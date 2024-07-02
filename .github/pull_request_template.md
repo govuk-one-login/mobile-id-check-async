@@ -1,11 +1,9 @@
 <!-- Include the Jira ticket number in square brackets as prefix, eg `[DCMAW-XXXX] PR Title` -->
 ​
 ### What changed
-
 <!-- Describe the changes in detail - the "what"-->
 
 ### Why did it change
-
 <!-- Describe the reason these changes were made - the "why" -->
 
 ## Checklists
