@@ -21,9 +21,6 @@ updates:
       interval: "weekly"
       day: "thursday"
       time: "03:00"
-    ignore:
-      - dependency-name: "@types/node"
-        versions: ["20.x"]
     open-pull-requests-limit: 5
     groups:
       backend-version:
