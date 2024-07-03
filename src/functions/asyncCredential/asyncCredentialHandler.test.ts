@@ -20,7 +20,22 @@ describe("Async Credential", () => {
     describe("Given access token does not start with Bearer", () => {
       it("Returns 401 Unauthorized", async () => {
         const event = buildRequest({
-          headers: { Authorization: "noBearerString" },
+          headers: { Authorization: "noBearerString mockToken" },
+        });
+
+        const result: APIGatewayProxyResult = await lambdaHandler(event);
+        expect(result).toEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 401,
+          body: "Unauthorized",
+        });
+      });
+    });
+
+    describe("Given Bearer token is not in expected format", () => {
+      it("Returns 401 Unauthorized", async () => {
+        const event = buildRequest({
+          headers: { Authorization: "Bearer " },
         });
 
         const result: APIGatewayProxyResult = await lambdaHandler(event);

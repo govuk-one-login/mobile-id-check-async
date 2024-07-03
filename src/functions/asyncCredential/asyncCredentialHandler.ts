@@ -13,7 +13,15 @@ export async function lambdaHandler(
     };
   }
 
-  if (bearerToken.split(" ")[0] !== "Bearer") {
+  if (!bearerToken.startsWith("Bearer ")) {
+    return {
+      headers: { "Content-Type": "application/json" },
+      statusCode: 401,
+      body: "Unauthorized",
+    };
+  }
+
+  if (bearerToken.split("").length !== 2) {
     return {
       headers: { "Content-Type": "application/json" },
       statusCode: 401,
