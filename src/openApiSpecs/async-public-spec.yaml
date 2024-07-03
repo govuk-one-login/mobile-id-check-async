@@ -1,0 +1,320 @@
+openapi: 3.0.0
+info:
+  title: GOV.UK One Login mobile app - API for asynchronous issuing of credentials
+  version: 1.0.0
+  description: GOV.UK One Login mobile app - API for asynchronous issuing of credentials
+
+components:
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: |
+            The error code.
+          enum:
+            - server_error
+            - invalid_session
+            - session_not_found
+            - invalid_request
+        error_description:
+          type: string
+          description: |
+            A description of the error.
+      required:
+        - error
+        - error_description
+
+paths:
+  /async/activeSession:
+    get:
+      security:
+        - bearerAuth: [ ]
+      summary: Look for an active session for a given user
+      description: Query the session database to find an active session for a given user. If an active session is found it returns the sessionId if not return 404 session not found
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              examples:
+                success:
+                  value:
+                    {
+                      "sessionId": "37aae92b-a51e-4f68-b571-8e455fb0ec34",
+                      "govuk_signin_dcmaw_metadata": {
+                        "journey_type": "desktop_app_desktop"
+                      }
+                    }
+              schema:
+                type: object
+                properties:
+                  sessionId:
+                    type: string
+                    description: |
+                      The id of an active session found for a given sub identifier
+                  govuk_signin_dcmaw_metadata:
+                    type: object
+                    description: |
+                      Object containing properties related to the specific DCMAW journey
+                      being initiated by this request.
+                      journey_type parameter is defined which can be:
+                      desktop_app_desktop - indicates the journey was initiated on a device other than the mobile that the app is running on, so the app should not attempt any automatic handback
+                      mobile_app_mobile - indicates the journey was initiated on the same device that the app us running on, so the app can attempt an automatic handback
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                errorInvalidRequest:
+                  description: |
+                    The authorization header is missing from the header
+                  value:
+                    {
+                      "error": "invalid_request",
+                      "error_description": "Authorization header is missing"
+                    }
+              schema:
+                $ref: "#/components/schemas/Error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                errorInvalidRequest:
+                  description: |
+                    Unauthorized, usually signifies a access_token is not valid,
+                    and the user should request for new access_token
+                  value:
+                    {
+                      "error": "invalid_request",
+                      "error_description": "Service token is invalid or expired"
+                    }
+              schema:
+                $ref: "#/components/schemas/Error"
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              examples:
+                errorSessionNotFound:
+                  description: |
+                    The active session with correct state is not found for given sub identifier
+                  value:
+                    {
+                      "error": "session_not_found",
+                      "error_description": "No active session found for the given sub identifier"
+                    }
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              examples:
+                internalServerError:
+                  description: |
+                    The server has encountered an unexpected condition or configuration problem that prevents 
+                    it from fulfilling the request made by the browser or client.
+                  value:
+                    {
+                      "error": "server_error",
+                      "error_description": "Internal server error"
+                    }
+              schema:
+                $ref: "#/components/schemas/Error"
+# Created with mock integration, This needs to be replaced with lambda proxy integration when available
+      x-amazon-apigateway-integration:
+        requestTemplates:
+          application/json:
+            statusCode: 200
+        httpMethod: "POST"
+        passthroughBehavior: "when_no_match"
+        type: "mock"
+
+  /async/biometricToken:
+    post:
+      description: Retrieves a biometric access token for the document selected by the user
+      requestBody:
+        required: true
+        description: A JSON object that contains the session ID and the document selected by the user
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sessionId:
+                  description: Id for an auth session
+                  type: string
+                documentType:
+                  description: Document selected by user for identity check
+                  type: string
+                  enum:
+                    - NFC_PASSPORT
+                    - UK_DRIVING_LICENCE
+                    - UK_NFC_BRP
+              required:
+                - sessionId
+                - documentType
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              examples:
+                success:
+                  value:
+                    {
+                      "accessToken": "string"
+                    }
+              schema:
+                type: object
+                description: access token depending on passport, DL or BRP selection to access the third-party biometric check endpoints
+                required:
+                  - accessToken
+                properties:
+                  accessToken:
+                    type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              examples:
+                errorInvalidRequest:
+                  description: |
+                    Request body is invalid json and unable to parse
+                  value:
+                    {
+                      "error": "invalid_request",
+                      "error_description": "Request body is invalid json"
+                    }
+              schema:
+                $ref: "#/components/schemas/Error"
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              examples:
+                errorInvalidSession:
+                  description: |
+                    Session does not exist or in incorrect state
+                  value:
+                    {
+                      "error": "invalid_session",
+                      "error_description": "Session does not exist or in incorrect state"
+                    }
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              examples:
+                internalServerError:
+                  description: |
+                    The server has encountered an unexpected condition or configuration problem that prevents 
+                    it from fulfilling the request made by the browser or client.
+                  value:
+                    {
+                      "error": "server_error",
+                      "error_description": "Internal server error"
+                    }
+              schema:
+                $ref: "#/components/schemas/Error"
+# Created with mock integration, This needs to be replaced with lambda proxy integration when available
+      x-amazon-apigateway-integration:
+        requestTemplates:
+          application/json:
+            statusCode: 200
+        httpMethod: "POST"
+        passthroughBehavior: "when_no_match"
+        type: "mock"
+  /async/finishBiometricSession:
+    post:
+      summary: App signifies to backend that user interaction for biometric session is complete
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                authSessionId:
+                  type: string
+                  format: uuid
+                  example: 11111111-1111-1111-1111-111111111111
+                  description: |
+                    authSessionId for the active session. Note this is effectively a short-lived bearer token
+                  pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+                biometricSessionId:
+                  type: string
+                  format: uuid
+                  example: 22222222-2222-2222-2222-222222222222
+                  description: |
+                    biometricSessionId for the READID session that the user has just completed
+                  pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+              required:
+                - authSessionId
+                - biometricSessionId
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              examples:
+                errorInvalidRequest:
+                  description: |
+                    Invalid request body
+                  value:
+                    {
+                      "error": "invalid_request",
+                      "error_description": "Invalid request body"
+                    }
+              schema:
+                $ref: "#/components/schemas/Error"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                errorInvalidSession:
+                  description: |
+                    Invalid session
+                  value:
+                    {
+                      "error": "invalid_session",
+                      "error_description": "authSessionId not recognised or not in a valid state"
+                    }
+              schema:
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              examples:
+                internalServerError:
+                  description: |
+                    The server has encountered an unexpected condition or configuration problem that prevents 
+                    it from fulfilling the request made by the browser or client.
+                  value:
+                    {
+                      "error": "server_error",
+                      "error_description": "Internal server error"
+                    }
+              schema:
+                $ref: "#/components/schemas/Error"
+# Created with mock integration, This needs to be replaced with lambda proxy integration when available
+      x-amazon-apigateway-integration:
+        requestTemplates:
+          application/json:
+            statusCode: 200
+        httpMethod: "POST"
+        passthroughBehavior: "when_no_match"
+        type: "mock"
