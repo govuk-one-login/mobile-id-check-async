@@ -6,7 +6,8 @@
   "scripts": {
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
-    "test": "./node_modules/.bin/jest --detectOpenHandles"
+    "test": "./node_modules/.bin/jest --detectOpenHandles",
+    "preinstall": "git config --local core.hooksPath .github/hook-scripts"
   },
   "devDependencies": {
     "@types/aws-lambda": "8.10.140",
