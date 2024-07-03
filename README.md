@@ -12,10 +12,22 @@ It follows the Client credentials grant flow from the OAuth2.0 Framework [see he
 
 ## Running tests
 
-### To run unit tests
-
-- From the /src folder, run the unit test command
+To run unit tests:
 
 ```bash
 npm run test
+```
+
+## Formatting
+
+This repository uses Prettier as an opionated formatter to ensure code style is consistent.
+
+To format your code:
+```bash
+npm run format
+```
+
+To validate your code adheres to the formatting rules:
+```bash
+npm run format:check
 ```
