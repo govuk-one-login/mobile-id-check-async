@@ -1,12 +1,14 @@
-import { lambdaHandler } from "./asyncCredentialHandler"
+import { lambdaHandler } from "./asyncCredentialHandler";
 
-describe('Async Credential', () => {
+describe("Async Credential", () => {
   it('Returns with 200 response with a body of "Hello World"', async () => {
-    const result = await lambdaHandler()
+    const result = await lambdaHandler();
 
-    expect(result.statusCode)
-    expect(result.body).toEqual(JSON.stringify({
-      message: "Hello World"
-    }))
-  })
-})
+    expect(result.statusCode);
+    expect(result.body).toEqual(
+      JSON.stringify({
+        message: "Hello World",
+      }),
+    );
+  });
+});

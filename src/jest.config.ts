@@ -4,12 +4,13 @@ export default {
   reporters: [
     "default",
     [
-      "jest-junit", {
+      "jest-junit",
+      {
         outputDirectory: "./results",
-        outputName: "report.xml"
-      }
-    ]
+        outputName: "report.xml",
+      },
+    ],
   ],
   testEnvironment: "node",
-  verbose: true
-}
+  verbose: true,
+};
