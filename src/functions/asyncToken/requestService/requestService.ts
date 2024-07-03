@@ -1,73 +1,88 @@
-import { LogOrValue, log, value } from "../../types/logOrValue"
-import { APIGatewayProxyEvent } from "aws-lambda"
-const Buffer = require('buffer').Buffer
+import { LogOrValue, log, value } from "../../types/logOrValue";
+import { APIGatewayProxyEvent } from "aws-lambda";
+const Buffer = require("buffer").Buffer;
 
 export class RequestService implements IProcessRequest {
-  processRequest = (request: APIGatewayProxyEvent): LogOrValue<IDecodedAuthorizationHeader> => {
-    const requestBody = request.body
-    const authorizationHeader = request.headers['Authorization']
+  processRequest = (
+    request: APIGatewayProxyEvent,
+  ): LogOrValue<IDecodedAuthorizationHeader> => {
+    const requestBody = request.body;
+    const authorizationHeader = request.headers["Authorization"];
 
     if (!this.isRequestBodyValid(requestBody)) {
-      return log('Invalid grant_type')
+      return log("Invalid grant_type");
     }
 
     if (!this.isRequestAuthorizationHeaderValid(authorizationHeader)) {
-      return log('Invalid authorization header')
+      return log("Invalid authorization header");
     }
 
-    const decodeAuthorizationHeader = this.decodeAuthorizationHeader(authorizationHeader)
+    const decodeAuthorizationHeader =
+      this.decodeAuthorizationHeader(authorizationHeader);
     if (decodeAuthorizationHeader.isLog) {
-      return log('Client secret incorrectly formatted') //TODO: there is sort of two logs for this, see private function
+      return log("Client secret incorrectly formatted"); //TODO: there is sort of two logs for this, see private function
     }
 
-    const decodedClientCredentials = decodeAuthorizationHeader.value as IDecodedAuthorizationHeader
+    const decodedClientCredentials =
+      decodeAuthorizationHeader.value as IDecodedAuthorizationHeader;
 
-    return value(decodedClientCredentials)
-  }
+    return value(decodedClientCredentials);
+  };
 
   private isRequestBodyValid = (body: string | null): boolean => {
     if (body == null) {
-      return false
+      return false;
     }
 
-    const { grant_type } = JSON.parse(body)
-    if (grant_type !== 'client_credentials') {
-      return false
+    const { grant_type } = JSON.parse(body);
+    if (grant_type !== "client_credentials") {
+      return false;
     }
 
-    return true
-  }
+    return true;
+  };
 
-  private isRequestAuthorizationHeaderValid = (authorizationHeader: string | undefined): boolean => {
+  private isRequestAuthorizationHeaderValid = (
+    authorizationHeader: string | undefined,
+  ): boolean => {
     if (!authorizationHeader) {
-      return false
+      return false;
     }
 
-    if (!authorizationHeader.startsWith('Basic ')) {
-      return false
+    if (!authorizationHeader.startsWith("Basic ")) {
+      return false;
     }
 
-    return true
-  }
+    return true;
+  };
 
-  private decodeAuthorizationHeader = (authorizationHeader: string | undefined): LogOrValue<IDecodedAuthorizationHeader> => {
-    const base64EncodedCredential = authorizationHeader?.split(' ')[1]
-    const base64DecodedCredential = Buffer.from(base64EncodedCredential, 'base64').toString('utf-8')
-    const [clientId, clientSecret] = base64DecodedCredential.split(':')
+  private decodeAuthorizationHeader = (
+    authorizationHeader: string | undefined,
+  ): LogOrValue<IDecodedAuthorizationHeader> => {
+    const base64EncodedCredential = authorizationHeader?.split(" ")[1];
+    const base64DecodedCredential = Buffer.from(
+      base64EncodedCredential,
+      "base64",
+    ).toString("utf-8");
+    const [clientId, clientSecret] = base64DecodedCredential.split(":");
 
     if (!clientId || !clientSecret) {
-      return log('BASE64_ENCODED_CLIENT_ID_AND_SECRET incorrectly formatted Authorization header')
+      return log(
+        "BASE64_ENCODED_CLIENT_ID_AND_SECRET incorrectly formatted Authorization header",
+      );
     }
 
-    return value({ clientId, clientSecret })
-  }
+    return value({ clientId, clientSecret });
+  };
 }
 
 export interface IProcessRequest {
-  processRequest: (request: APIGatewayProxyEvent) => LogOrValue<IDecodedAuthorizationHeader>
+  processRequest: (
+    request: APIGatewayProxyEvent,
+  ) => LogOrValue<IDecodedAuthorizationHeader>;
 }
 
 export interface IDecodedAuthorizationHeader {
-  clientId: string
-  clientSecret:string
+  clientId: string;
+  clientSecret: string;
 }
