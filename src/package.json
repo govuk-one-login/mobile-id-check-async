@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
+    "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
     "test": "./node_modules/.bin/jest --detectOpenHandles"
   },
   "devDependencies": {
