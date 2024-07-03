@@ -10,7 +10,7 @@ describe("Async Credential", () => {
 
   beforeEach(() => {
     dependencies = {
-      tokenService: (keyId: string) => new TokenService(),
+      tokenService: () => new TokenService(),
     };
   });
   describe("Access token validation", () => {

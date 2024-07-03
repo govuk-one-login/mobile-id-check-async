@@ -39,6 +39,18 @@ export async function lambdaHandler(
     };
   }
 
+  const tokenService = dependencies.tokenService();
+
+  const result = await tokenService.verifyTokenSignature("", "");
+
+  if (result.isLog) {
+    return {
+      headers: { "Content-Type": "application/json" },
+      statusCode: 401,
+      body: "Unauthorized",
+    };
+  }
+
   return {
     headers: { "Content-Type": "application/json" },
     statusCode: 200,
@@ -49,5 +61,9 @@ export async function lambdaHandler(
 }
 
 export interface Dependencies {
-  tokenService: (keyId: string) => TokenService;
+  tokenService: () => TokenService;
 }
+
+const dependencies = {
+  tokenService: () => new TokenService(),
+};
