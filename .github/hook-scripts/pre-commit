@@ -5,5 +5,5 @@
 # exit with non-zero status after issuing an appropriate message if
 # it wants to stop the commit.
 
-# Run prettier linting checks
+# Run prettier formatting checks
 cd src && npm run format:check
