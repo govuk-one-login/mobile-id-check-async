@@ -1,7 +1,9 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { TokenService } from "./TokenService/tokenService.test";
 
 export async function lambdaHandler(
   event: APIGatewayProxyEvent,
+  dependencies: Dependencies,
 ): Promise<APIGatewayProxyResult> {
   const bearerToken = event.headers["Authorization"];
 
@@ -21,7 +23,7 @@ export async function lambdaHandler(
     };
   }
 
-  if (bearerToken.split("").length !== 2) {
+  if (bearerToken.split(" ").length !== 2) {
     return {
       headers: { "Content-Type": "application/json" },
       statusCode: 401,
@@ -36,4 +38,8 @@ export async function lambdaHandler(
       message: "Hello World",
     }),
   };
+}
+
+export interface Dependencies {
+  tokenService: (keyId: string) => TokenService;
 }

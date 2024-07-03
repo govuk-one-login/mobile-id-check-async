@@ -1,14 +1,27 @@
 import { APIGatewayProxyResult } from "aws-lambda";
-import { lambdaHandler } from "./asyncCredentialHandler";
+import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
 import { buildRequest } from "../testUtils/mockRequest";
+import { IVerifyTokenSignature } from "./TokenService/tokenService.test";
+import { TokenService } from "../asyncCredential/TokenService/tokenService.test";
+import { LogOrValue, log } from "../types/logOrValue";
 
 describe("Async Credential", () => {
+  let dependencies: Dependencies;
+
+  beforeEach(() => {
+    dependencies = {
+      tokenService: (keyId: string) => new TokenService(),
+    };
+  });
   describe("Access token validation", () => {
     describe("Given access token payload is not present", () => {
       it("Returns 401 Unauthorized", async () => {
         const event = buildRequest();
 
-        const result: APIGatewayProxyResult = await lambdaHandler(event);
+        const result: APIGatewayProxyResult = await lambdaHandler(
+          event,
+          dependencies,
+        );
         expect(result).toEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -23,7 +36,10 @@ describe("Async Credential", () => {
           headers: { Authorization: "noBearerString mockToken" },
         });
 
-        const result: APIGatewayProxyResult = await lambdaHandler(event);
+        const result: APIGatewayProxyResult = await lambdaHandler(
+          event,
+          dependencies,
+        );
         expect(result).toEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -38,27 +54,6 @@ describe("Async Credential", () => {
           headers: { Authorization: "Bearer " },
         });
 
-        const result: APIGatewayProxyResult = await lambdaHandler(event);
-        expect(result).toEqual({
-          headers: { "Content-Type": "application/json" },
-          statusCode: 401,
-          body: "Unauthorized",
-        });
-      });
-    });
-  });
-
-  describe("JWT signature verification", () => {
-    describe("Given that the JWT signature verification fails", () => {
-      it("Returns 401 Unauthorized", async () => {
-        const event = buildRequest({
-          headers: { Authorization: "Bearer mockToken" },
-        });
-
-        const dependencies = {
-          tokenService: (keyId: string) => IVerifyTokenSignature,
-        };
-
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
           dependencies,
@@ -71,4 +66,33 @@ describe("Async Credential", () => {
       });
     });
   });
+
+  describe("JWT signature verification", () => {
+    describe("Given that the JWT signature verification fails", () => {
+      it("Returns 401 Unauthorized", async () => {
+        dependencies.tokenService = () => new MockTokenSeviceInvalidSignature();
+
+        const event = buildRequest({
+          headers: { Authorization: "Bearer mockToken" },
+        });
+
+        const result: APIGatewayProxyResult = await lambdaHandler(
+          event,
+          dependencies,
+        );
+
+        expect(result).toEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 401,
+          body: "Unauthorized",
+        });
+      });
+    });
+  });
 });
+
+class MockTokenSeviceInvalidSignature implements IVerifyTokenSignature {
+  verifyTokenSignature(): Promise<LogOrValue<null>> {
+    return Promise.resolve(log(""));
+  }
+}
