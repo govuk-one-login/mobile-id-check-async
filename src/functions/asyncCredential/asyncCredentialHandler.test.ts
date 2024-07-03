@@ -47,4 +47,28 @@ describe("Async Credential", () => {
       });
     });
   });
+
+  describe("JWT signature verification", () => {
+    describe("Given that the JWT signature verification fails", () => {
+      it("Returns 401 Unauthorized", async () => {
+        const event = buildRequest({
+          headers: { Authorization: "Bearer mockToken" },
+        });
+
+        const dependencies = {
+          tokenService: (keyId: string) => IVerifyTokenSignature,
+        };
+
+        const result: APIGatewayProxyResult = await lambdaHandler(
+          event,
+          dependencies,
+        );
+        expect(result).toEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 401,
+          body: "Unauthorized",
+        });
+      });
+    });
+  });
 });
