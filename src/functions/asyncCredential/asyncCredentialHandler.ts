@@ -31,6 +31,14 @@ export async function lambdaHandler(
     };
   }
 
+  if (bearerToken.split(" ")[1].length == 0) {
+    return {
+      headers: { "Content-Type": "application/json" },
+      statusCode: 401,
+      body: "Unauthorized",
+    };
+  }
+
   return {
     headers: { "Content-Type": "application/json" },
     statusCode: 200,

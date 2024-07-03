@@ -2,7 +2,7 @@ import { APIGatewayProxyResult } from "aws-lambda";
 import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
 import { buildRequest } from "../testUtils/mockRequest";
 import { IVerifyTokenSignature } from "./TokenService/tokenService.test";
-import { TokenService } from "../asyncCredential/TokenService/tokenService.test";
+import { TokenService } from "./TokenService/tokenService.test";
 import { LogOrValue, log } from "../types/logOrValue";
 
 describe("Async Credential", () => {
@@ -48,7 +48,25 @@ describe("Async Credential", () => {
       });
     });
 
-    describe("Given Bearer token is not in expected format", () => {
+    describe("Given Bearer token is not in expected format - contains spaces", () => {
+      it("Returns 401 Unauthorized", async () => {
+        const event = buildRequest({
+          headers: { Authorization: "Bearer mock token" },
+        });
+
+        const result: APIGatewayProxyResult = await lambdaHandler(
+          event,
+          dependencies,
+        );
+        expect(result).toEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 401,
+          body: "Unauthorized",
+        });
+      });
+    });
+
+    describe("Given Bearer token is not in expected format - missing token", () => {
       it("Returns 401 Unauthorized", async () => {
         const event = buildRequest({
           headers: { Authorization: "Bearer " },
