@@ -1,8 +1,8 @@
 import { KMSClient, SignCommand } from "@aws-sdk/client-kms"
 import { NodeHttpHandler } from '@aws-sdk/node-http-handler'
 import { Buffer } from 'buffer'
+import jose from 'node-jose'
 import format from 'ecdsa-sig-formatter'
-const jose = require('node-jose');
 
 export class TokenService implements IMintToken {
   readonly kidArn: string
@@ -51,7 +51,7 @@ export class TokenService implements IMintToken {
     }
 
     // Convert signature to buffer and format with ES256 algorithm
-    const signatureBuffer = Buffer.from(result.Signature as Uint8Array)
+    const signatureBuffer = Buffer.from(result.Signature)
     tokenComponents.signature = format.derToJose(signatureBuffer, 'ES256')
 
     return `${tokenComponents.header}.${tokenComponents.payload}.${tokenComponents.signature}`
