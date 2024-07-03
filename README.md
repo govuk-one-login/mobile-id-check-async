@@ -20,7 +20,7 @@ npm run test
 
 ## Formatting
 
-This repository uses Prettier as an opionated formatter to ensure code style is consistent.
+This repository uses Prettier as an opinionated formatter to ensure code style is consistent.
 
 To format your code:
 ```bash
