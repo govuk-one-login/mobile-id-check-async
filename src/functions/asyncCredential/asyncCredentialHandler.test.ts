@@ -1,14 +1,18 @@
+import { APIGatewayProxyResult } from "aws-lambda";
 import { lambdaHandler } from "./asyncCredentialHandler";
+import { buildRequest } from "../testUtils/mockRequest";
 
 describe("Async Credential", () => {
-  it('Returns with 200 response with a body of "Hello World"', async () => {
-    const result = await lambdaHandler();
+  describe("Given access token payload is not present", () => {
+    it("Returns 401 Unauthorized", async () => {
+      const event = buildRequest();
 
-    expect(result.statusCode);
-    expect(result.body).toEqual(
-      JSON.stringify({
-        message: "Hello World",
-      }),
-    );
+      const result: APIGatewayProxyResult = await lambdaHandler(event);
+      expect(result).toEqual({
+        headers: { "Content-Type": "application/json" },
+        statusCode: 401,
+        body: "Unauthorized",
+      });
+    });
   });
 });
