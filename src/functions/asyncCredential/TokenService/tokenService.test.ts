@@ -8,17 +8,33 @@ const mockJwt =
   "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.tyh-VfuzIxCyGYDlkBA7DfyjrqmSHu6pQ2hoZuFqUSLPNY2N0mpHb3nk5K17HWP_3cYHBw7AhHale5wky6-sVA";
 
 describe("Token Service", () => {
-  describe("Given the token signature is not valid", () => {
-    it("Returns a log", async () => {
-      const kmsMock = mockClient(KMSClient);
-      kmsMock.on(VerifyCommand).resolves({ SignatureValid: false });
-      const tokenService = new TokenService();
-      const result = await tokenService.verifyTokenSignature(
-        "mockKeyId",
-        mockJwt,
-      );
-      expect(result.isLog).toBe(true);
-      expect(result.value).toEqual("TOKEN_SIGNATURE_INVALID");
+  describe("JWT signature verification", () => {
+    describe("Given the token signature is not valid", () => {
+      it("Returns a log", async () => {
+        const kmsMock = mockClient(KMSClient);
+        kmsMock.on(VerifyCommand).resolves({ SignatureValid: false });
+        const tokenService = new TokenService();
+        const result = await tokenService.verifyTokenSignature(
+          "mockKeyId",
+          mockJwt,
+        );
+        expect(result.isLog).toBe(true);
+        expect(result.value).toEqual("TOKEN_SIGNATURE_INVALID");
+      });
+    });
+
+    describe("Given the token signature is valid", () => {
+      it("Returns a value of null", async () => {
+        const kmsMock = mockClient(KMSClient);
+        kmsMock.on(VerifyCommand).resolves({ SignatureValid: true });
+        const tokenService = new TokenService();
+        const result = await tokenService.verifyTokenSignature(
+          "mockKeyId",
+          mockJwt,
+        );
+        expect(result.isLog).toBe(false);
+        expect(result.value).toEqual(null);
+      });
     });
   });
 });
@@ -48,6 +64,7 @@ export class TokenService implements IVerifyTokenSignature {
     if (result.SignatureValid === false) {
       return log("TOKEN_SIGNATURE_INVALID");
     }
+
     return value(null);
   }
 }
