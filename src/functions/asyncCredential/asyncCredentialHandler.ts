@@ -13,6 +13,13 @@ export async function lambdaHandler(
     return serverError500Responses;
   }
 
+  let issuer;
+  try {
+    issuer = validOrThrow(dependencies.env, "ISSUER");
+  } catch (error) {
+    return serverError500Responses;
+  }
+
   const bearerToken = event.headers["Authorization"];
 
   if (bearerToken == null) {

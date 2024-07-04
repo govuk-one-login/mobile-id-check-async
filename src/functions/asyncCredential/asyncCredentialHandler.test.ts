@@ -19,6 +19,7 @@ const mockJwtNbfInFuture =
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
+  ISSUER: "mockIssuer",
 };
 
 describe("Async Credential", () => {
@@ -36,6 +37,21 @@ describe("Async Credential", () => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
         delete dependencies.env["SIGNING_KEY_ID"];
+        const event = buildRequest();
+        const result = await lambdaHandler(event, dependencies);
+
+        expect(result.statusCode).toBe(500);
+        expect(JSON.parse(result.body).error).toEqual("server_error");
+        expect(JSON.parse(result.body).error_description).toEqual(
+          "Server Error",
+        );
+      });
+    });
+
+    describe("Given ISSUER is missing", () => {
+      it("Returns a 500 Server Error response", async () => {
+        dependencies.env = JSON.parse(JSON.stringify(env));
+        delete dependencies.env["ISSUER"];
         const event = buildRequest();
         const result = await lambdaHandler(event, dependencies);
 
