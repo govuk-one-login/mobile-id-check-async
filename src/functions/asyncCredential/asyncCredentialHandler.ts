@@ -1,10 +1,18 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { TokenService } from "./TokenService/tokenService.test";
+import { validOrThrow } from "../config";
 
 export async function lambdaHandler(
   event: APIGatewayProxyEvent,
   dependencies: Dependencies,
 ): Promise<APIGatewayProxyResult> {
+  let kidArn;
+  try {
+    kidArn = validOrThrow(dependencies.env, "SIGNING_KEY_ID");
+  } catch (error) {
+    return serverError500Responses;
+  }
+
   const bearerToken = event.headers["Authorization"];
 
   if (bearerToken == null) {
@@ -74,8 +82,18 @@ const unauthorized401Response = {
   body: "Unauthorized",
 };
 
+const serverError500Responses: APIGatewayProxyResult = {
+  headers: { "Content-Type": "application/json" },
+  statusCode: 500,
+  body: JSON.stringify({
+    error: "server_error",
+    error_description: "Server Error",
+  }),
+};
+
 export interface Dependencies {
   tokenService: () => TokenService;
+  env: NodeJS.ProcessEnv;
 }
 
 const dependencies = {

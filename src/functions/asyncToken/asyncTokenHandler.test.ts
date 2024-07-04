@@ -33,10 +33,10 @@ describe("Async Token", () => {
   });
 
   describe("Environment variable validation", () => {
-    describe("Given SIGNING_KEY_IDS is missing", () => {
+    describe("Given SIGNING_KEY_ID is missing", () => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
-        delete dependencies.env["SIGNING_KEY_IDS"];
+        delete dependencies.env["SIGNING_KEY_ID"];
 
         const result = await lambdaHandlerConstructor(dependencies, request);
 
@@ -292,5 +292,5 @@ class MockFailingTokenService implements IMintToken {
 }
 
 const env = {
-  SIGNING_KEY_IDS: "mockSigningKeyId",
+  SIGNING_KEY_ID: "mockSigningKeyId",
 };

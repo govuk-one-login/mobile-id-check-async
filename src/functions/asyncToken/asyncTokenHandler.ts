@@ -21,7 +21,7 @@ export async function lambdaHandlerConstructor(
   // Environment variables
   let kidArn;
   try {
-    kidArn = validOrThrow(dependencies.env, "SIGNING_KEY_IDS");
+    kidArn = validOrThrow(dependencies.env, "SIGNING_KEY_ID");
   } catch (error) {
     return serverErrorResponse;
   }

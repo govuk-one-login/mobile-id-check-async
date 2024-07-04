@@ -16,14 +16,38 @@ const mockJwtExpInThePast =
 
 const mockJwtNbfInFuture =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIyMTQ1OTY0Njk1In0.7-OeXAHrUdvRirCd_7H_yxFf8aGzkGIk944gqAbCBVM";
+
+const env = {
+  SIGNING_KEY_ID: "mockKid",
+};
+
 describe("Async Credential", () => {
   let dependencies: Dependencies;
 
   beforeEach(() => {
     dependencies = {
       tokenService: () => new TokenService(),
+      env,
     };
   });
+
+  describe("Environment variable validation", () => {
+    describe("Given SIGNING_KEY_ID is missing", () => {
+      it("Returns a 500 Server Error response", async () => {
+        dependencies.env = JSON.parse(JSON.stringify(env));
+        delete dependencies.env["SIGNING_KEY_ID"];
+        const event = buildRequest();
+        const result = await lambdaHandler(event, dependencies);
+
+        expect(result.statusCode).toBe(500);
+        expect(JSON.parse(result.body).error).toEqual("server_error");
+        expect(JSON.parse(result.body).error_description).toEqual(
+          "Server Error",
+        );
+      });
+    });
+  });
+
   describe("Access token validation", () => {
     describe("Given access token payload is not present", () => {
       it("Returns 401 Unauthorized", async () => {

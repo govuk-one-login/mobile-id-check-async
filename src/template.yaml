@@ -16,7 +16,7 @@
 #   Function:
 #     Environment:
 #       Variables:
-#         SIGNING_KEY_IDS: !Sub "{{resolve:ssm:/${Environment}/${KMSKeyStack}/KMS/SigningKeyArn}}"
+#         SIGNING_KEY_ID: !Sub "{{resolve:ssm:/${Environment}/${KMSKeyStack}/KMS/SigningKeyArn}}"
 
 # Resources:
 #   BackendAsyncCredentialApi:
