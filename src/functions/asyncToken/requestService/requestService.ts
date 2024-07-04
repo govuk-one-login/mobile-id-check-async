@@ -1,6 +1,6 @@
 import { LogOrValue, log, value } from "../../types/logOrValue";
 import { APIGatewayProxyEvent } from "aws-lambda";
-const Buffer = require("buffer").Buffer;
+import {Buffer} from "Buffer"
 
 export class RequestService implements IProcessRequest {
   processRequest = (

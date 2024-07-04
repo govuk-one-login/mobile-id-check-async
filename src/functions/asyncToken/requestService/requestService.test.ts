@@ -115,7 +115,7 @@ describe("Request Service", () => {
   });
 });
 
-function buildRequest(overrides?: any): APIGatewayProxyEvent {
+function buildRequest(overrides?: {[key in string]: string}): APIGatewayProxyEvent {
   const defaultRequest = {
     httpMethod: "get",
     body: "",

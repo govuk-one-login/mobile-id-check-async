@@ -13,7 +13,7 @@ import {
   IProcessRequest,
 } from "./requestService/requestService";
 import { IGetClientCredentials } from "./ssmService/ssmService";
-import { IJwtPayload, IMintToken } from "./tokenService/tokenService";
+import { IMintToken } from "./tokenService/tokenService";
 
 describe("Async Token", () => {
   let request: APIGatewayProxyEvent;
@@ -168,9 +168,7 @@ describe("Async Token", () => {
 });
 
 class MockRequestServiceValueResponse implements IProcessRequest {
-  processRequest = (
-    request: APIGatewayProxyEvent,
-  ): LogOrValue<IDecodedAuthorizationHeader> => {
+  processRequest = (): LogOrValue<IDecodedAuthorizationHeader> => {
     return value({
       clientId: "mockClientId",
       clientSecret: "mockClientSecret",
@@ -179,9 +177,7 @@ class MockRequestServiceValueResponse implements IProcessRequest {
 }
 
 class MockRequestServiceInvalidGrantTypeLogResponse implements IProcessRequest {
-  processRequest = (
-    request: APIGatewayProxyEvent,
-  ): LogOrValue<IDecodedAuthorizationHeader> => {
+  processRequest = (): LogOrValue<IDecodedAuthorizationHeader> => {
     return log("Invalid grant_type");
   };
 }
@@ -189,9 +185,7 @@ class MockRequestServiceInvalidGrantTypeLogResponse implements IProcessRequest {
 class MockRequestServiceInvalidAuthorizationHeaderLogResponse
   implements IProcessRequest
 {
-  processRequest = (
-    request: APIGatewayProxyEvent,
-  ): LogOrValue<IDecodedAuthorizationHeader> => {
+  processRequest = (): LogOrValue<IDecodedAuthorizationHeader> => {
     return log("mockInvalidAuthorizationHeaderLog");
   };
 }
@@ -220,16 +214,10 @@ class MockFailingSsmService implements IGetClientCredentials {
 }
 
 class MockPassingClientCredentialsService implements IClientCredentialsService {
-  validate(
-    storedCredentials: IClientCredentials,
-    suppliedCredentials: IDecodedAuthorizationHeader,
-  ) {
+  validate() {
     return true;
   }
-  getClientCredentialsById(
-    storedCredentialsArray: IClientCredentials[],
-    suppliedClientId: string,
-  ) {
+  getClientCredentialsById() {
     return {
       client_id: "mockClientId",
       issuer: "mockIssuer",
@@ -242,16 +230,10 @@ class MockPassingClientCredentialsService implements IClientCredentialsService {
 class MockFailingClientCredentialsServiceGetClientCredentialsById
   implements IClientCredentialsService
 {
-  getClientCredentialsById(
-    storedCredentialsArray: IClientCredentials[],
-    suppliedClientId: string,
-  ) {
+  getClientCredentialsById() {
     return null;
   }
-  validate(
-    storedCredentials: IClientCredentials,
-    suppliedCredentials: IDecodedAuthorizationHeader,
-  ) {
+  validate() {
     return false;
   }
 }
@@ -259,10 +241,7 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
 class MockFailingClientCredentialsServiceValidation
   implements IClientCredentialsService
 {
-  getClientCredentialsById(
-    storedCredentialsArray: IClientCredentials[],
-    suppliedClientId: string,
-  ) {
+  getClientCredentialsById() {
     return {
       client_id: "mockClientId",
       issuer: "mockIssuer",
@@ -270,26 +249,24 @@ class MockFailingClientCredentialsServiceValidation
       hashed_client_secret: "mockHashedClientSecret",
     };
   }
-  validate(
-    storedCredentials: IClientCredentials,
-    suppliedCredentials: IDecodedAuthorizationHeader,
-  ) {
+  validate() {
     return false;
   }
 }
 
 class MockPassingTokenService implements IMintToken {
-  async mintToken(jwtPayload: IJwtPayload): Promise<string> {
+  async mintToken(): Promise<string> {
     return "mockToken";
   }
 }
 
 class MockFailingTokenService implements IMintToken {
-  async mintToken(jwtPayload: IJwtPayload): Promise<string> {
+  async mintToken(): Promise<string> {
     throw new Error("Failed to sign Jwt");
   }
 }
 
+//eslint-disable-next-line
 function buildRequest(overrides?: any): APIGatewayProxyEvent {
   const defaultRequest = {
     httpMethod: "get",

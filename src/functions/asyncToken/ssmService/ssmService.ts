@@ -42,7 +42,7 @@ export class SsmService implements IGetClientCredentials {
     let response;
     try {
       response = await this.ssmClient.send(new GetParameterCommand(command));
-    } catch (error: any) {
+    } catch (error: unknown) {
       return log("Client Credentials not found");
     }
 
@@ -72,7 +72,7 @@ export class SsmService implements IGetClientCredentials {
   };
 
   private isCredentialsArrayValid = (
-    credentials: any[] | undefined,
+    credentials: string[] | undefined,
   ): boolean => {
     if (!Array.isArray(credentials)) {
       return false;
@@ -90,7 +90,7 @@ export class SsmService implements IGetClientCredentials {
   };
 
   private isValidCredentialCredentialsStructure(
-    credentialArray: any[],
+    credentialArray: IClientCredentials[],
   ): boolean {
     return credentialArray.every(
       (obj) =>
