@@ -1,9 +1,12 @@
 import { APIGatewayProxyResult } from "aws-lambda";
-import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
 import { buildRequest } from "../testUtils/mockRequest";
-import { IVerifyTokenSignature } from "./TokenService/tokenService.test";
-import { TokenService } from "./TokenService/tokenService.test";
-import { LogOrValue, log } from "../types/logOrValue";
+import { LogOrValue, log, value } from "../types/logOrValue";
+import {
+  IValidateTokenPayload,
+  IVerifyTokenSignature,
+  TokenService,
+} from "./TokenService/tokenService.test";
+import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
 
 describe("Async Credential", () => {
   let dependencies: Dependencies;
@@ -109,7 +112,13 @@ describe("Async Credential", () => {
   });
 });
 
-class MockTokenSeviceInvalidSignature implements IVerifyTokenSignature {
+class MockTokenSeviceInvalidSignature
+  implements IValidateTokenPayload, IVerifyTokenSignature
+{
+  validateTokenPayload(): LogOrValue<null> {
+    return value(null);
+  }
+
   verifyTokenSignature(): Promise<LogOrValue<null>> {
     return Promise.resolve(log(""));
   }
