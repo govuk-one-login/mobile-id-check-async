@@ -74,12 +74,17 @@ export async function lambdaHandler(
   }
 
   if (jwtPayload.iss !== issuer) {
-    console.log("ISS NOT VALID");
+    console.log("ISS INVALID");
     return unauthorized401Response;
   }
 
   if (!jwtPayload.scope) {
     console.log("NO SCOPE");
+    return unauthorized401Response;
+  }
+
+  if (jwtPayload.scope !== "dcmaw.session.async_create") {
+    console.log("SCOPE INVALID");
     return unauthorized401Response;
   }
 

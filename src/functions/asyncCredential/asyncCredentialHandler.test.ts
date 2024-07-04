@@ -26,6 +26,9 @@ const mockJwtIssNotValid =
 const mockJwtNoScope =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciJ9._-4Sn9N5grVDSxI2vvoUH90-6bAh6nH53ELZ38b3Gwk";
 
+const mockJwtScopeNotValid =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciIsInNjb3BlIjoibW9ja0ludmFsaWRTY29wZSJ9.kO0R0-bN6uYkknOD9E0oqtpRlp0rHB-6njrHN3mKkX4";
+
 const env = {
   SIGNING_KEY_ID: "mockKid",
   ISSUER: "mockIssuer",
@@ -304,26 +307,26 @@ describe("Async Credential", () => {
         });
       });
 
-      // describe("Given scope is not valid", () => {
-      //   it("Returns a log", async () => {
-      //     const event = buildRequest({
-      //       headers: { Authorization: `Bearer ${mockJwtIssNotValid}` },
-      //     });
+      describe("Given scope is invalid", () => {
+        it("Returns a log", async () => {
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${mockJwtScopeNotValid}` },
+          });
 
-      //     dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
 
-      //     const result: APIGatewayProxyResult = await lambdaHandler(
-      //       event,
-      //       dependencies,
-      //     );
+          const result: APIGatewayProxyResult = await lambdaHandler(
+            event,
+            dependencies,
+          );
 
-      //     expect(result).toStrictEqual({
-      //       headers: { "Content-Type": "application/json" },
-      //       statusCode: 401,
-      //       body: "Unauthorized",
-      //     });
-      //   });
-      // });
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 401,
+            body: "Unauthorized",
+          });
+        });
+      });
     });
   });
 
