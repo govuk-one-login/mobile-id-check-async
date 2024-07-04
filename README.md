@@ -31,3 +31,10 @@ To validate your code adheres to the formatting rules:
 ```bash
 npm run format:check
 ```
+
+## Linting
+
+To lint your code:
+```base
+npm run lint
+```
