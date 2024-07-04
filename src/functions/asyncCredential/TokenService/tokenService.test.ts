@@ -7,6 +7,8 @@ import { LogOrValue, log, value } from "../../types/logOrValue";
 const mockJwt =
   "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.tyh-VfuzIxCyGYDlkBA7DfyjrqmSHu6pQ2hoZuFqUSLPNY2N0mpHb3nk5K17HWP_3cYHBw7AhHale5wky6-sVA";
 
+const mockJwtExpInThePast = "";
+
 describe("Token Service", () => {
   describe("JWT payload validation", () => {
     describe("Given expiry date is not present", () => {
@@ -16,6 +18,16 @@ describe("Token Service", () => {
 
         expect(result.isLog).toBe(true);
         expect(result.value).toEqual("EXPIRY_DATE_MISSING");
+      });
+    });
+
+    describe("Given expiry date is in the past", () => {
+      it("Returns a log", () => {
+        const tokenService = new TokenService();
+        const result = tokenService.validateTokenPayload(mockJwt);
+
+        expect(result.isLog).toBe(true);
+        expect(result.value).toEqual("EXPIRY_DATE_IN_THE_PAST");
       });
     });
   });
