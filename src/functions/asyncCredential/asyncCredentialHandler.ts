@@ -8,35 +8,19 @@ export async function lambdaHandler(
   const bearerToken = event.headers["Authorization"];
 
   if (bearerToken == null) {
-    return {
-      headers: { "Content-Type": "application/json" },
-      statusCode: 401,
-      body: "Unauthorized",
-    };
+    return unauthorized401Response;
   }
 
   if (!bearerToken.startsWith("Bearer ")) {
-    return {
-      headers: { "Content-Type": "application/json" },
-      statusCode: 401,
-      body: "Unauthorized",
-    };
+    return unauthorized401Response;
   }
 
   if (bearerToken.split(" ").length !== 2) {
-    return {
-      headers: { "Content-Type": "application/json" },
-      statusCode: 401,
-      body: "Unauthorized",
-    };
+    return unauthorized401Response;
   }
 
   if (bearerToken.split(" ")[1].length == 0) {
-    return {
-      headers: { "Content-Type": "application/json" },
-      statusCode: 401,
-      body: "Unauthorized",
-    };
+    return unauthorized401Response;
   }
 
   const tokenService = dependencies.tokenService();
@@ -50,29 +34,17 @@ export async function lambdaHandler(
   );
 
   if (!jwtPayload.exp) {
-    return {
-      headers: { "Content-Type": "application/json" },
-      statusCode: 401,
-      body: "Unauthorized",
-    };
+    return unauthorized401Response;
   }
 
   if (jwtPayload.exp <= Date.now()) {
-    return {
-      headers: { "Content-Type": "application/json" },
-      statusCode: 401,
-      body: "Unauthorized",
-    };
+    return unauthorized401Response;
   }
 
   const result = await tokenService.verifyTokenSignature("keyId", encodedJwt);
 
   if (result.isLog) {
-    return {
-      headers: { "Content-Type": "application/json" },
-      statusCode: 401,
-      body: "Unauthorized",
-    };
+    return unauthorized401Response;
   }
 
   return {
@@ -83,6 +55,12 @@ export async function lambdaHandler(
     }),
   };
 }
+
+const unauthorized401Response = {
+  headers: { "Content-Type": "application/json" },
+  statusCode: 401,
+  body: "Unauthorized",
+};
 
 export interface Dependencies {
   tokenService: () => TokenService;
