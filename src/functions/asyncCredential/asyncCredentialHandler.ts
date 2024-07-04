@@ -108,33 +108,26 @@ export async function lambdaHandler(
     return unauthorized401Response;
   }
 
-  // // Fetching stored client credentials
-  // const ssmService = dependencies.ssmService();
-  // const ssmServiceResponse = await ssmService.getClientCredentials();
-  // if (ssmServiceResponse.isLog) {
-  //   return serverError500Responses;
-  // }
+  // Fetching stored client credentials
+  const ssmService = dependencies.ssmService();
+  const ssmServiceResponse = await ssmService.getClientCredentials();
+  if (ssmServiceResponse.isLog) {
+    return serverError500Responses;
+  }
 
-  // const storedCredentialsArray =
-  //   ssmServiceResponse.value as IClientCredentials[];
+  const storedCredentialsArray =
+    ssmServiceResponse.value as IClientCredentials[];
 
-  // // Incoming credentials match stored credentials
-  // const clientCredentialsService = dependencies.clientCredentialsService();
-  // const storedCredentials = clientCredentialsService.getClientCredentialsById(
-  //   storedCredentialsArray,
-  //   suppliedCredentials.clientId,
-  // );
-  // if (!storedCredentials) {
-  //   return badRequestResponseInvalidCredentials;
-  // }
+  // Incoming credentials match stored credentials
+  const clientCredentialsService = dependencies.clientCredentialsService();
+  const storedCredentials = clientCredentialsService.getClientCredentialsById(
+    storedCredentialsArray,
+    jwtPayload.client_id,
+  );
 
-  // const isValidClientCredentials = clientCredentialsService.validate(
-  //   storedCredentials,
-  //   suppliedCredentials,
-  // );
-  // if (!isValidClientCredentials) {
-  //   return badRequestResponseInvalidCredentials;
-  // }
+  if (!storedCredentials) {
+    return badRequestResponseInvalidCredentials;
+  }
 
   return {
     headers: { "Content-Type": "application/json" },
@@ -144,6 +137,15 @@ export async function lambdaHandler(
     }),
   };
 }
+
+const badRequestResponseInvalidCredentials: APIGatewayProxyResult = {
+  headers: { "Content-Type": "application/json" },
+  statusCode: 400,
+  body: JSON.stringify({
+    error: "invalid_client",
+    error_description: "Supplied client credentials not recognised",
+  }),
+};
 
 const unauthorized401Response = {
   headers: { "Content-Type": "application/json" },
