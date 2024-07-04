@@ -10,7 +10,7 @@ import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
 
 const mockJwtNoExp =
   "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.0C_S0NEicI6k1yaTAV0l85Z0SlW3HI2YIqJb_unXZ1MttAvjR9wAOhsl_0X20i1NYN0ZhnaoHnGLpApUSz2kwQ";
-const mockJwtExpInThePast = "";
+const mockJwtExpInThePast = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE1MTYyMzkwMjJ9.LMHQh9wrANRpJYdQsP1oOVsrDEFTTJTYgpUVBy_w1Jd8GFRLwbenFEjFyXr2PZF-COP9xI87vpEOtrAri3ge8A";
 
 describe("Async Credential", () => {
   let dependencies: Dependencies;
@@ -114,15 +114,26 @@ describe("Async Credential", () => {
       });
     });
 
-    // describe("Given expiry date is in the past", () => {
-    //   it("Returns a log", () => {
-    //     const tokenService = new TokenService();
-    //     const result = tokenService.validateTokenPayload(mockJwtExpInThePast);
+    describe("Given expiry date is in the past", () => {
+      it("Returns a log", async () => {
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${mockJwtExpInThePast}` },
+        });
 
-    //     expect(result.isLog).toBe(true);
-    //     expect(result.value).toEqual("EXPIRY_DATE_IN_THE_PAST");
-    //   });
-    // });
+        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+
+        const result: APIGatewayProxyResult = await lambdaHandler(
+          event,
+          dependencies,
+        );
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 401,
+          body: "Unauthorized",
+        });
+      });
+    });
   });
 
   describe("JWT signature verification", () => {
