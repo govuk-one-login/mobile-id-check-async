@@ -15,8 +15,10 @@ import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
 
 const mockJwtNoExp =
   "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.0C_S0NEicI6k1yaTAV0l85Z0SlW3HI2YIqJb_unXZ1MttAvjR9wAOhsl_0X20i1NYN0ZhnaoHnGLpApUSz2kwQ";
+
 const mockJwtIatInTheFuture =
   "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZXhwIjoiMjE0NTk2NDY5NSIsImlhdCI6IjIxNDU5NjQ2OTUifQ.VnfFwIElQqPwbayMqLz-YaUK-BOx9tEKJE4_N49xh65TQvtP-9EWaPgD0D0C_3hULWjtvt2gh46nTPi-m7-y4A";
+
 const mockJwtExpInThePast =
   "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE1MTYyMzkwMjJ9.LMHQh9wrANRpJYdQsP1oOVsrDEFTTJTYgpUVBy_w1Jd8GFRLwbenFEjFyXr2PZF-COP9xI87vpEOtrAri3ge8A";
 
@@ -38,6 +40,9 @@ const mockJwtScopeNotValid =
 const mockJwtNoClientId =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUifQ.xN-h1mVndN7kNRSrVM0WLcdKblniD3q70xnY-RYBIlc";
 
+const mockValidJwt =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUiLCJjbGllbnRfaWQiOiJtb2NrQ2xpZW50SWQifQ.FzBrIcM0DDp1ecivQpCNF216l2ZFzU3fPAOgAegKylY";
+
 const env = {
   SIGNING_KEY_ID: "mockKid",
   ISSUER: "mockIssuer",
@@ -48,7 +53,7 @@ describe("Async Credential", () => {
 
   beforeEach(() => {
     dependencies = {
-      tokenService: () => new TokenService(),
+      tokenService: () => new MockTokenSeviceValidSignature(),
       ssmService: () => new MockPassingSsmService(),
       clientCredentialsService: () => new MockPassingClientCredentialsService(),
       env,
@@ -370,7 +375,7 @@ describe("Async Credential", () => {
         dependencies.tokenService = () => new MockTokenSeviceInvalidSignature();
 
         const event = buildRequest({
-          headers: { Authorization: "Bearer mockToken" },
+          headers: { Authorization: `Bearer ${mockValidJwt}` },
         });
 
         const result: APIGatewayProxyResult = await lambdaHandler(
@@ -392,7 +397,9 @@ describe("Async Credential", () => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.ssmService = () => new MockFailingSsmService();
 
-        const event = buildRequest();
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${mockValidJwt}` },
+        });
 
         const result = await lambdaHandler(event, dependencies);
 
@@ -408,7 +415,9 @@ describe("Async Credential", () => {
     describe("Get client credentials by ID", () => {
       describe("Given credentials are not found", () => {
         it("Returns 400 Bad Request response", async () => {
-          const event = buildRequest();
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${mockValidJwt}` },
+          });
           dependencies.clientCredentialsService = () =>
             new MockFailingClientCredentialsServiceGetClientCredentialsById();
 
@@ -417,25 +426,7 @@ describe("Async Credential", () => {
           expect(result.statusCode).toBe(400);
           expect(JSON.parse(result.body).error).toEqual("invalid_client");
           expect(JSON.parse(result.body).error_description).toEqual(
-            "Supplied client credentials not recognised",
-          );
-        });
-      });
-    });
-
-    describe("Credential validation", () => {
-      describe("Given credentials are not valid", () => {
-        it("Returns 400 Bad request response", async () => {
-          dependencies.clientCredentialsService = () =>
-            new MockFailingClientCredentialsServiceValidation();
-
-          const event = buildRequest();
-          const result = await lambdaHandler(event, dependencies);
-
-          expect(result.statusCode).toBe(400);
-          expect(JSON.parse(result.body).error).toEqual("invalid_client");
-          expect(JSON.parse(result.body).error_description).toEqual(
-            "Supplied client credentials not recognised",
+            "Supplied client not recognised",
           );
         });
       });

@@ -14,6 +14,7 @@ export async function lambdaHandler(
   event: APIGatewayProxyEvent,
   dependencies: Dependencies,
 ): Promise<APIGatewayProxyResult> {
+  console.log("REQUEST INCOMING");
   let keyId;
   try {
     keyId = validOrThrow(dependencies.env, "SIGNING_KEY_ID");
@@ -112,6 +113,7 @@ export async function lambdaHandler(
   const ssmService = dependencies.ssmService();
   const ssmServiceResponse = await ssmService.getClientCredentials();
   if (ssmServiceResponse.isLog) {
+    console.log("'it's an error!!!!!!!!!");
     return serverError500Responses;
   }
 
@@ -143,7 +145,7 @@ const badRequestResponseInvalidCredentials: APIGatewayProxyResult = {
   statusCode: 400,
   body: JSON.stringify({
     error: "invalid_client",
-    error_description: "Supplied client credentials not recognised",
+    error_description: "Supplied client not recognised",
   }),
 };
 
