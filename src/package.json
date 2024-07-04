@@ -19,15 +19,15 @@
     "prettier": "3.3.2",
     "ts-jest": "29.1.5",
     "ts-node": "10.9.2",
-    "typescript": "5.5.2"
+    "typescript": "5.5.3"
   },
   "dependencies": {
-    "@aws-sdk/client-kms": "3.600.0",
-    "@aws-sdk/client-ssm": "3.603.0",
+    "@aws-sdk/client-kms": "3.609.0",
+    "@aws-sdk/client-ssm": "3.609.0",
     "@aws-sdk/node-http-handler": "3.374.0",
     "dotenv": "16.4.5",
     "ecdsa-sig-formatter": "1.0.11",
-    "esbuild": "0.21.5",
+    "esbuild": "0.23.0",
     "node-jose": "2.2.0"
   }
 }
