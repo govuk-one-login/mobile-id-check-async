@@ -1,6 +1,5 @@
 import { LogOrValue, log, value } from "../../types/logOrValue";
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { Buffer } from "Buffer";
 
 export class RequestService implements IProcessRequest {
   processRequest = (
@@ -17,8 +16,9 @@ export class RequestService implements IProcessRequest {
       return log("Invalid authorization header");
     }
 
-    const decodeAuthorizationHeader =
-      this.decodeAuthorizationHeader(authorizationHeader);
+    const decodeAuthorizationHeader = this.decodeAuthorizationHeader(
+      authorizationHeader!,
+    ); // Adding ! given validation is done just above to ensure this is present
     if (decodeAuthorizationHeader.isLog) {
       return log("Client secret incorrectly formatted"); //TODO: there is sort of two logs for this, see private function
     }
@@ -57,11 +57,11 @@ export class RequestService implements IProcessRequest {
   };
 
   private decodeAuthorizationHeader = (
-    authorizationHeader: string | undefined,
+    authorizationHeader: string,
   ): LogOrValue<IDecodedAuthorizationHeader> => {
-    const base64EncodedCredential = authorizationHeader?.split(" ")[1];
+    const base64EncodedCredential = authorizationHeader.split(" ")[1];
     const base64DecodedCredential = Buffer.from(
-      base64EncodedCredential,
+      base64EncodedCredential!,
       "base64",
     ).toString("utf-8");
     const [clientId, clientSecret] = base64DecodedCredential.split(":");

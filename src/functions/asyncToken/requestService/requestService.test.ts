@@ -115,9 +115,8 @@ describe("Request Service", () => {
   });
 });
 
-function buildRequest(overrides?: {
-  [key in string]: string;
-}): APIGatewayProxyEvent {
+// eslint-disable-next-line
+function buildRequest(overrides?: any): APIGatewayProxyEvent {
   const defaultRequest = {
     httpMethod: "get",
     body: "",

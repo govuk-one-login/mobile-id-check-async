@@ -72,7 +72,7 @@ export class SsmService implements IGetClientCredentials {
   };
 
   private isCredentialsArrayValid = (
-    credentials: string[] | undefined,
+    credentials: IClientCredentials[] | undefined,
   ): boolean => {
     if (!Array.isArray(credentials)) {
       return false;
