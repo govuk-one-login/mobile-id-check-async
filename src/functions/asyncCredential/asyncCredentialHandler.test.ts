@@ -23,6 +23,9 @@ const mockJwtNoIss =
 const mockJwtIssNotValid =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0ludmFsaWRJc3N1ZXIifQ.K9lS44Bm3iHfXxAL2q-SBK2q-HB2NQ-UQSlmoqaaBVw";
 
+const mockJwtNoScope =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciJ9._-4Sn9N5grVDSxI2vvoUH90-6bAh6nH53ELZ38b3Gwk";
+
 const env = {
   SIGNING_KEY_ID: "mockKid",
   ISSUER: "mockIssuer",
@@ -277,6 +280,50 @@ describe("Async Credential", () => {
           });
         });
       });
+    });
+
+    describe("scope claim validation", () => {
+      describe("Given scope is not present", () => {
+        it("Returns a log", async () => {
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${mockJwtNoScope}` },
+          });
+
+          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+
+          const result: APIGatewayProxyResult = await lambdaHandler(
+            event,
+            dependencies,
+          );
+
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 401,
+            body: "Unauthorized",
+          });
+        });
+      });
+
+      // describe("Given scope is not valid", () => {
+      //   it("Returns a log", async () => {
+      //     const event = buildRequest({
+      //       headers: { Authorization: `Bearer ${mockJwtIssNotValid}` },
+      //     });
+
+      //     dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+
+      //     const result: APIGatewayProxyResult = await lambdaHandler(
+      //       event,
+      //       dependencies,
+      //     );
+
+      //     expect(result).toStrictEqual({
+      //       headers: { "Content-Type": "application/json" },
+      //       statusCode: 401,
+      //       body: "Unauthorized",
+      //     });
+      //   });
+      // });
     });
   });
 

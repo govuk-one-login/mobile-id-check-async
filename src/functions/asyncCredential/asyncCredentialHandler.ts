@@ -74,7 +74,12 @@ export async function lambdaHandler(
   }
 
   if (jwtPayload.iss !== issuer) {
-    console.log("NO ISS");
+    console.log("ISS NOT VALID");
+    return unauthorized401Response;
+  }
+
+  if (!jwtPayload.scope) {
+    console.log("NO SCOPE");
     return unauthorized401Response;
   }
 
