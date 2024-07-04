@@ -61,7 +61,7 @@ export class RequestService implements IProcessRequest {
   ): LogOrValue<IDecodedAuthorizationHeader> => {
     const base64EncodedCredential = authorizationHeader.split(" ")[1];
     const base64DecodedCredential = Buffer.from(
-      base64EncodedCredential!,
+      base64EncodedCredential,
       "base64",
     ).toString("utf-8");
     const [clientId, clientSecret] = base64DecodedCredential.split(":");
