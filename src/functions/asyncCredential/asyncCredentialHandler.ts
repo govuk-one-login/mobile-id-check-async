@@ -6,9 +6,9 @@ export async function lambdaHandler(
   event: APIGatewayProxyEvent,
   dependencies: Dependencies,
 ): Promise<APIGatewayProxyResult> {
-  let kidArn;
+  let keyId;
   try {
-    kidArn = validOrThrow(dependencies.env, "SIGNING_KEY_ID");
+    keyId = validOrThrow(dependencies.env, "SIGNING_KEY_ID");
   } catch (error) {
     return serverError500Responses;
   }
@@ -60,7 +60,7 @@ export async function lambdaHandler(
     console.log("DATE IN PAST");
     return unauthorized401Response;
   }
-  const result = await tokenService.verifyTokenSignature("keyId", encodedJwt);
+  const result = await tokenService.verifyTokenSignature(keyId, encodedJwt);
 
   if (result.isLog) {
     console.log("INVALID SIGNATURE");
