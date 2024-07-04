@@ -34,16 +34,24 @@ export async function lambdaHandler(
   );
 
   if (!jwtPayload.exp) {
+    console.log("NO EXP");
     return unauthorized401Response;
   }
 
-  if (jwtPayload.exp <= Date.now()) {
+  if (jwtPayload.exp <= Math.floor(Date.now() / 1000)) {
+    console.log("DATE IN PAST");
+    return unauthorized401Response;
+  }
+
+  if (!jwtPayload.iat) {
+    console.log("NO IAT");
     return unauthorized401Response;
   }
 
   const result = await tokenService.verifyTokenSignature("keyId", encodedJwt);
 
   if (result.isLog) {
+    console.log("INVALID SIGNATURE");
     return unauthorized401Response;
   }
 
