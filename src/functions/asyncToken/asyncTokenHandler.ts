@@ -5,14 +5,14 @@ import {
   ClientCredentialsService,
   IClientCredentials,
   IClientCredentialsService,
-} from "./clientCredentialsService/clientCredentialsService";
+} from "../services/clientCredentialsService/clientCredentialsService";
 import {
-  IDecodedAuthorizationHeader,
   IProcessRequest,
   RequestService,
 } from "./requestService/requestService";
 import { IGetClientCredentials, SsmService } from "./ssmService/ssmService";
 import { IMintToken, TokenService } from "./tokenService/tokenService";
+import { IDecodedClientCredentials } from "../types/clientCredentials";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
@@ -38,8 +38,7 @@ export async function lambdaHandlerConstructor(
     return badRequestResponseInvalidAuthorizationHeader;
   }
 
-  const suppliedCredentials =
-    processRequest.value as IDecodedAuthorizationHeader;
+  const suppliedCredentials = processRequest.value as IDecodedClientCredentials;
 
   // Fetching stored client credentials
   const ssmService = dependencies.getSsmService();

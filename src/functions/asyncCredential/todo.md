@@ -3,6 +3,7 @@
 [ ] Add logger for jwt clais
 [ ] Check claim validation to ensure it correctly returns 400/401
 [ ] Create a single shared token service
+[ ] Type naming/location
 
 
 ## Work to consider

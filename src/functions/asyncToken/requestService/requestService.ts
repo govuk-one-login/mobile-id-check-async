@@ -1,3 +1,4 @@
+import { IDecodedClientCredentials } from "../../types/clientCredentials";
 import { LogOrValue, log, value } from "../../types/logOrValue";
 import { APIGatewayProxyEvent } from "aws-lambda";
 const Buffer = require("buffer").Buffer;
@@ -5,7 +6,7 @@ const Buffer = require("buffer").Buffer;
 export class RequestService implements IProcessRequest {
   processRequest = (
     request: APIGatewayProxyEvent,
-  ): LogOrValue<IDecodedAuthorizationHeader> => {
+  ): LogOrValue<IDecodedClientCredentials> => {
     const requestBody = request.body;
     const authorizationHeader = request.headers["Authorization"];
 
@@ -24,7 +25,7 @@ export class RequestService implements IProcessRequest {
     }
 
     const decodedClientCredentials =
-      decodeAuthorizationHeader.value as IDecodedAuthorizationHeader;
+      decodeAuthorizationHeader.value as IDecodedClientCredentials;
 
     return value(decodedClientCredentials);
   };
@@ -58,7 +59,7 @@ export class RequestService implements IProcessRequest {
 
   private decodeAuthorizationHeader = (
     authorizationHeader: string | undefined,
-  ): LogOrValue<IDecodedAuthorizationHeader> => {
+  ): LogOrValue<IDecodedClientCredentials> => {
     const base64EncodedCredential = authorizationHeader?.split(" ")[1];
     const base64DecodedCredential = Buffer.from(
       base64EncodedCredential,
@@ -79,10 +80,5 @@ export class RequestService implements IProcessRequest {
 export interface IProcessRequest {
   processRequest: (
     request: APIGatewayProxyEvent,
-  ) => LogOrValue<IDecodedAuthorizationHeader>;
-}
-
-export interface IDecodedAuthorizationHeader {
-  clientId: string;
-  clientSecret: string;
+  ) => LogOrValue<IDecodedClientCredentials>;
 }

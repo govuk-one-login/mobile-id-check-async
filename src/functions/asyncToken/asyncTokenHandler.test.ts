@@ -7,14 +7,12 @@ import {
 import {
   IClientCredentials,
   IClientCredentialsService,
-} from "./clientCredentialsService/clientCredentialsService";
-import {
-  IDecodedAuthorizationHeader,
-  IProcessRequest,
-} from "./requestService/requestService";
+} from "../services/clientCredentialsService/clientCredentialsService";
+import { IProcessRequest } from "./requestService/requestService";
 import { IGetClientCredentials } from "./ssmService/ssmService";
 import { IJwtPayload, IMintToken } from "./tokenService/tokenService";
 import { buildRequest } from "../testUtils/mockRequest";
+import { IDecodedClientCredentials } from "../types/clientCredentials";
 
 describe("Async Token", () => {
   let request: APIGatewayProxyEvent;
@@ -171,7 +169,7 @@ describe("Async Token", () => {
 class MockRequestServiceValueResponse implements IProcessRequest {
   processRequest = (
     request: APIGatewayProxyEvent,
-  ): LogOrValue<IDecodedAuthorizationHeader> => {
+  ): LogOrValue<IDecodedClientCredentials> => {
     return value({
       clientId: "mockClientId",
       clientSecret: "mockClientSecret",
@@ -182,7 +180,7 @@ class MockRequestServiceValueResponse implements IProcessRequest {
 class MockRequestServiceInvalidGrantTypeLogResponse implements IProcessRequest {
   processRequest = (
     request: APIGatewayProxyEvent,
-  ): LogOrValue<IDecodedAuthorizationHeader> => {
+  ): LogOrValue<IDecodedClientCredentials> => {
     return log("Invalid grant_type");
   };
 }
@@ -192,7 +190,7 @@ class MockRequestServiceInvalidAuthorizationHeaderLogResponse
 {
   processRequest = (
     request: APIGatewayProxyEvent,
-  ): LogOrValue<IDecodedAuthorizationHeader> => {
+  ): LogOrValue<IDecodedClientCredentials> => {
     return log("mockInvalidAuthorizationHeaderLog");
   };
 }
@@ -223,7 +221,7 @@ class MockFailingSsmService implements IGetClientCredentials {
 class MockPassingClientCredentialsService implements IClientCredentialsService {
   validate(
     storedCredentials: IClientCredentials,
-    suppliedCredentials: IDecodedAuthorizationHeader,
+    suppliedCredentials: IDecodedClientCredentials,
   ) {
     return true;
   }
@@ -251,7 +249,7 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
   }
   validate(
     storedCredentials: IClientCredentials,
-    suppliedCredentials: IDecodedAuthorizationHeader,
+    suppliedCredentials: IDecodedClientCredentials,
   ) {
     return false;
   }
@@ -273,7 +271,7 @@ class MockFailingClientCredentialsServiceValidation
   }
   validate(
     storedCredentials: IClientCredentials,
-    suppliedCredentials: IDecodedAuthorizationHeader,
+    suppliedCredentials: IDecodedClientCredentials,
   ) {
     return false;
   }
