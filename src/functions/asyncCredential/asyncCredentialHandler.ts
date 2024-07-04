@@ -103,7 +103,7 @@ export async function lambdaHandler(
   }
 
   if (!jwtPayload.aud) {
-    console.log("NO CLIENT_ID");
+    console.log("NO AUD");
     return unauthorized401Response;
   }
 
@@ -125,7 +125,7 @@ export async function lambdaHandler(
   const storedCredentialsArray =
     ssmServiceResponse.value as IClientCredentials[];
 
-  // Incoming credentials match stored credentials
+  // Retrieving credentials from client credential array
   const clientCredentialsService = dependencies.clientCredentialsService();
   const storedCredentials = clientCredentialsService.getClientCredentialsById(
     storedCredentialsArray,
@@ -134,6 +134,11 @@ export async function lambdaHandler(
 
   if (!storedCredentials) {
     return badRequestResponseInvalidCredentials;
+  }
+
+  // Validate aud claim matches the ISSUER in client credential array
+  if (jwtPayload.aud !== storedCredentials.issuer) {
+    return badRequestResponseInvalidAud;
   }
 
   return {
@@ -151,6 +156,15 @@ const badRequestResponseInvalidCredentials: APIGatewayProxyResult = {
   body: JSON.stringify({
     error: "invalid_client",
     error_description: "Supplied client not recognised",
+  }),
+};
+
+const badRequestResponseInvalidAud: APIGatewayProxyResult = {
+  headers: { "Content-Type": "application/json" },
+  statusCode: 400,
+  body: JSON.stringify({
+    error: "invalid_client",
+    error_description: "Invalid aud claim",
   }),
 };
 
