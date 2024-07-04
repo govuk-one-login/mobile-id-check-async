@@ -27,7 +27,7 @@ export async function lambdaHandlerConstructor(
   }
 
   // Ensure that request contains expected params
-  const requestService = dependencies.getRequestService();
+  const requestService = dependencies.requestService();
   const processRequest = requestService.processRequest(event);
 
   if (processRequest.isLog) {
@@ -41,7 +41,7 @@ export async function lambdaHandlerConstructor(
   const suppliedCredentials = processRequest.value as IDecodedClientCredentials;
 
   // Fetching stored client credentials
-  const ssmService = dependencies.getSsmService();
+  const ssmService = dependencies.ssmService();
   const ssmServiceResponse = await ssmService.getClientCredentials();
   if (ssmServiceResponse.isLog) {
     return serverErrorResponse;
@@ -51,7 +51,7 @@ export async function lambdaHandlerConstructor(
     ssmServiceResponse.value as IClientCredentials[];
 
   // Incoming credentials match stored credentials
-  const clientCredentialsService = dependencies.getClientCredentialsService();
+  const clientCredentialsService = dependencies.clientCredentialService();
   const storedCredentials = clientCredentialsService.getClientCredentialsById(
     storedCredentialsArray,
     suppliedCredentials.clientId,
@@ -77,7 +77,7 @@ export async function lambdaHandlerConstructor(
   };
 
   let accessToken;
-  const tokenService = dependencies.getTokenService(kidArn);
+  const tokenService = dependencies.tokenService(kidArn);
   try {
     accessToken = await tokenService.mintToken(jwtPayload);
   } catch (error) {
@@ -137,18 +137,18 @@ const serverErrorResponse: APIGatewayProxyResult = {
 
 export interface IAsyncTokenRequestDependencies {
   env: NodeJS.ProcessEnv;
-  getRequestService: () => IProcessRequest;
-  getSsmService: () => IGetClientCredentials;
-  getClientCredentialsService: () => IClientCredentialsService;
-  getTokenService: (signingKey: string) => IMintToken;
+  requestService: () => IProcessRequest;
+  ssmService: () => IGetClientCredentials;
+  clientCredentialService: () => IClientCredentialsService;
+  tokenService: (signingKey: string) => IMintToken;
 }
 
 const dependencies: IAsyncTokenRequestDependencies = {
   env: process.env,
-  getRequestService: () => new RequestService(),
-  getSsmService: () => new SsmService(),
-  getClientCredentialsService: () => new ClientCredentialsService(),
-  getTokenService: (signingKey: string) => new TokenService(signingKey),
+  requestService: () => new RequestService(),
+  ssmService: () => new SsmService(),
+  clientCredentialService: () => new ClientCredentialsService(),
+  tokenService: (signingKey: string) => new TokenService(signingKey),
 };
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);

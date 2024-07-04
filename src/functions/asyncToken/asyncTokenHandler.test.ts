@@ -22,11 +22,10 @@ describe("Async Token", () => {
     request = buildRequest();
     dependencies = {
       env,
-      getRequestService: () => new MockRequestServiceValueResponse(),
-      getSsmService: () => new MockPassingSsmService(),
-      getClientCredentialsService: () =>
-        new MockPassingClientCredentialsService(),
-      getTokenService: () => new MockPassingTokenService(),
+      requestService: () => new MockRequestServiceValueResponse(),
+      ssmService: () => new MockPassingSsmService(),
+      clientCredentialService: () => new MockPassingClientCredentialsService(),
+      tokenService: () => new MockPassingTokenService(),
     };
   });
 
@@ -50,7 +49,7 @@ describe("Async Token", () => {
   describe("Request Service", () => {
     describe("Given the Request Service returns a log due to Invalid grant_type in request body", () => {
       it("Returns a 400 Bad Request response", async () => {
-        dependencies.getRequestService = () =>
+        dependencies.requestService = () =>
           new MockRequestServiceInvalidGrantTypeLogResponse();
 
         const result = await lambdaHandlerConstructor(dependencies, request);
@@ -65,7 +64,7 @@ describe("Async Token", () => {
 
     describe("Given the Request Service returns a log due to invalid Authorization header ", () => {
       it("Returns a 400 Bad Request response", async () => {
-        dependencies.getRequestService = () =>
+        dependencies.requestService = () =>
           new MockRequestServiceInvalidAuthorizationHeaderLogResponse();
 
         const result = await lambdaHandlerConstructor(dependencies, request);
@@ -84,7 +83,7 @@ describe("Async Token", () => {
   describe("SSM Service", () => {
     describe("Given there is an error retrieving client credentials from SSM", () => {
       it("Returns a 500 Server Error response", async () => {
-        dependencies.getSsmService = () => new MockFailingSsmService();
+        dependencies.ssmService = () => new MockFailingSsmService();
 
         const result = await lambdaHandlerConstructor(dependencies, request);
 
@@ -100,7 +99,7 @@ describe("Async Token", () => {
     describe("Get client credentials by ID", () => {
       describe("Given credentials are not found", () => {
         it("Returns 400 Bad Request response", async () => {
-          dependencies.getClientCredentialsService = () =>
+          dependencies.clientCredentialService = () =>
             new MockFailingClientCredentialsServiceGetClientCredentialsById();
 
           const result = await lambdaHandlerConstructor(dependencies, request);
@@ -117,7 +116,7 @@ describe("Async Token", () => {
     describe("Credential validation", () => {
       describe("Given credentials are not valid", () => {
         it("Returns 400 Bad request response", async () => {
-          dependencies.getClientCredentialsService = () =>
+          dependencies.clientCredentialService = () =>
             new MockFailingClientCredentialsServiceValidation();
 
           const result = await lambdaHandlerConstructor(dependencies, request);
@@ -135,7 +134,7 @@ describe("Async Token", () => {
   describe("Token Service", () => {
     describe("Given minting a new token fails", () => {
       it("Returns 500 Server Error response", async () => {
-        dependencies.getTokenService = () => new MockFailingTokenService();
+        dependencies.tokenService = () => new MockFailingTokenService();
 
         const result = await lambdaHandlerConstructor(dependencies, request);
 
