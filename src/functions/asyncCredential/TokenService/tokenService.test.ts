@@ -7,8 +7,6 @@ import { LogOrValue, log, value } from "../../types/logOrValue";
 const mockJwt =
   "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.tyh-VfuzIxCyGYDlkBA7DfyjrqmSHu6pQ2hoZuFqUSLPNY2N0mpHb3nk5K17HWP_3cYHBw7AhHale5wky6-sVA";
 
-const mockJwtExpInThePast = "";
-
 describe("Token Service", () => {
   describe("JWT signature verification", () => {
     describe("Given the token signature is not valid", () => {
@@ -53,17 +51,6 @@ export interface IVerifyTokenSignature {
 }
 
 export class TokenService implements IVerifyTokenSignature {
-  // validateTokenPayload(jwt: string): LogOrValue<null> {
-  //   const [header, payload, signature] = jwt.split(".");
-  //   const decodedPayload = JSON.parse(base64Decode(payload));
-
-  //   if (!decodedPayload.exp) {
-  //     return log("EXPIRY_DATE_MISSING");
-  //   }
-
-  //   return value(null);
-  // }
-
   async verifyTokenSignature(
     keyId: string,
     jwt: string,
@@ -84,8 +71,4 @@ export class TokenService implements IVerifyTokenSignature {
 
     return value(null);
   }
-}
-
-function base64Decode(value: string): string {
-  return Buffer.from(value, "base64").toString("utf-8");
 }
