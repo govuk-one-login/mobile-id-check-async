@@ -17,6 +17,11 @@ const mockJwtIatInTheFuture =
 const mockJwtExpInThePast =
   "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE1MTYyMzkwMjJ9.LMHQh9wrANRpJYdQsP1oOVsrDEFTTJTYgpUVBy_w1Jd8GFRLwbenFEjFyXr2PZF-COP9xI87vpEOtrAri3ge8A";
 
+const mockJwtNoNbf =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjIxNDU5NjQ2OTV9.DKhK1oE5CZPkQ3Va9wCJjohm7ft9QgXH0ZYTICfa3Z4";
+
+const mockJwtNbfInFuture =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIyMTQ1OTY0Njk1In0.7-OeXAHrUdvRirCd_7H_yxFf8aGzkGIk944gqAbCBVM";
 describe("Async Credential", () => {
   let dependencies: Dependencies;
 
@@ -165,10 +170,33 @@ describe("Async Credential", () => {
       });
     });
 
-    describe("Given issued at (iat) is in the future", () => {
+    describe("nbf claim validation", () => {
+      describe("Given not before (nbf) is not present", () => {
+        it("Returns a log", async () => {
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${mockJwtNoNbf}` },
+          });
+
+          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+
+          const result: APIGatewayProxyResult = await lambdaHandler(
+            event,
+            dependencies,
+          );
+
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 401,
+            body: "Unauthorized",
+          });
+        });
+      });
+    });
+
+    describe("Given not before (nbf) is in the future", () => {
       it("Returns a log", async () => {
         const event = buildRequest({
-          headers: { Authorization: `Bearer ${mockJwtIatInTheFuture}` },
+          headers: { Authorization: `Bearer ${mockJwtNbfInFuture}` },
         });
 
         dependencies.tokenService = () => new MockTokenSeviceValidSignature();
