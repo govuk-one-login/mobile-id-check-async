@@ -48,6 +48,11 @@ export async function lambdaHandler(
     return unauthorized401Response;
   }
 
+  if (jwtPayload.iat >= Math.floor(Date.now() / 1000)) {
+    console.log("DATE IN PAST");
+    return unauthorized401Response;
+  }
+
   const result = await tokenService.verifyTokenSignature("keyId", encodedJwt);
 
   if (result.isLog) {
