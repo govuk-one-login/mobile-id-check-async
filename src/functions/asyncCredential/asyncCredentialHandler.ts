@@ -96,40 +96,45 @@ export async function lambdaHandler(
     return unauthorized401Response;
   }
 
+  if (!jwtPayload.client_id) {
+    console.log("NO CLIENT_ID");
+    return unauthorized401Response;
+  }
+
   const result = await tokenService.verifyTokenSignature(keyId, encodedJwt);
-
-  // Fetching stored client credentials
-  const ssmService = dependencies.ssmService();
-  const ssmServiceResponse = await ssmService.getClientCredentials();
-  if (ssmServiceResponse.isLog) {
-    return serverError500Responses;
-  }
-
-  const storedCredentialsArray =
-    ssmServiceResponse.value as IClientCredentials[];
-
-  // Incoming credentials match stored credentials
-  const clientCredentialsService = dependencies.clientCredentialsService();
-  const storedCredentials = clientCredentialsService.getClientCredentialsById(
-    storedCredentialsArray,
-    suppliedCredentials.clientId,
-  );
-  if (!storedCredentials) {
-    return badRequestResponseInvalidCredentials;
-  }
-
-  const isValidClientCredentials = clientCredentialsService.validate(
-    storedCredentials,
-    suppliedCredentials,
-  );
-  if (!isValidClientCredentials) {
-    return badRequestResponseInvalidCredentials;
-  }
 
   if (result.isLog) {
     console.log("INVALID SIGNATURE");
     return unauthorized401Response;
   }
+
+  // // Fetching stored client credentials
+  // const ssmService = dependencies.ssmService();
+  // const ssmServiceResponse = await ssmService.getClientCredentials();
+  // if (ssmServiceResponse.isLog) {
+  //   return serverError500Responses;
+  // }
+
+  // const storedCredentialsArray =
+  //   ssmServiceResponse.value as IClientCredentials[];
+
+  // // Incoming credentials match stored credentials
+  // const clientCredentialsService = dependencies.clientCredentialsService();
+  // const storedCredentials = clientCredentialsService.getClientCredentialsById(
+  //   storedCredentialsArray,
+  //   suppliedCredentials.clientId,
+  // );
+  // if (!storedCredentials) {
+  //   return badRequestResponseInvalidCredentials;
+  // }
+
+  // const isValidClientCredentials = clientCredentialsService.validate(
+  //   storedCredentials,
+  //   suppliedCredentials,
+  // );
+  // if (!isValidClientCredentials) {
+  //   return badRequestResponseInvalidCredentials;
+  // }
 
   return {
     headers: { "Content-Type": "application/json" },
