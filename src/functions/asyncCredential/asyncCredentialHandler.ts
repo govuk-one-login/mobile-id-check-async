@@ -57,7 +57,7 @@ export async function lambdaHandler(
     };
   }
 
-  if(jwtPayload.exp <= Date.now()) {
+  if (jwtPayload.exp <= Date.now()) {
     return {
       headers: { "Content-Type": "application/json" },
       statusCode: 401,
