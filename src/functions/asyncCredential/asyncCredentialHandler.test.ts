@@ -8,6 +8,10 @@ import {
 } from "./TokenService/tokenService.test";
 import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
 
+const mockJwtNoExp =
+  "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.0C_S0NEicI6k1yaTAV0l85Z0SlW3HI2YIqJb_unXZ1MttAvjR9wAOhsl_0X20i1NYN0ZhnaoHnGLpApUSz2kwQ";
+const mockJwtExpInThePast = "";
+
 describe("Async Credential", () => {
   let dependencies: Dependencies;
 
@@ -25,7 +29,7 @@ describe("Async Credential", () => {
           event,
           dependencies,
         );
-        expect(result).toEqual({
+        expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
           body: "Unauthorized",
@@ -43,7 +47,7 @@ describe("Async Credential", () => {
           event,
           dependencies,
         );
-        expect(result).toEqual({
+        expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
           body: "Unauthorized",
@@ -61,7 +65,7 @@ describe("Async Credential", () => {
           event,
           dependencies,
         );
-        expect(result).toEqual({
+        expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
           body: "Unauthorized",
@@ -79,13 +83,46 @@ describe("Async Credential", () => {
           event,
           dependencies,
         );
-        expect(result).toEqual({
+        expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
           body: "Unauthorized",
         });
       });
     });
+  });
+
+  describe("JWT payload validation", () => {
+    describe("Given expiry date is not present", () => {
+      it("Returns a log", async () => {
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${mockJwtNoExp}` },
+        });
+
+        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+
+        const result: APIGatewayProxyResult = await lambdaHandler(
+          event,
+          dependencies,
+        );
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 401,
+          body: "Unauthorized",
+        });
+      });
+    });
+
+    // describe("Given expiry date is in the past", () => {
+    //   it("Returns a log", () => {
+    //     const tokenService = new TokenService();
+    //     const result = tokenService.validateTokenPayload(mockJwtExpInThePast);
+
+    //     expect(result.isLog).toBe(true);
+    //     expect(result.value).toEqual("EXPIRY_DATE_IN_THE_PAST");
+    //   });
+    // });
   });
 
   describe("JWT signature verification", () => {
@@ -102,7 +139,7 @@ describe("Async Credential", () => {
           dependencies,
         );
 
-        expect(result).toEqual({
+        expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
           body: "Unauthorized",
@@ -112,14 +149,14 @@ describe("Async Credential", () => {
   });
 });
 
-class MockTokenSeviceInvalidSignature
-  implements IValidateTokenPayload, IVerifyTokenSignature
-{
-  validateTokenPayload(): LogOrValue<null> {
-    return value(null);
-  }
-
+class MockTokenSeviceInvalidSignature implements IVerifyTokenSignature {
   verifyTokenSignature(): Promise<LogOrValue<null>> {
     return Promise.resolve(log(""));
+  }
+}
+
+class MockTokenSeviceValidSignature implements IVerifyTokenSignature {
+  verifyTokenSignature(): Promise<LogOrValue<null>> {
+    return Promise.resolve(value(null));
   }
 }

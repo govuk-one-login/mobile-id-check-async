@@ -10,28 +10,6 @@ const mockJwt =
 const mockJwtExpInThePast = "";
 
 describe("Token Service", () => {
-  describe("JWT payload validation", () => {
-    describe("Given expiry date is not present", () => {
-      it("Returns a log", () => {
-        const tokenService = new TokenService();
-        const result = tokenService.validateTokenPayload(mockJwt);
-
-        expect(result.isLog).toBe(true);
-        expect(result.value).toEqual("EXPIRY_DATE_MISSING");
-      });
-    });
-
-    describe("Given expiry date is in the past", () => {
-      it("Returns a log", () => {
-        const tokenService = new TokenService();
-        const result = tokenService.validateTokenPayload(mockJwt);
-
-        expect(result.isLog).toBe(true);
-        expect(result.value).toEqual("EXPIRY_DATE_IN_THE_PAST");
-      });
-    });
-  });
-
   describe("JWT signature verification", () => {
     describe("Given the token signature is not valid", () => {
       it("Returns a log", async () => {
@@ -74,19 +52,17 @@ export interface IVerifyTokenSignature {
   ) => Promise<LogOrValue<null>>;
 }
 
-export class TokenService
-  implements IValidateTokenPayload, IVerifyTokenSignature
-{
-  validateTokenPayload(jwt: string): LogOrValue<null> {
-    const [header, payload, signature] = jwt.split(".");
-    const decodedPayload = JSON.parse(base64Decode(payload));
+export class TokenService implements IVerifyTokenSignature {
+  // validateTokenPayload(jwt: string): LogOrValue<null> {
+  //   const [header, payload, signature] = jwt.split(".");
+  //   const decodedPayload = JSON.parse(base64Decode(payload));
 
-    if (!decodedPayload.exp) {
-      return log("EXPIRY_DATE_MISSING");
-    }
+  //   if (!decodedPayload.exp) {
+  //     return log("EXPIRY_DATE_MISSING");
+  //   }
 
-    return value(null);
-  }
+  //   return value(null);
+  // }
 
   async verifyTokenSignature(
     keyId: string,

@@ -41,7 +41,24 @@ export async function lambdaHandler(
 
   const tokenService = dependencies.tokenService();
 
-  const result = await tokenService.verifyTokenSignature("", "");
+  // JWT Claim validation
+  const encodedJwt = bearerToken.split(" ")[1];
+  console.log("ENCODED JWT", encodedJwt);
+  const [header, payload, signature] = encodedJwt.split(".");
+  const jwtPayload = JSON.parse(
+    Buffer.from(payload, "base64").toString("utf-8"),
+  );
+  console.log("JWT PAYLOAD", jwtPayload);
+
+  if (!jwtPayload.exp) {
+    return {
+      headers: { "Content-Type": "application/json" },
+      statusCode: 401,
+      body: "Unauthorized",
+    };
+  }
+
+  const result = await tokenService.verifyTokenSignature("keyId", encodedJwt);
 
   if (result.isLog) {
     return {
