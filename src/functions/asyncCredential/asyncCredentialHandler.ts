@@ -1,6 +1,14 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { TokenService } from "./TokenService/tokenService.test";
 import { validOrThrow } from "../config";
+import {
+  ClientCredentialsService,
+  IClientCredentials,
+} from "../services/clientCredentialsService/clientCredentialsService";
+import {
+  IGetClientCredentials,
+  SsmService,
+} from "../asyncToken/ssmService/ssmService";
 
 export async function lambdaHandler(
   event: APIGatewayProxyEvent,
@@ -90,6 +98,34 @@ export async function lambdaHandler(
 
   const result = await tokenService.verifyTokenSignature(keyId, encodedJwt);
 
+  // Fetching stored client credentials
+  const ssmService = dependencies.ssmService();
+  const ssmServiceResponse = await ssmService.getClientCredentials();
+  if (ssmServiceResponse.isLog) {
+    return serverError500Responses;
+  }
+
+  const storedCredentialsArray =
+    ssmServiceResponse.value as IClientCredentials[];
+
+  // Incoming credentials match stored credentials
+  const clientCredentialsService = dependencies.clientCredentialsService();
+  const storedCredentials = clientCredentialsService.getClientCredentialsById(
+    storedCredentialsArray,
+    suppliedCredentials.clientId,
+  );
+  if (!storedCredentials) {
+    return badRequestResponseInvalidCredentials;
+  }
+
+  const isValidClientCredentials = clientCredentialsService.validate(
+    storedCredentials,
+    suppliedCredentials,
+  );
+  if (!isValidClientCredentials) {
+    return badRequestResponseInvalidCredentials;
+  }
+
   if (result.isLog) {
     console.log("INVALID SIGNATURE");
     return unauthorized401Response;
@@ -121,6 +157,8 @@ const serverError500Responses: APIGatewayProxyResult = {
 
 export interface Dependencies {
   tokenService: () => TokenService;
+  clientCredentialsService: () => ClientCredentialsService;
+  ssmService: () => IGetClientCredentials;
   env: NodeJS.ProcessEnv;
 }
 

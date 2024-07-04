@@ -6,6 +6,12 @@ import {
   TokenService,
 } from "./TokenService/tokenService.test";
 import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
+import {
+  IClientCredentials,
+  IClientCredentialsService,
+} from "../services/clientCredentialsService/clientCredentialsService";
+import { IDecodedClientCredentials } from "../types/clientCredentials";
+import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
 
 const mockJwtNoExp =
   "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.0C_S0NEicI6k1yaTAV0l85Z0SlW3HI2YIqJb_unXZ1MttAvjR9wAOhsl_0X20i1NYN0ZhnaoHnGLpApUSz2kwQ";
@@ -40,6 +46,8 @@ describe("Async Credential", () => {
   beforeEach(() => {
     dependencies = {
       tokenService: () => new TokenService(),
+      ssmService: () => new MockPassingSsmService(),
+      clientCredentialsService: () => new MockPassingClientCredentialsService(),
       env,
     };
   });
@@ -352,6 +360,61 @@ describe("Async Credential", () => {
       });
     });
   });
+
+  describe("SSM Service", () => {
+    describe("Given there is an error retrieving client credentials from SSM", () => {
+      it("Returns a 500 Server Error response", async () => {
+        dependencies.ssmService = () => new MockFailingSsmService();
+
+        const event = buildRequest();
+
+        const result = await lambdaHandler(event, dependencies);
+
+        expect(JSON.parse(result.body).error).toEqual("server_error");
+        expect(JSON.parse(result.body).error_description).toEqual(
+          "Server Error",
+        );
+      });
+    });
+  });
+
+  describe("Client Credentials Service", () => {
+    describe("Get client credentials by ID", () => {
+      describe("Given credentials are not found", () => {
+        it("Returns 400 Bad Request response", async () => {
+          const event = buildRequest();
+          dependencies.clientCredentialsService = () =>
+            new MockFailingClientCredentialsServiceGetClientCredentialsById();
+
+          const result = await lambdaHandler(event, dependencies);
+
+          expect(result.statusCode).toBe(400);
+          expect(JSON.parse(result.body).error).toEqual("invalid_client");
+          expect(JSON.parse(result.body).error_description).toEqual(
+            "Supplied client credentials not recognised",
+          );
+        });
+      });
+    });
+
+    describe("Credential validation", () => {
+      describe("Given credentials are not valid", () => {
+        it("Returns 400 Bad request response", async () => {
+          dependencies.clientCredentialsService = () =>
+            new MockFailingClientCredentialsServiceValidation();
+
+          const event = buildRequest();
+          const result = await lambdaHandler(event, dependencies);
+
+          expect(result.statusCode).toBe(400);
+          expect(JSON.parse(result.body).error).toEqual("invalid_client");
+          expect(JSON.parse(result.body).error_description).toEqual(
+            "Supplied client credentials not recognised",
+          );
+        });
+      });
+    });
+  });
 });
 
 class MockTokenSeviceInvalidSignature implements IVerifyTokenSignature {
@@ -364,4 +427,86 @@ class MockTokenSeviceValidSignature implements IVerifyTokenSignature {
   verifyTokenSignature(): Promise<LogOrValue<null>> {
     return Promise.resolve(value(null));
   }
+}
+
+class MockFailingClientCredentialsServiceGetClientCredentialsById
+  implements IClientCredentialsService
+{
+  getClientCredentialsById(
+    storedCredentialsArray: IClientCredentials[],
+    suppliedClientId: string,
+  ) {
+    return null;
+  }
+  validate(
+    storedCredentials: IClientCredentials,
+    suppliedCredentials: IDecodedClientCredentials,
+  ) {
+    return false;
+  }
+}
+
+class MockFailingClientCredentialsServiceValidation
+  implements IClientCredentialsService
+{
+  getClientCredentialsById(
+    storedCredentialsArray: IClientCredentials[],
+    suppliedClientId: string,
+  ) {
+    return {
+      client_id: "mockClientId",
+      issuer: "mockIssuer",
+      salt: "mockSalt",
+      hashed_client_secret: "mockHashedClientSecret",
+    };
+  }
+  validate(
+    storedCredentials: IClientCredentials,
+    suppliedCredentials: IDecodedClientCredentials,
+  ) {
+    return false;
+  }
+}
+
+class MockPassingClientCredentialsService implements IClientCredentialsService {
+  validate(
+    _storedCredentials: IClientCredentials,
+    _suppliedCredentials: IDecodedClientCredentials,
+  ) {
+    return true;
+  }
+  getClientCredentialsById(
+    _storedCredentialsArray: IClientCredentials[],
+    _suppliedClientId: string,
+  ) {
+    return {
+      client_id: "mockClientId",
+      issuer: "mockIssuer",
+      salt: "mockSalt",
+      hashed_client_secret: "mockHashedClientSecret",
+    };
+  }
+}
+
+class MockPassingSsmService implements IGetClientCredentials {
+  getClientCredentials = async (
+    clientCredentials: IClientCredentials[] = [
+      {
+        client_id: "mockClientId",
+        issuer: "mockIssuer",
+        salt: "mockSalt",
+        hashed_client_secret: "mockHashedClientSecret",
+      },
+    ],
+  ): Promise<LogOrValue<IClientCredentials[]>> => {
+    return Promise.resolve(value(clientCredentials));
+  };
+}
+
+class MockFailingSsmService implements IGetClientCredentials {
+  getClientCredentials = async (): Promise<
+    LogOrValue<IClientCredentials[]>
+  > => {
+    return log("Mock Failing SSM log");
+  };
 }

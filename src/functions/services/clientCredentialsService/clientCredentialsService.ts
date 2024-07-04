@@ -8,7 +8,7 @@ export class ClientCredentialsService implements IClientCredentialsService {
   ): boolean => {
     const { clientSecret: suppliedClientSecret } = suppliedCredentials;
     const storedSalt = storedCredentials.salt;
-    const hashedSuppliedClientSecret = this.hashSecret(
+    const hashedSuppliedClientSecret = hashSecret(
       suppliedClientSecret,
       storedSalt,
     );
@@ -30,13 +30,13 @@ export class ClientCredentialsService implements IClientCredentialsService {
 
     return storedCredentials;
   };
-
-  private hashSecret = (secret: string, salt: string): string => {
-    return createHash("sha256")
-      .update(secret + salt)
-      .digest("hex");
-  };
 }
+
+const hashSecret = (secret: string, salt: string): string => {
+  return createHash("sha256")
+    .update(secret + salt)
+    .digest("hex");
+};
 
 export interface IClientCredentialsService {
   validate: (
