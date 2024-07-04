@@ -102,10 +102,15 @@ export async function lambdaHandler(
     return unauthorized401Response;
   }
 
+  if (!jwtPayload.aud) {
+    console.log("NO CLIENT_ID");
+    return unauthorized401Response;
+  }
+
   const result = await tokenService.verifyTokenSignature(keyId, encodedJwt);
 
   if (result.isLog) {
-    console.log("INVALID SIGNATURE");
+    console.log("INVALID SIGNATURE", encodedJwt);
     return unauthorized401Response;
   }
 

@@ -40,6 +40,8 @@ const mockJwtScopeNotValid =
 const mockJwtNoClientId =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUifQ.xN-h1mVndN7kNRSrVM0WLcdKblniD3q70xnY-RYBIlc";
 
+const mockJwtNoAud =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUiLCJjbGllbnRfaWQiOiJtb2NrQ2xpZW50SWQifQ.FzBrIcM0DDp1ecivQpCNF216l2ZFzU3fPAOgAegKylY";
 const mockValidJwt =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUiLCJjbGllbnRfaWQiOiJtb2NrQ2xpZW50SWQifQ.FzBrIcM0DDp1ecivQpCNF216l2ZFzU3fPAOgAegKylY";
 
@@ -367,6 +369,29 @@ describe("Async Credential", () => {
         });
       });
     });
+
+    describe("aud claim validation", () => {
+      describe("Given aud (audience) is not present", () => {
+        it("Returns a log", async () => {
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${mockJwtNoAud}` },
+          });
+
+          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+
+          const result: APIGatewayProxyResult = await lambdaHandler(
+            event,
+            dependencies,
+          );
+
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 401,
+            body: "Unauthorized",
+          });
+        });
+      });
+    });
   });
 
   describe("JWT signature verification", () => {
@@ -431,6 +456,10 @@ describe("Async Credential", () => {
         });
       });
     });
+  });
+
+  describe("JWT Payload validatiobn - using Client Credentials", () => {
+    describe("aud claim validation", () => {});
   });
 });
 
