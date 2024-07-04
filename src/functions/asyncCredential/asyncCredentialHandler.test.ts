@@ -17,6 +17,9 @@ const mockJwtExpInThePast =
 const mockJwtNbfInFuture =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIyMTQ1OTY0Njk1In0.7-OeXAHrUdvRirCd_7H_yxFf8aGzkGIk944gqAbCBVM";
 
+const mockJwtNoIss =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIn0.PO0IKWByJKerqZonGpagwKEaX-psQQPYZPPnXwI3JC4";
+
 const env = {
   SIGNING_KEY_ID: "mockKid",
   ISSUER: "mockIssuer",
@@ -204,27 +207,51 @@ describe("Async Credential", () => {
         });
       });
     });
-  });
 
-  describe("nbf claim validation", () => {
-    // nbf does not need to be present
-    describe("Given not before (nbf) is in the future", () => {
-      it("Returns a log", async () => {
-        const event = buildRequest({
-          headers: { Authorization: `Bearer ${mockJwtNbfInFuture}` },
+    describe("nbf claim validation", () => {
+      // nbf does not need to be present
+      describe("Given not before (nbf) is in the future", () => {
+        it("Returns a log", async () => {
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${mockJwtNbfInFuture}` },
+          });
+
+          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+
+          const result: APIGatewayProxyResult = await lambdaHandler(
+            event,
+            dependencies,
+          );
+
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 401,
+            body: "Unauthorized",
+          });
         });
+      });
+    });
 
-        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+    describe("iss claim validation", () => {
+      // nbf does not need to be present
+      describe("Given issuer (iss) is not present", () => {
+        it("Returns a log", async () => {
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${mockJwtNoIss}` },
+          });
 
-        const result: APIGatewayProxyResult = await lambdaHandler(
-          event,
-          dependencies,
-        );
+          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
 
-        expect(result).toStrictEqual({
-          headers: { "Content-Type": "application/json" },
-          statusCode: 401,
-          body: "Unauthorized",
+          const result: APIGatewayProxyResult = await lambdaHandler(
+            event,
+            dependencies,
+          );
+
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 401,
+            body: "Unauthorized",
+          });
         });
       });
     });

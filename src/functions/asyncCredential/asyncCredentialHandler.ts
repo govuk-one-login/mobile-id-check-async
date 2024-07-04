@@ -67,6 +67,12 @@ export async function lambdaHandler(
     console.log("DATE IN PAST");
     return unauthorized401Response;
   }
+
+  if (!jwtPayload.iss) {
+    console.log("NO ISS");
+    return unauthorized401Response;
+  }
+
   const result = await tokenService.verifyTokenSignature(keyId, encodedJwt);
 
   if (result.isLog) {
