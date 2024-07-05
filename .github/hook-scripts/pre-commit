@@ -6,4 +6,7 @@
 # it wants to stop the commit.
 
 # Run prettier formatting checks
-cd src && npm run format:check
+cd src || exit 1
+
+npm run lint
+npm run format:check
