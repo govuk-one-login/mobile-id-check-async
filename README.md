@@ -35,6 +35,6 @@ npm run format:check
 ## Linting
 
 To lint your code:
-```base
+```bash
 npm run lint
 ```
