@@ -12,6 +12,7 @@ export type LogMessage<T extends string> = {
 export interface ILoggerAdapter<T extends string> {
   info: (message: LogMessage<T>) => void;
   addContext: (lambdaContext: Context) => void;
+  appendKeys: (keys: { authSessionId: string }) => void;
 }
 
 type RegisteredMessageData<T extends string> = {
@@ -22,6 +23,7 @@ type RegisteredMessageData<T extends string> = {
 export type MessageName = "MOCK_MESSAGE_NAME";
 
 export interface ILogger<T extends string> {
-  info(logMessage: LogMessage<T>): void;
+  log(messageName: T): void;
   addContext(lambdaContext: Context): void;
+  appendKeys: (keys: { authSessionId: string }) => void;
 }

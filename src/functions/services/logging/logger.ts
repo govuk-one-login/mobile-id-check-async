@@ -1,7 +1,7 @@
 import { Context } from "aws-lambda";
-import { ILoggerAdapter, RegisteredLogMessages } from "./types";
+import { ILogger, ILoggerAdapter, RegisteredLogMessages } from "./types";
 
-export class Logger<T extends string> {
+export class Logger<T extends string> implements ILogger<T> {
   constructor(
     private logger: ILoggerAdapter<T>,
     private registeredLogs: RegisteredLogMessages<T>,
@@ -16,5 +16,9 @@ export class Logger<T extends string> {
 
   addContext = (context: Context): void => {
     this.logger.addContext(context);
+  };
+
+  appendKeys = (keys: { authSessionId: string }) => {
+    this.logger.appendKeys(keys);
   };
 }

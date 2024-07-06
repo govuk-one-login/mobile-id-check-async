@@ -3,7 +3,7 @@ import {
   LogMessage,
   RegisteredLogMessages,
   MessageName,
-  ILogger,
+  ILoggerAdapter,
 } from "./types";
 import { Context } from "aws-lambda";
 
@@ -41,15 +41,38 @@ describe("Logger", () => {
         });
       });
     });
+
+    describe("Given authSessionId is passed to the logger", () => {
+      it("Writes a log including the session data", () => {
+        const loggingAdapter = new MockLoggingAdapter();
+        const mockLogger = new Logger<MessageName>(
+          loggingAdapter,
+          mockRegisteredLogs,
+        );
+        mockLogger.appendKeys({ authSessionId: "mockAuthSessionId" });
+        mockLogger.log("MOCK_MESSAGE_NAME");
+        expect(loggingAdapter.getLogMessages()[0]).toMatchObject({
+          message: "mockMessage",
+          messageCode: "MOBILE_ASYNC_MOCK_MESSAGE_NAME",
+          messageName: "MOCK_MESSAGE_NAME",
+          authSessionId: "mockAuthSessionId",
+        });
+      });
+    });
   });
 });
 
-class MockLoggingAdapter<T extends string> implements ILogger<T> {
+class MockLoggingAdapter<T extends string> implements ILoggerAdapter<T> {
   logMessages: LogMessage<T>[] = [];
   private contextBody: Context | undefined;
+  private temporaryKeys: { [key in string]: string } | undefined;
   info = (logMessage: LogMessage<T>): void => {
-    const logMessageWithContext = { ...this.contextBody, ...logMessage };
-    this.logMessages.push(logMessageWithContext);
+    const enrichedLogMessage = {
+      ...this.contextBody,
+      ...this.temporaryKeys,
+      ...logMessage,
+    };
+    this.logMessages.push(enrichedLogMessage);
   };
   getLogMessages = (): LogMessage<T>[] => {
     return this.logMessages;
@@ -57,6 +80,9 @@ class MockLoggingAdapter<T extends string> implements ILogger<T> {
 
   addContext = (lambdaContext: Context) => {
     this.contextBody = lambdaContext;
+  };
+  appendKeys = (keys: { authSessionId: string }) => {
+    this.temporaryKeys = { ...keys };
   };
 }
 
