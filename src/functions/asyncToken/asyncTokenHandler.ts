@@ -35,7 +35,9 @@ export async function lambdaHandlerConstructor(
   try {
     kidArn = validOrThrow(dependencies.env, "SIGNING_KEY_ID");
   } catch (error) {
-    logger.log("ENVIRONMENT_VARIABLE_MISSING");
+    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
+      environmentVariable: "SIGNING_KEY_IDS",
+    });
 
     return serverErrorResponse;
   }

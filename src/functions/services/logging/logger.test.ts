@@ -1,3 +1,4 @@
+import { LogAttributes } from "@aws-lambda-powertools/logger/lib/cjs/types/Log";
 import { Logger } from "./logger";
 import {
   LogMessage,
@@ -16,7 +17,7 @@ describe("Logger", () => {
         mockRegisteredLogs,
       );
       mockLogger.log("MOCK_MESSAGE_NAME");
-      expect(loggingAdapter.getLogMessages()[0]).toMatchObject({
+      expect(loggingAdapter.getLogMessages()[0].logMessage).toMatchObject({
         message: "mockMessage",
         messageCode: "MOBILE_ASYNC_MOCK_MESSAGE_NAME",
         messageName: "MOCK_MESSAGE_NAME",
@@ -32,7 +33,7 @@ describe("Logger", () => {
         );
         mockLogger.addContext(buildLambdaContext());
         mockLogger.log("MOCK_MESSAGE_NAME");
-        expect(loggingAdapter.getLogMessages()[0]).toMatchObject({
+        expect(loggingAdapter.getLogMessages()[0].logMessage).toMatchObject({
           message: "mockMessage",
           messageCode: "MOBILE_ASYNC_MOCK_MESSAGE_NAME",
           messageName: "MOCK_MESSAGE_NAME",
@@ -51,7 +52,7 @@ describe("Logger", () => {
         );
         mockLogger.appendKeys({ authSessionId: "mockAuthSessionId" });
         mockLogger.log("MOCK_MESSAGE_NAME");
-        expect(loggingAdapter.getLogMessages()[0]).toMatchObject({
+        expect(loggingAdapter.getLogMessages()[0].logMessage).toMatchObject({
           message: "mockMessage",
           messageCode: "MOBILE_ASYNC_MOCK_MESSAGE_NAME",
           messageName: "MOCK_MESSAGE_NAME",
@@ -59,22 +60,41 @@ describe("Logger", () => {
         });
       });
     });
+
+    describe("Given custom data is passed into the log message", () => {
+      it("Writes a log including custom data", () => {
+        const loggingAdapter = new MockLoggingAdapter();
+        const mockLogger = new Logger<MessageName>(
+          loggingAdapter,
+          mockRegisteredLogs,
+        );
+        mockLogger.log("MOCK_MESSAGE_NAME", { mockKey: "mockValue" });
+        expect(loggingAdapter.getLogMessages()[0].logMessage).toMatchObject({
+          message: "mockMessage",
+          messageCode: "MOBILE_ASYNC_MOCK_MESSAGE_NAME",
+          messageName: "MOCK_MESSAGE_NAME",
+        });
+        expect(loggingAdapter.getLogMessages()[0].data).toMatchObject({
+          mockKey: "mockValue",
+        });
+      });
+    });
   });
 });
 
 export class MockLoggingAdapter<T extends string> implements ILoggerAdapter<T> {
-  logMessages: LogMessage<T>[] = [];
+  logMessages: { logMessage: LogMessage<T>; data: LogAttributes }[] = [];
   private contextBody: Context | undefined;
   private temporaryKeys: { [key in string]: string } | undefined;
-  info = (logMessage: LogMessage<T>): void => {
+  info = (logMessage: LogMessage<T>, data: LogAttributes): void => {
     const enrichedLogMessage = {
       ...this.contextBody,
       ...this.temporaryKeys,
       ...logMessage,
     };
-    this.logMessages.push(enrichedLogMessage);
+    this.logMessages.push({ logMessage: enrichedLogMessage, data });
   };
-  getLogMessages = (): LogMessage<T>[] => {
+  getLogMessages = (): { logMessage: LogMessage<T>; data: LogAttributes }[] => {
     return this.logMessages;
   };
 

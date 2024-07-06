@@ -51,9 +51,12 @@ describe("Async Token", () => {
           buildLambdaContext(),
           request,
         );
-        expect(mockLogger.getLogMessages()[1].messageName).toBe(
+        expect(mockLogger.getLogMessages()[1].logMessage.messageName).toBe(
           "ENVIRONMENT_VARIABLE_MISSING",
         );
+        expect(mockLogger.getLogMessages()[1].logMessage.data).toStrictEqual({
+          environmentVariable: "SIGNING_KEY_IDS",
+        });
 
         expect(result.statusCode).toBe(500);
         expect(JSON.parse(result.body).error).toEqual("server_error");
@@ -197,14 +200,14 @@ describe("Async Token", () => {
           buildLambdaContext(),
           request,
         );
-        expect(mockLogger.getLogMessages()[0]).toMatchObject({
+        expect(mockLogger.getLogMessages()[0].logMessage).toMatchObject({
           messageName: "STARTED",
           messageCode: "MOBILE_ASYNC_STARTED",
           awsRequestId: "awsRequestId",
           functionName: "lambdaFunctionName",
         });
 
-        expect(mockLogger.getLogMessages()[1]).toMatchObject({
+        expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
           messageName: "COMPLETED",
           messageCode: "MOBILE_ASYNC_COMPLETED",
           awsRequestId: "awsRequestId",
