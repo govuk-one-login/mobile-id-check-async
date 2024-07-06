@@ -13,16 +13,24 @@ import {
 import { IGetClientCredentials, SsmService } from "./ssmService/ssmService";
 import { IMintToken, TokenService } from "./tokenService/tokenService";
 import { IDecodedClientCredentials } from "../types/clientCredentials";
+import { Logger } from "../services/logging/logger";
+import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
+import { MessageName, registeredLogs } from "./registeredLogs";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> {
   // Environment variables
+
+  const logger = dependencies.logger();
+  logger.log("STARTED")
   let kidArn;
   try {
     kidArn = validOrThrow(dependencies.env, "SIGNING_KEY_ID");
   } catch (error) {
+    logger.log("ENVIRONMENT_VARIABLE_MISSING");
+
     return serverErrorResponse;
   }
 
@@ -137,6 +145,7 @@ const serverErrorResponse: APIGatewayProxyResult = {
 
 export interface IAsyncTokenRequestDependencies {
   env: NodeJS.ProcessEnv;
+  logger: () => Logger<MessageName>;
   requestService: () => IProcessRequest;
   ssmService: () => IGetClientCredentials;
   clientCredentialService: () => IClientCredentialsService;
@@ -145,6 +154,7 @@ export interface IAsyncTokenRequestDependencies {
 
 const dependencies: IAsyncTokenRequestDependencies = {
   env: process.env,
+  logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
   requestService: () => new RequestService(),
   ssmService: () => new SsmService(),
   clientCredentialService: () => new ClientCredentialsService(),

@@ -62,7 +62,7 @@ describe("Logger", () => {
   });
 });
 
-class MockLoggingAdapter<T extends string> implements ILoggerAdapter<T> {
+export class MockLoggingAdapter<T extends string> implements ILoggerAdapter<T> {
   logMessages: LogMessage<T>[] = [];
   private contextBody: Context | undefined;
   private temporaryKeys: { [key in string]: string } | undefined;

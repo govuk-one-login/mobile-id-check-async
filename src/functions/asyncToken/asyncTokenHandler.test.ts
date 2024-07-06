@@ -14,18 +14,25 @@ import { IGetClientCredentials } from "./ssmService/ssmService";
 import { buildRequest } from "../testUtils/mockRequest";
 import { IDecodedClientCredentials } from "../types/clientCredentials";
 import { IMintToken } from "./tokenService/tokenService";
+import { MockLoggingAdapter } from "../services/logging/logger.test";
+import { MessageName, registeredLogs } from "./registeredLogs";
+import { Logger } from "../services/logging/logger";
 
 describe("Async Token", () => {
+  let mockLogger: MockLoggingAdapter<MessageName>;
   let request: APIGatewayProxyEvent;
   let dependencies: IAsyncTokenRequestDependencies;
 
   beforeEach(() => {
     request = buildRequest();
+    mockLogger = new MockLoggingAdapter();
     dependencies = {
       env,
+      logger: () => new Logger(mockLogger, registeredLogs),
       requestService: () => new MockRequestServiceValueResponse(),
       ssmService: () => new MockPassingSsmService(),
-      clientCredentialService: () => new MockPassingClientCredentialsService(),
+      clientCredentialService: () =>
+        new MockPassingClientCredentialsService(),
       tokenService: () => new MockPassingTokenService(),
     };
   });
@@ -37,6 +44,9 @@ describe("Async Token", () => {
         delete dependencies.env["SIGNING_KEY_ID"];
 
         const result = await lambdaHandlerConstructor(dependencies, request);
+        expect(mockLogger.getLogMessages()[1].messageName).toBe(
+          "ENVIRONMENT_VARIABLE_MISSING",
+        );
 
         expect(result.statusCode).toBe(500);
         expect(JSON.parse(result.body).error).toEqual("server_error");
@@ -152,6 +162,7 @@ describe("Async Token", () => {
     describe("Given the request is valid", () => {
       it("Returns with 200 response with an access token in the response body", async () => {
         const result = await lambdaHandlerConstructor(dependencies, request);
+        expect(mockLogger.getLogMessages()[0].messageName).toEqual("STARTED")
 
         expect(result.statusCode);
         expect(result.body).toEqual(
