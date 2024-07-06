@@ -14,7 +14,10 @@ import { IGetClientCredentials } from "./ssmService/ssmService";
 import { buildRequest } from "../testUtils/mockRequest";
 import { IDecodedClientCredentials } from "../types/clientCredentials";
 import { IMintToken } from "./tokenService/tokenService";
-import { MockLoggingAdapter } from "../services/logging/logger.test";
+import {
+  MockLoggingAdapter,
+  buildLambdaContext,
+} from "../services/logging/logger.test";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
 
@@ -43,7 +46,11 @@ describe("Async Token", () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
         delete dependencies.env["SIGNING_KEY_ID"];
 
-        const result = await lambdaHandlerConstructor(dependencies, request);
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          buildLambdaContext(),
+          request,
+        );
         expect(mockLogger.getLogMessages()[1].messageName).toBe(
           "ENVIRONMENT_VARIABLE_MISSING",
         );
@@ -63,7 +70,11 @@ describe("Async Token", () => {
         dependencies.requestService = () =>
           new MockRequestServiceInvalidGrantTypeLogResponse();
 
-        const result = await lambdaHandlerConstructor(dependencies, request);
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          buildLambdaContext(),
+          request,
+        );
 
         expect(result.statusCode).toBe(400);
         expect(JSON.parse(result.body).error).toEqual("invalid_grant");
@@ -78,7 +89,11 @@ describe("Async Token", () => {
         dependencies.requestService = () =>
           new MockRequestServiceInvalidAuthorizationHeaderLogResponse();
 
-        const result = await lambdaHandlerConstructor(dependencies, request);
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          buildLambdaContext(),
+          request,
+        );
 
         expect(result.statusCode).toBe(400);
         expect(JSON.parse(result.body).error).toEqual(
@@ -96,7 +111,11 @@ describe("Async Token", () => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.ssmService = () => new MockFailingSsmService();
 
-        const result = await lambdaHandlerConstructor(dependencies, request);
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          buildLambdaContext(),
+          request,
+        );
 
         expect(JSON.parse(result.body).error).toEqual("server_error");
         expect(JSON.parse(result.body).error_description).toEqual(
@@ -113,7 +132,11 @@ describe("Async Token", () => {
           dependencies.clientCredentialService = () =>
             new MockFailingClientCredentialsServiceGetClientCredentialsById();
 
-          const result = await lambdaHandlerConstructor(dependencies, request);
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            buildLambdaContext(),
+            request,
+          );
 
           expect(result.statusCode).toBe(400);
           expect(JSON.parse(result.body).error).toEqual("invalid_client");
@@ -130,7 +153,11 @@ describe("Async Token", () => {
           dependencies.clientCredentialService = () =>
             new MockFailingClientCredentialsServiceValidation();
 
-          const result = await lambdaHandlerConstructor(dependencies, request);
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            buildLambdaContext(),
+            request,
+          );
 
           expect(result.statusCode).toBe(400);
           expect(JSON.parse(result.body).error).toEqual("invalid_client");
@@ -147,7 +174,11 @@ describe("Async Token", () => {
       it("Returns 500 Server Error response", async () => {
         dependencies.tokenService = () => new MockFailingTokenService();
 
-        const result = await lambdaHandlerConstructor(dependencies, request);
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          buildLambdaContext(),
+          request,
+        );
 
         expect(result.statusCode).toBe(500);
         expect(JSON.parse(result.body).error).toEqual("server_error");
@@ -161,8 +192,24 @@ describe("Async Token", () => {
   describe("Issue access token", () => {
     describe("Given the request is valid", () => {
       it("Returns with 200 response with an access token in the response body", async () => {
-        const result = await lambdaHandlerConstructor(dependencies, request);
-        expect(mockLogger.getLogMessages()[0].messageName).toEqual("STARTED");
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          buildLambdaContext(),
+          request,
+        );
+        expect(mockLogger.getLogMessages()[0]).toMatchObject({
+          messageName: "STARTED",
+          messageCode: "MOBILE_ASYNC_STARTED",
+          awsRequestId: "awsRequestId",
+          functionName: "lambdaFunctionName",
+        });
+
+        expect(mockLogger.getLogMessages()[1]).toMatchObject({
+          messageName: "COMPLETED",
+          messageCode: "MOBILE_ASYNC_COMPLETED",
+          awsRequestId: "awsRequestId",
+          functionName: "lambdaFunctionName",
+        });
 
         expect(result.statusCode);
         expect(result.body).toEqual(

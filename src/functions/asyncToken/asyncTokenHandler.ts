@@ -1,4 +1,8 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context,
+} from "aws-lambda";
 import "dotenv/config";
 import { validOrThrow } from "../config";
 import {
@@ -19,11 +23,13 @@ import { MessageName, registeredLogs } from "./registeredLogs";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
+  context: Context,
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> {
   // Environment variables
 
   const logger = dependencies.logger();
+  logger.addContext(context);
   logger.log("STARTED");
   let kidArn;
   try {
@@ -91,6 +97,8 @@ export async function lambdaHandlerConstructor(
   } catch (error) {
     return serverErrorResponse;
   }
+
+  logger.log("COMPLETED");
 
   return {
     headers: {
