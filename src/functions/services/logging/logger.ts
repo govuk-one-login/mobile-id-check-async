@@ -25,7 +25,6 @@ export class Logger<T extends string> implements ILogger<T> {
         message: this.registeredLogs[messageName].message,
         messageCode: this.registeredLogs[messageName].messageCode,
         messageName,
-        data,
       },
       data,
     );

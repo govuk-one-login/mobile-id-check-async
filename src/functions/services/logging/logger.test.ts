@@ -1,10 +1,9 @@
 import { LogAttributes } from "@aws-lambda-powertools/logger/lib/cjs/types/Log";
-import { Logger } from "./logger";
+import { ILoggerAdapter, Logger } from "./logger";
 import {
   LogMessage,
   RegisteredLogMessages,
   MessageName,
-  ILoggerAdapter,
 } from "./logMessageTypes";
 import { Context } from "aws-lambda";
 

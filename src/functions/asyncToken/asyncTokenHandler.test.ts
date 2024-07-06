@@ -54,7 +54,7 @@ describe("Async Token", () => {
         expect(mockLogger.getLogMessages()[1].logMessage.messageName).toBe(
           "ENVIRONMENT_VARIABLE_MISSING",
         );
-        expect(mockLogger.getLogMessages()[1].logMessage.data).toStrictEqual({
+        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
           environmentVariable: "SIGNING_KEY_IDS",
         });
 
