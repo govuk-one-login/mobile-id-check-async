@@ -162,7 +162,7 @@ describe("Async Token", () => {
     describe("Given the request is valid", () => {
       it("Returns with 200 response with an access token in the response body", async () => {
         const result = await lambdaHandlerConstructor(dependencies, request);
-        expect(mockLogger.getLogMessages()[0].messageName).toEqual("STARTED")
+        expect(mockLogger.getLogMessages()[0].messageName).toEqual("STARTED");
 
         expect(result.statusCode);
         expect(result.body).toEqual(
