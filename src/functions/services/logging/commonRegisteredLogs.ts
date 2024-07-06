@@ -1,4 +1,4 @@
-import { RegisteredLogMessages } from "./types";
+import { RegisteredLogMessages } from "./logMessageTypes";
 
 export type CommonMessageNames =
   | "STARTED"

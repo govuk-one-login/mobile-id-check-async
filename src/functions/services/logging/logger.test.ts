@@ -5,7 +5,7 @@ import {
   RegisteredLogMessages,
   MessageName,
   ILoggerAdapter,
-} from "./types";
+} from "./logMessageTypes";
 import { Context } from "aws-lambda";
 
 describe("Logger", () => {

@@ -1,6 +1,18 @@
 import { Context } from "aws-lambda";
-import { ILogger, ILoggerAdapter, RegisteredLogMessages } from "./types";
+import { LogMessage, RegisteredLogMessages } from "./logMessageTypes";
 import { LogAttributes } from "@aws-lambda-powertools/logger/lib/cjs/types/Log";
+
+export interface ILogger<T extends string> {
+  log(messageName: T, data: LogAttributes): void;
+  addContext(lambdaContext: Context): void;
+  appendKeys: (keys: { authSessionId: string }) => void;
+}
+
+export interface ILoggerAdapter<T extends string> {
+  info: (message: LogMessage<T>, data: LogAttributes) => void;
+  addContext: (lambdaContext: Context) => void;
+  appendKeys: (keys: { authSessionId: string }) => void;
+}
 
 export class Logger<T extends string> implements ILogger<T> {
   constructor(

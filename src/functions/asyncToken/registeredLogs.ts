@@ -2,7 +2,7 @@ import {
   CommonMessageNames,
   commonMessages,
 } from "../services/logging/commonRegisteredLogs";
-import { RegisteredLogMessages } from "../services/logging/types";
+import { RegisteredLogMessages } from "../services/logging/logMessageTypes";
 
 export type MessageName = CommonMessageNames;
 
