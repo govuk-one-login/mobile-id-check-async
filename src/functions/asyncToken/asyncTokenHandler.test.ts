@@ -82,7 +82,14 @@ describe("Async Token", () => {
           buildLambdaContext(),
           request,
         );
+        expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+          messageName: "INVALID_REQUEST",
+          messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
+        });
 
+        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: "Invalid grant_type",
+        });
         expect(result.statusCode).toBe(400);
         expect(JSON.parse(result.body).error).toEqual("invalid_grant");
         expect(JSON.parse(result.body).error_description).toEqual(
