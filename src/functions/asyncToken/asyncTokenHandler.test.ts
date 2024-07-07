@@ -109,6 +109,14 @@ describe("Async Token", () => {
           request,
         );
 
+        expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+          messageName: "INVALID_REQUEST",
+          messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
+        });
+        expect(mockLogger.getLogMessages()[1].data).toMatchObject({
+          errorMessage: "Invalid authorization header",
+        });
+
         expect(result.statusCode).toBe(400);
         expect(JSON.parse(result.body).error).toEqual(
           "invalid_authorization_header",
@@ -257,7 +265,7 @@ class MockRequestServiceInvalidAuthorizationHeaderLogResponse
   implements IProcessRequest
 {
   processRequest = (): ErrorOrSuccess<IDecodedClientCredentials> => {
-    return errorResponse("mockInvalidAuthorizationHeaderLog");
+    return errorResponse("Invalid authorization header");
   };
 }
 

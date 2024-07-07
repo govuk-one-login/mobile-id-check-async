@@ -52,6 +52,8 @@ export async function lambdaHandlerConstructor(
       return badRequestResponseInvalidGrant;
     }
 
+    logger.log("INVALID_REQUEST", { errorMessage: processRequest.value });
+
     return badRequestResponseInvalidAuthorizationHeader;
   }
 
