@@ -6,22 +6,24 @@ import {
 } from "../../types/errorOrValue";
 
 export class ClientCredentialsService implements IClientCredentialsService {
-  validate = (
-    storedCredentials: IClientCredentials,
-    suppliedCredentials: IDecodedClientCredentials,
-  ): boolean => {
-    const { clientSecret: suppliedClientSecret } = suppliedCredentials;
-    const storedSalt = storedCredentials.salt;
-    const hashedSuppliedClientSecret = hashSecret(
-      suppliedClientSecret,
-      storedSalt,
-    );
-    const hashedStoredClientSecret = storedCredentials.hashed_client_secret;
-    const isValidClientSecret =
-      hashedStoredClientSecret === hashedSuppliedClientSecret;
+validate = (
+  storedCredentials: IClientCredentials,
+  suppliedCredentials: IDecodedClientCredentials,
+): ErrorOrSuccess<null> => {
+  const { clientSecret: suppliedClientSecret } = suppliedCredentials;
+  const storedSalt = storedCredentials.salt;
+  const hashedSuppliedClientSecret = hashSecret(
+    suppliedClientSecret,
+    storedSalt,
+  );
+  const hashedStoredClientSecret = storedCredentials.hashed_client_secret;
+  const isValidClientSecret =
+    hashedStoredClientSecret === hashedSuppliedClientSecret;
 
-    return isValidClientSecret;
-  };
+  if (isValidClientSecret) return successResponse(null);
+
+  return errorResponse("Client secret not valid for the supplied clientId");
+};
 
   getClientCredentialsById = (
     storedCredentialsArray: IClientCredentials[],
@@ -34,8 +36,8 @@ export class ClientCredentialsService implements IClientCredentialsService {
 
     return successResponse(storedCredentials);
   };
-}
 
+}
 const hashSecret = (secret: string, salt: string): string => {
   return createHash("sha256")
     .update(secret + salt)
@@ -46,7 +48,7 @@ export interface IClientCredentialsService {
   validate: (
     storedCredentials: IClientCredentials,
     suppliedCredentials: IDecodedClientCredentials,
-  ) => boolean;
+  ) => ErrorOrSuccess<null>;
 
   getClientCredentialsById: (
     storedCredentialsArray: IClientCredentials[],

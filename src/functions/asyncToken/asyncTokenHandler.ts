@@ -66,7 +66,6 @@ export async function lambdaHandlerConstructor(
     logger.log("INTERNAL_SERVER_ERROR", {
       errorMessage: ssmServiceResponse.value,
     });
-    console.log("LINE 68 ->>>>>>>>>>>>>>>");
     return serverErrorResponse;
   }
 
@@ -90,11 +89,14 @@ export async function lambdaHandlerConstructor(
   const storedCredentials =
     clientCredentialsByIdResponse.value as IClientCredentials;
 
-  const isValidClientCredentials = clientCredentialsService.validate(
+  const isValidClientCredentialsResponse = clientCredentialsService.validate(
     storedCredentials,
     suppliedCredentials,
   );
-  if (!isValidClientCredentials) {
+  if (isValidClientCredentialsResponse.isError) {
+    logger.log("INVALID_REQUEST", {
+      errorMessage: isValidClientCredentialsResponse.value,
+    });
     return badRequestResponseInvalidCredentials;
   }
 

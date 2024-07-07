@@ -54,7 +54,10 @@ describe("Client Credentials Service", () => {
           mockSuppliedClientCredentials,
         );
 
-        expect(result).toBe(false);
+        expect(result.isError).toBe(true);
+        expect(result.value).toBe(
+          "Client secret not valid for the supplied clientId",
+        );
       });
     });
 
@@ -70,7 +73,8 @@ describe("Client Credentials Service", () => {
           mockSuppliedClientCredentials,
         );
 
-        expect(result).toBe(true);
+        expect(result.isError).toBe(false);
+        expect(result.value).toBe(null);
       });
     });
   });
