@@ -77,7 +77,7 @@ describe("Client Credentials Service", () => {
 
   describe("Get client credentials by ID", () => {
     describe("Given the supplied credential clientId is not present in the stored credentials array", () => {
-      it("Returns null", async () => {
+      it("Returns an error response", async () => {
         mockSuppliedClientCredentials = {
           clientId: "mockInvalidClientId",
           clientSecret: "mockClientSecret",
@@ -88,7 +88,8 @@ describe("Client Credentials Service", () => {
           mockSuppliedClientCredentials.clientId,
         );
 
-        expect(result).toBe(null);
+        expect(result.isError).toBe(true);
+        expect(result.value).toBe("ClientId not registered");
       });
     });
 
@@ -110,8 +111,8 @@ describe("Client Credentials Service", () => {
           mockStoredClientCredentialsArray,
           mockSuppliedClientCredentials.clientId,
         );
-
-        expect(result).toEqual(expectedClientCredentials);
+        expect(result.isError).toBe(false);
+        expect(result.value).toEqual(expectedClientCredentials);
       });
     });
   });

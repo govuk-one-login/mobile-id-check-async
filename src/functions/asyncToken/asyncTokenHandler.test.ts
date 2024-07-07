@@ -168,6 +168,14 @@ describe("Async Token", () => {
             request,
           );
 
+          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+            messageName: "INVALID_REQUEST",
+            messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
+          });
+          expect(mockLogger.getLogMessages()[1].data).toMatchObject({
+            errorMessage: "Client credentials not registered",
+          });
+
           expect(result.statusCode).toBe(400);
           expect(JSON.parse(result.body).error).toEqual("invalid_client");
           expect(JSON.parse(result.body).error_description).toEqual(
@@ -305,20 +313,20 @@ class MockPassingClientCredentialsService implements IClientCredentialsService {
     return true;
   }
   getClientCredentialsById() {
-    return {
+    return successResponse({
       client_id: "mockClientId",
       issuer: "mockIssuer",
       salt: "mockSalt",
       hashed_client_secret: "mockHashedClientSecret",
-    };
+    });
   }
 }
 
 class MockFailingClientCredentialsServiceGetClientCredentialsById
   implements IClientCredentialsService
 {
-  getClientCredentialsById() {
-    return null;
+  getClientCredentialsById(): ErrorOrSuccessResponse<IClientCredentials> {
+    return errorResponse("Client credentials not recognised");
   }
   validate() {
     return false;
@@ -329,12 +337,12 @@ class MockFailingClientCredentialsServiceValidation
   implements IClientCredentialsService
 {
   getClientCredentialsById() {
-    return {
+    return successResponse({
       client_id: "mockClientId",
       issuer: "mockIssuer",
       salt: "mockSalt",
       hashed_client_secret: "mockHashedClientSecret",
-    };
+    });
   }
   validate() {
     return false;

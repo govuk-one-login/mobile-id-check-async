@@ -75,13 +75,20 @@ export async function lambdaHandlerConstructor(
 
   // Incoming credentials match stored credentials
   const clientCredentialsService = dependencies.clientCredentialService();
-  const storedCredentials = clientCredentialsService.getClientCredentialsById(
-    storedCredentialsArray,
-    suppliedCredentials.clientId,
-  );
-  if (!storedCredentials) {
+  const clientCredentialsByIdResponse =
+    clientCredentialsService.getClientCredentialsById(
+      storedCredentialsArray,
+      suppliedCredentials.clientId,
+    );
+  if (clientCredentialsByIdResponse.isError) {
+    logger.log("INVALID_REQUEST", {
+      errorMessage: "Client credentials not registered",
+    });
     return badRequestResponseInvalidCredentials;
   }
+
+  const storedCredentials =
+    clientCredentialsByIdResponse.value as IClientCredentials;
 
   const isValidClientCredentials = clientCredentialsService.validate(
     storedCredentials,

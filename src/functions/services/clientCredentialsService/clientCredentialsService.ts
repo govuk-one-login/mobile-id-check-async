@@ -1,4 +1,9 @@
 import { createHash } from "crypto";
+import {
+  ErrorOrSuccess,
+  errorResponse,
+  successResponse,
+} from "../../types/errorOrValue";
 
 export class ClientCredentialsService implements IClientCredentialsService {
   validate = (
@@ -21,13 +26,13 @@ export class ClientCredentialsService implements IClientCredentialsService {
   getClientCredentialsById = (
     storedCredentialsArray: IClientCredentials[],
     suppliedClientId: string,
-  ) => {
+  ): ErrorOrSuccess<IClientCredentials> => {
     const storedCredentials = storedCredentialsArray.find(
       (cred: IClientCredentials) => cred.client_id === suppliedClientId,
     );
-    if (!storedCredentials) return null;
+    if (!storedCredentials) return errorResponse("ClientId not registered");
 
-    return storedCredentials;
+    return successResponse(storedCredentials);
   };
 }
 
@@ -46,7 +51,7 @@ export interface IClientCredentialsService {
   getClientCredentialsById: (
     storedCredentialsArray: IClientCredentials[],
     suppliedClientId: string,
-  ) => IClientCredentials | null;
+  ) => ErrorOrSuccess<IClientCredentials>;
 }
 
 export type IClientCredentials = {
