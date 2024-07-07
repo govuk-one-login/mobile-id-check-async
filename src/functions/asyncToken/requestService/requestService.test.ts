@@ -18,7 +18,7 @@ describe("Request Service", () => {
 
           const result = requestService.processRequest(request);
 
-          expect(result.isLog).toEqual(true);
+          expect(result.isError).toEqual(true);
           expect(result.value).toEqual("Invalid grant_type");
         });
       });
@@ -29,7 +29,7 @@ describe("Request Service", () => {
 
           const result = requestService.processRequest(request);
 
-          expect(result.isLog).toEqual(true);
+          expect(result.isError).toEqual(true);
           expect(result.value).toEqual("Invalid grant_type");
         });
       });
@@ -40,7 +40,7 @@ describe("Request Service", () => {
 
           const result = requestService.processRequest(request);
 
-          expect(result.isLog).toEqual(true);
+          expect(result.isError).toEqual(true);
           expect(result.value).toEqual("Invalid grant_type");
         });
       });
@@ -51,7 +51,7 @@ describe("Request Service", () => {
 
           const result = requestService.processRequest(request);
 
-          expect(result.isLog).toEqual(true);
+          expect(result.isError).toEqual(true);
           expect(result.value).toEqual("Invalid grant_type");
         });
       });
@@ -64,7 +64,7 @@ describe("Request Service", () => {
 
           const result = requestService.processRequest(request);
 
-          expect(result.isLog).toEqual(true);
+          expect(result.isError).toEqual(true);
           expect(result.value).toEqual("Invalid authorization header");
         });
       });
@@ -76,7 +76,7 @@ describe("Request Service", () => {
 
           const result = requestService.processRequest(request);
 
-          expect(result.isLog).toEqual(true);
+          expect(result.isError).toEqual(true);
           expect(result.value).toEqual("Invalid authorization header");
         });
       });
@@ -91,7 +91,7 @@ describe("Request Service", () => {
 
           const result = requestService.processRequest(request);
 
-          expect(result.isLog).toEqual(true);
+          expect(result.isError).toEqual(true);
           expect(result.value).toEqual("Client secret incorrectly formatted");
         });
       });
@@ -106,7 +106,7 @@ describe("Request Service", () => {
 
         const result = requestService.processRequest(request);
 
-        expect(result.isLog).toEqual(false);
+        expect(result.isError).toEqual(false);
         expect(result.value).toEqual({
           clientId: "mockClientId",
           clientSecret: "mockClientSecret",

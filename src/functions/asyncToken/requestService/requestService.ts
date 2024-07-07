@@ -1,36 +1,40 @@
 import { IDecodedClientCredentials } from "../../types/clientCredentials";
-import { LogOrValue, log, value } from "../../types/logOrValue";
+import {
+  ErrorOrSuccess,
+  errorResponse,
+  successResponse,
+} from "../../types/errorOrValue";
 import { APIGatewayProxyEvent } from "aws-lambda";
 
 export class RequestService implements IProcessRequest {
   processRequest = (
     request: APIGatewayProxyEvent,
-  ): LogOrValue<IDecodedClientCredentials> => {
+  ): ErrorOrSuccess<IDecodedClientCredentials> => {
     const requestBody = request.body;
     const authorizationHeader = request.headers["Authorization"];
 
     if (!this.isRequestBodyValid(requestBody)) {
-      return log("Invalid grant_type");
+      return errorResponse("Invalid grant_type");
     }
 
     if (!authorizationHeader) {
-      return log("Invalid authorization header");
+      return errorResponse("Invalid authorization header");
     }
 
     if (!authorizationHeader.startsWith("Basic ")) {
-      return log("Invalid authorization header");
+      return errorResponse("Invalid authorization header");
     }
 
     const decodeAuthorizationHeader =
       this.decodeAuthorizationHeader(authorizationHeader);
-    if (decodeAuthorizationHeader.isLog) {
-      return log("Client secret incorrectly formatted"); //TODO: there is sort of two logs for this, see private function
+    if (decodeAuthorizationHeader.isError) {
+      return errorResponse("Client secret incorrectly formatted"); //TODO: there is sort of two logs for this, see private function
     }
 
     const decodedClientCredentials =
       decodeAuthorizationHeader.value as IDecodedClientCredentials;
 
-    return value(decodedClientCredentials);
+    return successResponse(decodedClientCredentials);
   };
 
   private isRequestBodyValid = (body: string | null): boolean => {
@@ -48,7 +52,7 @@ export class RequestService implements IProcessRequest {
 
   private decodeAuthorizationHeader = (
     authorizationHeader: string,
-  ): LogOrValue<IDecodedClientCredentials> => {
+  ): ErrorOrSuccess<IDecodedClientCredentials> => {
     const base64EncodedCredential = authorizationHeader.split(" ")[1];
     const base64DecodedCredential = Buffer.from(
       base64EncodedCredential,
@@ -57,17 +61,22 @@ export class RequestService implements IProcessRequest {
     const [clientId, clientSecret] = base64DecodedCredential.split(":");
 
     if (!clientId || !clientSecret) {
-      return log(
+      return errorResponse(
         "BASE64_ENCODED_CLIENT_ID_AND_SECRET incorrectly formatted Authorization header",
       );
     }
 
-    return value({ clientId, clientSecret });
+    return successResponse({ clientId, clientSecret });
   };
 }
 
 export interface IProcessRequest {
   processRequest: (
     request: APIGatewayProxyEvent,
-  ) => LogOrValue<IDecodedClientCredentials>;
+  ) => ErrorOrSuccess<IDecodedClientCredentials>;
+}
+
+export interface IDecodedAuthorizationHeader {
+  clientId: string;
+  clientSecret: string;
 }

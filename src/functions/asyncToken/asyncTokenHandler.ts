@@ -46,7 +46,7 @@ export async function lambdaHandlerConstructor(
   const requestService = dependencies.requestService();
   const processRequest = requestService.processRequest(event);
 
-  if (processRequest.isLog) {
+  if (processRequest.isError) {
     if (processRequest.value === "Invalid grant_type") {
       return badRequestResponseInvalidGrant;
     }
@@ -59,7 +59,7 @@ export async function lambdaHandlerConstructor(
   // Fetching stored client credentials
   const ssmService = dependencies.ssmService();
   const ssmServiceResponse = await ssmService.getClientCredentials();
-  if (ssmServiceResponse.isLog) {
+  if (ssmServiceResponse.isError) {
     return serverErrorResponse;
   }
 

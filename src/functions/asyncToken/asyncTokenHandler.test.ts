@@ -1,5 +1,3 @@
-import { APIGatewayProxyEvent } from "aws-lambda";
-import { LogOrValue, log, value } from "../types/logOrValue";
 import {
   IAsyncTokenRequestDependencies,
   lambdaHandlerConstructor,
@@ -20,6 +18,12 @@ import {
 } from "../services/logging/logger.test";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
+import { APIGatewayProxyEvent } from "aws-lambda";
+import {
+  ErrorOrSuccess,
+  errorResponse,
+  successResponse,
+} from "../types/errorOrValue";
 
 describe("Async Token", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;
@@ -228,8 +232,8 @@ describe("Async Token", () => {
 });
 
 class MockRequestServiceValueResponse implements IProcessRequest {
-  processRequest = (): LogOrValue<IDecodedClientCredentials> => {
-    return value({
+  processRequest = (): ErrorOrSuccess<IDecodedClientCredentials> => {
+    return successResponse({
       clientId: "mockClientId",
       clientSecret: "mockClientSecret",
     });
@@ -237,16 +241,16 @@ class MockRequestServiceValueResponse implements IProcessRequest {
 }
 
 class MockRequestServiceInvalidGrantTypeLogResponse implements IProcessRequest {
-  processRequest = (): LogOrValue<IDecodedClientCredentials> => {
-    return log("Invalid grant_type");
+  processRequest = (): ErrorOrSuccess<IDecodedClientCredentials> => {
+    return errorResponse("Invalid grant_type");
   };
 }
 
 class MockRequestServiceInvalidAuthorizationHeaderLogResponse
   implements IProcessRequest
 {
-  processRequest = (): LogOrValue<IDecodedClientCredentials> => {
-    return log("mockInvalidAuthorizationHeaderLog");
+  processRequest = (): ErrorOrSuccess<IDecodedClientCredentials> => {
+    return errorResponse("mockInvalidAuthorizationHeaderLog");
   };
 }
 
@@ -260,16 +264,16 @@ class MockPassingSsmService implements IGetClientCredentials {
         hashed_client_secret: "mockHashedClientSecret",
       },
     ],
-  ): Promise<LogOrValue<IClientCredentials[]>> => {
-    return Promise.resolve(value(clientCredentials));
+  ): Promise<ErrorOrSuccess<IClientCredentials[]>> => {
+    return Promise.resolve(successResponse(clientCredentials));
   };
 }
 
 class MockFailingSsmService implements IGetClientCredentials {
   getClientCredentials = async (): Promise<
-    LogOrValue<IClientCredentials[]>
+    ErrorOrSuccess<IClientCredentials[]>
   > => {
-    return log("Mock Failing SSM log");
+    return errorResponse("Mock Failing SSM log");
   };
 }
 

@@ -1,3 +1,4 @@
+
 export interface ErrorOrSuccess<TValue> {
   isError: boolean;
   value: string | TValue;
