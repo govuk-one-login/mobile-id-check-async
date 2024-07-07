@@ -108,13 +108,16 @@ export async function lambdaHandlerConstructor(
     client_id: storedCredentials.client_id,
   };
 
-  let accessToken;
   const tokenService = dependencies.tokenService(kidArn);
-  try {
-    accessToken = await tokenService.mintToken(jwtPayload);
-  } catch (error) {
+
+  const mintTokenResponse = await tokenService.mintToken(jwtPayload);
+  if (mintTokenResponse.isError) {
+    logger.log("INTERNAL_SERVER_ERROR", {
+      errorMessage: mintTokenResponse.value,
+    });
     return serverErrorResponse;
   }
+  const accessToken = mintTokenResponse.value;
 
   logger.log("COMPLETED");
 

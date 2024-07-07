@@ -28,9 +28,9 @@ describe("Token Service", () => {
         .on(SignCommand)
         .rejects(new Error("Mock failing to sign JWT error message"));
 
-      await expect(tokenService.mintToken(payload)).rejects.toThrow(
-        "Mock failing to sign JWT error message",
-      );
+      const mintTokenResponse = tokenService.mintToken(payload);
+      expect((await mintTokenResponse).isError).toBe(true);
+      expect((await mintTokenResponse).value).toBe("Error from KMS");
     });
   });
 
@@ -39,8 +39,10 @@ describe("Token Service", () => {
       it("Throws Failed to sign JWT with signature error", async () => {
         kmsMock.on(SignCommand).resolves({ KeyId: "mockKeyId" });
 
-        await expect(tokenService.mintToken(payload)).rejects.toThrow(
-          "Failed to sign JWT with signature",
+        const mintTokenResponse = tokenService.mintToken(payload);
+        expect((await mintTokenResponse).isError).toBe(true);
+        expect((await mintTokenResponse).value).toBe(
+          "No signature in response from KMS",
         );
       });
     });
@@ -66,7 +68,8 @@ describe("Token Service", () => {
 
         const result = await tokenService.mintToken(payload);
 
-        expect(result).toEqual(
+        expect(result.isError).toBe(false);
+        expect(result.value).toEqual(
           "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1vY2tLaWQifQ.eyJhdWQiOiJodHRwczovL21vY2suYXVkaWVuY2UuY29tIiwiaXNzIjoiaHR0cHM6Ly9tb2NrLmlzc3Vlci5jb20iLCJleHAiOjM2MDAsInNjb3BlIjoibW9jay5zY29wZSIsImNsaWVudF9pZCI6Im1vY2tDbGllbnRJZCJ9.QkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkIkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJA",
         );
       });

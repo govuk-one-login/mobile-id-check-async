@@ -1,9 +1,14 @@
-import { KMSClient, SignCommand } from "@aws-sdk/client-kms";
+import { KMSClient, SignCommand, SignCommandOutput } from "@aws-sdk/client-kms";
 import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
 import { Buffer } from "buffer";
 import jose from "node-jose";
 import format from "ecdsa-sig-formatter";
 import { IJwtPayload, JwtHeader } from "../../types/jwt";
+import {
+  ErrorOrSuccess,
+  errorResponse,
+  successResponse
+} from "../../types/errorOrValue";
 
 export class TokenService implements IMintToken {
   readonly kidArn: string;
@@ -22,7 +27,9 @@ export class TokenService implements IMintToken {
     this.kidArn = kidArn;
   }
 
-  async mintToken(jwtPayload: IJwtPayload): Promise<string> {
+  async mintToken(
+    jwtPayload: IJwtPayload,
+  ): Promise<ErrorOrSuccess<string>> {
     // Building token
     const jwtHeader: JwtHeader = { alg: "ES256", typ: "JWT" };
     const kid = this.kidArn.split("/").pop();
@@ -39,24 +46,31 @@ export class TokenService implements IMintToken {
     const unsignedToken = `${tokenComponents.header}.${tokenComponents.payload}.`;
 
     // Signing token
-    const command = new SignCommand({
-      Message: Buffer.from(unsignedToken),
-      KeyId: this.kidArn,
-      SigningAlgorithm: "ECDSA_SHA_256",
-      MessageType: "RAW",
-    });
+    let result: SignCommandOutput;
+    try {
+      const command = new SignCommand({
+        Message: Buffer.from(unsignedToken),
+        KeyId: this.kidArn,
+        SigningAlgorithm: "ECDSA_SHA_256",
+        MessageType: "RAW",
+      });
 
-    const result = await this.kmsClient.send(command);
+      result = await this.kmsClient.send(command);
+    } catch (error: unknown) {
+      return errorResponse(`Error from KMS`);
+    }
 
     if (!result.Signature) {
-      throw new Error("Failed to sign JWT with signature");
+      return errorResponse("No signature in response from KMS");
     }
 
     // Convert signature to buffer and format with ES256 algorithm
     const signatureBuffer = Buffer.from(result.Signature);
     tokenComponents.signature = format.derToJose(signatureBuffer, "ES256");
 
-    return `${tokenComponents.header}.${tokenComponents.payload}.${tokenComponents.signature}`;
+    return successResponse(
+      `${tokenComponents.header}.${tokenComponents.payload}.${tokenComponents.signature}`,
+    );
   }
 
   // convert non-base64 string or uint8array into base64 encoded string
@@ -66,5 +80,7 @@ export class TokenService implements IMintToken {
 }
 
 export interface IMintToken {
-  mintToken: (jwtPayload: IJwtPayload) => Promise<string>;
+  mintToken: (
+    jwtPayload: IJwtPayload,
+  ) => Promise<ErrorOrSuccess<string>>;
 }

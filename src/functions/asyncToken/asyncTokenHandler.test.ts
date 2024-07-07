@@ -226,6 +226,14 @@ describe("Async Token", () => {
           request,
         );
 
+        expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+          messageName: "INTERNAL_SERVER_ERROR",
+          messageCode: "MOBILE_ASYNC_INTERNAL_SERVER_ERROR",
+        });
+        expect(mockLogger.getLogMessages()[1].data).toMatchObject({
+          errorMessage: "Failed to sign Jwt",
+        });
+
         expect(result.statusCode).toBe(500);
         expect(JSON.parse(result.body).error).toEqual("server_error");
         expect(JSON.parse(result.body).error_description).toEqual(
@@ -358,14 +366,14 @@ class MockFailingClientCredentialsServiceValidation
 }
 
 class MockPassingTokenService implements IMintToken {
-  async mintToken(): Promise<string> {
-    return "mockToken";
+  async mintToken(): Promise<ErrorOrSuccessResponse<string>> {
+    return successResponse("mockToken");
   }
 }
 
 class MockFailingTokenService implements IMintToken {
-  async mintToken(): Promise<string> {
-    throw new Error("Failed to sign Jwt");
+  async mintToken(): Promise<ErrorOrSuccessResponse<string>> {
+    return errorResponse("Failed to sign Jwt");
   }
 }
 
