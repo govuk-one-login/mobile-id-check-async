@@ -63,6 +63,10 @@ export async function lambdaHandlerConstructor(
   const ssmService = dependencies.ssmService();
   const ssmServiceResponse = await ssmService.getClientCredentials();
   if (ssmServiceResponse.isError) {
+    logger.log("INTERNAL_SERVER_ERROR", {
+      errorMessage: ssmServiceResponse.value,
+    });
+    console.log("LINE 68 ->>>>>>>>>>>>>>>");
     return serverErrorResponse;
   }
 

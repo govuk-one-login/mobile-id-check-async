@@ -139,6 +139,14 @@ describe("Async Token", () => {
           request,
         );
 
+        expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+          messageName: "INTERNAL_SERVER_ERROR",
+          messageCode: "MOBILE_ASYNC_INTERNAL_SERVER_ERROR",
+        });
+        expect(mockLogger.getLogMessages()[1].data).toMatchObject({
+          errorMessage: "Error from SSM Service",
+        });
+
         expect(JSON.parse(result.body).error).toEqual("server_error");
         expect(JSON.parse(result.body).error_description).toEqual(
           "Server Error",
@@ -288,7 +296,7 @@ class MockFailingSsmService implements IGetClientCredentials {
   getClientCredentials = async (): Promise<
     ErrorOrSuccess<IClientCredentials[]>
   > => {
-    return errorResponse("Mock Failing SSM log");
+    return errorResponse("Error from SSM Service");
   };
 }
 
