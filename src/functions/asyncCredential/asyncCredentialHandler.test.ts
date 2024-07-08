@@ -275,7 +275,7 @@ describe("Async Credential", () => {
     });
 
     describe("iss claim validation", () => {
-      describe("Given issuer (iss) is not present", () => {
+      describe("Given issuer (iss) is missing", () => {
         it("Returns a log", async () => {
           const event = buildRequest({
             headers: { Authorization: `Bearer ${mockJwtNoIss}` },
