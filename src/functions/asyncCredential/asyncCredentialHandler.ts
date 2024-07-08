@@ -79,7 +79,7 @@ export async function lambdaHandler(
 
   if (!jwtPayload.iss) {
     console.log("NO ISS");
-    return unauthorized401Response;
+    return badRequestResponseMissingIss;
   }
 
   if (jwtPayload.iss !== issuer) {
@@ -192,6 +192,15 @@ const badRequestResponseInvalidNbf: APIGatewayProxyResult = {
   body: JSON.stringify({
     error: "bad_request",
     error_description: "nbf claim is in the future",
+  }),
+};
+
+const badRequestResponseMissingIss: APIGatewayProxyResult = {
+  headers: { "Content-Type": "application/json" },
+  statusCode: 400,
+  body: JSON.stringify({
+    error: "bad_request",
+    error_description: "Missing iss claim",
   }),
 };
 
