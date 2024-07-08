@@ -99,7 +99,7 @@ export async function lambdaHandler(
 
   if (!jwtPayload.client_id) {
     console.log("NO CLIENT_ID");
-    return unauthorized401Response;
+    return badRequestResponseMissingClientId;
   }
 
   if (!jwtPayload.aud) {
@@ -228,6 +228,15 @@ const badRequestResponseInvalidScope: APIGatewayProxyResult = {
   body: JSON.stringify({
     error: "bad_request",
     error_description: "Invalid scope claim",
+  }),
+};
+
+const badRequestResponseMissingClientId: APIGatewayProxyResult = {
+  headers: { "Content-Type": "application/json" },
+  statusCode: 400,
+  body: JSON.stringify({
+    error: "bad_request",
+    error_description: "Missing client_id claim",
   }),
 };
 
