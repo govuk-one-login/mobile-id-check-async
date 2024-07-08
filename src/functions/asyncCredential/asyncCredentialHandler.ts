@@ -84,7 +84,7 @@ export async function lambdaHandler(
 
   if (jwtPayload.iss !== issuer) {
     console.log("ISS INVALID");
-    return unauthorized401Response;
+    return badRequestResponseInvalidIss;
   }
 
   if (!jwtPayload.scope) {
@@ -201,6 +201,15 @@ const badRequestResponseMissingIss: APIGatewayProxyResult = {
   body: JSON.stringify({
     error: "bad_request",
     error_description: "Missing iss claim",
+  }),
+};
+
+const badRequestResponseInvalidIss: APIGatewayProxyResult = {
+  headers: { "Content-Type": "application/json" },
+  statusCode: 400,
+  body: JSON.stringify({
+    error: "bad_request",
+    error_description: "iss claim does not match registered issuer",
   }),
 };
 

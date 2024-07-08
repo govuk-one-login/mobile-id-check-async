@@ -299,7 +299,7 @@ describe("Async Credential", () => {
         });
       });
 
-      describe("Given issuer (iss) is not valid", () => {
+      describe("Given issuer (iss) is invalid", () => {
         it("Returns a log", async () => {
           const event = buildRequest({
             headers: { Authorization: `Bearer ${mockJwtIssNotValid}` },
@@ -314,8 +314,11 @@ describe("Async Credential", () => {
 
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
-            statusCode: 401,
-            body: "Unauthorized",
+            statusCode: 400,
+            body: JSON.stringify({
+              error: "bad_request",
+              error_description: "iss claim does not match registered issuer",
+            }),
           });
         });
       });
@@ -476,7 +479,7 @@ describe("Async Credential", () => {
     });
   });
 
-  describe("JWT Payload validatiobn - using Client Credentials", () => {
+  describe("JWT Payload validation - using Client Credentials", () => {
     describe("aud claim does not match registered issue for given client", () => {
       it("Returns a 400 Bad request response", async () => {
         const event = buildRequest({
