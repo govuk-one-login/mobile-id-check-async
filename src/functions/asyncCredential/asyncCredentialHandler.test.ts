@@ -189,7 +189,7 @@ describe("Async Credential", () => {
             statusCode: 400,
             body: JSON.stringify({
               error: "bad_request",
-              error_description: "Missing exp claim in jwt",
+              error_description: "Missing exp claim",
             }),
           });
         });
@@ -213,7 +213,7 @@ describe("Async Credential", () => {
             statusCode: 400,
             body: JSON.stringify({
               error: "bad_request",
-              error_description: "Invalid exp claim in jwt",
+              error_description: "exp claim is in the past",
             }),
           });
         });
