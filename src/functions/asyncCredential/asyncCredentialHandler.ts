@@ -89,7 +89,7 @@ export async function lambdaHandler(
 
   if (!jwtPayload.scope) {
     console.log("NO SCOPE");
-    return unauthorized401Response;
+    return badRequestResponseMissingScope;
   }
 
   if (jwtPayload.scope !== "dcmaw.session.async_create") {
@@ -210,6 +210,15 @@ const badRequestResponseInvalidIss: APIGatewayProxyResult = {
   body: JSON.stringify({
     error: "bad_request",
     error_description: "iss claim does not match registered issuer",
+  }),
+};
+
+const badRequestResponseMissingScope: APIGatewayProxyResult = {
+  headers: { "Content-Type": "application/json" },
+  statusCode: 400,
+  body: JSON.stringify({
+    error: "bad_request",
+    error_description: "Missing scope claim",
   }),
 };
 
