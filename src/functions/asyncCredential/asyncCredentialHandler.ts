@@ -69,7 +69,7 @@ export async function lambdaHandler(
 
   if (jwtPayload.iat >= Math.floor(Date.now() / 1000)) {
     console.log("DATE IN PAST");
-    return unauthorized401Response;
+    return badRequestResponseInvalidIat;
   }
 
   if (jwtPayload.nbf >= Math.floor(Date.now() / 1000)) {
@@ -174,6 +174,15 @@ const badRequestResponseInvalidExp: APIGatewayProxyResult = {
   body: JSON.stringify({
     error: "bad_request",
     error_description: "Invalid exp claim in jwt",
+  }),
+};
+
+const badRequestResponseInvalidIat: APIGatewayProxyResult = {
+  headers: { "Content-Type": "application/json" },
+  statusCode: 400,
+  body: JSON.stringify({
+    error: "bad_request",
+    error_description: "iat claim is in the future",
   }),
 };
 
