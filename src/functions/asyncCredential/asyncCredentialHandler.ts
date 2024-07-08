@@ -94,7 +94,7 @@ export async function lambdaHandler(
 
   if (jwtPayload.scope !== "dcmaw.session.async_create") {
     console.log("SCOPE INVALID");
-    return unauthorized401Response;
+    return badRequestResponseInvalidScope;
   }
 
   if (!jwtPayload.client_id) {
@@ -219,6 +219,15 @@ const badRequestResponseMissingScope: APIGatewayProxyResult = {
   body: JSON.stringify({
     error: "bad_request",
     error_description: "Missing scope claim",
+  }),
+};
+
+const badRequestResponseInvalidScope: APIGatewayProxyResult = {
+  headers: { "Content-Type": "application/json" },
+  statusCode: 400,
+  body: JSON.stringify({
+    error: "bad_request",
+    error_description: "Invalid scope claim",
   }),
 };
 
