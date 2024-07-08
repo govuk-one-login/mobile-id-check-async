@@ -74,7 +74,7 @@ export async function lambdaHandler(
 
   if (jwtPayload.nbf >= Math.floor(Date.now() / 1000)) {
     console.log("DATE IN PAST");
-    return unauthorized401Response;
+    return badRequestResponseInvalidNbf;
   }
 
   if (!jwtPayload.iss) {
@@ -183,6 +183,15 @@ const badRequestResponseInvalidIat: APIGatewayProxyResult = {
   body: JSON.stringify({
     error: "bad_request",
     error_description: "iat claim is in the future",
+  }),
+};
+
+const badRequestResponseInvalidNbf: APIGatewayProxyResult = {
+  headers: { "Content-Type": "application/json" },
+  statusCode: 400,
+  body: JSON.stringify({
+    error: "bad_request",
+    error_description: "nbf claim is in the future",
   }),
 };
 
