@@ -104,7 +104,7 @@ export async function lambdaHandler(
 
   if (!jwtPayload.aud) {
     console.log("NO AUD");
-    return unauthorized401Response;
+    return badRequestResponseMissingAud;
   }
 
   const result = await tokenService.verifyTokenSignature(keyId, encodedJwt);
@@ -237,6 +237,15 @@ const badRequestResponseMissingClientId: APIGatewayProxyResult = {
   body: JSON.stringify({
     error: "bad_request",
     error_description: "Missing client_id claim",
+  }),
+};
+
+const badRequestResponseMissingAud: APIGatewayProxyResult = {
+  headers: { "Content-Type": "application/json" },
+  statusCode: 400,
+  body: JSON.stringify({
+    error: "bad_request",
+    error_description: "Missing aud claim",
   }),
 };
 
