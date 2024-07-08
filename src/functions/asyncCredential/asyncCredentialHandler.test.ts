@@ -98,7 +98,7 @@ describe("Async Credential", () => {
   });
 
   describe("Access token validation", () => {
-    describe("Given access token payload is not present", () => {
+    describe("Given access token payload is missing", () => {
       it("Returns 401 Unauthorized", async () => {
         const event = buildRequest();
 
@@ -171,7 +171,7 @@ describe("Async Credential", () => {
 
   describe("JWT payload validation", () => {
     describe("exp claim validation", () => {
-      describe("Given expiry date is not present", () => {
+      describe("Given expiry date is missing", () => {
         it("Returns a log", async () => {
           const event = buildRequest({
             headers: { Authorization: `Bearer ${mockJwtNoExp}` },
@@ -325,7 +325,7 @@ describe("Async Credential", () => {
     });
 
     describe("scope claim validation", () => {
-      describe("Given scope is not present", () => {
+      describe("Given scope is missing", () => {
         it("Returns a log", async () => {
           const event = buildRequest({
             headers: { Authorization: `Bearer ${mockJwtNoScope}` },
@@ -369,7 +369,7 @@ describe("Async Credential", () => {
     });
 
     describe("client_id claim validation", () => {
-      describe("Given client_id is not present", () => {
+      describe("Given client_id is missing", () => {
         it("Returns a log", async () => {
           const event = buildRequest({
             headers: { Authorization: `Bearer ${mockJwtNoClientId}` },
@@ -392,7 +392,7 @@ describe("Async Credential", () => {
     });
 
     describe("aud claim validation", () => {
-      describe("Given aud (audience) is not present", () => {
+      describe("Given aud (audience) is missing", () => {
         it("Returns a log", async () => {
           const event = buildRequest({
             headers: { Authorization: `Bearer ${mockJwtNoAud}` },
