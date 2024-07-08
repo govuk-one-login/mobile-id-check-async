@@ -64,7 +64,7 @@ export async function lambdaHandler(
 
   if (jwtPayload.exp <= Math.floor(Date.now() / 1000)) {
     console.log("DATE IN PAST");
-    return unauthorized401Response;
+    return badRequestResponseInvalidExp;
   }
 
   if (jwtPayload.iat >= Math.floor(Date.now() / 1000)) {
@@ -165,6 +165,15 @@ const badRequestResponseMissingExp: APIGatewayProxyResult = {
   body: JSON.stringify({
     error: "bad_request",
     error_description: "Missing exp claim in jwt",
+  }),
+};
+
+const badRequestResponseInvalidExp: APIGatewayProxyResult = {
+  headers: { "Content-Type": "application/json" },
+  statusCode: 400,
+  body: JSON.stringify({
+    error: "bad_request",
+    error_description: "Invalid exp claim in jwt",
   }),
 };
 
