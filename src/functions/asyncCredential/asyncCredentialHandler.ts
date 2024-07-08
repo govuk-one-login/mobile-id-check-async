@@ -59,7 +59,7 @@ export async function lambdaHandler(
 
   if (!jwtPayload.exp) {
     console.log("NO EXP");
-    return unauthorized401Response;
+    return badRequestResponseMissingExp;
   }
 
   if (jwtPayload.exp <= Math.floor(Date.now() / 1000)) {
@@ -156,6 +156,15 @@ const badRequestResponseInvalidCredentials: APIGatewayProxyResult = {
   body: JSON.stringify({
     error: "invalid_client",
     error_description: "Supplied client not recognised",
+  }),
+};
+
+const badRequestResponseMissingExp: APIGatewayProxyResult = {
+  headers: { "Content-Type": "application/json" },
+  statusCode: 400,
+  body: JSON.stringify({
+    error: "bad_request",
+    error_description: "Missing exp claim in jwt",
   }),
 };
 

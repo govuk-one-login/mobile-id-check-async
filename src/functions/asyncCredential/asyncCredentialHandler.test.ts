@@ -186,8 +186,11 @@ describe("Async Credential", () => {
 
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
-            statusCode: 401,
-            body: "Unauthorized",
+            statusCode: 400,
+            body: JSON.stringify({
+              error: "bad_request",
+              error_description: "Missing exp claim in jwt",
+            }),
           });
         });
       });
