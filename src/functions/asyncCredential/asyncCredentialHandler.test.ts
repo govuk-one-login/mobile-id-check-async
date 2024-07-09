@@ -495,6 +495,33 @@ describe("Async Credential", () => {
         });
       });
     });
+
+    describe("Given sub is missing", () => {
+      it("Returns 400 status code with invalid_request_body error", async () => {
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          body: JSON.stringify({
+            state: "mockState",
+          }),
+        });
+
+        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+
+        const result: APIGatewayProxyResult = await lambdaHandler(
+          event,
+          dependencies,
+        );
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request_body",
+            error_description: "Missing sub in request body",
+          }),
+        });
+      });
+    });
   });
 
   describe("JWT signature verification", () => {

@@ -71,7 +71,7 @@ export async function lambdaHandler(
   if (requestBodyValidationResponse.isError) {
     return badRequestResponse({
       error: "invalid_request_body",
-      errorDescription: jwtClaimValidationResponse.value as string,
+      errorDescription: requestBodyValidationResponse.value as string,
     });
   }
 
@@ -194,6 +194,10 @@ const requestBodyValidator = (body: string): ErrorOrSuccess<null> => {
   const parsedBody = JSON.parse(body);
   if (!parsedBody.state) {
     return errorResponse("Missing state in request body");
+  }
+
+  if (!parsedBody.sub) {
+    return errorResponse("Missing sub in request body");
   }
 
   return successResponse(null);
