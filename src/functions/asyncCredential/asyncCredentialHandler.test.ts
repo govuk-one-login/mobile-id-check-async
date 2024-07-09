@@ -550,6 +550,36 @@ describe("Async Credential", () => {
         });
       });
     });
+
+    describe("Given client_id is invalid", () => {
+      it("Returns 400 status code with invalid_request_body error", async () => {
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+            client_id: "mockInvalidClientId",
+          }),
+        });
+
+        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+
+        const result: APIGatewayProxyResult = await lambdaHandler(
+          event,
+          dependencies,
+        );
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request_body",
+            error_description:
+              "client_id in request body does not match client_id in access token",
+          }),
+        });
+      });
+    });
   });
 
   describe("JWT signature verification", () => {
