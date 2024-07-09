@@ -496,26 +496,24 @@ describe("Async Credential", () => {
     });
   });
 
-  describe("Client Credentials Service", () => {
-    describe("Get client credentials by ID", () => {
-      describe("Given credentials are not found", () => {
-        it("Returns 400 Bad Request response", async () => {
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${mockValidJwt}` },
-          });
-          dependencies.clientCredentialsService = () =>
-            new MockFailingClientCredentialsServiceGetClientCredentialsById();
+  describe("Client Credentials Service - get client credentials by ID", () => {
+    describe("Given credentials are not found", () => {
+      it("Returns 400 Bad Request response", async () => {
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${mockValidJwt}` },
+        });
+        dependencies.clientCredentialsService = () =>
+          new MockFailingClientCredentialsServiceGetClientCredentialsById();
 
-          const result = await lambdaHandler(event, dependencies);
+        const result = await lambdaHandler(event, dependencies);
 
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 400,
-            body: JSON.stringify({
-              error: "invalid_client",
-              error_description: "Supplied client not recognised",
-            }),
-          });
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_client",
+            error_description: "Supplied client not recognised",
+          }),
         });
       });
     });
