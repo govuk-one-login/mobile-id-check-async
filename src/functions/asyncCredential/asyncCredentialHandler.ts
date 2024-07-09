@@ -66,7 +66,11 @@ export async function lambdaHandler(
       errorDescription: "Missing request body",
     });
   }
-  const requestBodyValidationResponse = requestBodyValidator(requestBody);
+
+  const requestBodyValidationResponse = requestBodyValidator(
+    requestBody,
+    jwtPayload.client_id,
+  );
 
   if (requestBodyValidationResponse.isError) {
     return badRequestResponse({
@@ -190,7 +194,10 @@ const jwtClaimValidator = (
   return successResponse(null);
 };
 
-const requestBodyValidator = (body: string): ErrorOrSuccess<null> => {
+const requestBodyValidator = (
+  body: string,
+  jwtClientId: string,
+): ErrorOrSuccess<null> => {
   const parsedBody = JSON.parse(body);
   if (!parsedBody.state) {
     return errorResponse("Missing state in request body");
@@ -202,6 +209,12 @@ const requestBodyValidator = (body: string): ErrorOrSuccess<null> => {
 
   if (!parsedBody.client_id) {
     return errorResponse("Missing client_id in request body");
+  }
+
+  if (parsedBody.client_id !== jwtClientId) {
+    return errorResponse(
+      "client_id in request body does not match client_id in access token",
+    );
   }
 
   return successResponse(null);
