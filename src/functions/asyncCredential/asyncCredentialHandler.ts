@@ -25,28 +25,20 @@ export async function lambdaHandler(
     return serverError500Responses;
   }
 
-  const bearerToken = event.headers["Authorization"];
+  const authorizationHeader = event.headers["Authorization"];
 
-  if (bearerToken == null) {
+  if (authorizationHeader == null) {
     return unauthorizedResponse;
   }
 
-  if (!bearerToken.startsWith("Bearer ")) {
-    return unauthorizedResponse;
-  }
-
-  if (bearerToken.split(" ").length !== 2) {
-    return unauthorizedResponse;
-  }
-
-  if (bearerToken.split(" ")[1].length == 0) {
+  if(!isAuthorizationHeaderFormatValid(authorizationHeader)) {
     return unauthorizedResponse;
   }
 
   const tokenService = dependencies.tokenService();
 
   // JWT Claim validation
-  const encodedJwt = bearerToken.split(" ")[1];
+  const encodedJwt = authorizationHeader.split(" ")[1];
   // Replace with const [header, payload, signature] = encodedJwt.split(".") when needed
   const payload = encodedJwt.split(".")[1];
   const jwtPayload = JSON.parse(
@@ -132,6 +124,21 @@ export async function lambdaHandler(
       message: "Hello World",
     }),
   };
+}
+
+const isAuthorizationHeaderFormatValid = (authorizationHeader: string) => {
+
+  if (!authorizationHeader.startsWith("Bearer ")) {
+    return unauthorizedResponse;
+  }
+
+  if (authorizationHeader.split(" ").length !== 2) {
+    return unauthorizedResponse;
+  }
+
+  if (authorizationHeader.split(" ")[1].length == 0) {
+    return unauthorizedResponse;
+  }
 }
 
 const badRequestResponseInvalidCredentials: APIGatewayProxyResult = {
