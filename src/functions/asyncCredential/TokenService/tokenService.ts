@@ -2,10 +2,6 @@ import format from "ecdsa-sig-formatter";
 import { LogOrValue, log, value } from "../../types/logOrValue";
 import { KMSClient, VerifyCommand } from "@aws-sdk/client-kms";
 
-export interface IValidateTokenPayload {
-  validateTokenPayload: (keyId: string, jwt: string) => LogOrValue<null>;
-}
-
 export interface IVerifyTokenSignature {
   verifyTokenSignature: (
     keyId: string,
