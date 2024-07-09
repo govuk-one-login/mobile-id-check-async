@@ -38,8 +38,7 @@ describe("Async Token", () => {
       logger: () => new Logger(mockLogger, registeredLogs),
       requestService: () => new MockRequestServiceValueResponse(),
       ssmService: () => new MockPassingSsmService(),
-      clientCredentialService: () =>
-        new MockPassingClientCredentialsService(),
+      clientCredentialService: () => new MockPassingClientCredentialsService(),
       tokenService: () => new MockPassingTokenService(),
     };
   });
@@ -325,7 +324,7 @@ class MockFailingSsmService implements IGetClientCredentials {
 }
 
 class MockPassingClientCredentialsService implements IClientCredentialsService {
-  getClientCredentialsById(): ErrorOrSuccessResponse<IClientCredentials> {
+  getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
     return successResponse({
       client_id: "mockClientId",
       issuer: "mockIssuer",
@@ -333,7 +332,7 @@ class MockPassingClientCredentialsService implements IClientCredentialsService {
       hashed_client_secret: "mockHashedClientSecret",
     });
   }
-  validate(): ErrorOrSuccessResponse<null> {
+  validate(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
 }
@@ -341,10 +340,10 @@ class MockPassingClientCredentialsService implements IClientCredentialsService {
 class MockFailingClientCredentialsServiceGetClientCredentialsById
   implements IClientCredentialsService
 {
-  getClientCredentialsById(): ErrorOrSuccessResponse<IClientCredentials> {
+  getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
     return errorResponse("Client credentials not recognised");
   }
-  validate(): ErrorOrSuccessResponse<null> {
+  validate(): ErrorOrSuccess<null> {
     throw Error("This should not be used");
   }
 }
@@ -360,19 +359,19 @@ class MockFailingClientCredentialsServiceValidation
       hashed_client_secret: "mockHashedClientSecret",
     });
   }
-  validate(): ErrorOrSuccessResponse<null> {
+  validate(): ErrorOrSuccess<null> {
     return errorResponse("Client secrets not valid");
   }
 }
 
 class MockPassingTokenService implements IMintToken {
-  async mintToken(): Promise<ErrorOrSuccessResponse<string>> {
+  async mintToken(): Promise<ErrorOrSuccess<string>> {
     return successResponse("mockToken");
   }
 }
 
 class MockFailingTokenService implements IMintToken {
-  async mintToken(): Promise<ErrorOrSuccessResponse<string>> {
+  async mintToken(): Promise<ErrorOrSuccess<string>> {
     return errorResponse("Failed to sign Jwt");
   }
 }

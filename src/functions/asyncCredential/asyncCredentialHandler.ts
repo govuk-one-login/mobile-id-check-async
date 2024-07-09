@@ -81,14 +81,14 @@ export async function lambdaHandler(
 
   const result = await tokenService.verifyTokenSignature(keyId, encodedJwt);
 
-  if (result.isLog) {
+  if (result.isError) {
     return unauthorizedResponseInvalidSignature;
   }
 
   // Fetching stored client credentials
   const ssmService = dependencies.ssmService();
   const ssmServiceResponse = await ssmService.getClientCredentials();
-  if (ssmServiceResponse.isLog) {
+  if (ssmServiceResponse.isError) {
     return serverError500Responses;
   }
 
@@ -97,20 +97,24 @@ export async function lambdaHandler(
 
   // Retrieving credentials from client credential array
   const clientCredentialsService = dependencies.clientCredentialsService();
-  const storedCredentials = clientCredentialsService.getClientCredentialsById(
-    storedCredentialsArray,
-    jwtPayload.client_id,
-  );
+  const clientCredentialResponse =
+    clientCredentialsService.getClientCredentialsById(
+      storedCredentialsArray,
+      jwtPayload.client_id,
+    );
 
-  if (!storedCredentials) {
+  if (clientCredentialResponse.isError) {
     return badRequestResponse({
       error: "invalid_client",
       errorDescription: "Supplied client not recognised",
     });
   }
 
+  const clientCredentials =
+    clientCredentialResponse.value as IClientCredentials;
+
   // Validate aud claim matches the ISSUER in client credential array
-  if (jwtPayload.aud !== storedCredentials.issuer) {
+  if (jwtPayload.aud !== clientCredentials.issuer) {
     return badRequestResponse({
       error: "invalid_client",
       errorDescription: "Invalid aud claim",

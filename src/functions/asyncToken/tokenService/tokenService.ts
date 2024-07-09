@@ -7,7 +7,7 @@ import { IJwtPayload, JwtHeader } from "../../types/jwt";
 import {
   ErrorOrSuccess,
   errorResponse,
-  successResponse
+  successResponse,
 } from "../../types/errorOrValue";
 
 export class TokenService implements IMintToken {
@@ -27,9 +27,7 @@ export class TokenService implements IMintToken {
     this.kidArn = kidArn;
   }
 
-  async mintToken(
-    jwtPayload: IJwtPayload,
-  ): Promise<ErrorOrSuccess<string>> {
+  async mintToken(jwtPayload: IJwtPayload): Promise<ErrorOrSuccess<string>> {
     // Building token
     const jwtHeader: JwtHeader = { alg: "ES256", typ: "JWT" };
     const kid = this.kidArn.split("/").pop();
@@ -80,7 +78,5 @@ export class TokenService implements IMintToken {
 }
 
 export interface IMintToken {
-  mintToken: (
-    jwtPayload: IJwtPayload,
-  ) => Promise<ErrorOrSuccess<string>>;
+  mintToken: (jwtPayload: IJwtPayload) => Promise<ErrorOrSuccess<string>>;
 }

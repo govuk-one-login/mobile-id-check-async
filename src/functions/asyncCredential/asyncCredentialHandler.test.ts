@@ -1,6 +1,5 @@
 import { APIGatewayProxyResult } from "aws-lambda";
 import { buildRequest } from "../testUtils/mockRequest";
-import { LogOrValue, log, value } from "../types/logOrValue";
 import { IVerifyTokenSignature } from "./TokenService/tokenService";
 import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
 import {
@@ -8,6 +7,11 @@ import {
   IClientCredentialsService,
 } from "../services/clientCredentialsService/clientCredentialsService";
 import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
+import {
+  ErrorOrSuccess,
+  errorResponse,
+  successResponse,
+} from "../types/errorOrValue";
 
 const mockJwtNoExp =
   "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.0C_S0NEicI6k1yaTAV0l85Z0SlW3HI2YIqJb_unXZ1MttAvjR9wAOhsl_0X20i1NYN0ZhnaoHnGLpApUSz2kwQ";
@@ -764,39 +768,39 @@ describe("Async Credential", () => {
 });
 
 class MockTokenSeviceInvalidSignature implements IVerifyTokenSignature {
-  verifyTokenSignature(): Promise<LogOrValue<null>> {
-    return Promise.resolve(log(""));
+  verifyTokenSignature(): Promise<ErrorOrSuccess<null>> {
+    return Promise.resolve(errorResponse("Invalid signature"));
   }
 }
 
 class MockTokenSeviceValidSignature implements IVerifyTokenSignature {
-  verifyTokenSignature(): Promise<LogOrValue<null>> {
-    return Promise.resolve(value(null));
+  verifyTokenSignature(): Promise<ErrorOrSuccess<null>> {
+    return Promise.resolve(successResponse(null));
   }
 }
 
 class MockFailingClientCredentialsServiceGetClientCredentialsById
   implements IClientCredentialsService
 {
-  getClientCredentialsById() {
-    return null;
+  getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
+    return errorResponse("No credentials found");
   }
-  validate() {
-    return false;
+  validate(): ErrorOrSuccess<null> {
+    return errorResponse("invalid credentials");
   }
 }
 
 class MockPassingClientCredentialsService implements IClientCredentialsService {
   validate() {
-    return true;
+    return successResponse(null);
   }
   getClientCredentialsById() {
-    return {
+    return successResponse({
       client_id: "mockClientId",
       issuer: "mockIssuer",
       salt: "mockSalt",
       hashed_client_secret: "mockHashedClientSecret",
-    };
+    });
   }
 }
 
@@ -810,15 +814,15 @@ class MockPassingSsmService implements IGetClientCredentials {
         hashed_client_secret: "mockHashedClientSecret",
       },
     ],
-  ): Promise<LogOrValue<IClientCredentials[]>> => {
-    return Promise.resolve(value(clientCredentials));
+  ): Promise<ErrorOrSuccess<IClientCredentials[]>> => {
+    return Promise.resolve(successResponse(clientCredentials));
   };
 }
 
 class MockFailingSsmService implements IGetClientCredentials {
   getClientCredentials = async (): Promise<
-    LogOrValue<IClientCredentials[]>
+    ErrorOrSuccess<IClientCredentials[]>
   > => {
-    return log("Mock Failing SSM log");
+    return errorResponse("Mock Failing SSM log");
   };
 }

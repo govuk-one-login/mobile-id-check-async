@@ -5,7 +5,7 @@ import {
   SSMClientConfig,
 } from "@aws-sdk/client-ssm";
 import {
-  ErrorOrSuccessResponse,
+  ErrorOrSuccess,
   errorResponse,
   successResponse,
 } from "../../types/errorOrValue";
@@ -32,7 +32,7 @@ export class SsmService implements IGetClientCredentials {
   }
 
   getClientCredentials = async (): Promise<
-    ErrorOrSuccessResponse<IClientCredentials[]>
+    ErrorOrSuccess<IClientCredentials[]>
   > => {
     if (cache && cache.expiry > Date.now()) {
       return successResponse(cache.data);
@@ -112,9 +112,7 @@ export class SsmService implements IGetClientCredentials {
 }
 
 export interface IGetClientCredentials {
-  getClientCredentials: () => Promise<
-    ErrorOrSuccessResponse<IClientCredentials[]>
-  >;
+  getClientCredentials: () => Promise<ErrorOrSuccess<IClientCredentials[]>>;
 }
 
 interface CacheEntry {
