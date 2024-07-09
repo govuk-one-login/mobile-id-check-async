@@ -31,7 +31,7 @@ export async function lambdaHandler(
     return unauthorizedResponse;
   }
 
-  if(!isAuthorizationHeaderFormatValid(authorizationHeader)) {
+  if (!isAuthorizationHeaderFormatValid(authorizationHeader)) {
     return unauthorizedResponse;
   }
 
@@ -127,7 +127,6 @@ export async function lambdaHandler(
 }
 
 const isAuthorizationHeaderFormatValid = (authorizationHeader: string) => {
-
   if (!authorizationHeader.startsWith("Bearer ")) {
     return unauthorizedResponse;
   }
@@ -139,7 +138,7 @@ const isAuthorizationHeaderFormatValid = (authorizationHeader: string) => {
   if (authorizationHeader.split(" ")[1].length == 0) {
     return unauthorizedResponse;
   }
-}
+};
 
 const badRequestResponseInvalidCredentials: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
