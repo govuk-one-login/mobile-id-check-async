@@ -1,7 +1,5 @@
 ## Work cannot be marked as done until the following is done
 
-[ ] Add logger for jwt clais
-[x] Check claim validation to ensure it correctly returns 400/401
 [ ] Create a single shared token service
 [ ] Type naming/location
 [ ] Centralise mocks
