@@ -1,13 +1,13 @@
 import { LogAttributes } from "@aws-lambda-powertools/logger/lib/cjs/types/Log";
 import { ILoggerAdapter, Logger } from "./logger";
-import { LogMessage, RegisteredLogMessages, Message } from "./types";
+import { LogMessage, RegisteredLogMessages } from "./types";
 import { Context } from "aws-lambda";
 
 describe("Logger", () => {
   describe("Given there is a message to log", () => {
     it("Writes a log with registered log data ", () => {
       const loggingAdapter = new MockLoggingAdapter();
-      const mockLogger = new Logger<Message>(
+      const mockLogger = new Logger<MockMessage>(
         loggingAdapter,
         mockRegisteredLogs,
       );
@@ -21,7 +21,7 @@ describe("Logger", () => {
     describe("Given lambda context is passed to the logger", () => {
       it("Writes a log including the lambda context", () => {
         const loggingAdapter = new MockLoggingAdapter();
-        const mockLogger = new Logger<Message>(
+        const mockLogger = new Logger<MockMessage>(
           loggingAdapter,
           mockRegisteredLogs,
         );
@@ -39,7 +39,7 @@ describe("Logger", () => {
     describe("Given authSessionId is passed to the logger", () => {
       it("Writes a log including the session data", () => {
         const loggingAdapter = new MockLoggingAdapter();
-        const mockLogger = new Logger<Message>(
+        const mockLogger = new Logger<MockMessage>(
           loggingAdapter,
           mockRegisteredLogs,
         );
@@ -56,7 +56,7 @@ describe("Logger", () => {
     describe("Given custom data is passed into the log message", () => {
       it("Writes a log including custom data", () => {
         const loggingAdapter = new MockLoggingAdapter();
-        const mockLogger = new Logger<Message>(
+        const mockLogger = new Logger<MockMessage>(
           loggingAdapter,
           mockRegisteredLogs,
         );
@@ -97,7 +97,9 @@ export class MockLoggingAdapter<T extends string> implements ILoggerAdapter<T> {
   };
 }
 
-export const mockRegisteredLogs: RegisteredLogMessages<Message> = {
+type MockMessage = "MOCK_MESSAGE_NAME";
+
+const mockRegisteredLogs: RegisteredLogMessages<MockMessage> = {
   MOCK_MESSAGE_NAME: {
     messageCode: "MOBILE_ASYNC_MOCK_MESSAGE_NAME",
   },

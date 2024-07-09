@@ -3,7 +3,7 @@ import { LogMessage, RegisteredLogMessages } from "./types";
 import { LogAttributes } from "@aws-lambda-powertools/logger/lib/cjs/types/Log";
 
 export interface ILogger<T extends string> {
-  log(messageName: T, data: LogAttributes): void;
+  log(message: T, data: LogAttributes): void;
   addContext(lambdaContext: Context): void;
   appendKeys: (keys: { authSessionId: string }) => void;
 }
@@ -19,11 +19,11 @@ export class Logger<T extends string> implements ILogger<T> {
     private logger: ILoggerAdapter<T>,
     private registeredLogs: RegisteredLogMessages<T>,
   ) {}
-  log = (messageName: T, data: LogAttributes = {}): void => {
+  log = (message: T, data: LogAttributes = {}): void => {
     this.logger.info(
       {
-        message: messageName,
-        messageCode: this.registeredLogs[messageName].messageCode,
+        message,
+        messageCode: this.registeredLogs[message].messageCode,
       },
       data,
     );

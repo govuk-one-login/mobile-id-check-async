@@ -10,5 +10,3 @@ export type LogMessage<T extends string> = {
 type RegisteredMessageData<T extends string> = {
   messageCode: `MOBILE_ASYNC_${T}`;
 };
-
-export type Message = "MOCK_MESSAGE_NAME";
