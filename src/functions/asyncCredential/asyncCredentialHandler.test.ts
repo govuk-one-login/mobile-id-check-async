@@ -446,6 +446,57 @@ describe("Async Credential", () => {
     });
   });
 
+  describe("Request body validation", () => {
+    describe("Given body is missing", () => {
+      it("Returns 400 status code with invalid_request_body error", async () => {
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${mockValidJwt}` },
+        });
+
+        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+
+        const result: APIGatewayProxyResult = await lambdaHandler(
+          event,
+          dependencies,
+        );
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request_body",
+            error_description: "Missing request body",
+          }),
+        });
+      });
+    });
+
+    describe("Given state is missing", () => {
+      it("Returns 400 status code with invalid_request_body error", async () => {
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          body: JSON.stringify({}),
+        });
+
+        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+
+        const result: APIGatewayProxyResult = await lambdaHandler(
+          event,
+          dependencies,
+        );
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request_body",
+            error_description: "Missing state in request body",
+          }),
+        });
+      });
+    });
+  });
+
   describe("JWT signature verification", () => {
     describe("Given that the JWT signature verification fails", () => {
       it("Returns 401 Unauthorized", async () => {

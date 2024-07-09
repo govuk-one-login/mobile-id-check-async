@@ -58,6 +58,23 @@ export async function lambdaHandler(
     });
   }
 
+  const requestBody = event.body;
+
+  if (!requestBody) {
+    return badRequestResponse({
+      error: "invalid_request_body",
+      errorDescription: "Missing request body",
+    });
+  }
+  const requestBodyValidationResponse = requestBodyValidator(requestBody);
+
+  if (requestBodyValidationResponse.isError) {
+    return badRequestResponse({
+      error: "invalid_request_body",
+      errorDescription: jwtClaimValidationResponse.value as string,
+    });
+  }
+
   const result = await tokenService.verifyTokenSignature(keyId, encodedJwt);
 
   if (result.isLog) {
@@ -168,6 +185,15 @@ const jwtClaimValidator = (
 
   if (!jwtPayload.aud) {
     return errorResponse("Missing aud claim");
+  }
+
+  return successResponse(null);
+};
+
+const requestBodyValidator = (body: string): ErrorOrSuccess<null> => {
+  const parsedBody = JSON.parse(body);
+  if (!parsedBody.state) {
+    return errorResponse("Missing state in request body");
   }
 
   return successResponse(null);
