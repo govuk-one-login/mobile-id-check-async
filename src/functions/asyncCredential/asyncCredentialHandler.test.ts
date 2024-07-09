@@ -43,11 +43,8 @@ const mockJwtNoAud =
 const mockJwtInvalidAud =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUiLCJjbGllbnRfaWQiOiJtb2NrQ2xpZW50SWQiLCJhdWQiOiJpbnZhbGlkSXNzdWVyIiwic3RhdGUiOiJtb2NrU3RhdGUifQ.bMxAW6t5TzESfGqTAzIJwRn38-mLwYg_pVJbupscrU8";
 
-const mockJwtMissingState =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUiLCJjbGllbnRfaWQiOiJtb2NrQ2xpZW50SWQiLCJhdWQiOiJtb2NrSXNzdWVyIn0.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8";
-
 const mockValidJwt =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUiLCJjbGllbnRfaWQiOiJtb2NrQ2xpZW50SWQiLCJhdWQiOiJtb2NrSXNzdWVyIiwic3RhdGUiOiJtb2NrU3RhdGUifQ.GTL43WFrvk2bGiw7Sf8kDTkT_L37JDzUQG84t7uP6wo";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUiLCJjbGllbnRfaWQiOiJtb2NrQ2xpZW50SWQiLCJhdWQiOiJtb2NrSXNzdWVyIn0.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -421,32 +418,6 @@ describe("Async Credential", () => {
             body: JSON.stringify({
               error: "invalid_token",
               error_description: "Missing aud claim",
-            }),
-          });
-        });
-      });
-    });
-
-    describe("state claim validation", () => {
-      describe("Given state is missing", () => {
-        it("Returns a log", async () => {
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${mockJwtMissingState}` },
-          });
-
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
-
-          const result: APIGatewayProxyResult = await lambdaHandler(
-            event,
-            dependencies,
-          );
-
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 400,
-            body: JSON.stringify({
-              error: "invalid_token",
-              error_description: "Missing state claim",
             }),
           });
         });

@@ -107,11 +107,6 @@ export async function lambdaHandler(
     return badRequestResponseMissingAud;
   }
 
-  if (!jwtPayload.state) {
-    console.log("NO AUD");
-    return badRequestResponseMissingState;
-  }
-
   const result = await tokenService.verifyTokenSignature(keyId, encodedJwt);
 
   if (result.isLog) {
