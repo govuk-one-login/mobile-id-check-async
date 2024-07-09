@@ -1,5 +1,4 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { TokenService } from "./TokenService/tokenService.test";
 import { validOrThrow } from "../config";
 import {
   ClientCredentialsService,
@@ -9,6 +8,7 @@ import {
   IGetClientCredentials,
   SsmService,
 } from "../asyncToken/ssmService/ssmService";
+import { TokenService } from "./TokenService/tokenService";
 
 export async function lambdaHandler(
   event: APIGatewayProxyEvent,
@@ -294,6 +294,9 @@ export interface Dependencies {
   env: NodeJS.ProcessEnv;
 }
 
-const dependencies = {
+const dependencies: Dependencies = {
   tokenService: () => new TokenService(),
+  clientCredentialsService: () => new ClientCredentialsService(),
+  ssmService: () => new SsmService(),
+  env: process.env,
 };

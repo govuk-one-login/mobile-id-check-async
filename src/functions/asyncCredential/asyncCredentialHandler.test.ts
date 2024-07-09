@@ -1,10 +1,7 @@
 import { APIGatewayProxyResult } from "aws-lambda";
 import { buildRequest } from "../testUtils/mockRequest";
 import { LogOrValue, log, value } from "../types/logOrValue";
-import {
-  IVerifyTokenSignature,
-  TokenService,
-} from "./TokenService/tokenService.test";
+import { IVerifyTokenSignature } from "./TokenService/tokenService";
 import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
 import {
   IClientCredentials,
