@@ -300,7 +300,7 @@ describe("Async Credential", () => {
         });
       });
 
-      describe("Given issuer (iss) is invalid", () => {
+      describe("Given issuer (iss) is does not match environment variable", () => {
         it("Returns a log", async () => {
           const event = buildRequest({
             headers: { Authorization: `Bearer ${mockJwtIssNotValid}` },
