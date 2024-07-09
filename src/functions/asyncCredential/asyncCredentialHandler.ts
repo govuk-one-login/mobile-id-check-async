@@ -217,6 +217,10 @@ const requestBodyValidator = (
     );
   }
 
+  if (!parsedBody["govuk_signin_journey_id"]) {
+    return errorResponse("Missing govuk_signin_journey_id in request body");
+  }
+
   return successResponse(null);
 };
 
