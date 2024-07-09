@@ -168,7 +168,7 @@ const badRequestResponseMissingExp: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 400,
   body: JSON.stringify({
-    error: "bad_request",
+    error: "invalid_token",
     error_description: "Missing exp claim",
   }),
 };
@@ -177,7 +177,7 @@ const badRequestResponseInvalidExp: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 400,
   body: JSON.stringify({
-    error: "bad_request",
+    error: "invalid_token",
     error_description: "exp claim is in the past",
   }),
 };
@@ -186,7 +186,7 @@ const badRequestResponseInvalidIat: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 400,
   body: JSON.stringify({
-    error: "bad_request",
+    error: "invalid_token",
     error_description: "iat claim is in the future",
   }),
 };
@@ -195,7 +195,7 @@ const badRequestResponseInvalidNbf: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 400,
   body: JSON.stringify({
-    error: "bad_request",
+    error: "invalid_token",
     error_description: "nbf claim is in the future",
   }),
 };
@@ -204,7 +204,7 @@ const badRequestResponseMissingIss: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 400,
   body: JSON.stringify({
-    error: "bad_request",
+    error: "invalid_token",
     error_description: "Missing iss claim",
   }),
 };
@@ -213,7 +213,7 @@ const badRequestResponseInvalidIss: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 400,
   body: JSON.stringify({
-    error: "bad_request",
+    error: "invalid_token",
     error_description: "iss claim does not match registered issuer",
   }),
 };
@@ -222,7 +222,7 @@ const badRequestResponseMissingScope: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 400,
   body: JSON.stringify({
-    error: "bad_request",
+    error: "invalid_token",
     error_description: "Missing scope claim",
   }),
 };
@@ -231,7 +231,7 @@ const badRequestResponseInvalidScope: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 400,
   body: JSON.stringify({
-    error: "bad_request",
+    error: "invalid_token",
     error_description: "Invalid scope claim",
   }),
 };
@@ -240,7 +240,7 @@ const badRequestResponseMissingClientId: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 400,
   body: JSON.stringify({
-    error: "bad_request",
+    error: "invalid_token",
     error_description: "Missing client_id claim",
   }),
 };
@@ -249,7 +249,7 @@ const badRequestResponseMissingAud: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 400,
   body: JSON.stringify({
-    error: "bad_request",
+    error: "invalid_token",
     error_description: "Missing aud claim",
   }),
 };
@@ -258,7 +258,7 @@ const badRequestResponseMissingState: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 400,
   body: JSON.stringify({
-    error: "bad_request",
+    error: "invalid_token",
     error_description: "Missing state claim",
   }),
 };

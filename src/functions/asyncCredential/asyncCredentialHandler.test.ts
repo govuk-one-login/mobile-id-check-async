@@ -189,7 +189,7 @@ describe("Async Credential", () => {
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
             body: JSON.stringify({
-              error: "bad_request",
+              error: "invalid_token",
               error_description: "Missing exp claim",
             }),
           });
@@ -213,7 +213,7 @@ describe("Async Credential", () => {
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
             body: JSON.stringify({
-              error: "bad_request",
+              error: "invalid_token",
               error_description: "exp claim is in the past",
             }),
           });
@@ -240,7 +240,7 @@ describe("Async Credential", () => {
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
             body: JSON.stringify({
-              error: "bad_request",
+              error: "invalid_token",
               error_description: "iat claim is in the future",
             }),
           });
@@ -267,7 +267,7 @@ describe("Async Credential", () => {
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
             body: JSON.stringify({
-              error: "bad_request",
+              error: "invalid_token",
               error_description: "nbf claim is in the future",
             }),
           });
@@ -293,7 +293,7 @@ describe("Async Credential", () => {
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
             body: JSON.stringify({
-              error: "bad_request",
+              error: "invalid_token",
               error_description: "Missing iss claim",
             }),
           });
@@ -317,7 +317,7 @@ describe("Async Credential", () => {
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
             body: JSON.stringify({
-              error: "bad_request",
+              error: "invalid_token",
               error_description: "iss claim does not match registered issuer",
             }),
           });
@@ -343,7 +343,7 @@ describe("Async Credential", () => {
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
             body: JSON.stringify({
-              error: "bad_request",
+              error: "invalid_token",
               error_description: "Missing scope claim",
             }),
           });
@@ -367,7 +367,7 @@ describe("Async Credential", () => {
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
             body: JSON.stringify({
-              error: "bad_request",
+              error: "invalid_token",
               error_description: "Invalid scope claim",
             }),
           });
@@ -393,7 +393,7 @@ describe("Async Credential", () => {
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
             body: JSON.stringify({
-              error: "bad_request",
+              error: "invalid_token",
               error_description: "Missing client_id claim",
             }),
           });
@@ -419,7 +419,7 @@ describe("Async Credential", () => {
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
             body: JSON.stringify({
-              error: "bad_request",
+              error: "invalid_token",
               error_description: "Missing aud claim",
             }),
           });
@@ -445,7 +445,7 @@ describe("Async Credential", () => {
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
             body: JSON.stringify({
-              error: "bad_request",
+              error: "invalid_token",
               error_description: "Missing state claim",
             }),
           });
