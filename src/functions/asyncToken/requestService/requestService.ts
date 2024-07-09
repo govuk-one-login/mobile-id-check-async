@@ -25,16 +25,18 @@ export class RequestService implements IProcessRequest {
       return errorResponse("Invalid authorization header");
     }
 
-    const decodeAuthorizationHeader =
-      this.decodeAuthorizationHeader(authorizationHeader);
-    if (decodeAuthorizationHeader.isError) {
-      return errorResponse("Client secret incorrectly formatted"); //TODO: there is sort of two logs for this, see private function
+    const base64EncodedCredential = authorizationHeader.split(" ")[1];
+    const base64DecodedCredential = Buffer.from(
+      base64EncodedCredential,
+      "base64",
+    ).toString("utf-8");
+    const [clientId, clientSecret] = base64DecodedCredential.split(":");
+
+    if (!clientId || !clientSecret) {
+      return errorResponse("Client secret incorrectly formatted");
     }
 
-    const decodedClientCredentials =
-      decodeAuthorizationHeader.value as IDecodedClientCredentials;
-
-    return successResponse(decodedClientCredentials);
+    return successResponse({ clientId, clientSecret });
   };
 
   private isRequestBodyValid = (body: string | null): boolean => {
@@ -48,25 +50,6 @@ export class RequestService implements IProcessRequest {
     }
 
     return true;
-  };
-
-  private decodeAuthorizationHeader = (
-    authorizationHeader: string,
-  ): ErrorOrSuccess<IDecodedClientCredentials> => {
-    const base64EncodedCredential = authorizationHeader.split(" ")[1];
-    const base64DecodedCredential = Buffer.from(
-      base64EncodedCredential,
-      "base64",
-    ).toString("utf-8");
-    const [clientId, clientSecret] = base64DecodedCredential.split(":");
-
-    if (!clientId || !clientSecret) {
-      return errorResponse(
-        "BASE64_ENCODED_CLIENT_ID_AND_SECRET incorrectly formatted Authorization header",
-      );
-    }
-
-    return successResponse({ clientId, clientSecret });
   };
 }
 
