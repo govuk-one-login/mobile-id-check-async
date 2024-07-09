@@ -32,19 +32,19 @@ export async function lambdaHandler(
   const bearerToken = event.headers["Authorization"];
 
   if (bearerToken == null) {
-    return unauthorized401Response;
+    return unauthorizedResponse;
   }
 
   if (!bearerToken.startsWith("Bearer ")) {
-    return unauthorized401Response;
+    return unauthorizedResponse;
   }
 
   if (bearerToken.split(" ").length !== 2) {
-    return unauthorized401Response;
+    return unauthorizedResponse;
   }
 
   if (bearerToken.split(" ")[1].length == 0) {
-    return unauthorized401Response;
+    return unauthorizedResponse;
   }
 
   const tokenService = dependencies.tokenService();
@@ -111,7 +111,7 @@ export async function lambdaHandler(
 
   if (result.isLog) {
     console.log("INVALID SIGNATURE", encodedJwt);
-    return unauthorized401Response;
+    return unauthorizedResponseInvalidSignature;
   }
 
   // Fetching stored client credentials
@@ -249,15 +249,6 @@ const badRequestResponseMissingAud: APIGatewayProxyResult = {
   }),
 };
 
-const badRequestResponseMissingState: APIGatewayProxyResult = {
-  headers: { "Content-Type": "application/json" },
-  statusCode: 400,
-  body: JSON.stringify({
-    error: "invalid_token",
-    error_description: "Missing state claim",
-  }),
-};
-
 const badRequestResponseInvalidAud: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 400,
@@ -267,10 +258,22 @@ const badRequestResponseInvalidAud: APIGatewayProxyResult = {
   }),
 };
 
-const unauthorized401Response = {
+const unauthorizedResponse = {
   headers: { "Content-Type": "application/json" },
   statusCode: 401,
-  body: "Unauthorized",
+  body: JSON.stringify({
+    error: "Unauthorized",
+    error_description: "Invalid token",
+  }),
+};
+
+const unauthorizedResponseInvalidSignature = {
+  headers: { "Content-Type": "application/json" },
+  statusCode: 401,
+  body: JSON.stringify({
+    error: "Unauthorized",
+    error_description: "Invalid signature",
+  }),
 };
 
 const serverError500Responses: APIGatewayProxyResult = {

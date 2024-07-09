@@ -71,11 +71,14 @@ describe("Async Credential", () => {
         const event = buildRequest();
         const result = await lambdaHandler(event, dependencies);
 
-        expect(result.statusCode).toBe(500);
-        expect(JSON.parse(result.body).error).toEqual("server_error");
-        expect(JSON.parse(result.body).error_description).toEqual(
-          "Server Error",
-        );
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
+        });
       });
     });
 
@@ -86,17 +89,20 @@ describe("Async Credential", () => {
         const event = buildRequest();
         const result = await lambdaHandler(event, dependencies);
 
-        expect(result.statusCode).toBe(500);
-        expect(JSON.parse(result.body).error).toEqual("server_error");
-        expect(JSON.parse(result.body).error_description).toEqual(
-          "Server Error",
-        );
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
+        });
       });
     });
   });
 
   describe("Access token validation", () => {
-    describe("Given access token payload is missing", () => {
+    describe("Given Authentication header is missing", () => {
       it("Returns 401 Unauthorized", async () => {
         const event = buildRequest();
 
@@ -104,10 +110,14 @@ describe("Async Credential", () => {
           event,
           dependencies,
         );
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
-          body: "Unauthorized",
+          body: JSON.stringify({
+            error: "Unauthorized",
+            error_description: "Invalid token",
+          }),
         });
       });
     });
@@ -122,10 +132,14 @@ describe("Async Credential", () => {
           event,
           dependencies,
         );
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
-          body: "Unauthorized",
+          body: JSON.stringify({
+            error: "Unauthorized",
+            error_description: "Invalid token",
+          }),
         });
       });
     });
@@ -140,10 +154,14 @@ describe("Async Credential", () => {
           event,
           dependencies,
         );
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
-          body: "Unauthorized",
+          body: JSON.stringify({
+            error: "Unauthorized",
+            error_description: "Invalid token",
+          }),
         });
       });
     });
@@ -158,10 +176,14 @@ describe("Async Credential", () => {
           event,
           dependencies,
         );
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
-          body: "Unauthorized",
+          body: JSON.stringify({
+            error: "Unauthorized",
+            error_description: "Invalid token",
+          }),
         });
       });
     });
@@ -442,7 +464,10 @@ describe("Async Credential", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
-          body: "Unauthorized",
+          body: JSON.stringify({
+            error: "Unauthorized",
+            error_description: "Invalid signature",
+          }),
         });
       });
     });
@@ -459,10 +484,14 @@ describe("Async Credential", () => {
 
         const result = await lambdaHandler(event, dependencies);
 
-        expect(JSON.parse(result.body).error).toEqual("server_error");
-        expect(JSON.parse(result.body).error_description).toEqual(
-          "Server Error",
-        );
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
+        });
       });
     });
   });
@@ -479,11 +508,14 @@ describe("Async Credential", () => {
 
           const result = await lambdaHandler(event, dependencies);
 
-          expect(result.statusCode).toBe(400);
-          expect(JSON.parse(result.body).error).toEqual("invalid_client");
-          expect(JSON.parse(result.body).error_description).toEqual(
-            "Supplied client not recognised",
-          );
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 400,
+            body: JSON.stringify({
+              error: "invalid_client",
+              error_description: "Supplied client not recognised",
+            }),
+          });
         });
       });
     });
@@ -500,11 +532,14 @@ describe("Async Credential", () => {
 
         const result = await lambdaHandler(event, dependencies);
 
-        expect(result.statusCode).toBe(400);
-        // expect(JSON.parse(result.body).error).toEqual("invalid_client");
-        expect(JSON.parse(result.body).error_description).toEqual(
-          "Invalid aud claim",
-        );
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_client",
+            error_description: "Invalid aud claim",
+          }),
+        });
       });
     });
   });
