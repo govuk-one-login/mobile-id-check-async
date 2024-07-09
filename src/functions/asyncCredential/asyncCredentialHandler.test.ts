@@ -619,6 +619,12 @@ describe("Async Credential", () => {
 
         const event = buildRequest({
           headers: { Authorization: `Bearer ${mockValidJwt}` },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+          }),
         });
 
         const result: APIGatewayProxyResult = await lambdaHandler(
@@ -645,6 +651,12 @@ describe("Async Credential", () => {
 
         const event = buildRequest({
           headers: { Authorization: `Bearer ${mockValidJwt}` },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+          }),
         });
 
         const result = await lambdaHandler(event, dependencies);
@@ -666,6 +678,12 @@ describe("Async Credential", () => {
       it("Returns 400 Bad Request response", async () => {
         const event = buildRequest({
           headers: { Authorization: `Bearer ${mockValidJwt}` },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+          }),
         });
         dependencies.clientCredentialsService = () =>
           new MockFailingClientCredentialsServiceGetClientCredentialsById();
@@ -689,6 +707,12 @@ describe("Async Credential", () => {
       it("Returns a 400 Bad request response", async () => {
         const event = buildRequest({
           headers: { Authorization: `Bearer ${mockJwtInvalidAud}` },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+          }),
         });
         dependencies.clientCredentialsService = () =>
           new MockPassingClientCredentialsService();
