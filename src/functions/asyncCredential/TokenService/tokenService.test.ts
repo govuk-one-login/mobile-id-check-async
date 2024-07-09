@@ -3,7 +3,7 @@ import { mockClient } from "aws-sdk-client-mock";
 import format from "ecdsa-sig-formatter";
 import { LogOrValue, log, value } from "../../types/logOrValue";
 
-// Generated using jwt.io with thier public and private keys
+// Generated using jwt.io with their public and private keys
 const mockJwt =
   "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.tyh-VfuzIxCyGYDlkBA7DfyjrqmSHu6pQ2hoZuFqUSLPNY2N0mpHb3nk5K17HWP_3cYHBw7AhHale5wky6-sVA";
 
