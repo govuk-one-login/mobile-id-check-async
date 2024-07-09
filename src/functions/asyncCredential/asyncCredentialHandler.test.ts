@@ -448,7 +448,7 @@ describe("Async Credential", () => {
 
   describe("Request body validation", () => {
     describe("Given body is missing", () => {
-      it("Returns 400 status code with invalid_request_body error", async () => {
+      it("Returns 400 status code with invalid_request error", async () => {
         const event = buildRequest({
           headers: { Authorization: `Bearer ${mockValidJwt}` },
         });
@@ -464,7 +464,7 @@ describe("Async Credential", () => {
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
-            error: "invalid_request_body",
+            error: "invalid_request",
             error_description: "Missing request body",
           }),
         });
@@ -472,7 +472,7 @@ describe("Async Credential", () => {
     });
 
     describe("Given state is missing", () => {
-      it("Returns 400 status code with invalid_request_body error", async () => {
+      it("Returns 400 status code with invalid_request error", async () => {
         const event = buildRequest({
           headers: { Authorization: `Bearer ${mockValidJwt}` },
           body: JSON.stringify({}),
@@ -489,7 +489,7 @@ describe("Async Credential", () => {
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
-            error: "invalid_request_body",
+            error: "invalid_request",
             error_description: "Missing state in request body",
           }),
         });
@@ -497,7 +497,7 @@ describe("Async Credential", () => {
     });
 
     describe("Given sub is missing", () => {
-      it("Returns 400 status code with invalid_request_body error", async () => {
+      it("Returns 400 status code with invalid_request error", async () => {
         const event = buildRequest({
           headers: { Authorization: `Bearer ${mockValidJwt}` },
           body: JSON.stringify({
@@ -516,7 +516,7 @@ describe("Async Credential", () => {
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
-            error: "invalid_request_body",
+            error: "invalid_request",
             error_description: "Missing sub in request body",
           }),
         });
@@ -524,7 +524,7 @@ describe("Async Credential", () => {
     });
 
     describe("Given client_id is missing", () => {
-      it("Returns 400 status code with invalid_request_body error", async () => {
+      it("Returns 400 status code with invalid_request error", async () => {
         const event = buildRequest({
           headers: { Authorization: `Bearer ${mockValidJwt}` },
           body: JSON.stringify({
@@ -544,7 +544,7 @@ describe("Async Credential", () => {
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
-            error: "invalid_request_body",
+            error: "invalid_request",
             error_description: "Missing client_id in request body",
           }),
         });
@@ -552,7 +552,7 @@ describe("Async Credential", () => {
     });
 
     describe("Given client_id is invalid", () => {
-      it("Returns 400 status code with invalid_request_body error", async () => {
+      it("Returns 400 status code with invalid_request error", async () => {
         const event = buildRequest({
           headers: { Authorization: `Bearer ${mockValidJwt}` },
           body: JSON.stringify({
@@ -573,7 +573,7 @@ describe("Async Credential", () => {
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
-            error: "invalid_request_body",
+            error: "invalid_request",
             error_description:
               "client_id in request body does not match client_id in access token",
           }),
@@ -582,7 +582,7 @@ describe("Async Credential", () => {
     });
 
     describe("Given govuk_signin_journey_id is missing", () => {
-      it("Returns 400 status code with invalid_request_body error", async () => {
+      it("Returns 400 status code with invalid_request error", async () => {
         const event = buildRequest({
           headers: { Authorization: `Bearer ${mockValidJwt}` },
           body: JSON.stringify({
@@ -603,7 +603,7 @@ describe("Async Credential", () => {
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
-            error: "invalid_request_body",
+            error: "invalid_request",
             error_description:
               "Missing govuk_signin_journey_id in request body",
           }),

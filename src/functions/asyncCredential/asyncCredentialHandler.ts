@@ -62,7 +62,7 @@ export async function lambdaHandler(
 
   if (!requestBody) {
     return badRequestResponse({
-      error: "invalid_request_body",
+      error: "invalid_request",
       errorDescription: "Missing request body",
     });
   }
@@ -74,7 +74,7 @@ export async function lambdaHandler(
 
   if (requestBodyValidationResponse.isError) {
     return badRequestResponse({
-      error: "invalid_request_body",
+      error: "invalid_request",
       errorDescription: requestBodyValidationResponse.value as string,
     });
   }
