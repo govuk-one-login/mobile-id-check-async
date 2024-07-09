@@ -7,7 +7,6 @@ import {
   IClientCredentials,
   IClientCredentialsService,
 } from "../services/clientCredentialsService/clientCredentialsService";
-import { IDecodedClientCredentials } from "../types/clientCredentials";
 import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
 
 const mockJwtNoExp =
@@ -558,53 +557,19 @@ class MockTokenSeviceValidSignature implements IVerifyTokenSignature {
 class MockFailingClientCredentialsServiceGetClientCredentialsById
   implements IClientCredentialsService
 {
-  getClientCredentialsById(
-    storedCredentialsArray: IClientCredentials[],
-    suppliedClientId: string,
-  ) {
+  getClientCredentialsById() {
     return null;
   }
-  validate(
-    storedCredentials: IClientCredentials,
-    suppliedCredentials: IDecodedClientCredentials,
-  ) {
-    return false;
-  }
-}
-
-class MockFailingClientCredentialsServiceValidation
-  implements IClientCredentialsService
-{
-  getClientCredentialsById(
-    storedCredentialsArray: IClientCredentials[],
-    suppliedClientId: string,
-  ) {
-    return {
-      client_id: "mockClientId",
-      issuer: "mockIssuer",
-      salt: "mockSalt",
-      hashed_client_secret: "mockHashedClientSecret",
-    };
-  }
-  validate(
-    storedCredentials: IClientCredentials,
-    suppliedCredentials: IDecodedClientCredentials,
-  ) {
+  validate() {
     return false;
   }
 }
 
 class MockPassingClientCredentialsService implements IClientCredentialsService {
-  validate(
-    _storedCredentials: IClientCredentials,
-    _suppliedCredentials: IDecodedClientCredentials,
-  ) {
+  validate() {
     return true;
   }
-  getClientCredentialsById(
-    _storedCredentialsArray: IClientCredentials[],
-    _suppliedClientId: string,
-  ) {
+  getClientCredentialsById() {
     return {
       client_id: "mockClientId",
       issuer: "mockIssuer",

@@ -4,10 +4,7 @@ import {
   ClientCredentialsService,
   IClientCredentials,
 } from "../services/clientCredentialsService/clientCredentialsService";
-import {
-  IGetClientCredentials,
-  SsmService,
-} from "../asyncToken/ssmService/ssmService";
+import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
 import { TokenService } from "./TokenService/tokenService";
 
 export async function lambdaHandler(
@@ -51,8 +48,8 @@ export async function lambdaHandler(
 
   // JWT Claim validation
   const encodedJwt = bearerToken.split(" ")[1];
-
-  const [header, payload, signature] = encodedJwt.split(".");
+  // Replace with const [header, payload, signature] = encodedJwt.split(".") when needed
+  const payload = encodedJwt.split(".")[1];
   const jwtPayload = JSON.parse(
     Buffer.from(payload, "base64").toString("utf-8"),
   );
@@ -292,9 +289,9 @@ export interface Dependencies {
   env: NodeJS.ProcessEnv;
 }
 
-const dependencies: Dependencies = {
-  tokenService: () => new TokenService(),
-  clientCredentialsService: () => new ClientCredentialsService(),
-  ssmService: () => new SsmService(),
-  env: process.env,
-};
+// const dependencies: Dependencies = {
+//   tokenService: () => new TokenService(),
+//   clientCredentialsService: () => new ClientCredentialsService(),
+//   ssmService: () => new SsmService(),
+//   env: process.env,
+// };

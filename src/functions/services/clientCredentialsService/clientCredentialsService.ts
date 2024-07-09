@@ -1,5 +1,4 @@
 import { createHash } from "crypto";
-import { IDecodedClientCredentials } from "../../types/clientCredentials";
 
 export class ClientCredentialsService implements IClientCredentialsService {
   validate = (
@@ -56,3 +55,8 @@ export type IClientCredentials = {
   salt: string;
   hashed_client_secret: string;
 };
+
+export interface IDecodedClientCredentials {
+  clientId: string;
+  clientSecret: string;
+}

@@ -167,9 +167,7 @@ describe("Async Token", () => {
 });
 
 class MockRequestServiceValueResponse implements IProcessRequest {
-  processRequest = (
-    request: APIGatewayProxyEvent,
-  ): LogOrValue<IDecodedClientCredentials> => {
+  processRequest = (): LogOrValue<IDecodedClientCredentials> => {
     return value({
       clientId: "mockClientId",
       clientSecret: "mockClientSecret",
