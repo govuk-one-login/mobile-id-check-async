@@ -9,6 +9,20 @@ const mockJwt =
 
 describe("Token Service", () => {
   describe("JWT signature verification", () => {
+    describe("Given the token signature is not present", () => {
+      it("Returns a log", async () => {
+        const kmsMock = mockClient(KMSClient);
+        kmsMock.on(VerifyCommand).resolves({});
+        const tokenService = new TokenService();
+        const result = await tokenService.verifyTokenSignature(
+          "mockKeyId",
+          mockJwt,
+        );
+        expect(result.isLog).toBe(true);
+        expect(result.value).toEqual("TOKEN_SIGNATURE_INVALID");
+      });
+    });
+
     describe("Given the token signature is not valid", () => {
       it("Returns a log", async () => {
         const kmsMock = mockClient(KMSClient);
@@ -65,7 +79,7 @@ export class TokenService implements IVerifyTokenSignature {
     });
 
     const result = await kmsClient.send(verifyCommand);
-    if (result.SignatureValid === false) {
+    if (result.SignatureValid !== true) {
       return log("TOKEN_SIGNATURE_INVALID");
     }
 
