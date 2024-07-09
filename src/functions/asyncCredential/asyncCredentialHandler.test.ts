@@ -446,6 +446,172 @@ describe("Async Credential", () => {
     });
   });
 
+  describe("Request body validation", () => {
+    describe("Given body is missing", () => {
+      it("Returns 400 status code with invalid_request error", async () => {
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${mockValidJwt}` },
+        });
+
+        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+
+        const result: APIGatewayProxyResult = await lambdaHandler(
+          event,
+          dependencies,
+        );
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description: "Missing request body",
+          }),
+        });
+      });
+    });
+
+    describe("Given state is missing", () => {
+      it("Returns 400 status code with invalid_request error", async () => {
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          body: JSON.stringify({}),
+        });
+
+        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+
+        const result: APIGatewayProxyResult = await lambdaHandler(
+          event,
+          dependencies,
+        );
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description: "Missing state in request body",
+          }),
+        });
+      });
+    });
+
+    describe("Given sub is missing", () => {
+      it("Returns 400 status code with invalid_request error", async () => {
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          body: JSON.stringify({
+            state: "mockState",
+          }),
+        });
+
+        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+
+        const result: APIGatewayProxyResult = await lambdaHandler(
+          event,
+          dependencies,
+        );
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description: "Missing sub in request body",
+          }),
+        });
+      });
+    });
+
+    describe("Given client_id is missing", () => {
+      it("Returns 400 status code with invalid_request error", async () => {
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+          }),
+        });
+
+        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+
+        const result: APIGatewayProxyResult = await lambdaHandler(
+          event,
+          dependencies,
+        );
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description: "Missing client_id in request body",
+          }),
+        });
+      });
+    });
+
+    describe("Given client_id is invalid", () => {
+      it("Returns 400 status code with invalid_request error", async () => {
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+            client_id: "mockInvalidClientId",
+          }),
+        });
+
+        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+
+        const result: APIGatewayProxyResult = await lambdaHandler(
+          event,
+          dependencies,
+        );
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description:
+              "client_id in request body does not match client_id in access token",
+          }),
+        });
+      });
+    });
+
+    describe("Given govuk_signin_journey_id is missing", () => {
+      it("Returns 400 status code with invalid_request error", async () => {
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+          }),
+        });
+
+        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+
+        const result: APIGatewayProxyResult = await lambdaHandler(
+          event,
+          dependencies,
+        );
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description:
+              "Missing govuk_signin_journey_id in request body",
+          }),
+        });
+      });
+    });
+  });
+
   describe("JWT signature verification", () => {
     describe("Given that the JWT signature verification fails", () => {
       it("Returns 401 Unauthorized", async () => {
@@ -453,6 +619,12 @@ describe("Async Credential", () => {
 
         const event = buildRequest({
           headers: { Authorization: `Bearer ${mockValidJwt}` },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+          }),
         });
 
         const result: APIGatewayProxyResult = await lambdaHandler(
@@ -479,6 +651,12 @@ describe("Async Credential", () => {
 
         const event = buildRequest({
           headers: { Authorization: `Bearer ${mockValidJwt}` },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+          }),
         });
 
         const result = await lambdaHandler(event, dependencies);
@@ -500,6 +678,12 @@ describe("Async Credential", () => {
       it("Returns 400 Bad Request response", async () => {
         const event = buildRequest({
           headers: { Authorization: `Bearer ${mockValidJwt}` },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+          }),
         });
         dependencies.clientCredentialsService = () =>
           new MockFailingClientCredentialsServiceGetClientCredentialsById();
@@ -523,6 +707,12 @@ describe("Async Credential", () => {
       it("Returns a 400 Bad request response", async () => {
         const event = buildRequest({
           headers: { Authorization: `Bearer ${mockJwtInvalidAud}` },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+          }),
         });
         dependencies.clientCredentialsService = () =>
           new MockPassingClientCredentialsService();

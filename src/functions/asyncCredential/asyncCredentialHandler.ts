@@ -58,6 +58,27 @@ export async function lambdaHandler(
     });
   }
 
+  const requestBody = event.body;
+
+  if (!requestBody) {
+    return badRequestResponse({
+      error: "invalid_request",
+      errorDescription: "Missing request body",
+    });
+  }
+
+  const requestBodyValidationResponse = requestBodyValidator(
+    requestBody,
+    jwtPayload.client_id,
+  );
+
+  if (requestBodyValidationResponse.isError) {
+    return badRequestResponse({
+      error: "invalid_request",
+      errorDescription: requestBodyValidationResponse.value as string,
+    });
+  }
+
   const result = await tokenService.verifyTokenSignature(keyId, encodedJwt);
 
   if (result.isLog) {
@@ -168,6 +189,36 @@ const jwtClaimValidator = (
 
   if (!jwtPayload.aud) {
     return errorResponse("Missing aud claim");
+  }
+
+  return successResponse(null);
+};
+
+const requestBodyValidator = (
+  body: string,
+  jwtClientId: string,
+): ErrorOrSuccess<null> => {
+  const parsedBody = JSON.parse(body);
+  if (!parsedBody.state) {
+    return errorResponse("Missing state in request body");
+  }
+
+  if (!parsedBody.sub) {
+    return errorResponse("Missing sub in request body");
+  }
+
+  if (!parsedBody.client_id) {
+    return errorResponse("Missing client_id in request body");
+  }
+
+  if (parsedBody.client_id !== jwtClientId) {
+    return errorResponse(
+      "client_id in request body does not match client_id in access token",
+    );
+  }
+
+  if (!parsedBody["govuk_signin_journey_id"]) {
+    return errorResponse("Missing govuk_signin_journey_id in request body");
   }
 
   return successResponse(null);
