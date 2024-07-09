@@ -1,14 +1,13 @@
 import { createHash } from "crypto";
-import { IDecodedAuthorizationHeader } from "../requestService/requestService";
 
 export class ClientCredentialsService implements IClientCredentialsService {
   validate = (
     storedCredentials: IClientCredentials,
-    suppliedCredentials: IDecodedAuthorizationHeader,
+    suppliedCredentials: IDecodedClientCredentials,
   ): boolean => {
     const { clientSecret: suppliedClientSecret } = suppliedCredentials;
     const storedSalt = storedCredentials.salt;
-    const hashedSuppliedClientSecret = this.hashSecret(
+    const hashedSuppliedClientSecret = hashSecret(
       suppliedClientSecret,
       storedSalt,
     );
@@ -30,18 +29,18 @@ export class ClientCredentialsService implements IClientCredentialsService {
 
     return storedCredentials;
   };
-
-  private hashSecret = (secret: string, salt: string): string => {
-    return createHash("sha256")
-      .update(secret + salt)
-      .digest("hex");
-  };
 }
+
+const hashSecret = (secret: string, salt: string): string => {
+  return createHash("sha256")
+    .update(secret + salt)
+    .digest("hex");
+};
 
 export interface IClientCredentialsService {
   validate: (
     storedCredentials: IClientCredentials,
-    suppliedCredentials: IDecodedAuthorizationHeader,
+    suppliedCredentials: IDecodedClientCredentials,
   ) => boolean;
 
   getClientCredentialsById: (
@@ -56,3 +55,8 @@ export type IClientCredentials = {
   salt: string;
   hashed_client_secret: string;
 };
+
+export interface IDecodedClientCredentials {
+  clientId: string;
+  clientSecret: string;
+}

@@ -1,4 +1,4 @@
-import { IDecodedAuthorizationHeader } from "../requestService/requestService";
+import { IDecodedClientCredentials } from "../../types/clientCredentials";
 import {
   ClientCredentialsService,
   IClientCredentials,
@@ -6,7 +6,7 @@ import {
 
 describe("Client Credentials Service", () => {
   let clientCredentialsService: ClientCredentialsService;
-  let mockSuppliedClientCredentials: IDecodedAuthorizationHeader;
+  let mockSuppliedClientCredentials: IDecodedClientCredentials;
   let mockStoredClientCredentialsArray: IClientCredentials[];
   let mockStoredClientCredentials: IClientCredentials;
 

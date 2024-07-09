@@ -1,4 +1,4 @@
-export type EnvVars = "SIGNING_KEY_IDS";
+export type EnvVars = "SIGNING_KEY_ID" | "ISSUER";
 
 // Get static variables
 export const validOrThrow = (

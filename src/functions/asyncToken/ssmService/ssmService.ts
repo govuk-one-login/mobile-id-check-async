@@ -6,7 +6,7 @@ import {
 } from "@aws-sdk/client-ssm";
 import { LogOrValue, log, value } from "../../types/logOrValue";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
-import { IClientCredentials } from "../clientCredentialsService/clientCredentialsService";
+import { IClientCredentials } from "../../services/clientCredentialsService/clientCredentialsService";
 
 let cache: CacheEntry | null = null;
 

@@ -3,6 +3,7 @@ import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
 import { Buffer } from "buffer";
 import jose from "node-jose";
 import format from "ecdsa-sig-formatter";
+import { IJwtPayload, JwtHeader } from "../../types/jwt";
 
 export class TokenService implements IMintToken {
   readonly kidArn: string;
@@ -62,23 +63,6 @@ export class TokenService implements IMintToken {
   private base64Encode(value: string | Uint8Array): string {
     return jose.util.base64url.encode(Buffer.from(value), "utf8");
   }
-}
-
-export interface IJwtPayload {
-  [key: string]: string | number | undefined;
-  iss: string;
-  aud: string;
-  scope: string;
-  exp: number;
-  client_id: string;
-  nbf?: number;
-  iat?: number;
-}
-
-export interface JwtHeader {
-  alg: Algorithm | string;
-  typ: string;
-  kid?: string;
 }
 
 export interface IMintToken {

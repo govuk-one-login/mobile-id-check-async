@@ -7,12 +7,12 @@ import {
 import {
   IClientCredentials,
   IClientCredentialsService,
-} from "./clientCredentialsService/clientCredentialsService";
-import {
-  IDecodedAuthorizationHeader,
-  IProcessRequest,
-} from "./requestService/requestService";
+} from "../services/clientCredentialsService/clientCredentialsService";
+import { IProcessRequest } from "./requestService/requestService";
 import { IGetClientCredentials } from "./ssmService/ssmService";
+// import { IJwtPayload, IMintToken } from "./tokenService/tokenService";
+import { buildRequest } from "../testUtils/mockRequest";
+import { IDecodedClientCredentials } from "../types/clientCredentials";
 import { IMintToken } from "./tokenService/tokenService";
 
 describe("Async Token", () => {
@@ -23,19 +23,18 @@ describe("Async Token", () => {
     request = buildRequest();
     dependencies = {
       env,
-      getRequestService: () => new MockRequestServiceValueResponse(),
-      getSsmService: () => new MockPassingSsmService(),
-      getClientCredentialsService: () =>
-        new MockPassingClientCredentialsService(),
-      getTokenService: () => new MockPassingTokenService(),
+      requestService: () => new MockRequestServiceValueResponse(),
+      ssmService: () => new MockPassingSsmService(),
+      clientCredentialService: () => new MockPassingClientCredentialsService(),
+      tokenService: () => new MockPassingTokenService(),
     };
   });
 
   describe("Environment variable validation", () => {
-    describe("Given SIGNING_KEY_IDS is missing", () => {
+    describe("Given SIGNING_KEY_ID is missing", () => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
-        delete dependencies.env["SIGNING_KEY_IDS"];
+        delete dependencies.env["SIGNING_KEY_ID"];
 
         const result = await lambdaHandlerConstructor(dependencies, request);
 
@@ -51,7 +50,7 @@ describe("Async Token", () => {
   describe("Request Service", () => {
     describe("Given the Request Service returns a log due to Invalid grant_type in request body", () => {
       it("Returns a 400 Bad Request response", async () => {
-        dependencies.getRequestService = () =>
+        dependencies.requestService = () =>
           new MockRequestServiceInvalidGrantTypeLogResponse();
 
         const result = await lambdaHandlerConstructor(dependencies, request);
@@ -66,7 +65,7 @@ describe("Async Token", () => {
 
     describe("Given the Request Service returns a log due to invalid Authorization header ", () => {
       it("Returns a 400 Bad Request response", async () => {
-        dependencies.getRequestService = () =>
+        dependencies.requestService = () =>
           new MockRequestServiceInvalidAuthorizationHeaderLogResponse();
 
         const result = await lambdaHandlerConstructor(dependencies, request);
@@ -85,7 +84,7 @@ describe("Async Token", () => {
   describe("SSM Service", () => {
     describe("Given there is an error retrieving client credentials from SSM", () => {
       it("Returns a 500 Server Error response", async () => {
-        dependencies.getSsmService = () => new MockFailingSsmService();
+        dependencies.ssmService = () => new MockFailingSsmService();
 
         const result = await lambdaHandlerConstructor(dependencies, request);
 
@@ -101,7 +100,7 @@ describe("Async Token", () => {
     describe("Get client credentials by ID", () => {
       describe("Given credentials are not found", () => {
         it("Returns 400 Bad Request response", async () => {
-          dependencies.getClientCredentialsService = () =>
+          dependencies.clientCredentialService = () =>
             new MockFailingClientCredentialsServiceGetClientCredentialsById();
 
           const result = await lambdaHandlerConstructor(dependencies, request);
@@ -118,7 +117,7 @@ describe("Async Token", () => {
     describe("Credential validation", () => {
       describe("Given credentials are not valid", () => {
         it("Returns 400 Bad request response", async () => {
-          dependencies.getClientCredentialsService = () =>
+          dependencies.clientCredentialService = () =>
             new MockFailingClientCredentialsServiceValidation();
 
           const result = await lambdaHandlerConstructor(dependencies, request);
@@ -136,7 +135,7 @@ describe("Async Token", () => {
   describe("Token Service", () => {
     describe("Given minting a new token fails", () => {
       it("Returns 500 Server Error response", async () => {
-        dependencies.getTokenService = () => new MockFailingTokenService();
+        dependencies.tokenService = () => new MockFailingTokenService();
 
         const result = await lambdaHandlerConstructor(dependencies, request);
 
@@ -168,7 +167,7 @@ describe("Async Token", () => {
 });
 
 class MockRequestServiceValueResponse implements IProcessRequest {
-  processRequest = (): LogOrValue<IDecodedAuthorizationHeader> => {
+  processRequest = (): LogOrValue<IDecodedClientCredentials> => {
     return value({
       clientId: "mockClientId",
       clientSecret: "mockClientSecret",
@@ -177,7 +176,7 @@ class MockRequestServiceValueResponse implements IProcessRequest {
 }
 
 class MockRequestServiceInvalidGrantTypeLogResponse implements IProcessRequest {
-  processRequest = (): LogOrValue<IDecodedAuthorizationHeader> => {
+  processRequest = (): LogOrValue<IDecodedClientCredentials> => {
     return log("Invalid grant_type");
   };
 }
@@ -185,7 +184,7 @@ class MockRequestServiceInvalidGrantTypeLogResponse implements IProcessRequest {
 class MockRequestServiceInvalidAuthorizationHeaderLogResponse
   implements IProcessRequest
 {
-  processRequest = (): LogOrValue<IDecodedAuthorizationHeader> => {
+  processRequest = (): LogOrValue<IDecodedClientCredentials> => {
     return log("mockInvalidAuthorizationHeaderLog");
   };
 }
@@ -266,40 +265,6 @@ class MockFailingTokenService implements IMintToken {
   }
 }
 
-//eslint-disable-next-line
-function buildRequest(overrides?: any): APIGatewayProxyEvent {
-  const defaultRequest = {
-    httpMethod: "get",
-    body: "",
-    headers: {
-      "x-correlation-id": "correlationId",
-    },
-    isBase64Encoded: false,
-    multiValueHeaders: {},
-    multiValueQueryStringParameters: {},
-    path: "/hello",
-    pathParameters: {},
-    queryStringParameters: {},
-    requestContext: {
-      accountId: "123456789012",
-      apiId: "1234",
-      authorizer: {},
-      httpMethod: "get",
-      identity: { sourceIp: "1.1.1.1" },
-      path: "/hello",
-      protocol: "HTTP/1.1",
-      requestId: "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
-      requestTimeEpoch: 1428582896000,
-      resourceId: "123456",
-      resourcePath: "/hello",
-      stage: "dev",
-    },
-    resource: "",
-    stageVariables: {},
-  };
-  return { ...defaultRequest, ...overrides };
-}
-
 const env = {
-  SIGNING_KEY_IDS: "mockSigningKeyId",
+  SIGNING_KEY_ID: "mockSigningKeyId",
 };
