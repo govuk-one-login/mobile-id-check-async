@@ -200,6 +200,10 @@ const requestBodyValidator = (body: string): ErrorOrSuccess<null> => {
     return errorResponse("Missing sub in request body");
   }
 
+  if (!parsedBody.client_id) {
+    return errorResponse("Missing client_id in request body");
+  }
+
   return successResponse(null);
 };
 
