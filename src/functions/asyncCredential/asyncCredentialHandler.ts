@@ -11,7 +11,6 @@ export async function lambdaHandler(
   event: APIGatewayProxyEvent,
   dependencies: Dependencies,
 ): Promise<APIGatewayProxyResult> {
-  console.log("REQUEST INCOMING");
   let keyId;
   try {
     keyId = validOrThrow(dependencies.env, "SIGNING_KEY_ID");
@@ -55,59 +54,48 @@ export async function lambdaHandler(
   );
 
   if (!jwtPayload.exp) {
-    console.log("NO EXP");
     return badRequestResponseMissingExp;
   }
 
   if (jwtPayload.exp <= Math.floor(Date.now() / 1000)) {
-    console.log("DATE IN PAST");
     return badRequestResponseInvalidExp;
   }
 
   if (jwtPayload.iat >= Math.floor(Date.now() / 1000)) {
-    console.log("DATE IN PAST");
     return badRequestResponseInvalidIat;
   }
 
   if (jwtPayload.nbf >= Math.floor(Date.now() / 1000)) {
-    console.log("DATE IN PAST");
     return badRequestResponseInvalidNbf;
   }
 
   if (!jwtPayload.iss) {
-    console.log("NO ISS");
     return badRequestResponseMissingIss;
   }
 
   if (jwtPayload.iss !== issuer) {
-    console.log("ISS INVALID");
     return badRequestResponseInvalidIss;
   }
 
   if (!jwtPayload.scope) {
-    console.log("NO SCOPE");
     return badRequestResponseMissingScope;
   }
 
   if (jwtPayload.scope !== "dcmaw.session.async_create") {
-    console.log("SCOPE INVALID");
     return badRequestResponseInvalidScope;
   }
 
   if (!jwtPayload.client_id) {
-    console.log("NO CLIENT_ID");
     return badRequestResponseMissingClientId;
   }
 
   if (!jwtPayload.aud) {
-    console.log("NO AUD");
     return badRequestResponseMissingAud;
   }
 
   const result = await tokenService.verifyTokenSignature(keyId, encodedJwt);
 
   if (result.isLog) {
-    console.log("INVALID SIGNATURE", encodedJwt);
     return unauthorizedResponseInvalidSignature;
   }
 
@@ -115,7 +103,6 @@ export async function lambdaHandler(
   const ssmService = dependencies.ssmService();
   const ssmServiceResponse = await ssmService.getClientCredentials();
   if (ssmServiceResponse.isLog) {
-    console.log("'it's an error!!!!!!!!!");
     return serverError500Responses;
   }
 
