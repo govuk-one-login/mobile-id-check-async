@@ -350,7 +350,7 @@ describe("Async Credential", () => {
         });
       });
 
-      describe("Given scope is invalid", () => {
+      describe("Given scope is not dcmaw.session.async_create", () => {
         it("Returns a log", async () => {
           const event = buildRequest({
             headers: { Authorization: `Bearer ${mockJwtScopeNotValid}` },
