@@ -6,6 +6,12 @@ import {
 } from "../services/clientCredentialsService/clientCredentialsService";
 import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
 import { TokenService } from "./TokenService/tokenService";
+import {
+  ErrorOrSuccess,
+  errorResponse,
+  successResponse,
+} from "../types/errorOrValue";
+import { IJwtPayload } from "../types/jwt";
 
 export async function lambdaHandler(
   event: APIGatewayProxyEvent,
@@ -24,7 +30,6 @@ export async function lambdaHandler(
   } catch (error) {
     return serverError500Responses;
   }
-
   const authorizationHeader = event.headers["Authorization"];
 
   if (authorizationHeader == null) {
@@ -45,44 +50,12 @@ export async function lambdaHandler(
     Buffer.from(payload, "base64").toString("utf-8"),
   );
 
-  if (!jwtPayload.exp) {
-    return badRequestResponseMissingExp;
-  }
-
-  if (jwtPayload.exp <= Math.floor(Date.now() / 1000)) {
-    return badRequestResponseInvalidExp;
-  }
-
-  if (jwtPayload.iat >= Math.floor(Date.now() / 1000)) {
-    return badRequestResponseInvalidIat;
-  }
-
-  if (jwtPayload.nbf >= Math.floor(Date.now() / 1000)) {
-    return badRequestResponseInvalidNbf;
-  }
-
-  if (!jwtPayload.iss) {
-    return badRequestResponseMissingIss;
-  }
-
-  if (jwtPayload.iss !== issuer) {
-    return badRequestResponseInvalidIss;
-  }
-
-  if (!jwtPayload.scope) {
-    return badRequestResponseMissingScope;
-  }
-
-  if (jwtPayload.scope !== "dcmaw.session.async_create") {
-    return badRequestResponseInvalidScope;
-  }
-
-  if (!jwtPayload.client_id) {
-    return badRequestResponseMissingClientId;
-  }
-
-  if (!jwtPayload.aud) {
-    return badRequestResponseMissingAud;
+  const jwtClaimValidationResponse = jwtClaimValidator(jwtPayload, issuer);
+  if (jwtClaimValidationResponse.isError) {
+    return badRequestResponse({
+      error: "invalid_token",
+      errorDescription: jwtClaimValidationResponse.value as string,
+    });
   }
 
   const result = await tokenService.verifyTokenSignature(keyId, encodedJwt);
@@ -109,12 +82,18 @@ export async function lambdaHandler(
   );
 
   if (!storedCredentials) {
-    return badRequestResponseInvalidCredentials;
+    return badRequestResponse({
+      error: "invalid_client",
+      errorDescription: "Supplied client not recognised",
+    });
   }
 
   // Validate aud claim matches the ISSUER in client credential array
   if (jwtPayload.aud !== storedCredentials.issuer) {
-    return badRequestResponseInvalidAud;
+    return badRequestResponse({
+      error: "invalid_client",
+      errorDescription: "Invalid aud claim",
+    });
   }
 
   return {
@@ -126,126 +105,86 @@ export async function lambdaHandler(
   };
 }
 
-const isAuthorizationHeaderFormatValid = (authorizationHeader: string) => {
+const isAuthorizationHeaderFormatValid = (
+  authorizationHeader: string,
+): boolean => {
   if (!authorizationHeader.startsWith("Bearer ")) {
-    return unauthorizedResponse;
+    return false;
   }
 
   if (authorizationHeader.split(" ").length !== 2) {
-    return unauthorizedResponse;
+    return false;
   }
 
   if (authorizationHeader.split(" ")[1].length == 0) {
-    return unauthorizedResponse;
+    return false;
   }
+
+  return true;
 };
 
-const badRequestResponseInvalidCredentials: APIGatewayProxyResult = {
-  headers: { "Content-Type": "application/json" },
-  statusCode: 400,
-  body: JSON.stringify({
-    error: "invalid_client",
-    error_description: "Supplied client not recognised",
-  }),
+const jwtClaimValidator = (
+  jwtPayload: IJwtPayload,
+  issuer: string,
+): ErrorOrSuccess<null> => {
+  if (!jwtPayload.exp) {
+    return errorResponse("Missing exp claim");
+  }
+
+  if (jwtPayload.exp <= Math.floor(Date.now() / 1000)) {
+    return errorResponse("exp claim is in the past");
+  }
+  if (jwtPayload.iat) {
+    if (jwtPayload.iat >= Math.floor(Date.now() / 1000)) {
+      return errorResponse("iat claim is in the future");
+    }
+  }
+
+  if (jwtPayload.nbf) {
+    if (jwtPayload.nbf >= Math.floor(Date.now() / 1000)) {
+      return errorResponse("nbf claim is in the future");
+    }
+  }
+
+  if (!jwtPayload.iss) {
+    return errorResponse("Missing iss claim");
+  }
+
+  if (jwtPayload.iss !== issuer) {
+    return errorResponse("iss claim does not match registered issuer");
+  }
+
+  if (!jwtPayload.scope) {
+    return errorResponse("Missing scope claim");
+  }
+
+  if (jwtPayload.scope !== "dcmaw.session.async_create") {
+    return errorResponse("Invalid scope claim");
+  }
+
+  if (!jwtPayload.client_id) {
+    return errorResponse("Missing client_id claim");
+  }
+
+  if (!jwtPayload.aud) {
+    return errorResponse("Missing aud claim");
+  }
+
+  return successResponse(null);
 };
 
-const badRequestResponseMissingExp: APIGatewayProxyResult = {
-  headers: { "Content-Type": "application/json" },
-  statusCode: 400,
-  body: JSON.stringify({
-    error: "invalid_token",
-    error_description: "Missing exp claim",
-  }),
-};
-
-const badRequestResponseInvalidExp: APIGatewayProxyResult = {
-  headers: { "Content-Type": "application/json" },
-  statusCode: 400,
-  body: JSON.stringify({
-    error: "invalid_token",
-    error_description: "exp claim is in the past",
-  }),
-};
-
-const badRequestResponseInvalidIat: APIGatewayProxyResult = {
-  headers: { "Content-Type": "application/json" },
-  statusCode: 400,
-  body: JSON.stringify({
-    error: "invalid_token",
-    error_description: "iat claim is in the future",
-  }),
-};
-
-const badRequestResponseInvalidNbf: APIGatewayProxyResult = {
-  headers: { "Content-Type": "application/json" },
-  statusCode: 400,
-  body: JSON.stringify({
-    error: "invalid_token",
-    error_description: "nbf claim is in the future",
-  }),
-};
-
-const badRequestResponseMissingIss: APIGatewayProxyResult = {
-  headers: { "Content-Type": "application/json" },
-  statusCode: 400,
-  body: JSON.stringify({
-    error: "invalid_token",
-    error_description: "Missing iss claim",
-  }),
-};
-
-const badRequestResponseInvalidIss: APIGatewayProxyResult = {
-  headers: { "Content-Type": "application/json" },
-  statusCode: 400,
-  body: JSON.stringify({
-    error: "invalid_token",
-    error_description: "iss claim does not match registered issuer",
-  }),
-};
-
-const badRequestResponseMissingScope: APIGatewayProxyResult = {
-  headers: { "Content-Type": "application/json" },
-  statusCode: 400,
-  body: JSON.stringify({
-    error: "invalid_token",
-    error_description: "Missing scope claim",
-  }),
-};
-
-const badRequestResponseInvalidScope: APIGatewayProxyResult = {
-  headers: { "Content-Type": "application/json" },
-  statusCode: 400,
-  body: JSON.stringify({
-    error: "invalid_token",
-    error_description: "Invalid scope claim",
-  }),
-};
-
-const badRequestResponseMissingClientId: APIGatewayProxyResult = {
-  headers: { "Content-Type": "application/json" },
-  statusCode: 400,
-  body: JSON.stringify({
-    error: "invalid_token",
-    error_description: "Missing client_id claim",
-  }),
-};
-
-const badRequestResponseMissingAud: APIGatewayProxyResult = {
-  headers: { "Content-Type": "application/json" },
-  statusCode: 400,
-  body: JSON.stringify({
-    error: "invalid_token",
-    error_description: "Missing aud claim",
-  }),
-};
-
-const badRequestResponseInvalidAud: APIGatewayProxyResult = {
-  headers: { "Content-Type": "application/json" },
-  statusCode: 400,
-  body: JSON.stringify({
-    error: "invalid_client",
-    error_description: "Invalid aud claim",
-  }),
+const badRequestResponse = (responseInput: {
+  error: string;
+  errorDescription: string;
+}) => {
+  return {
+    headers: { "Content-Type": "application/json" },
+    statusCode: 400,
+    body: JSON.stringify({
+      error: responseInput.error,
+      error_description: responseInput.errorDescription,
+    }),
+  };
 };
 
 const unauthorizedResponse = {
@@ -281,10 +220,3 @@ export interface Dependencies {
   ssmService: () => IGetClientCredentials;
   env: NodeJS.ProcessEnv;
 }
-
-// const dependencies: Dependencies = {
-//   tokenService: () => new TokenService(),
-//   clientCredentialsService: () => new ClientCredentialsService(),
-//   ssmService: () => new SsmService(),
-//   env: process.env,
-// };
