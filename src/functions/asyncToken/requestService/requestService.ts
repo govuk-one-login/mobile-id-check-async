@@ -1,7 +1,6 @@
 import { IDecodedClientCredentials } from "../../types/clientCredentials";
 import { LogOrValue, log, value } from "../../types/logOrValue";
 import { APIGatewayProxyEvent } from "aws-lambda";
-const Buffer = require("buffer").Buffer;
 
 export class RequestService implements IProcessRequest {
   processRequest = (
@@ -14,7 +13,11 @@ export class RequestService implements IProcessRequest {
       return log("Invalid grant_type");
     }
 
-    if (!this.isRequestAuthorizationHeaderValid(authorizationHeader)) {
+    if (!authorizationHeader) {
+      return log("Invalid authorization header");
+    }
+
+    if (!authorizationHeader.startsWith("Basic ")) {
       return log("Invalid authorization header");
     }
 
@@ -43,24 +46,10 @@ export class RequestService implements IProcessRequest {
     return true;
   };
 
-  private isRequestAuthorizationHeaderValid = (
-    authorizationHeader: string | undefined,
-  ): boolean => {
-    if (!authorizationHeader) {
-      return false;
-    }
-
-    if (!authorizationHeader.startsWith("Basic ")) {
-      return false;
-    }
-
-    return true;
-  };
-
   private decodeAuthorizationHeader = (
-    authorizationHeader: string | undefined,
+    authorizationHeader: string,
   ): LogOrValue<IDecodedClientCredentials> => {
-    const base64EncodedCredential = authorizationHeader?.split(" ")[1];
+    const base64EncodedCredential = authorizationHeader.split(" ")[1];
     const base64DecodedCredential = Buffer.from(
       base64EncodedCredential,
       "base64",
