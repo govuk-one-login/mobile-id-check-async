@@ -520,7 +520,7 @@ describe("Async Credential", () => {
   });
 
   describe("JWT Payload validation - using Client Credentials", () => {
-    describe("aud claim does not match registered issue for given client", () => {
+    describe("aud claim does not match registered issuer for given client", () => {
       it("Returns a 400 Bad request response", async () => {
         const event = buildRequest({
           headers: { Authorization: `Bearer ${mockJwtInvalidAud}` },
