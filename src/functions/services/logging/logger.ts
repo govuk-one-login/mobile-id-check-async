@@ -1,5 +1,5 @@
 import { Context } from "aws-lambda";
-import { LogMessage, RegisteredLogMessages } from "./logMessageTypes";
+import { LogMessage, RegisteredLogMessages } from "./types";
 import { LogAttributes } from "@aws-lambda-powertools/logger/lib/cjs/types/Log";
 
 export interface ILogger<T extends string> {
@@ -22,9 +22,8 @@ export class Logger<T extends string> implements ILogger<T> {
   log = (messageName: T, data: LogAttributes = {}): void => {
     this.logger.info(
       {
-        message: this.registeredLogs[messageName].message,
+        message: messageName,
         messageCode: this.registeredLogs[messageName].messageCode,
-        messageName,
       },
       data,
     );

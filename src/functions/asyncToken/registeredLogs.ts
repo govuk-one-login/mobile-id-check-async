@@ -2,7 +2,7 @@ import {
   CommonMessageNames,
   commonMessages,
 } from "../services/logging/commonRegisteredLogs";
-import { RegisteredLogMessages } from "../services/logging/logMessageTypes";
+import { RegisteredLogMessages } from "../services/logging/types";
 
 export type MessageName =
   | "INVALID_REQUEST"
@@ -12,11 +12,9 @@ export type MessageName =
 export const registeredLogs: RegisteredLogMessages<MessageName> = {
   INVALID_REQUEST: {
     messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
-    message: "",
   },
   INTERNAL_SERVER_ERROR: {
     messageCode: "MOBILE_ASYNC_INTERNAL_SERVER_ERROR",
-    message: "",
   },
   ...commonMessages,
 };

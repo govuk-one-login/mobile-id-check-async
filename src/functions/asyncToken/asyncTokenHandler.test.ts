@@ -54,7 +54,7 @@ describe("Async Token", () => {
           buildLambdaContext(),
           request,
         );
-        expect(mockLogger.getLogMessages()[1].logMessage.messageName).toBe(
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
           "ENVIRONMENT_VARIABLE_MISSING",
         );
         expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
@@ -82,7 +82,7 @@ describe("Async Token", () => {
           request,
         );
         expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-          messageName: "INVALID_REQUEST",
+          message: "INVALID_REQUEST",
           messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
         });
 
@@ -109,7 +109,7 @@ describe("Async Token", () => {
         );
 
         expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-          messageName: "INVALID_REQUEST",
+          message: "INVALID_REQUEST",
           messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
         });
         expect(mockLogger.getLogMessages()[1].data).toMatchObject({
@@ -139,7 +139,7 @@ describe("Async Token", () => {
         );
 
         expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-          messageName: "INTERNAL_SERVER_ERROR",
+          message: "INTERNAL_SERVER_ERROR",
           messageCode: "MOBILE_ASYNC_INTERNAL_SERVER_ERROR",
         });
         expect(mockLogger.getLogMessages()[1].data).toMatchObject({
@@ -168,7 +168,7 @@ describe("Async Token", () => {
           );
 
           expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-            messageName: "INVALID_REQUEST",
+            message: "INVALID_REQUEST",
             messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
           });
           expect(mockLogger.getLogMessages()[1].data).toMatchObject({
@@ -197,7 +197,7 @@ describe("Async Token", () => {
           );
 
           expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-            messageName: "INVALID_REQUEST",
+            message: "INVALID_REQUEST",
             messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
           });
           expect(mockLogger.getLogMessages()[1].data).toMatchObject({
@@ -226,7 +226,7 @@ describe("Async Token", () => {
         );
 
         expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-          messageName: "INTERNAL_SERVER_ERROR",
+          message: "INTERNAL_SERVER_ERROR",
           messageCode: "MOBILE_ASYNC_INTERNAL_SERVER_ERROR",
         });
         expect(mockLogger.getLogMessages()[1].data).toMatchObject({
@@ -251,14 +251,14 @@ describe("Async Token", () => {
           request,
         );
         expect(mockLogger.getLogMessages()[0].logMessage).toMatchObject({
-          messageName: "STARTED",
+          message: "STARTED",
           messageCode: "MOBILE_ASYNC_STARTED",
           awsRequestId: "awsRequestId",
           functionName: "lambdaFunctionName",
         });
 
         expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-          messageName: "COMPLETED",
+          message: "COMPLETED",
           messageCode: "MOBILE_ASYNC_COMPLETED",
           awsRequestId: "awsRequestId",
           functionName: "lambdaFunctionName",
