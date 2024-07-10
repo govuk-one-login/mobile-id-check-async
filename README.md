@@ -12,7 +12,6 @@ It follows the Client credentials grant flow from the OAuth2.0 Framework [see he
 [![Async-credential Push to Main](https://github.com/govuk-one-login/mobile-id-check-async/actions/workflows/async-credential-push-to-main.yml/badge.svg?branch=main)](https://github.com/govuk-one-login/mobile-id-check-async/actions/workflows/async-credential-push-to-main.yml)
 
 
-
 ## Dependencies:
 - AWS CLI
 - AWS SAM
