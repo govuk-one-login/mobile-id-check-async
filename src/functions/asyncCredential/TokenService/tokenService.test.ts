@@ -17,7 +17,7 @@ describe("Token Service", () => {
           "mockKeyId",
           mockJwt,
         );
-        expect(result.isLog).toBe(true);
+        expect(result.isError).toBe(true);
         expect(result.value).toEqual("TOKEN_SIGNATURE_INVALID");
       });
     });
@@ -31,7 +31,7 @@ describe("Token Service", () => {
           "mockKeyId",
           mockJwt,
         );
-        expect(result.isLog).toBe(true);
+        expect(result.isError).toBe(true);
         expect(result.value).toEqual("TOKEN_SIGNATURE_INVALID");
       });
     });
@@ -45,7 +45,7 @@ describe("Token Service", () => {
           "mockKeyId",
           mockJwt,
         );
-        expect(result.isLog).toBe(false);
+        expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
       });
     });

@@ -27,6 +27,7 @@
     "typescript-eslint": "^7.15.0"
   },
   "dependencies": {
+    "@aws-lambda-powertools/logger": "^2.3.0",
     "@aws-sdk/client-kms": "3.609.0",
     "@aws-sdk/client-ssm": "3.609.0",
     "@aws-sdk/node-http-handler": "3.374.0",

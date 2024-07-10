@@ -1,5 +1,3 @@
-import { APIGatewayProxyEvent } from "aws-lambda";
-import { LogOrValue, log, value } from "../types/logOrValue";
 import {
   IAsyncTokenRequestDependencies,
   lambdaHandlerConstructor,
@@ -15,14 +13,28 @@ import { buildRequest } from "../testUtils/mockRequest";
 import { IDecodedClientCredentials } from "../types/clientCredentials";
 import { IMintToken } from "./tokenService/tokenService";
 
+import { MessageName, registeredLogs } from "./registeredLogs";
+import { Logger } from "../services/logging/logger";
+import { APIGatewayProxyEvent } from "aws-lambda";
+import {
+  ErrorOrSuccess,
+  errorResponse,
+  successResponse,
+} from "../types/errorOrValue";
+import { MockLoggingAdapter } from "../services/logging/tests/logger.test";
+import { buildLambdaContext } from "../testUtils/mockContext";
+
 describe("Async Token", () => {
+  let mockLogger: MockLoggingAdapter<MessageName>;
   let request: APIGatewayProxyEvent;
   let dependencies: IAsyncTokenRequestDependencies;
 
   beforeEach(() => {
     request = buildRequest();
+    mockLogger = new MockLoggingAdapter();
     dependencies = {
       env,
+      logger: () => new Logger(mockLogger, registeredLogs),
       requestService: () => new MockRequestServiceValueResponse(),
       ssmService: () => new MockPassingSsmService(),
       clientCredentialService: () => new MockPassingClientCredentialsService(),
@@ -36,7 +48,17 @@ describe("Async Token", () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
         delete dependencies.env["SIGNING_KEY_ID"];
 
-        const result = await lambdaHandlerConstructor(dependencies, request);
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          buildLambdaContext(),
+          request,
+        );
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
+          "ENVIRONMENT_VARIABLE_MISSING",
+        );
+        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+          environmentVariable: "SIGNING_KEY_IDS",
+        });
 
         expect(result.statusCode).toBe(500);
         expect(JSON.parse(result.body).error).toEqual("server_error");
@@ -53,8 +75,19 @@ describe("Async Token", () => {
         dependencies.requestService = () =>
           new MockRequestServiceInvalidGrantTypeLogResponse();
 
-        const result = await lambdaHandlerConstructor(dependencies, request);
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          buildLambdaContext(),
+          request,
+        );
+        expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+          message: "INVALID_REQUEST",
+          messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
+        });
 
+        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: "Invalid grant_type",
+        });
         expect(result.statusCode).toBe(400);
         expect(JSON.parse(result.body).error).toEqual("invalid_grant");
         expect(JSON.parse(result.body).error_description).toEqual(
@@ -68,7 +101,19 @@ describe("Async Token", () => {
         dependencies.requestService = () =>
           new MockRequestServiceInvalidAuthorizationHeaderLogResponse();
 
-        const result = await lambdaHandlerConstructor(dependencies, request);
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          buildLambdaContext(),
+          request,
+        );
+
+        expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+          message: "INVALID_REQUEST",
+          messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
+        });
+        expect(mockLogger.getLogMessages()[1].data).toMatchObject({
+          errorMessage: "Invalid authorization header",
+        });
 
         expect(result.statusCode).toBe(400);
         expect(JSON.parse(result.body).error).toEqual(
@@ -86,7 +131,19 @@ describe("Async Token", () => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.ssmService = () => new MockFailingSsmService();
 
-        const result = await lambdaHandlerConstructor(dependencies, request);
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          buildLambdaContext(),
+          request,
+        );
+
+        expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+          message: "INTERNAL_SERVER_ERROR",
+          messageCode: "MOBILE_ASYNC_INTERNAL_SERVER_ERROR",
+        });
+        expect(mockLogger.getLogMessages()[1].data).toMatchObject({
+          errorMessage: "Error from SSM Service",
+        });
 
         expect(JSON.parse(result.body).error).toEqual("server_error");
         expect(JSON.parse(result.body).error_description).toEqual(
@@ -103,7 +160,19 @@ describe("Async Token", () => {
           dependencies.clientCredentialService = () =>
             new MockFailingClientCredentialsServiceGetClientCredentialsById();
 
-          const result = await lambdaHandlerConstructor(dependencies, request);
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            buildLambdaContext(),
+            request,
+          );
+
+          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+            message: "INVALID_REQUEST",
+            messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
+          });
+          expect(mockLogger.getLogMessages()[1].data).toMatchObject({
+            errorMessage: "Client credentials not registered",
+          });
 
           expect(result.statusCode).toBe(400);
           expect(JSON.parse(result.body).error).toEqual("invalid_client");
@@ -120,7 +189,19 @@ describe("Async Token", () => {
           dependencies.clientCredentialService = () =>
             new MockFailingClientCredentialsServiceValidation();
 
-          const result = await lambdaHandlerConstructor(dependencies, request);
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            buildLambdaContext(),
+            request,
+          );
+
+          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+            message: "INVALID_REQUEST",
+            messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
+          });
+          expect(mockLogger.getLogMessages()[1].data).toMatchObject({
+            errorMessage: "Client secrets not valid",
+          });
 
           expect(result.statusCode).toBe(400);
           expect(JSON.parse(result.body).error).toEqual("invalid_client");
@@ -137,7 +218,19 @@ describe("Async Token", () => {
       it("Returns 500 Server Error response", async () => {
         dependencies.tokenService = () => new MockFailingTokenService();
 
-        const result = await lambdaHandlerConstructor(dependencies, request);
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          buildLambdaContext(),
+          request,
+        );
+
+        expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+          message: "INTERNAL_SERVER_ERROR",
+          messageCode: "MOBILE_ASYNC_INTERNAL_SERVER_ERROR",
+        });
+        expect(mockLogger.getLogMessages()[1].data).toMatchObject({
+          errorMessage: "Failed to sign Jwt",
+        });
 
         expect(result.statusCode).toBe(500);
         expect(JSON.parse(result.body).error).toEqual("server_error");
@@ -151,7 +244,24 @@ describe("Async Token", () => {
   describe("Issue access token", () => {
     describe("Given the request is valid", () => {
       it("Returns with 200 response with an access token in the response body", async () => {
-        const result = await lambdaHandlerConstructor(dependencies, request);
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          buildLambdaContext(),
+          request,
+        );
+        expect(mockLogger.getLogMessages()[0].logMessage).toMatchObject({
+          message: "STARTED",
+          messageCode: "MOBILE_ASYNC_STARTED",
+          awsRequestId: "awsRequestId",
+          functionName: "lambdaFunctionName",
+        });
+
+        expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+          message: "COMPLETED",
+          messageCode: "MOBILE_ASYNC_COMPLETED",
+          awsRequestId: "awsRequestId",
+          functionName: "lambdaFunctionName",
+        });
 
         expect(result.statusCode);
         expect(result.body).toEqual(
@@ -167,8 +277,8 @@ describe("Async Token", () => {
 });
 
 class MockRequestServiceValueResponse implements IProcessRequest {
-  processRequest = (): LogOrValue<IDecodedClientCredentials> => {
-    return value({
+  processRequest = (): ErrorOrSuccess<IDecodedClientCredentials> => {
+    return successResponse({
       clientId: "mockClientId",
       clientSecret: "mockClientSecret",
     });
@@ -176,16 +286,16 @@ class MockRequestServiceValueResponse implements IProcessRequest {
 }
 
 class MockRequestServiceInvalidGrantTypeLogResponse implements IProcessRequest {
-  processRequest = (): LogOrValue<IDecodedClientCredentials> => {
-    return log("Invalid grant_type");
+  processRequest = (): ErrorOrSuccess<IDecodedClientCredentials> => {
+    return errorResponse("Invalid grant_type");
   };
 }
 
 class MockRequestServiceInvalidAuthorizationHeaderLogResponse
   implements IProcessRequest
 {
-  processRequest = (): LogOrValue<IDecodedClientCredentials> => {
-    return log("mockInvalidAuthorizationHeaderLog");
+  processRequest = (): ErrorOrSuccess<IDecodedClientCredentials> => {
+    return errorResponse("Invalid authorization header");
   };
 }
 
@@ -199,41 +309,41 @@ class MockPassingSsmService implements IGetClientCredentials {
         hashed_client_secret: "mockHashedClientSecret",
       },
     ],
-  ): Promise<LogOrValue<IClientCredentials[]>> => {
-    return Promise.resolve(value(clientCredentials));
+  ): Promise<ErrorOrSuccess<IClientCredentials[]>> => {
+    return Promise.resolve(successResponse(clientCredentials));
   };
 }
 
 class MockFailingSsmService implements IGetClientCredentials {
   getClientCredentials = async (): Promise<
-    LogOrValue<IClientCredentials[]>
+    ErrorOrSuccess<IClientCredentials[]>
   > => {
-    return log("Mock Failing SSM log");
+    return errorResponse("Error from SSM Service");
   };
 }
 
 class MockPassingClientCredentialsService implements IClientCredentialsService {
-  validate() {
-    return true;
-  }
-  getClientCredentialsById() {
-    return {
+  getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
+    return successResponse({
       client_id: "mockClientId",
       issuer: "mockIssuer",
       salt: "mockSalt",
       hashed_client_secret: "mockHashedClientSecret",
-    };
+    });
+  }
+  validate(): ErrorOrSuccess<null> {
+    return successResponse(null);
   }
 }
 
 class MockFailingClientCredentialsServiceGetClientCredentialsById
   implements IClientCredentialsService
 {
-  getClientCredentialsById() {
-    return null;
+  getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
+    return errorResponse("Client credentials not recognised");
   }
-  validate() {
-    return false;
+  validate(): ErrorOrSuccess<null> {
+    throw Error("This should not be used");
   }
 }
 
@@ -241,27 +351,27 @@ class MockFailingClientCredentialsServiceValidation
   implements IClientCredentialsService
 {
   getClientCredentialsById() {
-    return {
+    return successResponse({
       client_id: "mockClientId",
       issuer: "mockIssuer",
       salt: "mockSalt",
       hashed_client_secret: "mockHashedClientSecret",
-    };
+    });
   }
-  validate() {
-    return false;
+  validate(): ErrorOrSuccess<null> {
+    return errorResponse("Client secrets not valid");
   }
 }
 
 class MockPassingTokenService implements IMintToken {
-  async mintToken(): Promise<string> {
-    return "mockToken";
+  async mintToken(): Promise<ErrorOrSuccess<string>> {
+    return successResponse("mockToken");
   }
 }
 
 class MockFailingTokenService implements IMintToken {
-  async mintToken(): Promise<string> {
-    throw new Error("Failed to sign Jwt");
+  async mintToken(): Promise<ErrorOrSuccess<string>> {
+    return errorResponse("Failed to sign Jwt");
   }
 }
 

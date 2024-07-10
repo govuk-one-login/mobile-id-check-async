@@ -1,19 +1,23 @@
 import format from "ecdsa-sig-formatter";
-import { LogOrValue, log, value } from "../../types/logOrValue";
 import { KMSClient, VerifyCommand } from "@aws-sdk/client-kms";
+import {
+  ErrorOrSuccess,
+  errorResponse,
+  successResponse,
+} from "../../types/errorOrValue";
 
 export interface IVerifyTokenSignature {
   verifyTokenSignature: (
     keyId: string,
     jwt: string,
-  ) => Promise<LogOrValue<null>>;
+  ) => Promise<ErrorOrSuccess<null>>;
 }
 
 export class TokenService implements IVerifyTokenSignature {
   async verifyTokenSignature(
     keyId: string,
     jwt: string,
-  ): Promise<LogOrValue<null>> {
+  ): Promise<ErrorOrSuccess<null>> {
     const [header, payload, signature] = jwt.split(".");
     const kmsClient = new KMSClient();
     const verifyCommand = new VerifyCommand({
@@ -25,9 +29,9 @@ export class TokenService implements IVerifyTokenSignature {
 
     const result = await kmsClient.send(verifyCommand);
     if (result.SignatureValid !== true) {
-      return log("TOKEN_SIGNATURE_INVALID");
+      return errorResponse("TOKEN_SIGNATURE_INVALID");
     }
 
-    return value(null);
+    return successResponse(null);
   }
 }

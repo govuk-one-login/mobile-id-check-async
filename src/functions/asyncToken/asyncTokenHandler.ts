@@ -1,4 +1,8 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context,
+} from "aws-lambda";
 import "dotenv/config";
 import { validOrThrow } from "../config";
 import {
@@ -13,16 +17,28 @@ import {
 import { IGetClientCredentials, SsmService } from "./ssmService/ssmService";
 import { IMintToken, TokenService } from "./tokenService/tokenService";
 import { IDecodedClientCredentials } from "../types/clientCredentials";
+import { Logger } from "../services/logging/logger";
+import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
+import { MessageName, registeredLogs } from "./registeredLogs";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
+  context: Context,
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> {
   // Environment variables
+
+  const logger = dependencies.logger();
+  logger.addContext(context);
+  logger.log("STARTED");
   let kidArn;
   try {
     kidArn = validOrThrow(dependencies.env, "SIGNING_KEY_ID");
   } catch (error) {
+    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
+      environmentVariable: "SIGNING_KEY_IDS",
+    });
+
     return serverErrorResponse;
   }
 
@@ -30,10 +46,13 @@ export async function lambdaHandlerConstructor(
   const requestService = dependencies.requestService();
   const processRequest = requestService.processRequest(event);
 
-  if (processRequest.isLog) {
+  if (processRequest.isError) {
     if (processRequest.value === "Invalid grant_type") {
+      logger.log("INVALID_REQUEST", { errorMessage: processRequest.value });
       return badRequestResponseInvalidGrant;
     }
+
+    logger.log("INVALID_REQUEST", { errorMessage: processRequest.value });
 
     return badRequestResponseInvalidAuthorizationHeader;
   }
@@ -43,7 +62,10 @@ export async function lambdaHandlerConstructor(
   // Fetching stored client credentials
   const ssmService = dependencies.ssmService();
   const ssmServiceResponse = await ssmService.getClientCredentials();
-  if (ssmServiceResponse.isLog) {
+  if (ssmServiceResponse.isError) {
+    logger.log("INTERNAL_SERVER_ERROR", {
+      errorMessage: ssmServiceResponse.value,
+    });
     return serverErrorResponse;
   }
 
@@ -52,19 +74,29 @@ export async function lambdaHandlerConstructor(
 
   // Incoming credentials match stored credentials
   const clientCredentialsService = dependencies.clientCredentialService();
-  const storedCredentials = clientCredentialsService.getClientCredentialsById(
-    storedCredentialsArray,
-    suppliedCredentials.clientId,
-  );
-  if (!storedCredentials) {
+  const clientCredentialsByIdResponse =
+    clientCredentialsService.getClientCredentialsById(
+      storedCredentialsArray,
+      suppliedCredentials.clientId,
+    );
+  if (clientCredentialsByIdResponse.isError) {
+    logger.log("INVALID_REQUEST", {
+      errorMessage: "Client credentials not registered",
+    });
     return badRequestResponseInvalidCredentials;
   }
 
-  const isValidClientCredentials = clientCredentialsService.validate(
+  const storedCredentials =
+    clientCredentialsByIdResponse.value as IClientCredentials;
+
+  const isValidClientCredentialsResponse = clientCredentialsService.validate(
     storedCredentials,
     suppliedCredentials,
   );
-  if (!isValidClientCredentials) {
+  if (isValidClientCredentialsResponse.isError) {
+    logger.log("INVALID_REQUEST", {
+      errorMessage: isValidClientCredentialsResponse.value,
+    });
     return badRequestResponseInvalidCredentials;
   }
 
@@ -76,13 +108,18 @@ export async function lambdaHandlerConstructor(
     client_id: storedCredentials.client_id,
   };
 
-  let accessToken;
   const tokenService = dependencies.tokenService(kidArn);
-  try {
-    accessToken = await tokenService.mintToken(jwtPayload);
-  } catch (error) {
+
+  const mintTokenResponse = await tokenService.mintToken(jwtPayload);
+  if (mintTokenResponse.isError) {
+    logger.log("INTERNAL_SERVER_ERROR", {
+      errorMessage: mintTokenResponse.value,
+    });
     return serverErrorResponse;
   }
+  const accessToken = mintTokenResponse.value;
+
+  logger.log("COMPLETED");
 
   return {
     headers: {
@@ -137,6 +174,7 @@ const serverErrorResponse: APIGatewayProxyResult = {
 
 export interface IAsyncTokenRequestDependencies {
   env: NodeJS.ProcessEnv;
+  logger: () => Logger<MessageName>;
   requestService: () => IProcessRequest;
   ssmService: () => IGetClientCredentials;
   clientCredentialService: () => IClientCredentialsService;
@@ -145,6 +183,7 @@ export interface IAsyncTokenRequestDependencies {
 
 const dependencies: IAsyncTokenRequestDependencies = {
   env: process.env,
+  logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
   requestService: () => new RequestService(),
   ssmService: () => new SsmService(),
   clientCredentialService: () => new ClientCredentialsService(),

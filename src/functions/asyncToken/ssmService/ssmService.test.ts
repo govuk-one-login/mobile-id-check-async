@@ -11,7 +11,7 @@ describe("SSM Service", () => {
 
       const result = await ssmService.getClientCredentials();
 
-      expect(result.isLog).toBe(true);
+      expect(result.isError).toBe(true);
       expect(result.value).toEqual("Client Credentials not found");
     });
   });
@@ -87,7 +87,7 @@ describe("SSM Service", () => {
 
           const result = await ssmService.getClientCredentials();
 
-          expect(result.isLog).toBe(true);
+          expect(result.isError).toBe(true);
           expect(result.value).toEqual(expectedErrorMessage);
         });
       },
@@ -112,7 +112,7 @@ describe("SSM Service", () => {
 
         const result = await ssmService.getClientCredentials();
 
-        expect(result.isLog).toBe(false);
+        expect(result.isError).toBe(false);
         expect(result.value).toStrictEqual([
           {
             client_id: "mockClientId",

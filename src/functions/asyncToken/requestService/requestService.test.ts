@@ -18,7 +18,7 @@ describe("Request Service", () => {
 
           const result = requestService.processRequest(request);
 
-          expect(result.isLog).toEqual(true);
+          expect(result.isError).toEqual(true);
           expect(result.value).toEqual("Invalid grant_type");
         });
       });
@@ -29,7 +29,7 @@ describe("Request Service", () => {
 
           const result = requestService.processRequest(request);
 
-          expect(result.isLog).toEqual(true);
+          expect(result.isError).toEqual(true);
           expect(result.value).toEqual("Invalid grant_type");
         });
       });
@@ -40,7 +40,7 @@ describe("Request Service", () => {
 
           const result = requestService.processRequest(request);
 
-          expect(result.isLog).toEqual(true);
+          expect(result.isError).toEqual(true);
           expect(result.value).toEqual("Invalid grant_type");
         });
       });
@@ -51,7 +51,7 @@ describe("Request Service", () => {
 
           const result = requestService.processRequest(request);
 
-          expect(result.isLog).toEqual(true);
+          expect(result.isError).toEqual(true);
           expect(result.value).toEqual("Invalid grant_type");
         });
       });
@@ -64,7 +64,7 @@ describe("Request Service", () => {
 
           const result = requestService.processRequest(request);
 
-          expect(result.isLog).toEqual(true);
+          expect(result.isError).toEqual(true);
           expect(result.value).toEqual("Invalid authorization header");
         });
       });
@@ -72,11 +72,11 @@ describe("Request Service", () => {
       describe("Given authorization header does not use Basic Authentication Scheme", () => {
         it('Returns Log with value "Invalid Request"', () => {
           request.body = JSON.stringify({ grant_type: "client_credentials" });
-          request.headers = { authorization: "mockAuthorization" };
+          request.headers = { Authorization: "mockAuthorization" };
 
           const result = requestService.processRequest(request);
 
-          expect(result.isLog).toEqual(true);
+          expect(result.isError).toEqual(true);
           expect(result.value).toEqual("Invalid authorization header");
         });
       });
@@ -91,7 +91,7 @@ describe("Request Service", () => {
 
           const result = requestService.processRequest(request);
 
-          expect(result.isLog).toEqual(true);
+          expect(result.isError).toEqual(true);
           expect(result.value).toEqual("Client secret incorrectly formatted");
         });
       });
@@ -106,7 +106,7 @@ describe("Request Service", () => {
 
         const result = requestService.processRequest(request);
 
-        expect(result.isLog).toEqual(false);
+        expect(result.isError).toEqual(false);
         expect(result.value).toEqual({
           clientId: "mockClientId",
           clientSecret: "mockClientSecret",

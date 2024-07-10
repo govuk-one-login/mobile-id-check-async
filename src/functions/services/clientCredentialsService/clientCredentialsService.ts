@@ -1,10 +1,15 @@
 import { createHash } from "crypto";
+import {
+  ErrorOrSuccess,
+  errorResponse,
+  successResponse,
+} from "../../types/errorOrValue";
 
 export class ClientCredentialsService implements IClientCredentialsService {
   validate = (
     storedCredentials: IClientCredentials,
     suppliedCredentials: IDecodedClientCredentials,
-  ): boolean => {
+  ): ErrorOrSuccess<null> => {
     const { clientSecret: suppliedClientSecret } = suppliedCredentials;
     const storedSalt = storedCredentials.salt;
     const hashedSuppliedClientSecret = hashSecret(
@@ -15,22 +20,23 @@ export class ClientCredentialsService implements IClientCredentialsService {
     const isValidClientSecret =
       hashedStoredClientSecret === hashedSuppliedClientSecret;
 
-    return isValidClientSecret;
+    if (isValidClientSecret) return successResponse(null);
+
+    return errorResponse("Client secret not valid for the supplied clientId");
   };
 
   getClientCredentialsById = (
     storedCredentialsArray: IClientCredentials[],
     suppliedClientId: string,
-  ) => {
+  ): ErrorOrSuccess<IClientCredentials> => {
     const storedCredentials = storedCredentialsArray.find(
       (cred: IClientCredentials) => cred.client_id === suppliedClientId,
     );
-    if (!storedCredentials) return null;
+    if (!storedCredentials) return errorResponse("ClientId not registered");
 
-    return storedCredentials;
+    return successResponse(storedCredentials);
   };
 }
-
 const hashSecret = (secret: string, salt: string): string => {
   return createHash("sha256")
     .update(secret + salt)
@@ -41,12 +47,12 @@ export interface IClientCredentialsService {
   validate: (
     storedCredentials: IClientCredentials,
     suppliedCredentials: IDecodedClientCredentials,
-  ) => boolean;
+  ) => ErrorOrSuccess<null>;
 
   getClientCredentialsById: (
     storedCredentialsArray: IClientCredentials[],
     suppliedClientId: string,
-  ) => IClientCredentials | null;
+  ) => ErrorOrSuccess<IClientCredentials>;
 }
 
 export type IClientCredentials = {
