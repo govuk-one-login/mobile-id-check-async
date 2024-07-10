@@ -7,11 +7,11 @@ describe("Logger", () => {
   describe("Given there is a message to log", () => {
     it("Writes a log with registered log data ", () => {
       const loggingAdapter = new MockLoggingAdapter();
-      const mockLogger = new Logger<MockMessage>(
+      const logger = new Logger<MockMessage>(
         loggingAdapter,
         mockRegisteredLogs,
       );
-      mockLogger.log("MOCK_MESSAGE_NAME");
+      logger.log("MOCK_MESSAGE_NAME");
       expect(loggingAdapter.getLogMessages()[0].logMessage).toMatchObject({
         message: "MOCK_MESSAGE_NAME",
         messageCode: "MOBILE_ASYNC_MOCK_MESSAGE_NAME",
@@ -21,12 +21,12 @@ describe("Logger", () => {
     describe("Given lambda context is passed to the logger", () => {
       it("Writes a log including the lambda context", () => {
         const loggingAdapter = new MockLoggingAdapter();
-        const mockLogger = new Logger<MockMessage>(
+        const logger = new Logger<MockMessage>(
           loggingAdapter,
           mockRegisteredLogs,
         );
-        mockLogger.addContext(buildLambdaContext());
-        mockLogger.log("MOCK_MESSAGE_NAME");
+        logger.addContext(buildLambdaContext());
+        logger.log("MOCK_MESSAGE_NAME");
         expect(loggingAdapter.getLogMessages()[0].logMessage).toMatchObject({
           message: "MOCK_MESSAGE_NAME",
           messageCode: "MOBILE_ASYNC_MOCK_MESSAGE_NAME",
@@ -39,12 +39,12 @@ describe("Logger", () => {
     describe("Given authSessionId is passed to the logger", () => {
       it("Writes a log including the session data", () => {
         const loggingAdapter = new MockLoggingAdapter();
-        const mockLogger = new Logger<MockMessage>(
+        const logger = new Logger<MockMessage>(
           loggingAdapter,
           mockRegisteredLogs,
         );
-        mockLogger.appendKeys({ authSessionId: "mockAuthSessionId" });
-        mockLogger.log("MOCK_MESSAGE_NAME");
+        logger.appendKeys({ authSessionId: "mockAuthSessionId" });
+        logger.log("MOCK_MESSAGE_NAME");
         expect(loggingAdapter.getLogMessages()[0].logMessage).toMatchObject({
           message: "MOCK_MESSAGE_NAME",
           messageCode: "MOBILE_ASYNC_MOCK_MESSAGE_NAME",
@@ -56,11 +56,11 @@ describe("Logger", () => {
     describe("Given custom data is passed into the log message", () => {
       it("Writes a log including custom data", () => {
         const loggingAdapter = new MockLoggingAdapter();
-        const mockLogger = new Logger<MockMessage>(
+        const logger = new Logger<MockMessage>(
           loggingAdapter,
           mockRegisteredLogs,
         );
-        mockLogger.log("MOCK_MESSAGE_NAME", { mockKey: "mockValue" });
+        logger.log("MOCK_MESSAGE_NAME", { mockKey: "mockValue" });
         expect(loggingAdapter.getLogMessages()[0].logMessage).toMatchObject({
           message: "MOCK_MESSAGE_NAME",
           messageCode: "MOBILE_ASYNC_MOCK_MESSAGE_NAME",
