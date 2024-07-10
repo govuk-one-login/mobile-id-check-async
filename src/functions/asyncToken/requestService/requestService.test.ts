@@ -72,7 +72,7 @@ describe("Request Service", () => {
       describe("Given authorization header does not use Basic Authentication Scheme", () => {
         it('Returns Log with value "Invalid Request"', () => {
           request.body = JSON.stringify({ grant_type: "client_credentials" });
-          request.headers = { authorization: "mockAuthorization" };
+          request.headers = { Authorization: "mockAuthorization" };
 
           const result = requestService.processRequest(request);
 
