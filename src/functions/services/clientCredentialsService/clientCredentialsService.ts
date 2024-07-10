@@ -24,8 +24,15 @@ export class ClientCredentialsService implements IClientCredentialsService {
       return errorResponse("Client secret not valid for the supplied clientId");
     }
 
-    if (!storedCredentials.redirect_uri) {
+    const registeredRedirectUri = storedCredentials.redirect_uri;
+    if (!registeredRedirectUri) {
       return errorResponse("Missing redirect_uri");
+    }
+
+    try {
+      new URL(registeredRedirectUri);
+    } catch (error) {
+      return errorResponse("Invalid redirect_uri");
     }
 
     return successResponse(null);
