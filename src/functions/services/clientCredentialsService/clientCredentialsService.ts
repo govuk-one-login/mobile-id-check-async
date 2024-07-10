@@ -20,9 +20,11 @@ export class ClientCredentialsService implements IClientCredentialsService {
     const isValidClientSecret =
       hashedStoredClientSecret === hashedSuppliedClientSecret;
 
-    if (isValidClientSecret) return successResponse(null);
+    if (!isValidClientSecret) {
+      return errorResponse("Client secret not valid for the supplied clientId");
+    }
 
-    return errorResponse("Client secret not valid for the supplied clientId");
+    return successResponse(null);
   };
 
   getClientCredentialsById = (
