@@ -1,14 +1,14 @@
 import { IDecodedClientCredentials } from "../../types/clientCredentials";
 import {
   ClientCredentialsService,
-  IClientCredentials,
+  IRegisteredClientCredentials,
 } from "./clientCredentialsService";
 
 describe("Client Credentials Service", () => {
   let clientCredentialsService: ClientCredentialsService;
   let mockSuppliedClientCredentials: IDecodedClientCredentials;
-  let mockStoredClientCredentialsArray: IClientCredentials[];
-  let mockStoredClientCredentials: IClientCredentials;
+  let mockStoredClientCredentialsArray: IRegisteredClientCredentials[];
+  let mockStoredClientCredentials: IRegisteredClientCredentials;
 
   beforeEach(() => {
     clientCredentialsService = new ClientCredentialsService();
@@ -23,6 +23,7 @@ describe("Client Credentials Service", () => {
         salt: "0vjPs=djeEHP",
         hashed_client_secret:
           "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+        redirect_uri: "https://mockRedirectUri.com",
       },
       {
         client_id: "mockAnotherClientId",
@@ -30,6 +31,7 @@ describe("Client Credentials Service", () => {
         salt: "0vjPs=djeEHP",
         hashed_client_secret:
           "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+        redirect_uri: "https://mockRedirectUri.com",
       },
     ];
     mockStoredClientCredentials = {
@@ -38,6 +40,7 @@ describe("Client Credentials Service", () => {
       salt: "0vjPs=djeEHP",
       hashed_client_secret:
         "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+      redirect_uri: "https://mockRedirectUri.com",
     };
   });
 
@@ -61,19 +64,21 @@ describe("Client Credentials Service", () => {
       });
     });
 
-    // describe("redirect_uri validation", () => {
-    //   describe("Given redirect_uri is not present", () => {
-    //     it("Returns a log", () => {
-    //       const result = clientCredentialsService.validate(
-    //         mockStoredClientCredentials,
-    //         mockSuppliedClientCredentials,
-    //       );
+    describe("redirect_uri validation", () => {
+      describe("Given redirect_uri is not present", () => {
+        it("Returns a log", () => {
+          mockStoredClientCredentials.redirect_uri = "";
 
-    //       expect(result.isError).toBe(true);
-    //       expect(result.value).toBe("Missing redirect_uri");
-    //     });
-    //   });
-    // });
+          const result = clientCredentialsService.validate(
+            mockStoredClientCredentials,
+            mockSuppliedClientCredentials,
+          );
+
+          expect(result.isError).toBe(true);
+          expect(result.value).toBe("Missing redirect_uri");
+        });
+      });
+    });
 
     describe("Given the supplied credentials match the stored credentials", () => {
       it("Returns true", async () => {
@@ -123,6 +128,7 @@ describe("Client Credentials Service", () => {
           salt: "0vjPs=djeEHP",
           hashed_client_secret:
             "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+          redirect_uri: "https://mockRedirectUri.com",
         };
 
         const result = clientCredentialsService.getClientCredentialsById(
