@@ -647,35 +647,35 @@ describe("Async Credential", () => {
     });
   });
 
-  // describe("Request body validation - using Client Credentials", () => {
-  //   describe("Given redirect_uri is present and does not match the registered redirect_uri value", () => {
-  //     it("Returns a 400 Bad Request response", async () => {
-  //       const event = buildRequest({
-  //         headers: { Authorization: `Bearer ${mockValidJwt}` },
-  //         body: JSON.stringify({
-  //           state: "mockState",
-  //           sub: "mockSub",
-  //           client_id: "mockClientId",
-  //           govuk_signin_journey_id: "mockGovukSigninJourneyId",
-  //           redirect_uri: "mockInvalidRedirectUri",
-  //         }),
-  //       });
-  //       dependencies.clientCredentialsService = () =>
-  //         new MockPassingClientCredentialsService();
+  describe("Request body validation - using Client Credentials", () => {
+    describe("Given redirect_uri is present and does not match the registered redirect_uri value", () => {
+      it("Returns a 400 Bad Request response", async () => {
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+            redirect_uri: "https://mockUnregisteredRedirectUri.com",
+          }),
+        });
+        dependencies.clientCredentialsService = () =>
+          new MockPassingClientCredentialsService();
 
-  //       const result = await lambdaHandler(event, dependencies);
+        const result = await lambdaHandler(event, dependencies);
 
-  //       expect(result).toStrictEqual({
-  //         headers: { "Content-Type": "application/json" },
-  //         statusCode: 400,
-  //         body: JSON.stringify({
-  //           error: "invalid_request",
-  //           error_description: "Unregistered redirect_uri",
-  //         }),
-  //       });
-  //     });
-  //   });
-  // });
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description: "Unregistered redirect_uri",
+          }),
+        });
+      });
+    });
+  });
 
   describe("JWT signature verification", () => {
     describe("Given that the JWT signature verification fails", () => {

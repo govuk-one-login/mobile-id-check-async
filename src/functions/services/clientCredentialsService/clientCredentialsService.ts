@@ -73,6 +73,7 @@ export type IClientCredentials = {
   issuer: string;
   salt: string;
   hashed_client_secret: string;
+  redirect_uri?: string;
 };
 
 export type IRegisteredClientCredentials = {

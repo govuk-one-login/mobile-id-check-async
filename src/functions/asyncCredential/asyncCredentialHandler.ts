@@ -3,6 +3,7 @@ import { validOrThrow } from "../config";
 import {
   ClientCredentialsService,
   IClientCredentials,
+  IRegisteredClientCredentials,
 } from "../services/clientCredentialsService/clientCredentialsService";
 import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
 import { TokenService } from "./TokenService/tokenService";
@@ -111,7 +112,37 @@ export async function lambdaHandler(
   }
 
   const clientCredentials =
-    clientCredentialResponse.value as IClientCredentials;
+    clientCredentialResponse.value as IRegisteredClientCredentials;
+
+  const validateClientCredentialsResponse = clientCredentialsService.validate(
+    clientCredentials,
+    JSON.parse(requestBody),
+  );
+  if (validateClientCredentialsResponse.value != null) {
+    return badRequestResponse({
+      error: "invalid_request",
+      errorDescription: validateClientCredentialsResponse.value,
+    });
+  }
+
+  let parsedRequestBody: IClientCredentials;
+  try {
+    parsedRequestBody = JSON.parse(requestBody);
+  } catch (error) {
+    return badRequestResponse({
+      error: "invalid_request",
+      errorDescription: "Invalid JSON in request body",
+    });
+  }
+
+  if (parsedRequestBody.redirect_uri) {
+    if (parsedRequestBody.redirect_uri !== clientCredentials.redirect_uri) {
+      return badRequestResponse({
+        error: "invalid_request",
+        errorDescription: "Unregistered redirect_uri",
+      });
+    }
+  }
 
   // Validate aud claim matches the ISSUER in client credential array
   if (jwtPayload.aud !== clientCredentials.issuer) {
