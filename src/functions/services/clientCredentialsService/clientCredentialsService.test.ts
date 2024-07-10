@@ -61,6 +61,20 @@ describe("Client Credentials Service", () => {
       });
     });
 
+    // describe("redirect_uri validation", () => {
+    //   describe("Given redirect_uri is not present", () => {
+    //     it("Returns a log", () => {
+    //       const result = clientCredentialsService.validate(
+    //         mockStoredClientCredentials,
+    //         mockSuppliedClientCredentials,
+    //       );
+
+    //       expect(result.isError).toBe(true);
+    //       expect(result.value).toBe("Missing redirect_uri");
+    //     });
+    //   });
+    // });
+
     describe("Given the supplied credentials match the stored credentials", () => {
       it("Returns true", async () => {
         mockSuppliedClientCredentials = {
