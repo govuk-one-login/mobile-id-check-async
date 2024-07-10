@@ -8,11 +8,11 @@ There are two logs that do not follow this pattern - the STARTED and COMPLETED l
 
 Careful considering should be given if other logs that do not follow this pattern are added.
 
-## Regsistration of logs:
+## Reference for registering logs:
 
 Logs should be registered within the folder for the given lambda. See here for an example of how to create a log file following the required typing:
 
-[Registered common logs] (commonRegisteredLogs.ts)
+[Registered common logs](commonRegisteredLogs.ts)
 
 Any logs that are used across more than one lambda should be added to the commonRegisteredLogs.ts
 
