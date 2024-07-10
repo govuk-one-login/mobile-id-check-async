@@ -222,7 +222,9 @@ const requestBodyValidator = (
   }
 
   if (parsedBody.redirect_uri) {
-    if (parsedBody.redirect_uri !== typeof URL) {
+    try {
+      new URL(parsedBody.redirect_uri);
+    } catch (error) {
       return errorResponse("Invalid redirect_uri");
     }
   }
