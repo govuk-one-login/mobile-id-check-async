@@ -611,7 +611,7 @@ describe("Async Credential", () => {
       });
     });
 
-    describe("Given redirect_uri is invalid", () => {
+    describe("Given redirect_uri is not a valid URL", () => {
       it("Returns 400 status code with invalid_request error", async () => {
         const event = buildRequest({
           headers: { Authorization: `Bearer ${mockValidJwt}` },
