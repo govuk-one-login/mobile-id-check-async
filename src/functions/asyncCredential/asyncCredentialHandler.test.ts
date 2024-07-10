@@ -610,6 +610,37 @@ describe("Async Credential", () => {
         });
       });
     });
+
+    describe("Given redirect_uri is not a valid URL", () => {
+      it("Returns 400 status code with invalid_request error", async () => {
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+            redirect_uri: "mockInvalidUrl",
+          }),
+        });
+
+        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+
+        const result: APIGatewayProxyResult = await lambdaHandler(
+          event,
+          dependencies,
+        );
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description: "Invalid redirect_uri",
+          }),
+        });
+      });
+    });
   });
 
   describe("JWT signature verification", () => {

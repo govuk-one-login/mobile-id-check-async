@@ -221,6 +221,14 @@ const requestBodyValidator = (
     return errorResponse("Missing govuk_signin_journey_id in request body");
   }
 
+  if (parsedBody.redirect_uri) {
+    try {
+      new URL(parsedBody.redirect_uri);
+    } catch (error) {
+      return errorResponse("Invalid redirect_uri");
+    }
+  }
+
   return successResponse(null);
 };
 
