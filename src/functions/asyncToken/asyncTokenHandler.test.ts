@@ -12,10 +12,7 @@ import { IGetClientCredentials } from "./ssmService/ssmService";
 import { buildRequest } from "../testUtils/mockRequest";
 import { IDecodedClientCredentials } from "../types/clientCredentials";
 import { IMintToken } from "./tokenService/tokenService";
-import {
-  MockLoggingAdapter,
-  buildLambdaContext,
-} from "../services/logging/logger.test";
+
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
 import { APIGatewayProxyEvent } from "aws-lambda";
@@ -24,6 +21,8 @@ import {
   errorResponse,
   successResponse,
 } from "../types/errorOrValue";
+import { MockLoggingAdapter } from "../services/logging/tests/logger.test";
+import { buildLambdaContext } from "../testUtils/mockContext";
 
 describe("Async Token", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;

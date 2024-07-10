@@ -1,7 +1,8 @@
 import { LogAttributes } from "@aws-lambda-powertools/logger/lib/cjs/types/Log";
-import { ILoggerAdapter, Logger } from "./logger";
-import { LogMessage, RegisteredLogMessages } from "./types";
+import { ILoggerAdapter, Logger } from "../logger";
+import { LogMessage, RegisteredLogMessages } from "../types";
 import { Context } from "aws-lambda";
+import { buildLambdaContext } from "../../../testUtils/mockContext";
 
 describe("Logger", () => {
   describe("Given there is a message to log", () => {
@@ -104,22 +105,3 @@ const mockRegisteredLogs: RegisteredLogMessages<MockMessage> = {
     messageCode: "MOBILE_ASYNC_MOCK_MESSAGE_NAME",
   },
 };
-
-export function buildLambdaContext(): Context {
-  return {
-    callbackWaitsForEmptyEventLoop: true,
-    functionName: "lambdaFunctionName",
-    functionVersion: "1",
-    invokedFunctionArn: "arn:12345",
-    memoryLimitInMB: "1028",
-    awsRequestId: "awsRequestId",
-    logGroupName: "logGroup",
-    logStreamName: "logStream",
-    getRemainingTimeInMillis: () => {
-      return 2000;
-    },
-    done: function (): void {},
-    fail: function (): void {},
-    succeed: function (): void {},
-  };
-}
