@@ -7,7 +7,7 @@ import {
 
 export class ClientCredentialsService implements IClientCredentialsService {
   validate = (
-    storedCredentials: IRegisteredClientCredentials,
+    storedCredentials: IClientCredentials,
     suppliedCredentials: IDecodedClientCredentials,
   ): ErrorOrSuccess<null> => {
     const { clientSecret: suppliedClientSecret } = suppliedCredentials;
@@ -58,7 +58,7 @@ const hashSecret = (secret: string, salt: string): string => {
 
 export interface IClientCredentialsService {
   validate: (
-    storedCredentials: IRegisteredClientCredentials,
+    storedCredentials: IClientCredentials,
     suppliedCredentials: IDecodedClientCredentials,
   ) => ErrorOrSuccess<null>;
 
@@ -74,14 +74,6 @@ export type IClientCredentials = {
   salt: string;
   hashed_client_secret: string;
   redirect_uri?: string;
-};
-
-export type IRegisteredClientCredentials = {
-  client_id: string;
-  issuer: string;
-  salt: string;
-  hashed_client_secret: string;
-  redirect_uri: string;
 };
 
 export interface IDecodedClientCredentials {

@@ -3,7 +3,6 @@ import { validOrThrow } from "../config";
 import {
   ClientCredentialsService,
   IClientCredentials,
-  IRegisteredClientCredentials,
 } from "../services/clientCredentialsService/clientCredentialsService";
 import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
 import { TokenService } from "./TokenService/tokenService";
@@ -112,7 +111,7 @@ export async function lambdaHandler(
   }
 
   const clientCredentials =
-    clientCredentialResponse.value as IRegisteredClientCredentials;
+    clientCredentialResponse.value as IClientCredentials;
 
   const validateClientCredentialsResponse = clientCredentialsService.validate(
     clientCredentials,

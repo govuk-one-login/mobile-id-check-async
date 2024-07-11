@@ -1,14 +1,14 @@
 import { IDecodedClientCredentials } from "../../types/clientCredentials";
 import {
   ClientCredentialsService,
-  IRegisteredClientCredentials,
+  IClientCredentials,
 } from "./clientCredentialsService";
 
 describe("Client Credentials Service", () => {
   let clientCredentialsService: ClientCredentialsService;
   let mockSuppliedClientCredentials: IDecodedClientCredentials;
-  let mockStoredClientCredentialsArray: IRegisteredClientCredentials[];
-  let mockStoredClientCredentials: IRegisteredClientCredentials;
+  let mockStoredClientCredentialsArray: IClientCredentials[];
+  let mockStoredClientCredentials: IClientCredentials;
 
   beforeEach(() => {
     clientCredentialsService = new ClientCredentialsService();

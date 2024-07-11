@@ -9,7 +9,6 @@ import {
   ClientCredentialsService,
   IClientCredentials,
   IClientCredentialsService,
-  IRegisteredClientCredentials,
 } from "../services/clientCredentialsService/clientCredentialsService";
 import {
   IProcessRequest,
@@ -88,7 +87,7 @@ export async function lambdaHandlerConstructor(
   }
 
   const storedCredentials =
-    clientCredentialsByIdResponse.value as IRegisteredClientCredentials;
+    clientCredentialsByIdResponse.value as IClientCredentials;
 
   const isValidClientCredentialsResponse = clientCredentialsService.validate(
     storedCredentials,
