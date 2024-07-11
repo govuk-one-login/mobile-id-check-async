@@ -43,7 +43,6 @@ export class ClientCredentialsService implements IClientCredentialsService {
     storedCredentials: IClientCredentials,
     suppliedCredentials: ICredentialRequestBody,
   ): ErrorOrSuccess<null> => {
-    // eslint-disable-next-line
     const registeredRedirectUri = storedCredentials.redirect_uri;
     if (!registeredRedirectUri) {
       return errorResponse("Missing redirect_uri");
