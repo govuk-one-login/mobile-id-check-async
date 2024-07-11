@@ -124,15 +124,15 @@ export async function lambdaHandler(
     clientCredentialResponse.value as IClientCredentials;
 
   // TODO - create separate method to validate async credential request
-  const validateClientCredentialsResponse =
+  const validateClientCredentialsResult =
     clientCredentialsService.validateCredentialRequest(
       clientCredentials,
       JSON.parse(requestBody),
     );
-  if (validateClientCredentialsResponse.isError) {
+  if (validateClientCredentialsResult.isError) {
     return badRequestResponse({
       error: "invalid_request",
-      errorDescription: validateClientCredentialsResponse.value as string,
+      errorDescription: validateClientCredentialsResult.value as string,
     });
   }
 
