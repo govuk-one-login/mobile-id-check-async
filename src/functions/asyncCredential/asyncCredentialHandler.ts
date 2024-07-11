@@ -129,10 +129,10 @@ export async function lambdaHandler(
       clientCredentials,
       JSON.parse(requestBody),
     );
-  if (validateClientCredentialsResponse.value != null) {
+  if (validateClientCredentialsResponse.isError) {
     return badRequestResponse({
       error: "invalid_request",
-      errorDescription: validateClientCredentialsResponse.value,
+      errorDescription: validateClientCredentialsResponse.value as string,
     });
   }
 
