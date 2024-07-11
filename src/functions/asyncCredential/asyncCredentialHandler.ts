@@ -123,7 +123,6 @@ export async function lambdaHandler(
   const clientCredentials =
     clientCredentialResponse.value as IClientCredentials;
 
-  // TODO - create separate method to validate async credential request
   const validateClientCredentialsResult =
     clientCredentialsService.validateCredentialRequest(
       clientCredentials,
