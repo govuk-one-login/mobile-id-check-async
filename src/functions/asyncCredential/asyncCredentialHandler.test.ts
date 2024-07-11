@@ -648,7 +648,7 @@ describe("Async Credential", () => {
   });
 
   describe("Request body validation - using Client Credentials", () => {
-    describe("Given redirect_uri is present and does not match the registered redirect_uri value", () => {
+    describe("Given request body validation fails", () => {
       it("Returns a 400 Bad Request response", async () => {
         const event = buildRequest({
           headers: { Authorization: `Bearer ${mockValidJwt}` },
@@ -657,11 +657,11 @@ describe("Async Credential", () => {
             sub: "mockSub",
             client_id: "mockClientId",
             govuk_signin_journey_id: "mockGovukSigninJourneyId",
-            redirect_uri: "https://mockUnregisteredRedirectUri.com",
+            redirect_uri: "https://mockInvalidRedirectUri.com",
           }),
         });
         dependencies.clientCredentialsService = () =>
-          new MockPassingClientCredentialsService();
+          new MockFailingClientCredentialsService();
 
         const result = await lambdaHandler(event, dependencies);
 
@@ -670,7 +670,7 @@ describe("Async Credential", () => {
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "Unregistered redirect_uri",
+            error_description: "mockClientCredentialServiceError",
           }),
         });
       });
@@ -824,13 +824,30 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
 }
 
 class MockPassingClientCredentialsService implements IClientCredentialsService {
-  validateTokenRequest() {
+  validateTokenRequest(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
-  validateCredentialRequest() {
+  validateCredentialRequest(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
-  getClientCredentialsById() {
+  getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
+    return successResponse({
+      client_id: "mockClientId",
+      issuer: "mockIssuer",
+      salt: "mockSalt",
+      hashed_client_secret: "mockHashedClientSecret",
+    });
+  }
+}
+
+class MockFailingClientCredentialsService implements IClientCredentialsService {
+  validateTokenRequest(): ErrorOrSuccess<null> {
+    return successResponse(null);
+  }
+  validateCredentialRequest(): ErrorOrSuccess<null> {
+    return errorResponse("mockClientCredentialServiceError");
+  }
+  getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
     return successResponse({
       client_id: "mockClientId",
       issuer: "mockIssuer",

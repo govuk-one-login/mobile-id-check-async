@@ -120,6 +120,53 @@ describe("Client Credentials Service", () => {
     });
   });
 
+  describe("Validate credential request credentials", () => {
+    describe("redirect_uri validation", () => {
+      describe("Given stored redirect_uri is not present", () => {
+        it("Returns a log", () => {
+          mockStoredClientCredentials.redirect_uri = "";
+
+          const result = clientCredentialsService.validateCredentialRequest(
+            mockStoredClientCredentials,
+            mockCredentialSuppliedClientCredentials,
+          );
+
+          expect(result.isError).toBe(true);
+          expect(result.value).toBe("Missing redirect_uri");
+        });
+      });
+
+      describe("Given stored redirect_uri is not a valid URL", () => {
+        it("Returns a log", () => {
+          mockStoredClientCredentials.redirect_uri = "mockInvalidURL";
+
+          const result = clientCredentialsService.validateCredentialRequest(
+            mockStoredClientCredentials,
+            mockCredentialSuppliedClientCredentials,
+          );
+
+          expect(result.isError).toBe(true);
+          expect(result.value).toBe("Invalid redirect_uri");
+        });
+      });
+
+      describe("Given supplied redirect_uri does not match stored redirect_uri", () => {
+        it("Returns a log", () => {
+          mockCredentialSuppliedClientCredentials.redirect_uri =
+            "https://mockInvalidRedirectUri.com";
+
+          const result = clientCredentialsService.validateCredentialRequest(
+            mockStoredClientCredentials,
+            mockCredentialSuppliedClientCredentials,
+          );
+
+          expect(result.isError).toBe(true);
+          expect(result.value).toBe("Unregistered redirect_uri");
+        });
+      });
+    });
+  });
+
   describe("Get client credentials by ID", () => {
     describe("Given the supplied credential clientId is not present in the stored credentials array", () => {
       it("Returns an error response", async () => {
@@ -159,38 +206,6 @@ describe("Client Credentials Service", () => {
         );
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(expectedClientCredentials);
-      });
-    });
-  });
-
-  describe("Validate credential request credentials", () => {
-    describe("redirect_uri validation", () => {
-      describe("Given redirect_uri is not present", () => {
-        it("Returns a log", () => {
-          mockStoredClientCredentials.redirect_uri = "";
-
-          const result = clientCredentialsService.validateCredentialRequest(
-            mockStoredClientCredentials,
-            mockCredentialSuppliedClientCredentials,
-          );
-
-          expect(result.isError).toBe(true);
-          expect(result.value).toBe("Missing redirect_uri");
-        });
-      });
-
-      describe("Given redirect_uri is not a valid URL", () => {
-        it("Returns a log", () => {
-          mockStoredClientCredentials.redirect_uri = "mockInvalidURL";
-
-          const result = clientCredentialsService.validateCredentialRequest(
-            mockStoredClientCredentials,
-            mockCredentialSuppliedClientCredentials,
-          );
-
-          expect(result.isError).toBe(true);
-          expect(result.value).toBe("Invalid redirect_uri");
-        });
       });
     });
   });

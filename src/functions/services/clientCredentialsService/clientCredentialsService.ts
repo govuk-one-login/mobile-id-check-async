@@ -44,8 +44,6 @@ export class ClientCredentialsService implements IClientCredentialsService {
     suppliedCredentials: ICredentialRequestBody,
   ): ErrorOrSuccess<null> => {
     // eslint-disable-next-line
-    const credentials = suppliedCredentials; // To be removed
-
     const registeredRedirectUri = storedCredentials.redirect_uri;
     if (!registeredRedirectUri) {
       return errorResponse("Missing redirect_uri");
@@ -55,6 +53,10 @@ export class ClientCredentialsService implements IClientCredentialsService {
       new URL(registeredRedirectUri);
     } catch (error) {
       return errorResponse("Invalid redirect_uri");
+    }
+
+    if (suppliedCredentials.redirect_uri !== storedCredentials.redirect_uri) {
+      return errorResponse("Unregistered redirect_uri");
     }
 
     return successResponse(null);

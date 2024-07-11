@@ -135,15 +135,6 @@ export async function lambdaHandler(
     });
   }
 
-  if (parsedRequestBody.redirect_uri) {
-    if (parsedRequestBody.redirect_uri !== clientCredentials.redirect_uri) {
-      return badRequestResponse({
-        error: "invalid_request",
-        errorDescription: "Unregistered redirect_uri",
-      });
-    }
-  }
-
   // Validate aud claim matches the ISSUER in client credential array
   if (jwtPayload.aud !== clientCredentials.issuer) {
     return badRequestResponse({
