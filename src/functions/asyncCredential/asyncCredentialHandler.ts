@@ -123,16 +123,18 @@ export async function lambdaHandler(
   const clientCredentials =
     clientCredentialResponse.value as IClientCredentials;
 
-  const validateClientCredentialsResult =
-    clientCredentialsService.validateCredentialRequest(
-      clientCredentials,
-      parsedRequestBody,
-    );
-  if (validateClientCredentialsResult.isError) {
-    return badRequestResponse({
-      error: "invalid_request",
-      errorDescription: validateClientCredentialsResult.value as string,
-    });
+  if (parsedRequestBody.redirect_uri) {
+    const validateClientCredentialsResult =
+      clientCredentialsService.validateCredentialRequest(
+        clientCredentials,
+        parsedRequestBody,
+      );
+    if (validateClientCredentialsResult.isError) {
+      return badRequestResponse({
+        error: "invalid_request",
+        errorDescription: validateClientCredentialsResult.value as string,
+      });
+    }
   }
 
   // Validate aud claim matches the ISSUER in client credential array

@@ -648,7 +648,7 @@ describe("Async Credential", () => {
   });
 
   describe("Request body validation - using Client Credentials", () => {
-    describe("Given request body validation fails", () => {
+    describe("Given redirect_uri is present and the request body validation fails", () => {
       it("Returns a 400 Bad Request response", async () => {
         const event = buildRequest({
           headers: { Authorization: `Bearer ${mockValidJwt}` },
