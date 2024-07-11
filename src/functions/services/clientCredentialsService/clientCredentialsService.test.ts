@@ -1,3 +1,4 @@
+import { ICredentialRequestBody } from "../../asyncCredential/asyncCredentialHandler";
 import { IDecodedClientCredentials } from "../../types/clientCredentials";
 import {
   ClientCredentialsService,
@@ -6,15 +7,22 @@ import {
 
 describe("Client Credentials Service", () => {
   let clientCredentialsService: ClientCredentialsService;
-  let mockSuppliedClientCredentials: IDecodedClientCredentials;
+  let mockTokenSuppliedClientCredentials: IDecodedClientCredentials;
+  let mockCredentialSuppliedClientCredentials: ICredentialRequestBody;
   let mockStoredClientCredentialsArray: IClientCredentials[];
   let mockStoredClientCredentials: IClientCredentials;
 
   beforeEach(() => {
     clientCredentialsService = new ClientCredentialsService();
-    mockSuppliedClientCredentials = {
+    mockTokenSuppliedClientCredentials = {
       clientId: "mockClientId",
       clientSecret: "mockClientSecret",
+    };
+    mockCredentialSuppliedClientCredentials = {
+      sub: "mockSub",
+      govuk_signin_journey_id: "mockGovukSigninJourneyId",
+      client_id: "mockClientId",
+      state: "mockState",
     };
     mockStoredClientCredentialsArray = [
       {
@@ -23,6 +31,7 @@ describe("Client Credentials Service", () => {
         salt: "0vjPs=djeEHP",
         hashed_client_secret:
           "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+        redirect_uri: "https://mockRedirectUri.com",
       },
       {
         client_id: "mockAnotherClientId",
@@ -30,6 +39,7 @@ describe("Client Credentials Service", () => {
         salt: "0vjPs=djeEHP",
         hashed_client_secret:
           "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+        redirect_uri: "https://mockRedirectUri.com",
       },
     ];
     mockStoredClientCredentials = {
@@ -38,20 +48,21 @@ describe("Client Credentials Service", () => {
       salt: "0vjPs=djeEHP",
       hashed_client_secret:
         "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+      redirect_uri: "https://mockRedirectUri.com",
     };
   });
 
-  describe("Validate", () => {
+  describe("Validate token request credentials", () => {
     describe("Given the supplied hashed client secret does not match the stored hashed client secret", () => {
       it("Returns false", async () => {
-        mockSuppliedClientCredentials = {
+        mockTokenSuppliedClientCredentials = {
           clientId: "mockClientId",
           clientSecret: "mockInvalidClientSecret",
         };
 
-        const result = clientCredentialsService.validate(
+        const result = clientCredentialsService.validateTokenRequest(
           mockStoredClientCredentials,
-          mockSuppliedClientCredentials,
+          mockTokenSuppliedClientCredentials,
         );
 
         expect(result.isError).toBe(true);
@@ -61,16 +72,46 @@ describe("Client Credentials Service", () => {
       });
     });
 
+    describe("redirect_uri validation", () => {
+      describe("Given redirect_uri is not present", () => {
+        it("Returns a log", () => {
+          mockStoredClientCredentials.redirect_uri = "";
+
+          const result = clientCredentialsService.validateTokenRequest(
+            mockStoredClientCredentials,
+            mockTokenSuppliedClientCredentials,
+          );
+
+          expect(result.isError).toBe(true);
+          expect(result.value).toBe("Missing redirect_uri");
+        });
+      });
+
+      describe("Given redirect_uri is not a valid URL", () => {
+        it("Returns a log", () => {
+          mockStoredClientCredentials.redirect_uri = "mockInvalidURL";
+
+          const result = clientCredentialsService.validateTokenRequest(
+            mockStoredClientCredentials,
+            mockTokenSuppliedClientCredentials,
+          );
+
+          expect(result.isError).toBe(true);
+          expect(result.value).toBe("Invalid redirect_uri");
+        });
+      });
+    });
+
     describe("Given the supplied credentials match the stored credentials", () => {
       it("Returns true", async () => {
-        mockSuppliedClientCredentials = {
+        mockTokenSuppliedClientCredentials = {
           clientId: "mockAnotherClientId",
           clientSecret: "mockClientSecret",
         };
 
-        const result = clientCredentialsService.validate(
+        const result = clientCredentialsService.validateTokenRequest(
           mockStoredClientCredentials,
-          mockSuppliedClientCredentials,
+          mockTokenSuppliedClientCredentials,
         );
 
         expect(result.isError).toBe(false);
@@ -79,17 +120,64 @@ describe("Client Credentials Service", () => {
     });
   });
 
+  describe("Validate credential request credentials", () => {
+    describe("redirect_uri validation", () => {
+      describe("Given stored redirect_uri is not present", () => {
+        it("Returns a log", () => {
+          mockStoredClientCredentials.redirect_uri = "";
+
+          const result = clientCredentialsService.validateCredentialRequest(
+            mockStoredClientCredentials,
+            mockCredentialSuppliedClientCredentials,
+          );
+
+          expect(result.isError).toBe(true);
+          expect(result.value).toBe("Missing redirect_uri");
+        });
+      });
+
+      describe("Given stored redirect_uri is not a valid URL", () => {
+        it("Returns a log", () => {
+          mockStoredClientCredentials.redirect_uri = "mockInvalidURL";
+
+          const result = clientCredentialsService.validateCredentialRequest(
+            mockStoredClientCredentials,
+            mockCredentialSuppliedClientCredentials,
+          );
+
+          expect(result.isError).toBe(true);
+          expect(result.value).toBe("Invalid redirect_uri");
+        });
+      });
+
+      describe("Given supplied redirect_uri does not match stored redirect_uri", () => {
+        it("Returns a log", () => {
+          mockCredentialSuppliedClientCredentials.redirect_uri =
+            "https://mockInvalidRedirectUri.com";
+
+          const result = clientCredentialsService.validateCredentialRequest(
+            mockStoredClientCredentials,
+            mockCredentialSuppliedClientCredentials,
+          );
+
+          expect(result.isError).toBe(true);
+          expect(result.value).toBe("Unregistered redirect_uri");
+        });
+      });
+    });
+  });
+
   describe("Get client credentials by ID", () => {
     describe("Given the supplied credential clientId is not present in the stored credentials array", () => {
       it("Returns an error response", async () => {
-        mockSuppliedClientCredentials = {
+        mockTokenSuppliedClientCredentials = {
           clientId: "mockInvalidClientId",
           clientSecret: "mockClientSecret",
         };
 
         const result = clientCredentialsService.getClientCredentialsById(
           mockStoredClientCredentialsArray,
-          mockSuppliedClientCredentials.clientId,
+          mockTokenSuppliedClientCredentials.clientId,
         );
 
         expect(result.isError).toBe(true);
@@ -99,7 +187,7 @@ describe("Client Credentials Service", () => {
 
     describe("Given the supplied credential clientId is present in the stored credentials array", () => {
       it("Returns client credentials", async () => {
-        mockSuppliedClientCredentials = {
+        mockTokenSuppliedClientCredentials = {
           clientId: "mockClientId",
           clientSecret: "mockClientSecret",
         };
@@ -109,11 +197,12 @@ describe("Client Credentials Service", () => {
           salt: "0vjPs=djeEHP",
           hashed_client_secret:
             "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+          redirect_uri: "https://mockRedirectUri.com",
         };
 
         const result = clientCredentialsService.getClientCredentialsById(
           mockStoredClientCredentialsArray,
-          mockSuppliedClientCredentials.clientId,
+          mockTokenSuppliedClientCredentials.clientId,
         );
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(expectedClientCredentials);

@@ -67,8 +67,18 @@ export async function lambdaHandler(
     });
   }
 
+  let parsedRequestBody: ICredentialRequestBody;
+  try {
+    parsedRequestBody = JSON.parse(requestBody);
+  } catch (error) {
+    return badRequestResponse({
+      error: "invalid_request",
+      errorDescription: "Invalid JSON in request body",
+    });
+  }
+
   const requestBodyValidationResponse = requestBodyValidator(
-    requestBody,
+    parsedRequestBody,
     jwtPayload.client_id,
   );
 
@@ -112,6 +122,20 @@ export async function lambdaHandler(
 
   const clientCredentials =
     clientCredentialResponse.value as IClientCredentials;
+
+  if (parsedRequestBody.redirect_uri) {
+    const validateClientCredentialsResult =
+      clientCredentialsService.validateCredentialRequest(
+        clientCredentials,
+        parsedRequestBody,
+      );
+    if (validateClientCredentialsResult.isError) {
+      return badRequestResponse({
+        error: "invalid_request",
+        errorDescription: validateClientCredentialsResult.value as string,
+      });
+    }
+  }
 
   // Validate aud claim matches the ISSUER in client credential array
   if (jwtPayload.aud !== clientCredentials.issuer) {
@@ -199,35 +223,34 @@ const jwtClaimValidator = (
 };
 
 const requestBodyValidator = (
-  body: string,
+  requestBody: ICredentialRequestBody,
   jwtClientId: string,
 ): ErrorOrSuccess<null> => {
-  const parsedBody = JSON.parse(body);
-  if (!parsedBody.state) {
+  if (!requestBody.state) {
     return errorResponse("Missing state in request body");
   }
 
-  if (!parsedBody.sub) {
+  if (!requestBody.sub) {
     return errorResponse("Missing sub in request body");
   }
 
-  if (!parsedBody.client_id) {
+  if (!requestBody.client_id) {
     return errorResponse("Missing client_id in request body");
   }
 
-  if (parsedBody.client_id !== jwtClientId) {
+  if (requestBody.client_id !== jwtClientId) {
     return errorResponse(
       "client_id in request body does not match client_id in access token",
     );
   }
 
-  if (!parsedBody["govuk_signin_journey_id"]) {
+  if (!requestBody["govuk_signin_journey_id"]) {
     return errorResponse("Missing govuk_signin_journey_id in request body");
   }
 
-  if (parsedBody.redirect_uri) {
+  if (requestBody.redirect_uri) {
     try {
-      new URL(parsedBody.redirect_uri);
+      new URL(requestBody.redirect_uri);
     } catch (error) {
       return errorResponse("Invalid redirect_uri");
     }
@@ -276,6 +299,14 @@ const serverError500Responses: APIGatewayProxyResult = {
     error_description: "Server Error",
   }),
 };
+
+export interface ICredentialRequestBody {
+  sub: string;
+  govuk_signin_journey_id: string;
+  client_id: string;
+  state: string;
+  redirect_uri?: string;
+}
 
 export interface Dependencies {
   tokenService: () => TokenService;

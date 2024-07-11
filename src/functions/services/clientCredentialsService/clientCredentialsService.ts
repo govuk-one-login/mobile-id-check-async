@@ -4,9 +4,10 @@ import {
   errorResponse,
   successResponse,
 } from "../../types/errorOrValue";
+import { ICredentialRequestBody } from "../../asyncCredential/asyncCredentialHandler";
 
 export class ClientCredentialsService implements IClientCredentialsService {
-  validate = (
+  validateTokenRequest = (
     storedCredentials: IClientCredentials,
     suppliedCredentials: IDecodedClientCredentials,
   ): ErrorOrSuccess<null> => {
@@ -20,9 +21,44 @@ export class ClientCredentialsService implements IClientCredentialsService {
     const isValidClientSecret =
       hashedStoredClientSecret === hashedSuppliedClientSecret;
 
-    if (isValidClientSecret) return successResponse(null);
+    if (!isValidClientSecret) {
+      return errorResponse("Client secret not valid for the supplied clientId");
+    }
 
-    return errorResponse("Client secret not valid for the supplied clientId");
+    const registeredRedirectUri = storedCredentials.redirect_uri;
+    if (!registeredRedirectUri) {
+      return errorResponse("Missing redirect_uri");
+    }
+
+    try {
+      new URL(registeredRedirectUri);
+    } catch (error) {
+      return errorResponse("Invalid redirect_uri");
+    }
+
+    return successResponse(null);
+  };
+
+  validateCredentialRequest = (
+    storedCredentials: IClientCredentials,
+    suppliedCredentials: ICredentialRequestBody,
+  ): ErrorOrSuccess<null> => {
+    const registeredRedirectUri = storedCredentials.redirect_uri;
+    if (!registeredRedirectUri) {
+      return errorResponse("Missing redirect_uri");
+    }
+
+    try {
+      new URL(registeredRedirectUri);
+    } catch (error) {
+      return errorResponse("Invalid redirect_uri");
+    }
+
+    if (suppliedCredentials.redirect_uri !== storedCredentials.redirect_uri) {
+      return errorResponse("Unregistered redirect_uri");
+    }
+
+    return successResponse(null);
   };
 
   getClientCredentialsById = (
@@ -44,9 +80,14 @@ const hashSecret = (secret: string, salt: string): string => {
 };
 
 export interface IClientCredentialsService {
-  validate: (
+  validateTokenRequest: (
     storedCredentials: IClientCredentials,
     suppliedCredentials: IDecodedClientCredentials,
+  ) => ErrorOrSuccess<null>;
+
+  validateCredentialRequest: (
+    storedCredentials: IClientCredentials,
+    suppliedCredentials: ICredentialRequestBody,
   ) => ErrorOrSuccess<null>;
 
   getClientCredentialsById: (
@@ -60,6 +101,7 @@ export type IClientCredentials = {
   issuer: string;
   salt: string;
   hashed_client_secret: string;
+  redirect_uri?: string;
 };
 
 export interface IDecodedClientCredentials {
