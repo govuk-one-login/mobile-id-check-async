@@ -67,7 +67,7 @@ export async function lambdaHandler(
     });
   }
 
-  let parsedRequestBody: IRequestBody;
+  let parsedRequestBody: ICredentialRequestBody;
   try {
     parsedRequestBody = JSON.parse(requestBody);
   } catch (error) {
@@ -126,7 +126,7 @@ export async function lambdaHandler(
   const validateClientCredentialsResult =
     clientCredentialsService.validateCredentialRequest(
       clientCredentials,
-      JSON.parse(requestBody),
+      parsedRequestBody,
     );
   if (validateClientCredentialsResult.isError) {
     return badRequestResponse({
@@ -230,7 +230,7 @@ const jwtClaimValidator = (
 };
 
 const requestBodyValidator = (
-  requestBody: IRequestBody,
+  requestBody: ICredentialRequestBody,
   jwtClientId: string,
 ): ErrorOrSuccess<null> => {
   if (!requestBody.state) {
@@ -307,7 +307,7 @@ const serverError500Responses: APIGatewayProxyResult = {
   }),
 };
 
-interface IRequestBody {
+export interface ICredentialRequestBody {
   sub: string;
   govuk_signin_journey_id: string;
   client_id: string;

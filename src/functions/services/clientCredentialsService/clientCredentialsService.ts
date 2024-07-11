@@ -4,6 +4,7 @@ import {
   errorResponse,
   successResponse,
 } from "../../types/errorOrValue";
+import { ICredentialRequestBody } from "../../asyncCredential/asyncCredentialHandler";
 
 export class ClientCredentialsService implements IClientCredentialsService {
   validateTokenRequest = (
@@ -40,7 +41,7 @@ export class ClientCredentialsService implements IClientCredentialsService {
 
   validateCredentialRequest = (
     storedCredentials: IClientCredentials,
-    suppliedCredentials: IDecodedClientCredentials,
+    suppliedCredentials: ICredentialRequestBody,
   ): ErrorOrSuccess<null> => {
     // eslint-disable-next-line
     const credentials = suppliedCredentials; // To be removed
@@ -85,7 +86,7 @@ export interface IClientCredentialsService {
 
   validateCredentialRequest: (
     storedCredentials: IClientCredentials,
-    suppliedCredentials: IDecodedClientCredentials,
+    suppliedCredentials: ICredentialRequestBody,
   ) => ErrorOrSuccess<null>;
 
   getClientCredentialsById: (

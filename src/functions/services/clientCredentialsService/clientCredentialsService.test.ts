@@ -1,3 +1,4 @@
+import { ICredentialRequestBody } from "../../asyncCredential/asyncCredentialHandler";
 import { IDecodedClientCredentials } from "../../types/clientCredentials";
 import {
   ClientCredentialsService,
@@ -6,15 +7,22 @@ import {
 
 describe("Client Credentials Service", () => {
   let clientCredentialsService: ClientCredentialsService;
-  let mockSuppliedClientCredentials: IDecodedClientCredentials;
+  let mockTokenSuppliedClientCredentials: IDecodedClientCredentials;
+  let mockCredentialSuppliedClientCredentials: ICredentialRequestBody;
   let mockStoredClientCredentialsArray: IClientCredentials[];
   let mockStoredClientCredentials: IClientCredentials;
 
   beforeEach(() => {
     clientCredentialsService = new ClientCredentialsService();
-    mockSuppliedClientCredentials = {
+    mockTokenSuppliedClientCredentials = {
       clientId: "mockClientId",
       clientSecret: "mockClientSecret",
+    };
+    mockCredentialSuppliedClientCredentials = {
+      sub: "mockSub",
+      govuk_signin_journey_id: "mockGovukSigninJourneyId",
+      client_id: "mockClientId",
+      state: "mockState",
     };
     mockStoredClientCredentialsArray = [
       {
@@ -47,14 +55,14 @@ describe("Client Credentials Service", () => {
   describe("Validate token request credentials", () => {
     describe("Given the supplied hashed client secret does not match the stored hashed client secret", () => {
       it("Returns false", async () => {
-        mockSuppliedClientCredentials = {
+        mockTokenSuppliedClientCredentials = {
           clientId: "mockClientId",
           clientSecret: "mockInvalidClientSecret",
         };
 
         const result = clientCredentialsService.validateTokenRequest(
           mockStoredClientCredentials,
-          mockSuppliedClientCredentials,
+          mockTokenSuppliedClientCredentials,
         );
 
         expect(result.isError).toBe(true);
@@ -71,7 +79,7 @@ describe("Client Credentials Service", () => {
 
           const result = clientCredentialsService.validateTokenRequest(
             mockStoredClientCredentials,
-            mockSuppliedClientCredentials,
+            mockTokenSuppliedClientCredentials,
           );
 
           expect(result.isError).toBe(true);
@@ -85,7 +93,7 @@ describe("Client Credentials Service", () => {
 
           const result = clientCredentialsService.validateTokenRequest(
             mockStoredClientCredentials,
-            mockSuppliedClientCredentials,
+            mockTokenSuppliedClientCredentials,
           );
 
           expect(result.isError).toBe(true);
@@ -96,14 +104,14 @@ describe("Client Credentials Service", () => {
 
     describe("Given the supplied credentials match the stored credentials", () => {
       it("Returns true", async () => {
-        mockSuppliedClientCredentials = {
+        mockTokenSuppliedClientCredentials = {
           clientId: "mockAnotherClientId",
           clientSecret: "mockClientSecret",
         };
 
         const result = clientCredentialsService.validateTokenRequest(
           mockStoredClientCredentials,
-          mockSuppliedClientCredentials,
+          mockTokenSuppliedClientCredentials,
         );
 
         expect(result.isError).toBe(false);
@@ -115,14 +123,14 @@ describe("Client Credentials Service", () => {
   describe("Get client credentials by ID", () => {
     describe("Given the supplied credential clientId is not present in the stored credentials array", () => {
       it("Returns an error response", async () => {
-        mockSuppliedClientCredentials = {
+        mockTokenSuppliedClientCredentials = {
           clientId: "mockInvalidClientId",
           clientSecret: "mockClientSecret",
         };
 
         const result = clientCredentialsService.getClientCredentialsById(
           mockStoredClientCredentialsArray,
-          mockSuppliedClientCredentials.clientId,
+          mockTokenSuppliedClientCredentials.clientId,
         );
 
         expect(result.isError).toBe(true);
@@ -132,7 +140,7 @@ describe("Client Credentials Service", () => {
 
     describe("Given the supplied credential clientId is present in the stored credentials array", () => {
       it("Returns client credentials", async () => {
-        mockSuppliedClientCredentials = {
+        mockTokenSuppliedClientCredentials = {
           clientId: "mockClientId",
           clientSecret: "mockClientSecret",
         };
@@ -147,7 +155,7 @@ describe("Client Credentials Service", () => {
 
         const result = clientCredentialsService.getClientCredentialsById(
           mockStoredClientCredentialsArray,
-          mockSuppliedClientCredentials.clientId,
+          mockTokenSuppliedClientCredentials.clientId,
         );
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(expectedClientCredentials);
@@ -163,7 +171,7 @@ describe("Client Credentials Service", () => {
 
           const result = clientCredentialsService.validateCredentialRequest(
             mockStoredClientCredentials,
-            mockSuppliedClientCredentials,
+            mockCredentialSuppliedClientCredentials,
           );
 
           expect(result.isError).toBe(true);
@@ -177,7 +185,7 @@ describe("Client Credentials Service", () => {
 
           const result = clientCredentialsService.validateCredentialRequest(
             mockStoredClientCredentials,
-            mockSuppliedClientCredentials,
+            mockCredentialSuppliedClientCredentials,
           );
 
           expect(result.isError).toBe(true);
