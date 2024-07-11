@@ -19,7 +19,7 @@ updates:
     directory: "src"
     schedule:
       interval: "weekly"
-      day: "thursday"
+      day: "tuesday"
       time: "03:00"
     open-pull-requests-limit: 5
     groups:
