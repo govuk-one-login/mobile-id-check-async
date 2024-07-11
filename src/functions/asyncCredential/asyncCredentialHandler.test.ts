@@ -812,16 +812,22 @@ class MockTokenSeviceValidSignature implements IVerifyTokenSignature {
 class MockFailingClientCredentialsServiceGetClientCredentialsById
   implements IClientCredentialsService
 {
+  validateTokenRequest(): ErrorOrSuccess<null> {
+    return successResponse(null);
+  }
+  validateCredentialRequest(): ErrorOrSuccess<null> {
+    return successResponse(null);
+  }
   getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
     return errorResponse("No credentials found");
-  }
-  validate(): ErrorOrSuccess<null> {
-    return errorResponse("invalid credentials");
   }
 }
 
 class MockPassingClientCredentialsService implements IClientCredentialsService {
-  validate() {
+  validateTokenRequest() {
+    return successResponse(null);
+  }
+  validateCredentialRequest() {
     return successResponse(null);
   }
   getClientCredentialsById() {

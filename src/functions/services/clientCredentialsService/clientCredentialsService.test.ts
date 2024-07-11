@@ -44,7 +44,7 @@ describe("Client Credentials Service", () => {
     };
   });
 
-  describe("Validate", () => {
+  describe("Validate token request credentials", () => {
     describe("Given the supplied hashed client secret does not match the stored hashed client secret", () => {
       it("Returns false", async () => {
         mockSuppliedClientCredentials = {
@@ -52,7 +52,7 @@ describe("Client Credentials Service", () => {
           clientSecret: "mockInvalidClientSecret",
         };
 
-        const result = clientCredentialsService.validate(
+        const result = clientCredentialsService.validateTokenRequest(
           mockStoredClientCredentials,
           mockSuppliedClientCredentials,
         );
@@ -69,7 +69,7 @@ describe("Client Credentials Service", () => {
         it("Returns a log", () => {
           mockStoredClientCredentials.redirect_uri = "";
 
-          const result = clientCredentialsService.validate(
+          const result = clientCredentialsService.validateTokenRequest(
             mockStoredClientCredentials,
             mockSuppliedClientCredentials,
           );
@@ -83,7 +83,7 @@ describe("Client Credentials Service", () => {
         it("Returns a log", () => {
           mockStoredClientCredentials.redirect_uri = "mockInvalidURL";
 
-          const result = clientCredentialsService.validate(
+          const result = clientCredentialsService.validateTokenRequest(
             mockStoredClientCredentials,
             mockSuppliedClientCredentials,
           );
@@ -101,7 +101,7 @@ describe("Client Credentials Service", () => {
           clientSecret: "mockClientSecret",
         };
 
-        const result = clientCredentialsService.validate(
+        const result = clientCredentialsService.validateTokenRequest(
           mockStoredClientCredentials,
           mockSuppliedClientCredentials,
         );
@@ -151,6 +151,38 @@ describe("Client Credentials Service", () => {
         );
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(expectedClientCredentials);
+      });
+    });
+  });
+
+  describe("Validate credential request credentials", () => {
+    describe("redirect_uri validation", () => {
+      describe("Given redirect_uri is not present", () => {
+        it("Returns a log", () => {
+          mockStoredClientCredentials.redirect_uri = "";
+
+          const result = clientCredentialsService.validateCredentialRequest(
+            mockStoredClientCredentials,
+            mockSuppliedClientCredentials,
+          );
+
+          expect(result.isError).toBe(true);
+          expect(result.value).toBe("Missing redirect_uri");
+        });
+      });
+
+      describe("Given redirect_uri is not a valid URL", () => {
+        it("Returns a log", () => {
+          mockStoredClientCredentials.redirect_uri = "mockInvalidURL";
+
+          const result = clientCredentialsService.validateCredentialRequest(
+            mockStoredClientCredentials,
+            mockSuppliedClientCredentials,
+          );
+
+          expect(result.isError).toBe(true);
+          expect(result.value).toBe("Invalid redirect_uri");
+        });
       });
     });
   });

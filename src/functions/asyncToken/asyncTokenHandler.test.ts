@@ -323,6 +323,12 @@ class MockFailingSsmService implements IGetClientCredentials {
 }
 
 class MockPassingClientCredentialsService implements IClientCredentialsService {
+  validateTokenRequest(): ErrorOrSuccess<null> {
+    return successResponse(null);
+  }
+  validateCredentialRequest(): ErrorOrSuccess<null> {
+    return successResponse(null);
+  }
   getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
     return successResponse({
       client_id: "mockClientId",
@@ -331,25 +337,31 @@ class MockPassingClientCredentialsService implements IClientCredentialsService {
       hashed_client_secret: "mockHashedClientSecret",
     });
   }
-  validate(): ErrorOrSuccess<null> {
-    return successResponse(null);
-  }
 }
 
 class MockFailingClientCredentialsServiceGetClientCredentialsById
   implements IClientCredentialsService
 {
+  validateTokenRequest(): ErrorOrSuccess<null> {
+    return successResponse(null);
+  }
+  validateCredentialRequest(): ErrorOrSuccess<null> {
+    return successResponse(null);
+  }
   getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
     return errorResponse("Client credentials not recognised");
-  }
-  validate(): ErrorOrSuccess<null> {
-    throw Error("This should not be used");
   }
 }
 
 class MockFailingClientCredentialsServiceValidation
   implements IClientCredentialsService
 {
+  validateTokenRequest(): ErrorOrSuccess<null> {
+    return errorResponse("Client secrets not valid");
+  }
+  validateCredentialRequest(): ErrorOrSuccess<null> {
+    return successResponse(null);
+  }
   getClientCredentialsById() {
     return successResponse({
       client_id: "mockClientId",
@@ -357,9 +369,6 @@ class MockFailingClientCredentialsServiceValidation
       salt: "mockSalt",
       hashed_client_secret: "mockHashedClientSecret",
     });
-  }
-  validate(): ErrorOrSuccess<null> {
-    return errorResponse("Client secrets not valid");
   }
 }
 

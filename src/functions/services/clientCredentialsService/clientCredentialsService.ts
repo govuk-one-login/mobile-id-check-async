@@ -6,7 +6,7 @@ import {
 } from "../../types/errorOrValue";
 
 export class ClientCredentialsService implements IClientCredentialsService {
-  validate = (
+  validateTokenRequest = (
     storedCredentials: IClientCredentials,
     suppliedCredentials: IDecodedClientCredentials,
   ): ErrorOrSuccess<null> => {
@@ -23,6 +23,27 @@ export class ClientCredentialsService implements IClientCredentialsService {
     if (!isValidClientSecret) {
       return errorResponse("Client secret not valid for the supplied clientId");
     }
+
+    const registeredRedirectUri = storedCredentials.redirect_uri;
+    if (!registeredRedirectUri) {
+      return errorResponse("Missing redirect_uri");
+    }
+
+    try {
+      new URL(registeredRedirectUri);
+    } catch (error) {
+      return errorResponse("Invalid redirect_uri");
+    }
+
+    return successResponse(null);
+  };
+
+  validateCredentialRequest = (
+    storedCredentials: IClientCredentials,
+    suppliedCredentials: IDecodedClientCredentials,
+  ): ErrorOrSuccess<null> => {
+    // eslint-disable-next-line
+    const credentials = suppliedCredentials; // To be removed
 
     const registeredRedirectUri = storedCredentials.redirect_uri;
     if (!registeredRedirectUri) {
@@ -57,7 +78,12 @@ const hashSecret = (secret: string, salt: string): string => {
 };
 
 export interface IClientCredentialsService {
-  validate: (
+  validateTokenRequest: (
+    storedCredentials: IClientCredentials,
+    suppliedCredentials: IDecodedClientCredentials,
+  ) => ErrorOrSuccess<null>;
+
+  validateCredentialRequest: (
     storedCredentials: IClientCredentials,
     suppliedCredentials: IDecodedClientCredentials,
   ) => ErrorOrSuccess<null>;

@@ -89,10 +89,11 @@ export async function lambdaHandlerConstructor(
   const storedCredentials =
     clientCredentialsByIdResponse.value as IClientCredentials;
 
-  const isValidClientCredentialsResponse = clientCredentialsService.validate(
-    storedCredentials,
-    suppliedCredentials,
-  );
+  const isValidClientCredentialsResponse =
+    clientCredentialsService.validateTokenRequest(
+      storedCredentials,
+      suppliedCredentials,
+    );
   if (isValidClientCredentialsResponse.isError) {
     logger.log("INVALID_REQUEST", {
       errorMessage: isValidClientCredentialsResponse.value,
