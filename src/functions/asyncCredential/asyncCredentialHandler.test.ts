@@ -477,15 +477,15 @@ describe("Async Credential", () => {
     });
 
     describe("Given body contains invalid JSON", () => {
-      const invalidJson = [
+      const invalidJsonCases = [
         ["an empty string", ""],
         ["a plain string", "This shall not parse!"],
         ["an object with an unquoted key", "{key: 'value'}"],
         ["malformed JSON", '{"key": value}'],
       ];
-      test.each(invalidJson)(
+      test.each(invalidJsonCases)(
         "Returns 400 status code with invalid_request error when body is %s",
-        async (_, invalidJson) => {
+        async (_description, invalidJson) => {
           const event = buildRequest({
             headers: { Authorization: `Bearer ${mockValidJwt}` },
             body: invalidJson,
