@@ -455,6 +455,7 @@ describe("Async Credential", () => {
       it("Returns 400 status code with invalid_request error", async () => {
         const event = buildRequest({
           headers: { Authorization: `Bearer ${mockValidJwt}` },
+          body: undefined,
         });
 
         dependencies.tokenService = () => new MockTokenSeviceValidSignature();
@@ -473,6 +474,42 @@ describe("Async Credential", () => {
           }),
         });
       });
+    });
+
+    describe("Given body contains invalid JSON", () => {
+      const invalidJson = [
+        ["an empty string", ""],
+        ["a plain string", "This shall not parse!"],
+        ["an object with an unquoted key", "{key: 'value'}"],
+        ["malformed JSON", '{"key": value}'],
+      ];
+      test.each(invalidJson)(
+        "Returns 400 status code with invalid_request error when body is %s",
+        async (_, invalidJson) => {
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${mockValidJwt}` },
+            body: invalidJson,
+          });
+
+          console.log("what is this?", invalidJson);
+
+          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+
+          const result: APIGatewayProxyResult = await lambdaHandler(
+            event,
+            dependencies,
+          );
+
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 400,
+            body: JSON.stringify({
+              error: "invalid_request",
+              error_description: "Invalid JSON in request body",
+            }),
+          });
+        },
+      );
     });
 
     describe("Given state is missing", () => {

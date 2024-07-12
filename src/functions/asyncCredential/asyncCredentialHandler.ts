@@ -58,9 +58,7 @@ export async function lambdaHandler(
     });
   }
 
-  const requestBody = event.body;
-
-  if (requestBody == null) {
+  if (event.body == null) {
     return badRequestResponse({
       error: "invalid_request",
       errorDescription: "Missing request body",
@@ -69,7 +67,7 @@ export async function lambdaHandler(
 
   let parsedRequestBody: ICredentialRequestBody;
   try {
-    parsedRequestBody = JSON.parse(requestBody);
+    parsedRequestBody = JSON.parse(event.body);
   } catch (error) {
     return badRequestResponse({
       error: "invalid_request",
