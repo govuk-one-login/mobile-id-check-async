@@ -60,7 +60,7 @@ export async function lambdaHandler(
 
   const requestBody = event.body;
 
-  if (!requestBody) {
+  if (requestBody == null) {
     return badRequestResponse({
       error: "invalid_request",
       errorDescription: "Missing request body",
