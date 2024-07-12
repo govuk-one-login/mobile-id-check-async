@@ -491,8 +491,6 @@ describe("Async Credential", () => {
             body: invalidJson,
           });
 
-          console.log("what is this?", invalidJson);
-
           dependencies.tokenService = () => new MockTokenSeviceValidSignature();
 
           const result: APIGatewayProxyResult = await lambdaHandler(
