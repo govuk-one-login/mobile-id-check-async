@@ -479,7 +479,7 @@ describe("Async Credential", () => {
     describe("Given body contains invalid JSON", () => {
       const invalidJsonCases = [
         ["an empty string", ""],
-        ["a plain string", "This shall not parse!"],
+        ["a plain string", "This is not JSON!"],
         ["an object with an unquoted key", "{key: 'value'}"],
         ["malformed JSON", '{"key": value}'],
       ];
