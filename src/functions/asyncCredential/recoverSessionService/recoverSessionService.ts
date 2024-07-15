@@ -19,11 +19,10 @@ export class recoverSessionService implements IRecoverAuthSession {
   constructor(
     tableName: string,
     indexName: string,
-    overrideDbClient?: DynamoDBClient,
   ) {
     this.tableName = tableName;
     this.indexName = indexName;
-    this.dbClient = overrideDbClient ?? dbClient;
+    this.dbClient = dbClient;
   }
 
   async getAuthSessionBySub(
