@@ -1,11 +1,11 @@
 import { DynamoDBClient, QueryCommand } from "@aws-sdk/client-dynamodb";
-import { recoverSessionService } from "./recoverSessionService";
+import { RecoverSessionService } from "./recoverSessionService";
 import { mockClient } from "aws-sdk-client-mock";
 
 describe("Recover Session Service", () => {
-  let service: recoverSessionService;
+  let service: RecoverSessionService;
   beforeEach(() => {
-    service = new recoverSessionService("mockTableName", "mockIndexName");
+    service = new RecoverSessionService("mockTableName", "mockIndexName");
   });
 
   describe("Given there is an unexpected error when calling Dynamo DB", () => {

@@ -11,7 +11,7 @@ import {
   successResponse,
 } from "../../types/errorOrValue";
 
-export class recoverSessionService implements IRecoverAuthSession {
+export class RecoverSessionService implements IRecoverAuthSession {
   readonly tableName: string;
   readonly indexName: string;
   readonly dbClient: DynamoDBClient;
