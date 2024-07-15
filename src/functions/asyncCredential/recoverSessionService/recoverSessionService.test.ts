@@ -1,6 +1,7 @@
 import { DynamoDBClient, QueryCommand } from "@aws-sdk/client-dynamodb";
 import { recoverSessionService } from "./recoverSessionService";
 import { mockClient } from "aws-sdk-client-mock";
+
 describe("Recover Session Service", () => {
   describe("Given there is an unexpected error when calling Dynamo DB", () => {
     it("Returns error response", async () => {
