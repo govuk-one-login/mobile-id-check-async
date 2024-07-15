@@ -12,6 +12,7 @@ import {
   successResponse,
 } from "../types/errorOrValue";
 import { IJwtPayload } from "../types/jwt";
+import { IRecoverAuthSession } from "./recoverSessionService/recoverSessionService";
 
 export async function lambdaHandler(
   event: APIGatewayProxyEvent,
@@ -141,6 +142,24 @@ export async function lambdaHandler(
       error: "invalid_client",
       errorDescription: "Invalid aud claim",
     });
+  }
+
+  const recoverSessionService = dependencies.getRecoverSessionService(
+    "mockTableName",
+    "mockIndexName",
+  );
+  const recoverSessionServiceResponse =
+    await recoverSessionService.getAuthSessionBySub(
+      parsedRequestBody.sub,
+      parsedRequestBody.state,
+      3600,
+    );
+  if (recoverSessionServiceResponse.isError) {
+    return serverError500Responses;
+  }
+
+  if (recoverSessionServiceResponse.value) {
+    return sessionRecoveredResponse(parsedRequestBody.sub);
   }
 
   return {
@@ -298,6 +317,17 @@ const serverError500Responses: APIGatewayProxyResult = {
   }),
 };
 
+const sessionRecoveredResponse = (sub: string): APIGatewayProxyResult => {
+  return {
+    headers: { "Content-Type": "application/json" },
+    statusCode: 200,
+    body: JSON.stringify({
+      sub,
+      "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
+    }),
+  };
+};
+
 export interface ICredentialRequestBody {
   sub: string;
   govuk_signin_journey_id: string;
@@ -310,5 +340,9 @@ export interface Dependencies {
   tokenService: () => TokenService;
   clientCredentialsService: () => ClientCredentialsService;
   ssmService: () => IGetClientCredentials;
+  getRecoverSessionService: (
+    tableName: string,
+    indexName: string,
+  ) => IRecoverAuthSession;
   env: NodeJS.ProcessEnv;
 }
