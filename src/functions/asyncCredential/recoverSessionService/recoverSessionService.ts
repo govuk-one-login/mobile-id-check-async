@@ -16,10 +16,7 @@ export class recoverSessionService implements IRecoverAuthSession {
   readonly indexName: string;
   readonly dbClient: DynamoDBClient;
 
-  constructor(
-    tableName: string,
-    indexName: string,
-  ) {
+  constructor(tableName: string, indexName: string) {
     this.tableName = tableName;
     this.indexName = indexName;
     this.dbClient = dbClient;
