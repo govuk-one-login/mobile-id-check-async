@@ -64,7 +64,8 @@ export class recoverSessionService implements IRecoverAuthSession {
     if (
       result.Items &&
       result.Items.length > 0 &&
-      result.Items[0].sessionId.S !== undefined
+      result.Items[0].sessionId !== undefined &&
+      result.Items[0].sessionId.S
     ) {
       return successResponse(result.Items[0].sessionId.S);
     }
