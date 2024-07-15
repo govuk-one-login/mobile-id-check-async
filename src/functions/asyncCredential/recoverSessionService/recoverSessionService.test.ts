@@ -15,7 +15,7 @@ describe("Recover Session Service", () => {
       const result = await service.getAuthSessionBySub(
         "mockSub",
         "mockValidState",
-        1000,
+        3600,
       );
 
       expect(result.isError).toBe(true);
@@ -37,7 +37,7 @@ describe("Recover Session Service", () => {
       const result = await service.getAuthSessionBySub(
         "mockSub",
         "mockValidState",
-        1000,
+        3600,
       );
 
       expect(result.isError).toBe(false);
@@ -57,7 +57,7 @@ describe("Recover Session Service", () => {
       const result = await service.getAuthSessionBySub(
         "mockSub",
         "mockValidState",
-        1000,
+        3600,
       );
 
       expect(result.isError).toBe(false);
@@ -85,7 +85,7 @@ describe("Recover Session Service", () => {
       const result = await service.getAuthSessionBySub(
         "mockSub",
         "mockState",
-        1000,
+        3600,
       );
 
       expect(result.isError).toBe(false);
@@ -114,7 +114,7 @@ describe("Recover Session Service", () => {
       const result = await service.getAuthSessionBySub(
         "mockSub",
         "mockState",
-        1000,
+        3600,
       );
 
       expect(result.isError).toBe(false);
@@ -143,7 +143,7 @@ describe("Recover Session Service", () => {
       const result = await service.getAuthSessionBySub(
         "mockSub",
         "mockState",
-        1000,
+        3600,
       );
 
       expect(result.isError).toBe(false);
