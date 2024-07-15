@@ -84,7 +84,7 @@ describe("Recover Session Service", () => {
 
       const result = await service.getAuthSessionBySub(
         "mockSub",
-        "mockState",
+        "mockValidState",
         3600,
       );
 
@@ -113,7 +113,7 @@ describe("Recover Session Service", () => {
 
       const result = await service.getAuthSessionBySub(
         "mockSub",
-        "mockState",
+        "mockValidState",
         3600,
       );
 
@@ -142,7 +142,7 @@ describe("Recover Session Service", () => {
 
       const result = await service.getAuthSessionBySub(
         "mockSub",
-        "mockState",
+        "mockValidState",
         3600,
       );
 
