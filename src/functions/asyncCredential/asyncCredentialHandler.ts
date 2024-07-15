@@ -148,11 +148,12 @@ export async function lambdaHandler(
     "mockTableName",
     "mockIndexName",
   );
+
   const recoverSessionServiceResponse =
     await recoverSessionService.getAuthSessionBySub(
       parsedRequestBody.sub,
       parsedRequestBody.state,
-      3600,
+      3600, //TODO Get this dynamically
     );
   if (recoverSessionServiceResponse.isError) {
     return serverError500Responses;
