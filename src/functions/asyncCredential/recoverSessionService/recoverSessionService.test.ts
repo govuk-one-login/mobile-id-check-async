@@ -3,12 +3,13 @@ import { recoverSessionService } from "./recoverSessionService";
 import { mockClient } from "aws-sdk-client-mock";
 
 describe("Recover Session Service", () => {
+  let service: recoverSessionService;
+  beforeEach(() => {
+    service = new recoverSessionService("mockTableName", "mockIndexName");
+  });
+
   describe("Given there is an unexpected error when calling Dynamo DB", () => {
     it("Returns error response", async () => {
-      const service = new recoverSessionService(
-        "mockTableName",
-        "mockIndexName",
-      );
       const dbMock = mockClient(DynamoDBClient);
       dbMock.on(QueryCommand).rejects("Mock DB Error");
 
@@ -27,10 +28,6 @@ describe("Recover Session Service", () => {
 
   describe("Given Items array is missing", () => {
     it("Returns success response will value of null", async () => {
-      const service = new recoverSessionService(
-        "mockTableName",
-        "mockIndexName",
-      );
       const dbMock = mockClient(DynamoDBClient);
       dbMock.on(QueryCommand).resolves({});
 
@@ -47,10 +44,6 @@ describe("Recover Session Service", () => {
 
   describe("Given Items array is empty", () => {
     it("Returns success response will value of null", async () => {
-      const service = new recoverSessionService(
-        "mockTableName",
-        "mockIndexName",
-      );
       const dbMock = mockClient(DynamoDBClient);
       dbMock.on(QueryCommand).resolves({ Items: [] });
 
@@ -67,11 +60,6 @@ describe("Recover Session Service", () => {
 
   describe("Given Items array is missing sessionId", () => {
     it("Returns success response will value of null", async () => {
-      const service = new recoverSessionService(
-        "mockTableName",
-        "mockIndexName",
-      );
-
       const dbMock = mockClient(DynamoDBClient);
       dbMock.on(QueryCommand).resolves({
         Items: [
@@ -95,11 +83,6 @@ describe("Recover Session Service", () => {
 
   describe("Given sessionId value in Items array is empty", () => {
     it("Returns success response will value of null", async () => {
-      const service = new recoverSessionService(
-        "mockTableName",
-        "mockIndexName",
-      );
-
       const dbMock = mockClient(DynamoDBClient);
       dbMock.on(QueryCommand).resolves({
         Items: [
@@ -124,11 +107,6 @@ describe("Recover Session Service", () => {
 
   describe("Given a valid recoverable session is found", () => {
     it("Returns a success response with sessionId as value", async () => {
-      const service = new recoverSessionService(
-        "mockTableName",
-        "mockIndexName",
-      );
-
       const dbMock = mockClient(DynamoDBClient);
       dbMock.on(QueryCommand).resolves({
         Items: [
