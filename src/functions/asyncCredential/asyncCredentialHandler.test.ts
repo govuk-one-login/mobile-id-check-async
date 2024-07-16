@@ -53,6 +53,8 @@ const mockValidJwt =
 const env = {
   SIGNING_KEY_ID: "mockKid",
   ISSUER: "mockIssuer",
+  SESSION_TABLE_NAME: "mockTableName",
+  SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: "mockIndexName",
 };
 
 describe("Async Credential", () => {
@@ -65,8 +67,8 @@ describe("Async Credential", () => {
       clientCredentialsService: () => new MockPassingClientCredentialsService(),
       getRecoverSessionService: () =>
         new MockNoRecoverableSessionRecoverSessionService(
-          "mockTable",
-          "mockIndex",
+          env.SESSION_TABLE_NAME,
+          env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
         ),
       env,
     };
@@ -95,6 +97,42 @@ describe("Async Credential", () => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
         delete dependencies.env["ISSUER"];
+        const event = buildRequest();
+        const result = await lambdaHandler(event, dependencies);
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
+        });
+      });
+    });
+
+    describe("Given SESSION_TABLE_NAME is missing", () => {
+      it("Returns a 500 Server Error response", async () => {
+        dependencies.env = JSON.parse(JSON.stringify(env));
+        delete dependencies.env["SESSION_TABLE_NAME"];
+        const event = buildRequest();
+        const result = await lambdaHandler(event, dependencies);
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
+        });
+      });
+    });
+
+    describe("Given SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME is missing", () => {
+      it("Returns a 500 Server Error response", async () => {
+        dependencies.env = JSON.parse(JSON.stringify(env));
+        delete dependencies.env["SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME"];
         const event = buildRequest();
         const result = await lambdaHandler(event, dependencies);
 
@@ -850,7 +888,10 @@ describe("Async Credential", () => {
           }),
         });
         dependencies.getRecoverSessionService = () =>
-          new MockFailingRecoverSessionService("mockTable", "mockIndex");
+          new MockFailingRecoverSessionService(
+            env.SESSION_TABLE_NAME,
+            env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
+          );
 
         const result = await lambdaHandler(event, dependencies);
 
@@ -878,8 +919,8 @@ describe("Async Credential", () => {
         });
         dependencies.getRecoverSessionService = () =>
           new MockSessionRecoveredRecoverSessionService(
-            "mockTable",
-            "mockIndex",
+            env.SESSION_TABLE_NAME,
+            env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
           );
 
         const result = await lambdaHandler(event, dependencies);
@@ -908,8 +949,8 @@ describe("Async Credential", () => {
         });
         dependencies.getRecoverSessionService = () =>
           new MockNoRecoverableSessionRecoverSessionService(
-            "mockTable",
-            "mockIndex",
+            env.SESSION_TABLE_NAME,
+            env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
           );
 
         const result = await lambdaHandler(event, dependencies);

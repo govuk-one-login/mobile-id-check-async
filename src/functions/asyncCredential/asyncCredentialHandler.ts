@@ -19,18 +19,21 @@ export async function lambdaHandler(
   dependencies: Dependencies,
 ): Promise<APIGatewayProxyResult> {
   let keyId;
+  let issuer;
+  let sessionTableName;
+  let sessionTableSubIndexName;
   try {
     keyId = validOrThrow(dependencies.env, "SIGNING_KEY_ID");
+    issuer = validOrThrow(dependencies.env, "ISSUER");
+    sessionTableName = validOrThrow(dependencies.env, "SESSION_TABLE_NAME");
+    sessionTableSubIndexName = validOrThrow(
+      dependencies.env,
+      "SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME",
+    );
   } catch (error) {
     return serverError500Responses;
   }
 
-  let issuer;
-  try {
-    issuer = validOrThrow(dependencies.env, "ISSUER");
-  } catch (error) {
-    return serverError500Responses;
-  }
   const authorizationHeader = event.headers["Authorization"];
 
   if (authorizationHeader == null) {
@@ -145,8 +148,8 @@ export async function lambdaHandler(
   }
 
   const recoverSessionService = dependencies.getRecoverSessionService(
-    "mockTableName",
-    "mockIndexName",
+    sessionTableName,
+    sessionTableSubIndexName,
   );
 
   const recoverSessionServiceResponse =
