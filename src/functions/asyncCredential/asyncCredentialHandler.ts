@@ -22,6 +22,7 @@ export async function lambdaHandler(
   let issuer;
   let sessionTableName;
   let sessionTableSubIndexName;
+  let sessionRecoveryTimeout;
   try {
     keyId = validOrThrow(dependencies.env, "SIGNING_KEY_ID");
     issuer = validOrThrow(dependencies.env, "ISSUER");
@@ -29,6 +30,9 @@ export async function lambdaHandler(
     sessionTableSubIndexName = validOrThrow(
       dependencies.env,
       "SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME",
+    );
+    sessionRecoveryTimeout = parseInt(
+      validOrThrow(dependencies.env, "SESSION_RECOVERY_TIMEOUT"),
     );
   } catch (error) {
     return serverError500Responses;
@@ -156,7 +160,7 @@ export async function lambdaHandler(
     await recoverSessionService.getAuthSessionBySub(
       parsedRequestBody.sub,
       parsedRequestBody.state,
-      3600, //TODO Get this dynamically
+      sessionRecoveryTimeout, //TODO Get this dynamically
     );
   if (recoverSessionServiceResponse.isError) {
     return serverError500Responses;
