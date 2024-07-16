@@ -914,7 +914,7 @@ describe("Async Credential", () => {
   });
 
   describe("Session recovery service", () => {
-    describe("Given service returns an unexpected error", () => {
+    describe("Given service returns an error response", () => {
       it("Returns 500 Server Error", async () => {
         const event = buildRequest({
           headers: { Authorization: `Bearer ${mockValidJwt}` },
@@ -944,61 +944,63 @@ describe("Async Credential", () => {
       });
     });
 
-    describe("Given service returns success response where value contains authSessionId string", () => {
-      it("Returns 200 session recovered response", async () => {
-        const event = buildRequest({
-          headers: { Authorization: `Bearer ${mockValidJwt}` },
-          body: JSON.stringify({
-            state: "mockState",
-            sub: "mockSub",
-            client_id: "mockClientId",
-            govuk_signin_journey_id: "mockGovukSigninJourneyId",
-          }),
-        });
-        dependencies.getRecoverSessionService = () =>
-          new MockSessionRecoveredRecoverSessionService(
-            env.SESSION_TABLE_NAME,
-            env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
-          );
+    describe("Given service returns success response", () => {
+      describe("Given response value is the authSessionId string", () => {
+        it("Returns 200 session recovered response", async () => {
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${mockValidJwt}` },
+            body: JSON.stringify({
+              state: "mockState",
+              sub: "mockSub",
+              client_id: "mockClientId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+            }),
+          });
+          dependencies.getRecoverSessionService = () =>
+            new MockSessionRecoveredRecoverSessionService(
+              env.SESSION_TABLE_NAME,
+              env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
+            );
 
-        const result = await lambdaHandler(event, dependencies);
+          const result = await lambdaHandler(event, dependencies);
 
-        expect(result).toStrictEqual({
-          headers: { "Content-Type": "application/json" },
-          statusCode: 200,
-          body: JSON.stringify({
-            sub: "mockSub",
-            "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
-          }),
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 200,
+            body: JSON.stringify({
+              sub: "mockSub",
+              "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
+            }),
+          });
         });
       });
-    });
 
-    describe("Given service returns success response where value is null", () => {
-      it("Returns 200 Hello World response", async () => {
-        const event = buildRequest({
-          headers: { Authorization: `Bearer ${mockValidJwt}` },
-          body: JSON.stringify({
-            state: "mockState",
-            sub: "mockSub",
-            client_id: "mockClientId",
-            govuk_signin_journey_id: "mockGovukSigninJourneyId",
-          }),
-        });
-        dependencies.getRecoverSessionService = () =>
-          new MockNoRecoverableSessionRecoverSessionService(
-            env.SESSION_TABLE_NAME,
-            env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
-          );
+      describe("Given response value is null", () => {
+        it("Returns 200 Hello World response", async () => {
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${mockValidJwt}` },
+            body: JSON.stringify({
+              state: "mockState",
+              sub: "mockSub",
+              client_id: "mockClientId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+            }),
+          });
+          dependencies.getRecoverSessionService = () =>
+            new MockNoRecoverableSessionRecoverSessionService(
+              env.SESSION_TABLE_NAME,
+              env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
+            );
 
-        const result = await lambdaHandler(event, dependencies);
+          const result = await lambdaHandler(event, dependencies);
 
-        expect(result).toStrictEqual({
-          headers: { "Content-Type": "application/json" },
-          statusCode: 200,
-          body: JSON.stringify({
-            message: "Hello World",
-          }),
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 200,
+            body: JSON.stringify({
+              message: "Hello World",
+            }),
+          });
         });
       });
     });
