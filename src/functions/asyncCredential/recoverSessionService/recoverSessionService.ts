@@ -57,11 +57,22 @@ export class RecoverSessionService implements IRecoverAuthSession {
       );
     }
 
-    if (!hasValidSession(result)) {
+    if (!this.hasValidSession(result)) {
       return successResponse(null);
     }
 
     return successResponse(result.Items[0].sessionId.S);
+  }
+
+  private hasValidSession(
+    result: IQueryCommandOutputType,
+  ): result is { Items: [{ sessionId: { S: string } }] } {
+    return (
+      Array.isArray(result.Items) &&
+      result.Items.length > 0 &&
+      result.Items[0].sessionId != null &&
+      result.Items[0].sessionId.S !== ""
+    );
   }
 }
 
@@ -76,14 +87,3 @@ export interface IRecoverAuthSession {
 type IQueryCommandOutputType = {
   Items?: { sessionId?: { S: string } }[];
 };
-
-function hasValidSession(
-  result: IQueryCommandOutputType,
-): result is { Items: [{ sessionId: { S: string } }] } {
-  return (
-    Array.isArray(result.Items) &&
-    result.Items.length > 0 &&
-    result.Items[0].sessionId != null &&
-    result.Items[0].sessionId.S !== ""
-  );
-}
