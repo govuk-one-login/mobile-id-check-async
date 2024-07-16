@@ -57,16 +57,11 @@ export class RecoverSessionService implements IRecoverAuthSession {
       );
     }
 
-    if (
-      result.Items &&
-      result.Items.length > 0 &&
-      result.Items[0].sessionId !== undefined &&
-      result.Items[0].sessionId.S
-    ) {
-      return successResponse(result.Items[0].sessionId.S);
+    if (!hasValidSession(result)) {
+      return successResponse(null);
     }
 
-    return successResponse(null);
+    return successResponse(result.Items[0].sessionId.S);
   }
 }
 
@@ -76,4 +71,19 @@ export interface IRecoverAuthSession {
     state: string,
     sessionRecoveryTimeout: number,
   ) => Promise<ErrorOrSuccess<string | null>>;
+}
+
+type IQueryCommandOutputType = {
+  Items?: { sessionId?: { S: string } }[];
+};
+
+function hasValidSession(
+  result: IQueryCommandOutputType,
+): result is { Items: [{ sessionId: { S: string } }] } {
+  return (
+    Array.isArray(result.Items) &&
+    result.Items.length > 0 &&
+    result.Items[0].sessionId != null &&
+    result.Items[0].sessionId.S !== ""
+  );
 }
