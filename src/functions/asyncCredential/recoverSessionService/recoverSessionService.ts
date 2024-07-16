@@ -36,7 +36,7 @@ export class RecoverSessionService implements IRecoverAuthSession {
         "authSessionState = :authSessionState and #state <> :state",
       ExpressionAttributeValues: {
         ":subjectIdentifier": { S: sub },
-        ":authSessionState": { S: "mockValidState" }, //TODO Get dynamically
+        ":authSessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
         ":issuedOn": { S: (Date.now() - sessionRecoveryTimeout).toString() },
         ":state": { S: state },
       },
