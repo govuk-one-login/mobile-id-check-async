@@ -12,6 +12,7 @@ import {
   errorResponse,
   successResponse,
 } from "../types/errorOrValue";
+import { IRecoverAuthSession } from "./recoverSessionService/recoverSessionService";
 
 const mockJwtNoExp =
   "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.0C_S0NEicI6k1yaTAV0l85Z0SlW3HI2YIqJb_unXZ1MttAvjR9wAOhsl_0X20i1NYN0ZhnaoHnGLpApUSz2kwQ";
@@ -52,6 +53,9 @@ const mockValidJwt =
 const env = {
   SIGNING_KEY_ID: "mockKid",
   ISSUER: "mockIssuer",
+  SESSION_TABLE_NAME: "mockTableName",
+  SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: "mockIndexName",
+  SESSION_RECOVERY_TIMEOUT: "12345",
 };
 
 describe("Async Credential", () => {
@@ -62,6 +66,11 @@ describe("Async Credential", () => {
       tokenService: () => new MockTokenSeviceValidSignature(),
       ssmService: () => new MockPassingSsmService(),
       clientCredentialsService: () => new MockPassingClientCredentialsService(),
+      getRecoverSessionService: () =>
+        new MockNoRecoverableSessionRecoverSessionService(
+          env.SESSION_TABLE_NAME,
+          env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
+        ),
       env,
     };
   });
@@ -89,6 +98,79 @@ describe("Async Credential", () => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
         delete dependencies.env["ISSUER"];
+        const event = buildRequest();
+        const result = await lambdaHandler(event, dependencies);
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
+        });
+      });
+    });
+
+    describe("Given SESSION_TABLE_NAME is missing", () => {
+      it("Returns a 500 Server Error response", async () => {
+        dependencies.env = JSON.parse(JSON.stringify(env));
+        delete dependencies.env["SESSION_TABLE_NAME"];
+        const event = buildRequest();
+        const result = await lambdaHandler(event, dependencies);
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
+        });
+      });
+    });
+
+    describe("Given SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME is missing", () => {
+      it("Returns a 500 Server Error response", async () => {
+        dependencies.env = JSON.parse(JSON.stringify(env));
+        delete dependencies.env["SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME"];
+        const event = buildRequest();
+        const result = await lambdaHandler(event, dependencies);
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
+        });
+      });
+    });
+
+    describe("Given SESSION_RECOVERY_TIMEOUT is missing", () => {
+      it("Returns a 500 Server Error response", async () => {
+        dependencies.env = JSON.parse(JSON.stringify(env));
+        delete dependencies.env["SESSION_RECOVERY_TIMEOUT"];
+        const event = buildRequest();
+        const result = await lambdaHandler(event, dependencies);
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
+        });
+      });
+    });
+
+    describe("Given SESSION_RECOVERY_TIMEOUT value is not a number", () => {
+      it("Returns a 500 Server Error response", async () => {
+        dependencies.env = JSON.parse(JSON.stringify(env));
+        dependencies.env["SESSION_RECOVERY_TIMEOUT"] =
+          "mockInvalidSessionRecoveryTimeout";
         const event = buildRequest();
         const result = await lambdaHandler(event, dependencies);
 
@@ -830,6 +912,99 @@ describe("Async Credential", () => {
       });
     });
   });
+
+  describe("Session recovery service", () => {
+    describe("Given service returns an error response", () => {
+      it("Returns 500 Server Error", async () => {
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+          }),
+        });
+        dependencies.getRecoverSessionService = () =>
+          new MockFailingRecoverSessionService(
+            env.SESSION_TABLE_NAME,
+            env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
+          );
+
+        const result = await lambdaHandler(event, dependencies);
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
+        });
+      });
+    });
+
+    describe("Given service returns success response", () => {
+      describe("Given response value is the authSessionId string", () => {
+        it("Returns 200 session recovered response", async () => {
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${mockValidJwt}` },
+            body: JSON.stringify({
+              state: "mockState",
+              sub: "mockSub",
+              client_id: "mockClientId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+            }),
+          });
+          dependencies.getRecoverSessionService = () =>
+            new MockSessionRecoveredRecoverSessionService(
+              env.SESSION_TABLE_NAME,
+              env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
+            );
+
+          const result = await lambdaHandler(event, dependencies);
+
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 200,
+            body: JSON.stringify({
+              sub: "mockSub",
+              "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
+            }),
+          });
+        });
+      });
+
+      describe("Given response value is null", () => {
+        it("Returns 200 Hello World response", async () => {
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${mockValidJwt}` },
+            body: JSON.stringify({
+              state: "mockState",
+              sub: "mockSub",
+              client_id: "mockClientId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+            }),
+          });
+          dependencies.getRecoverSessionService = () =>
+            new MockNoRecoverableSessionRecoverSessionService(
+              env.SESSION_TABLE_NAME,
+              env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
+            );
+
+          const result = await lambdaHandler(event, dependencies);
+
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 200,
+            body: JSON.stringify({
+              message: "Hello World",
+            }),
+          });
+        });
+      });
+    });
+  });
 });
 
 class MockTokenSeviceInvalidSignature implements IVerifyTokenSignature {
@@ -912,5 +1087,48 @@ class MockFailingSsmService implements IGetClientCredentials {
     ErrorOrSuccess<IClientCredentials[]>
   > => {
     return errorResponse("Mock Failing SSM log");
+  };
+}
+
+class MockFailingRecoverSessionService implements IRecoverAuthSession {
+  readonly tableName: string;
+  readonly indexName: string;
+
+  constructor(tableName: string, indexName: string) {
+    this.tableName = tableName;
+    this.indexName = indexName;
+  }
+
+  getAuthSessionBySub = async (): Promise<ErrorOrSuccess<string | null>> => {
+    return errorResponse("Mock failing DB call");
+  };
+}
+
+class MockNoRecoverableSessionRecoverSessionService
+  implements IRecoverAuthSession
+{
+  readonly tableName: string;
+  readonly indexName: string;
+
+  constructor(tableName: string, indexName: string) {
+    this.tableName = tableName;
+    this.indexName = indexName;
+  }
+  getAuthSessionBySub = async (): Promise<ErrorOrSuccess<string | null>> => {
+    return successResponse(null);
+  };
+}
+
+class MockSessionRecoveredRecoverSessionService implements IRecoverAuthSession {
+  readonly tableName: string;
+  readonly indexName: string;
+
+  constructor(tableName: string, indexName: string) {
+    this.tableName = tableName;
+    this.indexName = indexName;
+  }
+
+  getAuthSessionBySub = async (): Promise<ErrorOrSuccess<string | null>> => {
+    return successResponse("mockAuthSessionId");
   };
 }
