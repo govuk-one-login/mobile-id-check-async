@@ -3,7 +3,8 @@ export type EnvVars =
   | "ISSUER"
   | "SESSION_TABLE_NAME"
   | "SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME"
-  | "SESSION_RECOVERY_TIMEOUT";
+  | "SESSION_RECOVERY_TIMEOUT"
+  | "REGION";
 
 // Get static variables
 export const validOrThrow = (

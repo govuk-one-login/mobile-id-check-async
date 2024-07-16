@@ -164,7 +164,7 @@ export async function lambdaHandler(
     await recoverSessionService.getAuthSessionBySub(
       parsedRequestBody.sub,
       parsedRequestBody.state,
-      sessionRecoveryTimeout, //TODO Get this dynamically
+      sessionRecoveryTimeout,
     );
   if (recoverSessionServiceResponse.isError) {
     return serverError500Responses;

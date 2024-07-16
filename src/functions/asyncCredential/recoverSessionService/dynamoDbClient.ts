@@ -2,8 +2,7 @@ import { DynamoDBClient, DynamoDBClientConfig } from "@aws-sdk/client-dynamodb";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 
 const config: DynamoDBClientConfig = {
-  //TODO: Get region dynamically
-  region: "eu-west-2",
+  region: process.env.REGION,
   maxAttempts: 2,
   requestHandler: new NodeHttpHandler({
     connectionTimeout: 29000,
@@ -11,5 +10,4 @@ const config: DynamoDBClientConfig = {
   }),
 };
 
-//TODO: Check if we are using X-ray
 export const dbClient = new DynamoDBClient(config);
