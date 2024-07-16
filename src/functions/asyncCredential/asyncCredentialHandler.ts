@@ -34,6 +34,10 @@ export async function lambdaHandler(
     sessionRecoveryTimeout = parseInt(
       validOrThrow(dependencies.env, "SESSION_RECOVERY_TIMEOUT"),
     );
+
+    if (!sessionRecoveryTimeout) {
+      throw new Error("Invalid SESSION_RECOVERY_TIMEOUT value - not a number");
+    }
   } catch (error) {
     return serverError500Responses;
   }

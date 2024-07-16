@@ -55,7 +55,7 @@ const env = {
   ISSUER: "mockIssuer",
   SESSION_TABLE_NAME: "mockTableName",
   SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: "mockIndexName",
-  SESSION_RECOVERY_TIMEOUT: "mockSessionRecoveryTimeout",
+  SESSION_RECOVERY_TIMEOUT: "12345",
 };
 
 describe("Async Credential", () => {
@@ -152,6 +152,25 @@ describe("Async Credential", () => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
         delete dependencies.env["SESSION_RECOVERY_TIMEOUT"];
+        const event = buildRequest();
+        const result = await lambdaHandler(event, dependencies);
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
+        });
+      });
+    });
+
+    describe("Given SESSION_RECOVERY_TIMEOUT value is not a number", () => {
+      it("Returns a 500 Server Error response", async () => {
+        dependencies.env = JSON.parse(JSON.stringify(env));
+        dependencies.env["SESSION_RECOVERY_TIMEOUT"] =
+          "mockInvalidSessionRecoveryTimeout";
         const event = buildRequest();
         const result = await lambdaHandler(event, dependencies);
 
