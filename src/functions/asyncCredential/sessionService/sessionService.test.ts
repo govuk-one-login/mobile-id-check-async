@@ -148,6 +148,8 @@ describe("Session Service", () => {
           client_id: "mockClientId",
           govuk_signin_journey_id: "mockJourneyId",
           redirect_uri: "https://mockRedirectUri.com",
+          issuer: "mockIssuer",
+          sessionState: "mockSessionState",
         });
 
         expect(result.isError).toBe(true);

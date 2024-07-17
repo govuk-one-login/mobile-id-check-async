@@ -64,6 +64,24 @@ export class SessionService implements IRecoverAuthSession {
     return successResponse(result.Items[0].sessionId.S);
   }
 
+  async createSession(
+    sessionConfig: ICreateSessionConfig,
+  ): Promise<ErrorOrSuccess<null>> {
+    const config = {
+      TableName: this.tableName,
+      authSessionId: { S: sessionConfig.authSessionId },
+      state: { S: sessionConfig.state },
+      sub: { S: sessionConfig.sub },
+      client_id: { S: sessionConfig.client_id },
+      govuk_signin_journey_id: { S: sessionConfig.govuk_signin_journey_id },
+      redirect_uri: { S: sessionConfig.redirect_uri },
+      issuer: { S: sessionConfig.issuer },
+      sessionState: { S: sessionConfig.sessionState },
+    };
+
+    return successResponse(null);
+  }
+
   private hasValidSession(
     result: IQueryCommandOutputType,
   ): result is { Items: [{ sessionId: { S: string } }] } {
@@ -74,6 +92,17 @@ export class SessionService implements IRecoverAuthSession {
       result.Items[0].sessionId.S !== ""
     );
   }
+}
+
+interface ICreateSessionConfig {
+  authSessionId: string;
+  state: string;
+  sub: string;
+  client_id: string;
+  govuk_signin_journey_id: string;
+  redirect_uri: string;
+  issuer: string;
+  sessionState: string;
 }
 
 export interface IRecoverAuthSession {

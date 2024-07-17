@@ -1196,6 +1196,7 @@ class MockSessionRecoveredRecoverSessionService implements IRecoverAuthSession {
     return successResponse("mockAuthSessionId");
   };
 }
+
 // class MockSessionServiceCreateSessionFailure implements IRecoverAuthSession {
 //   readonly tableName: string;
 //   readonly indexName: string;
