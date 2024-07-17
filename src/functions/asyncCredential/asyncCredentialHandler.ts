@@ -4,7 +4,6 @@ import {
   ClientCredentialsService,
   IClientCredentials,
 } from "../services/clientCredentialsService/clientCredentialsService";
-import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
 import { TokenService } from "./TokenService/tokenService";
 import {
   ErrorOrSuccess,
@@ -12,6 +11,9 @@ import {
   successResponse,
 } from "../types/errorOrValue";
 import { IJwtPayload } from "../types/jwt";
+import { Logger } from "../services/logging/logger";
+import { MessageName } from "./registeredLogs";
+import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
 import { IRecoverAuthSession } from "./sessionService/sessionService";
 
 export async function lambdaHandler(
@@ -23,6 +25,13 @@ export async function lambdaHandler(
   let sessionTableName;
   let sessionTableSubIndexName;
   let sessionRecoveryTimeout;
+  const logger = dependencies.logger();
+  const config = configOrError(dependencies.env);
+
+  if (config.isError) {
+    logger.log("ENVIRONMENT_VARIABLE_MISSING", { errorMessage: config.value });
+    return serverError500Responses;
+  }
   try {
     keyId = validOrThrow(dependencies.env, "SIGNING_KEY_ID");
     issuer = validOrThrow(dependencies.env, "ISSUER");
@@ -183,6 +192,23 @@ export async function lambdaHandler(
   };
 }
 
+interface Config {
+  SIGNING_KEY_ID: string;
+  ISSUER: string;
+  SESSION_TABLE_NAME: string;
+  SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: string;
+  SESSION_RECOVERY_TIMEOUT: string;
+}
+const configOrError = (env: NodeJS.ProcessEnv): ErrorOrSuccess<Config> => {
+  if (!env.SIGNING_KEY_ID) return errorResponse("NO SIGNING_KEY");
+  return successResponse({
+    SIGNING_KEY_ID: "string",
+    ISSUER: "string",
+    SESSION_TABLE_NAME: "string",
+    SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: "string",
+    SESSION_RECOVERY_TIMEOUT: "string",
+  });
+};
 const isAuthorizationHeaderFormatValid = (
   authorizationHeader: string,
 ): boolean => {
@@ -349,6 +375,7 @@ export interface ICredentialRequestBody {
 }
 
 export interface Dependencies {
+  logger: () => Logger<MessageName>;
   tokenService: () => TokenService;
   clientCredentialsService: () => ClientCredentialsService;
   ssmService: () => IGetClientCredentials;

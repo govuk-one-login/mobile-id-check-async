@@ -14,6 +14,45 @@ import {
 } from "../types/errorOrValue";
 import { IRecoverAuthSession } from "./sessionService/sessionService";
 import { MockJWTBuilder } from "../testUtils/mockJwt";
+import { Logger } from "../services/logging/logger";
+import { MessageName, registeredLogs } from "./registeredLogs";
+import { MockLoggingAdapter } from "../services/logging/tests/logger.test";
+
+const mockJwtNoExp =
+  "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.0C_S0NEicI6k1yaTAV0l85Z0SlW3HI2YIqJb_unXZ1MttAvjR9wAOhsl_0X20i1NYN0ZhnaoHnGLpApUSz2kwQ";
+
+const mockJwtIatInTheFuture =
+  "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZXhwIjoiMjE0NTk2NDY5NSIsImlhdCI6IjIxNDU5NjQ2OTUifQ.VnfFwIElQqPwbayMqLz-YaUK-BOx9tEKJE4_N49xh65TQvtP-9EWaPgD0D0C_3hULWjtvt2gh46nTPi-m7-y4A";
+
+const mockJwtExpInThePast =
+  "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE1MTYyMzkwMjJ9.LMHQh9wrANRpJYdQsP1oOVsrDEFTTJTYgpUVBy_w1Jd8GFRLwbenFEjFyXr2PZF-COP9xI87vpEOtrAri3ge8A";
+
+const mockJwtNbfInFuture =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIyMTQ1OTY0Njk1In0.7-OeXAHrUdvRirCd_7H_yxFf8aGzkGIk944gqAbCBVM";
+
+const mockJwtNoIss =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIn0.PO0IKWByJKerqZonGpagwKEaX-psQQPYZPPnXwI3JC4";
+
+const mockJwtIssNotValid =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0ludmFsaWRJc3N1ZXIifQ.K9lS44Bm3iHfXxAL2q-SBK2q-HB2NQ-UQSlmoqaaBVw";
+
+const mockJwtNoScope =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciJ9._-4Sn9N5grVDSxI2vvoUH90-6bAh6nH53ELZ38b3Gwk";
+
+const mockJwtScopeNotValid =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciIsInNjb3BlIjoibW9ja0ludmFsaWRTY29wZSJ9.kO0R0-bN6uYkknOD9E0oqtpRlp0rHB-6njrHN3mKkX4";
+
+const mockJwtNoClientId =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUifQ.xN-h1mVndN7kNRSrVM0WLcdKblniD3q70xnY-RYBIlc";
+
+const mockJwtNoAud =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUiLCJjbGllbnRfaWQiOiJtb2NrQ2xpZW50SWQifQ.FzBrIcM0DDp1ecivQpCNF216l2ZFzU3fPAOgAegKylY";
+
+const mockJwtInvalidAud =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUiLCJjbGllbnRfaWQiOiJtb2NrQ2xpZW50SWQiLCJhdWQiOiJpbnZhbGlkSXNzdWVyIiwic3RhdGUiOiJtb2NrU3RhdGUifQ.bMxAW6t5TzESfGqTAzIJwRn38-mLwYg_pVJbupscrU8";
+
+const mockValidJwt =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUiLCJjbGllbnRfaWQiOiJtb2NrQ2xpZW50SWQiLCJhdWQiOiJtb2NrSXNzdWVyIn0.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -25,9 +64,12 @@ const env = {
 
 describe("Async Credential", () => {
   let dependencies: Dependencies;
+  let mockLogger: MockLoggingAdapter<MessageName>;
 
   beforeEach(() => {
+    mockLogger = new MockLoggingAdapter();
     dependencies = {
+      logger: () => new Logger(mockLogger, registeredLogs),
       tokenService: () => new MockTokenSeviceValidSignature(),
       ssmService: () => new MockPassingSsmService(),
       clientCredentialsService: () => new MockPassingClientCredentialsService(),
@@ -47,6 +89,13 @@ describe("Async Credential", () => {
         delete dependencies.env["SIGNING_KEY_ID"];
         const event = buildRequest();
         const result = await lambdaHandler(event, dependencies);
+
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "ENVIRONMENT_VARIABLE_MISSING",
+        );
+        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+          errorMessage: "NO SIGNING_KEY",
+        });
 
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
