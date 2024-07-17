@@ -12,7 +12,7 @@ import {
   errorResponse,
   successResponse,
 } from "../types/errorOrValue";
-import { IRecoverAuthSession } from "./recoverSessionService/recoverSessionService";
+import { IRecoverAuthSession } from "./sessionService/sessionService";
 
 const mockJwtNoExp =
   "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.0C_S0NEicI6k1yaTAV0l85Z0SlW3HI2YIqJb_unXZ1MttAvjR9wAOhsl_0X20i1NYN0ZhnaoHnGLpApUSz2kwQ";
