@@ -12,7 +12,7 @@ import {
   successResponse,
 } from "../types/errorOrValue";
 import { IJwtPayload } from "../types/jwt";
-import { IRecoverAuthSession } from "./recoverSessionService/recoverSessionService";
+import { IRecoverAuthSession } from "./sessionService/sessionService";
 
 export async function lambdaHandler(
   event: APIGatewayProxyEvent,
