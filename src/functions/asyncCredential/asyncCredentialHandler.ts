@@ -12,7 +12,7 @@ import {
   successResponse,
 } from "../types/errorOrValue";
 import { IJwtPayload } from "../types/jwt";
-import { IRecoverAuthSession } from "./sessionService/sessionService";
+import { ISessionService } from "./sessionService/sessionService";
 
 export async function lambdaHandler(
   event: APIGatewayProxyEvent,
@@ -155,13 +155,13 @@ export async function lambdaHandler(
     });
   }
 
-  const recoverSessionService = dependencies.getRecoverSessionService(
+  const sessionService = dependencies.getSessionService(
     sessionTableName,
     sessionTableSubIndexName,
   );
 
   const recoverSessionServiceResponse =
-    await recoverSessionService.getAuthSessionBySub(
+    await sessionService.getAuthSessionBySub(
       parsedRequestBody.sub,
       parsedRequestBody.state,
       sessionRecoveryTimeout,
@@ -174,13 +174,25 @@ export async function lambdaHandler(
     return sessionRecoveredResponse(parsedRequestBody.sub);
   }
 
-  return {
-    headers: { "Content-Type": "application/json" },
-    statusCode: 200,
-    body: JSON.stringify({
-      message: "Hello World",
-    }),
+  const sessionConfig = {
+    authSessionId: "",
+    state: "",
+    sub: "",
+    client_id: "",
+    govuk_signin_journey_id: "",
+    redirect_uri: "",
+    issuer: "",
+    sessionState: "",
   };
+
+  const sessionServiceCreateSessionResult =
+    await sessionService.createSession(sessionConfig);
+
+  if (sessionServiceCreateSessionResult.isError) {
+    return serverError500Responses;
+  }
+
+  return sessionCreatedResponse(parsedRequestBody.sub);
 }
 
 const isAuthorizationHeaderFormatValid = (
@@ -340,6 +352,17 @@ const sessionRecoveredResponse = (sub: string): APIGatewayProxyResult => {
   };
 };
 
+const sessionCreatedResponse = (sub: string): APIGatewayProxyResult => {
+  return {
+    headers: { "Content-Type": "application/json" },
+    statusCode: 201,
+    body: JSON.stringify({
+      sub,
+      "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
+    }),
+  };
+};
+
 export interface ICredentialRequestBody {
   sub: string;
   govuk_signin_journey_id: string;
@@ -352,9 +375,6 @@ export interface Dependencies {
   tokenService: () => TokenService;
   clientCredentialsService: () => ClientCredentialsService;
   ssmService: () => IGetClientCredentials;
-  getRecoverSessionService: (
-    tableName: string,
-    indexName: string,
-  ) => IRecoverAuthSession;
+  getSessionService: (tableName: string, indexName: string) => ISessionService;
   env: NodeJS.ProcessEnv;
 }

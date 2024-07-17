@@ -13,7 +13,7 @@ import {
   successResponse,
 } from "../../types/errorOrValue";
 
-export class SessionService implements IRecoverAuthSession {
+export class SessionService implements ISessionService {
   readonly tableName: string;
   readonly indexName: string;
   readonly dbClient: DynamoDBClient;
@@ -67,7 +67,7 @@ export class SessionService implements IRecoverAuthSession {
   }
 
   async createSession(
-    sessionConfig: ICreateSessionConfig,
+    sessionConfig: ISessionConfig,
   ): Promise<ErrorOrSuccess<null>> {
     const config = {
       TableName: this.tableName,
@@ -134,7 +134,7 @@ export class SessionService implements IRecoverAuthSession {
   }
 }
 
-interface ICreateSessionConfig {
+interface ISessionConfig {
   authSessionId: string;
   state: string;
   sub: string;
@@ -145,12 +145,15 @@ interface ICreateSessionConfig {
   sessionState: string;
 }
 
-export interface IRecoverAuthSession {
+export interface ISessionService {
   getAuthSessionBySub: (
     sub: string,
     state: string,
     sessionRecoveryTimeout: number,
   ) => Promise<ErrorOrSuccess<string | null>>;
+  createSession: (
+    sessionConfig: ISessionConfig,
+  ) => Promise<ErrorOrSuccess<null>>;
 }
 
 type IQueryCommandOutputType = {
