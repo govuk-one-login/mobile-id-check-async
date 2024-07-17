@@ -1,5 +1,6 @@
 import {
   DynamoDBClient,
+  GetItemCommand,
   PutItemCommand,
   QueryCommand,
   QueryCommandInput,
@@ -82,6 +83,21 @@ export class SessionService implements IRecoverAuthSession {
       },
     };
 
+    let doesSessionExist;
+    try {
+      doesSessionExist = await this.checkSessionsExists(
+        sessionConfig.authSessionId,
+      );
+    } catch (error) {
+      return errorResponse(
+        "Unexpected error when querying session table to check if authSessionId exists",
+      );
+    }
+
+    if (doesSessionExist) {
+      return errorResponse("authSessionId already exists in the database");
+    }
+
     try {
       await dbClient.send(new PutItemCommand(config));
     } catch (error) {
@@ -102,6 +118,19 @@ export class SessionService implements IRecoverAuthSession {
       result.Items[0].sessionId != null &&
       result.Items[0].sessionId.S !== ""
     );
+  }
+
+  private async checkSessionsExists(authSessionId: string): Promise<boolean> {
+    const output = await dbClient.send(
+      new GetItemCommand({
+        TableName: this.tableName,
+        Key: {
+          sessionId: { S: authSessionId },
+        },
+      }),
+    );
+
+    return output.Item != null;
   }
 }
 
