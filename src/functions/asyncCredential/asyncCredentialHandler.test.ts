@@ -16,7 +16,7 @@ import { IRecoverAuthSession } from "./sessionService/sessionService";
 import { MockJWTBuilder } from "../testUtils/mockJwt";
 import { Logger } from "../services/logging/logger";
 import { MessageName, registeredLogs } from "./registeredLogs";
-import { MockLoggingAdapter } from "../services/logging/tests/logger.test";
+import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 
 const mockJwtNoExp =
   "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.0C_S0NEicI6k1yaTAV0l85Z0SlW3HI2YIqJb_unXZ1MttAvjR9wAOhsl_0X20i1NYN0ZhnaoHnGLpApUSz2kwQ";
@@ -83,10 +83,15 @@ describe("Async Credential", () => {
   });
 
   describe("Environment variable validation", () => {
-    describe("Given SIGNING_KEY_ID is missing", () => {
+    describe.each([
+      "SIGNING_KEY_ID",
+      "ISSUER",
+      "SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME",
+      "SESSION_RECOVERY_TIMEOUT",
+    ])("Given %s is missing", (envVar: string) => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
-        delete dependencies.env["SIGNING_KEY_ID"];
+        delete dependencies.env[envVar];
         const event = buildRequest();
         const result = await lambdaHandler(event, dependencies);
 
@@ -94,80 +99,8 @@ describe("Async Credential", () => {
           "ENVIRONMENT_VARIABLE_MISSING",
         );
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-          errorMessage: "NO SIGNING_KEY",
+          errorMessage: `No ${envVar}`,
         });
-
-        expect(result).toStrictEqual({
-          headers: { "Content-Type": "application/json" },
-          statusCode: 500,
-          body: JSON.stringify({
-            error: "server_error",
-            error_description: "Server Error",
-          }),
-        });
-      });
-    });
-
-    describe("Given ISSUER is missing", () => {
-      it("Returns a 500 Server Error response", async () => {
-        dependencies.env = JSON.parse(JSON.stringify(env));
-        delete dependencies.env["ISSUER"];
-        const event = buildRequest();
-        const result = await lambdaHandler(event, dependencies);
-
-        expect(result).toStrictEqual({
-          headers: { "Content-Type": "application/json" },
-          statusCode: 500,
-          body: JSON.stringify({
-            error: "server_error",
-            error_description: "Server Error",
-          }),
-        });
-      });
-    });
-
-    describe("Given SESSION_TABLE_NAME is missing", () => {
-      it("Returns a 500 Server Error response", async () => {
-        dependencies.env = JSON.parse(JSON.stringify(env));
-        delete dependencies.env["SESSION_TABLE_NAME"];
-        const event = buildRequest();
-        const result = await lambdaHandler(event, dependencies);
-
-        expect(result).toStrictEqual({
-          headers: { "Content-Type": "application/json" },
-          statusCode: 500,
-          body: JSON.stringify({
-            error: "server_error",
-            error_description: "Server Error",
-          }),
-        });
-      });
-    });
-
-    describe("Given SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME is missing", () => {
-      it("Returns a 500 Server Error response", async () => {
-        dependencies.env = JSON.parse(JSON.stringify(env));
-        delete dependencies.env["SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME"];
-        const event = buildRequest();
-        const result = await lambdaHandler(event, dependencies);
-
-        expect(result).toStrictEqual({
-          headers: { "Content-Type": "application/json" },
-          statusCode: 500,
-          body: JSON.stringify({
-            error: "server_error",
-            error_description: "Server Error",
-          }),
-        });
-      });
-    });
-
-    describe("Given SESSION_RECOVERY_TIMEOUT is missing", () => {
-      it("Returns a 500 Server Error response", async () => {
-        dependencies.env = JSON.parse(JSON.stringify(env));
-        delete dependencies.env["SESSION_RECOVERY_TIMEOUT"];
-        const event = buildRequest();
-        const result = await lambdaHandler(event, dependencies);
 
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
@@ -187,6 +120,13 @@ describe("Async Credential", () => {
           "mockInvalidSessionRecoveryTimeout";
         const event = buildRequest();
         const result = await lambdaHandler(event, dependencies);
+
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "ENVIRONMENT_VARIABLE_MISSING",
+        );
+        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+          errorMessage: "SESSION_RECOVERY_TIMEOUT is not a valid number",
+        });
 
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
