@@ -1,5 +1,6 @@
 import {
   DynamoDBClient,
+  PutItemCommand,
   QueryCommand,
   QueryCommandInput,
   QueryCommandOutput,
@@ -69,15 +70,25 @@ export class SessionService implements IRecoverAuthSession {
   ): Promise<ErrorOrSuccess<null>> {
     const config = {
       TableName: this.tableName,
-      authSessionId: { S: sessionConfig.authSessionId },
-      state: { S: sessionConfig.state },
-      sub: { S: sessionConfig.sub },
-      client_id: { S: sessionConfig.client_id },
-      govuk_signin_journey_id: { S: sessionConfig.govuk_signin_journey_id },
-      redirect_uri: { S: sessionConfig.redirect_uri },
-      issuer: { S: sessionConfig.issuer },
-      sessionState: { S: sessionConfig.sessionState },
+      Item: {
+        authSessionId: { S: sessionConfig.authSessionId },
+        state: { S: sessionConfig.state },
+        sub: { S: sessionConfig.sub },
+        client_id: { S: sessionConfig.client_id },
+        govuk_signin_journey_id: { S: sessionConfig.govuk_signin_journey_id },
+        redirect_uri: { S: sessionConfig.redirect_uri },
+        issuer: { S: sessionConfig.issuer },
+        sessionState: { S: sessionConfig.sessionState },
+      },
     };
+
+    try {
+      await dbClient.send(new PutItemCommand(config));
+    } catch (error) {
+      return errorResponse(
+        "Unexpected error when querying session table whilst creating a session",
+      );
+    }
 
     return successResponse(null);
   }
