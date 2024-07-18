@@ -53,6 +53,7 @@ export async function lambdaHandler(
 
   // JWT Claim validation
   const encodedJwt = authorizationHeader.split(" ")[1];
+  console.log("ENCODEDJWT", encodedJwt);
   // Replace with const [header, payload, signature] = encodedJwt.split(".") when needed
   const payload = encodedJwt.split(".")[1];
   const jwtPayload = JSON.parse(
@@ -63,7 +64,11 @@ export async function lambdaHandler(
     jwtPayload,
     config.ISSUER,
   );
+  console.log("JWT PAYLOAD", jwtPayload);
   if (jwtClaimValidationResponse.isError) {
+    logger.log("JWT_CLAIM_INVALID", {
+      errorMessage: jwtClaimValidationResponse.value,
+    });
     return badRequestResponse({
       error: "invalid_token",
       errorDescription: jwtClaimValidationResponse.value as string,
@@ -238,7 +243,7 @@ const validAuthorizationHeaderOrError = (
 
 const jwtClaimValidator = (
   jwtPayload: IJwtPayload,
-  issuer: string,
+  issuerEnvironmentVariable: string,
 ): ErrorOrSuccess<null> => {
   if (!jwtPayload.exp) {
     return errorResponse("Missing exp claim");
@@ -263,8 +268,10 @@ const jwtClaimValidator = (
     return errorResponse("Missing iss claim");
   }
 
-  if (jwtPayload.iss !== issuer) {
-    return errorResponse("iss claim does not match registered issuer");
+  if (jwtPayload.iss !== issuerEnvironmentVariable) {
+    return errorResponse(
+      "iss claim does not match ISSUER environment variable",
+    );
   }
 
   if (!jwtPayload.scope) {

@@ -239,6 +239,13 @@ describe("Async Credential", () => {
             dependencies,
           );
 
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "JWT_CLAIM_INVALID",
+          );
+          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+            errorMessage: "Missing exp claim",
+          });
+
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
@@ -264,6 +271,13 @@ describe("Async Credential", () => {
             event,
             dependencies,
           );
+
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "JWT_CLAIM_INVALID",
+          );
+          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+            errorMessage: "exp claim is in the past",
+          });
 
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
@@ -294,6 +308,12 @@ describe("Async Credential", () => {
             dependencies,
           );
 
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "JWT_CLAIM_INVALID",
+          );
+          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+            errorMessage: "iat claim is in the future",
+          });
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
@@ -323,6 +343,12 @@ describe("Async Credential", () => {
             dependencies,
           );
 
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "JWT_CLAIM_INVALID",
+          );
+          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+            errorMessage: "nbf claim is in the future",
+          });
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
@@ -351,6 +377,12 @@ describe("Async Credential", () => {
             dependencies,
           );
 
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "JWT_CLAIM_INVALID",
+          );
+          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+            errorMessage: "Missing iss claim",
+          });
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
@@ -376,13 +408,21 @@ describe("Async Credential", () => {
             event,
             dependencies,
           );
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "JWT_CLAIM_INVALID",
+          );
+          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+            errorMessage:
+              "iss claim does not match ISSUER environment variable",
+          });
 
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
             body: JSON.stringify({
               error: "invalid_token",
-              error_description: "iss claim does not match registered issuer",
+              error_description:
+                "iss claim does not match ISSUER environment variable",
             }),
           });
         });
@@ -404,6 +444,12 @@ describe("Async Credential", () => {
             event,
             dependencies,
           );
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "JWT_CLAIM_INVALID",
+          );
+          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+            errorMessage: "Missing scope claim",
+          });
 
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
@@ -430,6 +476,12 @@ describe("Async Credential", () => {
             event,
             dependencies,
           );
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "JWT_CLAIM_INVALID",
+          );
+          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+            errorMessage: "Invalid scope claim",
+          });
 
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
@@ -458,6 +510,12 @@ describe("Async Credential", () => {
             event,
             dependencies,
           );
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "JWT_CLAIM_INVALID",
+          );
+          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+            errorMessage: "Missing client_id claim",
+          });
 
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
@@ -486,6 +544,12 @@ describe("Async Credential", () => {
             event,
             dependencies,
           );
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "JWT_CLAIM_INVALID",
+          );
+          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+            errorMessage: "Missing aud claim",
+          });
 
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
