@@ -67,9 +67,9 @@ export class SessionService implements ISessionService {
   }
 
   async createSession(
-    sessionConfig: ISessionConfigItems,
+    sessionConfig: IAuthSession,
   ): Promise<ErrorOrSuccess<null>> {
-    const config: ISessionConfig = {
+    const config: IPutAuthSessionConfig = {
       TableName: this.tableName,
       Item: {
         authSessionId: { S: sessionConfig.authSessionId },
@@ -137,12 +137,12 @@ export class SessionService implements ISessionService {
     return output.Item != null;
   }
 
-  private async putSessionInDb(config: ISessionConfig) {
+  private async putSessionInDb(config: IPutAuthSessionConfig) {
     await dbClient.send(new PutItemCommand(config));
   }
 }
 
-interface ISessionConfigItems {
+interface IAuthSession {
   authSessionId: string;
   state: string;
   sub: string;
@@ -154,7 +154,7 @@ interface ISessionConfigItems {
   redirect_uri?: string;
 }
 
-interface ISessionConfig {
+interface IPutAuthSessionConfig {
   TableName: string;
   Item: {
     authSessionId: { S: string };
@@ -175,9 +175,8 @@ export interface ISessionService {
     state: string,
     sessionRecoveryTimeout: number,
   ) => Promise<ErrorOrSuccess<string | null>>;
-  createSession: (
-    sessionConfig: ISessionConfigItems,
-  ) => Promise<ErrorOrSuccess<null>>;
+
+  createSession: (sessionConfig: IAuthSession) => Promise<ErrorOrSuccess<null>>;
 }
 
 type IQueryCommandOutputType = {
