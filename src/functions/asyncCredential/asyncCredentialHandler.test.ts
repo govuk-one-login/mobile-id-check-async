@@ -12,7 +12,10 @@ import {
   errorResponse,
   successResponse,
 } from "../types/errorOrValue";
-import { ISessionService } from "./sessionService/sessionService";
+import {
+  ICreateSession,
+  IGetAuthSessionBySub,
+} from "./sessionService/sessionService";
 
 const mockJwtNoExp =
   "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.0C_S0NEicI6k1yaTAV0l85Z0SlW3HI2YIqJb_unXZ1MttAvjR9wAOhsl_0X20i1NYN0ZhnaoHnGLpApUSz2kwQ";
@@ -1125,7 +1128,9 @@ class MockFailingSsmService implements IGetClientCredentials {
   };
 }
 
-class MockSessionServiceGetSessionBySubFailure implements ISessionService {
+class MockSessionServiceGetSessionBySubFailure
+  implements IGetAuthSessionBySub, ICreateSession
+{
   readonly tableName: string;
   readonly indexName: string;
 
@@ -1143,7 +1148,9 @@ class MockSessionServiceGetSessionBySubFailure implements ISessionService {
   };
 }
 
-class MockSessionServiceNoRecoverableSession implements ISessionService {
+class MockSessionServiceNoRecoverableSession
+  implements IGetAuthSessionBySub, ICreateSession
+{
   readonly tableName: string;
   readonly indexName: string;
 
@@ -1160,7 +1167,9 @@ class MockSessionServiceNoRecoverableSession implements ISessionService {
   };
 }
 
-class MockSessionServiceSessionRecovered implements ISessionService {
+class MockSessionServiceSessionRecovered
+  implements IGetAuthSessionBySub, ICreateSession
+{
   readonly tableName: string;
   readonly indexName: string;
 
@@ -1178,7 +1187,9 @@ class MockSessionServiceSessionRecovered implements ISessionService {
   };
 }
 
-class MockSessionServiceCreateSessionFailure implements ISessionService {
+class MockSessionServiceCreateSessionFailure
+  implements IGetAuthSessionBySub, ICreateSession
+{
   readonly tableName: string;
   readonly indexName: string;
 
@@ -1196,7 +1207,9 @@ class MockSessionServiceCreateSessionFailure implements ISessionService {
   };
 }
 
-class MockSessionServiceSessionCreated implements ISessionService {
+class MockSessionServiceSessionCreated
+  implements IGetAuthSessionBySub, ICreateSession
+{
   readonly tableName: string;
   readonly indexName: string;
 

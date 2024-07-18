@@ -12,7 +12,10 @@ import {
   successResponse,
 } from "../types/errorOrValue";
 import { IJwtPayload } from "../types/jwt";
-import { ISessionService } from "./sessionService/sessionService";
+import {
+  ICreateSession,
+  IGetAuthSessionBySub,
+} from "./sessionService/sessionService";
 import { randomUUID } from "crypto";
 
 export async function lambdaHandler(
@@ -383,6 +386,9 @@ export interface Dependencies {
   tokenService: () => TokenService;
   clientCredentialsService: () => ClientCredentialsService;
   ssmService: () => IGetClientCredentials;
-  getSessionService: (tableName: string, indexName: string) => ISessionService;
+  getSessionService: (
+    tableName: string,
+    indexName: string,
+  ) => IGetAuthSessionBySub & ICreateSession;
   env: NodeJS.ProcessEnv;
 }
