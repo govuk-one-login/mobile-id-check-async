@@ -326,7 +326,7 @@ class MockPassingClientCredentialsService implements IClientCredentialsService {
   validateTokenRequest(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
-  validateCredentialRequest(): ErrorOrSuccess<null> {
+  validateRedirectUri(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
   getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
@@ -345,7 +345,7 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
   validateTokenRequest(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
-  validateCredentialRequest(): ErrorOrSuccess<null> {
+  validateRedirectUri(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
   getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
@@ -359,7 +359,7 @@ class MockFailingClientCredentialsServiceValidation
   validateTokenRequest(): ErrorOrSuccess<null> {
     return errorResponse("Client secrets not valid");
   }
-  validateCredentialRequest(): ErrorOrSuccess<null> {
+  validateRedirectUri(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
   getClientCredentialsById() {
