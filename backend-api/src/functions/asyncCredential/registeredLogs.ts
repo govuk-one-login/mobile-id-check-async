@@ -9,7 +9,9 @@ export type MessageName =
   | "AUTHENTICATION_HEADER_INVALID"
   | "JWT_CLAIM_INVALID"
   | "ERROR_CREATING_SESSION"
-  | "SESSION_CREATED";
+  | "SESSION_CREATED"
+  | "REQUEST_BODY_INVALID"
+  | CommonMessageNames;
 
 export const registeredLogs: RegisteredLogMessages<MessageName> = {
   AUTHENTICATION_HEADER_INVALID: {
@@ -23,6 +25,9 @@ export const registeredLogs: RegisteredLogMessages<MessageName> = {
   },
   SESSION_CREATED: {
     messageCode: "MOBILE_ASYNC_SESSION_CREATED",
+  },
+  REQUEST_BODY_INVALID: {
+    messageCode: "MOBILE_ASYNC_REQUEST_BODY_INVALID",
   },
   ...commonMessages,
 };
