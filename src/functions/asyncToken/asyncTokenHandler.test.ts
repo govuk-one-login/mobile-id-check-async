@@ -21,8 +21,8 @@ import {
   errorResponse,
   successResponse,
 } from "../types/errorOrValue";
-import { MockLoggingAdapter } from "../services/logging/tests/logger.test";
 import { buildLambdaContext } from "../testUtils/mockContext";
+import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 
 describe("Async Token", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;

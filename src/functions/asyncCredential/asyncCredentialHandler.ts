@@ -1,10 +1,8 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { validOrThrow } from "../config";
 import {
   ClientCredentialsService,
   IClientCredentials,
 } from "../services/clientCredentialsService/clientCredentialsService";
-import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
 import { TokenService } from "./TokenService/tokenService";
 import {
   ErrorOrSuccess,
@@ -12,35 +10,26 @@ import {
   successResponse,
 } from "../types/errorOrValue";
 import { IJwtPayload } from "../types/jwt";
+import { Logger } from "../services/logging/logger";
+import { MessageName } from "./registeredLogs";
+import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
 import { IRecoverAuthSession } from "./sessionService/sessionService";
 
 export async function lambdaHandler(
   event: APIGatewayProxyEvent,
   dependencies: Dependencies,
 ): Promise<APIGatewayProxyResult> {
-  let keyId;
-  let issuer;
-  let sessionTableName;
-  let sessionTableSubIndexName;
-  let sessionRecoveryTimeout;
-  try {
-    keyId = validOrThrow(dependencies.env, "SIGNING_KEY_ID");
-    issuer = validOrThrow(dependencies.env, "ISSUER");
-    sessionTableName = validOrThrow(dependencies.env, "SESSION_TABLE_NAME");
-    sessionTableSubIndexName = validOrThrow(
-      dependencies.env,
-      "SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME",
-    );
-    sessionRecoveryTimeout = parseInt(
-      validOrThrow(dependencies.env, "SESSION_RECOVERY_TIMEOUT"),
-    );
+  const logger = dependencies.logger();
+  const configResponse = configOrError(dependencies.env);
 
-    if (!sessionRecoveryTimeout) {
-      throw new Error("Invalid SESSION_RECOVERY_TIMEOUT value - not a number");
-    }
-  } catch (error) {
+  if (configResponse.isError) {
+    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
+      errorMessage: configResponse.value,
+    });
     return serverError500Responses;
   }
+
+  const config = configResponse.value as Config;
 
   const authorizationHeader = event.headers["Authorization"];
 
@@ -62,7 +51,10 @@ export async function lambdaHandler(
     Buffer.from(payload, "base64").toString("utf-8"),
   );
 
-  const jwtClaimValidationResponse = jwtClaimValidator(jwtPayload, issuer);
+  const jwtClaimValidationResponse = jwtClaimValidator(
+    jwtPayload,
+    config.ISSUER,
+  );
   if (jwtClaimValidationResponse.isError) {
     return badRequestResponse({
       error: "invalid_token",
@@ -99,7 +91,10 @@ export async function lambdaHandler(
     });
   }
 
-  const result = await tokenService.verifyTokenSignature(keyId, encodedJwt);
+  const result = await tokenService.verifyTokenSignature(
+    config.SIGNING_KEY_ID,
+    encodedJwt,
+  );
 
   if (result.isError) {
     return unauthorizedResponseInvalidSignature;
@@ -156,15 +151,15 @@ export async function lambdaHandler(
   }
 
   const recoverSessionService = dependencies.getRecoverSessionService(
-    sessionTableName,
-    sessionTableSubIndexName,
+    config.SESSION_TABLE_NAME,
+    config.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
   );
 
   const recoverSessionServiceResponse =
     await recoverSessionService.getAuthSessionBySub(
       parsedRequestBody.sub,
       parsedRequestBody.state,
-      sessionRecoveryTimeout,
+      config.SESSION_RECOVERY_TIMEOUT,
     );
   if (recoverSessionServiceResponse.isError) {
     return serverError500Responses;
@@ -183,6 +178,32 @@ export async function lambdaHandler(
   };
 }
 
+interface Config {
+  SIGNING_KEY_ID: string;
+  ISSUER: string;
+  SESSION_TABLE_NAME: string;
+  SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: string;
+  SESSION_RECOVERY_TIMEOUT: number;
+}
+const configOrError = (env: NodeJS.ProcessEnv): ErrorOrSuccess<Config> => {
+  if (!env.SIGNING_KEY_ID) return errorResponse("No SIGNING_KEY_ID");
+  if (!env.ISSUER) return errorResponse("No ISSUER");
+  if (!env.SESSION_TABLE_NAME) return errorResponse("No SESSION_TABLE_NAME");
+  if (!env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME)
+    return errorResponse("No SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME");
+  if (!env.SESSION_RECOVERY_TIMEOUT)
+    return errorResponse("No SESSION_RECOVERY_TIMEOUT");
+  if (isNaN(Number(env.SESSION_RECOVERY_TIMEOUT)))
+    return errorResponse("SESSION_RECOVERY_TIMEOUT is not a valid number");
+  return successResponse({
+    SIGNING_KEY_ID: env.SIGNING_KEY_ID,
+    ISSUER: env.ISSUER,
+    SESSION_TABLE_NAME: env.SESSION_TABLE_NAME,
+    SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME:
+      env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
+    SESSION_RECOVERY_TIMEOUT: parseInt(env.SESSION_RECOVERY_TIMEOUT),
+  });
+};
 const isAuthorizationHeaderFormatValid = (
   authorizationHeader: string,
 ): boolean => {
@@ -349,6 +370,7 @@ export interface ICredentialRequestBody {
 }
 
 export interface Dependencies {
+  logger: () => Logger<MessageName>;
   tokenService: () => TokenService;
   clientCredentialsService: () => ClientCredentialsService;
   ssmService: () => IGetClientCredentials;
