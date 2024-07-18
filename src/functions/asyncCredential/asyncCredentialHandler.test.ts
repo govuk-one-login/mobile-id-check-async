@@ -1073,7 +1073,7 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
   validateTokenRequest(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
-  validateCredentialRequest(): ErrorOrSuccess<null> {
+  validateRedirectUri(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
   getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
@@ -1085,7 +1085,7 @@ class MockPassingClientCredentialsService implements IClientCredentialsService {
   validateTokenRequest(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
-  validateCredentialRequest(): ErrorOrSuccess<null> {
+  validateRedirectUri(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
   getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
@@ -1102,7 +1102,7 @@ class MockFailingClientCredentialsService implements IClientCredentialsService {
   validateTokenRequest(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
-  validateCredentialRequest(): ErrorOrSuccess<null> {
+  validateRedirectUri(): ErrorOrSuccess<null> {
     return errorResponse("mockClientCredentialServiceError");
   }
   getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
