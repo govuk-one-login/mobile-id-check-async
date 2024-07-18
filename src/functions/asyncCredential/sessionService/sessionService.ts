@@ -77,7 +77,6 @@ export class SessionService implements IGetAuthSessionBySub, ICreateSession {
         sub: { S: sessionConfig.sub },
         clientId: { S: sessionConfig.clientId },
         govukSigninJourneyId: { S: sessionConfig.govukSigninJourneyId },
-        aud: { S: sessionConfig.aud },
         issuer: { S: sessionConfig.issuer },
         sessionState: { S: sessionConfig.sessionState },
       },
@@ -148,7 +147,6 @@ interface IAuthSession {
   sub: string;
   clientId: string;
   govukSigninJourneyId: string;
-  aud: string;
   issuer: string;
   sessionState: string;
   redirectUri?: string;
@@ -162,7 +160,6 @@ interface IPutAuthSessionConfig {
     sub: { S: string };
     clientId: { S: string };
     govukSigninJourneyId: { S: string };
-    aud: { S: string };
     issuer: { S: string };
     sessionState: { S: string };
     redirectUri?: { S: string };
