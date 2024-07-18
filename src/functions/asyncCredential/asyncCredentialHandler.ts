@@ -1,10 +1,8 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { validOrThrow } from "../config";
 import {
   ClientCredentialsService,
   IClientCredentials,
 } from "../services/clientCredentialsService/clientCredentialsService";
-import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
 import { TokenService } from "./TokenService/tokenService";
 import {
   ErrorOrSuccess,
@@ -17,42 +15,41 @@ import {
   IGetAuthSessionBySub,
 } from "./sessionService/sessionService";
 import { randomUUID } from "crypto";
+import { Logger } from "../services/logging/logger";
+import { MessageName } from "./registeredLogs";
+import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
 
 export async function lambdaHandler(
   event: APIGatewayProxyEvent,
   dependencies: Dependencies,
 ): Promise<APIGatewayProxyResult> {
-  let keyId;
-  let issuer;
-  let sessionTableName;
-  let sessionTableSubIndexName;
-  let sessionRecoveryTimeout;
-  try {
-    keyId = validOrThrow(dependencies.env, "SIGNING_KEY_ID");
-    issuer = validOrThrow(dependencies.env, "ISSUER");
-    sessionTableName = validOrThrow(dependencies.env, "SESSION_TABLE_NAME");
-    sessionTableSubIndexName = validOrThrow(
-      dependencies.env,
-      "SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME",
-    );
-    sessionRecoveryTimeout = parseInt(
-      validOrThrow(dependencies.env, "SESSION_RECOVERY_TIMEOUT"),
-    );
+  const logger = dependencies.logger();
+  const configResponse = configOrError(dependencies.env);
 
-    if (!sessionRecoveryTimeout) {
-      throw new Error("Invalid SESSION_RECOVERY_TIMEOUT value - not a number");
-    }
-  } catch (error) {
+  if (configResponse.isError) {
+    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
+      errorMessage: configResponse.value,
+    });
     return serverError500Response;
   }
+
+  const config = configResponse.value as Config;
 
   const authorizationHeader = event.headers["Authorization"];
 
   if (authorizationHeader == null) {
+    logger.log("AUTHENTICATION_HEADER_INVALID", {
+      errorMessage: "No Authentication header present",
+    });
     return unauthorizedResponse;
   }
 
-  if (!isAuthorizationHeaderFormatValid(authorizationHeader)) {
+  const validAuthorizationHeaderOrErrorResponse =
+    validAuthorizationHeaderOrError(authorizationHeader);
+  if (validAuthorizationHeaderOrErrorResponse.isError) {
+    logger.log("AUTHENTICATION_HEADER_INVALID", {
+      errorMessage: validAuthorizationHeaderOrErrorResponse.value,
+    });
     return unauthorizedResponse;
   }
 
@@ -60,14 +57,22 @@ export async function lambdaHandler(
 
   // JWT Claim validation
   const encodedJwt = authorizationHeader.split(" ")[1];
+
   // Replace with const [header, payload, signature] = encodedJwt.split(".") when needed
   const payload = encodedJwt.split(".")[1];
   const jwtPayload = JSON.parse(
     Buffer.from(payload, "base64").toString("utf-8"),
   );
 
-  const jwtClaimValidationResponse = jwtClaimValidator(jwtPayload, issuer);
+  const jwtClaimValidationResponse = jwtClaimValidator(
+    jwtPayload,
+    config.ISSUER,
+  );
+
   if (jwtClaimValidationResponse.isError) {
+    logger.log("JWT_CLAIM_INVALID", {
+      errorMessage: jwtClaimValidationResponse.value,
+    });
     return badRequestResponse({
       error: "invalid_token",
       errorDescription: jwtClaimValidationResponse.value as string,
@@ -103,7 +108,10 @@ export async function lambdaHandler(
     });
   }
 
-  const result = await tokenService.verifyTokenSignature(keyId, encodedJwt);
+  const result = await tokenService.verifyTokenSignature(
+    config.SIGNING_KEY_ID,
+    encodedJwt,
+  );
 
   if (result.isError) {
     return unauthorizedResponseInvalidSignature;
@@ -139,7 +147,7 @@ export async function lambdaHandler(
 
   if (parsedRequestBody.redirect_uri) {
     const validateClientCredentialsResult =
-      clientCredentialsService.validateCredentialRequest(
+      clientCredentialsService.validateRedirectUri(
         clientCredentials,
         parsedRequestBody,
       );
@@ -160,15 +168,15 @@ export async function lambdaHandler(
   }
 
   const sessionService = dependencies.getSessionService(
-    sessionTableName,
-    sessionTableSubIndexName,
+    config.SESSION_TABLE_NAME,
+    config.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
   );
 
   const recoverSessionServiceResponse =
     await sessionService.getAuthSessionBySub(
       parsedRequestBody.sub,
       parsedRequestBody.state,
-      sessionRecoveryTimeout,
+      config.SESSION_RECOVERY_TIMEOUT,
     );
   if (recoverSessionServiceResponse.isError) {
     return serverError500Response;
@@ -206,27 +214,59 @@ export async function lambdaHandler(
   return sessionCreatedResponse(parsedRequestBody.sub);
 }
 
-const isAuthorizationHeaderFormatValid = (
+interface Config {
+  SIGNING_KEY_ID: string;
+  ISSUER: string;
+  SESSION_TABLE_NAME: string;
+  SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: string;
+  SESSION_RECOVERY_TIMEOUT: number;
+}
+const configOrError = (env: NodeJS.ProcessEnv): ErrorOrSuccess<Config> => {
+  if (!env.SIGNING_KEY_ID) return errorResponse("No SIGNING_KEY_ID");
+  if (!env.ISSUER) return errorResponse("No ISSUER");
+  if (!env.SESSION_TABLE_NAME) return errorResponse("No SESSION_TABLE_NAME");
+  if (!env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME)
+    return errorResponse("No SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME");
+  if (!env.SESSION_RECOVERY_TIMEOUT)
+    return errorResponse("No SESSION_RECOVERY_TIMEOUT");
+  if (isNaN(Number(env.SESSION_RECOVERY_TIMEOUT)))
+    return errorResponse("SESSION_RECOVERY_TIMEOUT is not a valid number");
+  return successResponse({
+    SIGNING_KEY_ID: env.SIGNING_KEY_ID,
+    ISSUER: env.ISSUER,
+    SESSION_TABLE_NAME: env.SESSION_TABLE_NAME,
+    SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME:
+      env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
+    SESSION_RECOVERY_TIMEOUT: parseInt(env.SESSION_RECOVERY_TIMEOUT),
+  });
+};
+const validAuthorizationHeaderOrError = (
   authorizationHeader: string,
-): boolean => {
+): ErrorOrSuccess<null> => {
   if (!authorizationHeader.startsWith("Bearer ")) {
-    return false;
+    return errorResponse(
+      "Invalid authentication header format - does not start with Bearer",
+    );
   }
 
   if (authorizationHeader.split(" ").length !== 2) {
-    return false;
+    return errorResponse(
+      "Invalid authentication header format - contains spaces",
+    );
   }
 
   if (authorizationHeader.split(" ")[1].length == 0) {
-    return false;
+    return errorResponse(
+      "Invalid authentication header format - missing token",
+    );
   }
 
-  return true;
+  return successResponse(null);
 };
 
 const jwtClaimValidator = (
   jwtPayload: IJwtPayload,
-  issuer: string,
+  issuerEnvironmentVariable: string,
 ): ErrorOrSuccess<null> => {
   if (!jwtPayload.exp) {
     return errorResponse("Missing exp claim");
@@ -251,8 +291,10 @@ const jwtClaimValidator = (
     return errorResponse("Missing iss claim");
   }
 
-  if (jwtPayload.iss !== issuer) {
-    return errorResponse("iss claim does not match registered issuer");
+  if (jwtPayload.iss !== issuerEnvironmentVariable) {
+    return errorResponse(
+      "iss claim does not match ISSUER environment variable",
+    );
   }
 
   if (!jwtPayload.scope) {
@@ -383,6 +425,7 @@ export interface ICredentialRequestBody {
 }
 
 export interface Dependencies {
+  logger: () => Logger<MessageName>;
   tokenService: () => TokenService;
   clientCredentialsService: () => ClientCredentialsService;
   ssmService: () => IGetClientCredentials;

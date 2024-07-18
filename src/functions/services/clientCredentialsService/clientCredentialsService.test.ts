@@ -8,7 +8,7 @@ import {
 describe("Client Credentials Service", () => {
   let clientCredentialsService: ClientCredentialsService;
   let mockTokenSuppliedClientCredentials: IDecodedClientCredentials;
-  let mockCredentialSuppliedClientCredentials: ICredentialRequestBody;
+  let mockSuppliedClientCredentials: ICredentialRequestBody;
   let mockStoredClientCredentialsArray: IClientCredentials[];
   let mockStoredClientCredentials: IClientCredentials;
 
@@ -18,7 +18,7 @@ describe("Client Credentials Service", () => {
       clientId: "mockClientId",
       clientSecret: "mockClientSecret",
     };
-    mockCredentialSuppliedClientCredentials = {
+    mockSuppliedClientCredentials = {
       sub: "mockSub",
       govuk_signin_journey_id: "mockGovukSigninJourneyId",
       client_id: "mockClientId",
@@ -126,9 +126,9 @@ describe("Client Credentials Service", () => {
         it("Returns a log", () => {
           mockStoredClientCredentials.redirect_uri = "";
 
-          const result = clientCredentialsService.validateCredentialRequest(
+          const result = clientCredentialsService.validateRedirectUri(
             mockStoredClientCredentials,
-            mockCredentialSuppliedClientCredentials,
+            mockSuppliedClientCredentials,
           );
 
           expect(result.isError).toBe(true);
@@ -140,9 +140,9 @@ describe("Client Credentials Service", () => {
         it("Returns a log", () => {
           mockStoredClientCredentials.redirect_uri = "mockInvalidURL";
 
-          const result = clientCredentialsService.validateCredentialRequest(
+          const result = clientCredentialsService.validateRedirectUri(
             mockStoredClientCredentials,
-            mockCredentialSuppliedClientCredentials,
+            mockSuppliedClientCredentials,
           );
 
           expect(result.isError).toBe(true);
@@ -152,16 +152,30 @@ describe("Client Credentials Service", () => {
 
       describe("Given supplied redirect_uri does not match stored redirect_uri", () => {
         it("Returns a log", () => {
-          mockCredentialSuppliedClientCredentials.redirect_uri =
+          mockSuppliedClientCredentials.redirect_uri =
             "https://mockInvalidRedirectUri.com";
 
-          const result = clientCredentialsService.validateCredentialRequest(
+          const result = clientCredentialsService.validateRedirectUri(
             mockStoredClientCredentials,
-            mockCredentialSuppliedClientCredentials,
+            mockSuppliedClientCredentials,
           );
 
           expect(result.isError).toBe(true);
           expect(result.value).toBe("Unregistered redirect_uri");
+        });
+      });
+
+      describe("Given redirect_uri is present and registered", () => {
+        it("Returns a value of null", () => {
+          mockSuppliedClientCredentials.redirect_uri =
+            "https://mockRedirectUri.com";
+          const result = clientCredentialsService.validateRedirectUri(
+            mockStoredClientCredentials,
+            mockSuppliedClientCredentials,
+          );
+
+          expect(result.isError).toBe(false);
+          expect(result.value).toBe(null);
         });
       });
     });

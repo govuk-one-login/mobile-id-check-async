@@ -21,8 +21,8 @@ import {
   errorResponse,
   successResponse,
 } from "../types/errorOrValue";
-import { MockLoggingAdapter } from "../services/logging/tests/logger.test";
 import { buildLambdaContext } from "../testUtils/mockContext";
+import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 
 describe("Async Token", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;
@@ -326,7 +326,7 @@ class MockPassingClientCredentialsService implements IClientCredentialsService {
   validateTokenRequest(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
-  validateCredentialRequest(): ErrorOrSuccess<null> {
+  validateRedirectUri(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
   getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
@@ -345,7 +345,7 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
   validateTokenRequest(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
-  validateCredentialRequest(): ErrorOrSuccess<null> {
+  validateRedirectUri(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
   getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
@@ -359,7 +359,7 @@ class MockFailingClientCredentialsServiceValidation
   validateTokenRequest(): ErrorOrSuccess<null> {
     return errorResponse("Client secrets not valid");
   }
-  validateCredentialRequest(): ErrorOrSuccess<null> {
+  validateRedirectUri(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
   getClientCredentialsById() {

@@ -39,7 +39,7 @@ export class ClientCredentialsService implements IClientCredentialsService {
     return successResponse(null);
   };
 
-  validateCredentialRequest = (
+  validateRedirectUri = (
     storedCredentials: IClientCredentials,
     suppliedCredentials: ICredentialRequestBody,
   ): ErrorOrSuccess<null> => {
@@ -85,7 +85,7 @@ export interface IClientCredentialsService {
     suppliedCredentials: IDecodedClientCredentials,
   ) => ErrorOrSuccess<null>;
 
-  validateCredentialRequest: (
+  validateRedirectUri: (
     storedCredentials: IClientCredentials,
     suppliedCredentials: ICredentialRequestBody,
   ) => ErrorOrSuccess<null>;
