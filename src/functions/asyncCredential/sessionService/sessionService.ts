@@ -69,7 +69,7 @@ export class SessionService implements ISessionService {
   async createSession(
     sessionConfig: ISessionConfigItems,
   ): Promise<ErrorOrSuccess<null>> {
-    let config: ISessionConfig = {
+    const config: ISessionConfig = {
       TableName: this.tableName,
       Item: {
         authSessionId: { S: sessionConfig.authSessionId },
@@ -84,10 +84,7 @@ export class SessionService implements ISessionService {
     };
 
     if (sessionConfig.redirect_uri) {
-      config.Item = {
-        ...config.Item,
-        redirect_uri: { S: sessionConfig.redirect_uri },
-      };
+      config.Item.redirect_uri = { S: sessionConfig.redirect_uri };
     }
 
     let doesSessionExist;
@@ -147,10 +144,10 @@ interface ISessionConfigItems {
   sub: string;
   client_id: string;
   govuk_signin_journey_id: string;
-  redirect_uri: string | undefined;
   aud: string;
   issuer: string;
   sessionState: string;
+  redirect_uri?: string;
 }
 
 interface ISessionConfig {
@@ -164,7 +161,7 @@ interface ISessionConfig {
     aud: { S: string };
     issuer: { S: string };
     sessionState: { S: string };
-    redirect_uri: { S: string } | undefined;
+    redirect_uri?: { S: string };
   };
 }
 

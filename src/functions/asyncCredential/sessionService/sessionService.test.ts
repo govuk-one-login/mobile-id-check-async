@@ -215,25 +215,49 @@ describe("Session Service", () => {
     });
 
     describe("Given creating a session is successful", () => {
-      it("Returns success response", async () => {
-        const dbMock = mockClient(DynamoDBClient);
-        dbMock.on(GetItemCommand).resolves({});
-        dbMock.on(PutItemCommand).resolves({});
+      describe("Given redirect_uri not present", () => {
+        it("Returns success response", async () => {
+          const dbMock = mockClient(DynamoDBClient);
+          dbMock.on(GetItemCommand).resolves({});
+          dbMock.on(PutItemCommand).resolves({});
 
-        const result = await service.createSession({
-          authSessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
-          state: "mockValidState",
-          sub: "mockSub",
-          client_id: "mockClientId",
-          govuk_signin_journey_id: "mockJourneyId",
-          redirect_uri: "https://mockRedirectUri.com",
-          aud: "mockAud",
-          issuer: "mockIssuer",
-          sessionState: "mockSessionState",
+          const result = await service.createSession({
+            authSessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
+            state: "mockValidState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockJourneyId",
+            aud: "mockAud",
+            issuer: "mockIssuer",
+            sessionState: "mockSessionState",
+          });
+
+          expect(result.isError).toBe(false);
+          expect(result.value).toEqual(null);
         });
+      });
 
-        expect(result.isError).toBe(false);
-        expect(result.value).toEqual(null);
+      describe("Given redirect_uri is present", () => {
+        it("Returns success response", async () => {
+          const dbMock = mockClient(DynamoDBClient);
+          dbMock.on(GetItemCommand).resolves({});
+          dbMock.on(PutItemCommand).resolves({});
+
+          const result = await service.createSession({
+            authSessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
+            state: "mockValidState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockJourneyId",
+            redirect_uri: "https://mockRedirectUri.com",
+            aud: "mockAud",
+            issuer: "mockIssuer",
+            sessionState: "mockSessionState",
+          });
+
+          expect(result.isError).toBe(false);
+          expect(result.value).toEqual(null);
+        });
       });
     });
   });
