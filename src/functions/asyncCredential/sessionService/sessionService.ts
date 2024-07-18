@@ -124,12 +124,12 @@ export class SessionService implements IGetAuthSessionBySub, ICreateSession {
     );
   }
 
-  private async checkSessionsExists(authSessionId: string): Promise<boolean> {
+  private async checkSessionsExists(sessionId: string): Promise<boolean> {
     const output = await dbClient.send(
       new GetItemCommand({
         TableName: this.tableName,
         Key: {
-          sessionId: { S: authSessionId },
+          sessionId: { S: sessionId },
         },
       }),
     );

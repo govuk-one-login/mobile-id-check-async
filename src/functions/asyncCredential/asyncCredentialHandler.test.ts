@@ -949,7 +949,7 @@ describe("Async Credential", () => {
       });
 
       describe("Given service returns success response", () => {
-        describe("Given response value is the authSessionId string", () => {
+        describe("Given response value is the sessionId string", () => {
           it("Returns 200 session recovered response", async () => {
             const event = buildRequest({
               headers: { Authorization: `Bearer ${mockValidJwt}` },
@@ -1179,7 +1179,7 @@ class MockSessionServiceSessionRecovered
   }
 
   getAuthSessionBySub = async (): Promise<ErrorOrSuccess<string | null>> => {
-    return successResponse("mockAuthSessionId");
+    return successResponse("mockSessionId");
   };
 
   createSession = async (): Promise<ErrorOrSuccess<null>> => {
