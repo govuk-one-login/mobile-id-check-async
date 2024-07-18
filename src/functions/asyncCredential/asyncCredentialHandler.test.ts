@@ -994,7 +994,7 @@ describe("Async Credential", () => {
         });
       });
 
-      describe("Given service returns success response", () => {
+      describe("Given there is a recoverable session", () => {
         describe("Given response value is the sessionId string", () => {
           it("Returns 200 session recovered response", async () => {
             const jwtBuilder = new MockJWTBuilder();
