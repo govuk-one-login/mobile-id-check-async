@@ -149,6 +149,7 @@ describe("Session Service", () => {
           client_id: "mockClientId",
           govuk_signin_journey_id: "mockJourneyId",
           redirect_uri: "https://mockRedirectUri.com",
+          aud: "mockAud",
           issuer: "mockIssuer",
           sessionState: "mockSessionState",
         });
@@ -176,6 +177,7 @@ describe("Session Service", () => {
           client_id: "mockClientId",
           govuk_signin_journey_id: "mockJourneyId",
           redirect_uri: "https://mockRedirectUri.com",
+          aud: "mockAud",
           issuer: "mockIssuer",
           sessionState: "mockSessionState",
         });
@@ -200,6 +202,7 @@ describe("Session Service", () => {
           client_id: "mockClientId",
           govuk_signin_journey_id: "mockJourneyId",
           redirect_uri: "https://mockRedirectUri.com",
+          aud: "mockAud",
           issuer: "mockIssuer",
           sessionState: "mockSessionState",
         });
@@ -224,6 +227,7 @@ describe("Session Service", () => {
           client_id: "mockClientId",
           govuk_signin_journey_id: "mockJourneyId",
           redirect_uri: "https://mockRedirectUri.com",
+          aud: "mockAud",
           issuer: "mockIssuer",
           sessionState: "mockSessionState",
         });

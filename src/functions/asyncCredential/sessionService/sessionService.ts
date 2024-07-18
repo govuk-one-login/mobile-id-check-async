@@ -67,9 +67,9 @@ export class SessionService implements ISessionService {
   }
 
   async createSession(
-    sessionConfig: ISessionConfig,
+    sessionConfig: ISessionConfigItems,
   ): Promise<ErrorOrSuccess<null>> {
-    const config = {
+    let config: ISessionConfig = {
       TableName: this.tableName,
       Item: {
         authSessionId: { S: sessionConfig.authSessionId },
@@ -77,11 +77,18 @@ export class SessionService implements ISessionService {
         sub: { S: sessionConfig.sub },
         client_id: { S: sessionConfig.client_id },
         govuk_signin_journey_id: { S: sessionConfig.govuk_signin_journey_id },
-        redirect_uri: { S: sessionConfig.redirect_uri },
+        aud: { S: sessionConfig.aud },
         issuer: { S: sessionConfig.issuer },
         sessionState: { S: sessionConfig.sessionState },
       },
     };
+
+    if (sessionConfig.redirect_uri) {
+      config.Item = {
+        ...config.Item,
+        redirect_uri: { S: sessionConfig.redirect_uri },
+      };
+    }
 
     let doesSessionExist;
     try {
@@ -134,15 +141,31 @@ export class SessionService implements ISessionService {
   }
 }
 
-interface ISessionConfig {
+interface ISessionConfigItems {
   authSessionId: string;
   state: string;
   sub: string;
   client_id: string;
   govuk_signin_journey_id: string;
-  redirect_uri: string;
+  redirect_uri: string | undefined;
+  aud: string;
   issuer: string;
   sessionState: string;
+}
+
+interface ISessionConfig {
+  TableName: string;
+  Item: {
+    authSessionId: { S: string };
+    state: { S: string };
+    sub: { S: string };
+    client_id: { S: string };
+    govuk_signin_journey_id: { S: string };
+    aud: { S: string };
+    issuer: { S: string };
+    sessionState: { S: string };
+    redirect_uri: { S: string } | undefined;
+  };
 }
 
 export interface ISessionService {
@@ -152,7 +175,7 @@ export interface ISessionService {
     sessionRecoveryTimeout: number,
   ) => Promise<ErrorOrSuccess<string | null>>;
   createSession: (
-    sessionConfig: ISessionConfig,
+    sessionConfig: ISessionConfigItems,
   ) => Promise<ErrorOrSuccess<null>>;
 }
 
