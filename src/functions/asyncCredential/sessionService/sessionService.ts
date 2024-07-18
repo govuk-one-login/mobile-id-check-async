@@ -103,7 +103,7 @@ export class SessionService implements ISessionService {
     }
 
     try {
-      await dbClient.send(new PutItemCommand(config));
+      await this.putSessionInDb(config);
     } catch (error) {
       return errorResponse(
         "Unexpected error when querying session table whilst creating a session",
@@ -135,6 +135,10 @@ export class SessionService implements ISessionService {
     );
 
     return output.Item != null;
+  }
+
+  private async putSessionInDb(config: ISessionConfig) {
+    await dbClient.send(new PutItemCommand(config));
   }
 }
 
