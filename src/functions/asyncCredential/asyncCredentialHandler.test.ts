@@ -114,6 +114,13 @@ describe("Async Credential", () => {
           dependencies,
         );
 
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "AUTHENTICATION_HEADER_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+          errorMessage: "No Authentication header present",
+        });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -135,6 +142,14 @@ describe("Async Credential", () => {
           event,
           dependencies,
         );
+
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "AUTHENTICATION_HEADER_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+          errorMessage:
+            "Invalid authentication header format - does not start with Bearer",
+        });
 
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
@@ -158,6 +173,14 @@ describe("Async Credential", () => {
           dependencies,
         );
 
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "AUTHENTICATION_HEADER_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+          errorMessage:
+            "Invalid authentication header format - contains spaces",
+        });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -179,6 +202,13 @@ describe("Async Credential", () => {
           event,
           dependencies,
         );
+
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "AUTHENTICATION_HEADER_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+          errorMessage: "Invalid authentication header format - missing token",
+        });
 
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },

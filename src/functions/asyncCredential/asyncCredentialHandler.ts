@@ -34,10 +34,18 @@ export async function lambdaHandler(
   const authorizationHeader = event.headers["Authorization"];
 
   if (authorizationHeader == null) {
+    logger.log("AUTHENTICATION_HEADER_INVALID", {
+      errorMessage: "No Authentication header present",
+    });
     return unauthorizedResponse;
   }
 
-  if (!isAuthorizationHeaderFormatValid(authorizationHeader)) {
+  const validAuthorizationHeaderOrErrorResponse =
+    validAuthorizationHeaderOrError(authorizationHeader);
+  if (validAuthorizationHeaderOrErrorResponse.isError) {
+    logger.log("AUTHENTICATION_HEADER_INVALID", {
+      errorMessage: validAuthorizationHeaderOrErrorResponse.value,
+    });
     return unauthorizedResponse;
   }
 
@@ -204,22 +212,28 @@ const configOrError = (env: NodeJS.ProcessEnv): ErrorOrSuccess<Config> => {
     SESSION_RECOVERY_TIMEOUT: parseInt(env.SESSION_RECOVERY_TIMEOUT),
   });
 };
-const isAuthorizationHeaderFormatValid = (
+const validAuthorizationHeaderOrError = (
   authorizationHeader: string,
-): boolean => {
+): ErrorOrSuccess<null> => {
   if (!authorizationHeader.startsWith("Bearer ")) {
-    return false;
+    return errorResponse(
+      "Invalid authentication header format - does not start with Bearer",
+    );
   }
 
   if (authorizationHeader.split(" ").length !== 2) {
-    return false;
+    return errorResponse(
+      "Invalid authentication header format - contains spaces",
+    );
   }
 
   if (authorizationHeader.split(" ")[1].length == 0) {
-    return false;
+    return errorResponse(
+      "Invalid authentication header format - missing token",
+    );
   }
 
-  return true;
+  return successResponse(null);
 };
 
 const jwtClaimValidator = (
