@@ -12,7 +12,7 @@ import {
 import { IJwtPayload } from "../types/jwt";
 import {
   ICreateSession,
-  IGetAuthSessionBySub,
+  IGetSessionBySub,
 } from "./sessionService/sessionService";
 import { randomUUID } from "crypto";
 import { Logger } from "../services/logging/logger";
@@ -431,6 +431,6 @@ export interface Dependencies {
   getSessionService: (
     tableName: string,
     indexName: string,
-  ) => IGetAuthSessionBySub & ICreateSession;
+  ) => IGetSessionBySub & ICreateSession;
   env: NodeJS.ProcessEnv;
 }

@@ -18,7 +18,7 @@ import { MessageName, registeredLogs } from "./registeredLogs";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import {
   ICreateSession,
-  IGetAuthSessionBySub,
+  IGetSessionBySub,
 } from "./sessionService/sessionService";
 
 const env = {
@@ -1178,7 +1178,7 @@ class MockFailingSsmService implements IGetClientCredentials {
 }
 
 class MockSessionServiceGetSessionBySubFailure
-  implements IGetAuthSessionBySub, ICreateSession
+  implements IGetSessionBySub, ICreateSession
 {
   readonly tableName: string;
   readonly indexName: string;
@@ -1198,7 +1198,7 @@ class MockSessionServiceGetSessionBySubFailure
 }
 
 class MockSessionServiceNoRecoverableSession
-  implements IGetAuthSessionBySub, ICreateSession
+  implements IGetSessionBySub, ICreateSession
 {
   readonly tableName: string;
   readonly indexName: string;
@@ -1217,7 +1217,7 @@ class MockSessionServiceNoRecoverableSession
 }
 
 class MockSessionServiceSessionRecovered
-  implements IGetAuthSessionBySub, ICreateSession
+  implements IGetSessionBySub, ICreateSession
 {
   readonly tableName: string;
   readonly indexName: string;
@@ -1237,7 +1237,7 @@ class MockSessionServiceSessionRecovered
 }
 
 class MockSessionServiceCreateSessionFailure
-  implements IGetAuthSessionBySub, ICreateSession
+  implements IGetSessionBySub, ICreateSession
 {
   readonly tableName: string;
   readonly indexName: string;
@@ -1257,7 +1257,7 @@ class MockSessionServiceCreateSessionFailure
 }
 
 class MockSessionServiceSessionCreated
-  implements IGetAuthSessionBySub, ICreateSession
+  implements IGetSessionBySub, ICreateSession
 {
   readonly tableName: string;
   readonly indexName: string;

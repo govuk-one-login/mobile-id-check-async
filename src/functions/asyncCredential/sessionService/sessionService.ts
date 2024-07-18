@@ -13,7 +13,7 @@ import {
   successResponse,
 } from "../../types/errorOrValue";
 
-export class SessionService implements IGetAuthSessionBySub, ICreateSession {
+export class SessionService implements IGetSessionBySub, ICreateSession {
   readonly tableName: string;
   readonly indexName: string;
   readonly dbClient: DynamoDBClient;
@@ -166,7 +166,7 @@ interface IPutAuthSessionConfig {
   };
 }
 
-export interface IGetAuthSessionBySub {
+export interface IGetSessionBySub {
   getAuthSessionBySub: (
     sub: string,
     state: string,
