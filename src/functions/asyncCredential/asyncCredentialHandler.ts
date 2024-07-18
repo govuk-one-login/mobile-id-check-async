@@ -53,7 +53,7 @@ export async function lambdaHandler(
 
   // JWT Claim validation
   const encodedJwt = authorizationHeader.split(" ")[1];
-  console.log("ENCODEDJWT", encodedJwt);
+
   // Replace with const [header, payload, signature] = encodedJwt.split(".") when needed
   const payload = encodedJwt.split(".")[1];
   const jwtPayload = JSON.parse(
@@ -64,7 +64,7 @@ export async function lambdaHandler(
     jwtPayload,
     config.ISSUER,
   );
-  console.log("JWT PAYLOAD", jwtPayload);
+
   if (jwtClaimValidationResponse.isError) {
     logger.log("JWT_CLAIM_INVALID", {
       errorMessage: jwtClaimValidationResponse.value,
