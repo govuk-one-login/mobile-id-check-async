@@ -1,5 +1,5 @@
 <!-- Include the Jira ticket number in square brackets as prefix, eg `[DCMAW-XXXX] PR Title` -->
-​
+​DCMAW-XXXX
 ### What changed
 <!-- Describe the changes in detail - the "what"-->
 
