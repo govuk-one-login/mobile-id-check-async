@@ -1030,6 +1030,22 @@ describe("Async Credential", () => {
 
     describe("Session creation", () => {
       describe("Given there is an error creating the session", () => {
+        // describe('Given it fails to write the DCMAW_ASYNC_CRI_5XXERROR event to TxMA', () => {
+        //   it('Logs and returns a 500 Internal server error', async () => {
+        //     dependencies.eventService = (_queueName) => new MockEventServiceFailedToWrite((event) => {
+        //       if (event.event_name === 'DCMAW_CRI_START') { throw new Error('Gary') } else return event
+        //     })
+
+        //     const result = await lambdaHandlerConstructor(dependencies, request, context)
+
+        //     expect(log.errorMessage[0].messageCode).toEqual('DCMAW_VERIFY_AUTHORIZE_REQUEST_FAILED_TO_WRITE_TXMA')
+        //     expect(log.errorMessage[0].data).toEqual({ eventName: "DCMAW_CRI_START", error: new Error('Gary') })
+
+        //     expect(result.statusCode).toBe(500)
+        //     expect(result.body).toEqual('Internal server error')
+        //   })
+        // })
+
         it("Returns 500 Server Error", async () => {
           const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
