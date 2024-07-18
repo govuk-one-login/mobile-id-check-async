@@ -10,10 +10,14 @@ import {
   successResponse,
 } from "../types/errorOrValue";
 import { IJwtPayload } from "../types/jwt";
+import {
+  ICreateSession,
+  IGetSessionBySub,
+} from "./sessionService/sessionService";
+import { randomUUID } from "crypto";
 import { Logger } from "../services/logging/logger";
 import { MessageName } from "./registeredLogs";
 import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
-import { IRecoverAuthSession } from "./sessionService/sessionService";
 
 export async function lambdaHandler(
   event: APIGatewayProxyEvent,
@@ -26,7 +30,7 @@ export async function lambdaHandler(
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
       errorMessage: configResponse.value,
     });
-    return serverError500Responses;
+    return serverError500Response;
   }
 
   const config = configResponse.value as Config;
@@ -117,7 +121,7 @@ export async function lambdaHandler(
   const ssmService = dependencies.ssmService();
   const ssmServiceResponse = await ssmService.getClientCredentials();
   if (ssmServiceResponse.isError) {
-    return serverError500Responses;
+    return serverError500Response;
   }
 
   const storedCredentialsArray =
@@ -163,32 +167,50 @@ export async function lambdaHandler(
     });
   }
 
-  const recoverSessionService = dependencies.getRecoverSessionService(
+  const sessionService = dependencies.getSessionService(
     config.SESSION_TABLE_NAME,
     config.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
   );
 
   const recoverSessionServiceResponse =
-    await recoverSessionService.getAuthSessionBySub(
+    await sessionService.getAuthSessionBySub(
       parsedRequestBody.sub,
       parsedRequestBody.state,
       config.SESSION_RECOVERY_TIMEOUT,
     );
   if (recoverSessionServiceResponse.isError) {
-    return serverError500Responses;
+    return serverError500Response;
   }
 
   if (recoverSessionServiceResponse.value) {
     return sessionRecoveredResponse(parsedRequestBody.sub);
   }
 
-  return {
-    headers: { "Content-Type": "application/json" },
-    statusCode: 200,
-    body: JSON.stringify({
-      message: "Hello World",
-    }),
+  const { sub, client_id, govuk_signin_journey_id, redirect_uri, state } =
+    parsedRequestBody;
+  const { iss } = jwtPayload;
+
+  const sessionId = randomUUID();
+
+  const sessionConfig = {
+    sessionId,
+    state,
+    sub,
+    clientId: client_id,
+    govukSigninJourneyId: govuk_signin_journey_id,
+    redirectUri: redirect_uri,
+    issuer: iss,
+    sessionState: "ASYNC_AUTH_SESSION_CREATED",
   };
+
+  const sessionServiceCreateSessionResult =
+    await sessionService.createSession(sessionConfig);
+
+  if (sessionServiceCreateSessionResult.isError) {
+    return serverError500Response;
+  }
+
+  return sessionCreatedResponse(parsedRequestBody.sub);
 }
 
 interface Config {
@@ -362,7 +384,7 @@ const unauthorizedResponseInvalidSignature = {
   }),
 };
 
-const serverError500Responses: APIGatewayProxyResult = {
+const serverError500Response: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 500,
   body: JSON.stringify({
@@ -375,6 +397,17 @@ const sessionRecoveredResponse = (sub: string): APIGatewayProxyResult => {
   return {
     headers: { "Content-Type": "application/json" },
     statusCode: 200,
+    body: JSON.stringify({
+      sub,
+      "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
+    }),
+  };
+};
+
+const sessionCreatedResponse = (sub: string): APIGatewayProxyResult => {
+  return {
+    headers: { "Content-Type": "application/json" },
+    statusCode: 201,
     body: JSON.stringify({
       sub,
       "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
@@ -395,9 +428,9 @@ export interface Dependencies {
   tokenService: () => TokenService;
   clientCredentialsService: () => ClientCredentialsService;
   ssmService: () => IGetClientCredentials;
-  getRecoverSessionService: (
+  getSessionService: (
     tableName: string,
     indexName: string,
-  ) => IRecoverAuthSession;
+  ) => IGetSessionBySub & ICreateSession;
   env: NodeJS.ProcessEnv;
 }

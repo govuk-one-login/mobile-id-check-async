@@ -1,5 +1,7 @@
 import {
   DynamoDBClient,
+  GetItemCommand,
+  PutItemCommand,
   QueryCommand,
   QueryCommandInput,
   QueryCommandOutput,
@@ -11,7 +13,7 @@ import {
   successResponse,
 } from "../../types/errorOrValue";
 
-export class SessionService implements IRecoverAuthSession {
+export class SessionService implements IGetSessionBySub, ICreateSession {
   readonly tableName: string;
   readonly indexName: string;
   readonly dbClient: DynamoDBClient;
@@ -64,6 +66,52 @@ export class SessionService implements IRecoverAuthSession {
     return successResponse(result.Items[0].sessionId.S);
   }
 
+  async createSession(
+    sessionConfig: IAuthSession,
+  ): Promise<ErrorOrSuccess<null>> {
+    const config: IPutAuthSessionConfig = {
+      TableName: this.tableName,
+      Item: {
+        sessionId: { S: sessionConfig.sessionId },
+        state: { S: sessionConfig.state },
+        sub: { S: sessionConfig.sub },
+        clientId: { S: sessionConfig.clientId },
+        govukSigninJourneyId: { S: sessionConfig.govukSigninJourneyId },
+        issuer: { S: sessionConfig.issuer },
+        sessionState: { S: sessionConfig.sessionState },
+      },
+    };
+
+    if (sessionConfig.redirectUri) {
+      config.Item.redirectUri = { S: sessionConfig.redirectUri };
+    }
+
+    let doesSessionExist;
+    try {
+      doesSessionExist = await this.checkSessionsExists(
+        sessionConfig.sessionId,
+      );
+    } catch (error) {
+      return errorResponse(
+        "Unexpected error when querying session table to check if sessionId exists",
+      );
+    }
+
+    if (doesSessionExist) {
+      return errorResponse("sessionId already exists in the database");
+    }
+
+    try {
+      await this.putSessionInDb(config);
+    } catch (error) {
+      return errorResponse(
+        "Unexpected error when querying session table whilst creating a session",
+      );
+    }
+
+    return successResponse(null);
+  }
+
   private hasValidSession(
     result: IQueryCommandOutputType,
   ): result is { Items: [{ sessionId: { S: string } }] } {
@@ -74,14 +122,60 @@ export class SessionService implements IRecoverAuthSession {
       result.Items[0].sessionId.S !== ""
     );
   }
+
+  private async checkSessionsExists(sessionId: string): Promise<boolean> {
+    const output = await dbClient.send(
+      new GetItemCommand({
+        TableName: this.tableName,
+        Key: {
+          sessionId: { S: sessionId },
+        },
+      }),
+    );
+
+    return output.Item != null;
+  }
+
+  private async putSessionInDb(config: IPutAuthSessionConfig) {
+    await dbClient.send(new PutItemCommand(config));
+  }
 }
 
-export interface IRecoverAuthSession {
+interface IAuthSession {
+  sessionId: string;
+  state: string;
+  sub: string;
+  clientId: string;
+  govukSigninJourneyId: string;
+  issuer: string;
+  sessionState: string;
+  redirectUri?: string;
+}
+
+interface IPutAuthSessionConfig {
+  TableName: string;
+  Item: {
+    sessionId: { S: string };
+    state: { S: string };
+    sub: { S: string };
+    clientId: { S: string };
+    govukSigninJourneyId: { S: string };
+    issuer: { S: string };
+    sessionState: { S: string };
+    redirectUri?: { S: string };
+  };
+}
+
+export interface IGetSessionBySub {
   getAuthSessionBySub: (
     sub: string,
     state: string,
     sessionRecoveryTimeout: number,
   ) => Promise<ErrorOrSuccess<string | null>>;
+}
+
+export interface ICreateSession {
+  createSession: (sessionConfig: IAuthSession) => Promise<ErrorOrSuccess<null>>;
 }
 
 type IQueryCommandOutputType = {
