@@ -39,7 +39,7 @@ export async function lambdaHandler(
       throw new Error("Invalid SESSION_RECOVERY_TIMEOUT value - not a number");
     }
   } catch (error) {
-    return serverError500Responses;
+    return serverError500Response;
   }
 
   const authorizationHeader = event.headers["Authorization"];
@@ -109,7 +109,7 @@ export async function lambdaHandler(
   const ssmService = dependencies.ssmService();
   const ssmServiceResponse = await ssmService.getClientCredentials();
   if (ssmServiceResponse.isError) {
-    return serverError500Responses;
+    return serverError500Response;
   }
 
   const storedCredentialsArray =
@@ -167,7 +167,7 @@ export async function lambdaHandler(
       sessionRecoveryTimeout,
     );
   if (recoverSessionServiceResponse.isError) {
-    return serverError500Responses;
+    return serverError500Response;
   }
 
   if (recoverSessionServiceResponse.value) {
@@ -194,7 +194,7 @@ export async function lambdaHandler(
     await sessionService.createSession(sessionConfig);
 
   if (sessionServiceCreateSessionResult.isError) {
-    return serverError500Responses;
+    return serverError500Response;
   }
 
   return sessionCreatedResponse(parsedRequestBody.sub);
@@ -337,7 +337,7 @@ const unauthorizedResponseInvalidSignature = {
   }),
 };
 
-const serverError500Responses: APIGatewayProxyResult = {
+const serverError500Response: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 500,
   body: JSON.stringify({
