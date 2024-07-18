@@ -20,6 +20,7 @@ import {
   ICreateSession,
   IGetSessionBySub,
 } from "./sessionService/sessionService";
+import { IWriteEvent } from "../services/events/eventWriter";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -36,6 +37,7 @@ describe("Async Credential", () => {
   beforeEach(() => {
     mockLogger = new MockLoggingAdapter();
     dependencies = {
+      eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(mockLogger, registeredLogs),
       tokenService: () => new MockTokenSeviceValidSignature(),
       ssmService: () => new MockPassingSsmService(),
@@ -1030,21 +1032,58 @@ describe("Async Credential", () => {
 
     describe("Session creation", () => {
       describe("Given there is an error creating the session", () => {
-        // describe('Given it fails to write the DCMAW_ASYNC_CRI_5XXERROR event to TxMA', () => {
-        //   it('Logs and returns a 500 Internal server error', async () => {
-        //     dependencies.eventService = (_queueName) => new MockEventServiceFailedToWrite((event) => {
-        //       if (event.event_name === 'DCMAW_CRI_START') { throw new Error('Gary') } else return event
-        //     })
+        describe("Given it fails to write the DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
+          it("Logs and returns a 500 Internal server error", async () => {
+            const jwtBuilder = new MockJWTBuilder();
+            const event = buildRequest({
+              headers: {
+                Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}`,
+              },
+              body: JSON.stringify({
+                state: "mockState",
+                sub: "mockSub",
+                client_id: "mockClientId",
+                govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              }),
+            });
+            class MockEventServiceFailToWrite implements IWriteEvent {
+              private eventNameToFail: string;
+              constructor(eventNameToFail: string) {
+                this.eventNameToFail = eventNameToFail;
+              }
+              writeEvent = (eventName: string): ErrorOrSuccess<null> => {
+                if (eventName === this.eventNameToFail)
+                  return errorResponse("Error writing to SQS");
+                return successResponse(null);
+              };
+            }
+            dependencies.eventService = () =>
+              new MockEventServiceFailToWrite("DCMAW_ASYNC_CRI_5XX");
+            dependencies.getSessionService = () =>
+              new MockSessionServiceCreateSessionFailure(
+                env.SESSION_TABLE_NAME,
+                env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
+              );
 
-        //     const result = await lambdaHandlerConstructor(dependencies, request, context)
+            const result = await lambdaHandler(event, dependencies);
 
-        //     expect(log.errorMessage[0].messageCode).toEqual('DCMAW_VERIFY_AUTHORIZE_REQUEST_FAILED_TO_WRITE_TXMA')
-        //     expect(log.errorMessage[0].data).toEqual({ eventName: "DCMAW_CRI_START", error: new Error('Gary') })
+            expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+              "ERROR_WRITING_AUDIT_EVENT",
+            );
+            expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+              "Unexpected error writing the ASYNC_CRI_START event",
+            );
 
-        //     expect(result.statusCode).toBe(500)
-        //     expect(result.body).toEqual('Internal server error')
-        //   })
-        // })
+            expect(result).toStrictEqual({
+              headers: { "Content-Type": "application/json" },
+              statusCode: 500,
+              body: JSON.stringify({
+                error: "server_error",
+                error_description: "Server Error",
+              }),
+            });
+          });
+        });
 
         it("Returns 500 Server Error", async () => {
           const jwtBuilder = new MockJWTBuilder();
@@ -1288,6 +1327,12 @@ class MockSessionServiceSessionCreated
   };
 
   createSession = async (): Promise<ErrorOrSuccess<null>> => {
+    return successResponse(null);
+  };
+}
+
+class MockEventWriterSuccess implements IWriteEvent {
+  writeEvent = () => {
     return successResponse(null);
   };
 }

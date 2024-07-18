@@ -18,6 +18,7 @@ import { randomUUID } from "crypto";
 import { Logger } from "../services/logging/logger";
 import { MessageName } from "./registeredLogs";
 import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
+import { IWriteEvent } from "../services/events/eventWriter";
 
 export async function lambdaHandler(
   event: APIGatewayProxyEvent,
@@ -207,6 +208,9 @@ export async function lambdaHandler(
     await sessionService.createSession(sessionConfig);
 
   if (sessionServiceCreateSessionResult.isError) {
+    logger.log("ERROR_WRITING_AUDIT_EVENT", {
+      errorMessage: "Unexpected error writing the ASYNC_CRI_START event",
+    });
     return serverError500Response;
   }
 
@@ -425,6 +429,7 @@ export interface ICredentialRequestBody {
 
 export interface Dependencies {
   logger: () => Logger<MessageName>;
+  eventService: () => IWriteEvent;
   tokenService: () => TokenService;
   clientCredentialsService: () => ClientCredentialsService;
   ssmService: () => IGetClientCredentials;
