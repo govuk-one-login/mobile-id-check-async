@@ -13,42 +13,7 @@ import {
   successResponse,
 } from "../types/errorOrValue";
 import { IRecoverAuthSession } from "./sessionService/sessionService";
-
-const mockJwtNoExp =
-  "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.0C_S0NEicI6k1yaTAV0l85Z0SlW3HI2YIqJb_unXZ1MttAvjR9wAOhsl_0X20i1NYN0ZhnaoHnGLpApUSz2kwQ";
-
-const mockJwtIatInTheFuture =
-  "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZXhwIjoiMjE0NTk2NDY5NSIsImlhdCI6IjIxNDU5NjQ2OTUifQ.VnfFwIElQqPwbayMqLz-YaUK-BOx9tEKJE4_N49xh65TQvtP-9EWaPgD0D0C_3hULWjtvt2gh46nTPi-m7-y4A";
-
-const mockJwtExpInThePast =
-  "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE1MTYyMzkwMjJ9.LMHQh9wrANRpJYdQsP1oOVsrDEFTTJTYgpUVBy_w1Jd8GFRLwbenFEjFyXr2PZF-COP9xI87vpEOtrAri3ge8A";
-
-const mockJwtNbfInFuture =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIyMTQ1OTY0Njk1In0.7-OeXAHrUdvRirCd_7H_yxFf8aGzkGIk944gqAbCBVM";
-
-const mockJwtNoIss =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIn0.PO0IKWByJKerqZonGpagwKEaX-psQQPYZPPnXwI3JC4";
-
-const mockJwtIssNotValid =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0ludmFsaWRJc3N1ZXIifQ.K9lS44Bm3iHfXxAL2q-SBK2q-HB2NQ-UQSlmoqaaBVw";
-
-const mockJwtNoScope =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciJ9._-4Sn9N5grVDSxI2vvoUH90-6bAh6nH53ELZ38b3Gwk";
-
-const mockJwtScopeNotValid =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciIsInNjb3BlIjoibW9ja0ludmFsaWRTY29wZSJ9.kO0R0-bN6uYkknOD9E0oqtpRlp0rHB-6njrHN3mKkX4";
-
-const mockJwtNoClientId =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUifQ.xN-h1mVndN7kNRSrVM0WLcdKblniD3q70xnY-RYBIlc";
-
-const mockJwtNoAud =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUiLCJjbGllbnRfaWQiOiJtb2NrQ2xpZW50SWQifQ.FzBrIcM0DDp1ecivQpCNF216l2ZFzU3fPAOgAegKylY";
-
-const mockJwtInvalidAud =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUiLCJjbGllbnRfaWQiOiJtb2NrQ2xpZW50SWQiLCJhdWQiOiJpbnZhbGlkSXNzdWVyIiwic3RhdGUiOiJtb2NrU3RhdGUifQ.bMxAW6t5TzESfGqTAzIJwRn38-mLwYg_pVJbupscrU8";
-
-const mockValidJwt =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoiMTUxNjIzOTAyMiIsImV4cCI6IjIxNDU5NjQ2OTUiLCJuYmYiOiIxNTE2MjM5MDIyIiwiaXNzIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUiLCJjbGllbnRfaWQiOiJtb2NrQ2xpZW50SWQiLCJhdWQiOiJtb2NrSXNzdWVyIn0.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8";
+import { MockJWTBuilder } from "../testUtils/mockJwt";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -278,8 +243,10 @@ describe("Async Credential", () => {
     describe("exp claim validation", () => {
       describe("Given expiry date is missing", () => {
         it("Returns a log", async () => {
+          const jwtBuilder = new MockJWTBuilder();
+          jwtBuilder.deleteExp();
           const event = buildRequest({
-            headers: { Authorization: `Bearer ${mockJwtNoExp}` },
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
 
           dependencies.tokenService = () => new MockTokenSeviceValidSignature();
@@ -302,8 +269,10 @@ describe("Async Credential", () => {
 
       describe("Given expiry date is in the past", () => {
         it("Returns a log", async () => {
+          const jwtBuilder = new MockJWTBuilder();
+          jwtBuilder.setExp(Math.floor(Date.now() - 1000) / 1000);
           const event = buildRequest({
-            headers: { Authorization: `Bearer ${mockJwtExpInThePast}` },
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
 
           dependencies.tokenService = () => new MockTokenSeviceValidSignature();
@@ -329,8 +298,10 @@ describe("Async Credential", () => {
       // iat does not need to be present
       describe("Given issued at (iat) is in the future", () => {
         it("Returns a log", async () => {
+          const jwtBuilder = new MockJWTBuilder();
+          jwtBuilder.setIat(Math.floor(Date.now() + 1000) / 1000);
           const event = buildRequest({
-            headers: { Authorization: `Bearer ${mockJwtIatInTheFuture}` },
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
 
           dependencies.tokenService = () => new MockTokenSeviceValidSignature();
@@ -356,8 +327,10 @@ describe("Async Credential", () => {
       // nbf does not need to be present
       describe("Given not before (nbf) is in the future", () => {
         it("Returns a log", async () => {
+          const jwtBuilder = new MockJWTBuilder();
+          jwtBuilder.setNbf(Date.now() + 1000);
           const event = buildRequest({
-            headers: { Authorization: `Bearer ${mockJwtNbfInFuture}` },
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
 
           dependencies.tokenService = () => new MockTokenSeviceValidSignature();
@@ -382,8 +355,10 @@ describe("Async Credential", () => {
     describe("iss claim validation", () => {
       describe("Given issuer (iss) is missing", () => {
         it("Returns a log", async () => {
+          const jwtBuilder = new MockJWTBuilder();
+          jwtBuilder.deleteIss();
           const event = buildRequest({
-            headers: { Authorization: `Bearer ${mockJwtNoIss}` },
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
 
           dependencies.tokenService = () => new MockTokenSeviceValidSignature();
@@ -406,8 +381,10 @@ describe("Async Credential", () => {
 
       describe("Given issuer (iss) is does not match environment variable", () => {
         it("Returns a log", async () => {
+          const jwtBuilder = new MockJWTBuilder();
+          jwtBuilder.setIss("invalidIss");
           const event = buildRequest({
-            headers: { Authorization: `Bearer ${mockJwtIssNotValid}` },
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
 
           dependencies.tokenService = () => new MockTokenSeviceValidSignature();
@@ -432,8 +409,10 @@ describe("Async Credential", () => {
     describe("scope claim validation", () => {
       describe("Given scope is missing", () => {
         it("Returns a log", async () => {
+          const jwtBuilder = new MockJWTBuilder();
+          jwtBuilder.deleteScope();
           const event = buildRequest({
-            headers: { Authorization: `Bearer ${mockJwtNoScope}` },
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
 
           dependencies.tokenService = () => new MockTokenSeviceValidSignature();
@@ -456,8 +435,10 @@ describe("Async Credential", () => {
 
       describe("Given scope is not dcmaw.session.async_create", () => {
         it("Returns a log", async () => {
+          const jwtBuilder = new MockJWTBuilder();
+          jwtBuilder.setScope("invalidScope");
           const event = buildRequest({
-            headers: { Authorization: `Bearer ${mockJwtScopeNotValid}` },
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
 
           dependencies.tokenService = () => new MockTokenSeviceValidSignature();
@@ -482,8 +463,10 @@ describe("Async Credential", () => {
     describe("client_id claim validation", () => {
       describe("Given client_id is missing", () => {
         it("Returns a log", async () => {
+          const jwtBuilder = new MockJWTBuilder();
+          jwtBuilder.deleteClientId();
           const event = buildRequest({
-            headers: { Authorization: `Bearer ${mockJwtNoClientId}` },
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
 
           dependencies.tokenService = () => new MockTokenSeviceValidSignature();
@@ -508,8 +491,10 @@ describe("Async Credential", () => {
     describe("aud claim validation", () => {
       describe("Given aud (audience) is missing", () => {
         it("Returns a log", async () => {
+          const jwtBuilder = new MockJWTBuilder();
+          jwtBuilder.deleteAud();
           const event = buildRequest({
-            headers: { Authorization: `Bearer ${mockJwtNoAud}` },
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
 
           dependencies.tokenService = () => new MockTokenSeviceValidSignature();
@@ -535,8 +520,9 @@ describe("Async Credential", () => {
   describe("Request body validation", () => {
     describe("Given body is missing", () => {
       it("Returns 400 status code with invalid_request error", async () => {
+        const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
-          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           body: undefined,
         });
 
@@ -568,8 +554,9 @@ describe("Async Credential", () => {
       test.each(invalidJsonCases)(
         "Returns 400 status code with invalid_request error when body is %s",
         async (_description, invalidJson) => {
+          const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
-            headers: { Authorization: `Bearer ${mockValidJwt}` },
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
             body: invalidJson,
           });
 
@@ -594,8 +581,9 @@ describe("Async Credential", () => {
 
     describe("Given state is missing", () => {
       it("Returns 400 status code with invalid_request error", async () => {
+        const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
-          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           body: JSON.stringify({}),
         });
 
@@ -619,8 +607,9 @@ describe("Async Credential", () => {
 
     describe("Given sub is missing", () => {
       it("Returns 400 status code with invalid_request error", async () => {
+        const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
-          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           body: JSON.stringify({
             state: "mockState",
           }),
@@ -646,8 +635,9 @@ describe("Async Credential", () => {
 
     describe("Given client_id is missing", () => {
       it("Returns 400 status code with invalid_request error", async () => {
+        const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
-          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           body: JSON.stringify({
             state: "mockState",
             sub: "mockSub",
@@ -674,8 +664,9 @@ describe("Async Credential", () => {
 
     describe("Given client_id is invalid", () => {
       it("Returns 400 status code with invalid_request error", async () => {
+        const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
-          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           body: JSON.stringify({
             state: "mockState",
             sub: "mockSub",
@@ -704,8 +695,9 @@ describe("Async Credential", () => {
 
     describe("Given govuk_signin_journey_id is missing", () => {
       it("Returns 400 status code with invalid_request error", async () => {
+        const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
-          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           body: JSON.stringify({
             state: "mockState",
             sub: "mockSub",
@@ -734,8 +726,9 @@ describe("Async Credential", () => {
 
     describe("Given redirect_uri is not a valid URL", () => {
       it("Returns 400 status code with invalid_request error", async () => {
+        const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
-          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           body: JSON.stringify({
             state: "mockState",
             sub: "mockSub",
@@ -767,8 +760,9 @@ describe("Async Credential", () => {
   describe("Request body validation - using Client Credentials", () => {
     describe("Given redirect_uri is present and the request body validation fails", () => {
       it("Returns a 400 Bad Request response", async () => {
+        const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
-          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           body: JSON.stringify({
             state: "mockState",
             sub: "mockSub",
@@ -799,8 +793,9 @@ describe("Async Credential", () => {
       it("Returns 401 Unauthorized", async () => {
         dependencies.tokenService = () => new MockTokenSeviceInvalidSignature();
 
+        const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
-          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           body: JSON.stringify({
             state: "mockState",
             sub: "mockSub",
@@ -830,9 +825,9 @@ describe("Async Credential", () => {
     describe("Given there is an error retrieving client credentials from SSM", () => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.ssmService = () => new MockFailingSsmService();
-
+        const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
-          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           body: JSON.stringify({
             state: "mockState",
             sub: "mockSub",
@@ -858,8 +853,9 @@ describe("Async Credential", () => {
   describe("Client Credentials Service - get client credentials by ID", () => {
     describe("Given credentials are not found", () => {
       it("Returns 400 Bad Request response", async () => {
+        const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
-          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           body: JSON.stringify({
             state: "mockState",
             sub: "mockSub",
@@ -887,8 +883,10 @@ describe("Async Credential", () => {
   describe("JWT Payload validation - using Client Credentials", () => {
     describe("aud claim does not match registered issuer for given client", () => {
       it("Returns a 400 Bad request response", async () => {
+        const jwtBuilder = new MockJWTBuilder();
+        jwtBuilder.setAud("invalidAud");
         const event = buildRequest({
-          headers: { Authorization: `Bearer ${mockJwtInvalidAud}` },
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           body: JSON.stringify({
             state: "mockState",
             sub: "mockSub",
@@ -916,8 +914,9 @@ describe("Async Credential", () => {
   describe("Session recovery service", () => {
     describe("Given service returns an error response", () => {
       it("Returns 500 Server Error", async () => {
+        const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
-          headers: { Authorization: `Bearer ${mockValidJwt}` },
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           body: JSON.stringify({
             state: "mockState",
             sub: "mockSub",
@@ -947,8 +946,9 @@ describe("Async Credential", () => {
     describe("Given service returns success response", () => {
       describe("Given response value is the authSessionId string", () => {
         it("Returns 200 session recovered response", async () => {
+          const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
-            headers: { Authorization: `Bearer ${mockValidJwt}` },
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
             body: JSON.stringify({
               state: "mockState",
               sub: "mockSub",
@@ -977,8 +977,9 @@ describe("Async Credential", () => {
 
       describe("Given response value is null", () => {
         it("Returns 200 Hello World response", async () => {
+          const mockJwt = new MockJWTBuilder();
           const event = buildRequest({
-            headers: { Authorization: `Bearer ${mockValidJwt}` },
+            headers: { Authorization: `Bearer ${mockJwt.getEncodedJwt()}` },
             body: JSON.stringify({
               state: "mockState",
               sub: "mockSub",
