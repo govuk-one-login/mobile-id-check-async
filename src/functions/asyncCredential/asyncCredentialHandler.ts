@@ -182,15 +182,15 @@ export async function lambdaHandler(
     parsedRequestBody;
   const { iss, aud } = jwtPayload;
 
-  const authSessionId = randomUUID();
+  const sessionId = randomUUID();
 
   const sessionConfig = {
-    authSessionId,
+    sessionId,
     state,
     sub,
-    client_id,
-    govuk_signin_journey_id,
-    redirect_uri,
+    clientId: client_id,
+    govukSigninJourneyId: govuk_signin_journey_id,
+    redirectUri: redirect_uri,
     aud,
     issuer: iss,
     sessionState: "ASYNC_AUTH_SESSION_CREATED",

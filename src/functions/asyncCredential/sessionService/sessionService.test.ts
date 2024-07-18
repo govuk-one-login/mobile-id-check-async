@@ -143,12 +143,12 @@ describe("Session Service", () => {
         dbMock.on(GetItemCommand).rejects("Mock DB Error");
 
         const result = await service.createSession({
-          authSessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
+          sessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
           state: "mockValidState",
           sub: "mockSub",
-          client_id: "mockClientId",
-          govuk_signin_journey_id: "mockJourneyId",
-          redirect_uri: "https://mockRedirectUri.com",
+          clientId: "mockClientId",
+          govukSigninJourneyId: "mockJourneyId",
+          redirectUri: "https://mockRedirectUri.com",
           aud: "mockAud",
           issuer: "mockIssuer",
           sessionState: "mockSessionState",
@@ -156,27 +156,27 @@ describe("Session Service", () => {
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual(
-          "Unexpected error when querying session table to check if authSessionId exists",
+          "Unexpected error when querying session table to check if sessionId exists",
         );
       });
     });
 
-    describe("Given authSessionId already exists", () => {
+    describe("Given sessionId already exists", () => {
       it("Returns error response", async () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(GetItemCommand).resolves({
           Item: {
-            authSessionId: { S: "137d5a4b-3046-456d-986a-147e0469cf62" },
+            sessionId: { S: "137d5a4b-3046-456d-986a-147e0469cf62" },
           },
         });
 
         const result = await service.createSession({
-          authSessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
+          sessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
           state: "mockValidState",
           sub: "mockSub",
-          client_id: "mockClientId",
-          govuk_signin_journey_id: "mockJourneyId",
-          redirect_uri: "https://mockRedirectUri.com",
+          clientId: "mockClientId",
+          govukSigninJourneyId: "mockJourneyId",
+          redirectUri: "https://mockRedirectUri.com",
           aud: "mockAud",
           issuer: "mockIssuer",
           sessionState: "mockSessionState",
@@ -184,7 +184,7 @@ describe("Session Service", () => {
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual(
-          "authSessionId already exists in the database",
+          "sessionId already exists in the database",
         );
       });
     });
@@ -196,12 +196,12 @@ describe("Session Service", () => {
         dbMock.on(PutItemCommand).rejects("Mock DB Error");
 
         const result = await service.createSession({
-          authSessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
+          sessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
           state: "mockValidState",
           sub: "mockSub",
-          client_id: "mockClientId",
-          govuk_signin_journey_id: "mockJourneyId",
-          redirect_uri: "https://mockRedirectUri.com",
+          clientId: "mockClientId",
+          govukSigninJourneyId: "mockJourneyId",
+          redirectUri: "https://mockRedirectUri.com",
           aud: "mockAud",
           issuer: "mockIssuer",
           sessionState: "mockSessionState",
@@ -222,11 +222,11 @@ describe("Session Service", () => {
           dbMock.on(PutItemCommand).resolves({});
 
           const result = await service.createSession({
-            authSessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
+            sessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
             state: "mockValidState",
             sub: "mockSub",
-            client_id: "mockClientId",
-            govuk_signin_journey_id: "mockJourneyId",
+            clientId: "mockClientId",
+            govukSigninJourneyId: "mockJourneyId",
             aud: "mockAud",
             issuer: "mockIssuer",
             sessionState: "mockSessionState",
@@ -244,12 +244,12 @@ describe("Session Service", () => {
           dbMock.on(PutItemCommand).resolves({});
 
           const result = await service.createSession({
-            authSessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
+            sessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
             state: "mockValidState",
             sub: "mockSub",
-            client_id: "mockClientId",
-            govuk_signin_journey_id: "mockJourneyId",
-            redirect_uri: "https://mockRedirectUri.com",
+            clientId: "mockClientId",
+            govukSigninJourneyId: "mockJourneyId",
+            redirectUri: "https://mockRedirectUri.com",
             aud: "mockAud",
             issuer: "mockIssuer",
             sessionState: "mockSessionState",

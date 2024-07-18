@@ -72,34 +72,34 @@ export class SessionService implements IGetAuthSessionBySub, ICreateSession {
     const config: IPutAuthSessionConfig = {
       TableName: this.tableName,
       Item: {
-        authSessionId: { S: sessionConfig.authSessionId },
+        sessionId: { S: sessionConfig.sessionId },
         state: { S: sessionConfig.state },
         sub: { S: sessionConfig.sub },
-        client_id: { S: sessionConfig.client_id },
-        govuk_signin_journey_id: { S: sessionConfig.govuk_signin_journey_id },
+        clientId: { S: sessionConfig.clientId },
+        govukSigninJourneyId: { S: sessionConfig.govukSigninJourneyId },
         aud: { S: sessionConfig.aud },
         issuer: { S: sessionConfig.issuer },
         sessionState: { S: sessionConfig.sessionState },
       },
     };
 
-    if (sessionConfig.redirect_uri) {
-      config.Item.redirect_uri = { S: sessionConfig.redirect_uri };
+    if (sessionConfig.redirectUri) {
+      config.Item.redirectUri = { S: sessionConfig.redirectUri };
     }
 
     let doesSessionExist;
     try {
       doesSessionExist = await this.checkSessionsExists(
-        sessionConfig.authSessionId,
+        sessionConfig.sessionId,
       );
     } catch (error) {
       return errorResponse(
-        "Unexpected error when querying session table to check if authSessionId exists",
+        "Unexpected error when querying session table to check if sessionId exists",
       );
     }
 
     if (doesSessionExist) {
-      return errorResponse("authSessionId already exists in the database");
+      return errorResponse("sessionId already exists in the database");
     }
 
     try {
@@ -143,29 +143,29 @@ export class SessionService implements IGetAuthSessionBySub, ICreateSession {
 }
 
 interface IAuthSession {
-  authSessionId: string;
+  sessionId: string;
   state: string;
   sub: string;
-  client_id: string;
-  govuk_signin_journey_id: string;
+  clientId: string;
+  govukSigninJourneyId: string;
   aud: string;
   issuer: string;
   sessionState: string;
-  redirect_uri?: string;
+  redirectUri?: string;
 }
 
 interface IPutAuthSessionConfig {
   TableName: string;
   Item: {
-    authSessionId: { S: string };
+    sessionId: { S: string };
     state: { S: string };
     sub: { S: string };
-    client_id: { S: string };
-    govuk_signin_journey_id: { S: string };
+    clientId: { S: string };
+    govukSigninJourneyId: { S: string };
     aud: { S: string };
     issuer: { S: string };
     sessionState: { S: string };
-    redirect_uri?: { S: string };
+    redirectUri?: { S: string };
   };
 }
 
