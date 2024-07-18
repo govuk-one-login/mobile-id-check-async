@@ -1029,7 +1029,7 @@ describe("Async Credential", () => {
     });
 
     describe("Session creation", () => {
-      describe("Given the service returns an error response", () => {
+      describe("Given there is an error creating the session", () => {
         it("Returns 500 Server Error", async () => {
           const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
@@ -1060,7 +1060,7 @@ describe("Async Credential", () => {
         });
       });
 
-      describe("Given the service returns a success repsonse", () => {
+      describe("Given the session has been created", () => {
         it("Returns 201 session created response", async () => {
           const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
