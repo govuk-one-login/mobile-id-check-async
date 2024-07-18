@@ -994,37 +994,35 @@ describe("Async Credential", () => {
         });
       });
 
-      describe("Given there is a recoverable session", () => {
-        describe("Given response value is the sessionId string", () => {
-          it("Returns 200 session recovered response", async () => {
-            const jwtBuilder = new MockJWTBuilder();
-            const event = buildRequest({
-              headers: {
-                Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}`,
-              },
-              body: JSON.stringify({
-                state: "mockState",
-                sub: "mockSub",
-                client_id: "mockClientId",
-                govuk_signin_journey_id: "mockGovukSigninJourneyId",
-              }),
-            });
-            dependencies.getSessionService = () =>
-              new MockSessionServiceSessionRecovered(
-                env.SESSION_TABLE_NAME,
-                env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
-              );
+      describe("Given service returns success response", () => {
+        it("Returns 200 session recovered response", async () => {
+          const jwtBuilder = new MockJWTBuilder();
+          const event = buildRequest({
+            headers: {
+              Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}`,
+            },
+            body: JSON.stringify({
+              state: "mockState",
+              sub: "mockSub",
+              client_id: "mockClientId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+            }),
+          });
+          dependencies.getSessionService = () =>
+            new MockSessionServiceSessionRecovered(
+              env.SESSION_TABLE_NAME,
+              env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
+            );
 
-            const result = await lambdaHandler(event, dependencies);
+          const result = await lambdaHandler(event, dependencies);
 
-            expect(result).toStrictEqual({
-              headers: { "Content-Type": "application/json" },
-              statusCode: 200,
-              body: JSON.stringify({
-                sub: "mockSub",
-                "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
-              }),
-            });
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 200,
+            body: JSON.stringify({
+              sub: "mockSub",
+              "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
+            }),
           });
         });
       });
