@@ -20,7 +20,7 @@ import {
   ICreateSession,
   IGetSessionBySub,
 } from "./sessionService/sessionService";
-import { IWriteEvent } from "../services/events/eventWriter";
+import { EventName, IWriteEvent } from "../services/events/eventWriter";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -1047,18 +1047,18 @@ describe("Async Credential", () => {
               }),
             });
             class MockEventServiceFailToWrite implements IWriteEvent {
-              private eventNameToFail: string;
-              constructor(eventNameToFail: string) {
+              private eventNameToFail: EventName;
+              constructor(eventNameToFail: EventName) {
                 this.eventNameToFail = eventNameToFail;
               }
-              writeEvent = (eventName: string): ErrorOrSuccess<null> => {
+              writeEvent = (eventName: EventName): ErrorOrSuccess<null> => {
                 if (eventName === this.eventNameToFail)
                   return errorResponse("Error writing to SQS");
                 return successResponse(null);
               };
             }
             dependencies.eventService = () =>
-              new MockEventServiceFailToWrite("DCMAW_ASYNC_CRI_5XX");
+              new MockEventServiceFailToWrite("DCMAW_ASYNC_CRI_5XXERROR");
             dependencies.getSessionService = () =>
               new MockSessionServiceCreateSessionFailure(
                 env.SESSION_TABLE_NAME,
@@ -1071,7 +1071,7 @@ describe("Async Credential", () => {
               "ERROR_WRITING_AUDIT_EVENT",
             );
             expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
-              "Unexpected error writing the ASYNC_CRI_START event",
+              "Unexpected error writing the DCMAW_ASYNC_CRI_START event",
             );
 
             expect(result).toStrictEqual({
