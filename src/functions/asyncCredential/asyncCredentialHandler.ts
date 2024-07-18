@@ -13,6 +13,7 @@ import {
 } from "../types/errorOrValue";
 import { IJwtPayload } from "../types/jwt";
 import { ISessionService } from "./sessionService/sessionService";
+import { randomUUID } from "crypto";
 
 export async function lambdaHandler(
   event: APIGatewayProxyEvent,
@@ -178,8 +179,10 @@ export async function lambdaHandler(
     parsedRequestBody;
   const { iss, aud } = jwtPayload;
 
+  const authSessionId = randomUUID();
+
   const sessionConfig = {
-    authSessionId: "",
+    authSessionId,
     state,
     sub,
     client_id,
