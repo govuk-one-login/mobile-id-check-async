@@ -20,7 +20,11 @@ import {
   ICreateSession,
   IGetSessionBySub,
 } from "./sessionService/sessionService";
-import { EventName, IEventService } from "../services/events/eventService";
+import {
+  EventName,
+  IEventConfig,
+  IEventService,
+} from "../services/events/eventService";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -1364,8 +1368,10 @@ class MockSessionServiceSessionCreated
 
 class MockEventWriterSuccess implements IEventService {
   auditEvents: EventName[] = [];
-  writeEvent = async (eventName: EventName): Promise<ErrorOrSuccess<null>> => {
-    this.auditEvents.push(eventName);
+  writeEvent = async (
+    eventConfig: IEventConfig,
+  ): Promise<ErrorOrSuccess<null>> => {
+    this.auditEvents.push(eventConfig.eventName);
     return successResponse(null);
   };
 }
@@ -1375,8 +1381,10 @@ class MockEventServiceFailToWrite implements IEventService {
   constructor(eventNameToFail: EventName) {
     this.eventNameToFail = eventNameToFail;
   }
-  writeEvent = async (eventName: EventName): Promise<ErrorOrSuccess<null>> => {
-    if (eventName === this.eventNameToFail)
+  writeEvent = async (
+    eventConfig: IEventConfig,
+  ): Promise<ErrorOrSuccess<null>> => {
+    if (eventConfig.eventName === this.eventNameToFail)
       return errorResponse("Error writing to SQS");
     return successResponse(null);
   };
