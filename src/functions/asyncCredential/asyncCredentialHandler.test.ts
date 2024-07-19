@@ -1046,21 +1046,11 @@ describe("Async Credential", () => {
                 govuk_signin_journey_id: "mockGovukSigninJourneyId",
               }),
             });
-            class MockEventServiceFailToWrite implements IWriteEvent {
-              private eventNameToFail: EventName;
-              constructor(eventNameToFail: EventName) {
-                this.eventNameToFail = eventNameToFail;
-              }
-              writeEvent = (eventName: EventName): ErrorOrSuccess<null> => {
-                if (eventName === this.eventNameToFail)
-                  return errorResponse("Error writing to SQS");
-                return successResponse(null);
-              };
-            }
+
             dependencies.eventService = () =>
               new MockEventServiceFailToWrite("DCMAW_ASYNC_CRI_5XXERROR");
             dependencies.getSessionService = () =>
-              new MockSessionServiceCreateSessionFailure(
+              new MockSessionServiceFailToCreateSession(
                 env.SESSION_TABLE_NAME,
                 env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
               );
@@ -1073,7 +1063,48 @@ describe("Async Credential", () => {
             expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
               "Unexpected error writing the DCMAW_ASYNC_CRI_START event",
             );
+            expect(result).toStrictEqual({
+              headers: { "Content-Type": "application/json" },
+              statusCode: 500,
+              body: JSON.stringify({
+                error: "server_error",
+                error_description: "Server Error",
+              }),
+            });
+          });
+        });
 
+        describe("Given it successfully writes the DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
+          it("Logs and returns a 500 Internal server error and writes to Txma", async () => {
+            const jwtBuilder = new MockJWTBuilder();
+            const event = buildRequest({
+              headers: {
+                Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}`,
+              },
+              body: JSON.stringify({
+                state: "mockState",
+                sub: "mockSub",
+                client_id: "mockClientId",
+                govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              }),
+            });
+
+            const mockEventWriter = new MockEventWriterSuccess();
+            dependencies.eventService = () => mockEventWriter;
+            dependencies.getSessionService = () =>
+              new MockSessionServiceFailToCreateSession(
+                env.SESSION_TABLE_NAME,
+                env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
+              );
+
+            const result = await lambdaHandler(event, dependencies);
+
+            expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+              "ERROR_CREATING_SESSION",
+            );
+            expect(mockEventWriter.auditEvents[0]).toEqual(
+              "DCMAW_ASYNC_CRI_5XXERROR",
+            );
             expect(result).toStrictEqual({
               headers: { "Content-Type": "application/json" },
               statusCode: 500,
@@ -1097,7 +1128,7 @@ describe("Async Credential", () => {
             }),
           });
           dependencies.getSessionService = () =>
-            new MockSessionServiceCreateSessionFailure(
+            new MockSessionServiceFailToCreateSession(
               env.SESSION_TABLE_NAME,
               env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
@@ -1291,7 +1322,7 @@ class MockSessionServiceSessionRecovered
   };
 }
 
-class MockSessionServiceCreateSessionFailure
+class MockSessionServiceFailToCreateSession
   implements IGetSessionBySub, ICreateSession
 {
   readonly tableName: string;
@@ -1332,7 +1363,22 @@ class MockSessionServiceSessionCreated
 }
 
 class MockEventWriterSuccess implements IWriteEvent {
-  writeEvent = () => {
+  auditEvents: EventName[] = [];
+  writeEvent = (eventName: EventName) => {
+    this.auditEvents.push(eventName);
+    return successResponse(null);
+  };
+}
+
+class MockEventServiceFailToWrite implements IWriteEvent {
+  private eventNameToFail: EventName;
+  constructor(eventNameToFail: EventName) {
+    this.eventNameToFail = eventNameToFail;
+  }
+  writeEvent = (eventName: EventName): ErrorOrSuccess<null> => {
+    eventName = eventName;
+    if (eventName === this.eventNameToFail)
+      return errorResponse("Error writing to SQS");
     return successResponse(null);
   };
 }
