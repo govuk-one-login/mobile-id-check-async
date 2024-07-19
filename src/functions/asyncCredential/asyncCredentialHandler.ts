@@ -18,7 +18,7 @@ import { randomUUID } from "crypto";
 import { Logger } from "../services/logging/logger";
 import { MessageName } from "./registeredLogs";
 import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
-import { IWriteEvent } from "../services/events/eventWriter";
+import { IEventService } from "../services/events/eventService";
 
 export async function lambdaHandler(
   event: APIGatewayProxyEvent,
@@ -429,7 +429,7 @@ export interface ICredentialRequestBody {
 
 export interface Dependencies {
   logger: () => Logger<MessageName>;
-  eventService: () => IWriteEvent;
+  eventService: () => IEventService;
   tokenService: () => TokenService;
   clientCredentialsService: () => ClientCredentialsService;
   ssmService: () => IGetClientCredentials;

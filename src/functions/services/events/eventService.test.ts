@@ -1,4 +1,4 @@
-import { EventService } from "./eventWriter";
+import { EventService } from "./eventService";
 import { mockClient } from "aws-sdk-client-mock";
 import { SendMessageCommand } from "@aws-sdk/client-sqs";
 import { sqsClient } from "./sqsClient";
@@ -6,7 +6,7 @@ import { sqsClient } from "./sqsClient";
 describe("Event Service", () => {
   describe("Writing to sqs", () => {
     describe("Given writing to SQS fails", () => {
-      it("Returns a log", async () => {
+      it("Returns an error response", async () => {
         const sqsMock = mockClient(sqsClient);
         const eventWriter = new EventService("mockSqsQueue");
         sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
@@ -18,15 +18,17 @@ describe("Event Service", () => {
       });
     });
 
-    // describe("Given writing to SQS successfully", () => {
-    //   it("Returns a log", async () => {
-    //     const eventWriter = new EventService("mockSqsQueue")
+    describe("Given writing to SQS is successful", () => {
+      it("Returns a log", async () => {
+        const sqsMock = mockClient(sqsClient);
+        const eventWriter = new EventService("mockSqsQueue");
+        sqsMock.on(SendMessageCommand).resolves({});
 
-    //     const result = await eventWriter.writeEvent("DCMAW_ASYNC_CRI_5XXERROR")
+        const result = await eventWriter.writeEvent("DCMAW_ASYNC_CRI_5XXERROR");
 
-    //     expect(result.isError).toBe(false)
-    //     expect(result.value).toEqual(null)
-    //   })
-    // })
+        expect(result.isError).toBe(false);
+        expect(result.value).toEqual(null);
+      });
+    });
   });
 });

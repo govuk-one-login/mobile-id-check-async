@@ -1,4 +1,3 @@
-import { EventName } from "../../services/events/eventWriter";
 import {
   ErrorOrSuccess,
   errorResponse,
@@ -35,6 +34,8 @@ export class EventService implements IEventService {
   }
 }
 
-interface IEventService {
+export interface IEventService {
   writeEvent: (eventName: EventName) => Promise<ErrorOrSuccess<null>>;
 }
+
+export type EventName = "DCMAW_ASYNC_CRI_5XXERROR";
