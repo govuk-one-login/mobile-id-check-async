@@ -3,7 +3,7 @@ import { NodeHttpHandler } from "@smithy/node-http-handler";
 
 export const sqsClient = new SQSClient({
   region: process.env.REGION,
-  maxAttempts: 2,
+  maxAttempts: 3,
   requestHandler: new NodeHttpHandler({
     connectionTimeout: 29000,
     requestTimeout: 29000,
