@@ -1134,7 +1134,9 @@ describe("Async Credential", () => {
                 govuk_signin_journey_id: "mockGovukSigninJourneyId",
               }),
             });
-            dependencies.eventService = () => new MockEventWriterSuccess();
+
+            const mockEventService = new MockEventWriterSuccess();
+            dependencies.eventService = () => mockEventService;
             dependencies.getSessionService = () =>
               new MockSessionServiceSessionCreated(
                 env.SESSION_TABLE_NAME,
@@ -1142,6 +1144,17 @@ describe("Async Credential", () => {
               );
 
             const result = await lambdaHandler(event, dependencies);
+
+            expect(mockEventService.auditEvents[0]).toStrictEqual({
+              eventName: "DCMAW_ASYNC_CRI_START",
+              sub: "mockSub",
+              sessionId: "mockSessionId",
+              ipAddress: "mockIpAddress",
+              govukSigninJourneyId: "mockGovukSigninJourneyId",
+              clientId: "mockClientId",
+              getNowInMilliseconds: () => 1609462861,
+              componentId: "mockComponentId",
+            });
 
             expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
               "SESSION_CREATED",
@@ -1345,11 +1358,11 @@ class MockSessionServiceSessionCreated
 }
 
 class MockEventWriterSuccess implements IEventService {
-  auditEvents: EventName[] = [];
+  auditEvents: IEventConfig[] = [];
   writeEvent = async (
     eventConfig: IEventConfig,
   ): Promise<ErrorOrSuccess<null>> => {
-    this.auditEvents.push(eventConfig.eventName);
+    this.auditEvents.push(eventConfig);
     return successResponse(null);
   };
 }
