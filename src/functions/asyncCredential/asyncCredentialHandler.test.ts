@@ -1145,11 +1145,10 @@ describe("Async Credential", () => {
 
             const result = await lambdaHandler(event, dependencies);
 
-            expect(mockEventService.auditEvents[0]).toStrictEqual({
+            expect(mockEventService.auditEvents[0].eventName).toStrictEqual({
               eventName: "DCMAW_ASYNC_CRI_START",
               sub: "mockSub",
-              sessionId: "mockSessionId",
-              ipAddress: "mockIpAddress",
+              sessionId: "0fba2659-3fdd-4cc8-882a-45408097119c",
               govukSigninJourneyId: "mockGovukSigninJourneyId",
               clientId: "mockClientId",
               getNowInMilliseconds: () => 1609462861,

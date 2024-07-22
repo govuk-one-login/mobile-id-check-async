@@ -217,7 +217,6 @@ export async function lambdaHandler(
   const baseEventConfig = {
     sub,
     sessionId,
-    ipAddress: "",
     govukSigninJourneyId: govuk_signin_journey_id,
     clientId: client_id,
     getNowInMilliseconds: Date.now,
@@ -461,7 +460,6 @@ const buildEventConfig = (
     eventName,
     sub: eventConfig.sub,
     sessionId: eventConfig.sessionId,
-    ipAddress: "",
     govukSigninJourneyId: eventConfig.govukSigninJourneyId,
     clientId: eventConfig.clientId,
     getNowInMilliseconds: Date.now,

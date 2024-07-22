@@ -40,7 +40,6 @@ export class EventService implements IEventService {
         user_id: eventConfig.sub,
         transaction_id: "",
         session_id: eventConfig.sessionId,
-        ip_address: eventConfig.ipAddress,
         govuk_signin_journey_id: eventConfig.govukSigninJourneyId,
       },
       client_id: eventConfig.clientId,
@@ -62,7 +61,6 @@ interface ITxmaEvent {
     user_id: string;
     transaction_id: string;
     session_id: string;
-    ip_address: string;
     govuk_signin_journey_id: string;
   };
   client_id: string;
@@ -78,7 +76,6 @@ export interface IEventConfig extends IBaseEventConfig {
 export interface IBaseEventConfig {
   sub: string;
   sessionId: string;
-  ipAddress: string;
   govukSigninJourneyId: string;
   clientId: string;
   getNowInMilliseconds: () => number;
