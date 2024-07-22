@@ -44,7 +44,7 @@ export class EventService implements IEventService {
         govuk_signin_journey_id: eventConfig.govukSigninJourneyId,
       },
       client_id: eventConfig.clientId,
-      timestamp: 1609462861,
+      timestamp: eventConfig.getNowInMilliseconds(),
       event_name: eventConfig.eventName,
       component_id: eventConfig.componentId,
     };
