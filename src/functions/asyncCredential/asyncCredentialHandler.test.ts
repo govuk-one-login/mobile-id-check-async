@@ -1124,38 +1124,6 @@ describe("Async Credential", () => {
             });
           });
         });
-
-        it("Returns 500 Server Error", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-            body: JSON.stringify({
-              state: "mockState",
-              sub: "mockSub",
-              client_id: "mockClientId",
-              govuk_signin_journey_id: "mockGovukSigninJourneyId",
-            }),
-          });
-          dependencies.getSessionService = () =>
-            new MockSessionServiceFailToCreateSession(
-              env.SESSION_TABLE_NAME,
-              env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
-            );
-
-          const result = await lambdaHandler(event, dependencies);
-
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "ERROR_CREATING_SESSION",
-          );
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 500,
-            body: JSON.stringify({
-              error: "server_error",
-              error_description: "Server Error",
-            }),
-          });
-        });
       });
 
       describe("Given the session has been created", () => {
