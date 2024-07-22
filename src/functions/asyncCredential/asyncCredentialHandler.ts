@@ -18,7 +18,11 @@ import { randomUUID } from "crypto";
 import { Logger } from "../services/logging/logger";
 import { MessageName } from "./registeredLogs";
 import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
-import { EventName, IEventService } from "../services/events/eventService";
+import {
+  EventName,
+  IEventConfig,
+  IEventService,
+} from "../services/events/eventService";
 
 export async function lambdaHandler(
   event: APIGatewayProxyEvent,
@@ -209,17 +213,22 @@ export async function lambdaHandler(
 
   const eventService = dependencies.eventService(config.SQS_QUEUE);
 
+  const baseEventConfig = {
+    sub,
+    sessionId,
+    ipAddress: "",
+    govukSigninJourneyId: govuk_signin_journey_id,
+    clientId: client_id,
+    getNowInMilliseconds: Date.now,
+    componentId: config.ISSUER,
+  };
+
   if (sessionServiceCreateSessionResult.isError) {
-    const writeEventResult = await eventService.writeEvent({
-      eventName: "DCMAW_ASYNC_CRI_5XXERROR" as EventName,
-      sub,
-      sessionId,
-      ipAddress: "",
-      govukSigninJourneyId: govuk_signin_journey_id,
-      clientId: client_id,
-      getNowInMilliseconds: Date.now,
-      componentId: config.ISSUER,
-    });
+    const eventConfigCri5xx = buildEventConfig(
+      "DCMAW_ASYNC_CRI_5XXERROR",
+      baseEventConfig,
+    );
+    const writeEventResult = await eventService.writeEvent(eventConfigCri5xx);
 
     if (writeEventResult.isError) {
       logger.log("ERROR_WRITING_AUDIT_EVENT", {
@@ -232,16 +241,11 @@ export async function lambdaHandler(
     return serverError500Response;
   }
 
-  const writeEventResult = await eventService.writeEvent({
-    eventName: "DCMAW_ASYNC_CRI_START" as EventName,
-    sub,
-    sessionId,
-    ipAddress: "",
-    govukSigninJourneyId: govuk_signin_journey_id,
-    clientId: client_id,
-    getNowInMilliseconds: Date.now,
-    componentId: config.ISSUER,
-  });
+  const eventConfigCriStart = buildEventConfig(
+    "DCMAW_ASYNC_CRI_START",
+    baseEventConfig,
+  );
+  const writeEventResult = await eventService.writeEvent(eventConfigCriStart);
 
   if (writeEventResult.isError) {
     logger.log("ERROR_WRITING_AUDIT_EVENT", {
@@ -253,8 +257,7 @@ export async function lambdaHandler(
   return sessionCreatedResponse(parsedRequestBody.sub);
 }
 
-export interface IEventConfig {
-  eventName: EventName;
+interface IBaseEventConfig {
   sub: string;
   sessionId: string;
   ipAddress: string;
@@ -272,6 +275,7 @@ interface Config {
   SESSION_RECOVERY_TIMEOUT: number;
   SQS_QUEUE: string;
 }
+
 const configOrError = (env: NodeJS.ProcessEnv): ErrorOrSuccess<Config> => {
   if (!env.SIGNING_KEY_ID) return errorResponse("No SIGNING_KEY_ID");
   if (!env.ISSUER) return errorResponse("No ISSUER");
@@ -293,6 +297,7 @@ const configOrError = (env: NodeJS.ProcessEnv): ErrorOrSuccess<Config> => {
     SQS_QUEUE: env.SQS_QUEUE,
   });
 };
+
 const validAuthorizationHeaderOrError = (
   authorizationHeader: string,
 ): ErrorOrSuccess<null> => {
@@ -466,6 +471,22 @@ const sessionCreatedResponse = (sub: string): APIGatewayProxyResult => {
       sub,
       "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
     }),
+  };
+};
+
+const buildEventConfig = (
+  eventName: EventName,
+  eventConfig: IBaseEventConfig,
+): IEventConfig => {
+  return {
+    eventName,
+    sub: eventConfig.sub,
+    sessionId: eventConfig.sessionId,
+    ipAddress: "",
+    govukSigninJourneyId: eventConfig.govukSigninJourneyId,
+    clientId: eventConfig.clientId,
+    getNowInMilliseconds: Date.now,
+    componentId: eventConfig.componentId,
   };
 };
 
