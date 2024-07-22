@@ -233,6 +233,26 @@ export async function lambdaHandler(
     return serverError500Response;
   }
 
+  const txma5xxConfig = {
+    eventName: "DCMAW_ASYNC_CRI_START" as EventName,
+    sub,
+    sessionId,
+    ipAddress: "",
+    govukSigninJourneyId: govuk_signin_journey_id,
+    clientId: client_id,
+    getNowInMilliseconds: Date.now,
+    componentId: config.ISSUER,
+  };
+
+  const writeEventResult = await eventService.writeEvent(txma5xxConfig);
+
+  if (writeEventResult.isError) {
+    logger.log("ERROR_WRITING_AUDIT_EVENT", {
+      errorMessage: "Unexpected error writing the DCMAW_ASYNC_CRI_START event",
+    });
+  }
+
+  logger.log("SESSION_CREATED");
   return sessionCreatedResponse(parsedRequestBody.sub);
 }
 
