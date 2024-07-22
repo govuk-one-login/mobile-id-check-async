@@ -32,6 +32,7 @@ const env = {
   SESSION_TABLE_NAME: "mockTableName",
   SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: "mockIndexName",
   SESSION_RECOVERY_TIMEOUT: "12345",
+  SQS_QUEUE: "mockSqsQueue",
 };
 
 describe("Async Credential", () => {
@@ -61,6 +62,7 @@ describe("Async Credential", () => {
       "ISSUER",
       "SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME",
       "SESSION_RECOVERY_TIMEOUT",
+      "SQS_QUEUE",
     ])("Given %s is missing", (envVar: string) => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
@@ -1065,7 +1067,7 @@ describe("Async Credential", () => {
               "ERROR_WRITING_AUDIT_EVENT",
             );
             expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
-              "Unexpected error writing the DCMAW_ASYNC_CRI_START event",
+              "Unexpected error writing the DCMAW_ASYNC_CRI_5XXERROR event",
             );
             expect(result).toStrictEqual({
               headers: { "Content-Type": "application/json" },
