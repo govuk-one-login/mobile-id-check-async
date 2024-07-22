@@ -12,7 +12,7 @@ describe("Event Service", () => {
         sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
 
         const result = await eventWriter.writeEvent({
-          eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+          eventName: "DCMAW_ASYNC_CRI_START",
           sub: "mockSub",
           sessionId: "mockSessionId",
           ipAddress: "mockIpAddress",
@@ -34,7 +34,7 @@ describe("Event Service", () => {
         sqsMock.on(SendMessageCommand).resolves({});
 
         const result = await eventWriter.writeEvent({
-          eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+          eventName: "DCMAW_ASYNC_CRI_START",
           sub: "mockSub",
           sessionId: "mockSessionId",
           ipAddress: "mockIpAddress",

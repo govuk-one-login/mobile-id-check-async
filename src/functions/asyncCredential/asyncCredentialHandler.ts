@@ -225,19 +225,6 @@ export async function lambdaHandler(
   };
 
   if (sessionServiceCreateSessionResult.isError) {
-    const eventConfigCri5xx = buildEventConfig(
-      "DCMAW_ASYNC_CRI_5XXERROR",
-      baseEventConfig,
-    );
-    const writeEventResult = await eventService.writeEvent(eventConfigCri5xx);
-
-    if (writeEventResult.isError) {
-      logger.log("ERROR_WRITING_AUDIT_EVENT", {
-        errorMessage:
-          "Unexpected error writing the DCMAW_ASYNC_CRI_5XXERROR event",
-      });
-    }
-
     logger.log("ERROR_CREATING_SESSION");
     return serverError500Response;
   }
@@ -246,6 +233,7 @@ export async function lambdaHandler(
     "DCMAW_ASYNC_CRI_START",
     baseEventConfig,
   );
+
   const writeEventResult = await eventService.writeEvent(eventConfigCriStart);
 
   if (writeEventResult.isError) {

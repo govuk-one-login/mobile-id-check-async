@@ -1038,90 +1038,38 @@ describe("Async Credential", () => {
 
     describe("Session creation", () => {
       describe("Given there is an error creating the session", () => {
-        describe("Given it fails to write the DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
-          it("Logs and returns a 500 Internal server error", async () => {
-            const jwtBuilder = new MockJWTBuilder();
-            const event = buildRequest({
-              headers: {
-                Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}`,
-              },
-              body: JSON.stringify({
-                state: "mockState",
-                sub: "mockSub",
-                client_id: "mockClientId",
-                govuk_signin_journey_id: "mockGovukSigninJourneyId",
-              }),
-            });
-
-            dependencies.eventService = () =>
-              new MockEventServiceFailToWrite("DCMAW_ASYNC_CRI_5XXERROR");
-            dependencies.getSessionService = () =>
-              new MockSessionServiceFailToCreateSession(
-                env.SESSION_TABLE_NAME,
-                env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
-              );
-
-            const result = await lambdaHandler(event, dependencies);
-
-            expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-              "ERROR_WRITING_AUDIT_EVENT",
-            );
-            expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
-              "Unexpected error writing the DCMAW_ASYNC_CRI_5XXERROR event",
-            );
-            expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
-              "ERROR_CREATING_SESSION",
-            );
-            expect(result).toStrictEqual({
-              headers: { "Content-Type": "application/json" },
-              statusCode: 500,
-              body: JSON.stringify({
-                error: "server_error",
-                error_description: "Server Error",
-              }),
-            });
+        it("Logs and returns a 500 Internal Server Error", async () => {
+          const jwtBuilder = new MockJWTBuilder();
+          const event = buildRequest({
+            headers: {
+              Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}`,
+            },
+            body: JSON.stringify({
+              state: "mockState",
+              sub: "mockSub",
+              client_id: "mockClientId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+            }),
           });
-        });
 
-        describe("Given it successfully writes the DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
-          it("Logs and returns a 500 Internal server error and writes to Txma", async () => {
-            const jwtBuilder = new MockJWTBuilder();
-            const event = buildRequest({
-              headers: {
-                Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}`,
-              },
-              body: JSON.stringify({
-                state: "mockState",
-                sub: "mockSub",
-                client_id: "mockClientId",
-                govuk_signin_journey_id: "mockGovukSigninJourneyId",
-              }),
-            });
-
-            const mockEventWriter = new MockEventWriterSuccess();
-            dependencies.eventService = () => mockEventWriter;
-            dependencies.getSessionService = () =>
-              new MockSessionServiceFailToCreateSession(
-                env.SESSION_TABLE_NAME,
-                env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
-              );
-
-            const result = await lambdaHandler(event, dependencies);
-
-            expect(mockEventWriter.auditEvents[0]).toEqual(
-              "DCMAW_ASYNC_CRI_5XXERROR",
+          dependencies.getSessionService = () =>
+            new MockSessionServiceFailToCreateSession(
+              env.SESSION_TABLE_NAME,
+              env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
-            expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-              "ERROR_CREATING_SESSION",
-            );
-            expect(result).toStrictEqual({
-              headers: { "Content-Type": "application/json" },
-              statusCode: 500,
-              body: JSON.stringify({
-                error: "server_error",
-                error_description: "Server Error",
-              }),
-            });
+
+          const result = await lambdaHandler(event, dependencies);
+
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "ERROR_CREATING_SESSION",
+          );
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 500,
+            body: JSON.stringify({
+              error: "server_error",
+              error_description: "Server Error",
+            }),
           });
         });
       });

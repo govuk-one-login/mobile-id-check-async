@@ -55,7 +55,7 @@ export interface IEventService {
   writeEvent: (eventConfig: IEventConfig) => Promise<ErrorOrSuccess<null>>;
 }
 
-export type EventName = "DCMAW_ASYNC_CRI_5XXERROR" | "DCMAW_ASYNC_CRI_START";
+export type EventName = "DCMAW_ASYNC_CRI_START";
 
 interface ITxmaEvent {
   user: {
