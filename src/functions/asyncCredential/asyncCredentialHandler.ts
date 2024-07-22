@@ -229,6 +229,8 @@ export async function lambdaHandler(
       });
     }
 
+    logger.log("ERROR_CREATING_SESSION");
+
     return serverError500Response;
   }
 

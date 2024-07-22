@@ -1069,6 +1069,9 @@ describe("Async Credential", () => {
             expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
               "Unexpected error writing the DCMAW_ASYNC_CRI_5XXERROR event",
             );
+            expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
+              "ERROR_CREATING_SESSION",
+            );
             expect(result).toStrictEqual({
               headers: { "Content-Type": "application/json" },
               statusCode: 500,
@@ -1105,11 +1108,11 @@ describe("Async Credential", () => {
 
             const result = await lambdaHandler(event, dependencies);
 
-            expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-              "ERROR_CREATING_SESSION",
-            );
             expect(mockEventWriter.auditEvents[0]).toEqual(
               "DCMAW_ASYNC_CRI_5XXERROR",
+            );
+            expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+              "ERROR_CREATING_SESSION",
             );
             expect(result).toStrictEqual({
               headers: { "Content-Type": "application/json" },
@@ -1141,6 +1144,9 @@ describe("Async Credential", () => {
 
           const result = await lambdaHandler(event, dependencies);
 
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "ERROR_CREATING_SESSION",
+          );
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 500,
