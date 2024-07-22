@@ -210,7 +210,7 @@ export async function lambdaHandler(
   const eventService = dependencies.eventService(config.SQS_QUEUE);
 
   if (sessionServiceCreateSessionResult.isError) {
-    const txma5xxConfig = {
+    const writeEventResult = await eventService.writeEvent({
       eventName: "DCMAW_ASYNC_CRI_5XXERROR" as EventName,
       sub,
       sessionId,
@@ -219,8 +219,7 @@ export async function lambdaHandler(
       clientId: client_id,
       getNowInMilliseconds: Date.now,
       componentId: config.ISSUER,
-    };
-    const writeEventResult = await eventService.writeEvent(txma5xxConfig);
+    });
 
     if (writeEventResult.isError) {
       logger.log("ERROR_WRITING_AUDIT_EVENT", {
@@ -233,7 +232,7 @@ export async function lambdaHandler(
     return serverError500Response;
   }
 
-  const txma5xxConfig = {
+  const writeEventResult = await eventService.writeEvent({
     eventName: "DCMAW_ASYNC_CRI_START" as EventName,
     sub,
     sessionId,
@@ -242,9 +241,7 @@ export async function lambdaHandler(
     clientId: client_id,
     getNowInMilliseconds: Date.now,
     componentId: config.ISSUER,
-  };
-
-  const writeEventResult = await eventService.writeEvent(txma5xxConfig);
+  });
 
   if (writeEventResult.isError) {
     logger.log("ERROR_WRITING_AUDIT_EVENT", {
