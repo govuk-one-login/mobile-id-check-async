@@ -218,7 +218,7 @@ export async function lambdaHandler(
       govukSigninJourneyId: govuk_signin_journey_id,
       clientId: client_id,
       getNowInMilliseconds: Date.now,
-      componentId: "mockCompId",
+      componentId: config.ISSUER,
     };
     const writeEventResult = await eventService.writeEvent(txma5xxConfig);
 
@@ -230,7 +230,6 @@ export async function lambdaHandler(
     }
 
     logger.log("ERROR_CREATING_SESSION");
-
     return serverError500Response;
   }
 
