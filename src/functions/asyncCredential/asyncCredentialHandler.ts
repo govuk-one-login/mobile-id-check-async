@@ -214,7 +214,7 @@ export async function lambdaHandler(
       eventName: "DCMAW_ASYNC_CRI_5XXERROR" as EventName,
       sub,
       sessionId,
-      ipAddress: "0.0.0.0",
+      ipAddress: "",
       govukSigninJourneyId: govuk_signin_journey_id,
       clientId: client_id,
       getNowInMilliseconds: Date.now,
