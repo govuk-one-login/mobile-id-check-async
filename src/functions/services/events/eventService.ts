@@ -45,8 +45,8 @@ export class EventService implements IEventService {
       },
       client_id: eventConfig.clientId,
       timestamp: 1609462861,
-      event_name: "DCMAW_ASYNC_CRI_5XXERROR",
-      component_id: "www.review-b.production.account.gov.uk",
+      event_name: eventConfig.eventName,
+      component_id: eventConfig.componentId,
     };
   }
 }
