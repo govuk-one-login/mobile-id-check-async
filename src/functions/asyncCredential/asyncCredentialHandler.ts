@@ -18,6 +18,7 @@ import { randomUUID } from "crypto";
 import { Logger } from "../services/logging/logger";
 import { MessageName } from "./registeredLogs";
 import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
+import { IEventService } from "../services/events/eventService";
 
 export async function lambdaHandler(
   event: APIGatewayProxyEvent,
@@ -206,10 +207,30 @@ export async function lambdaHandler(
   const sessionServiceCreateSessionResult =
     await sessionService.createSession(sessionConfig);
 
+  const eventService = dependencies.eventService(config.SQS_QUEUE);
+
   if (sessionServiceCreateSessionResult.isError) {
+    logger.log("ERROR_CREATING_SESSION");
     return serverError500Response;
   }
 
+  const writeEventResult = await eventService.writeEvent({
+    eventName: "DCMAW_ASYNC_CRI_START",
+    sub,
+    sessionId,
+    govukSigninJourneyId: govuk_signin_journey_id,
+    clientId: client_id,
+    getNowInMilliseconds: Date.now,
+    componentId: config.ISSUER,
+  });
+
+  if (writeEventResult.isError) {
+    logger.log("ERROR_WRITING_AUDIT_EVENT", {
+      errorMessage: "Unexpected error writing the DCMAW_ASYNC_CRI_START event",
+    });
+  }
+
+  logger.log("SESSION_CREATED");
   return sessionCreatedResponse(parsedRequestBody.sub);
 }
 
@@ -219,7 +240,9 @@ interface Config {
   SESSION_TABLE_NAME: string;
   SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: string;
   SESSION_RECOVERY_TIMEOUT: number;
+  SQS_QUEUE: string;
 }
+
 const configOrError = (env: NodeJS.ProcessEnv): ErrorOrSuccess<Config> => {
   if (!env.SIGNING_KEY_ID) return errorResponse("No SIGNING_KEY_ID");
   if (!env.ISSUER) return errorResponse("No ISSUER");
@@ -230,6 +253,7 @@ const configOrError = (env: NodeJS.ProcessEnv): ErrorOrSuccess<Config> => {
     return errorResponse("No SESSION_RECOVERY_TIMEOUT");
   if (isNaN(Number(env.SESSION_RECOVERY_TIMEOUT)))
     return errorResponse("SESSION_RECOVERY_TIMEOUT is not a valid number");
+  if (!env.SQS_QUEUE) return errorResponse("No SQS_QUEUE");
   return successResponse({
     SIGNING_KEY_ID: env.SIGNING_KEY_ID,
     ISSUER: env.ISSUER,
@@ -237,8 +261,10 @@ const configOrError = (env: NodeJS.ProcessEnv): ErrorOrSuccess<Config> => {
     SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME:
       env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
     SESSION_RECOVERY_TIMEOUT: parseInt(env.SESSION_RECOVERY_TIMEOUT),
+    SQS_QUEUE: env.SQS_QUEUE,
   });
 };
+
 const validAuthorizationHeaderOrError = (
   authorizationHeader: string,
 ): ErrorOrSuccess<null> => {
@@ -425,6 +451,7 @@ export interface ICredentialRequestBody {
 
 export interface Dependencies {
   logger: () => Logger<MessageName>;
+  eventService: (sqsQueue: string) => IEventService;
   tokenService: () => TokenService;
   clientCredentialsService: () => ClientCredentialsService;
   ssmService: () => IGetClientCredentials;

@@ -3,7 +3,8 @@ import { RegisteredLogMessages } from "./types";
 export type CommonMessageNames =
   | "STARTED"
   | "COMPLETED"
-  | "ENVIRONMENT_VARIABLE_MISSING";
+  | "ENVIRONMENT_VARIABLE_MISSING"
+  | "ERROR_WRITING_AUDIT_EVENT";
 
 export const commonMessages: RegisteredLogMessages<CommonMessageNames> = {
   STARTED: {
@@ -14,5 +15,8 @@ export const commonMessages: RegisteredLogMessages<CommonMessageNames> = {
   },
   ENVIRONMENT_VARIABLE_MISSING: {
     messageCode: "MOBILE_ASYNC_ENVIRONMENT_VARIABLE_MISSING",
+  },
+  ERROR_WRITING_AUDIT_EVENT: {
+    messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
   },
 };
