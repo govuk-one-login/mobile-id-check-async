@@ -69,11 +69,8 @@ interface ITxmaEvent {
   component_id: string;
 }
 
-export interface IEventConfig extends IBaseEventConfig {
+export interface IEventConfig {
   eventName: EventName;
-}
-
-export interface IBaseEventConfig {
   sub: string;
   sessionId: string;
   govukSigninJourneyId: string;

@@ -18,12 +18,7 @@ import { randomUUID } from "crypto";
 import { Logger } from "../services/logging/logger";
 import { MessageName } from "./registeredLogs";
 import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
-import {
-  EventName,
-  IBaseEventConfig,
-  IEventConfig,
-  IEventService,
-} from "../services/events/eventService";
+import { IEventService } from "../services/events/eventService";
 
 export async function lambdaHandler(
   event: APIGatewayProxyEvent,
@@ -214,26 +209,20 @@ export async function lambdaHandler(
 
   const eventService = dependencies.eventService(config.SQS_QUEUE);
 
-  const baseEventConfig = {
+  if (sessionServiceCreateSessionResult.isError) {
+    logger.log("ERROR_CREATING_SESSION");
+    return serverError500Response;
+  }
+
+  const writeEventResult = await eventService.writeEvent({
+    eventName: "DCMAW_ASYNC_CRI_START",
     sub,
     sessionId,
     govukSigninJourneyId: govuk_signin_journey_id,
     clientId: client_id,
     getNowInMilliseconds: Date.now,
     componentId: config.ISSUER,
-  };
-
-  if (sessionServiceCreateSessionResult.isError) {
-    logger.log("ERROR_CREATING_SESSION");
-    return serverError500Response;
-  }
-
-  const eventConfigCriStart = buildEventConfig(
-    "DCMAW_ASYNC_CRI_START",
-    baseEventConfig,
-  );
-
-  const writeEventResult = await eventService.writeEvent(eventConfigCriStart);
+  });
 
   if (writeEventResult.isError) {
     logger.log("ERROR_WRITING_AUDIT_EVENT", {
@@ -449,21 +438,6 @@ const sessionCreatedResponse = (sub: string): APIGatewayProxyResult => {
       sub,
       "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
     }),
-  };
-};
-
-const buildEventConfig = (
-  eventName: EventName,
-  eventConfig: IBaseEventConfig,
-): IEventConfig => {
-  return {
-    eventName,
-    sub: eventConfig.sub,
-    sessionId: eventConfig.sessionId,
-    govukSigninJourneyId: eventConfig.govukSigninJourneyId,
-    clientId: eventConfig.clientId,
-    getNowInMilliseconds: Date.now,
-    componentId: eventConfig.componentId,
   };
 };
 
