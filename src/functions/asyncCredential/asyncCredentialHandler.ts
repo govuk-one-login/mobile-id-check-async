@@ -20,6 +20,7 @@ import { MessageName } from "./registeredLogs";
 import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
 import {
   EventName,
+  IBaseEventConfig,
   IEventConfig,
   IEventService,
 } from "../services/events/eventService";
@@ -255,16 +256,6 @@ export async function lambdaHandler(
 
   logger.log("SESSION_CREATED");
   return sessionCreatedResponse(parsedRequestBody.sub);
-}
-
-interface IBaseEventConfig {
-  sub: string;
-  sessionId: string;
-  ipAddress: string;
-  govukSigninJourneyId: string;
-  clientId: string;
-  getNowInMilliseconds: () => number;
-  componentId: string;
 }
 
 interface Config {

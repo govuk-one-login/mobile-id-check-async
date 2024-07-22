@@ -71,8 +71,11 @@ interface ITxmaEvent {
   component_id: string;
 }
 
-export interface IEventConfig {
+export interface IEventConfig extends IBaseEventConfig {
   eventName: EventName;
+}
+
+export interface IBaseEventConfig {
   sub: string;
   sessionId: string;
   ipAddress: string;
