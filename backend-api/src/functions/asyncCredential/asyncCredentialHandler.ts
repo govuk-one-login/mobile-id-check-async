@@ -184,7 +184,7 @@ export async function lambdaHandler(
 
   const recoverSessionServiceResponse = await sessionService.getActiveSession(
     parsedRequestBody.sub,
-    config.SESSION_TTL_IN_MS,
+    config.SESSION_TTL_IN_MILLISECONDS,
   );
   if (recoverSessionServiceResponse.isError) {
     return serverError500Response;
@@ -246,7 +246,7 @@ interface Config {
   ISSUER: string;
   SESSION_TABLE_NAME: string;
   SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: string;
-  SESSION_TTL_IN_MS: number;
+  SESSION_TTL_IN_MILLISECONDS: number;
   SQS_QUEUE: string;
 }
 
@@ -256,9 +256,9 @@ const configOrError = (env: NodeJS.ProcessEnv): ErrorOrSuccess<Config> => {
   if (!env.SESSION_TABLE_NAME) return errorResponse("No SESSION_TABLE_NAME");
   if (!env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME)
     return errorResponse("No SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME");
-  if (!env.SESSION_TTL_IN_MS) return errorResponse("No SESSION_TTL_IN_MS");
-  if (isNaN(Number(env.SESSION_TTL_IN_MS)))
-    return errorResponse("SESSION_TTL_IN_MS is not a valid number");
+  if (!env.SESSION_TTL_IN_MILLISECONDS) return errorResponse("No SESSION_TTL_IN_MILLISECONDS");
+  if (isNaN(Number(env.SESSION_TTL_IN_MILLISECONDS)))
+    return errorResponse("SESSION_TTL_IN_MILLISECONDS is not a valid number");
   if (!env.SQS_QUEUE) return errorResponse("No SQS_QUEUE");
   return successResponse({
     SIGNING_KEY_ID: env.SIGNING_KEY_ID,
@@ -266,7 +266,7 @@ const configOrError = (env: NodeJS.ProcessEnv): ErrorOrSuccess<Config> => {
     SESSION_TABLE_NAME: env.SESSION_TABLE_NAME,
     SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME:
       env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
-    SESSION_TTL_IN_MS: parseInt(env.SESSION_TTL_IN_MS),
+    SESSION_TTL_IN_MILLISECONDS: parseInt(env.SESSION_TTL_IN_MILLISECONDS),
     SQS_QUEUE: env.SQS_QUEUE,
   });
 };

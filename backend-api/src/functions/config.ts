@@ -3,7 +3,7 @@ export type EnvVars =
   | "ISSUER"
   | "SESSION_TABLE_NAME"
   | "SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME"
-  | "SESSION_TTL_IN_MS"
+  | "SESSION_TTL_IN_MILLISECONDS"
   | "REGION";
 
 // Get static variables
