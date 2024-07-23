@@ -81,6 +81,9 @@ export async function lambdaHandler(
   }
 
   if (event.body == null) {
+    logger.log("REQUEST_BODY_INVALID", {
+      errorMessage: "Missing request body",
+    });
     return badRequestResponse({
       error: "invalid_request",
       errorDescription: "Missing request body",
@@ -91,6 +94,9 @@ export async function lambdaHandler(
   try {
     parsedRequestBody = JSON.parse(event.body);
   } catch (error) {
+    logger.log("REQUEST_BODY_INVALID", {
+      errorMessage: "Invalid JSON in request body",
+    });
     return badRequestResponse({
       error: "invalid_request",
       errorDescription: "Invalid JSON in request body",
@@ -103,9 +109,12 @@ export async function lambdaHandler(
   );
 
   if (requestBodyValidationResponse.isError) {
+    logger.log("REQUEST_BODY_INVALID", {
+      errorMessage: requestBodyValidationResponse.value,
+    });
     return badRequestResponse({
       error: "invalid_request",
-      errorDescription: requestBodyValidationResponse.value as string,
+      errorDescription: "Request body validation failed",
     });
   }
 
@@ -358,7 +367,7 @@ const requestBodyValidator = (
 
   if (requestBody.client_id !== jwtClientId) {
     return errorResponse(
-      "client_id in request body does not match client_id in access token",
+      "client_id in request body does not match value in access_token",
     );
   }
 
@@ -370,7 +379,7 @@ const requestBodyValidator = (
     try {
       new URL(requestBody.redirect_uri);
     } catch (error) {
-      return errorResponse("Invalid redirect_uri");
+      return errorResponse("redirect_uri in request body is not a URL");
     }
   }
 
