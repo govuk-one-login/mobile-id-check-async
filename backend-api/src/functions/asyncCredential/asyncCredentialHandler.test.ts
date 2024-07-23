@@ -1107,7 +1107,7 @@ describe("Async Credential", () => {
             }),
           });
           dependencies.getSessionService = () =>
-            new MockSessionServiceCreateSessionFailure(
+            new MockSessionServiceFailToCreateSession(
               env.SESSION_TABLE_NAME,
               env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
@@ -1395,7 +1395,7 @@ class MockSessionServiceSessionRecovered
   };
 }
 
-class MockSessionServiceCreateSessionFailure
+class MockSessionServiceFailToCreateSession
   implements IGetSessionBySub, ICreateSession
 {
   readonly tableName: string;
