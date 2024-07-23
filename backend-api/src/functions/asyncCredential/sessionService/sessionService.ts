@@ -13,7 +13,7 @@ import {
   successResponse,
 } from "../../types/errorOrValue";
 
-export class SessionService implements IGetSessionBySub, ICreateSession {
+export class SessionService implements IGetActiveSession, ICreateSession {
   readonly tableName: string;
   readonly indexName: string;
   readonly dbClient: DynamoDBClient;
@@ -24,28 +24,33 @@ export class SessionService implements IGetSessionBySub, ICreateSession {
     this.dbClient = dbClient;
   }
 
-  async getAuthSessionBySub(
+  async getActiveSession(
     sub: string,
-    state: string,
-    sessionRecoveryTimeout: number,
+    sessionTimeToLiveInMilliseconds: number,
   ): Promise<ErrorOrSuccess<string | null>> {
     const queryCommandInput: QueryCommandInput = {
       TableName: this.tableName,
       IndexName: this.indexName,
-      KeyConditionExpression:
-        "subjectIdentifier = :subjectIdentifier and issuedOn > :issuedOn",
+      KeyConditionExpression: "#sub = :sub and #sessionState = :sessionState",
       FilterExpression:
-        "authSessionState = :authSessionState and #state <> :state",
-      ExpressionAttributeValues: {
-        ":subjectIdentifier": { S: sub },
-        ":authSessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
-        ":issuedOn": { S: (Date.now() - sessionRecoveryTimeout).toString() },
-        ":state": { S: state },
-      },
+        ":currentTimeInMs < #issuedOn + :sessionTimeToLiveInMilliseconds",
       ExpressionAttributeNames: {
-        "#state": "state",
+        "#issuedOn": "issuedOn",
+        "#sessionId": "sessionId",
+        "#sessionState": "sessionState",
+        "#sub": "sub",
       },
-      ProjectionExpression: "sessionId",
+      ExpressionAttributeValues: {
+        ":sub": { S: sub },
+        ":sessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
+        ":currentTimeInMs": {
+          S: Date.now().toString(),
+        },
+        ":sessionTtlInMs": {
+          S: sessionTimeToLiveInMilliseconds.toString(),
+        },
+      },
+      ProjectionExpression: "#sessionId",
       Limit: 1,
       ScanIndexForward: false,
     };
@@ -55,7 +60,7 @@ export class SessionService implements IGetSessionBySub, ICreateSession {
       result = await dbClient.send(new QueryCommand(queryCommandInput));
     } catch (error) {
       return errorResponse(
-        "Unexpected error when querying session table whilst checking for recoverable session",
+        "Unexpected error when querying session table whilst checking for an active session",
       );
     }
 
@@ -166,11 +171,10 @@ interface IPutAuthSessionConfig {
   };
 }
 
-export interface IGetSessionBySub {
-  getAuthSessionBySub: (
+export interface IGetActiveSession {
+  getActiveSession: (
     sub: string,
-    state: string,
-    sessionRecoveryTimeout: number,
+    sessionTimeToLiveInMilliseconds: number,
   ) => Promise<ErrorOrSuccess<string | null>>;
 }
 

@@ -12,7 +12,7 @@ import {
 import { IJwtPayload } from "../types/jwt";
 import {
   ICreateSession,
-  IGetSessionBySub,
+  IGetActiveSession,
 } from "./sessionService/sessionService";
 import { randomUUID } from "crypto";
 import { Logger } from "../services/logging/logger";
@@ -195,28 +195,26 @@ export async function lambdaHandler(
     });
   }
 
-  const sessionService = dependencies.getSessionService(
+  const sessionService = dependencies.sessionService(
     config.SESSION_TABLE_NAME,
     config.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
   );
 
-  const recoverSessionServiceResponse =
-    await sessionService.getAuthSessionBySub(
-      parsedRequestBody.sub,
-      parsedRequestBody.state,
-      config.SESSION_RECOVERY_TIMEOUT,
-    );
-  if (recoverSessionServiceResponse.isError) {
+  const getActiveSessionResponse = await sessionService.getActiveSession(
+    parsedRequestBody.sub,
+    config.SESSION_TTL_IN_MILLISECONDS,
+  );
+  if (getActiveSessionResponse.isError) {
     logger.log("ERROR_RETRIEVING_SESSION", {
       errorMessage: "Unexpected error checking for existing session",
     });
     return serverError500Response;
   }
 
-  if (recoverSessionServiceResponse.value) {
-    logger.setSessionId({ sessionId: recoverSessionServiceResponse.value });
+  if (getActiveSessionResponse.value) {
+    logger.setSessionId({ sessionId: getActiveSessionResponse.value });
     logger.log("COMPLETED");
-    return sessionRecoveredResponse(parsedRequestBody.sub);
+    return activeSessionFoundResponse(parsedRequestBody.sub);
   }
 
   const { sub, client_id, govuk_signin_journey_id, redirect_uri, state } =
@@ -273,7 +271,7 @@ interface Config {
   ISSUER: string;
   SESSION_TABLE_NAME: string;
   SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: string;
-  SESSION_RECOVERY_TIMEOUT: number;
+  SESSION_TTL_IN_MILLISECONDS: number;
   SQS_QUEUE: string;
 }
 
@@ -283,10 +281,10 @@ const configOrError = (env: NodeJS.ProcessEnv): ErrorOrSuccess<Config> => {
   if (!env.SESSION_TABLE_NAME) return errorResponse("No SESSION_TABLE_NAME");
   if (!env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME)
     return errorResponse("No SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME");
-  if (!env.SESSION_RECOVERY_TIMEOUT)
-    return errorResponse("No SESSION_RECOVERY_TIMEOUT");
-  if (isNaN(Number(env.SESSION_RECOVERY_TIMEOUT)))
-    return errorResponse("SESSION_RECOVERY_TIMEOUT is not a valid number");
+  if (!env.SESSION_TTL_IN_MILLISECONDS)
+    return errorResponse("No SESSION_TTL_IN_MILLISECONDS");
+  if (isNaN(Number(env.SESSION_TTL_IN_MILLISECONDS)))
+    return errorResponse("SESSION_TTL_IN_MILLISECONDS is not a valid number");
   if (!env.SQS_QUEUE) return errorResponse("No SQS_QUEUE");
   return successResponse({
     SIGNING_KEY_ID: env.SIGNING_KEY_ID,
@@ -294,7 +292,7 @@ const configOrError = (env: NodeJS.ProcessEnv): ErrorOrSuccess<Config> => {
     SESSION_TABLE_NAME: env.SESSION_TABLE_NAME,
     SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME:
       env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
-    SESSION_RECOVERY_TIMEOUT: parseInt(env.SESSION_RECOVERY_TIMEOUT),
+    SESSION_TTL_IN_MILLISECONDS: parseInt(env.SESSION_TTL_IN_MILLISECONDS),
     SQS_QUEUE: env.SQS_QUEUE,
   });
 };
@@ -453,7 +451,7 @@ const serverError500Response: APIGatewayProxyResult = {
   }),
 };
 
-const sessionRecoveredResponse = (sub: string): APIGatewayProxyResult => {
+const activeSessionFoundResponse = (sub: string): APIGatewayProxyResult => {
   return {
     headers: { "Content-Type": "application/json" },
     statusCode: 200,
@@ -489,9 +487,9 @@ export interface Dependencies {
   tokenService: () => TokenService;
   clientCredentialsService: () => ClientCredentialsService;
   ssmService: () => IGetClientCredentials;
-  getSessionService: (
+  sessionService: (
     tableName: string,
     indexName: string,
-  ) => IGetSessionBySub & ICreateSession;
+  ) => IGetActiveSession & ICreateSession;
   env: NodeJS.ProcessEnv;
 }

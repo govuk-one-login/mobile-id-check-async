@@ -13,21 +13,17 @@ describe("Session Service", () => {
     service = new SessionService("mockTableName", "mockIndexName");
   });
 
-  describe("Session recovery", () => {
+  describe("Get active session", () => {
     describe("Given there is an unexpected error when calling Dynamo DB", () => {
       it("Returns error response", async () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).rejects("Mock DB Error");
 
-        const result = await service.getAuthSessionBySub(
-          "mockSub",
-          "mockValidState",
-          3600,
-        );
+        const result = await service.getActiveSession("mockSub", 12345);
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual(
-          "Unexpected error when querying session table whilst checking for recoverable session",
+          "Unexpected error when querying session table whilst checking for an active session",
         );
       });
     });
@@ -37,11 +33,7 @@ describe("Session Service", () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).resolves({});
 
-        const result = await service.getAuthSessionBySub(
-          "mockSub",
-          "mockValidState",
-          3600,
-        );
+        const result = await service.getActiveSession("mockSub", 12345);
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -53,11 +45,7 @@ describe("Session Service", () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).resolves({ Items: [] });
 
-        const result = await service.getAuthSessionBySub(
-          "mockSub",
-          "mockValidState",
-          3600,
-        );
+        const result = await service.getActiveSession("mockSub", 12345);
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -68,19 +56,10 @@ describe("Session Service", () => {
       it("Returns success response will value of null", async () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).resolves({
-          Items: [
-            {
-              sub: { S: "mockSub" },
-              state: { S: "mockValidState" },
-            },
-          ],
+          Items: [{}],
         });
 
-        const result = await service.getAuthSessionBySub(
-          "mockSub",
-          "mockValidState",
-          3600,
-        );
+        const result = await service.getActiveSession("mockSub", 12345);
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -93,42 +72,30 @@ describe("Session Service", () => {
         dbMock.on(QueryCommand).resolves({
           Items: [
             {
-              sub: { S: "mockSub" },
-              state: { S: "mockValidState" },
               sessionId: { S: "" },
             },
           ],
         });
 
-        const result = await service.getAuthSessionBySub(
-          "mockSub",
-          "mockValidState",
-          3600,
-        );
+        const result = await service.getActiveSession("mockSub", 12345);
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
       });
     });
 
-    describe("Given a valid recoverable session is found", () => {
+    describe("Given an active session is found", () => {
       it("Returns a success response with sessionId as value", async () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).resolves({
           Items: [
             {
-              sub: { S: "mockSub" },
-              state: { S: "mockValidState" },
               sessionId: { S: "mockSessionId" },
             },
           ],
         });
 
-        const result = await service.getAuthSessionBySub(
-          "mockSub",
-          "mockValidState",
-          3600,
-        );
+        const result = await service.getActiveSession("mockSub", 12345);
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual("mockSessionId");

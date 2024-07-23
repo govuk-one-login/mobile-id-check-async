@@ -18,7 +18,7 @@ import { MessageName, registeredLogs } from "./registeredLogs";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import {
   ICreateSession,
-  IGetSessionBySub,
+  IGetActiveSession,
 } from "./sessionService/sessionService";
 import {
   EventName,
@@ -31,7 +31,7 @@ const env = {
   ISSUER: "mockIssuer",
   SESSION_TABLE_NAME: "mockTableName",
   SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: "mockIndexName",
-  SESSION_RECOVERY_TIMEOUT: "12345",
+  SESSION_TTL_IN_MILLISECONDS: "12345",
   SQS_QUEUE: "mockSqsQueue",
 };
 
@@ -47,8 +47,8 @@ describe("Async Credential", () => {
       tokenService: () => new MockTokenSeviceValidSignature(),
       ssmService: () => new MockPassingSsmService(),
       clientCredentialsService: () => new MockPassingClientCredentialsService(),
-      getSessionService: () =>
-        new MockSessionServiceNoRecoverableSession(
+      sessionService: () =>
+        new MockSessionServiceNoActiveSession(
           env.SESSION_TABLE_NAME,
           env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
         ),
@@ -61,7 +61,7 @@ describe("Async Credential", () => {
       "SIGNING_KEY_ID",
       "ISSUER",
       "SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME",
-      "SESSION_RECOVERY_TIMEOUT",
+      "SESSION_TTL_IN_MILLISECONDS",
       "SQS_QUEUE",
     ])("Given %s is missing", (envVar: string) => {
       it("Returns a 500 Server Error response", async () => {
@@ -88,11 +88,11 @@ describe("Async Credential", () => {
       });
     });
 
-    describe("Given SESSION_RECOVERY_TIMEOUT value is not a number", () => {
+    describe("Given SESSION_TTL_IN_MILLISECONDS value is not a number", () => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
-        dependencies.env["SESSION_RECOVERY_TIMEOUT"] =
-          "mockInvalidSessionRecoveryTimeout";
+        dependencies.env["SESSION_TTL_IN_MILLISECONDS"] =
+          "mockInvalidSessionTtlMs";
         const event = buildRequest();
         const result = await lambdaHandler(event, dependencies);
 
@@ -100,7 +100,7 @@ describe("Async Credential", () => {
           "ENVIRONMENT_VARIABLE_MISSING",
         );
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-          errorMessage: "SESSION_RECOVERY_TIMEOUT is not a valid number",
+          errorMessage: "SESSION_TTL_IN_MILLISECONDS is not a valid number",
         });
 
         expect(result).toStrictEqual({
@@ -1084,7 +1084,7 @@ describe("Async Credential", () => {
   });
 
   describe("Session Service", () => {
-    describe("Check for existing session", () => {
+    describe("Check for active session", () => {
       describe("Given there is an error checking for an existing session", () => {
         it("Returns 500 Server Error", async () => {
           const jwtBuilder = new MockJWTBuilder();
@@ -1097,7 +1097,7 @@ describe("Async Credential", () => {
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
             }),
           });
-          dependencies.getSessionService = () =>
+          dependencies.sessionService = () =>
             new MockSessionServiceGetSessionBySubFailure(
               env.SESSION_TABLE_NAME,
               env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
@@ -1123,8 +1123,8 @@ describe("Async Credential", () => {
         });
       });
 
-      describe("Given there is an existing session in a valid state", () => {
-        it("Logs and returns 200 session recovered response", async () => {
+      describe("Given there is an active session", () => {
+        it("Logs and returns 200 active session found response", async () => {
           const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
             headers: {
@@ -1137,8 +1137,8 @@ describe("Async Credential", () => {
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
             }),
           });
-          dependencies.getSessionService = () =>
-            new MockSessionServiceSessionRecovered(
+          dependencies.sessionService = () =>
+            new MockSessionServiceActiveSessionFound(
               env.SESSION_TABLE_NAME,
               env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
@@ -1180,7 +1180,7 @@ describe("Async Credential", () => {
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
             }),
           });
-          dependencies.getSessionService = () =>
+          dependencies.sessionService = () =>
             new MockSessionServiceFailToCreateSession(
               env.SESSION_TABLE_NAME,
               env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
@@ -1219,7 +1219,7 @@ describe("Async Credential", () => {
             });
             dependencies.eventService = () =>
               new MockEventServiceFailToWrite("DCMAW_ASYNC_CRI_START");
-            dependencies.getSessionService = () =>
+            dependencies.sessionService = () =>
               new MockSessionServiceSessionCreated(
                 env.SESSION_TABLE_NAME,
                 env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
@@ -1262,7 +1262,7 @@ describe("Async Credential", () => {
 
             const mockEventService = new MockEventWriterSuccess();
             dependencies.eventService = () => mockEventService;
-            dependencies.getSessionService = () =>
+            dependencies.sessionService = () =>
               new MockSessionServiceSessionCreated(
                 env.SESSION_TABLE_NAME,
                 env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
@@ -1400,7 +1400,7 @@ class MockFailingSsmService implements IGetClientCredentials {
 }
 
 class MockSessionServiceGetSessionBySubFailure
-  implements IGetSessionBySub, ICreateSession
+  implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
   readonly indexName: string;
@@ -1410,7 +1410,7 @@ class MockSessionServiceGetSessionBySubFailure
     this.indexName = indexName;
   }
 
-  getAuthSessionBySub = async (): Promise<ErrorOrSuccess<string | null>> => {
+  getActiveSession = async (): Promise<ErrorOrSuccess<string | null>> => {
     return errorResponse("Mock failing DB call");
   };
 
@@ -1419,8 +1419,8 @@ class MockSessionServiceGetSessionBySubFailure
   };
 }
 
-class MockSessionServiceNoRecoverableSession
-  implements IGetSessionBySub, ICreateSession
+class MockSessionServiceNoActiveSession
+  implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
   readonly indexName: string;
@@ -1429,7 +1429,7 @@ class MockSessionServiceNoRecoverableSession
     this.tableName = tableName;
     this.indexName = indexName;
   }
-  getAuthSessionBySub = async (): Promise<ErrorOrSuccess<string | null>> => {
+  getActiveSession = async (): Promise<ErrorOrSuccess<string | null>> => {
     return successResponse(null);
   };
 
@@ -1438,8 +1438,8 @@ class MockSessionServiceNoRecoverableSession
   };
 }
 
-class MockSessionServiceSessionRecovered
-  implements IGetSessionBySub, ICreateSession
+class MockSessionServiceActiveSessionFound
+  implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
   readonly indexName: string;
@@ -1449,7 +1449,7 @@ class MockSessionServiceSessionRecovered
     this.indexName = indexName;
   }
 
-  getAuthSessionBySub = async (): Promise<ErrorOrSuccess<string | null>> => {
+  getActiveSession = async (): Promise<ErrorOrSuccess<string | null>> => {
     return successResponse("mockSessionId");
   };
 
@@ -1459,7 +1459,7 @@ class MockSessionServiceSessionRecovered
 }
 
 class MockSessionServiceFailToCreateSession
-  implements IGetSessionBySub, ICreateSession
+  implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
   readonly indexName: string;
@@ -1469,7 +1469,7 @@ class MockSessionServiceFailToCreateSession
     this.indexName = indexName;
   }
 
-  getAuthSessionBySub = async (): Promise<ErrorOrSuccess<string | null>> => {
+  getActiveSession = async (): Promise<ErrorOrSuccess<string | null>> => {
     return successResponse(null);
   };
 
@@ -1479,7 +1479,7 @@ class MockSessionServiceFailToCreateSession
 }
 
 class MockSessionServiceSessionCreated
-  implements IGetSessionBySub, ICreateSession
+  implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
   readonly indexName: string;
@@ -1489,7 +1489,7 @@ class MockSessionServiceSessionCreated
     this.indexName = indexName;
   }
 
-  getAuthSessionBySub = async (): Promise<ErrorOrSuccess<string | null>> => {
+  getActiveSession = async (): Promise<ErrorOrSuccess<string | null>> => {
     return successResponse(null);
   };
 
