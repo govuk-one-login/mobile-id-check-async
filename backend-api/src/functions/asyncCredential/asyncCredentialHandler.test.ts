@@ -31,7 +31,7 @@ const env = {
   ISSUER: "mockIssuer",
   SESSION_TABLE_NAME: "mockTableName",
   SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: "mockIndexName",
-  SESSION_RECOVERY_TIMEOUT: "12345",
+  SESSION_EXPIRY_TIME_IN_MS: "12345",
   SQS_QUEUE: "mockSqsQueue",
 };
 
@@ -61,7 +61,7 @@ describe("Async Credential", () => {
       "SIGNING_KEY_ID",
       "ISSUER",
       "SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME",
-      "SESSION_RECOVERY_TIMEOUT",
+      "SESSION_EXPIRY_TIME_IN_MS",
       "SQS_QUEUE",
     ])("Given %s is missing", (envVar: string) => {
       it("Returns a 500 Server Error response", async () => {
@@ -88,10 +88,10 @@ describe("Async Credential", () => {
       });
     });
 
-    describe("Given SESSION_RECOVERY_TIMEOUT value is not a number", () => {
+    describe("Given SESSION_EXPIRY_TIME_IN_MS value is not a number", () => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
-        dependencies.env["SESSION_RECOVERY_TIMEOUT"] =
+        dependencies.env["SESSION_EXPIRY_TIME_IN_MS"] =
           "mockInvalidSessionRecoveryTimeout";
         const event = buildRequest();
         const result = await lambdaHandler(event, dependencies);
@@ -100,7 +100,7 @@ describe("Async Credential", () => {
           "ENVIRONMENT_VARIABLE_MISSING",
         );
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-          errorMessage: "SESSION_RECOVERY_TIMEOUT is not a valid number",
+          errorMessage: "SESSION_EXPIRY_TIME_IN_MS is not a valid number",
         });
 
         expect(result).toStrictEqual({

@@ -26,24 +26,27 @@ export class SessionService implements IGetSessionBySub, ICreateSession {
 
   async getAuthSessionBySub(
     sub: string,
+    sessionExpiryTimeInMs: number,
   ): Promise<ErrorOrSuccess<string | null>> {
     const queryCommandInput: QueryCommandInput = {
       TableName: this.tableName,
       IndexName: this.indexName,
-      KeyConditionExpression:
-        "#sub = :subVal and #sessionState = :sessionStateVal",
-      FilterExpression: ":currentTimeMilliSeconds < #ttl",
+      KeyConditionExpression: "#sub = :sub and #sessionState = :sessionState",
+      FilterExpression: ":currentTimeInMs < #issuedOn + :sessionExpiryTimeInMs",
       ExpressionAttributeNames: {
-        "#sub": "sub",
-        "#sessionState": "sessionState",
-        "#ttl": "ttl",
+        "#issuedOn": "issuedOn",
         "#sessionId": "sessionId",
+        "#sessionState": "sessionState",
+        "#sub": "sub",
       },
       ExpressionAttributeValues: {
-        ":subVal": { S: sub },
-        ":sessionStateVal": { S: "ASYNC_AUTH_SESSION_CREATED" },
-        ":currentTimeMilliSeconds": {
+        ":sub": { S: sub },
+        ":sessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
+        ":currentTimeInMs": {
           S: Date.now().toString(),
+        },
+        ":sessionExpiryTimeInMs": {
+          S: sessionExpiryTimeInMs.toString(),
         },
       },
       ProjectionExpression: "#sessionId",
@@ -168,7 +171,10 @@ interface IPutAuthSessionConfig {
 }
 
 export interface IGetSessionBySub {
-  getAuthSessionBySub: (sub: string) => Promise<ErrorOrSuccess<string | null>>;
+  getAuthSessionBySub: (
+    sub: string,
+    sessionExpiryTimeInMs: number,
+  ) => Promise<ErrorOrSuccess<string | null>>;
 }
 
 export interface ICreateSession {

@@ -13,13 +13,13 @@ describe("Session Service", () => {
     service = new SessionService("mockTableName", "mockIndexName");
   });
 
-  describe("Session recovery", () => {
+  describe("Get auth session by sub", () => {
     describe("Given there is an unexpected error when calling Dynamo DB", () => {
       it("Returns error response", async () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).rejects("Mock DB Error");
 
-        const result = await service.getAuthSessionBySub("mockSub");
+        const result = await service.getAuthSessionBySub("mockSub", 12345);
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual(
@@ -33,7 +33,7 @@ describe("Session Service", () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).resolves({});
 
-        const result = await service.getAuthSessionBySub("mockSub");
+        const result = await service.getAuthSessionBySub("mockSub", 12345);
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -45,7 +45,7 @@ describe("Session Service", () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).resolves({ Items: [] });
 
-        const result = await service.getAuthSessionBySub("mockSub");
+        const result = await service.getAuthSessionBySub("mockSub", 12345);
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -59,7 +59,7 @@ describe("Session Service", () => {
           Items: [{}],
         });
 
-        const result = await service.getAuthSessionBySub("mockSub");
+        const result = await service.getAuthSessionBySub("mockSub", 12345);
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -77,7 +77,7 @@ describe("Session Service", () => {
           ],
         });
 
-        const result = await service.getAuthSessionBySub("mockSub");
+        const result = await service.getAuthSessionBySub("mockSub", 12345);
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -95,7 +95,7 @@ describe("Session Service", () => {
           ],
         });
 
-        const result = await service.getAuthSessionBySub("mockSub");
+        const result = await service.getAuthSessionBySub("mockSub", 12345);
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual("mockSessionId");
