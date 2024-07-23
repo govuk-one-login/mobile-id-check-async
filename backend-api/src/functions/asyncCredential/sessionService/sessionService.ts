@@ -33,7 +33,7 @@ export class SessionService implements IGetSessionBySub, ICreateSession {
       IndexName: this.indexName,
       KeyConditionExpression:
         "#sub = :subVal and #sessionState = :sessionStateVal",
-      FilterExpression: "#issuedOn > :validTimeMillis",
+      FilterExpression: "#issuedOn > :validTime",
       ExpressionAttributeNames: {
         "#sub": "sub",
         "#sessionState": "sessionState",
@@ -43,7 +43,7 @@ export class SessionService implements IGetSessionBySub, ICreateSession {
       ExpressionAttributeValues: {
         ":subVal": { S: sub },
         ":sessionStateVal": { S: "ASYNC_AUTH_SESSION_CREATED" },
-        ":validTimeMillis": {
+        ":validTime": {
           S: (Date.now() - sessionRecoveryTimeout).toString(),
         },
       },
