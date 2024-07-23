@@ -13,7 +13,7 @@ import {
   successResponse,
 } from "../../types/errorOrValue";
 
-export class SessionService implements IGetSessionBySub, ICreateSession {
+export class SessionService implements IGetActiveSession, ICreateSession {
   readonly tableName: string;
   readonly indexName: string;
   readonly dbClient: DynamoDBClient;
@@ -32,7 +32,8 @@ export class SessionService implements IGetSessionBySub, ICreateSession {
       TableName: this.tableName,
       IndexName: this.indexName,
       KeyConditionExpression: "#sub = :sub and #sessionState = :sessionState",
-      FilterExpression: ":currentTimeInMs < #issuedOn + :sessionTimeToLiveInMilliseconds",
+      FilterExpression:
+        ":currentTimeInMs < #issuedOn + :sessionTimeToLiveInMilliseconds",
       ExpressionAttributeNames: {
         "#issuedOn": "issuedOn",
         "#sessionId": "sessionId",
@@ -170,7 +171,7 @@ interface IPutAuthSessionConfig {
   };
 }
 
-export interface IGetSessionBySub {
+export interface IGetActiveSession {
   getActiveSession: (
     sub: string,
     sessionTimeToLiveInMilliseconds: number,

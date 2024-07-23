@@ -13,7 +13,7 @@ describe("Session Service", () => {
     service = new SessionService("mockTableName", "mockIndexName");
   });
 
-  describe("Get auth session by sub", () => {
+  describe("Get active session", () => {
     describe("Given there is an unexpected error when calling Dynamo DB", () => {
       it("Returns error response", async () => {
         const dbMock = mockClient(DynamoDBClient);

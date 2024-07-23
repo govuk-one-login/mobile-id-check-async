@@ -12,7 +12,7 @@ import {
 import { IJwtPayload } from "../types/jwt";
 import {
   ICreateSession,
-  IGetSessionBySub,
+  IGetActiveSession,
 } from "./sessionService/sessionService";
 import { randomUUID } from "crypto";
 import { Logger } from "../services/logging/logger";
@@ -177,20 +177,20 @@ export async function lambdaHandler(
     });
   }
 
-  const sessionService = dependencies.getSessionService(
+  const sessionService = dependencies.sessionService(
     config.SESSION_TABLE_NAME,
     config.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
   );
 
-  const recoverSessionServiceResponse = await sessionService.getActiveSession(
+  const getActiveSessionResponse = await sessionService.getActiveSession(
     parsedRequestBody.sub,
     config.SESSION_TTL_IN_MILLISECONDS,
   );
-  if (recoverSessionServiceResponse.isError) {
+  if (getActiveSessionResponse.isError) {
     return serverError500Response;
   }
 
-  if (recoverSessionServiceResponse.value) {
+  if (getActiveSessionResponse.value) {
     return sessionRecoveredResponse(parsedRequestBody.sub);
   }
 
@@ -256,7 +256,8 @@ const configOrError = (env: NodeJS.ProcessEnv): ErrorOrSuccess<Config> => {
   if (!env.SESSION_TABLE_NAME) return errorResponse("No SESSION_TABLE_NAME");
   if (!env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME)
     return errorResponse("No SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME");
-  if (!env.SESSION_TTL_IN_MILLISECONDS) return errorResponse("No SESSION_TTL_IN_MILLISECONDS");
+  if (!env.SESSION_TTL_IN_MILLISECONDS)
+    return errorResponse("No SESSION_TTL_IN_MILLISECONDS");
   if (isNaN(Number(env.SESSION_TTL_IN_MILLISECONDS)))
     return errorResponse("SESSION_TTL_IN_MILLISECONDS is not a valid number");
   if (!env.SQS_QUEUE) return errorResponse("No SQS_QUEUE");
@@ -461,9 +462,9 @@ export interface Dependencies {
   tokenService: () => TokenService;
   clientCredentialsService: () => ClientCredentialsService;
   ssmService: () => IGetClientCredentials;
-  getSessionService: (
+  sessionService: (
     tableName: string,
     indexName: string,
-  ) => IGetSessionBySub & ICreateSession;
+  ) => IGetActiveSession & ICreateSession;
   env: NodeJS.ProcessEnv;
 }

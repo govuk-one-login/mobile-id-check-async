@@ -18,7 +18,7 @@ import { MessageName, registeredLogs } from "./registeredLogs";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import {
   ICreateSession,
-  IGetSessionBySub,
+  IGetActiveSession,
 } from "./sessionService/sessionService";
 import {
   EventName,
@@ -47,7 +47,7 @@ describe("Async Credential", () => {
       tokenService: () => new MockTokenSeviceValidSignature(),
       ssmService: () => new MockPassingSsmService(),
       clientCredentialsService: () => new MockPassingClientCredentialsService(),
-      getSessionService: () =>
+      sessionService: () =>
         new MockSessionServiceNoRecoverableSession(
           env.SESSION_TABLE_NAME,
           env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
@@ -1038,7 +1038,7 @@ describe("Async Credential", () => {
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
             }),
           });
-          dependencies.getSessionService = () =>
+          dependencies.sessionService = () =>
             new MockSessionServiceGetSessionBySubFailure(
               env.SESSION_TABLE_NAME,
               env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
@@ -1071,7 +1071,7 @@ describe("Async Credential", () => {
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
             }),
           });
-          dependencies.getSessionService = () =>
+          dependencies.sessionService = () =>
             new MockSessionServiceSessionRecovered(
               env.SESSION_TABLE_NAME,
               env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
@@ -1106,7 +1106,7 @@ describe("Async Credential", () => {
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
             }),
           });
-          dependencies.getSessionService = () =>
+          dependencies.sessionService = () =>
             new MockSessionServiceFailToCreateSession(
               env.SESSION_TABLE_NAME,
               env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
@@ -1145,7 +1145,7 @@ describe("Async Credential", () => {
             });
             dependencies.eventService = () =>
               new MockEventServiceFailToWrite("DCMAW_ASYNC_CRI_START");
-            dependencies.getSessionService = () =>
+            dependencies.sessionService = () =>
               new MockSessionServiceSessionCreated(
                 env.SESSION_TABLE_NAME,
                 env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
@@ -1191,7 +1191,7 @@ describe("Async Credential", () => {
 
             const mockEventService = new MockEventWriterSuccess();
             dependencies.eventService = () => mockEventService;
-            dependencies.getSessionService = () =>
+            dependencies.sessionService = () =>
               new MockSessionServiceSessionCreated(
                 env.SESSION_TABLE_NAME,
                 env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
@@ -1306,7 +1306,7 @@ class MockFailingSsmService implements IGetClientCredentials {
 }
 
 class MockSessionServiceGetSessionBySubFailure
-  implements IGetSessionBySub, ICreateSession
+  implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
   readonly indexName: string;
@@ -1326,7 +1326,7 @@ class MockSessionServiceGetSessionBySubFailure
 }
 
 class MockSessionServiceNoRecoverableSession
-  implements IGetSessionBySub, ICreateSession
+  implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
   readonly indexName: string;
@@ -1345,7 +1345,7 @@ class MockSessionServiceNoRecoverableSession
 }
 
 class MockSessionServiceSessionRecovered
-  implements IGetSessionBySub, ICreateSession
+  implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
   readonly indexName: string;
@@ -1365,7 +1365,7 @@ class MockSessionServiceSessionRecovered
 }
 
 class MockSessionServiceFailToCreateSession
-  implements IGetSessionBySub, ICreateSession
+  implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
   readonly indexName: string;
@@ -1385,7 +1385,7 @@ class MockSessionServiceFailToCreateSession
 }
 
 class MockSessionServiceSessionCreated
-  implements IGetSessionBySub, ICreateSession
+  implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
   readonly indexName: string;
