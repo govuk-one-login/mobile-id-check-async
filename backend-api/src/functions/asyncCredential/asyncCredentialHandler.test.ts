@@ -975,7 +975,7 @@ describe("Async Credential", () => {
     });
   });
 
-  describe("Client Credentials Service - get client credentials by ID", () => {
+  describe("Client Credentials Service", () => {
     describe("Given credentials are not found", () => {
       it("Returns 400 Bad Request response", async () => {
         const jwtBuilder = new MockJWTBuilder();
@@ -1011,8 +1011,41 @@ describe("Async Credential", () => {
     });
   });
 
-  describe("JWT Payload validation - using Client Credentials", () => {
-    describe("aud claim does not match registered issuer for given client", () => {
+  describe("Given redirect_uri from request body does not match registered value", () => {
+    it("Returns a 400 Bad request response", async () => {
+      const jwtBuilder = new MockJWTBuilder();
+      const event = buildRequest({
+        headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+        body: JSON.stringify({
+          state: "mockState",
+          sub: "mockSub",
+          client_id: "mockClientId",
+          govuk_signin_journey_id: "mockGovukSigninJourneyId",
+          redirect_uri: "https://mockInvalidRedirectUri.com",
+        }),
+      });
+      dependencies.clientCredentialsService = () =>
+        new MockClientCredentialsServiceInvalidRedirectUri();
+
+      const result = await lambdaHandler(event, dependencies);
+
+      expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+        "REDIRECT_URI_INVALID",
+      );
+      expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+        "Invalid redirect_uri",
+      );
+      expect(result).toStrictEqual({
+        headers: { "Content-Type": "application/json" },
+        statusCode: 400,
+        body: JSON.stringify({
+          error: "invalid_request",
+          error_description: "Invalid redirect_uri",
+        }),
+      });
+    });
+
+    describe("aud claim from JWT payload does not match registered issuer for given client", () => {
       it("Returns a 400 Bad request response", async () => {
         const jwtBuilder = new MockJWTBuilder();
         jwtBuilder.setAud("invalidAud");
@@ -1266,12 +1299,12 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
   }
 }
 
-class MockPassingClientCredentialsService implements IClientCredentialsService {
+class MockFailingClientCredentialsService implements IClientCredentialsService {
   validateTokenRequest(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
   validateRedirectUri(): ErrorOrSuccess<null> {
-    return successResponse(null);
+    return errorResponse("mockClientCredentialServiceError");
   }
   getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
     return successResponse({
@@ -1283,12 +1316,31 @@ class MockPassingClientCredentialsService implements IClientCredentialsService {
   }
 }
 
-class MockFailingClientCredentialsService implements IClientCredentialsService {
+class MockClientCredentialsServiceInvalidRedirectUri
+  implements IClientCredentialsService
+{
   validateTokenRequest(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
   validateRedirectUri(): ErrorOrSuccess<null> {
-    return errorResponse("mockClientCredentialServiceError");
+    return errorResponse("Invalid redirect_uri");
+  }
+  getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
+    return successResponse({
+      client_id: "mockClientId",
+      issuer: "mockIssuer",
+      salt: "mockSalt",
+      hashed_client_secret: "mockHashedClientSecret",
+    });
+  }
+}
+
+class MockPassingClientCredentialsService implements IClientCredentialsService {
+  validateTokenRequest(): ErrorOrSuccess<null> {
+    return successResponse(null);
+  }
+  validateRedirectUri(): ErrorOrSuccess<null> {
+    return successResponse(null);
   }
   getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
     return successResponse({
