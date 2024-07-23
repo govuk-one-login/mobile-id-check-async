@@ -191,7 +191,7 @@ export async function lambdaHandler(
   }
 
   if (getActiveSessionResponse.value) {
-    return sessionRecoveredResponse(parsedRequestBody.sub);
+    return activeSessionFoundResponse(parsedRequestBody.sub);
   }
 
   const { sub, client_id, govuk_signin_journey_id, redirect_uri, state } =
@@ -426,7 +426,7 @@ const serverError500Response: APIGatewayProxyResult = {
   }),
 };
 
-const sessionRecoveredResponse = (sub: string): APIGatewayProxyResult => {
+const activeSessionFoundResponse = (sub: string): APIGatewayProxyResult => {
   return {
     headers: { "Content-Type": "application/json" },
     statusCode: 200,
