@@ -1063,6 +1063,12 @@ describe("Async Credential", () => {
 
         const result = await lambdaHandler(event, dependencies);
 
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "JWT_CLAIM_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+          "Invalid aud claim",
+        );
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
