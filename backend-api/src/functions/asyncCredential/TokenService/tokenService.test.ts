@@ -8,7 +8,7 @@ const mockJwt =
 
 describe("Token Service", () => {
   describe("JWT signature verification", () => {
-    describe("Given the token signature is not present", () => {
+    describe("Given KMS cannot calculate signature validity", () => {
       it("Returns a log", async () => {
         const kmsMock = mockClient(KMSClient);
         kmsMock.on(VerifyCommand).resolves({});
@@ -18,7 +18,7 @@ describe("Token Service", () => {
           mockJwt,
         );
         expect(result.isError).toBe(true);
-        expect(result.value).toEqual("Failed to verify token signature");
+        expect(result.value).toEqual("Signature is invalid");
       });
     });
 
@@ -32,7 +32,7 @@ describe("Token Service", () => {
           mockJwt,
         );
         expect(result.isError).toBe(true);
-        expect(result.value).toEqual("Failed to verify token signature");
+        expect(result.value).toEqual("Signature is invalid");
       });
     });
 
