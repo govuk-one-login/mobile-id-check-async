@@ -208,7 +208,7 @@ export async function lambdaHandler(
     );
   if (recoverSessionServiceResponse.isError) {
     logger.log("ERROR_RETRIEVING_SESSION", {
-      errorMessage: "Unexpected error checking for existing session in Dynamo",
+      errorMessage: "Unexpected error checking for existing session",
     });
     return serverError500Response;
   }
