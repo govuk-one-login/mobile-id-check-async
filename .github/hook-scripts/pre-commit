@@ -8,7 +8,7 @@
 set -e
 
 # Run prettier formatting checks
-cd src || exit 1
+cd backend-api/src || exit 1
 
 npm run lint
 npm run format:check
