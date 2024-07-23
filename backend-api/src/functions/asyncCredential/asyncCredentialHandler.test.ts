@@ -591,6 +591,13 @@ describe("Async Credential", () => {
           dependencies,
         );
 
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "REQUEST_BODY_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+          errorMessage: "Missing request body",
+        });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -609,7 +616,7 @@ describe("Async Credential", () => {
         ["an object with an unquoted key", "{key: 'value'}"],
         ["malformed JSON", '{"key": value}'],
       ];
-      test.each(invalidJsonCases)(
+      it.each(invalidJsonCases)(
         "Returns 400 status code with invalid_request error when body is %s",
         async (_description, invalidJson) => {
           const jwtBuilder = new MockJWTBuilder();
@@ -624,6 +631,13 @@ describe("Async Credential", () => {
             event,
             dependencies,
           );
+
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "REQUEST_BODY_INVALID",
+          );
+          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+            errorMessage: "Invalid JSON in request body",
+          });
 
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
@@ -652,12 +666,19 @@ describe("Async Credential", () => {
           dependencies,
         );
 
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "REQUEST_BODY_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+          errorMessage: "Missing state in request body",
+        });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "Missing state in request body",
+            error_description: "Request body validation failed",
           }),
         });
       });
@@ -680,12 +701,19 @@ describe("Async Credential", () => {
           dependencies,
         );
 
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "REQUEST_BODY_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+          errorMessage: "Missing sub in request body",
+        });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "Missing sub in request body",
+            error_description: "Request body validation failed",
           }),
         });
       });
@@ -709,12 +737,19 @@ describe("Async Credential", () => {
           dependencies,
         );
 
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "REQUEST_BODY_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+          errorMessage: "Missing client_id in request body",
+        });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "Missing client_id in request body",
+            error_description: "Request body validation failed",
           }),
         });
       });
@@ -739,13 +774,20 @@ describe("Async Credential", () => {
           dependencies,
         );
 
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "REQUEST_BODY_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+          errorMessage:
+            "client_id in request body does not match value in access_token",
+        });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description:
-              "client_id in request body does not match client_id in access token",
+            error_description: "Request body validation failed",
           }),
         });
       });
@@ -770,13 +812,19 @@ describe("Async Credential", () => {
           dependencies,
         );
 
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "REQUEST_BODY_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+          errorMessage: "Missing govuk_signin_journey_id in request body",
+        });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description:
-              "Missing govuk_signin_journey_id in request body",
+            error_description: "Request body validation failed",
           }),
         });
       });
@@ -803,12 +851,19 @@ describe("Async Credential", () => {
           dependencies,
         );
 
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "REQUEST_BODY_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+          errorMessage: "redirect_uri in request body is not a URL",
+        });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "Invalid redirect_uri",
+            error_description: "Request body validation failed",
           }),
         });
       });
@@ -1051,7 +1106,6 @@ describe("Async Credential", () => {
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
             }),
           });
-
           dependencies.getSessionService = () =>
             new MockSessionServiceFailToCreateSession(
               env.SESSION_TABLE_NAME,
