@@ -1077,7 +1077,7 @@ describe("Async Credential", () => {
 
   describe("Session Service", () => {
     describe("Session recovery", () => {
-      describe("Given service returns an error response", () => {
+      describe("Given there is an error retrieving a session", () => {
         it("Returns 500 Server Error", async () => {
           const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
@@ -1097,6 +1097,14 @@ describe("Async Credential", () => {
 
           const result = await lambdaHandler(event, dependencies);
 
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "ERROR_RETRIEVING_SESSION",
+          );
+          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+            errorMessage:
+              "Unexpected error checking for existing session in Dynamo",
+          });
+
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 500,
@@ -1108,8 +1116,8 @@ describe("Async Credential", () => {
         });
       });
 
-      describe("Given service returns success response", () => {
-        it("Returns 200 session recovered response", async () => {
+      describe("Given there is a recoverable session", () => {
+        it("Logs and returns 200 session recovered response", async () => {
           const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
             headers: {
@@ -1129,6 +1137,10 @@ describe("Async Credential", () => {
             );
 
           const result = await lambdaHandler(event, dependencies);
+
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "COMPLETED",
+          );
 
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },

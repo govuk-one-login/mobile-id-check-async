@@ -203,10 +203,14 @@ export async function lambdaHandler(
       config.SESSION_RECOVERY_TIMEOUT,
     );
   if (recoverSessionServiceResponse.isError) {
+    logger.log("ERROR_RETRIEVING_SESSION", {
+      errorMessage: "Unexpected error checking for existing session in Dynamo",
+    });
     return serverError500Response;
   }
 
   if (recoverSessionServiceResponse.value) {
+    logger.log("COMPLETED");
     return sessionRecoveredResponse(parsedRequestBody.sub);
   }
 
