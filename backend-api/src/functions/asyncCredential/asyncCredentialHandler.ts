@@ -176,7 +176,6 @@ export async function lambdaHandler(
   const recoverSessionServiceResponse =
     await sessionService.getAuthSessionBySub(
       parsedRequestBody.sub,
-      parsedRequestBody.state,
       config.SESSION_RECOVERY_TIMEOUT,
     );
   if (recoverSessionServiceResponse.isError) {

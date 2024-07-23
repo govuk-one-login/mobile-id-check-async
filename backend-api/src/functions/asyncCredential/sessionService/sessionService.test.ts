@@ -19,11 +19,7 @@ describe("Session Service", () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).rejects("Mock DB Error");
 
-        const result = await service.getAuthSessionBySub(
-          "mockSub",
-          "mockValidState",
-          3600,
-        );
+        const result = await service.getAuthSessionBySub("mockSub", 3600);
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual(
@@ -37,11 +33,7 @@ describe("Session Service", () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).resolves({});
 
-        const result = await service.getAuthSessionBySub(
-          "mockSub",
-          "mockValidState",
-          3600,
-        );
+        const result = await service.getAuthSessionBySub("mockSub", 3600);
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -53,11 +45,7 @@ describe("Session Service", () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).resolves({ Items: [] });
 
-        const result = await service.getAuthSessionBySub(
-          "mockSub",
-          "mockValidState",
-          3600,
-        );
+        const result = await service.getAuthSessionBySub("mockSub", 3600);
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -68,19 +56,10 @@ describe("Session Service", () => {
       it("Returns success response will value of null", async () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).resolves({
-          Items: [
-            {
-              sub: { S: "mockSub" },
-              state: { S: "mockValidState" },
-            },
-          ],
+          Items: [{}],
         });
 
-        const result = await service.getAuthSessionBySub(
-          "mockSub",
-          "mockValidState",
-          3600,
-        );
+        const result = await service.getAuthSessionBySub("mockSub", 3600);
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -93,18 +72,12 @@ describe("Session Service", () => {
         dbMock.on(QueryCommand).resolves({
           Items: [
             {
-              sub: { S: "mockSub" },
-              state: { S: "mockValidState" },
               sessionId: { S: "" },
             },
           ],
         });
 
-        const result = await service.getAuthSessionBySub(
-          "mockSub",
-          "mockValidState",
-          3600,
-        );
+        const result = await service.getAuthSessionBySub("mockSub", 3600);
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -117,18 +90,12 @@ describe("Session Service", () => {
         dbMock.on(QueryCommand).resolves({
           Items: [
             {
-              sub: { S: "mockSub" },
-              state: { S: "mockValidState" },
               sessionId: { S: "mockSessionId" },
             },
           ],
         });
 
-        const result = await service.getAuthSessionBySub(
-          "mockSub",
-          "mockValidState",
-          3600,
-        );
+        const result = await service.getAuthSessionBySub("mockSub", 3600);
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual("mockSessionId");
