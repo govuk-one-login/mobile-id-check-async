@@ -20,6 +20,11 @@ import {
   ICreateSession,
   IGetSessionBySub,
 } from "./sessionService/sessionService";
+import {
+  EventName,
+  IEventConfig,
+  IEventService,
+} from "../services/events/eventService";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -27,6 +32,7 @@ const env = {
   SESSION_TABLE_NAME: "mockTableName",
   SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: "mockIndexName",
   SESSION_RECOVERY_TIMEOUT: "12345",
+  SQS_QUEUE: "mockSqsQueue",
 };
 
 describe("Async Credential", () => {
@@ -36,6 +42,7 @@ describe("Async Credential", () => {
   beforeEach(() => {
     mockLogger = new MockLoggingAdapter();
     dependencies = {
+      eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(mockLogger, registeredLogs),
       tokenService: () => new MockTokenSeviceValidSignature(),
       ssmService: () => new MockPassingSsmService(),
@@ -55,6 +62,7 @@ describe("Async Credential", () => {
       "ISSUER",
       "SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME",
       "SESSION_RECOVERY_TIMEOUT",
+      "SQS_QUEUE",
     ])("Given %s is missing", (envVar: string) => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
@@ -1030,10 +1038,12 @@ describe("Async Credential", () => {
 
     describe("Session creation", () => {
       describe("Given there is an error creating the session", () => {
-        it("Returns 500 Server Error", async () => {
+        it("Logs and returns a 500 Internal Server Error", async () => {
           const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+            headers: {
+              Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}`,
+            },
             body: JSON.stringify({
               state: "mockState",
               sub: "mockSub",
@@ -1041,14 +1051,18 @@ describe("Async Credential", () => {
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
             }),
           });
+
           dependencies.getSessionService = () =>
-            new MockSessionServiceCreateSessionFailure(
+            new MockSessionServiceFailToCreateSession(
               env.SESSION_TABLE_NAME,
               env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
 
           const result = await lambdaHandler(event, dependencies);
 
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "ERROR_CREATING_SESSION",
+          );
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 500,
@@ -1061,32 +1075,92 @@ describe("Async Credential", () => {
       });
 
       describe("Given the session has been created", () => {
-        it("Returns 201 session created response", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-            body: JSON.stringify({
-              state: "mockState",
-              sub: "mockSub",
-              client_id: "mockClientId",
-              govuk_signin_journey_id: "mockGovukSigninJourneyId",
-            }),
-          });
-          dependencies.getSessionService = () =>
-            new MockSessionServiceSessionCreated(
-              env.SESSION_TABLE_NAME,
-              env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
+        describe("Given it fails to write the DCMAW_ASYNC_CRI_START event to TxMA", () => {
+          it("Logs and returns 201 session created response", async () => {
+            const jwtBuilder = new MockJWTBuilder();
+            const event = buildRequest({
+              headers: {
+                Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}`,
+              },
+              body: JSON.stringify({
+                state: "mockState",
+                sub: "mockSub",
+                client_id: "mockClientId",
+                govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              }),
+            });
+            dependencies.eventService = () =>
+              new MockEventServiceFailToWrite("DCMAW_ASYNC_CRI_START");
+            dependencies.getSessionService = () =>
+              new MockSessionServiceSessionCreated(
+                env.SESSION_TABLE_NAME,
+                env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
+              );
+
+            const result = await lambdaHandler(event, dependencies);
+
+            expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+              "ERROR_WRITING_AUDIT_EVENT",
+            );
+            expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+              "Unexpected error writing the DCMAW_ASYNC_CRI_START event",
+            );
+            expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
+              "SESSION_CREATED",
             );
 
-          const result = await lambdaHandler(event, dependencies);
+            expect(result).toStrictEqual({
+              headers: { "Content-Type": "application/json" },
+              statusCode: 201,
+              body: JSON.stringify({
+                sub: "mockSub",
+                "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
+              }),
+            });
+          });
+        });
 
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 201,
-            body: JSON.stringify({
-              sub: "mockSub",
-              "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
-            }),
+        describe("Given it successfully writes the DCMAW_ASYNC_CRI_START event to TxMA", () => {
+          it("Logs and returns 201 session created response", async () => {
+            const jwtBuilder = new MockJWTBuilder();
+            const event = buildRequest({
+              headers: {
+                Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}`,
+              },
+              body: JSON.stringify({
+                state: "mockState",
+                sub: "mockSub",
+                client_id: "mockClientId",
+                govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              }),
+            });
+
+            const mockEventService = new MockEventWriterSuccess();
+            dependencies.eventService = () => mockEventService;
+            dependencies.getSessionService = () =>
+              new MockSessionServiceSessionCreated(
+                env.SESSION_TABLE_NAME,
+                env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
+              );
+
+            const result = await lambdaHandler(event, dependencies);
+
+            expect(mockEventService.auditEvents[0].eventName).toEqual(
+              "DCMAW_ASYNC_CRI_START",
+            );
+
+            expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+              "SESSION_CREATED",
+            );
+
+            expect(result).toStrictEqual({
+              headers: { "Content-Type": "application/json" },
+              statusCode: 201,
+              body: JSON.stringify({
+                sub: "mockSub",
+                "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
+              }),
+            });
           });
         });
       });
@@ -1236,7 +1310,7 @@ class MockSessionServiceSessionRecovered
   };
 }
 
-class MockSessionServiceCreateSessionFailure
+class MockSessionServiceFailToCreateSession
   implements IGetSessionBySub, ICreateSession
 {
   readonly tableName: string;
@@ -1272,6 +1346,30 @@ class MockSessionServiceSessionCreated
   };
 
   createSession = async (): Promise<ErrorOrSuccess<null>> => {
+    return successResponse(null);
+  };
+}
+
+class MockEventWriterSuccess implements IEventService {
+  auditEvents: IEventConfig[] = [];
+  writeEvent = async (
+    eventConfig: IEventConfig,
+  ): Promise<ErrorOrSuccess<null>> => {
+    this.auditEvents.push(eventConfig);
+    return successResponse(null);
+  };
+}
+
+class MockEventServiceFailToWrite implements IEventService {
+  private eventNameToFail: EventName;
+  constructor(eventNameToFail: EventName) {
+    this.eventNameToFail = eventNameToFail;
+  }
+  writeEvent = async (
+    eventConfig: IEventConfig,
+  ): Promise<ErrorOrSuccess<null>> => {
+    if (eventConfig.eventName === this.eventNameToFail)
+      return errorResponse("Error writing to SQS");
     return successResponse(null);
   };
 }
