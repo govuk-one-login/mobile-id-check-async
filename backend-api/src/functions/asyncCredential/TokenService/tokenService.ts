@@ -29,7 +29,7 @@ export class TokenService implements IVerifyTokenSignature {
 
     const result = await kmsClient.send(verifyCommand);
     if (result.SignatureValid !== true) {
-      return errorResponse("TOKEN_SIGNATURE_INVALID");
+      return errorResponse("Failed to verify token signature");
     }
 
     return successResponse(null);

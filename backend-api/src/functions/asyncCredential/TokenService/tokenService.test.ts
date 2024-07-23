@@ -18,7 +18,7 @@ describe("Token Service", () => {
           mockJwt,
         );
         expect(result.isError).toBe(true);
-        expect(result.value).toEqual("TOKEN_SIGNATURE_INVALID");
+        expect(result.value).toEqual("Failed to verify token signature");
       });
     });
 
@@ -32,7 +32,7 @@ describe("Token Service", () => {
           mockJwt,
         );
         expect(result.isError).toBe(true);
-        expect(result.value).toEqual("TOKEN_SIGNATURE_INVALID");
+        expect(result.value).toEqual("Failed to verify token signature");
       });
     });
 

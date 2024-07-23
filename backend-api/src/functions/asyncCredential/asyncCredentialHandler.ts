@@ -124,6 +124,10 @@ export async function lambdaHandler(
   );
 
   if (result.isError) {
+    console.log("MESSAGE NAME: ", result.value);
+    logger.log("TOKEN_SIGNATURE_INVALID", {
+      errorMessage: result.value,
+    });
     return unauthorizedResponseInvalidSignature;
   }
 

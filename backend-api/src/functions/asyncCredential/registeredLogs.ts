@@ -10,6 +10,7 @@ export type MessageName =
   | "ERROR_CREATING_SESSION"
   | "SESSION_CREATED"
   | "REQUEST_BODY_INVALID"
+  | "TOKEN_SIGNATURE_INVALID"
   | CommonMessageNames;
 
 export const registeredLogs: RegisteredLogMessages<MessageName> = {
@@ -27,6 +28,9 @@ export const registeredLogs: RegisteredLogMessages<MessageName> = {
   },
   REQUEST_BODY_INVALID: {
     messageCode: "MOBILE_ASYNC_REQUEST_BODY_INVALID",
+  },
+  TOKEN_SIGNATURE_INVALID: {
+    messageCode: "MOBILE_ASYNC_TOKEN_SIGNATURE_INVALID",
   },
   ...commonMessages,
 };

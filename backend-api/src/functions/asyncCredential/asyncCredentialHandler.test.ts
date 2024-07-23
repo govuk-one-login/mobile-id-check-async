@@ -922,6 +922,12 @@ describe("Async Credential", () => {
           dependencies,
         );
 
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "TOKEN_SIGNATURE_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+          "Failed to verify token signature",
+        );
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -1224,7 +1230,7 @@ describe("Async Credential", () => {
 
 class MockTokenSeviceInvalidSignature implements IVerifyTokenSignature {
   verifyTokenSignature(): Promise<ErrorOrSuccess<null>> {
-    return Promise.resolve(errorResponse("Invalid signature"));
+    return Promise.resolve(errorResponse("Failed to verify token signature"));
   }
 }
 
