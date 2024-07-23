@@ -84,6 +84,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
         govukSigninJourneyId: { S: sessionConfig.govukSigninJourneyId },
         issuer: { S: sessionConfig.issuer },
         sessionState: { S: sessionConfig.sessionState },
+        issuedOn: { S: sessionConfig.issuedOn },
       },
     };
 
@@ -154,6 +155,7 @@ interface IAuthSession {
   govukSigninJourneyId: string;
   issuer: string;
   sessionState: string;
+  issuedOn: string;
   redirectUri?: string;
 }
 
@@ -167,6 +169,7 @@ interface IPutAuthSessionConfig {
     govukSigninJourneyId: { S: string };
     issuer: { S: string };
     sessionState: { S: string };
+    issuedOn: { S: string };
     redirectUri?: { S: string };
   };
 }

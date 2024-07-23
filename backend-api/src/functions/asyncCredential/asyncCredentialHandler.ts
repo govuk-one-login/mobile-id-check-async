@@ -231,6 +231,7 @@ export async function lambdaHandler(
     govukSigninJourneyId: govuk_signin_journey_id,
     redirectUri: redirect_uri,
     issuer: iss,
+    issuedOn: Date.now().toString(),
     sessionState: "ASYNC_AUTH_SESSION_CREATED",
   };
 
