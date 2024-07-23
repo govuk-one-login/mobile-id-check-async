@@ -183,10 +183,7 @@ export async function lambdaHandler(
   );
 
   const recoverSessionServiceResponse =
-    await sessionService.getAuthSessionBySub(
-      parsedRequestBody.sub,
-      config.SESSION_RECOVERY_TIMEOUT,
-    );
+    await sessionService.getAuthSessionBySub(parsedRequestBody.sub);
   if (recoverSessionServiceResponse.isError) {
     return serverError500Response;
   }
