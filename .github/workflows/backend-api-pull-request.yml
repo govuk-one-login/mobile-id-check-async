@@ -10,8 +10,8 @@ on:
       - ready_for_review
       - synchronize
     paths:
-      - "src/**"
-      - ".github/workflows/async-credential-pull-req.yml"
+      - "backend-api/src/**"
+      - ".github/workflows/backend-api-pull-request.yml"
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -22,7 +22,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: ./src
+        working-directory: backend-api/src
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -35,7 +35,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: src/package-lock.json
+          cache-dependency-path: backend-api/src/package-lock.json
 
       - name: Install dependencies
         run: npm install

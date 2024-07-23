@@ -7,8 +7,7 @@
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
     "lint": "./node_modules/.bin/eslint ./functions",
-    "test": "./node_modules/.bin/jest --detectOpenHandles",
-    "preinstall": "git config --local core.hooksPath .github/hook-scripts"
+    "test": "./node_modules/.bin/jest --detectOpenHandles"
   },
   "devDependencies": {
     "@eslint/js": "^9.7.0",
