@@ -1,0 +1,38 @@
+[
+    {
+        "ParameterKey": "DistributionAlias",
+        "ParameterValue": "api-backend-api.review-b.dev.account.gov.uk"
+    },
+    {
+        "ParameterKey": "CloudFrontCertArn",
+        "ParameterValue": "arn:aws:acm:us-east-1:709132032242:certificate/b342aa6c-049c-4d8f-a4fa-b985f7a9645d"
+    },
+    {
+        "ParameterKey": "AddWWWPrefix",
+        "ParameterValue": "false"
+    },
+    {
+        "ParameterKey": "FraudHeaderEnabled",
+        "ParameterValue": "true"
+    },
+    {
+        "ParameterKey": "OriginCloakingHeader",
+        "ParameterValue": "aMbW89liuQw"
+    },
+    {
+        "ParameterKey": "PreviousOriginCloakingHeader",
+        "ParameterValue": "aMbW89liuQw"
+    },
+    {
+        "ParameterKey": "CloudFrontWafACL",
+        "ParameterValue": "arn:aws:wafv2:us-east-1:709132032242:global/webacl/platform-security-dev-acl/9d1bd57a-c3fe-4e22-8c28-144bcdc69077"
+    },
+    {
+        "ParameterKey": "StandardLoggingEnabled",
+        "ParameterValue": "false"
+    },
+    {
+        "ParameterKey": "LogDestination",
+        "ParameterValue": "none"
+    }
+]

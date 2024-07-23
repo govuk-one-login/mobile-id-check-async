@@ -1,0 +1,14 @@
+[
+    {
+        "ParameterKey": "CloudfrontDistribution",
+        "ParameterValue": "EPWCNZKX4DBKF"
+    },
+    {
+        "ParameterKey": "CloudFrontAdditionaldMetricsEnabled",
+        "ParameterValue": "true"
+    },
+    {
+        "ParameterKey": "CacheHitAlarmSNSTopicARN",
+        "ParameterValue": "arn:aws:sns:us-east-1:709132032242:platform-alarms-sns-warning"
+    }
+]

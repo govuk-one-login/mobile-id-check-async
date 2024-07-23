@@ -1,0 +1,174 @@
+[
+    {
+        "ParameterKey": "AllowedServiceTwo",
+        "ParameterValue": "none"
+    },
+    {
+        "ParameterKey": "IncludePromotion",
+        "ParameterValue": "No"
+    },
+    {
+        "ParameterKey": "ECSCanaryDeployment",
+        "ParameterValue": "None"
+    },
+    {
+        "ParameterKey": "LambdaCanaryDeployment",
+        "ParameterValue": "None"
+    },
+    {
+        "ParameterKey": "ArtifactWriteTimeLoggingLambdaArn",
+        "ParameterValue": "None"
+    },
+    {
+        "ParameterKey": "TrafficTestImageRepositoryUri",
+        "ParameterValue": "none"
+    },
+    {
+        "ParameterKey": "DynamicResourcesPrefix",
+        "ParameterValue": "none"
+    },
+    {
+        "ParameterKey": "RunTestContainerInVPC",
+        "ParameterValue": "False"
+    },
+    {
+        "ParameterKey": "AccessLogsCustomBucketNameEnabled",
+        "ParameterValue": "Yes"
+    },
+    {
+        "ParameterKey": "AllowedServiceFour",
+        "ParameterValue": "none"
+    },
+    {
+        "ParameterKey": "SigningProfileArn",
+        "ParameterValue": "#TO-DO"
+    },
+    {
+        "ParameterKey": "AllowedServiceThree",
+        "ParameterValue": "none"
+    },
+    {
+        "ParameterKey": "GitHubRepositoryName",
+        "ParameterValue": "none"
+    },
+    {
+        "ParameterKey": "ArtifactSourceBucketArn",
+        "ParameterValue": "none"
+    },
+    {
+        "ParameterKey": "OneLoginRepositoryName",
+        "ParameterValue": "#TO-DO"
+    },
+    {
+        "ParameterKey": "SAMStackName",
+        "ParameterValue": "base-image"
+    },
+    {
+        "ParameterKey": "AbortOnCheckovFailure",
+        "ParameterValue": "CONTINUE"
+    },
+    {
+        "ParameterKey": "TestImageRepositoryUri",
+        "ParameterValue": "none"
+    },
+    {
+        "ParameterKey": "AllowedServiceFive",
+        "ParameterValue": "none"
+    },
+    {
+        "ParameterKey": "RequireManualApproval",
+        "ParameterValue": "No"
+    },
+    {
+        "ParameterKey": "LogRetentionDays",
+        "ParameterValue": "7"
+    },
+    {
+        "ParameterKey": "InvokableLambdaAccounts",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "AllowedAccounts",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "AdditionalCodeSigningVersionArns",
+        "ParameterValue": "none"
+    },
+    {
+        "ParameterKey": "TestCoverageReportFormat",
+        "ParameterValue": "CLOVERXML"
+    },
+    {
+        "ParameterKey": "VpcStackName",
+        "ParameterValue": "platform-vpc"
+    },
+    {
+        "ParameterKey": "BuildNotificationStackName",
+        "ParameterValue": "build-slack-notifications"
+    },
+    {
+        "ParameterKey": "TestReportFormat",
+        "ParameterValue": "JUNITXML"
+    },
+    {
+        "ParameterKey": "AllowedServiceOne",
+        "ParameterValue": "none"
+    },
+    {
+        "ParameterKey": "TestComputeType",
+        "ParameterValue": "BUILD_GENERAL1_SMALL"
+    },
+    {
+        "ParameterKey": "PipelineEnvironmentNameEnabled",
+        "ParameterValue": "No"
+    },
+    {
+        "ParameterKey": "CustomKmsKeyArns",
+        "ParameterValue": ""
+    },
+    {
+        "ParameterKey": "AllowedServiceSix",
+        "ParameterValue": "none"
+    },
+    {
+        "ParameterKey": "SigningProfileVersionArn",
+        "ParameterValue": "#TO-DO"
+    },
+    {
+        "ParameterKey": "RequireTestContainerSignatureValidation",
+        "ParameterValue": "No"
+    },
+    {
+        "ParameterKey": "TruncatedPipelineStackName",
+        "ParameterValue": "none"
+    },
+    {
+        "ParameterKey": "AllowedServiceSeven",
+        "ParameterValue": "none"
+    },
+    {
+        "ParameterKey": "AWSOrganizationId",
+        "ParameterValue": "o-pjzf8d99ys,o-dpp53lco28"
+    },
+    {
+        "ParameterKey": "ArtifactSourceBucketEventTriggerRoleArn",
+        "ParameterValue": "none"
+    },
+    {
+        "ParameterKey": "Environment",
+        "ParameterValue": "dev"
+    },
+    {
+        "ParameterKey": "ContainerSignerKmsKeyArn",
+        "ParameterValue": "none"
+    },
+    {
+        "ParameterKey": "SlackNotificationType",
+        "ParameterValue": "All"
+    },
+    {
+        "ParameterKey": "ProgrammaticPermissionsBoundary",
+        "ParameterValue": "False"
+    }
+]
