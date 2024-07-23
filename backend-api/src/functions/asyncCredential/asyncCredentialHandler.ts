@@ -214,6 +214,7 @@ export async function lambdaHandler(
   }
 
   if (recoverSessionServiceResponse.value) {
+    logger.setSessionId({ sessionId: recoverSessionServiceResponse.value });
     logger.log("COMPLETED");
     return sessionRecoveredResponse(parsedRequestBody.sub);
   }
@@ -245,6 +246,8 @@ export async function lambdaHandler(
     return serverError500Response;
   }
 
+  logger.setSessionId({ sessionId });
+
   const writeEventResult = await eventService.writeEvent({
     eventName: "DCMAW_ASYNC_CRI_START",
     sub,
@@ -261,7 +264,7 @@ export async function lambdaHandler(
     });
   }
 
-  logger.log("SESSION_CREATED");
+  logger.log("COMPLETED");
   return sessionCreatedResponse(parsedRequestBody.sub);
 }
 

@@ -1082,8 +1082,8 @@ describe("Async Credential", () => {
   });
 
   describe("Session Service", () => {
-    describe("Session recovery", () => {
-      describe("Given there is an error retrieving a session", () => {
+    describe("Check for existing session", () => {
+      describe("Given there is an error checking for an existing session", () => {
         it("Returns 500 Server Error", async () => {
           const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
@@ -1122,7 +1122,7 @@ describe("Async Credential", () => {
         });
       });
 
-      describe("Given there is a recoverable session", () => {
+      describe("Given there is an existing session in a valid state", () => {
         it("Logs and returns 200 session recovered response", async () => {
           const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
@@ -1146,6 +1146,10 @@ describe("Async Credential", () => {
 
           expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
             "COMPLETED",
+          );
+
+          expect(mockLogger.getLogMessages()[0].logMessage.sessionId).toBe(
+            "mockSessionId",
           );
 
           expect(result).toStrictEqual({
@@ -1273,7 +1277,11 @@ describe("Async Credential", () => {
             );
 
             expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-              "SESSION_CREATED",
+              "COMPLETED",
+            );
+
+            expect(mockLogger.getLogMessages()[0].logMessage.sessionId).toEqual(
+              expect.any(String),
             );
 
             expect(result).toStrictEqual({
