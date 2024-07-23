@@ -182,7 +182,7 @@ export async function lambdaHandler(
     config.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
   );
 
-  const sessionExpiryTimeInMs = Date.now() + config.SESSION_EXPIRY_TIME_IN_MS;
+  const sessionExpiryTimeInMs = Date.now() + config.SESSION_TTL_IN_MS;
 
   const recoverSessionServiceResponse =
     await sessionService.getAuthSessionBySub(
@@ -249,7 +249,7 @@ interface Config {
   ISSUER: string;
   SESSION_TABLE_NAME: string;
   SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: string;
-  SESSION_EXPIRY_TIME_IN_MS: number;
+  SESSION_TTL_IN_MS: number;
   SQS_QUEUE: string;
 }
 
@@ -259,10 +259,10 @@ const configOrError = (env: NodeJS.ProcessEnv): ErrorOrSuccess<Config> => {
   if (!env.SESSION_TABLE_NAME) return errorResponse("No SESSION_TABLE_NAME");
   if (!env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME)
     return errorResponse("No SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME");
-  if (!env.SESSION_EXPIRY_TIME_IN_MS)
-    return errorResponse("No SESSION_EXPIRY_TIME_IN_MS");
-  if (isNaN(Number(env.SESSION_EXPIRY_TIME_IN_MS)))
-    return errorResponse("SESSION_EXPIRY_TIME_IN_MS is not a valid number");
+  if (!env.SESSION_TTL_IN_MS)
+    return errorResponse("No SESSION_TTL_IN_MS");
+  if (isNaN(Number(env.SESSION_TTL_IN_MS)))
+    return errorResponse("SESSION_TTL_IN_MS is not a valid number");
   if (!env.SQS_QUEUE) return errorResponse("No SQS_QUEUE");
   return successResponse({
     SIGNING_KEY_ID: env.SIGNING_KEY_ID,
@@ -270,7 +270,7 @@ const configOrError = (env: NodeJS.ProcessEnv): ErrorOrSuccess<Config> => {
     SESSION_TABLE_NAME: env.SESSION_TABLE_NAME,
     SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME:
       env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
-    SESSION_EXPIRY_TIME_IN_MS: parseInt(env.SESSION_EXPIRY_TIME_IN_MS),
+    SESSION_TTL_IN_MS: parseInt(env.SESSION_TTL_IN_MS),
     SQS_QUEUE: env.SQS_QUEUE,
   });
 };
