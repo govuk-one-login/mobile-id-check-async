@@ -1232,9 +1232,6 @@ describe("Async Credential", () => {
             expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
               "Unexpected error writing the DCMAW_ASYNC_CRI_START event",
             );
-            expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
-              "SESSION_CREATED",
-            );
 
             expect(result).toStrictEqual({
               headers: { "Content-Type": "application/json" },

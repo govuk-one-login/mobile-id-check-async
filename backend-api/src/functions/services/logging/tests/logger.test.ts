@@ -43,12 +43,12 @@ describe("Logger", () => {
           loggingAdapter,
           mockRegisteredLogs,
         );
-        logger.appendKeys({ authSessionId: "mockAuthSessionId" });
+        logger.setSessionId({ sessionId: "mockSessionId" });
         logger.log("MOCK_MESSAGE_NAME");
         expect(loggingAdapter.getLogMessages()[0].logMessage).toMatchObject({
           message: "MOCK_MESSAGE_NAME",
           messageCode: "MOBILE_ASYNC_MOCK_MESSAGE_NAME",
-          authSessionId: "mockAuthSessionId",
+          sessionId: "mockSessionId",
         });
       });
     });
