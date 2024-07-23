@@ -957,6 +957,12 @@ describe("Async Credential", () => {
 
         const result = await lambdaHandler(event, dependencies);
 
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "ERROR_RETRIEVING_CLIENT_CREDENTIALS",
+        );
+        expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+          "Mock Failing SSM log",
+        );
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 500,

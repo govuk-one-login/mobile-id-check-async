@@ -124,7 +124,6 @@ export async function lambdaHandler(
   );
 
   if (result.isError) {
-    console.log("MESSAGE NAME: ", result.value);
     logger.log("TOKEN_SIGNATURE_INVALID", {
       errorMessage: result.value,
     });
@@ -135,6 +134,9 @@ export async function lambdaHandler(
   const ssmService = dependencies.ssmService();
   const ssmServiceResponse = await ssmService.getClientCredentials();
   if (ssmServiceResponse.isError) {
+    logger.log("ERROR_RETRIEVING_CLIENT_CREDENTIALS", {
+      errorMessage: ssmServiceResponse.value,
+    });
     return serverError500Response;
   }
 
