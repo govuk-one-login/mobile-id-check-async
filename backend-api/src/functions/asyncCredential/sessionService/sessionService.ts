@@ -26,13 +26,13 @@ export class SessionService implements IGetSessionBySub, ICreateSession {
 
   async getAuthSessionBySub(
     sub: string,
-    sessionExpiryTimeInMs: number,
+    sessionTtlInMs: number,
   ): Promise<ErrorOrSuccess<string | null>> {
     const queryCommandInput: QueryCommandInput = {
       TableName: this.tableName,
       IndexName: this.indexName,
       KeyConditionExpression: "#sub = :sub and #sessionState = :sessionState",
-      FilterExpression: ":currentTimeInMs < #issuedOn + :sessionExpiryTimeInMs",
+      FilterExpression: ":currentTimeInMs < #issuedOn + :sessionTtlInMs",
       ExpressionAttributeNames: {
         "#issuedOn": "issuedOn",
         "#sessionId": "sessionId",
@@ -45,8 +45,8 @@ export class SessionService implements IGetSessionBySub, ICreateSession {
         ":currentTimeInMs": {
           S: Date.now().toString(),
         },
-        ":sessionExpiryTimeInMs": {
-          S: sessionExpiryTimeInMs.toString(),
+        ":sessionTtlInMs": {
+          S: sessionTtlInMs.toString(),
         },
       },
       ProjectionExpression: "#sessionId",
