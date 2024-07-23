@@ -32,7 +32,7 @@ export class SessionService implements IGetSessionBySub, ICreateSession {
       IndexName: this.indexName,
       KeyConditionExpression:
         "#sub = :subVal and #sessionState = :sessionStateVal",
-      FilterExpression: ":currentTimeSeconds < #ttl",
+      FilterExpression: ":currentTimeMilliSeconds < #ttl",
       ExpressionAttributeNames: {
         "#sub": "sub",
         "#sessionState": "sessionState",
