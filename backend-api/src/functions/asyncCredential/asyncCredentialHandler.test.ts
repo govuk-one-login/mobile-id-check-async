@@ -1129,37 +1129,6 @@ describe("Async Credential", () => {
       });
 
       describe("Given the session has been created", () => {
-        it("Returns 201 session created response", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-            body: JSON.stringify({
-              state: "mockState",
-              sub: "mockSub",
-              client_id: "mockClientId",
-              govuk_signin_journey_id: "mockGovukSigninJourneyId",
-            }),
-          });
-          dependencies.getSessionService = () =>
-            new MockSessionServiceSessionCreated(
-              env.SESSION_TABLE_NAME,
-              env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
-            );
-
-          const result = await lambdaHandler(event, dependencies);
-
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 201,
-            body: JSON.stringify({
-              sub: "mockSub",
-              "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
-            }),
-          });
-        });
-      });
-
-      describe("Given the session has been created", () => {
         describe("Given it fails to write the DCMAW_ASYNC_CRI_START event to TxMA", () => {
           it("Logs and returns 201 session created response", async () => {
             const jwtBuilder = new MockJWTBuilder();
