@@ -23,7 +23,7 @@ describe("Session Service", () => {
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual(
-          "Unexpected error when querying session table whilst checking for recoverable session",
+          "Unexpected error when querying session table whilst checking for an active session",
         );
       });
     });
@@ -84,7 +84,7 @@ describe("Session Service", () => {
       });
     });
 
-    describe("Given a valid recoverable session is found", () => {
+    describe("Given an active session is found", () => {
       it("Returns a success response with sessionId as value", async () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).resolves({

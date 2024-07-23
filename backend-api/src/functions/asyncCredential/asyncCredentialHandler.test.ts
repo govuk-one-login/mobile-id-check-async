@@ -48,7 +48,7 @@ describe("Async Credential", () => {
       ssmService: () => new MockPassingSsmService(),
       clientCredentialsService: () => new MockPassingClientCredentialsService(),
       sessionService: () =>
-        new MockSessionServiceNoRecoverableSession(
+        new MockSessionServiceNoActiveSession(
           env.SESSION_TABLE_NAME,
           env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
         ),
@@ -92,7 +92,7 @@ describe("Async Credential", () => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
         dependencies.env["SESSION_TTL_IN_MILLISECONDS"] =
-          "mockInvalidSessionRecoveryTimeout";
+          "mockInvalidSessionTtlMs";
         const event = buildRequest();
         const result = await lambdaHandler(event, dependencies);
 
@@ -1138,7 +1138,7 @@ describe("Async Credential", () => {
             }),
           });
           dependencies.sessionService = () =>
-            new MockSessionServiceSessionRecovered(
+            new MockSessionServiceActiveSessionFound(
               env.SESSION_TABLE_NAME,
               env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
@@ -1419,7 +1419,7 @@ class MockSessionServiceGetSessionBySubFailure
   };
 }
 
-class MockSessionServiceNoRecoverableSession
+class MockSessionServiceNoActiveSession
   implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
@@ -1438,7 +1438,7 @@ class MockSessionServiceNoRecoverableSession
   };
 }
 
-class MockSessionServiceSessionRecovered
+class MockSessionServiceActiveSessionFound
   implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;

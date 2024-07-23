@@ -60,7 +60,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
       result = await dbClient.send(new QueryCommand(queryCommandInput));
     } catch (error) {
       return errorResponse(
-        "Unexpected error when querying session table whilst checking for recoverable session",
+        "Unexpected error when querying session table whilst checking for an active session",
       );
     }
 
