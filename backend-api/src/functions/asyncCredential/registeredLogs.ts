@@ -5,7 +5,6 @@ import {
 import { RegisteredLogMessages } from "../services/logging/types";
 
 export type MessageName =
-  | CommonMessageNames
   | "AUTHENTICATION_HEADER_INVALID"
   | "JWT_CLAIM_INVALID"
   | "ERROR_CREATING_SESSION"
