@@ -922,6 +922,12 @@ describe("Async Credential", () => {
           dependencies,
         );
 
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "TOKEN_SIGNATURE_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+          "Failed to verify token signature",
+        );
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -951,6 +957,12 @@ describe("Async Credential", () => {
 
         const result = await lambdaHandler(event, dependencies);
 
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "ERROR_RETRIEVING_CLIENT_CREDENTIALS",
+        );
+        expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+          "Mock Failing SSM log",
+        );
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 500,
@@ -963,7 +975,7 @@ describe("Async Credential", () => {
     });
   });
 
-  describe("Client Credentials Service - get client credentials by ID", () => {
+  describe("Client Credentials Service", () => {
     describe("Given credentials are not found", () => {
       it("Returns 400 Bad Request response", async () => {
         const jwtBuilder = new MockJWTBuilder();
@@ -981,6 +993,12 @@ describe("Async Credential", () => {
 
         const result = await lambdaHandler(event, dependencies);
 
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "CLIENT_CREDENTIALS_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+          "No credentials found",
+        );
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -991,10 +1009,45 @@ describe("Async Credential", () => {
         });
       });
     });
+
+    describe("Given redirect_uri is not valid", () => {
+      it("Returns a 400 Bad request response", async () => {
+        const jwtBuilder = new MockJWTBuilder();
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+            redirect_uri: "https://mockInvalidRedirectUri.com",
+          }),
+        });
+        dependencies.clientCredentialsService = () =>
+          new MockClientCredentialsServiceInvalidRedirectUri();
+
+        const result = await lambdaHandler(event, dependencies);
+
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "REQUEST_BODY_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+          "Invalid redirect_uri",
+        );
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description: "Invalid redirect_uri",
+          }),
+        });
+      });
+    });
   });
 
-  describe("JWT Payload validation - using Client Credentials", () => {
-    describe("aud claim does not match registered issuer for given client", () => {
+  describe("Aud claim validation", () => {
+    describe("aud claim from JWT payload does not match registered issuer for given client", () => {
       it("Returns a 400 Bad request response", async () => {
         const jwtBuilder = new MockJWTBuilder();
         jwtBuilder.setAud("invalidAud");
@@ -1012,6 +1065,12 @@ describe("Async Credential", () => {
 
         const result = await lambdaHandler(event, dependencies);
 
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "JWT_CLAIM_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+          "Invalid aud claim",
+        );
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -1026,7 +1085,7 @@ describe("Async Credential", () => {
 
   describe("Session Service", () => {
     describe("Check for active session", () => {
-      describe("Given service returns an error response", () => {
+      describe("Given there is an error checking for an existing session", () => {
         it("Returns 500 Server Error", async () => {
           const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
@@ -1046,6 +1105,13 @@ describe("Async Credential", () => {
 
           const result = await lambdaHandler(event, dependencies);
 
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "ERROR_RETRIEVING_SESSION",
+          );
+          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+            errorMessage: "Unexpected error checking for existing session",
+          });
+
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 500,
@@ -1057,8 +1123,8 @@ describe("Async Credential", () => {
         });
       });
 
-      describe("Given service returns success response", () => {
-        it("Returns 200 active session found response", async () => {
+      describe("Given there is an active session", () => {
+        it("Logs and returns 200 active session found response", async () => {
           const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
             headers: {
@@ -1078,6 +1144,14 @@ describe("Async Credential", () => {
             );
 
           const result = await lambdaHandler(event, dependencies);
+
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "COMPLETED",
+          );
+
+          expect(mockLogger.getLogMessages()[0].logMessage.sessionId).toBe(
+            "mockSessionId",
+          );
 
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
@@ -1159,9 +1233,6 @@ describe("Async Credential", () => {
             expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
               "Unexpected error writing the DCMAW_ASYNC_CRI_START event",
             );
-            expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
-              "SESSION_CREATED",
-            );
 
             expect(result).toStrictEqual({
               headers: { "Content-Type": "application/json" },
@@ -1204,7 +1275,11 @@ describe("Async Credential", () => {
             );
 
             expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-              "SESSION_CREATED",
+              "COMPLETED",
+            );
+
+            expect(mockLogger.getLogMessages()[0].logMessage.sessionId).toEqual(
+              expect.any(String),
             );
 
             expect(result).toStrictEqual({
@@ -1224,7 +1299,7 @@ describe("Async Credential", () => {
 
 class MockTokenSeviceInvalidSignature implements IVerifyTokenSignature {
   verifyTokenSignature(): Promise<ErrorOrSuccess<null>> {
-    return Promise.resolve(errorResponse("Invalid signature"));
+    return Promise.resolve(errorResponse("Failed to verify token signature"));
   }
 }
 
@@ -1248,12 +1323,12 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
   }
 }
 
-class MockPassingClientCredentialsService implements IClientCredentialsService {
+class MockFailingClientCredentialsService implements IClientCredentialsService {
   validateTokenRequest(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
   validateRedirectUri(): ErrorOrSuccess<null> {
-    return successResponse(null);
+    return errorResponse("mockClientCredentialServiceError");
   }
   getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
     return successResponse({
@@ -1265,12 +1340,31 @@ class MockPassingClientCredentialsService implements IClientCredentialsService {
   }
 }
 
-class MockFailingClientCredentialsService implements IClientCredentialsService {
+class MockClientCredentialsServiceInvalidRedirectUri
+  implements IClientCredentialsService
+{
   validateTokenRequest(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
   validateRedirectUri(): ErrorOrSuccess<null> {
-    return errorResponse("mockClientCredentialServiceError");
+    return errorResponse("Invalid redirect_uri");
+  }
+  getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
+    return successResponse({
+      client_id: "mockClientId",
+      issuer: "mockIssuer",
+      salt: "mockSalt",
+      hashed_client_secret: "mockHashedClientSecret",
+    });
+  }
+}
+
+class MockPassingClientCredentialsService implements IClientCredentialsService {
+  validateTokenRequest(): ErrorOrSuccess<null> {
+    return successResponse(null);
+  }
+  validateRedirectUri(): ErrorOrSuccess<null> {
+    return successResponse(null);
   }
   getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
     return successResponse({

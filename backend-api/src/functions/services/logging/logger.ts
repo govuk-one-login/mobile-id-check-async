@@ -5,13 +5,13 @@ import { LogAttributes } from "@aws-lambda-powertools/logger/lib/cjs/types/Log";
 export interface ILogger<T extends string> {
   log(message: T, data: LogAttributes): void;
   addContext(lambdaContext: Context): void;
-  appendKeys: (keys: { authSessionId: string }) => void;
+  setSessionId: (keys: { sessionId: string }) => void;
 }
 
 export interface ILoggerAdapter<T extends string> {
   info: (message: LogMessage<T>, data: LogAttributes) => void;
   addContext: (lambdaContext: Context) => void;
-  appendKeys: (keys: { authSessionId: string }) => void;
+  appendKeys: (keys: { sessionId: string }) => void;
 }
 
 export class Logger<T extends string> implements ILogger<T> {
@@ -33,7 +33,7 @@ export class Logger<T extends string> implements ILogger<T> {
     this.logger.addContext(context);
   };
 
-  appendKeys = (keys: { authSessionId: string }) => {
+  setSessionId = (keys: { sessionId: string }) => {
     this.logger.appendKeys(keys);
   };
 }
