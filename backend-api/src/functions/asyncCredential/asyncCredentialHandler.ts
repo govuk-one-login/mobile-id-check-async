@@ -172,7 +172,7 @@ export async function lambdaHandler(
         parsedRequestBody,
       );
     if (validateClientCredentialsResult.isError) {
-      logger.log("REDIRECT_URI_INVALID", {
+      logger.log("REQUEST_BODY_INVALID", {
         errorMessage: validateClientCredentialsResult.value,
       });
 

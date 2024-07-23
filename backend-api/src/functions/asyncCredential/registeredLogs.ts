@@ -14,7 +14,6 @@ export type MessageName =
   | "ERROR_RETRIEVING_CLIENT_CREDENTIALS"
   | "ERROR_RETRIEVING_SESSION"
   | "CLIENT_CREDENTIALS_INVALID"
-  | "REDIRECT_URI_INVALID"
   | CommonMessageNames;
 
 export const registeredLogs: RegisteredLogMessages<MessageName> = {
@@ -44,9 +43,6 @@ export const registeredLogs: RegisteredLogMessages<MessageName> = {
   },
   CLIENT_CREDENTIALS_INVALID: {
     messageCode: "MOBILE_ASYNC_CLIENT_CREDENTIALS_INVALID",
-  },
-  REDIRECT_URI_INVALID: {
-    messageCode: "MOBILE_ASYNC_REDIRECT_URI_INVALID",
   },
   ...commonMessages,
 };
