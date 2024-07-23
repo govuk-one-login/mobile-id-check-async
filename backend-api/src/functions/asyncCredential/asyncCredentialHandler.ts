@@ -182,12 +182,10 @@ export async function lambdaHandler(
     config.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
   );
 
-  const sessionTtlInMs = Date.now() + config.SESSION_TTL_IN_MS;
-
   const recoverSessionServiceResponse =
     await sessionService.getAuthSessionBySub(
       parsedRequestBody.sub,
-      sessionTtlInMs,
+      config.SESSION_TTL_IN_MS,
     );
   if (recoverSessionServiceResponse.isError) {
     return serverError500Response;
@@ -259,8 +257,7 @@ const configOrError = (env: NodeJS.ProcessEnv): ErrorOrSuccess<Config> => {
   if (!env.SESSION_TABLE_NAME) return errorResponse("No SESSION_TABLE_NAME");
   if (!env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME)
     return errorResponse("No SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME");
-  if (!env.SESSION_TTL_IN_MS)
-    return errorResponse("No SESSION_TTL_IN_MS");
+  if (!env.SESSION_TTL_IN_MS) return errorResponse("No SESSION_TTL_IN_MS");
   if (isNaN(Number(env.SESSION_TTL_IN_MS)))
     return errorResponse("SESSION_TTL_IN_MS is not a valid number");
   if (!env.SQS_QUEUE) return errorResponse("No SQS_QUEUE");
