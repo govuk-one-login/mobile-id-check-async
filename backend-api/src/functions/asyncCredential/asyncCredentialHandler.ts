@@ -124,6 +124,9 @@ export async function lambdaHandler(
   );
 
   if (result.isError) {
+    logger.log("TOKEN_SIGNATURE_INVALID", {
+      errorMessage: result.value,
+    });
     return unauthorizedResponseInvalidSignature;
   }
 
@@ -131,6 +134,9 @@ export async function lambdaHandler(
   const ssmService = dependencies.ssmService();
   const ssmServiceResponse = await ssmService.getClientCredentials();
   if (ssmServiceResponse.isError) {
+    logger.log("ERROR_RETRIEVING_CLIENT_CREDENTIALS", {
+      errorMessage: ssmServiceResponse.value,
+    });
     return serverError500Response;
   }
 
@@ -146,6 +152,10 @@ export async function lambdaHandler(
     );
 
   if (clientCredentialResponse.isError) {
+    logger.log("CLIENT_CREDENTIALS_INVALID", {
+      errorMessage: clientCredentialResponse.value,
+    });
+
     return badRequestResponse({
       error: "invalid_client",
       errorDescription: "Supplied client not recognised",
@@ -162,6 +172,10 @@ export async function lambdaHandler(
         parsedRequestBody,
       );
     if (validateClientCredentialsResult.isError) {
+      logger.log("REQUEST_BODY_INVALID", {
+        errorMessage: validateClientCredentialsResult.value,
+      });
+
       return badRequestResponse({
         error: "invalid_request",
         errorDescription: validateClientCredentialsResult.value as string,
@@ -171,6 +185,10 @@ export async function lambdaHandler(
 
   // Validate aud claim matches the ISSUER in client credential array
   if (jwtPayload.aud !== clientCredentials.issuer) {
+    logger.log("JWT_CLAIM_INVALID", {
+      errorMessage: "Invalid aud claim",
+    });
+
     return badRequestResponse({
       error: "invalid_client",
       errorDescription: "Invalid aud claim",
@@ -189,10 +207,15 @@ export async function lambdaHandler(
       config.SESSION_RECOVERY_TIMEOUT,
     );
   if (recoverSessionServiceResponse.isError) {
+    logger.log("ERROR_RETRIEVING_SESSION", {
+      errorMessage: "Unexpected error checking for existing session",
+    });
     return serverError500Response;
   }
 
   if (recoverSessionServiceResponse.value) {
+    logger.setSessionId({ sessionId: recoverSessionServiceResponse.value });
+    logger.log("COMPLETED");
     return sessionRecoveredResponse(parsedRequestBody.sub);
   }
 
@@ -223,6 +246,8 @@ export async function lambdaHandler(
     return serverError500Response;
   }
 
+  logger.setSessionId({ sessionId });
+
   const writeEventResult = await eventService.writeEvent({
     eventName: "DCMAW_ASYNC_CRI_START",
     sub,
@@ -239,7 +264,7 @@ export async function lambdaHandler(
     });
   }
 
-  logger.log("SESSION_CREATED");
+  logger.log("COMPLETED");
   return sessionCreatedResponse(parsedRequestBody.sub);
 }
 

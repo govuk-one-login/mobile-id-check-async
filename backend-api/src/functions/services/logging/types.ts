@@ -5,6 +5,7 @@ export type RegisteredLogMessages<T extends string> = {
 
 export type LogMessage<T extends string> = {
   message: T;
+  sessionId?: string;
 } & RegisteredMessageData<T>;
 
 type RegisteredMessageData<T extends string> = {
