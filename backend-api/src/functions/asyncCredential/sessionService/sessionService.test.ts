@@ -118,6 +118,7 @@ describe("Session Service", () => {
           redirectUri: "https://mockRedirectUri.com",
           issuer: "mockIssuer",
           sessionState: "mockSessionState",
+          issuedOn: "mockIssuedOn",
         });
 
         expect(result.isError).toBe(true);
@@ -145,6 +146,7 @@ describe("Session Service", () => {
           redirectUri: "https://mockRedirectUri.com",
           issuer: "mockIssuer",
           sessionState: "mockSessionState",
+          issuedOn: "mockIssuedOn",
         });
 
         expect(result.isError).toBe(true);
@@ -169,6 +171,7 @@ describe("Session Service", () => {
           redirectUri: "https://mockRedirectUri.com",
           issuer: "mockIssuer",
           sessionState: "mockSessionState",
+          issuedOn: "mockIssuedOn",
         });
 
         expect(result.isError).toBe(true);
@@ -193,6 +196,7 @@ describe("Session Service", () => {
             govukSigninJourneyId: "mockJourneyId",
             issuer: "mockIssuer",
             sessionState: "mockSessionState",
+            issuedOn: "mockIssuedOn",
           });
 
           expect(result.isError).toBe(false);
@@ -215,6 +219,7 @@ describe("Session Service", () => {
             redirectUri: "https://mockRedirectUri.com",
             issuer: "mockIssuer",
             sessionState: "mockSessionState",
+            issuedOn: "mockIssuedOn",
           });
 
           expect(result.isError).toBe(false);
