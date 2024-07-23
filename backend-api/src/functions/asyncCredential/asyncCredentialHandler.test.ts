@@ -1009,42 +1009,44 @@ describe("Async Credential", () => {
         });
       });
     });
-  });
 
-  describe("Given redirect_uri from request body does not match registered value", () => {
-    it("Returns a 400 Bad request response", async () => {
-      const jwtBuilder = new MockJWTBuilder();
-      const event = buildRequest({
-        headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-        body: JSON.stringify({
-          state: "mockState",
-          sub: "mockSub",
-          client_id: "mockClientId",
-          govuk_signin_journey_id: "mockGovukSigninJourneyId",
-          redirect_uri: "https://mockInvalidRedirectUri.com",
-        }),
-      });
-      dependencies.clientCredentialsService = () =>
-        new MockClientCredentialsServiceInvalidRedirectUri();
+    describe("Given redirect_uri is not valid", () => {
+      it("Returns a 400 Bad request response", async () => {
+        const jwtBuilder = new MockJWTBuilder();
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+            redirect_uri: "https://mockInvalidRedirectUri.com",
+          }),
+        });
+        dependencies.clientCredentialsService = () =>
+          new MockClientCredentialsServiceInvalidRedirectUri();
 
-      const result = await lambdaHandler(event, dependencies);
+        const result = await lambdaHandler(event, dependencies);
 
-      expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-        "REQUEST_BODY_INVALID",
-      );
-      expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
-        "Invalid redirect_uri",
-      );
-      expect(result).toStrictEqual({
-        headers: { "Content-Type": "application/json" },
-        statusCode: 400,
-        body: JSON.stringify({
-          error: "invalid_request",
-          error_description: "Invalid redirect_uri",
-        }),
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "REQUEST_BODY_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+          "Invalid redirect_uri",
+        );
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description: "Invalid redirect_uri",
+          }),
+        });
       });
     });
+  });
 
+  describe("Aud claim validation", () => {
     describe("aud claim from JWT payload does not match registered issuer for given client", () => {
       it("Returns a 400 Bad request response", async () => {
         const jwtBuilder = new MockJWTBuilder();
