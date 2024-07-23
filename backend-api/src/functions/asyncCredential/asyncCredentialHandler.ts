@@ -152,6 +152,10 @@ export async function lambdaHandler(
     );
 
   if (clientCredentialResponse.isError) {
+    logger.log("CLIENT_CREDENTIALS_INVALID", {
+      errorMessage: clientCredentialResponse.value,
+    });
+
     return badRequestResponse({
       error: "invalid_client",
       errorDescription: "Supplied client not recognised",

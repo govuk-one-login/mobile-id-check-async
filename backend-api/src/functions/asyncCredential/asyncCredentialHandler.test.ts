@@ -993,6 +993,12 @@ describe("Async Credential", () => {
 
         const result = await lambdaHandler(event, dependencies);
 
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "CLIENT_CREDENTIALS_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+          "No credentials found",
+        );
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
