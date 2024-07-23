@@ -182,11 +182,10 @@ export async function lambdaHandler(
     config.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
   );
 
-  const recoverSessionServiceResponse =
-    await sessionService.getAuthSessionBySub(
-      parsedRequestBody.sub,
-      config.SESSION_TTL_IN_MS,
-    );
+  const recoverSessionServiceResponse = await sessionService.getActiveSession(
+    parsedRequestBody.sub,
+    config.SESSION_TTL_IN_MS,
+  );
   if (recoverSessionServiceResponse.isError) {
     return serverError500Response;
   }

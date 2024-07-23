@@ -1316,7 +1316,7 @@ class MockSessionServiceGetSessionBySubFailure
     this.indexName = indexName;
   }
 
-  getAuthSessionBySub = async (): Promise<ErrorOrSuccess<string | null>> => {
+  getActiveSession = async (): Promise<ErrorOrSuccess<string | null>> => {
     return errorResponse("Mock failing DB call");
   };
 
@@ -1335,7 +1335,7 @@ class MockSessionServiceNoRecoverableSession
     this.tableName = tableName;
     this.indexName = indexName;
   }
-  getAuthSessionBySub = async (): Promise<ErrorOrSuccess<string | null>> => {
+  getActiveSession = async (): Promise<ErrorOrSuccess<string | null>> => {
     return successResponse(null);
   };
 
@@ -1355,7 +1355,7 @@ class MockSessionServiceSessionRecovered
     this.indexName = indexName;
   }
 
-  getAuthSessionBySub = async (): Promise<ErrorOrSuccess<string | null>> => {
+  getActiveSession = async (): Promise<ErrorOrSuccess<string | null>> => {
     return successResponse("mockSessionId");
   };
 
@@ -1375,7 +1375,7 @@ class MockSessionServiceFailToCreateSession
     this.indexName = indexName;
   }
 
-  getAuthSessionBySub = async (): Promise<ErrorOrSuccess<string | null>> => {
+  getActiveSession = async (): Promise<ErrorOrSuccess<string | null>> => {
     return successResponse(null);
   };
 
@@ -1395,7 +1395,7 @@ class MockSessionServiceSessionCreated
     this.indexName = indexName;
   }
 
-  getAuthSessionBySub = async (): Promise<ErrorOrSuccess<string | null>> => {
+  getActiveSession = async (): Promise<ErrorOrSuccess<string | null>> => {
     return successResponse(null);
   };
 
