@@ -36,23 +36,17 @@ export async function lambdaHandler(
 
   const config = configResponse.value as Config;
 
-  const authorizationHeader = event.headers["Authorization"];
-
-  if (authorizationHeader == null) {
+  const authorizationHeaderOrError = getAuthorizationHeader(
+    event.headers["Authorization"],
+  );
+  if (authorizationHeaderOrError.isError) {
     logger.log("AUTHENTICATION_HEADER_INVALID", {
-      errorMessage: "No Authentication header present",
+      errorMessage: authorizationHeaderOrError.value,
     });
     return unauthorizedResponse;
   }
 
-  const validAuthorizationHeaderOrErrorResponse =
-    validAuthorizationHeaderOrError(authorizationHeader);
-  if (validAuthorizationHeaderOrErrorResponse.isError) {
-    logger.log("AUTHENTICATION_HEADER_INVALID", {
-      errorMessage: validAuthorizationHeaderOrErrorResponse.value,
-    });
-    return unauthorizedResponse;
-  }
+  const authorizationHeader = authorizationHeaderOrError.value;
 
   const tokenService = dependencies.tokenService();
 
@@ -297,9 +291,13 @@ const configOrError = (env: NodeJS.ProcessEnv): ErrorOrSuccess<Config> => {
   });
 };
 
-const validAuthorizationHeaderOrError = (
-  authorizationHeader: string,
-): ErrorOrSuccess<null> => {
+const getAuthorizationHeader = (
+  authorizationHeader: string | undefined,
+): ErrorOrSuccess<string> => {
+  if (authorizationHeader == null) {
+    return errorResponse("No Authentication header present");
+  }
+
   if (!authorizationHeader.startsWith("Bearer ")) {
     return errorResponse(
       "Invalid authentication header format - does not start with Bearer",
@@ -318,7 +316,7 @@ const validAuthorizationHeaderOrError = (
     );
   }
 
-  return successResponse(null);
+  return successResponse(authorizationHeader);
 };
 
 const jwtClaimValidator = (
