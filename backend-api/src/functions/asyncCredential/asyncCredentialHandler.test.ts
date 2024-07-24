@@ -56,13 +56,7 @@ describe("Async Credential", () => {
   });
 
   describe("Environment variable validation", () => {
-    describe.each([
-      "SIGNING_KEY_ID",
-      "ISSUER",
-      "SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME",
-      "SESSION_TTL_IN_MILLISECONDS",
-      "SQS_QUEUE",
-    ])("Given %s is missing", (envVar: string) => {
+    describe.each(Object.keys(env))("Given %s is missing", (envVar: string) => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
         delete dependencies.env[envVar];
