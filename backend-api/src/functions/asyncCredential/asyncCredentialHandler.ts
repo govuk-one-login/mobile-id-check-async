@@ -21,13 +21,14 @@ import { Logger } from "../services/logging/logger";
 import { MessageName } from "./registeredLogs";
 import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
 import { IEventService } from "../services/events/eventService";
+import { Config, ConfigService } from "./configService/configService";
 
 export async function lambdaHandler(
   event: APIGatewayProxyEvent,
   dependencies: Dependencies,
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
-  const configResponse = configOrError(dependencies.env);
+  const configResponse = new ConfigService().getConfig(dependencies.env);
 
   if (configResponse.isError) {
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
@@ -215,7 +216,7 @@ export async function lambdaHandler(
 
   logger.setSessionId({ sessionId });
 
-  const writeEventResult = await eventService.writeEvent({
+  const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_START",
     sub,
     sessionId,
@@ -233,37 +234,6 @@ export async function lambdaHandler(
   logger.log("COMPLETED");
   return sessionCreatedResponse(requestBody.sub);
 }
-
-interface Config {
-  SIGNING_KEY_ID: string;
-  ISSUER: string;
-  SESSION_TABLE_NAME: string;
-  SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: string;
-  SESSION_TTL_IN_MILLISECONDS: number;
-  SQS_QUEUE: string;
-}
-
-const configOrError = (env: NodeJS.ProcessEnv): ErrorOrSuccess<Config> => {
-  if (!env.SIGNING_KEY_ID) return errorResponse("No SIGNING_KEY_ID");
-  if (!env.ISSUER) return errorResponse("No ISSUER");
-  if (!env.SESSION_TABLE_NAME) return errorResponse("No SESSION_TABLE_NAME");
-  if (!env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME)
-    return errorResponse("No SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME");
-  if (!env.SESSION_TTL_IN_MILLISECONDS)
-    return errorResponse("No SESSION_TTL_IN_MILLISECONDS");
-  if (isNaN(Number(env.SESSION_TTL_IN_MILLISECONDS)))
-    return errorResponse("SESSION_TTL_IN_MILLISECONDS is not a valid number");
-  if (!env.SQS_QUEUE) return errorResponse("No SQS_QUEUE");
-  return successResponse({
-    SIGNING_KEY_ID: env.SIGNING_KEY_ID,
-    ISSUER: env.ISSUER,
-    SESSION_TABLE_NAME: env.SESSION_TABLE_NAME,
-    SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME:
-      env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
-    SESSION_TTL_IN_MILLISECONDS: parseInt(env.SESSION_TTL_IN_MILLISECONDS),
-    SQS_QUEUE: env.SQS_QUEUE,
-  });
-};
 
 const getAuthorizationHeader = (
   authorizationHeader: string | undefined,
