@@ -1,6 +1,9 @@
 import { APIGatewayProxyResult } from "aws-lambda";
 import { buildRequest } from "../testUtils/mockRequest";
-import { IVerifyTokenSignature } from "./TokenService/tokenService";
+import {
+  IVerifyTokenSignature,
+  TokenService,
+} from "./TokenService/tokenService";
 import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
 import {
   IClientCredentials,
@@ -44,7 +47,7 @@ describe("Async Credential", () => {
     dependencies = {
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(mockLogger, registeredLogs),
-      tokenService: () => new MockTokenSeviceValidSignature(),
+      tokenService: () => new MockTokenServiceValidSignature(),
       ssmService: () => new MockPassingSsmService(),
       clientCredentialsService: () => new MockPassingClientCredentialsService(),
       sessionService: () =>
@@ -243,7 +246,7 @@ describe("Async Credential", () => {
             headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
 
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+          dependencies.tokenService = () => new TokenService();
 
           const result: APIGatewayProxyResult = await lambdaHandler(
             event,
@@ -276,7 +279,7 @@ describe("Async Credential", () => {
             headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
 
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+          dependencies.tokenService = () => new TokenService();
 
           const result: APIGatewayProxyResult = await lambdaHandler(
             event,
@@ -312,7 +315,7 @@ describe("Async Credential", () => {
             headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
 
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+          dependencies.tokenService = () => new TokenService();
 
           const result: APIGatewayProxyResult = await lambdaHandler(
             event,
@@ -347,7 +350,7 @@ describe("Async Credential", () => {
             headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
 
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+          dependencies.tokenService = () => new TokenService();
 
           const result: APIGatewayProxyResult = await lambdaHandler(
             event,
@@ -381,7 +384,7 @@ describe("Async Credential", () => {
             headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
 
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+          dependencies.tokenService = () => new TokenService();
 
           const result: APIGatewayProxyResult = await lambdaHandler(
             event,
@@ -413,7 +416,7 @@ describe("Async Credential", () => {
             headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
 
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+          dependencies.tokenService = () => new TokenService();
 
           const result: APIGatewayProxyResult = await lambdaHandler(
             event,
@@ -449,7 +452,7 @@ describe("Async Credential", () => {
             headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
 
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+          dependencies.tokenService = () => new TokenService();
 
           const result: APIGatewayProxyResult = await lambdaHandler(
             event,
@@ -481,7 +484,7 @@ describe("Async Credential", () => {
             headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
 
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+          dependencies.tokenService = () => new TokenService();
 
           const result: APIGatewayProxyResult = await lambdaHandler(
             event,
@@ -515,7 +518,7 @@ describe("Async Credential", () => {
             headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
 
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+          dependencies.tokenService = () => new TokenService();
 
           const result: APIGatewayProxyResult = await lambdaHandler(
             event,
@@ -549,7 +552,7 @@ describe("Async Credential", () => {
             headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
 
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+          dependencies.tokenService = () => new TokenService();
 
           const result: APIGatewayProxyResult = await lambdaHandler(
             event,
@@ -584,7 +587,7 @@ describe("Async Credential", () => {
           body: undefined,
         });
 
-        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceValidSignature();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -625,7 +628,8 @@ describe("Async Credential", () => {
             body: invalidJson,
           });
 
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+          dependencies.tokenService = () =>
+            new MockTokenServiceValidSignature();
 
           const result: APIGatewayProxyResult = await lambdaHandler(
             event,
@@ -659,7 +663,7 @@ describe("Async Credential", () => {
           body: JSON.stringify({}),
         });
 
-        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceValidSignature();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -694,7 +698,7 @@ describe("Async Credential", () => {
           }),
         });
 
-        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceValidSignature();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -730,7 +734,7 @@ describe("Async Credential", () => {
           }),
         });
 
-        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceValidSignature();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -767,7 +771,7 @@ describe("Async Credential", () => {
           }),
         });
 
-        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceValidSignature();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -805,7 +809,7 @@ describe("Async Credential", () => {
           }),
         });
 
-        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceValidSignature();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -844,7 +848,7 @@ describe("Async Credential", () => {
           }),
         });
 
-        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceValidSignature();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -1298,12 +1302,18 @@ describe("Async Credential", () => {
 });
 
 class MockTokenSeviceInvalidSignature implements IVerifyTokenSignature {
+  verifyTokenClaims(): ErrorOrSuccess<null> {
+    return successResponse(null);
+  }
   verifyTokenSignature(): Promise<ErrorOrSuccess<null>> {
     return Promise.resolve(errorResponse("Failed to verify token signature"));
   }
 }
 
-class MockTokenSeviceValidSignature implements IVerifyTokenSignature {
+class MockTokenServiceValidSignature implements IVerifyTokenSignature {
+  verifyTokenClaims(): ErrorOrSuccess<null> {
+    return successResponse(null);
+  }
   verifyTokenSignature(): Promise<ErrorOrSuccess<null>> {
     return Promise.resolve(successResponse(null));
   }
