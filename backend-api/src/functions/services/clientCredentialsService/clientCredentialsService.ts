@@ -4,7 +4,7 @@ import {
   errorResponse,
   successResponse,
 } from "../../types/errorOrValue";
-import { ICredentialRequestBody } from "../../asyncCredential/asyncCredentialHandler";
+import { IRequestBody } from "../../asyncCredential/asyncCredentialHandler";
 
 export class ClientCredentialsService implements IClientCredentialsService {
   validateTokenRequest = (
@@ -41,7 +41,7 @@ export class ClientCredentialsService implements IClientCredentialsService {
 
   validateRedirectUri = (
     storedCredentials: IClientCredentials,
-    suppliedCredentials: ICredentialRequestBody,
+    suppliedCredentials: IRequestBody,
   ): ErrorOrSuccess<null> => {
     const registeredRedirectUri = storedCredentials.redirect_uri;
     if (!registeredRedirectUri) {
@@ -87,7 +87,7 @@ export interface IClientCredentialsService {
 
   validateRedirectUri: (
     storedCredentials: IClientCredentials,
-    suppliedCredentials: ICredentialRequestBody,
+    suppliedCredentials: IRequestBody,
   ) => ErrorOrSuccess<null>;
 
   getClientCredentialsById: (

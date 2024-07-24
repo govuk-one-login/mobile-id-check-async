@@ -1,4 +1,4 @@
-import { ICredentialRequestBody } from "../../asyncCredential/asyncCredentialHandler";
+import { IRequestBody } from "../../asyncCredential/asyncCredentialHandler";
 import { IDecodedClientCredentials } from "../../types/clientCredentials";
 import {
   ClientCredentialsService,
@@ -8,7 +8,7 @@ import {
 describe("Client Credentials Service", () => {
   let clientCredentialsService: ClientCredentialsService;
   let mockTokenSuppliedClientCredentials: IDecodedClientCredentials;
-  let mockSuppliedClientCredentials: ICredentialRequestBody;
+  let mockSuppliedClientCredentials: IRequestBody;
   let mockStoredClientCredentialsArray: IClientCredentials[];
   let mockStoredClientCredentials: IClientCredentials;
 

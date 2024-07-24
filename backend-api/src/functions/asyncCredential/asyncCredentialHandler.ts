@@ -87,7 +87,7 @@ export async function lambdaHandler(
     });
   }
 
-  const requestBody = requestBodyOrError.value as ICredentialRequestBody;
+  const requestBody = requestBodyOrError.value as IRequestBody;
 
   const result = await tokenService.verifyTokenSignature(
     config.SIGNING_KEY_ID,
@@ -299,12 +299,12 @@ const getAuthorizationHeader = (
 const getRequestBody = (
   requestBody: string | null,
   jwtClientId: string,
-): ErrorOrSuccess<ICredentialRequestBody> => {
+): ErrorOrSuccess<IRequestBody> => {
   if (requestBody == null) {
     return errorResponse("Missing request body");
   }
 
-  let body: ICredentialRequestBody;
+  let body: IRequestBody;
   try {
     body = JSON.parse(requestBody);
   } catch (error) {
@@ -459,7 +459,7 @@ const sessionCreatedResponse = (sub: string): APIGatewayProxyResult => {
   };
 };
 
-export interface ICredentialRequestBody {
+export interface IRequestBody {
   sub: string;
   govuk_signin_journey_id: string;
   client_id: string;
