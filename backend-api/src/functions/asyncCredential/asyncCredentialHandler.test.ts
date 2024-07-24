@@ -21,10 +21,9 @@ import {
   IGetActiveSession,
 } from "./sessionService/sessionService";
 import {
-  EventName,
-  IEventConfig,
-  IEventService,
-} from "../services/events/eventService";
+  MockEventServiceFailToWrite,
+  MockEventWriterSuccess,
+} from "../services/events/tests/mocks";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -57,13 +56,7 @@ describe("Async Credential", () => {
   });
 
   describe("Environment variable validation", () => {
-    describe.each([
-      "SIGNING_KEY_ID",
-      "ISSUER",
-      "SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME",
-      "SESSION_TTL_IN_MILLISECONDS",
-      "SQS_QUEUE",
-    ])("Given %s is missing", (envVar: string) => {
+    describe.each(Object.keys(env))("Given %s is missing", (envVar: string) => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
         delete dependencies.env[envVar];
@@ -1270,7 +1263,7 @@ describe("Async Credential", () => {
 
             const result = await lambdaHandler(event, dependencies);
 
-            expect(mockEventService.auditEvents[0].eventName).toEqual(
+            expect(mockEventService.auditEvents[0]).toEqual(
               "DCMAW_ASYNC_CRI_START",
             );
 
@@ -1494,30 +1487,6 @@ class MockSessionServiceSessionCreated
   };
 
   createSession = async (): Promise<ErrorOrSuccess<null>> => {
-    return successResponse(null);
-  };
-}
-
-class MockEventWriterSuccess implements IEventService {
-  auditEvents: IEventConfig[] = [];
-  writeEvent = async (
-    eventConfig: IEventConfig,
-  ): Promise<ErrorOrSuccess<null>> => {
-    this.auditEvents.push(eventConfig);
-    return successResponse(null);
-  };
-}
-
-class MockEventServiceFailToWrite implements IEventService {
-  private eventNameToFail: EventName;
-  constructor(eventNameToFail: EventName) {
-    this.eventNameToFail = eventNameToFail;
-  }
-  writeEvent = async (
-    eventConfig: IEventConfig,
-  ): Promise<ErrorOrSuccess<null>> => {
-    if (eventConfig.eventName === this.eventNameToFail)
-      return errorResponse("Error writing to SQS");
     return successResponse(null);
   };
 }

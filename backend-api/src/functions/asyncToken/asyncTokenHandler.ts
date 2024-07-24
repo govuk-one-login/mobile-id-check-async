@@ -4,7 +4,6 @@ import {
   Context,
 } from "aws-lambda";
 import "dotenv/config";
-import { validOrThrow } from "../config";
 import {
   ClientCredentialsService,
   IClientCredentials,
@@ -20,6 +19,8 @@ import { IDecodedClientCredentials } from "../types/clientCredentials";
 import { Logger } from "../services/logging/logger";
 import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
 import { MessageName, registeredLogs } from "./registeredLogs";
+import { Config, ConfigService } from "./configService/configService";
+import { EventService, IEventService } from "../services/events/eventService";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
@@ -31,16 +32,16 @@ export async function lambdaHandlerConstructor(
   const logger = dependencies.logger();
   logger.addContext(context);
   logger.log("STARTED");
-  let kidArn;
-  try {
-    kidArn = validOrThrow(dependencies.env, "SIGNING_KEY_ID");
-  } catch (error) {
-    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
-      environmentVariable: "SIGNING_KEY_IDS",
-    });
 
+  const configResponse = new ConfigService().getConfig(dependencies.env);
+  if (configResponse.isError) {
+    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
+      errorMessage: configResponse.value,
+    });
     return serverErrorResponse;
   }
+
+  const config = configResponse.value as Config;
 
   // Ensure that request contains expected params
   const requestService = dependencies.requestService();
@@ -103,13 +104,13 @@ export async function lambdaHandlerConstructor(
 
   const jwtPayload = {
     aud: storedCredentials.issuer,
-    iss: "https://www.review-b.account.gov.uk",
+    iss: config.ISSUER,
     exp: Math.floor(Date.now() / 1000) + 3600,
     scope: "dcmaw.session.async_create",
     client_id: storedCredentials.client_id,
   };
 
-  const tokenService = dependencies.tokenService(kidArn);
+  const tokenService = dependencies.tokenService(config.SIGNING_KEY_ID);
 
   const mintTokenResponse = await tokenService.mintToken(jwtPayload);
   if (mintTokenResponse.isError) {
@@ -120,6 +121,18 @@ export async function lambdaHandlerConstructor(
   }
   const accessToken = mintTokenResponse.value;
 
+  const eventWriter = dependencies.eventService(config.SQS_QUEUE);
+  const eventWriterResult = await eventWriter.writeCredentialTokenIssuedEvent({
+    componentId: config.ISSUER,
+    getNowInMilliseconds: Date.now,
+    eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+  });
+  if (eventWriterResult.isError) {
+    logger.log("ERROR_WRITING_AUDIT_EVENT", {
+      errorMessage: eventWriterResult.value,
+    });
+    return serverErrorResponse;
+  }
   logger.log("COMPLETED");
 
   return {
@@ -175,6 +188,7 @@ const serverErrorResponse: APIGatewayProxyResult = {
 
 export interface IAsyncTokenRequestDependencies {
   env: NodeJS.ProcessEnv;
+  eventService: (sqsQueue: string) => IEventService;
   logger: () => Logger<MessageName>;
   requestService: () => IProcessRequest;
   ssmService: () => IGetClientCredentials;
@@ -184,6 +198,7 @@ export interface IAsyncTokenRequestDependencies {
 
 const dependencies: IAsyncTokenRequestDependencies = {
   env: process.env,
+  eventService: (sqsQueue: string) => new EventService(sqsQueue),
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
   requestService: () => new RequestService(),
   ssmService: () => new SsmService(),
