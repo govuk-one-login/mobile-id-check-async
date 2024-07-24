@@ -20,6 +20,7 @@ import { IDecodedClientCredentials } from "../types/clientCredentials";
 import { Logger } from "../services/logging/logger";
 import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
 import { MessageName, registeredLogs } from "./registeredLogs";
+import { Config, ConfigService } from "./configService/configService";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
@@ -31,16 +32,17 @@ export async function lambdaHandlerConstructor(
   const logger = dependencies.logger();
   logger.addContext(context);
   logger.log("STARTED");
-  let kidArn;
-  try {
-    kidArn = validOrThrow(dependencies.env, "SIGNING_KEY_ID");
-  } catch (error) {
-    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
-      environmentVariable: "SIGNING_KEY_IDS",
-    });
 
+  const configResponse = new ConfigService().getConfig(dependencies.env)
+  if(configResponse.isError) {
+    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
+      environmentVariable: configResponse.value,
+    });
     return serverErrorResponse;
   }
+
+  const config = configResponse.value as Config
+
 
   // Ensure that request contains expected params
   const requestService = dependencies.requestService();
@@ -109,7 +111,7 @@ export async function lambdaHandlerConstructor(
     client_id: storedCredentials.client_id,
   };
 
-  const tokenService = dependencies.tokenService(kidArn);
+  const tokenService = dependencies.tokenService(config.SIGNING_KEY_ID);
 
   const mintTokenResponse = await tokenService.mintToken(jwtPayload);
   if (mintTokenResponse.isError) {
