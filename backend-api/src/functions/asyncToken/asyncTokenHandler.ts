@@ -104,7 +104,7 @@ export async function lambdaHandlerConstructor(
 
   const jwtPayload = {
     aud: storedCredentials.issuer,
-    iss: "https://www.review-b.account.gov.uk",
+    iss: config.ISSUER,
     exp: Math.floor(Date.now() / 1000) + 3600,
     scope: "dcmaw.session.async_create",
     client_id: storedCredentials.client_id,
