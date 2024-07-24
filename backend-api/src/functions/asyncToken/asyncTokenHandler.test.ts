@@ -288,34 +288,43 @@ describe("Async Token", () => {
           );
         });
       });
-      it("Returns with 200 response with an access token in the response body", async () => {
-        const result = await lambdaHandlerConstructor(
-          dependencies,
-          buildLambdaContext(),
-          request,
-        );
-        expect(mockLogger.getLogMessages()[0].logMessage).toMatchObject({
-          message: "STARTED",
-          messageCode: "MOBILE_ASYNC_STARTED",
-          awsRequestId: "awsRequestId",
-          functionName: "lambdaFunctionName",
-        });
 
-        expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-          message: "COMPLETED",
-          messageCode: "MOBILE_ASYNC_COMPLETED",
-          awsRequestId: "awsRequestId",
-          functionName: "lambdaFunctionName",
-        });
+      describe("Given the event is written successfully", () => {
+        it("Logs and returns with 200 response with an access token in the response body", async () => {
+          const mockEventWriter = new MockEventWriterSuccess();
+          dependencies.eventService = () => mockEventWriter;
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            buildLambdaContext(),
+            request,
+          );
+          expect(mockLogger.getLogMessages()[0].logMessage).toMatchObject({
+            message: "STARTED",
+            messageCode: "MOBILE_ASYNC_STARTED",
+            awsRequestId: "awsRequestId",
+            functionName: "lambdaFunctionName",
+          });
 
-        expect(result.statusCode);
-        expect(result.body).toEqual(
-          JSON.stringify({
-            access_token: "mockToken",
-            token_type: "Bearer",
-            expires_in: 3600,
-          }),
-        );
+          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+            message: "COMPLETED",
+            messageCode: "MOBILE_ASYNC_COMPLETED",
+            awsRequestId: "awsRequestId",
+            functionName: "lambdaFunctionName",
+          });
+
+          expect(mockEventWriter.auditEvents[0]).toBe(
+            "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+          );
+
+          expect(result.statusCode);
+          expect(result.body).toEqual(
+            JSON.stringify({
+              access_token: "mockToken",
+              token_type: "Bearer",
+              expires_in: 3600,
+            }),
+          );
+        });
       });
     });
   });
