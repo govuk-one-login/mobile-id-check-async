@@ -74,43 +74,20 @@ export async function lambdaHandler(
     });
   }
 
-  if (event.body == null) {
-    logger.log("REQUEST_BODY_INVALID", {
-      errorMessage: "Missing request body",
-    });
-    return badRequestResponse({
-      error: "invalid_request",
-      errorDescription: "Missing request body",
-    });
-  }
+  const requestBodyOrError = getRequestBody(event.body, jwtPayload.client_id);
 
-  let parsedRequestBody: ICredentialRequestBody;
-  try {
-    parsedRequestBody = JSON.parse(event.body);
-  } catch (error) {
+  if (requestBodyOrError.isError) {
     logger.log("REQUEST_BODY_INVALID", {
-      errorMessage: "Invalid JSON in request body",
+      errorMessage: requestBodyOrError.value,
     });
-    return badRequestResponse({
-      error: "invalid_request",
-      errorDescription: "Invalid JSON in request body",
-    });
-  }
 
-  const requestBodyValidationResponse = requestBodyValidator(
-    parsedRequestBody,
-    jwtPayload.client_id,
-  );
-
-  if (requestBodyValidationResponse.isError) {
-    logger.log("REQUEST_BODY_INVALID", {
-      errorMessage: requestBodyValidationResponse.value,
-    });
     return badRequestResponse({
       error: "invalid_request",
       errorDescription: "Request body validation failed",
     });
   }
+
+  const requestBody = requestBodyOrError.value as ICredentialRequestBody;
 
   const result = await tokenService.verifyTokenSignature(
     config.SIGNING_KEY_ID,
@@ -159,11 +136,11 @@ export async function lambdaHandler(
   const clientCredentials =
     clientCredentialResponse.value as IClientCredentials;
 
-  if (parsedRequestBody.redirect_uri) {
+  if (requestBody.redirect_uri) {
     const validateClientCredentialsResult =
       clientCredentialsService.validateRedirectUri(
         clientCredentials,
-        parsedRequestBody,
+        requestBody,
       );
     if (validateClientCredentialsResult.isError) {
       logger.log("REQUEST_BODY_INVALID", {
@@ -195,7 +172,7 @@ export async function lambdaHandler(
   );
 
   const getActiveSessionResponse = await sessionService.getActiveSession(
-    parsedRequestBody.sub,
+    requestBody.sub,
     config.SESSION_TTL_IN_MILLISECONDS,
   );
   if (getActiveSessionResponse.isError) {
@@ -208,11 +185,11 @@ export async function lambdaHandler(
   if (getActiveSessionResponse.value) {
     logger.setSessionId({ sessionId: getActiveSessionResponse.value });
     logger.log("COMPLETED");
-    return activeSessionFoundResponse(parsedRequestBody.sub);
+    return activeSessionFoundResponse(requestBody.sub);
   }
 
   const { sub, client_id, govuk_signin_journey_id, redirect_uri, state } =
-    parsedRequestBody;
+    requestBody;
   const { iss } = jwtPayload;
 
   const sessionId = randomUUID();
@@ -257,7 +234,7 @@ export async function lambdaHandler(
   }
 
   logger.log("COMPLETED");
-  return sessionCreatedResponse(parsedRequestBody.sub);
+  return sessionCreatedResponse(requestBody.sub);
 }
 
 interface Config {
@@ -319,6 +296,54 @@ const getAuthorizationHeader = (
   return successResponse(authorizationHeader);
 };
 
+const getRequestBody = (
+  requestBody: string | null,
+  jwtClientId: string,
+): ErrorOrSuccess<ICredentialRequestBody> => {
+  if (requestBody == null) {
+    return errorResponse("Missing request body");
+  }
+
+  let body: ICredentialRequestBody;
+  try {
+    body = JSON.parse(requestBody);
+  } catch (error) {
+    return errorResponse("Invalid JSON in request body");
+  }
+
+  if (!body.state) {
+    return errorResponse("Missing state in request body");
+  }
+
+  if (!body.sub) {
+    return errorResponse("Missing sub in request body");
+  }
+
+  if (!body.client_id) {
+    return errorResponse("Missing client_id in request body");
+  }
+
+  if (body.client_id !== jwtClientId) {
+    return errorResponse(
+      "client_id in request body does not match value in access_token",
+    );
+  }
+
+  if (!body["govuk_signin_journey_id"]) {
+    return errorResponse("Missing govuk_signin_journey_id in request body");
+  }
+
+  if (body.redirect_uri) {
+    try {
+      new URL(body.redirect_uri);
+    } catch (error) {
+      return errorResponse("redirect_uri in request body is not a URL");
+    }
+  }
+
+  return successResponse(body);
+};
+
 const jwtClaimValidator = (
   jwtPayload: IJwtPayload,
   issuerEnvironmentVariable: string,
@@ -366,43 +391,6 @@ const jwtClaimValidator = (
 
   if (!jwtPayload.aud) {
     return errorResponse("Missing aud claim");
-  }
-
-  return successResponse(null);
-};
-
-const requestBodyValidator = (
-  requestBody: ICredentialRequestBody,
-  jwtClientId: string,
-): ErrorOrSuccess<null> => {
-  if (!requestBody.state) {
-    return errorResponse("Missing state in request body");
-  }
-
-  if (!requestBody.sub) {
-    return errorResponse("Missing sub in request body");
-  }
-
-  if (!requestBody.client_id) {
-    return errorResponse("Missing client_id in request body");
-  }
-
-  if (requestBody.client_id !== jwtClientId) {
-    return errorResponse(
-      "client_id in request body does not match value in access_token",
-    );
-  }
-
-  if (!requestBody["govuk_signin_journey_id"]) {
-    return errorResponse("Missing govuk_signin_journey_id in request body");
-  }
-
-  if (requestBody.redirect_uri) {
-    try {
-      new URL(requestBody.redirect_uri);
-    } catch (error) {
-      return errorResponse("redirect_uri in request body is not a URL");
-    }
   }
 
   return successResponse(null);
