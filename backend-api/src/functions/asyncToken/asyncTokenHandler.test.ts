@@ -23,17 +23,28 @@ import {
 } from "../types/errorOrValue";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
+import {
+  MockEventServiceFailToWrite,
+  MockEventWriterSuccess,
+} from "../services/events/tests/mocks";
 
 describe("Async Token", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;
   let request: APIGatewayProxyEvent;
   let dependencies: IAsyncTokenRequestDependencies;
 
+  const env = {
+    SIGNING_KEY_ID: "mockSigningKeyId",
+    ISSUER: "mockIssuer",
+    SQS_QUEUE: "mockSQSQueue",
+  };
+
   beforeEach(() => {
     request = buildRequest();
     mockLogger = new MockLoggingAdapter();
     dependencies = {
       env,
+      eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(mockLogger, registeredLogs),
       requestService: () => new MockRequestServiceValueResponse(),
       ssmService: () => new MockPassingSsmService(),
@@ -43,30 +54,36 @@ describe("Async Token", () => {
   });
 
   describe("Environment variable validation", () => {
-    describe("Given SIGNING_KEY_ID is missing", () => {
-      it("Returns a 500 Server Error response", async () => {
-        dependencies.env = JSON.parse(JSON.stringify(env));
-        delete dependencies.env["SIGNING_KEY_ID"];
+    describe.each([Object.keys(env)])(
+      "Given %s is missing",
+      (envVar: string) => {
+        it("Returns a 500 Server Error response", async () => {
+          dependencies.env = JSON.parse(JSON.stringify(env));
+          delete dependencies.env[envVar];
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            buildLambdaContext(),
+            request,
+          );
 
-        const result = await lambdaHandlerConstructor(
-          dependencies,
-          buildLambdaContext(),
-          request,
-        );
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
-          "ENVIRONMENT_VARIABLE_MISSING",
-        );
-        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
-          environmentVariable: "SIGNING_KEY_IDS",
+          expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
+            "ENVIRONMENT_VARIABLE_MISSING",
+          );
+          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+            errorMessage: `No ${envVar}`,
+          });
+
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 500,
+            body: JSON.stringify({
+              error: "server_error",
+              error_description: "Server Error",
+            }),
+          });
         });
-
-        expect(result.statusCode).toBe(500);
-        expect(JSON.parse(result.body).error).toEqual("server_error");
-        expect(JSON.parse(result.body).error_description).toEqual(
-          "Server Error",
-        );
-      });
-    });
+      },
+    );
   });
 
   describe("Request Service", () => {
@@ -243,6 +260,34 @@ describe("Async Token", () => {
 
   describe("Issue access token", () => {
     describe("Given the request is valid", () => {
+      describe("Given there is an error writing the audit event", () => {
+        it("Logs and returns a 500 server error", async () => {
+          const mockFailingEventService = new MockEventServiceFailToWrite(
+            "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+          );
+          dependencies.eventService = () => mockFailingEventService;
+
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            buildLambdaContext(),
+            request,
+          );
+
+          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+            message: "ERROR_WRITING_AUDIT_EVENT",
+            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+          });
+          expect(mockLogger.getLogMessages()[1].data).toMatchObject({
+            errorMessage: "Error writing to SQS",
+          });
+
+          expect(result.statusCode).toBe(500);
+          expect(JSON.parse(result.body).error).toEqual("server_error");
+          expect(JSON.parse(result.body).error_description).toEqual(
+            "Server Error",
+          );
+        });
+      });
       it("Returns with 200 response with an access token in the response body", async () => {
         const result = await lambdaHandlerConstructor(
           dependencies,
@@ -383,7 +428,3 @@ class MockFailingTokenService implements IMintToken {
     return errorResponse("Failed to sign Jwt");
   }
 }
-
-const env = {
-  SIGNING_KEY_ID: "mockSigningKeyId",
-};

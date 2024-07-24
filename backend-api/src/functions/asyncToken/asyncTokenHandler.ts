@@ -4,7 +4,6 @@ import {
   Context,
 } from "aws-lambda";
 import "dotenv/config";
-import { validOrThrow } from "../config";
 import {
   ClientCredentialsService,
   IClientCredentials,
@@ -21,6 +20,7 @@ import { Logger } from "../services/logging/logger";
 import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Config, ConfigService } from "./configService/configService";
+import { EventService, IEventService } from "../services/events/eventService";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
@@ -33,16 +33,15 @@ export async function lambdaHandlerConstructor(
   logger.addContext(context);
   logger.log("STARTED");
 
-  const configResponse = new ConfigService().getConfig(dependencies.env)
-  if(configResponse.isError) {
+  const configResponse = new ConfigService().getConfig(dependencies.env);
+  if (configResponse.isError) {
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
-      environmentVariable: configResponse.value,
+      errorMessage: configResponse.value,
     });
     return serverErrorResponse;
   }
 
-  const config = configResponse.value as Config
-
+  const config = configResponse.value as Config;
 
   // Ensure that request contains expected params
   const requestService = dependencies.requestService();
@@ -122,6 +121,18 @@ export async function lambdaHandlerConstructor(
   }
   const accessToken = mintTokenResponse.value;
 
+  const eventWriter = dependencies.eventService(config.SQS_QUEUE);
+  const eventWriterResult = await eventWriter.writeCredentialTokenIssuedEvent({
+    componentId: config.ISSUER,
+    getNowInMilliseconds: Date.now,
+    eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+  });
+  if (eventWriterResult.isError) {
+    logger.log("ERROR_WRITING_AUDIT_EVENT", {
+      errorMessage: eventWriterResult.value,
+    });
+    return serverErrorResponse;
+  }
   logger.log("COMPLETED");
 
   return {
@@ -177,6 +188,7 @@ const serverErrorResponse: APIGatewayProxyResult = {
 
 export interface IAsyncTokenRequestDependencies {
   env: NodeJS.ProcessEnv;
+  eventService: (sqsQueue: string) => IEventService;
   logger: () => Logger<MessageName>;
   requestService: () => IProcessRequest;
   ssmService: () => IGetClientCredentials;
@@ -186,6 +198,7 @@ export interface IAsyncTokenRequestDependencies {
 
 const dependencies: IAsyncTokenRequestDependencies = {
   env: process.env,
+  eventService: (sqsQueue: string) => new EventService(sqsQueue),
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
   requestService: () => new RequestService(),
   ssmService: () => new SsmService(),

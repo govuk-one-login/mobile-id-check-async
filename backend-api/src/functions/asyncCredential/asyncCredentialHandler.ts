@@ -219,7 +219,7 @@ export async function lambdaHandler(
 
   logger.setSessionId({ sessionId });
 
-  const writeEventResult = await eventService.writeEvent({
+  const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_START",
     sub,
     sessionId,
