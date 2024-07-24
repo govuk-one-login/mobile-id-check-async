@@ -39,8 +39,7 @@ export class MockEventServiceFailToWrite implements IEventService {
     return successResponse(null);
   };
 
-  writeCredentialTokenIssuedEvent = async (
-  ): Promise<ErrorOrSuccess<null>> => {
+  writeCredentialTokenIssuedEvent = async (): Promise<ErrorOrSuccess<null>> => {
     return errorResponse("Error writing to SQS");
   };
 }
