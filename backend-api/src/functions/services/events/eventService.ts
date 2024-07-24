@@ -96,12 +96,6 @@ interface GenericTxmaEvent {
   component_id: string;
 }
 
-interface CredentialTokenIssuedEvent {
-  timestamp: number;
-  event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
-  component_id: string;
-}
-
 export interface GenericEventConfig {
   eventName: GenericEventName;
   sub: string;
@@ -109,6 +103,12 @@ export interface GenericEventConfig {
   govukSigninJourneyId: string;
   getNowInMilliseconds: () => number;
   componentId: string;
+}
+
+interface CredentialTokenIssuedEvent {
+  timestamp: number;
+  event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
+  component_id: string;
 }
 
 export interface CredentialTokenIssuedEventConfig {
