@@ -252,7 +252,6 @@ export async function lambdaHandler(
     sub,
     sessionId,
     govukSigninJourneyId: govuk_signin_journey_id,
-    clientId: client_id,
     getNowInMilliseconds: Date.now,
     componentId: config.ISSUER,
   });

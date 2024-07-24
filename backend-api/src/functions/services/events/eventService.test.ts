@@ -16,7 +16,6 @@ describe("Event Service", () => {
           sub: "mockSub",
           sessionId: "mockSessionId",
           govukSigninJourneyId: "mockGovukSigninJourneyId",
-          clientId: "mockClientId",
           getNowInMilliseconds: () => 1609462861,
           componentId: "mockComponentId",
         });
@@ -37,7 +36,6 @@ describe("Event Service", () => {
           sub: "mockSub",
           sessionId: "mockSessionId",
           govukSigninJourneyId: "mockGovukSigninJourneyId",
-          clientId: "mockClientId",
           getNowInMilliseconds: () => 1609462861,
           componentId: "mockComponentId",
         });

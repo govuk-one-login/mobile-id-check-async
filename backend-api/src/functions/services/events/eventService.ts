@@ -42,7 +42,6 @@ export class EventService implements IEventService {
         session_id: eventConfig.sessionId,
         govuk_signin_journey_id: eventConfig.govukSigninJourneyId,
       },
-      client_id: eventConfig.clientId,
       timestamp: eventConfig.getNowInMilliseconds(),
       event_name: eventConfig.eventName,
       component_id: eventConfig.componentId,
@@ -63,7 +62,6 @@ interface ITxmaEvent {
     session_id: string;
     govuk_signin_journey_id: string;
   };
-  client_id: string;
   timestamp: number;
   event_name: EventName;
   component_id: string;
@@ -74,7 +72,6 @@ export interface IEventConfig {
   sub: string;
   sessionId: string;
   govukSigninJourneyId: string;
-  clientId: string;
   getNowInMilliseconds: () => number;
   componentId: string;
 }
