@@ -15,6 +15,7 @@ It follows the Client credentials grant flow from the OAuth2.0 Framework [see he
 - AWS SAM
 - node v.20
 - npm
+- nvm
 
 ## Running tests
 
