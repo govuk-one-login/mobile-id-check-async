@@ -603,7 +603,7 @@ describe("Async Credential", () => {
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "Missing request body",
+            error_description: "Request body validation failed",
           }),
         });
       });
@@ -644,7 +644,7 @@ describe("Async Credential", () => {
             statusCode: 400,
             body: JSON.stringify({
               error: "invalid_request",
-              error_description: "Invalid JSON in request body",
+              error_description: "Request body validation failed",
             }),
           });
         },
