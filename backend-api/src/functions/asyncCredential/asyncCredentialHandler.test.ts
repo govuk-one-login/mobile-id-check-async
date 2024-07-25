@@ -1272,7 +1272,7 @@ describe("Async Credential", () => {
             );
 
             expect(mockLogger.getLogMessages()[0].logMessage.sessionId).toEqual(
-              expect.any(String),
+              "mockSessionId",
             );
 
             expect(result).toStrictEqual({
