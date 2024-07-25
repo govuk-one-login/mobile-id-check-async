@@ -6,7 +6,7 @@ import { MockJWTBuilder } from "../../testUtils/mockJwt";
 describe("Token Service", () => {
   describe("Verify token claims", () => {
     describe("Given payload does not contain valid JSON", () => {
-      it("reutrns", () => {
+      it("Returns error response", () => {
         const tokenService = new TokenService();
         const invalidJson =
           "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJpc3MiOiJtb2NrSXNzdWVyIiwiYXVkIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUiCJjbGllbnRfaWQiOiJtb2NrQ2xpZW50SWQifQ.fFnJIXCCkFY-LdzcUB7JmedN-97sE2J-J1FT74HJd7o";
