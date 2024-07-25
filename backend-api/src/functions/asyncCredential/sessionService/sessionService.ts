@@ -113,7 +113,10 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     );
   }
 
-  private buildPutItemCommandInput(sessionId: string, config: ICreateSessionConfig) {
+  private buildPutItemCommandInput(
+    sessionId: string,
+    config: ICreateSessionConfig,
+  ) {
     const {
       state,
       sub,
