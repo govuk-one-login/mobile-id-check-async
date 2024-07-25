@@ -110,15 +110,12 @@ describe("Session Service", () => {
         dbMock.on(GetItemCommand).rejects("Mock DB Error");
 
         const result = await service.createSession({
-          sessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
           state: "mockValidState",
           sub: "mockSub",
-          clientId: "mockClientId",
-          govukSigninJourneyId: "mockJourneyId",
-          redirectUri: "https://mockRedirectUri.com",
+          client_id: "mockClientId",
+          govuk_signin_journey_id: "mockJourneyId",
+          redirect_uri: "https://mockRedirectUri.com",
           issuer: "mockIssuer",
-          sessionState: "mockSessionState",
-          issuedOn: "mockIssuedOn",
         });
 
         expect(result.isError).toBe(true);
@@ -138,15 +135,12 @@ describe("Session Service", () => {
         });
 
         const result = await service.createSession({
-          sessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
           state: "mockValidState",
           sub: "mockSub",
-          clientId: "mockClientId",
-          govukSigninJourneyId: "mockJourneyId",
-          redirectUri: "https://mockRedirectUri.com",
+          client_id: "mockClientId",
+          govuk_signin_journey_id: "mockJourneyId",
+          redirect_uri: "https://mockRedirectUri.com",
           issuer: "mockIssuer",
-          sessionState: "mockSessionState",
-          issuedOn: "mockIssuedOn",
         });
 
         expect(result.isError).toBe(true);
@@ -163,15 +157,12 @@ describe("Session Service", () => {
         dbMock.on(PutItemCommand).rejects("Mock DB Error");
 
         const result = await service.createSession({
-          sessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
           state: "mockValidState",
           sub: "mockSub",
-          clientId: "mockClientId",
-          govukSigninJourneyId: "mockJourneyId",
-          redirectUri: "https://mockRedirectUri.com",
+          client_id: "mockClientId",
+          govuk_signin_journey_id: "mockJourneyId",
+          redirect_uri: "https://mockRedirectUri.com",
           issuer: "mockIssuer",
-          sessionState: "mockSessionState",
-          issuedOn: "mockIssuedOn",
         });
 
         expect(result.isError).toBe(true);
@@ -189,18 +180,15 @@ describe("Session Service", () => {
           dbMock.on(PutItemCommand).resolves({});
 
           const result = await service.createSession({
-            sessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
             state: "mockValidState",
             sub: "mockSub",
-            clientId: "mockClientId",
-            govukSigninJourneyId: "mockJourneyId",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockJourneyId",
             issuer: "mockIssuer",
-            sessionState: "mockSessionState",
-            issuedOn: "mockIssuedOn",
           });
 
           expect(result.isError).toBe(false);
-          expect(result.value).toEqual(null);
+          expect(typeof result.value).toBe("string");
         });
       });
 
@@ -211,19 +199,16 @@ describe("Session Service", () => {
           dbMock.on(PutItemCommand).resolves({});
 
           const result = await service.createSession({
-            sessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
             state: "mockValidState",
             sub: "mockSub",
-            clientId: "mockClientId",
-            govukSigninJourneyId: "mockJourneyId",
-            redirectUri: "https://mockRedirectUri.com",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockJourneyId",
+            redirect_uri: "https://mockRedirectUri.com",
             issuer: "mockIssuer",
-            sessionState: "mockSessionState",
-            issuedOn: "mockIssuedOn",
           });
 
           expect(result.isError).toBe(false);
-          expect(result.value).toEqual(null);
+          expect(typeof result.value).toBe("string");
         });
       });
     });

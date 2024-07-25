@@ -12,6 +12,7 @@ import {
   errorResponse,
   successResponse,
 } from "../../types/errorOrValue";
+import { randomUUID } from "crypto";
 
 export class SessionService implements IGetActiveSession, ICreateSession {
   readonly tableName: string;
@@ -72,31 +73,14 @@ export class SessionService implements IGetActiveSession, ICreateSession {
   }
 
   async createSession(
-    sessionConfig: IAuthSession,
-  ): Promise<ErrorOrSuccess<null>> {
-    const config: IPutAuthSessionConfig = {
-      TableName: this.tableName,
-      Item: {
-        sessionId: { S: sessionConfig.sessionId },
-        state: { S: sessionConfig.state },
-        sub: { S: sessionConfig.sub },
-        clientId: { S: sessionConfig.clientId },
-        govukSigninJourneyId: { S: sessionConfig.govukSigninJourneyId },
-        issuer: { S: sessionConfig.issuer },
-        sessionState: { S: sessionConfig.sessionState },
-        issuedOn: { S: sessionConfig.issuedOn },
-      },
-    };
-
-    if (sessionConfig.redirectUri) {
-      config.Item.redirectUri = { S: sessionConfig.redirectUri };
-    }
+    config: ICreateSessionConfig,
+  ): Promise<ErrorOrSuccess<string>> {
+    const sessionId = randomUUID();
+    const putSessionConfig = this.buildPutItemCommandInput(sessionId, config);
 
     let doesSessionExist;
     try {
-      doesSessionExist = await this.checkSessionsExists(
-        sessionConfig.sessionId,
-      );
+      doesSessionExist = await this.checkSessionsExists(sessionId);
     } catch (error) {
       return errorResponse(
         "Unexpected error when querying session table to check if sessionId exists",
@@ -108,14 +92,14 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     }
 
     try {
-      await this.putSessionInDb(config);
+      await this.putSessionInDb(putSessionConfig);
     } catch (error) {
       return errorResponse(
         "Unexpected error when querying session table whilst creating a session",
       );
     }
 
-    return successResponse(null);
+    return successResponse(sessionId);
   }
 
   private hasValidSession(
@@ -127,6 +111,40 @@ export class SessionService implements IGetActiveSession, ICreateSession {
       result.Items[0].sessionId != null &&
       result.Items[0].sessionId.S !== ""
     );
+  }
+
+  private buildPutItemCommandInput(
+    sessionId: string,
+    config: ICreateSessionConfig,
+  ) {
+    const {
+      state,
+      sub,
+      client_id,
+      govuk_signin_journey_id,
+      redirect_uri,
+      issuer,
+    } = config;
+
+    const putSessionConfig: IPutSessionConfig = {
+      TableName: this.tableName,
+      Item: {
+        sessionId: { S: sessionId },
+        state: { S: state },
+        sub: { S: sub },
+        clientId: { S: client_id },
+        govukSigninJourneyId: { S: govuk_signin_journey_id },
+        issuer: { S: issuer },
+        sessionState: { S: "ASYNC_AUTH_SESSION_CREATED" },
+        issuedOn: { S: Date.now().toString() },
+      },
+    };
+
+    if (redirect_uri) {
+      putSessionConfig.Item.redirectUri = { S: redirect_uri };
+    }
+
+    return putSessionConfig;
   }
 
   private async checkSessionsExists(sessionId: string): Promise<boolean> {
@@ -142,24 +160,12 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     return output.Item != null;
   }
 
-  private async putSessionInDb(config: IPutAuthSessionConfig) {
+  private async putSessionInDb(config: IPutSessionConfig) {
     await dbClient.send(new PutItemCommand(config));
   }
 }
 
-interface IAuthSession {
-  sessionId: string;
-  state: string;
-  sub: string;
-  clientId: string;
-  govukSigninJourneyId: string;
-  issuer: string;
-  sessionState: string;
-  issuedOn: string;
-  redirectUri?: string;
-}
-
-interface IPutAuthSessionConfig {
+interface IPutSessionConfig {
   TableName: string;
   Item: {
     sessionId: { S: string };
@@ -181,8 +187,19 @@ export interface IGetActiveSession {
   ) => Promise<ErrorOrSuccess<string | null>>;
 }
 
+interface ICreateSessionConfig {
+  state: string;
+  sub: string;
+  client_id: string;
+  govuk_signin_journey_id: string;
+  issuer: string;
+  redirect_uri?: string;
+}
+
 export interface ICreateSession {
-  createSession: (sessionConfig: IAuthSession) => Promise<ErrorOrSuccess<null>>;
+  createSession: (
+    config: ICreateSessionConfig,
+  ) => Promise<ErrorOrSuccess<string>>;
 }
 
 type IQueryCommandOutputType = {
