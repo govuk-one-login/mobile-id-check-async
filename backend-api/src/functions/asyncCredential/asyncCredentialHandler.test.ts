@@ -756,7 +756,7 @@ describe("Async Credential", () => {
         });
 
         dependencies.clientCredentialsService = () =>
-          new MockPassingClientCredentialsService();
+          new MockPassingClientCredentialsServiceInvalidIssuer();
 
         const result = await lambdaHandler(event, dependencies);
 
@@ -1109,6 +1109,23 @@ class MockClientCredentialsServiceInvalidRedirectUri
     return successResponse({
       client_id: "mockClientId",
       issuer: "mockIssuer",
+      salt: "mockSalt",
+      hashed_client_secret: "mockHashedClientSecret",
+    });
+  }
+}
+
+class MockPassingClientCredentialsServiceInvalidIssuer implements IClientCredentialsService {
+  validateTokenRequest(): ErrorOrSuccess<null> {
+    return successResponse(null);
+  }
+  validateRedirectUri(): ErrorOrSuccess<null> {
+    return successResponse(null);
+  }
+  getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
+    return successResponse({
+      client_id: "mockClientId",
+      issuer: "mockInvalidIssuer",
       salt: "mockSalt",
       hashed_client_secret: "mockHashedClientSecret",
     });
