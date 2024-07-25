@@ -4,6 +4,7 @@ import {
   IClientCredentials,
 } from "../services/clientCredentialsService/clientCredentialsService";
 import {
+  IReturnToken,
   IVerifyTokenClaims,
   IVerifyTokenSignature,
 } from "./TokenService/tokenService";
@@ -50,16 +51,11 @@ export async function lambdaHandler(
   }
 
   const authorizationHeader = authorizationHeaderOrError.value;
-  const encodedJwt = authorizationHeader.split(" ")[1];
-  const payload = encodedJwt.split(".")[1];
-  const jwtPayload = JSON.parse(
-    Buffer.from(payload, "base64").toString("utf-8"),
-  );
 
   // JWT Claim validation
   const tokenService = dependencies.tokenService();
   const validTokenClaimsOrError = tokenService.verifyTokenClaims(
-    jwtPayload,
+    authorizationHeader,
     config.ISSUER,
   );
   if (validTokenClaimsOrError.isError) {
@@ -71,6 +67,9 @@ export async function lambdaHandler(
       errorDescription: validTokenClaimsOrError.value as string,
     });
   }
+
+  const { encodedJwt, jwtPayload } =
+    validTokenClaimsOrError.value as IReturnToken;
 
   const requestBodyOrError = getRequestBody(event.body, jwtPayload.client_id);
 

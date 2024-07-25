@@ -1,6 +1,10 @@
 import { APIGatewayProxyResult } from "aws-lambda";
 import { buildRequest } from "../testUtils/mockRequest";
-import { IVerifyTokenSignature } from "./TokenService/tokenService";
+import {
+  IReturnToken,
+  IVerifyTokenClaims,
+  IVerifyTokenSignature,
+} from "./TokenService/tokenService";
 import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
 import {
   IClientCredentials,
@@ -24,6 +28,7 @@ import {
   MockEventServiceFailToWrite,
   MockEventWriterSuccess,
 } from "../services/events/tests/mocks";
+import { IJwtPayload } from "../types/jwt";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -43,7 +48,7 @@ describe("Async Credential", () => {
     dependencies = {
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(mockLogger, registeredLogs),
-      tokenService: () => new MockTokenServiceValidSignature(),
+      tokenService: () => new MockTokenServiceValidClaim(),
       ssmService: () => new MockPassingSsmService(),
       clientCredentialsService: () => new MockPassingClientCredentialsService(),
       sessionService: () =>
@@ -256,6 +261,33 @@ describe("Async Credential", () => {
             error: "invalid_token",
             error_description: "Mock invalid claim",
           }),
+        });
+      });
+    });
+
+    describe("Given claims are valid", () => {
+      it("returns success response with encodedJWT and jwtPayload", async () => {
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date(1721901142000)); // Thursday, 25 July 2024 10:52:22 GMT+01:00
+        const jwtBuilder = new MockJWTBuilder();
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+        });
+        const mockTokenService = new MockTokenServiceValidClaim();
+        dependencies.tokenService = () => mockTokenService;
+
+        await lambdaHandler(event, dependencies);
+
+        expect(mockTokenService.tokenObjects[0]).toEqual({
+          encodedJwt:
+            "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJleHAiOjE3MjE5MDExNDMwMDAsImlzcyI6Im1vY2tJc3N1ZXIiLCJhdWQiOiJtb2NrSXNzdWVyIiwic2NvcGUiOiJkY21hdy5zZXNzaW9uLmFzeW5jX2NyZWF0ZSIsImNsaWVudF9pZCI6Im1vY2tDbGllbnRJZCJ9.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
+          jwtPayload: {
+            aud: "mockIssuer",
+            client_id: "mockClientId",
+            exp: 1721901143000,
+            iss: "mockIssuer",
+            scope: "dcmaw.session.async_create",
+          },
         });
       });
     });
@@ -748,6 +780,7 @@ describe("Async Credential", () => {
             govuk_signin_journey_id: "mockGovukSigninJourneyId",
           }),
         });
+
         dependencies.clientCredentialsService = () =>
           new MockPassingClientCredentialsService();
 
@@ -985,8 +1018,10 @@ describe("Async Credential", () => {
   });
 });
 
-class MockTokenServiceInvalidClaim implements IVerifyTokenSignature {
-  verifyTokenClaims(): ErrorOrSuccess<null> {
+class MockTokenServiceInvalidClaim
+  implements IVerifyTokenClaims, IVerifyTokenSignature
+{
+  verifyTokenClaims(): ErrorOrSuccess<IReturnToken> {
     return errorResponse("Mock invalid claim");
   }
   verifyTokenSignature(): Promise<ErrorOrSuccess<null>> {
@@ -994,18 +1029,113 @@ class MockTokenServiceInvalidClaim implements IVerifyTokenSignature {
   }
 }
 
-class MockTokenServiceInvalidSignature implements IVerifyTokenSignature {
-  verifyTokenClaims(): ErrorOrSuccess<null> {
-    return successResponse(null);
+class MockTokenServiceValidClaim
+  implements IVerifyTokenClaims, IVerifyTokenSignature
+{
+  tokenObjects: { encodedJwt: string; jwtPayload: IJwtPayload }[] = [];
+  verifyTokenClaims(
+    authorizationHeader: string,
+    issuer: string,
+  ): ErrorOrSuccess<IReturnToken> {
+    const encodedJwt = authorizationHeader.split(" ")[1];
+    const payload = encodedJwt.split(".")[1];
+    const jwtPayload = JSON.parse(
+      Buffer.from(payload, "base64").toString("utf-8"),
+    );
+
+    if (!jwtPayload.exp) {
+      return errorResponse("Missing exp claim");
+    }
+
+    if (jwtPayload.exp <= Math.floor(Date.now() / 1000)) {
+      return errorResponse("exp claim is in the past");
+    }
+    if (jwtPayload.iat) {
+      if (jwtPayload.iat >= Math.floor(Date.now() / 1000)) {
+        return errorResponse("iat claim is in the future");
+      }
+    }
+
+    if (jwtPayload.nbf) {
+      if (jwtPayload.nbf >= Math.floor(Date.now() / 1000)) {
+        return errorResponse("nbf claim is in the future");
+      }
+    }
+
+    if (!jwtPayload.iss) {
+      return errorResponse("Missing iss claim");
+    }
+
+    if (jwtPayload.iss !== issuer) {
+      return errorResponse(
+        "iss claim does not match ISSUER environment variable",
+      );
+    }
+
+    if (!jwtPayload.scope) {
+      return errorResponse("Missing scope claim");
+    }
+
+    if (jwtPayload.scope !== "dcmaw.session.async_create") {
+      return errorResponse("Invalid scope claim");
+    }
+
+    if (!jwtPayload.client_id) {
+      return errorResponse("Missing client_id claim");
+    }
+
+    if (!jwtPayload.aud) {
+      return errorResponse("Missing aud claim");
+    }
+
+    this.tokenObjects.push({ encodedJwt, jwtPayload });
+
+    return successResponse({
+      encodedJwt,
+      jwtPayload,
+    });
+  }
+  verifyTokenSignature(): Promise<ErrorOrSuccess<null>> {
+    return Promise.resolve(successResponse(null));
+  }
+}
+
+class MockTokenServiceInvalidSignature
+  implements IVerifyTokenClaims, IVerifyTokenSignature
+{
+  verifyTokenClaims(): ErrorOrSuccess<IReturnToken> {
+    return successResponse({
+      encodedJwt:
+        "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJleHAiOjE3MjE5MDExNDMwMDAsImlzcyI6Im1vY2tJc3N1ZXIiLCJhdWQiOiJtb2NrSXNzdWVyIiwic2NvcGUiOiJkY21hdy5zZXNzaW9uLmFzeW5jX2NyZWF0ZSIsImNsaWVudF9pZCI6Im1vY2tDbGllbnRJZCJ9.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
+      jwtPayload: {
+        aud: "mockIssuer",
+        client_id: "mockClientId",
+        exp: 1721901143000,
+        iss: "mockIssuer",
+        scope: "dcmaw.session.async_create",
+      },
+    });
   }
   verifyTokenSignature(): Promise<ErrorOrSuccess<null>> {
     return Promise.resolve(errorResponse("Failed to verify token signature"));
   }
 }
 
-class MockTokenServiceValidSignature implements IVerifyTokenSignature {
-  verifyTokenClaims(): ErrorOrSuccess<null> {
-    return successResponse(null);
+class MockTokenServiceValidSignature
+  implements IVerifyTokenClaims, IVerifyTokenSignature
+{
+  verifyTokenClaims(): ErrorOrSuccess<IReturnToken> {
+    return successResponse({
+      encodedJwt:
+        "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJleHAiOjE3MjE5MDExNDMwMDAsImlzcyI6Im1vY2tJc3N1ZXIiLCJhdWQiOiJtb2NrSXNzdWVyIiwic2NvcGUiOiJkY21hdy5zZXNzaW9uLmFzeW5jX2NyZWF0ZSIsImNsaWVudF9pZCI6Im1vY2tDbGllbnRJZCJ9.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
+      jwtPayload: {
+        aud: "mockIssuer",
+        client_id: "mockClientId",
+        exp: 1721901143000,
+        iss: "mockIssuer",
+        scope: "dcmaw.session.async_create",
+      },
+    });
   }
   verifyTokenSignature(): Promise<ErrorOrSuccess<null>> {
     return Promise.resolve(successResponse(null));

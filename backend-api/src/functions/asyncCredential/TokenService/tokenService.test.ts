@@ -5,20 +5,16 @@ import { MockJWTBuilder } from "../../testUtils/mockJwt";
 
 describe("Token Service", () => {
   describe("Verify token claims", () => {
-    describe("exp claim", () => {
+    describe("Given exp claim is invalid", () => {
       describe("Given expiry date is missing", () => {
         it("Returns error response", () => {
           const tokenService = new TokenService();
           const jwtBuilder = new MockJWTBuilder();
           jwtBuilder.deleteExp();
-          const encodedJwt = jwtBuilder.getEncodedJwt();
-          const payload = encodedJwt.split(".")[1];
-          const jwtPayload = JSON.parse(
-            Buffer.from(payload, "base64").toString("utf-8"),
-          );
+          const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
           const result = tokenService.verifyTokenClaims(
-            jwtPayload,
+            authorizationHeader,
             "mockIssuer",
           );
 
@@ -32,14 +28,10 @@ describe("Token Service", () => {
           const tokenService = new TokenService();
           const jwtBuilder = new MockJWTBuilder();
           jwtBuilder.setExp(Math.floor(Date.now() - 1000) / 1000);
-          const encodedJwt = jwtBuilder.getEncodedJwt();
-          const payload = encodedJwt.split(".")[1];
-          const jwtPayload = JSON.parse(
-            Buffer.from(payload, "base64").toString("utf-8"),
-          );
+          const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
           const result = tokenService.verifyTokenClaims(
-            jwtPayload,
+            authorizationHeader,
             "mockIssuer",
           );
 
@@ -49,20 +41,16 @@ describe("Token Service", () => {
       });
     });
 
-    describe("iat claim", () => {
+    describe("Given iat claim is invalid", () => {
       describe("Given issued at (iat) is in the future", () => {
         it("Returns error response", () => {
           const tokenService = new TokenService();
           const jwtBuilder = new MockJWTBuilder();
           jwtBuilder.setIat(Math.floor(Date.now() + 1000) / 1000);
-          const encodedJwt = jwtBuilder.getEncodedJwt();
-          const payload = encodedJwt.split(".")[1];
-          const jwtPayload = JSON.parse(
-            Buffer.from(payload, "base64").toString("utf-8"),
-          );
+          const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
           const result = tokenService.verifyTokenClaims(
-            jwtPayload,
+            authorizationHeader,
             "mockIssuer",
           );
 
@@ -72,20 +60,16 @@ describe("Token Service", () => {
       });
     });
 
-    describe("nfb claim", () => {
+    describe("Given nfb claim is invalid", () => {
       describe("Given not before (nbf) is in the future", () => {
         it("Returns error response", () => {
           const tokenService = new TokenService();
           const jwtBuilder = new MockJWTBuilder();
           jwtBuilder.setNbf(Date.now() + 1000);
-          const encodedJwt = jwtBuilder.getEncodedJwt();
-          const payload = encodedJwt.split(".")[1];
-          const jwtPayload = JSON.parse(
-            Buffer.from(payload, "base64").toString("utf-8"),
-          );
+          const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
           const result = tokenService.verifyTokenClaims(
-            jwtPayload,
+            authorizationHeader,
             "mockIssuer",
           );
 
@@ -95,20 +79,16 @@ describe("Token Service", () => {
       });
     });
 
-    describe("iss claim", () => {
+    describe("Given iss claim is invalid", () => {
       describe("Given issuer (iss) is missing", () => {
         it("Returns error response", () => {
           const tokenService = new TokenService();
           const jwtBuilder = new MockJWTBuilder();
           jwtBuilder.deleteIss();
-          const encodedJwt = jwtBuilder.getEncodedJwt();
-          const payload = encodedJwt.split(".")[1];
-          const jwtPayload = JSON.parse(
-            Buffer.from(payload, "base64").toString("utf-8"),
-          );
+          const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
           const result = tokenService.verifyTokenClaims(
-            jwtPayload,
+            authorizationHeader,
             "mockIssuer",
           );
 
@@ -122,14 +102,10 @@ describe("Token Service", () => {
           const tokenService = new TokenService();
           const jwtBuilder = new MockJWTBuilder();
           jwtBuilder.setIss("invalidIss");
-          const encodedJwt = jwtBuilder.getEncodedJwt();
-          const payload = encodedJwt.split(".")[1];
-          const jwtPayload = JSON.parse(
-            Buffer.from(payload, "base64").toString("utf-8"),
-          );
+          const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
           const result = tokenService.verifyTokenClaims(
-            jwtPayload,
+            authorizationHeader,
             "mockIssuer",
           );
 
@@ -141,20 +117,16 @@ describe("Token Service", () => {
       });
     });
 
-    describe("scope claim", () => {
+    describe("Given scope claim is invalid", () => {
       describe("Given scope is not dcmaw.session.async_create", () => {
         it("Returns error response", () => {
           const tokenService = new TokenService();
           const jwtBuilder = new MockJWTBuilder();
           jwtBuilder.setScope("invalidScope");
-          const encodedJwt = jwtBuilder.getEncodedJwt();
-          const payload = encodedJwt.split(".")[1];
-          const jwtPayload = JSON.parse(
-            Buffer.from(payload, "base64").toString("utf-8"),
-          );
+          const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
           const result = tokenService.verifyTokenClaims(
-            jwtPayload,
+            authorizationHeader,
             "mockIssuer",
           );
 
@@ -164,20 +136,16 @@ describe("Token Service", () => {
       });
     });
 
-    describe("client_id claim", () => {
+    describe("Given client_id claim is invalid", () => {
       describe("Given client_id is missing", () => {
         it("Returns error response", () => {
           const tokenService = new TokenService();
           const jwtBuilder = new MockJWTBuilder();
           jwtBuilder.deleteClientId();
-          const encodedJwt = jwtBuilder.getEncodedJwt();
-          const payload = encodedJwt.split(".")[1];
-          const jwtPayload = JSON.parse(
-            Buffer.from(payload, "base64").toString("utf-8"),
-          );
+          const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
           const result = tokenService.verifyTokenClaims(
-            jwtPayload,
+            authorizationHeader,
             "mockIssuer",
           );
 
@@ -187,25 +155,49 @@ describe("Token Service", () => {
       });
     });
 
-    describe("client_id claim", () => {
+    describe("Given aud claim is invalid", () => {
       describe("Given aud (audience) is missing", () => {
         it("Returns error response", () => {
           const tokenService = new TokenService();
           const jwtBuilder = new MockJWTBuilder();
           jwtBuilder.deleteAud();
-          const encodedJwt = jwtBuilder.getEncodedJwt();
-          const payload = encodedJwt.split(".")[1];
-          const jwtPayload = JSON.parse(
-            Buffer.from(payload, "base64").toString("utf-8"),
-          );
+          const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
           const result = tokenService.verifyTokenClaims(
-            jwtPayload,
+            authorizationHeader,
             "mockIssuer",
           );
 
           expect(result.isError).toEqual(true);
           expect(result.value).toEqual("Missing aud claim");
+        });
+      });
+    });
+
+    describe("Given all claims are valid", () => {
+      it("Returns success response with encodedJwt and JwtPayload", () => {
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date(1721901142000)); // Thursday, 25 July 2024 10:52:22 GMT+01:00
+        const tokenService = new TokenService();
+        const jwtBuilder = new MockJWTBuilder();
+        const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
+
+        const result = tokenService.verifyTokenClaims(
+          authorizationHeader,
+          "mockIssuer",
+        );
+
+        expect(result.isError).toEqual(false);
+        expect(result.value).toEqual({
+          encodedJwt:
+            "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJleHAiOjE3MjE5MDExNDMwMDAsImlzcyI6Im1vY2tJc3N1ZXIiLCJhdWQiOiJtb2NrSXNzdWVyIiwic2NvcGUiOiJkY21hdy5zZXNzaW9uLmFzeW5jX2NyZWF0ZSIsImNsaWVudF9pZCI6Im1vY2tDbGllbnRJZCJ9.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
+          jwtPayload: {
+            aud: "mockIssuer",
+            client_id: "mockClientId",
+            exp: 1721901143000,
+            iss: "mockIssuer",
+            scope: "dcmaw.session.async_create",
+          },
         });
       });
     });

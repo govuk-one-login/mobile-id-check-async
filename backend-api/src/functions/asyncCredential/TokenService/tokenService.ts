@@ -9,9 +9,15 @@ import { IJwtPayload } from "../../types/jwt";
 
 export class TokenService implements IVerifyTokenClaims, IVerifyTokenSignature {
   verifyTokenClaims(
-    jwtPayload: IJwtPayload,
+    authorizationHeader: string,
     issuer: string,
-  ): ErrorOrSuccess<null> {
+  ): ErrorOrSuccess<IReturnToken> {
+    const encodedJwt = authorizationHeader.split(" ")[1];
+    const payload = encodedJwt.split(".")[1];
+    const jwtPayload = JSON.parse(
+      Buffer.from(payload, "base64").toString("utf-8"),
+    );
+
     if (!jwtPayload.exp) {
       return errorResponse("Missing exp claim");
     }
@@ -57,7 +63,10 @@ export class TokenService implements IVerifyTokenClaims, IVerifyTokenSignature {
       return errorResponse("Missing aud claim");
     }
 
-    return successResponse(null);
+    return successResponse({
+      encodedJwt,
+      jwtPayload,
+    });
   }
 
   async verifyTokenSignature(
@@ -84,9 +93,9 @@ export class TokenService implements IVerifyTokenClaims, IVerifyTokenSignature {
 
 export interface IVerifyTokenClaims {
   verifyTokenClaims: (
-    IJwtPayload: IJwtPayload,
+    authorizationHeader: string,
     issuer: string,
-  ) => ErrorOrSuccess<null>;
+  ) => ErrorOrSuccess<{ encodedJwt: string; jwtPayload: IJwtPayload }>;
 }
 
 export interface IVerifyTokenSignature {
@@ -94,4 +103,9 @@ export interface IVerifyTokenSignature {
     keyId: string,
     jwt: string,
   ) => Promise<ErrorOrSuccess<null>>;
+}
+
+export interface IReturnToken {
+  encodedJwt: string;
+  jwtPayload: IJwtPayload;
 }
