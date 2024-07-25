@@ -134,6 +134,22 @@ describe("Token Service", () => {
     });
 
     describe("Given scope claim is invalid", () => {
+      describe("Given scope is missing", () => {
+        it("Returns error response", () => {
+          const tokenService = new TokenService();
+          const jwtBuilder = new MockJWTBuilder();
+          jwtBuilder.deleteScope();
+          const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
+
+          const result = tokenService.getDecodedToken({
+            authorizationHeader,
+            issuer: "mockIssuer",
+          });
+
+          expect(result.isError).toEqual(true);
+          expect(result.value).toEqual("Missing scope claim");
+        });
+      });
       describe("Given scope is not dcmaw.session.async_create", () => {
         it("Returns error response", () => {
           const tokenService = new TokenService();
