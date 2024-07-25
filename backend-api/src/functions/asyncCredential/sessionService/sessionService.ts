@@ -68,17 +68,13 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     return success(result.Items[0].sessionId.S);
   }
 
-  async createSession(
-    config: ICreateSessionConfig,
-  ): Promise<Result<string>> {
+  async createSession(config: ICreateSessionConfig): Promise<Result<string>> {
     const sessionId = randomUUID();
     const putSessionConfig = this.buildPutItemCommandInput(sessionId, config);
 
     let doesSessionExist;
     try {
-      doesSessionExist = await this.checkSessionsExists(
-        sessionId,
-      );
+      doesSessionExist = await this.checkSessionsExists(sessionId);
     } catch (e) {
       return error(
         "Unexpected error when querying session table to check if sessionId exists",
@@ -194,9 +190,7 @@ interface ICreateSessionConfig {
 }
 
 export interface ICreateSession {
-  createSession: (
-    config: ICreateSessionConfig,
-  ) => Promise<Result<string>>;
+  createSession: (config: ICreateSessionConfig) => Promise<Result<string>>;
 }
 
 type IQueryCommandOutputType = {

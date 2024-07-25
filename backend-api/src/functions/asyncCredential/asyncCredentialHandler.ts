@@ -1,8 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import {
-  ClientCredentialsService,
-  IClientCredentials,
-} from "../services/clientCredentialsService/clientCredentialsService";
+import { ClientCredentialsService } from "../services/clientCredentialsService/clientCredentialsService";
 import {
   IDecodedToken,
   IDecodeToken,
@@ -17,7 +14,7 @@ import { Logger } from "../services/logging/logger";
 import { MessageName } from "./registeredLogs";
 import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
 import { IEventService } from "../services/events/eventService";
-import { Config, ConfigService } from "./configService/configService";
+import { ConfigService } from "./configService/configService";
 
 export async function lambdaHandler(
   event: APIGatewayProxyEvent,
@@ -33,7 +30,7 @@ export async function lambdaHandler(
     return serverError500Response;
   }
 
-  const config = configResponse.value as Config;
+  const config = configResponse.value;
 
   const authorizationHeaderOrError = getAuthorizationHeader(
     event.headers["Authorization"],
@@ -59,7 +56,7 @@ export async function lambdaHandler(
     });
     return badRequestResponse({
       error: "invalid_token",
-      errorDescription: validTokenClaimsOrError.value as string,
+      errorDescription: validTokenClaimsOrError.value,
     });
   }
 
@@ -79,7 +76,7 @@ export async function lambdaHandler(
     });
   }
 
-  const requestBody = requestBodyOrError.value as IRequestBody;
+  const requestBody = requestBodyOrError.value;
 
   const result = await tokenService.verifyTokenSignature(
     config.SIGNING_KEY_ID,
@@ -103,8 +100,7 @@ export async function lambdaHandler(
     return serverError500Response;
   }
 
-  const storedCredentialsArray =
-    ssmServiceResponse.value as IClientCredentials[];
+  const storedCredentialsArray = ssmServiceResponse.value;
 
   // Retrieving credentials from client credential array
   const clientCredentialsService = dependencies.clientCredentialsService();
@@ -125,8 +121,7 @@ export async function lambdaHandler(
     });
   }
 
-  const clientCredentials =
-    clientCredentialResponse.value as IClientCredentials;
+  const clientCredentials = clientCredentialResponse.value;
 
   if (requestBody.redirect_uri) {
     const validateClientCredentialsResult =
@@ -141,7 +136,7 @@ export async function lambdaHandler(
 
       return badRequestResponse({
         error: "invalid_request",
-        errorDescription: validateClientCredentialsResult.value as string,
+        errorDescription: validateClientCredentialsResult.value,
       });
     }
   }
