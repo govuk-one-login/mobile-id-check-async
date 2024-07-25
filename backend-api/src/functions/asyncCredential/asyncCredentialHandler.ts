@@ -4,8 +4,8 @@ import {
   IClientCredentials,
 } from "../services/clientCredentialsService/clientCredentialsService";
 import {
-  IReturnToken,
-  IVerifyTokenClaims,
+  IDecodedToken,
+  IDecodeToken,
   IVerifyTokenSignature,
 } from "./TokenService/tokenService";
 import {
@@ -54,7 +54,7 @@ export async function lambdaHandler(
 
   // JWT Claim validation
   const tokenService = dependencies.tokenService();
-  const validTokenClaimsOrError = tokenService.verifyTokenClaims(
+  const validTokenClaimsOrError = tokenService.getDecodedToken(
     authorizationHeader,
     config.ISSUER,
   );
@@ -69,7 +69,7 @@ export async function lambdaHandler(
   }
 
   const { encodedJwt, jwtPayload } =
-    validTokenClaimsOrError.value as IReturnToken;
+    validTokenClaimsOrError.value as IDecodedToken;
 
   const requestBodyOrError = getRequestBody(event.body, jwtPayload.client_id);
 
@@ -384,7 +384,7 @@ export interface IRequestBody {
 export interface Dependencies {
   logger: () => Logger<MessageName>;
   eventService: (sqsQueue: string) => IEventService;
-  tokenService: () => IVerifyTokenClaims & IVerifyTokenSignature;
+  tokenService: () => IDecodeToken & IVerifyTokenSignature;
   clientCredentialsService: () => ClientCredentialsService;
   ssmService: () => IGetClientCredentials;
   sessionService: (

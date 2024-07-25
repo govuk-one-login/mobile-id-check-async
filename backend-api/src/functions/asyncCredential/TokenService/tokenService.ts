@@ -7,11 +7,11 @@ import {
 } from "../../types/errorOrValue";
 import { IJwtPayload } from "../../types/jwt";
 
-export class TokenService implements IVerifyTokenClaims, IVerifyTokenSignature {
-  verifyTokenClaims(
+export class TokenService implements IDecodeToken, IVerifyTokenSignature {
+  getDecodedToken(
     authorizationHeader: string,
     issuer: string,
-  ): ErrorOrSuccess<IReturnToken> {
+  ): ErrorOrSuccess<IDecodedToken> {
     const encodedJwt = authorizationHeader.split(" ")[1];
     const payload = encodedJwt.split(".")[1];
     let jwtPayload;
@@ -95,8 +95,8 @@ export class TokenService implements IVerifyTokenClaims, IVerifyTokenSignature {
   }
 }
 
-export interface IVerifyTokenClaims {
-  verifyTokenClaims: (
+export interface IDecodeToken {
+  getDecodedToken: (
     authorizationHeader: string,
     issuer: string,
   ) => ErrorOrSuccess<{ encodedJwt: string; jwtPayload: IJwtPayload }>;
@@ -109,7 +109,7 @@ export interface IVerifyTokenSignature {
   ) => Promise<ErrorOrSuccess<null>>;
 }
 
-export interface IReturnToken {
+export interface IDecodedToken {
   encodedJwt: string;
   jwtPayload: IJwtPayload;
 }

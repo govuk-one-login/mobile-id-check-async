@@ -12,7 +12,7 @@ describe("Token Service", () => {
           "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJpc3MiOiJtb2NrSXNzdWVyIiwiYXVkIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUiCJjbGllbnRfaWQiOiJtb2NrQ2xpZW50SWQifQ.fFnJIXCCkFY-LdzcUB7JmedN-97sE2J-J1FT74HJd7o";
         const authorizationHeader = `Bearer ${invalidJson}`;
 
-        const result = tokenService.verifyTokenClaims(
+        const result = tokenService.getDecodedToken(
           authorizationHeader,
           "mockIssuer",
         );
@@ -31,7 +31,7 @@ describe("Token Service", () => {
 
           console.log("what is this?", authorizationHeader);
 
-          const result = tokenService.verifyTokenClaims(
+          const result = tokenService.getDecodedToken(
             authorizationHeader,
             "mockIssuer",
           );
@@ -48,7 +48,7 @@ describe("Token Service", () => {
           jwtBuilder.setExp(Math.floor(Date.now() - 1000) / 1000);
           const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
-          const result = tokenService.verifyTokenClaims(
+          const result = tokenService.getDecodedToken(
             authorizationHeader,
             "mockIssuer",
           );
@@ -67,7 +67,7 @@ describe("Token Service", () => {
           jwtBuilder.setIat(Math.floor(Date.now() + 1000) / 1000);
           const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
-          const result = tokenService.verifyTokenClaims(
+          const result = tokenService.getDecodedToken(
             authorizationHeader,
             "mockIssuer",
           );
@@ -86,7 +86,7 @@ describe("Token Service", () => {
           jwtBuilder.setNbf(Date.now() + 1000);
           const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
-          const result = tokenService.verifyTokenClaims(
+          const result = tokenService.getDecodedToken(
             authorizationHeader,
             "mockIssuer",
           );
@@ -105,7 +105,7 @@ describe("Token Service", () => {
           jwtBuilder.deleteIss();
           const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
-          const result = tokenService.verifyTokenClaims(
+          const result = tokenService.getDecodedToken(
             authorizationHeader,
             "mockIssuer",
           );
@@ -122,7 +122,7 @@ describe("Token Service", () => {
           jwtBuilder.setIss("invalidIss");
           const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
-          const result = tokenService.verifyTokenClaims(
+          const result = tokenService.getDecodedToken(
             authorizationHeader,
             "mockIssuer",
           );
@@ -143,7 +143,7 @@ describe("Token Service", () => {
           jwtBuilder.setScope("invalidScope");
           const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
-          const result = tokenService.verifyTokenClaims(
+          const result = tokenService.getDecodedToken(
             authorizationHeader,
             "mockIssuer",
           );
@@ -162,7 +162,7 @@ describe("Token Service", () => {
           jwtBuilder.deleteClientId();
           const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
-          const result = tokenService.verifyTokenClaims(
+          const result = tokenService.getDecodedToken(
             authorizationHeader,
             "mockIssuer",
           );
@@ -181,7 +181,7 @@ describe("Token Service", () => {
           jwtBuilder.deleteAud();
           const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
-          const result = tokenService.verifyTokenClaims(
+          const result = tokenService.getDecodedToken(
             authorizationHeader,
             "mockIssuer",
           );
@@ -200,7 +200,7 @@ describe("Token Service", () => {
         const jwtBuilder = new MockJWTBuilder();
         const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
-        const result = tokenService.verifyTokenClaims(
+        const result = tokenService.getDecodedToken(
           authorizationHeader,
           "mockIssuer",
         );

@@ -1,8 +1,8 @@
 import { APIGatewayProxyResult } from "aws-lambda";
 import { buildRequest } from "../testUtils/mockRequest";
 import {
-  IReturnToken,
-  IVerifyTokenClaims,
+  IDecodedToken,
+  IDecodeToken,
   IVerifyTokenSignature,
 } from "./TokenService/tokenService";
 import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
@@ -1018,9 +1018,9 @@ describe("Async Credential", () => {
 });
 
 class MockTokenServiceInvalidClaim
-  implements IVerifyTokenClaims, IVerifyTokenSignature
+  implements IDecodeToken, IVerifyTokenSignature
 {
-  verifyTokenClaims(): ErrorOrSuccess<IReturnToken> {
+  getDecodedToken(): ErrorOrSuccess<IDecodedToken> {
     return errorResponse("Mock invalid claim");
   }
   verifyTokenSignature(): Promise<ErrorOrSuccess<null>> {
@@ -1029,17 +1029,14 @@ class MockTokenServiceInvalidClaim
 }
 
 class MockTokenServiceValidClaim
-  implements IVerifyTokenClaims, IVerifyTokenSignature
+  implements IDecodeToken, IVerifyTokenSignature
 {
-  tokenObjects: IReturnToken[] = [];
-  verifyTokenClaims(authorizationHeader: string): ErrorOrSuccess<IReturnToken> {
+  getDecodedToken(authorizationHeader: string): ErrorOrSuccess<IDecodedToken> {
     const encodedJwt = authorizationHeader.split(" ")[1];
     const payload = encodedJwt.split(".")[1];
     const jwtPayload = JSON.parse(
       Buffer.from(payload, "base64").toString("utf-8"),
     );
-
-    this.tokenObjects.push({ encodedJwt, jwtPayload });
 
     return successResponse({
       encodedJwt,
@@ -1052,9 +1049,9 @@ class MockTokenServiceValidClaim
 }
 
 class MockTokenServiceInvalidSignature
-  implements IVerifyTokenClaims, IVerifyTokenSignature
+  implements IDecodeToken, IVerifyTokenSignature
 {
-  verifyTokenClaims(): ErrorOrSuccess<IReturnToken> {
+  getDecodedToken(): ErrorOrSuccess<IDecodedToken> {
     return successResponse({
       encodedJwt:
         "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJleHAiOjE3MjE5MDExNDMwMDAsImlzcyI6Im1vY2tJc3N1ZXIiLCJhdWQiOiJtb2NrSXNzdWVyIiwic2NvcGUiOiJkY21hdy5zZXNzaW9uLmFzeW5jX2NyZWF0ZSIsImNsaWVudF9pZCI6Im1vY2tDbGllbnRJZCJ9.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
@@ -1073,9 +1070,9 @@ class MockTokenServiceInvalidSignature
 }
 
 class MockTokenServiceValidSignature
-  implements IVerifyTokenClaims, IVerifyTokenSignature
+  implements IDecodeToken, IVerifyTokenSignature
 {
-  verifyTokenClaims(): ErrorOrSuccess<IReturnToken> {
+  getDecodedToken(): ErrorOrSuccess<IDecodedToken> {
     return successResponse({
       encodedJwt:
         "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJleHAiOjE3MjE5MDExNDMwMDAsImlzcyI6Im1vY2tJc3N1ZXIiLCJhdWQiOiJtb2NrSXNzdWVyIiwic2NvcGUiOiJkY21hdy5zZXNzaW9uLmFzeW5jX2NyZWF0ZSIsImNsaWVudF9pZCI6Im1vY2tDbGllbnRJZCJ9.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
