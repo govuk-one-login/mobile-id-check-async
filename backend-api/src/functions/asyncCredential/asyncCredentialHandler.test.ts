@@ -1197,7 +1197,7 @@ describe("Async Credential", () => {
 
       describe("Given the session has been created", () => {
         describe("Given it fails to write the DCMAW_ASYNC_CRI_START event to TxMA", () => {
-          it("Logs and returns 201 session created response", async () => {
+          it("Logs and returns a 500 Internal Server Error", async () => {
             const jwtBuilder = new MockJWTBuilder();
             const event = buildRequest({
               headers: {
@@ -1229,10 +1229,10 @@ describe("Async Credential", () => {
 
             expect(result).toStrictEqual({
               headers: { "Content-Type": "application/json" },
-              statusCode: 201,
+              statusCode: 500,
               body: JSON.stringify({
-                sub: "mockSub",
-                "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
+                error: "server_error",
+                error_description: "Server Error",
               }),
             });
           });

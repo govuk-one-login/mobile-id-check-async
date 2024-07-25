@@ -217,6 +217,7 @@ export async function lambdaHandler(
     logger.log("ERROR_WRITING_AUDIT_EVENT", {
       errorMessage: "Unexpected error writing the DCMAW_ASYNC_CRI_START event",
     });
+    return serverError500Response;
   }
 
   logger.log("COMPLETED");
