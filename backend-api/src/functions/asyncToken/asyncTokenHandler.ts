@@ -6,7 +6,6 @@ import {
 import "dotenv/config";
 import {
   ClientCredentialsService,
-  IClientCredentials,
   IClientCredentialsService,
 } from "../services/clientCredentialsService/clientCredentialsService";
 import {
@@ -15,11 +14,10 @@ import {
 } from "./requestService/requestService";
 import { IGetClientCredentials, SsmService } from "./ssmService/ssmService";
 import { IMintToken, TokenService } from "./tokenService/tokenService";
-import { IDecodedClientCredentials } from "../types/clientCredentials";
 import { Logger } from "../services/logging/logger";
 import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
 import { MessageName, registeredLogs } from "./registeredLogs";
-import { Config, ConfigService } from "./configService/configService";
+import { ConfigService } from "./configService/configService";
 import { EventService, IEventService } from "../services/events/eventService";
 
 export async function lambdaHandlerConstructor(
@@ -41,7 +39,7 @@ export async function lambdaHandlerConstructor(
     return serverErrorResponse;
   }
 
-  const config = configResponse.value as Config;
+  const config = configResponse.value;
 
   // Ensure that request contains expected params
   const requestService = dependencies.requestService();
@@ -58,7 +56,7 @@ export async function lambdaHandlerConstructor(
     return badRequestResponseInvalidAuthorizationHeader;
   }
 
-  const suppliedCredentials = processRequest.value as IDecodedClientCredentials;
+  const suppliedCredentials = processRequest.value;
 
   // Fetching stored client credentials
   const ssmService = dependencies.ssmService();
@@ -70,8 +68,7 @@ export async function lambdaHandlerConstructor(
     return serverErrorResponse;
   }
 
-  const storedCredentialsArray =
-    ssmServiceResponse.value as IClientCredentials[];
+  const storedCredentialsArray = ssmServiceResponse.value;
 
   // Incoming credentials match stored credentials
   const clientCredentialsService = dependencies.clientCredentialService();
@@ -87,8 +84,7 @@ export async function lambdaHandlerConstructor(
     return badRequestResponseInvalidCredentials;
   }
 
-  const storedCredentials =
-    clientCredentialsByIdResponse.value as IClientCredentials;
+  const storedCredentials = clientCredentialsByIdResponse.value;
 
   const isValidClientCredentialsResponse =
     clientCredentialsService.validateTokenRequest(

@@ -1,16 +1,12 @@
 import { createHash } from "crypto";
-import {
-  ErrorOrSuccess,
-  errorResponse,
-  successResponse,
-} from "../../types/errorOrValue";
+import { Result, errorResult, successResult } from "../../utils/result";
 import { IRequestBody } from "../../asyncCredential/asyncCredentialHandler";
 
 export class ClientCredentialsService implements IClientCredentialsService {
   validateTokenRequest = (
     storedCredentials: IClientCredentials,
     suppliedCredentials: IDecodedClientCredentials,
-  ): ErrorOrSuccess<null> => {
+  ): Result<null> => {
     const { clientSecret: suppliedClientSecret } = suppliedCredentials;
     const storedSalt = storedCredentials.salt;
     const hashedSuppliedClientSecret = hashSecret(
@@ -22,55 +18,55 @@ export class ClientCredentialsService implements IClientCredentialsService {
       hashedStoredClientSecret === hashedSuppliedClientSecret;
 
     if (!isValidClientSecret) {
-      return errorResponse("Client secret not valid for the supplied clientId");
+      return errorResult("Client secret not valid for the supplied clientId");
     }
 
     const registeredRedirectUri = storedCredentials.redirect_uri;
     if (!registeredRedirectUri) {
-      return errorResponse("Missing redirect_uri");
+      return errorResult("Missing redirect_uri");
     }
 
     try {
       new URL(registeredRedirectUri);
-    } catch (error) {
-      return errorResponse("Invalid redirect_uri");
+    } catch (e) {
+      return errorResult("Invalid redirect_uri");
     }
 
-    return successResponse(null);
+    return successResult(null);
   };
 
   validateRedirectUri = (
     storedCredentials: IClientCredentials,
     suppliedCredentials: IRequestBody,
-  ): ErrorOrSuccess<null> => {
+  ): Result<null> => {
     const registeredRedirectUri = storedCredentials.redirect_uri;
     if (!registeredRedirectUri) {
-      return errorResponse("Missing redirect_uri");
+      return errorResult("Missing redirect_uri");
     }
 
     try {
       new URL(registeredRedirectUri);
-    } catch (error) {
-      return errorResponse("Invalid redirect_uri");
+    } catch (e) {
+      return errorResult("Invalid redirect_uri");
     }
 
     if (suppliedCredentials.redirect_uri !== storedCredentials.redirect_uri) {
-      return errorResponse("Unregistered redirect_uri");
+      return errorResult("Unregistered redirect_uri");
     }
 
-    return successResponse(null);
+    return successResult(null);
   };
 
   getClientCredentialsById = (
     storedCredentialsArray: IClientCredentials[],
     suppliedClientId: string,
-  ): ErrorOrSuccess<IClientCredentials> => {
+  ): Result<IClientCredentials> => {
     const storedCredentials = storedCredentialsArray.find(
       (cred: IClientCredentials) => cred.client_id === suppliedClientId,
     );
-    if (!storedCredentials) return errorResponse("ClientId not registered");
+    if (!storedCredentials) return errorResult("ClientId not registered");
 
-    return successResponse(storedCredentials);
+    return successResult(storedCredentials);
   };
 }
 const hashSecret = (secret: string, salt: string): string => {
@@ -83,17 +79,17 @@ export interface IClientCredentialsService {
   validateTokenRequest: (
     storedCredentials: IClientCredentials,
     suppliedCredentials: IDecodedClientCredentials,
-  ) => ErrorOrSuccess<null>;
+  ) => Result<null>;
 
   validateRedirectUri: (
     storedCredentials: IClientCredentials,
     suppliedCredentials: IRequestBody,
-  ) => ErrorOrSuccess<null>;
+  ) => Result<null>;
 
   getClientCredentialsById: (
     storedCredentialsArray: IClientCredentials[],
     suppliedClientId: string,
-  ) => ErrorOrSuccess<IClientCredentials>;
+  ) => Result<IClientCredentials>;
 }
 
 export type IClientCredentials = {

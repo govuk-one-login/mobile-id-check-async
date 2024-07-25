@@ -1,8 +1,4 @@
-import {
-  ErrorOrSuccess,
-  successResponse,
-  errorResponse,
-} from "../../../types/errorOrValue";
+import { errorResult, Result, successResult } from "../../../utils/result";
 import {
   GenericEventConfig,
   IEventService,
@@ -14,15 +10,15 @@ export class MockEventWriterSuccess implements IEventService {
   auditEvents: EventNames[] = [];
   writeGenericEvent = async (
     eventConfig: GenericEventConfig,
-  ): Promise<ErrorOrSuccess<null>> => {
+  ): Promise<Result<null>> => {
     this.auditEvents.push(eventConfig.eventName);
-    return successResponse(null);
+    return successResult(null);
   };
   writeCredentialTokenIssuedEvent = async (
     eventConfig: CredentialTokenIssuedEventConfig,
-  ): Promise<ErrorOrSuccess<null>> => {
+  ): Promise<Result<null>> => {
     this.auditEvents.push(eventConfig.eventName);
-    return successResponse(null);
+    return successResult(null);
   };
 }
 
@@ -33,13 +29,13 @@ export class MockEventServiceFailToWrite implements IEventService {
   }
   writeGenericEvent = async (
     eventConfig: GenericEventConfig,
-  ): Promise<ErrorOrSuccess<null>> => {
+  ): Promise<Result<null>> => {
     if (eventConfig.eventName === this.eventNameToFail)
-      return errorResponse("Error writing to SQS");
-    return successResponse(null);
+      return errorResult("Error writing to SQS");
+    return successResult(null);
   };
 
-  writeCredentialTokenIssuedEvent = async (): Promise<ErrorOrSuccess<null>> => {
-    return errorResponse("Error writing to SQS");
+  writeCredentialTokenIssuedEvent = async (): Promise<Result<null>> => {
+    return errorResult("Error writing to SQS");
   };
 }

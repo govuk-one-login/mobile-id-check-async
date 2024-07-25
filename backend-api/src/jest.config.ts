@@ -1,5 +1,6 @@
 export default {
   collectCoverage: true,
+  coveragePathIgnorePatterns: ["/testUtils/", "/node-modules/"],
   preset: "ts-jest",
   reporters: [
     "default",

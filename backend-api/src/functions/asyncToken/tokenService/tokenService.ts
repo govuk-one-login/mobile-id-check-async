@@ -4,11 +4,7 @@ import { Buffer } from "buffer";
 import jose from "node-jose";
 import format from "ecdsa-sig-formatter";
 import { IJwtPayload, JwtHeader } from "../../types/jwt";
-import {
-  ErrorOrSuccess,
-  errorResponse,
-  successResponse,
-} from "../../types/errorOrValue";
+import { errorResult, Result, successResult } from "../../utils/result";
 
 export class TokenService implements IMintToken {
   readonly kidArn: string;
@@ -27,7 +23,7 @@ export class TokenService implements IMintToken {
     this.kidArn = kidArn;
   }
 
-  async mintToken(jwtPayload: IJwtPayload): Promise<ErrorOrSuccess<string>> {
+  async mintToken(jwtPayload: IJwtPayload): Promise<Result<string>> {
     // Building token
     const jwtHeader: JwtHeader = { alg: "ES256", typ: "JWT" };
     const kid = this.kidArn.split("/").pop();
@@ -54,19 +50,19 @@ export class TokenService implements IMintToken {
       });
 
       result = await this.kmsClient.send(command);
-    } catch (error: unknown) {
-      return errorResponse(`Error from KMS`);
+    } catch (e: unknown) {
+      return errorResult(`Error from KMS`);
     }
 
     if (!result.Signature) {
-      return errorResponse("No signature in response from KMS");
+      return errorResult("No signature in response from KMS");
     }
 
     // Convert signature to buffer and format with ES256 algorithm
     const signatureBuffer = Buffer.from(result.Signature);
     tokenComponents.signature = format.derToJose(signatureBuffer, "ES256");
 
-    return successResponse(
+    return successResult(
       `${tokenComponents.header}.${tokenComponents.payload}.${tokenComponents.signature}`,
     );
   }
@@ -78,5 +74,5 @@ export class TokenService implements IMintToken {
 }
 
 export interface IMintToken {
-  mintToken: (jwtPayload: IJwtPayload) => Promise<ErrorOrSuccess<string>>;
+  mintToken: (jwtPayload: IJwtPayload) => Promise<Result<string>>;
 }

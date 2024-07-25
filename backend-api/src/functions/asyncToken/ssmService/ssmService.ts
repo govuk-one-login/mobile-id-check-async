@@ -4,11 +4,7 @@ import {
   SSMClient,
   SSMClientConfig,
 } from "@aws-sdk/client-ssm";
-import {
-  ErrorOrSuccess,
-  errorResponse,
-  successResponse,
-} from "../../types/errorOrValue";
+import { Result, errorResult, successResult } from "../../utils/result";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { IClientCredentials } from "../../services/clientCredentialsService/clientCredentialsService";
 
@@ -31,11 +27,9 @@ export class SsmService implements IGetClientCredentials {
     this.cacheTTL = 3600 * 1000;
   }
 
-  getClientCredentials = async (): Promise<
-    ErrorOrSuccess<IClientCredentials[]>
-  > => {
+  getClientCredentials = async (): Promise<Result<IClientCredentials[]>> => {
     if (cache && cache.expiry > Date.now()) {
-      return successResponse(cache.data);
+      return successResult(cache.data);
     }
 
     const command: GetParameterRequest = {
@@ -46,25 +40,25 @@ export class SsmService implements IGetClientCredentials {
     let response;
     try {
       response = await this.ssmClient.send(new GetParameterCommand(command));
-    } catch (error: unknown) {
-      return errorResponse("Client Credentials not found");
+    } catch (e: unknown) {
+      return errorResult("Client Credentials not found");
     }
 
     const clientCredentialResponse = response.Parameter?.Value;
 
     if (!clientCredentialResponse) {
-      return errorResponse("Client Credentials is null or undefined");
+      return errorResult("Client Credentials is null or undefined");
     }
 
     let parsedCredentials;
     try {
       parsedCredentials = JSON.parse(clientCredentialResponse);
-    } catch (error: unknown) {
-      return errorResponse("Client Credentials is not valid JSON");
+    } catch (e: unknown) {
+      return errorResult("Client Credentials is not valid JSON");
     }
 
     if (!this.isCredentialsArrayValid(parsedCredentials)) {
-      return errorResponse("Parsed Client Credentials array is malformed");
+      return errorResult("Parsed Client Credentials array is malformed");
     }
 
     cache = {
@@ -72,7 +66,7 @@ export class SsmService implements IGetClientCredentials {
       data: parsedCredentials,
     };
 
-    return successResponse(parsedCredentials);
+    return successResult(parsedCredentials);
   };
 
   private isCredentialsArrayValid = (
@@ -112,7 +106,7 @@ export class SsmService implements IGetClientCredentials {
 }
 
 export interface IGetClientCredentials {
-  getClientCredentials: () => Promise<ErrorOrSuccess<IClientCredentials[]>>;
+  getClientCredentials: () => Promise<Result<IClientCredentials[]>>;
 }
 
 interface CacheEntry {

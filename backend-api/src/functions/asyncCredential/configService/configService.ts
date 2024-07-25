@@ -1,9 +1,5 @@
 import { IGetConfig } from "../../types/config";
-import {
-  ErrorOrSuccess,
-  errorResponse,
-  successResponse,
-} from "../../types/errorOrValue";
+import { errorResult, Result, successResult } from "../../utils/result";
 
 export interface Config {
   SIGNING_KEY_ID: string;
@@ -15,18 +11,18 @@ export interface Config {
 }
 
 export class ConfigService implements IGetConfig<Config> {
-  getConfig = (env: NodeJS.ProcessEnv): ErrorOrSuccess<Config> => {
-    if (!env.SIGNING_KEY_ID) return errorResponse("No SIGNING_KEY_ID");
-    if (!env.ISSUER) return errorResponse("No ISSUER");
-    if (!env.SESSION_TABLE_NAME) return errorResponse("No SESSION_TABLE_NAME");
+  getConfig = (env: NodeJS.ProcessEnv): Result<Config> => {
+    if (!env.SIGNING_KEY_ID) return errorResult("No SIGNING_KEY_ID");
+    if (!env.ISSUER) return errorResult("No ISSUER");
+    if (!env.SESSION_TABLE_NAME) return errorResult("No SESSION_TABLE_NAME");
     if (!env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME)
-      return errorResponse("No SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME");
+      return errorResult("No SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME");
     if (!env.SESSION_TTL_IN_MILLISECONDS)
-      return errorResponse("No SESSION_TTL_IN_MILLISECONDS");
+      return errorResult("No SESSION_TTL_IN_MILLISECONDS");
     if (isNaN(Number(env.SESSION_TTL_IN_MILLISECONDS)))
-      return errorResponse("SESSION_TTL_IN_MILLISECONDS is not a valid number");
-    if (!env.SQS_QUEUE) return errorResponse("No SQS_QUEUE");
-    return successResponse({
+      return errorResult("SESSION_TTL_IN_MILLISECONDS is not a valid number");
+    if (!env.SQS_QUEUE) return errorResult("No SQS_QUEUE");
+    return successResult({
       SIGNING_KEY_ID: env.SIGNING_KEY_ID,
       ISSUER: env.ISSUER,
       SESSION_TABLE_NAME: env.SESSION_TABLE_NAME,

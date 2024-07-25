@@ -1,18 +1,11 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import {
-  ClientCredentialsService,
-  IClientCredentials,
-} from "../services/clientCredentialsService/clientCredentialsService";
+import { ClientCredentialsService } from "../services/clientCredentialsService/clientCredentialsService";
 import {
   IDecodedToken,
   IDecodeToken,
   IVerifyTokenSignature,
 } from "./TokenService/tokenService";
-import {
-  ErrorOrSuccess,
-  errorResponse,
-  successResponse,
-} from "../types/errorOrValue";
+import { errorResult, Result, successResult } from "../utils/result";
 import {
   ICreateSession,
   IGetActiveSession,
@@ -21,7 +14,7 @@ import { Logger } from "../services/logging/logger";
 import { MessageName } from "./registeredLogs";
 import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
 import { IEventService } from "../services/events/eventService";
-import { Config, ConfigService } from "./configService/configService";
+import { ConfigService } from "./configService/configService";
 
 export async function lambdaHandler(
   event: APIGatewayProxyEvent,
@@ -37,7 +30,7 @@ export async function lambdaHandler(
     return serverError500Response;
   }
 
-  const config = configResponse.value as Config;
+  const config = configResponse.value;
 
   const authorizationHeaderOrError = getAuthorizationHeader(
     event.headers["Authorization"],
@@ -63,7 +56,7 @@ export async function lambdaHandler(
     });
     return badRequestResponse({
       error: "invalid_token",
-      errorDescription: validTokenClaimsOrError.value as string,
+      errorDescription: validTokenClaimsOrError.value,
     });
   }
 
@@ -83,7 +76,7 @@ export async function lambdaHandler(
     });
   }
 
-  const requestBody = requestBodyOrError.value as IRequestBody;
+  const requestBody = requestBodyOrError.value;
 
   const result = await tokenService.verifyTokenSignature(
     config.SIGNING_KEY_ID,
@@ -107,8 +100,7 @@ export async function lambdaHandler(
     return serverError500Response;
   }
 
-  const storedCredentialsArray =
-    ssmServiceResponse.value as IClientCredentials[];
+  const storedCredentialsArray = ssmServiceResponse.value;
 
   // Retrieving credentials from client credential array
   const clientCredentialsService = dependencies.clientCredentialsService();
@@ -129,8 +121,7 @@ export async function lambdaHandler(
     });
   }
 
-  const clientCredentials =
-    clientCredentialResponse.value as IClientCredentials;
+  const clientCredentials = clientCredentialResponse.value;
 
   if (requestBody.redirect_uri) {
     const validateClientCredentialsResult =
@@ -145,7 +136,7 @@ export async function lambdaHandler(
 
       return badRequestResponse({
         error: "invalid_request",
-        errorDescription: validateClientCredentialsResult.value as string,
+        errorDescription: validateClientCredentialsResult.value,
       });
     }
   }
@@ -222,78 +213,76 @@ export async function lambdaHandler(
 
 const getAuthorizationHeader = (
   authorizationHeader: string | undefined,
-): ErrorOrSuccess<string> => {
+): Result<string> => {
   if (authorizationHeader == null) {
-    return errorResponse("No Authentication header present");
+    return errorResult("No Authentication header present");
   }
 
   if (!authorizationHeader.startsWith("Bearer ")) {
-    return errorResponse(
+    return errorResult(
       "Invalid authentication header format - does not start with Bearer",
     );
   }
 
   if (authorizationHeader.split(" ").length !== 2) {
-    return errorResponse(
+    return errorResult(
       "Invalid authentication header format - contains spaces",
     );
   }
 
   if (authorizationHeader.split(" ")[1].length == 0) {
-    return errorResponse(
-      "Invalid authentication header format - missing token",
-    );
+    return errorResult("Invalid authentication header format - missing token");
   }
 
-  return successResponse(authorizationHeader);
+  return successResult(authorizationHeader);
 };
 
 const getRequestBody = (
   requestBody: string | null,
   jwtClientId: string,
-): ErrorOrSuccess<IRequestBody> => {
+): Result<IRequestBody> => {
   if (requestBody == null) {
-    return errorResponse("Missing request body");
+    return errorResult("Missing request body");
   }
 
   let body: IRequestBody;
   try {
     body = JSON.parse(requestBody);
-  } catch (error) {
-    return errorResponse("Invalid JSON in request body");
+  } catch (e) {
+    return errorResult("Invalid JSON in request body");
   }
 
   if (!body.state) {
-    return errorResponse("Missing state in request body");
+    return errorResult("Missing state in request body");
   }
 
   if (!body.sub) {
-    return errorResponse("Missing sub in request body");
+    return errorResult("Missing sub in request body");
   }
 
   if (!body.client_id) {
-    return errorResponse("Missing client_id in request body");
+    return errorResult("Missing client_id in request body");
   }
 
   if (body.client_id !== jwtClientId) {
-    return errorResponse(
+    return errorResult(
       "client_id in request body does not match value in access_token",
     );
   }
 
   if (!body["govuk_signin_journey_id"]) {
-    return errorResponse("Missing govuk_signin_journey_id in request body");
+    return errorResult("Missing govuk_signin_journey_id in request body");
   }
 
   if (body.redirect_uri) {
     try {
       new URL(body.redirect_uri);
-    } catch (error) {
-      return errorResponse("redirect_uri in request body is not a URL");
+    } catch (e) {
+      return errorResult("redirect_uri in request body is not a URL");
     }
   }
 
-  return successResponse(body);
+  return successResult(body);
 };
 
 const badRequestResponse = (responseInput: {

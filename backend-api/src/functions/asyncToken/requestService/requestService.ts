@@ -1,28 +1,24 @@
 import { IDecodedClientCredentials } from "../../types/clientCredentials";
-import {
-  ErrorOrSuccess,
-  errorResponse,
-  successResponse,
-} from "../../types/errorOrValue";
+import { errorResult, Result, successResult } from "../../utils/result";
 import { APIGatewayProxyEvent } from "aws-lambda";
 
 export class RequestService implements IProcessRequest {
   processRequest = (
     request: APIGatewayProxyEvent,
-  ): ErrorOrSuccess<IDecodedClientCredentials> => {
+  ): Result<IDecodedClientCredentials> => {
     const requestBody = request.body;
     const authorizationHeader = request.headers["Authorization"];
 
     if (!this.isRequestBodyValid(requestBody)) {
-      return errorResponse("Invalid grant_type");
+      return errorResult("Invalid grant_type");
     }
 
     if (!authorizationHeader) {
-      return errorResponse("Invalid authorization header");
+      return errorResult("Invalid authorization header");
     }
 
     if (!authorizationHeader.startsWith("Basic ")) {
-      return errorResponse("Invalid authorization header");
+      return errorResult("Invalid authorization header");
     }
 
     const base64EncodedCredential = authorizationHeader.split(" ")[1];
@@ -33,10 +29,10 @@ export class RequestService implements IProcessRequest {
     const [clientId, clientSecret] = base64DecodedCredential.split(":");
 
     if (!clientId || !clientSecret) {
-      return errorResponse("Client secret incorrectly formatted");
+      return errorResult("Client secret incorrectly formatted");
     }
 
-    return successResponse({ clientId, clientSecret });
+    return successResult({ clientId, clientSecret });
   };
 
   private isRequestBodyValid = (body: string | null): boolean => {
@@ -56,7 +52,7 @@ export class RequestService implements IProcessRequest {
 export interface IProcessRequest {
   processRequest: (
     request: APIGatewayProxyEvent,
-  ) => ErrorOrSuccess<IDecodedClientCredentials>;
+  ) => Result<IDecodedClientCredentials>;
 }
 
 export interface IDecodedAuthorizationHeader {
