@@ -76,32 +76,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     config: ICreateSessionConfig,
   ): Promise<ErrorOrSuccess<string>> {
     const sessionId = randomUUID();
-    const {
-      state,
-      sub,
-      client_id,
-      govuk_signin_journey_id,
-      redirect_uri,
-      issuer,
-    } = config;
-
-    const putSessionConfig: IPutSessionConfig = {
-      TableName: this.tableName,
-      Item: {
-        sessionId: { S: sessionId },
-        state: { S: state },
-        sub: { S: sub },
-        clientId: { S: client_id },
-        govukSigninJourneyId: { S: govuk_signin_journey_id },
-        issuer: { S: issuer },
-        sessionState: { S: "ASYNC_AUTH_SESSION_CREATED" },
-        issuedOn: { S: Date.now().toString() },
-      },
-    };
-
-    if (redirect_uri) {
-      putSessionConfig.Item.redirectUri = { S: redirect_uri };
-    }
+    const putSessionConfig = this.buildSession(sessionId, config);
 
     let doesSessionExist;
     try {
@@ -136,6 +111,37 @@ export class SessionService implements IGetActiveSession, ICreateSession {
       result.Items[0].sessionId != null &&
       result.Items[0].sessionId.S !== ""
     );
+  }
+
+  private buildSession(sessionId: string, config: ICreateSessionConfig) {
+    const {
+      state,
+      sub,
+      client_id,
+      govuk_signin_journey_id,
+      redirect_uri,
+      issuer,
+    } = config;
+
+    const putSessionConfig: IPutSessionConfig = {
+      TableName: this.tableName,
+      Item: {
+        sessionId: { S: sessionId },
+        state: { S: state },
+        sub: { S: sub },
+        clientId: { S: client_id },
+        govukSigninJourneyId: { S: govuk_signin_journey_id },
+        issuer: { S: issuer },
+        sessionState: { S: "ASYNC_AUTH_SESSION_CREATED" },
+        issuedOn: { S: Date.now().toString() },
+      },
+    };
+
+    if (redirect_uri) {
+      putSessionConfig.Item.redirectUri = { S: redirect_uri };
+    }
+
+    return putSessionConfig;
   }
 
   private async checkSessionsExists(sessionId: string): Promise<boolean> {
