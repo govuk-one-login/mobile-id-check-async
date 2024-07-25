@@ -85,7 +85,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
       issuer,
     } = config;
 
-    const putItemCommandConfig: IPutAuthSessionConfig = {
+    const putAuthSessionConfig: IPutAuthSessionConfig = {
       TableName: this.tableName,
       Item: {
         sessionId: { S: sessionId },
@@ -100,7 +100,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     };
 
     if (redirect_uri) {
-      putItemCommandConfig.Item.redirectUri = { S: redirect_uri };
+      putAuthSessionConfig.Item.redirectUri = { S: redirect_uri };
     }
 
     let doesSessionExist;
@@ -117,7 +117,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     }
 
     try {
-      await this.putSessionInDb(putItemCommandConfig);
+      await this.putSessionInDb(putAuthSessionConfig);
     } catch (error) {
       return errorResponse(
         "Unexpected error when querying session table whilst creating a session",
