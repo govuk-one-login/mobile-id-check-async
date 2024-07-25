@@ -194,10 +194,9 @@ describe("Token Service", () => {
 
     describe("Given all claims are valid", () => {
       it("Returns success response with encodedJwt and JwtPayload", () => {
-        jest.useFakeTimers();
-        jest.setSystemTime(new Date(1721901142000)); // Thursday, 25 July 2024 10:52:22 GMT+01:00
         const tokenService = new TokenService();
         const jwtBuilder = new MockJWTBuilder();
+        jwtBuilder.setExp(1721901143000);
         const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
         const result = tokenService.getDecodedToken({
