@@ -11,7 +11,7 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
     if (decodedJwtOrError.isError) {
       return errorResult(decodedJwtOrError.value);
     }
-    const jwtPayload = decodedJwtOrError.value as IJwtPayload;
+    const jwtPayload = decodedJwtOrError.value;
 
     const validClaimsOrError = this.validateTokenClaims(
       jwtPayload,
