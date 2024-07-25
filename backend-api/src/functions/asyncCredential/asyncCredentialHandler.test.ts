@@ -48,7 +48,7 @@ describe("Async Credential", () => {
     dependencies = {
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(mockLogger, registeredLogs),
-      tokenService: () => new MockTokenServiceValidClaim(),
+      tokenService: () => new MockTokenServiceGetDecodedTokenSuccess(),
       ssmService: () => new MockPassingSsmService(),
       clientCredentialsService: () => new MockPassingClientCredentialsService(),
       sessionService: () =>
@@ -231,16 +231,17 @@ describe("Async Credential", () => {
     });
   });
 
-  describe("Token claim validation", () => {
-    describe("Given there is an invalid claim", () => {
-      it("Returns a log", async () => {
+  describe("Get decoded token", () => {
+    describe("Given decoding token fails", () => {
+      it("Logs and returns 400 Bad Request response", async () => {
         const jwtBuilder = new MockJWTBuilder();
         jwtBuilder.deleteExp();
         const event = buildRequest({
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
 
-        dependencies.tokenService = () => new MockTokenServiceInvalidClaim();
+        dependencies.tokenService = () =>
+          new MockTokenServiceGetDecodedTokenFailure();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -251,7 +252,7 @@ describe("Async Credential", () => {
           "JWT_CLAIM_INVALID",
         );
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-          errorMessage: "Mock invalid claim",
+          errorMessage: "Mock decoding token error",
         });
 
         expect(result).toStrictEqual({
@@ -259,7 +260,7 @@ describe("Async Credential", () => {
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_token",
-            error_description: "Mock invalid claim",
+            error_description: "Mock decoding token error",
           }),
         });
       });
@@ -991,18 +992,18 @@ describe("Async Credential", () => {
   });
 });
 
-class MockTokenServiceInvalidClaim
+class MockTokenServiceGetDecodedTokenFailure
   implements IDecodeToken, IVerifyTokenSignature
 {
   getDecodedToken(): ErrorOrSuccess<IDecodedToken> {
-    return errorResponse("Mock invalid claim");
+    return errorResponse("Mock decoding token error");
   }
   verifyTokenSignature(): Promise<ErrorOrSuccess<null>> {
     return Promise.resolve(successResponse(null));
   }
 }
 
-class MockTokenServiceValidClaim
+class MockTokenServiceGetDecodedTokenSuccess
   implements IDecodeToken, IVerifyTokenSignature
 {
   getDecodedToken(config: IDecodeTokenConfig): ErrorOrSuccess<IDecodedToken> {
