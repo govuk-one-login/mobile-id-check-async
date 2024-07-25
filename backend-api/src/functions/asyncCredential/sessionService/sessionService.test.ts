@@ -109,16 +109,14 @@ describe("Session Service", () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(GetItemCommand).rejects("Mock DB Error");
 
-        const result = await service.createSession(
-          {
-            state: "mockValidState",
-            sub: "mockSub",
-            client_id: "mockClientId",
-            govuk_signin_journey_id: "mockJourneyId",
-            redirect_uri: "https://mockRedirectUri.com",
-          },
-          "mockIssuer",
-        );
+        const result = await service.createSession({
+          state: "mockValidState",
+          sub: "mockSub",
+          client_id: "mockClientId",
+          govuk_signin_journey_id: "mockJourneyId",
+          redirect_uri: "https://mockRedirectUri.com",
+          issuer: "mockIssuer",
+        });
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual(
@@ -136,16 +134,14 @@ describe("Session Service", () => {
           },
         });
 
-        const result = await service.createSession(
-          {
-            state: "mockValidState",
-            sub: "mockSub",
-            client_id: "mockClientId",
-            govuk_signin_journey_id: "mockJourneyId",
-            redirect_uri: "https://mockRedirectUri.com",
-          },
-          "mockIssuer",
-        );
+        const result = await service.createSession({
+          state: "mockValidState",
+          sub: "mockSub",
+          client_id: "mockClientId",
+          govuk_signin_journey_id: "mockJourneyId",
+          redirect_uri: "https://mockRedirectUri.com",
+          issuer: "mockIssuer",
+        });
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual(
@@ -160,16 +156,14 @@ describe("Session Service", () => {
         dbMock.on(GetItemCommand).resolves({});
         dbMock.on(PutItemCommand).rejects("Mock DB Error");
 
-        const result = await service.createSession(
-          {
-            state: "mockValidState",
-            sub: "mockSub",
-            client_id: "mockClientId",
-            govuk_signin_journey_id: "mockJourneyId",
-            redirect_uri: "https://mockRedirectUri.com",
-          },
-          "mockIssuer",
-        );
+        const result = await service.createSession({
+          state: "mockValidState",
+          sub: "mockSub",
+          client_id: "mockClientId",
+          govuk_signin_journey_id: "mockJourneyId",
+          redirect_uri: "https://mockRedirectUri.com",
+          issuer: "mockIssuer",
+        });
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual(
@@ -185,15 +179,13 @@ describe("Session Service", () => {
           dbMock.on(GetItemCommand).resolves({});
           dbMock.on(PutItemCommand).resolves({});
 
-          const result = await service.createSession(
-            {
-              state: "mockValidState",
-              sub: "mockSub",
-              client_id: "mockClientId",
-              govuk_signin_journey_id: "mockJourneyId",
-            },
-            "mockIssuer",
-          );
+          const result = await service.createSession({
+            state: "mockValidState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockJourneyId",
+            issuer: "mockIssuer",
+          });
 
           expect(result.isError).toBe(false);
           expect(typeof result.value).toBe("string");
@@ -206,16 +198,14 @@ describe("Session Service", () => {
           dbMock.on(GetItemCommand).resolves({});
           dbMock.on(PutItemCommand).resolves({});
 
-          const result = await service.createSession(
-            {
-              state: "mockValidState",
-              sub: "mockSub",
-              client_id: "mockClientId",
-              govuk_signin_journey_id: "mockJourneyId",
-              redirect_uri: "https://mockRedirectUri.com",
-            },
-            "mockIssuer",
-          );
+          const result = await service.createSession({
+            state: "mockValidState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockJourneyId",
+            redirect_uri: "https://mockRedirectUri.com",
+            issuer: "mockIssuer",
+          });
 
           expect(result.isError).toBe(false);
           expect(typeof result.value).toBe("string");

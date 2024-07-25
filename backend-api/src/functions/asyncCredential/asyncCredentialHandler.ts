@@ -188,10 +188,10 @@ export async function lambdaHandler(
     return activeSessionFoundResponse(requestBody.sub);
   }
 
-  const sessionServiceCreateSessionResult = await sessionService.createSession(
-    requestBody,
-    jwtPayload.iss,
-  );
+  const sessionServiceCreateSessionResult = await sessionService.createSession({
+    ...requestBody,
+    issuer: jwtPayload.iss,
+  });
 
   const sessionId = sessionServiceCreateSessionResult.value;
 

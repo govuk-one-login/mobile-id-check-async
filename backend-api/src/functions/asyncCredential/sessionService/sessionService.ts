@@ -12,7 +12,6 @@ import {
   errorResponse,
   successResponse,
 } from "../../types/errorOrValue";
-import { IRequestBody } from "../asyncCredentialHandler";
 import { randomUUID } from "crypto";
 
 export class SessionService implements IGetActiveSession, ICreateSession {
@@ -74,14 +73,19 @@ export class SessionService implements IGetActiveSession, ICreateSession {
   }
 
   async createSession(
-    requestBody: IRequestBody,
-    issuer: string,
+    config: ICreateSessionConfig,
   ): Promise<ErrorOrSuccess<string>> {
-    const { sub, client_id, govuk_signin_journey_id, redirect_uri, state } =
-      requestBody;
     const sessionId = randomUUID();
+    const {
+      state,
+      sub,
+      client_id,
+      govuk_signin_journey_id,
+      redirect_uri,
+      issuer,
+    } = config;
 
-    const config: IPutAuthSessionConfig = {
+    const putItemCommandConfig: IPutAuthSessionConfig = {
       TableName: this.tableName,
       Item: {
         sessionId: { S: sessionId },
@@ -96,7 +100,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     };
 
     if (redirect_uri) {
-      config.Item.redirectUri = { S: redirect_uri };
+      putItemCommandConfig.Item.redirectUri = { S: redirect_uri };
     }
 
     let doesSessionExist;
@@ -113,7 +117,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     }
 
     try {
-      await this.putSessionInDb(config);
+      await this.putSessionInDb(putItemCommandConfig);
     } catch (error) {
       return errorResponse(
         "Unexpected error when querying session table whilst creating a session",
@@ -174,10 +178,18 @@ export interface IGetActiveSession {
   ) => Promise<ErrorOrSuccess<string | null>>;
 }
 
+interface ICreateSessionConfig {
+  state: string;
+  sub: string;
+  client_id: string;
+  govuk_signin_journey_id: string;
+  issuer: string;
+  redirect_uri?: string;
+}
+
 export interface ICreateSession {
   createSession: (
-    requestBody: IRequestBody,
-    issuer: string,
+    config: ICreateSessionConfig,
   ) => Promise<ErrorOrSuccess<string>>;
 }
 
