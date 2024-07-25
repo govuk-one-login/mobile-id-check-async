@@ -13,6 +13,7 @@ import {
   successResponse,
 } from "../../types/errorOrValue";
 import { IRequestBody } from "../asyncCredentialHandler";
+import { randomUUID } from "crypto";
 
 export class SessionService implements IGetActiveSession, ICreateSession {
   readonly tableName: string;
@@ -73,12 +74,12 @@ export class SessionService implements IGetActiveSession, ICreateSession {
   }
 
   async createSession(
-    sessionId: string,
     requestBody: IRequestBody,
     issuer: string,
-  ): Promise<ErrorOrSuccess<null>> {
+  ): Promise<ErrorOrSuccess<string>> {
     const { sub, client_id, govuk_signin_journey_id, redirect_uri, state } =
       requestBody;
+    const sessionId = randomUUID();
 
     const config: IPutAuthSessionConfig = {
       TableName: this.tableName,
@@ -119,7 +120,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
       );
     }
 
-    return successResponse(null);
+    return successResponse(sessionId);
   }
 
   private hasValidSession(
@@ -175,10 +176,9 @@ export interface IGetActiveSession {
 
 export interface ICreateSession {
   createSession: (
-    sessionId: string,
     requestBody: IRequestBody,
     issuer: string,
-  ) => Promise<ErrorOrSuccess<null>>;
+  ) => Promise<ErrorOrSuccess<string>>;
 }
 
 type IQueryCommandOutputType = {

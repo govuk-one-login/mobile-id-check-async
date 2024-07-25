@@ -110,7 +110,6 @@ describe("Session Service", () => {
         dbMock.on(GetItemCommand).rejects("Mock DB Error");
 
         const result = await service.createSession(
-          "137d5a4b-3046-456d-986a-147e0469cf62",
           {
             state: "mockValidState",
             sub: "mockSub",
@@ -138,7 +137,6 @@ describe("Session Service", () => {
         });
 
         const result = await service.createSession(
-          "137d5a4b-3046-456d-986a-147e0469cf62",
           {
             state: "mockValidState",
             sub: "mockSub",
@@ -163,7 +161,6 @@ describe("Session Service", () => {
         dbMock.on(PutItemCommand).rejects("Mock DB Error");
 
         const result = await service.createSession(
-          "137d5a4b-3046-456d-986a-147e0469cf62",
           {
             state: "mockValidState",
             sub: "mockSub",
@@ -189,7 +186,6 @@ describe("Session Service", () => {
           dbMock.on(PutItemCommand).resolves({});
 
           const result = await service.createSession(
-            "137d5a4b-3046-456d-986a-147e0469cf62",
             {
               state: "mockValidState",
               sub: "mockSub",
@@ -200,7 +196,7 @@ describe("Session Service", () => {
           );
 
           expect(result.isError).toBe(false);
-          expect(result.value).toEqual(null);
+          expect(typeof result.value).toBe("string");
         });
       });
 
@@ -211,7 +207,6 @@ describe("Session Service", () => {
           dbMock.on(PutItemCommand).resolves({});
 
           const result = await service.createSession(
-            "137d5a4b-3046-456d-986a-147e0469cf62",
             {
               state: "mockValidState",
               sub: "mockSub",
@@ -223,7 +218,7 @@ describe("Session Service", () => {
           );
 
           expect(result.isError).toBe(false);
-          expect(result.value).toEqual(null);
+          expect(typeof result.value).toBe("string");
         });
       });
     });

@@ -1407,8 +1407,8 @@ class MockSessionServiceGetSessionBySubFailure
     return errorResponse("Mock failing DB call");
   };
 
-  createSession = async (): Promise<ErrorOrSuccess<null>> => {
-    return successResponse(null);
+  createSession = async (): Promise<ErrorOrSuccess<string>> => {
+    return successResponse("mockSessionId");
   };
 }
 
@@ -1426,8 +1426,8 @@ class MockSessionServiceNoActiveSession
     return successResponse(null);
   };
 
-  createSession = async (): Promise<ErrorOrSuccess<null>> => {
-    return successResponse(null);
+  createSession = async (): Promise<ErrorOrSuccess<string>> => {
+    return successResponse("mockSessionId");
   };
 }
 
@@ -1446,8 +1446,8 @@ class MockSessionServiceActiveSessionFound
     return successResponse("mockSessionId");
   };
 
-  createSession = async (): Promise<ErrorOrSuccess<null>> => {
-    return successResponse(null);
+  createSession = async (): Promise<ErrorOrSuccess<string>> => {
+    return successResponse("mockSessionId");
   };
 }
 
@@ -1466,7 +1466,7 @@ class MockSessionServiceFailToCreateSession
     return successResponse(null);
   };
 
-  createSession = async (): Promise<ErrorOrSuccess<null>> => {
+  createSession = async (): Promise<ErrorOrSuccess<string>> => {
     return errorResponse("Mock error");
   };
 }
@@ -1486,7 +1486,7 @@ class MockSessionServiceSessionCreated
     return successResponse(null);
   };
 
-  createSession = async (): Promise<ErrorOrSuccess<null>> => {
-    return successResponse(null);
+  createSession = async (): Promise<ErrorOrSuccess<string>> => {
+    return successResponse("mockSessionId");
   };
 }

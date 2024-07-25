@@ -14,7 +14,6 @@ import {
   ICreateSession,
   IGetActiveSession,
 } from "./sessionService/sessionService";
-import { randomUUID } from "crypto";
 import { Logger } from "../services/logging/logger";
 import { MessageName } from "./registeredLogs";
 import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
@@ -189,12 +188,12 @@ export async function lambdaHandler(
     return activeSessionFoundResponse(requestBody.sub);
   }
 
-  const sessionId = randomUUID();
   const sessionServiceCreateSessionResult = await sessionService.createSession(
-    sessionId,
     requestBody,
     jwtPayload.iss,
   );
+
+  const sessionId = sessionServiceCreateSessionResult.value;
 
   const eventService = dependencies.eventService(config.SQS_QUEUE);
 
