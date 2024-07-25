@@ -76,7 +76,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     config: ICreateSessionConfig,
   ): Promise<ErrorOrSuccess<string>> {
     const sessionId = randomUUID();
-    const putSessionConfig = this.buildSession(sessionId, config);
+    const putSessionConfig = this.buildPutItemCommandInput(sessionId, config);
 
     let doesSessionExist;
     try {
@@ -113,7 +113,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     );
   }
 
-  private buildSession(sessionId: string, config: ICreateSessionConfig) {
+  private buildPutItemCommandInput(sessionId: string, config: ICreateSessionConfig) {
     const {
       state,
       sub,
