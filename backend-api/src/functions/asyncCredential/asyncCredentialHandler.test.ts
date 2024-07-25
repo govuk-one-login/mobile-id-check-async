@@ -3,7 +3,6 @@ import { buildRequest } from "../testUtils/mockRequest";
 import {
   IDecodedToken,
   IDecodeToken,
-  IDecodeTokenConfig,
   IVerifyTokenSignature,
 } from "./TokenService/tokenService";
 import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
@@ -48,7 +47,7 @@ describe("Async Credential", () => {
     dependencies = {
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(mockLogger, registeredLogs),
-      tokenService: () => new MockTokenServiceGetDecodedTokenSuccess(),
+      tokenService: () => new MockTokenServiceSuccess(),
       ssmService: () => new MockPassingSsmService(),
       clientCredentialsService: () => new MockPassingClientCredentialsService(),
       sessionService: () =>
@@ -276,7 +275,7 @@ describe("Async Credential", () => {
           body: undefined,
         });
 
-        dependencies.tokenService = () => new MockTokenServiceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -317,8 +316,7 @@ describe("Async Credential", () => {
             body: invalidJson,
           });
 
-          dependencies.tokenService = () =>
-            new MockTokenServiceValidSignature();
+          dependencies.tokenService = () => new MockTokenServiceSuccess();
 
           const result: APIGatewayProxyResult = await lambdaHandler(
             event,
@@ -352,7 +350,7 @@ describe("Async Credential", () => {
           body: JSON.stringify({}),
         });
 
-        dependencies.tokenService = () => new MockTokenServiceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -387,7 +385,7 @@ describe("Async Credential", () => {
           }),
         });
 
-        dependencies.tokenService = () => new MockTokenServiceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -423,7 +421,7 @@ describe("Async Credential", () => {
           }),
         });
 
-        dependencies.tokenService = () => new MockTokenServiceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -460,7 +458,7 @@ describe("Async Credential", () => {
           }),
         });
 
-        dependencies.tokenService = () => new MockTokenServiceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -498,7 +496,7 @@ describe("Async Credential", () => {
           }),
         });
 
-        dependencies.tokenService = () => new MockTokenServiceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -537,7 +535,7 @@ describe("Async Credential", () => {
           }),
         });
 
-        dependencies.tokenService = () => new MockTokenServiceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -1003,26 +1001,6 @@ class MockTokenServiceGetDecodedTokenFailure
   }
 }
 
-class MockTokenServiceGetDecodedTokenSuccess
-  implements IDecodeToken, IVerifyTokenSignature
-{
-  getDecodedToken(config: IDecodeTokenConfig): ErrorOrSuccess<IDecodedToken> {
-    const encodedJwt = config.authorizationHeader.split(" ")[1];
-    const payload = encodedJwt.split(".")[1];
-    const jwtPayload = JSON.parse(
-      Buffer.from(payload, "base64").toString("utf-8"),
-    );
-
-    return successResponse({
-      encodedJwt,
-      jwtPayload,
-    });
-  }
-  verifyTokenSignature(): Promise<ErrorOrSuccess<null>> {
-    return Promise.resolve(successResponse(null));
-  }
-}
-
 class MockTokenServiceInvalidSignature
   implements IDecodeToken, IVerifyTokenSignature
 {
@@ -1044,9 +1022,7 @@ class MockTokenServiceInvalidSignature
   }
 }
 
-class MockTokenServiceValidSignature
-  implements IDecodeToken, IVerifyTokenSignature
-{
+class MockTokenServiceSuccess implements IDecodeToken, IVerifyTokenSignature {
   getDecodedToken(): ErrorOrSuccess<IDecodedToken> {
     return successResponse({
       encodedJwt:
@@ -1115,7 +1091,9 @@ class MockClientCredentialsServiceInvalidRedirectUri
   }
 }
 
-class MockPassingClientCredentialsServiceInvalidIssuer implements IClientCredentialsService {
+class MockPassingClientCredentialsServiceInvalidIssuer
+  implements IClientCredentialsService
+{
   validateTokenRequest(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
