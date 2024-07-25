@@ -234,7 +234,6 @@ describe("Async Credential", () => {
     describe("Given decoding token fails", () => {
       it("Logs and returns 400 Bad Request response", async () => {
         const jwtBuilder = new MockJWTBuilder();
-        jwtBuilder.deleteExp();
         const event = buildRequest({
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
