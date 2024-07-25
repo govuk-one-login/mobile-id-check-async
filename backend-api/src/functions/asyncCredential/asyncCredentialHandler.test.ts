@@ -28,7 +28,6 @@ import {
   MockEventServiceFailToWrite,
   MockEventWriterSuccess,
 } from "../services/events/tests/mocks";
-import { IJwtPayload } from "../types/jwt";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -1032,7 +1031,7 @@ class MockTokenServiceInvalidClaim
 class MockTokenServiceValidClaim
   implements IVerifyTokenClaims, IVerifyTokenSignature
 {
-  tokenObjects: { encodedJwt: string; jwtPayload: IJwtPayload }[] = [];
+  tokenObjects: IReturnToken[] = [];
   verifyTokenClaims(
     authorizationHeader: string,
     issuer: string,
