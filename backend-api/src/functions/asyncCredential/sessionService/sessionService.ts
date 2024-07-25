@@ -8,7 +8,7 @@ import {
 } from "@aws-sdk/client-dynamodb";
 import { dbClient } from "./dynamoDbClient";
 import { randomUUID } from "crypto";
-import { error, Result, success } from "../../types/result";
+import { errorResult, Result, successResult } from "../../utils/result";
 
 export class SessionService implements IGetActiveSession, ICreateSession {
   readonly tableName: string;
@@ -56,16 +56,16 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     try {
       result = await dbClient.send(new QueryCommand(queryCommandInput));
     } catch (e) {
-      return error(
+      return errorResult(
         "Unexpected error when querying session table whilst checking for an active session",
       );
     }
 
     if (!this.hasValidSession(result)) {
-      return success(null);
+      return successResult(null);
     }
 
-    return success(result.Items[0].sessionId.S);
+    return successResult(result.Items[0].sessionId.S);
   }
 
   async createSession(config: ICreateSessionConfig): Promise<Result<string>> {
@@ -76,23 +76,23 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     try {
       doesSessionExist = await this.checkSessionsExists(sessionId);
     } catch (e) {
-      return error(
+      return errorResult(
         "Unexpected error when querying session table to check if sessionId exists",
       );
     }
 
     if (doesSessionExist) {
-      return error("sessionId already exists in the database");
+      return errorResult("sessionId already exists in the database");
     }
 
     try {
       await this.putSessionInDb(putSessionConfig);
     } catch (e) {
-      return error(
+      return errorResult(
         "Unexpected error when querying session table whilst creating a session",
       );
     }
-    return success(sessionId);
+    return successResult(sessionId);
   }
 
   private hasValidSession(

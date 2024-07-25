@@ -1,4 +1,4 @@
-import { Result, error, success } from "../../types/result";
+import { Result, errorResult, successResult } from "../../utils/result";
 import { sqsClient } from "./sqsClient";
 import { SendMessageCommand } from "@aws-sdk/client-sqs";
 
@@ -33,10 +33,10 @@ export class EventService implements IEventService {
         }),
       );
     } catch (e) {
-      return error("Failed to write to SQS");
+      return errorResult("Failed to write to SQS");
     }
 
-    return success(null);
+    return successResult(null);
   }
 
   private buildGenericEvent = (

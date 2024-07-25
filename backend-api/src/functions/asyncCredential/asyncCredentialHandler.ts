@@ -5,7 +5,7 @@ import {
   IDecodeToken,
   IVerifyTokenSignature,
 } from "./TokenService/tokenService";
-import { error, Result, success } from "../types/result";
+import { errorResult, Result, successResult } from "../utils/result";
 import {
   ICreateSession,
   IGetActiveSession,
@@ -215,24 +215,26 @@ const getAuthorizationHeader = (
   authorizationHeader: string | undefined,
 ): Result<string> => {
   if (authorizationHeader == null) {
-    return error("No Authentication header present");
+    return errorResult("No Authentication header present");
   }
 
   if (!authorizationHeader.startsWith("Bearer ")) {
-    return error(
+    return errorResult(
       "Invalid authentication header format - does not start with Bearer",
     );
   }
 
   if (authorizationHeader.split(" ").length !== 2) {
-    return error("Invalid authentication header format - contains spaces");
+    return errorResult(
+      "Invalid authentication header format - contains spaces",
+    );
   }
 
   if (authorizationHeader.split(" ")[1].length == 0) {
-    return error("Invalid authentication header format - missing token");
+    return errorResult("Invalid authentication header format - missing token");
   }
 
-  return success(authorizationHeader);
+  return successResult(authorizationHeader);
 };
 
 const getRequestBody = (
@@ -240,47 +242,47 @@ const getRequestBody = (
   jwtClientId: string,
 ): Result<IRequestBody> => {
   if (requestBody == null) {
-    return error("Missing request body");
+    return errorResult("Missing request body");
   }
 
   let body: IRequestBody;
   try {
     body = JSON.parse(requestBody);
   } catch (e) {
-    return error("Invalid JSON in request body");
+    return errorResult("Invalid JSON in request body");
   }
 
   if (!body.state) {
-    return error("Missing state in request body");
+    return errorResult("Missing state in request body");
   }
 
   if (!body.sub) {
-    return error("Missing sub in request body");
+    return errorResult("Missing sub in request body");
   }
 
   if (!body.client_id) {
-    return error("Missing client_id in request body");
+    return errorResult("Missing client_id in request body");
   }
 
   if (body.client_id !== jwtClientId) {
-    return error(
+    return errorResult(
       "client_id in request body does not match value in access_token",
     );
   }
 
   if (!body["govuk_signin_journey_id"]) {
-    return error("Missing govuk_signin_journey_id in request body");
+    return errorResult("Missing govuk_signin_journey_id in request body");
   }
 
   if (body.redirect_uri) {
     try {
       new URL(body.redirect_uri);
     } catch (e) {
-      return error("redirect_uri in request body is not a URL");
+      return errorResult("redirect_uri in request body is not a URL");
     }
   }
 
-  return success(body);
+  return successResult(body);
 };
 
 const badRequestResponse = (responseInput: {

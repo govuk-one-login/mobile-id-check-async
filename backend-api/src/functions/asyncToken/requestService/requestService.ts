@@ -1,5 +1,5 @@
 import { IDecodedClientCredentials } from "../../types/clientCredentials";
-import { error, Result, success } from "../../types/result";
+import { errorResult, Result, successResult } from "../../utils/result";
 import { APIGatewayProxyEvent } from "aws-lambda";
 
 export class RequestService implements IProcessRequest {
@@ -10,15 +10,15 @@ export class RequestService implements IProcessRequest {
     const authorizationHeader = request.headers["Authorization"];
 
     if (!this.isRequestBodyValid(requestBody)) {
-      return error("Invalid grant_type");
+      return errorResult("Invalid grant_type");
     }
 
     if (!authorizationHeader) {
-      return error("Invalid authorization header");
+      return errorResult("Invalid authorization header");
     }
 
     if (!authorizationHeader.startsWith("Basic ")) {
-      return error("Invalid authorization header");
+      return errorResult("Invalid authorization header");
     }
 
     const base64EncodedCredential = authorizationHeader.split(" ")[1];
@@ -29,10 +29,10 @@ export class RequestService implements IProcessRequest {
     const [clientId, clientSecret] = base64DecodedCredential.split(":");
 
     if (!clientId || !clientSecret) {
-      return error("Client secret incorrectly formatted");
+      return errorResult("Client secret incorrectly formatted");
     }
 
-    return success({ clientId, clientSecret });
+    return successResult({ clientId, clientSecret });
   };
 
   private isRequestBodyValid = (body: string | null): boolean => {

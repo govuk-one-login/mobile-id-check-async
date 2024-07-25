@@ -4,7 +4,7 @@ import {
   SSMClient,
   SSMClientConfig,
 } from "@aws-sdk/client-ssm";
-import { Result, error, success } from "../../types/result";
+import { Result, errorResult, successResult } from "../../utils/result";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { IClientCredentials } from "../../services/clientCredentialsService/clientCredentialsService";
 
@@ -29,7 +29,7 @@ export class SsmService implements IGetClientCredentials {
 
   getClientCredentials = async (): Promise<Result<IClientCredentials[]>> => {
     if (cache && cache.expiry > Date.now()) {
-      return success(cache.data);
+      return successResult(cache.data);
     }
 
     const command: GetParameterRequest = {
@@ -41,24 +41,24 @@ export class SsmService implements IGetClientCredentials {
     try {
       response = await this.ssmClient.send(new GetParameterCommand(command));
     } catch (e: unknown) {
-      return error("Client Credentials not found");
+      return errorResult("Client Credentials not found");
     }
 
     const clientCredentialResponse = response.Parameter?.Value;
 
     if (!clientCredentialResponse) {
-      return error("Client Credentials is null or undefined");
+      return errorResult("Client Credentials is null or undefined");
     }
 
     let parsedCredentials;
     try {
       parsedCredentials = JSON.parse(clientCredentialResponse);
     } catch (e: unknown) {
-      return error("Client Credentials is not valid JSON");
+      return errorResult("Client Credentials is not valid JSON");
     }
 
     if (!this.isCredentialsArrayValid(parsedCredentials)) {
-      return error("Parsed Client Credentials array is malformed");
+      return errorResult("Parsed Client Credentials array is malformed");
     }
 
     cache = {
@@ -66,7 +66,7 @@ export class SsmService implements IGetClientCredentials {
       data: parsedCredentials,
     };
 
-    return success(parsedCredentials);
+    return successResult(parsedCredentials);
   };
 
   private isCredentialsArrayValid = (

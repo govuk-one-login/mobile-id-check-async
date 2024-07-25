@@ -11,7 +11,7 @@ import {
   IClientCredentialsService,
 } from "../services/clientCredentialsService/clientCredentialsService";
 import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
-import { Result, error, success } from "../types/result";
+import { Result, errorResult, successResult } from "../utils/result";
 import { MockJWTBuilder } from "../testUtils/mockJwt";
 import { Logger } from "../services/logging/logger";
 import { MessageName, registeredLogs } from "./registeredLogs";
@@ -1013,7 +1013,7 @@ class MockTokenServiceInvalidSignature
     });
   }
   verifyTokenSignature(): Promise<Result<null>> {
-    return Promise.resolve(error("Failed to verify token signature"));
+    return Promise.resolve(errorResult("Failed to verify token signature"));
   }
 }
 
@@ -1032,7 +1032,7 @@ class MockTokenServiceSuccess implements IDecodeToken, IVerifyTokenSignature {
     });
   }
   verifyTokenSignature(): Promise<Result<null>> {
-    return Promise.resolve(success(null));
+    return Promise.resolve(successResult(null));
   }
 }
 
@@ -1040,25 +1040,25 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
   implements IClientCredentialsService
 {
   validateTokenRequest(): Result<null> {
-    return success(null);
+    return successResult(null);
   }
   validateRedirectUri(): Result<null> {
-    return success(null);
+    return successResult(null);
   }
   getClientCredentialsById(): Result<IClientCredentials> {
-    return error("No credentials found");
+    return errorResult("No credentials found");
   }
 }
 
 class MockFailingClientCredentialsService implements IClientCredentialsService {
   validateTokenRequest(): Result<null> {
-    return success(null);
+    return successResult(null);
   }
   validateRedirectUri(): Result<null> {
-    return error("mockClientCredentialServiceError");
+    return errorResult("mockClientCredentialServiceError");
   }
   getClientCredentialsById(): Result<IClientCredentials> {
-    return success({
+    return successResult({
       client_id: "mockClientId",
       issuer: "mockIssuer",
       salt: "mockSalt",
@@ -1071,13 +1071,13 @@ class MockClientCredentialsServiceInvalidRedirectUri
   implements IClientCredentialsService
 {
   validateTokenRequest(): Result<null> {
-    return success(null);
+    return successResult(null);
   }
   validateRedirectUri(): Result<null> {
-    return error("Invalid redirect_uri");
+    return errorResult("Invalid redirect_uri");
   }
   getClientCredentialsById(): Result<IClientCredentials> {
-    return success({
+    return successResult({
       client_id: "mockClientId",
       issuer: "mockIssuer",
       salt: "mockSalt",
@@ -1107,13 +1107,13 @@ class MockPassingClientCredentialsServiceInvalidIssuer
 
 class MockPassingClientCredentialsService implements IClientCredentialsService {
   validateTokenRequest(): Result<null> {
-    return success(null);
+    return successResult(null);
   }
   validateRedirectUri(): Result<null> {
-    return success(null);
+    return successResult(null);
   }
   getClientCredentialsById(): Result<IClientCredentials> {
-    return success({
+    return successResult({
       client_id: "mockClientId",
       issuer: "mockIssuer",
       salt: "mockSalt",
@@ -1133,13 +1133,13 @@ class MockPassingSsmService implements IGetClientCredentials {
       },
     ],
   ): Promise<Result<IClientCredentials[]>> => {
-    return Promise.resolve(success(clientCredentials));
+    return Promise.resolve(successResult(clientCredentials));
   };
 }
 
 class MockFailingSsmService implements IGetClientCredentials {
   getClientCredentials = async (): Promise<Result<IClientCredentials[]>> => {
-    return error("Mock Failing SSM log");
+    return errorResult("Mock Failing SSM log");
   };
 }
 
@@ -1155,11 +1155,11 @@ class MockSessionServiceGetSessionBySubFailure
   }
 
   getActiveSession = async (): Promise<Result<string | null>> => {
-    return error("Mock failing DB call");
+    return errorResult("Mock failing DB call");
   };
 
   createSession = async (): Promise<Result<string>> => {
-    return success("mockSessionId");
+    return successResult("mockSessionId");
   };
 }
 
@@ -1174,11 +1174,11 @@ class MockSessionServiceNoActiveSession
     this.indexName = indexName;
   }
   getActiveSession = async (): Promise<Result<string | null>> => {
-    return success(null);
+    return successResult(null);
   };
 
   createSession = async (): Promise<Result<string>> => {
-    return success("mockSessionId");
+    return successResult("mockSessionId");
   };
 }
 
@@ -1194,11 +1194,11 @@ class MockSessionServiceActiveSessionFound
   }
 
   getActiveSession = async (): Promise<Result<string | null>> => {
-    return success("mockSessionId");
+    return successResult("mockSessionId");
   };
 
   createSession = async (): Promise<Result<string>> => {
-    return success("mockSessionId");
+    return successResult("mockSessionId");
   };
 }
 
@@ -1214,11 +1214,11 @@ class MockSessionServiceFailToCreateSession
   }
 
   getActiveSession = async (): Promise<Result<string | null>> => {
-    return success(null);
+    return successResult(null);
   };
 
-  createSession = async (): Promise<Result<null>> => {
-    return error("Mock error");
+  createSession = async (): Promise<Result<string>> => {
+    return errorResult("Mock error");
   };
 }
 
@@ -1234,10 +1234,10 @@ class MockSessionServiceSessionCreated
   }
 
   getActiveSession = async (): Promise<Result<string | null>> => {
-    return success(null);
+    return successResult(null);
   };
 
   createSession = async (): Promise<Result<string>> => {
-    return success("mockSessionId");
+    return successResult("mockSessionId");
   };
 }

@@ -4,7 +4,7 @@ import { Buffer } from "buffer";
 import jose from "node-jose";
 import format from "ecdsa-sig-formatter";
 import { IJwtPayload, JwtHeader } from "../../types/jwt";
-import { error, Result, success } from "../../types/result";
+import { errorResult, Result, successResult } from "../../utils/result";
 
 export class TokenService implements IMintToken {
   readonly kidArn: string;
@@ -51,18 +51,18 @@ export class TokenService implements IMintToken {
 
       result = await this.kmsClient.send(command);
     } catch (e: unknown) {
-      return error(`Error from KMS`);
+      return errorResult(`Error from KMS`);
     }
 
     if (!result.Signature) {
-      return error("No signature in response from KMS");
+      return errorResult("No signature in response from KMS");
     }
 
     // Convert signature to buffer and format with ES256 algorithm
     const signatureBuffer = Buffer.from(result.Signature);
     tokenComponents.signature = format.derToJose(signatureBuffer, "ES256");
 
-    return success(
+    return successResult(
       `${tokenComponents.header}.${tokenComponents.payload}.${tokenComponents.signature}`,
     );
   }

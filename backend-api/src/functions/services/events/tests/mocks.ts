@@ -1,4 +1,4 @@
-import { error, Result, success } from "../../../types/result";
+import { errorResult, Result, successResult } from "../../../utils/result";
 import {
   GenericEventConfig,
   IEventService,
@@ -12,13 +12,13 @@ export class MockEventWriterSuccess implements IEventService {
     eventConfig: GenericEventConfig,
   ): Promise<Result<null>> => {
     this.auditEvents.push(eventConfig.eventName);
-    return success(null);
+    return successResult(null);
   };
   writeCredentialTokenIssuedEvent = async (
     eventConfig: CredentialTokenIssuedEventConfig,
   ): Promise<Result<null>> => {
     this.auditEvents.push(eventConfig.eventName);
-    return success(null);
+    return successResult(null);
   };
 }
 
@@ -31,11 +31,11 @@ export class MockEventServiceFailToWrite implements IEventService {
     eventConfig: GenericEventConfig,
   ): Promise<Result<null>> => {
     if (eventConfig.eventName === this.eventNameToFail)
-      return error("Error writing to SQS");
-    return success(null);
+      return errorResult("Error writing to SQS");
+    return successResult(null);
   };
 
   writeCredentialTokenIssuedEvent = async (): Promise<Result<null>> => {
-    return error("Error writing to SQS");
+    return errorResult("Error writing to SQS");
   };
 }

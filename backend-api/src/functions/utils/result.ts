@@ -10,14 +10,14 @@ type ErrorResult<E> = {
   value: E;
 };
 
-export const success = <S>(value: S): SuccessResult<S> => {
+export const successResult = <S>(value: S): SuccessResult<S> => {
   return {
     isError: false,
     value,
   };
 };
 
-export const error = <E>(value: E): ErrorResult<E> => {
+export const errorResult = <E>(value: E): ErrorResult<E> => {
   return {
     isError: true,
     value,

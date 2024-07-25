@@ -1,10 +1,10 @@
-import { error, Result, success } from "../result";
+import { errorResult, Result, successResult } from "../result";
 
 describe("Result", () => {
   describe("Given there is an error and the return type is not specified", () => {
     it("An error response is returned with a string", () => {
       const returnErrorWithoutTypeOverride = (): Result<null> => {
-        return error("mockErrorResponse");
+        return errorResult("mockErrorResponse");
       };
       const result = returnErrorWithoutTypeOverride();
       expect(result.isError).toBe(true);
@@ -14,7 +14,7 @@ describe("Result", () => {
   describe("Given there is an error and the return type is overriden", () => {
     it("An error response is returned with a number", () => {
       const returnErrorWithTypeOverride = (): Result<null, number> => {
-        return error(10);
+        return errorResult(10);
       };
 
       const result = returnErrorWithTypeOverride();
@@ -25,7 +25,7 @@ describe("Result", () => {
   describe("Given the operation completed successfully", () => {
     it("A success response is returned", () => {
       const returnSuccessResponse = (): Result<string> => {
-        return success("mockSuccessResponse");
+        return successResult("mockSuccessResponse");
       };
       const response = returnSuccessResponse();
       expect(response.isError).toBe(false);

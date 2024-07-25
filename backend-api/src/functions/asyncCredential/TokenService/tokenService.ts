@@ -1,7 +1,7 @@
 import format from "ecdsa-sig-formatter";
 import { KMSClient, VerifyCommand } from "@aws-sdk/client-kms";
-import { error, Result, success } from "../../types/result";
 import { IJwtPayload } from "../../types/jwt";
+import { errorResult, Result, successResult } from "../../utils/result";
 
 export class TokenService implements IDecodeToken, IVerifyTokenSignature {
   getDecodedToken(config: IDecodeTokenConfig): Result<IDecodedToken> {
@@ -9,7 +9,7 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
 
     const decodedJwtOrError = this.decodeToken(encodedJwt);
     if (decodedJwtOrError.isError) {
-      return error(decodedJwtOrError.value as string);
+      return errorResult(decodedJwtOrError.value);
     }
     const jwtPayload = decodedJwtOrError.value as IJwtPayload;
 
@@ -18,10 +18,10 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
       config.issuer,
     );
     if (validClaimsOrError.isError) {
-      return error(validClaimsOrError.value as string);
+      return errorResult(validClaimsOrError.value);
     }
 
-    return success({
+    return successResult({
       encodedJwt,
       jwtPayload,
     });
@@ -42,10 +42,10 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
 
     const result = await kmsClient.send(verifyCommand);
     if (result.SignatureValid !== true) {
-      return error("Signature is invalid");
+      return errorResult("Signature is invalid");
     }
 
-    return success(null);
+    return successResult(null);
   }
 
   private decodeToken(encodedJwt: string): Result<IJwtPayload> {
@@ -53,11 +53,11 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
     let jwtPayload;
     try {
       jwtPayload = JSON.parse(Buffer.from(payload, "base64").toString("utf-8"));
-    } catch (e) {
-      return error("JWT payload not valid JSON");
+    } catch (error) {
+      return errorResult("JWT payload not valid JSON");
     }
 
-    return success(jwtPayload);
+    return successResult(jwtPayload);
   }
 
   private validateTokenClaims(
@@ -65,50 +65,50 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
     issuer: string,
   ): Result<null> {
     if (!jwtPayload.exp) {
-      return error("Missing exp claim");
+      return errorResult("Missing exp claim");
     }
 
     if (jwtPayload.exp <= Math.floor(Date.now() / 1000)) {
-      return error("exp claim is in the past");
+      return errorResult("exp claim is in the past");
     }
 
     if (jwtPayload.iat) {
       if (jwtPayload.iat >= Math.floor(Date.now() / 1000)) {
-        return error("iat claim is in the future");
+        return errorResult("iat claim is in the future");
       }
     }
 
     if (jwtPayload.nbf) {
       if (jwtPayload.nbf >= Math.floor(Date.now() / 1000)) {
-        return error("nbf claim is in the future");
+        return errorResult("nbf claim is in the future");
       }
     }
 
     if (!jwtPayload.iss) {
-      return error("Missing iss claim");
+      return errorResult("Missing iss claim");
     }
 
     if (jwtPayload.iss !== issuer) {
-      return error("iss claim does not match ISSUER environment variable");
+      return errorResult("iss claim does not match ISSUER environment variable");
     }
 
     if (!jwtPayload.scope) {
-      return error("Missing scope claim");
+      return errorResult("Missing scope claim");
     }
 
     if (jwtPayload.scope !== "dcmaw.session.async_create") {
-      return error("Invalid scope claim");
+      return errorResult("Invalid scope claim");
     }
 
     if (!jwtPayload.client_id) {
-      return error("Missing client_id claim");
+      return errorResult("Missing client_id claim");
     }
 
     if (!jwtPayload.aud) {
-      return error("Missing aud claim");
+      return errorResult("Missing aud claim");
     }
 
-    return success(null);
+    return successResult(null);
   }
 }
 

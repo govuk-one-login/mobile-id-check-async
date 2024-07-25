@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { Result, error, success } from "../../types/result";
+import { Result, errorResult, successResult } from "../../utils/result";
 import { IRequestBody } from "../../asyncCredential/asyncCredentialHandler";
 
 export class ClientCredentialsService implements IClientCredentialsService {
@@ -18,21 +18,21 @@ export class ClientCredentialsService implements IClientCredentialsService {
       hashedStoredClientSecret === hashedSuppliedClientSecret;
 
     if (!isValidClientSecret) {
-      return error("Client secret not valid for the supplied clientId");
+      return errorResult("Client secret not valid for the supplied clientId");
     }
 
     const registeredRedirectUri = storedCredentials.redirect_uri;
     if (!registeredRedirectUri) {
-      return error("Missing redirect_uri");
+      return errorResult("Missing redirect_uri");
     }
 
     try {
       new URL(registeredRedirectUri);
     } catch (e) {
-      return error("Invalid redirect_uri");
+      return errorResult("Invalid redirect_uri");
     }
 
-    return success(null);
+    return successResult(null);
   };
 
   validateRedirectUri = (
@@ -41,20 +41,20 @@ export class ClientCredentialsService implements IClientCredentialsService {
   ): Result<null> => {
     const registeredRedirectUri = storedCredentials.redirect_uri;
     if (!registeredRedirectUri) {
-      return error("Missing redirect_uri");
+      return errorResult("Missing redirect_uri");
     }
 
     try {
       new URL(registeredRedirectUri);
     } catch (e) {
-      return error("Invalid redirect_uri");
+      return errorResult("Invalid redirect_uri");
     }
 
     if (suppliedCredentials.redirect_uri !== storedCredentials.redirect_uri) {
-      return error("Unregistered redirect_uri");
+      return errorResult("Unregistered redirect_uri");
     }
 
-    return success(null);
+    return successResult(null);
   };
 
   getClientCredentialsById = (
@@ -64,9 +64,9 @@ export class ClientCredentialsService implements IClientCredentialsService {
     const storedCredentials = storedCredentialsArray.find(
       (cred: IClientCredentials) => cred.client_id === suppliedClientId,
     );
-    if (!storedCredentials) return error("ClientId not registered");
+    if (!storedCredentials) return errorResult("ClientId not registered");
 
-    return success(storedCredentials);
+    return successResult(storedCredentials);
   };
 }
 const hashSecret = (secret: string, salt: string): string => {
