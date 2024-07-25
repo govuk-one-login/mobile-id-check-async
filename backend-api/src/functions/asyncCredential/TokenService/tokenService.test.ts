@@ -5,6 +5,22 @@ import { MockJWTBuilder } from "../../testUtils/mockJwt";
 
 describe("Token Service", () => {
   describe("Verify token claims", () => {
+    describe("Given payload does not contain valid JSON", () => {
+      it("reutrns", () => {
+        const tokenService = new TokenService();
+        const invalidJson =
+          "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJpc3MiOiJtb2NrSXNzdWVyIiwiYXVkIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUiCJjbGllbnRfaWQiOiJtb2NrQ2xpZW50SWQifQ.fFnJIXCCkFY-LdzcUB7JmedN-97sE2J-J1FT74HJd7o";
+        const authorizationHeader = `Bearer ${invalidJson}`;
+
+        const result = tokenService.verifyTokenClaims(
+          authorizationHeader,
+          "mockIssuer",
+        );
+
+        expect(result.isError).toEqual(true);
+        expect(result.value).toEqual("JWT payload not valid JSON");
+      });
+    });
     describe("Given exp claim is invalid", () => {
       describe("Given expiry date is missing", () => {
         it("Returns error response", () => {
@@ -12,6 +28,8 @@ describe("Token Service", () => {
           const jwtBuilder = new MockJWTBuilder();
           jwtBuilder.deleteExp();
           const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
+
+          console.log("what is this?", authorizationHeader);
 
           const result = tokenService.verifyTokenClaims(
             authorizationHeader,

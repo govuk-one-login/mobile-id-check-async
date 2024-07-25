@@ -14,9 +14,12 @@ export class TokenService implements IVerifyTokenClaims, IVerifyTokenSignature {
   ): ErrorOrSuccess<IReturnToken> {
     const encodedJwt = authorizationHeader.split(" ")[1];
     const payload = encodedJwt.split(".")[1];
-    const jwtPayload = JSON.parse(
-      Buffer.from(payload, "base64").toString("utf-8"),
-    );
+    let jwtPayload;
+    try {
+      jwtPayload = JSON.parse(Buffer.from(payload, "base64").toString("utf-8"));
+    } catch (error) {
+      return errorResponse("JWT payload not valid JSON");
+    }
 
     if (!jwtPayload.exp) {
       return errorResponse("Missing exp claim");
@@ -25,6 +28,7 @@ export class TokenService implements IVerifyTokenClaims, IVerifyTokenSignature {
     if (jwtPayload.exp <= Math.floor(Date.now() / 1000)) {
       return errorResponse("exp claim is in the past");
     }
+
     if (jwtPayload.iat) {
       if (jwtPayload.iat >= Math.floor(Date.now() / 1000)) {
         return errorResponse("iat claim is in the future");
