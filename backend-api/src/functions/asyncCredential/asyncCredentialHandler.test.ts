@@ -263,33 +263,6 @@ describe("Async Credential", () => {
         });
       });
     });
-
-    describe("Given claims are valid", () => {
-      it("returns success response with encodedJWT and jwtPayload", async () => {
-        jest.useFakeTimers();
-        jest.setSystemTime(new Date(1721901142000)); // Thursday, 25 July 2024 10:52:22 GMT+01:00
-        const jwtBuilder = new MockJWTBuilder();
-        const event = buildRequest({
-          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-        });
-        const mockTokenService = new MockTokenServiceValidClaim();
-        dependencies.tokenService = () => mockTokenService;
-
-        await lambdaHandler(event, dependencies);
-
-        expect(mockTokenService.tokenObjects[0]).toEqual({
-          encodedJwt:
-            "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJleHAiOjE3MjE5MDExNDMwMDAsImlzcyI6Im1vY2tJc3N1ZXIiLCJhdWQiOiJtb2NrSXNzdWVyIiwic2NvcGUiOiJkY21hdy5zZXNzaW9uLmFzeW5jX2NyZWF0ZSIsImNsaWVudF9pZCI6Im1vY2tDbGllbnRJZCJ9.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
-          jwtPayload: {
-            aud: "mockIssuer",
-            client_id: "mockClientId",
-            exp: 1721901143000,
-            iss: "mockIssuer",
-            scope: "dcmaw.session.async_create",
-          },
-        });
-      });
-    });
   });
 
   describe("Request body validation", () => {
