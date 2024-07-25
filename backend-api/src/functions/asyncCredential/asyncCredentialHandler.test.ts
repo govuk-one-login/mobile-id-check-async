@@ -1032,60 +1032,12 @@ class MockTokenServiceValidClaim
   implements IVerifyTokenClaims, IVerifyTokenSignature
 {
   tokenObjects: IReturnToken[] = [];
-  verifyTokenClaims(
-    authorizationHeader: string,
-    issuer: string,
-  ): ErrorOrSuccess<IReturnToken> {
+  verifyTokenClaims(authorizationHeader: string): ErrorOrSuccess<IReturnToken> {
     const encodedJwt = authorizationHeader.split(" ")[1];
     const payload = encodedJwt.split(".")[1];
     const jwtPayload = JSON.parse(
       Buffer.from(payload, "base64").toString("utf-8"),
     );
-
-    if (!jwtPayload.exp) {
-      return errorResponse("Missing exp claim");
-    }
-
-    if (jwtPayload.exp <= Math.floor(Date.now() / 1000)) {
-      return errorResponse("exp claim is in the past");
-    }
-    if (jwtPayload.iat) {
-      if (jwtPayload.iat >= Math.floor(Date.now() / 1000)) {
-        return errorResponse("iat claim is in the future");
-      }
-    }
-
-    if (jwtPayload.nbf) {
-      if (jwtPayload.nbf >= Math.floor(Date.now() / 1000)) {
-        return errorResponse("nbf claim is in the future");
-      }
-    }
-
-    if (!jwtPayload.iss) {
-      return errorResponse("Missing iss claim");
-    }
-
-    if (jwtPayload.iss !== issuer) {
-      return errorResponse(
-        "iss claim does not match ISSUER environment variable",
-      );
-    }
-
-    if (!jwtPayload.scope) {
-      return errorResponse("Missing scope claim");
-    }
-
-    if (jwtPayload.scope !== "dcmaw.session.async_create") {
-      return errorResponse("Invalid scope claim");
-    }
-
-    if (!jwtPayload.client_id) {
-      return errorResponse("Missing client_id claim");
-    }
-
-    if (!jwtPayload.aud) {
-      return errorResponse("Missing aud claim");
-    }
 
     this.tokenObjects.push({ encodedJwt, jwtPayload });
 
