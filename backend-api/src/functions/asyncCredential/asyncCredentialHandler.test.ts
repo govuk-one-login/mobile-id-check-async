@@ -901,7 +901,7 @@ describe("Async Credential", () => {
   describe("JWT signature verification", () => {
     describe("Given that the JWT signature verification fails", () => {
       it("Returns 401 Unauthorized", async () => {
-        dependencies.tokenService = () => new MockTokenSeviceInvalidSignature();
+        dependencies.tokenService = () => new MockTokenServiceInvalidSignature();
 
         const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
@@ -1294,7 +1294,7 @@ describe("Async Credential", () => {
   });
 });
 
-class MockTokenSeviceInvalidSignature implements IVerifyTokenSignature {
+class MockTokenServiceInvalidSignature implements IVerifyTokenSignature {
   verifyTokenClaims(): ErrorOrSuccess<null> {
     return successResponse(null);
   }
