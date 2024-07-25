@@ -89,7 +89,9 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
     }
 
     if (jwtPayload.iss !== issuer) {
-      return errorResult("iss claim does not match ISSUER environment variable");
+      return errorResult(
+        "iss claim does not match ISSUER environment variable",
+      );
     }
 
     if (!jwtPayload.scope) {

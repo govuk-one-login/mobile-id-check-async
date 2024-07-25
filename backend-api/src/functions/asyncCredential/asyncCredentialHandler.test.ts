@@ -989,10 +989,10 @@ class MockTokenServiceGetDecodedTokenFailure
   implements IDecodeToken, IVerifyTokenSignature
 {
   getDecodedToken(): Result<IDecodedToken> {
-    return error("Mock decoding token error");
+    return errorResult("Mock decoding token error");
   }
   verifyTokenSignature(): Promise<Result<null>> {
-    return Promise.resolve(success(null));
+    return Promise.resolve(successResult(null));
   }
 }
 
@@ -1000,7 +1000,7 @@ class MockTokenServiceInvalidSignature
   implements IDecodeToken, IVerifyTokenSignature
 {
   getDecodedToken(): Result<IDecodedToken> {
-    return success({
+    return successResult({
       encodedJwt:
         "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJleHAiOjE3MjE5MDExNDMwMDAsImlzcyI6Im1vY2tJc3N1ZXIiLCJhdWQiOiJtb2NrSXNzdWVyIiwic2NvcGUiOiJkY21hdy5zZXNzaW9uLmFzeW5jX2NyZWF0ZSIsImNsaWVudF9pZCI6Im1vY2tDbGllbnRJZCJ9.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
       jwtPayload: {
@@ -1019,7 +1019,7 @@ class MockTokenServiceInvalidSignature
 
 class MockTokenServiceSuccess implements IDecodeToken, IVerifyTokenSignature {
   getDecodedToken(): Result<IDecodedToken> {
-    return success({
+    return successResult({
       encodedJwt:
         "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJleHAiOjE3MjE5MDExNDMwMDAsImlzcyI6Im1vY2tJc3N1ZXIiLCJhdWQiOiJtb2NrSXNzdWVyIiwic2NvcGUiOiJkY21hdy5zZXNzaW9uLmFzeW5jX2NyZWF0ZSIsImNsaWVudF9pZCI6Im1vY2tDbGllbnRJZCJ9.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
       jwtPayload: {
@@ -1090,13 +1090,13 @@ class MockPassingClientCredentialsServiceInvalidIssuer
   implements IClientCredentialsService
 {
   validateTokenRequest(): Result<null> {
-    return success(null);
+    return successResult(null);
   }
   validateRedirectUri(): Result<null> {
-    return success(null);
+    return successResult(null);
   }
   getClientCredentialsById(): Result<IClientCredentials> {
-    return success({
+    return successResult({
       client_id: "mockClientId",
       issuer: "mockInvalidIssuer",
       salt: "mockSalt",
