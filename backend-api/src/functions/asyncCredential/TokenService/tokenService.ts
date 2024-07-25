@@ -1,19 +1,15 @@
 import format from "ecdsa-sig-formatter";
 import { KMSClient, VerifyCommand } from "@aws-sdk/client-kms";
-import {
-  ErrorOrSuccess,
-  errorResponse,
-  successResponse,
-} from "../../types/errorOrValue";
+import { error, Result, success } from "../../types/result";
 import { IJwtPayload } from "../../types/jwt";
 
 export class TokenService implements IDecodeToken, IVerifyTokenSignature {
-  getDecodedToken(config: IDecodeTokenConfig): ErrorOrSuccess<IDecodedToken> {
+  getDecodedToken(config: IDecodeTokenConfig): Result<IDecodedToken> {
     const encodedJwt = config.authorizationHeader.split(" ")[1];
 
     const decodedJwtOrError = this.decodeToken(encodedJwt);
     if (decodedJwtOrError.isError) {
-      return errorResponse(decodedJwtOrError.value as string);
+      return error(decodedJwtOrError.value as string);
     }
     const jwtPayload = decodedJwtOrError.value as IJwtPayload;
 
@@ -22,10 +18,10 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
       config.issuer,
     );
     if (validClaimsOrError.isError) {
-      return errorResponse(validClaimsOrError.value as string);
+      return error(validClaimsOrError.value as string);
     }
 
-    return successResponse({
+    return success({
       encodedJwt,
       jwtPayload,
     });
@@ -34,7 +30,7 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
   async verifyTokenSignature(
     keyId: string,
     jwt: string,
-  ): Promise<ErrorOrSuccess<null>> {
+  ): Promise<Result<null>> {
     const [header, payload, signature] = jwt.split(".");
     const kmsClient = new KMSClient();
     const verifyCommand = new VerifyCommand({
@@ -46,89 +42,89 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
 
     const result = await kmsClient.send(verifyCommand);
     if (result.SignatureValid !== true) {
-      return errorResponse("Signature is invalid");
+      return error("Signature is invalid");
     }
 
-    return successResponse(null);
+    return success(null);
   }
 
-  private decodeToken(encodedJwt: string): ErrorOrSuccess<IJwtPayload> {
+  private decodeToken(encodedJwt: string): Result<IJwtPayload> {
     const payload = encodedJwt.split(".")[1];
     let jwtPayload;
     try {
       jwtPayload = JSON.parse(Buffer.from(payload, "base64").toString("utf-8"));
-    } catch (error) {
-      return errorResponse("JWT payload not valid JSON");
+    } catch (e) {
+      return error("JWT payload not valid JSON");
     }
 
-    return successResponse(jwtPayload);
+    return success(jwtPayload);
   }
 
   private validateTokenClaims(
     jwtPayload: IJwtPayload,
     issuer: string,
-  ): ErrorOrSuccess<null> {
+  ): Result<null> {
     if (!jwtPayload.exp) {
-      return errorResponse("Missing exp claim");
+      return error("Missing exp claim");
     }
 
     if (jwtPayload.exp <= Math.floor(Date.now() / 1000)) {
-      return errorResponse("exp claim is in the past");
+      return error("exp claim is in the past");
     }
 
     if (jwtPayload.iat) {
       if (jwtPayload.iat >= Math.floor(Date.now() / 1000)) {
-        return errorResponse("iat claim is in the future");
+        return error("iat claim is in the future");
       }
     }
 
     if (jwtPayload.nbf) {
       if (jwtPayload.nbf >= Math.floor(Date.now() / 1000)) {
-        return errorResponse("nbf claim is in the future");
+        return error("nbf claim is in the future");
       }
     }
 
     if (!jwtPayload.iss) {
-      return errorResponse("Missing iss claim");
+      return error("Missing iss claim");
     }
 
     if (jwtPayload.iss !== issuer) {
-      return errorResponse(
+      return error(
         "iss claim does not match ISSUER environment variable",
       );
     }
 
     if (!jwtPayload.scope) {
-      return errorResponse("Missing scope claim");
+      return error("Missing scope claim");
     }
 
     if (jwtPayload.scope !== "dcmaw.session.async_create") {
-      return errorResponse("Invalid scope claim");
+      return error("Invalid scope claim");
     }
 
     if (!jwtPayload.client_id) {
-      return errorResponse("Missing client_id claim");
+      return error("Missing client_id claim");
     }
 
     if (!jwtPayload.aud) {
-      return errorResponse("Missing aud claim");
+      return error("Missing aud claim");
     }
 
-    return successResponse(null);
+    return success(null);
   }
 }
 
 export interface IDecodeToken {
   getDecodedToken: (
     config: IDecodeTokenConfig,
-  ) => ErrorOrSuccess<{ encodedJwt: string; jwtPayload: IJwtPayload }>;
+  ) => Result<{ encodedJwt: string; jwtPayload: IJwtPayload }>;
 }
 
 export interface IVerifyTokenSignature {
   verifyTokenSignature: (
     keyId: string,
     jwt: string,
-  ) => Promise<ErrorOrSuccess<null>>;
+  ) => Promise<Result<null>>;
 }
 
 export interface IDecodedToken {

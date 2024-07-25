@@ -7,12 +7,8 @@ import {
   QueryCommandOutput,
 } from "@aws-sdk/client-dynamodb";
 import { dbClient } from "./dynamoDbClient";
-import {
-  ErrorOrSuccess,
-  errorResponse,
-  successResponse,
-} from "../../types/errorOrValue";
 import { randomUUID } from "crypto";
+import { error, Result, success } from "../../types/result";
 
 export class SessionService implements IGetActiveSession, ICreateSession {
   readonly tableName: string;
@@ -28,7 +24,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
   async getActiveSession(
     sub: string,
     sessionTimeToLiveInMilliseconds: number,
-  ): Promise<ErrorOrSuccess<string | null>> {
+  ): Promise<Result<string | null>> {
     const queryCommandInput: QueryCommandInput = {
       TableName: this.tableName,
       IndexName: this.indexName,
@@ -59,47 +55,48 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     let result: QueryCommandOutput;
     try {
       result = await dbClient.send(new QueryCommand(queryCommandInput));
-    } catch (error) {
-      return errorResponse(
+    } catch (e) {
+      return error(
         "Unexpected error when querying session table whilst checking for an active session",
       );
     }
 
     if (!this.hasValidSession(result)) {
-      return successResponse(null);
+      return success(null);
     }
 
-    return successResponse(result.Items[0].sessionId.S);
+    return success(result.Items[0].sessionId.S);
   }
 
   async createSession(
     config: ICreateSessionConfig,
-  ): Promise<ErrorOrSuccess<string>> {
+  ): Promise<Result<string>> {
     const sessionId = randomUUID();
     const putSessionConfig = this.buildPutItemCommandInput(sessionId, config);
 
     let doesSessionExist;
     try {
-      doesSessionExist = await this.checkSessionsExists(sessionId);
-    } catch (error) {
-      return errorResponse(
+      doesSessionExist = await this.checkSessionsExists(
+        sessionId,
+      );
+    } catch (e) {
+      return error(
         "Unexpected error when querying session table to check if sessionId exists",
       );
     }
 
     if (doesSessionExist) {
-      return errorResponse("sessionId already exists in the database");
+      return error("sessionId already exists in the database");
     }
 
     try {
       await this.putSessionInDb(putSessionConfig);
-    } catch (error) {
-      return errorResponse(
+    } catch (e) {
+      return error(
         "Unexpected error when querying session table whilst creating a session",
       );
     }
-
-    return successResponse(sessionId);
+    return success(sessionId);
   }
 
   private hasValidSession(
@@ -184,7 +181,7 @@ export interface IGetActiveSession {
   getActiveSession: (
     sub: string,
     sessionTimeToLiveInMilliseconds: number,
-  ) => Promise<ErrorOrSuccess<string | null>>;
+  ) => Promise<Result<string | null>>;
 }
 
 interface ICreateSessionConfig {
@@ -199,7 +196,7 @@ interface ICreateSessionConfig {
 export interface ICreateSession {
   createSession: (
     config: ICreateSessionConfig,
-  ) => Promise<ErrorOrSuccess<string>>;
+  ) => Promise<Result<string>>;
 }
 
 type IQueryCommandOutputType = {

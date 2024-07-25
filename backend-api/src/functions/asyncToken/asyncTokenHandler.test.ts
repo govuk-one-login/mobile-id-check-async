@@ -16,11 +16,7 @@ import { IMintToken } from "./tokenService/tokenService";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
 import { APIGatewayProxyEvent } from "aws-lambda";
-import {
-  ErrorOrSuccess,
-  errorResponse,
-  successResponse,
-} from "../types/errorOrValue";
+import { error, Result, success } from "../types/result";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import {
@@ -331,8 +327,8 @@ describe("Async Token", () => {
 });
 
 class MockRequestServiceValueResponse implements IProcessRequest {
-  processRequest = (): ErrorOrSuccess<IDecodedClientCredentials> => {
-    return successResponse({
+  processRequest = (): Result<IDecodedClientCredentials> => {
+    return success({
       clientId: "mockClientId",
       clientSecret: "mockClientSecret",
     });
@@ -340,16 +336,16 @@ class MockRequestServiceValueResponse implements IProcessRequest {
 }
 
 class MockRequestServiceInvalidGrantTypeLogResponse implements IProcessRequest {
-  processRequest = (): ErrorOrSuccess<IDecodedClientCredentials> => {
-    return errorResponse("Invalid grant_type");
+  processRequest = (): Result<IDecodedClientCredentials> => {
+    return error("Invalid grant_type");
   };
 }
 
 class MockRequestServiceInvalidAuthorizationHeaderLogResponse
   implements IProcessRequest
 {
-  processRequest = (): ErrorOrSuccess<IDecodedClientCredentials> => {
-    return errorResponse("Invalid authorization header");
+  processRequest = (): Result<IDecodedClientCredentials> => {
+    return error("Invalid authorization header");
   };
 }
 
@@ -363,28 +359,26 @@ class MockPassingSsmService implements IGetClientCredentials {
         hashed_client_secret: "mockHashedClientSecret",
       },
     ],
-  ): Promise<ErrorOrSuccess<IClientCredentials[]>> => {
-    return Promise.resolve(successResponse(clientCredentials));
+  ): Promise<Result<IClientCredentials[]>> => {
+    return Promise.resolve(success(clientCredentials));
   };
 }
 
 class MockFailingSsmService implements IGetClientCredentials {
-  getClientCredentials = async (): Promise<
-    ErrorOrSuccess<IClientCredentials[]>
-  > => {
-    return errorResponse("Error from SSM Service");
+  getClientCredentials = async (): Promise<Result<IClientCredentials[]>> => {
+    return error("Error from SSM Service");
   };
 }
 
 class MockPassingClientCredentialsService implements IClientCredentialsService {
-  validateTokenRequest(): ErrorOrSuccess<null> {
-    return successResponse(null);
+  validateTokenRequest(): Result<null> {
+    return success(null);
   }
-  validateRedirectUri(): ErrorOrSuccess<null> {
-    return successResponse(null);
+  validateRedirectUri(): Result<null> {
+    return success(null);
   }
-  getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
-    return successResponse({
+  getClientCredentialsById(): Result<IClientCredentials> {
+    return success({
       client_id: "mockClientId",
       issuer: "mockIssuer",
       salt: "mockSalt",
@@ -396,28 +390,28 @@ class MockPassingClientCredentialsService implements IClientCredentialsService {
 class MockFailingClientCredentialsServiceGetClientCredentialsById
   implements IClientCredentialsService
 {
-  validateTokenRequest(): ErrorOrSuccess<null> {
-    return successResponse(null);
+  validateTokenRequest(): Result<null> {
+    return success(null);
   }
-  validateRedirectUri(): ErrorOrSuccess<null> {
-    return successResponse(null);
+  validateRedirectUri(): Result<null> {
+    return success(null);
   }
-  getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
-    return errorResponse("Client credentials not recognised");
+  getClientCredentialsById(): Result<IClientCredentials> {
+    return error("Client credentials not recognised");
   }
 }
 
 class MockFailingClientCredentialsServiceValidation
   implements IClientCredentialsService
 {
-  validateTokenRequest(): ErrorOrSuccess<null> {
-    return errorResponse("Client secrets not valid");
+  validateTokenRequest(): Result<null> {
+    return error("Client secrets not valid");
   }
-  validateRedirectUri(): ErrorOrSuccess<null> {
-    return successResponse(null);
+  validateRedirectUri(): Result<null> {
+    return success(null);
   }
   getClientCredentialsById() {
-    return successResponse({
+    return success({
       client_id: "mockClientId",
       issuer: "mockIssuer",
       salt: "mockSalt",
@@ -427,13 +421,13 @@ class MockFailingClientCredentialsServiceValidation
 }
 
 class MockPassingTokenService implements IMintToken {
-  async mintToken(): Promise<ErrorOrSuccess<string>> {
-    return successResponse("mockToken");
+  async mintToken(): Promise<Result<string>> {
+    return success("mockToken");
   }
 }
 
 class MockFailingTokenService implements IMintToken {
-  async mintToken(): Promise<ErrorOrSuccess<string>> {
-    return errorResponse("Failed to sign Jwt");
+  async mintToken(): Promise<Result<string>> {
+    return error("Failed to sign Jwt");
   }
 }

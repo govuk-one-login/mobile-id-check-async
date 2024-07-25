@@ -1,8 +1,4 @@
-import {
-  ErrorOrSuccess,
-  errorResponse,
-  successResponse,
-} from "../../types/errorOrValue";
+import { Result, error, success } from "../../types/result";
 import { sqsClient } from "./sqsClient";
 import { SendMessageCommand } from "@aws-sdk/client-sqs";
 
@@ -14,21 +10,21 @@ export class EventService implements IEventService {
   }
   async writeGenericEvent(
     eventConfig: GenericEventConfig,
-  ): Promise<ErrorOrSuccess<null>> {
+  ): Promise<Result<null>> {
     const txmaEvent = this.buildGenericEvent(eventConfig);
     return await this.writeToSqs(txmaEvent);
   }
 
   async writeCredentialTokenIssuedEvent(
     eventConfig: CredentialTokenIssuedEventConfig,
-  ): Promise<ErrorOrSuccess<null>> {
+  ): Promise<Result<null>> {
     const txmaEvent = this.buildCredentialTokenIssuedEvent(eventConfig);
     return await this.writeToSqs(txmaEvent);
   }
 
   private async writeToSqs(
     txmaEvent: GenericTxmaEvent | CredentialTokenIssuedEvent,
-  ): Promise<ErrorOrSuccess<null>> {
+  ): Promise<Result<null>> {
     try {
       await sqsClient.send(
         new SendMessageCommand({
@@ -36,11 +32,11 @@ export class EventService implements IEventService {
           MessageBody: JSON.stringify(txmaEvent),
         }),
       );
-    } catch (error) {
-      return errorResponse("Failed to write to SQS");
+    } catch (e) {
+      return error("Failed to write to SQS");
     }
 
-    return successResponse(null);
+    return success(null);
   }
 
   private buildGenericEvent = (
@@ -73,10 +69,8 @@ export class EventService implements IEventService {
 export interface IEventService {
   writeCredentialTokenIssuedEvent: (
     eventConfig: CredentialTokenIssuedEventConfig,
-  ) => Promise<ErrorOrSuccess<null>>;
-  writeGenericEvent: (
-    eventConfig: GenericEventConfig,
-  ) => Promise<ErrorOrSuccess<null>>;
+  ) => Promise<Result<null>>;
+  writeGenericEvent: (eventConfig: GenericEventConfig) => Promise<Result<null>>;
 }
 
 export type GenericEventName = "DCMAW_ASYNC_CRI_START";

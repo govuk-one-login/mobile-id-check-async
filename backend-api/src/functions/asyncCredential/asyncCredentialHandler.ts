@@ -8,11 +8,7 @@ import {
   IDecodeToken,
   IVerifyTokenSignature,
 } from "./TokenService/tokenService";
-import {
-  ErrorOrSuccess,
-  errorResponse,
-  successResponse,
-} from "../types/errorOrValue";
+import { error, Result, success } from "../types/result";
 import {
   ICreateSession,
   IGetActiveSession,
@@ -222,78 +218,74 @@ export async function lambdaHandler(
 
 const getAuthorizationHeader = (
   authorizationHeader: string | undefined,
-): ErrorOrSuccess<string> => {
+): Result<string> => {
   if (authorizationHeader == null) {
-    return errorResponse("No Authentication header present");
+    return error("No Authentication header present");
   }
 
   if (!authorizationHeader.startsWith("Bearer ")) {
-    return errorResponse(
+    return error(
       "Invalid authentication header format - does not start with Bearer",
     );
   }
 
   if (authorizationHeader.split(" ").length !== 2) {
-    return errorResponse(
-      "Invalid authentication header format - contains spaces",
-    );
+    return error("Invalid authentication header format - contains spaces");
   }
 
   if (authorizationHeader.split(" ")[1].length == 0) {
-    return errorResponse(
-      "Invalid authentication header format - missing token",
-    );
+    return error("Invalid authentication header format - missing token");
   }
 
-  return successResponse(authorizationHeader);
+  return success(authorizationHeader);
 };
 
 const getRequestBody = (
   requestBody: string | null,
   jwtClientId: string,
-): ErrorOrSuccess<IRequestBody> => {
+): Result<IRequestBody> => {
   if (requestBody == null) {
-    return errorResponse("Missing request body");
+    return error("Missing request body");
   }
 
   let body: IRequestBody;
   try {
     body = JSON.parse(requestBody);
-  } catch (error) {
-    return errorResponse("Invalid JSON in request body");
+  } catch (e) {
+    return error("Invalid JSON in request body");
   }
 
   if (!body.state) {
-    return errorResponse("Missing state in request body");
+    return error("Missing state in request body");
   }
 
   if (!body.sub) {
-    return errorResponse("Missing sub in request body");
+    return error("Missing sub in request body");
   }
 
   if (!body.client_id) {
-    return errorResponse("Missing client_id in request body");
+    return error("Missing client_id in request body");
   }
 
   if (body.client_id !== jwtClientId) {
-    return errorResponse(
+    return error(
       "client_id in request body does not match value in access_token",
     );
   }
 
   if (!body["govuk_signin_journey_id"]) {
-    return errorResponse("Missing govuk_signin_journey_id in request body");
+    return error("Missing govuk_signin_journey_id in request body");
   }
 
   if (body.redirect_uri) {
     try {
       new URL(body.redirect_uri);
-    } catch (error) {
-      return errorResponse("redirect_uri in request body is not a URL");
+    } catch (e) {
+      return error("redirect_uri in request body is not a URL");
     }
   }
 
-  return successResponse(body);
+  return success(body);
 };
 
 const badRequestResponse = (responseInput: {

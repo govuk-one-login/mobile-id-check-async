@@ -1,5 +1,5 @@
-import { ErrorOrSuccess } from "./errorOrValue";
+import { Result } from "./result";
 
 export interface IGetConfig<T> {
-  getConfig: (env: NodeJS.ProcessEnv) => ErrorOrSuccess<T>;
+  getConfig: (env: NodeJS.ProcessEnv) => Result<T>;
 }
