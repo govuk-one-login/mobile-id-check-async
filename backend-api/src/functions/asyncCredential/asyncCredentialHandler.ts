@@ -3,13 +3,16 @@ import {
   ClientCredentialsService,
   IClientCredentials,
 } from "../services/clientCredentialsService/clientCredentialsService";
-import { TokenService } from "./TokenService/tokenService";
+import {
+  IDecodedToken,
+  IDecodeToken,
+  IVerifyTokenSignature,
+} from "./TokenService/tokenService";
 import {
   ErrorOrSuccess,
   errorResponse,
   successResponse,
 } from "../types/errorOrValue";
-import { IJwtPayload } from "../types/jwt";
 import {
   ICreateSession,
   IGetActiveSession,
@@ -48,31 +51,24 @@ export async function lambdaHandler(
 
   const authorizationHeader = authorizationHeaderOrError.value;
 
-  const tokenService = dependencies.tokenService();
-
   // JWT Claim validation
-  const encodedJwt = authorizationHeader.split(" ")[1];
-
-  // Replace with const [header, payload, signature] = encodedJwt.split(".") when needed
-  const payload = encodedJwt.split(".")[1];
-  const jwtPayload = JSON.parse(
-    Buffer.from(payload, "base64").toString("utf-8"),
-  );
-
-  const jwtClaimValidationResponse = jwtClaimValidator(
-    jwtPayload,
-    config.ISSUER,
-  );
-
-  if (jwtClaimValidationResponse.isError) {
+  const tokenService = dependencies.tokenService();
+  const validTokenClaimsOrError = tokenService.getDecodedToken({
+    authorizationHeader,
+    issuer: config.ISSUER,
+  });
+  if (validTokenClaimsOrError.isError) {
     logger.log("JWT_CLAIM_INVALID", {
-      errorMessage: jwtClaimValidationResponse.value,
+      errorMessage: validTokenClaimsOrError.value,
     });
     return badRequestResponse({
       error: "invalid_token",
-      errorDescription: jwtClaimValidationResponse.value as string,
+      errorDescription: validTokenClaimsOrError.value as string,
     });
   }
+
+  const { encodedJwt, jwtPayload } =
+    validTokenClaimsOrError.value as IDecodedToken;
 
   const requestBodyOrError = getRequestBody(event.body, jwtPayload.client_id);
 
@@ -300,58 +296,6 @@ const getRequestBody = (
   return successResponse(body);
 };
 
-const jwtClaimValidator = (
-  jwtPayload: IJwtPayload,
-  issuerEnvironmentVariable: string,
-): ErrorOrSuccess<null> => {
-  if (!jwtPayload.exp) {
-    return errorResponse("Missing exp claim");
-  }
-
-  if (jwtPayload.exp <= Math.floor(Date.now() / 1000)) {
-    return errorResponse("exp claim is in the past");
-  }
-  if (jwtPayload.iat) {
-    if (jwtPayload.iat >= Math.floor(Date.now() / 1000)) {
-      return errorResponse("iat claim is in the future");
-    }
-  }
-
-  if (jwtPayload.nbf) {
-    if (jwtPayload.nbf >= Math.floor(Date.now() / 1000)) {
-      return errorResponse("nbf claim is in the future");
-    }
-  }
-
-  if (!jwtPayload.iss) {
-    return errorResponse("Missing iss claim");
-  }
-
-  if (jwtPayload.iss !== issuerEnvironmentVariable) {
-    return errorResponse(
-      "iss claim does not match ISSUER environment variable",
-    );
-  }
-
-  if (!jwtPayload.scope) {
-    return errorResponse("Missing scope claim");
-  }
-
-  if (jwtPayload.scope !== "dcmaw.session.async_create") {
-    return errorResponse("Invalid scope claim");
-  }
-
-  if (!jwtPayload.client_id) {
-    return errorResponse("Missing client_id claim");
-  }
-
-  if (!jwtPayload.aud) {
-    return errorResponse("Missing aud claim");
-  }
-
-  return successResponse(null);
-};
-
 const badRequestResponse = (responseInput: {
   error: string;
   errorDescription: string;
@@ -426,7 +370,7 @@ export interface IRequestBody {
 export interface Dependencies {
   logger: () => Logger<MessageName>;
   eventService: (sqsQueue: string) => IEventService;
-  tokenService: () => TokenService;
+  tokenService: () => IDecodeToken & IVerifyTokenSignature;
   clientCredentialsService: () => ClientCredentialsService;
   ssmService: () => IGetClientCredentials;
   sessionService: (
