@@ -189,26 +189,12 @@ export async function lambdaHandler(
     return activeSessionFoundResponse(requestBody.sub);
   }
 
-  const { sub, client_id, govuk_signin_journey_id, redirect_uri, state } =
-    requestBody;
-  const { iss } = jwtPayload;
-
   const sessionId = randomUUID();
-
-  const sessionConfig = {
+  const sessionServiceCreateSessionResult = await sessionService.createSession(
     sessionId,
-    state,
-    sub,
-    clientId: client_id,
-    govukSigninJourneyId: govuk_signin_journey_id,
-    redirectUri: redirect_uri,
-    issuer: iss,
-    issuedOn: Date.now().toString(),
-    sessionState: "ASYNC_AUTH_SESSION_CREATED",
-  };
-
-  const sessionServiceCreateSessionResult =
-    await sessionService.createSession(sessionConfig);
+    requestBody,
+    jwtPayload.iss,
+  );
 
   const eventService = dependencies.eventService(config.SQS_QUEUE);
 
@@ -221,9 +207,9 @@ export async function lambdaHandler(
 
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_START",
-    sub,
+    sub: requestBody.sub,
     sessionId,
-    govukSigninJourneyId: govuk_signin_journey_id,
+    govukSigninJourneyId: requestBody.govuk_signin_journey_id,
     getNowInMilliseconds: Date.now,
     componentId: config.ISSUER,
   });

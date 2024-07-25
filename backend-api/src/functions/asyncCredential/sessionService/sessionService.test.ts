@@ -109,17 +109,17 @@ describe("Session Service", () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(GetItemCommand).rejects("Mock DB Error");
 
-        const result = await service.createSession({
-          sessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
-          state: "mockValidState",
-          sub: "mockSub",
-          clientId: "mockClientId",
-          govukSigninJourneyId: "mockJourneyId",
-          redirectUri: "https://mockRedirectUri.com",
-          issuer: "mockIssuer",
-          sessionState: "mockSessionState",
-          issuedOn: "mockIssuedOn",
-        });
+        const result = await service.createSession(
+          "137d5a4b-3046-456d-986a-147e0469cf62",
+          {
+            state: "mockValidState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockJourneyId",
+            redirect_uri: "https://mockRedirectUri.com",
+          },
+          "mockIssuer",
+        );
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual(
@@ -137,17 +137,17 @@ describe("Session Service", () => {
           },
         });
 
-        const result = await service.createSession({
-          sessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
-          state: "mockValidState",
-          sub: "mockSub",
-          clientId: "mockClientId",
-          govukSigninJourneyId: "mockJourneyId",
-          redirectUri: "https://mockRedirectUri.com",
-          issuer: "mockIssuer",
-          sessionState: "mockSessionState",
-          issuedOn: "mockIssuedOn",
-        });
+        const result = await service.createSession(
+          "137d5a4b-3046-456d-986a-147e0469cf62",
+          {
+            state: "mockValidState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockJourneyId",
+            redirect_uri: "https://mockRedirectUri.com",
+          },
+          "mockIssuer",
+        );
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual(
@@ -162,17 +162,17 @@ describe("Session Service", () => {
         dbMock.on(GetItemCommand).resolves({});
         dbMock.on(PutItemCommand).rejects("Mock DB Error");
 
-        const result = await service.createSession({
-          sessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
-          state: "mockValidState",
-          sub: "mockSub",
-          clientId: "mockClientId",
-          govukSigninJourneyId: "mockJourneyId",
-          redirectUri: "https://mockRedirectUri.com",
-          issuer: "mockIssuer",
-          sessionState: "mockSessionState",
-          issuedOn: "mockIssuedOn",
-        });
+        const result = await service.createSession(
+          "137d5a4b-3046-456d-986a-147e0469cf62",
+          {
+            state: "mockValidState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockJourneyId",
+            redirect_uri: "https://mockRedirectUri.com",
+          },
+          "mockIssuer",
+        );
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual(
@@ -188,16 +188,16 @@ describe("Session Service", () => {
           dbMock.on(GetItemCommand).resolves({});
           dbMock.on(PutItemCommand).resolves({});
 
-          const result = await service.createSession({
-            sessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
-            state: "mockValidState",
-            sub: "mockSub",
-            clientId: "mockClientId",
-            govukSigninJourneyId: "mockJourneyId",
-            issuer: "mockIssuer",
-            sessionState: "mockSessionState",
-            issuedOn: "mockIssuedOn",
-          });
+          const result = await service.createSession(
+            "137d5a4b-3046-456d-986a-147e0469cf62",
+            {
+              state: "mockValidState",
+              sub: "mockSub",
+              client_id: "mockClientId",
+              govuk_signin_journey_id: "mockJourneyId",
+            },
+            "mockIssuer",
+          );
 
           expect(result.isError).toBe(false);
           expect(result.value).toEqual(null);
@@ -210,17 +210,17 @@ describe("Session Service", () => {
           dbMock.on(GetItemCommand).resolves({});
           dbMock.on(PutItemCommand).resolves({});
 
-          const result = await service.createSession({
-            sessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
-            state: "mockValidState",
-            sub: "mockSub",
-            clientId: "mockClientId",
-            govukSigninJourneyId: "mockJourneyId",
-            redirectUri: "https://mockRedirectUri.com",
-            issuer: "mockIssuer",
-            sessionState: "mockSessionState",
-            issuedOn: "mockIssuedOn",
-          });
+          const result = await service.createSession(
+            "137d5a4b-3046-456d-986a-147e0469cf62",
+            {
+              state: "mockValidState",
+              sub: "mockSub",
+              client_id: "mockClientId",
+              govuk_signin_journey_id: "mockJourneyId",
+              redirect_uri: "https://mockRedirectUri.com",
+            },
+            "mockIssuer",
+          );
 
           expect(result.isError).toBe(false);
           expect(result.value).toEqual(null);

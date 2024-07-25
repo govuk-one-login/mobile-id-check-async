@@ -12,6 +12,7 @@ import {
   errorResponse,
   successResponse,
 } from "../../types/errorOrValue";
+import { IRequestBody } from "../asyncCredentialHandler";
 
 export class SessionService implements IGetActiveSession, ICreateSession {
   readonly tableName: string;
@@ -72,31 +73,34 @@ export class SessionService implements IGetActiveSession, ICreateSession {
   }
 
   async createSession(
-    sessionConfig: IAuthSession,
+    sessionId: string,
+    requestBody: IRequestBody,
+    issuer: string,
   ): Promise<ErrorOrSuccess<null>> {
+    const { sub, client_id, govuk_signin_journey_id, redirect_uri, state } =
+      requestBody;
+
     const config: IPutAuthSessionConfig = {
       TableName: this.tableName,
       Item: {
-        sessionId: { S: sessionConfig.sessionId },
-        state: { S: sessionConfig.state },
-        sub: { S: sessionConfig.sub },
-        clientId: { S: sessionConfig.clientId },
-        govukSigninJourneyId: { S: sessionConfig.govukSigninJourneyId },
-        issuer: { S: sessionConfig.issuer },
-        sessionState: { S: sessionConfig.sessionState },
-        issuedOn: { S: sessionConfig.issuedOn },
+        sessionId: { S: sessionId },
+        state: { S: state },
+        sub: { S: sub },
+        clientId: { S: client_id },
+        govukSigninJourneyId: { S: govuk_signin_journey_id },
+        issuer: { S: issuer },
+        sessionState: { S: "ASYNC_AUTH_SESSION_CREATED" },
+        issuedOn: { S: Date.now().toString() },
       },
     };
 
-    if (sessionConfig.redirectUri) {
-      config.Item.redirectUri = { S: sessionConfig.redirectUri };
+    if (redirect_uri) {
+      config.Item.redirectUri = { S: redirect_uri };
     }
 
     let doesSessionExist;
     try {
-      doesSessionExist = await this.checkSessionsExists(
-        sessionConfig.sessionId,
-      );
+      doesSessionExist = await this.checkSessionsExists(sessionId);
     } catch (error) {
       return errorResponse(
         "Unexpected error when querying session table to check if sessionId exists",
@@ -147,18 +151,6 @@ export class SessionService implements IGetActiveSession, ICreateSession {
   }
 }
 
-interface IAuthSession {
-  sessionId: string;
-  state: string;
-  sub: string;
-  clientId: string;
-  govukSigninJourneyId: string;
-  issuer: string;
-  sessionState: string;
-  issuedOn: string;
-  redirectUri?: string;
-}
-
 interface IPutAuthSessionConfig {
   TableName: string;
   Item: {
@@ -182,7 +174,11 @@ export interface IGetActiveSession {
 }
 
 export interface ICreateSession {
-  createSession: (sessionConfig: IAuthSession) => Promise<ErrorOrSuccess<null>>;
+  createSession: (
+    sessionId: string,
+    requestBody: IRequestBody,
+    issuer: string,
+  ) => Promise<ErrorOrSuccess<null>>;
 }
 
 type IQueryCommandOutputType = {
