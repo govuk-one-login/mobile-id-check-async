@@ -29,8 +29,6 @@ describe("Token Service", () => {
           jwtBuilder.deleteExp();
           const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
-          console.log("what is this?", authorizationHeader);
-
           const result = tokenService.getDecodedToken({
             authorizationHeader,
             issuer: "mockIssuer",
