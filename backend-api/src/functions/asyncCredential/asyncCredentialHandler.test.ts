@@ -3,6 +3,7 @@ import { buildRequest } from "../testUtils/mockRequest";
 import {
   IDecodedToken,
   IDecodeToken,
+  IDecodeTokenConfig,
   IVerifyTokenSignature,
 } from "./TokenService/tokenService";
 import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
@@ -1004,8 +1005,8 @@ class MockTokenServiceInvalidClaim
 class MockTokenServiceValidClaim
   implements IDecodeToken, IVerifyTokenSignature
 {
-  getDecodedToken(authorizationHeader: string): ErrorOrSuccess<IDecodedToken> {
-    const encodedJwt = authorizationHeader.split(" ")[1];
+  getDecodedToken(config: IDecodeTokenConfig): ErrorOrSuccess<IDecodedToken> {
+    const encodedJwt = config.authorizationHeader.split(" ")[1];
     const payload = encodedJwt.split(".")[1];
     const jwtPayload = JSON.parse(
       Buffer.from(payload, "base64").toString("utf-8"),

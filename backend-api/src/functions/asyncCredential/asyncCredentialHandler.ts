@@ -54,10 +54,10 @@ export async function lambdaHandler(
 
   // JWT Claim validation
   const tokenService = dependencies.tokenService();
-  const validTokenClaimsOrError = tokenService.getDecodedToken(
+  const validTokenClaimsOrError = tokenService.getDecodedToken({
     authorizationHeader,
-    config.ISSUER,
-  );
+    issuer: config.ISSUER,
+  });
   if (validTokenClaimsOrError.isError) {
     logger.log("JWT_CLAIM_INVALID", {
       errorMessage: validTokenClaimsOrError.value,

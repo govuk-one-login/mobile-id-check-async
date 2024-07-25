@@ -8,11 +8,8 @@ import {
 import { IJwtPayload } from "../../types/jwt";
 
 export class TokenService implements IDecodeToken, IVerifyTokenSignature {
-  getDecodedToken(
-    authorizationHeader: string,
-    issuer: string,
-  ): ErrorOrSuccess<IDecodedToken> {
-    const encodedJwt = authorizationHeader.split(" ")[1];
+  getDecodedToken(config: IDecodeTokenConfig): ErrorOrSuccess<IDecodedToken> {
+    const encodedJwt = config.authorizationHeader.split(" ")[1];
     const payload = encodedJwt.split(".")[1];
     let jwtPayload;
     try {
@@ -45,7 +42,7 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
       return errorResponse("Missing iss claim");
     }
 
-    if (jwtPayload.iss !== issuer) {
+    if (jwtPayload.iss !== config.issuer) {
       return errorResponse(
         "iss claim does not match ISSUER environment variable",
       );
@@ -97,8 +94,7 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
 
 export interface IDecodeToken {
   getDecodedToken: (
-    authorizationHeader: string,
-    issuer: string,
+    config: IDecodeTokenConfig,
   ) => ErrorOrSuccess<{ encodedJwt: string; jwtPayload: IJwtPayload }>;
 }
 
@@ -112,4 +108,9 @@ export interface IVerifyTokenSignature {
 export interface IDecodedToken {
   encodedJwt: string;
   jwtPayload: IJwtPayload;
+}
+
+export interface IDecodeTokenConfig {
+  authorizationHeader: string;
+  issuer: string;
 }

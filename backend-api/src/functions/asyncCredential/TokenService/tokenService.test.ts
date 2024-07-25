@@ -12,10 +12,10 @@ describe("Token Service", () => {
           "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJpc3MiOiJtb2NrSXNzdWVyIiwiYXVkIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUiCJjbGllbnRfaWQiOiJtb2NrQ2xpZW50SWQifQ.fFnJIXCCkFY-LdzcUB7JmedN-97sE2J-J1FT74HJd7o";
         const authorizationHeader = `Bearer ${invalidJson}`;
 
-        const result = tokenService.getDecodedToken(
+        const result = tokenService.getDecodedToken({
           authorizationHeader,
-          "mockIssuer",
-        );
+          issuer: "mockIssuer",
+        });
 
         expect(result.isError).toEqual(true);
         expect(result.value).toEqual("JWT payload not valid JSON");
@@ -31,10 +31,10 @@ describe("Token Service", () => {
 
           console.log("what is this?", authorizationHeader);
 
-          const result = tokenService.getDecodedToken(
+          const result = tokenService.getDecodedToken({
             authorizationHeader,
-            "mockIssuer",
-          );
+            issuer: "mockIssuer",
+          });
 
           expect(result.isError).toEqual(true);
           expect(result.value).toEqual("Missing exp claim");
@@ -48,10 +48,10 @@ describe("Token Service", () => {
           jwtBuilder.setExp(Math.floor(Date.now() - 1000) / 1000);
           const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
-          const result = tokenService.getDecodedToken(
+          const result = tokenService.getDecodedToken({
             authorizationHeader,
-            "mockIssuer",
-          );
+            issuer: "mockIssuer",
+          });
 
           expect(result.isError).toEqual(true);
           expect(result.value).toEqual("exp claim is in the past");
@@ -67,10 +67,10 @@ describe("Token Service", () => {
           jwtBuilder.setIat(Math.floor(Date.now() + 1000) / 1000);
           const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
-          const result = tokenService.getDecodedToken(
+          const result = tokenService.getDecodedToken({
             authorizationHeader,
-            "mockIssuer",
-          );
+            issuer: "mockIssuer",
+          });
 
           expect(result.isError).toEqual(true);
           expect(result.value).toEqual("iat claim is in the future");
@@ -86,10 +86,10 @@ describe("Token Service", () => {
           jwtBuilder.setNbf(Date.now() + 1000);
           const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
-          const result = tokenService.getDecodedToken(
+          const result = tokenService.getDecodedToken({
             authorizationHeader,
-            "mockIssuer",
-          );
+            issuer: "mockIssuer",
+          });
 
           expect(result.isError).toEqual(true);
           expect(result.value).toEqual("nbf claim is in the future");
@@ -105,10 +105,10 @@ describe("Token Service", () => {
           jwtBuilder.deleteIss();
           const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
-          const result = tokenService.getDecodedToken(
+          const result = tokenService.getDecodedToken({
             authorizationHeader,
-            "mockIssuer",
-          );
+            issuer: "mockIssuer",
+          });
 
           expect(result.isError).toEqual(true);
           expect(result.value).toEqual("Missing iss claim");
@@ -122,10 +122,10 @@ describe("Token Service", () => {
           jwtBuilder.setIss("invalidIss");
           const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
-          const result = tokenService.getDecodedToken(
+          const result = tokenService.getDecodedToken({
             authorizationHeader,
-            "mockIssuer",
-          );
+            issuer: "mockIssuer",
+          });
 
           expect(result.isError).toEqual(true);
           expect(result.value).toEqual(
@@ -143,10 +143,10 @@ describe("Token Service", () => {
           jwtBuilder.setScope("invalidScope");
           const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
-          const result = tokenService.getDecodedToken(
+          const result = tokenService.getDecodedToken({
             authorizationHeader,
-            "mockIssuer",
-          );
+            issuer: "mockIssuer",
+          });
 
           expect(result.isError).toEqual(true);
           expect(result.value).toEqual("Invalid scope claim");
@@ -162,10 +162,10 @@ describe("Token Service", () => {
           jwtBuilder.deleteClientId();
           const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
-          const result = tokenService.getDecodedToken(
+          const result = tokenService.getDecodedToken({
             authorizationHeader,
-            "mockIssuer",
-          );
+            issuer: "mockIssuer",
+          });
 
           expect(result.isError).toEqual(true);
           expect(result.value).toEqual("Missing client_id claim");
@@ -181,10 +181,10 @@ describe("Token Service", () => {
           jwtBuilder.deleteAud();
           const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
-          const result = tokenService.getDecodedToken(
+          const result = tokenService.getDecodedToken({
             authorizationHeader,
-            "mockIssuer",
-          );
+            issuer: "mockIssuer",
+          });
 
           expect(result.isError).toEqual(true);
           expect(result.value).toEqual("Missing aud claim");
@@ -200,10 +200,10 @@ describe("Token Service", () => {
         const jwtBuilder = new MockJWTBuilder();
         const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
 
-        const result = tokenService.getDecodedToken(
+        const result = tokenService.getDecodedToken({
           authorizationHeader,
-          "mockIssuer",
-        );
+          issuer: "mockIssuer",
+        });
 
         expect(result.isError).toEqual(false);
         expect(result.value).toEqual({
