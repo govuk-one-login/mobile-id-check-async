@@ -89,7 +89,7 @@ export async function lambdaHandlerConstructor(
   const storedCredentials = clientCredentialsByIdResponse.value;
 
   const isValidClientCredentialsResponse =
-    clientCredentialsService.validateTokenRequest(
+    clientCredentialsService.validateAsyncTokenRequest(
       storedCredentials,
       suppliedCredentials,
     );

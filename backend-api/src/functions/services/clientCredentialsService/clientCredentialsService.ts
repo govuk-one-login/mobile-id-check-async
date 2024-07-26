@@ -66,7 +66,7 @@ export class ClientCredentialsService
     return successResult(parsedCredentials);
   };
 
-  validateTokenRequest = (
+  validateAsyncTokenRequest = (
     storedCredentials: IClientCredentials,
     suppliedCredentials: IDecodedClientCredentials,
   ): Result<null> => {
@@ -182,7 +182,7 @@ export interface IGetClientCredentials {
 }
 
 export interface IValidateTokenRequest {
-  validateTokenRequest: (
+  validateAsyncTokenRequest: (
     storedCredentials: IClientCredentials,
     suppliedCredentials: IDecodedClientCredentials,
   ) => Result<null>;

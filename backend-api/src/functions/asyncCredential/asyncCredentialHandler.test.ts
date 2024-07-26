@@ -993,7 +993,7 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
     return Promise.resolve(successResult(clientCredentials));
   };
 
-  validateTokenRequest(): Result<null> {
+  validateAsyncTokenRequest(): Result<null> {
     return successResult(null);
   }
   validateAsyncCredentialRequest(): Result<null> {
@@ -1024,7 +1024,7 @@ class MockClientCredentialsServiceInvalidClientCredentials
     return Promise.resolve(successResult(clientCredentials));
   };
 
-  validateTokenRequest(): Result<null> {
+  validateAsyncTokenRequest(): Result<null> {
     return successResult(null);
   }
   validateAsyncCredentialRequest(): Result<null> {
@@ -1060,7 +1060,7 @@ class MockPassingClientCredentialsService
     return Promise.resolve(successResult(clientCredentials));
   };
 
-  validateTokenRequest(): Result<null> {
+  validateAsyncTokenRequest(): Result<null> {
     return successResult(null);
   }
   validateAsyncCredentialRequest(): Result<null> {
@@ -1087,7 +1087,7 @@ class MockClientCredentialServiceGetClientCredentialsErrorResult
     return errorResult("Mock failure retrieving client credentials");
   };
 
-  validateTokenRequest(): Result<null> {
+  validateAsyncTokenRequest(): Result<null> {
     return successResult(null);
   }
 

@@ -232,7 +232,7 @@ describe("Client Credentials Service", () => {
           clientSecret: "mockInvalidClientSecret",
         };
 
-        const result = clientCredentialsService.validateTokenRequest(
+        const result = clientCredentialsService.validateAsyncTokenRequest(
           mockStoredClientCredentials,
           mockTokenSuppliedClientCredentials,
         );
@@ -249,7 +249,7 @@ describe("Client Credentials Service", () => {
         it("Returns a log", () => {
           mockStoredClientCredentials.redirect_uri = "";
 
-          const result = clientCredentialsService.validateTokenRequest(
+          const result = clientCredentialsService.validateAsyncTokenRequest(
             mockStoredClientCredentials,
             mockTokenSuppliedClientCredentials,
           );
@@ -263,7 +263,7 @@ describe("Client Credentials Service", () => {
         it("Returns a log", () => {
           mockStoredClientCredentials.redirect_uri = "mockInvalidURL";
 
-          const result = clientCredentialsService.validateTokenRequest(
+          const result = clientCredentialsService.validateAsyncTokenRequest(
             mockStoredClientCredentials,
             mockTokenSuppliedClientCredentials,
           );
@@ -281,7 +281,7 @@ describe("Client Credentials Service", () => {
           clientSecret: "mockClientSecret",
         };
 
-        const result = clientCredentialsService.validateTokenRequest(
+        const result = clientCredentialsService.validateAsyncTokenRequest(
           mockStoredClientCredentials,
           mockTokenSuppliedClientCredentials,
         );
