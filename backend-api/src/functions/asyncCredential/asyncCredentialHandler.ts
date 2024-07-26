@@ -25,15 +25,14 @@ export async function lambdaHandler(
   dependencies: Dependencies,
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
-  const configResponse = new ConfigService().getConfig(dependencies.env);
 
+  const configResponse = new ConfigService().getConfig(dependencies.env);
   if (configResponse.isError) {
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
       errorMessage: configResponse.value,
     });
     return serverError500Response;
   }
-
   const config = configResponse.value;
 
   const authorizationHeaderOrError = getAuthorizationHeader(
@@ -45,7 +44,6 @@ export async function lambdaHandler(
     });
     return unauthorizedResponse;
   }
-
   const authorizationHeader = authorizationHeaderOrError.value;
 
   // JWT Claim validation
@@ -67,7 +65,6 @@ export async function lambdaHandler(
     validTokenClaimsOrError.value as IDecodedToken;
 
   const requestBodyOrError = getRequestBody(event.body, jwtPayload.client_id);
-
   if (requestBodyOrError.isError) {
     logger.log("REQUEST_BODY_INVALID", {
       errorMessage: requestBodyOrError.value,
@@ -119,7 +116,6 @@ export async function lambdaHandler(
       errorDescription: "Supplied client not recognised",
     });
   }
-
   const clientCredentials = clientCredentialResponse.value;
 
   const validateClientCredentialsResult =
@@ -129,7 +125,6 @@ export async function lambdaHandler(
       storedCredentials: clientCredentials,
       redirectUri: requestBody.redirect_uri,
     });
-
   if (validateClientCredentialsResult.isError) {
     logger.log("REQUEST_BODY_INVALID", {
       errorMessage: validateClientCredentialsResult.value,
@@ -156,7 +151,6 @@ export async function lambdaHandler(
     });
     return serverError500Response;
   }
-
   if (getActiveSessionResponse.value) {
     logger.setSessionId({ sessionId: getActiveSessionResponse.value });
     logger.log("COMPLETED");
@@ -167,18 +161,13 @@ export async function lambdaHandler(
     ...requestBody,
     issuer: jwtPayload.iss,
   });
-
   const sessionId = sessionServiceCreateSessionResult.value;
-
   const eventService = dependencies.eventService(config.SQS_QUEUE);
-
   if (sessionServiceCreateSessionResult.isError) {
     logger.log("ERROR_CREATING_SESSION");
     return serverError500Response;
   }
-
   logger.setSessionId({ sessionId });
-
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_START",
     sub: requestBody.sub,
@@ -187,7 +176,6 @@ export async function lambdaHandler(
     getNowInMilliseconds: Date.now,
     componentId: config.ISSUER,
   });
-
   if (writeEventResult.isError) {
     logger.log("ERROR_WRITING_AUDIT_EVENT", {
       errorMessage: "Unexpected error writing the DCMAW_ASYNC_CRI_START event",
