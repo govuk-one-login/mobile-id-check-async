@@ -122,23 +122,23 @@ export async function lambdaHandler(
 
   const clientCredentials = clientCredentialResponse.value;
 
-  if (requestBody.redirect_uri) {
-    const validateClientCredentialsResult =
-      clientCredentialsService.validateAsyncCredentialRequest(
-        clientCredentials,
-        requestBody,
-      );
+  const validateClientCredentialsResult =
+    clientCredentialsService.validateAsyncCredentialRequest({
+      aud: jwtPayload.aud,
+      issuer: clientCredentials.issuer,
+      storedCredentials: clientCredentials,
+      redirectUri: requestBody.redirect_uri,
+    });
 
-    if (validateClientCredentialsResult.isError) {
-      logger.log("REQUEST_BODY_INVALID", {
-        errorMessage: validateClientCredentialsResult.value,
-      });
+  if (validateClientCredentialsResult.isError) {
+    logger.log("REQUEST_BODY_INVALID", {
+      errorMessage: validateClientCredentialsResult.value,
+    });
 
-      return badRequestResponse({
-        error: "invalid_request",
-        errorDescription: validateClientCredentialsResult.value,
-      });
-    }
+    return badRequestResponse({
+      error: "invalid_request",
+      errorDescription: validateClientCredentialsResult.value,
+    });
   }
 
   const sessionService = dependencies.sessionService(
