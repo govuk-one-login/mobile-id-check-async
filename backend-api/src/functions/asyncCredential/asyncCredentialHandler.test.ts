@@ -8,11 +8,11 @@ import {
 import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
 import {
   IClientCredentials,
+  IGetClientCredentials,
   IGetClientCredentialsById,
   IValidateAsyncCredentialRequest,
   IValidateTokenRequest,
 } from "../services/clientCredentialsService/clientCredentialsService";
-import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
 import { Result, errorResult, successResult } from "../utils/result";
 import { MockJWTBuilder } from "../testUtils/mockJwt";
 import { Logger } from "../services/logging/logger";
@@ -46,7 +46,6 @@ describe("Async Credential", () => {
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(mockLogger, registeredLogs),
       tokenService: () => new MockTokenServiceSuccess(),
-      ssmService: () => new MockPassingSsmService(),
       clientCredentialsService: () => new MockPassingClientCredentialsService(),
       sessionService: () =>
         new MockSessionServiceNoActiveSession(
@@ -1075,21 +1074,6 @@ class MockPassingClientCredentialsService
       hashed_client_secret: "mockHashedClientSecret",
     });
   }
-}
-
-class MockPassingSsmService implements IGetClientCredentials {
-  getClientCredentials = async (
-    clientCredentials: IClientCredentials[] = [
-      {
-        client_id: "mockClientId",
-        issuer: "mockIssuer",
-        salt: "mockSalt",
-        hashed_client_secret: "mockHashedClientSecret",
-      },
-    ],
-  ): Promise<Result<IClientCredentials[]>> => {
-    return Promise.resolve(successResult(clientCredentials));
-  };
 }
 
 class MockClientCredentialServiceGetClientCredentialsErrorResult

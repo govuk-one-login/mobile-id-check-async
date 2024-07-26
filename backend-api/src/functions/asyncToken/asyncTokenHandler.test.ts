@@ -4,12 +4,12 @@ import {
 } from "./asyncTokenHandler";
 import {
   IClientCredentials,
+  IGetClientCredentials,
   IGetClientCredentialsById,
   IValidateAsyncCredentialRequest,
   IValidateTokenRequest,
 } from "../services/clientCredentialsService/clientCredentialsService";
 import { IProcessRequest } from "./requestService/requestService";
-import { IGetClientCredentials } from "./ssmService/ssmService";
 import { buildRequest } from "../testUtils/mockRequest";
 import { IDecodedClientCredentials } from "../types/clientCredentials";
 import { IMintToken } from "./tokenService/tokenService";
@@ -43,7 +43,6 @@ describe("Async Token", () => {
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(mockLogger, registeredLogs),
       requestService: () => new MockRequestServiceValueResponse(),
-      ssmService: () => new MockPassingSsmService(),
       clientCredentialService: () => new MockPassingClientCredentialsService(),
       tokenService: () => new MockPassingTokenService(),
     };
@@ -346,21 +345,6 @@ class MockRequestServiceInvalidAuthorizationHeaderLogResponse
 {
   processRequest = (): Result<IDecodedClientCredentials> => {
     return errorResult("Invalid authorization header");
-  };
-}
-
-class MockPassingSsmService implements IGetClientCredentials {
-  getClientCredentials = async (
-    clientCredentials: IClientCredentials[] = [
-      {
-        client_id: "mockClientId",
-        issuer: "mockIssuer",
-        salt: "mockSalt",
-        hashed_client_secret: "mockHashedClientSecret",
-      },
-    ],
-  ): Promise<Result<IClientCredentials[]>> => {
-    return Promise.resolve(successResult(clientCredentials));
   };
 }
 

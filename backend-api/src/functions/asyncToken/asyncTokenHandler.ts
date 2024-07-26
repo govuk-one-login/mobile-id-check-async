@@ -6,6 +6,7 @@ import {
 import "dotenv/config";
 import {
   ClientCredentialsService,
+  IGetClientCredentials,
   IGetClientCredentialsById,
   IValidateAsyncCredentialRequest,
   IValidateTokenRequest,
@@ -14,7 +15,6 @@ import {
   IProcessRequest,
   RequestService,
 } from "./requestService/requestService";
-import { IGetClientCredentials, SsmService } from "./ssmService/ssmService";
 import { IMintToken, TokenService } from "./tokenService/tokenService";
 import { Logger } from "../services/logging/logger";
 import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
@@ -189,7 +189,6 @@ export interface IAsyncTokenRequestDependencies {
   eventService: (sqsQueue: string) => IEventService;
   logger: () => Logger<MessageName>;
   requestService: () => IProcessRequest;
-  ssmService: () => IGetClientCredentials;
   clientCredentialService: () => IGetClientCredentials &
     IValidateTokenRequest &
     IValidateAsyncCredentialRequest &
@@ -202,7 +201,6 @@ const dependencies: IAsyncTokenRequestDependencies = {
   eventService: (sqsQueue: string) => new EventService(sqsQueue),
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
   requestService: () => new RequestService(),
-  ssmService: () => new SsmService(),
   clientCredentialService: () => new ClientCredentialsService(),
   tokenService: (signingKey: string) => new TokenService(signingKey),
 };

@@ -1,5 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import {
+  IGetClientCredentials,
   IGetClientCredentialsById,
   IValidateAsyncCredentialRequest,
   IValidateTokenRequest,
@@ -16,7 +17,6 @@ import {
 } from "./sessionService/sessionService";
 import { Logger } from "../services/logging/logger";
 import { MessageName } from "./registeredLogs";
-import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
 import { IEventService } from "../services/events/eventService";
 import { ConfigService } from "./configService/configService";
 
@@ -352,7 +352,6 @@ export interface Dependencies {
     IValidateTokenRequest &
     IValidateAsyncCredentialRequest &
     IGetClientCredentialsById;
-  ssmService: () => IGetClientCredentials;
   sessionService: (
     tableName: string,
     indexName: string,
