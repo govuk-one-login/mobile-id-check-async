@@ -709,44 +709,6 @@ describe("Async Credential", () => {
     });
   });
 
-  describe("Aud claim validation", () => {
-    describe("aud claim from JWT payload does not match registered issuer for given client", () => {
-      it("Returns a 400 Bad request response", async () => {
-        const jwtBuilder = new MockJWTBuilder();
-        jwtBuilder.setAud("invalidAud");
-        const event = buildRequest({
-          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-          body: JSON.stringify({
-            state: "mockState",
-            sub: "mockSub",
-            client_id: "mockClientId",
-            govuk_signin_journey_id: "mockGovukSigninJourneyId",
-          }),
-        });
-
-        dependencies.clientCredentialsService = () =>
-          new MockPassingClientCredentialsServiceInvalidIssuer();
-
-        const result = await lambdaHandler(event, dependencies);
-
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-          "JWT_CLAIM_INVALID",
-        );
-        expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
-          "Invalid aud claim",
-        );
-        expect(result).toStrictEqual({
-          headers: { "Content-Type": "application/json" },
-          statusCode: 400,
-          body: JSON.stringify({
-            error: "invalid_client",
-            error_description: "Invalid aud claim",
-          }),
-        });
-      });
-    });
-  });
-
   describe("Session Service", () => {
     describe("Check for active session", () => {
       describe("Given there is an error checking for an existing session", () => {
@@ -1073,41 +1035,6 @@ class MockClientCredentialsServiceInvalidClientCredentials
     return successResult({
       client_id: "mockClientId",
       issuer: "mockIssuer",
-      salt: "mockSalt",
-      hashed_client_secret: "mockHashedClientSecret",
-    });
-  }
-}
-
-class MockPassingClientCredentialsServiceInvalidIssuer
-  implements
-    IGetClientCredentials,
-    IValidateTokenRequest,
-    IValidateAsyncCredentialRequest,
-    IGetClientCredentialsById
-{
-  getClientCredentials = async (
-    clientCredentials: IClientCredentials[] = [
-      {
-        client_id: "mockClientId",
-        issuer: "mockIssuer",
-        salt: "mockSalt",
-        hashed_client_secret: "mockHashedClientSecret",
-      },
-    ],
-  ): Promise<Result<IClientCredentials[]>> => {
-    return Promise.resolve(successResult(clientCredentials));
-  };
-  validateTokenRequest(): Result<null> {
-    return successResult(null);
-  }
-  validateAsyncCredentialRequest(): Result<null> {
-    return successResult(null);
-  }
-  getClientCredentialsById(): Result<IClientCredentials> {
-    return successResult({
-      client_id: "mockClientId",
-      issuer: "mockInvalidIssuer",
       salt: "mockSalt",
       hashed_client_secret: "mockHashedClientSecret",
     });

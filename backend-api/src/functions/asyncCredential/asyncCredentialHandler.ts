@@ -141,18 +141,6 @@ export async function lambdaHandler(
     }
   }
 
-  // Validate aud claim matches the ISSUER in client credential array
-  if (jwtPayload.aud !== clientCredentials.issuer) {
-    logger.log("JWT_CLAIM_INVALID", {
-      errorMessage: "Invalid aud claim",
-    });
-
-    return badRequestResponse({
-      error: "invalid_client",
-      errorDescription: "Invalid aud claim",
-    });
-  }
-
   const sessionService = dependencies.sessionService(
     config.SESSION_TABLE_NAME,
     config.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
