@@ -61,19 +61,19 @@ export async function lambdaHandlerConstructor(
   const suppliedCredentials = processRequest.value;
 
   // Fetching stored client credentials
-  const ssmService = dependencies.ssmService();
-  const ssmServiceResponse = await ssmService.getClientCredentials();
-  if (ssmServiceResponse.isError) {
+  const clientCredentialsService = dependencies.clientCredentialService();
+  const clientCredentialsResult =
+    await clientCredentialsService.getClientCredentials();
+  if (clientCredentialsResult.isError) {
     logger.log("INTERNAL_SERVER_ERROR", {
-      errorMessage: ssmServiceResponse.value,
+      errorMessage: clientCredentialsResult.value,
     });
     return serverErrorResponse;
   }
 
-  const storedCredentialsArray = ssmServiceResponse.value;
+  const storedCredentialsArray = clientCredentialsResult.value;
 
   // Incoming credentials match stored credentials
-  const clientCredentialsService = dependencies.clientCredentialService();
   const clientCredentialsByIdResponse =
     clientCredentialsService.getClientCredentialsById(
       storedCredentialsArray,
