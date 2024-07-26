@@ -116,6 +116,10 @@ export class ClientCredentialsService
       return errorResult("Unregistered redirect_uri");
     }
 
+    if (config.aud !== config.storedCredentials.issuer) {
+      return errorResult("Invalid aud claim");
+    }
+
     return successResult(null);
   };
 

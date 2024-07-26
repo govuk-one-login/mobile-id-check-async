@@ -128,6 +128,7 @@ export async function lambdaHandler(
         clientCredentials,
         requestBody,
       );
+
     if (validateClientCredentialsResult.isError) {
       logger.log("REQUEST_BODY_INVALID", {
         errorMessage: validateClientCredentialsResult.value,

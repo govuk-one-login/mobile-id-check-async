@@ -300,7 +300,7 @@ describe("Client Credentials Service", () => {
 
           const result =
             clientCredentialsService.validateAsyncCredentialRequest({
-              aud: "mockAud",
+              aud: "mockIssuer",
               issuer: "mockIssuer",
               storedCredentials: mockStoredClientCredentials,
             });
@@ -316,7 +316,7 @@ describe("Client Credentials Service", () => {
 
           const result =
             clientCredentialsService.validateAsyncCredentialRequest({
-              aud: "mockAud",
+              aud: "mockIssuer",
               issuer: "mockIssuer",
               storedCredentials: mockStoredClientCredentials,
               redirectUri: "https://mockRedirectUri.com",
@@ -331,7 +331,7 @@ describe("Client Credentials Service", () => {
         it("Returns a log", () => {
           const result =
             clientCredentialsService.validateAsyncCredentialRequest({
-              aud: "mockAud",
+              aud: "mockIssuer",
               issuer: "mockIssuer",
               storedCredentials: mockStoredClientCredentials,
               redirectUri: "https://mockInvalidRedirectUri.com",
@@ -346,7 +346,7 @@ describe("Client Credentials Service", () => {
         it("Returns a value of null", () => {
           const result =
             clientCredentialsService.validateAsyncCredentialRequest({
-              aud: "mockAud",
+              aud: "mockIssuer",
               issuer: "mockIssuer",
               storedCredentials: mockStoredClientCredentials,
               redirectUri: "https://mockRedirectUri.com",
@@ -360,10 +360,10 @@ describe("Client Credentials Service", () => {
 
     describe("aud validation", () => {
       describe("Given supplied aud claim does not match registered issuer", () => {
-        it("Returns error response", () => {
+        it("Returns error result", () => {
           const result =
             clientCredentialsService.validateAsyncCredentialRequest({
-              aud: "mockInvalidAud",
+              aud: "mockInvalidIssuer",
               issuer: "mockIssuer",
               storedCredentials: mockStoredClientCredentials,
               redirectUri: "https://mockRedirectUri.com",
