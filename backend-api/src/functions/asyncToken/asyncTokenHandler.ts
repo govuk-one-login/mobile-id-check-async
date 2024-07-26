@@ -9,7 +9,7 @@ import {
   IGetClientCredentials,
   IGetClientCredentialsById,
   IValidateAsyncCredentialRequest,
-  IValidateTokenRequest,
+  IValidateAsyncTokenRequest,
 } from "../services/clientCredentialsService/clientCredentialsService";
 import {
   IProcessRequest,
@@ -190,7 +190,7 @@ export interface IAsyncTokenRequestDependencies {
   logger: () => Logger<MessageName>;
   requestService: () => IProcessRequest;
   clientCredentialService: () => IGetClientCredentials &
-    IValidateTokenRequest &
+    IValidateAsyncTokenRequest &
     IValidateAsyncCredentialRequest &
     IGetClientCredentialsById;
   tokenService: (signingKey: string) => IMintToken;

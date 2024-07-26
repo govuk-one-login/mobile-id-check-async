@@ -3,7 +3,7 @@ import {
   IGetClientCredentials,
   IGetClientCredentialsById,
   IValidateAsyncCredentialRequest,
-  IValidateTokenRequest,
+  IValidateAsyncTokenRequest,
 } from "../services/clientCredentialsService/clientCredentialsService";
 import {
   IDecodedToken,
@@ -337,7 +337,7 @@ export interface Dependencies {
   eventService: (sqsQueue: string) => IEventService;
   tokenService: () => IDecodeToken & IVerifyTokenSignature;
   clientCredentialsService: () => IGetClientCredentials &
-    IValidateTokenRequest &
+    IValidateAsyncTokenRequest &
     IValidateAsyncCredentialRequest &
     IGetClientCredentialsById;
   sessionService: (

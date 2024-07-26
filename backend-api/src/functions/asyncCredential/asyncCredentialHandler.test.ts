@@ -11,7 +11,7 @@ import {
   IGetClientCredentials,
   IGetClientCredentialsById,
   IValidateAsyncCredentialRequest,
-  IValidateTokenRequest,
+  IValidateAsyncTokenRequest,
 } from "../services/clientCredentialsService/clientCredentialsService";
 import { Result, errorResult, successResult } from "../utils/result";
 import { MockJWTBuilder } from "../testUtils/mockJwt";
@@ -976,7 +976,7 @@ class MockTokenServiceSuccess implements IDecodeToken, IVerifyTokenSignature {
 class MockFailingClientCredentialsServiceGetClientCredentialsById
   implements
     IGetClientCredentials,
-    IValidateTokenRequest,
+    IValidateAsyncTokenRequest,
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
@@ -1007,7 +1007,7 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
 class MockClientCredentialsServiceInvalidClientCredentials
   implements
     IGetClientCredentials,
-    IValidateTokenRequest,
+    IValidateAsyncTokenRequest,
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
@@ -1043,7 +1043,7 @@ class MockClientCredentialsServiceInvalidClientCredentials
 class MockPassingClientCredentialsService
   implements
     IGetClientCredentials,
-    IValidateTokenRequest,
+    IValidateAsyncTokenRequest,
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
@@ -1079,7 +1079,7 @@ class MockPassingClientCredentialsService
 class MockClientCredentialServiceGetClientCredentialsErrorResult
   implements
     IGetClientCredentials,
-    IValidateTokenRequest,
+    IValidateAsyncTokenRequest,
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {

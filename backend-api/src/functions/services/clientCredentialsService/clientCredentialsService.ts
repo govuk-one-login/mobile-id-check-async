@@ -12,7 +12,7 @@ let cache: CacheEntry | null = null;
 export class ClientCredentialsService
   implements
     IGetClientCredentials,
-    IValidateTokenRequest,
+    IValidateAsyncTokenRequest,
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
@@ -181,7 +181,7 @@ export interface IGetClientCredentials {
   getClientCredentials: () => Promise<Result<IClientCredentials[]>>;
 }
 
-export interface IValidateTokenRequest {
+export interface IValidateAsyncTokenRequest {
   validateAsyncTokenRequest: (
     storedCredentials: IClientCredentials,
     suppliedCredentials: IDecodedClientCredentials,

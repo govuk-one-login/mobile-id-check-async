@@ -7,7 +7,7 @@ import {
   IGetClientCredentials,
   IGetClientCredentialsById,
   IValidateAsyncCredentialRequest,
-  IValidateTokenRequest,
+  IValidateAsyncTokenRequest,
 } from "../services/clientCredentialsService/clientCredentialsService";
 import { IProcessRequest } from "./requestService/requestService";
 import { buildRequest } from "../testUtils/mockRequest";
@@ -351,7 +351,7 @@ class MockRequestServiceInvalidAuthorizationHeaderLogResponse
 class MockClientCredentialServiceGetClientCredentialsErrorResult
   implements
     IGetClientCredentials,
-    IValidateTokenRequest,
+    IValidateAsyncTokenRequest,
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
@@ -379,7 +379,7 @@ class MockClientCredentialServiceGetClientCredentialsErrorResult
 class MockPassingClientCredentialsService
   implements
     IGetClientCredentials,
-    IValidateTokenRequest,
+    IValidateAsyncTokenRequest,
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
@@ -415,7 +415,7 @@ class MockPassingClientCredentialsService
 class MockFailingClientCredentialsServiceGetClientCredentialsById
   implements
     IGetClientCredentials,
-    IValidateTokenRequest,
+    IValidateAsyncTokenRequest,
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
@@ -446,7 +446,7 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
 class MockFailingClientCredentialsServiceValidation
   implements
     IGetClientCredentials,
-    IValidateTokenRequest,
+    IValidateAsyncTokenRequest,
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
