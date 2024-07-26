@@ -48,7 +48,7 @@ describe("Client Credentials Service", () => {
 
   describe("Get client credentials", () => {
     describe("Given there is an error calling SSM", () => {
-      it("Returns a Log response with error message", async () => {
+      it("Returns error result", async () => {
         const ssmMock = mockClient(SSMClient);
         ssmMock.on(GetParameterCommand).rejects("SSM Error");
 
@@ -121,7 +121,7 @@ describe("Client Credentials Service", () => {
       ])(
         "Given the Client Credential array $scenario",
         ({ clientCredentials, expectedErrorMessage }) => {
-          it("Returns a Log response with error message", async () => {
+          it("Returns error result", async () => {
             const ssmMock = mockClient(SSMClient);
             ssmMock
               .on(GetParameterCommand)
@@ -137,7 +137,7 @@ describe("Client Credentials Service", () => {
       );
 
       describe("Given the Credential object is valid", () => {
-        it("Returns a Value response with Credential object", async () => {
+        it("Returns success result with Credential object", async () => {
           const ssmMock = mockClient(SSMClient);
           ssmMock.on(GetParameterCommand).resolves({
             Parameter: {
@@ -295,7 +295,7 @@ describe("Client Credentials Service", () => {
   describe("Validate credential request credentials", () => {
     describe("redirect_uri validation", () => {
       describe("Given stored redirect_uri is not present", () => {
-        it("Returns a log", () => {
+        it("Returns an error result", () => {
           mockStoredClientCredentials.redirect_uri = "";
 
           const result =
@@ -311,7 +311,7 @@ describe("Client Credentials Service", () => {
       });
 
       describe("Given stored redirect_uri is not a valid URL", () => {
-        it("Returns a log", () => {
+        it("Returns an error result", () => {
           mockStoredClientCredentials.redirect_uri = "mockInvalidURL";
 
           const result =
@@ -328,7 +328,7 @@ describe("Client Credentials Service", () => {
       });
 
       describe("Given supplied redirect_uri does not match stored redirect_uri", () => {
-        it("Returns a log", () => {
+        it("Returns an error result", () => {
           const result =
             clientCredentialsService.validateAsyncCredentialRequest({
               aud: "mockIssuer",
@@ -343,7 +343,7 @@ describe("Client Credentials Service", () => {
       });
 
       describe("Given redirect_uri is present and registered", () => {
-        it("Returns a value of null", () => {
+        it("Returns a success result", () => {
           const result =
             clientCredentialsService.validateAsyncCredentialRequest({
               aud: "mockIssuer",
@@ -378,7 +378,7 @@ describe("Client Credentials Service", () => {
 
   describe("Get client credentials by ID", () => {
     describe("Given the supplied credential clientId is not present in the stored credentials array", () => {
-      it("Returns an error response", async () => {
+      it("Returns error result", async () => {
         mockTokenSuppliedClientCredentials = {
           clientId: "mockInvalidClientId",
           clientSecret: "mockClientSecret",
@@ -395,7 +395,7 @@ describe("Client Credentials Service", () => {
     });
 
     describe("Given the supplied credential clientId is present in the stored credentials array", () => {
-      it("Returns client credentials", async () => {
+      it("Returns success result with client credentials", async () => {
         mockTokenSuppliedClientCredentials = {
           clientId: "mockClientId",
           clientSecret: "mockClientSecret",
