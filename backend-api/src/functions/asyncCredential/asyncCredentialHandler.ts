@@ -1,5 +1,10 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { ClientCredentialsService } from "../services/clientCredentialsService/clientCredentialsService";
+import {
+  IGetClientCredentials,
+  IGetClientCredentialsById,
+  IValidateAsyncCredentialRequest,
+  IValidateAsyncTokenRequest,
+} from "../services/clientCredentialsService/clientCredentialsService";
 import {
   IDecodedToken,
   IDecodeToken,
@@ -12,7 +17,6 @@ import {
 } from "./sessionService/sessionService";
 import { Logger } from "../services/logging/logger";
 import { MessageName } from "./registeredLogs";
-import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
 import { IEventService } from "../services/events/eventService";
 import { ConfigService } from "./configService/configService";
 
@@ -21,15 +25,14 @@ export async function lambdaHandler(
   dependencies: Dependencies,
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
-  const configResponse = new ConfigService().getConfig(dependencies.env);
 
+  const configResponse = new ConfigService().getConfig(dependencies.env);
   if (configResponse.isError) {
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
       errorMessage: configResponse.value,
     });
     return serverError500Response;
   }
-
   const config = configResponse.value;
 
   const authorizationHeaderOrError = getAuthorizationHeader(
@@ -41,7 +44,6 @@ export async function lambdaHandler(
     });
     return unauthorizedResponse;
   }
-
   const authorizationHeader = authorizationHeaderOrError.value;
 
   // JWT Claim validation
@@ -59,12 +61,10 @@ export async function lambdaHandler(
       errorDescription: validTokenClaimsOrError.value,
     });
   }
-
   const { encodedJwt, jwtPayload } =
     validTokenClaimsOrError.value as IDecodedToken;
 
   const requestBodyOrError = getRequestBody(event.body, jwtPayload.client_id);
-
   if (requestBodyOrError.isError) {
     logger.log("REQUEST_BODY_INVALID", {
       errorMessage: requestBodyOrError.value,
@@ -75,14 +75,12 @@ export async function lambdaHandler(
       errorDescription: "Request body validation failed",
     });
   }
-
   const requestBody = requestBodyOrError.value;
 
   const result = await tokenService.verifyTokenSignature(
     config.SIGNING_KEY_ID,
     encodedJwt,
   );
-
   if (result.isError) {
     logger.log("TOKEN_SIGNATURE_INVALID", {
       errorMessage: result.value,
@@ -91,25 +89,23 @@ export async function lambdaHandler(
   }
 
   // Fetching stored client credentials
-  const ssmService = dependencies.ssmService();
-  const ssmServiceResponse = await ssmService.getClientCredentials();
-  if (ssmServiceResponse.isError) {
+  const clientCredentialsService = dependencies.clientCredentialsService();
+  const clientCredentialsResult =
+    await clientCredentialsService.getClientCredentials();
+  if (clientCredentialsResult.isError) {
     logger.log("ERROR_RETRIEVING_CLIENT_CREDENTIALS", {
-      errorMessage: ssmServiceResponse.value,
+      errorMessage: clientCredentialsResult.value,
     });
     return serverError500Response;
   }
-
-  const storedCredentialsArray = ssmServiceResponse.value;
+  const storedCredentialsArray = clientCredentialsResult.value;
 
   // Retrieving credentials from client credential array
-  const clientCredentialsService = dependencies.clientCredentialsService();
   const clientCredentialResponse =
     clientCredentialsService.getClientCredentialsById(
       storedCredentialsArray,
       jwtPayload.client_id,
     );
-
   if (clientCredentialResponse.isError) {
     logger.log("CLIENT_CREDENTIALS_INVALID", {
       errorMessage: clientCredentialResponse.value,
@@ -120,36 +116,23 @@ export async function lambdaHandler(
       errorDescription: "Supplied client not recognised",
     });
   }
-
   const clientCredentials = clientCredentialResponse.value;
 
-  if (requestBody.redirect_uri) {
-    const validateClientCredentialsResult =
-      clientCredentialsService.validateRedirectUri(
-        clientCredentials,
-        requestBody,
-      );
-    if (validateClientCredentialsResult.isError) {
-      logger.log("REQUEST_BODY_INVALID", {
-        errorMessage: validateClientCredentialsResult.value,
-      });
-
-      return badRequestResponse({
-        error: "invalid_request",
-        errorDescription: validateClientCredentialsResult.value,
-      });
-    }
-  }
-
-  // Validate aud claim matches the ISSUER in client credential array
-  if (jwtPayload.aud !== clientCredentials.issuer) {
-    logger.log("JWT_CLAIM_INVALID", {
-      errorMessage: "Invalid aud claim",
+  const validateClientCredentialsResult =
+    clientCredentialsService.validateAsyncCredentialRequest({
+      aud: jwtPayload.aud,
+      issuer: clientCredentials.issuer,
+      storedCredentials: clientCredentials,
+      redirectUri: requestBody.redirect_uri,
+    });
+  if (validateClientCredentialsResult.isError) {
+    logger.log("REQUEST_BODY_INVALID", {
+      errorMessage: validateClientCredentialsResult.value,
     });
 
     return badRequestResponse({
-      error: "invalid_client",
-      errorDescription: "Invalid aud claim",
+      error: "invalid_request",
+      errorDescription: validateClientCredentialsResult.value,
     });
   }
 
@@ -168,7 +151,6 @@ export async function lambdaHandler(
     });
     return serverError500Response;
   }
-
   if (getActiveSessionResponse.value) {
     logger.setSessionId({ sessionId: getActiveSessionResponse.value });
     logger.log("COMPLETED");
@@ -179,18 +161,13 @@ export async function lambdaHandler(
     ...requestBody,
     issuer: jwtPayload.iss,
   });
-
   const sessionId = sessionServiceCreateSessionResult.value;
-
   const eventService = dependencies.eventService(config.SQS_QUEUE);
-
   if (sessionServiceCreateSessionResult.isError) {
     logger.log("ERROR_CREATING_SESSION");
     return serverError500Response;
   }
-
   logger.setSessionId({ sessionId });
-
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_START",
     sub: requestBody.sub,
@@ -199,7 +176,6 @@ export async function lambdaHandler(
     getNowInMilliseconds: Date.now,
     componentId: config.ISSUER,
   });
-
   if (writeEventResult.isError) {
     logger.log("ERROR_WRITING_AUDIT_EVENT", {
       errorMessage: "Unexpected error writing the DCMAW_ASYNC_CRI_START event",
@@ -360,8 +336,10 @@ export interface Dependencies {
   logger: () => Logger<MessageName>;
   eventService: (sqsQueue: string) => IEventService;
   tokenService: () => IDecodeToken & IVerifyTokenSignature;
-  clientCredentialsService: () => ClientCredentialsService;
-  ssmService: () => IGetClientCredentials;
+  clientCredentialsService: () => IGetClientCredentials &
+    IValidateAsyncTokenRequest &
+    IValidateAsyncCredentialRequest &
+    IGetClientCredentialsById;
   sessionService: (
     tableName: string,
     indexName: string,

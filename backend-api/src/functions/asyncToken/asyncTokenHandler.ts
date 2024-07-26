@@ -6,13 +6,15 @@ import {
 import "dotenv/config";
 import {
   ClientCredentialsService,
-  IClientCredentialsService,
+  IGetClientCredentials,
+  IGetClientCredentialsById,
+  IValidateAsyncCredentialRequest,
+  IValidateAsyncTokenRequest,
 } from "../services/clientCredentialsService/clientCredentialsService";
 import {
   IProcessRequest,
   RequestService,
 } from "./requestService/requestService";
-import { IGetClientCredentials, SsmService } from "./ssmService/ssmService";
 import { IMintToken, TokenService } from "./tokenService/tokenService";
 import { Logger } from "../services/logging/logger";
 import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
@@ -59,19 +61,19 @@ export async function lambdaHandlerConstructor(
   const suppliedCredentials = processRequest.value;
 
   // Fetching stored client credentials
-  const ssmService = dependencies.ssmService();
-  const ssmServiceResponse = await ssmService.getClientCredentials();
-  if (ssmServiceResponse.isError) {
+  const clientCredentialsService = dependencies.clientCredentialService();
+  const clientCredentialsResult =
+    await clientCredentialsService.getClientCredentials();
+  if (clientCredentialsResult.isError) {
     logger.log("INTERNAL_SERVER_ERROR", {
-      errorMessage: ssmServiceResponse.value,
+      errorMessage: clientCredentialsResult.value,
     });
     return serverErrorResponse;
   }
 
-  const storedCredentialsArray = ssmServiceResponse.value;
+  const storedCredentialsArray = clientCredentialsResult.value;
 
   // Incoming credentials match stored credentials
-  const clientCredentialsService = dependencies.clientCredentialService();
   const clientCredentialsByIdResponse =
     clientCredentialsService.getClientCredentialsById(
       storedCredentialsArray,
@@ -87,7 +89,7 @@ export async function lambdaHandlerConstructor(
   const storedCredentials = clientCredentialsByIdResponse.value;
 
   const isValidClientCredentialsResponse =
-    clientCredentialsService.validateTokenRequest(
+    clientCredentialsService.validateAsyncTokenRequest(
       storedCredentials,
       suppliedCredentials,
     );
@@ -187,8 +189,10 @@ export interface IAsyncTokenRequestDependencies {
   eventService: (sqsQueue: string) => IEventService;
   logger: () => Logger<MessageName>;
   requestService: () => IProcessRequest;
-  ssmService: () => IGetClientCredentials;
-  clientCredentialService: () => IClientCredentialsService;
+  clientCredentialService: () => IGetClientCredentials &
+    IValidateAsyncTokenRequest &
+    IValidateAsyncCredentialRequest &
+    IGetClientCredentialsById;
   tokenService: (signingKey: string) => IMintToken;
 }
 
@@ -197,7 +201,6 @@ const dependencies: IAsyncTokenRequestDependencies = {
   eventService: (sqsQueue: string) => new EventService(sqsQueue),
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
   requestService: () => new RequestService(),
-  ssmService: () => new SsmService(),
   clientCredentialService: () => new ClientCredentialsService(),
   tokenService: (signingKey: string) => new TokenService(signingKey),
 };
