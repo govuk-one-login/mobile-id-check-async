@@ -394,7 +394,7 @@ describe("Client Credentials Service", () => {
       });
     });
 
-    describe("Given the supplied credential clientId is present in the stored credentials array", () => {
+    describe("Given the supplied clientId is present in the stored credentials array", () => {
       it("Returns success result with client credentials", async () => {
         mockTokenSuppliedClientCredentials = {
           clientId: "mockClientId",
