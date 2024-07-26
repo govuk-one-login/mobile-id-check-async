@@ -379,7 +379,7 @@ class MockClientCredentialServiceGetClientCredentialsErrorResult
     return successResult(null);
   }
 
-  validateRedirectUri(): Result<null> {
+  validateAsyncCredentialRequest(): Result<null> {
     return successResult(null);
   }
   getClientCredentialsById(): Result<IClientCredentials> {
@@ -415,7 +415,7 @@ class MockPassingClientCredentialsService
   validateTokenRequest(): Result<null> {
     return successResult(null);
   }
-  validateRedirectUri(): Result<null> {
+  validateAsyncCredentialRequest(): Result<null> {
     return successResult(null);
   }
   getClientCredentialsById(): Result<IClientCredentials> {
@@ -451,7 +451,7 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
   validateTokenRequest(): Result<null> {
     return successResult(null);
   }
-  validateRedirectUri(): Result<null> {
+  validateAsyncCredentialRequest(): Result<null> {
     return successResult(null);
   }
   getClientCredentialsById(): Result<IClientCredentials> {
@@ -482,7 +482,7 @@ class MockFailingClientCredentialsServiceValidation
   validateTokenRequest(): Result<null> {
     return errorResult("Client secrets not valid");
   }
-  validateRedirectUri(): Result<null> {
+  validateAsyncCredentialRequest(): Result<null> {
     return successResult(null);
   }
   getClientCredentialsById() {

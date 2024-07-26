@@ -128,7 +128,7 @@ export async function lambdaHandler(
 
   if (requestBody.redirect_uri) {
     const validateClientCredentialsResult =
-      clientCredentialsService.validateRedirectUri(
+      clientCredentialsService.validateAsyncCredentialRequest(
         clientCredentials,
         requestBody,
       );

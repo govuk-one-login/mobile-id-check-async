@@ -14,7 +14,7 @@ export class ClientCredentialsService
   implements
     IGetClientCredentials,
     IValidateTokenRequest,
-    IValidateRedirectUri,
+    IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
   ssmClient: SSMClient;
@@ -99,11 +99,10 @@ export class ClientCredentialsService
     return successResult(null);
   };
 
-  validateRedirectUri = (
-    storedCredentials: IClientCredentials,
-    suppliedCredentials: IRequestBody,
+  validateAsyncCredentialRequest = (
+    config: IValidateAsyncCredentialRequestConfig,
   ): Result<null> => {
-    const registeredRedirectUri = storedCredentials.redirect_uri;
+    const registeredRedirectUri = config.storedCredentials.redirect_uri;
     if (!registeredRedirectUri) {
       return errorResult("Missing redirect_uri");
     }
@@ -114,7 +113,7 @@ export class ClientCredentialsService
       return errorResult("Invalid redirect_uri");
     }
 
-    if (suppliedCredentials.redirect_uri !== storedCredentials.redirect_uri) {
+    if (config.redirectUri !== config.storedCredentials.redirect_uri) {
       return errorResult("Unregistered redirect_uri");
     }
 
@@ -186,18 +185,17 @@ export interface IValidateTokenRequest {
   ) => Result<null>;
 }
 
-export interface IValidateRedirectUri {
-  validateRedirectUri: (
-    storedCredentials: IClientCredentials,
-    suppliedCredentials: IRequestBody,
-  ) => Result<null>;
-}
-
 export interface IGetClientCredentialsById {
   getClientCredentialsById: (
     storedCredentialsArray: IClientCredentials[],
     suppliedClientId: string,
   ) => Result<IClientCredentials>;
+}
+
+export interface IValidateAsyncCredentialRequest {
+  validateAsyncCredentialRequest: (
+    config: IValidateAsyncCredentialRequestConfig,
+  ) => Result<null>;
 }
 
 export type IClientCredentials = {
@@ -218,9 +216,9 @@ interface CacheEntry {
   data: IClientCredentials[];
 }
 
-interface IValidateAsyncCredentialConfig {
-  aud: string
-  issuer: string
-  storedCredentials: IClientCredentials
-  redirectUri?: string
+interface IValidateAsyncCredentialRequestConfig {
+  aud: string;
+  issuer: string;
+  storedCredentials: IClientCredentials;
+  redirectUri?: string;
 }

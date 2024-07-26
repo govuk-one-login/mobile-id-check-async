@@ -1047,7 +1047,7 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
   implements
     IGetClientCredentials,
     IValidateTokenRequest,
-    IValidateRedirectUri,
+    IValidateAsyncCredentialRequestConfig,
     IGetClientCredentialsById
 {
   getClientCredentials = async (
@@ -1066,7 +1066,7 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
   validateTokenRequest(): Result<null> {
     return successResult(null);
   }
-  validateRedirectUri(): Result<null> {
+  validateAsyncCredentialRequest(): Result<null> {
     return successResult(null);
   }
   getClientCredentialsById(): Result<IClientCredentials> {
@@ -1096,7 +1096,7 @@ class MockClientCredentialsServiceValidateRedirectUriFailure
   validateTokenRequest(): Result<null> {
     return successResult(null);
   }
-  validateRedirectUri(): Result<null> {
+  validateAsyncCredentialRequest(): Result<null> {
     return errorResult("mockClientCredentialServiceError");
   }
   getClientCredentialsById(): Result<IClientCredentials> {
@@ -1132,7 +1132,7 @@ class MockClientCredentialsServiceInvalidClientCredentials
   validateTokenRequest(): Result<null> {
     return successResult(null);
   }
-  validateRedirectUri(): Result<null> {
+  validateAsyncCredentialRequest(): Result<null> {
     return errorResult("Invalid redirect_uri");
   }
   getClientCredentialsById(): Result<IClientCredentials> {
@@ -1167,7 +1167,7 @@ class MockPassingClientCredentialsServiceInvalidIssuer
   validateTokenRequest(): Result<null> {
     return successResult(null);
   }
-  validateRedirectUri(): Result<null> {
+  validateAsyncCredentialRequest(): Result<null> {
     return successResult(null);
   }
   getClientCredentialsById(): Result<IClientCredentials> {
@@ -1203,7 +1203,7 @@ class MockPassingClientCredentialsService
   validateTokenRequest(): Result<null> {
     return successResult(null);
   }
-  validateRedirectUri(): Result<null> {
+  validateAsyncCredentialRequest(): Result<null> {
     return successResult(null);
   }
   getClientCredentialsById(): Result<IClientCredentials> {
@@ -1246,7 +1246,7 @@ class MockClientCredentialServiceGetClientCredentialsErrorResult
     return successResult(null);
   }
 
-  validateRedirectUri(): Result<null> {
+  validateAsyncCredentialRequest(): Result<null> {
     return successResult(null);
   }
   getClientCredentialsById(): Result<IClientCredentials> {
