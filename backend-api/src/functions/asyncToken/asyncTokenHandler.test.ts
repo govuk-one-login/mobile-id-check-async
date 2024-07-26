@@ -5,7 +5,7 @@ import {
 import {
   IClientCredentials,
   IGetClientCredentialsById,
-  IValidateRedirectUri,
+  IValidateAsyncCredentialRequest,
   IValidateTokenRequest,
 } from "../services/clientCredentialsService/clientCredentialsService";
 import { IProcessRequest } from "./requestService/requestService";
@@ -368,7 +368,7 @@ class MockClientCredentialServiceGetClientCredentialsErrorResult
   implements
     IGetClientCredentials,
     IValidateTokenRequest,
-    IValidateRedirectUri,
+    IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
   getClientCredentials = async (): Promise<Result<IClientCredentials[]>> => {
@@ -396,7 +396,7 @@ class MockPassingClientCredentialsService
   implements
     IGetClientCredentials,
     IValidateTokenRequest,
-    IValidateRedirectUri,
+    IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
   getClientCredentials = async (
@@ -432,7 +432,7 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
   implements
     IGetClientCredentials,
     IValidateTokenRequest,
-    IValidateRedirectUri,
+    IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
   getClientCredentials = async (
@@ -463,7 +463,7 @@ class MockFailingClientCredentialsServiceValidation
   implements
     IGetClientCredentials,
     IValidateTokenRequest,
-    IValidateRedirectUri,
+    IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
   getClientCredentials = async (

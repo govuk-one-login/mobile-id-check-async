@@ -9,7 +9,7 @@ import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
 import {
   IClientCredentials,
   IGetClientCredentialsById,
-  IValidateRedirectUri,
+  IValidateAsyncCredentialRequest,
   IValidateTokenRequest,
 } from "../services/clientCredentialsService/clientCredentialsService";
 import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
@@ -1047,7 +1047,7 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
   implements
     IGetClientCredentials,
     IValidateTokenRequest,
-    IValidateAsyncCredentialRequestConfig,
+    IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
   getClientCredentials = async (
@@ -1078,7 +1078,7 @@ class MockClientCredentialsServiceValidateRedirectUriFailure
   implements
     IGetClientCredentials,
     IValidateTokenRequest,
-    IValidateRedirectUri,
+    IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
   getClientCredentials = async (
@@ -1113,7 +1113,7 @@ class MockClientCredentialsServiceInvalidClientCredentials
   implements
     IGetClientCredentials,
     IValidateTokenRequest,
-    IValidateRedirectUri,
+    IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
   getClientCredentials = async (
@@ -1149,7 +1149,7 @@ class MockPassingClientCredentialsServiceInvalidIssuer
   implements
     IGetClientCredentials,
     IValidateTokenRequest,
-    IValidateRedirectUri,
+    IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
   getClientCredentials = async (
@@ -1184,7 +1184,7 @@ class MockPassingClientCredentialsService
   implements
     IGetClientCredentials,
     IValidateTokenRequest,
-    IValidateRedirectUri,
+    IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
   getClientCredentials = async (
@@ -1235,7 +1235,7 @@ class MockClientCredentialServiceGetClientCredentialsErrorResult
   implements
     IGetClientCredentials,
     IValidateTokenRequest,
-    IValidateRedirectUri,
+    IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
   getClientCredentials = async (): Promise<Result<IClientCredentials[]>> => {

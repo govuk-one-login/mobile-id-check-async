@@ -1,6 +1,5 @@
 import { createHash } from "crypto";
 import { Result, errorResult, successResult } from "../../utils/result";
-import { IRequestBody } from "../../asyncCredential/asyncCredentialHandler";
 import {
   GetParameterCommand,
   GetParameterRequest,
@@ -216,7 +215,7 @@ interface CacheEntry {
   data: IClientCredentials[];
 }
 
-interface IValidateAsyncCredentialRequestConfig {
+export interface IValidateAsyncCredentialRequestConfig {
   aud: string;
   issuer: string;
   storedCredentials: IClientCredentials;

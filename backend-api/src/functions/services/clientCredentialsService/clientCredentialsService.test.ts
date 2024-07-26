@@ -1,5 +1,4 @@
 import { GetParameterCommand, SSMClient } from "@aws-sdk/client-ssm";
-import { IRequestBody } from "../../asyncCredential/asyncCredentialHandler";
 import { IDecodedClientCredentials } from "../../types/clientCredentials";
 import {
   ClientCredentialsService,
@@ -10,7 +9,6 @@ import { mockClient } from "aws-sdk-client-mock";
 describe("Client Credentials Service", () => {
   let clientCredentialsService: ClientCredentialsService;
   let mockTokenSuppliedClientCredentials: IDecodedClientCredentials;
-  let mockSuppliedClientCredentials: IRequestBody;
   let mockStoredClientCredentialsArray: IClientCredentials[];
   let mockStoredClientCredentials: IClientCredentials;
 
@@ -19,12 +17,6 @@ describe("Client Credentials Service", () => {
     mockTokenSuppliedClientCredentials = {
       clientId: "mockClientId",
       clientSecret: "mockClientSecret",
-    };
-    mockSuppliedClientCredentials = {
-      sub: "mockSub",
-      govuk_signin_journey_id: "mockGovukSigninJourneyId",
-      client_id: "mockClientId",
-      state: "mockState",
     };
     mockStoredClientCredentialsArray = [
       {

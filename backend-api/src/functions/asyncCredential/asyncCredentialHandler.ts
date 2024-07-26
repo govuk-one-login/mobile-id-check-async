@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import {
   IGetClientCredentialsById,
-  IValidateRedirectUri,
+  IValidateAsyncCredentialRequest,
   IValidateTokenRequest,
 } from "../services/clientCredentialsService/clientCredentialsService";
 import {
@@ -103,7 +103,6 @@ export async function lambdaHandler(
     });
     return serverError500Response;
   }
-
   const storedCredentialsArray = clientCredentialsResult.value;
 
   // Retrieving credentials from client credential array
@@ -112,7 +111,6 @@ export async function lambdaHandler(
       storedCredentialsArray,
       jwtPayload.client_id,
     );
-
   if (clientCredentialResponse.isError) {
     logger.log("CLIENT_CREDENTIALS_INVALID", {
       errorMessage: clientCredentialResponse.value,
@@ -365,7 +363,7 @@ export interface Dependencies {
   tokenService: () => IDecodeToken & IVerifyTokenSignature;
   clientCredentialsService: () => IGetClientCredentials &
     IValidateTokenRequest &
-    IValidateRedirectUri &
+    IValidateAsyncCredentialRequest &
     IGetClientCredentialsById;
   ssmService: () => IGetClientCredentials;
   sessionService: (
