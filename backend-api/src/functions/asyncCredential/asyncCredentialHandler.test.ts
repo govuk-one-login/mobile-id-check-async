@@ -573,7 +573,7 @@ describe("Async Credential", () => {
           }),
         });
         dependencies.clientCredentialsService = () =>
-          new MockFailingClientCredentialsService();
+          new MockClientCredentialsServiceValidateRedirectUriFailure();
 
         const result = await lambdaHandler(event, dependencies);
 
@@ -1074,15 +1074,24 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
   }
 }
 
-class MockFailingClientCredentialsService
+class MockClientCredentialsServiceValidateRedirectUriFailure
   implements
     IGetClientCredentials,
     IValidateTokenRequest,
     IValidateRedirectUri,
     IGetClientCredentialsById
 {
-  getClientCredentials = async (): Promise<Result<IClientCredentials[]>> => {
-    return errorResult("Mock failure retrieving client credentials");
+  getClientCredentials = async (
+    clientCredentials: IClientCredentials[] = [
+      {
+        client_id: "mockClientId",
+        issuer: "mockIssuer",
+        salt: "mockSalt",
+        hashed_client_secret: "mockHashedClientSecret",
+      },
+    ],
+  ): Promise<Result<IClientCredentials[]>> => {
+    return Promise.resolve(successResult(clientCredentials));
   };
   validateTokenRequest(): Result<null> {
     return successResult(null);

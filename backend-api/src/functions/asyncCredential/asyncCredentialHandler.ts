@@ -63,7 +63,6 @@ export async function lambdaHandler(
       errorDescription: validTokenClaimsOrError.value,
     });
   }
-
   const { encodedJwt, jwtPayload } =
     validTokenClaimsOrError.value as IDecodedToken;
 
@@ -95,8 +94,9 @@ export async function lambdaHandler(
   }
 
   // Fetching stored client credentials
-  const ssmService = dependencies.ssmService();
-  const ssmServiceResponse = await ssmService.getClientCredentials();
+  const clientCredentialsService = dependencies.clientCredentialsService();
+  const ssmServiceResponse =
+    await clientCredentialsService.getClientCredentials();
   if (ssmServiceResponse.isError) {
     logger.log("ERROR_RETRIEVING_CLIENT_CREDENTIALS", {
       errorMessage: ssmServiceResponse.value,
@@ -107,7 +107,6 @@ export async function lambdaHandler(
   const storedCredentialsArray = ssmServiceResponse.value;
 
   // Retrieving credentials from client credential array
-  const clientCredentialsService = dependencies.clientCredentialsService();
   const clientCredentialResponse =
     clientCredentialsService.getClientCredentialsById(
       storedCredentialsArray,
