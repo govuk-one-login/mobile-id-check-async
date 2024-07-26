@@ -671,7 +671,7 @@ describe("Async Credential", () => {
     });
 
     describe("Validate client credentials", () => {
-      describe("Given redirect_uri is not valid", () => {
+      describe("Given supplied credentials are not valid", () => {
         it("Returns a 400 Bad request response", async () => {
           const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
@@ -693,14 +693,14 @@ describe("Async Credential", () => {
             "REQUEST_BODY_INVALID",
           );
           expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
-            "Invalid redirect_uri",
+            "Mock invalid credential error",
           );
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
             body: JSON.stringify({
               error: "invalid_request",
-              error_description: "Invalid redirect_uri",
+              error_description: "Mock invalid credential error",
             }),
           });
         });
@@ -1028,7 +1028,7 @@ class MockClientCredentialsServiceInvalidClientCredentials
     return successResult(null);
   }
   validateAsyncCredentialRequest(): Result<null> {
-    return errorResult("Invalid redirect_uri");
+    return errorResult("Mock invalid credential error");
   }
   getClientCredentialsById(): Result<IClientCredentials> {
     return successResult({
