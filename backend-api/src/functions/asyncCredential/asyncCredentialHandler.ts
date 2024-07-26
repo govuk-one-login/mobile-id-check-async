@@ -78,14 +78,12 @@ export async function lambdaHandler(
       errorDescription: "Request body validation failed",
     });
   }
-
   const requestBody = requestBodyOrError.value;
 
   const result = await tokenService.verifyTokenSignature(
     config.SIGNING_KEY_ID,
     encodedJwt,
   );
-
   if (result.isError) {
     logger.log("TOKEN_SIGNATURE_INVALID", {
       errorMessage: result.value,

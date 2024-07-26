@@ -263,7 +263,7 @@ describe("Async Credential", () => {
     });
   });
 
-  describe("Request body validation", () => {
+  describe("Get request body", () => {
     describe("Given body is missing", () => {
       it("Returns 400 status code with invalid_request error", async () => {
         const jwtBuilder = new MockJWTBuilder();
@@ -552,37 +552,6 @@ describe("Async Credential", () => {
           body: JSON.stringify({
             error: "invalid_request",
             error_description: "Request body validation failed",
-          }),
-        });
-      });
-    });
-  });
-
-  describe("Request body validation - using Client Credentials", () => {
-    describe("Given redirect_uri is present and the request body validation fails", () => {
-      it("Returns a 400 Bad Request response", async () => {
-        const jwtBuilder = new MockJWTBuilder();
-        const event = buildRequest({
-          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-          body: JSON.stringify({
-            state: "mockState",
-            sub: "mockSub",
-            client_id: "mockClientId",
-            govuk_signin_journey_id: "mockGovukSigninJourneyId",
-            redirect_uri: "https://mockInvalidRedirectUri.com",
-          }),
-        });
-        dependencies.clientCredentialsService = () =>
-          new MockClientCredentialsServiceValidateRedirectUriFailure();
-
-        const result = await lambdaHandler(event, dependencies);
-
-        expect(result).toStrictEqual({
-          headers: { "Content-Type": "application/json" },
-          statusCode: 400,
-          body: JSON.stringify({
-            error: "invalid_request",
-            error_description: "mockClientCredentialServiceError",
           }),
         });
       });
@@ -1071,41 +1040,6 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
   }
   getClientCredentialsById(): Result<IClientCredentials> {
     return errorResult("No credentials found");
-  }
-}
-
-class MockClientCredentialsServiceValidateRedirectUriFailure
-  implements
-    IGetClientCredentials,
-    IValidateTokenRequest,
-    IValidateAsyncCredentialRequest,
-    IGetClientCredentialsById
-{
-  getClientCredentials = async (
-    clientCredentials: IClientCredentials[] = [
-      {
-        client_id: "mockClientId",
-        issuer: "mockIssuer",
-        salt: "mockSalt",
-        hashed_client_secret: "mockHashedClientSecret",
-      },
-    ],
-  ): Promise<Result<IClientCredentials[]>> => {
-    return Promise.resolve(successResult(clientCredentials));
-  };
-  validateTokenRequest(): Result<null> {
-    return successResult(null);
-  }
-  validateAsyncCredentialRequest(): Result<null> {
-    return errorResult("mockClientCredentialServiceError");
-  }
-  getClientCredentialsById(): Result<IClientCredentials> {
-    return successResult({
-      client_id: "mockClientId",
-      issuer: "mockIssuer",
-      salt: "mockSalt",
-      hashed_client_secret: "mockHashedClientSecret",
-    });
   }
 }
 

@@ -357,6 +357,23 @@ describe("Client Credentials Service", () => {
         });
       });
     });
+
+    describe("aud validation", () => {
+      describe("Given supplied aud claim does not match registered issuer", () => {
+        it("Returns error response", () => {
+          const result =
+            clientCredentialsService.validateAsyncCredentialRequest({
+              aud: "mockInvalidAud",
+              issuer: "mockIssuer",
+              storedCredentials: mockStoredClientCredentials,
+              redirectUri: "https://mockRedirectUri.com",
+            });
+
+          expect(result.isError).toBe(true);
+          expect(result.value).toBe("Invalid aud claim");
+        });
+      });
+    });
   });
 
   describe("Get client credentials by ID", () => {
