@@ -1,9 +1,11 @@
+import { GetParameterCommand, SSMClient } from "@aws-sdk/client-ssm";
 import { IRequestBody } from "../../asyncCredential/asyncCredentialHandler";
 import { IDecodedClientCredentials } from "../../types/clientCredentials";
 import {
   ClientCredentialsService,
   IClientCredentials,
 } from "./clientCredentialsService";
+import { mockClient } from "aws-sdk-client-mock";
 
 describe("Client Credentials Service", () => {
   let clientCredentialsService: ClientCredentialsService;
@@ -50,6 +52,184 @@ describe("Client Credentials Service", () => {
         "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
       redirect_uri: "https://mockRedirectUri.com",
     };
+  });
+
+  describe("Get client credentials", () => {
+    describe("Given there is an error calling SSM", () => {
+      it("Returns a Log response with error message", async () => {
+        const ssmMock = mockClient(SSMClient);
+        ssmMock.on(GetParameterCommand).rejects("SSM Error");
+
+        const result = await clientCredentialsService.getClientCredentials();
+
+        expect(result.isError).toBe(true);
+        expect(result.value).toEqual("Client Credentials not found");
+      });
+    });
+
+    describe("Given the request to SSM is successful", () => {
+      describe.each([
+        {
+          clientCredentials: undefined,
+          scenario: "is undefined",
+          expectedErrorMessage: "Client Credentials is null or undefined",
+        },
+        {
+          clientCredentials: "{}}",
+          scenario: "is invalid JSON",
+          expectedErrorMessage: "Client Credentials is not valid JSON",
+        },
+        {
+          clientCredentials: JSON.stringify({}),
+          scenario: "is not an array",
+          expectedErrorMessage: "Parsed Client Credentials array is malformed",
+        },
+        {
+          clientCredentials: JSON.stringify([]),
+          scenario: "is an empty array",
+          expectedErrorMessage: "Parsed Client Credentials array is malformed",
+        },
+        {
+          clientCredentials: JSON.stringify([{ client_id: "123" }]),
+          scenario: "contains an object with incorrect keys",
+          expectedErrorMessage: "Parsed Client Credentials array is malformed",
+        },
+        {
+          clientCredentials: JSON.stringify([
+            {
+              client_id: [],
+              issuer: "mockIssuer",
+              salt: "mockSalt",
+              hashed_client_secret: "mockHashedClientSecret",
+            },
+          ]),
+          scenario:
+            'contains an object where not all key types are in a "string" format',
+          expectedErrorMessage: "Parsed Client Credentials array is malformed",
+        },
+        {
+          clientCredentials: JSON.stringify([
+            {
+              client_id: "mockClientId",
+              issuer: "mockIssuer",
+              salt: "mockSalt",
+              hashed_client_secret: "mockHashedClientSecret",
+            },
+            {
+              client_id: [],
+              issuer: "mockIssuer",
+              salt: "mockSalt",
+              hashed_client_secret: "mockHashedClientSecret",
+            },
+          ]),
+          scenario:
+            "contains multiple objects with where at least one key is incorrect",
+          expectedErrorMessage: "Parsed Client Credentials array is malformed",
+        },
+      ])(
+        "Given the Client Credential array $scenario",
+        ({ clientCredentials, expectedErrorMessage }) => {
+          it("Returns a Log response with error message", async () => {
+            const ssmMock = mockClient(SSMClient);
+            ssmMock
+              .on(GetParameterCommand)
+              .resolves({ Parameter: { Value: clientCredentials } });
+
+            const result =
+              await clientCredentialsService.getClientCredentials();
+
+            expect(result.isError).toBe(true);
+            expect(result.value).toEqual(expectedErrorMessage);
+          });
+        },
+      );
+
+      describe("Given the Credential object is valid", () => {
+        it("Returns a Value response with Credential object", async () => {
+          const ssmMock = mockClient(SSMClient);
+          ssmMock.on(GetParameterCommand).resolves({
+            Parameter: {
+              Value: JSON.stringify([
+                {
+                  client_id: "mockClientId",
+                  issuer: "mockIssuer",
+                  salt: "mockSalt",
+                  hashed_client_secret: "mockHashedClientSecret",
+                },
+              ]),
+            },
+          });
+
+          const result = await clientCredentialsService.getClientCredentials();
+
+          expect(result.isError).toBe(false);
+          expect(result.value).toStrictEqual([
+            {
+              client_id: "mockClientId",
+              issuer: "mockIssuer",
+              salt: "mockSalt",
+              hashed_client_secret: "mockHashedClientSecret",
+            },
+          ]);
+        });
+
+        it("Utilizes cache for subsequent requests", async () => {
+          const ssmMock = mockClient(SSMClient);
+          ssmMock.on(GetParameterCommand).resolves({
+            Parameter: {
+              Value: JSON.stringify([
+                {
+                  client_id: "mockClientId",
+                  issuer: "mockIssuer",
+                  salt: "mockSalt",
+                  hashed_client_secret: "mockHashedClientSecret",
+                },
+              ]),
+            },
+          });
+
+          clientCredentialsService.resetCache();
+
+          // First call should populate the cache
+          await clientCredentialsService.getClientCredentials();
+          // Second call should use cache
+          await clientCredentialsService.getClientCredentials();
+
+          // Expect SSM to have been called only once, since the second call uses cache
+          expect(ssmMock.calls()).toHaveLength(1);
+        });
+
+        it("Refreshes cache after TTL expires", async () => {
+          const ssmMock = mockClient(SSMClient);
+
+          jest.useFakeTimers();
+
+          ssmMock.on(GetParameterCommand).resolves({
+            Parameter: {
+              Value: JSON.stringify([
+                {
+                  client_id: "mockClientId",
+                  issuer: "mockIssuer",
+                  salt: "mockSalt",
+                  hashed_client_secret: "mockHashedClientSecret",
+                },
+              ]),
+            },
+          });
+
+          clientCredentialsService.resetCache();
+          await clientCredentialsService.getClientCredentials();
+          // Simulate time passing to exceed cache TTL
+          jest.advanceTimersByTime(clientCredentialsService.cacheTTL + 1);
+          // This call should refresh cache
+          await clientCredentialsService.getClientCredentials();
+
+          // Expect SSM to have been called twice: once to populate, once to refresh after TTL
+          expect(ssmMock.calls()).toHaveLength(2);
+          jest.useRealTimers();
+        });
+      });
+    });
   });
 
   describe("Validate token request credentials", () => {

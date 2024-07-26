@@ -6,7 +6,9 @@ import {
 import "dotenv/config";
 import {
   ClientCredentialsService,
-  IClientCredentialsService,
+  IGetClientCredentialsById,
+  IValidateRedirectUri,
+  IValidateTokenRequest,
 } from "../services/clientCredentialsService/clientCredentialsService";
 import {
   IProcessRequest,
@@ -188,7 +190,10 @@ export interface IAsyncTokenRequestDependencies {
   logger: () => Logger<MessageName>;
   requestService: () => IProcessRequest;
   ssmService: () => IGetClientCredentials;
-  clientCredentialService: () => IClientCredentialsService;
+  clientCredentialService: () => IGetClientCredentials &
+    IValidateTokenRequest &
+    IValidateRedirectUri &
+    IGetClientCredentialsById;
   tokenService: (signingKey: string) => IMintToken;
 }
 

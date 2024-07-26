@@ -1,5 +1,9 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { ClientCredentialsService } from "../services/clientCredentialsService/clientCredentialsService";
+import {
+  IGetClientCredentialsById,
+  IValidateRedirectUri,
+  IValidateTokenRequest,
+} from "../services/clientCredentialsService/clientCredentialsService";
 import {
   IDecodedToken,
   IDecodeToken,
@@ -360,7 +364,10 @@ export interface Dependencies {
   logger: () => Logger<MessageName>;
   eventService: (sqsQueue: string) => IEventService;
   tokenService: () => IDecodeToken & IVerifyTokenSignature;
-  clientCredentialsService: () => ClientCredentialsService;
+  clientCredentialsService: () => IGetClientCredentials &
+    IValidateTokenRequest &
+    IValidateRedirectUri &
+    IGetClientCredentialsById;
   ssmService: () => IGetClientCredentials;
   sessionService: (
     tableName: string,

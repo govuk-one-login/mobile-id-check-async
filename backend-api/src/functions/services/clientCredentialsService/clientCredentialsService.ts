@@ -1,8 +1,72 @@
 import { createHash } from "crypto";
 import { Result, errorResult, successResult } from "../../utils/result";
 import { IRequestBody } from "../../asyncCredential/asyncCredentialHandler";
+import {
+  GetParameterCommand,
+  GetParameterRequest,
+  SSMClient,
+} from "@aws-sdk/client-ssm";
+import { ssmClient } from "./ssmClient";
 
-export class ClientCredentialsService implements IClientCredentialsService {
+let cache: CacheEntry | null = null;
+
+export class ClientCredentialsService
+  implements
+    IGetClientCredentials,
+    IValidateTokenRequest,
+    IValidateRedirectUri,
+    IGetClientCredentialsById
+{
+  ssmClient: SSMClient;
+  cacheTTL: number;
+
+  constructor() {
+    this.ssmClient = new SSMClient(ssmClient);
+    this.cacheTTL = 3600 * 1000;
+  }
+
+  getClientCredentials = async (): Promise<Result<IClientCredentials[]>> => {
+    if (cache && cache.expiry > Date.now()) {
+      return successResult(cache.data);
+    }
+
+    const command: GetParameterRequest = {
+      Name: "/dev/async-credential/CLIENT_CREDENTIALS",
+      WithDecryption: true, // Parameter is encrypted at rest
+    };
+
+    let response;
+    try {
+      response = await this.ssmClient.send(new GetParameterCommand(command));
+    } catch (e: unknown) {
+      return errorResult("Client Credentials not found");
+    }
+
+    const clientCredentialResponse = response.Parameter?.Value;
+
+    if (!clientCredentialResponse) {
+      return errorResult("Client Credentials is null or undefined");
+    }
+
+    let parsedCredentials;
+    try {
+      parsedCredentials = JSON.parse(clientCredentialResponse);
+    } catch (e: unknown) {
+      return errorResult("Client Credentials is not valid JSON");
+    }
+
+    if (!this.isCredentialsArrayValid(parsedCredentials)) {
+      return errorResult("Parsed Client Credentials array is malformed");
+    }
+
+    cache = {
+      expiry: Date.now() + this.cacheTTL,
+      data: parsedCredentials,
+    };
+
+    return successResult(parsedCredentials);
+  };
+
   validateTokenRequest = (
     storedCredentials: IClientCredentials,
     suppliedCredentials: IDecodedClientCredentials,
@@ -68,24 +132,68 @@ export class ClientCredentialsService implements IClientCredentialsService {
 
     return successResult(storedCredentials);
   };
+
+  private isCredentialsArrayValid = (
+    credentials: IClientCredentials[] | undefined,
+  ): boolean => {
+    if (!Array.isArray(credentials)) {
+      return false;
+    }
+
+    if (credentials.length === 0) {
+      return false;
+    }
+
+    if (!this.isValidCredentialCredentialsStructure(credentials)) {
+      return false;
+    }
+
+    return true;
+  };
+
+  private isValidCredentialCredentialsStructure(
+    credentialArray: IClientCredentials[],
+  ): boolean {
+    return credentialArray.every(
+      (obj) =>
+        typeof obj.client_id === "string" &&
+        typeof obj.issuer === "string" &&
+        typeof obj.salt === "string" &&
+        typeof obj.hashed_client_secret === "string" &&
+        Object.keys(obj).length === 4,
+    );
+  }
+
+  resetCache() {
+    cache = null;
+  }
 }
+
 const hashSecret = (secret: string, salt: string): string => {
   return createHash("sha256")
     .update(secret + salt)
     .digest("hex");
 };
 
-export interface IClientCredentialsService {
+export interface IGetClientCredentials {
+  getClientCredentials: () => Promise<Result<IClientCredentials[]>>;
+}
+
+export interface IValidateTokenRequest {
   validateTokenRequest: (
     storedCredentials: IClientCredentials,
     suppliedCredentials: IDecodedClientCredentials,
   ) => Result<null>;
+}
 
+export interface IValidateRedirectUri {
   validateRedirectUri: (
     storedCredentials: IClientCredentials,
     suppliedCredentials: IRequestBody,
   ) => Result<null>;
+}
 
+export interface IGetClientCredentialsById {
   getClientCredentialsById: (
     storedCredentialsArray: IClientCredentials[],
     suppliedClientId: string,
@@ -103,4 +211,9 @@ export type IClientCredentials = {
 export interface IDecodedClientCredentials {
   clientId: string;
   clientSecret: string;
+}
+
+interface CacheEntry {
+  expiry: number;
+  data: IClientCredentials[];
 }
