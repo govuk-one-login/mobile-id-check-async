@@ -217,3 +217,10 @@ interface CacheEntry {
   expiry: number;
   data: IClientCredentials[];
 }
+
+interface IValidateAsyncCredentialConfig {
+  aud: string
+  issuer: string
+  storedCredentials: IClientCredentials
+  redirectUri?: string
+}
