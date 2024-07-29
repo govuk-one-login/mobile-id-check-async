@@ -980,7 +980,7 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
-  getClientCredentials = async (
+  getStoredClientCredentials = async (
     clientCredentials: IClientCredentials[] = [
       {
         client_id: "mockClientId",
@@ -999,7 +999,7 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
   validateAsyncCredentialRequest(): Result<null> {
     return successResult(null);
   }
-  getClientCredentialsById(): Result<IClientCredentials> {
+  getStoredClientCredentialsById(): Result<IClientCredentials> {
     return errorResult("No credentials found");
   }
 }
@@ -1011,7 +1011,7 @@ class MockClientCredentialsServiceInvalidClientCredentials
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
-  getClientCredentials = async (
+  getStoredClientCredentials = async (
     clientCredentials: IClientCredentials[] = [
       {
         client_id: "mockClientId",
@@ -1030,7 +1030,7 @@ class MockClientCredentialsServiceInvalidClientCredentials
   validateAsyncCredentialRequest(): Result<null> {
     return errorResult("Mock invalid credential error");
   }
-  getClientCredentialsById(): Result<IClientCredentials> {
+  getStoredClientCredentialsById(): Result<IClientCredentials> {
     return successResult({
       client_id: "mockClientId",
       issuer: "mockIssuer",
@@ -1047,7 +1047,7 @@ class MockPassingClientCredentialsService
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
-  getClientCredentials = async (
+  getStoredClientCredentials = async (
     clientCredentials: IClientCredentials[] = [
       {
         client_id: "mockClientId",
@@ -1066,7 +1066,7 @@ class MockPassingClientCredentialsService
   validateAsyncCredentialRequest(): Result<null> {
     return successResult(null);
   }
-  getClientCredentialsById(): Result<IClientCredentials> {
+  getStoredClientCredentialsById(): Result<IClientCredentials> {
     return successResult({
       client_id: "mockClientId",
       issuer: "mockIssuer",
@@ -1083,7 +1083,9 @@ class MockClientCredentialServiceGetClientCredentialsErrorResult
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
-  getClientCredentials = async (): Promise<Result<IClientCredentials[]>> => {
+  getStoredClientCredentials = async (): Promise<
+    Result<IClientCredentials[]>
+  > => {
     return errorResult("Mock failure retrieving client credentials");
   };
 
@@ -1094,7 +1096,7 @@ class MockClientCredentialServiceGetClientCredentialsErrorResult
   validateAsyncCredentialRequest(): Result<null> {
     return successResult(null);
   }
-  getClientCredentialsById(): Result<IClientCredentials> {
+  getStoredClientCredentialsById(): Result<IClientCredentials> {
     return successResult({
       client_id: "mockClientId",
       issuer: "mockIssuer",

@@ -43,7 +43,7 @@ describe("Async Token", () => {
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(mockLogger, registeredLogs),
       requestService: () => new MockRequestServiceValueResponse(),
-      clientCredentialService: () => new MockPassingClientCredentialsService(),
+      clientCredentialsService: () => new MockPassingClientCredentialsService(),
       tokenService: () => new MockPassingTokenService(),
     };
   });
@@ -142,7 +142,7 @@ describe("Async Token", () => {
     describe("Get client credentials", () => {
       describe("Given an error result is returned", () => {
         it("Returns a 500 Server Error response", async () => {
-          dependencies.clientCredentialService = () =>
+          dependencies.clientCredentialsService = () =>
             new MockClientCredentialServiceGetClientCredentialsErrorResult();
 
           const result = await lambdaHandlerConstructor(
@@ -169,7 +169,7 @@ describe("Async Token", () => {
     describe("Get client credentials by ID", () => {
       describe("Given credentials are not found", () => {
         it("Returns 400 Bad Request response", async () => {
-          dependencies.clientCredentialService = () =>
+          dependencies.clientCredentialsService = () =>
             new MockFailingClientCredentialsServiceGetClientCredentialsById();
 
           const result = await lambdaHandlerConstructor(
@@ -198,7 +198,7 @@ describe("Async Token", () => {
     describe("Credential validation", () => {
       describe("Given credentials are not valid", () => {
         it("Returns 400 Bad request response", async () => {
-          dependencies.clientCredentialService = () =>
+          dependencies.clientCredentialsService = () =>
             new MockFailingClientCredentialsServiceValidation();
 
           const result = await lambdaHandlerConstructor(
@@ -355,7 +355,9 @@ class MockClientCredentialServiceGetClientCredentialsErrorResult
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
-  getClientCredentials = async (): Promise<Result<IClientCredentials[]>> => {
+  getStoredClientCredentials = async (): Promise<
+    Result<IClientCredentials[]>
+  > => {
     return errorResult("Mock failure retrieving client credentials");
   };
 
@@ -366,7 +368,7 @@ class MockClientCredentialServiceGetClientCredentialsErrorResult
   validateAsyncCredentialRequest(): Result<null> {
     return successResult(null);
   }
-  getClientCredentialsById(): Result<IClientCredentials> {
+  getStoredClientCredentialsById(): Result<IClientCredentials> {
     return successResult({
       client_id: "mockClientId",
       issuer: "mockIssuer",
@@ -383,7 +385,7 @@ class MockPassingClientCredentialsService
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
-  getClientCredentials = async (
+  getStoredClientCredentials = async (
     clientCredentials: IClientCredentials[] = [
       {
         client_id: "mockClientId",
@@ -402,7 +404,7 @@ class MockPassingClientCredentialsService
   validateAsyncCredentialRequest(): Result<null> {
     return successResult(null);
   }
-  getClientCredentialsById(): Result<IClientCredentials> {
+  getStoredClientCredentialsById(): Result<IClientCredentials> {
     return successResult({
       client_id: "mockClientId",
       issuer: "mockIssuer",
@@ -419,7 +421,7 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
-  getClientCredentials = async (
+  getStoredClientCredentials = async (
     clientCredentials: IClientCredentials[] = [
       {
         client_id: "mockClientId",
@@ -438,7 +440,7 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
   validateAsyncCredentialRequest(): Result<null> {
     return successResult(null);
   }
-  getClientCredentialsById(): Result<IClientCredentials> {
+  getStoredClientCredentialsById(): Result<IClientCredentials> {
     return errorResult("No credentials found");
   }
 }
@@ -450,7 +452,7 @@ class MockFailingClientCredentialsServiceValidation
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
-  getClientCredentials = async (
+  getStoredClientCredentials = async (
     clientCredentials: IClientCredentials[] = [
       {
         client_id: "mockClientId",
@@ -469,7 +471,7 @@ class MockFailingClientCredentialsServiceValidation
   validateAsyncCredentialRequest(): Result<null> {
     return successResult(null);
   }
-  getClientCredentialsById() {
+  getStoredClientCredentialsById() {
     return successResult({
       client_id: "mockClientId",
       issuer: "mockIssuer",

@@ -24,7 +24,9 @@ export class ClientCredentialsService
     this.cacheTTL = 3600 * 1000;
   }
 
-  getClientCredentials = async (): Promise<Result<IClientCredentials[]>> => {
+  getStoredClientCredentials = async (): Promise<
+    Result<IClientCredentials[]>
+  > => {
     if (cache && cache.expiry > Date.now()) {
       return successResult(cache.data);
     }
@@ -101,7 +103,7 @@ export class ClientCredentialsService
   validateAsyncCredentialRequest = (
     config: IValidateAsyncCredentialRequestConfig,
   ): Result<null> => {
-    const registeredRedirectUri = config.storedCredentials.redirect_uri;
+    const registeredRedirectUri = config.storedClientCredentials.redirect_uri;
     if (!registeredRedirectUri) {
       return errorResult("Missing redirect_uri");
     }
@@ -112,18 +114,18 @@ export class ClientCredentialsService
       return errorResult("Invalid redirect_uri");
     }
 
-    if (config.redirectUri !== config.storedCredentials.redirect_uri) {
+    if (config.redirectUri !== config.storedClientCredentials.redirect_uri) {
       return errorResult("Unregistered redirect_uri");
     }
 
-    if (config.aud !== config.storedCredentials.issuer) {
+    if (config.aud !== config.storedClientCredentials.issuer) {
       return errorResult("Invalid aud claim");
     }
 
     return successResult(null);
   };
 
-  getClientCredentialsById = (
+  getStoredClientCredentialsById = (
     storedCredentialsArray: IClientCredentials[],
     suppliedClientId: string,
   ): Result<IClientCredentials> => {
@@ -178,7 +180,7 @@ const hashSecret = (secret: string, salt: string): string => {
 };
 
 export interface IGetClientCredentials {
-  getClientCredentials: () => Promise<Result<IClientCredentials[]>>;
+  getStoredClientCredentials: () => Promise<Result<IClientCredentials[]>>;
 }
 
 export interface IValidateAsyncTokenRequest {
@@ -189,7 +191,7 @@ export interface IValidateAsyncTokenRequest {
 }
 
 export interface IGetClientCredentialsById {
-  getClientCredentialsById: (
+  getStoredClientCredentialsById: (
     storedCredentialsArray: IClientCredentials[],
     suppliedClientId: string,
   ) => Result<IClientCredentials>;
@@ -222,6 +224,6 @@ interface CacheEntry {
 export interface IValidateAsyncCredentialRequestConfig {
   aud: string;
   issuer: string;
-  storedCredentials: IClientCredentials;
+  storedClientCredentials: IClientCredentials;
   redirectUri?: string;
 }
