@@ -90,25 +90,26 @@ export async function lambdaHandler(
 
   // Fetching stored client credentials
   const clientCredentialsService = dependencies.clientCredentialsService();
-  const storedClientCredentialsArrayResult =
-    await clientCredentialsService.getStoredClientCredentials();
-  if (storedClientCredentialsArrayResult.isError) {
+  const registeredClientCredentialsArrayResult =
+    await clientCredentialsService.getRegisteredClientCredentials();
+  if (registeredClientCredentialsArrayResult.isError) {
     logger.log("ERROR_RETRIEVING_CLIENT_CREDENTIALS", {
-      errorMessage: storedClientCredentialsArrayResult.value,
+      errorMessage: registeredClientCredentialsArrayResult.value,
     });
     return serverError500Response;
   }
-  const storedClientCredentialsArray = storedClientCredentialsArrayResult.value;
+  const registeredClientCredentialsArray =
+    registeredClientCredentialsArrayResult.value;
 
   // Retrieving credentials from client credential array
-  const storedClientCredentialsByIdResult =
-    clientCredentialsService.getStoredClientCredentialsById(
-      storedClientCredentialsArray,
+  const registeredClientCredentialsByIdResult =
+    clientCredentialsService.getRegisteredClientCredentialsById(
+      registeredClientCredentialsArray,
       jwtPayload.client_id,
     );
-  if (storedClientCredentialsByIdResult.isError) {
+  if (registeredClientCredentialsByIdResult.isError) {
     logger.log("CLIENT_CREDENTIALS_INVALID", {
-      errorMessage: storedClientCredentialsByIdResult.value,
+      errorMessage: registeredClientCredentialsByIdResult.value,
     });
 
     return badRequestResponse({
@@ -116,13 +117,14 @@ export async function lambdaHandler(
       errorDescription: "Supplied client not recognised",
     });
   }
-  const storedClientCredentials = storedClientCredentialsByIdResult.value;
+  const registeredClientCredentials =
+    registeredClientCredentialsByIdResult.value;
 
   const validateClientCredentialsResult =
     clientCredentialsService.validateAsyncCredentialRequest({
       aud: jwtPayload.aud,
-      issuer: storedClientCredentials.issuer,
-      storedClientCredentials,
+      issuer: registeredClientCredentials.issuer,
+      registeredClientCredentials,
       redirectUri: requestBody.redirect_uri,
     });
   if (validateClientCredentialsResult.isError) {

@@ -64,35 +64,37 @@ export async function lambdaHandlerConstructor(
 
   // Fetching stored client credentials
   const clientCredentialsService = dependencies.clientCredentialsService();
-  const storedClientCredentialsArrayResult =
-    await clientCredentialsService.getStoredClientCredentials();
-  if (storedClientCredentialsArrayResult.isError) {
+  const registeredClientCredentialsArrayResult =
+    await clientCredentialsService.getRegisteredClientCredentials();
+  if (registeredClientCredentialsArrayResult.isError) {
     logger.log("INTERNAL_SERVER_ERROR", {
-      errorMessage: storedClientCredentialsArrayResult.value,
+      errorMessage: registeredClientCredentialsArrayResult.value,
     });
     return serverErrorResponse;
   }
 
-  const storedClientCredentialsArray = storedClientCredentialsArrayResult.value;
+  const registeredClientCredentialsArray =
+    registeredClientCredentialsArrayResult.value;
 
   // Incoming credentials match stored credentials
-  const storedClientCredentialsByIdResult =
-    clientCredentialsService.getStoredClientCredentialsById(
-      storedClientCredentialsArray,
+  const registeredClientCredentialsByIdResult =
+    clientCredentialsService.getRegisteredClientCredentialsById(
+      registeredClientCredentialsArray,
       suppliedClientCredentials.clientId,
     );
-  if (storedClientCredentialsByIdResult.isError) {
+  if (registeredClientCredentialsByIdResult.isError) {
     logger.log("INVALID_REQUEST", {
       errorMessage: "Client credentials not registered",
     });
     return badRequestResponseInvalidCredentials;
   }
 
-  const storedClientCredentials = storedClientCredentialsByIdResult.value;
+  const registeredClientCredentials =
+    registeredClientCredentialsByIdResult.value;
 
   const validateAsyncTokenRequestResult =
     clientCredentialsService.validateAsyncTokenRequest(
-      storedClientCredentials,
+      registeredClientCredentials,
       suppliedClientCredentials,
     );
   if (validateAsyncTokenRequestResult.isError) {
@@ -103,11 +105,11 @@ export async function lambdaHandlerConstructor(
   }
 
   const jwtPayload = {
-    aud: storedClientCredentials.issuer,
+    aud: registeredClientCredentials.issuer,
     iss: config.ISSUER,
     exp: Math.floor(Date.now() / 1000) + 3600,
     scope: "dcmaw.session.async_create",
-    client_id: storedClientCredentials.client_id,
+    client_id: registeredClientCredentials.client_id,
   };
 
   const tokenService = dependencies.tokenService(config.SIGNING_KEY_ID);

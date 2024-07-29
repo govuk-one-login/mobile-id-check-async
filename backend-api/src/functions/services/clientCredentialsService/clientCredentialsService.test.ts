@@ -53,7 +53,7 @@ describe("Client Credentials Service", () => {
         ssmMock.on(GetParameterCommand).rejects("SSM Error");
 
         const result =
-          await clientCredentialsService.getStoredClientCredentials();
+          await clientCredentialsService.getRegisteredClientCredentials();
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual("Client Credentials not found");
@@ -129,7 +129,7 @@ describe("Client Credentials Service", () => {
               .resolves({ Parameter: { Value: clientCredentials } });
 
             const result =
-              await clientCredentialsService.getStoredClientCredentials();
+              await clientCredentialsService.getRegisteredClientCredentials();
 
             expect(result.isError).toBe(true);
             expect(result.value).toEqual(expectedErrorMessage);
@@ -154,7 +154,7 @@ describe("Client Credentials Service", () => {
           });
 
           const result =
-            await clientCredentialsService.getStoredClientCredentials();
+            await clientCredentialsService.getRegisteredClientCredentials();
 
           expect(result.isError).toBe(false);
           expect(result.value).toStrictEqual([
@@ -185,9 +185,9 @@ describe("Client Credentials Service", () => {
           clientCredentialsService.resetCache();
 
           // First call should populate the cache
-          await clientCredentialsService.getStoredClientCredentials();
+          await clientCredentialsService.getRegisteredClientCredentials();
           // Second call should use cache
-          await clientCredentialsService.getStoredClientCredentials();
+          await clientCredentialsService.getRegisteredClientCredentials();
 
           // Expect SSM to have been called only once, since the second call uses cache
           expect(ssmMock.calls()).toHaveLength(1);
@@ -212,11 +212,11 @@ describe("Client Credentials Service", () => {
           });
 
           clientCredentialsService.resetCache();
-          await clientCredentialsService.getStoredClientCredentials();
+          await clientCredentialsService.getRegisteredClientCredentials();
           // Simulate time passing to exceed cache TTL
           jest.advanceTimersByTime(clientCredentialsService.cacheTTL + 1);
           // This call should refresh cache
-          await clientCredentialsService.getStoredClientCredentials();
+          await clientCredentialsService.getRegisteredClientCredentials();
 
           // Expect SSM to have been called twice: once to populate, once to refresh after TTL
           expect(ssmMock.calls()).toHaveLength(2);
@@ -304,7 +304,7 @@ describe("Client Credentials Service", () => {
             clientCredentialsService.validateAsyncCredentialRequest({
               aud: "mockIssuer",
               issuer: "mockIssuer",
-              storedClientCredentials: mockStoredClientCredentials,
+              registeredClientCredentials: mockStoredClientCredentials,
             });
 
           expect(result.isError).toBe(true);
@@ -320,7 +320,7 @@ describe("Client Credentials Service", () => {
             clientCredentialsService.validateAsyncCredentialRequest({
               aud: "mockIssuer",
               issuer: "mockIssuer",
-              storedClientCredentials: mockStoredClientCredentials,
+              registeredClientCredentials: mockStoredClientCredentials,
               redirectUri: "https://mockRedirectUri.com",
             });
 
@@ -335,7 +335,7 @@ describe("Client Credentials Service", () => {
             clientCredentialsService.validateAsyncCredentialRequest({
               aud: "mockIssuer",
               issuer: "mockIssuer",
-              storedClientCredentials: mockStoredClientCredentials,
+              registeredClientCredentials: mockStoredClientCredentials,
               redirectUri: "https://mockInvalidRedirectUri.com",
             });
 
@@ -350,7 +350,7 @@ describe("Client Credentials Service", () => {
             clientCredentialsService.validateAsyncCredentialRequest({
               aud: "mockIssuer",
               issuer: "mockIssuer",
-              storedClientCredentials: mockStoredClientCredentials,
+              registeredClientCredentials: mockStoredClientCredentials,
               redirectUri: "https://mockRedirectUri.com",
             });
 
@@ -367,7 +367,7 @@ describe("Client Credentials Service", () => {
             clientCredentialsService.validateAsyncCredentialRequest({
               aud: "mockInvalidIssuer",
               issuer: "mockIssuer",
-              storedClientCredentials: mockStoredClientCredentials,
+              registeredClientCredentials: mockStoredClientCredentials,
               redirectUri: "https://mockRedirectUri.com",
             });
 
@@ -386,10 +386,11 @@ describe("Client Credentials Service", () => {
           clientSecret: "mockClientSecret",
         };
 
-        const result = clientCredentialsService.getStoredClientCredentialsById(
-          mockStoredClientCredentialsArray,
-          mockTokenSuppliedClientCredentials.clientId,
-        );
+        const result =
+          clientCredentialsService.getRegisteredClientCredentialsById(
+            mockStoredClientCredentialsArray,
+            mockTokenSuppliedClientCredentials.clientId,
+          );
 
         expect(result.isError).toBe(true);
         expect(result.value).toBe("ClientId not registered");
@@ -411,10 +412,11 @@ describe("Client Credentials Service", () => {
           redirect_uri: "https://mockRedirectUri.com",
         };
 
-        const result = clientCredentialsService.getStoredClientCredentialsById(
-          mockStoredClientCredentialsArray,
-          mockTokenSuppliedClientCredentials.clientId,
-        );
+        const result =
+          clientCredentialsService.getRegisteredClientCredentialsById(
+            mockStoredClientCredentialsArray,
+            mockTokenSuppliedClientCredentials.clientId,
+          );
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(expectedClientCredentials);
       });
