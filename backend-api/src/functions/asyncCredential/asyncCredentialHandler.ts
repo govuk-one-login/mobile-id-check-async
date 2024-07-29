@@ -90,21 +90,21 @@ export async function lambdaHandler(
 
   // Fetching stored client credentials
   const clientCredentialsService = dependencies.clientCredentialsService();
-  const registeredClientCredentialsArrayResult =
-    await clientCredentialsService.getRegisteredClientCredentials();
-  if (registeredClientCredentialsArrayResult.isError) {
+  const allRegisteredClientCredentialsResult =
+    await clientCredentialsService.getAllRegisteredClientCredentials();
+  if (allRegisteredClientCredentialsResult.isError) {
     logger.log("ERROR_RETRIEVING_CLIENT_CREDENTIALS", {
-      errorMessage: registeredClientCredentialsArrayResult.value,
+      errorMessage: allRegisteredClientCredentialsResult.value,
     });
     return serverError500Response;
   }
-  const registeredClientCredentialsArray =
-    registeredClientCredentialsArrayResult.value;
+  const allRegisteredClientCredentials =
+    allRegisteredClientCredentialsResult.value;
 
   // Retrieving credentials from client credential array
   const registeredClientCredentialsByIdResult =
     clientCredentialsService.getRegisteredClientCredentialsById(
-      registeredClientCredentialsArray,
+      allRegisteredClientCredentials,
       jwtPayload.client_id,
     );
   if (registeredClientCredentialsByIdResult.isError) {

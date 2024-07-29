@@ -53,7 +53,7 @@ describe("Client Credentials Service", () => {
         ssmMock.on(GetParameterCommand).rejects("SSM Error");
 
         const result =
-          await clientCredentialsService.getRegisteredClientCredentials();
+          await clientCredentialsService.getAllRegisteredClientCredentials();
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual("Client Credentials not found");
@@ -129,7 +129,7 @@ describe("Client Credentials Service", () => {
               .resolves({ Parameter: { Value: clientCredentials } });
 
             const result =
-              await clientCredentialsService.getRegisteredClientCredentials();
+              await clientCredentialsService.getAllRegisteredClientCredentials();
 
             expect(result.isError).toBe(true);
             expect(result.value).toEqual(expectedErrorMessage);
@@ -154,7 +154,7 @@ describe("Client Credentials Service", () => {
           });
 
           const result =
-            await clientCredentialsService.getRegisteredClientCredentials();
+            await clientCredentialsService.getAllRegisteredClientCredentials();
 
           expect(result.isError).toBe(false);
           expect(result.value).toStrictEqual([
@@ -185,9 +185,9 @@ describe("Client Credentials Service", () => {
           clientCredentialsService.resetCache();
 
           // First call should populate the cache
-          await clientCredentialsService.getRegisteredClientCredentials();
+          await clientCredentialsService.getAllRegisteredClientCredentials();
           // Second call should use cache
-          await clientCredentialsService.getRegisteredClientCredentials();
+          await clientCredentialsService.getAllRegisteredClientCredentials();
 
           // Expect SSM to have been called only once, since the second call uses cache
           expect(ssmMock.calls()).toHaveLength(1);
@@ -212,11 +212,11 @@ describe("Client Credentials Service", () => {
           });
 
           clientCredentialsService.resetCache();
-          await clientCredentialsService.getRegisteredClientCredentials();
+          await clientCredentialsService.getAllRegisteredClientCredentials();
           // Simulate time passing to exceed cache TTL
           jest.advanceTimersByTime(clientCredentialsService.cacheTTL + 1);
           // This call should refresh cache
-          await clientCredentialsService.getRegisteredClientCredentials();
+          await clientCredentialsService.getAllRegisteredClientCredentials();
 
           // Expect SSM to have been called twice: once to populate, once to refresh after TTL
           expect(ssmMock.calls()).toHaveLength(2);

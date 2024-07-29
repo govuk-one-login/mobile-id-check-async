@@ -64,22 +64,22 @@ export async function lambdaHandlerConstructor(
 
   // Fetching stored client credentials
   const clientCredentialsService = dependencies.clientCredentialsService();
-  const registeredClientCredentialsArrayResult =
-    await clientCredentialsService.getRegisteredClientCredentials();
-  if (registeredClientCredentialsArrayResult.isError) {
+  const allRegisteredClientCredentialsResult =
+    await clientCredentialsService.getAllRegisteredClientCredentials();
+  if (allRegisteredClientCredentialsResult.isError) {
     logger.log("INTERNAL_SERVER_ERROR", {
-      errorMessage: registeredClientCredentialsArrayResult.value,
+      errorMessage: allRegisteredClientCredentialsResult.value,
     });
     return serverErrorResponse;
   }
 
-  const registeredClientCredentialsArray =
-    registeredClientCredentialsArrayResult.value;
+  const allRegisteredClientCredentials =
+    allRegisteredClientCredentialsResult.value;
 
   // Incoming credentials match stored credentials
   const registeredClientCredentialsByIdResult =
     clientCredentialsService.getRegisteredClientCredentialsById(
-      registeredClientCredentialsArray,
+      allRegisteredClientCredentials,
       suppliedClientCredentials.clientId,
     );
   if (registeredClientCredentialsByIdResult.isError) {

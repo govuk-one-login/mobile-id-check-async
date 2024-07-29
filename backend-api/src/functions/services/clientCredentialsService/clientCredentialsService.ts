@@ -24,7 +24,7 @@ export class ClientCredentialsService
     this.cacheTTL = 3600 * 1000;
   }
 
-  getRegisteredClientCredentials = async (): Promise<
+  getAllRegisteredClientCredentials = async (): Promise<
     Result<IClientCredentials[]>
   > => {
     if (cache && cache.expiry > Date.now()) {
@@ -183,7 +183,9 @@ const hashSecret = (secret: string, salt: string): string => {
 };
 
 export interface IGetClientCredentials {
-  getRegisteredClientCredentials: () => Promise<Result<IClientCredentials[]>>;
+  getAllRegisteredClientCredentials: () => Promise<
+    Result<IClientCredentials[]>
+  >;
 }
 
 export interface IValidateAsyncTokenRequest {

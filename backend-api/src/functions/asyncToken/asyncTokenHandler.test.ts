@@ -356,7 +356,7 @@ class MockClientCredentialServiceGetClientCredentialsErrorResult
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
-  getRegisteredClientCredentials = async (): Promise<
+  getAllRegisteredClientCredentials = async (): Promise<
     Result<IClientCredentials[]>
   > => {
     return errorResult("Mock failure retrieving client credentials");
@@ -386,7 +386,7 @@ class MockClientCredentialsServiceSuccessResult
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
-  getRegisteredClientCredentials = async (
+  getAllRegisteredClientCredentials = async (
     clientCredentials: IClientCredentials[] = [
       {
         client_id: "mockClientId",
@@ -422,7 +422,7 @@ class MockClientCredentialsServiceGetClientCredentialsByIdErrorResult
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
-  getRegisteredClientCredentials = async (
+  getAllRegisteredClientCredentials = async (
     clientCredentials: IClientCredentials[] = [
       {
         client_id: "mockClientId",
@@ -453,7 +453,7 @@ class MockClientCredentialsServiceValidateAsyncTokenRequestErrorResult
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
-  getRegisteredClientCredentials = async (
+  getAllRegisteredClientCredentials = async (
     clientCredentials: IClientCredentials[] = [
       {
         client_id: "mockClientId",
