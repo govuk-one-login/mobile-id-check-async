@@ -86,13 +86,13 @@ export class ClientCredentialsService
       return errorResult("Client secret not valid for the supplied clientId");
     }
 
-    const registeredRedirectUri = storedCredentials.redirect_uri;
-    if (!registeredRedirectUri) {
+    const storedRedirectUri = storedCredentials.redirect_uri;
+    if (!storedRedirectUri) {
       return errorResult("Missing redirect_uri");
     }
 
     try {
-      new URL(registeredRedirectUri);
+      new URL(storedRedirectUri);
     } catch (e) {
       return errorResult("Invalid redirect_uri");
     }
