@@ -42,9 +42,10 @@ describe("Async Token", () => {
       env,
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(mockLogger, registeredLogs),
-      requestService: () => new MockRequestServiceValueResponse(),
-      clientCredentialsService: () => new MockPassingClientCredentialsService(),
-      tokenService: () => new MockPassingTokenService(),
+      requestService: () => new MockRequestServiceValidResponse(),
+      clientCredentialsService: () =>
+        new MockClientCredentialsServiceSuccessResult(),
+      tokenService: () => new MockTokenServiceSuccessResult(),
     };
   });
 
@@ -170,7 +171,7 @@ describe("Async Token", () => {
       describe("Given credentials are not found", () => {
         it("Returns 400 Bad Request response", async () => {
           dependencies.clientCredentialsService = () =>
-            new MockFailingClientCredentialsServiceGetClientCredentialsById();
+            new MockClientCredentialsServiceGetClientCredentialsByIdErrorResult();
 
           const result = await lambdaHandlerConstructor(
             dependencies,
@@ -199,7 +200,7 @@ describe("Async Token", () => {
       describe("Given credentials are not valid", () => {
         it("Returns 400 Bad request response", async () => {
           dependencies.clientCredentialsService = () =>
-            new MockFailingClientCredentialsServiceValidation();
+            new MockClientCredentialsServiceValidateAsyncTokenRequestErrorResult();
 
           const result = await lambdaHandlerConstructor(
             dependencies,
@@ -228,7 +229,7 @@ describe("Async Token", () => {
   describe("Token Service", () => {
     describe("Given minting a new token fails", () => {
       it("Returns 500 Server Error response", async () => {
-        dependencies.tokenService = () => new MockFailingTokenService();
+        dependencies.tokenService = () => new MockTokenServiceErrorResult();
 
         const result = await lambdaHandlerConstructor(
           dependencies,
@@ -325,7 +326,7 @@ describe("Async Token", () => {
   });
 });
 
-class MockRequestServiceValueResponse implements IProcessRequest {
+class MockRequestServiceValidResponse implements IProcessRequest {
   processRequest = (): Result<IDecodedClientCredentials> => {
     return successResult({
       clientId: "mockClientId",
@@ -378,7 +379,7 @@ class MockClientCredentialServiceGetClientCredentialsErrorResult
   }
 }
 
-class MockPassingClientCredentialsService
+class MockClientCredentialsServiceSuccessResult
   implements
     IGetClientCredentials,
     IValidateAsyncTokenRequest,
@@ -414,7 +415,7 @@ class MockPassingClientCredentialsService
   }
 }
 
-class MockFailingClientCredentialsServiceGetClientCredentialsById
+class MockClientCredentialsServiceGetClientCredentialsByIdErrorResult
   implements
     IGetClientCredentials,
     IValidateAsyncTokenRequest,
@@ -445,7 +446,7 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
   }
 }
 
-class MockFailingClientCredentialsServiceValidation
+class MockClientCredentialsServiceValidateAsyncTokenRequestErrorResult
   implements
     IGetClientCredentials,
     IValidateAsyncTokenRequest,
@@ -481,13 +482,13 @@ class MockFailingClientCredentialsServiceValidation
   }
 }
 
-class MockPassingTokenService implements IMintToken {
+class MockTokenServiceSuccessResult implements IMintToken {
   async mintToken(): Promise<Result<string>> {
     return successResult("mockToken");
   }
 }
 
-class MockFailingTokenService implements IMintToken {
+class MockTokenServiceErrorResult implements IMintToken {
   async mintToken(): Promise<Result<string>> {
     return errorResult("Failed to sign Jwt");
   }

@@ -49,7 +49,9 @@ export async function lambdaHandlerConstructor(
 
   if (processRequestResult.isError) {
     if (processRequestResult.value === "Invalid grant_type") {
-      logger.log("INVALID_REQUEST", { errorMessage: processRequestResult.value });
+      logger.log("INVALID_REQUEST", {
+        errorMessage: processRequestResult.value,
+      });
       return badRequestResponseInvalidGrant;
     }
 

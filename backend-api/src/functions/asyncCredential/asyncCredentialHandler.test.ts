@@ -46,7 +46,7 @@ describe("Async Credential", () => {
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(mockLogger, registeredLogs),
       tokenService: () => new MockTokenServiceSuccess(),
-      clientCredentialsService: () => new MockPassingClientCredentialsService(),
+      clientCredentialsService: () => new MockClientCredentialsServiceSuccess(),
       sessionService: () =>
         new MockSessionServiceNoActiveSession(
           env.SESSION_TABLE_NAME,
@@ -236,7 +236,7 @@ describe("Async Credential", () => {
         });
 
         dependencies.tokenService = () =>
-          new MockTokenServiceGetDecodedTokenFailure();
+          new MockTokenServiceGetDecodedTokenErrorResult();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -648,7 +648,7 @@ describe("Async Credential", () => {
             }),
           });
           dependencies.clientCredentialsService = () =>
-            new MockFailingClientCredentialsServiceGetClientCredentialsById();
+            new MockClientCredentialsServiceGetClientCredentialsByIdErrorResult();
 
           const result = await lambdaHandler(event, dependencies);
 
@@ -723,7 +723,7 @@ describe("Async Credential", () => {
             }),
           });
           dependencies.sessionService = () =>
-            new MockSessionServiceGetSessionBySubFailure(
+            new MockSessionServiceGetSessionBySubErrorResult(
               env.SESSION_TABLE_NAME,
               env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
@@ -806,7 +806,7 @@ describe("Async Credential", () => {
             }),
           });
           dependencies.sessionService = () =>
-            new MockSessionServiceFailToCreateSession(
+            new MockSessionServiceCreateSessionErrorResult(
               env.SESSION_TABLE_NAME,
               env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
@@ -922,7 +922,7 @@ describe("Async Credential", () => {
   });
 });
 
-class MockTokenServiceGetDecodedTokenFailure
+class MockTokenServiceGetDecodedTokenErrorResult
   implements IDecodeToken, IVerifyTokenSignature
 {
   getDecodedToken(): Result<IDecodedToken> {
@@ -973,7 +973,7 @@ class MockTokenServiceSuccess implements IDecodeToken, IVerifyTokenSignature {
   }
 }
 
-class MockFailingClientCredentialsServiceGetClientCredentialsById
+class MockClientCredentialsServiceGetClientCredentialsByIdErrorResult
   implements
     IGetClientCredentials,
     IValidateAsyncTokenRequest,
@@ -1040,7 +1040,7 @@ class MockClientCredentialsServiceInvalidClientCredentials
   }
 }
 
-class MockPassingClientCredentialsService
+class MockClientCredentialsServiceSuccess
   implements
     IGetClientCredentials,
     IValidateAsyncTokenRequest,
@@ -1106,7 +1106,7 @@ class MockClientCredentialServiceGetClientCredentialsErrorResult
   }
 }
 
-class MockSessionServiceGetSessionBySubFailure
+class MockSessionServiceGetSessionBySubErrorResult
   implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
@@ -1165,7 +1165,7 @@ class MockSessionServiceActiveSessionFound
   };
 }
 
-class MockSessionServiceFailToCreateSession
+class MockSessionServiceCreateSessionErrorResult
   implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
