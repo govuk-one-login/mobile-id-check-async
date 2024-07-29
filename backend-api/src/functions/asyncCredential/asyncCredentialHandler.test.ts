@@ -4,7 +4,7 @@ import {
   IDecodedToken,
   IDecodeToken,
   IVerifyTokenSignature,
-} from "./TokenService/tokenService";
+} from "./tokenService/tokenService";
 import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
 import {
   IClientCredentials,

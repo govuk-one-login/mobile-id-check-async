@@ -9,7 +9,7 @@ import {
   IDecodedToken,
   IDecodeToken,
   IVerifyTokenSignature,
-} from "./TokenService/tokenService";
+} from "./tokenService/tokenService";
 import { errorResult, Result, successResult } from "../utils/result";
 import {
   ICreateSession,
