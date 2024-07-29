@@ -46,7 +46,8 @@ describe("Async Credential", () => {
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(mockLogger, registeredLogs),
       tokenService: () => new MockTokenServiceSuccess(),
-      clientCredentialsService: () => new MockClientCredentialsServiceSuccess(),
+      clientCredentialsService: () =>
+        new MockClientCredentialsServiceSuccessResult(),
       sessionService: () =>
         new MockSessionServiceNoActiveSession(
           env.SESSION_TABLE_NAME,
@@ -561,7 +562,7 @@ describe("Async Credential", () => {
     describe("Given that the JWT signature verification fails", () => {
       it("Returns 401 Unauthorized", async () => {
         dependencies.tokenService = () =>
-          new MockTokenServiceInvalidSignature();
+          new MockTokenServiceInvalidSignatureErrorResult();
 
         const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
@@ -685,7 +686,7 @@ describe("Async Credential", () => {
             }),
           });
           dependencies.clientCredentialsService = () =>
-            new MockClientCredentialsServiceInvalidClientCredentials();
+            new MockClientCredentialsServiceInvalidCredentialsErrorResult();
 
           const result = await lambdaHandler(event, dependencies);
 
@@ -763,7 +764,7 @@ describe("Async Credential", () => {
             }),
           });
           dependencies.sessionService = () =>
-            new MockSessionServiceActiveSessionFound(
+            new MockSessionServiceGetActiveSessionSuccessResult(
               env.SESSION_TABLE_NAME,
               env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
@@ -845,7 +846,7 @@ describe("Async Credential", () => {
             dependencies.eventService = () =>
               new MockEventServiceFailToWrite("DCMAW_ASYNC_CRI_START");
             dependencies.sessionService = () =>
-              new MockSessionServiceSessionCreated(
+              new MockSessionServiceCreateSessionSuccessResult(
                 env.SESSION_TABLE_NAME,
                 env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
               );
@@ -888,7 +889,7 @@ describe("Async Credential", () => {
             const mockEventService = new MockEventWriterSuccess();
             dependencies.eventService = () => mockEventService;
             dependencies.sessionService = () =>
-              new MockSessionServiceSessionCreated(
+              new MockSessionServiceCreateSessionSuccessResult(
                 env.SESSION_TABLE_NAME,
                 env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
               );
@@ -933,7 +934,7 @@ class MockTokenServiceGetDecodedTokenErrorResult
   }
 }
 
-class MockTokenServiceInvalidSignature
+class MockTokenServiceInvalidSignatureErrorResult
   implements IDecodeToken, IVerifyTokenSignature
 {
   getDecodedToken(): Result<IDecodedToken> {
@@ -1004,7 +1005,7 @@ class MockClientCredentialsServiceGetClientCredentialsByIdErrorResult
   }
 }
 
-class MockClientCredentialsServiceInvalidClientCredentials
+class MockClientCredentialsServiceInvalidCredentialsErrorResult
   implements
     IGetClientCredentials,
     IValidateAsyncTokenRequest,
@@ -1040,7 +1041,7 @@ class MockClientCredentialsServiceInvalidClientCredentials
   }
 }
 
-class MockClientCredentialsServiceSuccess
+class MockClientCredentialsServiceSuccessResult
   implements
     IGetClientCredentials,
     IValidateAsyncTokenRequest,
@@ -1145,7 +1146,7 @@ class MockSessionServiceNoActiveSession
   };
 }
 
-class MockSessionServiceActiveSessionFound
+class MockSessionServiceGetActiveSessionSuccessResult
   implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
@@ -1185,7 +1186,7 @@ class MockSessionServiceCreateSessionErrorResult
   };
 }
 
-class MockSessionServiceSessionCreated
+class MockSessionServiceCreateSessionSuccessResult
   implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;

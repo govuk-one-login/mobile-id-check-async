@@ -42,7 +42,7 @@ describe("Async Token", () => {
       env,
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(mockLogger, registeredLogs),
-      requestService: () => new MockRequestServiceValidResponse(),
+      requestService: () => new MockRequestServiceSuccessResult(),
       clientCredentialsService: () =>
         new MockClientCredentialsServiceSuccessResult(),
       tokenService: () => new MockTokenServiceSuccessResult(),
@@ -86,7 +86,7 @@ describe("Async Token", () => {
     describe("Given the Request Service returns a log due to Invalid grant_type in request body", () => {
       it("Returns a 400 Bad Request response", async () => {
         dependencies.requestService = () =>
-          new MockRequestServiceInvalidGrantTypeLogResponse();
+          new MockRequestServiceInvalidGrantTypeErrorResult();
 
         const result = await lambdaHandlerConstructor(
           dependencies,
@@ -112,7 +112,7 @@ describe("Async Token", () => {
     describe("Given the Request Service returns a log due to invalid Authorization header ", () => {
       it("Returns a 400 Bad Request response", async () => {
         dependencies.requestService = () =>
-          new MockRequestServiceInvalidAuthorizationHeaderLogResponse();
+          new MockRequestServiceInvalidAuthorizationHeaderErrorResult();
 
         const result = await lambdaHandlerConstructor(
           dependencies,
@@ -326,7 +326,7 @@ describe("Async Token", () => {
   });
 });
 
-class MockRequestServiceValidResponse implements IProcessRequest {
+class MockRequestServiceSuccessResult implements IProcessRequest {
   processRequest = (): Result<IDecodedClientCredentials> => {
     return successResult({
       clientId: "mockClientId",
@@ -335,13 +335,13 @@ class MockRequestServiceValidResponse implements IProcessRequest {
   };
 }
 
-class MockRequestServiceInvalidGrantTypeLogResponse implements IProcessRequest {
+class MockRequestServiceInvalidGrantTypeErrorResult implements IProcessRequest {
   processRequest = (): Result<IDecodedClientCredentials> => {
     return errorResult("Invalid grant_type");
   };
 }
 
-class MockRequestServiceInvalidAuthorizationHeaderLogResponse
+class MockRequestServiceInvalidAuthorizationHeaderErrorResult
   implements IProcessRequest
 {
   processRequest = (): Result<IDecodedClientCredentials> => {
