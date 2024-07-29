@@ -42,9 +42,10 @@ describe("Async Token", () => {
       env,
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(mockLogger, registeredLogs),
-      requestService: () => new MockRequestServiceValueResponse(),
-      clientCredentialService: () => new MockPassingClientCredentialsService(),
-      tokenService: () => new MockPassingTokenService(),
+      requestService: () => new MockRequestServiceSuccessResult(),
+      clientCredentialsService: () =>
+        new MockClientCredentialsServiceSuccessResult(),
+      tokenService: () => new MockTokenServiceSuccessResult(),
     };
   });
 
@@ -85,7 +86,7 @@ describe("Async Token", () => {
     describe("Given the Request Service returns a log due to Invalid grant_type in request body", () => {
       it("Returns a 400 Bad Request response", async () => {
         dependencies.requestService = () =>
-          new MockRequestServiceInvalidGrantTypeLogResponse();
+          new MockRequestServiceInvalidGrantTypeErrorResult();
 
         const result = await lambdaHandlerConstructor(
           dependencies,
@@ -111,7 +112,7 @@ describe("Async Token", () => {
     describe("Given the Request Service returns a log due to invalid Authorization header ", () => {
       it("Returns a 400 Bad Request response", async () => {
         dependencies.requestService = () =>
-          new MockRequestServiceInvalidAuthorizationHeaderLogResponse();
+          new MockRequestServiceInvalidAuthorizationHeaderErrorResult();
 
         const result = await lambdaHandlerConstructor(
           dependencies,
@@ -142,7 +143,7 @@ describe("Async Token", () => {
     describe("Get client credentials", () => {
       describe("Given an error result is returned", () => {
         it("Returns a 500 Server Error response", async () => {
-          dependencies.clientCredentialService = () =>
+          dependencies.clientCredentialsService = () =>
             new MockClientCredentialServiceGetClientCredentialsErrorResult();
 
           const result = await lambdaHandlerConstructor(
@@ -169,8 +170,8 @@ describe("Async Token", () => {
     describe("Get client credentials by ID", () => {
       describe("Given credentials are not found", () => {
         it("Returns 400 Bad Request response", async () => {
-          dependencies.clientCredentialService = () =>
-            new MockFailingClientCredentialsServiceGetClientCredentialsById();
+          dependencies.clientCredentialsService = () =>
+            new MockClientCredentialsServiceGetClientCredentialsByIdErrorResult();
 
           const result = await lambdaHandlerConstructor(
             dependencies,
@@ -198,8 +199,8 @@ describe("Async Token", () => {
     describe("Credential validation", () => {
       describe("Given credentials are not valid", () => {
         it("Returns 400 Bad request response", async () => {
-          dependencies.clientCredentialService = () =>
-            new MockFailingClientCredentialsServiceValidation();
+          dependencies.clientCredentialsService = () =>
+            new MockClientCredentialsServiceValidateAsyncTokenRequestErrorResult();
 
           const result = await lambdaHandlerConstructor(
             dependencies,
@@ -228,7 +229,7 @@ describe("Async Token", () => {
   describe("Token Service", () => {
     describe("Given minting a new token fails", () => {
       it("Returns 500 Server Error response", async () => {
-        dependencies.tokenService = () => new MockFailingTokenService();
+        dependencies.tokenService = () => new MockTokenServiceErrorResult();
 
         const result = await lambdaHandlerConstructor(
           dependencies,
@@ -325,7 +326,7 @@ describe("Async Token", () => {
   });
 });
 
-class MockRequestServiceValueResponse implements IProcessRequest {
+class MockRequestServiceSuccessResult implements IProcessRequest {
   processRequest = (): Result<IDecodedClientCredentials> => {
     return successResult({
       clientId: "mockClientId",
@@ -334,13 +335,13 @@ class MockRequestServiceValueResponse implements IProcessRequest {
   };
 }
 
-class MockRequestServiceInvalidGrantTypeLogResponse implements IProcessRequest {
+class MockRequestServiceInvalidGrantTypeErrorResult implements IProcessRequest {
   processRequest = (): Result<IDecodedClientCredentials> => {
     return errorResult("Invalid grant_type");
   };
 }
 
-class MockRequestServiceInvalidAuthorizationHeaderLogResponse
+class MockRequestServiceInvalidAuthorizationHeaderErrorResult
   implements IProcessRequest
 {
   processRequest = (): Result<IDecodedClientCredentials> => {
@@ -355,7 +356,9 @@ class MockClientCredentialServiceGetClientCredentialsErrorResult
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
-  getClientCredentials = async (): Promise<Result<IClientCredentials[]>> => {
+  getAllRegisteredClientCredentials = async (): Promise<
+    Result<IClientCredentials[]>
+  > => {
     return errorResult("Mock failure retrieving client credentials");
   };
 
@@ -366,7 +369,7 @@ class MockClientCredentialServiceGetClientCredentialsErrorResult
   validateAsyncCredentialRequest(): Result<null> {
     return successResult(null);
   }
-  getClientCredentialsById(): Result<IClientCredentials> {
+  getRegisteredClientCredentialsById(): Result<IClientCredentials> {
     return successResult({
       client_id: "mockClientId",
       issuer: "mockIssuer",
@@ -376,14 +379,14 @@ class MockClientCredentialServiceGetClientCredentialsErrorResult
   }
 }
 
-class MockPassingClientCredentialsService
+class MockClientCredentialsServiceSuccessResult
   implements
     IGetClientCredentials,
     IValidateAsyncTokenRequest,
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
-  getClientCredentials = async (
+  getAllRegisteredClientCredentials = async (
     clientCredentials: IClientCredentials[] = [
       {
         client_id: "mockClientId",
@@ -402,7 +405,7 @@ class MockPassingClientCredentialsService
   validateAsyncCredentialRequest(): Result<null> {
     return successResult(null);
   }
-  getClientCredentialsById(): Result<IClientCredentials> {
+  getRegisteredClientCredentialsById(): Result<IClientCredentials> {
     return successResult({
       client_id: "mockClientId",
       issuer: "mockIssuer",
@@ -412,14 +415,14 @@ class MockPassingClientCredentialsService
   }
 }
 
-class MockFailingClientCredentialsServiceGetClientCredentialsById
+class MockClientCredentialsServiceGetClientCredentialsByIdErrorResult
   implements
     IGetClientCredentials,
     IValidateAsyncTokenRequest,
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
-  getClientCredentials = async (
+  getAllRegisteredClientCredentials = async (
     clientCredentials: IClientCredentials[] = [
       {
         client_id: "mockClientId",
@@ -438,19 +441,19 @@ class MockFailingClientCredentialsServiceGetClientCredentialsById
   validateAsyncCredentialRequest(): Result<null> {
     return successResult(null);
   }
-  getClientCredentialsById(): Result<IClientCredentials> {
+  getRegisteredClientCredentialsById(): Result<IClientCredentials> {
     return errorResult("No credentials found");
   }
 }
 
-class MockFailingClientCredentialsServiceValidation
+class MockClientCredentialsServiceValidateAsyncTokenRequestErrorResult
   implements
     IGetClientCredentials,
     IValidateAsyncTokenRequest,
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
-  getClientCredentials = async (
+  getAllRegisteredClientCredentials = async (
     clientCredentials: IClientCredentials[] = [
       {
         client_id: "mockClientId",
@@ -469,7 +472,7 @@ class MockFailingClientCredentialsServiceValidation
   validateAsyncCredentialRequest(): Result<null> {
     return successResult(null);
   }
-  getClientCredentialsById() {
+  getRegisteredClientCredentialsById() {
     return successResult({
       client_id: "mockClientId",
       issuer: "mockIssuer",
@@ -479,13 +482,13 @@ class MockFailingClientCredentialsServiceValidation
   }
 }
 
-class MockPassingTokenService implements IMintToken {
+class MockTokenServiceSuccessResult implements IMintToken {
   async mintToken(): Promise<Result<string>> {
     return successResult("mockToken");
   }
 }
 
-class MockFailingTokenService implements IMintToken {
+class MockTokenServiceErrorResult implements IMintToken {
   async mintToken(): Promise<Result<string>> {
     return errorResult("Failed to sign Jwt");
   }

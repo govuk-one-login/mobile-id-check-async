@@ -7,18 +7,18 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
   getDecodedToken(config: IDecodeTokenConfig): Result<IDecodedToken> {
     const encodedJwt = config.authorizationHeader.split(" ")[1];
 
-    const decodedJwtOrError = this.decodeToken(encodedJwt);
-    if (decodedJwtOrError.isError) {
-      return errorResult(decodedJwtOrError.value);
+    const decodedJwtResult = this.decodeToken(encodedJwt);
+    if (decodedJwtResult.isError) {
+      return errorResult(decodedJwtResult.value);
     }
-    const jwtPayload = decodedJwtOrError.value;
+    const jwtPayload = decodedJwtResult.value;
 
-    const validClaimsOrError = this.validateTokenClaims(
+    const validateTokenClaimsResult = this.validateTokenClaims(
       jwtPayload,
       config.issuer,
     );
-    if (validClaimsOrError.isError) {
-      return errorResult(validClaimsOrError.value);
+    if (validateTokenClaimsResult.isError) {
+      return errorResult(validateTokenClaimsResult.value);
     }
 
     return successResult({

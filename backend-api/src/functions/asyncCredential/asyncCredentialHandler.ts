@@ -9,7 +9,7 @@ import {
   IDecodedToken,
   IDecodeToken,
   IVerifyTokenSignature,
-} from "./TokenService/tokenService";
+} from "./tokenService/tokenService";
 import { errorResult, Result, successResult } from "../utils/result";
 import {
   ICreateSession,
@@ -26,48 +26,48 @@ export async function lambdaHandler(
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
 
-  const configResponse = new ConfigService().getConfig(dependencies.env);
-  if (configResponse.isError) {
+  const configResult = new ConfigService().getConfig(dependencies.env);
+  if (configResult.isError) {
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
-      errorMessage: configResponse.value,
+      errorMessage: configResult.value,
     });
     return serverError500Response;
   }
-  const config = configResponse.value;
+  const config = configResult.value;
 
-  const authorizationHeaderOrError = getAuthorizationHeader(
+  const authorizationHeaderResult = getAuthorizationHeader(
     event.headers["Authorization"],
   );
-  if (authorizationHeaderOrError.isError) {
+  if (authorizationHeaderResult.isError) {
     logger.log("AUTHENTICATION_HEADER_INVALID", {
-      errorMessage: authorizationHeaderOrError.value,
+      errorMessage: authorizationHeaderResult.value,
     });
     return unauthorizedResponse;
   }
-  const authorizationHeader = authorizationHeaderOrError.value;
+  const authorizationHeader = authorizationHeaderResult.value;
 
   // JWT Claim validation
   const tokenService = dependencies.tokenService();
-  const validTokenClaimsOrError = tokenService.getDecodedToken({
+  const validTokenClaimsResult = tokenService.getDecodedToken({
     authorizationHeader,
     issuer: config.ISSUER,
   });
-  if (validTokenClaimsOrError.isError) {
+  if (validTokenClaimsResult.isError) {
     logger.log("JWT_CLAIM_INVALID", {
-      errorMessage: validTokenClaimsOrError.value,
+      errorMessage: validTokenClaimsResult.value,
     });
     return badRequestResponse({
       error: "invalid_token",
-      errorDescription: validTokenClaimsOrError.value,
+      errorDescription: validTokenClaimsResult.value,
     });
   }
   const { encodedJwt, jwtPayload } =
-    validTokenClaimsOrError.value as IDecodedToken;
+    validTokenClaimsResult.value as IDecodedToken;
 
-  const requestBodyOrError = getRequestBody(event.body, jwtPayload.client_id);
-  if (requestBodyOrError.isError) {
+  const requestBodyResult = getRequestBody(event.body, jwtPayload.client_id);
+  if (requestBodyResult.isError) {
     logger.log("REQUEST_BODY_INVALID", {
-      errorMessage: requestBodyOrError.value,
+      errorMessage: requestBodyResult.value,
     });
 
     return badRequestResponse({
@@ -75,40 +75,41 @@ export async function lambdaHandler(
       errorDescription: "Request body validation failed",
     });
   }
-  const requestBody = requestBodyOrError.value;
+  const requestBody = requestBodyResult.value;
 
-  const result = await tokenService.verifyTokenSignature(
+  const verifyTokenSignatureResult = await tokenService.verifyTokenSignature(
     config.SIGNING_KEY_ID,
     encodedJwt,
   );
-  if (result.isError) {
+  if (verifyTokenSignatureResult.isError) {
     logger.log("TOKEN_SIGNATURE_INVALID", {
-      errorMessage: result.value,
+      errorMessage: verifyTokenSignatureResult.value,
     });
     return unauthorizedResponseInvalidSignature;
   }
 
   // Fetching stored client credentials
   const clientCredentialsService = dependencies.clientCredentialsService();
-  const clientCredentialsResult =
-    await clientCredentialsService.getClientCredentials();
-  if (clientCredentialsResult.isError) {
+  const allRegisteredClientCredentialsResult =
+    await clientCredentialsService.getAllRegisteredClientCredentials();
+  if (allRegisteredClientCredentialsResult.isError) {
     logger.log("ERROR_RETRIEVING_CLIENT_CREDENTIALS", {
-      errorMessage: clientCredentialsResult.value,
+      errorMessage: allRegisteredClientCredentialsResult.value,
     });
     return serverError500Response;
   }
-  const storedCredentialsArray = clientCredentialsResult.value;
+  const allRegisteredClientCredentials =
+    allRegisteredClientCredentialsResult.value;
 
   // Retrieving credentials from client credential array
-  const clientCredentialResponse =
-    clientCredentialsService.getClientCredentialsById(
-      storedCredentialsArray,
+  const registeredClientCredentialsByIdResult =
+    clientCredentialsService.getRegisteredClientCredentialsById(
+      allRegisteredClientCredentials,
       jwtPayload.client_id,
     );
-  if (clientCredentialResponse.isError) {
+  if (registeredClientCredentialsByIdResult.isError) {
     logger.log("CLIENT_CREDENTIALS_INVALID", {
-      errorMessage: clientCredentialResponse.value,
+      errorMessage: registeredClientCredentialsByIdResult.value,
     });
 
     return badRequestResponse({
@@ -116,13 +117,14 @@ export async function lambdaHandler(
       errorDescription: "Supplied client not recognised",
     });
   }
-  const clientCredentials = clientCredentialResponse.value;
+  const registeredClientCredentials =
+    registeredClientCredentialsByIdResult.value;
 
   const validateClientCredentialsResult =
     clientCredentialsService.validateAsyncCredentialRequest({
       aud: jwtPayload.aud,
-      issuer: clientCredentials.issuer,
-      storedCredentials: clientCredentials,
+      issuer: registeredClientCredentials.issuer,
+      registeredClientCredentials,
       redirectUri: requestBody.redirect_uri,
     });
   if (validateClientCredentialsResult.isError) {
@@ -141,29 +143,29 @@ export async function lambdaHandler(
     config.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
   );
 
-  const getActiveSessionResponse = await sessionService.getActiveSession(
+  const activeSessionResult = await sessionService.getActiveSession(
     requestBody.sub,
     config.SESSION_TTL_IN_MILLISECONDS,
   );
-  if (getActiveSessionResponse.isError) {
+  if (activeSessionResult.isError) {
     logger.log("ERROR_RETRIEVING_SESSION", {
       errorMessage: "Unexpected error checking for existing session",
     });
     return serverError500Response;
   }
-  if (getActiveSessionResponse.value) {
-    logger.setSessionId({ sessionId: getActiveSessionResponse.value });
+  if (activeSessionResult.value) {
+    logger.setSessionId({ sessionId: activeSessionResult.value });
     logger.log("COMPLETED");
     return activeSessionFoundResponse(requestBody.sub);
   }
 
-  const sessionServiceCreateSessionResult = await sessionService.createSession({
+  const createSessionResult = await sessionService.createSession({
     ...requestBody,
     issuer: jwtPayload.iss,
   });
-  const sessionId = sessionServiceCreateSessionResult.value;
+  const sessionId = createSessionResult.value;
   const eventService = dependencies.eventService(config.SQS_QUEUE);
-  if (sessionServiceCreateSessionResult.isError) {
+  if (createSessionResult.isError) {
     logger.log("ERROR_CREATING_SESSION");
     return serverError500Response;
   }

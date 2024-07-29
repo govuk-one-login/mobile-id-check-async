@@ -33,101 +33,105 @@ export async function lambdaHandlerConstructor(
   logger.addContext(context);
   logger.log("STARTED");
 
-  const configResponse = new ConfigService().getConfig(dependencies.env);
-  if (configResponse.isError) {
+  const configResult = new ConfigService().getConfig(dependencies.env);
+  if (configResult.isError) {
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
-      errorMessage: configResponse.value,
+      errorMessage: configResult.value,
     });
     return serverErrorResponse;
   }
 
-  const config = configResponse.value;
+  const config = configResult.value;
 
   // Ensure that request contains expected params
   const requestService = dependencies.requestService();
-  const processRequest = requestService.processRequest(event);
+  const processRequestResult = requestService.processRequest(event);
 
-  if (processRequest.isError) {
-    if (processRequest.value === "Invalid grant_type") {
-      logger.log("INVALID_REQUEST", { errorMessage: processRequest.value });
+  if (processRequestResult.isError) {
+    if (processRequestResult.value === "Invalid grant_type") {
+      logger.log("INVALID_REQUEST", {
+        errorMessage: processRequestResult.value,
+      });
       return badRequestResponseInvalidGrant;
     }
 
-    logger.log("INVALID_REQUEST", { errorMessage: processRequest.value });
+    logger.log("INVALID_REQUEST", { errorMessage: processRequestResult.value });
 
     return badRequestResponseInvalidAuthorizationHeader;
   }
 
-  const suppliedCredentials = processRequest.value;
+  const suppliedClientCredentials = processRequestResult.value;
 
   // Fetching stored client credentials
-  const clientCredentialsService = dependencies.clientCredentialService();
-  const clientCredentialsResult =
-    await clientCredentialsService.getClientCredentials();
-  if (clientCredentialsResult.isError) {
+  const clientCredentialsService = dependencies.clientCredentialsService();
+  const allRegisteredClientCredentialsResult =
+    await clientCredentialsService.getAllRegisteredClientCredentials();
+  if (allRegisteredClientCredentialsResult.isError) {
     logger.log("INTERNAL_SERVER_ERROR", {
-      errorMessage: clientCredentialsResult.value,
+      errorMessage: allRegisteredClientCredentialsResult.value,
     });
     return serverErrorResponse;
   }
 
-  const storedCredentialsArray = clientCredentialsResult.value;
+  const allRegisteredClientCredentials =
+    allRegisteredClientCredentialsResult.value;
 
   // Incoming credentials match stored credentials
-  const clientCredentialsByIdResponse =
-    clientCredentialsService.getClientCredentialsById(
-      storedCredentialsArray,
-      suppliedCredentials.clientId,
+  const registeredClientCredentialsByIdResult =
+    clientCredentialsService.getRegisteredClientCredentialsById(
+      allRegisteredClientCredentials,
+      suppliedClientCredentials.clientId,
     );
-  if (clientCredentialsByIdResponse.isError) {
+  if (registeredClientCredentialsByIdResult.isError) {
     logger.log("INVALID_REQUEST", {
       errorMessage: "Client credentials not registered",
     });
     return badRequestResponseInvalidCredentials;
   }
 
-  const storedCredentials = clientCredentialsByIdResponse.value;
+  const registeredClientCredentials =
+    registeredClientCredentialsByIdResult.value;
 
-  const isValidClientCredentialsResponse =
+  const validateAsyncTokenRequestResult =
     clientCredentialsService.validateAsyncTokenRequest(
-      storedCredentials,
-      suppliedCredentials,
+      registeredClientCredentials,
+      suppliedClientCredentials,
     );
-  if (isValidClientCredentialsResponse.isError) {
+  if (validateAsyncTokenRequestResult.isError) {
     logger.log("INVALID_REQUEST", {
-      errorMessage: isValidClientCredentialsResponse.value,
+      errorMessage: validateAsyncTokenRequestResult.value,
     });
     return badRequestResponseInvalidCredentials;
   }
 
   const jwtPayload = {
-    aud: storedCredentials.issuer,
+    aud: registeredClientCredentials.issuer,
     iss: config.ISSUER,
     exp: Math.floor(Date.now() / 1000) + 3600,
     scope: "dcmaw.session.async_create",
-    client_id: storedCredentials.client_id,
+    client_id: registeredClientCredentials.client_id,
   };
 
   const tokenService = dependencies.tokenService(config.SIGNING_KEY_ID);
 
-  const mintTokenResponse = await tokenService.mintToken(jwtPayload);
-  if (mintTokenResponse.isError) {
+  const mintTokenResult = await tokenService.mintToken(jwtPayload);
+  if (mintTokenResult.isError) {
     logger.log("INTERNAL_SERVER_ERROR", {
-      errorMessage: mintTokenResponse.value,
+      errorMessage: mintTokenResult.value,
     });
     return serverErrorResponse;
   }
-  const accessToken = mintTokenResponse.value;
+  const accessToken = mintTokenResult.value;
 
   const eventWriter = dependencies.eventService(config.SQS_QUEUE);
-  const eventWriterResult = await eventWriter.writeCredentialTokenIssuedEvent({
+  const writeEventResult = await eventWriter.writeCredentialTokenIssuedEvent({
     componentId: config.ISSUER,
     getNowInMilliseconds: Date.now,
     eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
   });
-  if (eventWriterResult.isError) {
+  if (writeEventResult.isError) {
     logger.log("ERROR_WRITING_AUDIT_EVENT", {
-      errorMessage: eventWriterResult.value,
+      errorMessage: writeEventResult.value,
     });
     return serverErrorResponse;
   }
@@ -189,7 +193,7 @@ export interface IAsyncTokenRequestDependencies {
   eventService: (sqsQueue: string) => IEventService;
   logger: () => Logger<MessageName>;
   requestService: () => IProcessRequest;
-  clientCredentialService: () => IGetClientCredentials &
+  clientCredentialsService: () => IGetClientCredentials &
     IValidateAsyncTokenRequest &
     IValidateAsyncCredentialRequest &
     IGetClientCredentialsById;
@@ -201,7 +205,7 @@ const dependencies: IAsyncTokenRequestDependencies = {
   eventService: (sqsQueue: string) => new EventService(sqsQueue),
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
   requestService: () => new RequestService(),
-  clientCredentialService: () => new ClientCredentialsService(),
+  clientCredentialsService: () => new ClientCredentialsService(),
   tokenService: (signingKey: string) => new TokenService(signingKey),
 };
 

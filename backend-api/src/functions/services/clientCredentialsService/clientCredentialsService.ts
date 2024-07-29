@@ -24,7 +24,9 @@ export class ClientCredentialsService
     this.cacheTTL = 3600 * 1000;
   }
 
-  getClientCredentials = async (): Promise<Result<IClientCredentials[]>> => {
+  getAllRegisteredClientCredentials = async (): Promise<
+    Result<IClientCredentials[]>
+  > => {
     if (cache && cache.expiry > Date.now()) {
       return successResult(cache.data);
     }
@@ -67,16 +69,16 @@ export class ClientCredentialsService
   };
 
   validateAsyncTokenRequest = (
-    storedCredentials: IClientCredentials,
+    registeredCredentials: IClientCredentials,
     suppliedCredentials: IDecodedClientCredentials,
   ): Result<null> => {
     const { clientSecret: suppliedClientSecret } = suppliedCredentials;
-    const storedSalt = storedCredentials.salt;
+    const storedSalt = registeredCredentials.salt;
     const hashedSuppliedClientSecret = hashSecret(
       suppliedClientSecret,
       storedSalt,
     );
-    const hashedStoredClientSecret = storedCredentials.hashed_client_secret;
+    const hashedStoredClientSecret = registeredCredentials.hashed_client_secret;
     const isValidClientSecret =
       hashedStoredClientSecret === hashedSuppliedClientSecret;
 
@@ -84,7 +86,7 @@ export class ClientCredentialsService
       return errorResult("Client secret not valid for the supplied clientId");
     }
 
-    const registeredRedirectUri = storedCredentials.redirect_uri;
+    const registeredRedirectUri = registeredCredentials.redirect_uri;
     if (!registeredRedirectUri) {
       return errorResult("Missing redirect_uri");
     }
@@ -101,7 +103,8 @@ export class ClientCredentialsService
   validateAsyncCredentialRequest = (
     config: IValidateAsyncCredentialRequestConfig,
   ): Result<null> => {
-    const registeredRedirectUri = config.storedCredentials.redirect_uri;
+    const registeredRedirectUri =
+      config.registeredClientCredentials.redirect_uri;
     if (!registeredRedirectUri) {
       return errorResult("Missing redirect_uri");
     }
@@ -112,18 +115,20 @@ export class ClientCredentialsService
       return errorResult("Invalid redirect_uri");
     }
 
-    if (config.redirectUri !== config.storedCredentials.redirect_uri) {
+    if (
+      config.redirectUri !== config.registeredClientCredentials.redirect_uri
+    ) {
       return errorResult("Unregistered redirect_uri");
     }
 
-    if (config.aud !== config.storedCredentials.issuer) {
+    if (config.aud !== config.registeredClientCredentials.issuer) {
       return errorResult("Invalid aud claim");
     }
 
     return successResult(null);
   };
 
-  getClientCredentialsById = (
+  getRegisteredClientCredentialsById = (
     storedCredentialsArray: IClientCredentials[],
     suppliedClientId: string,
   ): Result<IClientCredentials> => {
@@ -178,7 +183,9 @@ const hashSecret = (secret: string, salt: string): string => {
 };
 
 export interface IGetClientCredentials {
-  getClientCredentials: () => Promise<Result<IClientCredentials[]>>;
+  getAllRegisteredClientCredentials: () => Promise<
+    Result<IClientCredentials[]>
+  >;
 }
 
 export interface IValidateAsyncTokenRequest {
@@ -189,7 +196,7 @@ export interface IValidateAsyncTokenRequest {
 }
 
 export interface IGetClientCredentialsById {
-  getClientCredentialsById: (
+  getRegisteredClientCredentialsById: (
     storedCredentialsArray: IClientCredentials[],
     suppliedClientId: string,
   ) => Result<IClientCredentials>;
@@ -222,6 +229,6 @@ interface CacheEntry {
 export interface IValidateAsyncCredentialRequestConfig {
   aud: string;
   issuer: string;
-  storedCredentials: IClientCredentials;
+  registeredClientCredentials: IClientCredentials;
   redirectUri?: string;
 }
