@@ -69,16 +69,16 @@ export class ClientCredentialsService
   };
 
   validateAsyncTokenRequest = (
-    storedCredentials: IClientCredentials,
+    registeredCredentials: IClientCredentials,
     suppliedCredentials: IDecodedClientCredentials,
   ): Result<null> => {
     const { clientSecret: suppliedClientSecret } = suppliedCredentials;
-    const storedSalt = storedCredentials.salt;
+    const storedSalt = registeredCredentials.salt;
     const hashedSuppliedClientSecret = hashSecret(
       suppliedClientSecret,
       storedSalt,
     );
-    const hashedStoredClientSecret = storedCredentials.hashed_client_secret;
+    const hashedStoredClientSecret = registeredCredentials.hashed_client_secret;
     const isValidClientSecret =
       hashedStoredClientSecret === hashedSuppliedClientSecret;
 
@@ -86,13 +86,13 @@ export class ClientCredentialsService
       return errorResult("Client secret not valid for the supplied clientId");
     }
 
-    const storedRedirectUri = storedCredentials.redirect_uri;
-    if (!storedRedirectUri) {
+    const registeredRedirectUri = registeredCredentials.redirect_uri;
+    if (!registeredRedirectUri) {
       return errorResult("Missing redirect_uri");
     }
 
     try {
-      new URL(storedRedirectUri);
+      new URL(registeredRedirectUri);
     } catch (e) {
       return errorResult("Invalid redirect_uri");
     }
