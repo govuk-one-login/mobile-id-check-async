@@ -2,7 +2,7 @@ import {
   IAsyncTokenRequestDependencies,
   lambdaHandlerConstructor,
 } from "./asyncTokenHandler";
-import { IGetRegisteredIssueUsingClientSecrets } from "../services/clientCredentialsService/clientCredentialsService";
+import { IGetRegisteredIssuerUsingClientSecrets } from "../services/clientCredentialsService/clientCredentialsService";
 import { IProcessRequest } from "./requestService/requestService";
 import { buildRequest } from "../testUtils/mockRequest";
 import { IDecodedClientCredentials } from "../types/clientCredentials";
@@ -314,7 +314,7 @@ class MockRequestServiceInvalidAuthorizationHeaderErrorResult
 }
 
 class MockClientCredentialsServiceSuccessResult
-  implements IGetRegisteredIssueUsingClientSecrets
+  implements IGetRegisteredIssuerUsingClientSecrets
 {
   getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
     return Promise.resolve(successResult("mockIssuer"));
@@ -322,7 +322,7 @@ class MockClientCredentialsServiceSuccessResult
 }
 
 class MockClientCredentialsServiceInternalServerErrorResult
-  implements IGetRegisteredIssueUsingClientSecrets
+  implements IGetRegisteredIssuerUsingClientSecrets
 {
   getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
     return Promise.resolve(
@@ -332,7 +332,7 @@ class MockClientCredentialsServiceInternalServerErrorResult
 }
 
 class MockClientCredentialsServiceBadRequestResult
-  implements IGetRegisteredIssueUsingClientSecrets
+  implements IGetRegisteredIssuerUsingClientSecrets
 {
   getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
     return Promise.resolve(
