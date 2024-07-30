@@ -26,6 +26,4 @@ resource "aws_cloudformation_stack" "build_notifications" {
   }
 
   capabilities = ["CAPABILITY_AUTO_EXPAND", "CAPABILITY_IAM"]
-
-  depends_on = [aws_cloudformation_stack.checkov_hook]
 }

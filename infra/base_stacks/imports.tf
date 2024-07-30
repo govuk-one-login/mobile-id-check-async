@@ -35,13 +35,13 @@ import {
 }
 
 import {
-  for_each = var.stacks_to_import.signer ? [0] : []
+  for_each = var.stacks_to_import.signer && local.is_artifact_account ? [0] : []
   to       = aws_cloudformation_stack.signer[0]
   id       = "devplatform-signer"
 }
 
 import {
-  for_each = var.stacks_to_import.vpc && local.is_artifact_account ? [0] : []
+  for_each = var.stacks_to_import.vpc ? [0] : []
   to       = aws_cloudformation_stack.vpc
   id       = "devplatform-vpc"
 }
