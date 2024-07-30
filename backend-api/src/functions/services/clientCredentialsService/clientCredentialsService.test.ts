@@ -46,7 +46,7 @@ describe("Client Credentials Service", () => {
     };
   });
 
-  describe("Get client credentials", () => {
+  describe("Get issuer from client secrets", () => {
     describe("Given there is an error calling SSM", () => {
       it("Returns error result", async () => {
         const ssmMock = mockClient(SSMClient);
@@ -229,6 +229,26 @@ describe("Client Credentials Service", () => {
           });
         });
       });
+
+      describe("Credential validation", () => {
+        describe("Given the client ID is not registered", () => {
+        })
+
+        describe("Given the credentials are registered", () => {
+          it("Returns the issuer for the registered client", async () => {
+
+            mockTokenSuppliedClientCredentials = {
+              clientId: "mockAnotherClientId",
+              clientSecret: "mockClientSecret",
+            };
+    
+            const result = clientCredentialsService.getRegisteredIssuerUsingClientSecrets({clientId: "mockAnotherClientId", clientSecret: "mockClientSecret"});
+    
+            expect(result.isError).toBe(false);
+            expect(result.value).toBe({issuer: "mockIssuer"});
+          });
+        })
+      })
     });
   });
 
