@@ -95,7 +95,8 @@ export class ClientCredentialsService
         typeof registeredClient.issuer === "string" &&
         typeof registeredClient.salt === "string" &&
         typeof registeredClient.hashed_client_secret === "string" &&
-        Object.keys(registeredClient).length === 4,
+        this.isValidUrl(registeredClient.redirect_uri) &&
+        Object.keys(registeredClient).length === 5,
     );
     if (!allPropertiesPresent)
       return errorResult("Client registry failed schema validation");
@@ -106,6 +107,14 @@ export class ClientCredentialsService
     return successResult(clientRegistry);
   };
 
+  private isValidUrl = (rawUrl: string): boolean => {
+    try {
+      new URL(rawUrl);
+    } catch (error) {
+      return false;
+    }
+    return true;
+  };
   private getRegisteredClientCredentialsByClientId = (
     clientRegistery: IClientCredentials[],
     clientId: string,
@@ -212,7 +221,7 @@ export type IClientCredentials = {
   issuer: string;
   salt: string;
   hashed_client_secret: string;
-  redirect_uri?: string;
+  redirect_uri: string;
 };
 
 export interface IDecodedClientCredentials {

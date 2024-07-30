@@ -66,92 +66,482 @@ describe("Client Credentials Service", () => {
 
     describe("Given the request to SSM is successful", () => {
       describe("Schema validation", () => {
-        describe.each([
-          {
-            clientCredentials: undefined,
-            scenario: "is undefined",
-            expectedErrorMessage: "Client registry not found",
-          },
-          {
-            clientCredentials: "{}}",
-            scenario: "is invalid JSON",
-            expectedErrorMessage:
-              "Client registry is not a valid JSON",
-          },
-          {
-            clientCredentials: JSON.stringify({}),
-            scenario: "is not an array",
-            expectedErrorMessage:
-              "Client registry is not an array",
-          },
-          {
-            clientCredentials: JSON.stringify([]),
-            scenario: "is an empty array",
-            expectedErrorMessage:
-              "Client registry is empty",
-          },
-          {
-            clientCredentials: JSON.stringify([{ client_id: "123" }]),
-            scenario: "contains an object with incorrect keys",
-            expectedErrorMessage:
-              "Client registry failed schema validation",
-          },
-          {
-            clientCredentials: JSON.stringify([
-              {
-                client_id: [],
-                issuer: "mockIssuer",
-                salt: "mockSalt",
-                hashed_client_secret: "mockHashedClientSecret",
-              },
-            ]),
-            scenario:
-              'contains an object where not all key types are in a "string" format',
-            expectedErrorMessage:
-              "Client registry failed schema validation",
-          },
-          {
-            clientCredentials: JSON.stringify([
-              {
-                client_id: "mockClientId",
-                issuer: "mockIssuer",
-                salt: "mockSalt",
-                hashed_client_secret: "mockHashedClientSecret",
-              },
-              {
-                client_id: [],
-                issuer: "mockIssuer",
-                salt: "mockSalt",
-                hashed_client_secret: "mockHashedClientSecret",
-              },
-            ]),
-            scenario:
-              "contains multiple objects with where at least one key is incorrect",
-            expectedErrorMessage:
-              "Client registry failed schema validation",
-          },
-        ])(
-          "Given the Client Credential array $scenario",
-          ({ clientCredentials, expectedErrorMessage }) => {
-            it("Returns error result", async () => {
-              const ssmMock = mockClient(SSMClient);
-              ssmMock
-                .on(GetParameterCommand)
-                .resolves({ Parameter: { Value: clientCredentials } });
+        describe("Given no client registry was found", () => {
+          it("Returns error result", async () => {
+            const ssmMock = mockClient(SSMClient);
+            ssmMock.on(GetParameterCommand).resolves({});
 
-              const result =
-                await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
-                  {
-                    clientId: "mockAnotherClientId",
-                    clientSecret: "mockClientSecret",
-                  },
-                );
+            const result =
+              await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+                {
+                  clientId: "mockAnotherClientId",
+                  clientSecret: "mockClientSecret",
+                },
+              );
 
-              expect(result.isError).toBe(true);
-              expect(result.value).toEqual(expectedErrorMessage);
+            expect(result.isError).toBe(true);
+            expect(result.value).toEqual("Client registry not found");
+          });
+        });
+
+        describe("Given client registry is not a valid JSON", () => {
+          it("Returns error result", async () => {
+            const ssmMock = mockClient(SSMClient);
+            ssmMock.on(GetParameterCommand).resolves({
+              Parameter: {
+                Value: "{{{",
+              },
             });
-          },
-        );
+
+            const result =
+              await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+                {
+                  clientId: "mockAnotherClientId",
+                  clientSecret: "mockClientSecret",
+                },
+              );
+
+            expect(result.isError).toBe(true);
+            expect(result.value).toEqual("Client registry is not a valid JSON");
+          });
+        });
+
+        describe("Given client registry is not an array", () => {
+          it("Returns error result", async () => {
+            const ssmMock = mockClient(SSMClient);
+            ssmMock.on(GetParameterCommand).resolves({
+              Parameter: {
+                Value: "{}",
+              },
+            });
+
+            const result =
+              await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+                {
+                  clientId: "mockAnotherClientId",
+                  clientSecret: "mockClientSecret",
+                },
+              );
+
+            expect(result.isError).toBe(true);
+            expect(result.value).toEqual("Client registry is not an array");
+          });
+        });
+        describe("Given client registry is empty", () => {
+          it("Returns error result", async () => {
+            const ssmMock = mockClient(SSMClient);
+            ssmMock.on(GetParameterCommand).resolves({
+              Parameter: {
+                Value: "[]",
+              },
+            });
+
+            const result =
+              await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+                {
+                  clientId: "mockAnotherClientId",
+                  clientSecret: "mockClientSecret",
+                },
+              );
+
+            expect(result.isError).toBe(true);
+            expect(result.value).toEqual("Client registry is empty");
+          });
+        });
+        describe("Given the clientId is missing", () => {
+          it("Returns error result", async () => {
+            const ssmMock = mockClient(SSMClient);
+            ssmMock.on(GetParameterCommand).resolves({
+              Parameter: {
+                Value: JSON.stringify([
+                  {
+                    issuer: "mockIssuer",
+                    salt: "0vjPs=djeEHP",
+                    hashed_client_secret:
+                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                    redirect_uri: "https://mockRedirectUri.com",
+                  },
+                ]),
+              },
+            });
+
+            const result =
+              await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+                {
+                  clientId: "mockAnotherClientId",
+                  clientSecret: "mockClientSecret",
+                },
+              );
+
+            expect(result.isError).toBe(true);
+            expect(result.value).toEqual(
+              "Client registry failed schema validation",
+            );
+          });
+        });
+
+        describe("Given the clientId is not a string", () => {
+          it("Returns error result", async () => {
+            const ssmMock = mockClient(SSMClient);
+            ssmMock.on(GetParameterCommand).resolves({
+              Parameter: {
+                Value: JSON.stringify([
+                  {
+                    client_id: 1,
+                    issuer: "mockIssuer",
+                    salt: "0vjPs=djeEHP",
+                    hashed_client_secret:
+                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                    redirect_uri: "https://mockRedirectUri.com",
+                  },
+                ]),
+              },
+            });
+
+            const result =
+              await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+                {
+                  clientId: "mockAnotherClientId",
+                  clientSecret: "mockClientSecret",
+                },
+              );
+
+            expect(result.isError).toBe(true);
+            expect(result.value).toEqual(
+              "Client registry failed schema validation",
+            );
+          });
+        });
+
+        describe("Given the salt is missing", () => {
+          it("Returns error result", async () => {
+            const ssmMock = mockClient(SSMClient);
+            ssmMock.on(GetParameterCommand).resolves({
+              Parameter: {
+                Value: JSON.stringify([
+                  {
+                    client_id: "clientId",
+                    issuer: "mockIssuer",
+                    hashed_client_secret:
+                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                    redirect_uri: "https://mockRedirectUri.com",
+                  },
+                ]),
+              },
+            });
+
+            const result =
+              await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+                {
+                  clientId: "mockAnotherClientId",
+                  clientSecret: "mockClientSecret",
+                },
+              );
+
+            expect(result.isError).toBe(true);
+            expect(result.value).toEqual(
+              "Client registry failed schema validation",
+            );
+          });
+        });
+        describe("Given the salt is not a string", () => {
+          it("Returns error result", async () => {
+            const ssmMock = mockClient(SSMClient);
+            ssmMock.on(GetParameterCommand).resolves({
+              Parameter: {
+                Value: JSON.stringify([
+                  {
+                    client_id: "clientId",
+                    salt: 1,
+                    issuer: "mockIssuer",
+                    hashed_client_secret:
+                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                    redirect_uri: "https://mockRedirectUri.com",
+                  },
+                ]),
+              },
+            });
+
+            const result =
+              await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+                {
+                  clientId: "mockAnotherClientId",
+                  clientSecret: "mockClientSecret",
+                },
+              );
+
+            expect(result.isError).toBe(true);
+            expect(result.value).toEqual(
+              "Client registry failed schema validation",
+            );
+          });
+        });
+
+        describe("Given the issuer is missing", () => {
+          it("Returns error result", async () => {
+            const ssmMock = mockClient(SSMClient);
+            ssmMock.on(GetParameterCommand).resolves({
+              Parameter: {
+                Value: JSON.stringify([
+                  {
+                    client_id: "clientId",
+                    salt: "salt",
+                    hashed_client_secret:
+                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                    redirect_uri: "https://mockRedirectUri.com",
+                  },
+                ]),
+              },
+            });
+
+            const result =
+              await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+                {
+                  clientId: "mockAnotherClientId",
+                  clientSecret: "mockClientSecret",
+                },
+              );
+
+            expect(result.isError).toBe(true);
+            expect(result.value).toEqual(
+              "Client registry failed schema validation",
+            );
+          });
+        });
+
+        describe("Given the issuer is not a string", () => {
+          it("Returns error result", async () => {
+            const ssmMock = mockClient(SSMClient);
+            ssmMock.on(GetParameterCommand).resolves({
+              Parameter: {
+                Value: JSON.stringify([
+                  {
+                    client_id: "clientId",
+                    salt: "salt",
+                    issuer: 1,
+                    hashed_client_secret:
+                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                    redirect_uri: "https://mockRedirectUri.com",
+                  },
+                ]),
+              },
+            });
+
+            const result =
+              await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+                {
+                  clientId: "mockAnotherClientId",
+                  clientSecret: "mockClientSecret",
+                },
+              );
+
+            expect(result.isError).toBe(true);
+            expect(result.value).toEqual(
+              "Client registry failed schema validation",
+            );
+          });
+        });
+
+        describe("Given the hashed client secret is missing", () => {
+          it("Returns error result", async () => {
+            const ssmMock = mockClient(SSMClient);
+            ssmMock.on(GetParameterCommand).resolves({
+              Parameter: {
+                Value: JSON.stringify([
+                  {
+                    client_id: "clientId",
+                    salt: "salt",
+                    issuer: "issuer",
+                    redirect_uri: "https://mockRedirectUri.com",
+                  },
+                ]),
+              },
+            });
+
+            const result =
+              await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+                {
+                  clientId: "mockAnotherClientId",
+                  clientSecret: "mockClientSecret",
+                },
+              );
+
+            expect(result.isError).toBe(true);
+            expect(result.value).toEqual(
+              "Client registry failed schema validation",
+            );
+          });
+        });
+
+        describe("Given the hashed client secret is not a string", () => {
+          it("Returns error result", async () => {
+            const ssmMock = mockClient(SSMClient);
+            ssmMock.on(GetParameterCommand).resolves({
+              Parameter: {
+                Value: JSON.stringify([
+                  {
+                    client_id: "clientId",
+                    salt: "salt",
+                    issuer: "issuer",
+                    hashed_client_secret: 1,
+                    redirect_uri: "https://mockRedirectUri.com",
+                  },
+                ]),
+              },
+            });
+
+            const result =
+              await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+                {
+                  clientId: "mockAnotherClientId",
+                  clientSecret: "mockClientSecret",
+                },
+              );
+
+            expect(result.isError).toBe(true);
+            expect(result.value).toEqual(
+              "Client registry failed schema validation",
+            );
+          });
+        });
+
+        describe("Given the redirect_uri is missing", () => {
+          it("Returns error result", async () => {
+            const ssmMock = mockClient(SSMClient);
+            ssmMock.on(GetParameterCommand).resolves({
+              Parameter: {
+                Value: JSON.stringify([
+                  {
+                    client_id: "clientId",
+                    salt: "salt",
+                    issuer: "issuer",
+                    hashed_client_secret: "hashedSecret",
+                  },
+                ]),
+              },
+            });
+
+            const result =
+              await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+                {
+                  clientId: "mockAnotherClientId",
+                  clientSecret: "mockClientSecret",
+                },
+              );
+
+            expect(result.isError).toBe(true);
+            expect(result.value).toEqual(
+              "Client registry failed schema validation",
+            );
+          });
+        });
+
+        describe("Given the redirect_uri is not a URL", () => {
+          it("Returns error result", async () => {
+            const ssmMock = mockClient(SSMClient);
+            ssmMock.on(GetParameterCommand).resolves({
+              Parameter: {
+                Value: JSON.stringify([
+                  {
+                    client_id: "clientId",
+                    salt: "salt",
+                    issuer: "issuer",
+                    hashed_client_secret: "hashedSecret",
+                    redirect_uri: "invalidUrl",
+                  },
+                ]),
+              },
+            });
+
+            const result =
+              await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+                {
+                  clientId: "mockAnotherClientId",
+                  clientSecret: "mockClientSecret",
+                },
+              );
+
+            expect(result.isError).toBe(true);
+            expect(result.value).toEqual(
+              "Client registry failed schema validation",
+            );
+          });
+        });
+
+        describe("Given more than one registered client fails validation", () => {
+          it("Returns error result", async () => {
+            const ssmMock = mockClient(SSMClient);
+            ssmMock.on(GetParameterCommand).resolves({
+              Parameter: {
+                Value: JSON.stringify([
+                  {
+                    client_id: "clientId",
+                    salt: "salt",
+                    issuer: "issuer",
+                    hashed_client_secret: "hashedSecret",
+                  },
+                  {
+                    client_id: "clientId",
+                    salt: "salt",
+                    issuer: "issuer",
+                    hashed_client_secret: "hashedSecret",
+                  },
+                ]),
+              },
+            });
+
+            const result =
+              await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+                {
+                  clientId: "mockAnotherClientId",
+                  clientSecret: "mockClientSecret",
+                },
+              );
+
+            expect(result.isError).toBe(true);
+            expect(result.value).toEqual(
+              "Client registry failed schema validation",
+            );
+          });
+        });
+
+        describe("Given only one registered client fails validation", () => {
+          it("Returns error result", async () => {
+            const ssmMock = mockClient(SSMClient);
+            ssmMock.on(GetParameterCommand).resolves({
+              Parameter: {
+                Value: JSON.stringify([
+                  {
+                    client_id: "clientId",
+                    salt: "salt",
+                    issuer: "issuer",
+                    hashed_client_secret: "hashedSecret",
+                    redirect_uri: "https://www.mockUrl.com",
+                  },
+                  {
+                    client_id: "clientId",
+                    salt: "salt",
+                    issuer: "issuer",
+                    hashed_client_secret: "hashedSecret",
+                  },
+                ]),
+              },
+            });
+
+            const result =
+              await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+                {
+                  clientId: "mockAnotherClientId",
+                  clientSecret: "mockClientSecret",
+                },
+              );
+
+            expect(result.isError).toBe(true);
+            expect(result.value).toEqual(
+              "Client registry failed schema validation",
+            );
+          });
+        });
       });
 
       describe("Credential validation", () => {
@@ -166,6 +556,7 @@ describe("Client Credentials Service", () => {
                     issuer: "mockIssuer",
                     salt: "mockSalt",
                     hashed_client_secret: "mockHashedClientSecret",
+                    redirect_uri: "https://www.validUrl.com",
                   },
                 ]),
               },
@@ -184,24 +575,35 @@ describe("Client Credentials Service", () => {
           });
         });
 
-        // describe("Given the client credentials are invalid", () => {
-        //   it("Returns false", async () => {
-        //     mockTokenSuppliedClientCredentials = {
-        //       clientId: "mockClientId",
-        //       clientSecret: "mockInvalidClientSecret",
-        //     };
+        describe("Given the client credentials are invalid", () => {
+          it("Returns false", async () => {
+            const ssmMock = mockClient(SSMClient);
+            ssmMock.on(GetParameterCommand).resolves({
+              Parameter: {
+                Value: JSON.stringify([
+                  {
+                    client_id: "mockAnotherClientId",
+                    issuer: "mockIssuer",
+                    salt: "0vjPs=djeEHP",
+                    hashed_client_secret: "invalidHasedSecret", // mockClientSecret hashing with above salt
+                    redirect_uri: "https://www.validUrl.com",
+                  },
+                ]),
+              },
+            });
 
-        //     const result = clientCredentialsService.validateAsyncTokenRequest(
-        //       mockStoredClientCredentials,
-        //       mockTokenSuppliedClientCredentials,
-        //     );
+            const result =
+              await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+                {
+                  clientId: "mockAnotherClientId",
+                  clientSecret: "mockClientSecret",
+                },
+              );
 
-        //     expect(result.isError).toBe(true);
-        //     expect(result.value).toBe(
-        //       "Client credentials are invalid",
-        //     );
-        //   });
-        // })
+            expect(result.isError).toBe(true);
+            expect(result.value).toBe("Client credentials are invalid");
+          });
+        });
 
         describe("Given the client credentials are valid", () => {
           it("Returns the issuer for the registered client", async () => {
@@ -215,7 +617,7 @@ describe("Client Credentials Service", () => {
                     salt: "0vjPs=djeEHP",
                     hashed_client_secret:
                       "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
-                    // redirect_uri: "https://mockRedirectUri.com",
+                    redirect_uri: "https://mockRedirectUri.com",
                   },
                 ]),
               },
@@ -243,6 +645,7 @@ describe("Client Credentials Service", () => {
                     issuer: "mockIssuer",
                     salt: "mockSalt",
                     hashed_client_secret: "mockHashedClientSecret",
+                    redirect_uri: "https://www.validUrl.com",
                   },
                 ]),
               },
@@ -282,6 +685,7 @@ describe("Client Credentials Service", () => {
                     issuer: "mockIssuer",
                     salt: "mockSalt",
                     hashed_client_secret: "mockHashedClientSecret",
+                    redirect_uri: "https://www.validUrl.com",
                   },
                 ]),
               },
