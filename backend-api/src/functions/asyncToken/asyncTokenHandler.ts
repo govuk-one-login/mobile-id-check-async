@@ -6,10 +6,9 @@ import {
 import "dotenv/config";
 import {
   ClientCredentialsService,
-  IGetClientCredentials,
   IGetClientCredentialsById,
+  IGetRegisteredIssueUsingClientSecrets,
   IValidateAsyncCredentialRequest,
-  IValidateAsyncTokenRequest,
 } from "../services/clientCredentialsService/clientCredentialsService";
 import {
   IProcessRequest,
@@ -62,54 +61,32 @@ export async function lambdaHandlerConstructor(
 
   const suppliedClientCredentials = processRequestResult.value;
 
-  // Fetching stored client credentials
+  // Retrieving issuer and validating client secrets
   const clientCredentialsService = dependencies.clientCredentialsService();
-  const allRegisteredClientCredentialsResult =
-    await clientCredentialsService.getAllRegisteredClientCredentials();
-  if (allRegisteredClientCredentialsResult.isError) {
-    logger.log("INTERNAL_SERVER_ERROR", {
-      errorMessage: allRegisteredClientCredentialsResult.value,
-    });
-    return serverErrorResponse;
+  const getRegisteredIssuerByClientSecretsResult =
+    await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(suppliedClientCredentials);
+  if (getRegisteredIssuerByClientSecretsResult.isError) {
+
+    // TODO: This is intentionally hardcoded on a string. This requires a wider refactor that is in progress and part of the next PR.
+    if(getRegisteredIssuerByClientSecretsResult.value === "Unexpected error retrieving issuer") {
+      logger.log("INTERNAL_SERVER_ERROR", {
+        errorMessage: getRegisteredIssuerByClientSecretsResult.value,
+      });
+      return serverErrorResponse;
+    }
+    logger.log("INVALID_REQUEST", {errorMessage:getRegisteredIssuerByClientSecretsResult.value })
+    return badRequestResponseInvalidCredentials
   }
 
-  const allRegisteredClientCredentials =
-    allRegisteredClientCredentialsResult.value;
-
-  // Incoming credentials match stored credentials
-  const registeredClientCredentialsByIdResult =
-    clientCredentialsService.getRegisteredClientCredentialsById(
-      allRegisteredClientCredentials,
-      suppliedClientCredentials.clientId,
-    );
-  if (registeredClientCredentialsByIdResult.isError) {
-    logger.log("INVALID_REQUEST", {
-      errorMessage: "Client credentials not registered",
-    });
-    return badRequestResponseInvalidCredentials;
-  }
-
-  const registeredClientCredentials =
-    registeredClientCredentialsByIdResult.value;
-
-  const validateAsyncTokenRequestResult =
-    clientCredentialsService.validateAsyncTokenRequest(
-      registeredClientCredentials,
-      suppliedClientCredentials,
-    );
-  if (validateAsyncTokenRequestResult.isError) {
-    logger.log("INVALID_REQUEST", {
-      errorMessage: validateAsyncTokenRequestResult.value,
-    });
-    return badRequestResponseInvalidCredentials;
-  }
+  const registeredIssuer = getRegisteredIssuerByClientSecretsResult.value
 
   const jwtPayload = {
-    aud: registeredClientCredentials.issuer,
+    aud: registeredIssuer,
     iss: config.ISSUER,
     exp: Math.floor(Date.now() / 1000) + 3600,
     scope: "dcmaw.session.async_create",
-    client_id: registeredClientCredentials.client_id,
+    // The clientId can be trusted as the credential service validates the incoming clientId against the client registry
+    client_id: suppliedClientCredentials.clientId, 
   };
 
   const tokenService = dependencies.tokenService(config.SIGNING_KEY_ID);
@@ -193,10 +170,7 @@ export interface IAsyncTokenRequestDependencies {
   eventService: (sqsQueue: string) => IEventService;
   logger: () => Logger<MessageName>;
   requestService: () => IProcessRequest;
-  clientCredentialsService: () => IGetClientCredentials &
-    IValidateAsyncTokenRequest &
-    IValidateAsyncCredentialRequest &
-    IGetClientCredentialsById;
+  clientCredentialsService: () => IGetRegisteredIssueUsingClientSecrets
   tokenService: (signingKey: string) => IMintToken;
 }
 
