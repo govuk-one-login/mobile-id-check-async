@@ -5,7 +5,7 @@ resource "aws_cloudformation_stack" "github_identity" {
   name = "devplatform-github-identity"
 
   template_url = format(local.preformat_template_url,
-    "github-identity",                 # https://github.com/govuk-one-login/devplatform-checkov-hook
+    "github-identity",                 # https://github.com/govuk-one-login/devplatform-deploy/tree/main/github-identity
     "eA2KQSivjkZIIpAV0M15Eo5DoB8rfPmD" # v1.1.1
   )
 
@@ -21,7 +21,7 @@ resource "aws_cloudformation_stack" "signer" {
   name = "devplatform-signer"
 
   template_url = format(local.preformat_template_url,
-    "signer",                          # https://github.com/govuk-one-login/devplatform-checkov-hook
+    "signer",                          # https://github.com/govuk-one-login/devplatform-deploy/tree/main/signer
     "u5KejsTCRYh47HnulR9rkyOkRWehwPEf" # v1.0.8
   )
 
