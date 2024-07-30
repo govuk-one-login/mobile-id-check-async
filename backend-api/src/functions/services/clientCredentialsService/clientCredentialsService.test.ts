@@ -61,166 +61,172 @@ describe("Client Credentials Service", () => {
     });
 
     describe("Given the request to SSM is successful", () => {
-      describe.each([
-        {
-          clientCredentials: undefined,
-          scenario: "is undefined",
-          expectedErrorMessage: "Client Credentials is null or undefined",
-        },
-        {
-          clientCredentials: "{}}",
-          scenario: "is invalid JSON",
-          expectedErrorMessage: "Client Credentials is not valid JSON",
-        },
-        {
-          clientCredentials: JSON.stringify({}),
-          scenario: "is not an array",
-          expectedErrorMessage: "Parsed Client Credentials array is malformed",
-        },
-        {
-          clientCredentials: JSON.stringify([]),
-          scenario: "is an empty array",
-          expectedErrorMessage: "Parsed Client Credentials array is malformed",
-        },
-        {
-          clientCredentials: JSON.stringify([{ client_id: "123" }]),
-          scenario: "contains an object with incorrect keys",
-          expectedErrorMessage: "Parsed Client Credentials array is malformed",
-        },
-        {
-          clientCredentials: JSON.stringify([
-            {
-              client_id: [],
-              issuer: "mockIssuer",
-              salt: "mockSalt",
-              hashed_client_secret: "mockHashedClientSecret",
-            },
-          ]),
-          scenario:
-            'contains an object where not all key types are in a "string" format',
-          expectedErrorMessage: "Parsed Client Credentials array is malformed",
-        },
-        {
-          clientCredentials: JSON.stringify([
-            {
-              client_id: "mockClientId",
-              issuer: "mockIssuer",
-              salt: "mockSalt",
-              hashed_client_secret: "mockHashedClientSecret",
-            },
-            {
-              client_id: [],
-              issuer: "mockIssuer",
-              salt: "mockSalt",
-              hashed_client_secret: "mockHashedClientSecret",
-            },
-          ]),
-          scenario:
-            "contains multiple objects with where at least one key is incorrect",
-          expectedErrorMessage: "Parsed Client Credentials array is malformed",
-        },
-      ])(
-        "Given the Client Credential array $scenario",
-        ({ clientCredentials, expectedErrorMessage }) => {
-          it("Returns error result", async () => {
+      describe("Schema validation", () => {
+        describe.each([
+          {
+            clientCredentials: undefined,
+            scenario: "is undefined",
+            expectedErrorMessage: "Client Credentials is null or undefined",
+          },
+          {
+            clientCredentials: "{}}",
+            scenario: "is invalid JSON",
+            expectedErrorMessage: "Client Credentials is not valid JSON",
+          },
+          {
+            clientCredentials: JSON.stringify({}),
+            scenario: "is not an array",
+            expectedErrorMessage:
+              "Parsed Client Credentials array is malformed",
+          },
+          {
+            clientCredentials: JSON.stringify([]),
+            scenario: "is an empty array",
+            expectedErrorMessage:
+              "Parsed Client Credentials array is malformed",
+          },
+          {
+            clientCredentials: JSON.stringify([{ client_id: "123" }]),
+            scenario: "contains an object with incorrect keys",
+            expectedErrorMessage:
+              "Parsed Client Credentials array is malformed",
+          },
+          {
+            clientCredentials: JSON.stringify([
+              {
+                client_id: [],
+                issuer: "mockIssuer",
+                salt: "mockSalt",
+                hashed_client_secret: "mockHashedClientSecret",
+              },
+            ]),
+            scenario:
+              'contains an object where not all key types are in a "string" format',
+            expectedErrorMessage:
+              "Parsed Client Credentials array is malformed",
+          },
+          {
+            clientCredentials: JSON.stringify([
+              {
+                client_id: "mockClientId",
+                issuer: "mockIssuer",
+                salt: "mockSalt",
+                hashed_client_secret: "mockHashedClientSecret",
+              },
+              {
+                client_id: [],
+                issuer: "mockIssuer",
+                salt: "mockSalt",
+                hashed_client_secret: "mockHashedClientSecret",
+              },
+            ]),
+            scenario:
+              "contains multiple objects with where at least one key is incorrect",
+            expectedErrorMessage:
+              "Parsed Client Credentials array is malformed",
+          },
+        ])(
+          "Given the Client Credential array $scenario",
+          ({ clientCredentials, expectedErrorMessage }) => {
+            it("Returns error result", async () => {
+              const ssmMock = mockClient(SSMClient);
+              ssmMock
+                .on(GetParameterCommand)
+                .resolves({ Parameter: { Value: clientCredentials } });
+
+              const result =
+                await clientCredentialsService.getAllRegisteredClientCredentials();
+
+              expect(result.isError).toBe(true);
+              expect(result.value).toEqual(expectedErrorMessage);
+            });
+          },
+        );
+        describe("Given the Credential object is valid", () => {
+          it("Returns success result with Credential object", async () => {
             const ssmMock = mockClient(SSMClient);
-            ssmMock
-              .on(GetParameterCommand)
-              .resolves({ Parameter: { Value: clientCredentials } });
+            ssmMock.on(GetParameterCommand).resolves({
+              Parameter: {
+                Value: JSON.stringify([
+                  {
+                    client_id: "mockClientId",
+                    issuer: "mockIssuer",
+                    salt: "mockSalt",
+                    hashed_client_secret: "mockHashedClientSecret",
+                  },
+                ]),
+              },
+            });
 
             const result =
               await clientCredentialsService.getAllRegisteredClientCredentials();
 
-            expect(result.isError).toBe(true);
-            expect(result.value).toEqual(expectedErrorMessage);
-          });
-        },
-      );
-
-      describe("Given the Credential object is valid", () => {
-        it("Returns success result with Credential object", async () => {
-          const ssmMock = mockClient(SSMClient);
-          ssmMock.on(GetParameterCommand).resolves({
-            Parameter: {
-              Value: JSON.stringify([
-                {
-                  client_id: "mockClientId",
-                  issuer: "mockIssuer",
-                  salt: "mockSalt",
-                  hashed_client_secret: "mockHashedClientSecret",
-                },
-              ]),
-            },
+            expect(result.isError).toBe(false);
+            expect(result.value).toStrictEqual([
+              {
+                client_id: "mockClientId",
+                issuer: "mockIssuer",
+                salt: "mockSalt",
+                hashed_client_secret: "mockHashedClientSecret",
+              },
+            ]);
           });
 
-          const result =
+          it("Utilizes cache for subsequent requests", async () => {
+            const ssmMock = mockClient(SSMClient);
+            ssmMock.on(GetParameterCommand).resolves({
+              Parameter: {
+                Value: JSON.stringify([
+                  {
+                    client_id: "mockClientId",
+                    issuer: "mockIssuer",
+                    salt: "mockSalt",
+                    hashed_client_secret: "mockHashedClientSecret",
+                  },
+                ]),
+              },
+            });
+
+            clientCredentialsService.resetCache();
+
+            // First call should populate the cache
+            await clientCredentialsService.getAllRegisteredClientCredentials();
+            // Second call should use cache
             await clientCredentialsService.getAllRegisteredClientCredentials();
 
-          expect(result.isError).toBe(false);
-          expect(result.value).toStrictEqual([
-            {
-              client_id: "mockClientId",
-              issuer: "mockIssuer",
-              salt: "mockSalt",
-              hashed_client_secret: "mockHashedClientSecret",
-            },
-          ]);
-        });
-
-        it("Utilizes cache for subsequent requests", async () => {
-          const ssmMock = mockClient(SSMClient);
-          ssmMock.on(GetParameterCommand).resolves({
-            Parameter: {
-              Value: JSON.stringify([
-                {
-                  client_id: "mockClientId",
-                  issuer: "mockIssuer",
-                  salt: "mockSalt",
-                  hashed_client_secret: "mockHashedClientSecret",
-                },
-              ]),
-            },
+            // Expect SSM to have been called only once, since the second call uses cache
+            expect(ssmMock.calls()).toHaveLength(1);
           });
 
-          clientCredentialsService.resetCache();
+          it("Refreshes cache after TTL expires", async () => {
+            const ssmMock = mockClient(SSMClient);
 
-          // First call should populate the cache
-          await clientCredentialsService.getAllRegisteredClientCredentials();
-          // Second call should use cache
-          await clientCredentialsService.getAllRegisteredClientCredentials();
+            jest.useFakeTimers();
 
-          // Expect SSM to have been called only once, since the second call uses cache
-          expect(ssmMock.calls()).toHaveLength(1);
-        });
+            ssmMock.on(GetParameterCommand).resolves({
+              Parameter: {
+                Value: JSON.stringify([
+                  {
+                    client_id: "mockClientId",
+                    issuer: "mockIssuer",
+                    salt: "mockSalt",
+                    hashed_client_secret: "mockHashedClientSecret",
+                  },
+                ]),
+              },
+            });
 
-        it("Refreshes cache after TTL expires", async () => {
-          const ssmMock = mockClient(SSMClient);
+            clientCredentialsService.resetCache();
+            await clientCredentialsService.getAllRegisteredClientCredentials();
+            // Simulate time passing to exceed cache TTL
+            jest.advanceTimersByTime(clientCredentialsService.cacheTTL + 1);
+            // This call should refresh cache
+            await clientCredentialsService.getAllRegisteredClientCredentials();
 
-          jest.useFakeTimers();
-
-          ssmMock.on(GetParameterCommand).resolves({
-            Parameter: {
-              Value: JSON.stringify([
-                {
-                  client_id: "mockClientId",
-                  issuer: "mockIssuer",
-                  salt: "mockSalt",
-                  hashed_client_secret: "mockHashedClientSecret",
-                },
-              ]),
-            },
+            // Expect SSM to have been called twice: once to populate, once to refresh after TTL
+            expect(ssmMock.calls()).toHaveLength(2);
+            jest.useRealTimers();
           });
-
-          clientCredentialsService.resetCache();
-          await clientCredentialsService.getAllRegisteredClientCredentials();
-          // Simulate time passing to exceed cache TTL
-          jest.advanceTimersByTime(clientCredentialsService.cacheTTL + 1);
-          // This call should refresh cache
-          await clientCredentialsService.getAllRegisteredClientCredentials();
-
-          // Expect SSM to have been called twice: once to populate, once to refresh after TTL
-          expect(ssmMock.calls()).toHaveLength(2);
-          jest.useRealTimers();
         });
       });
     });
