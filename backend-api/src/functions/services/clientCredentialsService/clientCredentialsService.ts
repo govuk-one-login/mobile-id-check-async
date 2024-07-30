@@ -11,9 +11,10 @@ let cache: CacheEntry | null = null;
 
 export class ClientCredentialsService
   implements
-    IGetRegisteredIssueUsingClientSecrets,
+    IGetRegisteredIssuerUsingClientSecrets,
     IValidateAsyncCredentialRequest,
-    IGetClientCredentialsById
+    IGetClientCredentialsById,
+    IGetPartialRegisteredClientCredentialsByClientId
 {
   ssmClient: SSMClient;
   cacheTTL: number;
@@ -50,6 +51,23 @@ export class ClientCredentialsService
       return errorResult("Client credentials are invalid");
 
     return successResult(registeredClientCredentials.issuer);
+  };
+
+  getPartialRegisteredClientCredentialsByClientId = async (clientId: string): Promise<Result<{issuer: string, redirectUri: string}>> => {
+    const clientRegistryResult = await this.getClientRegistery();
+    if (clientRegistryResult.isError)
+      return errorResult(clientRegistryResult.value);
+    const clientRegistery = clientRegistryResult.value;
+
+    const registeredClientCredentials =
+      this.getRegisteredClientCredentialsByClientId(
+        clientRegistery,
+        clientId,
+      );
+    if (!registeredClientCredentials)
+      return errorResult("Client is not registered");
+
+    return successResult({issuer: registeredClientCredentials.issuer, redirectUri: registeredClientCredentials.redirect_uri});
   };
 
   private getClientRegistery = async (): Promise<
@@ -196,11 +214,15 @@ const hashSecret = (secret: string, salt: string): string => {
     .digest("hex");
 };
 
-export interface IGetRegisteredIssueUsingClientSecrets {
+export interface IGetRegisteredIssuerUsingClientSecrets {
   getRegisteredIssuerUsingClientSecrets: (credentials: {
     clientId: string;
     clientSecret: string;
   }) => Promise<Result<string>>;
+}
+
+export interface IGetPartialRegisteredClientCredentialsByClientId {
+  getPartialRegisteredClientCredentialsByClientId: (clientId: string) => Promise<Result<{issuer: string, redirectUri: string}>>;
 }
 
 export interface IGetClientCredentialsById {
