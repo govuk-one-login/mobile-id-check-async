@@ -1,7 +1,6 @@
 import { createHash } from "crypto";
 import { Result, errorResult, successResult } from "../../utils/result";
 import {
-  ComplianceStringFilter,
   GetParameterCommand,
   GetParameterRequest,
   SSMClient,
@@ -53,7 +52,9 @@ export class ClientCredentialsService
     return successResult(registeredClientCredentials.issuer);
   };
 
-  private getClientRegistery = async (): Promise<Result<IClientCredentials[]>> => {
+  private getClientRegistery = async (): Promise<
+    Result<IClientCredentials[]>
+  > => {
     if (cache && cache.expiry > Date.now()) {
       return successResult(cache.data);
     }
@@ -74,14 +75,35 @@ export class ClientCredentialsService
     if (!clientCredentialResponse) {
       return errorResult("Client registry not found");
     }
+    let clientRegistry;
+    try {
+      clientRegistry = JSON.parse(clientCredentialResponse);
+    } catch (error) {
+      return errorResult("Client registry is not a valid JSON");
+    }
+    if (!Array.isArray(clientRegistry)) {
+      return errorResult("Client registry is not an array");
+    }
 
-    if(!this.isClientRegistryValid(clientCredentialResponse)) return errorResult("Parsed Client Credentials array is malformed")
+    if (clientRegistry.length === 0) {
+      return errorResult("Client registry is empty");
+    }
 
-      cache = {
-        expiry: Date.now() + this.cacheTTL,
-        data: JSON.parse(clientCredentialResponse)
-      };
-    return successResult(JSON.parse(clientCredentialResponse));
+    const allPropertiesPresent = clientRegistry.every(
+      (registeredClient) =>
+        typeof registeredClient.client_id === "string" &&
+        typeof registeredClient.issuer === "string" &&
+        typeof registeredClient.salt === "string" &&
+        typeof registeredClient.hashed_client_secret === "string" &&
+        Object.keys(registeredClient).length === 4,
+    );
+    if (!allPropertiesPresent)
+      return errorResult("Client registry failed schema validation");
+    cache = {
+      expiry: Date.now() + this.cacheTTL,
+      data: JSON.parse(clientCredentialResponse),
+    };
+    return successResult(clientRegistry);
   };
 
   private getRegisteredClientCredentialsByClientId = (
@@ -109,8 +131,8 @@ export class ClientCredentialsService
     );
     const hashedStoredClientSecret = registeredClientSecrets.hashedClientSecret;
 
-    console.log("REGISTERED CLIENT SECRET", hashedStoredClientSecret)
-    console.log("SUPPLIED CLIENT SECRET", hashedSuppliedClientSecret)
+    console.log("REGISTERED CLIENT SECRET", hashedStoredClientSecret);
+    console.log("SUPPLIED CLIENT SECRET", hashedSuppliedClientSecret);
     return hashedStoredClientSecret === hashedSuppliedClientSecret;
   };
 
@@ -153,43 +175,6 @@ export class ClientCredentialsService
 
     return successResult(storedCredentials);
   };
-
-  private isClientRegistryValid = (
-    rawClientRegistry: string,
-  ): boolean => {
-    let clientRegistry
-    try {
-      clientRegistry = JSON.parse(rawClientRegistry)
-    } catch (error) {
-      
-    }
-    if (!Array.isArray(clientRegistry)) {
-      return false;
-    }
-
-    if (clientRegistry.length === 0) {
-      return false;
-    }
-
-    if (!this.isValidCredentialCredentialsStructure(clientRegistry)) {
-      return false;
-    }
-
-    return true;
-  };
-
-  private isValidCredentialCredentialsStructure(
-    credentialArray: IClientCredentials[],
-  ): boolean {
-    return credentialArray.every(
-      (obj) =>
-        typeof obj.client_id === "string" &&
-        typeof obj.issuer === "string" &&
-        typeof obj.salt === "string" &&
-        typeof obj.hashed_client_secret === "string" &&
-        Object.keys(obj).length === 4,
-    );
-  }
 
   resetCache() {
     cache = null;

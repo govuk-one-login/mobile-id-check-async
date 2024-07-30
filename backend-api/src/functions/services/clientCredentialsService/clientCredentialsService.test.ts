@@ -54,7 +54,10 @@ describe("Client Credentials Service", () => {
         ssmMock.on(GetParameterCommand).rejects("SSM Error");
 
         const result =
-          await clientCredentialsService.getRegisteredIssuerUsingClientSecrets({clientId: "mockAnotherClientId", clientSecret: "mockClientSecret"});
+          await clientCredentialsService.getRegisteredIssuerUsingClientSecrets({
+            clientId: "mockAnotherClientId",
+            clientSecret: "mockClientSecret",
+          });
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual("Error retrieving client secrets");
@@ -72,25 +75,26 @@ describe("Client Credentials Service", () => {
           {
             clientCredentials: "{}}",
             scenario: "is invalid JSON",
-            expectedErrorMessage: "Parsed Client Credentials array is malformed",
+            expectedErrorMessage:
+              "Client registry is not a valid JSON",
           },
           {
             clientCredentials: JSON.stringify({}),
             scenario: "is not an array",
             expectedErrorMessage:
-              "Parsed Client Credentials array is malformed",
+              "Client registry is not an array",
           },
           {
             clientCredentials: JSON.stringify([]),
             scenario: "is an empty array",
             expectedErrorMessage:
-              "Parsed Client Credentials array is malformed",
+              "Client registry is empty",
           },
           {
             clientCredentials: JSON.stringify([{ client_id: "123" }]),
             scenario: "contains an object with incorrect keys",
             expectedErrorMessage:
-              "Parsed Client Credentials array is malformed",
+              "Client registry failed schema validation",
           },
           {
             clientCredentials: JSON.stringify([
@@ -104,7 +108,7 @@ describe("Client Credentials Service", () => {
             scenario:
               'contains an object where not all key types are in a "string" format',
             expectedErrorMessage:
-              "Parsed Client Credentials array is malformed",
+              "Client registry failed schema validation",
           },
           {
             clientCredentials: JSON.stringify([
@@ -124,7 +128,7 @@ describe("Client Credentials Service", () => {
             scenario:
               "contains multiple objects with where at least one key is incorrect",
             expectedErrorMessage:
-              "Parsed Client Credentials array is malformed",
+              "Client registry failed schema validation",
           },
         ])(
           "Given the Client Credential array $scenario",
@@ -136,7 +140,12 @@ describe("Client Credentials Service", () => {
                 .resolves({ Parameter: { Value: clientCredentials } });
 
               const result =
-                await clientCredentialsService.getRegisteredIssuerUsingClientSecrets({clientId: "mockAnotherClientId", clientSecret: "mockClientSecret"});
+                await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+                  {
+                    clientId: "mockAnotherClientId",
+                    clientSecret: "mockClientSecret",
+                  },
+                );
 
               expect(result.isError).toBe(true);
               expect(result.value).toEqual(expectedErrorMessage);
@@ -161,15 +170,19 @@ describe("Client Credentials Service", () => {
                 ]),
               },
             });
-    
-            const result = await clientCredentialsService.getRegisteredIssuerUsingClientSecrets({clientId: "unregisteredClientId", clientSecret: "mockInvalidClientSecret"})
-    
+
+            const result =
+              await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+                {
+                  clientId: "unregisteredClientId",
+                  clientSecret: "mockInvalidClientSecret",
+                },
+              );
+
             expect(result.isError).toBe(true);
-            expect(result.value).toBe(
-              "Client is not registered",
-            );
+            expect(result.value).toBe("Client is not registered");
           });
-        })
+        });
 
         // describe("Given the client credentials are invalid", () => {
         //   it("Returns false", async () => {
@@ -177,12 +190,12 @@ describe("Client Credentials Service", () => {
         //       clientId: "mockClientId",
         //       clientSecret: "mockInvalidClientSecret",
         //     };
-    
+
         //     const result = clientCredentialsService.validateAsyncTokenRequest(
         //       mockStoredClientCredentials,
         //       mockTokenSuppliedClientCredentials,
         //     );
-    
+
         //     expect(result.isError).toBe(true);
         //     expect(result.value).toBe(
         //       "Client credentials are invalid",
@@ -207,9 +220,15 @@ describe("Client Credentials Service", () => {
                 ]),
               },
             });
-    
-            const result = await clientCredentialsService.getRegisteredIssuerUsingClientSecrets({clientId: "mockAnotherClientId", clientSecret: "mockClientSecret"});
-    
+
+            const result =
+              await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+                {
+                  clientId: "mockAnotherClientId",
+                  clientSecret: "mockClientSecret",
+                },
+              );
+
             expect(result.isError).toBe(false);
             expect(result.value).toBe("mockIssuer");
           });
@@ -232,9 +251,19 @@ describe("Client Credentials Service", () => {
             clientCredentialsService.resetCache();
 
             // First call should populate the cache
-            await clientCredentialsService.getRegisteredIssuerUsingClientSecrets({clientId: "mockAnotherClientId", clientSecret: "mockClientSecret"});
+            await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+              {
+                clientId: "mockAnotherClientId",
+                clientSecret: "mockClientSecret",
+              },
+            );
             // Second call should use cache
-            await clientCredentialsService.getRegisteredIssuerUsingClientSecrets({clientId: "mockAnotherClientId", clientSecret: "mockClientSecret"});
+            await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+              {
+                clientId: "mockAnotherClientId",
+                clientSecret: "mockClientSecret",
+              },
+            );
 
             // Expect SSM to have been called only once, since the second call uses cache
             expect(ssmMock.calls()).toHaveLength(1);
@@ -259,18 +288,28 @@ describe("Client Credentials Service", () => {
             });
 
             clientCredentialsService.resetCache();
-            await clientCredentialsService.getRegisteredIssuerUsingClientSecrets({clientId: "mockAnotherClientId", clientSecret: "mockClientSecret"});
+            await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+              {
+                clientId: "mockAnotherClientId",
+                clientSecret: "mockClientSecret",
+              },
+            );
             // Simulate time passing to exceed cache TTL
             jest.advanceTimersByTime(clientCredentialsService.cacheTTL + 1);
             // This call should refresh cache
-            await clientCredentialsService.getRegisteredIssuerUsingClientSecrets({clientId: "mockAnotherClientId", clientSecret: "mockClientSecret"});
+            await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
+              {
+                clientId: "mockAnotherClientId",
+                clientSecret: "mockClientSecret",
+              },
+            );
 
             // Expect SSM to have been called twice: once to populate, once to refresh after TTL
             expect(ssmMock.calls()).toHaveLength(2);
             jest.useRealTimers();
           });
-        })
-      })
+        });
+      });
     });
   });
 
