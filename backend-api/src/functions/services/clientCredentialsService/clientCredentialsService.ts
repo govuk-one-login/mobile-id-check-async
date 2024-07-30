@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import { Result, errorResult, successResult } from "../../utils/result";
 import {
+  ComplianceStringFilter,
   GetParameterCommand,
   GetParameterRequest,
   SSMClient,
@@ -11,8 +12,7 @@ let cache: CacheEntry | null = null;
 
 export class ClientCredentialsService
   implements
-    IGetClientCredentials,
-    IValidateAsyncTokenRequest,
+    IGetRegisteredIssueUsingClientSecrets,
     IValidateAsyncCredentialRequest,
     IGetClientCredentialsById
 {
@@ -23,14 +23,40 @@ export class ClientCredentialsService
     this.ssmClient = new SSMClient(ssmClient);
     this.cacheTTL = 3600 * 1000;
   }
+  getRegisteredIssuerUsingClientSecrets = async (credentials: {
+    clientId: string;
+    clientSecret: string;
+  }): Promise<Result<string>> => {
+    const clientRegistryResult = await this.getClientRegistery();
+    if (clientRegistryResult.isError)
+      return errorResult(clientRegistryResult.value);
+    const clientRegistery = clientRegistryResult.value;
 
-  getAllRegisteredClientCredentials = async (): Promise<
-    Result<IClientCredentials[]>
-  > => {
+    const registeredClientCredentials =
+      this.getRegisteredClientCredentialsByClientId(
+        clientRegistery,
+        credentials.clientId,
+      );
+    if (!registeredClientCredentials)
+      return errorResult("Client is not registered");
+
+    const isClientSecretsValid = this.validateClientSecrets(
+      {
+        hashedClientSecret: registeredClientCredentials.hashed_client_secret,
+        salt: registeredClientCredentials.salt,
+      },
+      credentials,
+    );
+    if (!isClientSecretsValid)
+      return errorResult("Client credentials are invalid");
+
+    return successResult(registeredClientCredentials.issuer);
+  };
+
+  private getClientRegistery = async (): Promise<Result<IClientCredentials[]>> => {
     if (cache && cache.expiry > Date.now()) {
       return successResult(cache.data);
     }
-
     const command: GetParameterRequest = {
       Name: "/dev/async-credential/CLIENT_CREDENTIALS",
       WithDecryption: true, // Parameter is encrypted at rest
@@ -40,64 +66,52 @@ export class ClientCredentialsService
     try {
       response = await this.ssmClient.send(new GetParameterCommand(command));
     } catch (e: unknown) {
-      return errorResult("Client Credentials not found");
+      return errorResult("Error retrieving client secrets");
     }
 
     const clientCredentialResponse = response.Parameter?.Value;
 
     if (!clientCredentialResponse) {
-      return errorResult("Client Credentials is null or undefined");
+      return errorResult("Client registry not found");
     }
 
-    let parsedCredentials;
-    try {
-      parsedCredentials = JSON.parse(clientCredentialResponse);
-    } catch (e: unknown) {
-      return errorResult("Client Credentials is not valid JSON");
-    }
+    if(!this.isClientRegistryValid(clientCredentialResponse)) return errorResult("Parsed Client Credentials array is malformed")
 
-    if (!this.isCredentialsArrayValid(parsedCredentials)) {
-      return errorResult("Parsed Client Credentials array is malformed");
-    }
-
-    cache = {
-      expiry: Date.now() + this.cacheTTL,
-      data: parsedCredentials,
-    };
-
-    return successResult(parsedCredentials);
+      cache = {
+        expiry: Date.now() + this.cacheTTL,
+        data: JSON.parse(clientCredentialResponse)
+      };
+    return successResult(JSON.parse(clientCredentialResponse));
   };
 
-  validateAsyncTokenRequest = (
-    registeredCredentials: IClientCredentials,
-    suppliedCredentials: IDecodedClientCredentials,
-  ): Result<null> => {
-    const { clientSecret: suppliedClientSecret } = suppliedCredentials;
-    const storedSalt = registeredCredentials.salt;
+  private getRegisteredClientCredentialsByClientId = (
+    clientRegistery: IClientCredentials[],
+    clientId: string,
+  ): IClientCredentials | undefined => {
+    const registeredClientCredentials = clientRegistery.find(
+      (registeredClientCredential) => {
+        return registeredClientCredential.client_id === clientId;
+      },
+    );
+
+    if (!registeredClientCredentials) return undefined;
+
+    return registeredClientCredentials;
+  };
+  private validateClientSecrets = (
+    registeredClientSecrets: { hashedClientSecret: string; salt: string },
+    incomingClientSecrets: { clientId: string; clientSecret: string },
+  ): boolean => {
+    const storedSalt = registeredClientSecrets.salt;
     const hashedSuppliedClientSecret = hashSecret(
-      suppliedClientSecret,
+      incomingClientSecrets.clientSecret,
       storedSalt,
     );
-    const hashedStoredClientSecret = registeredCredentials.hashed_client_secret;
-    const isValidClientSecret =
-      hashedStoredClientSecret === hashedSuppliedClientSecret;
+    const hashedStoredClientSecret = registeredClientSecrets.hashedClientSecret;
 
-    if (!isValidClientSecret) {
-      return errorResult("Client secret not valid for the supplied clientId");
-    }
-
-    const registeredRedirectUri = registeredCredentials.redirect_uri;
-    if (!registeredRedirectUri) {
-      return errorResult("Missing redirect_uri");
-    }
-
-    try {
-      new URL(registeredRedirectUri);
-    } catch (e) {
-      return errorResult("Invalid redirect_uri");
-    }
-
-    return successResult(null);
+    console.log("REGISTERED CLIENT SECRET", hashedStoredClientSecret)
+    console.log("SUPPLIED CLIENT SECRET", hashedSuppliedClientSecret)
+    return hashedStoredClientSecret === hashedSuppliedClientSecret;
   };
 
   validateAsyncCredentialRequest = (
@@ -140,18 +154,24 @@ export class ClientCredentialsService
     return successResult(storedCredentials);
   };
 
-  private isCredentialsArrayValid = (
-    credentials: IClientCredentials[] | undefined,
+  private isClientRegistryValid = (
+    rawClientRegistry: string,
   ): boolean => {
-    if (!Array.isArray(credentials)) {
+    let clientRegistry
+    try {
+      clientRegistry = JSON.parse(rawClientRegistry)
+    } catch (error) {
+      
+    }
+    if (!Array.isArray(clientRegistry)) {
       return false;
     }
 
-    if (credentials.length === 0) {
+    if (clientRegistry.length === 0) {
       return false;
     }
 
-    if (!this.isValidCredentialCredentialsStructure(credentials)) {
+    if (!this.isValidCredentialCredentialsStructure(clientRegistry)) {
       return false;
     }
 
@@ -182,17 +202,11 @@ const hashSecret = (secret: string, salt: string): string => {
     .digest("hex");
 };
 
-export interface IGetClientCredentials {
-  getAllRegisteredClientCredentials: () => Promise<
-    Result<IClientCredentials[]>
-  >;
-}
-
-export interface IValidateAsyncTokenRequest {
-  validateAsyncTokenRequest: (
-    storedCredentials: IClientCredentials,
-    suppliedCredentials: IDecodedClientCredentials,
-  ) => Result<null>;
+export interface IGetRegisteredIssueUsingClientSecrets {
+  getRegisteredIssuerUsingClientSecrets: (credentials: {
+    clientId: string;
+    clientSecret: string;
+  }) => Promise<Result<string>>;
 }
 
 export interface IGetClientCredentialsById {

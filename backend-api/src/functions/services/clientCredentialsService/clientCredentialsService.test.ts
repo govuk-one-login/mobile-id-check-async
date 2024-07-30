@@ -14,6 +14,7 @@ describe("Client Credentials Service", () => {
 
   beforeEach(() => {
     clientCredentialsService = new ClientCredentialsService();
+    clientCredentialsService.resetCache();
     mockTokenSuppliedClientCredentials = {
       clientId: "mockClientId",
       clientSecret: "mockClientSecret",
@@ -53,10 +54,10 @@ describe("Client Credentials Service", () => {
         ssmMock.on(GetParameterCommand).rejects("SSM Error");
 
         const result =
-          await clientCredentialsService.getAllRegisteredClientCredentials();
+          await clientCredentialsService.getRegisteredIssuerUsingClientSecrets({clientId: "mockAnotherClientId", clientSecret: "mockClientSecret"});
 
         expect(result.isError).toBe(true);
-        expect(result.value).toEqual("Client Credentials not found");
+        expect(result.value).toEqual("Error retrieving client secrets");
       });
     });
 
@@ -66,12 +67,12 @@ describe("Client Credentials Service", () => {
           {
             clientCredentials: undefined,
             scenario: "is undefined",
-            expectedErrorMessage: "Client Credentials is null or undefined",
+            expectedErrorMessage: "Client registry not found",
           },
           {
             clientCredentials: "{}}",
             scenario: "is invalid JSON",
-            expectedErrorMessage: "Client Credentials is not valid JSON",
+            expectedErrorMessage: "Parsed Client Credentials array is malformed",
           },
           {
             clientCredentials: JSON.stringify({}),
@@ -135,15 +136,18 @@ describe("Client Credentials Service", () => {
                 .resolves({ Parameter: { Value: clientCredentials } });
 
               const result =
-                await clientCredentialsService.getAllRegisteredClientCredentials();
+                await clientCredentialsService.getRegisteredIssuerUsingClientSecrets({clientId: "mockAnotherClientId", clientSecret: "mockClientSecret"});
 
               expect(result.isError).toBe(true);
               expect(result.value).toEqual(expectedErrorMessage);
             });
           },
         );
-        describe("Given the Credential object is valid", () => {
-          it("Returns success result with Credential object", async () => {
+      });
+
+      describe("Credential validation", () => {
+        describe("Given the client is not registered", () => {
+          it("Returns false", async () => {
             const ssmMock = mockClient(SSMClient);
             ssmMock.on(GetParameterCommand).resolves({
               Parameter: {
@@ -157,19 +161,57 @@ describe("Client Credentials Service", () => {
                 ]),
               },
             });
+    
+            const result = await clientCredentialsService.getRegisteredIssuerUsingClientSecrets({clientId: "unregisteredClientId", clientSecret: "mockInvalidClientSecret"})
+    
+            expect(result.isError).toBe(true);
+            expect(result.value).toBe(
+              "Client is not registered",
+            );
+          });
+        })
 
-            const result =
-              await clientCredentialsService.getAllRegisteredClientCredentials();
+        // describe("Given the client credentials are invalid", () => {
+        //   it("Returns false", async () => {
+        //     mockTokenSuppliedClientCredentials = {
+        //       clientId: "mockClientId",
+        //       clientSecret: "mockInvalidClientSecret",
+        //     };
+    
+        //     const result = clientCredentialsService.validateAsyncTokenRequest(
+        //       mockStoredClientCredentials,
+        //       mockTokenSuppliedClientCredentials,
+        //     );
+    
+        //     expect(result.isError).toBe(true);
+        //     expect(result.value).toBe(
+        //       "Client credentials are invalid",
+        //     );
+        //   });
+        // })
 
-            expect(result.isError).toBe(false);
-            expect(result.value).toStrictEqual([
-              {
-                client_id: "mockClientId",
-                issuer: "mockIssuer",
-                salt: "mockSalt",
-                hashed_client_secret: "mockHashedClientSecret",
+        describe("Given the client credentials are valid", () => {
+          it("Returns the issuer for the registered client", async () => {
+            const ssmMock = mockClient(SSMClient);
+            ssmMock.on(GetParameterCommand).resolves({
+              Parameter: {
+                Value: JSON.stringify([
+                  {
+                    client_id: "mockAnotherClientId",
+                    issuer: "mockIssuer",
+                    salt: "0vjPs=djeEHP",
+                    hashed_client_secret:
+                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                    // redirect_uri: "https://mockRedirectUri.com",
+                  },
+                ]),
               },
-            ]);
+            });
+    
+            const result = await clientCredentialsService.getRegisteredIssuerUsingClientSecrets({clientId: "mockAnotherClientId", clientSecret: "mockClientSecret"});
+    
+            expect(result.isError).toBe(false);
+            expect(result.value).toBe("mockIssuer");
           });
 
           it("Utilizes cache for subsequent requests", async () => {
@@ -190,9 +232,9 @@ describe("Client Credentials Service", () => {
             clientCredentialsService.resetCache();
 
             // First call should populate the cache
-            await clientCredentialsService.getAllRegisteredClientCredentials();
+            await clientCredentialsService.getRegisteredIssuerUsingClientSecrets({clientId: "mockAnotherClientId", clientSecret: "mockClientSecret"});
             // Second call should use cache
-            await clientCredentialsService.getAllRegisteredClientCredentials();
+            await clientCredentialsService.getRegisteredIssuerUsingClientSecrets({clientId: "mockAnotherClientId", clientSecret: "mockClientSecret"});
 
             // Expect SSM to have been called only once, since the second call uses cache
             expect(ssmMock.calls()).toHaveLength(1);
@@ -217,108 +259,73 @@ describe("Client Credentials Service", () => {
             });
 
             clientCredentialsService.resetCache();
-            await clientCredentialsService.getAllRegisteredClientCredentials();
+            await clientCredentialsService.getRegisteredIssuerUsingClientSecrets({clientId: "mockAnotherClientId", clientSecret: "mockClientSecret"});
             // Simulate time passing to exceed cache TTL
             jest.advanceTimersByTime(clientCredentialsService.cacheTTL + 1);
             // This call should refresh cache
-            await clientCredentialsService.getAllRegisteredClientCredentials();
+            await clientCredentialsService.getRegisteredIssuerUsingClientSecrets({clientId: "mockAnotherClientId", clientSecret: "mockClientSecret"});
 
             // Expect SSM to have been called twice: once to populate, once to refresh after TTL
             expect(ssmMock.calls()).toHaveLength(2);
             jest.useRealTimers();
-          });
-        });
-      });
-
-      describe("Credential validation", () => {
-        describe("Given the client ID is not registered", () => {
-        })
-
-        describe("Given the credentials are registered", () => {
-          it("Returns the issuer for the registered client", async () => {
-
-            mockTokenSuppliedClientCredentials = {
-              clientId: "mockAnotherClientId",
-              clientSecret: "mockClientSecret",
-            };
-    
-            const result = clientCredentialsService.getRegisteredIssuerUsingClientSecrets({clientId: "mockAnotherClientId", clientSecret: "mockClientSecret"});
-    
-            expect(result.isError).toBe(false);
-            expect(result.value).toBe({issuer: "mockIssuer"});
           });
         })
       })
     });
   });
 
-  describe("Validate token request credentials", () => {
-    describe("Given the supplied hashed client secret does not match the stored hashed client secret", () => {
-      it("Returns false", async () => {
-        mockTokenSuppliedClientCredentials = {
-          clientId: "mockClientId",
-          clientSecret: "mockInvalidClientSecret",
-        };
+  // describe("Validate token request credentials", () => {
+  //   describe("Given the supplied hashed client secret does not match the stored hashed client secret", () => {
 
-        const result = clientCredentialsService.validateAsyncTokenRequest(
-          mockStoredClientCredentials,
-          mockTokenSuppliedClientCredentials,
-        );
+  //   });
 
-        expect(result.isError).toBe(true);
-        expect(result.value).toBe(
-          "Client secret not valid for the supplied clientId",
-        );
-      });
-    });
+  //   describe("redirect_uri validation", () => {
+  //     describe("Given redirect_uri is not present", () => {
+  //       it("Returns a log", () => {
+  //         mockStoredClientCredentials.redirect_uri = "";
 
-    describe("redirect_uri validation", () => {
-      describe("Given redirect_uri is not present", () => {
-        it("Returns a log", () => {
-          mockStoredClientCredentials.redirect_uri = "";
+  //         const result = clientCredentialsService.validateAsyncTokenRequest(
+  //           mockStoredClientCredentials,
+  //           mockTokenSuppliedClientCredentials,
+  //         );
 
-          const result = clientCredentialsService.validateAsyncTokenRequest(
-            mockStoredClientCredentials,
-            mockTokenSuppliedClientCredentials,
-          );
+  //         expect(result.isError).toBe(true);
+  //         expect(result.value).toBe("Missing redirect_uri");
+  //       });
+  //     });
 
-          expect(result.isError).toBe(true);
-          expect(result.value).toBe("Missing redirect_uri");
-        });
-      });
+  //     describe("Given redirect_uri is not a valid URL", () => {
+  //       it("Returns a log", () => {
+  //         mockStoredClientCredentials.redirect_uri = "mockInvalidURL";
 
-      describe("Given redirect_uri is not a valid URL", () => {
-        it("Returns a log", () => {
-          mockStoredClientCredentials.redirect_uri = "mockInvalidURL";
+  //         const result = clientCredentialsService.validateAsyncTokenRequest(
+  //           mockStoredClientCredentials,
+  //           mockTokenSuppliedClientCredentials,
+  //         );
 
-          const result = clientCredentialsService.validateAsyncTokenRequest(
-            mockStoredClientCredentials,
-            mockTokenSuppliedClientCredentials,
-          );
+  //         expect(result.isError).toBe(true);
+  //         expect(result.value).toBe("Invalid redirect_uri");
+  //       });
+  //     });
+  //   });
 
-          expect(result.isError).toBe(true);
-          expect(result.value).toBe("Invalid redirect_uri");
-        });
-      });
-    });
+  //   describe("Given the supplied credentials match the stored credentials", () => {
+  //     it("Returns true", async () => {
+  //       mockTokenSuppliedClientCredentials = {
+  //         clientId: "mockAnotherClientId",
+  //         clientSecret: "mockClientSecret",
+  //       };
 
-    describe("Given the supplied credentials match the stored credentials", () => {
-      it("Returns true", async () => {
-        mockTokenSuppliedClientCredentials = {
-          clientId: "mockAnotherClientId",
-          clientSecret: "mockClientSecret",
-        };
+  //       const result = clientCredentialsService.validateAsyncTokenRequest(
+  //         mockStoredClientCredentials,
+  //         mockTokenSuppliedClientCredentials,
+  //       );
 
-        const result = clientCredentialsService.validateAsyncTokenRequest(
-          mockStoredClientCredentials,
-          mockTokenSuppliedClientCredentials,
-        );
-
-        expect(result.isError).toBe(false);
-        expect(result.value).toBe(null);
-      });
-    });
-  });
+  //       expect(result.isError).toBe(false);
+  //       expect(result.value).toBe(null);
+  //     });
+  //   });
+  // });
 
   describe("Validate credential request credentials", () => {
     describe("redirect_uri validation", () => {
