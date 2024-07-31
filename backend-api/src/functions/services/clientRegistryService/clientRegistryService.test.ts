@@ -11,7 +11,7 @@ describe("Client Credentials Service", () => {
   });
 
   describe("Get issuer from client secrets", () => {
-    describe("Given there is an error calling SSM", () => {
+    describe("Given there is an unexpected error retrieving the client registry", () => {
       it("Returns error result", async () => {
         const ssmMock = mockClient(SSMClient);
         ssmMock.on(GetParameterCommand).rejects("SSM Error");
@@ -27,7 +27,7 @@ describe("Client Credentials Service", () => {
       });
     });
 
-    describe("Given the request to SSM is successful", () => {
+    describe("Given the client registry is successfully retrieved", () => {
       describe("Schema validation", () => {
         describe("Given no client registry was found", () => {
           it("Returns error result", async () => {
@@ -681,7 +681,7 @@ describe("Client Credentials Service", () => {
   });
 
   describe("Get issuer and redirect_uri from client id", () => {
-    describe("Given there is an error calling SSM", () => {
+    describe("Given there is an unexpected error retrieving the client registry", () => {
       it("Returns error result", async () => {
         const ssmMock = mockClient(SSMClient);
         ssmMock.on(GetParameterCommand).rejects("SSM Error");
@@ -696,7 +696,7 @@ describe("Client Credentials Service", () => {
       });
     });
 
-    describe("Given the request to SSM is successful", () => {
+    describe("Given the client registry is successfully retrieved", () => {
       describe("Schema validation", () => {
         describe("Given no client registry was found", () => {
           it("Returns error result", async () => {
