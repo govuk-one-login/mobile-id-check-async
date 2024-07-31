@@ -37,8 +37,7 @@ describe("Async Token", () => {
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(mockLogger, registeredLogs),
       requestService: () => new MockRequestServiceSuccessResult(),
-      clientRegistryService: () =>
-        new MockClientRegistryServiceSuccessResult(),
+      clientRegistryService: () => new MockClientRegistryServiceSuccessResult(),
       tokenService: () => new MockTokenServiceSuccessResult(),
     };
   });

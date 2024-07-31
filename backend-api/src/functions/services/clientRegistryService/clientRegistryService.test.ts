@@ -1,7 +1,5 @@
 import { GetParameterCommand, SSMClient } from "@aws-sdk/client-ssm";
-import {
-  ClientRegistryService,
-} from "./clientRegistryService";
+import { ClientRegistryService } from "./clientRegistryService";
 import { mockClient } from "aws-sdk-client-mock";
 
 describe("Client Credentials Service", () => {

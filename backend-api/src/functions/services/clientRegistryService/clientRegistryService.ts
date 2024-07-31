@@ -30,13 +30,11 @@ export class ClientRegistryService
       return errorResult(clientRegistryResult.value);
     const clientRegistery = clientRegistryResult.value;
 
-    const registeredClient =
-      this.getRegisteredClientByClientId(
-        clientRegistery,
-        credentials.clientId,
-      );
-    if (!registeredClient)
-      return errorResult("Client is not registered");
+    const registeredClient = this.getRegisteredClientByClientId(
+      clientRegistery,
+      credentials.clientId,
+    );
+    if (!registeredClient) return errorResult("Client is not registered");
 
     const isClientSecretsValid = this.validateClientSecrets(
       {
@@ -59,10 +57,11 @@ export class ClientRegistryService
       return errorResult(clientRegistryResult.value);
     const clientRegistery = clientRegistryResult.value;
 
-    const registeredClient =
-      this.getRegisteredClientByClientId(clientRegistery, clientId);
-    if (!registeredClient)
-      return errorResult("Client is not registered");
+    const registeredClient = this.getRegisteredClientByClientId(
+      clientRegistery,
+      clientId,
+    );
+    if (!registeredClient) return errorResult("Client is not registered");
 
     return successResult({
       issuer: registeredClient.issuer,
@@ -70,9 +69,7 @@ export class ClientRegistryService
     });
   };
 
-  private getClientRegistery = async (): Promise<
-    Result<IRegisteredClient[]>
-  > => {
+  private getClientRegistery = async (): Promise<Result<IClientRegistry>> => {
     if (cache && cache.expiry > Date.now()) {
       return successResult(cache.data);
     }
@@ -134,14 +131,12 @@ export class ClientRegistryService
     return true;
   };
   private getRegisteredClientByClientId = (
-    clientRegistery: IRegisteredClient[],
+    clientRegistery: IClientRegistry,
     clientId: string,
   ): IRegisteredClient | undefined => {
-    const registeredClient = clientRegistery.find(
-      (client) => {
-        return client.client_id === clientId;
-      },
-    );
+    const registeredClient = clientRegistery.find((client) => {
+      return client.client_id === clientId;
+    });
 
     if (!registeredClient) return undefined;
 
@@ -202,7 +197,7 @@ export interface IDecodedClientSecrets {
 
 interface CacheEntry {
   expiry: number;
-  data: IRegisteredClient[];
+  data: IClientRegistry;
 }
 
-type ClientRegistry = IRegisteredClient[]
+type IClientRegistry = IRegisteredClient[];

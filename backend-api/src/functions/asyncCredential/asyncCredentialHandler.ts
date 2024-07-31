@@ -115,7 +115,8 @@ export async function lambdaHandler(
 
   // Validate issuer and redirect_uri against client registry
   const registeredIssuer = getPartialRegisteredClientResponse.value.issuer;
-  const registeredRedirectUri = getPartialRegisteredClientResponse.value.redirectUri;
+  const registeredRedirectUri =
+    getPartialRegisteredClientResponse.value.redirectUri;
 
   if (jwtPayload.iss !== registeredIssuer) {
     logger.log("REQUEST_BODY_INVALID", {

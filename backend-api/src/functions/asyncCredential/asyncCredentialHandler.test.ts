@@ -6,9 +6,7 @@ import {
   IVerifyTokenSignature,
 } from "./tokenService/tokenService";
 import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
-import {
-  IGetPartialRegisteredClientByClientId,
-} from "../services/clientRegistryService/clientRegistryService";
+import { IGetPartialRegisteredClientByClientId } from "../services/clientRegistryService/clientRegistryService";
 import { Result, errorResult, successResult } from "../utils/result";
 import { MockJWTBuilder } from "../testUtils/mockJwt";
 import { Logger } from "../services/logging/logger";
