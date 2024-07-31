@@ -1,10 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import {
-  IGetClientCredentials,
-  IGetClientCredentialsById,
-  IValidateAsyncCredentialRequest,
-  IValidateAsyncTokenRequest,
-} from "../services/clientCredentialsService/clientCredentialsService";
+import { IGetPartialRegisteredClientByClientId } from "../services/clientRegistryService/clientRegistryService";
 import {
   IDecodedToken,
   IDecodeToken,
@@ -26,6 +21,7 @@ export async function lambdaHandler(
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
 
+  // Get environment variables
   const configResult = new ConfigService().getConfig(dependencies.env);
   if (configResult.isError) {
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
@@ -64,6 +60,7 @@ export async function lambdaHandler(
   const { encodedJwt, jwtPayload } =
     validTokenClaimsResult.value as IDecodedToken;
 
+  // Validate request body
   const requestBodyResult = getRequestBody(event.body, jwtPayload.client_id);
   if (requestBodyResult.isError) {
     logger.log("REQUEST_BODY_INVALID", {
@@ -77,6 +74,7 @@ export async function lambdaHandler(
   }
   const requestBody = requestBodyResult.value;
 
+  // Check token signature
   const verifyTokenSignatureResult = await tokenService.verifyTokenSignature(
     config.SIGNING_KEY_ID,
     encodedJwt,
@@ -88,56 +86,63 @@ export async function lambdaHandler(
     return unauthorizedResponseInvalidSignature;
   }
 
-  // Fetching stored client credentials
-  const clientCredentialsService = dependencies.clientCredentialsService();
-  const allRegisteredClientCredentialsResult =
-    await clientCredentialsService.getAllRegisteredClientCredentials();
-  if (allRegisteredClientCredentialsResult.isError) {
-    logger.log("ERROR_RETRIEVING_CLIENT_CREDENTIALS", {
-      errorMessage: allRegisteredClientCredentialsResult.value,
-    });
-    return serverError500Response;
-  }
-  const allRegisteredClientCredentials =
-    allRegisteredClientCredentialsResult.value;
-
-  // Retrieving credentials from client credential array
-  const registeredClientCredentialsByIdResult =
-    clientCredentialsService.getRegisteredClientCredentialsById(
-      allRegisteredClientCredentials,
+  // Fetching issuer and redirect_uri from client registry using the client_id from the incoming jwt
+  const clientRegistryService = dependencies.clientRegistryService(
+    config.CLIENT_REGISTRY_PARAMETER_NAME,
+  );
+  const getPartialRegisteredClientResponse =
+    await clientRegistryService.getPartialRegisteredClientByClientId(
       jwtPayload.client_id,
     );
-  if (registeredClientCredentialsByIdResult.isError) {
-    logger.log("CLIENT_CREDENTIALS_INVALID", {
-      errorMessage: registeredClientCredentialsByIdResult.value,
-    });
+  if (getPartialRegisteredClientResponse.isError) {
+    // TODO: Temporary logic until the Result pattern has been refactored. This is coming on the next PR.
+    if (
+      getPartialRegisteredClientResponse.value ===
+      "Unexpected error retrieving registered client"
+    ) {
+      logger.log("ERROR_RETRIEVING_REGISTERED_CLIENT", {
+        errorMessage: getPartialRegisteredClientResponse.value,
+      });
+      return serverError500Response;
+    }
 
+    logger.log("CLIENT_CREDENTIALS_INVALID", {
+      errorMessage: getPartialRegisteredClientResponse.value,
+    });
     return badRequestResponse({
-      error: "invalid_client",
       errorDescription: "Supplied client not recognised",
+      error: "invalid_client",
     });
   }
-  const registeredClientCredentials =
-    registeredClientCredentialsByIdResult.value;
 
-  const validateClientCredentialsResult =
-    clientCredentialsService.validateAsyncCredentialRequest({
-      aud: jwtPayload.aud,
-      issuer: registeredClientCredentials.issuer,
-      registeredClientCredentials,
-      redirectUri: requestBody.redirect_uri,
-    });
-  if (validateClientCredentialsResult.isError) {
+  // Validate issuer and redirect_uri against client registry
+  const registeredIssuer = getPartialRegisteredClientResponse.value.issuer;
+  const registeredRedirectUri =
+    getPartialRegisteredClientResponse.value.redirectUri;
+
+  if (jwtPayload.iss !== registeredIssuer) {
     logger.log("REQUEST_BODY_INVALID", {
-      errorMessage: validateClientCredentialsResult.value,
+      errorMessage: "issuer does not match value from client registry",
     });
-
     return badRequestResponse({
       error: "invalid_request",
-      errorDescription: validateClientCredentialsResult.value,
+      errorDescription: "Request body validation failed",
     });
   }
 
+  if (requestBody.redirect_uri) {
+    if (requestBody.redirect_uri !== registeredRedirectUri) {
+      logger.log("REQUEST_BODY_INVALID", {
+        errorMessage: "redirect_uri does not match value from client registry",
+      });
+      return badRequestResponse({
+        error: "invalid_request",
+        errorDescription: "Request body validation failed",
+      });
+    }
+  }
+
+  // Create a session
   const sessionService = dependencies.sessionService(
     config.SESSION_TABLE_NAME,
     config.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
@@ -164,6 +169,8 @@ export async function lambdaHandler(
     issuer: jwtPayload.iss,
   });
   const sessionId = createSessionResult.value;
+
+  // Write audit event
   const eventService = dependencies.eventService(config.SQS_QUEUE);
   if (createSessionResult.isError) {
     logger.log("ERROR_CREATING_SESSION");
@@ -338,10 +345,9 @@ export interface Dependencies {
   logger: () => Logger<MessageName>;
   eventService: (sqsQueue: string) => IEventService;
   tokenService: () => IDecodeToken & IVerifyTokenSignature;
-  clientCredentialsService: () => IGetClientCredentials &
-    IValidateAsyncTokenRequest &
-    IValidateAsyncCredentialRequest &
-    IGetClientCredentialsById;
+  clientRegistryService: (
+    clientRegistryParameterName: string,
+  ) => IGetPartialRegisteredClientByClientId;
   sessionService: (
     tableName: string,
     indexName: string,
