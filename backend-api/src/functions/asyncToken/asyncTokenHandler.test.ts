@@ -2,10 +2,12 @@ import {
   IAsyncTokenRequestDependencies,
   lambdaHandlerConstructor,
 } from "./asyncTokenHandler";
-import { IGetRegisteredIssuerUsingClientSecrets } from "../services/clientRegistryService/clientRegistryService";
+import {
+  IDecodedClientSecrets,
+  IGetRegisteredIssuerUsingClientSecrets,
+} from "../services/clientRegistryService/clientRegistryService";
 import { IProcessRequest } from "./requestService/requestService";
 import { buildRequest } from "../testUtils/mockRequest";
-import { IDecodedClientCredentials } from "../types/clientCredentials";
 import { IMintToken } from "./tokenService/tokenService";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
@@ -290,7 +292,7 @@ describe("Async Token", () => {
 });
 
 class MockRequestServiceSuccessResult implements IProcessRequest {
-  processRequest = (): Result<IDecodedClientCredentials> => {
+  processRequest = (): Result<IDecodedClientSecrets> => {
     return successResult({
       clientId: "mockClientId",
       clientSecret: "mockClientSecret",
@@ -299,7 +301,7 @@ class MockRequestServiceSuccessResult implements IProcessRequest {
 }
 
 class MockRequestServiceInvalidGrantTypeErrorResult implements IProcessRequest {
-  processRequest = (): Result<IDecodedClientCredentials> => {
+  processRequest = (): Result<IDecodedClientSecrets> => {
     return errorResult("Invalid grant_type");
   };
 }
@@ -307,7 +309,7 @@ class MockRequestServiceInvalidGrantTypeErrorResult implements IProcessRequest {
 class MockRequestServiceInvalidAuthorizationHeaderErrorResult
   implements IProcessRequest
 {
-  processRequest = (): Result<IDecodedClientCredentials> => {
+  processRequest = (): Result<IDecodedClientSecrets> => {
     return errorResult("Invalid authorization header");
   };
 }

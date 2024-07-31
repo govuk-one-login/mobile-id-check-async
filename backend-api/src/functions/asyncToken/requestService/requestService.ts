@@ -1,11 +1,11 @@
-import { IDecodedClientCredentials } from "../../types/clientCredentials";
+import { IDecodedClientSecrets } from "../../services/clientRegistryService/clientRegistryService";
 import { errorResult, Result, successResult } from "../../utils/result";
 import { APIGatewayProxyEvent } from "aws-lambda";
 
 export class RequestService implements IProcessRequest {
   processRequest = (
     request: APIGatewayProxyEvent,
-  ): Result<IDecodedClientCredentials> => {
+  ): Result<IDecodedClientSecrets> => {
     const requestBody = request.body;
     const authorizationHeader = request.headers["Authorization"];
 
@@ -52,7 +52,7 @@ export class RequestService implements IProcessRequest {
 export interface IProcessRequest {
   processRequest: (
     request: APIGatewayProxyEvent,
-  ) => Result<IDecodedClientCredentials>;
+  ) => Result<IDecodedClientSecrets>;
 }
 
 export interface IDecodedAuthorizationHeader {
