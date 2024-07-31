@@ -5,7 +5,7 @@ export interface Config {
   SIGNING_KEY_ID: string;
   SQS_QUEUE: string;
   ISSUER: string;
-  CLIENT_REGISTRY_PARAMETER_NAME: string
+  CLIENT_REGISTRY_PARAMETER_NAME: string;
 }
 
 export class ConfigService implements IGetConfig<Config> {

@@ -16,12 +16,12 @@ export class ClientRegistryService
 {
   ssmClient: SSMClient;
   cacheTTL: number;
-  clientRegistryParamterName: string
+  clientRegistryParamterName: string;
 
   constructor(clientRegistryParamterName: string) {
     this.ssmClient = ssmClient;
     this.cacheTTL = 3600 * 1000;
-    this.clientRegistryParamterName = clientRegistryParamterName
+    this.clientRegistryParamterName = clientRegistryParamterName;
   }
 
   getRegisteredIssuerUsingClientSecrets = async (

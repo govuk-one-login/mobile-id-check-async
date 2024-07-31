@@ -87,7 +87,9 @@ export async function lambdaHandler(
   }
 
   // Fetching issuer and redirect_uri from client registry using the client_id from the incoming jwt
-  const clientRegistryService = dependencies.clientRegistryService();
+  const clientRegistryService = dependencies.clientRegistryService(
+    config.CLIENT_REGISTRY_PARAMETER_NAME,
+  );
   const getPartialRegisteredClientResponse =
     await clientRegistryService.getPartialRegisteredClientByClientId(
       jwtPayload.client_id,
@@ -343,7 +345,9 @@ export interface Dependencies {
   logger: () => Logger<MessageName>;
   eventService: (sqsQueue: string) => IEventService;
   tokenService: () => IDecodeToken & IVerifyTokenSignature;
-  clientRegistryService: () => IGetPartialRegisteredClientByClientId;
+  clientRegistryService: (
+    clientRegistryParameterName: string,
+  ) => IGetPartialRegisteredClientByClientId;
   sessionService: (
     tableName: string,
     indexName: string,

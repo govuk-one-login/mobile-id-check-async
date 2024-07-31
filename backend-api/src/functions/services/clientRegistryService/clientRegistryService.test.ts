@@ -6,7 +6,7 @@ describe("Client Credentials Service", () => {
   let clientCredentialsService: ClientRegistryService;
 
   beforeEach(() => {
-    clientCredentialsService = new ClientRegistryService();
+    clientCredentialsService = new ClientRegistryService("mockParameterName");
     clientCredentialsService.resetCache();
   });
 

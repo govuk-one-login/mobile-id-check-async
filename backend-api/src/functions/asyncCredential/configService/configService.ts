@@ -8,6 +8,7 @@ export interface Config {
   SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: string;
   SESSION_TTL_IN_MILLISECONDS: number;
   SQS_QUEUE: string;
+  CLIENT_REGISTRY_PARAMETER_NAME: string;
 }
 
 export class ConfigService implements IGetConfig<Config> {

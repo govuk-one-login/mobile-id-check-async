@@ -60,7 +60,9 @@ export async function lambdaHandlerConstructor(
   const suppliedClientCredentials = processRequestResult.value;
 
   // Retrieving issuer and validating client secrets
-  const clientRegistryService = dependencies.clientRegistryService(config.);
+  const clientRegistryService = dependencies.clientRegistryService(
+    config.CLIENT_REGISTRY_PARAMETER_NAME,
+  );
   const getRegisteredIssuerByClientSecretsResult =
     await clientRegistryService.getRegisteredIssuerUsingClientSecrets(
       suppliedClientCredentials,
@@ -174,7 +176,9 @@ export interface IAsyncTokenRequestDependencies {
   eventService: (sqsQueue: string) => IEventService;
   logger: () => Logger<MessageName>;
   requestService: () => IProcessRequest;
-  clientRegistryService: (clientRegistryParameterName: string) => IGetRegisteredIssuerUsingClientSecrets;
+  clientRegistryService: (
+    clientRegistryParameterName: string,
+  ) => IGetRegisteredIssuerUsingClientSecrets;
   tokenService: (signingKey: string) => IMintToken;
 }
 
@@ -183,7 +187,8 @@ const dependencies: IAsyncTokenRequestDependencies = {
   eventService: (sqsQueue: string) => new EventService(sqsQueue),
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
   requestService: () => new RequestService(),
-  clientRegistryService: (clientRegistryParameterName: string) => new ClientRegistryService(clientRegistryParameterName),
+  clientRegistryService: (clientRegistryParameterName: string) =>
+    new ClientRegistryService(clientRegistryParameterName),
   tokenService: (signingKey: string) => new TokenService(signingKey),
 };
 
