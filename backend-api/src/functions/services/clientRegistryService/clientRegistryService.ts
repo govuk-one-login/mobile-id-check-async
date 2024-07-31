@@ -16,12 +16,17 @@ export class ClientRegistryService
 {
   ssmClient: SSMClient;
   cacheTTL: number;
+  clientRegistryParamterName: string
 
-  constructor() {
+  constructor(clientRegistryParamterName: string) {
     this.ssmClient = ssmClient;
     this.cacheTTL = 3600 * 1000;
+    this.clientRegistryParamterName = clientRegistryParamterName
   }
-  getRegisteredIssuerUsingClientSecrets = async (secrets: IDecodedClientSecrets): Promise<Result<string>> => {
+
+  getRegisteredIssuerUsingClientSecrets = async (
+    secrets: IDecodedClientSecrets,
+  ): Promise<Result<string>> => {
     const clientRegistryResult = await this.getClientRegistry();
     if (clientRegistryResult.isError)
       return errorResult(clientRegistryResult.value);
@@ -71,7 +76,7 @@ export class ClientRegistryService
       return successResult(cache.data);
     }
     const command: GetParameterRequest = {
-      Name: "/dev/async-credential/CLIENT_CREDENTIALS",
+      Name: this.clientRegistryParamterName,
       WithDecryption: true, // Parameter is encrypted at rest
     };
 
@@ -164,7 +169,8 @@ const hashSecret = (secret: string, salt: string): string => {
 };
 
 export interface IGetRegisteredIssuerUsingClientSecrets {
-  getRegisteredIssuerUsingClientSecrets: (credentials: IDecodedClientSecrets
+  getRegisteredIssuerUsingClientSecrets: (
+    credentials: IDecodedClientSecrets,
   ) => Promise<Result<string>>;
 }
 

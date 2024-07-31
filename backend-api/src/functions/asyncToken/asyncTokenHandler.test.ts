@@ -29,6 +29,7 @@ describe("Async Token", () => {
     SIGNING_KEY_ID: "mockSigningKeyId",
     ISSUER: "mockIssuer",
     SQS_QUEUE: "mockSQSQueue",
+    CLIENT_REGISTRY_PARAMETER_NAME: "mockParmaterName",
   };
 
   beforeEach(() => {
@@ -45,36 +46,33 @@ describe("Async Token", () => {
   });
 
   describe("Environment variable validation", () => {
-    describe.each([Object.keys(env)])(
-      "Given %s is missing",
-      (envVar: string) => {
-        it("Returns a 500 Server Error response", async () => {
-          dependencies.env = JSON.parse(JSON.stringify(env));
-          delete dependencies.env[envVar];
-          const result = await lambdaHandlerConstructor(
-            dependencies,
-            buildLambdaContext(),
-            request,
-          );
+    describe.each(Object.keys(env))("Given %s is missing", (envVar: string) => {
+      it("Returns a 500 Server Error response", async () => {
+        dependencies.env = JSON.parse(JSON.stringify(env));
+        delete dependencies.env[envVar];
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          buildLambdaContext(),
+          request,
+        );
 
-          expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
-            "ENVIRONMENT_VARIABLE_MISSING",
-          );
-          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
-            errorMessage: `No ${envVar}`,
-          });
-
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 500,
-            body: JSON.stringify({
-              error: "server_error",
-              error_description: "Server Error",
-            }),
-          });
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
+          "ENVIRONMENT_VARIABLE_MISSING",
+        );
+        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: `No ${envVar}`,
         });
-      },
-    );
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
+        });
+      });
+    });
   });
 
   describe("Request Service", () => {

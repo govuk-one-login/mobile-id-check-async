@@ -28,6 +28,7 @@ const env = {
   SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: "mockIndexName",
   SESSION_TTL_IN_MILLISECONDS: "12345",
   SQS_QUEUE: "mockSqsQueue",
+  CLIENT_REGISTRY_PARAMETER_NAME: "mockParmaterName",
 };
 
 describe("Async Credential", () => {

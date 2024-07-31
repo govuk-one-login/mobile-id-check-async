@@ -22,6 +22,9 @@ export class ConfigService implements IGetConfig<Config> {
     if (isNaN(Number(env.SESSION_TTL_IN_MILLISECONDS)))
       return errorResult("SESSION_TTL_IN_MILLISECONDS is not a valid number");
     if (!env.SQS_QUEUE) return errorResult("No SQS_QUEUE");
+    if (!env.CLIENT_REGISTRY_PARAMETER_NAME)
+      return errorResult("No CLIENT_REGISTRY_PARAMETER_NAME");
+
     return successResult({
       SIGNING_KEY_ID: env.SIGNING_KEY_ID,
       ISSUER: env.ISSUER,
@@ -30,6 +33,7 @@ export class ConfigService implements IGetConfig<Config> {
         env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
       SESSION_TTL_IN_MILLISECONDS: parseInt(env.SESSION_TTL_IN_MILLISECONDS),
       SQS_QUEUE: env.SQS_QUEUE,
+      CLIENT_REGISTRY_PARAMETER_NAME: env.CLIENT_REGISTRY_PARAMETER_NAME,
     });
   };
 }
