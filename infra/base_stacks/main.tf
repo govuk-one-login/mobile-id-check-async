@@ -1,5 +1,3 @@
-
-
 locals {
   template_bucket        = data.aws_ssm_parameter.template_storage_bucket.insecure_value
   preformat_template_url = "https://${data.aws_ssm_parameter.template_storage_bucket.insecure_value}.s3.amazonaws.com/%s/template.yaml?versionId=%s"
@@ -20,5 +18,8 @@ provider "aws" {
 }
 
 terraform {
-  backend "local" {} // set by config/${ENV}.local.tfbackend
+  backend "s3" {
+    # bucket = "dmica-${local.environment}-tfs" # set by ../_backend/${local.environment}.s3.tfbackend as variables are unable to be used here
+    key = "tf/base-stacks.tfstate"
+  }
 }

@@ -6,6 +6,8 @@
 # USAGE: sh get-latest-versions.sh "${TEMPLATE_NAME}"
 # EXAMPLE: sh get-latest-versions.sh "vpc"
 
+set -e
+
 TEMPLATE_STORAGE_BUCKET=${TEMPLATE_STORAGE_BUCKET:-}
 
 if [ -z "$TEMPLATE_STORAGE_BUCKET" ]; then

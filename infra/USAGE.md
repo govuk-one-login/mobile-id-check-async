@@ -13,6 +13,8 @@ brew install hashicorp/tap/terraform
 
 ## Applying changes
 
+All commands done from within the terraform folder.
+
 For `${environment}` as one of: [ `dev`, `build`, `integration`, `staging`, `prod` ]
 
 Export AWS Credentials configured for the appropriate account.
@@ -24,13 +26,13 @@ environment=dev
 
 terraform init \
   -reconfigure \
-  -backend-config="config/${environment}.local.tfbackend"
+  -backend-config="../_backend/${environment}.s3.tfbackend"
 
 terraform plan \
-  -var-file="config/${environment}.tfvars"
+  -var "environment=${environment}"
 
 terraform apply \
-  -var-file="config/${environment}.tfvars"
+  -var "environment=${environment}"
 ```
 
 Ensure to review the plan before completing the apply.
@@ -39,10 +41,6 @@ Ensure to review the plan before completing the apply.
 
 1. Retrieve latest version id using `../scripts/get-latest-version.sh`. I.e. `sh ../scripts/get-latest-version.sh template-name`
 2. Create a new `aws_cloudformation_stack` resource, setting the template_url, parameters and capabilities as required
-3. Add the stack to the `stack_to_import` variable.
-4. Create an `import` block for the `aws_cloudformation_stack` resource using that variable.
-5. With the `stack_to_import['${stack_name}']` variable set to false run terraform to create the stack.
-6. Set the variable to true in the `config/${env}.tfvars` file
 
 ## Destroying a stack
 
@@ -53,10 +51,10 @@ environment=dev
 
 terraform init \
   -reconfigure \
-  -backend-config="config/${environment}.local.tfbackend"
+  -backend-config="../_backend/${environment}.s3.tfbackend"
 
 terraform apply \
-  -var-file="config/${environment}.tfvars"
+  -var "environment=${environment}"
 ```
 
 2. Remove the `aws_cloudformation_stack` resource from the configuration and its associated import block.
