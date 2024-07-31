@@ -152,9 +152,6 @@ export class ClientRegistryService
       storedSalt,
     );
     const hashedStoredClientSecret = registeredClientSecrets.hashedClientSecret;
-
-    console.log("REGISTERED CLIENT SECRET", hashedStoredClientSecret);
-    console.log("SUPPLIED CLIENT SECRET", hashedSuppliedClientSecret);
     return hashedStoredClientSecret === hashedSuppliedClientSecret;
   };
 
