@@ -5,9 +5,9 @@ import {
 } from "aws-lambda";
 import "dotenv/config";
 import {
-  ClientCredentialsService,
+  ClientRegistryService,
   IGetRegisteredIssuerUsingClientSecrets,
-} from "../services/clientCredentialsService/clientCredentialsService";
+} from "../services/clientRegistryService/clientRegistryService";
 import {
   IProcessRequest,
   RequestService,
@@ -60,23 +60,29 @@ export async function lambdaHandlerConstructor(
   const suppliedClientCredentials = processRequestResult.value;
 
   // Retrieving issuer and validating client secrets
-  const clientCredentialsService = dependencies.clientCredentialsService();
+  const clientRegistryService = dependencies.clientRegistryService();
   const getRegisteredIssuerByClientSecretsResult =
-    await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(suppliedClientCredentials);
+    await clientRegistryService.getRegisteredIssuerUsingClientSecrets(
+      suppliedClientCredentials,
+    );
   if (getRegisteredIssuerByClientSecretsResult.isError) {
-
     // TODO: This is intentionally hardcoded on a string. This requires a wider refactor that is in progress and part of the next PR.
-    if(getRegisteredIssuerByClientSecretsResult.value === "Unexpected error retrieving issuer") {
+    if (
+      getRegisteredIssuerByClientSecretsResult.value ===
+      "Unexpected error retrieving issuer"
+    ) {
       logger.log("INTERNAL_SERVER_ERROR", {
         errorMessage: getRegisteredIssuerByClientSecretsResult.value,
       });
       return serverErrorResponse;
     }
-    logger.log("INVALID_REQUEST", {errorMessage:getRegisteredIssuerByClientSecretsResult.value })
-    return badRequestResponseInvalidCredentials
+    logger.log("INVALID_REQUEST", {
+      errorMessage: getRegisteredIssuerByClientSecretsResult.value,
+    });
+    return badRequestResponseInvalidCredentials;
   }
 
-  const registeredIssuer = getRegisteredIssuerByClientSecretsResult.value
+  const registeredIssuer = getRegisteredIssuerByClientSecretsResult.value;
 
   const jwtPayload = {
     aud: registeredIssuer,
@@ -84,7 +90,7 @@ export async function lambdaHandlerConstructor(
     exp: Math.floor(Date.now() / 1000) + 3600,
     scope: "dcmaw.session.async_create",
     // The clientId can be trusted as the credential service validates the incoming clientId against the client registry
-    client_id: suppliedClientCredentials.clientId, 
+    client_id: suppliedClientCredentials.clientId,
   };
 
   const tokenService = dependencies.tokenService(config.SIGNING_KEY_ID);
@@ -168,7 +174,7 @@ export interface IAsyncTokenRequestDependencies {
   eventService: (sqsQueue: string) => IEventService;
   logger: () => Logger<MessageName>;
   requestService: () => IProcessRequest;
-  clientCredentialsService: () => IGetRegisteredIssuerUsingClientSecrets
+  clientRegistryService: () => IGetRegisteredIssuerUsingClientSecrets;
   tokenService: (signingKey: string) => IMintToken;
 }
 
@@ -177,7 +183,7 @@ const dependencies: IAsyncTokenRequestDependencies = {
   eventService: (sqsQueue: string) => new EventService(sqsQueue),
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
   requestService: () => new RequestService(),
-  clientCredentialsService: () => new ClientCredentialsService(),
+  clientRegistryService: () => new ClientRegistryService(),
   tokenService: (signingKey: string) => new TokenService(signingKey),
 };
 

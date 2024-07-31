@@ -2,7 +2,7 @@ import {
   IAsyncTokenRequestDependencies,
   lambdaHandlerConstructor,
 } from "./asyncTokenHandler";
-import { IGetRegisteredIssuerUsingClientSecrets } from "../services/clientCredentialsService/clientCredentialsService";
+import { IGetRegisteredIssuerUsingClientSecrets } from "../services/clientRegistryService/clientRegistryService";
 import { IProcessRequest } from "./requestService/requestService";
 import { buildRequest } from "../testUtils/mockRequest";
 import { IDecodedClientCredentials } from "../types/clientCredentials";
@@ -37,8 +37,8 @@ describe("Async Token", () => {
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(mockLogger, registeredLogs),
       requestService: () => new MockRequestServiceSuccessResult(),
-      clientCredentialsService: () =>
-        new MockClientCredentialsServiceSuccessResult(),
+      clientRegistryService: () =>
+        new MockClientRegistryServiceSuccessResult(),
       tokenService: () => new MockTokenServiceSuccessResult(),
     };
   });
@@ -137,8 +137,8 @@ describe("Async Token", () => {
     describe("Get issuer from client registry", () => {
       describe("Given there is an unexpected error retrieving the client credentials", () => {
         it("Returns a 500 Server Error response", async () => {
-          dependencies.clientCredentialsService = () =>
-            new MockClientCredentialsServiceInternalServerErrorResult();
+          dependencies.clientRegistryService = () =>
+            new MockClientRegistryServiceInternalServerErrorResult();
 
           const result = await lambdaHandlerConstructor(
             dependencies,
@@ -163,8 +163,8 @@ describe("Async Token", () => {
 
       describe("Given the credentials are not valid", () => {
         it("Returns 400 Bad Request response", async () => {
-          dependencies.clientCredentialsService = () =>
-            new MockClientCredentialsServiceBadRequestResult();
+          dependencies.clientRegistryService = () =>
+            new MockClientRegistryServiceBadRequestResult();
 
           const result = await lambdaHandlerConstructor(
             dependencies,
@@ -313,7 +313,7 @@ class MockRequestServiceInvalidAuthorizationHeaderErrorResult
   };
 }
 
-class MockClientCredentialsServiceSuccessResult
+class MockClientRegistryServiceSuccessResult
   implements IGetRegisteredIssuerUsingClientSecrets
 {
   getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
@@ -321,23 +321,19 @@ class MockClientCredentialsServiceSuccessResult
   };
 }
 
-class MockClientCredentialsServiceInternalServerErrorResult
+class MockClientRegistryServiceInternalServerErrorResult
   implements IGetRegisteredIssuerUsingClientSecrets
 {
   getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
-    return Promise.resolve(
-      errorResult("Unexpected error retrieving issuer"),
-    );
+    return Promise.resolve(errorResult("Unexpected error retrieving issuer"));
   };
 }
 
-class MockClientCredentialsServiceBadRequestResult
+class MockClientRegistryServiceBadRequestResult
   implements IGetRegisteredIssuerUsingClientSecrets
 {
   getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
-    return Promise.resolve(
-      errorResult("Client secrets invalid"),
-    );
+    return Promise.resolve(errorResult("Client secrets invalid"));
   };
 }
 

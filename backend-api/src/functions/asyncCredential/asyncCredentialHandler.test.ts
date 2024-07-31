@@ -7,12 +7,8 @@ import {
 } from "./tokenService/tokenService";
 import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
 import {
-  IClientCredentials,
-  IGetClientCredentials,
-  IGetClientCredentialsById,
-  IValidateAsyncCredentialRequest,
-  IValidateAsyncTokenRequest,
-} from "../services/clientCredentialsService/clientCredentialsService";
+  IGetPartialRegisteredClientByClientId,
+} from "../services/clientRegistryService/clientRegistryService";
 import { Result, errorResult, successResult } from "../utils/result";
 import { MockJWTBuilder } from "../testUtils/mockJwt";
 import { Logger } from "../services/logging/logger";
@@ -46,8 +42,8 @@ describe("Async Credential", () => {
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(mockLogger, registeredLogs),
       tokenService: () => new MockTokenServiceSuccess(),
-      clientCredentialsService: () =>
-        new MockClientCredentialsServiceSuccessResult(),
+      clientRegistryService: () =>
+        new MockClientRegistryServiceGetPartialClientSuccessResult(),
       sessionService: () =>
         new MockSessionServiceNoActiveSession(
           env.SESSION_TABLE_NAME,
@@ -599,11 +595,11 @@ describe("Async Credential", () => {
   });
 
   describe("Client Credentials Service", () => {
-    describe("Get client credentials", () => {
+    describe("Get partial client credentials by client id", () => {
       describe("Given an error result is returned", () => {
         it("Returns a 500 Server Error response", async () => {
-          dependencies.clientCredentialsService = () =>
-            new MockClientCredentialServiceGetClientCredentialsErrorResult();
+          dependencies.clientRegistryService = () =>
+            new MockClientRegistryServiceeGetPartialClientInternalServerResult();
           const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
             headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
@@ -618,10 +614,10 @@ describe("Async Credential", () => {
           const result = await lambdaHandler(event, dependencies);
 
           expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "ERROR_RETRIEVING_CLIENT_CREDENTIALS",
+            "ERROR_RETRIEVING_REGISTERED_CLIENT",
           );
           expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
-            "Mock failure retrieving client credentials",
+            "Unexpected error retrieving registered client",
           );
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
@@ -635,44 +631,8 @@ describe("Async Credential", () => {
       });
     });
 
-    describe("Get client credentials by id", () => {
-      describe("Given credentials are not found", () => {
-        it("Returns 400 Bad Request response", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-            body: JSON.stringify({
-              state: "mockState",
-              sub: "mockSub",
-              client_id: "mockClientId",
-              govuk_signin_journey_id: "mockGovukSigninJourneyId",
-            }),
-          });
-          dependencies.clientCredentialsService = () =>
-            new MockClientCredentialsServiceGetClientCredentialsByIdErrorResult();
-
-          const result = await lambdaHandler(event, dependencies);
-
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "CLIENT_CREDENTIALS_INVALID",
-          );
-          expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
-            "No credentials found",
-          );
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 400,
-            body: JSON.stringify({
-              error: "invalid_client",
-              error_description: "Supplied client not recognised",
-            }),
-          });
-        });
-      });
-    });
-
-    describe("Validate client credentials", () => {
-      describe("Given supplied credentials are not valid", () => {
+    describe("Redirect uri and issuer validation", () => {
+      describe("Given redirect_uri does not match registered value", () => {
         it("Returns a 400 Bad request response", async () => {
           const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
@@ -682,11 +642,63 @@ describe("Async Credential", () => {
               sub: "mockSub",
               client_id: "mockClientId",
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
-              redirect_uri: "https://mockInvalidRedirectUri.com",
+              redirect_uri: "https://www.unregisteredRedirectUri.com",
             }),
           });
-          dependencies.clientCredentialsService = () =>
-            new MockClientCredentialsServiceInvalidCredentialsErrorResult();
+          const result = await lambdaHandler(event, dependencies);
+
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "REQUEST_BODY_INVALID",
+          );
+          expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+            "redirect_uri does not match value from client registry",
+          );
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 400,
+            body: JSON.stringify({
+              error: "invalid_request",
+              error_description: "Request body validation failed",
+            }),
+          });
+        });
+      });
+
+      describe("Given issuer does not match registered value", () => {
+        it("Returns a 400 Bad request response", async () => {
+          const jwtBuilder = new MockJWTBuilder();
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+            body: JSON.stringify({
+              state: "mockState",
+              sub: "mockSub",
+              client_id: "mockClientId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              redirect_uri: "https://www.unregisteredRedirectUri.com",
+            }),
+          });
+          class MockTokenServiceInvalidIssuer
+            implements IDecodeToken, IVerifyTokenSignature
+          {
+            getDecodedToken(): Result<IDecodedToken> {
+              return successResult({
+                encodedJwt:
+                  "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJleHAiOjE3MjE5MDExNDMwMDAsImlzcyI6Im1vY2tJc3N1ZXIiLCJhdWQiOiJtb2NrSXNzdWVyIiwic2NvcGUiOiJkY21hdy5zZXNzaW9uLmFzeW5jX2NyZWF0ZSIsImNsaWVudF9pZCI6Im1vY2tDbGllbnRJZCJ9.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
+                jwtPayload: {
+                  aud: "mockIssuer",
+                  client_id: "mockClientId",
+                  exp: 1721901143000,
+                  iss: "invalidIssuer",
+                  scope: "dcmaw.session.async_create",
+                },
+              });
+            }
+            verifyTokenSignature(): Promise<Result<null>> {
+              return Promise.resolve(successResult(null));
+            }
+          }
+
+          dependencies.tokenService = () => new MockTokenServiceInvalidIssuer();
 
           const result = await lambdaHandler(event, dependencies);
 
@@ -694,17 +706,50 @@ describe("Async Credential", () => {
             "REQUEST_BODY_INVALID",
           );
           expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
-            "Mock invalid credential error",
+            "issuer does not match value from client registry",
           );
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
             body: JSON.stringify({
               error: "invalid_request",
-              error_description: "Mock invalid credential error",
+              error_description: "Request body validation failed",
             }),
           });
         });
+      });
+    });
+  });
+  describe("Given client is not registered", () => {
+    it("Returns 400 Bad Request response", async () => {
+      const jwtBuilder = new MockJWTBuilder();
+      const event = buildRequest({
+        headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+        body: JSON.stringify({
+          state: "mockState",
+          sub: "mockSub",
+          client_id: "mockClientId",
+          govuk_signin_journey_id: "mockGovukSigninJourneyId",
+        }),
+      });
+      dependencies.clientRegistryService = () =>
+        new MockClientRegistryServiceGetPartialClientBadRequestResponse();
+
+      const result = await lambdaHandler(event, dependencies);
+
+      expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+        "CLIENT_CREDENTIALS_INVALID",
+      );
+      expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+        "Client Id is not registered",
+      );
+      expect(result).toStrictEqual({
+        headers: { "Content-Type": "application/json" },
+        statusCode: 400,
+        body: JSON.stringify({
+          error: "invalid_client",
+          error_description: "Supplied client not recognised",
+        }),
       });
     });
   });
@@ -974,137 +1019,31 @@ class MockTokenServiceSuccess implements IDecodeToken, IVerifyTokenSignature {
   }
 }
 
-class MockClientCredentialsServiceGetClientCredentialsByIdErrorResult
-  implements
-    IGetClientCredentials,
-    IValidateAsyncTokenRequest,
-    IValidateAsyncCredentialRequest,
-    IGetClientCredentialsById
+class MockClientRegistryServiceeGetPartialClientInternalServerResult
+  implements IGetPartialRegisteredClientByClientId
 {
-  getAllRegisteredClientCredentials = async (
-    clientCredentials: IClientCredentials[] = [
-      {
-        client_id: "mockClientId",
-        issuer: "mockIssuer",
-        salt: "mockSalt",
-        hashed_client_secret: "mockHashedClientSecret",
-      },
-    ],
-  ): Promise<Result<IClientCredentials[]>> => {
-    return Promise.resolve(successResult(clientCredentials));
+  getPartialRegisteredClientByClientId = async () => {
+    return errorResult("Unexpected error retrieving registered client");
   };
-
-  validateAsyncTokenRequest(): Result<null> {
-    return successResult(null);
-  }
-  validateAsyncCredentialRequest(): Result<null> {
-    return successResult(null);
-  }
-  getRegisteredClientCredentialsById(): Result<IClientCredentials> {
-    return errorResult("No credentials found");
-  }
 }
 
-class MockClientCredentialsServiceInvalidCredentialsErrorResult
-  implements
-    IGetClientCredentials,
-    IValidateAsyncTokenRequest,
-    IValidateAsyncCredentialRequest,
-    IGetClientCredentialsById
+class MockClientRegistryServiceGetPartialClientBadRequestResponse
+  implements IGetPartialRegisteredClientByClientId
 {
-  getAllRegisteredClientCredentials = async (
-    clientCredentials: IClientCredentials[] = [
-      {
-        client_id: "mockClientId",
-        issuer: "mockIssuer",
-        salt: "mockSalt",
-        hashed_client_secret: "mockHashedClientSecret",
-      },
-    ],
-  ): Promise<Result<IClientCredentials[]>> => {
-    return Promise.resolve(successResult(clientCredentials));
+  getPartialRegisteredClientByClientId = async () => {
+    return errorResult("Client Id is not registered");
   };
-
-  validateAsyncTokenRequest(): Result<null> {
-    return successResult(null);
-  }
-  validateAsyncCredentialRequest(): Result<null> {
-    return errorResult("Mock invalid credential error");
-  }
-  getRegisteredClientCredentialsById(): Result<IClientCredentials> {
-    return successResult({
-      client_id: "mockClientId",
-      issuer: "mockIssuer",
-      salt: "mockSalt",
-      hashed_client_secret: "mockHashedClientSecret",
-    });
-  }
 }
 
-class MockClientCredentialsServiceSuccessResult
-  implements
-    IGetClientCredentials,
-    IValidateAsyncTokenRequest,
-    IValidateAsyncCredentialRequest,
-    IGetClientCredentialsById
+class MockClientRegistryServiceGetPartialClientSuccessResult
+  implements IGetPartialRegisteredClientByClientId
 {
-  getAllRegisteredClientCredentials = async (
-    clientCredentials: IClientCredentials[] = [
-      {
-        client_id: "mockClientId",
-        issuer: "mockIssuer",
-        salt: "mockSalt",
-        hashed_client_secret: "mockHashedClientSecret",
-      },
-    ],
-  ): Promise<Result<IClientCredentials[]>> => {
-    return Promise.resolve(successResult(clientCredentials));
-  };
-
-  validateAsyncTokenRequest(): Result<null> {
-    return successResult(null);
-  }
-  validateAsyncCredentialRequest(): Result<null> {
-    return successResult(null);
-  }
-  getRegisteredClientCredentialsById(): Result<IClientCredentials> {
+  getPartialRegisteredClientByClientId = async () => {
     return successResult({
-      client_id: "mockClientId",
       issuer: "mockIssuer",
-      salt: "mockSalt",
-      hashed_client_secret: "mockHashedClientSecret",
+      redirectUri: "https://www.mockUrl.com",
     });
-  }
-}
-
-class MockClientCredentialServiceGetClientCredentialsErrorResult
-  implements
-    IGetClientCredentials,
-    IValidateAsyncTokenRequest,
-    IValidateAsyncCredentialRequest,
-    IGetClientCredentialsById
-{
-  getAllRegisteredClientCredentials = async (): Promise<
-    Result<IClientCredentials[]>
-  > => {
-    return errorResult("Mock failure retrieving client credentials");
   };
-
-  validateAsyncTokenRequest(): Result<null> {
-    return successResult(null);
-  }
-
-  validateAsyncCredentialRequest(): Result<null> {
-    return successResult(null);
-  }
-  getRegisteredClientCredentialsById(): Result<IClientCredentials> {
-    return successResult({
-      client_id: "mockClientId",
-      issuer: "mockIssuer",
-      salt: "mockSalt",
-      hashed_client_secret: "mockHashedClientSecret",
-    });
-  }
 }
 
 class MockSessionServiceGetSessionBySubErrorResult

@@ -9,12 +9,10 @@ import { ssmClient } from "./ssmClient";
 
 let cache: CacheEntry | null = null;
 
-export class ClientCredentialsService
+export class ClientRegistryService
   implements
     IGetRegisteredIssuerUsingClientSecrets,
-    IValidateAsyncCredentialRequest,
-    IGetClientCredentialsById,
-    IGetPartialRegisteredClientCredentialsByClientId
+    IGetPartialRegisteredClientByClientId
 {
   ssmClient: SSMClient;
   cacheTTL: number;
@@ -32,46 +30,48 @@ export class ClientCredentialsService
       return errorResult(clientRegistryResult.value);
     const clientRegistery = clientRegistryResult.value;
 
-    const registeredClientCredentials =
-      this.getRegisteredClientCredentialsByClientId(
+    const registeredClient =
+      this.getRegisteredClientByClientId(
         clientRegistery,
         credentials.clientId,
       );
-    if (!registeredClientCredentials)
+    if (!registeredClient)
       return errorResult("Client is not registered");
 
     const isClientSecretsValid = this.validateClientSecrets(
       {
-        hashedClientSecret: registeredClientCredentials.hashed_client_secret,
-        salt: registeredClientCredentials.salt,
+        hashedClientSecret: registeredClient.hashed_client_secret,
+        salt: registeredClient.salt,
       },
       credentials,
     );
     if (!isClientSecretsValid)
       return errorResult("Client credentials are invalid");
 
-    return successResult(registeredClientCredentials.issuer);
+    return successResult(registeredClient.issuer);
   };
 
-  getPartialRegisteredClientCredentialsByClientId = async (clientId: string): Promise<Result<{issuer: string, redirectUri: string}>> => {
+  getPartialRegisteredClientByClientId = async (
+    clientId: string,
+  ): Promise<Result<{ issuer: string; redirectUri: string }>> => {
     const clientRegistryResult = await this.getClientRegistery();
     if (clientRegistryResult.isError)
       return errorResult(clientRegistryResult.value);
     const clientRegistery = clientRegistryResult.value;
 
-    const registeredClientCredentials =
-      this.getRegisteredClientCredentialsByClientId(
-        clientRegistery,
-        clientId,
-      );
-    if (!registeredClientCredentials)
+    const registeredClient =
+      this.getRegisteredClientByClientId(clientRegistery, clientId);
+    if (!registeredClient)
       return errorResult("Client is not registered");
 
-    return successResult({issuer: registeredClientCredentials.issuer, redirectUri: registeredClientCredentials.redirect_uri});
+    return successResult({
+      issuer: registeredClient.issuer,
+      redirectUri: registeredClient.redirect_uri,
+    });
   };
 
   private getClientRegistery = async (): Promise<
-    Result<IClientCredentials[]>
+    Result<IRegisteredClient[]>
   > => {
     if (cache && cache.expiry > Date.now()) {
       return successResult(cache.data);
@@ -88,14 +88,14 @@ export class ClientCredentialsService
       return errorResult("Error retrieving client secrets");
     }
 
-    const clientCredentialResponse = response.Parameter?.Value;
+    const clientRegistryResponse = response.Parameter?.Value;
 
-    if (!clientCredentialResponse) {
+    if (!clientRegistryResponse) {
       return errorResult("Client registry not found");
     }
     let clientRegistry;
     try {
-      clientRegistry = JSON.parse(clientCredentialResponse);
+      clientRegistry = JSON.parse(clientRegistryResponse);
     } catch (error) {
       return errorResult("Client registry is not a valid JSON");
     }
@@ -120,7 +120,7 @@ export class ClientCredentialsService
       return errorResult("Client registry failed schema validation");
     cache = {
       expiry: Date.now() + this.cacheTTL,
-      data: JSON.parse(clientCredentialResponse),
+      data: clientRegistry,
     };
     return successResult(clientRegistry);
   };
@@ -133,19 +133,19 @@ export class ClientCredentialsService
     }
     return true;
   };
-  private getRegisteredClientCredentialsByClientId = (
-    clientRegistery: IClientCredentials[],
+  private getRegisteredClientByClientId = (
+    clientRegistery: IRegisteredClient[],
     clientId: string,
-  ): IClientCredentials | undefined => {
-    const registeredClientCredentials = clientRegistery.find(
-      (registeredClientCredential) => {
-        return registeredClientCredential.client_id === clientId;
+  ): IRegisteredClient | undefined => {
+    const registeredClient = clientRegistery.find(
+      (client) => {
+        return client.client_id === clientId;
       },
     );
 
-    if (!registeredClientCredentials) return undefined;
+    if (!registeredClient) return undefined;
 
-    return registeredClientCredentials;
+    return registeredClient;
   };
   private validateClientSecrets = (
     registeredClientSecrets: { hashedClientSecret: string; salt: string },
@@ -161,46 +161,6 @@ export class ClientCredentialsService
     console.log("REGISTERED CLIENT SECRET", hashedStoredClientSecret);
     console.log("SUPPLIED CLIENT SECRET", hashedSuppliedClientSecret);
     return hashedStoredClientSecret === hashedSuppliedClientSecret;
-  };
-
-  validateAsyncCredentialRequest = (
-    config: IValidateAsyncCredentialRequestConfig,
-  ): Result<null> => {
-    const registeredRedirectUri =
-      config.registeredClientCredentials.redirect_uri;
-    if (!registeredRedirectUri) {
-      return errorResult("Missing redirect_uri");
-    }
-
-    try {
-      new URL(registeredRedirectUri);
-    } catch (e) {
-      return errorResult("Invalid redirect_uri");
-    }
-
-    if (
-      config.redirectUri !== config.registeredClientCredentials.redirect_uri
-    ) {
-      return errorResult("Unregistered redirect_uri");
-    }
-
-    if (config.aud !== config.registeredClientCredentials.issuer) {
-      return errorResult("Invalid aud claim");
-    }
-
-    return successResult(null);
-  };
-
-  getRegisteredClientCredentialsById = (
-    storedCredentialsArray: IClientCredentials[],
-    suppliedClientId: string,
-  ): Result<IClientCredentials> => {
-    const storedCredentials = storedCredentialsArray.find(
-      (cred: IClientCredentials) => cred.client_id === suppliedClientId,
-    );
-    if (!storedCredentials) return errorResult("ClientId not registered");
-
-    return successResult(storedCredentials);
   };
 
   resetCache() {
@@ -221,24 +181,13 @@ export interface IGetRegisteredIssuerUsingClientSecrets {
   }) => Promise<Result<string>>;
 }
 
-export interface IGetPartialRegisteredClientCredentialsByClientId {
-  getPartialRegisteredClientCredentialsByClientId: (clientId: string) => Promise<Result<{issuer: string, redirectUri: string}>>;
+export interface IGetPartialRegisteredClientByClientId {
+  getPartialRegisteredClientByClientId: (
+    clientId: string,
+  ) => Promise<Result<{ issuer: string; redirectUri: string }>>;
 }
 
-export interface IGetClientCredentialsById {
-  getRegisteredClientCredentialsById: (
-    storedCredentialsArray: IClientCredentials[],
-    suppliedClientId: string,
-  ) => Result<IClientCredentials>;
-}
-
-export interface IValidateAsyncCredentialRequest {
-  validateAsyncCredentialRequest: (
-    config: IValidateAsyncCredentialRequestConfig,
-  ) => Result<null>;
-}
-
-export type IClientCredentials = {
+export type IRegisteredClient = {
   client_id: string;
   issuer: string;
   salt: string;
@@ -246,19 +195,14 @@ export type IClientCredentials = {
   redirect_uri: string;
 };
 
-export interface IDecodedClientCredentials {
+export interface IDecodedClientSecrets {
   clientId: string;
   clientSecret: string;
 }
 
 interface CacheEntry {
   expiry: number;
-  data: IClientCredentials[];
+  data: IRegisteredClient[];
 }
 
-export interface IValidateAsyncCredentialRequestConfig {
-  aud: string;
-  issuer: string;
-  registeredClientCredentials: IClientCredentials;
-  redirectUri?: string;
-}
+type ClientRegistry = IRegisteredClient[]
