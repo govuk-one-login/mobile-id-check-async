@@ -21,18 +21,15 @@ export class ClientRegistryService
     this.ssmClient = ssmClient;
     this.cacheTTL = 3600 * 1000;
   }
-  getRegisteredIssuerUsingClientSecrets = async (credentials: {
-    clientId: string;
-    clientSecret: string;
-  }): Promise<Result<string>> => {
-    const clientRegistryResult = await this.getClientRegistery();
+  getRegisteredIssuerUsingClientSecrets = async (secrets: IDecodedClientSecrets): Promise<Result<string>> => {
+    const clientRegistryResult = await this.getClientRegistry();
     if (clientRegistryResult.isError)
       return errorResult(clientRegistryResult.value);
-    const clientRegistery = clientRegistryResult.value;
+    const clientRegistry = clientRegistryResult.value;
 
     const registeredClient = this.getRegisteredClientByClientId(
-      clientRegistery,
-      credentials.clientId,
+      clientRegistry,
+      secrets.clientId,
     );
     if (!registeredClient) return errorResult("Client is not registered");
 
@@ -41,7 +38,7 @@ export class ClientRegistryService
         hashedClientSecret: registeredClient.hashed_client_secret,
         salt: registeredClient.salt,
       },
-      credentials,
+      secrets,
     );
     if (!isClientSecretsValid)
       return errorResult("Client credentials are invalid");
@@ -52,13 +49,13 @@ export class ClientRegistryService
   getPartialRegisteredClientByClientId = async (
     clientId: string,
   ): Promise<Result<{ issuer: string; redirectUri: string }>> => {
-    const clientRegistryResult = await this.getClientRegistery();
+    const clientRegistryResult = await this.getClientRegistry();
     if (clientRegistryResult.isError)
       return errorResult(clientRegistryResult.value);
-    const clientRegistery = clientRegistryResult.value;
+    const clientRegistry = clientRegistryResult.value;
 
     const registeredClient = this.getRegisteredClientByClientId(
-      clientRegistery,
+      clientRegistry,
       clientId,
     );
     if (!registeredClient) return errorResult("Client is not registered");
@@ -69,7 +66,7 @@ export class ClientRegistryService
     });
   };
 
-  private getClientRegistery = async (): Promise<Result<IClientRegistry>> => {
+  private getClientRegistry = async (): Promise<Result<IClientRegistry>> => {
     if (cache && cache.expiry > Date.now()) {
       return successResult(cache.data);
     }
@@ -131,10 +128,10 @@ export class ClientRegistryService
     return true;
   };
   private getRegisteredClientByClientId = (
-    clientRegistery: IClientRegistry,
+    clientRegistry: IClientRegistry,
     clientId: string,
   ): IRegisteredClient | undefined => {
-    const registeredClient = clientRegistery.find((client) => {
+    const registeredClient = clientRegistry.find((client) => {
       return client.client_id === clientId;
     });
 
@@ -167,10 +164,8 @@ const hashSecret = (secret: string, salt: string): string => {
 };
 
 export interface IGetRegisteredIssuerUsingClientSecrets {
-  getRegisteredIssuerUsingClientSecrets: (credentials: {
-    clientId: string;
-    clientSecret: string;
-  }) => Promise<Result<string>>;
+  getRegisteredIssuerUsingClientSecrets: (credentials: IDecodedClientSecrets
+  ) => Promise<Result<string>>;
 }
 
 export interface IGetPartialRegisteredClientByClientId {
