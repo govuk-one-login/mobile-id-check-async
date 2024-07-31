@@ -18,7 +18,7 @@ export class ClientRegistryService
   cacheTTL: number;
 
   constructor() {
-    this.ssmClient = new SSMClient(ssmClient);
+    this.ssmClient = ssmClient;
     this.cacheTTL = 3600 * 1000;
   }
   getRegisteredIssuerUsingClientSecrets = async (credentials: {
