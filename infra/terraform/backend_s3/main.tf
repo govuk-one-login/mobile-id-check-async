@@ -32,11 +32,11 @@ resource "aws_s3_bucket" "tfs" {
 }
 
 resource "aws_s3_bucket_versioning" "tfs" {
-    bucket = aws_s3_bucket.tfs.id
+  bucket = aws_s3_bucket.tfs.id
 
-    versioning_configuration {
-      status = "Enabled"
-    }
+  versioning_configuration {
+    status = "Enabled"
+  }
 }
 
 # Comment out on first run
