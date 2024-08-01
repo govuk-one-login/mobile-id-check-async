@@ -27,7 +27,7 @@ describe("Provider API contract verification", () => {
       pactUrls: [
         path.resolve(
           process.cwd(),
-          "./pactFiles/IpvCoreBack-DcmawCriProvider.json",
+          "functions/tests/pact/pactFiles/IpvCoreBack-DcmawCriProvider.json",
         ),
       ],
       providerBaseUrl: `http://localhost:${port}`,
