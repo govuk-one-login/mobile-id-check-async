@@ -289,7 +289,7 @@ describe("Async Token", () => {
   });
 });
 
-class MockRequestServiceSuccessResult implements IProcessRequest {
+export class MockRequestServiceSuccessResult implements IProcessRequest {
   processRequest = (): Result<IDecodedClientSecrets> => {
     return successResult({
       clientId: "mockClientId",
@@ -312,7 +312,7 @@ class MockRequestServiceInvalidAuthorizationHeaderErrorResult
   };
 }
 
-class MockClientRegistryServiceSuccessResult
+export class MockClientRegistryServiceSuccessResult
   implements IGetRegisteredIssuerUsingClientSecrets
 {
   getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
@@ -336,7 +336,7 @@ class MockClientRegistryServiceBadRequestResult
   };
 }
 
-class MockTokenServiceSuccessResult implements IMintToken {
+export class MockTokenServiceSuccessResult implements IMintToken {
   async mintToken(): Promise<Result<string>> {
     return successResult("mockToken");
   }
