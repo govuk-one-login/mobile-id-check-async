@@ -46,7 +46,7 @@ paths:
                 success:
                   value:
                     {
-                      "sessionId": "37aae92b-a51e-4f68-b571-8e455fb0ec34",
+                      "sessionId": "37aae92b-a51e-4f68-b571-8e455fb0ec34",`
                       "govuk_signin_dcmaw_metadata": {
                         "journey_type": "desktop_app_desktop"
                       }

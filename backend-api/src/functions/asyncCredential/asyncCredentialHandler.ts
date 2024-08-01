@@ -1,23 +1,29 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { IGetPartialRegisteredClientByClientId } from "../services/clientRegistryService/clientRegistryService";
+import {
+  ClientRegistryService,
+  IGetPartialRegisteredClientByClientId,
+} from "../services/clientRegistryService/clientRegistryService";
 import {
   IDecodedToken,
   IDecodeToken,
   IVerifyTokenSignature,
+  TokenService,
 } from "./tokenService/tokenService";
 import { errorResult, Result, successResult } from "../utils/result";
 import {
   ICreateSession,
   IGetActiveSession,
+  SessionService,
 } from "./sessionService/sessionService";
 import { Logger } from "../services/logging/logger";
-import { MessageName } from "./registeredLogs";
-import { IEventService } from "../services/events/eventService";
+import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
+import { MessageName, registeredLogs } from "./registeredLogs";
+import { EventService, IEventService } from "../services/events/eventService";
 import { ConfigService } from "./configService/configService";
 
-export async function lambdaHandler(
-  event: APIGatewayProxyEvent,
+export async function lambdaHandlerConstructor(
   dependencies: Dependencies,
+  event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
 
@@ -354,3 +360,16 @@ export interface Dependencies {
   ) => IGetActiveSession & ICreateSession;
   env: NodeJS.ProcessEnv;
 }
+
+const dependencies: Dependencies = {
+  env: process.env,
+  eventService: (sqsQueue: string) => new EventService(sqsQueue),
+  logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
+  clientRegistryService: (clientRegistryParameterName: string) =>
+    new ClientRegistryService(clientRegistryParameterName),
+  tokenService: () => new TokenService(),
+  sessionService: (tableName: string, indexName: string) =>
+    new SessionService(tableName, indexName),
+};
+
+export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);

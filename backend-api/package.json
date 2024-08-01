@@ -6,7 +6,7 @@
   "scripts": {
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
-    "lint": "./node_modules/.bin/eslint ./functions",
+    "lint": "./node_modules/.bin/eslint ./src/functions",
     "test": "./node_modules/.bin/jest --detectOpenHandles",
     "ci": "npm run test && npm run format:check && npm run lint"
   },
@@ -39,7 +39,7 @@
     "@types/node": "^20.14.11",
     "dotenv": "16.4.5",
     "ecdsa-sig-formatter": "1.0.11",
-    "esbuild": "0.23.0",
+    "esbuild": "^0.23.0",
     "node-jose": "2.2.0"
   }
 }
