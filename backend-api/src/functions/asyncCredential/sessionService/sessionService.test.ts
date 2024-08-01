@@ -13,21 +13,17 @@ describe("Session Service", () => {
     service = new SessionService("mockTableName", "mockIndexName");
   });
 
-  describe("Session recovery", () => {
+  describe("Get active session", () => {
     describe("Given there is an unexpected error when calling Dynamo DB", () => {
       it("Returns error response", async () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).rejects("Mock DB Error");
 
-        const result = await service.getAuthSessionBySub(
-          "mockSub",
-          "mockValidState",
-          3600,
-        );
+        const result = await service.getActiveSession("mockSub", 12345);
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual(
-          "Unexpected error when querying session table whilst checking for recoverable session",
+          "Unexpected error when querying session table whilst checking for an active session",
         );
       });
     });
@@ -37,11 +33,7 @@ describe("Session Service", () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).resolves({});
 
-        const result = await service.getAuthSessionBySub(
-          "mockSub",
-          "mockValidState",
-          3600,
-        );
+        const result = await service.getActiveSession("mockSub", 12345);
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -53,11 +45,7 @@ describe("Session Service", () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).resolves({ Items: [] });
 
-        const result = await service.getAuthSessionBySub(
-          "mockSub",
-          "mockValidState",
-          3600,
-        );
+        const result = await service.getActiveSession("mockSub", 12345);
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -68,19 +56,10 @@ describe("Session Service", () => {
       it("Returns success response will value of null", async () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).resolves({
-          Items: [
-            {
-              sub: { S: "mockSub" },
-              state: { S: "mockValidState" },
-            },
-          ],
+          Items: [{}],
         });
 
-        const result = await service.getAuthSessionBySub(
-          "mockSub",
-          "mockValidState",
-          3600,
-        );
+        const result = await service.getActiveSession("mockSub", 12345);
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -93,42 +72,30 @@ describe("Session Service", () => {
         dbMock.on(QueryCommand).resolves({
           Items: [
             {
-              sub: { S: "mockSub" },
-              state: { S: "mockValidState" },
               sessionId: { S: "" },
             },
           ],
         });
 
-        const result = await service.getAuthSessionBySub(
-          "mockSub",
-          "mockValidState",
-          3600,
-        );
+        const result = await service.getActiveSession("mockSub", 12345);
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
       });
     });
 
-    describe("Given a valid recoverable session is found", () => {
+    describe("Given an active session is found", () => {
       it("Returns a success response with sessionId as value", async () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).resolves({
           Items: [
             {
-              sub: { S: "mockSub" },
-              state: { S: "mockValidState" },
               sessionId: { S: "mockSessionId" },
             },
           ],
         });
 
-        const result = await service.getAuthSessionBySub(
-          "mockSub",
-          "mockValidState",
-          3600,
-        );
+        const result = await service.getActiveSession("mockSub", 12345);
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual("mockSessionId");
@@ -143,14 +110,12 @@ describe("Session Service", () => {
         dbMock.on(GetItemCommand).rejects("Mock DB Error");
 
         const result = await service.createSession({
-          sessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
           state: "mockValidState",
           sub: "mockSub",
-          clientId: "mockClientId",
-          govukSigninJourneyId: "mockJourneyId",
-          redirectUri: "https://mockRedirectUri.com",
+          client_id: "mockClientId",
+          govuk_signin_journey_id: "mockJourneyId",
+          redirect_uri: "https://mockRedirectUri.com",
           issuer: "mockIssuer",
-          sessionState: "mockSessionState",
         });
 
         expect(result.isError).toBe(true);
@@ -170,14 +135,12 @@ describe("Session Service", () => {
         });
 
         const result = await service.createSession({
-          sessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
           state: "mockValidState",
           sub: "mockSub",
-          clientId: "mockClientId",
-          govukSigninJourneyId: "mockJourneyId",
-          redirectUri: "https://mockRedirectUri.com",
+          client_id: "mockClientId",
+          govuk_signin_journey_id: "mockJourneyId",
+          redirect_uri: "https://mockRedirectUri.com",
           issuer: "mockIssuer",
-          sessionState: "mockSessionState",
         });
 
         expect(result.isError).toBe(true);
@@ -194,14 +157,12 @@ describe("Session Service", () => {
         dbMock.on(PutItemCommand).rejects("Mock DB Error");
 
         const result = await service.createSession({
-          sessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
           state: "mockValidState",
           sub: "mockSub",
-          clientId: "mockClientId",
-          govukSigninJourneyId: "mockJourneyId",
-          redirectUri: "https://mockRedirectUri.com",
+          client_id: "mockClientId",
+          govuk_signin_journey_id: "mockJourneyId",
+          redirect_uri: "https://mockRedirectUri.com",
           issuer: "mockIssuer",
-          sessionState: "mockSessionState",
         });
 
         expect(result.isError).toBe(true);
@@ -219,17 +180,15 @@ describe("Session Service", () => {
           dbMock.on(PutItemCommand).resolves({});
 
           const result = await service.createSession({
-            sessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
             state: "mockValidState",
             sub: "mockSub",
-            clientId: "mockClientId",
-            govukSigninJourneyId: "mockJourneyId",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockJourneyId",
             issuer: "mockIssuer",
-            sessionState: "mockSessionState",
           });
 
           expect(result.isError).toBe(false);
-          expect(result.value).toEqual(null);
+          expect(typeof result.value).toBe("string");
         });
       });
 
@@ -240,18 +199,16 @@ describe("Session Service", () => {
           dbMock.on(PutItemCommand).resolves({});
 
           const result = await service.createSession({
-            sessionId: "137d5a4b-3046-456d-986a-147e0469cf62",
             state: "mockValidState",
             sub: "mockSub",
-            clientId: "mockClientId",
-            govukSigninJourneyId: "mockJourneyId",
-            redirectUri: "https://mockRedirectUri.com",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockJourneyId",
+            redirect_uri: "https://mockRedirectUri.com",
             issuer: "mockIssuer",
-            sessionState: "mockSessionState",
           });
 
           expect(result.isError).toBe(false);
-          expect(result.value).toEqual(null);
+          expect(typeof result.value).toBe("string");
         });
       });
     });

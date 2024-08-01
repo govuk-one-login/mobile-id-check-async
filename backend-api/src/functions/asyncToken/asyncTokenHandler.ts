@@ -4,22 +4,20 @@ import {
   Context,
 } from "aws-lambda";
 import "dotenv/config";
-import { validOrThrow } from "../config";
 import {
-  ClientCredentialsService,
-  IClientCredentials,
-  IClientCredentialsService,
-} from "../services/clientCredentialsService/clientCredentialsService";
+  ClientRegistryService,
+  IGetRegisteredIssuerUsingClientSecrets,
+} from "../services/clientRegistryService/clientRegistryService";
 import {
   IProcessRequest,
   RequestService,
 } from "./requestService/requestService";
-import { IGetClientCredentials, SsmService } from "./ssmService/ssmService";
 import { IMintToken, TokenService } from "./tokenService/tokenService";
-import { IDecodedClientCredentials } from "../types/clientCredentials";
 import { Logger } from "../services/logging/logger";
 import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
 import { MessageName, registeredLogs } from "./registeredLogs";
+import { ConfigService } from "./configService/configService";
+import { EventService, IEventService } from "../services/events/eventService";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
@@ -31,95 +29,95 @@ export async function lambdaHandlerConstructor(
   const logger = dependencies.logger();
   logger.addContext(context);
   logger.log("STARTED");
-  let kidArn;
-  try {
-    kidArn = validOrThrow(dependencies.env, "SIGNING_KEY_ID");
-  } catch (error) {
-    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
-      environmentVariable: "SIGNING_KEY_IDS",
-    });
 
+  const configResult = new ConfigService().getConfig(dependencies.env);
+  if (configResult.isError) {
+    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
+      errorMessage: configResult.value,
+    });
     return serverErrorResponse;
   }
 
+  const config = configResult.value;
+
   // Ensure that request contains expected params
   const requestService = dependencies.requestService();
-  const processRequest = requestService.processRequest(event);
+  const processRequestResult = requestService.processRequest(event);
 
-  if (processRequest.isError) {
-    if (processRequest.value === "Invalid grant_type") {
-      logger.log("INVALID_REQUEST", { errorMessage: processRequest.value });
+  if (processRequestResult.isError) {
+    if (processRequestResult.value === "Invalid grant_type") {
+      logger.log("INVALID_REQUEST", {
+        errorMessage: processRequestResult.value,
+      });
       return badRequestResponseInvalidGrant;
     }
 
-    logger.log("INVALID_REQUEST", { errorMessage: processRequest.value });
+    logger.log("INVALID_REQUEST", { errorMessage: processRequestResult.value });
 
     return badRequestResponseInvalidAuthorizationHeader;
   }
 
-  const suppliedCredentials = processRequest.value as IDecodedClientCredentials;
+  const suppliedClientCredentials = processRequestResult.value;
 
-  // Fetching stored client credentials
-  const ssmService = dependencies.ssmService();
-  const ssmServiceResponse = await ssmService.getClientCredentials();
-  if (ssmServiceResponse.isError) {
-    logger.log("INTERNAL_SERVER_ERROR", {
-      errorMessage: ssmServiceResponse.value,
-    });
-    return serverErrorResponse;
-  }
-
-  const storedCredentialsArray =
-    ssmServiceResponse.value as IClientCredentials[];
-
-  // Incoming credentials match stored credentials
-  const clientCredentialsService = dependencies.clientCredentialService();
-  const clientCredentialsByIdResponse =
-    clientCredentialsService.getClientCredentialsById(
-      storedCredentialsArray,
-      suppliedCredentials.clientId,
+  // Retrieving issuer and validating client secrets
+  const clientRegistryService = dependencies.clientRegistryService(
+    config.CLIENT_REGISTRY_PARAMETER_NAME,
+  );
+  const getRegisteredIssuerByClientSecretsResult =
+    await clientRegistryService.getRegisteredIssuerUsingClientSecrets(
+      suppliedClientCredentials,
     );
-  if (clientCredentialsByIdResponse.isError) {
+  if (getRegisteredIssuerByClientSecretsResult.isError) {
+    // TODO: This is intentionally hardcoded on a string. This requires a wider refactor that is in progress and part of the next PR.
+    if (
+      getRegisteredIssuerByClientSecretsResult.value ===
+      "Unexpected error retrieving issuer"
+    ) {
+      logger.log("INTERNAL_SERVER_ERROR", {
+        errorMessage: getRegisteredIssuerByClientSecretsResult.value,
+      });
+      return serverErrorResponse;
+    }
     logger.log("INVALID_REQUEST", {
-      errorMessage: "Client credentials not registered",
+      errorMessage: getRegisteredIssuerByClientSecretsResult.value,
     });
     return badRequestResponseInvalidCredentials;
   }
 
-  const storedCredentials =
-    clientCredentialsByIdResponse.value as IClientCredentials;
-
-  const isValidClientCredentialsResponse =
-    clientCredentialsService.validateTokenRequest(
-      storedCredentials,
-      suppliedCredentials,
-    );
-  if (isValidClientCredentialsResponse.isError) {
-    logger.log("INVALID_REQUEST", {
-      errorMessage: isValidClientCredentialsResponse.value,
-    });
-    return badRequestResponseInvalidCredentials;
-  }
+  const registeredIssuer = getRegisteredIssuerByClientSecretsResult.value;
 
   const jwtPayload = {
-    aud: storedCredentials.issuer,
-    iss: "https://www.review-b.account.gov.uk",
+    aud: registeredIssuer,
+    iss: config.ISSUER,
     exp: Math.floor(Date.now() / 1000) + 3600,
     scope: "dcmaw.session.async_create",
-    client_id: storedCredentials.client_id,
+    // The clientId can be trusted as the credential service validates the incoming clientId against the client registry
+    client_id: suppliedClientCredentials.clientId,
   };
 
-  const tokenService = dependencies.tokenService(kidArn);
+  const tokenService = dependencies.tokenService(config.SIGNING_KEY_ID);
 
-  const mintTokenResponse = await tokenService.mintToken(jwtPayload);
-  if (mintTokenResponse.isError) {
+  const mintTokenResult = await tokenService.mintToken(jwtPayload);
+  if (mintTokenResult.isError) {
     logger.log("INTERNAL_SERVER_ERROR", {
-      errorMessage: mintTokenResponse.value,
+      errorMessage: mintTokenResult.value,
     });
     return serverErrorResponse;
   }
-  const accessToken = mintTokenResponse.value;
+  const accessToken = mintTokenResult.value;
 
+  const eventWriter = dependencies.eventService(config.SQS_QUEUE);
+  const writeEventResult = await eventWriter.writeCredentialTokenIssuedEvent({
+    componentId: config.ISSUER,
+    getNowInMilliseconds: Date.now,
+    eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+  });
+  if (writeEventResult.isError) {
+    logger.log("ERROR_WRITING_AUDIT_EVENT", {
+      errorMessage: writeEventResult.value,
+    });
+    return serverErrorResponse;
+  }
   logger.log("COMPLETED");
 
   return {
@@ -175,19 +173,22 @@ const serverErrorResponse: APIGatewayProxyResult = {
 
 export interface IAsyncTokenRequestDependencies {
   env: NodeJS.ProcessEnv;
+  eventService: (sqsQueue: string) => IEventService;
   logger: () => Logger<MessageName>;
   requestService: () => IProcessRequest;
-  ssmService: () => IGetClientCredentials;
-  clientCredentialService: () => IClientCredentialsService;
+  clientRegistryService: (
+    clientRegistryParameterName: string,
+  ) => IGetRegisteredIssuerUsingClientSecrets;
   tokenService: (signingKey: string) => IMintToken;
 }
 
 const dependencies: IAsyncTokenRequestDependencies = {
   env: process.env,
+  eventService: (sqsQueue: string) => new EventService(sqsQueue),
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
   requestService: () => new RequestService(),
-  ssmService: () => new SsmService(),
-  clientCredentialService: () => new ClientCredentialsService(),
+  clientRegistryService: (clientRegistryParameterName: string) =>
+    new ClientRegistryService(clientRegistryParameterName),
   tokenService: (signingKey: string) => new TokenService(signingKey),
 };
 

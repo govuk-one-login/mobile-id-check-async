@@ -1,38 +1,34 @@
 import { APIGatewayProxyResult } from "aws-lambda";
 import { buildRequest } from "../testUtils/mockRequest";
-import { IVerifyTokenSignature } from "./TokenService/tokenService";
+import {
+  IDecodedToken,
+  IDecodeToken,
+  IVerifyTokenSignature,
+} from "./tokenService/tokenService";
 import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
-import {
-  IClientCredentials,
-  IClientCredentialsService,
-} from "../services/clientCredentialsService/clientCredentialsService";
-import { IGetClientCredentials } from "../asyncToken/ssmService/ssmService";
-import {
-  ErrorOrSuccess,
-  errorResponse,
-  successResponse,
-} from "../types/errorOrValue";
+import { IGetPartialRegisteredClientByClientId } from "../services/clientRegistryService/clientRegistryService";
+import { Result, errorResult, successResult } from "../utils/result";
 import { MockJWTBuilder } from "../testUtils/mockJwt";
 import { Logger } from "../services/logging/logger";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import {
   ICreateSession,
-  IGetSessionBySub,
+  IGetActiveSession,
 } from "./sessionService/sessionService";
 import {
-  EventName,
-  IEventConfig,
-  IEventService,
-} from "../services/events/eventService";
+  MockEventServiceFailToWrite,
+  MockEventWriterSuccess,
+} from "../services/events/tests/mocks";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
   ISSUER: "mockIssuer",
   SESSION_TABLE_NAME: "mockTableName",
   SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: "mockIndexName",
-  SESSION_RECOVERY_TIMEOUT: "12345",
+  SESSION_TTL_IN_MILLISECONDS: "12345",
   SQS_QUEUE: "mockSqsQueue",
+  CLIENT_REGISTRY_PARAMETER_NAME: "mockParmaterName",
 };
 
 describe("Async Credential", () => {
@@ -44,11 +40,11 @@ describe("Async Credential", () => {
     dependencies = {
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(mockLogger, registeredLogs),
-      tokenService: () => new MockTokenSeviceValidSignature(),
-      ssmService: () => new MockPassingSsmService(),
-      clientCredentialsService: () => new MockPassingClientCredentialsService(),
-      getSessionService: () =>
-        new MockSessionServiceNoRecoverableSession(
+      tokenService: () => new MockTokenServiceSuccess(),
+      clientRegistryService: () =>
+        new MockClientRegistryServiceGetPartialClientSuccessResult(),
+      sessionService: () =>
+        new MockSessionServiceNoActiveSession(
           env.SESSION_TABLE_NAME,
           env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
         ),
@@ -57,13 +53,7 @@ describe("Async Credential", () => {
   });
 
   describe("Environment variable validation", () => {
-    describe.each([
-      "SIGNING_KEY_ID",
-      "ISSUER",
-      "SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME",
-      "SESSION_RECOVERY_TIMEOUT",
-      "SQS_QUEUE",
-    ])("Given %s is missing", (envVar: string) => {
+    describe.each(Object.keys(env))("Given %s is missing", (envVar: string) => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
         delete dependencies.env[envVar];
@@ -88,11 +78,11 @@ describe("Async Credential", () => {
       });
     });
 
-    describe("Given SESSION_RECOVERY_TIMEOUT value is not a number", () => {
+    describe("Given SESSION_TTL_IN_MILLISECONDS value is not a number", () => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
-        dependencies.env["SESSION_RECOVERY_TIMEOUT"] =
-          "mockInvalidSessionRecoveryTimeout";
+        dependencies.env["SESSION_TTL_IN_MILLISECONDS"] =
+          "mockInvalidSessionTtlMs";
         const event = buildRequest();
         const result = await lambdaHandler(event, dependencies);
 
@@ -100,7 +90,7 @@ describe("Async Credential", () => {
           "ENVIRONMENT_VARIABLE_MISSING",
         );
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-          errorMessage: "SESSION_RECOVERY_TIMEOUT is not a valid number",
+          errorMessage: "SESSION_TTL_IN_MILLISECONDS is not a valid number",
         });
 
         expect(result).toStrictEqual({
@@ -233,349 +223,42 @@ describe("Async Credential", () => {
     });
   });
 
-  describe("JWT payload validation", () => {
-    describe("exp claim validation", () => {
-      describe("Given expiry date is missing", () => {
-        it("Returns a log", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          jwtBuilder.deleteExp();
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-          });
-
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
-
-          const result: APIGatewayProxyResult = await lambdaHandler(
-            event,
-            dependencies,
-          );
-
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "JWT_CLAIM_INVALID",
-          );
-          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-            errorMessage: "Missing exp claim",
-          });
-
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 400,
-            body: JSON.stringify({
-              error: "invalid_token",
-              error_description: "Missing exp claim",
-            }),
-          });
+  describe("Get decoded token", () => {
+    describe("Given decoding token fails", () => {
+      it("Logs and returns 400 Bad Request response", async () => {
+        const jwtBuilder = new MockJWTBuilder();
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
-      });
 
-      describe("Given expiry date is in the past", () => {
-        it("Returns a log", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          jwtBuilder.setExp(Math.floor(Date.now() - 1000) / 1000);
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-          });
+        dependencies.tokenService = () =>
+          new MockTokenServiceGetDecodedTokenErrorResult();
 
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+        const result: APIGatewayProxyResult = await lambdaHandler(
+          event,
+          dependencies,
+        );
 
-          const result: APIGatewayProxyResult = await lambdaHandler(
-            event,
-            dependencies,
-          );
-
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "JWT_CLAIM_INVALID",
-          );
-          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-            errorMessage: "exp claim is in the past",
-          });
-
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 400,
-            body: JSON.stringify({
-              error: "invalid_token",
-              error_description: "exp claim is in the past",
-            }),
-          });
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "JWT_CLAIM_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+          errorMessage: "Mock decoding token error",
         });
-      });
-    });
 
-    describe("iat claim validation", () => {
-      // iat does not need to be present
-      describe("Given issued at (iat) is in the future", () => {
-        it("Returns a log", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          jwtBuilder.setIat(Math.floor(Date.now() + 1000) / 1000);
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-          });
-
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
-
-          const result: APIGatewayProxyResult = await lambdaHandler(
-            event,
-            dependencies,
-          );
-
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "JWT_CLAIM_INVALID",
-          );
-          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-            errorMessage: "iat claim is in the future",
-          });
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 400,
-            body: JSON.stringify({
-              error: "invalid_token",
-              error_description: "iat claim is in the future",
-            }),
-          });
-        });
-      });
-    });
-
-    describe("nbf claim validation", () => {
-      // nbf does not need to be present
-      describe("Given not before (nbf) is in the future", () => {
-        it("Returns a log", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          jwtBuilder.setNbf(Date.now() + 1000);
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-          });
-
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
-
-          const result: APIGatewayProxyResult = await lambdaHandler(
-            event,
-            dependencies,
-          );
-
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "JWT_CLAIM_INVALID",
-          );
-          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-            errorMessage: "nbf claim is in the future",
-          });
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 400,
-            body: JSON.stringify({
-              error: "invalid_token",
-              error_description: "nbf claim is in the future",
-            }),
-          });
-        });
-      });
-    });
-
-    describe("iss claim validation", () => {
-      describe("Given issuer (iss) is missing", () => {
-        it("Returns a log", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          jwtBuilder.deleteIss();
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-          });
-
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
-
-          const result: APIGatewayProxyResult = await lambdaHandler(
-            event,
-            dependencies,
-          );
-
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "JWT_CLAIM_INVALID",
-          );
-          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-            errorMessage: "Missing iss claim",
-          });
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 400,
-            body: JSON.stringify({
-              error: "invalid_token",
-              error_description: "Missing iss claim",
-            }),
-          });
-        });
-      });
-
-      describe("Given issuer (iss) is does not match environment variable", () => {
-        it("Returns a log", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          jwtBuilder.setIss("invalidIss");
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-          });
-
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
-
-          const result: APIGatewayProxyResult = await lambdaHandler(
-            event,
-            dependencies,
-          );
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "JWT_CLAIM_INVALID",
-          );
-          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-            errorMessage:
-              "iss claim does not match ISSUER environment variable",
-          });
-
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 400,
-            body: JSON.stringify({
-              error: "invalid_token",
-              error_description:
-                "iss claim does not match ISSUER environment variable",
-            }),
-          });
-        });
-      });
-    });
-
-    describe("scope claim validation", () => {
-      describe("Given scope is missing", () => {
-        it("Returns a log", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          jwtBuilder.deleteScope();
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-          });
-
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
-
-          const result: APIGatewayProxyResult = await lambdaHandler(
-            event,
-            dependencies,
-          );
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "JWT_CLAIM_INVALID",
-          );
-          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-            errorMessage: "Missing scope claim",
-          });
-
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 400,
-            body: JSON.stringify({
-              error: "invalid_token",
-              error_description: "Missing scope claim",
-            }),
-          });
-        });
-      });
-
-      describe("Given scope is not dcmaw.session.async_create", () => {
-        it("Returns a log", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          jwtBuilder.setScope("invalidScope");
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-          });
-
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
-
-          const result: APIGatewayProxyResult = await lambdaHandler(
-            event,
-            dependencies,
-          );
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "JWT_CLAIM_INVALID",
-          );
-          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-            errorMessage: "Invalid scope claim",
-          });
-
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 400,
-            body: JSON.stringify({
-              error: "invalid_token",
-              error_description: "Invalid scope claim",
-            }),
-          });
-        });
-      });
-    });
-
-    describe("client_id claim validation", () => {
-      describe("Given client_id is missing", () => {
-        it("Returns a log", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          jwtBuilder.deleteClientId();
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-          });
-
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
-
-          const result: APIGatewayProxyResult = await lambdaHandler(
-            event,
-            dependencies,
-          );
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "JWT_CLAIM_INVALID",
-          );
-          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-            errorMessage: "Missing client_id claim",
-          });
-
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 400,
-            body: JSON.stringify({
-              error: "invalid_token",
-              error_description: "Missing client_id claim",
-            }),
-          });
-        });
-      });
-    });
-
-    describe("aud claim validation", () => {
-      describe("Given aud (audience) is missing", () => {
-        it("Returns a log", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          jwtBuilder.deleteAud();
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-          });
-
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
-
-          const result: APIGatewayProxyResult = await lambdaHandler(
-            event,
-            dependencies,
-          );
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "JWT_CLAIM_INVALID",
-          );
-          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-            errorMessage: "Missing aud claim",
-          });
-
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 400,
-            body: JSON.stringify({
-              error: "invalid_token",
-              error_description: "Missing aud claim",
-            }),
-          });
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_token",
+            error_description: "Mock decoding token error",
+          }),
         });
       });
     });
   });
 
-  describe("Request body validation", () => {
+  describe("Get request body", () => {
     describe("Given body is missing", () => {
       it("Returns 400 status code with invalid_request error", async () => {
         const jwtBuilder = new MockJWTBuilder();
@@ -584,7 +267,7 @@ describe("Async Credential", () => {
           body: undefined,
         });
 
-        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -603,7 +286,7 @@ describe("Async Credential", () => {
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "Missing request body",
+            error_description: "Request body validation failed",
           }),
         });
       });
@@ -625,7 +308,7 @@ describe("Async Credential", () => {
             body: invalidJson,
           });
 
-          dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+          dependencies.tokenService = () => new MockTokenServiceSuccess();
 
           const result: APIGatewayProxyResult = await lambdaHandler(
             event,
@@ -644,7 +327,7 @@ describe("Async Credential", () => {
             statusCode: 400,
             body: JSON.stringify({
               error: "invalid_request",
-              error_description: "Invalid JSON in request body",
+              error_description: "Request body validation failed",
             }),
           });
         },
@@ -659,7 +342,7 @@ describe("Async Credential", () => {
           body: JSON.stringify({}),
         });
 
-        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -694,7 +377,7 @@ describe("Async Credential", () => {
           }),
         });
 
-        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -730,7 +413,7 @@ describe("Async Credential", () => {
           }),
         });
 
-        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -767,7 +450,7 @@ describe("Async Credential", () => {
           }),
         });
 
-        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -805,7 +488,7 @@ describe("Async Credential", () => {
           }),
         });
 
-        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -844,7 +527,7 @@ describe("Async Credential", () => {
           }),
         });
 
-        dependencies.tokenService = () => new MockTokenSeviceValidSignature();
+        dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandler(
           event,
@@ -870,41 +553,11 @@ describe("Async Credential", () => {
     });
   });
 
-  describe("Request body validation - using Client Credentials", () => {
-    describe("Given redirect_uri is present and the request body validation fails", () => {
-      it("Returns a 400 Bad Request response", async () => {
-        const jwtBuilder = new MockJWTBuilder();
-        const event = buildRequest({
-          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-          body: JSON.stringify({
-            state: "mockState",
-            sub: "mockSub",
-            client_id: "mockClientId",
-            govuk_signin_journey_id: "mockGovukSigninJourneyId",
-            redirect_uri: "https://mockInvalidRedirectUri.com",
-          }),
-        });
-        dependencies.clientCredentialsService = () =>
-          new MockFailingClientCredentialsService();
-
-        const result = await lambdaHandler(event, dependencies);
-
-        expect(result).toStrictEqual({
-          headers: { "Content-Type": "application/json" },
-          statusCode: 400,
-          body: JSON.stringify({
-            error: "invalid_request",
-            error_description: "mockClientCredentialServiceError",
-          }),
-        });
-      });
-    });
-  });
-
   describe("JWT signature verification", () => {
     describe("Given that the JWT signature verification fails", () => {
       it("Returns 401 Unauthorized", async () => {
-        dependencies.tokenService = () => new MockTokenSeviceInvalidSignature();
+        dependencies.tokenService = () =>
+          new MockTokenServiceInvalidSignatureErrorResult();
 
         const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
@@ -922,6 +575,12 @@ describe("Async Credential", () => {
           dependencies,
         );
 
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "TOKEN_SIGNATURE_INVALID",
+        );
+        expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+          "Failed to verify token signature",
+        );
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -934,99 +593,169 @@ describe("Async Credential", () => {
     });
   });
 
-  describe("SSM Service", () => {
-    describe("Given there is an error retrieving client credentials from SSM", () => {
-      it("Returns a 500 Server Error response", async () => {
-        dependencies.ssmService = () => new MockFailingSsmService();
-        const jwtBuilder = new MockJWTBuilder();
-        const event = buildRequest({
-          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-          body: JSON.stringify({
-            state: "mockState",
-            sub: "mockSub",
-            client_id: "mockClientId",
-            govuk_signin_journey_id: "mockGovukSigninJourneyId",
-          }),
+  describe("Client Credentials Service", () => {
+    describe("Get partial client credentials by client id", () => {
+      describe("Given an error result is returned", () => {
+        it("Returns a 500 Server Error response", async () => {
+          dependencies.clientRegistryService = () =>
+            new MockClientRegistryServiceeGetPartialClientInternalServerResult();
+          const jwtBuilder = new MockJWTBuilder();
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+            body: JSON.stringify({
+              state: "mockState",
+              sub: "mockSub",
+              client_id: "mockClientId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+            }),
+          });
+
+          const result = await lambdaHandler(event, dependencies);
+
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "ERROR_RETRIEVING_REGISTERED_CLIENT",
+          );
+          expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+            "Unexpected error retrieving registered client",
+          );
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 500,
+            body: JSON.stringify({
+              error: "server_error",
+              error_description: "Server Error",
+            }),
+          });
         });
+      });
+    });
 
-        const result = await lambdaHandler(event, dependencies);
+    describe("Redirect uri and issuer validation", () => {
+      describe("Given redirect_uri does not match registered value", () => {
+        it("Returns a 400 Bad request response", async () => {
+          const jwtBuilder = new MockJWTBuilder();
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+            body: JSON.stringify({
+              state: "mockState",
+              sub: "mockSub",
+              client_id: "mockClientId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              redirect_uri: "https://www.unregisteredRedirectUri.com",
+            }),
+          });
+          const result = await lambdaHandler(event, dependencies);
 
-        expect(result).toStrictEqual({
-          headers: { "Content-Type": "application/json" },
-          statusCode: 500,
-          body: JSON.stringify({
-            error: "server_error",
-            error_description: "Server Error",
-          }),
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "REQUEST_BODY_INVALID",
+          );
+          expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+            "redirect_uri does not match value from client registry",
+          );
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 400,
+            body: JSON.stringify({
+              error: "invalid_request",
+              error_description: "Request body validation failed",
+            }),
+          });
+        });
+      });
+
+      describe("Given issuer does not match registered value", () => {
+        it("Returns a 400 Bad request response", async () => {
+          const jwtBuilder = new MockJWTBuilder();
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+            body: JSON.stringify({
+              state: "mockState",
+              sub: "mockSub",
+              client_id: "mockClientId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              redirect_uri: "https://www.unregisteredRedirectUri.com",
+            }),
+          });
+          class MockTokenServiceInvalidIssuer
+            implements IDecodeToken, IVerifyTokenSignature
+          {
+            getDecodedToken(): Result<IDecodedToken> {
+              return successResult({
+                encodedJwt:
+                  "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJleHAiOjE3MjE5MDExNDMwMDAsImlzcyI6Im1vY2tJc3N1ZXIiLCJhdWQiOiJtb2NrSXNzdWVyIiwic2NvcGUiOiJkY21hdy5zZXNzaW9uLmFzeW5jX2NyZWF0ZSIsImNsaWVudF9pZCI6Im1vY2tDbGllbnRJZCJ9.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
+                jwtPayload: {
+                  aud: "mockIssuer",
+                  client_id: "mockClientId",
+                  exp: 1721901143000,
+                  iss: "invalidIssuer",
+                  scope: "dcmaw.session.async_create",
+                },
+              });
+            }
+            verifyTokenSignature(): Promise<Result<null>> {
+              return Promise.resolve(successResult(null));
+            }
+          }
+
+          dependencies.tokenService = () => new MockTokenServiceInvalidIssuer();
+
+          const result = await lambdaHandler(event, dependencies);
+
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "REQUEST_BODY_INVALID",
+          );
+          expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+            "issuer does not match value from client registry",
+          );
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 400,
+            body: JSON.stringify({
+              error: "invalid_request",
+              error_description: "Request body validation failed",
+            }),
+          });
         });
       });
     });
   });
-
-  describe("Client Credentials Service - get client credentials by ID", () => {
-    describe("Given credentials are not found", () => {
-      it("Returns 400 Bad Request response", async () => {
-        const jwtBuilder = new MockJWTBuilder();
-        const event = buildRequest({
-          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-          body: JSON.stringify({
-            state: "mockState",
-            sub: "mockSub",
-            client_id: "mockClientId",
-            govuk_signin_journey_id: "mockGovukSigninJourneyId",
-          }),
-        });
-        dependencies.clientCredentialsService = () =>
-          new MockFailingClientCredentialsServiceGetClientCredentialsById();
-
-        const result = await lambdaHandler(event, dependencies);
-
-        expect(result).toStrictEqual({
-          headers: { "Content-Type": "application/json" },
-          statusCode: 400,
-          body: JSON.stringify({
-            error: "invalid_client",
-            error_description: "Supplied client not recognised",
-          }),
-        });
+  describe("Given client is not registered", () => {
+    it("Returns 400 Bad Request response", async () => {
+      const jwtBuilder = new MockJWTBuilder();
+      const event = buildRequest({
+        headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+        body: JSON.stringify({
+          state: "mockState",
+          sub: "mockSub",
+          client_id: "mockClientId",
+          govuk_signin_journey_id: "mockGovukSigninJourneyId",
+        }),
       });
-    });
-  });
+      dependencies.clientRegistryService = () =>
+        new MockClientRegistryServiceGetPartialClientBadRequestResponse();
 
-  describe("JWT Payload validation - using Client Credentials", () => {
-    describe("aud claim does not match registered issuer for given client", () => {
-      it("Returns a 400 Bad request response", async () => {
-        const jwtBuilder = new MockJWTBuilder();
-        jwtBuilder.setAud("invalidAud");
-        const event = buildRequest({
-          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-          body: JSON.stringify({
-            state: "mockState",
-            sub: "mockSub",
-            client_id: "mockClientId",
-            govuk_signin_journey_id: "mockGovukSigninJourneyId",
-          }),
-        });
-        dependencies.clientCredentialsService = () =>
-          new MockPassingClientCredentialsService();
+      const result = await lambdaHandler(event, dependencies);
 
-        const result = await lambdaHandler(event, dependencies);
-
-        expect(result).toStrictEqual({
-          headers: { "Content-Type": "application/json" },
-          statusCode: 400,
-          body: JSON.stringify({
-            error: "invalid_client",
-            error_description: "Invalid aud claim",
-          }),
-        });
+      expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+        "CLIENT_CREDENTIALS_INVALID",
+      );
+      expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+        "Client Id is not registered",
+      );
+      expect(result).toStrictEqual({
+        headers: { "Content-Type": "application/json" },
+        statusCode: 400,
+        body: JSON.stringify({
+          error: "invalid_client",
+          error_description: "Supplied client not recognised",
+        }),
       });
     });
   });
 
   describe("Session Service", () => {
-    describe("Session recovery", () => {
-      describe("Given service returns an error response", () => {
+    describe("Check for active session", () => {
+      describe("Given there is an error checking for an existing session", () => {
         it("Returns 500 Server Error", async () => {
           const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
@@ -1038,13 +767,20 @@ describe("Async Credential", () => {
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
             }),
           });
-          dependencies.getSessionService = () =>
-            new MockSessionServiceGetSessionBySubFailure(
+          dependencies.sessionService = () =>
+            new MockSessionServiceGetSessionBySubErrorResult(
               env.SESSION_TABLE_NAME,
               env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
 
           const result = await lambdaHandler(event, dependencies);
+
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "ERROR_RETRIEVING_SESSION",
+          );
+          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+            errorMessage: "Unexpected error checking for existing session",
+          });
 
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
@@ -1057,8 +793,8 @@ describe("Async Credential", () => {
         });
       });
 
-      describe("Given service returns success response", () => {
-        it("Returns 200 session recovered response", async () => {
+      describe("Given there is an active session", () => {
+        it("Logs and returns 200 active session found response", async () => {
           const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
             headers: {
@@ -1071,13 +807,21 @@ describe("Async Credential", () => {
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
             }),
           });
-          dependencies.getSessionService = () =>
-            new MockSessionServiceSessionRecovered(
+          dependencies.sessionService = () =>
+            new MockSessionServiceGetActiveSessionSuccessResult(
               env.SESSION_TABLE_NAME,
               env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
 
           const result = await lambdaHandler(event, dependencies);
+
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "COMPLETED",
+          );
+
+          expect(mockLogger.getLogMessages()[0].logMessage.sessionId).toBe(
+            "mockSessionId",
+          );
 
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
@@ -1106,8 +850,8 @@ describe("Async Credential", () => {
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
             }),
           });
-          dependencies.getSessionService = () =>
-            new MockSessionServiceFailToCreateSession(
+          dependencies.sessionService = () =>
+            new MockSessionServiceCreateSessionErrorResult(
               env.SESSION_TABLE_NAME,
               env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
@@ -1130,7 +874,7 @@ describe("Async Credential", () => {
 
       describe("Given the session has been created", () => {
         describe("Given it fails to write the DCMAW_ASYNC_CRI_START event to TxMA", () => {
-          it("Logs and returns 201 session created response", async () => {
+          it("Logs and returns a 500 Internal Server Error", async () => {
             const jwtBuilder = new MockJWTBuilder();
             const event = buildRequest({
               headers: {
@@ -1145,8 +889,8 @@ describe("Async Credential", () => {
             });
             dependencies.eventService = () =>
               new MockEventServiceFailToWrite("DCMAW_ASYNC_CRI_START");
-            dependencies.getSessionService = () =>
-              new MockSessionServiceSessionCreated(
+            dependencies.sessionService = () =>
+              new MockSessionServiceCreateSessionSuccessResult(
                 env.SESSION_TABLE_NAME,
                 env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
               );
@@ -1159,16 +903,13 @@ describe("Async Credential", () => {
             expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
               "Unexpected error writing the DCMAW_ASYNC_CRI_START event",
             );
-            expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
-              "SESSION_CREATED",
-            );
 
             expect(result).toStrictEqual({
               headers: { "Content-Type": "application/json" },
-              statusCode: 201,
+              statusCode: 500,
               body: JSON.stringify({
-                sub: "mockSub",
-                "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
+                error: "server_error",
+                error_description: "Server Error",
               }),
             });
           });
@@ -1191,20 +932,24 @@ describe("Async Credential", () => {
 
             const mockEventService = new MockEventWriterSuccess();
             dependencies.eventService = () => mockEventService;
-            dependencies.getSessionService = () =>
-              new MockSessionServiceSessionCreated(
+            dependencies.sessionService = () =>
+              new MockSessionServiceCreateSessionSuccessResult(
                 env.SESSION_TABLE_NAME,
                 env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
               );
 
             const result = await lambdaHandler(event, dependencies);
 
-            expect(mockEventService.auditEvents[0].eventName).toEqual(
+            expect(mockEventService.auditEvents[0]).toEqual(
               "DCMAW_ASYNC_CRI_START",
             );
 
             expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-              "SESSION_CREATED",
+              "COMPLETED",
+            );
+
+            expect(mockLogger.getLogMessages()[0].logMessage.sessionId).toEqual(
+              "mockSessionId",
             );
 
             expect(result).toStrictEqual({
@@ -1222,91 +967,86 @@ describe("Async Credential", () => {
   });
 });
 
-class MockTokenSeviceInvalidSignature implements IVerifyTokenSignature {
-  verifyTokenSignature(): Promise<ErrorOrSuccess<null>> {
-    return Promise.resolve(errorResponse("Invalid signature"));
-  }
-}
-
-class MockTokenSeviceValidSignature implements IVerifyTokenSignature {
-  verifyTokenSignature(): Promise<ErrorOrSuccess<null>> {
-    return Promise.resolve(successResponse(null));
-  }
-}
-
-class MockFailingClientCredentialsServiceGetClientCredentialsById
-  implements IClientCredentialsService
+class MockTokenServiceGetDecodedTokenErrorResult
+  implements IDecodeToken, IVerifyTokenSignature
 {
-  validateTokenRequest(): ErrorOrSuccess<null> {
-    return successResponse(null);
+  getDecodedToken(): Result<IDecodedToken> {
+    return errorResult("Mock decoding token error");
   }
-  validateRedirectUri(): ErrorOrSuccess<null> {
-    return successResponse(null);
-  }
-  getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
-    return errorResponse("No credentials found");
+  verifyTokenSignature(): Promise<Result<null>> {
+    return Promise.resolve(successResult(null));
   }
 }
 
-class MockPassingClientCredentialsService implements IClientCredentialsService {
-  validateTokenRequest(): ErrorOrSuccess<null> {
-    return successResponse(null);
-  }
-  validateRedirectUri(): ErrorOrSuccess<null> {
-    return successResponse(null);
-  }
-  getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
-    return successResponse({
-      client_id: "mockClientId",
-      issuer: "mockIssuer",
-      salt: "mockSalt",
-      hashed_client_secret: "mockHashedClientSecret",
-    });
-  }
-}
-
-class MockFailingClientCredentialsService implements IClientCredentialsService {
-  validateTokenRequest(): ErrorOrSuccess<null> {
-    return successResponse(null);
-  }
-  validateRedirectUri(): ErrorOrSuccess<null> {
-    return errorResponse("mockClientCredentialServiceError");
-  }
-  getClientCredentialsById(): ErrorOrSuccess<IClientCredentials> {
-    return successResponse({
-      client_id: "mockClientId",
-      issuer: "mockIssuer",
-      salt: "mockSalt",
-      hashed_client_secret: "mockHashedClientSecret",
-    });
-  }
-}
-
-class MockPassingSsmService implements IGetClientCredentials {
-  getClientCredentials = async (
-    clientCredentials: IClientCredentials[] = [
-      {
+class MockTokenServiceInvalidSignatureErrorResult
+  implements IDecodeToken, IVerifyTokenSignature
+{
+  getDecodedToken(): Result<IDecodedToken> {
+    return successResult({
+      encodedJwt:
+        "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJleHAiOjE3MjE5MDExNDMwMDAsImlzcyI6Im1vY2tJc3N1ZXIiLCJhdWQiOiJtb2NrSXNzdWVyIiwic2NvcGUiOiJkY21hdy5zZXNzaW9uLmFzeW5jX2NyZWF0ZSIsImNsaWVudF9pZCI6Im1vY2tDbGllbnRJZCJ9.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
+      jwtPayload: {
+        aud: "mockIssuer",
         client_id: "mockClientId",
-        issuer: "mockIssuer",
-        salt: "mockSalt",
-        hashed_client_secret: "mockHashedClientSecret",
+        exp: 1721901143000,
+        iss: "mockIssuer",
+        scope: "dcmaw.session.async_create",
       },
-    ],
-  ): Promise<ErrorOrSuccess<IClientCredentials[]>> => {
-    return Promise.resolve(successResponse(clientCredentials));
+    });
+  }
+  verifyTokenSignature(): Promise<Result<null>> {
+    return Promise.resolve(errorResult("Failed to verify token signature"));
+  }
+}
+
+class MockTokenServiceSuccess implements IDecodeToken, IVerifyTokenSignature {
+  getDecodedToken(): Result<IDecodedToken> {
+    return successResult({
+      encodedJwt:
+        "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJleHAiOjE3MjE5MDExNDMwMDAsImlzcyI6Im1vY2tJc3N1ZXIiLCJhdWQiOiJtb2NrSXNzdWVyIiwic2NvcGUiOiJkY21hdy5zZXNzaW9uLmFzeW5jX2NyZWF0ZSIsImNsaWVudF9pZCI6Im1vY2tDbGllbnRJZCJ9.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
+      jwtPayload: {
+        aud: "mockIssuer",
+        client_id: "mockClientId",
+        exp: 1721901143000,
+        iss: "mockIssuer",
+        scope: "dcmaw.session.async_create",
+      },
+    });
+  }
+  verifyTokenSignature(): Promise<Result<null>> {
+    return Promise.resolve(successResult(null));
+  }
+}
+
+class MockClientRegistryServiceeGetPartialClientInternalServerResult
+  implements IGetPartialRegisteredClientByClientId
+{
+  getPartialRegisteredClientByClientId = async () => {
+    return errorResult("Unexpected error retrieving registered client");
   };
 }
 
-class MockFailingSsmService implements IGetClientCredentials {
-  getClientCredentials = async (): Promise<
-    ErrorOrSuccess<IClientCredentials[]>
-  > => {
-    return errorResponse("Mock Failing SSM log");
+class MockClientRegistryServiceGetPartialClientBadRequestResponse
+  implements IGetPartialRegisteredClientByClientId
+{
+  getPartialRegisteredClientByClientId = async () => {
+    return errorResult("Client Id is not registered");
   };
 }
 
-class MockSessionServiceGetSessionBySubFailure
-  implements IGetSessionBySub, ICreateSession
+class MockClientRegistryServiceGetPartialClientSuccessResult
+  implements IGetPartialRegisteredClientByClientId
+{
+  getPartialRegisteredClientByClientId = async () => {
+    return successResult({
+      issuer: "mockIssuer",
+      redirectUri: "https://www.mockUrl.com",
+    });
+  };
+}
+
+class MockSessionServiceGetSessionBySubErrorResult
+  implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
   readonly indexName: string;
@@ -1316,17 +1056,17 @@ class MockSessionServiceGetSessionBySubFailure
     this.indexName = indexName;
   }
 
-  getAuthSessionBySub = async (): Promise<ErrorOrSuccess<string | null>> => {
-    return errorResponse("Mock failing DB call");
+  getActiveSession = async (): Promise<Result<string | null>> => {
+    return errorResult("Mock failing DB call");
   };
 
-  createSession = async (): Promise<ErrorOrSuccess<null>> => {
-    return successResponse(null);
+  createSession = async (): Promise<Result<string>> => {
+    return successResult("mockSessionId");
   };
 }
 
-class MockSessionServiceNoRecoverableSession
-  implements IGetSessionBySub, ICreateSession
+class MockSessionServiceNoActiveSession
+  implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
   readonly indexName: string;
@@ -1335,37 +1075,17 @@ class MockSessionServiceNoRecoverableSession
     this.tableName = tableName;
     this.indexName = indexName;
   }
-  getAuthSessionBySub = async (): Promise<ErrorOrSuccess<string | null>> => {
-    return successResponse(null);
+  getActiveSession = async (): Promise<Result<string | null>> => {
+    return successResult(null);
   };
 
-  createSession = async (): Promise<ErrorOrSuccess<null>> => {
-    return successResponse(null);
-  };
-}
-
-class MockSessionServiceSessionRecovered
-  implements IGetSessionBySub, ICreateSession
-{
-  readonly tableName: string;
-  readonly indexName: string;
-
-  constructor(tableName: string, indexName: string) {
-    this.tableName = tableName;
-    this.indexName = indexName;
-  }
-
-  getAuthSessionBySub = async (): Promise<ErrorOrSuccess<string | null>> => {
-    return successResponse("mockSessionId");
-  };
-
-  createSession = async (): Promise<ErrorOrSuccess<null>> => {
-    return successResponse(null);
+  createSession = async (): Promise<Result<string>> => {
+    return successResult("mockSessionId");
   };
 }
 
-class MockSessionServiceFailToCreateSession
-  implements IGetSessionBySub, ICreateSession
+class MockSessionServiceGetActiveSessionSuccessResult
+  implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
   readonly indexName: string;
@@ -1375,17 +1095,17 @@ class MockSessionServiceFailToCreateSession
     this.indexName = indexName;
   }
 
-  getAuthSessionBySub = async (): Promise<ErrorOrSuccess<string | null>> => {
-    return successResponse(null);
+  getActiveSession = async (): Promise<Result<string | null>> => {
+    return successResult("mockSessionId");
   };
 
-  createSession = async (): Promise<ErrorOrSuccess<null>> => {
-    return errorResponse("Mock error");
+  createSession = async (): Promise<Result<string>> => {
+    return successResult("mockSessionId");
   };
 }
 
-class MockSessionServiceSessionCreated
-  implements IGetSessionBySub, ICreateSession
+class MockSessionServiceCreateSessionErrorResult
+  implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
   readonly indexName: string;
@@ -1395,35 +1115,31 @@ class MockSessionServiceSessionCreated
     this.indexName = indexName;
   }
 
-  getAuthSessionBySub = async (): Promise<ErrorOrSuccess<string | null>> => {
-    return successResponse(null);
+  getActiveSession = async (): Promise<Result<string | null>> => {
+    return successResult(null);
   };
 
-  createSession = async (): Promise<ErrorOrSuccess<null>> => {
-    return successResponse(null);
-  };
-}
-
-class MockEventWriterSuccess implements IEventService {
-  auditEvents: IEventConfig[] = [];
-  writeEvent = async (
-    eventConfig: IEventConfig,
-  ): Promise<ErrorOrSuccess<null>> => {
-    this.auditEvents.push(eventConfig);
-    return successResponse(null);
+  createSession = async (): Promise<Result<string>> => {
+    return errorResult("Mock error");
   };
 }
 
-class MockEventServiceFailToWrite implements IEventService {
-  private eventNameToFail: EventName;
-  constructor(eventNameToFail: EventName) {
-    this.eventNameToFail = eventNameToFail;
+class MockSessionServiceCreateSessionSuccessResult
+  implements IGetActiveSession, ICreateSession
+{
+  readonly tableName: string;
+  readonly indexName: string;
+
+  constructor(tableName: string, indexName: string) {
+    this.tableName = tableName;
+    this.indexName = indexName;
   }
-  writeEvent = async (
-    eventConfig: IEventConfig,
-  ): Promise<ErrorOrSuccess<null>> => {
-    if (eventConfig.eventName === this.eventNameToFail)
-      return errorResponse("Error writing to SQS");
-    return successResponse(null);
+
+  getActiveSession = async (): Promise<Result<string | null>> => {
+    return successResult(null);
+  };
+
+  createSession = async (): Promise<Result<string>> => {
+    return successResult("mockSessionId");
   };
 }

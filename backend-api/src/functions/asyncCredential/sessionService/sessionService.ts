@@ -7,13 +7,10 @@ import {
   QueryCommandOutput,
 } from "@aws-sdk/client-dynamodb";
 import { dbClient } from "./dynamoDbClient";
-import {
-  ErrorOrSuccess,
-  errorResponse,
-  successResponse,
-} from "../../types/errorOrValue";
+import { randomUUID } from "crypto";
+import { errorResult, Result, successResult } from "../../utils/result";
 
-export class SessionService implements IGetSessionBySub, ICreateSession {
+export class SessionService implements IGetActiveSession, ICreateSession {
   readonly tableName: string;
   readonly indexName: string;
   readonly dbClient: DynamoDBClient;
@@ -24,28 +21,33 @@ export class SessionService implements IGetSessionBySub, ICreateSession {
     this.dbClient = dbClient;
   }
 
-  async getAuthSessionBySub(
+  async getActiveSession(
     sub: string,
-    state: string,
-    sessionRecoveryTimeout: number,
-  ): Promise<ErrorOrSuccess<string | null>> {
+    sessionTimeToLiveInMilliseconds: number,
+  ): Promise<Result<string | null>> {
     const queryCommandInput: QueryCommandInput = {
       TableName: this.tableName,
       IndexName: this.indexName,
-      KeyConditionExpression:
-        "subjectIdentifier = :subjectIdentifier and issuedOn > :issuedOn",
+      KeyConditionExpression: "#sub = :sub and #sessionState = :sessionState",
       FilterExpression:
-        "authSessionState = :authSessionState and #state <> :state",
-      ExpressionAttributeValues: {
-        ":subjectIdentifier": { S: sub },
-        ":authSessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
-        ":issuedOn": { S: (Date.now() - sessionRecoveryTimeout).toString() },
-        ":state": { S: state },
-      },
+        ":currentTimeInMs < #issuedOn + :sessionTimeToLiveInMilliseconds",
       ExpressionAttributeNames: {
-        "#state": "state",
+        "#issuedOn": "issuedOn",
+        "#sessionId": "sessionId",
+        "#sessionState": "sessionState",
+        "#sub": "sub",
       },
-      ProjectionExpression: "sessionId",
+      ExpressionAttributeValues: {
+        ":sub": { S: sub },
+        ":sessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
+        ":currentTimeInMs": {
+          S: Date.now().toString(),
+        },
+        ":sessionTtlInMs": {
+          S: sessionTimeToLiveInMilliseconds.toString(),
+        },
+      },
+      ProjectionExpression: "#sessionId",
       Limit: 1,
       ScanIndexForward: false,
     };
@@ -53,63 +55,44 @@ export class SessionService implements IGetSessionBySub, ICreateSession {
     let result: QueryCommandOutput;
     try {
       result = await dbClient.send(new QueryCommand(queryCommandInput));
-    } catch (error) {
-      return errorResponse(
-        "Unexpected error when querying session table whilst checking for recoverable session",
+    } catch (e) {
+      return errorResult(
+        "Unexpected error when querying session table whilst checking for an active session",
       );
     }
 
     if (!this.hasValidSession(result)) {
-      return successResponse(null);
+      return successResult(null);
     }
 
-    return successResponse(result.Items[0].sessionId.S);
+    return successResult(result.Items[0].sessionId.S);
   }
 
-  async createSession(
-    sessionConfig: IAuthSession,
-  ): Promise<ErrorOrSuccess<null>> {
-    const config: IPutAuthSessionConfig = {
-      TableName: this.tableName,
-      Item: {
-        sessionId: { S: sessionConfig.sessionId },
-        state: { S: sessionConfig.state },
-        sub: { S: sessionConfig.sub },
-        clientId: { S: sessionConfig.clientId },
-        govukSigninJourneyId: { S: sessionConfig.govukSigninJourneyId },
-        issuer: { S: sessionConfig.issuer },
-        sessionState: { S: sessionConfig.sessionState },
-      },
-    };
-
-    if (sessionConfig.redirectUri) {
-      config.Item.redirectUri = { S: sessionConfig.redirectUri };
-    }
+  async createSession(config: ICreateSessionConfig): Promise<Result<string>> {
+    const sessionId = randomUUID();
+    const putSessionConfig = this.buildPutItemCommandInput(sessionId, config);
 
     let doesSessionExist;
     try {
-      doesSessionExist = await this.checkSessionsExists(
-        sessionConfig.sessionId,
-      );
-    } catch (error) {
-      return errorResponse(
+      doesSessionExist = await this.checkSessionsExists(sessionId);
+    } catch (e) {
+      return errorResult(
         "Unexpected error when querying session table to check if sessionId exists",
       );
     }
 
     if (doesSessionExist) {
-      return errorResponse("sessionId already exists in the database");
+      return errorResult("sessionId already exists in the database");
     }
 
     try {
-      await this.putSessionInDb(config);
-    } catch (error) {
-      return errorResponse(
+      await this.putSessionInDb(putSessionConfig);
+    } catch (e) {
+      return errorResult(
         "Unexpected error when querying session table whilst creating a session",
       );
     }
-
-    return successResponse(null);
+    return successResult(sessionId);
   }
 
   private hasValidSession(
@@ -121,6 +104,40 @@ export class SessionService implements IGetSessionBySub, ICreateSession {
       result.Items[0].sessionId != null &&
       result.Items[0].sessionId.S !== ""
     );
+  }
+
+  private buildPutItemCommandInput(
+    sessionId: string,
+    config: ICreateSessionConfig,
+  ) {
+    const {
+      state,
+      sub,
+      client_id,
+      govuk_signin_journey_id,
+      redirect_uri,
+      issuer,
+    } = config;
+
+    const putSessionConfig: IPutSessionConfig = {
+      TableName: this.tableName,
+      Item: {
+        sessionId: { S: sessionId },
+        state: { S: state },
+        sub: { S: sub },
+        clientId: { S: client_id },
+        govukSigninJourneyId: { S: govuk_signin_journey_id },
+        issuer: { S: issuer },
+        sessionState: { S: "ASYNC_AUTH_SESSION_CREATED" },
+        issuedOn: { S: Date.now().toString() },
+      },
+    };
+
+    if (redirect_uri) {
+      putSessionConfig.Item.redirectUri = { S: redirect_uri };
+    }
+
+    return putSessionConfig;
   }
 
   private async checkSessionsExists(sessionId: string): Promise<boolean> {
@@ -136,23 +153,12 @@ export class SessionService implements IGetSessionBySub, ICreateSession {
     return output.Item != null;
   }
 
-  private async putSessionInDb(config: IPutAuthSessionConfig) {
+  private async putSessionInDb(config: IPutSessionConfig) {
     await dbClient.send(new PutItemCommand(config));
   }
 }
 
-interface IAuthSession {
-  sessionId: string;
-  state: string;
-  sub: string;
-  clientId: string;
-  govukSigninJourneyId: string;
-  issuer: string;
-  sessionState: string;
-  redirectUri?: string;
-}
-
-interface IPutAuthSessionConfig {
+interface IPutSessionConfig {
   TableName: string;
   Item: {
     sessionId: { S: string };
@@ -162,20 +168,29 @@ interface IPutAuthSessionConfig {
     govukSigninJourneyId: { S: string };
     issuer: { S: string };
     sessionState: { S: string };
+    issuedOn: { S: string };
     redirectUri?: { S: string };
   };
 }
 
-export interface IGetSessionBySub {
-  getAuthSessionBySub: (
+export interface IGetActiveSession {
+  getActiveSession: (
     sub: string,
-    state: string,
-    sessionRecoveryTimeout: number,
-  ) => Promise<ErrorOrSuccess<string | null>>;
+    sessionTimeToLiveInMilliseconds: number,
+  ) => Promise<Result<string | null>>;
+}
+
+interface ICreateSessionConfig {
+  state: string;
+  sub: string;
+  client_id: string;
+  govuk_signin_journey_id: string;
+  issuer: string;
+  redirect_uri?: string;
 }
 
 export interface ICreateSession {
-  createSession: (sessionConfig: IAuthSession) => Promise<ErrorOrSuccess<null>>;
+  createSession: (config: ICreateSessionConfig) => Promise<Result<string>>;
 }
 
 type IQueryCommandOutputType = {

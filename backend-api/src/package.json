@@ -7,11 +7,15 @@
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
     "lint": "./node_modules/.bin/eslint ./functions",
-    "test": "./node_modules/.bin/jest --detectOpenHandles"
+    "test": "./node_modules/.bin/jest --detectOpenHandles",
+    "ci": "npm run test && npm run format:check && npm run lint"
+  },
+  "engines": {
+    "node": "20"
   },
   "devDependencies": {
-    "@eslint/js": "^9.7.0",
-    "@types/aws-lambda": "8.10.141",
+    "@eslint/js": "^9.8.0",
+    "@types/aws-lambda": "8.10.142",
     "@types/eslint__js": "^8.42.3",
     "@types/jest": "29.5.12",
     "@types/node-jose": "^1.1.13",
@@ -23,14 +27,14 @@
     "ts-jest": "29.2.3",
     "ts-node": "10.9.2",
     "typescript": "^5.5.4",
-    "typescript-eslint": "^7.17.0"
+    "typescript-eslint": "^7.18.0"
   },
   "dependencies": {
-    "@aws-lambda-powertools/logger": "^2.5.0",
-    "@aws-sdk/client-dynamodb": "^3.616.0",
-    "@aws-sdk/client-kms": "3.616.0",
-    "@aws-sdk/client-sqs": "^3.616.0",
-    "@aws-sdk/client-ssm": "3.616.0",
+    "@aws-lambda-powertools/logger": "^2.6.0",
+    "@aws-sdk/client-dynamodb": "^3.621.0",
+    "@aws-sdk/client-kms": "3.621.0",
+    "@aws-sdk/client-sqs": "^3.621.0",
+    "@aws-sdk/client-ssm": "3.621.0",
     "@aws-sdk/node-http-handler": "3.374.0",
     "@types/node": "^20.14.11",
     "dotenv": "16.4.5",

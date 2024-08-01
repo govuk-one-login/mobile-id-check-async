@@ -13,7 +13,7 @@ It follows the Client credentials grant flow from the OAuth2.0 Framework [see he
 ## Dependencies:
 - AWS CLI
 - AWS SAM
-- node v.20
+- Node.js v20
 - npm
 
 ## Running tests

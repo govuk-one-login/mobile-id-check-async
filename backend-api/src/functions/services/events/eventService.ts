@@ -1,8 +1,4 @@
-import {
-  ErrorOrSuccess,
-  errorResponse,
-  successResponse,
-} from "../../types/errorOrValue";
+import { Result, errorResult, successResult } from "../../utils/result";
 import { sqsClient } from "./sqsClient";
 import { SendMessageCommand } from "@aws-sdk/client-sqs";
 
@@ -12,14 +8,23 @@ export class EventService implements IEventService {
   constructor(sqsQueue: string) {
     this.sqsQueue = sqsQueue;
   }
-  async writeEvent(eventConfig: IEventConfig): Promise<ErrorOrSuccess<null>> {
-    const txmaEvent = this.buildEvent(eventConfig);
+  async writeGenericEvent(
+    eventConfig: GenericEventConfig,
+  ): Promise<Result<null>> {
+    const txmaEvent = this.buildGenericEvent(eventConfig);
+    return await this.writeToSqs(txmaEvent);
+  }
+
+  async writeCredentialTokenIssuedEvent(
+    eventConfig: CredentialTokenIssuedEventConfig,
+  ): Promise<Result<null>> {
+    const txmaEvent = this.buildCredentialTokenIssuedEvent(eventConfig);
     return await this.writeToSqs(txmaEvent);
   }
 
   private async writeToSqs(
-    txmaEvent: ITxmaEvent,
-  ): Promise<ErrorOrSuccess<null>> {
+    txmaEvent: GenericTxmaEvent | CredentialTokenIssuedEvent,
+  ): Promise<Result<null>> {
     try {
       await sqsClient.send(
         new SendMessageCommand({
@@ -27,14 +32,16 @@ export class EventService implements IEventService {
           MessageBody: JSON.stringify(txmaEvent),
         }),
       );
-    } catch (error) {
-      return errorResponse("Failed to write to SQS");
+    } catch (e) {
+      return errorResult("Failed to write to SQS");
     }
 
-    return successResponse(null);
+    return successResult(null);
   }
 
-  private buildEvent(eventConfig: IEventConfig): ITxmaEvent {
+  private buildGenericEvent = (
+    eventConfig: GenericEventConfig,
+  ): GenericTxmaEvent => {
     return {
       user: {
         user_id: eventConfig.sub,
@@ -42,39 +49,64 @@ export class EventService implements IEventService {
         session_id: eventConfig.sessionId,
         govuk_signin_journey_id: eventConfig.govukSigninJourneyId,
       },
-      client_id: eventConfig.clientId,
       timestamp: eventConfig.getNowInMilliseconds(),
       event_name: eventConfig.eventName,
       component_id: eventConfig.componentId,
     };
-  }
+  };
+
+  private buildCredentialTokenIssuedEvent = (
+    eventConfig: CredentialTokenIssuedEventConfig,
+  ): CredentialTokenIssuedEvent => {
+    return {
+      event_name: eventConfig.eventName,
+      component_id: eventConfig.componentId,
+      timestamp: eventConfig.getNowInMilliseconds(),
+    };
+  };
 }
 
 export interface IEventService {
-  writeEvent: (eventConfig: IEventConfig) => Promise<ErrorOrSuccess<null>>;
+  writeCredentialTokenIssuedEvent: (
+    eventConfig: CredentialTokenIssuedEventConfig,
+  ) => Promise<Result<null>>;
+  writeGenericEvent: (eventConfig: GenericEventConfig) => Promise<Result<null>>;
 }
 
-export type EventName = "DCMAW_ASYNC_CRI_START";
+export type GenericEventName = "DCMAW_ASYNC_CRI_START";
+export type EventNames =
+  | GenericEventName
+  | "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
 
-interface ITxmaEvent {
+interface GenericTxmaEvent {
   user: {
     user_id: string;
     transaction_id: string;
     session_id: string;
     govuk_signin_journey_id: string;
   };
-  client_id: string;
   timestamp: number;
-  event_name: EventName;
+  event_name: GenericEventName;
   component_id: string;
 }
 
-export interface IEventConfig {
-  eventName: EventName;
+export interface GenericEventConfig {
+  eventName: GenericEventName;
   sub: string;
   sessionId: string;
   govukSigninJourneyId: string;
-  clientId: string;
   getNowInMilliseconds: () => number;
   componentId: string;
+}
+
+interface CredentialTokenIssuedEvent {
+  timestamp: number;
+  event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
+  component_id: string;
+}
+
+export interface CredentialTokenIssuedEventConfig {
+  getNowInMilliseconds: () => number;
+  componentId: string;
+  eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
 }
