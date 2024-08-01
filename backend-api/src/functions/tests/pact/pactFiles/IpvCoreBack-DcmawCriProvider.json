@@ -3,30 +3,6 @@
     "name": "IpvCoreBack"
   },
   "interactions": [{
-      "_id": "5a0752a32c5eb9c7363a48e68123a695063ee34a",
-      "description": "Valid credential request",
-      "providerStates": [{
-          "name": "badAccessToken is not a valid access token"
-        }],
-      "request": {
-        "body": {
-          "client_id": "ipv-core",
-          "govuk_signin_journey_id": "dummyJourneyId",
-          "redirect_uri": "https://identity.staging.account.gov.uk/credential-issuer/callback?id=dcmawAsync",
-          "state": "DUMMY_RANDOM_OAUTH_STATE",
-          "sub": "dummySubjectId"
-        },
-        "headers": {
-          "Authorization": "Bearer badAccessToken",
-          "Content-Type": "application/json"
-        },
-        "method": "POST",
-        "path": "/async/credential"
-      },
-      "response": {
-        "status": 403
-      }
-    }, {
       "_id": "8f0e7b179b60b70696091786cb2d7a2d874416ab",
       "description": "Invalid basic auth credentials",
       "providerStates": [{
@@ -45,48 +21,6 @@
       },
       "response": {
         "status": 401
-      }
-    }, {
-      "_id": "b2fc8c776fe377170a280673bc457735c8e4080d",
-      "description": "Valid credential request",
-      "providerStates": [{
-          "name": "dummyAccessToken is a valid access token"
-        }],
-      "request": {
-        "body": {
-          "client_id": "ipv-core",
-          "govuk_signin_journey_id": "dummyJourneyId",
-          "redirect_uri": "https://identity.staging.account.gov.uk/credential-issuer/callback?id=dcmawAsync",
-          "state": "DUMMY_RANDOM_OAUTH_STATE",
-          "sub": "dummySubjectId"
-        },
-        "headers": {
-          "Authorization": "Bearer dummyAccessToken",
-          "Content-Type": "application/json"
-        },
-        "method": "POST",
-        "path": "/async/credential"
-      },
-      "response": {
-        "body": {
-          "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
-          "sub": "dummySubjectId"
-        },
-        "headers": {
-          "Content-Type": "application/json; charset=UTF-8"
-        },
-        "matchingRules": {
-          "header": {
-            "Content-Type": {
-              "combine": "AND",
-              "matchers": [{
-                  "match": "regex",
-                  "regex": "application/json(;\\s?charset=[\\w\\-]+)?"
-                }]
-            }
-          }
-        },
-        "status": 200
       }
     }, {
       "_id": "5327d667d5bdf05cac61e1409725008d26d73380",
