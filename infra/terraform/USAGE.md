@@ -22,19 +22,19 @@ Export AWS Credentials configured for the appropriate account.
 Dev Example for base_stacks using AWS_PROFILE to set the aws credentials:
 
 ```bash
-export AWS_PROFILE=dmica-dev
 cd base_stacks
-environment=dev
+env=dev
+export AWS_PROFILE=async-${env}
 
 terraform init \
   -reconfigure \
-  -backend-config="../_backend/${environment}.s3.tfbackend"
+  -backend-config="../_backend/${env}.s3.tfbackend"
 
 terraform plan \
-  -var "environment=${environment}"
+  -var "environment=${env}"
 
 terraform apply \
-  -var "environment=${environment}"
+  -var "environment=${env}"
 ```
 
 Ensure to review the plan before completing the apply.
