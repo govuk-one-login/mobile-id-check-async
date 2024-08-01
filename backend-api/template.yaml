@@ -1,7 +1,23 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: async-backend SAM template for the ID Check v2 app
-
+Mappings:
+  PrivateApigw:
+    dev: 
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+    build: 
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    staging: 
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    integration: 
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    production: 
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
 Parameters:
   Environment:
     Description: "The environment type"
@@ -19,7 +35,7 @@ Resources:
   BackendAsyncCredentialApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub "id-check-${AWS::StackName}"
+      Name: !Sub "${AWS::StackName}-private-api"
       Description: Private APIgw for Client Credentials flow
       EndpointConfiguration: PRIVATE
       StageName: 
@@ -33,6 +49,10 @@ Resources:
         ResourcePolicy:
           IntrinsicVpceWhitelist:
             - !ImportValue devplatform-vpc-ExecuteApiGatewayEndpointId
+      MethodSetting:
+        MetricsEnabled: true
+        ThrottlingRateLimit: !FindInMap [ PrivateApigw, !Ref Environment, ApiRateLimit ]
+        ThrottlingBurstLimit: !FindInMap [ PrivateApigw, !Ref Environment, ApiBurstLimit ]
 
 ### Token lambda
   AsyncTokenFunction:
@@ -118,7 +138,6 @@ Resources:
           - asyncCredentialHandler.ts
     Properties:
       AutoPublishAlias: live
-      FunctionName: !Sub "async-credential-${AWS::StackName}"
       FunctionName: !Sub "async-credential-${AWS::StackName}"
       Runtime: nodejs20.x
       Handler: asyncCredentialHandler.lambdaHandler
