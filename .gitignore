@@ -6,4 +6,6 @@ report.xml
 # Jest code coverage output
 coverage/
 
+# AWS SAM
 .aws-sam/
+samconfig.toml
