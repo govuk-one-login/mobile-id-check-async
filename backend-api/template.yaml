@@ -1,0 +1,177 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: async-backend SAM template for the ID Check v2 app
+
+Parameters:
+  Environment:
+    Description: "The environment type"
+    Type: "String"
+    Default: dev
+
+Globals:
+  Function:
+    Environment:
+      Variables:
+        SIGNING_KEY_ID: !ImportValue platform-kms-signing-key-id
+
+Resources:
+### Private APIgw for Client Credentials grant flow
+  BackendAsyncCredentialApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub "id-check-${AWS::StackName}"
+      Description: Private APIgw for Client Credentials flow
+      EndpointConfiguration: PRIVATE
+      StageName: ${Environment}
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: './openApiSpecs/async-private-spec.yaml'
+      Auth:
+        ResourcePolicy:
+          IntrinsicVpceWhitelist:
+            - !ImportValue dev-platform-vpc-ExecuteApiGatewayEndpointId
+
+### Token lambda
+  AsyncTokenFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2022"
+        Sourcemap: false
+        EntryPoints:
+          - asyncTokenHandler.ts
+    Properties:
+      AutoPublishAlias: live
+      FunctionName: !Sub "async-token-${AWS::StackName}"
+      Runtime: nodejs20.x
+      Handler: asyncTokenHandler.lambdaHandler
+      CodeUri: src/functions/asyncToken/
+      Events:
+        AsyncToken:
+          Type: Api
+          Properties:
+            Path: /async/token
+            Method: post
+            RestApiId: !Ref BackendAsyncCredentialApi
+      Role: !GetAtt AsyncTokenLambdaRole.Arn
+
+  AsyncTokenFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt AsyncTokenFunction.Arn
+      Principal: events.amazonaws.com
+      SourceAccount: !Sub "${AWS::AccountId}"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialApi}/*/*/*"
+
+  AsyncTokenLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: AsyncTokenFunctionSsmPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: 'arn:aws:logs:*:*:*'
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource:
+                  - !Sub "arn:aws:secretsmanager${AWS::Region}:${AWS::AccountId}:secret:SECRET_NAME-12345"
+                  
+        - PolicyName: AsyncTokenFunctionKmsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:Sign
+                Resource: !ImportValue platform-kms-signing-key-id
+
+### Credential Lambda
+  AsyncCredentialFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2022"
+        Sourcemap: false
+        EntryPoints:
+          - asyncCredentialHandler.ts
+    Properties:
+      AutoPublishAlias: live
+      FunctionName: !Sub "async-credential-${AWS::StackName}"
+      FunctionName: !Sub "async-credential-${AWS::StackName}"
+      Runtime: nodejs20.x
+      Handler: asyncCredentialHandler.lambdaHandler
+      CodeUri: src/functions/asyncCredential
+      Role: AsyncCredentialLambdaRole.arn
+      Events:
+        AsyncCredential:
+          Type: Api
+          Properties:
+            Path: /async/credential
+            Method: post
+            RestApiId: !Ref BackendAsyncCredentialApi
+
+  AsyncCredentialFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt AsyncCredentialFunction.Arn
+      Principal: events.amazonaws.com
+      SourceAccount: !Sub "${AWS::AccountId}"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialApi}/*/*/*"
+
+  AsyncCredentialLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: AsyncTokenFunctionSsmPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: 'arn:aws:logs:*:*:*'
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource:
+                  - !Sub "arn:aws:secretsmanager${AWS::Region}:${AWS::AccountId}:secret:SECRET_NAME-12345"
+                  
+        - PolicyName: AsyncTokenFunctionKmsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:Sign
+                Resource: !ImportValue platform-kms-signing-key-id
