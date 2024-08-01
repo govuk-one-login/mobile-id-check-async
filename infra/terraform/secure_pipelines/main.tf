@@ -135,6 +135,7 @@ resource "aws_cloudformation_stack" "pipeline_mob_async_backend" {
       CustomKmsKeyArns                 = "arn:aws:kms:eu-west-2:216552277552:key/4bc58ab5-c9bb-4702-a2c3-5d339604a8fe" # To support Dynatrace
       AdditionalCodeSigningVersionArns = "arn:aws:signer:eu-west-2:216552277552:/signing-profiles/DynatraceSigner/5uwzCCGTPq"
       BuildNotificationStackName       = "devplatform-build-notifications"
+      SlackNotificationType            = "All"
     },
     local.parameters.pipeline_mob_async_backend[var.environment]
   )
