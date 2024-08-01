@@ -13,14 +13,12 @@ data "aws_ssm_parameter" "template_storage_bucket" {
   name = "/devplatform/template-storage-bucket"
 }
 
-
 terraform {
   backend "s3" {
     # bucket = "dmica-${local.environment}-tfs" # set by ../_backend/${local.environment}.s3.tfbackend as variables are unable to be used here
     key = "tf/secure-pipelines.tfstate"
   }
 }
-
 
 locals {
   template_bucket        = data.aws_ssm_parameter.template_storage_bucket.insecure_value
@@ -37,7 +35,7 @@ locals {
   }
 
   parameters = {
-    pipeline_mob_async_backend = {
+    mob_async_backend_pl = {
       dev = {
         OneLoginRepositoryName = "mobile-id-check-async"
 
@@ -58,8 +56,8 @@ locals {
       }
 
       staging = {
-        ArtifactSourceBucketArn                 = one(data.aws_cloudformation_stack.pipeline_mob_async_backend_build[*].outputs["ArtifactPromotionBucketArn"])
-        ArtifactSourceBucketEventTriggerRoleArn = one(data.aws_cloudformation_stack.pipeline_mob_async_backend_build[*].outputs["ArtifactPromotionBucketEventTriggerRoleArn"])
+        ArtifactSourceBucketArn                 = one(data.aws_cloudformation_stack.mob_async_backend_pl_build[*].outputs["ArtifactPromotionBucketArn"])
+        ArtifactSourceBucketEventTriggerRoleArn = one(data.aws_cloudformation_stack.mob_async_backend_pl_build[*].outputs["ArtifactPromotionBucketEventTriggerRoleArn"])
 
         IncludePromotion = "Yes"
         AllowedAccounts  = join(",", [local.account_vars.integration.account_id, local.account_vars.prod.account_id])
@@ -69,8 +67,8 @@ locals {
       }
 
       integration = {
-        ArtifactSourceBucketArn                 = one(data.aws_cloudformation_stack.pipeline_mob_async_backend_staging[*].outputs["ArtifactPromotionBucketArn"])
-        ArtifactSourceBucketEventTriggerRoleArn = one(data.aws_cloudformation_stack.pipeline_mob_async_backend_staging[*].outputs["ArtifactPromotionBucketEventTriggerRoleArn"])
+        ArtifactSourceBucketArn                 = one(data.aws_cloudformation_stack.mob_async_backend_pl_staging[*].outputs["ArtifactPromotionBucketArn"])
+        ArtifactSourceBucketEventTriggerRoleArn = one(data.aws_cloudformation_stack.mob_async_backend_pl_staging[*].outputs["ArtifactPromotionBucketEventTriggerRoleArn"])
 
         IncludePromotion = "No"
 
@@ -79,8 +77,8 @@ locals {
       }
 
       prod = {
-        ArtifactSourceBucketArn                 = one(data.aws_cloudformation_stack.pipeline_mob_async_backend_staging[*].outputs["ArtifactPromotionBucketArn"])
-        ArtifactSourceBucketEventTriggerRoleArn = one(data.aws_cloudformation_stack.pipeline_mob_async_backend_staging[*].outputs["ArtifactPromotionBucketEventTriggerRoleArn"])
+        ArtifactSourceBucketArn                 = one(data.aws_cloudformation_stack.mob_async_backend_pl_staging[*].outputs["ArtifactPromotionBucketArn"])
+        ArtifactSourceBucketEventTriggerRoleArn = one(data.aws_cloudformation_stack.mob_async_backend_pl_staging[*].outputs["ArtifactPromotionBucketEventTriggerRoleArn"])
 
         IncludePromotion = "No"
 
@@ -91,16 +89,16 @@ locals {
   }
 }
 
-data "aws_cloudformation_stack" "pipeline_mob_async_backend_build" {
+data "aws_cloudformation_stack" "mob_async_backend_pl_build" {
   provider = aws.build
   count    = var.environment == "staging" ? 1 : 0
-  name     = "devplatform-pipeline-mob-async-backend"
+  name     = "mob-async-backend-pl"
 }
 
-data "aws_cloudformation_stack" "pipeline_mob_async_backend_staging" {
+data "aws_cloudformation_stack" "mob_async_backend_pl_staging" {
   provider = aws.staging
   count    = contains(["integration", "prod"], var.environment) ? 1 : 0
-  name     = "devplatform-pipeline-mob-async-backend"
+  name     = "mob-async-backend-pl"
 }
 
 data "aws_cloudformation_stack" "signer_dev" {
@@ -116,8 +114,8 @@ data "aws_cloudformation_stack" "signer_build" {
 }
 
 
-resource "aws_cloudformation_stack" "pipeline_mob_async_backend" {
-  name = "devplatform-pipeline-mob-async-backend"
+resource "aws_cloudformation_stack" "mob_async_backend_pl" {
+  name = "mob-async-backend-pl"
 
   template_url = format(local.preformat_template_url,
     "sam-deploy-pipeline",             # https://github.com/govuk-one-login/devplatform-deploy/tree/main/sam-deploy-pipeline
@@ -126,20 +124,18 @@ resource "aws_cloudformation_stack" "pipeline_mob_async_backend" {
 
   parameters = merge(
     {
-      Environment = var.environment
-
-      SAMStackName               = "mob-async-backend"
-      TruncatedPipelineStackName = "mob-async-backend"
+      Environment  = var.environment
+      SAMStackName = "mob-async-backend"
 
       VpcStackName                     = "devplatform-vpc"
       CustomKmsKeyArns                 = "arn:aws:kms:eu-west-2:216552277552:key/4bc58ab5-c9bb-4702-a2c3-5d339604a8fe" # To support Dynatrace
       AdditionalCodeSigningVersionArns = "arn:aws:signer:eu-west-2:216552277552:/signing-profiles/DynatraceSigner/5uwzCCGTPq"
-      BuildNotificationStackName       = "devplatform-build-notifications"
-      SlackNotificationType            = "All"
+
+      BuildNotificationStackName = "devplatform-build-notifications"
+      SlackNotificationType      = "All"
     },
-    local.parameters.pipeline_mob_async_backend[var.environment]
+    local.parameters.mob_async_backend_pl[var.environment]
   )
 
   capabilities = ["CAPABILITY_NAMED_IAM"]
-
 }
