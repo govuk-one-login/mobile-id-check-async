@@ -9,10 +9,10 @@ export async function createApp(): Promise<Application> {
   app.use(express.json());
 
   app.post("/async/token", async (req: Request, res: Response) => {
-    // await asyncTokenHandlerConstructor();
+    // const result = await asyncTokenHandlerConstructor({ headers: req.headers, body: req.body});
 
-    res.status(200)
-    res.send("hello world")
+    res.status(200);
+    res.send("hello world");
   });
 
   return app;

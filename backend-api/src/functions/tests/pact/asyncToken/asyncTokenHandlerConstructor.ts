@@ -13,11 +13,11 @@ import {
   MockClientRegistryServiceSuccessResult,
   MockTokenServiceSuccessResult,
 } from "../../../asyncToken/asyncTokenHandler.test";
-import {
-  registeredLogs,
-} from "../../../asyncToken/registeredLogs";
+import { registeredLogs } from "../../../asyncToken/registeredLogs";
 
-export async function asyncTokenHandlerConstructor(): Promise<APIGatewayProxyResult> {
+export async function asyncTokenHandlerConstructor(
+  requestConfig: IAsyncTokenHandlerConfig,
+): Promise<APIGatewayProxyResult> {
   const env = {
     SIGNING_KEY_ID: "mockSigningKeyId",
     ISSUER: "mockIssuer",
@@ -35,8 +35,13 @@ export async function asyncTokenHandlerConstructor(): Promise<APIGatewayProxyRes
     tokenService: () => new MockTokenServiceSuccessResult(),
   };
 
-  const event: APIGatewayProxyEvent = buildRequest();
+  const event: APIGatewayProxyEvent = buildRequest(requestConfig);
   const context = buildLambdaContext();
 
   return await lambdaHandlerConstructor(dependencies, context, event);
+}
+
+interface IAsyncTokenHandlerConfig {
+  headers: { [name: string]: string | string[] | undefined };
+  body: string | null;
 }
