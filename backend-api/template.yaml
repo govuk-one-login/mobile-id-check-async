@@ -12,7 +12,7 @@ Globals:
   Function:
     Environment:
       Variables:
-        SIGNING_KEY_ID: !ImportValue platform-kms-signing-key-id
+        SIGNING_KEY_ID: !ImportValue platform-kms-signing-key-arn
 
 Resources:
 ### Private APIgw for Client Credentials grant flow
@@ -22,7 +22,8 @@ Resources:
       Name: !Sub "id-check-${AWS::StackName}"
       Description: Private APIgw for Client Credentials flow
       EndpointConfiguration: PRIVATE
-      StageName: ${Environment}
+      StageName: 
+        Ref: Environment
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
@@ -31,7 +32,7 @@ Resources:
       Auth:
         ResourcePolicy:
           IntrinsicVpceWhitelist:
-            - !ImportValue dev-platform-vpc-ExecuteApiGatewayEndpointId
+            - !ImportValue devplatform-vpc-ExecuteApiGatewayEndpointId
 
 ### Token lambda
   AsyncTokenFunction:
@@ -102,7 +103,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - kms:Sign
-                Resource: !ImportValue platform-kms-signing-key-id
+                Resource: !ImportValue platform-kms-signing-key-arn
 
 ### Credential Lambda
   AsyncCredentialFunction:
@@ -122,7 +123,7 @@ Resources:
       Runtime: nodejs20.x
       Handler: asyncCredentialHandler.lambdaHandler
       CodeUri: src/functions/asyncCredential
-      Role: AsyncCredentialLambdaRole.arn
+      Role: !GetAtt AsyncCredentialLambdaRole.Arn
       Events:
         AsyncCredential:
           Type: Api
@@ -174,4 +175,4 @@ Resources:
               - Effect: Allow
                 Action:
                   - kms:Sign
-                Resource: !ImportValue platform-kms-signing-key-id
+                Resource: !ImportValue platform-kms-signing-key-arn
