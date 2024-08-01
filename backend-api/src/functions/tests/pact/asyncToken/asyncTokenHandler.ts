@@ -1,12 +1,22 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda"
-import { IAsyncTokenRequestDependencies, lambdaHandlerConstructor } from "../../../asyncToken/asyncTokenHandler"
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import {
+  IAsyncTokenRequestDependencies,
+  lambdaHandlerConstructor,
+} from "../../../asyncToken/asyncTokenHandler";
 import { buildRequest } from "../../../testUtils/mockRequest";
 import { buildLambdaContext } from "../../../testUtils/mockContext";
 import { MockEventWriterSuccess } from "../../../services/events/tests/mocks";
 import { MockLoggingAdapter } from "../../../services/logging/tests/mockLogger";
 import { Logger } from "../../../services/logging/logger";
-import { MockRequestServiceSuccessResult, MockClientRegistryServiceSuccessResult, MockTokenServiceSuccessResult } from "../../../asyncToken/asyncTokenHandler.test";
-import { MessageName, registeredLogs } from "../../../asyncToken/registeredLogs";
+import {
+  MockRequestServiceSuccessResult,
+  MockClientRegistryServiceSuccessResult,
+  MockTokenServiceSuccessResult,
+} from "../../../asyncToken/asyncTokenHandler.test";
+import {
+  MessageName,
+  registeredLogs,
+} from "../../../asyncToken/registeredLogs";
 
 export async function asyncTokenHandler(): Promise<APIGatewayProxyResult> {
   const env = {
@@ -27,8 +37,7 @@ export async function asyncTokenHandler(): Promise<APIGatewayProxyResult> {
   };
 
   const event: APIGatewayProxyEvent = buildRequest();
-  const context = buildLambdaContext()
+  const context = buildLambdaContext();
 
-
-  return await lambdaHandlerConstructor(dependencies, context, event)
+  return await lambdaHandlerConstructor(dependencies, context, event);
 }
