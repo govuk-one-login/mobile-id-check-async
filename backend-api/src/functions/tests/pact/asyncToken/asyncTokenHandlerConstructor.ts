@@ -14,7 +14,6 @@ import {
   MockTokenServiceSuccessResult,
 } from "../../../asyncToken/asyncTokenHandler.test";
 import {
-  MessageName,
   registeredLogs,
 } from "../../../asyncToken/registeredLogs";
 
@@ -26,7 +25,7 @@ export async function asyncTokenHandlerConstructor(): Promise<APIGatewayProxyRes
     CLIENT_REGISTRY_PARAMETER_NAME: "mockParmaterName",
   };
 
-  let mockLogger: MockLoggingAdapter<MessageName>;
+  const mockLogger = new MockLoggingAdapter();
   const dependencies: IAsyncTokenRequestDependencies = {
     env,
     eventService: () => new MockEventWriterSuccess(),
