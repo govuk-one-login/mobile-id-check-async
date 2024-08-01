@@ -5,3 +5,5 @@ report.xml
 
 # Jest code coverage output
 coverage/
+
+.aws-sam/
