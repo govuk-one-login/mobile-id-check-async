@@ -56,6 +56,8 @@ Resources:
 
 ### Token lambda
   AsyncTokenFunction:
+    DependsOn:
+      - "AsyncTokenLogGroup"
     Type: AWS::Serverless::Function
     Metadata:
       BuildMethod: esbuild
@@ -67,7 +69,7 @@ Resources:
           - asyncTokenHandler.ts
     Properties:
       AutoPublishAlias: live
-      FunctionName: !Sub "async-token-${AWS::StackName}"
+      FunctionName: !Sub "${AWS::StackName}-token"
       Runtime: nodejs20.x
       Handler: asyncTokenHandler.lambdaHandler
       CodeUri: src/functions/asyncToken/
@@ -88,6 +90,13 @@ Resources:
       Principal: events.amazonaws.com
       SourceAccount: !Sub "${AWS::AccountId}"
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialApi}/*/*/*"
+
+
+  AsyncTokenLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-token"
 
   AsyncTokenLambdaRole:
     Type: AWS::IAM::Role
@@ -127,6 +136,8 @@ Resources:
 
 ### Credential Lambda
   AsyncCredentialFunction:
+    DependsOn:
+      - "AsyncCredentialLogGroup"
     Type: AWS::Serverless::Function
     Metadata:
       BuildMethod: esbuild
@@ -138,7 +149,7 @@ Resources:
           - asyncCredentialHandler.ts
     Properties:
       AutoPublishAlias: live
-      FunctionName: !Sub "async-credential-${AWS::StackName}"
+      FunctionName: !Sub "${AWS::StackName}-credential"
       Runtime: nodejs20.x
       Handler: asyncCredentialHandler.lambdaHandler
       CodeUri: src/functions/asyncCredential
@@ -150,6 +161,13 @@ Resources:
             Path: /async/credential
             Method: post
             RestApiId: !Ref BackendAsyncCredentialApi
+
+  AsyncCredentialLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-credential"
+
 
   AsyncCredentialFunctionPermission:
     Type: AWS::Lambda::Permission
