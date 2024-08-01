@@ -1,6 +1,6 @@
 import express from "express";
 import { Application, Request, Response } from "express";
-import { asyncTokenHandler } from "./asyncToken/asyncTokenHandler";
+import { asyncTokenHandlerConstructor } from "./asyncToken/asyncTokenHandlerConstructor";
 
 export async function createApp(): Promise<Application> {
   const app: Application = express();
@@ -9,7 +9,7 @@ export async function createApp(): Promise<Application> {
   app.use(express.json());
 
   app.post("/async/token", async (req: Request, res: Response) => {
-    await asyncTokenHandler();
+    await asyncTokenHandlerConstructor();
   });
 
   return app;

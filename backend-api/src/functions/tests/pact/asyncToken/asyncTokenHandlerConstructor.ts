@@ -18,7 +18,7 @@ import {
   registeredLogs,
 } from "../../../asyncToken/registeredLogs";
 
-export async function asyncTokenHandler(): Promise<APIGatewayProxyResult> {
+export async function asyncTokenHandlerConstructor(): Promise<APIGatewayProxyResult> {
   const env = {
     SIGNING_KEY_ID: "mockSigningKeyId",
     ISSUER: "mockIssuer",
