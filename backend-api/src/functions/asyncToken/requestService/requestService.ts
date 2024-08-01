@@ -10,15 +10,24 @@ export class RequestService implements IProcessRequest {
     const authorizationHeader = request.headers["Authorization"];
 
     if (!this.isRequestBodyValid(requestBody)) {
-      return errorResult("Invalid grant_type");
+      return errorResult({
+        errorMessage: "Invalid grant_type",
+        errorCategory: "CLIENT_ERROR",
+      });
     }
 
     if (!authorizationHeader) {
-      return errorResult("Invalid authorization header");
+      return errorResult({
+        errorMessage: "Invalid authorization header",
+        errorCategory: "CLIENT_ERROR",
+      });
     }
 
     if (!authorizationHeader.startsWith("Basic ")) {
-      return errorResult("Invalid authorization header");
+      return errorResult({
+        errorMessage: "Invalid authorization header",
+        errorCategory: "CLIENT_ERROR",
+      });
     }
 
     const base64EncodedCredential = authorizationHeader.split(" ")[1];
@@ -29,7 +38,10 @@ export class RequestService implements IProcessRequest {
     const [clientId, clientSecret] = base64DecodedCredential.split(":");
 
     if (!clientId || !clientSecret) {
-      return errorResult("Client secret incorrectly formatted");
+      return errorResult({
+        errorMessage: "Client secret incorrectly formatted",
+        errorCategory: "CLIENT_ERROR",
+      });
     }
 
     return successResult({ clientId, clientSecret });

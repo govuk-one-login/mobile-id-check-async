@@ -130,9 +130,9 @@ describe("Async Token", () => {
     });
   });
 
-  describe("Client Credentials Service", () => {
+  describe("Client Registry Service", () => {
     describe("Get issuer from client registry", () => {
-      describe("Given there is an unexpected error retrieving the client credentials", () => {
+      describe("Given there is an unexpected error retrieving the client registry", () => {
         it("Returns a 500 Server Error response", async () => {
           dependencies.clientRegistryService = () =>
             new MockClientRegistryServiceInternalServerErrorResult();
@@ -298,7 +298,10 @@ class MockRequestServiceSuccessResult implements IProcessRequest {
 
 class MockRequestServiceInvalidGrantTypeErrorResult implements IProcessRequest {
   processRequest = (): Result<IDecodedClientSecrets> => {
-    return errorResult("Invalid grant_type");
+    return errorResult({
+      errorMessage: "Invalid grant_type",
+      errorCategory: "CLIENT_ERROR",
+    });
   };
 }
 
@@ -306,7 +309,10 @@ class MockRequestServiceInvalidAuthorizationHeaderErrorResult
   implements IProcessRequest
 {
   processRequest = (): Result<IDecodedClientSecrets> => {
-    return errorResult("Invalid authorization header");
+    return errorResult({
+      errorMessage: "Invalid authorization header",
+      errorCategory: "CLIENT_ERROR",
+    });
   };
 }
 
@@ -322,7 +328,12 @@ class MockClientRegistryServiceInternalServerErrorResult
   implements IGetRegisteredIssuerUsingClientSecrets
 {
   getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
-    return Promise.resolve(errorResult("Unexpected error retrieving issuer"));
+    return Promise.resolve(
+      errorResult({
+        errorMessage: "Unexpected error retrieving issuer",
+        errorCategory: "SERVER_ERROR",
+      }),
+    );
   };
 }
 
@@ -330,7 +341,12 @@ class MockClientRegistryServiceBadRequestResult
   implements IGetRegisteredIssuerUsingClientSecrets
 {
   getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
-    return Promise.resolve(errorResult("Client secrets invalid"));
+    return Promise.resolve(
+      errorResult({
+        errorMessage: "Client secrets invalid",
+        errorCategory: "CLIENT_ERROR",
+      }),
+    );
   };
 }
 
@@ -342,6 +358,9 @@ class MockTokenServiceSuccessResult implements IMintToken {
 
 class MockTokenServiceErrorResult implements IMintToken {
   async mintToken(): Promise<Result<string>> {
-    return errorResult("Failed to sign Jwt");
+    return errorResult({
+      errorMessage: "Failed to sign Jwt",
+      errorCategory: "SERVER_ERROR",
+    });
   }
 }

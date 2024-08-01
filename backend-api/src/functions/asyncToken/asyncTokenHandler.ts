@@ -23,7 +23,7 @@ export async function lambdaHandlerConstructor(
   const configResult = new ConfigService().getConfig(dependencies.env);
   if (configResult.isError) {
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
-      errorMessage: configResult.value,
+      errorMessage: configResult.value.errorMessage,
     });
     return serverErrorResponse;
   }
@@ -35,14 +35,16 @@ export async function lambdaHandlerConstructor(
   const processRequestResult = requestService.processRequest(event);
 
   if (processRequestResult.isError) {
-    if (processRequestResult.value === "Invalid grant_type") {
+    if (processRequestResult.value.errorMessage === "Invalid grant_type") {
       logger.log("INVALID_REQUEST", {
-        errorMessage: processRequestResult.value,
+        errorMessage: processRequestResult.value.errorMessage,
       });
       return badRequestResponseInvalidGrant;
     }
 
-    logger.log("INVALID_REQUEST", { errorMessage: processRequestResult.value });
+    logger.log("INVALID_REQUEST", {
+      errorMessage: processRequestResult.value.errorMessage,
+    });
 
     return badRequestResponseInvalidAuthorizationHeader;
   }
@@ -58,18 +60,18 @@ export async function lambdaHandlerConstructor(
       suppliedClientCredentials,
     );
   if (getRegisteredIssuerByClientSecretsResult.isError) {
-    // TODO: This is intentionally hardcoded on a string. This requires a wider refactor that is in progress and part of the next PR.
     if (
-      getRegisteredIssuerByClientSecretsResult.value ===
-      "Unexpected error retrieving issuer"
+      getRegisteredIssuerByClientSecretsResult.value.errorCategory ===
+      "SERVER_ERROR"
     ) {
       logger.log("INTERNAL_SERVER_ERROR", {
-        errorMessage: getRegisteredIssuerByClientSecretsResult.value,
+        errorMessage:
+          getRegisteredIssuerByClientSecretsResult.value.errorMessage,
       });
       return serverErrorResponse;
     }
     logger.log("INVALID_REQUEST", {
-      errorMessage: getRegisteredIssuerByClientSecretsResult.value,
+      errorMessage: getRegisteredIssuerByClientSecretsResult.value.errorMessage,
     });
     return badRequestResponseInvalidCredentials;
   }
@@ -90,7 +92,7 @@ export async function lambdaHandlerConstructor(
   const mintTokenResult = await tokenService.mintToken(jwtPayload);
   if (mintTokenResult.isError) {
     logger.log("INTERNAL_SERVER_ERROR", {
-      errorMessage: mintTokenResult.value,
+      errorMessage: mintTokenResult.value.errorMessage,
     });
     return serverErrorResponse;
   }
@@ -104,7 +106,7 @@ export async function lambdaHandlerConstructor(
   });
   if (writeEventResult.isError) {
     logger.log("ERROR_WRITING_AUDIT_EVENT", {
-      errorMessage: writeEventResult.value,
+      errorMessage: writeEventResult.value.errorMessage,
     });
     return serverErrorResponse;
   }

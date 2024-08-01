@@ -19,7 +19,10 @@ describe("Request Service", () => {
           const result = requestService.processRequest(request);
 
           expect(result.isError).toEqual(true);
-          expect(result.value).toEqual("Invalid grant_type");
+          expect(result.value).toStrictEqual({
+            errorMessage: "Invalid grant_type",
+            errorCategory: "CLIENT_ERROR",
+          });
         });
       });
 
@@ -30,7 +33,10 @@ describe("Request Service", () => {
           const result = requestService.processRequest(request);
 
           expect(result.isError).toEqual(true);
-          expect(result.value).toEqual("Invalid grant_type");
+          expect(result.value).toStrictEqual({
+            errorMessage: "Invalid grant_type",
+            errorCategory: "CLIENT_ERROR",
+          });
         });
       });
 
@@ -41,7 +47,10 @@ describe("Request Service", () => {
           const result = requestService.processRequest(request);
 
           expect(result.isError).toEqual(true);
-          expect(result.value).toEqual("Invalid grant_type");
+          expect(result.value).toStrictEqual({
+            errorMessage: "Invalid grant_type",
+            errorCategory: "CLIENT_ERROR",
+          });
         });
       });
 
@@ -52,7 +61,10 @@ describe("Request Service", () => {
           const result = requestService.processRequest(request);
 
           expect(result.isError).toEqual(true);
-          expect(result.value).toEqual("Invalid grant_type");
+          expect(result.value).toStrictEqual({
+            errorMessage: "Invalid grant_type",
+            errorCategory: "CLIENT_ERROR",
+          });
         });
       });
     });
@@ -65,7 +77,10 @@ describe("Request Service", () => {
           const result = requestService.processRequest(request);
 
           expect(result.isError).toEqual(true);
-          expect(result.value).toEqual("Invalid authorization header");
+          expect(result.value).toStrictEqual({
+            errorMessage: "Invalid authorization header",
+            errorCategory: "CLIENT_ERROR",
+          });
         });
       });
 
@@ -77,7 +92,10 @@ describe("Request Service", () => {
           const result = requestService.processRequest(request);
 
           expect(result.isError).toEqual(true);
-          expect(result.value).toEqual("Invalid authorization header");
+          expect(result.value).toStrictEqual({
+            errorMessage: "Invalid authorization header",
+            errorCategory: "CLIENT_ERROR",
+          });
         });
       });
     });
@@ -92,7 +110,10 @@ describe("Request Service", () => {
           const result = requestService.processRequest(request);
 
           expect(result.isError).toEqual(true);
-          expect(result.value).toEqual("Client secret incorrectly formatted");
+          expect(result.value).toStrictEqual({
+            errorMessage: "Client secret incorrectly formatted",
+            errorCategory: "CLIENT_ERROR",
+          });
         });
       });
     });

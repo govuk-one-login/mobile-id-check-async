@@ -1,13 +1,13 @@
-export type Result<S, E = string> = SuccessResult<S> | ErrorResult<E>;
+export type Result<S> = SuccessResult<S> | ErrorResult;
 
 type SuccessResult<S> = {
   isError: false;
   value: S;
 };
 
-type ErrorResult<E> = {
+type ErrorResult = {
   isError: true;
-  value: E;
+  value: { errorMessage: string; errorCategory: ErrorCategory };
 };
 
 export const successResult = <S>(value: S): SuccessResult<S> => {
@@ -17,9 +17,14 @@ export const successResult = <S>(value: S): SuccessResult<S> => {
   };
 };
 
-export const errorResult = <E>(value: E): ErrorResult<E> => {
+export const errorResult = (value: {
+  errorMessage: string;
+  errorCategory: ErrorCategory;
+}): ErrorResult => {
   return {
     isError: true,
     value,
   };
 };
+
+type ErrorCategory = "SERVER_ERROR" | "CLIENT_ERROR" | "UNCATEGORIZED";
