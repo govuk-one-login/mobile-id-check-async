@@ -11,4 +11,4 @@ class StateConfiguration {
   }
 }
 
-export const stateConfig = new StateConfiguration()
+export const stateConfig = new StateConfiguration();
