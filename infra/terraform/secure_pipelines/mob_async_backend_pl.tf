@@ -53,8 +53,9 @@ locals {
         ArtifactSourceBucketArn                 = one(data.aws_cloudformation_stack.mob_async_backend_pl_build[*].outputs["ArtifactPromotionBucketArn"])
         ArtifactSourceBucketEventTriggerRoleArn = one(data.aws_cloudformation_stack.mob_async_backend_pl_build[*].outputs["ArtifactPromotionBucketEventTriggerRoleArn"])
 
-        IncludePromotion = "Yes"
-        AllowedAccounts  = join(",", [local.account_vars.integration.account_id, local.account_vars.prod.account_id])
+       # Stopping promotion at staging
+        IncludePromotion = "No" # "Yes"
+        AllowedAccounts  = null # join(",", [local.account_vars.integration.account_id, local.account_vars.prod.account_id])
 
         SigningProfileArn        = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileArn"])
         SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileVersionArn"])

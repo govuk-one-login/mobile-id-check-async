@@ -27,9 +27,9 @@ SIGNING_PROFILE="$(
 )" && export SIGNING_PROFILE
 
 export TEMPLATE_FILE="template.yaml"
-export COMMIT_MESSAGE="Test App Deployment for validating pipeline"
+export COMMIT_MESSAGE="Test App Deployment for validating pipeline - stop at Staging"
 export GITHUB_ACTOR="dothomson"
-export VERSION_NUMBER="v0.0.1"
+export VERSION_NUMBER="v0.0.2"
 export GITHUB_REPOSITORY="mobile-id-check-async"
 GITHUB_SHA="$(git rev-parse HEAD)" && export GITHUB_SHA
 
