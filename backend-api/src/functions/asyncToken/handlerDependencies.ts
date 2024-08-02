@@ -1,9 +1,15 @@
 import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
-import { Logger} from "../services/logging/logger"
-import { IGetRegisteredIssuerUsingClientSecrets, ClientRegistryService } from "../services/clientRegistryService/clientRegistryService";
+import { Logger } from "../services/logging/logger";
+import {
+  IGetRegisteredIssuerUsingClientSecrets,
+  ClientRegistryService,
+} from "../services/clientRegistryService/clientRegistryService";
 import { EventService, IEventService } from "../services/events/eventService";
 import { MessageName, registeredLogs } from "./registeredLogs";
-import { IProcessRequest, RequestService } from "./requestService/requestService";
+import {
+  IProcessRequest,
+  RequestService,
+} from "./requestService/requestService";
 import { IMintToken, TokenService } from "./tokenService/tokenService";
 
 export interface IAsyncTokenRequestDependencies {

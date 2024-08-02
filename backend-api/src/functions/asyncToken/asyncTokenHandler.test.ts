@@ -1,6 +1,4 @@
-import {
-  lambdaHandlerConstructor,
-} from "./asyncTokenHandler";
+import { lambdaHandlerConstructor } from "./asyncTokenHandler";
 import {
   IDecodedClientSecrets,
   IGetRegisteredIssuerUsingClientSecrets,

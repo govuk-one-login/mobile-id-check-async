@@ -5,9 +5,7 @@ import {
   IDecodeToken,
   IVerifyTokenSignature,
 } from "./tokenService/tokenService";
-import {
-  lambdaHandlerConstructor,
-} from "./asyncCredentialHandler";
+import { lambdaHandlerConstructor } from "./asyncCredentialHandler";
 import { IGetPartialRegisteredClientByClientId } from "../services/clientRegistryService/clientRegistryService";
 import { Result, errorResult, successResult } from "../utils/result";
 import { MockJWTBuilder } from "../testUtils/mockJwt";

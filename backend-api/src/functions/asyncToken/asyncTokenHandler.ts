@@ -4,7 +4,10 @@ import {
   Context,
 } from "aws-lambda";
 import { ConfigService } from "./configService/configService";
-import { dependencies, IAsyncTokenRequestDependencies } from "./handlerDependencies";
+import {
+  dependencies,
+  IAsyncTokenRequestDependencies,
+} from "./handlerDependencies";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,

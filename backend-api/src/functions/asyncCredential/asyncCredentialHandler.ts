@@ -1,10 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import {
-  IDecodedToken,
-} from "./tokenService/tokenService";
+import { IDecodedToken } from "./tokenService/tokenService";
 import { errorResult, Result, successResult } from "../utils/result";
-import {
-} from "./sessionService/sessionService";
+import {} from "./sessionService/sessionService";
 import { ConfigService } from "./configService/configService";
 import { Dependencies, dependencies } from "./handlerDependencies";
 
@@ -333,7 +330,5 @@ export interface IRequestBody {
   state: string;
   redirect_uri?: string;
 }
-
-
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);

@@ -1,9 +1,20 @@
 import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
-import { IGetPartialRegisteredClientByClientId, ClientRegistryService } from "../services/clientRegistryService/clientRegistryService";
+import {
+  IGetPartialRegisteredClientByClientId,
+  ClientRegistryService,
+} from "../services/clientRegistryService/clientRegistryService";
 import { IEventService, EventService } from "../services/events/eventService";
 import { MessageName, registeredLogs } from "./registeredLogs";
-import { IGetActiveSession, ICreateSession, SessionService } from "./sessionService/sessionService";
-import { IDecodeToken, IVerifyTokenSignature, TokenService } from "./tokenService/tokenService";
+import {
+  IGetActiveSession,
+  ICreateSession,
+  SessionService,
+} from "./sessionService/sessionService";
+import {
+  IDecodeToken,
+  IVerifyTokenSignature,
+  TokenService,
+} from "./tokenService/tokenService";
 import { Logger } from "../services/logging/logger";
 
 export interface Dependencies {
