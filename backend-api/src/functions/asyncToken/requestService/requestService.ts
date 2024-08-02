@@ -7,7 +7,7 @@ export interface IDecodedAuthorizationHeader {
   clientSecret: string;
 }
 
-interface IProcessRequest {
+interface IRequestService {
   getClientCredentials: (
     headers: APIGatewayProxyEventHeaders,
   ) => Result<IDecodedAuthorizationHeader>;
