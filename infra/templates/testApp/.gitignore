@@ -1,0 +1,4 @@
+devplatform-upload-action
+.aws-sam
+template.zip
+cf-template.yaml
