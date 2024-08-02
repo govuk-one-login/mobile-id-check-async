@@ -8,7 +8,7 @@ import {
   dependencies,
   IAsyncTokenRequestDependencies,
 } from "./handlerDependencies";
-import { processRequest } from "./processRequest";
+import { requestService } from "./requestService/requestService";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
@@ -32,7 +32,7 @@ export async function lambdaHandlerConstructor(
   const config = configResult.value;
 
   // Ensure that request contains expected params
-  const eventBodyResult = processRequest.getBody(event.body);
+  const eventBodyResult = requestService.validateBody(event.body);
   if (eventBodyResult.isError) {
     logger.log("INVALID_REQUEST", {
       errorMessage: eventBodyResult.value.errorMessage,
@@ -40,7 +40,7 @@ export async function lambdaHandlerConstructor(
     return badRequestResponseInvalidGrant;
   }
 
-  const eventHeadersResult = processRequest.getHeader(event.headers);
+  const eventHeadersResult = requestService.getClientCredentials(event.headers);
   if (eventHeadersResult.isError) {
     logger.log("INVALID_REQUEST", {
       errorMessage: eventHeadersResult.value.errorMessage,

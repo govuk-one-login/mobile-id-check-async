@@ -1,7 +1,7 @@
-import { Result } from "../utils/result";
+import { Result } from "../../utils/result";
 import { APIGatewayProxyEventHeaders } from "aws-lambda";
-import { IDecodedClientSecrets } from "../services/clientRegistryService/clientRegistryService";
-import { errorResult, successResult } from "../utils/result";
+import { IDecodedClientSecrets } from "../../services/clientRegistryService/clientRegistryService";
+import { errorResult, successResult } from "../../utils/result";
 
 export interface IDecodedAuthorizationHeader {
   clientId: string;
@@ -9,17 +9,18 @@ export interface IDecodedAuthorizationHeader {
 }
 
 interface IProcessRequest {
-  getHeader: (
+  getClientCredentials: (
     headers: APIGatewayProxyEventHeaders,
   ) => Result<IDecodedAuthorizationHeader>;
-  getBody: (body: string | null) => Result<null>;
+  validateBody: (body: string | null) => Result<null>;
 }
-export const processRequest: IProcessRequest = {
-  getHeader: (headers: APIGatewayProxyEventHeaders) => getHeader(headers),
-  getBody: (body: string | null) => getBody(body),
+export const requestService: IProcessRequest = {
+  getClientCredentials: (headers: APIGatewayProxyEventHeaders) =>
+    getClientCredentials(headers),
+  validateBody: (body: string | null) => validateBody(body),
 };
 
-const getHeader = (
+const getClientCredentials = (
   headers: APIGatewayProxyEventHeaders,
 ): Result<IDecodedClientSecrets> => {
   const authorizationHeader = headers.Authorization;
@@ -54,7 +55,7 @@ const getHeader = (
   return successResult({ clientId, clientSecret });
 };
 
-const getBody = (body: string | null): Result<null> => {
+const validateBody = (body: string | null): Result<null> => {
   if (body == null) {
     return errorResult({
       errorMessage: "Missing request body",
