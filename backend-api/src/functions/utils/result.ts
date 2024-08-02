@@ -27,4 +27,4 @@ export const errorResult = (value: {
   };
 };
 
-type ErrorCategory = "SERVER_ERROR" | "CLIENT_ERROR" | "UNCATEGORIZED";
+type ErrorCategory = "SERVER_ERROR" | "CLIENT_ERROR";

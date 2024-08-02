@@ -1140,7 +1140,7 @@ class MockSessionServiceCreateSessionErrorResult
   createSession = async (): Promise<Result<string>> => {
     return errorResult({
       errorMessage: "Mock error",
-      errorCategory: "UNCATEGORIZED",
+      errorCategory: "SERVER_ERROR",
     });
   };
 }
