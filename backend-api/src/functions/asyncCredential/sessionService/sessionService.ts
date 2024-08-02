@@ -55,7 +55,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     let result: QueryCommandOutput;
     try {
       result = await dbClient.send(new QueryCommand(queryCommandInput));
-    } catch (e) {
+    } catch {
       return errorResult(
         "Unexpected error when querying session table whilst checking for an active session",
       );
@@ -75,7 +75,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     let doesSessionExist;
     try {
       doesSessionExist = await this.checkSessionsExists(sessionId);
-    } catch (e) {
+    } catch {
       return errorResult(
         "Unexpected error when querying session table to check if sessionId exists",
       );
@@ -87,7 +87,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
 
     try {
       await this.putSessionInDb(putSessionConfig);
-    } catch (e) {
+    } catch {
       return errorResult(
         "Unexpected error when querying session table whilst creating a session",
       );
