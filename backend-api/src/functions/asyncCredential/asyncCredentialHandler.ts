@@ -1,23 +1,13 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { IGetPartialRegisteredClientByClientId } from "../services/clientRegistryService/clientRegistryService";
-import {
-  IDecodedToken,
-  IDecodeToken,
-  IVerifyTokenSignature,
-} from "./tokenService/tokenService";
+import { IDecodedToken } from "./tokenService/tokenService";
 import { errorResult, Result, successResult } from "../utils/result";
-import {
-  ICreateSession,
-  IGetActiveSession,
-} from "./sessionService/sessionService";
-import { Logger } from "../services/logging/logger";
-import { MessageName } from "./registeredLogs";
-import { IEventService } from "../services/events/eventService";
+import {} from "./sessionService/sessionService";
 import { ConfigService } from "./configService/configService";
+import { Dependencies, dependencies } from "./handlerDependencies";
 
-export async function lambdaHandler(
-  event: APIGatewayProxyEvent,
+export async function lambdaHandlerConstructor(
   dependencies: Dependencies,
+  event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
 
@@ -341,16 +331,4 @@ export interface IRequestBody {
   redirect_uri?: string;
 }
 
-export interface Dependencies {
-  logger: () => Logger<MessageName>;
-  eventService: (sqsQueue: string) => IEventService;
-  tokenService: () => IDecodeToken & IVerifyTokenSignature;
-  clientRegistryService: (
-    clientRegistryParameterName: string,
-  ) => IGetPartialRegisteredClientByClientId;
-  sessionService: (
-    tableName: string,
-    indexName: string,
-  ) => IGetActiveSession & ICreateSession;
-  env: NodeJS.ProcessEnv;
-}
+export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);

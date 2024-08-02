@@ -3,21 +3,11 @@ import {
   APIGatewayProxyResult,
   Context,
 } from "aws-lambda";
-import "dotenv/config";
-import {
-  ClientRegistryService,
-  IGetRegisteredIssuerUsingClientSecrets,
-} from "../services/clientRegistryService/clientRegistryService";
-import {
-  IProcessRequest,
-  RequestService,
-} from "./requestService/requestService";
-import { IMintToken, TokenService } from "./tokenService/tokenService";
-import { Logger } from "../services/logging/logger";
-import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
-import { MessageName, registeredLogs } from "./registeredLogs";
 import { ConfigService } from "./configService/configService";
-import { EventService, IEventService } from "../services/events/eventService";
+import {
+  dependencies,
+  IAsyncTokenRequestDependencies,
+} from "./handlerDependencies";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
@@ -169,27 +159,6 @@ const serverErrorResponse: APIGatewayProxyResult = {
     error: "server_error",
     error_description: "Server Error",
   }),
-};
-
-export interface IAsyncTokenRequestDependencies {
-  env: NodeJS.ProcessEnv;
-  eventService: (sqsQueue: string) => IEventService;
-  logger: () => Logger<MessageName>;
-  requestService: () => IProcessRequest;
-  clientRegistryService: (
-    clientRegistryParameterName: string,
-  ) => IGetRegisteredIssuerUsingClientSecrets;
-  tokenService: (signingKey: string) => IMintToken;
-}
-
-const dependencies: IAsyncTokenRequestDependencies = {
-  env: process.env,
-  eventService: (sqsQueue: string) => new EventService(sqsQueue),
-  logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
-  requestService: () => new RequestService(),
-  clientRegistryService: (clientRegistryParameterName: string) =>
-    new ClientRegistryService(clientRegistryParameterName),
-  tokenService: (signingKey: string) => new TokenService(signingKey),
 };
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);

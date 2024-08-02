@@ -1,7 +1,4 @@
-import {
-  IAsyncTokenRequestDependencies,
-  lambdaHandlerConstructor,
-} from "./asyncTokenHandler";
+import { lambdaHandlerConstructor } from "./asyncTokenHandler";
 import {
   IDecodedClientSecrets,
   IGetRegisteredIssuerUsingClientSecrets,
@@ -19,6 +16,7 @@ import {
   MockEventServiceFailToWrite,
   MockEventWriterSuccess,
 } from "../services/events/tests/mocks";
+import { IAsyncTokenRequestDependencies } from "./handlerDependencies";
 
 describe("Async Token", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;
