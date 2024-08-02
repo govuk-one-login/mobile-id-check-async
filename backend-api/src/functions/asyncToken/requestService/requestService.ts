@@ -1,7 +1,6 @@
-import { Result } from "../../utils/result";
+import { Result, errorResult, successResult } from "../../utils/result";
 import { APIGatewayProxyEventHeaders } from "aws-lambda";
 import { IDecodedClientSecrets } from "../../services/clientRegistryService/clientRegistryService";
-import { errorResult, successResult } from "../../utils/result";
 
 export interface IDecodedAuthorizationHeader {
   clientId: string;
