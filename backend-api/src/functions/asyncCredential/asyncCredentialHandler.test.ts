@@ -972,7 +972,10 @@ class MockTokenServiceGetDecodedTokenErrorResult
   implements IDecodeToken, IVerifyTokenSignature
 {
   getDecodedToken(): Result<IDecodedToken> {
-    return errorResult("Mock decoding token error");
+    return errorResult({
+      errorMessage: "Mock decoding token error",
+      errorCategory: "SERVER_ERROR",
+    });
   }
   verifyTokenSignature(): Promise<Result<null>> {
     return Promise.resolve(successResult(null));
@@ -996,7 +999,12 @@ class MockTokenServiceInvalidSignatureErrorResult
     });
   }
   verifyTokenSignature(): Promise<Result<null>> {
-    return Promise.resolve(errorResult("Failed to verify token signature"));
+    return Promise.resolve(
+      errorResult({
+        errorMessage: "Failed to verify token signature",
+        errorCategory: "SERVER_ERROR",
+      }),
+    );
   }
 }
 
@@ -1023,7 +1031,10 @@ class MockClientRegistryServiceeGetPartialClientInternalServerResult
   implements IGetPartialRegisteredClientByClientId
 {
   getPartialRegisteredClientByClientId = async () => {
-    return errorResult("Unexpected error retrieving registered client");
+    return errorResult({
+      errorMessage: "Unexpected error retrieving registered client",
+      errorCategory: "SERVER_ERROR",
+    });
   };
 }
 
@@ -1031,7 +1042,10 @@ class MockClientRegistryServiceGetPartialClientBadRequestResponse
   implements IGetPartialRegisteredClientByClientId
 {
   getPartialRegisteredClientByClientId = async () => {
-    return errorResult("Client Id is not registered");
+    return errorResult({
+      errorMessage: "Client Id is not registered",
+      errorCategory: "CLIENT_ERROR",
+    });
   };
 }
 
@@ -1058,7 +1072,10 @@ class MockSessionServiceGetSessionBySubErrorResult
   }
 
   getActiveSession = async (): Promise<Result<string | null>> => {
-    return errorResult("Mock failing DB call");
+    return errorResult({
+      errorMessage: "Mock failing DB call",
+      errorCategory: "SERVER_ERROR",
+    });
   };
 
   createSession = async (): Promise<Result<string>> => {
@@ -1121,7 +1138,10 @@ class MockSessionServiceCreateSessionErrorResult
   };
 
   createSession = async (): Promise<Result<string>> => {
-    return errorResult("Mock error");
+    return errorResult({
+      errorMessage: "Mock error",
+      errorCategory: "SERVER_ERROR",
+    });
   };
 }
 

@@ -15,7 +15,7 @@ export async function lambdaHandlerConstructor(
   const configResult = new ConfigService().getConfig(dependencies.env);
   if (configResult.isError) {
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
-      errorMessage: configResult.value,
+      errorMessage: configResult.value.errorMessage,
     });
     return serverError500Response;
   }
@@ -26,7 +26,7 @@ export async function lambdaHandlerConstructor(
   );
   if (authorizationHeaderResult.isError) {
     logger.log("AUTHENTICATION_HEADER_INVALID", {
-      errorMessage: authorizationHeaderResult.value,
+      errorMessage: authorizationHeaderResult.value.errorMessage,
     });
     return unauthorizedResponse;
   }
@@ -40,11 +40,11 @@ export async function lambdaHandlerConstructor(
   });
   if (validTokenClaimsResult.isError) {
     logger.log("JWT_CLAIM_INVALID", {
-      errorMessage: validTokenClaimsResult.value,
+      errorMessage: validTokenClaimsResult.value.errorMessage,
     });
     return badRequestResponse({
       error: "invalid_token",
-      errorDescription: validTokenClaimsResult.value,
+      errorDescription: validTokenClaimsResult.value.errorMessage,
     });
   }
   const { encodedJwt, jwtPayload } =
@@ -54,7 +54,7 @@ export async function lambdaHandlerConstructor(
   const requestBodyResult = getRequestBody(event.body, jwtPayload.client_id);
   if (requestBodyResult.isError) {
     logger.log("REQUEST_BODY_INVALID", {
-      errorMessage: requestBodyResult.value,
+      errorMessage: requestBodyResult.value.errorMessage,
     });
 
     return badRequestResponse({
@@ -71,7 +71,7 @@ export async function lambdaHandlerConstructor(
   );
   if (verifyTokenSignatureResult.isError) {
     logger.log("TOKEN_SIGNATURE_INVALID", {
-      errorMessage: verifyTokenSignatureResult.value,
+      errorMessage: verifyTokenSignatureResult.value.errorMessage,
     });
     return unauthorizedResponseInvalidSignature;
   }
@@ -85,19 +85,17 @@ export async function lambdaHandlerConstructor(
       jwtPayload.client_id,
     );
   if (getPartialRegisteredClientResponse.isError) {
-    // TODO: Temporary logic until the Result pattern has been refactored. This is coming on the next PR.
     if (
-      getPartialRegisteredClientResponse.value ===
-      "Unexpected error retrieving registered client"
+      getPartialRegisteredClientResponse.value.errorCategory === "SERVER_ERROR"
     ) {
       logger.log("ERROR_RETRIEVING_REGISTERED_CLIENT", {
-        errorMessage: getPartialRegisteredClientResponse.value,
+        errorMessage: getPartialRegisteredClientResponse.value.errorMessage,
       });
       return serverError500Response;
     }
 
     logger.log("CLIENT_CREDENTIALS_INVALID", {
-      errorMessage: getPartialRegisteredClientResponse.value,
+      errorMessage: getPartialRegisteredClientResponse.value.errorMessage,
     });
     return badRequestResponse({
       errorDescription: "Supplied client not recognised",
@@ -158,15 +156,16 @@ export async function lambdaHandlerConstructor(
     ...requestBody,
     issuer: jwtPayload.iss,
   });
-  const sessionId = createSessionResult.value;
 
-  // Write audit event
-  const eventService = dependencies.eventService(config.SQS_QUEUE);
   if (createSessionResult.isError) {
     logger.log("ERROR_CREATING_SESSION");
     return serverError500Response;
   }
+  const sessionId = createSessionResult.value;
   logger.setSessionId({ sessionId });
+
+  // Write audit event
+  const eventService = dependencies.eventService(config.SQS_QUEUE);
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_START",
     sub: requestBody.sub,
@@ -190,23 +189,32 @@ const getAuthorizationHeader = (
   authorizationHeader: string | undefined,
 ): Result<string> => {
   if (authorizationHeader == null) {
-    return errorResult("No Authentication header present");
+    return errorResult({
+      errorMessage: "No Authentication header present",
+      errorCategory: "CLIENT_ERROR",
+    });
   }
 
   if (!authorizationHeader.startsWith("Bearer ")) {
-    return errorResult(
-      "Invalid authentication header format - does not start with Bearer",
-    );
+    return errorResult({
+      errorMessage:
+        "Invalid authentication header format - does not start with Bearer",
+      errorCategory: "CLIENT_ERROR",
+    });
   }
 
   if (authorizationHeader.split(" ").length !== 2) {
-    return errorResult(
-      "Invalid authentication header format - contains spaces",
-    );
+    return errorResult({
+      errorMessage: "Invalid authentication header format - contains spaces",
+      errorCategory: "CLIENT_ERROR",
+    });
   }
 
   if (authorizationHeader.split(" ")[1].length == 0) {
-    return errorResult("Invalid authentication header format - missing token");
+    return errorResult({
+      errorMessage: "Invalid authentication header format - missing token",
+      errorCategory: "CLIENT_ERROR",
+    });
   }
 
   return successResult(authorizationHeader);
@@ -217,43 +225,66 @@ const getRequestBody = (
   jwtClientId: string,
 ): Result<IRequestBody> => {
   if (requestBody == null) {
-    return errorResult("Missing request body");
+    return errorResult({
+      errorMessage: "Missing request body",
+      errorCategory: "CLIENT_ERROR",
+    });
   }
 
   let body: IRequestBody;
   try {
     body = JSON.parse(requestBody);
   } catch {
-    return errorResult("Invalid JSON in request body");
+    return errorResult({
+      errorMessage: "Invalid JSON in request body",
+      errorCategory: "CLIENT_ERROR",
+    });
   }
 
   if (!body.state) {
-    return errorResult("Missing state in request body");
+    return errorResult({
+      errorMessage: "Missing state in request body",
+      errorCategory: "CLIENT_ERROR",
+    });
   }
 
   if (!body.sub) {
-    return errorResult("Missing sub in request body");
+    return errorResult({
+      errorMessage: "Missing sub in request body",
+      errorCategory: "CLIENT_ERROR",
+    });
   }
 
   if (!body.client_id) {
-    return errorResult("Missing client_id in request body");
+    return errorResult({
+      errorMessage: "Missing client_id in request body",
+      errorCategory: "CLIENT_ERROR",
+    });
   }
 
   if (body.client_id !== jwtClientId) {
-    return errorResult(
-      "client_id in request body does not match value in access_token",
-    );
+    return errorResult({
+      errorMessage:
+        "client_id in request body does not match value in access_token",
+      errorCategory: "CLIENT_ERROR",
+    });
   }
 
   if (!body["govuk_signin_journey_id"]) {
-    return errorResult("Missing govuk_signin_journey_id in request body");
+    return errorResult({
+      errorMessage: "Missing govuk_signin_journey_id in request body",
+      errorCategory: "CLIENT_ERROR",
+    });
   }
 
   if (body.redirect_uri) {
     try {
       new URL(body.redirect_uri);
     } catch {
-      return errorResult("redirect_uri in request body is not a URL");
+      return errorResult({
+        errorMessage: "redirect_uri in request body is not a URL",
+        errorCategory: "CLIENT_ERROR",
+      });
     }
   }
 

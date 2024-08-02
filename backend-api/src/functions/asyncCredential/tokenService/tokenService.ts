@@ -42,7 +42,10 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
 
     const result = await kmsClient.send(verifyCommand);
     if (result.SignatureValid !== true) {
-      return errorResult("Signature is invalid");
+      return errorResult({
+        errorMessage: "Signature is invalid",
+        errorCategory: "CLIENT_ERROR",
+      });
     }
 
     return successResult(null);
@@ -54,7 +57,10 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
     try {
       jwtPayload = JSON.parse(Buffer.from(payload, "base64").toString("utf-8"));
     } catch {
-      return errorResult("JWT payload not valid JSON");
+      return errorResult({
+        errorMessage: "JWT payload not valid JSON",
+        errorCategory: "CLIENT_ERROR",
+      });
     }
 
     return successResult(jwtPayload);
@@ -65,49 +71,77 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
     issuer: string,
   ): Result<null> {
     if (!jwtPayload.exp) {
-      return errorResult("Missing exp claim");
+      return errorResult({
+        errorMessage: "Missing exp claim",
+        errorCategory: "CLIENT_ERROR",
+      });
     }
 
     if (jwtPayload.exp <= Math.floor(Date.now() / 1000)) {
-      return errorResult("exp claim is in the past");
+      return errorResult({
+        errorMessage: "exp claim is in the past",
+        errorCategory: "CLIENT_ERROR",
+      });
     }
 
     if (jwtPayload.iat) {
       if (jwtPayload.iat >= Math.floor(Date.now() / 1000)) {
-        return errorResult("iat claim is in the future");
+        return errorResult({
+          errorMessage: "iat claim is in the future",
+          errorCategory: "CLIENT_ERROR",
+        });
       }
     }
 
     if (jwtPayload.nbf) {
       if (jwtPayload.nbf >= Math.floor(Date.now() / 1000)) {
-        return errorResult("nbf claim is in the future");
+        return errorResult({
+          errorMessage: "nbf claim is in the future",
+          errorCategory: "CLIENT_ERROR",
+        });
       }
     }
 
     if (!jwtPayload.iss) {
-      return errorResult("Missing iss claim");
+      return errorResult({
+        errorMessage: "Missing iss claim",
+        errorCategory: "CLIENT_ERROR",
+      });
     }
 
     if (jwtPayload.iss !== issuer) {
-      return errorResult(
-        "iss claim does not match ISSUER environment variable",
-      );
+      return errorResult({
+        errorMessage: "iss claim does not match ISSUER environment variable",
+        errorCategory: "CLIENT_ERROR",
+      });
     }
 
     if (!jwtPayload.scope) {
-      return errorResult("Missing scope claim");
+      return errorResult({
+        errorMessage: "Missing scope claim",
+        errorCategory: "CLIENT_ERROR",
+      });
     }
 
     if (jwtPayload.scope !== "dcmaw.session.async_create") {
-      return errorResult("Invalid scope claim");
+      return errorResult({
+        errorMessage: "Invalid scope claim",
+        errorCategory: "CLIENT_ERROR",
+      });
     }
 
     if (!jwtPayload.client_id) {
-      return errorResult("Missing client_id claim");
+      return errorResult({
+        errorMessage: "Missing client_id claim",
+        errorCategory: "CLIENT_ERROR",
+      });
     }
 
     if (!jwtPayload.aud) {
-      return errorResult("Missing aud claim");
+      return errorResult({
+        errorMessage: "Missing aud claim",
+        errorCategory: "CLIENT_ERROR",
+      });
     }
 
     return successResult(null);

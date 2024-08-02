@@ -33,7 +33,10 @@ export class EventService implements IEventService {
         }),
       );
     } catch {
-      return errorResult("Failed to write to SQS");
+      return errorResult({
+        errorMessage: "Failed to write to SQS",
+        errorCategory: "SERVER_ERROR",
+      });
     }
 
     return successResult(null);

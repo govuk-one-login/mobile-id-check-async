@@ -51,11 +51,17 @@ export class TokenService implements IMintToken {
 
       result = await this.kmsClient.send(command);
     } catch {
-      return errorResult(`Error from KMS`);
+      return errorResult({
+        errorMessage: "Error from KMS",
+        errorCategory: "SERVER_ERROR",
+      });
     }
 
     if (!result.Signature) {
-      return errorResult("No signature in response from KMS");
+      return errorResult({
+        errorMessage: "No signature in response from KMS",
+        errorCategory: "SERVER_ERROR",
+      });
     }
 
     // Convert signature to buffer and format with ES256 algorithm

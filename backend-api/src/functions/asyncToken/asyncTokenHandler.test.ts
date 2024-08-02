@@ -1,10 +1,6 @@
 import { lambdaHandlerConstructor } from "./asyncTokenHandler";
-import {
-  IDecodedClientSecrets,
-  IGetRegisteredIssuerUsingClientSecrets,
-} from "../services/clientRegistryService/clientRegistryService";
-import { IProcessRequest } from "./requestService/requestService";
-import { buildRequest } from "../testUtils/mockRequest";
+import { IGetRegisteredIssuerUsingClientSecrets } from "../services/clientRegistryService/clientRegistryService";
+import { buildTokenHandlerRequest } from "../testUtils/mockRequest";
 import { IMintToken } from "./tokenService/tokenService";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
@@ -30,14 +26,20 @@ describe("Async Token", () => {
     CLIENT_REGISTRY_PARAMETER_NAME: "mockParmaterName",
   };
 
+  const validAuthorizationHeader =
+    "Basic bW9ja0NsaWVudElkOm1vY2tDbGllbnRTZWNyZXQ="; // Header decodes to base64encoded mockClientId:mockClientSecret
+
   beforeEach(() => {
-    request = buildRequest();
+    // Header decodes to base64encoded mockClientId:mockClientSecret
+    request = buildTokenHandlerRequest({
+      body: JSON.stringify({ grant_type: "client_credentials" }),
+      authorizationHeader: validAuthorizationHeader,
+    });
     mockLogger = new MockLoggingAdapter();
     dependencies = {
       env,
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(mockLogger, registeredLogs),
-      requestService: () => new MockRequestServiceSuccessResult(),
       clientRegistryService: () => new MockClientRegistryServiceSuccessResult(),
       tokenService: () => new MockTokenServiceSuccessResult(),
     };
@@ -74,65 +76,186 @@ describe("Async Token", () => {
   });
 
   describe("Request Service", () => {
-    describe("Given the Request Service returns a log due to Invalid grant_type in request body", () => {
-      it("Returns a 400 Bad Request response", async () => {
-        dependencies.requestService = () =>
-          new MockRequestServiceInvalidGrantTypeErrorResult();
+    describe("Request body validation", () => {
+      describe("Given there is no request body", () => {
+        it("Returns a log and 400 response", async () => {
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            buildLambdaContext(),
+            buildTokenHandlerRequest({
+              body: null,
+              authorizationHeader: validAuthorizationHeader,
+            }),
+          );
 
-        const result = await lambdaHandlerConstructor(
-          dependencies,
-          buildLambdaContext(),
-          request,
-        );
-        expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-          message: "INVALID_REQUEST",
-          messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
-        });
+          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+            message: "INVALID_REQUEST",
+            messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
+          });
 
-        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Invalid grant_type",
+          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+            errorMessage: "Missing request body",
+          });
+          expect(result.statusCode).toBe(400);
+          expect(JSON.parse(result.body).error).toEqual("invalid_grant");
+          expect(JSON.parse(result.body).error_description).toEqual(
+            "Invalid grant type or grant type not specified",
+          );
         });
-        expect(result.statusCode).toBe(400);
-        expect(JSON.parse(result.body).error).toEqual("invalid_grant");
-        expect(JSON.parse(result.body).error_description).toEqual(
-          "Invalid grant type or grant type not specified",
-        );
+      });
+
+      describe("Given there is no grant_type", () => {
+        it("Returns log and 400 response", async () => {
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            buildLambdaContext(),
+            buildTokenHandlerRequest({
+              body: JSON.stringify({}),
+              authorizationHeader: validAuthorizationHeader,
+            }),
+          );
+
+          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+            message: "INVALID_REQUEST",
+            messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
+          });
+
+          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+            errorMessage: "Missing grant_type",
+          });
+          expect(result.statusCode).toBe(400);
+          expect(JSON.parse(result.body).error).toEqual("invalid_grant");
+          expect(JSON.parse(result.body).error_description).toEqual(
+            "Invalid grant type or grant type not specified",
+          );
+        });
+      });
+
+      describe("Given grant_type is not client_credentials", () => {
+        it("Returns Log with value Invalid grant_type", async () => {
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            buildLambdaContext(),
+            buildTokenHandlerRequest({
+              body: JSON.stringify({ grant_type: "invalidGrantType" }),
+              authorizationHeader: validAuthorizationHeader,
+            }),
+          );
+
+          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+            message: "INVALID_REQUEST",
+            messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
+          });
+
+          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+            errorMessage: "Invalid grant_type",
+          });
+          expect(result.statusCode).toBe(400);
+          expect(JSON.parse(result.body).error).toEqual("invalid_grant");
+          expect(JSON.parse(result.body).error_description).toEqual(
+            "Invalid grant type or grant type not specified",
+          );
+        });
       });
     });
 
-    describe("Given the Request Service returns a log due to invalid Authorization header ", () => {
-      it("Returns a 400 Bad Request response", async () => {
-        dependencies.requestService = () =>
-          new MockRequestServiceInvalidAuthorizationHeaderErrorResult();
+    describe("Authorization header validation", () => {
+      describe("Given request does not include authorization header", () => {
+        it('Returns Log with value "Invalid Request"', async () => {
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            buildLambdaContext(),
+            buildTokenHandlerRequest({
+              body: JSON.stringify({ grant_type: "client_credentials" }),
+              authorizationHeader: null,
+            }),
+          );
 
-        const result = await lambdaHandlerConstructor(
-          dependencies,
-          buildLambdaContext(),
-          request,
-        );
+          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+            message: "INVALID_REQUEST",
+            messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
+          });
 
-        expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-          message: "INVALID_REQUEST",
-          messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
+          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+            errorMessage: "Missing authorization header",
+          });
+          expect(result.statusCode).toBe(400);
+          expect(JSON.parse(result.body).error).toEqual(
+            "invalid_authorization_header",
+          );
+          expect(JSON.parse(result.body).error_description).toEqual(
+            "Invalid authorization header",
+          );
         });
-        expect(mockLogger.getLogMessages()[1].data).toMatchObject({
-          errorMessage: "Invalid authorization header",
-        });
+      });
+    });
 
-        expect(result.statusCode).toBe(400);
-        expect(JSON.parse(result.body).error).toEqual(
-          "invalid_authorization_header",
-        );
-        expect(JSON.parse(result.body).error_description).toEqual(
-          "Invalid authorization header",
-        );
+    describe("Request Authorization header validation", () => {
+      describe("Given authorization header does not use Basic Authentication Scheme", () => {
+        it('Returns Log with value "Invalid Request"', async () => {
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            buildLambdaContext(),
+            buildTokenHandlerRequest({
+              body: JSON.stringify({ grant_type: "client_credentials" }),
+              authorizationHeader: "missingBearerKeyword",
+            }),
+          );
+
+          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+            message: "INVALID_REQUEST",
+            messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
+          });
+
+          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+            errorMessage: "Invalid authorization header",
+          });
+          expect(result.statusCode).toBe(400);
+          expect(JSON.parse(result.body).error).toEqual(
+            "invalid_authorization_header",
+          );
+          expect(JSON.parse(result.body).error_description).toEqual(
+            "Invalid authorization header",
+          );
+        });
+      });
+
+      describe("Decoding Authorization header", () => {
+        describe("Given Authorization header is not formatted correctly", () => {
+          it("Logs with invalid Authorization header format", async () => {
+            const result = await lambdaHandlerConstructor(
+              dependencies,
+              buildLambdaContext(),
+              buildTokenHandlerRequest({
+                body: JSON.stringify({ grant_type: "client_credentials" }),
+                authorizationHeader: "Basic bW9ja0NsaWVuZElk", // decodes to Basic mockCliendId
+              }),
+            );
+
+            expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+              message: "INVALID_REQUEST",
+              messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
+            });
+
+            expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+              errorMessage: "Client secret incorrectly formatted",
+            });
+            expect(result.statusCode).toBe(400);
+            expect(JSON.parse(result.body).error).toEqual(
+              "invalid_authorization_header",
+            );
+            expect(JSON.parse(result.body).error_description).toEqual(
+              "Invalid authorization header",
+            );
+          });
+        });
       });
     });
   });
 
-  describe("Client Credentials Service", () => {
+  describe("Client Registry Service", () => {
     describe("Get issuer from client registry", () => {
-      describe("Given there is an unexpected error retrieving the client credentials", () => {
+      describe("Given there is an unexpected error retrieving the client registry", () => {
         it("Returns a 500 Server Error response", async () => {
           dependencies.clientRegistryService = () =>
             new MockClientRegistryServiceInternalServerErrorResult();
@@ -286,30 +409,6 @@ describe("Async Token", () => {
     });
   });
 });
-
-class MockRequestServiceSuccessResult implements IProcessRequest {
-  processRequest = (): Result<IDecodedClientSecrets> => {
-    return successResult({
-      clientId: "mockClientId",
-      clientSecret: "mockClientSecret",
-    });
-  };
-}
-
-class MockRequestServiceInvalidGrantTypeErrorResult implements IProcessRequest {
-  processRequest = (): Result<IDecodedClientSecrets> => {
-    return errorResult("Invalid grant_type");
-  };
-}
-
-class MockRequestServiceInvalidAuthorizationHeaderErrorResult
-  implements IProcessRequest
-{
-  processRequest = (): Result<IDecodedClientSecrets> => {
-    return errorResult("Invalid authorization header");
-  };
-}
-
 class MockClientRegistryServiceSuccessResult
   implements IGetRegisteredIssuerUsingClientSecrets
 {
@@ -322,7 +421,12 @@ class MockClientRegistryServiceInternalServerErrorResult
   implements IGetRegisteredIssuerUsingClientSecrets
 {
   getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
-    return Promise.resolve(errorResult("Unexpected error retrieving issuer"));
+    return Promise.resolve(
+      errorResult({
+        errorMessage: "Unexpected error retrieving issuer",
+        errorCategory: "SERVER_ERROR",
+      }),
+    );
   };
 }
 
@@ -330,7 +434,12 @@ class MockClientRegistryServiceBadRequestResult
   implements IGetRegisteredIssuerUsingClientSecrets
 {
   getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
-    return Promise.resolve(errorResult("Client secrets invalid"));
+    return Promise.resolve(
+      errorResult({
+        errorMessage: "Client secrets invalid",
+        errorCategory: "CLIENT_ERROR",
+      }),
+    );
   };
 }
 
@@ -342,6 +451,9 @@ class MockTokenServiceSuccessResult implements IMintToken {
 
 class MockTokenServiceErrorResult implements IMintToken {
   async mintToken(): Promise<Result<string>> {
-    return errorResult("Failed to sign Jwt");
+    return errorResult({
+      errorMessage: "Failed to sign Jwt",
+      errorCategory: "SERVER_ERROR",
+    });
   }
 }
