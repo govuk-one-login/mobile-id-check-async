@@ -223,7 +223,7 @@ const getRequestBody = (
   let body: IRequestBody;
   try {
     body = JSON.parse(requestBody);
-  } catch (e) {
+  } catch {
     return errorResult("Invalid JSON in request body");
   }
 
@@ -252,7 +252,7 @@ const getRequestBody = (
   if (body.redirect_uri) {
     try {
       new URL(body.redirect_uri);
-    } catch (e) {
+    } catch {
       return errorResult("redirect_uri in request body is not a URL");
     }
   }

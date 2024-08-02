@@ -53,7 +53,7 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
     let jwtPayload;
     try {
       jwtPayload = JSON.parse(Buffer.from(payload, "base64").toString("utf-8"));
-    } catch (error) {
+    } catch {
       return errorResult("JWT payload not valid JSON");
     }
 

@@ -83,7 +83,7 @@ export class ClientRegistryService
     let response;
     try {
       response = await this.ssmClient.send(new GetParameterCommand(command));
-    } catch (e: unknown) {
+    } catch {
       return errorResult("Error retrieving client secrets");
     }
 
@@ -95,7 +95,7 @@ export class ClientRegistryService
     let clientRegistry;
     try {
       clientRegistry = JSON.parse(clientRegistryResponse);
-    } catch (error) {
+    } catch {
       return errorResult("Client registry is not a valid JSON");
     }
     if (!Array.isArray(clientRegistry)) {
@@ -127,7 +127,7 @@ export class ClientRegistryService
   private isValidUrl = (rawUrl: string): boolean => {
     try {
       new URL(rawUrl);
-    } catch (error) {
+    } catch {
       return false;
     }
     return true;

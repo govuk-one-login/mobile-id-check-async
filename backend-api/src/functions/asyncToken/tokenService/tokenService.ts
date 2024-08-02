@@ -50,7 +50,7 @@ export class TokenService implements IMintToken {
       });
 
       result = await this.kmsClient.send(command);
-    } catch (e: unknown) {
+    } catch {
       return errorResult(`Error from KMS`);
     }
 

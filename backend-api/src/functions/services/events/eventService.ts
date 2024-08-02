@@ -32,7 +32,7 @@ export class EventService implements IEventService {
           MessageBody: JSON.stringify(txmaEvent),
         }),
       );
-    } catch (e) {
+    } catch {
       return errorResult("Failed to write to SQS");
     }
 
