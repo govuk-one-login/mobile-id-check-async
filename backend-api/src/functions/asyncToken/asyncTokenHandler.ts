@@ -8,6 +8,7 @@ import {
   dependencies,
   IAsyncTokenRequestDependencies,
 } from "./handlerDependencies";
+import { processRequest } from "./processRequest";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
@@ -31,25 +32,23 @@ export async function lambdaHandlerConstructor(
   const config = configResult.value;
 
   // Ensure that request contains expected params
-  const requestService = dependencies.requestService();
-  const processRequestResult = requestService.processRequest(event);
-
-  if (processRequestResult.isError) {
-    if (processRequestResult.value.errorMessage === "Invalid grant_type") {
-      logger.log("INVALID_REQUEST", {
-        errorMessage: processRequestResult.value.errorMessage,
-      });
-      return badRequestResponseInvalidGrant;
-    }
-
+  const eventBodyResult = processRequest.getBody(event.body);
+  if (eventBodyResult.isError) {
     logger.log("INVALID_REQUEST", {
-      errorMessage: processRequestResult.value.errorMessage,
+      errorMessage: eventBodyResult.value.errorMessage,
     });
+    return badRequestResponseInvalidGrant;
+  }
 
+  const eventHeadersResult = processRequest.getHeader(event.headers);
+  if (eventHeadersResult.isError) {
+    logger.log("INVALID_REQUEST", {
+      errorMessage: eventHeadersResult.value.errorMessage,
+    });
     return badRequestResponseInvalidAuthorizationHeader;
   }
 
-  const suppliedClientCredentials = processRequestResult.value;
+  const clientCredentials = eventHeadersResult.value;
 
   // Retrieving issuer and validating client secrets
   const clientRegistryService = dependencies.clientRegistryService(
@@ -57,7 +56,7 @@ export async function lambdaHandlerConstructor(
   );
   const getRegisteredIssuerByClientSecretsResult =
     await clientRegistryService.getRegisteredIssuerUsingClientSecrets(
-      suppliedClientCredentials,
+      clientCredentials,
     );
   if (getRegisteredIssuerByClientSecretsResult.isError) {
     if (
@@ -84,7 +83,7 @@ export async function lambdaHandlerConstructor(
     exp: Math.floor(Date.now() / 1000) + 3600,
     scope: "dcmaw.session.async_create",
     // The clientId can be trusted as the credential service validates the incoming clientId against the client registry
-    client_id: suppliedClientCredentials.clientId,
+    client_id: clientCredentials.clientId,
   };
 
   const tokenService = dependencies.tokenService(config.SIGNING_KEY_ID);
@@ -126,7 +125,6 @@ export async function lambdaHandlerConstructor(
     }),
   };
 }
-
 const badRequestResponseInvalidGrant: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 400,
