@@ -49,7 +49,7 @@ describe("Backend application infrastructure", () => {
         expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
       });
 
-      test("Rate and burst limit mappings are correctly", () => {
+      test("Rate and burst limit mappings are set", () => {
         const expectedBurstLimits = {
           dev: 10,
           build: 0,
@@ -103,34 +103,57 @@ describe("Backend application infrastructure", () => {
         });
       });
     });
-  });
 
-  describe("Lambdas", () => {
-    test("All lambdas have a FunctionName defined", () => {
-      const lambdas = template.findResources("AWS::Serverless::Function");
-      const lambda_list = Object.keys(lambdas);
-      lambda_list.forEach((lambda) => {
-        expect(lambdas[lambda].Properties.FunctionName).toBeTruthy();
+    test("Access log group is attached to APIgw", () => {
+      template.hasResourceProperties("AWS::Serverless::Api", {
+        Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
+        AccessLogSetting: {
+          DestinationArn: {
+            "Fn::Sub":
+              "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialApiAccessLogs}",
+          },
+        },
       });
     });
-    test("All lambdas have a log group", () => {
-      const lambdas = template.findResources("AWS::Serverless::Function");
-      const lambda_list = Object.keys(lambdas);
-      lambda_list.forEach((lambda) => {
-        const functionName = lambdas[lambda].Properties.FunctionName["Fn::Sub"];
-        const expectedLogName = {
-          "Fn::Sub": `/aws/lambda/${functionName}`,
-        };
-        template.hasResourceProperties("AWS::Logs::LogGroup", {
-          LogGroupName: Match.objectLike(expectedLogName),
+
+    test("Access log group has a retention period", () => {
+      template.hasResourceProperties("AWS::Logs::LogGroup", {
+        RetentionInDays: 30,
+        LogGroupName: {
+          "Fn::Sub":
+            "/aws/apigateway/${AWS::StackName}-private-api-access-logs",
+        },
+      });
+    });
+
+    describe("Lambdas", () => {
+      test("All lambdas have a FunctionName defined", () => {
+        const lambdas = template.findResources("AWS::Serverless::Function");
+        const lambda_list = Object.keys(lambdas);
+        lambda_list.forEach((lambda) => {
+          expect(lambdas[lambda].Properties.FunctionName).toBeTruthy();
         });
       });
-    });
-    test("All log groups have a retention period", () => {
-      const logGroups = template.findResources("AWS::Logs::LogGroup");
-      const logGroupList = Object.keys(logGroups);
-      logGroupList.forEach((logGroup) => {
-        expect(logGroups[logGroup].Properties.RetentionInDays).toEqual(30);
+      test("All lambdas have a log group", () => {
+        const lambdas = template.findResources("AWS::Serverless::Function");
+        const lambda_list = Object.keys(lambdas);
+        lambda_list.forEach((lambda) => {
+          const functionName =
+            lambdas[lambda].Properties.FunctionName["Fn::Sub"];
+          const expectedLogName = {
+            "Fn::Sub": `/aws/lambda/${functionName}`,
+          };
+          template.hasResourceProperties("AWS::Logs::LogGroup", {
+            LogGroupName: Match.objectLike(expectedLogName),
+          });
+        });
+      });
+      test("All log groups have a retention period", () => {
+        const logGroups = template.findResources("AWS::Logs::LogGroup");
+        const logGroupList = Object.keys(logGroups);
+        logGroupList.forEach((logGroup) => {
+          expect(logGroups[logGroup].Properties.RetentionInDays).toEqual(30);
+        });
       });
     });
   });

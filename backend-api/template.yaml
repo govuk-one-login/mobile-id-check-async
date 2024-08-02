@@ -45,6 +45,9 @@ Resources:
       StageName: 
         Ref: Environment
       OpenApiVersion: 3.0.1
+      AccessLogSetting:
+        DestinationArn: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialApiAccessLogs}"
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
       MethodSettings:
         - LoggingLevel: INFO
           ResourcePath: "/*"
@@ -59,6 +62,13 @@ Resources:
           Name: AWS::Include
           Parameters:
             Location: './openApiSpecs/async-private-spec.yaml'
+
+  AsyncCredentialApiAccessLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
+      RetentionInDays: 30
+
 ### Token lambda
   AsyncTokenFunction:
     DependsOn:
