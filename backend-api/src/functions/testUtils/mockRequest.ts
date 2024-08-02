@@ -37,7 +37,7 @@ export function buildRequest(overrides?: any): APIGatewayProxyEvent {
 // base64encoded mockClientId:mockClientSecret" -> synthetic test data - not a secret
 export const buildTokenHandlerRequest = (requestParams: {
   body: string | null;
-  authorizationHeader: string;
+  authorizationHeader: string | null;
 }): APIGatewayProxyEvent => {
   return buildRequest({
     body: requestParams.body,

@@ -166,8 +166,8 @@ describe("Async Token", () => {
             dependencies,
             buildLambdaContext(),
             buildTokenHandlerRequest({
-              body: JSON.stringify({ grant_type: "invalidGrantType" }),
-              authorizationHeader: validAuthorizationHeader,
+              body: JSON.stringify({ grant_type: "client_credentials" }),
+              authorizationHeader: null,
             }),
           );
 
@@ -177,12 +177,14 @@ describe("Async Token", () => {
           });
 
           expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
-            errorMessage: "Invalid grant_type",
+            errorMessage: "Missing authorization header",
           });
           expect(result.statusCode).toBe(400);
-          expect(JSON.parse(result.body).error).toEqual("invalid_grant");
+          expect(JSON.parse(result.body).error).toEqual(
+            "invalid_authorization_header",
+          );
           expect(JSON.parse(result.body).error_description).toEqual(
-            "Invalid grant type or grant type not specified",
+            "Invalid authorization header",
           );
         });
       });
