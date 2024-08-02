@@ -1,7 +1,7 @@
 import { errorResult, Result, successResult } from "../result";
 
 describe("Result", () => {
-  describe("Given there is an errord", () => {
+  describe("Given there is an error", () => {
     it("An error response is returned", () => {
       const returnErrorWithoutTypeOverride = (): Result<null> => {
         return errorResult({
