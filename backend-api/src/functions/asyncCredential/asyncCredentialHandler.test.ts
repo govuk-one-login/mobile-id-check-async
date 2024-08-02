@@ -6,7 +6,6 @@ import {
   IVerifyTokenSignature,
 } from "./tokenService/tokenService";
 import {
-  Dependencies,
   lambdaHandlerConstructor,
 } from "./asyncCredentialHandler";
 import { IGetPartialRegisteredClientByClientId } from "../services/clientRegistryService/clientRegistryService";
@@ -23,6 +22,7 @@ import {
   MockEventServiceFailToWrite,
   MockEventWriterSuccess,
 } from "../services/events/tests/mocks";
+import { Dependencies } from "./handlerDependencies";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",

@@ -1,25 +1,12 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import {
-  ClientRegistryService,
-  IGetPartialRegisteredClientByClientId,
-} from "../services/clientRegistryService/clientRegistryService";
-import {
   IDecodedToken,
-  IDecodeToken,
-  IVerifyTokenSignature,
-  TokenService,
 } from "./tokenService/tokenService";
 import { errorResult, Result, successResult } from "../utils/result";
 import {
-  ICreateSession,
-  IGetActiveSession,
-  SessionService,
 } from "./sessionService/sessionService";
-import { Logger } from "../services/logging/logger";
-import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
-import { MessageName, registeredLogs } from "./registeredLogs";
-import { EventService, IEventService } from "../services/events/eventService";
 import { ConfigService } from "./configService/configService";
+import { Dependencies, dependencies } from "./handlerDependencies";
 
 export async function lambdaHandlerConstructor(
   dependencies: Dependencies,
@@ -347,29 +334,6 @@ export interface IRequestBody {
   redirect_uri?: string;
 }
 
-export interface Dependencies {
-  logger: () => Logger<MessageName>;
-  eventService: (sqsQueue: string) => IEventService;
-  tokenService: () => IDecodeToken & IVerifyTokenSignature;
-  clientRegistryService: (
-    clientRegistryParameterName: string,
-  ) => IGetPartialRegisteredClientByClientId;
-  sessionService: (
-    tableName: string,
-    indexName: string,
-  ) => IGetActiveSession & ICreateSession;
-  env: NodeJS.ProcessEnv;
-}
 
-const dependencies: Dependencies = {
-  env: process.env,
-  eventService: (sqsQueue: string) => new EventService(sqsQueue),
-  logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
-  clientRegistryService: (clientRegistryParameterName: string) =>
-    new ClientRegistryService(clientRegistryParameterName),
-  tokenService: () => new TokenService(),
-  sessionService: (tableName: string, indexName: string) =>
-    new SessionService(tableName, indexName),
-};
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);

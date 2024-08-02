@@ -1,5 +1,4 @@
 import {
-  IAsyncTokenRequestDependencies,
   lambdaHandlerConstructor,
 } from "./asyncTokenHandler";
 import {
@@ -19,6 +18,7 @@ import {
   MockEventServiceFailToWrite,
   MockEventWriterSuccess,
 } from "../services/events/tests/mocks";
+import { IAsyncTokenRequestDependencies } from "./handlerDependencies";
 
 describe("Async Token", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;
