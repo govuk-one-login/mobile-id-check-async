@@ -13,7 +13,7 @@ interface IRequestService {
   ) => Result<IDecodedAuthorizationHeader>;
   validateBody: (body: string | null) => Result<null>;
 }
-export const requestService: IProcessRequest = {
+export const requestService: IRequestService = {
   getClientCredentials: (headers: APIGatewayProxyEventHeaders) =>
     getClientCredentials(headers),
   validateBody: (body: string | null) => validateBody(body),
