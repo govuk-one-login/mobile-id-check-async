@@ -35,68 +35,73 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("It has metrics enabled", () => {
-      template.hasResourceProperties(
-        "AWS::Serverless::Api",
+    describe("APIgw method settings", () => {
+      test("Metrics are enabled", () => {
+        const methodSettings = new Capture();
+        template.hasResourceProperties(
+          "AWS::Serverless::Api",
 
-        {
-          Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
-          MethodSetting: {
-            MetricsEnabled: true,
+          {
+            Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
+            MethodSettings: methodSettings,
           },
-        },
-      );
-    });
-
-    test("Rate limiting is set", () => {
-      const expectedBurstLimits = {
-        dev: 10,
-        build: 0,
-        staging: 0,
-        integration: 0,
-        production: 0,
-      };
-
-      const expectedRateLimits = {
-        dev: 10,
-        build: 0,
-        staging: 0,
-        integration: 0,
-        production: 0,
-      };
-      const mappingHelper = new Mappings(template);
-      mappingHelper.validatePrivateAPIMapping({
-        environmentFlags: expectedBurstLimits,
-        mappingBottomLevelKey: "ApiBurstLimit",
-      });
-      mappingHelper.validatePrivateAPIMapping({
-        environmentFlags: expectedRateLimits,
-        mappingBottomLevelKey: "ApiRateLimit",
+        );
+        expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
       });
 
-      template.hasResourceProperties(
-        "AWS::Serverless::Api",
+      test("Rate and burst limit mappings are correctly", () => {
+        const expectedBurstLimits = {
+          dev: 10,
+          build: 0,
+          staging: 0,
+          integration: 0,
+          production: 0,
+        };
 
-        {
-          Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
-          MethodSetting: {
-            ThrottlingRateLimit: {
-              "Fn::FindInMap": [
-                "PrivateApigw",
-                { Ref: "Environment" },
-                "ApiRateLimit",
-              ],
-            },
-            ThrottlingBurstLimit: {
-              "Fn::FindInMap": [
-                "PrivateApigw",
-                { Ref: "Environment" },
-                "ApiBurstLimit",
-              ],
-            },
+        const expectedRateLimits = {
+          dev: 10,
+          build: 0,
+          staging: 0,
+          integration: 0,
+          production: 0,
+        };
+        const mappingHelper = new Mappings(template);
+        mappingHelper.validatePrivateAPIMapping({
+          environmentFlags: expectedBurstLimits,
+          mappingBottomLevelKey: "ApiBurstLimit",
+        });
+        mappingHelper.validatePrivateAPIMapping({
+          environmentFlags: expectedRateLimits,
+          mappingBottomLevelKey: "ApiRateLimit",
+        });
+      });
+
+      test("Rate limit and burst mappings are applied to the APIgw", () => {
+        const methodSettings = new Capture();
+        template.hasResourceProperties(
+          "AWS::Serverless::Api",
+
+          {
+            Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
+            MethodSettings: methodSettings,
           },
-        },
-      );
+        );
+        expect(methodSettings.asArray()[0].ThrottlingBurstLimit).toStrictEqual({
+          "Fn::FindInMap": [
+            "PrivateApigw",
+            { Ref: "Environment" },
+            "ApiBurstLimit",
+          ],
+        });
+
+        expect(methodSettings.asArray()[0].ThrottlingRateLimit).toStrictEqual({
+          "Fn::FindInMap": [
+            "PrivateApigw",
+            { Ref: "Environment" },
+            "ApiRateLimit",
+          ],
+        });
+      });
     });
   });
 
