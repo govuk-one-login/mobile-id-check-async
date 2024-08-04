@@ -1,6 +1,9 @@
+import { IAsyncTokenRequestDependencies } from "../../asyncToken/asyncTokenHandler";
+
 class StateConfiguration {
   secret: string = "";
   componentId: string = "";
+  dependencies!: IAsyncTokenRequestDependencies;
 
   get secretValue(): string {
     return this.secret;
@@ -8,6 +11,14 @@ class StateConfiguration {
 
   set secretValue(value: string) {
     this.secret = value;
+  }
+
+  get dependenciesValue() {
+    return this.dependencies;
+  }
+
+  set dependenciesValue(value: IAsyncTokenRequestDependencies) {
+    this.dependencies = value;
   }
 }
 
