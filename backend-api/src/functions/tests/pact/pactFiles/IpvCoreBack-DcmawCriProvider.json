@@ -20,7 +20,7 @@
         "path": "/async/token"
       },
       "response": {
-        "status": 401
+        "status": 400
       }
     }, {
       "_id": "5327d667d5bdf05cac61e1409725008d26d73380",
