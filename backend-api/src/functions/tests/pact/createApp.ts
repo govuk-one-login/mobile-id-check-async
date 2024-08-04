@@ -18,9 +18,10 @@ export async function createApp(): Promise<Application> {
 
     console.log("result.statusCode >>>>>", result.statusCode);
     console.log("result.body >>>>>", result.body);
+    console.log("result", result)
 
     res.status(result.statusCode);
-    res.send(result.body);
+    res.send(result);
   });
 
   return app;
