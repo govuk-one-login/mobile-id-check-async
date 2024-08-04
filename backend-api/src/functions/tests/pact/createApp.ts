@@ -1,6 +1,7 @@
 import express from "express";
 import { Application, Request, Response } from "express";
-// import { asyncTokenHandlerConstructor } from "./asyncToken/asyncTokenHandlerConstructor";
+import { asyncTokenHandlerConstructor } from "./asyncToken/asyncTokenHandlerConstructor";
+import { stateConfig } from "./stateConfiguration";
 
 export async function createApp(): Promise<Application> {
   const app: Application = express();
@@ -9,10 +10,17 @@ export async function createApp(): Promise<Application> {
   app.use(express.json());
 
   app.post("/async/token", async (req: Request, res: Response) => {
-    // const result = await asyncTokenHandlerConstructor({ headers: req.headers, body: req.body});
+    const result = await asyncTokenHandlerConstructor({
+      headers: req.headers,
+      body: req.body,
+      dependencies: stateConfig.dependencies,
+    });
 
-    res.status(200);
-    res.send("hello world");
+    console.log("result.statusCode >>>>>", result.statusCode);
+    console.log("result.body >>>>>", result.body);
+
+    res.status(result.statusCode);
+    res.send(result.body);
   });
 
   return app;
