@@ -328,7 +328,7 @@ class MockClientRegistryServiceInternalServerErrorResult
   };
 }
 
-class MockClientRegistryServiceBadRequestResult
+export class MockClientRegistryServiceBadRequestResult
   implements IGetRegisteredIssuerUsingClientSecrets
 {
   getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
