@@ -23,7 +23,7 @@ describe("Provider API contract verification", () => {
     SIGNING_KEY_ID: "mockSigningKeyId",
     ISSUER: "mockIssuer",
     SQS_QUEUE: "mockSQSQueue",
-    CLIENT_REGISTRY_PARAMETER_NAME: "mockParmaterName",
+    CLIENT_REGISTRY_PARAMETER_NAME: "mockRegistryParameterName",
   };
 
   beforeAll(async () => {
