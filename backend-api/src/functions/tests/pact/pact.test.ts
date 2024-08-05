@@ -3,8 +3,8 @@ import { createApp } from "./createApp";
 import { Verifier } from "@pact-foundation/pact";
 import path from "path";
 import { stateConfig } from "./stateConfiguration";
-import { MockClientRegistryServiceBadRequestResult } from "../../asyncToken/asyncTokenHandler.test";
 import { Server } from "http";
+import { MockClientRegistryServiceBadRequestResult } from "../../testUtils/asyncTokenMocks";
 
 describe("Provider API contract verification", () => {
   let app: Application;

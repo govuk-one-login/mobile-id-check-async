@@ -3,12 +3,8 @@ import { registeredLogs } from "../../asyncToken/registeredLogs";
 import { MockEventWriterSuccess } from "../../services/events/tests/mocks";
 import { MockLoggingAdapter } from "../../services/logging/tests/mockLogger";
 import { Logger } from "../../services/logging/logger";
-import {
-  MockClientRegistryServiceSuccessResult,
-  MockRequestServiceSuccessResult,
-  MockTokenServiceSuccessResult,
-} from "../../asyncToken/asyncTokenHandler.test";
 import { IGetRegisteredIssuerUsingClientSecrets } from "../../services/clientRegistryService/clientRegistryService";
+import { MockClientRegistryServiceSuccessResult, MockRequestServiceSuccessResult, MockTokenServiceSuccessResult } from "../../testUtils/asyncTokenMocks";
 
 export class StateConfiguration {
   secret: string = "";

@@ -2,23 +2,17 @@ import {
   IAsyncTokenRequestDependencies,
   lambdaHandlerConstructor,
 } from "./asyncTokenHandler";
-import {
-  IDecodedClientSecrets,
-  IGetRegisteredIssuerUsingClientSecrets,
-} from "../services/clientRegistryService/clientRegistryService";
-import { IProcessRequest } from "./requestService/requestService";
 import { buildRequest } from "../testUtils/mockRequest";
-import { IMintToken } from "./tokenService/tokenService";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { errorResult, Result, successResult } from "../utils/result";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import {
   MockEventServiceFailToWrite,
   MockEventWriterSuccess,
 } from "../services/events/tests/mocks";
+import { MockRequestServiceSuccessResult, MockClientRegistryServiceSuccessResult, MockTokenServiceSuccessResult, MockRequestServiceInvalidGrantTypeErrorResult, MockRequestServiceInvalidAuthorizationHeaderErrorResult, MockClientRegistryServiceInternalServerErrorResult, MockClientRegistryServiceBadRequestResult, MockTokenServiceErrorResult } from "../testUtils/asyncTokenMocks";
 
 describe("Async Token", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;
@@ -288,62 +282,3 @@ describe("Async Token", () => {
     });
   });
 });
-
-export class MockRequestServiceSuccessResult implements IProcessRequest {
-  processRequest = (): Result<IDecodedClientSecrets> => {
-    return successResult({
-      clientId: "mockClientId",
-      clientSecret: "mockClientSecret",
-    });
-  };
-}
-
-class MockRequestServiceInvalidGrantTypeErrorResult implements IProcessRequest {
-  processRequest = (): Result<IDecodedClientSecrets> => {
-    return errorResult("Invalid grant_type");
-  };
-}
-
-class MockRequestServiceInvalidAuthorizationHeaderErrorResult
-  implements IProcessRequest
-{
-  processRequest = (): Result<IDecodedClientSecrets> => {
-    return errorResult("Invalid authorization header");
-  };
-}
-
-export class MockClientRegistryServiceSuccessResult
-  implements IGetRegisteredIssuerUsingClientSecrets
-{
-  getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
-    return Promise.resolve(successResult("mockIssuer"));
-  };
-}
-
-class MockClientRegistryServiceInternalServerErrorResult
-  implements IGetRegisteredIssuerUsingClientSecrets
-{
-  getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
-    return Promise.resolve(errorResult("Unexpected error retrieving issuer"));
-  };
-}
-
-export class MockClientRegistryServiceBadRequestResult
-  implements IGetRegisteredIssuerUsingClientSecrets
-{
-  getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
-    return Promise.resolve(errorResult("Client secrets invalid"));
-  };
-}
-
-export class MockTokenServiceSuccessResult implements IMintToken {
-  async mintToken(): Promise<Result<string>> {
-    return successResult("mockToken");
-  }
-}
-
-class MockTokenServiceErrorResult implements IMintToken {
-  async mintToken(): Promise<Result<string>> {
-    return errorResult("Failed to sign Jwt");
-  }
-}
