@@ -5,10 +5,13 @@ import path from "path";
 import { stateConfig } from "./stateConfiguration";
 import { Server } from "http";
 import { MockClientRegistryServiceBadRequestResult } from "../../testUtils/asyncTokenMocks";
+import { requestService } from "../../asyncToken/requestService/requestService";
+import { successResult } from "../../utils/result";
 
 describe("Provider API contract verification", () => {
   let app: Application;
   let server: Server;
+  let requestServiceSpy;
   const port = 2025;
 
   beforeAll(async () => {
@@ -17,6 +20,18 @@ describe("Provider API contract verification", () => {
     server = app.listen(port, () => {
       console.log(`Server listening on port ${port}.`);
     });
+
+    requestServiceSpy = jest
+      .spyOn(requestService, "validateBody")
+      .mockImplementation(() => successResult(null));
+    requestServiceSpy = jest
+      .spyOn(requestService, "getClientCredentials")
+      .mockImplementation(() =>
+        successResult({
+          clientId: "mockClientId",
+          clientSecret: "mockClientSecret",
+        }),
+      );
   });
 
   afterAll(() => {
@@ -43,7 +58,7 @@ describe("Provider API contract verification", () => {
       pactUrls: [
         path.resolve(
           process.cwd(),
-          "functions/tests/pact/pactFiles/IpvCoreBack-DcmawCriProvider.json",
+          "src/functions/tests/pact/pactFiles/IpvCoreBack-DcmawCriProvider.json",
         ),
       ],
       stateHandlers,
