@@ -16,10 +16,6 @@ export async function createApp(): Promise<Application> {
       dependencies: stateConfig.dependencies,
     });
 
-    console.log("result.statusCode >>>>>", result.statusCode);
-    console.log("result.body >>>>>", result.body);
-    console.log("result", result)
-
     res.status(result.statusCode);
     res.send(result);
   });
