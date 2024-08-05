@@ -47,7 +47,7 @@ jobs:
         run: npm run format:check
 
       - name: Run tests #This should be updated to only run unit/infra tests when they have been categorised as such
-        run: npm run test
+        run: npm run test:unit
 
       - name: "Run SonarCloud Scan"
         uses: SonarSource/sonarcloud-github-action@e44258b109568baa0df60ed515909fc6c72cba92 # master

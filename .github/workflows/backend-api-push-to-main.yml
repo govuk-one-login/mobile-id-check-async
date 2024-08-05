@@ -40,7 +40,7 @@ jobs:
 
       # Generate test coverage report for Sonar main branch analysis
       - name: Run Tests
-        run: npm run test
+        run: npm run test:unit
 
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@master
