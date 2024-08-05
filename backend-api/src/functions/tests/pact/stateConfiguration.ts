@@ -11,17 +11,15 @@ import {
 import { IGetRegisteredIssuerUsingClientSecrets } from "../../services/clientRegistryService/clientRegistryService";
 
 export class StateConfiguration {
-  env = {
-    SIGNING_KEY_ID: "mockSigningKeyId",
-    ISSUER: "mockIssuer",
-    SQS_QUEUE: "mockSQSQueue",
-    CLIENT_REGISTRY_PARAMETER_NAME: "mockRegistryParameterName",
-  };
-
   secret: string = "";
   componentId: string = "";
   asyncTokenDependencies: IAsyncTokenRequestDependencies = {
-    env: this.env,
+    env: {
+      SIGNING_KEY_ID: "mockSigningKeyId",
+      ISSUER: "mockIssuer",
+      SQS_QUEUE: "mockSQSQueue",
+      CLIENT_REGISTRY_PARAMETER_NAME: "mockRegistryParameterName",
+    },
     eventService: () => new MockEventWriterSuccess(),
     logger: () => new Logger(new MockLoggingAdapter(), registeredLogs),
     requestService: () => new MockRequestServiceSuccessResult(),
@@ -53,7 +51,12 @@ export class StateConfiguration {
 
   resetToPassingAsyncTokenDependencies() {
     this.asyncTokenDependencies = {
-      env: this.env,
+      env: {
+        SIGNING_KEY_ID: "mockSigningKeyId",
+        ISSUER: "mockIssuer",
+        SQS_QUEUE: "mockSQSQueue",
+        CLIENT_REGISTRY_PARAMETER_NAME: "mockRegistryParameterName",
+      },
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(new MockLoggingAdapter(), registeredLogs),
       requestService: () => new MockRequestServiceSuccessResult(),
