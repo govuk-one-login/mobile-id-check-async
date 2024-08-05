@@ -36,8 +36,6 @@ describe("Provider API contract verification", () => {
     jest.clearAllMocks();
   });
 
-  beforeEach(() => {});
-
   it("validates adherence to all consumer contracts", () => {
     const stateHandlers = {
       "badDummySecret is not a valid basic auth secret": () => {
