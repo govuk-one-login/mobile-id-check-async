@@ -45,7 +45,7 @@ export class StateConfiguration {
     this.asyncTokenDependencies = value;
   }
 
-  set asyncTokenDependenciesClientRegisteryService(
+  set asyncTokenDependenciesClientRegistryService(
     value: () => IGetRegisteredIssuerUsingClientSecrets,
   ) {
     this.asyncTokenDependencies.clientRegistryService = value;

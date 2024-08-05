@@ -27,7 +27,7 @@ describe("Provider API contract verification", () => {
     const stateHandlers = {
       "badDummySecret is not a valid basic auth secret": () => {
         stateConfig.resetToPassingAsyncTokenDependencies();
-        stateConfig.asyncTokenDependenciesClientRegisteryService = () =>
+        stateConfig.asyncTokenDependenciesClientRegistryService = () =>
           new MockClientRegistryServiceBadRequestResult();
         return Promise.resolve("State set for invalid basic auth secret");
       },
