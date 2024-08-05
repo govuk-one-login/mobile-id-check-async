@@ -4,7 +4,7 @@ import { asyncTokenHandlerConstructor } from "./asyncToken/asyncTokenHandlerCons
 import { stateConfig } from "./stateConfiguration";
 
 export async function createApp(): Promise<Application> {
-  const app: Application = express();
+  const app = express();
 
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());

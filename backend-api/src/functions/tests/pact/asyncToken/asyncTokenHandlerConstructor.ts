@@ -12,8 +12,6 @@ export async function asyncTokenHandlerConstructor(
   const event: APIGatewayProxyEvent = buildRequest(requestConfig);
   const context = buildLambdaContext();
 
-  console.log("what is this?>>> ", requestConfig.dependencies);
-
   return await lambdaHandlerConstructor(
     requestConfig.dependencies,
     context,
