@@ -1,10 +1,13 @@
-import { IAsyncTokenRequestDependencies } from "../../asyncToken/asyncTokenHandler";
 import { registeredLogs } from "../../asyncToken/registeredLogs";
 import { MockEventWriterSuccess } from "../../services/events/tests/mocks";
 import { MockLoggingAdapter } from "../../services/logging/tests/mockLogger";
 import { Logger } from "../../services/logging/logger";
 import { IGetRegisteredIssuerUsingClientSecrets } from "../../services/clientRegistryService/clientRegistryService";
-import { MockClientRegistryServiceSuccessResult, MockRequestServiceSuccessResult, MockTokenServiceSuccessResult } from "../../testUtils/asyncTokenMocks";
+import {
+  MockClientRegistryServiceSuccessResult,
+  MockTokenServiceSuccessResult,
+} from "../../testUtils/asyncTokenMocks";
+import { IAsyncTokenRequestDependencies } from "../../asyncToken/handlerDependencies";
 
 export class StateConfiguration {
   secret: string = "";
@@ -18,7 +21,6 @@ export class StateConfiguration {
     },
     eventService: () => new MockEventWriterSuccess(),
     logger: () => new Logger(new MockLoggingAdapter(), registeredLogs),
-    requestService: () => new MockRequestServiceSuccessResult(),
     clientRegistryService: () => new MockClientRegistryServiceSuccessResult(),
     tokenService: () => new MockTokenServiceSuccessResult(),
   };
@@ -55,7 +57,6 @@ export class StateConfiguration {
       },
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(new MockLoggingAdapter(), registeredLogs),
-      requestService: () => new MockRequestServiceSuccessResult(),
       clientRegistryService: () => new MockClientRegistryServiceSuccessResult(),
       tokenService: () => new MockTokenServiceSuccessResult(),
     };

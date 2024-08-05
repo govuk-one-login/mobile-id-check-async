@@ -7,7 +7,7 @@ It follows the Client credentials grant flow from the OAuth2.0 Framework [see he
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=mobile-id-check-async&metric=alert_status&token=2b3ffa4269d7a6f80ff97e936fea21a45f10dd33)](https://sonarcloud.io/summary/new_code?id=mobile-id-check-async)
 
-[![Async-credential Push to Main](https://github.com/govuk-one-login/mobile-id-check-async/actions/workflows/async-credential-push-to-main.yml/badge.svg?branch=main)](https://github.com/govuk-one-login/mobile-id-check-async/actions/workflows/async-credential-push-to-main.yml)
+[![Async-credential Push to Main](https://github.com/govuk-one-login/mobile-id-check-async/actions/workflows/backend-api-push-to-main.yml/badge.svg)](https://github.com/govuk-one-login/mobile-id-check-async/actions/workflows/backend-api-push-to-main.yml)
 
 
 ## Dependencies:
@@ -18,7 +18,7 @@ It follows the Client credentials grant flow from the OAuth2.0 Framework [see he
 
 ## Running tests
 
-To run unit tests:
+To run unit and infra tests:
 
 ```bash
 npm run test

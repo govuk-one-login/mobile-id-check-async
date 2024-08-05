@@ -36,7 +36,11 @@ export class ClientRegistryService
       clientRegistry,
       secrets.clientId,
     );
-    if (!registeredClient) return errorResult("Client is not registered");
+    if (!registeredClient)
+      return errorResult({
+        errorMessage: "Client is not registered",
+        errorCategory: "CLIENT_ERROR",
+      });
 
     const isClientSecretsValid = this.validateClientSecrets(
       {
@@ -46,7 +50,10 @@ export class ClientRegistryService
       secrets,
     );
     if (!isClientSecretsValid)
-      return errorResult("Client credentials are invalid");
+      return errorResult({
+        errorMessage: "Client credentials are invalid",
+        errorCategory: "CLIENT_ERROR",
+      });
 
     return successResult(registeredClient.issuer);
   };
@@ -63,7 +70,11 @@ export class ClientRegistryService
       clientRegistry,
       clientId,
     );
-    if (!registeredClient) return errorResult("Client is not registered");
+    if (!registeredClient)
+      return errorResult({
+        errorMessage: "Client is not registered",
+        errorCategory: "CLIENT_ERROR",
+      });
 
     return successResult({
       issuer: registeredClient.issuer,
@@ -83,27 +94,42 @@ export class ClientRegistryService
     let response;
     try {
       response = await this.ssmClient.send(new GetParameterCommand(command));
-    } catch (e: unknown) {
-      return errorResult("Error retrieving client secrets");
+    } catch {
+      return errorResult({
+        errorMessage: "Error retrieving client secrets",
+        errorCategory: "SERVER_ERROR",
+      });
     }
 
     const clientRegistryResponse = response.Parameter?.Value;
 
     if (!clientRegistryResponse) {
-      return errorResult("Client registry not found");
+      return errorResult({
+        errorMessage: "Client registry not found",
+        errorCategory: "SERVER_ERROR",
+      });
     }
     let clientRegistry;
     try {
       clientRegistry = JSON.parse(clientRegistryResponse);
-    } catch (error) {
-      return errorResult("Client registry is not a valid JSON");
+    } catch {
+      return errorResult({
+        errorMessage: "Client registry is not a valid JSON",
+        errorCategory: "SERVER_ERROR",
+      });
     }
     if (!Array.isArray(clientRegistry)) {
-      return errorResult("Client registry is not an array");
+      return errorResult({
+        errorMessage: "Client registry is not an array",
+        errorCategory: "SERVER_ERROR",
+      });
     }
 
     if (clientRegistry.length === 0) {
-      return errorResult("Client registry is empty");
+      return errorResult({
+        errorMessage: "Client registry is empty",
+        errorCategory: "SERVER_ERROR",
+      });
     }
 
     const allPropertiesPresent = clientRegistry.every(
@@ -116,7 +142,10 @@ export class ClientRegistryService
         Object.keys(registeredClient).length === 5,
     );
     if (!allPropertiesPresent)
-      return errorResult("Client registry failed schema validation");
+      return errorResult({
+        errorMessage: "Client registry failed schema validation",
+        errorCategory: "SERVER_ERROR",
+      });
     cache = {
       expiry: Date.now() + this.cacheTTL,
       data: clientRegistry,
@@ -127,7 +156,7 @@ export class ClientRegistryService
   private isValidUrl = (rawUrl: string): boolean => {
     try {
       new URL(rawUrl);
-    } catch (error) {
+    } catch {
       return false;
     }
     return true;

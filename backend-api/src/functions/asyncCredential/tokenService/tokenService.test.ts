@@ -18,7 +18,10 @@ describe("Token Service", () => {
         });
 
         expect(result.isError).toEqual(true);
-        expect(result.value).toEqual("JWT payload not valid JSON");
+        expect(result.value).toStrictEqual({
+          errorMessage: "JWT payload not valid JSON",
+          errorCategory: "CLIENT_ERROR",
+        });
       });
     });
     describe("Given exp claim is invalid", () => {
@@ -35,7 +38,10 @@ describe("Token Service", () => {
           });
 
           expect(result.isError).toEqual(true);
-          expect(result.value).toEqual("Missing exp claim");
+          expect(result.value).toStrictEqual({
+            errorMessage: "Missing exp claim",
+            errorCategory: "CLIENT_ERROR",
+          });
         });
       });
 
@@ -52,7 +58,10 @@ describe("Token Service", () => {
           });
 
           expect(result.isError).toEqual(true);
-          expect(result.value).toEqual("exp claim is in the past");
+          expect(result.value).toStrictEqual({
+            errorMessage: "exp claim is in the past",
+            errorCategory: "CLIENT_ERROR",
+          });
         });
       });
     });
@@ -71,7 +80,10 @@ describe("Token Service", () => {
           });
 
           expect(result.isError).toEqual(true);
-          expect(result.value).toEqual("iat claim is in the future");
+          expect(result.value).toStrictEqual({
+            errorMessage: "iat claim is in the future",
+            errorCategory: "CLIENT_ERROR",
+          });
         });
       });
     });
@@ -90,7 +102,10 @@ describe("Token Service", () => {
           });
 
           expect(result.isError).toEqual(true);
-          expect(result.value).toEqual("nbf claim is in the future");
+          expect(result.value).toStrictEqual({
+            errorMessage: "nbf claim is in the future",
+            errorCategory: "CLIENT_ERROR",
+          });
         });
       });
     });
@@ -109,7 +124,10 @@ describe("Token Service", () => {
           });
 
           expect(result.isError).toEqual(true);
-          expect(result.value).toEqual("Missing iss claim");
+          expect(result.value).toStrictEqual({
+            errorMessage: "Missing iss claim",
+            errorCategory: "CLIENT_ERROR",
+          });
         });
       });
 
@@ -126,9 +144,11 @@ describe("Token Service", () => {
           });
 
           expect(result.isError).toEqual(true);
-          expect(result.value).toEqual(
-            "iss claim does not match ISSUER environment variable",
-          );
+          expect(result.value).toStrictEqual({
+            errorMessage:
+              "iss claim does not match ISSUER environment variable",
+            errorCategory: "CLIENT_ERROR",
+          });
         });
       });
     });
@@ -147,7 +167,10 @@ describe("Token Service", () => {
           });
 
           expect(result.isError).toEqual(true);
-          expect(result.value).toEqual("Missing scope claim");
+          expect(result.value).toStrictEqual({
+            errorMessage: "Missing scope claim",
+            errorCategory: "CLIENT_ERROR",
+          });
         });
       });
       describe("Given scope is not dcmaw.session.async_create", () => {
@@ -163,7 +186,10 @@ describe("Token Service", () => {
           });
 
           expect(result.isError).toEqual(true);
-          expect(result.value).toEqual("Invalid scope claim");
+          expect(result.value).toStrictEqual({
+            errorMessage: "Invalid scope claim",
+            errorCategory: "CLIENT_ERROR",
+          });
         });
       });
     });
@@ -182,7 +208,10 @@ describe("Token Service", () => {
           });
 
           expect(result.isError).toEqual(true);
-          expect(result.value).toEqual("Missing client_id claim");
+          expect(result.value).toStrictEqual({
+            errorMessage: "Missing client_id claim",
+            errorCategory: "CLIENT_ERROR",
+          });
         });
       });
     });
@@ -201,7 +230,10 @@ describe("Token Service", () => {
           });
 
           expect(result.isError).toEqual(true);
-          expect(result.value).toEqual("Missing aud claim");
+          expect(result.value).toStrictEqual({
+            errorMessage: "Missing aud claim",
+            errorCategory: "CLIENT_ERROR",
+          });
         });
       });
     });
@@ -249,7 +281,10 @@ describe("Token Service", () => {
           mockJwt,
         );
         expect(result.isError).toBe(true);
-        expect(result.value).toEqual("Signature is invalid");
+        expect(result.value).toStrictEqual({
+          errorMessage: "Signature is invalid",
+          errorCategory: "CLIENT_ERROR",
+        });
       });
     });
 
@@ -263,7 +298,10 @@ describe("Token Service", () => {
           mockJwt,
         );
         expect(result.isError).toBe(true);
-        expect(result.value).toEqual("Signature is invalid");
+        expect(result.value).toStrictEqual({
+          errorMessage: "Signature is invalid",
+          errorCategory: "CLIENT_ERROR",
+        });
       });
     });
 

@@ -32,8 +32,11 @@ export class EventService implements IEventService {
           MessageBody: JSON.stringify(txmaEvent),
         }),
       );
-    } catch (e) {
-      return errorResult("Failed to write to SQS");
+    } catch {
+      return errorResult({
+        errorMessage: "Failed to write to SQS",
+        errorCategory: "SERVER_ERROR",
+      });
     }
 
     return successResult(null);

@@ -1,10 +1,8 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import {
-  IAsyncTokenRequestDependencies,
-  lambdaHandlerConstructor,
-} from "../../../asyncToken/asyncTokenHandler";
+import { lambdaHandlerConstructor } from "../../../asyncToken/asyncTokenHandler";
 import { buildRequest } from "../../../testUtils/mockRequest";
 import { buildLambdaContext } from "../../../testUtils/mockContext";
+import { IAsyncTokenRequestDependencies } from "../../../asyncToken/handlerDependencies";
 
 export async function asyncTokenHandlerConstructor(
   requestConfig: IAsyncTokenHandlerConfig,

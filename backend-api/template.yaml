@@ -1,0 +1,230 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: async-backend SAM template for the ID Check v2 app
+Mappings:
+  PrivateApigw:
+    dev: 
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+    build: 
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    staging: 
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    integration: 
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    production: 
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+Parameters:
+  Environment:
+    Description: "The environment type"
+    Type: "String"
+    Default: dev
+
+Globals:
+  Function:
+    Environment:
+      Variables:
+        SIGNING_KEY_ID: !ImportValue platform-kms-signing-key-arn
+
+Resources:
+### Private APIgw for Client Credentials grant flow
+  BackendAsyncCredentialApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub "${AWS::StackName}-private-api"
+      Description: Private APIgw for Client Credentials flow
+      EndpointConfiguration: PRIVATE
+      Auth:
+        ResourcePolicy:
+          IntrinsicVpceWhitelist:
+            - !ImportValue devplatform-vpc-ExecuteApiGatewayEndpointId
+      StageName: 
+        Ref: Environment
+      OpenApiVersion: 3.0.1
+      AccessLogSetting:
+        DestinationArn: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialApiAccessLogs}"
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      MethodSettings:
+        - LoggingLevel: INFO
+          ResourcePath: "/*"
+          HttpMethod: "*"
+          # Disable data trace in production and integration to avoid logging customer sensitive information
+          DataTraceEnabled: false # Client credentials used in headers
+          MetricsEnabled: true
+          ThrottlingBurstLimit: !FindInMap [ PrivateApigw, !Ref Environment, ApiBurstLimit ]
+          ThrottlingRateLimit: !FindInMap [ PrivateApigw, !Ref Environment, ApiRateLimit ]
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: './openApiSpecs/async-private-spec.yaml'
+
+  AsyncCredentialApiAccessLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
+      RetentionInDays: 30
+
+### Token lambda
+  AsyncTokenFunction:
+    DependsOn:
+      - "AsyncTokenLogGroup"
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2022"
+        Sourcemap: false
+        EntryPoints:
+          - asyncTokenHandler.ts
+    Properties:
+      AutoPublishAlias: live
+      FunctionName: !Sub "${AWS::StackName}-token"
+      Runtime: nodejs20.x
+      Handler: asyncTokenHandler.lambdaHandler
+      CodeUri: src/functions/asyncToken/
+      Events:
+        AsyncToken:
+          Type: Api
+          Properties:
+            Path: /async/token
+            Method: post
+            RestApiId: !Ref BackendAsyncCredentialApi
+      Role: !GetAtt AsyncTokenLambdaRole.Arn
+
+  AsyncTokenFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt AsyncTokenFunction.Arn
+      Principal: events.amazonaws.com
+      SourceAccount: !Sub "${AWS::AccountId}"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialApi}/*/*/*"
+
+
+  AsyncTokenLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-token"
+
+  AsyncTokenLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: AsyncTokenFunctionSsmPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: 'arn:aws:logs:*:*:*'
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource:
+                  - !Sub "arn:aws:secretsmanager${AWS::Region}:${AWS::AccountId}:secret:SECRET_NAME-12345"
+                  
+        - PolicyName: AsyncTokenFunctionKmsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:Sign
+                Resource: !ImportValue platform-kms-signing-key-arn
+
+### Credential Lambda
+  AsyncCredentialFunction:
+    DependsOn:
+      - "AsyncCredentialLogGroup"
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2022"
+        Sourcemap: false
+        EntryPoints:
+          - asyncCredentialHandler.ts
+    Properties:
+      AutoPublishAlias: live
+      FunctionName: !Sub "${AWS::StackName}-credential"
+      Runtime: nodejs20.x
+      Handler: asyncCredentialHandler.lambdaHandler
+      CodeUri: src/functions/asyncCredential
+      Role: !GetAtt AsyncCredentialLambdaRole.Arn
+      Events:
+        AsyncCredential:
+          Type: Api
+          Properties:
+            Path: /async/credential
+            Method: post
+            RestApiId: !Ref BackendAsyncCredentialApi
+
+  AsyncCredentialLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-credential"
+
+
+  AsyncCredentialFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt AsyncCredentialFunction.Arn
+      Principal: events.amazonaws.com
+      SourceAccount: !Sub "${AWS::AccountId}"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialApi}/*/*/*"
+
+  AsyncCredentialLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: AsyncTokenFunctionSsmPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: 'arn:aws:logs:*:*:*'
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource:
+                  - !Sub "arn:aws:secretsmanager${AWS::Region}:${AWS::AccountId}:secret:SECRET_NAME-12345"
+                  
+        - PolicyName: AsyncTokenFunctionKmsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:Sign
+                Resource: !ImportValue platform-kms-signing-key-arn
