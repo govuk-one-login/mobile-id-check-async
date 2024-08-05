@@ -17,7 +17,7 @@ export async function createApp(): Promise<Application> {
     });
 
     res.status(result.statusCode);
-    res.send(result);
+    res.send(JSON.parse(result.body));
   });
 
   return app;
