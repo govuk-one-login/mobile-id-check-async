@@ -11,7 +11,6 @@ import { IAsyncTokenRequestDependencies } from "../../asyncToken/handlerDependen
 
 export class StateConfiguration {
   secret: string = "";
-  componentId: string = "";
   asyncTokenDependencies: IAsyncTokenRequestDependencies = {
     env: {
       SIGNING_KEY_ID: "mockSigningKeyId",
@@ -24,14 +23,6 @@ export class StateConfiguration {
     clientRegistryService: () => new MockClientRegistryServiceSuccessResult(),
     tokenService: () => new MockTokenServiceSuccessResult(),
   };
-
-  get secretValue(): string {
-    return this.secret;
-  }
-
-  set secretValue(value: string) {
-    this.secret = value;
-  }
 
   get asyncTokenDependenciesValue() {
     return this.asyncTokenDependencies;
