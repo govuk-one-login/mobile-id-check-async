@@ -26,61 +26,61 @@ resource "aws_cloudformation_stack" "mob_async_backend_pl" {
 }
 
 locals {
-    // Define environemnt specific parameters here. Will be merged and take precedence over the
-    // parameters defined in the resource above.
-    // https://developer.hashicorp.com/terraform/language/functions/merge
-    mob_async_backend_pl = {
-      dev = {
-        OneLoginRepositoryName = "mobile-id-check-async"
+  // Define environemnt specific parameters here. Will be merged and take precedence over the
+  // parameters defined in the resource above.
+  // https://developer.hashicorp.com/terraform/language/functions/merge
+  mob_async_backend_pl = {
+    dev = {
+      OneLoginRepositoryName = "mobile-id-check-async"
 
-        IncludePromotion = "No"
+      IncludePromotion = "No"
 
-        SigningProfileArn        = one(data.aws_cloudformation_stack.signer_dev[*].outputs["SigningProfileArn"])
-        SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_dev[*].outputs["SigningProfileVersionArn"])
-      }
-
-      build = {
-        OneLoginRepositoryName = "mobile-id-check-async"
-
-        IncludePromotion = "Yes"
-        AllowedAccounts  = local.account_vars.staging.account_id
-
-        SigningProfileArn        = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileArn"])
-        SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileVersionArn"])
-      }
-
-      staging = {
-        ArtifactSourceBucketArn                 = one(data.aws_cloudformation_stack.mob_async_backend_pl_build[*].outputs["ArtifactPromotionBucketArn"])
-        ArtifactSourceBucketEventTriggerRoleArn = one(data.aws_cloudformation_stack.mob_async_backend_pl_build[*].outputs["ArtifactPromotionBucketEventTriggerRoleArn"])
-
-       # Stopping promotion at staging
-        IncludePromotion = "No" # "Yes"
-        AllowedAccounts  = null # join(",", [local.account_vars.integration.account_id, local.account_vars.prod.account_id])
-
-        SigningProfileArn        = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileArn"])
-        SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileVersionArn"])
-      }
-
-      integration = {
-        ArtifactSourceBucketArn                 = one(data.aws_cloudformation_stack.mob_async_backend_pl_staging[*].outputs["ArtifactPromotionBucketArn"])
-        ArtifactSourceBucketEventTriggerRoleArn = one(data.aws_cloudformation_stack.mob_async_backend_pl_staging[*].outputs["ArtifactPromotionBucketEventTriggerRoleArn"])
-
-        IncludePromotion = "No"
-
-        SigningProfileArn        = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileArn"])
-        SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileVersionArn"])
-      }
-
-      prod = {
-        Environment = "production"
-
-        ArtifactSourceBucketArn                 = one(data.aws_cloudformation_stack.mob_async_backend_pl_staging[*].outputs["ArtifactPromotionBucketArn"])
-        ArtifactSourceBucketEventTriggerRoleArn = one(data.aws_cloudformation_stack.mob_async_backend_pl_staging[*].outputs["ArtifactPromotionBucketEventTriggerRoleArn"])
-
-        IncludePromotion = "No"
-
-        SigningProfileArn        = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileArn"])
-        SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileVersionArn"])
-      }
+      SigningProfileArn        = one(data.aws_cloudformation_stack.signer_dev[*].outputs["SigningProfileArn"])
+      SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_dev[*].outputs["SigningProfileVersionArn"])
     }
+
+    build = {
+      OneLoginRepositoryName = "mobile-id-check-async"
+
+      IncludePromotion = "Yes"
+      AllowedAccounts  = local.account_vars.staging.account_id
+
+      SigningProfileArn        = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileArn"])
+      SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileVersionArn"])
+    }
+
+    staging = {
+      ArtifactSourceBucketArn                 = one(data.aws_cloudformation_stack.mob_async_backend_pl_build[*].outputs["ArtifactPromotionBucketArn"])
+      ArtifactSourceBucketEventTriggerRoleArn = one(data.aws_cloudformation_stack.mob_async_backend_pl_build[*].outputs["ArtifactPromotionBucketEventTriggerRoleArn"])
+
+      # Stopping promotion at staging
+      IncludePromotion = "No" # "Yes"
+      AllowedAccounts  = null # join(",", [local.account_vars.integration.account_id, local.account_vars.prod.account_id])
+
+      SigningProfileArn        = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileArn"])
+      SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileVersionArn"])
+    }
+
+    integration = {
+      ArtifactSourceBucketArn                 = one(data.aws_cloudformation_stack.mob_async_backend_pl_staging[*].outputs["ArtifactPromotionBucketArn"])
+      ArtifactSourceBucketEventTriggerRoleArn = one(data.aws_cloudformation_stack.mob_async_backend_pl_staging[*].outputs["ArtifactPromotionBucketEventTriggerRoleArn"])
+
+      IncludePromotion = "No"
+
+      SigningProfileArn        = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileArn"])
+      SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileVersionArn"])
+    }
+
+    prod = {
+      Environment = "production"
+
+      ArtifactSourceBucketArn                 = one(data.aws_cloudformation_stack.mob_async_backend_pl_staging[*].outputs["ArtifactPromotionBucketArn"])
+      ArtifactSourceBucketEventTriggerRoleArn = one(data.aws_cloudformation_stack.mob_async_backend_pl_staging[*].outputs["ArtifactPromotionBucketEventTriggerRoleArn"])
+
+      IncludePromotion = "No"
+
+      SigningProfileArn        = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileArn"])
+      SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileVersionArn"])
+    }
+  }
 }

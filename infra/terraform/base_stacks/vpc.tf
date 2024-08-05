@@ -12,6 +12,10 @@ resource "aws_cloudformation_stack" "vpc" {
   parameters = {
     SSMParametersStoreEnabled = "Yes"
     // TODO: Enable AWS Service APIs as required
+    DynamoDBApiEnabled       = "Yes"
     ExecuteApiGatewayEnabled = "Yes"
+    KMSApiEnabled            = "Yes"
+    SQSApiEnabled            = "Yes"
+    SSMApiEnabled            = "Yes"
   }
 }
