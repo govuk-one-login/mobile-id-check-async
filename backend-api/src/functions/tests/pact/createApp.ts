@@ -13,7 +13,7 @@ export async function createApp(): Promise<Application> {
     const result = await asyncTokenHandlerConstructor({
       headers: req.headers,
       body: req.body,
-      dependencies: stateConfig.dependencies,
+      dependencies: stateConfig.asyncTokenDependencies,
     });
 
     res.status(result.statusCode);
