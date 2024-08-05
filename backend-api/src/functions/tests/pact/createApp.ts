@@ -1,5 +1,4 @@
-import express from "express";
-import { Application, Request, Response } from "express";
+import express, { Application, Request, Response } from "express";
 import { asyncTokenHandlerConstructor } from "./asyncToken/asyncTokenHandlerConstructor";
 import { stateConfig } from "./stateConfiguration";
 
