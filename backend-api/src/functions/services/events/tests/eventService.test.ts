@@ -21,7 +21,10 @@ describe("Event Service", () => {
         });
 
         expect(result.isError).toBe(true);
-        expect(result.value).toEqual("Failed to write to SQS");
+        expect(result.value).toStrictEqual({
+          errorMessage: "Failed to write to SQS",
+          errorCategory: "SERVER_ERROR",
+        });
 
         expect(sqsMock.call(0).args[0].input).toEqual({
           MessageBody: JSON.stringify({
@@ -89,7 +92,10 @@ describe("Event Service", () => {
           });
 
           expect(result.isError).toBe(true);
-          expect(result.value).toEqual("Failed to write to SQS");
+          expect(result.value).toStrictEqual({
+            errorMessage: "Failed to write to SQS",
+            errorCategory: "SERVER_ERROR",
+          });
 
           expect(sqsMock.call(0).args[0].input).toStrictEqual({
             MessageBody: JSON.stringify({

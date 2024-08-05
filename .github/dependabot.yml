@@ -16,7 +16,7 @@ updates:
         patterns:
           - "*"
   - package-ecosystem: "npm"
-    directory: "backend-api/src"
+    directory: "backend-api"
     schedule:
       interval: "weekly"
       day: "tuesday"

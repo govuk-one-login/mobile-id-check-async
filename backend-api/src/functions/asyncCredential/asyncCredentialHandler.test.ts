@@ -5,7 +5,7 @@ import {
   IDecodeToken,
   IVerifyTokenSignature,
 } from "./tokenService/tokenService";
-import { Dependencies, lambdaHandler } from "./asyncCredentialHandler";
+import { lambdaHandlerConstructor } from "./asyncCredentialHandler";
 import { IGetPartialRegisteredClientByClientId } from "../services/clientRegistryService/clientRegistryService";
 import { Result, errorResult, successResult } from "../utils/result";
 import { MockJWTBuilder } from "../testUtils/mockJwt";
@@ -20,6 +20,7 @@ import {
   MockEventServiceFailToWrite,
   MockEventWriterSuccess,
 } from "../services/events/tests/mocks";
+import { Dependencies } from "./handlerDependencies";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -58,7 +59,7 @@ describe("Async Credential", () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
         delete dependencies.env[envVar];
         const event = buildRequest();
-        const result = await lambdaHandler(event, dependencies);
+        const result = await lambdaHandlerConstructor(dependencies, event);
 
         expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
           "ENVIRONMENT_VARIABLE_MISSING",
@@ -84,7 +85,7 @@ describe("Async Credential", () => {
         dependencies.env["SESSION_TTL_IN_MILLISECONDS"] =
           "mockInvalidSessionTtlMs";
         const event = buildRequest();
-        const result = await lambdaHandler(event, dependencies);
+        const result = await lambdaHandlerConstructor(dependencies, event);
 
         expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
           "ENVIRONMENT_VARIABLE_MISSING",
@@ -110,9 +111,9 @@ describe("Async Credential", () => {
       it("Returns 401 Unauthorized", async () => {
         const event = buildRequest();
 
-        const result: APIGatewayProxyResult = await lambdaHandler(
-          event,
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
+          event,
         );
 
         expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
@@ -139,9 +140,9 @@ describe("Async Credential", () => {
           headers: { Authorization: "noBearerString mockToken" },
         });
 
-        const result: APIGatewayProxyResult = await lambdaHandler(
-          event,
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
+          event,
         );
 
         expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
@@ -169,9 +170,9 @@ describe("Async Credential", () => {
           headers: { Authorization: "Bearer mock token" },
         });
 
-        const result: APIGatewayProxyResult = await lambdaHandler(
-          event,
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
+          event,
         );
 
         expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
@@ -199,9 +200,9 @@ describe("Async Credential", () => {
           headers: { Authorization: "Bearer " },
         });
 
-        const result: APIGatewayProxyResult = await lambdaHandler(
-          event,
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
+          event,
         );
 
         expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
@@ -234,9 +235,9 @@ describe("Async Credential", () => {
         dependencies.tokenService = () =>
           new MockTokenServiceGetDecodedTokenErrorResult();
 
-        const result: APIGatewayProxyResult = await lambdaHandler(
-          event,
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
+          event,
         );
 
         expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
@@ -269,9 +270,9 @@ describe("Async Credential", () => {
 
         dependencies.tokenService = () => new MockTokenServiceSuccess();
 
-        const result: APIGatewayProxyResult = await lambdaHandler(
-          event,
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
+          event,
         );
 
         expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
@@ -310,9 +311,9 @@ describe("Async Credential", () => {
 
           dependencies.tokenService = () => new MockTokenServiceSuccess();
 
-          const result: APIGatewayProxyResult = await lambdaHandler(
-            event,
+          const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
             dependencies,
+            event,
           );
 
           expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
@@ -344,9 +345,9 @@ describe("Async Credential", () => {
 
         dependencies.tokenService = () => new MockTokenServiceSuccess();
 
-        const result: APIGatewayProxyResult = await lambdaHandler(
-          event,
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
+          event,
         );
 
         expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
@@ -379,9 +380,9 @@ describe("Async Credential", () => {
 
         dependencies.tokenService = () => new MockTokenServiceSuccess();
 
-        const result: APIGatewayProxyResult = await lambdaHandler(
-          event,
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
+          event,
         );
 
         expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
@@ -415,9 +416,9 @@ describe("Async Credential", () => {
 
         dependencies.tokenService = () => new MockTokenServiceSuccess();
 
-        const result: APIGatewayProxyResult = await lambdaHandler(
-          event,
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
+          event,
         );
 
         expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
@@ -452,9 +453,9 @@ describe("Async Credential", () => {
 
         dependencies.tokenService = () => new MockTokenServiceSuccess();
 
-        const result: APIGatewayProxyResult = await lambdaHandler(
-          event,
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
+          event,
         );
 
         expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
@@ -490,9 +491,9 @@ describe("Async Credential", () => {
 
         dependencies.tokenService = () => new MockTokenServiceSuccess();
 
-        const result: APIGatewayProxyResult = await lambdaHandler(
-          event,
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
+          event,
         );
 
         expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
@@ -529,9 +530,9 @@ describe("Async Credential", () => {
 
         dependencies.tokenService = () => new MockTokenServiceSuccess();
 
-        const result: APIGatewayProxyResult = await lambdaHandler(
-          event,
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
+          event,
         );
 
         expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
@@ -570,9 +571,9 @@ describe("Async Credential", () => {
           }),
         });
 
-        const result: APIGatewayProxyResult = await lambdaHandler(
-          event,
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
+          event,
         );
 
         expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
@@ -610,7 +611,7 @@ describe("Async Credential", () => {
             }),
           });
 
-          const result = await lambdaHandler(event, dependencies);
+          const result = await lambdaHandlerConstructor(dependencies, event);
 
           expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
             "ERROR_RETRIEVING_REGISTERED_CLIENT",
@@ -644,7 +645,7 @@ describe("Async Credential", () => {
               redirect_uri: "https://www.unregisteredRedirectUri.com",
             }),
           });
-          const result = await lambdaHandler(event, dependencies);
+          const result = await lambdaHandlerConstructor(dependencies, event);
 
           expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
             "REQUEST_BODY_INVALID",
@@ -699,7 +700,7 @@ describe("Async Credential", () => {
 
           dependencies.tokenService = () => new MockTokenServiceInvalidIssuer();
 
-          const result = await lambdaHandler(event, dependencies);
+          const result = await lambdaHandlerConstructor(dependencies, event);
 
           expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
             "REQUEST_BODY_INVALID",
@@ -734,7 +735,7 @@ describe("Async Credential", () => {
       dependencies.clientRegistryService = () =>
         new MockClientRegistryServiceGetPartialClientBadRequestResponse();
 
-      const result = await lambdaHandler(event, dependencies);
+      const result = await lambdaHandlerConstructor(dependencies, event);
 
       expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
         "CLIENT_CREDENTIALS_INVALID",
@@ -773,7 +774,7 @@ describe("Async Credential", () => {
               env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
 
-          const result = await lambdaHandler(event, dependencies);
+          const result = await lambdaHandlerConstructor(dependencies, event);
 
           expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
             "ERROR_RETRIEVING_SESSION",
@@ -813,7 +814,7 @@ describe("Async Credential", () => {
               env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
 
-          const result = await lambdaHandler(event, dependencies);
+          const result = await lambdaHandlerConstructor(dependencies, event);
 
           expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
             "COMPLETED",
@@ -856,7 +857,7 @@ describe("Async Credential", () => {
               env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
 
-          const result = await lambdaHandler(event, dependencies);
+          const result = await lambdaHandlerConstructor(dependencies, event);
 
           expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
             "ERROR_CREATING_SESSION",
@@ -895,7 +896,7 @@ describe("Async Credential", () => {
                 env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
               );
 
-            const result = await lambdaHandler(event, dependencies);
+            const result = await lambdaHandlerConstructor(dependencies, event);
 
             expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
               "ERROR_WRITING_AUDIT_EVENT",
@@ -938,7 +939,7 @@ describe("Async Credential", () => {
                 env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
               );
 
-            const result = await lambdaHandler(event, dependencies);
+            const result = await lambdaHandlerConstructor(dependencies, event);
 
             expect(mockEventService.auditEvents[0]).toEqual(
               "DCMAW_ASYNC_CRI_START",
@@ -971,7 +972,10 @@ class MockTokenServiceGetDecodedTokenErrorResult
   implements IDecodeToken, IVerifyTokenSignature
 {
   getDecodedToken(): Result<IDecodedToken> {
-    return errorResult("Mock decoding token error");
+    return errorResult({
+      errorMessage: "Mock decoding token error",
+      errorCategory: "SERVER_ERROR",
+    });
   }
   verifyTokenSignature(): Promise<Result<null>> {
     return Promise.resolve(successResult(null));
@@ -995,7 +999,12 @@ class MockTokenServiceInvalidSignatureErrorResult
     });
   }
   verifyTokenSignature(): Promise<Result<null>> {
-    return Promise.resolve(errorResult("Failed to verify token signature"));
+    return Promise.resolve(
+      errorResult({
+        errorMessage: "Failed to verify token signature",
+        errorCategory: "SERVER_ERROR",
+      }),
+    );
   }
 }
 
@@ -1022,7 +1031,10 @@ class MockClientRegistryServiceeGetPartialClientInternalServerResult
   implements IGetPartialRegisteredClientByClientId
 {
   getPartialRegisteredClientByClientId = async () => {
-    return errorResult("Unexpected error retrieving registered client");
+    return errorResult({
+      errorMessage: "Unexpected error retrieving registered client",
+      errorCategory: "SERVER_ERROR",
+    });
   };
 }
 
@@ -1030,7 +1042,10 @@ class MockClientRegistryServiceGetPartialClientBadRequestResponse
   implements IGetPartialRegisteredClientByClientId
 {
   getPartialRegisteredClientByClientId = async () => {
-    return errorResult("Client Id is not registered");
+    return errorResult({
+      errorMessage: "Client Id is not registered",
+      errorCategory: "CLIENT_ERROR",
+    });
   };
 }
 
@@ -1057,7 +1072,10 @@ class MockSessionServiceGetSessionBySubErrorResult
   }
 
   getActiveSession = async (): Promise<Result<string | null>> => {
-    return errorResult("Mock failing DB call");
+    return errorResult({
+      errorMessage: "Mock failing DB call",
+      errorCategory: "SERVER_ERROR",
+    });
   };
 
   createSession = async (): Promise<Result<string>> => {
@@ -1120,7 +1138,10 @@ class MockSessionServiceCreateSessionErrorResult
   };
 
   createSession = async (): Promise<Result<string>> => {
-    return errorResult("Mock error");
+    return errorResult({
+      errorMessage: "Mock error",
+      errorCategory: "SERVER_ERROR",
+    });
   };
 }
 

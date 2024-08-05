@@ -31,11 +31,17 @@ export class MockEventServiceFailToWrite implements IEventService {
     eventConfig: GenericEventConfig,
   ): Promise<Result<null>> => {
     if (eventConfig.eventName === this.eventNameToFail)
-      return errorResult("Error writing to SQS");
+      return errorResult({
+        errorMessage: "Error writing to SQS",
+        errorCategory: "SERVER_ERROR",
+      });
     return successResult(null);
   };
 
   writeCredentialTokenIssuedEvent = async (): Promise<Result<null>> => {
-    return errorResult("Error writing to SQS");
+    return errorResult({
+      errorMessage: "Error writing to SQS",
+      errorCategory: "SERVER_ERROR",
+    });
   };
 }

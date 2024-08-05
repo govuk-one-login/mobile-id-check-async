@@ -55,10 +55,12 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     let result: QueryCommandOutput;
     try {
       result = await dbClient.send(new QueryCommand(queryCommandInput));
-    } catch (e) {
-      return errorResult(
-        "Unexpected error when querying session table whilst checking for an active session",
-      );
+    } catch {
+      return errorResult({
+        errorMessage:
+          "Unexpected error when querying session table whilst checking for an active session",
+        errorCategory: "SERVER_ERROR",
+      });
     }
 
     if (!this.hasValidSession(result)) {
@@ -75,22 +77,29 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     let doesSessionExist;
     try {
       doesSessionExist = await this.checkSessionsExists(sessionId);
-    } catch (e) {
-      return errorResult(
-        "Unexpected error when querying session table to check if sessionId exists",
-      );
+    } catch {
+      return errorResult({
+        errorMessage:
+          "Unexpected error when querying session table to check if sessionId exists",
+        errorCategory: "SERVER_ERROR",
+      });
     }
 
     if (doesSessionExist) {
-      return errorResult("sessionId already exists in the database");
+      return errorResult({
+        errorMessage: "sessionId already exists in the database",
+        errorCategory: "SERVER_ERROR",
+      });
     }
 
     try {
       await this.putSessionInDb(putSessionConfig);
-    } catch (e) {
-      return errorResult(
-        "Unexpected error when querying session table whilst creating a session",
-      );
+    } catch {
+      return errorResult({
+        errorMessage:
+          "Unexpected error when querying session table whilst creating a session",
+        errorCategory: "SERVER_ERROR",
+      });
     }
     return successResult(sessionId);
   }

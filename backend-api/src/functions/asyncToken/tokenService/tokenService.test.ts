@@ -30,7 +30,10 @@ describe("Token Service", () => {
 
       const mintTokenResponse = tokenService.mintToken(payload);
       expect((await mintTokenResponse).isError).toBe(true);
-      expect((await mintTokenResponse).value).toBe("Error from KMS");
+      expect((await mintTokenResponse).value).toStrictEqual({
+        errorMessage: "Error from KMS",
+        errorCategory: "SERVER_ERROR",
+      });
     });
   });
 
@@ -41,9 +44,10 @@ describe("Token Service", () => {
 
         const mintTokenResponse = tokenService.mintToken(payload);
         expect((await mintTokenResponse).isError).toBe(true);
-        expect((await mintTokenResponse).value).toBe(
-          "No signature in response from KMS",
-        );
+        expect((await mintTokenResponse).value).toStrictEqual({
+          errorMessage: "No signature in response from KMS",
+          errorCategory: "SERVER_ERROR",
+        });
       });
     });
 

@@ -21,10 +21,13 @@ describe("Session Service", () => {
 
         const result = await service.getActiveSession("mockSub", 12345);
 
+        expect(result.value).toStrictEqual({
+          errorMessage:
+            "Unexpected error when querying session table whilst checking for an active session",
+          errorCategory: "SERVER_ERROR",
+        });
+
         expect(result.isError).toBe(true);
-        expect(result.value).toEqual(
-          "Unexpected error when querying session table whilst checking for an active session",
-        );
       });
     });
 
@@ -80,7 +83,7 @@ describe("Session Service", () => {
         const result = await service.getActiveSession("mockSub", 12345);
 
         expect(result.isError).toBe(false);
-        expect(result.value).toEqual(null);
+        expect(result.value).toBe(null);
       });
     });
 
@@ -119,9 +122,11 @@ describe("Session Service", () => {
         });
 
         expect(result.isError).toBe(true);
-        expect(result.value).toEqual(
-          "Unexpected error when querying session table to check if sessionId exists",
-        );
+        expect(result.value).toStrictEqual({
+          errorMessage:
+            "Unexpected error when querying session table to check if sessionId exists",
+          errorCategory: "SERVER_ERROR",
+        });
       });
     });
 
@@ -144,9 +149,10 @@ describe("Session Service", () => {
         });
 
         expect(result.isError).toBe(true);
-        expect(result.value).toEqual(
-          "sessionId already exists in the database",
-        );
+        expect(result.value).toStrictEqual({
+          errorMessage: "sessionId already exists in the database",
+          errorCategory: "SERVER_ERROR",
+        });
       });
     });
 
@@ -166,9 +172,11 @@ describe("Session Service", () => {
         });
 
         expect(result.isError).toBe(true);
-        expect(result.value).toEqual(
-          "Unexpected error when querying session table whilst creating a session",
-        );
+        expect(result.value).toStrictEqual({
+          errorMessage:
+            "Unexpected error when querying session table whilst creating a session",
+          errorCategory: "SERVER_ERROR",
+        });
       });
     });
 
