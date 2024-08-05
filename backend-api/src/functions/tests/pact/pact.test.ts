@@ -11,7 +11,6 @@ import { successResult } from "../../utils/result";
 describe("Provider API contract verification", () => {
   let app: Application;
   let server: Server;
-  let requestServiceSpy;
   const port = 2025;
 
   beforeAll(async () => {
@@ -21,22 +20,23 @@ describe("Provider API contract verification", () => {
       console.log(`Server listening on port ${port}.`);
     });
 
-    requestServiceSpy = jest
+    jest
       .spyOn(requestService, "validateBody")
       .mockImplementation(() => successResult(null));
-    requestServiceSpy = jest
-      .spyOn(requestService, "getClientCredentials")
-      .mockImplementation(() =>
-        successResult({
-          clientId: "mockClientId",
-          clientSecret: "mockClientSecret",
-        }),
-      );
+    jest.spyOn(requestService, "getClientCredentials").mockImplementation(() =>
+      successResult({
+        clientId: "mockClientId",
+        clientSecret: "mockClientSecret",
+      }),
+    );
   });
 
   afterAll(() => {
     server.close();
+    jest.clearAllMocks();
   });
+
+  beforeEach(() => {});
 
   it("validates adherence to all consumer contracts", () => {
     const stateHandlers = {
@@ -53,12 +53,12 @@ describe("Provider API contract verification", () => {
     };
 
     const verifier = new Verifier({
-      provider: "DcmawCriProvider",
+      provider: "DcmawAsyncCriProvider",
       logLevel: "info",
       pactUrls: [
         path.resolve(
           process.cwd(),
-          "src/functions/tests/pact/pactFiles/IpvCoreBack-DcmawCriProvider.json",
+          "src/functions/tests/pact/pactFiles/IpvCoreBack-DcmawAsyncCriProvider.json",
         ),
       ],
       stateHandlers,
