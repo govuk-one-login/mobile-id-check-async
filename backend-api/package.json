@@ -10,7 +10,7 @@
     "pact": "./node_modules/.bin/jest --testPathPattern=tests/pact",
     "test:infra": "./node_modules/.bin/jest --testPathPattern=infra-tests/",
     "test:pact": "npm run pact",
-    "test:unit": "./node_modules/.bin/jest --detectOpenHandles",
+    "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/pact",
     "ci": "npm run test && npm run format:check && npm run lint"
   },
   "engines": {
