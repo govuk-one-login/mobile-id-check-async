@@ -16,9 +16,9 @@ import { registeredLogs } from "../../asyncToken/registeredLogs";
 import { Server } from "http";
 
 describe("Provider API contract verification", () => {
-  const port: number = 2025;
   let app: Application;
   let server: Server;
+  const port = 2025;
   const env = {
     SIGNING_KEY_ID: "mockSigningKeyId",
     ISSUER: "mockIssuer",
