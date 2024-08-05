@@ -12,7 +12,7 @@ export async function createApp(): Promise<Application> {
   app.post("/async/token", async (req: Request, res: Response) => {
     const result = await asyncTokenHandlerConstructor({
       headers: req.headers,
-      body: JSON.stringify(req.body),
+      body: req.body,
       dependencies: stateConfig.asyncTokenDependencies,
     });
 
