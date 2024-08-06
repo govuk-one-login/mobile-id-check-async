@@ -3,7 +3,7 @@ import { registeredLogs } from "../../../asyncCredential/registeredLogs";
 import { MockEventWriterSuccess } from "../../../services/events/tests/mocks";
 import { Logger } from "../../../services/logging/logger";
 import { MockLoggingAdapter } from "../../../services/logging/tests/mockLogger";
-import { MockClientRegistryServiceGetPartialClientSuccessResult, MockSessionServiceCreateSessionSuccessResult, MockTokenServiceSuccess } from "../../../testUtils/asyncCredentialMocks";
+import { MockClientRegistryServiceGetPartialClientSuccessResult, MockSessionServiceCreateSessionSuccessResult, MockTokenServiceSuccessIPV } from "../../../testUtils/asyncCredentialMocks";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -22,7 +22,7 @@ export class AsyncCredentialStateConfiguration {
     eventService: () => new MockEventWriterSuccess(),
     logger: () => new Logger(new MockLoggingAdapter(), registeredLogs),
     clientRegistryService: () => new MockClientRegistryServiceGetPartialClientSuccessResult(),
-    tokenService: () => new MockTokenServiceSuccess(),
+    tokenService: () => new MockTokenServiceSuccessIPV(),
     sessionService: () => new MockSessionServiceCreateSessionSuccessResult(env.SESSION_TABLE_NAME, env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME),
   };
 
@@ -48,7 +48,7 @@ export class AsyncCredentialStateConfiguration {
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(new MockLoggingAdapter(), registeredLogs),
       clientRegistryService: () => new MockClientRegistryServiceGetPartialClientSuccessResult(),
-      tokenService: () => new MockTokenServiceSuccess(),
+      tokenService: () => new MockTokenServiceSuccessIPV(),
       sessionService: () => new MockSessionServiceCreateSessionSuccessResult("mockTableName", "mockIndexName"),
     };
   }
