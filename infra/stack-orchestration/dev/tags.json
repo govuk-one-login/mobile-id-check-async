@@ -1,0 +1,14 @@
+[
+    {
+      "Key": "Product",
+      "Value": "GOV.UK Sign In"
+    },
+    {
+      "Key": "System",
+      "Value": "GOV.UK ID Check V2"
+    },
+    {
+      "Key": "Environment",
+      "Value": "dev"
+    }
+  ]
