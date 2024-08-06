@@ -56,8 +56,8 @@ describe("Provider API contract verification", () => {
       pactUrls: [
         path.resolve(
           process.cwd(),
-          "src/functions/tests/pact/pactFiles/IpvCoreBack-DcmawAsyncCriProvider.json",
-        ),
+          "src/functions/tests/pact/asyncToken/IpvCoreBack-DcmawAsyncCriProvider.json",
+        )
       ],
       stateHandlers,
       providerBaseUrl: `http://localhost:${port}`,

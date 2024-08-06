@@ -2,14 +2,18 @@
   "consumer": {
     "name": "IpvCoreBack"
   },
-  "interactions": [{
+  "interactions": [
+    {
       "_id": "8f0e7b179b60b70696091786cb2d7a2d874416ab",
       "description": "Invalid basic auth credentials",
-      "providerStates": [{
+      "providerStates": [
+        {
           "name": "badDummySecret is not a valid basic auth secret"
-        }, {
+        },
+        {
           "name": "dummyDcmawAsyncComponentId is the dcmaw async CRI component ID"
-        }],
+        }
+      ],
       "request": {
         "body": "grant_type%3Dclient_credentials",
         "headers": {
@@ -22,14 +26,18 @@
       "response": {
         "status": 400
       }
-    }, {
+    },
+    {
       "_id": "5327d667d5bdf05cac61e1409725008d26d73380",
       "description": "Valid basic auth credentials",
-      "providerStates": [{
+      "providerStates": [
+        {
           "name": "dummySecret is a valid basic auth secret"
-        }, {
+        },
+        {
           "name": "dummyDcmawAsyncComponentId is the dcmaw async CRI component ID"
-        }],
+        }
+      ],
       "request": {
         "body": "grant_type%3Dclient_credentials",
         "headers": {
@@ -65,30 +73,37 @@
           "body": {
             "$.access_token": {
               "combine": "AND",
-              "matchers": [{
+              "matchers": [
+                {
                   "match": "type"
-                }]
+                }
+              ]
             },
             "$.expires_in": {
               "combine": "AND",
-              "matchers": [{
+              "matchers": [
+                {
                   "match": "integer"
-                }]
+                }
+              ]
             }
           },
           "header": {
             "Content-Type": {
               "combine": "AND",
-              "matchers": [{
+              "matchers": [
+                {
                   "match": "regex",
                   "regex": "application/json(;\\s?charset=[\\w\\-]+)?"
-                }]
+                }
+              ]
             }
           }
         },
         "status": 200
       }
-    }],
+    }
+  ],
   "metadata": {
     "pact-jvm": {
       "version": "4.6.5"
