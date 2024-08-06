@@ -4,6 +4,57 @@
   },
   "interactions": [
     {
+      "_id": "5a0752a32c5eb9c7363a48e68123a695063ee34a",
+      "description": "Valid credential request",
+      "providerStates": [
+        {
+          "name": "badAccessToken is not a valid access token"
+        }
+      ],
+      "request": {
+        "body": {
+          "client_id": "ipv-core",
+          "govuk_signin_journey_id": "dummyJourneyId",
+          "redirect_uri": "https://identity.staging.account.gov.uk/credential-issuer/callback?id=dcmawAsync",
+          "state": "DUMMY_RANDOM_OAUTH_STATE",
+          "sub": "dummySubjectId"
+        },
+        "headers": {
+          "Authorization": "Bearer badAccessToken",
+          "Content-Type": "application/json"
+        },
+        "method": "POST",
+        "path": "/async/credential"
+      },
+      "response": {
+        "status": 401
+      }
+    },
+    {
+      "_id": "8f0e7b179b60b70696091786cb2d7a2d874416ab",
+      "description": "Invalid basic auth credentials",
+      "providerStates": [
+        {
+          "name": "badDummySecret is not a valid basic auth secret"
+        },
+        {
+          "name": "dummyDcmawAsyncComponentId is the dcmaw async CRI component ID"
+        }
+      ],
+      "request": {
+        "body": "grant_type%3Dclient_credentials",
+        "headers": {
+          "Authorization": "Basic aXB2LWNvcmU6YmFkRHVtbXlTZWNyZXQ=",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "method": "POST",
+        "path": "/async/token"
+      },
+      "response": {
+        "status": 400
+      }
+    },
+    {
       "_id": "b2fc8c776fe377170a280673bc457735c8e4080d",
       "description": "Valid credential request",
       "providerStates": [
@@ -48,6 +99,82 @@
           }
         },
         "status": 201
+      }
+    },
+    {
+      "_id": "5327d667d5bdf05cac61e1409725008d26d73380",
+      "description": "Valid basic auth credentials",
+      "providerStates": [
+        {
+          "name": "dummySecret is a valid basic auth secret"
+        },
+        {
+          "name": "dummyDcmawAsyncComponentId is the dcmaw async CRI component ID"
+        }
+      ],
+      "request": {
+        "body": "grant_type%3Dclient_credentials",
+        "headers": {
+          "Authorization": "Basic aXB2LWNvcmU6ZHVtbXlTZWNyZXQ=",
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        "method": "POST",
+        "path": "/async/token"
+      },
+      "response": {
+        "body": {
+          "access_token": "string",
+          "expires_in": 100,
+          "token_type": "Bearer"
+        },
+        "generators": {
+          "body": {
+            "$.access_token": {
+              "size": 20,
+              "type": "RandomString"
+            },
+            "$.expires_in": {
+              "max": 2147483647,
+              "min": 0,
+              "type": "RandomInt"
+            }
+          }
+        },
+        "headers": {
+          "Content-Type": "application/json; charset=UTF-8"
+        },
+        "matchingRules": {
+          "body": {
+            "$.access_token": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.expires_in": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "integer"
+                }
+              ]
+            }
+          },
+          "header": {
+            "Content-Type": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "application/json(;\\s?charset=[\\w\\-]+)?"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
       }
     }
   ],
