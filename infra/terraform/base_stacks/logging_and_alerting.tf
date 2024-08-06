@@ -19,10 +19,65 @@ resource "aws_cloudformation_stack" "build_notifications" {
   )
 
   parameters = {
-    InitialNotificationStack = "Yes"                                                                    # Initial per account
-    SlackWorkspaceId         = data.aws_ssm_parameter.SlackWorkspaceId.insecure_value                   # insecure_value make visible in the plan
-    SlackChannelId           = data.aws_ssm_parameter.build_notifications_SlackChannelId.insecure_value # insecure_value make visible in the plan
+    InitialNotificationStack = "Yes"                                                      # Initial per account
+    SlackWorkspaceId         = data.aws_ssm_parameter.SlackWorkspaceId.insecure_value     # insecure_value make visible in the plan
+    SlackChannelId           = data.aws_ssm_parameter.SlackChannelId_build.insecure_value # insecure_value make visible in the plan
     EnrichedNotifications    = "True"
+  }
+
+  capabilities = ["CAPABILITY_AUTO_EXPAND", "CAPABILITY_IAM"]
+}
+
+
+resource "aws_cloudformation_stack" "alarms_sns" {
+  name = "platform-alarms-sns"
+
+  template_body = file("../../templates/alarms-sns/template.yaml")
+
+  parameters = {
+    Environment = var.environment
+  }
+
+  capabilities = ["CAPABILITY_AUTO_EXPAND"]
+}
+
+resource "aws_cloudformation_stack" "alarms_sns_us_east_1" {
+  provider = aws.us-east-1
+
+  name = "platform-alarms-sns"
+
+  template_body = file("../../templates/alarms-sns/template.yaml")
+
+  parameters = {
+    Environment = var.environment
+  }
+
+  capabilities = ["CAPABILITY_AUTO_EXPAND"]
+}
+
+resource "aws_cloudformation_stack" "alarms_chatbot" {
+  name = "platform-alarms-chatbot"
+
+  template_body = file("../../templates/alarms-chatbot/template.yaml")
+
+  parameters = {
+    Environment = var.environment
+
+    SlackWorkspaceId       = data.aws_ssm_parameter.SlackWorkspaceId.insecure_value
+    SlackChannelIdCritical = data.aws_ssm_parameter.SlackChannelId_critical.insecure_value
+    SlackChannelIdWarning  = data.aws_ssm_parameter.SlackChannelId_warning.insecure_value
+    SlackChannelId2ndLine  = null # one(data.aws_ssm_parameter.SlackChannelId_di_2nd_line[*].insecure_value) # TODO Set once live system is ready.
+
+    SNSTopicsCritical = join(",", [
+      aws_cloudformation_stack.alarms_sns.outputs["AlarmCriticalSNSTopic"],
+      aws_cloudformation_stack.alarms_sns_us_east_1.outputs["AlarmCriticalSNSTopic"],
+    ])
+    SNSTopicsWarning = join(",", [
+      aws_cloudformation_stack.alarms_sns.outputs["AlarmWarningSNSTopic"],
+      aws_cloudformation_stack.alarms_sns_us_east_1.outputs["AlarmWarningSNSTopic"],
+    ])
+
+    InitialNotificationStack = "No" // The honor was taken but `build-notifications`
   }
 
   capabilities = ["CAPABILITY_AUTO_EXPAND", "CAPABILITY_IAM"]

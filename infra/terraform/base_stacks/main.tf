@@ -9,11 +9,20 @@ locals {
     build       = { account_id = "058264551042" }
     staging     = { account_id = "730335288219" }
     integration = { account_id = "992382392501" }
-    production        = { account_id = "339712924890" }
+    production  = { account_id = "339712924890" }
   }
 }
 
 provider "aws" {
+  region = "eu-west-2"
+
+  allowed_account_ids = [local.account_vars[var.environment].account_id]
+}
+
+provider "aws" {
+  alias = "us-east-1"
+
+  region              = "us-east-1"
   allowed_account_ids = [local.account_vars[var.environment].account_id]
 }
 

@@ -29,6 +29,7 @@ locals {
   // Define environemnt specific parameters here. Will be merged and take precedence over the
   // parameters defined in the resource above.
   // https://developer.hashicorp.com/terraform/language/functions/merge
+  // https://developer.hashicorp.com/terraform/language/functions/one
   mob_async_backend_pl = {
     dev = {
       OneLoginRepositoryName = "mobile-id-check-async"
