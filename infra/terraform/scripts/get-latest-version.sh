@@ -15,52 +15,55 @@ if [ -z "$TEMPLATE_STORAGE_BUCKET" ]; then
   TEMPLATE_STORAGE_BUCKET=$(aws ssm get-parameter --name /devplatform/template-storage-bucket --query 'Parameter.Value' --output text)
 fi
 
-TEMPLATE_NAME="${1}"
+TEMPLATE_NAMES="${1}"
 
-if [ -z "${TEMPLATE_NAME}" ]; then
-  echo "Please provide a template name"
+if [ -z "${TEMPLATE_NAMES}" ]; then
+  echo "Please provide template names"
   exit 1
 fi
 
-LATEST_VERSION_ID=$(
-  aws s3api list-object-versions \
-    --bucket "${TEMPLATE_STORAGE_BUCKET}" \
-    --prefix "${TEMPLATE_NAME}/template.yaml" |
-    jq -r '.Versions
+for TEMPLATE_NAME in $TEMPLATE_NAMES; do
+
+  LATEST_VERSION_ID=$(
+    aws s3api list-object-versions \
+      --bucket "${TEMPLATE_STORAGE_BUCKET}" \
+      --prefix "${TEMPLATE_NAME}/template.yaml" |
+      jq -r '.Versions
       | sort_by(.LastModified)
       | last
       | .VersionId'
-)
+  )
 
-echo "Latest version?"
-aws s3api list-object-versions \
-  --bucket "${TEMPLATE_STORAGE_BUCKET}" \
-  --prefix "${TEMPLATE_NAME}/template.yaml" | jq '.Versions[0]'
-echo
+  echo "Latest version?"
+  aws s3api list-object-versions \
+    --bucket "${TEMPLATE_STORAGE_BUCKET}" \
+    --prefix "${TEMPLATE_NAME}/template.yaml" | jq '.Versions[0]'
+  echo
 
-VERSION=$(
-  aws s3api head-object --bucket "${TEMPLATE_STORAGE_BUCKET}" --key "${TEMPLATE_NAME}/template.yaml" --version-id "${LATEST_VERSION_ID}" | jq -r '.Metadata.version'
-)
+  VERSION=$(
+    aws s3api head-object --bucket "${TEMPLATE_STORAGE_BUCKET}" --key "${TEMPLATE_NAME}/template.yaml" --version-id "${LATEST_VERSION_ID}" | jq -r '.Metadata.version'
+  )
 
-echo "Head object"
-aws s3api head-object --bucket "${TEMPLATE_STORAGE_BUCKET}" --key "${TEMPLATE_NAME}/template.yaml" --version-id "${LATEST_VERSION_ID}" | jq .
-echo
+  echo "Head object"
+  aws s3api head-object --bucket "${TEMPLATE_STORAGE_BUCKET}" --key "${TEMPLATE_NAME}/template.yaml" --version-id "${LATEST_VERSION_ID}" | jq .
+  echo
 
-TEMPLATE_URL="https://${TEMPLATE_STORAGE_BUCKET}.s3.amazonaws.com/${TEMPLATE_NAME}/template.yaml?versionId=${LATEST_VERSION_ID}"
+  TEMPLATE_URL="https://${TEMPLATE_STORAGE_BUCKET}.s3.amazonaws.com/${TEMPLATE_NAME}/template.yaml?versionId=${LATEST_VERSION_ID}"
 
-echo "Bucket:    ${TEMPLATE_STORAGE_BUCKET}"
-echo "Key:       ${TEMPLATE_NAME}/template.yaml"
-echo "VersionId: ${LATEST_VERSION_ID}"
-echo "Version:   ${VERSION}"
-echo "Url:       ${TEMPLATE_URL}"
-echo
-echo "Saving template to ./templates/${TEMPLATE_NAME}-${VERSION}.yaml"
-echo
+  echo "Bucket:    ${TEMPLATE_STORAGE_BUCKET}"
+  echo "Key:       ${TEMPLATE_NAME}/template.yaml"
+  echo "VersionId: ${LATEST_VERSION_ID}"
+  echo "Version:   ${VERSION}"
+  echo "Url:       ${TEMPLATE_URL}"
+  echo
+  echo "Saving template to ./templates/${TEMPLATE_NAME}-${VERSION}.yaml"
+  echo
 
-mkdir -pv "templates"
+  mkdir -pv "templates"
 
-curl "${TEMPLATE_URL}" \
-  --user "$(aws configure export-credentials | jq -r .AccessKeyId)":"$(aws configure export-credentials | jq -r .SecretAccessKey)" \
-  --header "x-amz-security-token: $(aws configure export-credentials | jq -r .SessionToken)" \
-  --aws-sigv4 "aws:amz:eu-west-2:s3" \
-  --output "templates/${TEMPLATE_NAME}-${VERSION}.yaml"
+  curl "${TEMPLATE_URL}" \
+    --user "$(aws configure export-credentials | jq -r .AccessKeyId)":"$(aws configure export-credentials | jq -r .SecretAccessKey)" \
+    --header "x-amz-security-token: $(aws configure export-credentials | jq -r .SessionToken)" \
+    --aws-sigv4 "aws:amz:eu-west-2:s3" \
+    --output "templates/${TEMPLATE_NAME}-${VERSION}.yaml"
+done

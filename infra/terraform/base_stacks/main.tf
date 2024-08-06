@@ -9,7 +9,7 @@ locals {
     build       = { account_id = "058264551042" }
     staging     = { account_id = "730335288219" }
     integration = { account_id = "992382392501" }
-    prod        = { account_id = "339712924890" }
+    production        = { account_id = "339712924890" }
   }
 }
 

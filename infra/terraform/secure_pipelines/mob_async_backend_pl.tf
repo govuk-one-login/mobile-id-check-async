@@ -55,7 +55,7 @@ locals {
 
       # Stopping promotion at staging
       IncludePromotion = "No" # "Yes"
-      AllowedAccounts  = null # join(",", [local.account_vars.integration.account_id, local.account_vars.prod.account_id])
+      AllowedAccounts  = null # join(",", [local.account_vars.integration.account_id, local.account_vars.production.account_id])
 
       SigningProfileArn        = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileArn"])
       SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileVersionArn"])
@@ -71,9 +71,7 @@ locals {
       SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileVersionArn"])
     }
 
-    prod = {
-      Environment = "production"
-
+    production = {
       ArtifactSourceBucketArn                 = one(data.aws_cloudformation_stack.mob_async_backend_pl_staging[*].outputs["ArtifactPromotionBucketArn"])
       ArtifactSourceBucketEventTriggerRoleArn = one(data.aws_cloudformation_stack.mob_async_backend_pl_staging[*].outputs["ArtifactPromotionBucketEventTriggerRoleArn"])
 

@@ -31,7 +31,7 @@ locals {
     build       = { account_id = "058264551042" }
     staging     = { account_id = "730335288219" }
     integration = { account_id = "992382392501" }
-    prod        = { account_id = "339712924890" }
+    production        = { account_id = "339712924890" }
   }
 
 
@@ -46,7 +46,7 @@ data "aws_cloudformation_stack" "mob_async_backend_pl_build" {
 
 data "aws_cloudformation_stack" "mob_async_backend_pl_staging" {
   provider = aws.staging
-  count    = contains(["integration", "prod"], var.environment) ? 1 : 0
+  count    = contains(["integration", "production"], var.environment) ? 1 : 0
   name     = "mob-async-backend-pl"
 }
 
@@ -58,6 +58,6 @@ data "aws_cloudformation_stack" "signer_dev" {
 
 data "aws_cloudformation_stack" "signer_build" {
   provider = aws.build
-  count    = contains(["build", "staging", "integration", "prod"], var.environment) ? 1 : 0
+  count    = contains(["build", "staging", "integration", "production"], var.environment) ? 1 : 0
   name     = "devplatform-signer"
 }

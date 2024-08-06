@@ -15,7 +15,7 @@ brew install hashicorp/tap/terraform
 
 All commands done from within the relevant terraform folder.
 
-For `${environment}` as one of: [ `dev`, `build`, `integration`, `staging`, `prod` ]
+For `${environment}` as one of: [ `dev`, `build`, `integration`, `staging`, `production` ]
 
 Export AWS Credentials configured for the appropriate account.
 

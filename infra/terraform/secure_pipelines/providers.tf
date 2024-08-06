@@ -30,7 +30,7 @@ provider "aws" {
 }
 
 provider "aws" {
-  alias               = "prod"
-  profile             = "async-prod"
-  allowed_account_ids = [local.account_vars["prod"].account_id]
+  alias               = "production"
+  profile             = "async-production"
+  allowed_account_ids = [local.account_vars["production"].account_id]
 }
