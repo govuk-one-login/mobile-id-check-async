@@ -46,7 +46,10 @@ describe("Provider API contract verification", () => {
       },
       "dummySecret is a valid basic auth secret": () => {
         asyncTokenStateConfig.resetToPassingDependencies();
-        return Promise.resolve("State set for invalid basic auth secret");
+        return Promise.resolve("dummySecret is a valid basic auth secret");
+      },
+      "dummyAccessToken is a valid access token": () => {
+        return Promise.resolve("dummyAccessToken is a valid access token");
       },
     };
 
