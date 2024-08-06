@@ -27,7 +27,7 @@
         "path": "/async/credential"
       },
       "response": {
-        "status": 403
+        "status": 401
       }
     },
     {
