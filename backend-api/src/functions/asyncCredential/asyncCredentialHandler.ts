@@ -22,7 +22,7 @@ export async function lambdaHandlerConstructor(
   const config = configResult.value;
 
   const authorizationHeaderResult = getAuthorizationHeader(
-    event.headers["Authorization"],
+    event.headers["Authorization"] ?? event.headers["authorization"],
   );
   if (authorizationHeaderResult.isError) {
     logger.log("AUTHENTICATION_HEADER_INVALID", {
@@ -112,6 +112,7 @@ export async function lambdaHandlerConstructor(
     logger.log("REQUEST_BODY_INVALID", {
       errorMessage: "issuer does not match value from client registry",
     });
+
     return badRequestResponse({
       error: "invalid_request",
       errorDescription: "Request body validation failed",
@@ -123,6 +124,7 @@ export async function lambdaHandlerConstructor(
       logger.log("REQUEST_BODY_INVALID", {
         errorMessage: "redirect_uri does not match value from client registry",
       });
+
       return badRequestResponse({
         error: "invalid_request",
         errorDescription: "Request body validation failed",

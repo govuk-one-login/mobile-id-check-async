@@ -220,3 +220,14 @@ export class MockTokenServiceSuccessIPV implements IDecodeToken, IVerifyTokenSig
     return Promise.resolve(successResult(null));
   }
 }
+
+export class MockClientRegistryServiceGetPartialClientSuccessResultIPV
+  implements IGetPartialRegisteredClientByClientId
+{
+  getPartialRegisteredClientByClientId = async () => {
+    return successResult({
+      issuer: "mockIssuer",
+      redirectUri: "https://identity.staging.account.gov.uk/credential-issuer/callback?id=dcmawAsync",
+    });
+  };
+}
