@@ -19,5 +19,11 @@ export async function createApp(): Promise<Application> {
     res.send(JSON.parse(result.body));
   });
 
+  app.post("/async/credential", async (req: Request, res: Response) => {
+
+    res.status(200);
+    res.send('Hello, World');
+  });
+
   return app;
 }
