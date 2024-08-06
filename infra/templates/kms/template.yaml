@@ -1,7 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
 Description: |
-  kms
   A set of KMS resources to handle Encryption and Signing at account level
 
 Parameters:

@@ -21,7 +21,7 @@ It follows the Client credentials grant flow from the OAuth2.0 Framework [see he
 To run unit and infra tests:
 
 ```bash
-npm run test
+npm run test:unit
 ```
 
 ## Formatting

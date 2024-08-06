@@ -1,17 +1,21 @@
-import { lambdaHandlerConstructor } from "./asyncTokenHandler";
-import { IGetRegisteredIssuerUsingClientSecrets } from "../services/clientRegistryService/clientRegistryService";
-import { buildTokenHandlerRequest } from "../testUtils/mockRequest";
-import { IMintToken } from "./tokenService/tokenService";
-import { MessageName, registeredLogs } from "./registeredLogs";
-import { Logger } from "../services/logging/logger";
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { errorResult, Result, successResult } from "../utils/result";
-import { buildLambdaContext } from "../testUtils/mockContext";
-import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import {
   MockEventServiceFailToWrite,
   MockEventWriterSuccess,
 } from "../services/events/tests/mocks";
+import { Logger } from "../services/logging/logger";
+import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
+import {
+  MockClientRegistryServiceBadRequestResult,
+  MockClientRegistryServiceInternalServerErrorResult,
+  MockClientRegistryServiceSuccessResult,
+  MockTokenServiceErrorResult,
+  MockTokenServiceSuccessResult,
+} from "../testUtils/asyncTokenMocks";
+import { buildLambdaContext } from "../testUtils/mockContext";
+import { buildTokenHandlerRequest } from "../testUtils/mockRequest";
+import { lambdaHandlerConstructor } from "./asyncTokenHandler";
+import { MessageName, registeredLogs } from "./registeredLogs";
 import { IAsyncTokenRequestDependencies } from "./handlerDependencies";
 
 describe("Async Token", () => {
@@ -409,51 +413,3 @@ describe("Async Token", () => {
     });
   });
 });
-class MockClientRegistryServiceSuccessResult
-  implements IGetRegisteredIssuerUsingClientSecrets
-{
-  getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
-    return Promise.resolve(successResult("mockIssuer"));
-  };
-}
-
-class MockClientRegistryServiceInternalServerErrorResult
-  implements IGetRegisteredIssuerUsingClientSecrets
-{
-  getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
-    return Promise.resolve(
-      errorResult({
-        errorMessage: "Unexpected error retrieving issuer",
-        errorCategory: "SERVER_ERROR",
-      }),
-    );
-  };
-}
-
-class MockClientRegistryServiceBadRequestResult
-  implements IGetRegisteredIssuerUsingClientSecrets
-{
-  getRegisteredIssuerUsingClientSecrets = async (): Promise<Result<string>> => {
-    return Promise.resolve(
-      errorResult({
-        errorMessage: "Client secrets invalid",
-        errorCategory: "CLIENT_ERROR",
-      }),
-    );
-  };
-}
-
-class MockTokenServiceSuccessResult implements IMintToken {
-  async mintToken(): Promise<Result<string>> {
-    return successResult("mockToken");
-  }
-}
-
-class MockTokenServiceErrorResult implements IMintToken {
-  async mintToken(): Promise<Result<string>> {
-    return errorResult({
-      errorMessage: "Failed to sign Jwt",
-      errorCategory: "SERVER_ERROR",
-    });
-  }
-}
