@@ -1,6 +1,6 @@
 import express, { Application, Request, Response } from "express";
 import { asyncTokenHandlerConstructor } from "./asyncToken/asyncTokenHandlerConstructor";
-import { stateConfig } from "./stateConfiguration";
+import { stateConfig } from "./asyncToken/asyncTokenStateConfiguration";
 
 export async function createApp(): Promise<Application> {
   const app = express();
