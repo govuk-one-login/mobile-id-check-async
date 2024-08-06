@@ -2,7 +2,7 @@ import { Application } from "express";
 import { createApp } from "./createApp";
 import { Verifier } from "@pact-foundation/pact";
 import path from "path";
-import { stateConfig } from "./asyncToken/asyncTokenStateConfiguration";
+import { asyncTokenStateConfig } from "./asyncToken/asyncTokenStateConfiguration";
 import { Server } from "http";
 import { MockClientRegistryServiceBadRequestResult } from "../../testUtils/asyncTokenMocks";
 import { requestService } from "../../asyncToken/requestService/requestService";
@@ -39,13 +39,13 @@ describe("Provider API contract verification", () => {
   it("validates adherence to all consumer contracts", () => {
     const stateHandlers = {
       "badDummySecret is not a valid basic auth secret": () => {
-        stateConfig.resetToPassingAsyncTokenDependencies();
-        stateConfig.asyncTokenDependenciesClientRegistryService = () =>
+        asyncTokenStateConfig.resetToPassingDependencies();
+        asyncTokenStateConfig.dependenciesClientRegistryService = () =>
           new MockClientRegistryServiceBadRequestResult();
         return Promise.resolve("State set for invalid basic auth secret");
       },
       "dummySecret is a valid basic auth secret": () => {
-        stateConfig.resetToPassingAsyncTokenDependencies();
+        asyncTokenStateConfig.resetToPassingDependencies();
         return Promise.resolve("State set for invalid basic auth secret");
       },
     };

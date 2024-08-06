@@ -9,9 +9,9 @@ import {
 } from "../../../testUtils/asyncTokenMocks";
 import { IAsyncTokenRequestDependencies } from "../../../asyncToken/handlerDependencies";
 
-export class StateConfiguration {
+export class AsyncTokenStateConfiguration {
   secret: string = "";
-  asyncTokenDependencies: IAsyncTokenRequestDependencies = {
+  dependencies: IAsyncTokenRequestDependencies = {
     env: {
       SIGNING_KEY_ID: "mockSigningKeyId",
       ISSUER: "mockIssuer",
@@ -24,22 +24,22 @@ export class StateConfiguration {
     tokenService: () => new MockTokenServiceSuccessResult(),
   };
 
-  get asyncTokenDependenciesValue() {
-    return this.asyncTokenDependencies;
+  get dependenciesValue() {
+    return this.dependencies;
   }
 
-  set asyncTokenDependenciesValue(value: IAsyncTokenRequestDependencies) {
-    this.asyncTokenDependencies = value;
+  set dependenciesValue(value: IAsyncTokenRequestDependencies) {
+    this.dependencies = value;
   }
 
-  set asyncTokenDependenciesClientRegistryService(
+  set dependenciesClientRegistryService(
     value: () => IGetRegisteredIssuerUsingClientSecrets,
   ) {
-    this.asyncTokenDependencies.clientRegistryService = value;
+    this.dependencies.clientRegistryService = value;
   }
 
-  resetToPassingAsyncTokenDependencies() {
-    this.asyncTokenDependencies = {
+  resetToPassingDependencies() {
+    this.dependencies = {
       env: {
         SIGNING_KEY_ID: "mockSigningKeyId",
         ISSUER: "mockIssuer",
@@ -54,4 +54,4 @@ export class StateConfiguration {
   }
 }
 
-export const stateConfig = new StateConfiguration();
+export const asyncTokenStateConfig = new AsyncTokenStateConfiguration();

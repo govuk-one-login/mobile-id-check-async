@@ -1,6 +1,6 @@
 import express, { Application, Request, Response } from "express";
 import { asyncTokenHandlerConstructor } from "./asyncToken/asyncTokenHandlerConstructor";
-import { stateConfig } from "./asyncToken/asyncTokenStateConfiguration";
+import { asyncTokenStateConfig } from "./asyncToken/asyncTokenStateConfiguration";
 
 export async function createApp(): Promise<Application> {
   const app = express();
@@ -12,7 +12,7 @@ export async function createApp(): Promise<Application> {
     const result = await asyncTokenHandlerConstructor({
       headers: req.headers,
       body: req.body,
-      dependencies: stateConfig.asyncTokenDependencies,
+      dependencies: asyncTokenStateConfig.dependencies,
     });
 
     res.status(result.statusCode);
