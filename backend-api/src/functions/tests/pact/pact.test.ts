@@ -2,7 +2,7 @@ import { Application } from "express";
 import { createApp } from "./createApp";
 import { Verifier } from "@pact-foundation/pact";
 import path from "path";
-import { stateConfig } from "./stateConfiguration";
+import { stateConfig } from "./asyncTokenStateConfiguration";
 import { Server } from "http";
 import { MockClientRegistryServiceBadRequestResult } from "../../testUtils/asyncTokenMocks";
 import { requestService } from "../../asyncToken/requestService/requestService";
