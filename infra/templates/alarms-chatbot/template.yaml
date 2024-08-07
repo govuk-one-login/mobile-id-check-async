@@ -1,0 +1,165 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: |
+  Connects SNS topics used for alarts to Slack chatbot
+
+Parameters:
+  Environment:
+    Description: The environment type
+    Type: String
+    AllowedValues:
+      - dev
+      - build
+      - staging
+      - integration
+      - production
+    Default: dev
+
+  SlackWorkspaceId:
+    Description: |
+      The ID of the Slack workspace where notification messages are posted.
+    Type: String
+    AllowedPattern: \w+
+    ConstraintDescription: Must be an AWS Chatbot Slack workspace ID
+
+  SlackChannelIdWarning:
+    Description: |
+      The ID of the Slack channel where Warning notifications are posted
+    Type: String
+    AllowedPattern: \w+
+    ConstraintDescription: Must be a Slack Channel ID
+
+  SlackChannelIdCritical:
+    Description: |
+      The ID of the Slack channel where Critical notifications are posted
+    Type: String
+    AllowedPattern: \w+
+    ConstraintDescription: Must be a Slack Channel ID
+
+  SlackChannelId2ndLine:
+    Description: |
+      The ID of the Slack channel where Critical notifications are posted - 2nd Line
+    Type: String
+    Default: none
+    AllowedPattern: \w+
+    ConstraintDescription: Must be a Slack Channel ID
+
+  SNSTopicsCritical:
+    Description: Comma delimited list of SNS Topics for the Alert chatbot.
+    Type: CommaDelimitedList
+    Default: none
+
+  SNSTopicsWarning:
+    Description: Comma delimited list of SNS Topics for the Warning chatbot.
+    Type: CommaDelimitedList
+    Default: none
+
+  InitialNotificationStack:
+    Description: '(Optional) Is this the first notification stack to be created in
+      this account? Controls the creation of the service linked role which only needs to be created once.
+      '
+    Type: String
+    Default: 'Yes'
+    AllowedValues:
+    - 'Yes'
+    - 'No'
+
+Conditions:
+  Deploy2ndLineConfiguration: !And
+    - !Not
+      - !Equals
+        - !Ref SlackChannelId2ndLine
+        - none
+    - !Not
+      - !Equals
+        - !Select
+          - 0
+          - !Ref SNSTopicsCritical
+        - none
+
+  DeployCriticalConfiguration: !Not
+    - !Equals
+      - !Select
+        - 0
+        - !Ref SNSTopicsCritical
+      - none
+
+  DeployWarningConfiguration: !Not
+    - !Equals
+      - !Select
+        - 0
+        - !Ref SNSTopicsWarning
+      - none
+
+  DeployServiceLinkedRole: !Equals
+    - !Ref InitialNotificationStack
+    - 'Yes'
+
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  ChatbotRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: chatbot.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-ChatbotRole
+        - Key: Product
+          Value: Gov.UK Sign On
+        - Key: System
+          Value: Document Checking App
+        - Key: Environment
+          Value: !Ref Environment
+
+  ChatbotChannelCriticalConfiguration:
+    Type: AWS::Chatbot::SlackChannelConfiguration
+    Condition: DeployCriticalConfiguration
+    Properties:
+      ConfigurationName: !Sub ${AWS::StackName}-critical-notifications
+      IamRoleArn: !GetAtt ChatbotRole.Arn
+      SlackWorkspaceId: !Ref SlackWorkspaceId
+      SlackChannelId: !Ref SlackChannelIdCritical
+      LoggingLevel: INFO
+      SnsTopicArns: !Ref SNSTopicsCritical
+
+  ChatbotChannelAlertConfigurationDi2ndLine:
+    Type: AWS::Chatbot::SlackChannelConfiguration
+    Condition: Deploy2ndLineConfiguration
+    Properties:
+      ConfigurationName: !Sub ${AWS::StackName}-2nd-line-notifications
+      IamRoleArn: !GetAtt ChatbotRole.Arn
+      SlackWorkspaceId: !Ref SlackWorkspaceId
+      SlackChannelId: !Ref SlackChannelId2ndLine
+      LoggingLevel: INFO
+      SnsTopicArns: !Ref SNSTopicsCritical
+
+  ChatbotChannelWarningConfiguration:
+    Type: AWS::Chatbot::SlackChannelConfiguration
+    Condition: DeployWarningConfiguration
+    Properties:
+      ConfigurationName: !Sub ${AWS::StackName}-warning-notifications
+      IamRoleArn: !GetAtt ChatbotRole.Arn
+      SlackWorkspaceId: !Ref SlackWorkspaceId
+      SlackChannelId: !Ref SlackChannelIdWarning
+      LoggingLevel: INFO
+      SnsTopicArns: !Ref SNSTopicsWarning
+
+  ChatbotServiceLinkedRole:
+    Condition: DeployServiceLinkedRole
+    DeletionPolicy: Retain
+    Type: AWS::IAM::ServiceLinkedRole
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - W3011 # The UpdateReplacePolicy does not apply to this resource
+    Properties:
+      AWSServiceName: management.chatbot.amazonaws.com
