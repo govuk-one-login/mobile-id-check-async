@@ -1,0 +1,119 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: |
+  Create SNS topics for configuring alerting systems, e.g. Slack
+
+Parameters:
+  Environment:
+    Description: The environment type
+    Type: String
+    AllowedValues:
+      - dev
+      - build
+      - staging
+      - integration
+      - production
+    Default: dev
+
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+  AlarmCriticalSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: !Sub ${AWS::StackName}-critical
+      KmsMasterKeyId: !Ref AlarmSNSTopicKey
+      FifoTopic: false
+      Tags:
+        - Key: Product
+          Value: Gov.UK Sign On
+        - Key: System
+          Value: Document Checking App
+        - Key: Environment
+          Value: !Ref Environment
+      TopicName: !Sub ${AWS::StackName}-critical
+
+  AlarmWarningSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: !Sub ${AWS::StackName}-warning
+      KmsMasterKeyId: !Ref AlarmSNSTopicKey
+      FifoTopic: false
+      Tags:
+        - Key: Product
+          Value: Gov.UK Sign On
+        - Key: System
+          Value: Document Checking App
+        - Key: Environment
+          Value: !Ref Environment
+      TopicName: !Sub ${AWS::StackName}-warning
+
+  AlarmCriticalSNSTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref AlarmCriticalSNSTopic
+      PolicyDocument:
+        Statement:
+          - Action: sns:Publish
+            Effect: Allow
+            Resource: !Ref AlarmCriticalSNSTopic
+            Principal:
+              Service: cloudwatch.amazonaws.com
+
+  AlarmWarningSNSTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref AlarmWarningSNSTopic
+      PolicyDocument:
+        Statement:
+          - Action: sns:Publish
+            Effect: Allow
+            Resource: !Ref AlarmWarningSNSTopic
+            Principal:
+              Service: cloudwatch.amazonaws.com
+
+  AlarmSNSTopicKey:
+    Type: AWS::KMS::Key
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: Allow Cloudwatch to enqueue encrypted messages
+            Effect: Allow
+            Resource: '*'
+            Action:
+              - kms:Decrypt
+              - kms:GenerateDataKey
+            Principal:
+              Service: cloudwatch.amazonaws.com
+          - Sid: Allow the account to manage the key
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: kms:*
+            Resource: '*'
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-topics
+        - Key: Product
+          Value: Gov.UK Sign On
+        - Key: System
+          Value: Document Checking App
+        - Key: Environment
+          Value: !Ref Environment
+
+Outputs:
+  AlarmWarningSNSTopic:
+    Description: The SNS Arn of the Warnings Alarm Topic
+    Value: !Ref AlarmWarningSNSTopic
+    Export:
+      Name: !Sub ${AWS::StackName}-topic-warning
+
+  AlarmCriticalSNSTopic:
+    Description: The SNS Arn of the Critical Alarm Topic
+    Value: !Ref AlarmCriticalSNSTopic
+    Export:
+      Name: !Sub ${AWS::StackName}-topic-critical
