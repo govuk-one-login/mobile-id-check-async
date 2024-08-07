@@ -1,5 +1,5 @@
 resource "aws_cloudformation_stack" "mob_async_backend_tir" {
-  count = contains(["dev", "build"], var.environment)
+  count = contains(["dev", "build"], var.environment) ? 1 : 0
 
   name = "mob-async-backend-tir"
 
@@ -15,4 +15,6 @@ resource "aws_cloudformation_stack" "mob_async_backend_tir" {
       RetainedImageCount = 25
     }
   )
+
+  capabilities = ["CAPABILITY_NAMED_IAM"]
 }

@@ -33,9 +33,12 @@ locals {
     integration = { account_id = "992382392501" }
     production  = { account_id = "339712924890" }
   }
+}
 
-
-
+data "aws_cloudformation_stack" "mob_async_backend_tir_build" {
+  provider = aws.build
+  count    = var.environment == "staging" ? 1 : 0
+  name     = "mob-async-backend-tir"
 }
 
 data "aws_cloudformation_stack" "mob_async_backend_pl_build" {

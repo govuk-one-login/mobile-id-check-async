@@ -38,6 +38,8 @@ locals {
 
       SigningProfileArn        = one(data.aws_cloudformation_stack.signer_dev[*].outputs["SigningProfileArn"])
       SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_dev[*].outputs["SigningProfileVersionArn"])
+
+      TestImageRepositoryUri = one(aws_cloudformation_stack.mob_async_backend_tir[*].outputs["TestRunnerImageEcrRepositoryUri"])
     }
 
     build = {
@@ -48,6 +50,8 @@ locals {
 
       SigningProfileArn        = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileArn"])
       SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileVersionArn"])
+
+      TestImageRepositoryUri = one(aws_cloudformation_stack.mob_async_backend_tir[*].outputs["TestRunnerImageEcrRepositoryUri"])
     }
 
     staging = {
@@ -60,6 +64,8 @@ locals {
 
       SigningProfileArn        = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileArn"])
       SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileVersionArn"])
+
+      TestImageRepositoryUri = one(data.aws_cloudformation_stack.mob_async_backend_tir_build[*].outputs["TestRunnerImageEcrRepositoryUri"])
     }
 
     integration = {
