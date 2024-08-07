@@ -3,7 +3,7 @@ import { registeredLogs } from "../../../asyncCredential/registeredLogs";
 import { MockEventWriterSuccess } from "../../../services/events/tests/mocks";
 import { Logger } from "../../../services/logging/logger";
 import { MockLoggingAdapter } from "../../../services/logging/tests/mockLogger";
-import { MockClientRegistryServiceGetPartialClientSuccessResultIPV, MockSessionServiceCreateSessionSuccessResult, MockTokenServiceSuccessIPV } from "../../../testUtils/asyncCredentialMocks";
+import { MockClientRegistryServiceGetPartialClientSuccessResultIPV, MockSessionServiceCreateSessionSuccessResult, MockTokenServiceInvalidSignatureIPV, MockTokenServiceSuccessIPV } from "../../../testUtils/asyncCredentialMocks";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -32,6 +32,10 @@ export class AsyncCredentialStateConfiguration {
 
   set dependenciesValue(value: Dependencies) {
     this.dependencies = value;
+  }
+
+  setMockTokenServiceInvalidSignature() {
+    this.dependencies.tokenService = () => new MockTokenServiceInvalidSignatureIPV()
   }
 
   resetToPassingDependencies() {
