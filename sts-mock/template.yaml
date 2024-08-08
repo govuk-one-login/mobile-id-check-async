@@ -1,0 +1,138 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: SAM template for the STS mock
+Mappings:
+  StsMockApiGateway:
+    dev: 
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+    build: 
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    staging: 
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+Parameters:
+  Environment:
+    Description: "The environment type"
+    Type: "String"
+    Default: dev
+
+Globals:
+  Function:
+    Environment:
+      Variables:
+        SIGNING_KEY_ID: !ImportValue platform-kms-signing-key
+
+Resources:
+### Public API gateway for STS Mock
+  StsMockApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub "${AWS::StackName}-sts-mock-api"
+      Description: Public API gateway for STS Mock
+      EndpointConfiguration: REGIONAL
+      StageName: 
+        Ref: Environment
+      OpenApiVersion: 3.0.1
+      AccessLogSetting:
+        DestinationArn: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${StsMockApiAccessLogs}"
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      CacheClusterEnabled: true
+      MethodSettings:
+        - LoggingLevel: INFO
+          ResourcePath: "/*"
+          HttpMethod: "*"
+          DataTraceEnabled: true
+          MetricsEnabled: true
+          ThrottlingBurstLimit: !FindInMap [ StsMockApiGateway, !Ref Environment, ApiBurstLimit ]
+          ThrottlingRateLimit: !FindInMap [ StsMockApiGateway, !Ref Environment, ApiRateLimit ]
+          CachingEnabled: true
+          CacheDataEncrypted: false
+          CacheTtlInSeconds: 3600
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: './openApiSpecs/sts-mock-spec.yaml'
+
+  StsMockApiAccessLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sts-mock-api-access-logs
+      RetentionInDays: 30
+
+### JWKS lambda
+  JwksFunction:
+    DependsOn:
+      - "JwksFunctionLogGroup"
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2022"
+        Sourcemap: false
+        EntryPoints:
+          - jwksHandler.ts
+    Properties:
+      Description: Convert STS Mock public key to JWKS format and publish it
+      AutoPublishAlias: live
+      FunctionName: !Sub "${AWS::StackName}-jwks"
+      Runtime: nodejs20.x
+      Handler: jwksHandler.lambdaHandler
+      CodeUri: src/jwks/
+      Events:
+        AsyncToken:
+          Type: Api
+          Properties:
+            Path: /jwks
+            Method: get
+            RestApiId: !Ref StsMockApi
+      Role: !GetAtt JwksFunctionLambdaRole.Arn
+
+  JwksFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt JwksFunction.Arn
+      Principal: events.amazonaws.com
+      SourceAccount: !Sub "${AWS::AccountId}"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${StsMockApi}/*/*/*"
+
+  JwksFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-jwks"
+
+  JwksFunctionLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: JwksFunctionLogsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: 'arn:aws:logs:*:*:*'
+        - PolicyName: JwksFunctionKmsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:Sign
+                Resource: !ImportValue platform-kms-signing-key
+
