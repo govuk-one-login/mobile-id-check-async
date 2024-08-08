@@ -26,7 +26,7 @@ export async function createApp(): Promise<Application> {
       headers: req.headers,
       body: JSON.stringify(req.body),
       dependencies: asyncCredentialStateConfig.dependencies,
-    })
+    });
 
     res.status(result.statusCode);
     res.send(JSON.parse(result.body));

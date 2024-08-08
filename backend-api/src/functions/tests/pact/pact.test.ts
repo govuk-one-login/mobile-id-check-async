@@ -50,11 +50,11 @@ describe("Provider API contract verification", () => {
         return Promise.resolve("dummySecret is a valid basic auth secret");
       },
       "dummyAccessToken is a valid access token": () => {
-        asyncCredentialStateConfig.resetToPassingDependencies()
+        asyncCredentialStateConfig.resetToPassingDependencies();
         return Promise.resolve("dummyAccessToken is a valid access token");
       },
       "badAccessToken is not a valid access token": () => {
-        asyncCredentialStateConfig.setMockTokenServiceInvalidSignature()
+        asyncCredentialStateConfig.setMockTokenServiceInvalidSignature();
         return Promise.resolve("State set for invalid access token");
       },
     };
@@ -66,7 +66,7 @@ describe("Provider API contract verification", () => {
         path.resolve(
           process.cwd(),
           "src/functions/tests/pact/pactFiles/IpvCoreBack-DcmawAsyncCriProvider.json",
-        )
+        ),
       ],
       stateHandlers,
       providerBaseUrl: `http://localhost:${port}`,

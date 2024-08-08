@@ -3,7 +3,12 @@ import { registeredLogs } from "../../../asyncCredential/registeredLogs";
 import { MockEventWriterSuccess } from "../../../services/events/tests/mocks";
 import { Logger } from "../../../services/logging/logger";
 import { MockLoggingAdapter } from "../../../services/logging/tests/mockLogger";
-import { MockClientRegistryServiceGetPartialClientSuccessResultIPV, MockSessionServiceCreateSessionSuccessResult, MockTokenServiceInvalidSignatureIPV, MockTokenServiceSuccessIPV } from "../../../testUtils/asyncCredentialMocks";
+import {
+  MockClientRegistryServiceGetPartialClientSuccessResultIPV,
+  MockSessionServiceCreateSessionSuccessResult,
+  MockTokenServiceInvalidSignatureIPV,
+  MockTokenServiceSuccessIPV,
+} from "../../../testUtils/asyncCredentialMocks";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -13,7 +18,7 @@ const env = {
   SESSION_TTL_IN_MILLISECONDS: "12345",
   SQS_QUEUE: "mockSqsQueue",
   CLIENT_REGISTRY_PARAMETER_NAME: "mockParmaterName",
-}
+};
 
 export class AsyncCredentialStateConfiguration {
   secret: string = "";
@@ -21,9 +26,14 @@ export class AsyncCredentialStateConfiguration {
     env,
     eventService: () => new MockEventWriterSuccess(),
     logger: () => new Logger(new MockLoggingAdapter(), registeredLogs),
-    clientRegistryService: () => new MockClientRegistryServiceGetPartialClientSuccessResultIPV(),
+    clientRegistryService: () =>
+      new MockClientRegistryServiceGetPartialClientSuccessResultIPV(),
     tokenService: () => new MockTokenServiceSuccessIPV(),
-    sessionService: () => new MockSessionServiceCreateSessionSuccessResult(env.SESSION_TABLE_NAME, env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME),
+    sessionService: () =>
+      new MockSessionServiceCreateSessionSuccessResult(
+        env.SESSION_TABLE_NAME,
+        env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
+      ),
   };
 
   get dependenciesValue() {
@@ -35,7 +45,8 @@ export class AsyncCredentialStateConfiguration {
   }
 
   setMockTokenServiceInvalidSignature() {
-    this.dependencies.tokenService = () => new MockTokenServiceInvalidSignatureIPV()
+    this.dependencies.tokenService = () =>
+      new MockTokenServiceInvalidSignatureIPV();
   }
 
   resetToPassingDependencies() {
@@ -51,11 +62,17 @@ export class AsyncCredentialStateConfiguration {
       },
       eventService: () => new MockEventWriterSuccess(),
       logger: () => new Logger(new MockLoggingAdapter(), registeredLogs),
-      clientRegistryService: () => new MockClientRegistryServiceGetPartialClientSuccessResultIPV(),
+      clientRegistryService: () =>
+        new MockClientRegistryServiceGetPartialClientSuccessResultIPV(),
       tokenService: () => new MockTokenServiceSuccessIPV(),
-      sessionService: () => new MockSessionServiceCreateSessionSuccessResult("mockTableName", "mockIndexName"),
+      sessionService: () =>
+        new MockSessionServiceCreateSessionSuccessResult(
+          "mockTableName",
+          "mockIndexName",
+        ),
     };
   }
 }
 
-export const asyncCredentialStateConfig = new AsyncCredentialStateConfiguration();
+export const asyncCredentialStateConfig =
+  new AsyncCredentialStateConfiguration();

@@ -1,6 +1,12 @@
-
-import { IGetActiveSession, ICreateSession } from "../asyncCredential/sessionService/sessionService";
-import { IDecodeToken, IVerifyTokenSignature, IDecodedToken } from "../asyncCredential/tokenService/tokenService";
+import {
+  IGetActiveSession,
+  ICreateSession,
+} from "../asyncCredential/sessionService/sessionService";
+import {
+  IDecodeToken,
+  IVerifyTokenSignature,
+  IDecodedToken,
+} from "../asyncCredential/tokenService/tokenService";
 import { IGetPartialRegisteredClientByClientId } from "../services/clientRegistryService/clientRegistryService";
 import { errorResult, Result, successResult } from "../utils/result";
 
@@ -44,7 +50,9 @@ export class MockTokenServiceInvalidSignatureErrorResult
   }
 }
 
-export class MockTokenServiceSuccess implements IDecodeToken, IVerifyTokenSignature {
+export class MockTokenServiceSuccess
+  implements IDecodeToken, IVerifyTokenSignature
+{
   getDecodedToken(): Result<IDecodedToken> {
     return successResult({
       encodedJwt:
@@ -202,7 +210,9 @@ export class MockSessionServiceCreateSessionSuccessResult
 }
 
 // IPV Core pact mocks
-export class MockTokenServiceInvalidSignatureIPV implements IDecodeToken, IVerifyTokenSignature {
+export class MockTokenServiceInvalidSignatureIPV
+  implements IDecodeToken, IVerifyTokenSignature
+{
   getDecodedToken(): Result<IDecodedToken> {
     return successResult({
       encodedJwt:
@@ -217,14 +227,18 @@ export class MockTokenServiceInvalidSignatureIPV implements IDecodeToken, IVerif
     });
   }
   verifyTokenSignature(): Promise<Result<null>> {
-    return Promise.resolve(errorResult({
-      errorMessage: "Signature is invalid",
-      errorCategory: "CLIENT_ERROR",
-    }));
+    return Promise.resolve(
+      errorResult({
+        errorMessage: "Signature is invalid",
+        errorCategory: "CLIENT_ERROR",
+      }),
+    );
   }
 }
 
-export class MockTokenServiceSuccessIPV implements IDecodeToken, IVerifyTokenSignature {
+export class MockTokenServiceSuccessIPV
+  implements IDecodeToken, IVerifyTokenSignature
+{
   getDecodedToken(): Result<IDecodedToken> {
     return successResult({
       encodedJwt:
@@ -249,7 +263,8 @@ export class MockClientRegistryServiceGetPartialClientSuccessResultIPV
   getPartialRegisteredClientByClientId = async () => {
     return successResult({
       issuer: "mockIssuer",
-      redirectUri: "https://identity.staging.account.gov.uk/credential-issuer/callback?id=dcmawAsync",
+      redirectUri:
+        "https://identity.staging.account.gov.uk/credential-issuer/callback?id=dcmawAsync",
     });
   };
 }

@@ -8,10 +8,7 @@ export async function asyncCredentialHandlerConstructor(
 ): Promise<APIGatewayProxyResult> {
   const event: APIGatewayProxyEvent = buildRequest(requestConfig);
 
-  return await lambdaHandlerConstructor(
-    requestConfig.dependencies,
-    event,
-  );
+  return await lambdaHandlerConstructor(requestConfig.dependencies, event);
 }
 
 interface IAsyncCredentialHandlerConfig {
