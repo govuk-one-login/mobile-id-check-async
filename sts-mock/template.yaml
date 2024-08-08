@@ -39,6 +39,7 @@ Resources:
         DestinationArn: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${StsMockApiAccessLogs}"
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
       CacheClusterEnabled: true
+      CacheClusterSize: "0.5"
       MethodSettings:
         - LoggingLevel: INFO
           ResourcePath: "/*"
@@ -83,10 +84,10 @@ Resources:
       Handler: jwksHandler.lambdaHandler
       CodeUri: src/jwks/
       Events:
-        AsyncToken:
+        Jwks:
           Type: Api
           Properties:
-            Path: /jwks
+            Path: /.well-known/jwks.json
             Method: get
             RestApiId: !Ref StsMockApi
       Role: !GetAtt JwksFunctionLambdaRole.Arn
@@ -133,6 +134,6 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - kms:Sign
+                  - kms:GetPublicKey
                 Resource: !ImportValue platform-kms-signing-key
 
