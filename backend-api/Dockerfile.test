@@ -7,7 +7,7 @@ RUN adduser --disabled-password test
 RUN chown test .
 
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm install --ignore-scripts
 
 
 ## Update container and install awscli

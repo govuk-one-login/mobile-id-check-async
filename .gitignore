@@ -1,7 +1,7 @@
 node_modules
 
 # Jest test report
-report.xml 
+report.xml
 
 # Jest code coverage output
 coverage/
@@ -9,3 +9,6 @@ coverage/
 # AWS SAM
 .aws-sam/
 samconfig.toml
+
+cf-output.txt
+docker-vars.env
