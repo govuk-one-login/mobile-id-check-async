@@ -77,7 +77,7 @@ resource "aws_cloudformation_stack" "alarms_chatbot" {
       aws_cloudformation_stack.alarms_sns_us_east_1.outputs["AlarmWarningSNSTopic"],
     ])
 
-    InitialNotificationStack = "No" // The honor was taken but `build-notifications`
+    InitialNotificationStack = "No" // The honor was taken by `build-notifications`
   }
 
   capabilities = ["CAPABILITY_AUTO_EXPAND", "CAPABILITY_IAM"]
