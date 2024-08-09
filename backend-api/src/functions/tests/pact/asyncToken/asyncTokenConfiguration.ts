@@ -24,14 +24,9 @@ export class AsyncTokenConfiguration {
   setDependencies(scenario?: AsyncTokenTestScenarios) {
     this.resetToPassingDependencies();
 
-    switch (scenario) {
-      case "INVALID_CLIENT_SECRETS":
-        this.dependencies.clientRegistryService = () =>
-          new MockClientRegistryServiceBadRequestResult();
-        break;
-      default:
-        this.resetToPassingDependencies();
-    }
+    if (scenario === "INVALID_CLIENT_SECRETS")
+      this.dependencies.clientRegistryService = () =>
+        new MockClientRegistryServiceBadRequestResult();
   }
 
   private resetToPassingDependencies() {
