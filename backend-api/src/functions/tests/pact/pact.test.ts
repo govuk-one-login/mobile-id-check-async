@@ -2,11 +2,11 @@ import { Application } from "express";
 import { createApp } from "./createApp";
 import { Verifier } from "@pact-foundation/pact";
 import path from "path";
-import { stateConfig } from "./stateConfiguration";
+import { asyncTokenConfig } from "./asyncToken/asyncTokenConfiguration";
 import { Server } from "http";
-import { MockClientRegistryServiceBadRequestResult } from "../../testUtils/asyncTokenMocks";
 import { requestService } from "../../asyncToken/requestService/requestService";
 import { successResult } from "../../utils/result";
+import { asyncCredentialConfig } from "./asyncCredential/asyncCredentialConfiguration";
 
 describe("Provider API contract verification", () => {
   let app: Application;
@@ -39,14 +39,20 @@ describe("Provider API contract verification", () => {
   it("validates adherence to all consumer contracts", () => {
     const stateHandlers = {
       "badDummySecret is not a valid basic auth secret": () => {
-        stateConfig.resetToPassingAsyncTokenDependencies();
-        stateConfig.asyncTokenDependenciesClientRegistryService = () =>
-          new MockClientRegistryServiceBadRequestResult();
+        asyncTokenConfig.setDependencies("INVALID_CLIENT_SECRETS");
         return Promise.resolve("State set for invalid basic auth secret");
       },
       "dummySecret is a valid basic auth secret": () => {
-        stateConfig.resetToPassingAsyncTokenDependencies();
-        return Promise.resolve("State set for invalid basic auth secret");
+        asyncTokenConfig.setDependencies();
+        return Promise.resolve("dummySecret is a valid basic auth secret");
+      },
+      "dummyAccessToken is a valid access token": () => {
+        asyncCredentialConfig.setDependencies();
+        return Promise.resolve("dummyAccessToken is a valid access token");
+      },
+      "badAccessToken is not a valid access token": () => {
+        asyncCredentialConfig.setDependencies("INVALID_ACCESS_TOKEN");
+        return Promise.resolve("State set for invalid access token");
       },
     };
 
