@@ -33,7 +33,8 @@ export class AsyncTokenStateConfiguration {
   }
 
   setClientRegistryServiceBadRequestResult() {
-    this.dependencies.clientRegistryService = () => new MockClientRegistryServiceBadRequestResult();
+    this.dependencies.clientRegistryService = () =>
+      new MockClientRegistryServiceBadRequestResult();
   }
 
   resetToPassingDependencies() {
