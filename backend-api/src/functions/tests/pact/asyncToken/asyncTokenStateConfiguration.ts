@@ -32,10 +32,10 @@ export class AsyncTokenStateConfiguration {
     this.dependencies = value;
   }
 
-  set dependenciesClientRegistryService(
-    value: () => IGetRegisteredIssuerUsingClientSecrets,
+  setClientRegistryServiceDependency(
+    clientRegistryservice: IGetRegisteredIssuerUsingClientSecrets,
   ) {
-    this.dependencies.clientRegistryService = value;
+    this.dependencies.clientRegistryService = () => clientRegistryservice;
   }
 
   resetToPassingDependencies() {
