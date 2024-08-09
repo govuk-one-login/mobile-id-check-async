@@ -40,10 +40,6 @@ export class AsyncCredentialConfiguration {
         new MockTokenServiceInvalidSignatureIPV();
   }
 
-  private resetToPassingDependencies() {
-    this.dependencies = this.getPassingDependencies();
-  }
-
   private getPassingDependencies() {
     return {
       env,
@@ -58,6 +54,10 @@ export class AsyncCredentialConfiguration {
           env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
         ),
     };
+  }
+
+  private resetToPassingDependencies() {
+    this.dependencies = this.getPassingDependencies();
   }
 }
 

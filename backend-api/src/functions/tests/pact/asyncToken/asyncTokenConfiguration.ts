@@ -29,10 +29,6 @@ export class AsyncTokenConfiguration {
         new MockClientRegistryServiceBadRequestResult();
   }
 
-  private resetToPassingDependencies() {
-    this.dependencies = this.getPassingDependencies();
-  }
-
   private getPassingDependencies() {
     return {
       env: {
@@ -46,6 +42,10 @@ export class AsyncTokenConfiguration {
       clientRegistryService: () => new MockClientRegistryServiceSuccessResult(),
       tokenService: () => new MockTokenServiceSuccessResult(),
     };
+  }
+
+  private resetToPassingDependencies() {
+    this.dependencies = this.getPassingDependencies();
   }
 }
 
