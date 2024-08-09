@@ -2,8 +2,8 @@ import { registeredLogs } from "../../../asyncToken/registeredLogs";
 import { MockEventWriterSuccess } from "../../../services/events/tests/mocks";
 import { MockLoggingAdapter } from "../../../services/logging/tests/mockLogger";
 import { Logger } from "../../../services/logging/logger";
-import { IGetRegisteredIssuerUsingClientSecrets } from "../../../services/clientRegistryService/clientRegistryService";
 import {
+  MockClientRegistryServiceBadRequestResult,
   MockClientRegistryServiceSuccessResult,
   MockTokenServiceSuccessResult,
 } from "../../../testUtils/asyncTokenMocks";
@@ -32,10 +32,8 @@ export class AsyncTokenStateConfiguration {
     this.dependencies = value;
   }
 
-  setClientRegistryServiceDependency(
-    clientRegistryservice: IGetRegisteredIssuerUsingClientSecrets,
-  ) {
-    this.dependencies.clientRegistryService = () => clientRegistryservice;
+  setClientRegistryServiceBadRequestResult() {
+    this.dependencies.clientRegistryService = () => new MockClientRegistryServiceBadRequestResult();
   }
 
   resetToPassingDependencies() {
