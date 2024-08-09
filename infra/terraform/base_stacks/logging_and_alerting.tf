@@ -28,7 +28,6 @@ resource "aws_cloudformation_stack" "build_notifications" {
   capabilities = ["CAPABILITY_AUTO_EXPAND", "CAPABILITY_IAM"]
 }
 
-
 resource "aws_cloudformation_stack" "alarms_sns" {
   name = "platform-alarms-sns"
 
