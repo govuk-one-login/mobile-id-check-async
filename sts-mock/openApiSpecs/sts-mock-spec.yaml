@@ -146,7 +146,7 @@ paths:
             responseParameters:
               method.response.header.Content-Type: "'text/plain'"
         passthroughBehavior: "when_no_match"
-        httpMethod: "GET"
+        httpMethod: "POST"
         type: "aws"
 #  /token:
 #    post:
