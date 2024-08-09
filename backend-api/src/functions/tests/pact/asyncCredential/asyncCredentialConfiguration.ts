@@ -22,19 +22,7 @@ const env = {
 
 export class AsyncCredentialConfiguration {
   secret: string = "";
-  dependencies: Dependencies = {
-    env,
-    eventService: () => new MockEventWriterSuccess(),
-    logger: () => new Logger(new MockLoggingAdapter(), registeredLogs),
-    clientRegistryService: () =>
-      new MockClientRegistryServiceGetPartialClientSuccessResultIPV(),
-    tokenService: () => new MockTokenServiceSuccessIPV(),
-    sessionService: () =>
-      new MockSessionServiceCreateSessionSuccessResult(
-        env.SESSION_TABLE_NAME,
-        env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
-      ),
-  };
+  dependencies: Dependencies = this.getPassingDependencies();
 
   get dependenciesValue() {
     return this.dependencies;
@@ -45,26 +33,36 @@ export class AsyncCredentialConfiguration {
   }
 
   setDependencies(scenario?: AsyncCredentialTestScenarios) {
+    this.resetToPassingDependencies();
+
     switch (scenario) {
       case "INVALID_ACCESS_TOKEN":
         this.dependencies.tokenService = () =>
           new MockTokenServiceInvalidSignatureIPV();
         break;
       default:
-        this.dependencies = {
-          env,
-          eventService: () => new MockEventWriterSuccess(),
-          logger: () => new Logger(new MockLoggingAdapter(), registeredLogs),
-          clientRegistryService: () =>
-            new MockClientRegistryServiceGetPartialClientSuccessResultIPV(),
-          tokenService: () => new MockTokenServiceSuccessIPV(),
-          sessionService: () =>
-            new MockSessionServiceCreateSessionSuccessResult(
-              env.SESSION_TABLE_NAME,
-              env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
-            ),
-        };
+        this.resetToPassingDependencies();
     }
+  }
+
+  private resetToPassingDependencies() {
+    this.dependencies = this.getPassingDependencies();
+  }
+
+  private getPassingDependencies() {
+    return {
+      env,
+      eventService: () => new MockEventWriterSuccess(),
+      logger: () => new Logger(new MockLoggingAdapter(), registeredLogs),
+      clientRegistryService: () =>
+        new MockClientRegistryServiceGetPartialClientSuccessResultIPV(),
+      tokenService: () => new MockTokenServiceSuccessIPV(),
+      sessionService: () =>
+        new MockSessionServiceCreateSessionSuccessResult(
+          env.SESSION_TABLE_NAME,
+          env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
+        ),
+    };
   }
 }
 
