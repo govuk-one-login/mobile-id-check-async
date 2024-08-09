@@ -21,8 +21,6 @@ export class AsyncTokenConfiguration {
     this.dependencies = value;
   }
 
-  setClientRegistryServiceBadRequestResult() {}
-
   setDependencies(scenario?: AsyncTokenTestScenarios) {
     this.resetToPassingDependencies();
 
