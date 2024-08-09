@@ -11,18 +11,7 @@ import { IAsyncTokenRequestDependencies } from "../../../asyncToken/handlerDepen
 
 export class AsyncTokenConfiguration {
   secret: string = "";
-  dependencies: IAsyncTokenRequestDependencies = {
-    env: {
-      SIGNING_KEY_ID: "mockSigningKeyId",
-      ISSUER: "mockIssuer",
-      SQS_QUEUE: "mockSQSQueue",
-      CLIENT_REGISTRY_PARAMETER_NAME: "mockRegistryParameterName",
-    },
-    eventService: () => new MockEventWriterSuccess(),
-    logger: () => new Logger(new MockLoggingAdapter(), registeredLogs),
-    clientRegistryService: () => new MockClientRegistryServiceSuccessResult(),
-    tokenService: () => new MockTokenServiceSuccessResult(),
-  };
+  dependencies: IAsyncTokenRequestDependencies = this.getPassingDependencies();
 
   get dependenciesValue() {
     return this.dependencies;
@@ -35,26 +24,35 @@ export class AsyncTokenConfiguration {
   setClientRegistryServiceBadRequestResult() {}
 
   setDependencies(scenario?: AsyncTokenTestScenarios) {
+    this.resetToPassingDependencies();
+
     switch (scenario) {
       case "INVALID_CLIENT_SECRETS":
         this.dependencies.clientRegistryService = () =>
           new MockClientRegistryServiceBadRequestResult();
         break;
       default:
-        this.dependencies = {
-          env: {
-            SIGNING_KEY_ID: "mockSigningKeyId",
-            ISSUER: "mockIssuer",
-            SQS_QUEUE: "mockSQSQueue",
-            CLIENT_REGISTRY_PARAMETER_NAME: "mockRegistryParameterName",
-          },
-          eventService: () => new MockEventWriterSuccess(),
-          logger: () => new Logger(new MockLoggingAdapter(), registeredLogs),
-          clientRegistryService: () =>
-            new MockClientRegistryServiceSuccessResult(),
-          tokenService: () => new MockTokenServiceSuccessResult(),
-        };
+        this.resetToPassingDependencies();
     }
+  }
+
+  private resetToPassingDependencies() {
+    this.dependencies = this.getPassingDependencies();
+  }
+
+  private getPassingDependencies() {
+    return {
+      env: {
+        SIGNING_KEY_ID: "mockSigningKeyId",
+        ISSUER: "mockIssuer",
+        SQS_QUEUE: "mockSQSQueue",
+        CLIENT_REGISTRY_PARAMETER_NAME: "mockRegistryParameterName",
+      },
+      eventService: () => new MockEventWriterSuccess(),
+      logger: () => new Logger(new MockLoggingAdapter(), registeredLogs),
+      clientRegistryService: () => new MockClientRegistryServiceSuccessResult(),
+      tokenService: () => new MockTokenServiceSuccessResult(),
+    };
   }
 }
 

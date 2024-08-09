@@ -39,7 +39,6 @@ describe("Provider API contract verification", () => {
   it("validates adherence to all consumer contracts", () => {
     const stateHandlers = {
       "badDummySecret is not a valid basic auth secret": () => {
-        asyncTokenConfig.setDependencies();
         asyncTokenConfig.setDependencies("INVALID_CLIENT_SECRETS");
         return Promise.resolve("State set for invalid basic auth secret");
       },
