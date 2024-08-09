@@ -9,7 +9,7 @@ import {
 } from "../../../testUtils/asyncTokenMocks";
 import { IAsyncTokenRequestDependencies } from "../../../asyncToken/handlerDependencies";
 
-export class AsyncTokenStateConfiguration {
+export class AsyncTokenConfiguration {
   secret: string = "";
   dependencies: IAsyncTokenRequestDependencies = {
     env: {
@@ -53,4 +53,4 @@ export class AsyncTokenStateConfiguration {
   }
 }
 
-export const asyncTokenStateConfig = new AsyncTokenStateConfiguration();
+export const asyncTokenConfig = new AsyncTokenConfiguration();

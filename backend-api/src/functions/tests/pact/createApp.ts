@@ -1,8 +1,8 @@
 import express, { Application, Request, Response } from "express";
 import { asyncTokenHandlerConstructor } from "./asyncToken/asyncTokenHandlerConstructor";
-import { asyncTokenStateConfig } from "./asyncToken/asyncTokenStateConfiguration";
+import { asyncTokenConfig } from "./asyncToken/asyncTokenConfiguration";
 import { asyncCredentialHandlerConstructor } from "./asyncCredential/asyncCredentialHandlerConstructor";
-import { asyncCredentialStateConfig } from "./asyncCredential/asyncCredentialStateConfiguration";
+import { asyncCredentialConfig } from "./asyncCredential/asyncCredentialConfiguration";
 
 export async function createApp(): Promise<Application> {
   const app = express();
@@ -14,7 +14,7 @@ export async function createApp(): Promise<Application> {
     const result = await asyncTokenHandlerConstructor({
       headers: req.headers,
       body: req.body,
-      dependencies: asyncTokenStateConfig.dependencies,
+      dependencies: asyncTokenConfig.dependencies,
     });
 
     res.status(result.statusCode);
@@ -25,7 +25,7 @@ export async function createApp(): Promise<Application> {
     const result = await asyncCredentialHandlerConstructor({
       headers: req.headers,
       body: JSON.stringify(req.body),
-      dependencies: asyncCredentialStateConfig.dependencies,
+      dependencies: asyncCredentialConfig.dependencies,
     });
 
     res.status(result.statusCode);

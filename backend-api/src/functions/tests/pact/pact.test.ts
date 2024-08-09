@@ -2,11 +2,11 @@ import { Application } from "express";
 import { createApp } from "./createApp";
 import { Verifier } from "@pact-foundation/pact";
 import path from "path";
-import { asyncTokenStateConfig } from "./asyncToken/asyncTokenStateConfiguration";
+import { asyncTokenConfig } from "./asyncToken/asyncTokenConfiguration";
 import { Server } from "http";
 import { requestService } from "../../asyncToken/requestService/requestService";
 import { successResult } from "../../utils/result";
-import { asyncCredentialStateConfig } from "./asyncCredential/asyncCredentialStateConfiguration";
+import { asyncCredentialConfig } from "./asyncCredential/asyncCredentialConfiguration";
 
 describe("Provider API contract verification", () => {
   let app: Application;
@@ -39,20 +39,20 @@ describe("Provider API contract verification", () => {
   it("validates adherence to all consumer contracts", () => {
     const stateHandlers = {
       "badDummySecret is not a valid basic auth secret": () => {
-        asyncTokenStateConfig.resetToPassingDependencies();
-        asyncTokenStateConfig.setClientRegistryServiceBadRequestResult();
+        asyncTokenConfig.resetToPassingDependencies();
+        asyncTokenConfig.setClientRegistryServiceBadRequestResult();
         return Promise.resolve("State set for invalid basic auth secret");
       },
       "dummySecret is a valid basic auth secret": () => {
-        asyncTokenStateConfig.resetToPassingDependencies();
+        asyncTokenConfig.resetToPassingDependencies();
         return Promise.resolve("dummySecret is a valid basic auth secret");
       },
       "dummyAccessToken is a valid access token": () => {
-        asyncCredentialStateConfig.resetToPassingDependencies();
+        asyncCredentialConfig.resetToPassingDependencies();
         return Promise.resolve("dummyAccessToken is a valid access token");
       },
       "badAccessToken is not a valid access token": () => {
-        asyncCredentialStateConfig.setMockTokenServiceInvalidSignature();
+        asyncCredentialConfig.setMockTokenServiceInvalidSignature();
         return Promise.resolve("State set for invalid access token");
       },
     };

@@ -20,7 +20,7 @@ const env = {
   CLIENT_REGISTRY_PARAMETER_NAME: "mockParmaterName",
 };
 
-export class AsyncCredentialStateConfiguration {
+export class AsyncCredentialConfiguration {
   secret: string = "";
   dependencies: Dependencies = {
     env,
@@ -74,5 +74,4 @@ export class AsyncCredentialStateConfiguration {
   }
 }
 
-export const asyncCredentialStateConfig =
-  new AsyncCredentialStateConfiguration();
+export const asyncCredentialConfig = new AsyncCredentialConfiguration();
