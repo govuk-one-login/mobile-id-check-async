@@ -35,14 +35,9 @@ export class AsyncCredentialConfiguration {
   setDependencies(scenario?: AsyncCredentialTestScenarios) {
     this.resetToPassingDependencies();
 
-    switch (scenario) {
-      case "INVALID_ACCESS_TOKEN":
-        this.dependencies.tokenService = () =>
-          new MockTokenServiceInvalidSignatureIPV();
-        break;
-      default:
-        this.resetToPassingDependencies();
-    }
+    if (scenario === "INVALID_ACCESS_TOKEN")
+      this.dependencies.tokenService = () =>
+        new MockTokenServiceInvalidSignatureIPV();
   }
 
   private resetToPassingDependencies() {
