@@ -44,34 +44,30 @@ export class AsyncCredentialConfiguration {
     this.dependencies = value;
   }
 
-  setMockTokenServiceInvalidSignature() {
-    this.dependencies.tokenService = () =>
-      new MockTokenServiceInvalidSignatureIPV();
-  }
-
-  resetToPassingDependencies() {
-    this.dependencies = {
-      env: {
-        SIGNING_KEY_ID: "mockKid",
-        ISSUER: "mockIssuer",
-        SESSION_TABLE_NAME: "mockTableName",
-        SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: "mockIndexName",
-        SESSION_TTL_IN_MILLISECONDS: "12345",
-        SQS_QUEUE: "mockSqsQueue",
-        CLIENT_REGISTRY_PARAMETER_NAME: "mockParmaterName",
-      },
-      eventService: () => new MockEventWriterSuccess(),
-      logger: () => new Logger(new MockLoggingAdapter(), registeredLogs),
-      clientRegistryService: () =>
-        new MockClientRegistryServiceGetPartialClientSuccessResultIPV(),
-      tokenService: () => new MockTokenServiceSuccessIPV(),
-      sessionService: () =>
-        new MockSessionServiceCreateSessionSuccessResult(
-          "mockTableName",
-          "mockIndexName",
-        ),
-    };
+  setDependencies(scenario?: AsyncCredentialTestScenarios) {
+    switch (scenario) {
+      case "INVALID_ACCESS_TOKEN":
+        this.dependencies.tokenService = () =>
+          new MockTokenServiceInvalidSignatureIPV();
+        break;
+      default:
+        this.dependencies = {
+          env,
+          eventService: () => new MockEventWriterSuccess(),
+          logger: () => new Logger(new MockLoggingAdapter(), registeredLogs),
+          clientRegistryService: () =>
+            new MockClientRegistryServiceGetPartialClientSuccessResultIPV(),
+          tokenService: () => new MockTokenServiceSuccessIPV(),
+          sessionService: () =>
+            new MockSessionServiceCreateSessionSuccessResult(
+              env.SESSION_TABLE_NAME,
+              env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
+            ),
+        };
+    }
   }
 }
+
+type AsyncCredentialTestScenarios = "INVALID_ACCESS_TOKEN";
 
 export const asyncCredentialConfig = new AsyncCredentialConfiguration();
