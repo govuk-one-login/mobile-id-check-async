@@ -86,9 +86,10 @@ describe("Event Service", () => {
           sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
 
           const result = await eventWriter.writeCredentialTokenIssuedEvent({
-            getNowInMilliseconds: () => 1609462861,
+            getNowInMilliseconds: () => 1609462861000,
             componentId: "mockComponentId",
             eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+            clientId: "mockClientId",
           });
 
           expect(result.isError).toBe(true);
@@ -102,6 +103,10 @@ describe("Event Service", () => {
               event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
               component_id: "mockComponentId",
               timestamp: 1609462861,
+              event_timestamp_ms: 1609462861000,
+              extensions: {
+                client_id: "mockClientId",
+              },
             }),
             QueueUrl: "mockSqsQueue",
           });
@@ -115,9 +120,10 @@ describe("Event Service", () => {
           sqsMock.on(SendMessageCommand).resolves({});
 
           const result = await eventWriter.writeCredentialTokenIssuedEvent({
-            getNowInMilliseconds: () => 1609462861,
+            getNowInMilliseconds: () => 1609462861000,
             componentId: "mockComponentId",
             eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+            clientId: "mockClientId",
           });
 
           expect(result.isError).toBe(false);
@@ -128,6 +134,10 @@ describe("Event Service", () => {
               event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
               component_id: "mockComponentId",
               timestamp: 1609462861,
+              event_timestamp_ms: 1609462861000,
+              extensions: {
+                client_id: "mockClientId",
+              },
             }),
             QueueUrl: "mockSqsQueue",
           });
