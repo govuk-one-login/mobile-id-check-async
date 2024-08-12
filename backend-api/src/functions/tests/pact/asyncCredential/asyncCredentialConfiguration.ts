@@ -22,18 +22,22 @@ const env = {
 
 export class AsyncCredentialConfiguration {
   secret: string = "";
-  dependencies: IAsyncCredentialDependencies
+  dependencies: IAsyncCredentialDependencies;
 
   constructor() {
-    this.dependencies = this.getPassingDependencies()
+    this.dependencies = this.getPassingDependencies();
   }
 
-  setDependencies(scenario?: AsyncCredentialTestScenario) {
-    this.resetToPassingDependencies();
-
-    if (scenario === "INVALID_ACCESS_TOKEN")
+  setDependenciesByScenario(scenario?: AsyncCredentialTestScenario) {
+    if (scenario === "badAccessToken is not a valid access token") {
+      this.resetToPassingDependencies();
       this.dependencies.tokenService = () =>
         new MockTokenServiceInvalidSignatureIPV();
+    }
+
+    if (scenario === "dummyAccessToken is a valid access token") {
+      this.resetToPassingDependencies();
+    }
   }
 
   private getPassingDependencies() {
@@ -57,6 +61,8 @@ export class AsyncCredentialConfiguration {
   }
 }
 
-type AsyncCredentialTestScenario = "INVALID_ACCESS_TOKEN";
+type AsyncCredentialTestScenario =
+  | "badAccessToken is not a valid access token"
+  | "dummyAccessToken is a valid access token";
 
 export const asyncCredentialConfig = new AsyncCredentialConfiguration();

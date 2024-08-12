@@ -39,19 +39,27 @@ describe("Provider API contract verification", () => {
   it("validates adherence to all consumer contracts", () => {
     const stateHandlers = {
       "badDummySecret is not a valid basic auth secret": () => {
-        asyncTokenConfig.setDependencies("INVALID_CLIENT_SECRETS");
+        asyncTokenConfig.setDependenciesByScenario(
+          "badDummySecret is not a valid basic auth secret",
+        );
         return Promise.resolve("State set for invalid basic auth secret");
       },
       "dummySecret is a valid basic auth secret": () => {
-        asyncTokenConfig.setDependencies();
+        asyncTokenConfig.setDependenciesByScenario(
+          "dummySecret is a valid basic auth secret",
+        );
         return Promise.resolve("dummySecret is a valid basic auth secret");
       },
       "dummyAccessToken is a valid access token": () => {
-        asyncCredentialConfig.setDependencies();
+        asyncCredentialConfig.setDependenciesByScenario(
+          "dummyAccessToken is a valid access token",
+        );
         return Promise.resolve("dummyAccessToken is a valid access token");
       },
       "badAccessToken is not a valid access token": () => {
-        asyncCredentialConfig.setDependencies("INVALID_ACCESS_TOKEN");
+        asyncCredentialConfig.setDependenciesByScenario(
+          "badAccessToken is not a valid access token",
+        );
         return Promise.resolve("State set for invalid access token");
       },
     };

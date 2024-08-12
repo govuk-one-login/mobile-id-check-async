@@ -3,7 +3,10 @@ import { IDecodedToken } from "./tokenService/tokenService";
 import { errorResult, Result, successResult } from "../utils/result";
 import {} from "./sessionService/sessionService";
 import { ConfigService } from "./configService/configService";
-import { IAsyncCredentialDependencies, dependencies } from "./handlerDependencies";
+import {
+  IAsyncCredentialDependencies,
+  dependencies,
+} from "./handlerDependencies";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncCredentialDependencies,

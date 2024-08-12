@@ -11,18 +11,22 @@ import { IAsyncTokenRequestDependencies } from "../../../asyncToken/handlerDepen
 
 export class AsyncTokenConfiguration {
   secret: string = "";
-  dependencies: IAsyncTokenRequestDependencies
+  dependencies: IAsyncTokenRequestDependencies;
 
   constructor() {
-    this.dependencies = this.getPassingDependencies()
+    this.dependencies = this.getPassingDependencies();
   }
 
-  setDependencies(scenario?: AsyncTokenTestScenario) {
-    this.resetToPassingDependencies();
-
-    if (scenario === "INVALID_CLIENT_SECRETS")
+  setDependenciesByScenario(scenario?: AsyncTokenTestScenario) {
+    if (scenario === "badDummySecret is not a valid basic auth secret") {
+      this.resetToPassingDependencies();
       this.dependencies.clientRegistryService = () =>
         new MockClientRegistryServiceBadRequestResult();
+    }
+
+    if (scenario === "dummySecret is a valid basic auth secret") {
+      this.resetToPassingDependencies();
+    }
   }
 
   private getPassingDependencies() {
@@ -45,6 +49,8 @@ export class AsyncTokenConfiguration {
   }
 }
 
-type AsyncTokenTestScenario = "INVALID_CLIENT_SECRETS";
+type AsyncTokenTestScenario =
+  | "badDummySecret is not a valid basic auth secret"
+  | "dummySecret is a valid basic auth secret";
 
 export const asyncTokenConfig = new AsyncTokenConfiguration();
