@@ -2,7 +2,7 @@ import { registeredLogs } from "../../../asyncToken/registeredLogs";
 import { MockEventWriterSuccess } from "../../../services/events/tests/mocks";
 import { MockLoggingAdapter } from "../../../services/logging/tests/mockLogger";
 import { Logger } from "../../../services/logging/logger";
-import { MockTokenServiceSuccessResult } from "../../../asyncToken/tokenService/tests/mock";
+import { MockTokenServiceSuccessResult } from "../../../asyncToken/tokenService/tests/mocks";
 import {
   MockClientRegistryServiceSuccessResult,
   MockClientRegistryServiceBadRequestResult,

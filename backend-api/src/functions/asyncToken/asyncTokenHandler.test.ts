@@ -18,7 +18,7 @@ import {
 import {
   MockTokenServiceSuccessResult,
   MockTokenServiceErrorResult,
-} from "./tokenService/tests/mock";
+} from "./tokenService/tests/mocks";
 
 describe("Async Token", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;

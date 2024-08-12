@@ -15,7 +15,7 @@ const getDecodedTokenSuccessResult = {
     iss: "mockIssuer",
     scope: "dcmaw.session.async_create",
   },
-}
+};
 
 export class MockTokenServiceGetDecodedTokenErrorResult
   implements IDecodeToken, IVerifyTokenSignature
