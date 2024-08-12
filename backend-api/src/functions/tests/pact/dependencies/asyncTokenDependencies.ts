@@ -2,11 +2,11 @@ import { registeredLogs } from "../../../asyncToken/registeredLogs";
 import { MockEventWriterSuccess } from "../../../services/events/tests/mocks";
 import { MockLoggingAdapter } from "../../../services/logging/tests/mockLogger";
 import { Logger } from "../../../services/logging/logger";
+import { MockTokenServiceSuccessResult } from "../../../asyncToken/tokenService/tests/mock";
 import {
-  MockClientRegistryServiceBadRequestResult,
   MockClientRegistryServiceSuccessResult,
-  MockTokenServiceSuccessResult,
-} from "../../../testUtils/asyncTokenMocks";
+  MockClientRegistryServiceBadRequestResult,
+} from "../../../services/clientRegistryService/tests/mocks";
 
 const defaultPassingDependencies = {
   env: {
@@ -21,7 +21,7 @@ const defaultPassingDependencies = {
   tokenService: () => new MockTokenServiceSuccessResult(),
 };
 
-export class AsyncTokenConfiguration {
+export class AsyncTokenDependencies {
   dependencies = defaultPassingDependencies;
 
   setInvalidAuthHeader = () => {
@@ -37,4 +37,4 @@ export class AsyncTokenConfiguration {
   };
 }
 
-export const asyncTokenConfig = new AsyncTokenConfiguration();
+export const asyncTokenDependencies = new AsyncTokenDependencies();

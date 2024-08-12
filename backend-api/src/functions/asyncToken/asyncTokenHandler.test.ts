@@ -5,18 +5,20 @@ import {
 } from "../services/events/tests/mocks";
 import { Logger } from "../services/logging/logger";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
-import {
-  MockClientRegistryServiceBadRequestResult,
-  MockClientRegistryServiceInternalServerErrorResult,
-  MockClientRegistryServiceSuccessResult,
-  MockTokenServiceErrorResult,
-  MockTokenServiceSuccessResult,
-} from "../testUtils/asyncTokenMocks";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { buildTokenHandlerRequest } from "../testUtils/mockRequest";
 import { lambdaHandlerConstructor } from "./asyncTokenHandler";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { IAsyncTokenRequestDependencies } from "./handlerDependencies";
+import {
+  MockClientRegistryServiceSuccessResult,
+  MockClientRegistryServiceInternalServerErrorResult,
+  MockClientRegistryServiceBadRequestResult,
+} from "../services/clientRegistryService/tests/mocks";
+import {
+  MockTokenServiceSuccessResult,
+  MockTokenServiceErrorResult,
+} from "./tokenService/tests/mock";
 
 describe("Async Token", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;

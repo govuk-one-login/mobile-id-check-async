@@ -1,7 +1,7 @@
 import { KMSClient, VerifyCommand } from "@aws-sdk/client-kms";
 import { mockClient } from "aws-sdk-client-mock";
-import { TokenService } from "./tokenService";
-import { MockJWTBuilder } from "../../testUtils/mockJwt";
+import { TokenService } from "../tokenService";
+import { MockJWTBuilder } from "../../../testUtils/mockJwt";
 
 describe("Token Service", () => {
   describe("Verify token claims", () => {

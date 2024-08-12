@@ -2,11 +2,11 @@ import { Application } from "express";
 import { createApp } from "./createApp";
 import { Verifier } from "@pact-foundation/pact";
 import path from "path";
-import { asyncTokenConfig } from "./asyncToken/asyncTokenConfiguration";
 import { Server } from "http";
 import { requestService } from "../../asyncToken/requestService/requestService";
 import { successResult } from "../../utils/result";
-import { asyncCredentialConfig } from "./asyncCredential/asyncCredentialConfiguration";
+import { asyncTokenDependencies } from "./dependencies/asyncTokenDependencies";
+import { asyncCredentialConfig } from "./dependencies/asyncCredentialDependencies";
 
 jest.setTimeout(60000);
 describe("Provider API contract verification", () => {
@@ -40,11 +40,11 @@ describe("Provider API contract verification", () => {
   it("validates adherence to all consumer contracts", () => {
     const stateHandlers = {
       "badDummySecret is not a valid basic auth secret": () => {
-        asyncTokenConfig.setInvalidAuthHeader();
+        asyncTokenDependencies.setInvalidAuthHeader();
         return Promise.resolve("State set for invalid basic auth secret");
       },
       "dummySecret is a valid basic auth secret": () => {
-        asyncTokenConfig.setValidAuthHeader();
+        asyncTokenDependencies.setValidAuthHeader();
         return Promise.resolve("dummySecret is a valid basic auth secret");
       },
       "dummyAccessToken is a valid access token": () => {

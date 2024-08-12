@@ -1,13 +1,13 @@
 import { registeredLogs } from "../../../asyncCredential/registeredLogs";
+import { MockSessionServiceCreateSessionSuccessResult } from "../../../asyncCredential/sessionService/tests/mocks";
+import {
+  MockTokenServiceSuccessIPV,
+  MockTokenServiceInvalidSignatureIPV,
+} from "../../../asyncCredential/tokenService/tests/mocks";
+import { MockClientRegistryServiceGetPartialClientSuccessResultIPV } from "../../../services/clientRegistryService/tests/mocks";
 import { MockEventWriterSuccess } from "../../../services/events/tests/mocks";
 import { Logger } from "../../../services/logging/logger";
 import { MockLoggingAdapter } from "../../../services/logging/tests/mockLogger";
-import {
-  MockClientRegistryServiceGetPartialClientSuccessResultIPV,
-  MockSessionServiceCreateSessionSuccessResult,
-  MockTokenServiceInvalidSignatureIPV,
-  MockTokenServiceSuccessIPV,
-} from "../../../testUtils/asyncCredentialMocks";
 
 const defaultPassingDependencies = {
   env: {
