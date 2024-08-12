@@ -13,14 +13,6 @@ export class AsyncTokenConfiguration {
   secret: string = "";
   dependencies: IAsyncTokenRequestDependencies = this.getPassingDependencies();
 
-  get dependenciesValue() {
-    return this.dependencies;
-  }
-
-  set dependenciesValue(value: IAsyncTokenRequestDependencies) {
-    this.dependencies = value;
-  }
-
   setDependencies(scenario?: AsyncTokenTestScenarios) {
     this.resetToPassingDependencies();
 

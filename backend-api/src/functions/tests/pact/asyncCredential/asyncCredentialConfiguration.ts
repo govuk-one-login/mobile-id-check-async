@@ -24,14 +24,6 @@ export class AsyncCredentialConfiguration {
   secret: string = "";
   dependencies: Dependencies = this.getPassingDependencies();
 
-  get dependenciesValue() {
-    return this.dependencies;
-  }
-
-  set dependenciesValue(value: Dependencies) {
-    this.dependencies = value;
-  }
-
   setDependencies(scenario?: AsyncCredentialTestScenarios) {
     this.resetToPassingDependencies();
 
