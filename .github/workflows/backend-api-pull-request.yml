@@ -46,9 +46,9 @@ jobs:
       - name: Check formatting using Prettier
         run: npm run format:check
 
-        # This runs both tests against functional code and against the SAM template
+      # Runs unit, infra and pact tests
       - name: Run tests 
-        run: npm run test:unit
+        run: npm run test
 
       - name: "Run SonarCloud Scan"
         uses: SonarSource/sonarcloud-github-action@e44258b109568baa0df60ed515909fc6c72cba92 # master

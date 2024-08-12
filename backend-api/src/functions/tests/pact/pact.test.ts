@@ -59,7 +59,7 @@ describe("Provider API contract verification", () => {
 
     const verifier = new Verifier({
       provider: "DcmawAsyncCriProvider",
-      logLevel: "info",
+      logLevel: "error",
       pactUrls: [
         path.resolve(
           process.cwd(),
