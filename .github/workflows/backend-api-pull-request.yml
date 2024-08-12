@@ -46,7 +46,8 @@ jobs:
       - name: Check formatting using Prettier
         run: npm run format:check
 
-      - name: Run tests #This should be updated to only run unit/infra tests when they have been categorised as such
+        # This runs both tests against functional code and against the SAM template
+      - name: Run tests 
         run: npm run test:unit
 
       - name: "Run SonarCloud Scan"
