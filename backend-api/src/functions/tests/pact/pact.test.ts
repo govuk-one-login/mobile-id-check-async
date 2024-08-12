@@ -48,15 +48,11 @@ describe("Provider API contract verification", () => {
         return Promise.resolve("dummySecret is a valid basic auth secret");
       },
       "dummyAccessToken is a valid access token": () => {
-        asyncCredentialConfig.setDependenciesByScenario(
-          "dummyAccessToken is a valid access token",
-        );
+        asyncCredentialConfig.setValidAccessToken();
         return Promise.resolve("dummyAccessToken is a valid access token");
       },
       "badAccessToken is not a valid access token": () => {
-        asyncCredentialConfig.setDependenciesByScenario(
-          "badAccessToken is not a valid access token",
-        );
+        asyncCredentialConfig.setInvalidAccessToken();
         return Promise.resolve("State set for invalid access token");
       },
     };
