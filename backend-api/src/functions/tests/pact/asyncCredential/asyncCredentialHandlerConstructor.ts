@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { lambdaHandlerConstructor } from "../../../asyncCredential/asyncCredentialHandler";
 import { buildRequest } from "../../../testUtils/mockRequest";
-import { Dependencies } from "../../../asyncCredential/handlerDependencies";
+import { IAsyncCredentialDependencies } from "../../../asyncCredential/handlerDependencies";
 
 export async function asyncCredentialHandlerConstructor(
   requestConfig: IAsyncCredentialHandlerConfig,
@@ -14,5 +14,5 @@ export async function asyncCredentialHandlerConstructor(
 interface IAsyncCredentialHandlerConfig {
   headers: { [name: string]: string | string[] | undefined };
   body: string | null;
-  dependencies: Dependencies;
+  dependencies: IAsyncCredentialDependencies;
 }

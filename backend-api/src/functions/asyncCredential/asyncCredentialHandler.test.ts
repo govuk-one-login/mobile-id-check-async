@@ -22,7 +22,7 @@ import { MockJWTBuilder } from "../testUtils/mockJwt";
 import { buildRequest } from "../testUtils/mockRequest";
 import { Result, successResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncCredentialHandler";
-import { Dependencies } from "./handlerDependencies";
+import { IAsyncCredentialDependencies } from "./handlerDependencies";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import {
   IDecodedToken,
@@ -41,7 +41,7 @@ const env = {
 };
 
 describe("Async Credential", () => {
-  let dependencies: Dependencies;
+  let dependencies: IAsyncCredentialDependencies;
   let mockLogger: MockLoggingAdapter<MessageName>;
 
   beforeEach(() => {

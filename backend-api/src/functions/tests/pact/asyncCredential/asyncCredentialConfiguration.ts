@@ -1,4 +1,4 @@
-import { Dependencies } from "../../../asyncCredential/handlerDependencies";
+import { IAsyncCredentialDependencies } from "../../../asyncCredential/handlerDependencies";
 import { registeredLogs } from "../../../asyncCredential/registeredLogs";
 import { MockEventWriterSuccess } from "../../../services/events/tests/mocks";
 import { Logger } from "../../../services/logging/logger";
@@ -22,7 +22,7 @@ const env = {
 
 export class AsyncCredentialConfiguration {
   secret: string = "";
-  dependencies: Dependencies
+  dependencies: IAsyncCredentialDependencies
 
   constructor() {
     this.dependencies = this.getPassingDependencies()
