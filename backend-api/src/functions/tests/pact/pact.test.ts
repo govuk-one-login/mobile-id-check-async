@@ -6,7 +6,7 @@ import { Server } from "http";
 import { requestService } from "../../asyncToken/requestService/requestService";
 import { successResult } from "../../utils/result";
 import { asyncTokenDependencies } from "./dependencies/asyncTokenDependencies";
-import { asyncCredentialConfig } from "./dependencies/asyncCredentialDependencies";
+import { asyncCredentialDependencies } from "./dependencies/asyncCredentialDependencies";
 
 jest.setTimeout(60000);
 describe("Provider API contract verification", () => {
@@ -48,11 +48,11 @@ describe("Provider API contract verification", () => {
         return Promise.resolve("dummySecret is a valid basic auth secret");
       },
       "dummyAccessToken is a valid access token": () => {
-        asyncCredentialConfig.setValidAccessToken();
+        asyncCredentialDependencies.setValidAccessToken();
         return Promise.resolve("dummyAccessToken is a valid access token");
       },
       "badAccessToken is not a valid access token": () => {
-        asyncCredentialConfig.setInvalidAccessToken();
+        asyncCredentialDependencies.setInvalidAccessToken();
         return Promise.resolve("State set for invalid access token");
       },
     };

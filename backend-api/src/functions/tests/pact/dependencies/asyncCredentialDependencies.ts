@@ -31,7 +31,7 @@ const defaultPassingDependencies = {
     ),
 };
 
-export class AsyncCredentialConfiguration {
+export class AsyncCredentialDependencies {
   dependencies = defaultPassingDependencies;
 
   setValidAccessToken() {
@@ -46,4 +46,4 @@ export class AsyncCredentialConfiguration {
   }
 }
 
-export const asyncCredentialConfig = new AsyncCredentialConfiguration();
+export const asyncCredentialDependencies = new AsyncCredentialDependencies();
