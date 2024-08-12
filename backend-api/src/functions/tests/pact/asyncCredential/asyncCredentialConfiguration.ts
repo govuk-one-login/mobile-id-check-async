@@ -22,7 +22,11 @@ const env = {
 
 export class AsyncCredentialConfiguration {
   secret: string = "";
-  dependencies: Dependencies = this.getPassingDependencies();
+  dependencies: Dependencies
+
+  constructor() {
+    this.dependencies = this.getPassingDependencies()
+  }
 
   setDependencies(scenario?: AsyncCredentialTestScenarios) {
     this.resetToPassingDependencies();

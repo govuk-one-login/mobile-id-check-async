@@ -11,7 +11,11 @@ import { IAsyncTokenRequestDependencies } from "../../../asyncToken/handlerDepen
 
 export class AsyncTokenConfiguration {
   secret: string = "";
-  dependencies: IAsyncTokenRequestDependencies = this.getPassingDependencies();
+  dependencies: IAsyncTokenRequestDependencies
+
+  constructor() {
+    this.dependencies = this.getPassingDependencies()
+  }
 
   setDependencies(scenario?: AsyncTokenTestScenarios) {
     this.resetToPassingDependencies();
