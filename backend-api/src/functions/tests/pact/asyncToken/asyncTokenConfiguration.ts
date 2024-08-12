@@ -17,7 +17,7 @@ export class AsyncTokenConfiguration {
     this.dependencies = this.getPassingDependencies()
   }
 
-  setDependencies(scenario?: AsyncTokenTestScenarios) {
+  setDependencies(scenario?: AsyncTokenTestScenario) {
     this.resetToPassingDependencies();
 
     if (scenario === "INVALID_CLIENT_SECRETS")
@@ -45,6 +45,6 @@ export class AsyncTokenConfiguration {
   }
 }
 
-type AsyncTokenTestScenarios = "INVALID_CLIENT_SECRETS";
+type AsyncTokenTestScenario = "INVALID_CLIENT_SECRETS";
 
 export const asyncTokenConfig = new AsyncTokenConfiguration();

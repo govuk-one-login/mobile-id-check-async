@@ -28,7 +28,7 @@ export class AsyncCredentialConfiguration {
     this.dependencies = this.getPassingDependencies()
   }
 
-  setDependencies(scenario?: AsyncCredentialTestScenarios) {
+  setDependencies(scenario?: AsyncCredentialTestScenario) {
     this.resetToPassingDependencies();
 
     if (scenario === "INVALID_ACCESS_TOKEN")
@@ -57,6 +57,6 @@ export class AsyncCredentialConfiguration {
   }
 }
 
-type AsyncCredentialTestScenarios = "INVALID_ACCESS_TOKEN";
+type AsyncCredentialTestScenario = "INVALID_ACCESS_TOKEN";
 
 export const asyncCredentialConfig = new AsyncCredentialConfiguration();
