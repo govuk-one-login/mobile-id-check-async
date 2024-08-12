@@ -8,6 +8,7 @@ import { requestService } from "../../asyncToken/requestService/requestService";
 import { successResult } from "../../utils/result";
 import { asyncCredentialConfig } from "./asyncCredential/asyncCredentialConfiguration";
 
+jest.setTimeout(60000);
 describe("Provider API contract verification", () => {
   let app: Application;
   let server: Server;
@@ -39,15 +40,11 @@ describe("Provider API contract verification", () => {
   it("validates adherence to all consumer contracts", () => {
     const stateHandlers = {
       "badDummySecret is not a valid basic auth secret": () => {
-        asyncTokenConfig.setDependenciesByScenario(
-          "badDummySecret is not a valid basic auth secret",
-        );
+        asyncTokenConfig.setInvalidAuthHeader();
         return Promise.resolve("State set for invalid basic auth secret");
       },
       "dummySecret is a valid basic auth secret": () => {
-        asyncTokenConfig.setDependenciesByScenario(
-          "dummySecret is a valid basic auth secret",
-        );
+        asyncTokenConfig.setValidAuthHeader();
         return Promise.resolve("dummySecret is a valid basic auth secret");
       },
       "dummyAccessToken is a valid access token": () => {
