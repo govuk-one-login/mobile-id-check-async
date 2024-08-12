@@ -17,7 +17,7 @@ import {
 } from "./tokenService/tokenService";
 import { Logger } from "../services/logging/logger";
 
-export interface Dependencies {
+export interface IAsyncCredentialDependencies {
   logger: () => Logger<MessageName>;
   eventService: (sqsQueue: string) => IEventService;
   tokenService: () => IDecodeToken & IVerifyTokenSignature;
@@ -31,7 +31,7 @@ export interface Dependencies {
   env: NodeJS.ProcessEnv;
 }
 
-export const dependencies: Dependencies = {
+export const dependencies: IAsyncCredentialDependencies = {
   env: process.env,
   eventService: (sqsQueue: string) => new EventService(sqsQueue),
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),

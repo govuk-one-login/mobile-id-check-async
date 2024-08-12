@@ -1,6 +1,6 @@
 import { KMSClient, SignCommand } from "@aws-sdk/client-kms";
 import { mockClient } from "aws-sdk-client-mock";
-import { TokenService } from "./tokenService";
+import { TokenService } from "../tokenService";
 
 const kmsMock = mockClient(KMSClient);
 

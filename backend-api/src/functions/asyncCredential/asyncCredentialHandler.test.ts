@@ -1,26 +1,38 @@
 import { APIGatewayProxyResult } from "aws-lambda";
+import {
+  MockEventServiceFailToWrite,
+  MockEventWriterSuccess,
+} from "../services/events/tests/mocks";
+import { Logger } from "../services/logging/logger";
+import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
+import { MockJWTBuilder } from "../testUtils/mockJwt";
 import { buildRequest } from "../testUtils/mockRequest";
+import { Result, successResult } from "../utils/result";
+import { lambdaHandlerConstructor } from "./asyncCredentialHandler";
+import { IAsyncCredentialDependencies } from "./handlerDependencies";
+import { MessageName, registeredLogs } from "./registeredLogs";
 import {
   IDecodedToken,
   IDecodeToken,
   IVerifyTokenSignature,
 } from "./tokenService/tokenService";
-import { lambdaHandlerConstructor } from "./asyncCredentialHandler";
-import { IGetPartialRegisteredClientByClientId } from "../services/clientRegistryService/clientRegistryService";
-import { Result, errorResult, successResult } from "../utils/result";
-import { MockJWTBuilder } from "../testUtils/mockJwt";
-import { Logger } from "../services/logging/logger";
-import { MessageName, registeredLogs } from "./registeredLogs";
-import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import {
-  ICreateSession,
-  IGetActiveSession,
-} from "./sessionService/sessionService";
+  MockTokenServiceGetDecodedTokenErrorResult,
+  MockTokenServiceInvalidSignatureErrorResult,
+  MockTokenServiceSuccess,
+} from "./tokenService/tests/mocks";
 import {
-  MockEventServiceFailToWrite,
-  MockEventWriterSuccess,
-} from "../services/events/tests/mocks";
-import { Dependencies } from "./handlerDependencies";
+  MockClientRegistryServiceeGetPartialClientInternalServerResult,
+  MockClientRegistryServiceGetPartialClientBadRequestResponse,
+  MockClientRegistryServiceGetPartialClientSuccessResult,
+} from "../services/clientRegistryService/tests/mocks";
+import {
+  MockSessionServiceCreateSessionErrorResult,
+  MockSessionServiceCreateSessionSuccessResult,
+  MockSessionServiceGetActiveSessionSuccessResult,
+  MockSessionServiceGetSessionBySubErrorResult,
+  MockSessionServiceNoActiveSession,
+} from "./sessionService/tests/mocks";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -33,7 +45,7 @@ const env = {
 };
 
 describe("Async Credential", () => {
-  let dependencies: Dependencies;
+  let dependencies: IAsyncCredentialDependencies;
   let mockLogger: MockLoggingAdapter<MessageName>;
 
   beforeEach(() => {
@@ -967,200 +979,3 @@ describe("Async Credential", () => {
     });
   });
 });
-
-class MockTokenServiceGetDecodedTokenErrorResult
-  implements IDecodeToken, IVerifyTokenSignature
-{
-  getDecodedToken(): Result<IDecodedToken> {
-    return errorResult({
-      errorMessage: "Mock decoding token error",
-      errorCategory: "SERVER_ERROR",
-    });
-  }
-  verifyTokenSignature(): Promise<Result<null>> {
-    return Promise.resolve(successResult(null));
-  }
-}
-
-class MockTokenServiceInvalidSignatureErrorResult
-  implements IDecodeToken, IVerifyTokenSignature
-{
-  getDecodedToken(): Result<IDecodedToken> {
-    return successResult({
-      encodedJwt:
-        "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJleHAiOjE3MjE5MDExNDMwMDAsImlzcyI6Im1vY2tJc3N1ZXIiLCJhdWQiOiJtb2NrSXNzdWVyIiwic2NvcGUiOiJkY21hdy5zZXNzaW9uLmFzeW5jX2NyZWF0ZSIsImNsaWVudF9pZCI6Im1vY2tDbGllbnRJZCJ9.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
-      jwtPayload: {
-        aud: "mockIssuer",
-        client_id: "mockClientId",
-        exp: 1721901143000,
-        iss: "mockIssuer",
-        scope: "dcmaw.session.async_create",
-      },
-    });
-  }
-  verifyTokenSignature(): Promise<Result<null>> {
-    return Promise.resolve(
-      errorResult({
-        errorMessage: "Failed to verify token signature",
-        errorCategory: "SERVER_ERROR",
-      }),
-    );
-  }
-}
-
-class MockTokenServiceSuccess implements IDecodeToken, IVerifyTokenSignature {
-  getDecodedToken(): Result<IDecodedToken> {
-    return successResult({
-      encodedJwt:
-        "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJleHAiOjE3MjE5MDExNDMwMDAsImlzcyI6Im1vY2tJc3N1ZXIiLCJhdWQiOiJtb2NrSXNzdWVyIiwic2NvcGUiOiJkY21hdy5zZXNzaW9uLmFzeW5jX2NyZWF0ZSIsImNsaWVudF9pZCI6Im1vY2tDbGllbnRJZCJ9.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
-      jwtPayload: {
-        aud: "mockIssuer",
-        client_id: "mockClientId",
-        exp: 1721901143000,
-        iss: "mockIssuer",
-        scope: "dcmaw.session.async_create",
-      },
-    });
-  }
-  verifyTokenSignature(): Promise<Result<null>> {
-    return Promise.resolve(successResult(null));
-  }
-}
-
-class MockClientRegistryServiceeGetPartialClientInternalServerResult
-  implements IGetPartialRegisteredClientByClientId
-{
-  getPartialRegisteredClientByClientId = async () => {
-    return errorResult({
-      errorMessage: "Unexpected error retrieving registered client",
-      errorCategory: "SERVER_ERROR",
-    });
-  };
-}
-
-class MockClientRegistryServiceGetPartialClientBadRequestResponse
-  implements IGetPartialRegisteredClientByClientId
-{
-  getPartialRegisteredClientByClientId = async () => {
-    return errorResult({
-      errorMessage: "Client Id is not registered",
-      errorCategory: "CLIENT_ERROR",
-    });
-  };
-}
-
-class MockClientRegistryServiceGetPartialClientSuccessResult
-  implements IGetPartialRegisteredClientByClientId
-{
-  getPartialRegisteredClientByClientId = async () => {
-    return successResult({
-      issuer: "mockIssuer",
-      redirectUri: "https://www.mockUrl.com",
-    });
-  };
-}
-
-class MockSessionServiceGetSessionBySubErrorResult
-  implements IGetActiveSession, ICreateSession
-{
-  readonly tableName: string;
-  readonly indexName: string;
-
-  constructor(tableName: string, indexName: string) {
-    this.tableName = tableName;
-    this.indexName = indexName;
-  }
-
-  getActiveSession = async (): Promise<Result<string | null>> => {
-    return errorResult({
-      errorMessage: "Mock failing DB call",
-      errorCategory: "SERVER_ERROR",
-    });
-  };
-
-  createSession = async (): Promise<Result<string>> => {
-    return successResult("mockSessionId");
-  };
-}
-
-class MockSessionServiceNoActiveSession
-  implements IGetActiveSession, ICreateSession
-{
-  readonly tableName: string;
-  readonly indexName: string;
-
-  constructor(tableName: string, indexName: string) {
-    this.tableName = tableName;
-    this.indexName = indexName;
-  }
-  getActiveSession = async (): Promise<Result<string | null>> => {
-    return successResult(null);
-  };
-
-  createSession = async (): Promise<Result<string>> => {
-    return successResult("mockSessionId");
-  };
-}
-
-class MockSessionServiceGetActiveSessionSuccessResult
-  implements IGetActiveSession, ICreateSession
-{
-  readonly tableName: string;
-  readonly indexName: string;
-
-  constructor(tableName: string, indexName: string) {
-    this.tableName = tableName;
-    this.indexName = indexName;
-  }
-
-  getActiveSession = async (): Promise<Result<string | null>> => {
-    return successResult("mockSessionId");
-  };
-
-  createSession = async (): Promise<Result<string>> => {
-    return successResult("mockSessionId");
-  };
-}
-
-class MockSessionServiceCreateSessionErrorResult
-  implements IGetActiveSession, ICreateSession
-{
-  readonly tableName: string;
-  readonly indexName: string;
-
-  constructor(tableName: string, indexName: string) {
-    this.tableName = tableName;
-    this.indexName = indexName;
-  }
-
-  getActiveSession = async (): Promise<Result<string | null>> => {
-    return successResult(null);
-  };
-
-  createSession = async (): Promise<Result<string>> => {
-    return errorResult({
-      errorMessage: "Mock error",
-      errorCategory: "SERVER_ERROR",
-    });
-  };
-}
-
-class MockSessionServiceCreateSessionSuccessResult
-  implements IGetActiveSession, ICreateSession
-{
-  readonly tableName: string;
-  readonly indexName: string;
-
-  constructor(tableName: string, indexName: string) {
-    this.tableName = tableName;
-    this.indexName = indexName;
-  }
-
-  getActiveSession = async (): Promise<Result<string | null>> => {
-    return successResult(null);
-  };
-
-  createSession = async (): Promise<Result<string>> => {
-    return successResult("mockSessionId");
-  };
-}
