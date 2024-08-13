@@ -598,7 +598,7 @@ describe("Async Credential", () => {
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
-            error: "Unauthorized",
+            error: "invalid_request",
             error_description: "Invalid signature",
           }),
         });

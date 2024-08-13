@@ -80,7 +80,10 @@ export async function lambdaHandlerConstructor(
     logger.log("TOKEN_SIGNATURE_INVALID", {
       errorMessage: verifyTokenSignatureResult.value.errorMessage,
     });
-    return unauthorizedResponseInvalidSignature;
+    return badRequestResponse({
+      error: "invalid_request",
+      errorDescription: "Invalid signature",
+    });
   }
 
   // Fetching issuer and redirect_uri from client registry using the client_id from the incoming jwt
@@ -214,15 +217,6 @@ const unauthorizedResponse = {
   body: JSON.stringify({
     error: "Unauthorized",
     error_description: "Invalid token",
-  }),
-};
-
-const unauthorizedResponseInvalidSignature = {
-  headers: { "Content-Type": "application/json" },
-  statusCode: 401,
-  body: JSON.stringify({
-    error: "Unauthorized",
-    error_description: "Invalid signature",
   }),
 };
 
