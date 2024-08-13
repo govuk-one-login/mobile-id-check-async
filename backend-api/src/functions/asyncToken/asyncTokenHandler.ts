@@ -8,7 +8,6 @@ import {
   dependencies,
   IAsyncTokenRequestDependencies,
 } from "./handlerDependencies";
-import { requestService } from "./requestService/requestService";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
@@ -30,6 +29,8 @@ export async function lambdaHandlerConstructor(
   }
 
   const config = configResult.value;
+
+  const requestService = dependencies.requestService();
 
   // Ensure that request contains expected params
   const eventBodyResult = requestService.validateBody(event.body);

@@ -3,8 +3,6 @@ import { createApp } from "./createApp";
 import { Verifier } from "@pact-foundation/pact";
 import path from "path";
 import { Server } from "http";
-import { requestService } from "../../asyncToken/requestService/requestService";
-import { errorResult, successResult } from "../../utils/result";
 import { asyncTokenDependencies } from "./dependencies/asyncTokenDependencies";
 import { asyncCredentialDependencies } from "./dependencies/asyncCredentialDependencies";
 
@@ -20,26 +18,12 @@ describe("Provider API contract verification", () => {
     server = app.listen(port, () => {
       console.log(`Server listening on port ${port}.`);
     });
-
-    jest
-      .spyOn(requestService, "validateBody")
-      .mockImplementation(() => successResult(null));
-    jest.spyOn(requestService, "getClientCredentials").mockImplementation(() =>
-      successResult({
-        clientId: "mockClientId",
-        clientSecret: "mockClientSecret",
-      }),
-    );
   });
 
-  afterEach(()  => {
-    jest.resetAllMocks()
-  }
-  )
+  afterEach(() => {});
 
   afterAll(() => {
     server.close();
-    jest.clearAllMocks();
   });
 
   it("validates adherence to all consumer contracts", () => {
@@ -57,8 +41,6 @@ describe("Provider API contract verification", () => {
         return Promise.resolve("dummyAccessToken is a valid access token");
       },
       "badAccessToken is not a valid access token": () => {
-
-        jest.mock("getAuthorizationHeader", () => errorResult({errorCategory: "CLIENT_ERROR", errorMessage: "access token is not in the correct format"}))
         asyncCredentialDependencies.setInvalidAccessToken();
         return Promise.resolve("State set for invalid access token");
       },

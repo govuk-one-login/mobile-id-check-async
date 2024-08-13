@@ -19,7 +19,7 @@ import {
   MockTokenServiceSuccessResult,
   MockTokenServiceErrorResult,
 } from "./tokenService/tests/mocks";
-import { requestService } from "./requestService/requestService";
+import { RequestService } from "./requestService/requestService";
 
 describe("Async Token", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;
@@ -49,7 +49,7 @@ describe("Async Token", () => {
       logger: () => new Logger(mockLogger, registeredLogs),
       clientRegistryService: () => new MockClientRegistryServiceSuccessResult(),
       tokenService: () => new MockTokenServiceSuccessResult(),
-      requestService: () => requestService
+      requestService: () => new RequestService(),
     };
   });
 
