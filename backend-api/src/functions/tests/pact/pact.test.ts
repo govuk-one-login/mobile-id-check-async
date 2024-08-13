@@ -6,7 +6,7 @@ import { Server } from "http";
 import { asyncTokenDependencies } from "./dependencies/asyncTokenDependencies";
 import { asyncCredentialDependencies } from "./dependencies/asyncCredentialDependencies";
 
-jest.setTimeout(60000);
+jest.setTimeout(30000);
 describe("Provider API contract verification", () => {
   let app: Application;
   let server: Server;
@@ -20,8 +20,6 @@ describe("Provider API contract verification", () => {
     });
   });
 
-  afterEach(() => {});
-
   afterAll(() => {
     server.close();
   });
@@ -30,7 +28,9 @@ describe("Provider API contract verification", () => {
     const stateHandlers = {
       "badDummySecret is not a valid basic auth secret": () => {
         asyncTokenDependencies.setInvalidAuthHeader();
-        return Promise.resolve("State set for invalid basic auth secret");
+        return Promise.resolve(
+          "badDummySecret is not a valid basic auth secret",
+        );
       },
       "dummySecret is a valid basic auth secret": () => {
         asyncTokenDependencies.setValidAuthHeader();
@@ -42,7 +42,11 @@ describe("Provider API contract verification", () => {
       },
       "badAccessToken is not a valid access token": () => {
         asyncCredentialDependencies.setInvalidAccessToken();
-        return Promise.resolve("State set for invalid access token");
+        return Promise.resolve("badAccessToken is not a valid access token");
+      },
+      "access token is missing": () => {
+        asyncCredentialDependencies.setMissingAccessToken();
+        return Promise.resolve("access token is missing");
       },
     };
 

@@ -1,14 +1,11 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { IDecodedToken } from "./tokenService/tokenService";
-import { errorResult, Result, successResult } from "../utils/result";
-import {} from "./sessionService/sessionService";
 import { ConfigService } from "./configService/configService";
 import {
   IAsyncCredentialDependencies,
   dependencies,
 } from "./handlerDependencies";
-import { getAuthorizationHeader } from "./validators/getAuthorizationHeader";
-import { getRequestBody } from "./validators/getRequestBody";
+import { RequestService } from "./requestService/requestService";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncCredentialDependencies,
@@ -26,7 +23,9 @@ export async function lambdaHandlerConstructor(
   }
   const config = configResult.value;
 
-  const authorizationHeaderResult = getAuthorizationHeader(
+  const requestService = new RequestService();
+
+  const authorizationHeaderResult = requestService.getAuthorizationHeader(
     event.headers["Authorization"] ?? event.headers["authorization"],
   );
   if (authorizationHeaderResult.isError) {
@@ -56,7 +55,10 @@ export async function lambdaHandlerConstructor(
     validTokenClaimsResult.value as IDecodedToken;
 
   // Validate request body
-  const requestBodyResult = getRequestBody(event.body, jwtPayload.client_id);
+  const requestBodyResult = requestService.getRequestBody(
+    event.body,
+    jwtPayload.client_id,
+  );
   if (requestBodyResult.isError) {
     logger.log("REQUEST_BODY_INVALID", {
       errorMessage: requestBodyResult.value.errorMessage,
