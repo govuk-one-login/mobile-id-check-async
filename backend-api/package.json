@@ -12,7 +12,8 @@
     "test:infra": "./node_modules/.bin/jest --testPathPattern=infra-tests/",
     "test:pact": "npm run pact",
     "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/pact",
-    "ci": "npm run test:unit && npm run format:check && npm run lint"
+    "ci": "npm run test:unit && npm run format:check && npm run lint",
+    "preinstall": "git config --local core.hooksPath .github/hook-scripts"
   },
   "engines": {
     "node": "20"
