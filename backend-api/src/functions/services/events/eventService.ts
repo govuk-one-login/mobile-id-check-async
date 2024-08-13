@@ -52,7 +52,7 @@ export class EventService implements IEventService {
         session_id: eventConfig.sessionId,
         govuk_signin_journey_id: eventConfig.govukSigninJourneyId,
       },
-      timestamp: Math.floor(eventConfig.getNowInMilliseconds()/1000),
+      timestamp: Math.floor(eventConfig.getNowInMilliseconds() / 1000),
       event_name: eventConfig.eventName,
       component_id: eventConfig.componentId,
     };
