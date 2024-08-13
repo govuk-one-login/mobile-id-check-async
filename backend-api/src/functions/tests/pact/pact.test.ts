@@ -4,7 +4,7 @@ import { Verifier } from "@pact-foundation/pact";
 import path from "path";
 import { Server } from "http";
 import { requestService } from "../../asyncToken/requestService/requestService";
-import { successResult } from "../../utils/result";
+import { errorResult, successResult } from "../../utils/result";
 import { asyncTokenDependencies } from "./dependencies/asyncTokenDependencies";
 import { asyncCredentialDependencies } from "./dependencies/asyncCredentialDependencies";
 
@@ -32,6 +32,11 @@ describe("Provider API contract verification", () => {
     );
   });
 
+  afterEach(()  => {
+    jest.resetAllMocks()
+  }
+  )
+
   afterAll(() => {
     server.close();
     jest.clearAllMocks();
@@ -52,6 +57,8 @@ describe("Provider API contract verification", () => {
         return Promise.resolve("dummyAccessToken is a valid access token");
       },
       "badAccessToken is not a valid access token": () => {
+
+        jest.mock("getAuthorizationHeader", () => errorResult({errorCategory: "CLIENT_ERROR", errorMessage: "access token is not in the correct format"}))
         asyncCredentialDependencies.setInvalidAccessToken();
         return Promise.resolve("State set for invalid access token");
       },
