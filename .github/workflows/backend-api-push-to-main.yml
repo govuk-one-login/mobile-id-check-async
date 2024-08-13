@@ -10,13 +10,13 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-permissions:
+permissions: 
   contents: read
 
 jobs:
   sonar-scan:
     name: Sonar main branch scan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest 
     defaults:
       run:
         shell: bash
