@@ -53,5 +53,8 @@
     "esbuild": "^0.23.0",
     "js-yaml": "^4.1.0",
     "node-jose": "2.2.0"
+  },
+  "overrides": {
+    "axios": "^1.7.4"
   }
 }
