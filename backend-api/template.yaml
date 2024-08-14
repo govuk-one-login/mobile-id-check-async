@@ -82,6 +82,11 @@ Resources:
       Description: Regional IPVCore API Gateway for mock calls.
       EndpointConfiguration: REGIONAL
       StageName: !Ref Environment
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: /openApiSpecs/async-public-spec.yaml
       MethodSettings:
         - LoggingLevel: INFO
           HttpMethod: '*'
@@ -93,8 +98,17 @@ Resources:
           {
             "requestId" : "$context.requestId",
             "ip" : "$context.identity.sourceIp",
-            "requestTime" : "$context.requestTime" 
+            "requestTime" : "$context.requestTime",
+            "httpMethod" : "$context.httpMethod",
+            "path" : "$context.path",
+            "routeKey" : "$context.routeKey",
+            "status" : "$context.status",
+            "protocol" : "$context.protocol",
+            "responseLength" : "$context.responseLength",
+            "integrationError" : "$context.integrationErrorMessage"
           }
+      Auth:
+        DefaultAuthorizer: AWS_IAM
 
 
 
