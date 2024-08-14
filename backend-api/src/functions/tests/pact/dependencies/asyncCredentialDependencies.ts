@@ -1,8 +1,8 @@
 import { registeredLogs } from "../../../asyncCredential/registeredLogs";
 import { MockSessionServiceCreateSessionSuccessResult } from "../../../asyncCredential/sessionService/tests/mocks";
 import {
+  MockTokenServiceGetDecodedTokenErrorResult,
   MockTokenServiceSuccessIPV,
-  MockTokenServiceInvalidSignatureIPV,
 } from "../../../asyncCredential/tokenService/tests/mocks";
 import { MockClientRegistryServiceGetPartialClientSuccessResultIPV } from "../../../services/clientRegistryService/tests/mocks";
 import { MockEventWriterSuccess } from "../../../services/events/tests/mocks";
@@ -41,9 +41,12 @@ export class AsyncCredentialDependencies {
   setInvalidAccessToken() {
     this.dependencies = {
       ...defaultPassingDependencies,
-      tokenService: () => new MockTokenServiceInvalidSignatureIPV(),
+      tokenService: () => new MockTokenServiceGetDecodedTokenErrorResult(),
     };
   }
-}
 
+  setMissingAccessToken() {
+    this.dependencies = defaultPassingDependencies;
+  }
+}
 export const asyncCredentialDependencies = new AsyncCredentialDependencies();

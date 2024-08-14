@@ -1,12 +1,11 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { IDecodedToken } from "./tokenService/tokenService";
-import { errorResult, Result, successResult } from "../utils/result";
-import {} from "./sessionService/sessionService";
 import { ConfigService } from "./configService/configService";
 import {
   IAsyncCredentialDependencies,
   dependencies,
 } from "./handlerDependencies";
+import { RequestService } from "./requestService/requestService";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncCredentialDependencies,
@@ -24,7 +23,9 @@ export async function lambdaHandlerConstructor(
   }
   const config = configResult.value;
 
-  const authorizationHeaderResult = getAuthorizationHeader(
+  const requestService = new RequestService();
+
+  const authorizationHeaderResult = requestService.getAuthorizationHeader(
     event.headers["Authorization"] ?? event.headers["authorization"],
   );
   if (authorizationHeaderResult.isError) {
@@ -54,7 +55,10 @@ export async function lambdaHandlerConstructor(
     validTokenClaimsResult.value as IDecodedToken;
 
   // Validate request body
-  const requestBodyResult = getRequestBody(event.body, jwtPayload.client_id);
+  const requestBodyResult = requestService.getRequestBody(
+    event.body,
+    jwtPayload.client_id,
+  );
   if (requestBodyResult.isError) {
     logger.log("REQUEST_BODY_INVALID", {
       errorMessage: requestBodyResult.value.errorMessage,
@@ -76,7 +80,10 @@ export async function lambdaHandlerConstructor(
     logger.log("TOKEN_SIGNATURE_INVALID", {
       errorMessage: verifyTokenSignatureResult.value.errorMessage,
     });
-    return unauthorizedResponseInvalidSignature;
+    return badRequestResponse({
+      error: "invalid_request",
+      errorDescription: "Invalid signature",
+    });
   }
 
   // Fetching issuer and redirect_uri from client registry using the client_id from the incoming jwt
@@ -190,112 +197,6 @@ export async function lambdaHandlerConstructor(
   return sessionCreatedResponse(requestBody.sub);
 }
 
-const getAuthorizationHeader = (
-  authorizationHeader: string | undefined,
-): Result<string> => {
-  if (authorizationHeader == null) {
-    return errorResult({
-      errorMessage: "No Authentication header present",
-      errorCategory: "CLIENT_ERROR",
-    });
-  }
-
-  if (!authorizationHeader.startsWith("Bearer ")) {
-    return errorResult({
-      errorMessage:
-        "Invalid authentication header format - does not start with Bearer",
-      errorCategory: "CLIENT_ERROR",
-    });
-  }
-
-  if (authorizationHeader.split(" ").length !== 2) {
-    return errorResult({
-      errorMessage: "Invalid authentication header format - contains spaces",
-      errorCategory: "CLIENT_ERROR",
-    });
-  }
-
-  if (authorizationHeader.split(" ")[1].length == 0) {
-    return errorResult({
-      errorMessage: "Invalid authentication header format - missing token",
-      errorCategory: "CLIENT_ERROR",
-    });
-  }
-
-  return successResult(authorizationHeader);
-};
-
-const getRequestBody = (
-  requestBody: string | null,
-  jwtClientId: string,
-): Result<IRequestBody> => {
-  if (requestBody == null) {
-    return errorResult({
-      errorMessage: "Missing request body",
-      errorCategory: "CLIENT_ERROR",
-    });
-  }
-
-  let body: IRequestBody;
-  try {
-    body = JSON.parse(requestBody);
-  } catch {
-    return errorResult({
-      errorMessage: "Invalid JSON in request body",
-      errorCategory: "CLIENT_ERROR",
-    });
-  }
-
-  if (!body.state) {
-    return errorResult({
-      errorMessage: "Missing state in request body",
-      errorCategory: "CLIENT_ERROR",
-    });
-  }
-
-  if (!body.sub) {
-    return errorResult({
-      errorMessage: "Missing sub in request body",
-      errorCategory: "CLIENT_ERROR",
-    });
-  }
-
-  if (!body.client_id) {
-    return errorResult({
-      errorMessage: "Missing client_id in request body",
-      errorCategory: "CLIENT_ERROR",
-    });
-  }
-
-  if (body.client_id !== jwtClientId) {
-    return errorResult({
-      errorMessage:
-        "client_id in request body does not match value in access_token",
-      errorCategory: "CLIENT_ERROR",
-    });
-  }
-
-  if (!body["govuk_signin_journey_id"]) {
-    return errorResult({
-      errorMessage: "Missing govuk_signin_journey_id in request body",
-      errorCategory: "CLIENT_ERROR",
-    });
-  }
-
-  if (body.redirect_uri) {
-    try {
-      new URL(body.redirect_uri);
-    } catch {
-      return errorResult({
-        errorMessage: "redirect_uri in request body is not a URL",
-        errorCategory: "CLIENT_ERROR",
-      });
-    }
-  }
-
-  return successResult(body);
-};
-
 const badRequestResponse = (responseInput: {
   error: string;
   errorDescription: string;
@@ -316,15 +217,6 @@ const unauthorizedResponse = {
   body: JSON.stringify({
     error: "Unauthorized",
     error_description: "Invalid token",
-  }),
-};
-
-const unauthorizedResponseInvalidSignature = {
-  headers: { "Content-Type": "application/json" },
-  statusCode: 401,
-  body: JSON.stringify({
-    error: "Unauthorized",
-    error_description: "Invalid signature",
   }),
 };
 

@@ -596,9 +596,9 @@ describe("Async Credential", () => {
         );
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
-          statusCode: 401,
+          statusCode: 400,
           body: JSON.stringify({
-            error: "Unauthorized",
+            error: "invalid_request",
             error_description: "Invalid signature",
           }),
         });

@@ -7,6 +7,7 @@ import {
   MockClientRegistryServiceSuccessResult,
   MockClientRegistryServiceBadRequestResult,
 } from "../../../services/clientRegistryService/tests/mocks";
+import { MockRequestServiceSuccessResult } from "../../../asyncToken/requestService/tests/mocks";
 
 const defaultPassingDependencies = {
   env: {
@@ -19,6 +20,7 @@ const defaultPassingDependencies = {
   logger: () => new Logger(new MockLoggingAdapter(), registeredLogs),
   clientRegistryService: () => new MockClientRegistryServiceSuccessResult(),
   tokenService: () => new MockTokenServiceSuccessResult(),
+  requestService: () => new MockRequestServiceSuccessResult(),
 };
 
 export class AsyncTokenDependencies {

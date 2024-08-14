@@ -3,12 +3,10 @@ import { createApp } from "./createApp";
 import { Verifier } from "@pact-foundation/pact";
 import path from "path";
 import { Server } from "http";
-import { requestService } from "../../asyncToken/requestService/requestService";
-import { successResult } from "../../utils/result";
 import { asyncTokenDependencies } from "./dependencies/asyncTokenDependencies";
 import { asyncCredentialDependencies } from "./dependencies/asyncCredentialDependencies";
 
-jest.setTimeout(60000);
+jest.setTimeout(30000);
 describe("Provider API contract verification", () => {
   let app: Application;
   let server: Server;
@@ -20,28 +18,19 @@ describe("Provider API contract verification", () => {
     server = app.listen(port, () => {
       console.log(`Server listening on port ${port}.`);
     });
-
-    jest
-      .spyOn(requestService, "validateBody")
-      .mockImplementation(() => successResult(null));
-    jest.spyOn(requestService, "getClientCredentials").mockImplementation(() =>
-      successResult({
-        clientId: "mockClientId",
-        clientSecret: "mockClientSecret",
-      }),
-    );
   });
 
   afterAll(() => {
     server.close();
-    jest.clearAllMocks();
   });
 
   it("validates adherence to all consumer contracts", () => {
     const stateHandlers = {
       "badDummySecret is not a valid basic auth secret": () => {
         asyncTokenDependencies.setInvalidAuthHeader();
-        return Promise.resolve("State set for invalid basic auth secret");
+        return Promise.resolve(
+          "badDummySecret is not a valid basic auth secret",
+        );
       },
       "dummySecret is a valid basic auth secret": () => {
         asyncTokenDependencies.setValidAuthHeader();
@@ -53,7 +42,11 @@ describe("Provider API contract verification", () => {
       },
       "badAccessToken is not a valid access token": () => {
         asyncCredentialDependencies.setInvalidAccessToken();
-        return Promise.resolve("State set for invalid access token");
+        return Promise.resolve("badAccessToken is not a valid access token");
+      },
+      "access token is missing": () => {
+        asyncCredentialDependencies.setMissingAccessToken();
+        return Promise.resolve("access token is missing");
       },
     };
 
