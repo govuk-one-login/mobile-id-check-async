@@ -132,37 +132,86 @@ Resources:
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      BucketName: !Sub sts-${AWS::StackName}-jwks-${Environment}
+      BucketName: !Sub 'sts-${AWS::StackName}-jwks-${Environment}'
+      VersioningConfiguration:
+        Status: 'Enabled'
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
         IgnorePublicAcls: true
         RestrictPublicBuckets: true
-      VersioningConfiguration:
-        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LoggingConfiguration:
+        DestinationBucketName: !Ref JsonWebKeysBucketAccessLogs
+        LogFilePrefix: !Sub sts-${AWS::StackName}-jwks-${Environment}
 
-  JsonWebKeysBucketRole:
-    Type: AWS::IAM::Role
+  JsonWebKeysBucketPolicy:
+    Type: AWS::S3::BucketPolicy
     Properties:
-      AssumeRolePolicyDocument:
+      Bucket: !Ref JsonWebKeysBucket
+      PolicyDocument:
         Version: '2012-10-17'
         Statement:
-          - Effect: Allow
-            Action:
-             - sts:AssumeRole
+          - Effect: Deny
             Principal:
-              Service: apigateway.amazonaws.com
-      Policies:
-        - PolicyDocument:
-            Statement:
-              - Action:
-                  - s3:GetObject
-                Effect: Allow
-                Resource:
-                  - !Sub ${JsonWebKeysBucket.Arn}/.well-known/jwks.json
-            Version: "2012-10-17"
-          PolicyName: JwksBucketPolicy
+              AWS: '*'
+            Action: '*'
+            Resource: !Sub
+              - arn:aws:s3:::${bucketName}/*
+              - bucketName: !Ref JsonWebKeysBucket
+            Condition:
+              Bool:
+                "aws:SecureTransport": false
+
+  JsonWebKeysBucketAccessLogs:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub sts-${AWS::StackName}-jwks-${Environment}-access-logs
+      VersioningConfiguration:
+        Status: 'Enabled'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: ObjectWriter
+
+  JsonWebKeysBucketAccessLogsPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref JsonWebKeysBucketAccessLogs
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Deny'
+            Principal:
+              AWS: '*'
+            Action: '*'
+            Resource: !Sub
+              - 'arn:aws:s3:::${bucketName}/*'
+              - bucketName: !Ref JsonWebKeysBucketAccessLogs
+            Condition:
+              Bool:
+                "aws:SecureTransport": false
+          - Effect: 'Allow'
+            Principal:
+              Service: logging.s3.amazonaws.com
+            Action:
+              - "s3:PutObject"
+            Resource: !Sub
+              - 'arn:aws:s3:::${bucketName}/*'
+              - bucketName: !Ref JsonWebKeysBucketAccessLogs
+            Condition:
+              ArnLike:
+                aws:SourceArn: !GetAtt JsonWebKeysBucket.Arn
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
