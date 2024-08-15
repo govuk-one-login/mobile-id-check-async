@@ -15,46 +15,46 @@ permissions:
   id-token: write
 
 jobs:
-  # sonar-scan:
-  #   name: Sonar main branch scan
-  #   runs-on: ubuntu-latest
-  #   defaults:
-  #     run:
-  #       shell: bash
-  #       working-directory: backend-api
-  #   steps:
-  #     - name: Check out repository code
-  #       uses: actions/checkout@v4
-  #       with:
-  #         submodules: true
-  #         fetch-depth: 0
+  sonar-scan:
+    name: Sonar main branch scan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend-api
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@9a9194f87191a7e9055e3e9b95b8cfb13023bb08 #main
+        with:
+          submodules: true
+          fetch-depth: 0
 
-  #     - name: Setup nodeJS v20
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: 20
-  #         cache: npm
-  #         cache-dependency-path: backend-api/package-lock.json
+      - name: Setup nodeJS v20
+        uses: actions/setup-node@26961cf329f22f6837d5f54c3efd76b480300ace #main
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend-api/package-lock.json
 
-  #     - name: Install dependencies
-  #       run: npm install
+      - name: Install dependencies
+        run: npm install
 
-  #     # Generate test coverage report for Sonar main branch analysis
-  #     - name: Run Tests
-  #       run: npm run test:unit
+      # Generate test coverage report for Sonar main branch analysis
+      - name: Run Tests
+        run: npm run test:unit
 
-  #     - name: SonarCloud Scan
-  #       uses: sonarsource/sonarcloud-github-action@master
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@f5003fc9688ade81ce47b57a3fa97a8d3f12de4c #master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   build-and-push-test-image:
-    # needs: sonar-scan
+    needs: sonar-scan
     runs-on: ubuntu-latest
     env:
       BACKEND_API_DEV_TEST_IMAGE_REPOSITORY: ${{ secrets.BACKEND_API_DEV_TEST_IMAGE_REPOSITORY }}
-      BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY: ${{ secrets.BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY }}
+      BACKEND_API_DEV_CODE_SIGNING_KEY: ${{secrets.BACKEND_API_DEV_CODE_SIGNING_KEY}}
       IMAGE_TAG: latest
     defaults:
       run:
@@ -62,7 +62,7 @@ jobs:
         working-directory: backend-api
     steps:
     - name: Check out repository code
-      uses: actions/checkout@v4
+      uses: actions/checkout@9a9194f87191a7e9055e3e9b95b8cfb13023bb08 #main
       with:
         submodules: true
         fetch-depth: 0
@@ -72,28 +72,18 @@ jobs:
         docker build -t $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG . 
     - name: Configure AWS credentials for DEV
 
-      uses: aws-actions/configure-aws-credentials@v4
+      uses: aws-actions/configure-aws-credentials@55f725fcb586ca16a5ed5b0d75d464defbfa831b #main
       with:
         aws-region: eu-west-2
         role-to-assume: ${{ secrets.BACKEND_API_DEV_GH_ACTIONS_ROLE_ARN }}
 
     - name: Login to Amazon ECR DEV
-      uses: aws-actions/amazon-ecr-login@v2
+      uses: aws-actions/amazon-ecr-login@a81a5945e74802f35ca53aa274a9e00436e6210e #main
 
     - name: Push image to DEV
       run: |
         docker push $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
 
-    # - name: Configure AWS credentials for BUILD
-    #   uses: aws-actions/configure-aws-credentials@v4
-    #   with:
-    #     aws-region: eu-west-2
-    #     role-to-assume: ${{ secrets.BUILD_BACKEND-API_GH_ACTIONS_ROLE }}
-
-    # - name: Login to Amazon ECR BUILD
-    #   uses: aws-actions/amazon-ecr-login@v2
-
-    # - name: Push image to BUILD
-    #   run: |
-    #     docker push $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
-    
+    - name: Code sign the image in DEV
+      run: |
+        cosign sign --key awskms:///$BACKEND_API_DEV_CODE_SIGNING_KEY $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
