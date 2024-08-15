@@ -9,9 +9,6 @@ Mappings:
     build: 
       ApiBurstLimit: 0
       ApiRateLimit: 0
-    staging: 
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
 Parameters:
   Environment:
     Description: The name of the environment to deploy to
