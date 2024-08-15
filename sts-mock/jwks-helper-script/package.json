@@ -1,0 +1,10 @@
+{
+  "name": "jwks-helper-script",
+  "description": "Creates an asymmetric key pair in JWKS format",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "node-jose": "2.2.0"
+  },
+  "devDependencies": {}
+}
