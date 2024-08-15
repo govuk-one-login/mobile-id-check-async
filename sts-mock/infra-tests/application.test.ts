@@ -9,40 +9,39 @@ import { Mappings } from "./helpers/mappings";
 describe("Backend application infrastructure", () => {
   let template: Template;
   beforeEach(() => {
-    let yamltemplate: any = load(readFileSync("template.yaml", "utf-8"), {
+    let templateYaml: any = load(readFileSync("template.yaml", "utf-8"), {
       schema: schema,
     });
-    template = Template.fromJSON(yamltemplate);
+    template = Template.fromJSON(templateYaml);
   });
 
-  describe("Private APIgw", () => {
-    test("The endpoints are Private", () => {
+  describe("API Gateway", () => {
+    test("The endpoints are REGIONAL", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
-        EndpointConfiguration: "PRIVATE",
+        Name: { "Fn::Sub": "${AWS::StackName}-sts-mock-api" },
+        EndpointConfiguration: "REGIONAL",
       });
     });
 
-    test("It uses the private async OpenAPI Spec", () => {
+    test("It uses the STS mock OpenAPI Spec", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
+        Name: { "Fn::Sub": "${AWS::StackName}-sts-mock-api" },
         DefinitionBody: {
           "Fn::Transform": {
             Name: "AWS::Include",
-            Parameters: { Location: "./openApiSpecs/async-private-spec.yaml" },
+            Parameters: { Location: "./openApiSpecs/sts-mock-spec.yaml" },
           },
         },
       });
     });
 
-    describe("APIgw method settings", () => {
+    describe("API Gateway method settings", () => {
       test("Metrics are enabled", () => {
         const methodSettings = new Capture();
         template.hasResourceProperties(
           "AWS::Serverless::Api",
-
           {
-            Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
+            Name: { "Fn::Sub": "${AWS::StackName}-sts-mock-api" },
             MethodSettings: methodSettings,
           },
         );
@@ -53,17 +52,10 @@ describe("Backend application infrastructure", () => {
         const expectedBurstLimits = {
           dev: 10,
           build: 0,
-          staging: 0,
-          integration: 0,
-          production: 0,
         };
-
         const expectedRateLimits = {
           dev: 10,
           build: 0,
-          staging: 0,
-          integration: 0,
-          production: 0,
         };
         const mappingHelper = new Mappings(template);
         mappingHelper.validatePrivateAPIMapping({
@@ -76,27 +68,25 @@ describe("Backend application infrastructure", () => {
         });
       });
 
-      test("Rate limit and burst mappings are applied to the APIgw", () => {
+      test("Rate limit and burst mappings are applied to the API gateway", () => {
         const methodSettings = new Capture();
         template.hasResourceProperties(
           "AWS::Serverless::Api",
-
           {
-            Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
+            Name: { "Fn::Sub": "${AWS::StackName}-sts-mock-api" },
             MethodSettings: methodSettings,
           },
         );
         expect(methodSettings.asArray()[0].ThrottlingBurstLimit).toStrictEqual({
           "Fn::FindInMap": [
-            "PrivateApigw",
+            "StsMockApiGateway",
             { Ref: "Environment" },
             "ApiBurstLimit",
           ],
         });
-
         expect(methodSettings.asArray()[0].ThrottlingRateLimit).toStrictEqual({
           "Fn::FindInMap": [
-            "PrivateApigw",
+            "StsMockApiGateway",
             { Ref: "Environment" },
             "ApiRateLimit",
           ],
@@ -104,13 +94,13 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("Access log group is attached to APIgw", () => {
+    test("Access log group is attached to the API gateway", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
+        Name: { "Fn::Sub": "${AWS::StackName}-sts-mock-api" },
         AccessLogSetting: {
           DestinationArn: {
             "Fn::Sub":
-              "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialApiAccessLogs}",
+              "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${StsMockApiAccessLogs}",
           },
         },
       });
@@ -121,40 +111,64 @@ describe("Backend application infrastructure", () => {
         RetentionInDays: 30,
         LogGroupName: {
           "Fn::Sub":
-            "/aws/apigateway/${AWS::StackName}-private-api-access-logs",
+            "/aws/apigateway/${AWS::StackName}-sts-mock-api-access-logs",
         },
       });
     });
+  });
 
-    describe("Lambdas", () => {
-      test("All lambdas have a FunctionName defined", () => {
-        const lambdas = template.findResources("AWS::Serverless::Function");
-        const lambda_list = Object.keys(lambdas);
-        lambda_list.forEach((lambda) => {
-          expect(lambdas[lambda].Properties.FunctionName).toBeTruthy();
+  describe("Lambdas", () => {
+    test("All lambdas have a name", () => {
+      const lambdas = template.findResources("AWS::Serverless::Function");
+      const lambda_list = Object.keys(lambdas);
+      lambda_list.forEach((lambda) => {
+        expect(lambdas[lambda].Properties.FunctionName).toBeTruthy();
+      });
+    });
+
+    test("All lambdas have a log group", () => {
+      const lambdas = template.findResources("AWS::Serverless::Function");
+      const lambda_list = Object.keys(lambdas);
+      lambda_list.forEach((lambda) => {
+        const functionName = lambdas[lambda].Properties.FunctionName["Fn::Sub"];
+        const expectedLogName = {
+          "Fn::Sub": `/aws/lambda/${functionName}`,
+        };
+        template.hasResourceProperties("AWS::Logs::LogGroup", {
+          LogGroupName: Match.objectLike(expectedLogName),
         });
       });
-      test("All lambdas have a log group", () => {
-        const lambdas = template.findResources("AWS::Serverless::Function");
-        const lambda_list = Object.keys(lambdas);
-        lambda_list.forEach((lambda) => {
-          const functionName =
-            lambdas[lambda].Properties.FunctionName["Fn::Sub"];
-          const expectedLogName = {
-            "Fn::Sub": `/aws/lambda/${functionName}`,
-          };
-          template.hasResourceProperties("AWS::Logs::LogGroup", {
-            LogGroupName: Match.objectLike(expectedLogName),
-          });
-        });
+    });
+
+    test("All log groups have a retention period", () => {
+      const logGroups = template.findResources("AWS::Logs::LogGroup");
+      const logGroupList = Object.keys(logGroups);
+      logGroupList.forEach((logGroup) => {
+        expect(logGroups[logGroup].Properties.RetentionInDays).toEqual(30);
       });
-      test("All log groups have a retention period", () => {
-        const logGroups = template.findResources("AWS::Logs::LogGroup");
-        const logGroupList = Object.keys(logGroups);
-        logGroupList.forEach((logGroup) => {
-          expect(logGroups[logGroup].Properties.RetentionInDays).toEqual(30);
-        });
+    });
+  });
+
+  describe("S3", () => {
+    test("All buckets have a name", () => {
+      const buckets = template.findResources("AWS::S3::Bucket");
+      const buckets_list = Object.keys(buckets);
+      buckets_list.forEach((bucket) => {
+        expect(buckets[bucket].Properties.BucketName).toBeTruthy();
       });
+    });
+
+    test('All buckets have an associated bucket policy', () => {
+      const buckets = template.findResources('AWS::S3::Bucket')
+      const buckets_list = Object.keys(buckets)
+      buckets_list.forEach(bucket => {
+        template.hasResourceProperties(
+            'AWS::S3::BucketPolicy',
+            Match.objectLike({
+              Bucket: { Ref: bucket },
+            }),
+        )
+      })
     });
   });
 });

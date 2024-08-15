@@ -3,9 +3,6 @@ import { Template } from "aws-cdk-lib/assertions";
 interface EnvironmentFlags {
   dev: string | boolean | number;
   build: string | boolean | number;
-  staging: string | boolean | number;
-  integration: string | boolean | number;
-  production: string | boolean | number;
 }
 
 export class Mappings {
@@ -13,9 +10,6 @@ export class Mappings {
   readonly environments = [
     "dev",
     "build",
-    "staging",
-    "integration",
-    "production",
   ];
   constructor(template: Template) {
     this.template = template;
@@ -24,7 +18,7 @@ export class Mappings {
     environmentFlags: EnvironmentFlags;
     mappingBottomLevelKey: string;
   }) {
-    this.validateMapping({ ...args, mappingTopLevelKey: "PrivateApigw" });
+    this.validateMapping({ ...args, mappingTopLevelKey: "StsMockApiGateway" });
   }
 
   private validateMapping(args: {
@@ -37,7 +31,6 @@ export class Mappings {
       expect(
         mappings[args.mappingTopLevelKey][env][args.mappingBottomLevelKey],
       ).toStrictEqual(args.environmentFlags[env as keyof EnvironmentFlags]);
-      // Typescript needs you to strongly type the key if it's also used as a type
     }
   }
 }
