@@ -84,7 +84,12 @@ jobs:
       run: |
         docker push $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
 
-    - name: Code sign the image in DEV
+    - name: Install Cosign
+      uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382 #main
+      with:
+        cosign-release: 'v1.9.0'
+
+    - name: Sign the image in DEV
       run: |
         cosign sign --key awskms:///$BACKEND_API_DEV_CODE_SIGNING_KEY $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
 
