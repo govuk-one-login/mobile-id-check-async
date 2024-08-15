@@ -130,9 +130,9 @@ paths:
           $ref: '#/components/responses/InternalServerError'
       x-amazon-apigateway-integration:
         credentials:
-          Fn::GetAtt: [ "JsonWebKeysBucketApiRole", "Arn" ]
+          Fn::GetAtt: [ "JwksBucketApiRole", "Arn" ]
         uri:
-          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:s3:path/${JsonWebKeysBucket}/.well-known/jwks.json"
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:s3:path/${JwksBucket}/.well-known/jwks.json"
         responses:
           "200":
             statusCode: "200"
@@ -145,7 +145,7 @@ paths:
             responseParameters:
               method.response.header.Content-Type: "'text/plain'"
         passthroughBehavior: "when_no_match"
-        httpMethod: "POST"
+        httpMethod: "GET"
         type: "aws"
   /token:
     post:

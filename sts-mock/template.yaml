@@ -236,6 +236,6 @@ Resources:
               - bucketName: !Ref JwksBucketAccessLogs
             Condition:
               ArnLike:
-                aws:SourceArn: !GetAtt JJwksBucket.Arn
+                aws:SourceArn: !GetAtt JwksBucket.Arn
               StringEquals:
                 aws:SourceAccount: !Ref AWS::AccountId
