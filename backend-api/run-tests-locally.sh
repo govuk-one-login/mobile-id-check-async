@@ -3,7 +3,7 @@ set -eu
 
 stack_name=${1:-mob-async-backend}
 
-echo Running test against "${stack_name}"
+echo "Running test against ${stack_name}"
 
 rm -rf docker-vars.env
 
