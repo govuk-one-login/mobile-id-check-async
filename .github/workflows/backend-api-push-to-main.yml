@@ -87,3 +87,44 @@ jobs:
     - name: Code sign the image in DEV
       run: |
         cosign sign --key awskms:///$BACKEND_API_DEV_CODE_SIGNING_KEY $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
+
+  build-and-upload-sam-artifact:
+    name: Validate & upload S3 artifact to dev
+    runs-on: ubuntu-latest
+    needs:
+      - build-and-push-test-image
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend-api
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup SAM CLI
+        uses: aws-actions/setup-sam@2360ef6d90015369947b45b496193ab9976a9b04 #main
+        with:
+          use-installer: true
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@55f725fcb586ca16a5ed5b0d75d464defbfa831b #main
+        with:
+          aws-region: eu-west-2
+          role-to-assume: ${{ secrets.BACKEND_API_DEV_GH_ACTIONS_ROLE_ARN }}
+
+      - name: Sam Validate
+        run: |
+          echo "SAM_CLI_TELEMETRY=0" >> $GITHUB_ENV
+          sam validate --lint
+      - name: Sam Build
+        run: |
+          sam build --cached
+
+      - name: Upload SAM artifat into the DEV artifact bucket
+        uses: govuk-one-login/devplatform-upload-action@2360ef6d90015369947b45b496193ab9976a9b04 #main
+        with:
+          artifact-bucket-name: ${{ secrets.BACKEND_API_DEV_ARTIFACT_BUCKET }}
+          signing-profile-name: ${{ secrets.BACKEND_API_DEV_SIGNING_PROFILE }}
+          template-file: .aws-sam/build/template.yaml
