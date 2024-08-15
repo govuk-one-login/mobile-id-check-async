@@ -12,3 +12,6 @@ samconfig.toml
 
 cf-output.txt
 docker-vars.env
+
+# VSCode
+.vscode
