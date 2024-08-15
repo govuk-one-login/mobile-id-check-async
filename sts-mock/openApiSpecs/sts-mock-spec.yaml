@@ -129,11 +129,10 @@ paths:
         "500":
           $ref: '#/components/responses/InternalServerError'
       x-amazon-apigateway-integration:
-        requestTemplates:
-          application/json:
-            statusCode: 200
+        credentials:
+          Fn::GetAtt: [ "JsonWebKeysBucketRole", "Arn" ]
         uri:
-          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${JwksFunction}:live/invocations"
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:s3:path/${JsonWebKeysBucket}/.well-known/jwks.json"
         responses:
           "200":
             statusCode: "200"
@@ -148,153 +147,129 @@ paths:
         passthroughBehavior: "when_no_match"
         httpMethod: "POST"
         type: "aws"
-#  /token:
-#    post:
-#      operationId: postToken
-#      summary: Obtain a service token
-#      description: Exchange an STS-issued access token for a service token
-#      requestBody:
-#        required: true
-#        content:
-#          application/x-www-form-urlencoded:
-#            schema:
-#              type: object
-#              properties:
-#                grant_type:
-#                  type: string
-#                  enum:
-#                    - urn:ietf:params:oauth:grant-type:token-exchange
-#                  description: Exchange an access token for a service token.
-#                scope:
-#                  type: string
-#                  description: |
-#                    A space-delimited list of requested scope permissions.
-#                subject_token:
-#                  type: string
-#                  description: |
-#                    The `access_token` received from STS to exchange for service tokens.
-#                subject_token_type:
-#                  type: string
-#                  enum:
-#                    - urn:ietf:params:oauth:token-type:access_token
-#                  description: |
-#                    Must be `urn:ietf:params:oauth:token-type:access_token`.
-#              required:
-#                - grant_type
-#                - scope
-#                - subject_token
-#                - subject_token_type
-#      responses:
-#        "200":
-#          description: OK
-#          content:
-#            application/json:
-#              examples:
-#                success:
-#                  value:
-#                    {
-#                      "access_token": "SlAV32hkKG",
-#                      "token_type": "bearer",
-#                      "expires_in": 180
-#                    }
-#              schema:
-#                type: object
-#                properties:
-#                  access_token:
-#                    type: string
-#                    description: |
-#                      A service token that grants access to a protected resource that has been registered with STS.
-#                  token_type:
-#                    type: string
-#                    enum:
-#                      - bearer
-#                    description: |
-#                      The token type value.
-#                  expires_in:
-#                    type: integer
-#                    description: |
-#                      The length of time the token is valid for. This is displayed in seconds.
-#                required:
-#                  - access_token
-#                  - token_type
-#                  - expires_in
-#          headers:
-#            Cache-Control:
-#              schema:
-#                type: "string"
-#            Content-Type:
-#              schema:
-#                type: "string"
-#            Strict-Transport-Security:
-#              schema:
-#                type: "string"
-#            X-Content-Type-Options:
-#              schema:
-#                type: "string"
-#            X-Frame-Options:
-#              schema:
-#                type: "string"
-#        "400":
-#          description: Bad request
-#          content:
-#            application/json:
-#              examples:
-#                errorInvalidRequest:
-#                  description: |
-#                    The request is missing a parameter so the server cannot proceed with the request. This error may also be returned if the request includes an unsupported parameter or repeats a parameter.
-#                    Review your parameters and check they are supported and not repeated.
-#                  value:
-#                    {
-#                      "error": "invalid_request",
-#                      "error_description": "Invalid request"
-#                    }
-#                errorUnsupportedGrantType:
-#                  description: |
-#                    The grant type is not supported by the server.
-#                  value:
-#                    {
-#                      "error": "unsupported_grant_type",
-#                      "error_description": "Unsupported grant type"
-#                    }
-#              schema:
-#                type: object
-#                properties:
-#                  error:
-#                    type: string
-#                    enum:
-#                      - invalid_request
-#                      - unsupported_grant_type
-#                      - invalid_grant
-#                    description: |
-#                      The error code.
-#                  error_description:
-#                    type: string
-#                    description: |
-#                      A description of the error.
-#                required:
-#                  - error
-#                  - error_description
-#          headers:
-#            Cache-Control:
-#              schema:
-#                type: "string"
-#            Content-Type:
-#              schema:
-#                type: "string"
-#            Strict-Transport-Security:
-#              schema:
-#                type: "string"
-#            X-Content-Type-Options:
-#              schema:
-#                type: "string"
-#            X-Frame-Options:
-#              schema:
-#                type: "string"
-#        "500":
-#          $ref: '#/components/responses/InternalServerError'
-#      x-amazon-apigateway-integration:
-#        httpMethod: "POST"
-#        uri:
-#          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${TokenFunction}:live/invocations"
-#        passthroughBehavior: "when_no_match"
-#        type: "aws_proxy"
+  /token:
+    post:
+      operationId: postToken
+      summary: Obtain a service token
+      description: Exchange a Mock STS-issued access token for a service token
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                grant_type:
+                  type: string
+                  enum:
+                    - urn:ietf:params:oauth:grant-type:token-exchange
+                  description: Exchange an access token for a service token.
+                scope:
+                  type: string
+                  description: |
+                    A space-delimited list of requested scope permissions.
+                subject_token:
+                  type: string
+                  description: |
+                    The `access_token` received from STS to exchange for service tokens.
+                subject_token_type:
+                  type: string
+                  enum:
+                    - urn:ietf:params:oauth:token-type:access_token
+                  description: |
+                    Must be `urn:ietf:params:oauth:token-type:access_token`.
+              required:
+                - grant_type
+                - scope
+                - subject_token
+                - subject_token_type
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              examples:
+                success:
+                  value:
+                    {
+                      "access_token": "SlAV32hkKG",
+                      "token_type": "bearer",
+                      "expires_in": 180
+                    }
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: |
+                      A service token that grants access to a protected resource that has been registered with STS.
+                  token_type:
+                    type: string
+                    enum:
+                      - bearer
+                    description: |
+                      The token type value.
+                  expires_in:
+                    type: integer
+                    description: |
+                      The length of time the token is valid for. This is displayed in seconds.
+                required:
+                  - access_token
+                  - token_type
+                  - expires_in
+          headers:
+            Cache-Control:
+              schema:
+                type: "string"
+            Content-Type:
+              schema:
+                type: "string"
+            Strict-Transport-Security:
+              schema:
+                type: "string"
+            X-Content-Type-Options:
+              schema:
+                type: "string"
+            X-Frame-Options:
+              schema:
+                type: "string"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: The error code.
+                  error_description:
+                    type: string
+                    description: A description of the error.
+                required:
+                  - error
+                  - error_description
+          headers:
+            Cache-Control:
+              schema:
+                type: "string"
+            Content-Type:
+              schema:
+                type: "string"
+            Strict-Transport-Security:
+              schema:
+                type: "string"
+            X-Content-Type-Options:
+              schema:
+                type: "string"
+            X-Frame-Options:
+              schema:
+                type: "string"
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${TokenFunction}:live/invocations"
+        passthroughBehavior: "when_no_match"
+        type: "aws_proxy"
