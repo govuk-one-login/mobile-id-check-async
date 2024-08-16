@@ -51,10 +51,6 @@ export async function lambdaHandlerConstructor(
 
   const clientCredentials = eventHeadersResult.value;
 
-  if (!clientCredentials) {
-    logger.log("COMPLETED");
-  }
-
   // Retrieving issuer and validating client secrets
   const clientRegistryService = dependencies.clientRegistryService(
     config.CLIENT_REGISTRY_PARAMETER_NAME,

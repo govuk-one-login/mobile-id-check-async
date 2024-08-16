@@ -14,10 +14,6 @@ export async function lambdaHandlerConstructor(
 
   logger.log("COMPLETED");
 
-  if (accessToken === "accessToken") {
-    logger.log("COMPLETED");
-  }
-
   return {
     headers: {
       "Content-Type": "application/json",
