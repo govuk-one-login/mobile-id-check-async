@@ -1,7 +1,7 @@
 node_modules
 
 # Jest test report
-report.xml 
+report.xml
 
 # Jest code coverage output
 coverage/
@@ -10,4 +10,11 @@ coverage/
 .aws-sam/
 samconfig.toml
 
+cf-output.txt
+docker-vars.env
+
+# VSCode
+.vscode
+
+# IntelliJ IDEA
 .idea

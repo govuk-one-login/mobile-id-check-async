@@ -4,8 +4,8 @@ import {
   PutItemCommand,
   QueryCommand,
 } from "@aws-sdk/client-dynamodb";
-import { SessionService } from "./sessionService";
 import { mockClient } from "aws-sdk-client-mock";
+import { SessionService } from "../sessionService";
 
 describe("Session Service", () => {
   let service: SessionService;

@@ -2,12 +2,11 @@ import { Application } from "express";
 import { createApp } from "./createApp";
 import { Verifier } from "@pact-foundation/pact";
 import path from "path";
-import { stateConfig } from "./stateConfiguration";
 import { Server } from "http";
-import { MockClientRegistryServiceBadRequestResult } from "../../testUtils/asyncTokenMocks";
-import { requestService } from "../../asyncToken/requestService/requestService";
-import { successResult } from "../../utils/result";
+import { asyncTokenDependencies } from "./dependencies/asyncTokenDependencies";
+import { asyncCredentialDependencies } from "./dependencies/asyncCredentialDependencies";
 
+jest.setTimeout(30000);
 describe("Provider API contract verification", () => {
   let app: Application;
   let server: Server;
@@ -19,40 +18,41 @@ describe("Provider API contract verification", () => {
     server = app.listen(port, () => {
       console.log(`Server listening on port ${port}.`);
     });
-
-    jest
-      .spyOn(requestService, "validateBody")
-      .mockImplementation(() => successResult(null));
-    jest.spyOn(requestService, "getClientCredentials").mockImplementation(() =>
-      successResult({
-        clientId: "mockClientId",
-        clientSecret: "mockClientSecret",
-      }),
-    );
   });
 
   afterAll(() => {
     server.close();
-    jest.clearAllMocks();
   });
 
   it("validates adherence to all consumer contracts", () => {
     const stateHandlers = {
       "badDummySecret is not a valid basic auth secret": () => {
-        stateConfig.resetToPassingAsyncTokenDependencies();
-        stateConfig.asyncTokenDependenciesClientRegistryService = () =>
-          new MockClientRegistryServiceBadRequestResult();
-        return Promise.resolve("State set for invalid basic auth secret");
+        asyncTokenDependencies.setInvalidAuthHeader();
+        return Promise.resolve(
+          "badDummySecret is not a valid basic auth secret",
+        );
       },
       "dummySecret is a valid basic auth secret": () => {
-        stateConfig.resetToPassingAsyncTokenDependencies();
-        return Promise.resolve("State set for invalid basic auth secret");
+        asyncTokenDependencies.setValidAuthHeader();
+        return Promise.resolve("dummySecret is a valid basic auth secret");
+      },
+      "dummyAccessToken is a valid access token": () => {
+        asyncCredentialDependencies.setValidAccessToken();
+        return Promise.resolve("dummyAccessToken is a valid access token");
+      },
+      "badAccessToken is not a valid access token": () => {
+        asyncCredentialDependencies.setInvalidAccessToken();
+        return Promise.resolve("badAccessToken is not a valid access token");
+      },
+      "access token is missing": () => {
+        asyncCredentialDependencies.setMissingAccessToken();
+        return Promise.resolve("access token is missing");
       },
     };
 
     const verifier = new Verifier({
       provider: "DcmawAsyncCriProvider",
-      logLevel: "info",
+      logLevel: "error",
       pactUrls: [
         path.resolve(
           process.cwd(),
