@@ -65,4 +65,4 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          projectBaseDir: backend-api
+          scanMetadataReportFile: backend-api/.scannerwork/report-task.txt
