@@ -16,6 +16,14 @@ It follows the Client credentials grant flow from the OAuth2.0 Framework [see he
 - Node.js v20
 - npm
 
+## Setup:
+
+This repository uses Githooks to run pre-commit checks. To install these:
+
+```bash
+git config --local core.hooksPath .github/hook-scripts
+```
+
 ## Running tests
 
 To run unit and infra tests:
