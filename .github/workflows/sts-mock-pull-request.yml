@@ -26,13 +26,13 @@ jobs:
         working-directory: sts-mock
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@9a9194f87191a7e9055e3e9b95b8cfb13023bb08 #main
         with:
           submodules: true
           fetch-depth: 0
 
       - name: Setup nodeJS v20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@26961cf329f22f6837d5f54c3efd76b480300ace #main
         with:
           node-version: 20
           cache: npm
@@ -50,3 +50,16 @@ jobs:
       # Runs unit and infrastructure tests
       - name: Run tests 
         run: npm run test
+
+      - name: Run SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@f5003fc9688ade81ce47b57a3fa97a8d3f12de4c #master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: SonarQube Quality Gate check
+        uses: Sonarsource/sonarqube-quality-gate-action@72f24ebf1f81eda168a979ce14b8203273b7c3ad # master
+        # Force to fail step after specific time
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
