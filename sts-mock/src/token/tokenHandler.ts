@@ -1,14 +1,9 @@
-import {
-  APIGatewayProxyEvent,
-  APIGatewayProxyResult,
-  Context,
-} from "aws-lambda";
+import { APIGatewayProxyResult, Context } from "aws-lambda";
 import { Dependencies, dependencies } from "./handlerDependencies";
 
 export async function lambdaHandlerConstructor(
   dependencies: Dependencies,
   context: Context,
-  event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
   logger.addContext(context);
