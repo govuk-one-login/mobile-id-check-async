@@ -16,6 +16,10 @@ export async function lambdaHandlerConstructor(
     logger.log("COMPLETED");
   }
 
+  if (accessToken === "accessToken") {
+    logger.log("COMPLETED");
+  }
+
   logger.log("COMPLETED");
 
   return {
