@@ -7,10 +7,7 @@ interface EnvironmentFlags {
 
 export class Mappings {
   template: Template;
-  readonly environments = [
-    "dev",
-    "build",
-  ];
+  readonly environments = ["dev", "build"];
   constructor(template: Template) {
     this.template = template;
   }

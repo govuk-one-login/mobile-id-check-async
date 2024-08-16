@@ -44,13 +44,10 @@ describe("STS mock infrastructure", () => {
     describe("API Gateway method settings", () => {
       test("metrics are enabled", () => {
         const methodSettings = new Capture();
-        template.hasResourceProperties(
-          "AWS::Serverless::Api",
-          {
-            Name: { "Fn::Sub": "${AWS::StackName}-sts-mock-api" },
-            MethodSettings: methodSettings,
-          },
-        );
+        template.hasResourceProperties("AWS::Serverless::Api", {
+          Name: { "Fn::Sub": "${AWS::StackName}-sts-mock-api" },
+          MethodSettings: methodSettings,
+        });
         expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
       });
 
@@ -76,13 +73,10 @@ describe("STS mock infrastructure", () => {
 
       test("rate limit and burst mappings are applied to the API gateway", () => {
         const methodSettings = new Capture();
-        template.hasResourceProperties(
-          "AWS::Serverless::Api",
-          {
-            Name: { "Fn::Sub": "${AWS::StackName}-sts-mock-api" },
-            MethodSettings: methodSettings,
-          },
-        );
+        template.hasResourceProperties("AWS::Serverless::Api", {
+          Name: { "Fn::Sub": "${AWS::StackName}-sts-mock-api" },
+          MethodSettings: methodSettings,
+        });
         expect(methodSettings.asArray()[0].ThrottlingBurstLimit).toStrictEqual({
           "Fn::FindInMap": [
             "StsMockApiGateway",
@@ -164,29 +158,33 @@ describe("STS mock infrastructure", () => {
       });
     });
 
-    test('all buckets have an associated bucket policy', () => {
-      const buckets = template.findResources('AWS::S3::Bucket')
-      const bucketList = Object.keys(buckets)
-      bucketList.forEach(bucket => {
+    test("all buckets have an associated bucket policy", () => {
+      const buckets = template.findResources("AWS::S3::Bucket");
+      const bucketList = Object.keys(buckets);
+      bucketList.forEach((bucket) => {
         template.hasResourceProperties(
-            'AWS::S3::BucketPolicy',
-            Match.objectLike({
-              Bucket: { Ref: bucket },
-            }),
-        )
-      })
+          "AWS::S3::BucketPolicy",
+          Match.objectLike({
+            Bucket: { Ref: bucket },
+          }),
+        );
+      });
     });
 
     test("all buckets have public access blocked", () => {
       const buckets = template.findResources("AWS::S3::Bucket");
       const bucketList = Object.keys(buckets);
       bucketList.forEach((bucket) => {
-        expect(buckets[bucket].Properties.PublicAccessBlockConfiguration).toEqual(expect.objectContaining({
-          BlockPublicAcls: true,
-          BlockPublicPolicy: true,
-          IgnorePublicAcls: true,
-          RestrictPublicBuckets: true,
-        }));
+        expect(
+          buckets[bucket].Properties.PublicAccessBlockConfiguration,
+        ).toEqual(
+          expect.objectContaining({
+            BlockPublicAcls: true,
+            BlockPublicPolicy: true,
+            IgnorePublicAcls: true,
+            RestrictPublicBuckets: true,
+          }),
+        );
       });
     });
 
@@ -194,13 +192,18 @@ describe("STS mock infrastructure", () => {
       const buckets = template.findResources("AWS::S3::Bucket");
       const bucketList = Object.keys(buckets);
       bucketList.forEach((bucket) => {
-        expect(buckets[bucket].Properties.BucketEncryption.ServerSideEncryptionConfiguration).toEqual(expect.arrayContaining([
-          expect.objectContaining({
-            ServerSideEncryptionByDefault: expect.objectContaining({
-              SSEAlgorithm: expect.any(String),
+        expect(
+          buckets[bucket].Properties.BucketEncryption
+            .ServerSideEncryptionConfiguration,
+        ).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              ServerSideEncryptionByDefault: expect.objectContaining({
+                SSEAlgorithm: expect.any(String),
+              }),
             }),
-          })
-        ]));
+          ]),
+        );
       });
     });
   });

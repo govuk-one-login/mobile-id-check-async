@@ -3,10 +3,7 @@ import {
   APIGatewayProxyResult,
   Context,
 } from "aws-lambda";
-import {
-  Dependencies,
-  dependencies,
-} from "./handlerDependencies";
+import { Dependencies, dependencies } from "./handlerDependencies";
 
 export async function lambdaHandlerConstructor(
   dependencies: Dependencies,
@@ -35,7 +32,6 @@ export async function lambdaHandlerConstructor(
       expires_in: 3600,
     }),
   };
-
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);

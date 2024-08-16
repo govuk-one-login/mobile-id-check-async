@@ -1,90 +1,15 @@
-openapi: "3.0.1"
+openapi: "1.0.0"
 info:
   title: "Security Token Service (STS) Mock API"
   version: "1.0"
-  description: >-
-    STS Mock API.
-
-components:
-#  securitySchemes:
-#    basicAuth:
-#      type: http
-#      scheme: basic
-  schemas:
-    JwksResponse:
-      type: object
-      properties:
-        keys:
-          type: array
-          items:
-              - $ref: '#/components/schemas/EllipticCurveJwk'
-    EllipticCurveJwk:
-      type: object
-      properties:
-        kid:
-          type: string
-        kty:
-          type: string
-        alg:
-          type: string
-        use:
-          type: string
-        crv:
-          type: string
-        x:
-          type: string
-        y:
-          type: string
-  responses:
-    OK:
-      description: "OK"
-      headers:
-        Cache-Control:
-          schema:
-            type: "string"
-        Content-Type:
-          schema:
-            type: "string"
-        Strict-Transport-Security:
-          schema:
-            type: "string"
-        X-Content-Type-Options:
-          schema:
-            type: "string"
-        X-Frame-Options:
-          schema:
-            type: "string"
-    InternalServerError:
-      description: "Internal Server Error"
-      headers:
-        Cache-Control:
-          schema:
-            type: "string"
-        Content-Type:
-          schema:
-            type: "string"
-        Strict-Transport-Security:
-          schema:
-            type: "string"
-        X-Content-Type-Options:
-          schema:
-            type: "string"
-        X-Frame-Options:
-          schema:
-            type: "string"
-      content:
-        text/plain:
-          schema:
-            type: "string"
-            enum:
-              - "InternalServerError"
+  description: STS Mock API.
 
 paths:
   /.well-known/jwks.json:
     get:
       operationId: getJwks
-      summary: Get STS Mock JWKS
-      description: Retrieve JSON Web Key Set for verifying JSON Web Tokens issued by the STS Mock
+      summary: Get STS Mock JWKS.
+      description: Retrieve JSON Web Key Set for verifying JSON Web Tokens issued by the STS Mock.
       tags:
         - Static
       responses:
@@ -93,7 +18,27 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/JwksResponse'
+                type: object
+                properties:
+                  keys:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        kid:
+                          type: string
+                        kty:
+                          type: string
+                        alg:
+                          type: string
+                        use:
+                          type: string
+                        crv:
+                          type: string
+                        x:
+                          type: string
+                        y:
+                          type: string
               examples:
                 success:
                   value:
@@ -150,8 +95,8 @@ paths:
   /token:
     post:
       operationId: postToken
-      summary: Obtain a service token
-      description: Exchange a Mock STS-issued access token for a service token
+      summary: Obtain a service token.
+      description: Exchange a Mock STS-issued access token for a service token.
       requestBody:
         required: true
         content:
@@ -273,3 +218,30 @@ paths:
           Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${TokenFunction}:live/invocations"
         passthroughBehavior: "when_no_match"
         type: "aws_proxy"
+
+components:
+  responses:
+    InternalServerError:
+      description: "Internal Server Error"
+      headers:
+        Cache-Control:
+          schema:
+            type: "string"
+        Content-Type:
+          schema:
+            type: "string"
+        Strict-Transport-Security:
+          schema:
+            type: "string"
+        X-Content-Type-Options:
+          schema:
+            type: "string"
+        X-Frame-Options:
+          schema:
+            type: "string"
+      content:
+        text/plain:
+          schema:
+            type: "string"
+            enum:
+              - "InternalServerError"
