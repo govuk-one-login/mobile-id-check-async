@@ -81,13 +81,12 @@ Resources:
         Target: "es2022"
         Sourcemap: false
         EntryPoints:
-          - asyncTokenHandler.ts
+          - src/functions/asyncToken/asyncTokenHandler.ts
     Properties:
       AutoPublishAlias: live
       FunctionName: !Sub "${AWS::StackName}-token"
       Runtime: nodejs20.x
       Handler: asyncTokenHandler.lambdaHandler
-      CodeUri: src/functions/asyncToken/
       Events:
         AsyncToken:
           Type: Api
@@ -161,13 +160,12 @@ Resources:
         Target: "es2022"
         Sourcemap: false
         EntryPoints:
-          - asyncCredentialHandler.ts
+          - src/functions/asyncCredential/asyncCredentialHandler.ts
     Properties:
       AutoPublishAlias: live
       FunctionName: !Sub "${AWS::StackName}-credential"
       Runtime: nodejs20.x
       Handler: asyncCredentialHandler.lambdaHandler
-      CodeUri: src/functions/asyncCredential
       Role: !GetAtt AsyncCredentialLambdaRole.Arn
       Events:
         AsyncCredential:
