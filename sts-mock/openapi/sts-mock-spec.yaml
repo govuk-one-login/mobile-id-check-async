@@ -1,0 +1,247 @@
+openapi: "3.0.1"
+info:
+  title: "Security Token Service (STS) Mock API"
+  version: "1.0"
+  description: STS Mock API.
+
+paths:
+  /.well-known/jwks.json:
+    get:
+      operationId: getJwks
+      summary: Get STS Mock JWKS.
+      description: Retrieve JSON Web Key Set for verifying JSON Web Tokens issued by the STS Mock.
+      tags:
+        - Static
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  keys:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        kid:
+                          type: string
+                        kty:
+                          type: string
+                        alg:
+                          type: string
+                        use:
+                          type: string
+                        crv:
+                          type: string
+                        x:
+                          type: string
+                        y:
+                          type: string
+              examples:
+                success:
+                  value:
+                    {
+                      "keys": [
+                        {
+                          "kty": "EC",
+                          "kid": "C9De3xMDDyG7Nce4kGm09pCamzTMmYefPSmWw4FhnUg",
+                          "use": "sig",
+                          "alg": "ES256",
+                          "crv": "P-256",
+                          "x": "HnS0nYguUiD5l0sM7OQCu3nlFxAcuIK8KzReSlrQvLA",
+                          "y": "oqZL2uXpzHCD73mAs1pcrxTOsilhfzKAIDnoAYVA7jw"
+                        }
+                      ]
+                    }
+          headers:
+            Cache-Control:
+              schema:
+                type: "string"
+            Content-Type:
+              schema:
+                type: "string"
+            Strict-Transport-Security:
+              schema:
+                type: "string"
+            X-Content-Type-Options:
+              schema:
+                type: "string"
+            X-Frame-Options:
+              schema:
+                type: "string"
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+      x-amazon-apigateway-integration:
+        credentials:
+          Fn::GetAtt: [ "JwksBucketApiRole", "Arn" ]
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:s3:path/${JwksBucket}/.well-known/jwks.json"
+        responses:
+          "200":
+            statusCode: "200"
+            description: OK
+            responseParameters:
+              method.response.header.Content-Type: "'application/json'"
+            contentHandling: "CONVERT_TO_TEXT"
+          default:
+            statusCode: "500"
+            responseParameters:
+              method.response.header.Content-Type: "'text/plain'"
+        passthroughBehavior: "when_no_match"
+        httpMethod: "GET"
+        type: "aws"
+  /token:
+    post:
+      operationId: postToken
+      summary: Obtain a service token.
+      description: Exchange a Mock STS-issued access token for a service token.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                grant_type:
+                  type: string
+                  enum:
+                    - urn:ietf:params:oauth:grant-type:token-exchange
+                  description: Exchange an access token for a service token.
+                scope:
+                  type: string
+                  description: |
+                    A space-delimited list of requested scope permissions.
+                subject_token:
+                  type: string
+                  description: |
+                    The `access_token` received from STS to exchange for service tokens.
+                subject_token_type:
+                  type: string
+                  enum:
+                    - urn:ietf:params:oauth:token-type:access_token
+                  description: |
+                    Must be `urn:ietf:params:oauth:token-type:access_token`.
+              required:
+                - grant_type
+                - scope
+                - subject_token
+                - subject_token_type
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              examples:
+                success:
+                  value:
+                    {
+                      "access_token": "SlAV32hkKG",
+                      "token_type": "bearer",
+                      "expires_in": 180
+                    }
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: |
+                      A service token that grants access to a protected resource that has been registered with STS.
+                  token_type:
+                    type: string
+                    enum:
+                      - bearer
+                    description: |
+                      The token type value.
+                  expires_in:
+                    type: integer
+                    description: |
+                      The length of time the token is valid for. This is displayed in seconds.
+                required:
+                  - access_token
+                  - token_type
+                  - expires_in
+          headers:
+            Cache-Control:
+              schema:
+                type: "string"
+            Content-Type:
+              schema:
+                type: "string"
+            Strict-Transport-Security:
+              schema:
+                type: "string"
+            X-Content-Type-Options:
+              schema:
+                type: "string"
+            X-Frame-Options:
+              schema:
+                type: "string"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: The error code.
+                  error_description:
+                    type: string
+                    description: A description of the error.
+                required:
+                  - error
+                  - error_description
+          headers:
+            Cache-Control:
+              schema:
+                type: "string"
+            Content-Type:
+              schema:
+                type: "string"
+            Strict-Transport-Security:
+              schema:
+                type: "string"
+            X-Content-Type-Options:
+              schema:
+                type: "string"
+            X-Frame-Options:
+              schema:
+                type: "string"
+        "500":
+          $ref: '#/components/responses/InternalServerError'
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${TokenFunction}:live/invocations"
+        passthroughBehavior: "when_no_match"
+        type: "aws_proxy"
+
+components:
+  responses:
+    InternalServerError:
+      description: "Internal Server Error"
+      headers:
+        Cache-Control:
+          schema:
+            type: "string"
+        Content-Type:
+          schema:
+            type: "string"
+        Strict-Transport-Security:
+          schema:
+            type: "string"
+        X-Content-Type-Options:
+          schema:
+            type: "string"
+        X-Frame-Options:
+          schema:
+            type: "string"
+      content:
+        text/plain:
+          schema:
+            type: "string"
+            enum:
+              - "InternalServerError"
