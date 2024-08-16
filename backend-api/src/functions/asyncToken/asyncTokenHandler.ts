@@ -78,6 +78,10 @@ export async function lambdaHandlerConstructor(
 
   const registeredIssuer = getRegisteredIssuerByClientSecretsResult.value;
 
+  if (registeredIssuer === "accessToken") {
+    logger.log("COMPLETED");
+  }
+
   const jwtPayload = {
     aud: registeredIssuer,
     iss: config.ISSUER,

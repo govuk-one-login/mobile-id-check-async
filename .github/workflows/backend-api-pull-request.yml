@@ -50,14 +50,13 @@ jobs:
       - name: Run tests 
         run: npm run test
 
-      - name: "Run SonarCloud Scan"
+      - name: Run SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@e44258b109568baa0df60ed515909fc6c72cba92 # master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: >
-            -Dsonar.javascript.lcov.reportPaths=./backend-api/coverage/lcov.info
+          projectBaseDir: backend-api
 
       - name: SonarQube Quality Gate check
         uses: Sonarsource/sonarqube-quality-gate-action@72f24ebf1f81eda168a979ce14b8203273b7c3ad # master

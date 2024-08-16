@@ -49,8 +49,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          args: >
-            -Dsonar.javascript.lcov.reportPaths=./backend-api/coverage/lcov.info
+          projectBaseDir: backend-api
 
   build-and-push-test-image:
     needs: sonar-scan
