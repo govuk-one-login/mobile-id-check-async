@@ -55,6 +55,9 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: >
+            -Dsonar.javascript.lcov.reportPaths=./backend-api/coverage/lcov.info
 
       - name: SonarQube Quality Gate check
         uses: Sonarsource/sonarqube-quality-gate-action@72f24ebf1f81eda168a979ce14b8203273b7c3ad # master
