@@ -28,7 +28,6 @@ export async function lambdaHandlerConstructor(
     return serverErrorResponse;
   }
 
-
   const config = configResult.value;
 
   const requestService = dependencies.requestService();
