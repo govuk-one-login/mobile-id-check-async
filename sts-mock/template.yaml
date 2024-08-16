@@ -44,7 +44,7 @@ Resources:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: "./openApiSpecs/sts-mock-spec.yaml"
+            Location: "./openapi/sts-mock-spec.yaml"
 
   StsMockApiAccessLogs:
     Type: AWS::Logs::LogGroup
