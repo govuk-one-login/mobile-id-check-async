@@ -1,11 +1,11 @@
-name: Async-credential Push to Main
+name: sts-mock push to main
 on:
   push:
     branches:
       - main
     paths:
-      - "backend-api/**"
-      - ".github/workflows/backend-api-push-to-main.yml"
+      - "sts-mock/**"
+      - ".github/workflows/sts-mock-push-to-main.yml"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -20,7 +20,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: backend-api
+        working-directory: sts-mock
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -33,17 +33,10 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: backend-api/package-lock.json
+          cache-dependency-path: sts-mock/package-lock.json
 
       - name: Install dependencies
         run: npm install
 
-      # Generate test coverage report for Sonar main branch analysis
       - name: Run Tests
         run: npm run test:unit
-
-      - name: SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
