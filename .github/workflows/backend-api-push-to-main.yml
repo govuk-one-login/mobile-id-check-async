@@ -128,7 +128,7 @@ jobs:
           sam build --cached
 
       - name: Upload SAM artifat into the DEV artifact bucket
-        uses: govuk-one-login/devplatform-upload-action@2360ef6d90015369947b45b496193ab9976a9b04 #main
+        uses: govuk-one-login/devplatform-upload-action@6985ccbaa306e2320a8826252c922af65242b283 #main
         with:
           artifact-bucket-name: ${{ secrets.BACKEND_API_DEV_ARTIFACT_BUCKET }}
           signing-profile-name: ${{ secrets.BACKEND_API_DEV_SIGNING_PROFILE }}
