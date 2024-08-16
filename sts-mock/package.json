@@ -7,6 +7,7 @@
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
     "lint": "./node_modules/.bin/eslint ./src",
+    "test:infra": "./node_modules/.bin/jest --testPathPattern=infrastructure-tests/",
     "test:unit": "./node_modules/.bin/jest --detectOpenHandles",
     "ci": "npm run test:unit && npm run format:check && npm run lint"
   },
