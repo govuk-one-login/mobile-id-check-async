@@ -6,7 +6,7 @@ import { Mappings } from "./helpers/mappings";
 
 // https://docs.aws.amazon.com/cdk/v2/guide/testing.html <--- how to use this file
 
-describe("Backend application infrastructure", () => {
+describe("STS mock infrastructure", () => {
   let template: Template;
   beforeEach(() => {
     let templateYaml: any = load(readFileSync("template.yaml", "utf-8"), {
@@ -16,14 +16,20 @@ describe("Backend application infrastructure", () => {
   });
 
   describe("API Gateway", () => {
-    test("The endpoints are REGIONAL", () => {
+    test("the endpoints are REGIONAL", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
         Name: { "Fn::Sub": "${AWS::StackName}-sts-mock-api" },
         EndpointConfiguration: "REGIONAL",
       });
     });
 
-    test("It uses the STS mock OpenAPI Spec", () => {
+    test("it define a DefinitionBody as part of the serverless::api", () => {
+      template.hasResourceProperties("AWS::Serverless::Api", {
+        DefinitionBody: Match.anyValue(),
+      });
+    });
+
+    test("it uses the STS mock OpenAPI Spec", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
         Name: { "Fn::Sub": "${AWS::StackName}-sts-mock-api" },
         DefinitionBody: {
@@ -36,7 +42,7 @@ describe("Backend application infrastructure", () => {
     });
 
     describe("API Gateway method settings", () => {
-      test("Metrics are enabled", () => {
+      test("metrics are enabled", () => {
         const methodSettings = new Capture();
         template.hasResourceProperties(
           "AWS::Serverless::Api",
@@ -48,7 +54,7 @@ describe("Backend application infrastructure", () => {
         expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
       });
 
-      test("Rate and burst limit mappings are set", () => {
+      test("rate and burst limit mappings are set", () => {
         const expectedBurstLimits = {
           dev: 10,
           build: 0,
@@ -68,7 +74,7 @@ describe("Backend application infrastructure", () => {
         });
       });
 
-      test("Rate limit and burst mappings are applied to the API gateway", () => {
+      test("rate limit and burst mappings are applied to the API gateway", () => {
         const methodSettings = new Capture();
         template.hasResourceProperties(
           "AWS::Serverless::Api",
@@ -94,7 +100,7 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("Access log group is attached to the API gateway", () => {
+    test("access log group is attached to the API gateway", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
         Name: { "Fn::Sub": "${AWS::StackName}-sts-mock-api" },
         AccessLogSetting: {
@@ -106,7 +112,7 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("Access log group has a retention period", () => {
+    test("access log group has a retention period", () => {
       template.hasResourceProperties("AWS::Logs::LogGroup", {
         RetentionInDays: 30,
         LogGroupName: {
@@ -117,19 +123,19 @@ describe("Backend application infrastructure", () => {
     });
   });
 
-  describe("Lambdas", () => {
-    test("All lambdas have a name", () => {
+  describe("Lambda", () => {
+    test("all lambdas have a name", () => {
       const lambdas = template.findResources("AWS::Serverless::Function");
-      const lambda_list = Object.keys(lambdas);
-      lambda_list.forEach((lambda) => {
+      const lambdaList = Object.keys(lambdas);
+      lambdaList.forEach((lambda) => {
         expect(lambdas[lambda].Properties.FunctionName).toBeTruthy();
       });
     });
 
-    test("All lambdas have a log group", () => {
+    test("all lambdas have a log group", () => {
       const lambdas = template.findResources("AWS::Serverless::Function");
-      const lambda_list = Object.keys(lambdas);
-      lambda_list.forEach((lambda) => {
+      const lambdaList = Object.keys(lambdas);
+      lambdaList.forEach((lambda) => {
         const functionName = lambdas[lambda].Properties.FunctionName["Fn::Sub"];
         const expectedLogName = {
           "Fn::Sub": `/aws/lambda/${functionName}`,
@@ -140,7 +146,7 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("All log groups have a retention period", () => {
+    test("all log groups have a retention period", () => {
       const logGroups = template.findResources("AWS::Logs::LogGroup");
       const logGroupList = Object.keys(logGroups);
       logGroupList.forEach((logGroup) => {
@@ -150,18 +156,18 @@ describe("Backend application infrastructure", () => {
   });
 
   describe("S3", () => {
-    test("All buckets have a name", () => {
+    test("all buckets have a name", () => {
       const buckets = template.findResources("AWS::S3::Bucket");
-      const buckets_list = Object.keys(buckets);
-      buckets_list.forEach((bucket) => {
+      const bucketList = Object.keys(buckets);
+      bucketList.forEach((bucket) => {
         expect(buckets[bucket].Properties.BucketName).toBeTruthy();
       });
     });
 
-    test('All buckets have an associated bucket policy', () => {
+    test('all buckets have an associated bucket policy', () => {
       const buckets = template.findResources('AWS::S3::Bucket')
-      const buckets_list = Object.keys(buckets)
-      buckets_list.forEach(bucket => {
+      const bucketList = Object.keys(buckets)
+      bucketList.forEach(bucket => {
         template.hasResourceProperties(
             'AWS::S3::BucketPolicy',
             Match.objectLike({
@@ -169,6 +175,33 @@ describe("Backend application infrastructure", () => {
             }),
         )
       })
+    });
+
+    test("all buckets have public access blocked", () => {
+      const buckets = template.findResources("AWS::S3::Bucket");
+      const bucketList = Object.keys(buckets);
+      bucketList.forEach((bucket) => {
+        expect(buckets[bucket].Properties.PublicAccessBlockConfiguration).toEqual(expect.objectContaining({
+          BlockPublicAcls: true,
+          BlockPublicPolicy: true,
+          IgnorePublicAcls: true,
+          RestrictPublicBuckets: true,
+        }));
+      });
+    });
+
+    test("all buckets have encryption enabled", () => {
+      const buckets = template.findResources("AWS::S3::Bucket");
+      const bucketList = Object.keys(buckets);
+      bucketList.forEach((bucket) => {
+        expect(buckets[bucket].Properties.BucketEncryption.ServerSideEncryptionConfiguration).toEqual(expect.arrayContaining([
+          expect.objectContaining({
+            ServerSideEncryptionByDefault: expect.objectContaining({
+              SSEAlgorithm: expect.any(String),
+            }),
+          })
+        ]));
+      });
     });
   });
 });
