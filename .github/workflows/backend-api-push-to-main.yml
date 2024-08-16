@@ -70,8 +70,8 @@ jobs:
     - name: Build test image
       run: |
         docker build -t $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG . 
-    - name: Configure AWS credentials for DEV
 
+    - name: Configure AWS credentials for DEV
       uses: aws-actions/configure-aws-credentials@55f725fcb586ca16a5ed5b0d75d464defbfa831b #main
       with:
         aws-region: eu-west-2
@@ -130,11 +130,12 @@ jobs:
         run: |
           echo "SAM_CLI_TELEMETRY=0" >> $GITHUB_ENV
           sam validate --lint
+
       - name: Sam Build
         run: |
           sam build --cached
 
-      - name: Upload SAM artifat into the DEV artifact bucket
+      - name: Upload SAM artifact into the DEV artifact bucket
         uses: govuk-one-login/devplatform-upload-action@6985ccbaa306e2320a8826252c922af65242b283 #main
         with:
           artifact-bucket-name: ${{ secrets.BACKEND_API_DEV_ARTIFACT_BUCKET }}
