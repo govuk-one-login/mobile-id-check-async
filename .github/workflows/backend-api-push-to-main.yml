@@ -108,6 +108,13 @@ jobs:
         with:
           submodules: true
 
+      - name: Setup nodeJS v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend-api/package-lock.json
+
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@2360ef6d90015369947b45b496193ab9976a9b04 #main
         with:
