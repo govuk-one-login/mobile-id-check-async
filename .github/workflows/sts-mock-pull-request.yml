@@ -1,0 +1,52 @@
+name: sts-mock pull request
+on:
+  # Triggers the workflow on pull request events for all branches
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - ready_for_review
+      - synchronize
+    paths:
+      - "sts-mock/**"
+      - ".github/workflows/sts-mock-pull-request.yml"
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  ci-checks:
+    name: Run CI checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: sts-mock
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Setup nodeJS v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: sts-mock/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Linting
+        run: npm run lint
+
+      - name: Check formatting using Prettier
+        run: npm run format:check
+
+      # Runs unit and infrastructure tests
+      - name: Run tests 
+        run: npm run test

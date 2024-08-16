@@ -15,3 +15,6 @@ docker-vars.env
 
 # VSCode
 .vscode
+
+# IntelliJ IDEA
+.idea
