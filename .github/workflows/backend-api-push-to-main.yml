@@ -1,4 +1,4 @@
-name: Async-credential Push to Main
+name: backend-api push to main
 on:
   push:
     branches:
