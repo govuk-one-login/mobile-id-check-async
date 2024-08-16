@@ -89,9 +89,10 @@ jobs:
       with:
         cosign-release: 'v1.9.0'
 
-    - name: Sign the image in DEV
-      run: |
-        cosign sign --key awskms:///$BACKEND_API_DEV_COSIGN_KEY $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
+    # Commenting out due to AWS permission issues
+    # - name: Sign the image in DEV
+    #   run: |
+    #     cosign sign --key awskms:///$BACKEND_API_DEV_COSIGN_KEY $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
 
   build-and-upload-sam-artifact:
     name: Validate & upload S3 artifact to dev
