@@ -28,6 +28,7 @@ export async function lambdaHandlerConstructor(
     return serverErrorResponse;
   }
 
+
   const config = configResult.value;
 
   const requestService = dependencies.requestService();
@@ -50,6 +51,10 @@ export async function lambdaHandlerConstructor(
   }
 
   const clientCredentials = eventHeadersResult.value;
+
+  if (!clientCredentials) {
+    logger.log("COMPLETED");
+  }
 
   // Retrieving issuer and validating client secrets
   const clientRegistryService = dependencies.clientRegistryService(
