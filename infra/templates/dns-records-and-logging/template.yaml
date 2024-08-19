@@ -25,10 +25,7 @@ Parameters:
       - build
       - staging
       - integration
-      - production
-  PublicHostedZoneId:
-    Description: The hosted zone id
-    Type: String
+      - production  
 
 Resources:
   ExternalCertificate:
@@ -56,19 +53,19 @@ Resources:
         - DomainName: !Sub
           - "${DNSSUFFIX}"
           - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
-          HostedZoneId: !Ref PublicHostedZoneId
+          HostedZoneId: !ImportValue PublicHostedZoneId
         - DomainName: !Sub
           - "api.${DNSSUFFIX}"
           - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
-          HostedZoneId: !Ref PublicHostedZoneId
+          HostedZoneId: !ImportValue PublicHostedZoneId
         - DomainName: !Sub
           - "www.${DNSSUFFIX}"
           - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
-          HostedZoneId: !Ref PublicHostedZoneId
+          HostedZoneId: !ImportValue PublicHostedZoneId
         - DomainName: !Sub
           - "app.${DNSSUFFIX}"
           - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
-          HostedZoneId: !Ref PublicHostedZoneId
+          HostedZoneId: !ImportValue PublicHostedZoneId
       ValidationMethod: DNS
       Tags:
         - Key: Name

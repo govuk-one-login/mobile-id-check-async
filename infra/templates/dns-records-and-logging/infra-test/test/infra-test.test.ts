@@ -40,7 +40,7 @@ const customDomainConfiguration = () => {
     helper.getTemplate().hasResourceProperties("AWS::CertificateManager::Certificate", {
         DomainValidationOptions: attributesCapture,
     })
-    const expectedConfiguration = {"Ref": "PublicHostedZoneId"}
+    const expectedConfiguration = {"Fn::ImportValue": "PublicHostedZoneId"}
     const attributes = attributesCapture.asArray()
     const domainAttribute = attributes[2].HostedZoneId
     expect(domainAttribute).to.be.an('object').to.deep.include(expectedConfiguration)
