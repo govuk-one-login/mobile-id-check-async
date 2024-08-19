@@ -9,6 +9,4 @@ Unit testing is about testing the smallest piece of code that can be logically i
 
 ## Useful commands
 
-* `yarn install`       compile typescript to js
-* `yarn test`          run test
-* `yarn test:infra`    perform the jest unit tests
+* `npm run test:infra`    perform the jest unit tests

@@ -5,6 +5,5 @@ resource "aws_cloudformation_stack" "dns-records-and-logging" {
 
     parameters {
         Environment = var.environment
-
-        }
+    }
 }
