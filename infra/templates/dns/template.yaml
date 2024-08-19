@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: >-
+  Creates the necessary components to manage DNS in the Async ID Check journey including logging and alternative record names.
+Parameters:
+  Environment:
+    Description: The name of the environment to deploy to
+    Type: String
+    AllowedValues:
+      - dev
+      - build
+      - staging
+      - integration
+      - production
+
+Conditions:
+  IsProduction: !Equals [ !Ref Environment, production]
+
+Resources:
+  PublicHostedZone:
+    Type: AWS::Route53::HostedZone
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Name: !If
+        - IsProduction
+        - review-b-async.account.gov.uk
+        - !Sub review-b-async.${Environment}.account.gov.uk
+      HostedZoneTags:
+        - Key: Name
+          Value: !If
+            - IsProduction
+            - review-b-async.account.gov.uk
+            - !Sub review-b-async.${Environment}.account.gov.uk
+        - Key: Product
+          Value: "ID Check V2 App"
+        - Key: System
+          Value: "ID Check Async"
+        - Key: Environment
+          Value: !Sub "${Environment}"
+
+  PublicHostedZoneSSM:
+    Type: AWS::SSM::Parameter    
+    Properties:    
+      Description: The ARN of hosted zone
+      Name: !Sub "/${Environment}/Platform/Route53/PrimaryZoneID"
+      Type: String
+      Value: !Ref PublicHostedZone
+      Tags:
+        Name: !Sub "/${Environment}/Platform/Route53/PrimaryZoneID"
+        Product: "ID Check V2 App"
+        System: "ID Check Async"
+        Environment: !Sub "${Environment}" 
+ 
+Outputs:
+  PublicHostedZoneNameServers:
+    Value: !Join
+          - ","
+          - !GetAtt PublicHostedZone.NameServers
+  PublicHostedZoneId:
+    Value: !GetAtt PublicHostedZone.Id
+    Export:
+      Name: PublicHostedZoneId  

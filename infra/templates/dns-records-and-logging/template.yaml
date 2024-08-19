@@ -1,0 +1,132 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: >-
+  Creates the necessary components to manage DNS in the Async ID Check journey and the logging for the Route 53 service.
+
+Mappings:
+  PlatformConfiguration:
+    dev:
+      DNSSUFFIX: review-b-async.dev.account.gov.uk
+    build:
+      DNSSUFFIX: review-b-async.build.account.gov.uk
+    staging:
+      DNSSUFFIX: review-b-async.staging.account.gov.uk
+    integration:
+      DNSSUFFIX: review-b-async.integration.account.gov.uk
+    production:
+      DNSSUFFIX: review-b-async.account.gov.uk
+
+Parameters:
+  Environment:
+    Description: The name of the environment to deploy to
+    Type: String
+    AllowedValues:
+      - dev
+      - build
+      - staging
+      - integration
+      - production
+  PublicHostedZoneId:
+    Description: The hosted zone id
+    Type: String
+
+Resources:
+  ExternalCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Sub
+      - "${DNSSUFFIX}"
+      - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
+
+      SubjectAlternativeNames:
+      - !Sub
+        - "api.${DNSSUFFIX}"
+        - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
+      - !Sub
+        - "www.${DNSSUFFIX}"
+        - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
+      - !Sub
+        - "app.${DNSSUFFIX}"
+        - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
+      - !Sub
+        - "*.${DNSSUFFIX}"
+        - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
+
+      DomainValidationOptions:
+        - DomainName: !Sub
+          - "${DNSSUFFIX}"
+          - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
+          HostedZoneId: !Ref PublicHostedZoneId
+        - DomainName: !Sub
+          - "api.${DNSSUFFIX}"
+          - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
+          HostedZoneId: !Ref PublicHostedZoneId
+        - DomainName: !Sub
+          - "www.${DNSSUFFIX}"
+          - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
+          HostedZoneId: !Ref PublicHostedZoneId
+        - DomainName: !Sub
+          - "app.${DNSSUFFIX}"
+          - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
+          HostedZoneId: !Ref PublicHostedZoneId
+      ValidationMethod: DNS
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - "${DNSSUFFIX}"
+            - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
+        - Key: Product
+          Value: "ID Check V2 App"
+        - Key: System
+          Value: "ID Check Async"
+        - Key: Environment
+          Value: !Sub "${Environment}"
+
+  CertificateARNSSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: The Certificate ARN
+      Name: !Sub "/${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN"
+      Type: String
+      Value: !Ref ExternalCertificate
+      Tags:
+        Name: !Sub "/${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN"
+        Product: "ID Check V2 App"
+        System: "ID Check Async"
+        Environment: !Sub "${Environment}"
+
+  QueryLoggingConfiguration:
+    Type: AWS::Route53Resolver::ResolverQueryLoggingConfig
+    Properties:
+      DestinationArn: !GetAtt QueryLoggingLogGroup.Arn
+      Name: DNSQueryLogging
+
+  DnsQueryLogging:
+    Type: AWS::Route53Resolver::ResolverQueryLoggingConfigAssociation
+    Properties:
+      ResolverQueryLogConfigId: !Ref QueryLoggingConfiguration
+      ResourceId: !ImportValue platform-vpc-VpcId
+  
+  QueryLoggingLogGroup:
+    # API Access Log not encrypted
+    # checkov:skip=CKV_AWS_158: No PII in logs
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/${AWS::StackName}/${Environment}
+      RetentionInDays: 30
+
+Outputs:
+  CertificateARN:
+    Description: The ARN for the ACM Certificate created in this template
+    Value: !Ref ExternalCertificate
+    Export:
+      Name: platform-dns-records-certificate-arn
+  QueryLoggingConfId:
+    Description: DNS Query Logging Configuration Id
+    Value: !Ref QueryLoggingConfiguration
+  QueryLoggingConfName:
+    Description: DNS Query Logging Configuration Name
+    Value: DNSQueryLogging
+  QueryLoggingLogGroupName:
+    Description: DNS Query Logging Group Name
+    Value: !Ref QueryLoggingLogGroup
