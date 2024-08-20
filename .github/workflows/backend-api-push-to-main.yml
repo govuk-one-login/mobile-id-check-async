@@ -120,6 +120,7 @@ jobs:
         uses: aws-actions/setup-sam@2360ef6d90015369947b45b496193ab9976a9b04 #main
         with:
           use-installer: true
+          version: 1.123.0
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@55f725fcb586ca16a5ed5b0d75d464defbfa831b #main
