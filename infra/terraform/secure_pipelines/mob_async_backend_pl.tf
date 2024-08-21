@@ -18,6 +18,8 @@ resource "aws_cloudformation_stack" "mob_async_backend_pl" {
 
       BuildNotificationStackName = "devplatform-build-notifications"
       SlackNotificationType      = "All"
+
+      ProgrammaticPermissionsBoundary = "True"
     },
     local.mob_async_backend_pl[var.environment]
   )
