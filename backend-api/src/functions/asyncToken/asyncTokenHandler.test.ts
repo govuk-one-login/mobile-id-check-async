@@ -169,6 +169,7 @@ describe("Async Token", () => {
     });
 
     describe("Authorization header validation", () => {
+      // TODO -> ensure we have tests for when header value is null, empty string, not present (and present)
       describe("Given request does not include authorization header", () => {
         it('Returns Log with value "Invalid Request"', async () => {
           const result = await lambdaHandlerConstructor(
