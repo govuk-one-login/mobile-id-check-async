@@ -155,6 +155,25 @@ describe("Backend application infrastructure", () => {
           expect(logGroups[logGroup].Properties.RetentionInDays).toEqual(30);
         });
       });
+
+      test("Create session lambdas have the client registry environment variable", () => {
+        const createSessionLambdaHandlers = [
+          "asyncTokenHandler.lambdaHandler",
+          "asyncCredentialHandler.lambdaHandler",
+        ];
+        createSessionLambdaHandlers.forEach((lambdaHandler) => {
+          template.hasResourceProperties("AWS::Serverless::Function", {
+            Handler: lambdaHandler,
+            Environment: {
+              Variables: {
+                CLIENT_REGISTRY_SECRET_NAME: {
+                  "Fn::Sub": "${Environment}/clientRegistry",
+                },
+              },
+            },
+          });
+        });
+      });
     });
   });
 });
