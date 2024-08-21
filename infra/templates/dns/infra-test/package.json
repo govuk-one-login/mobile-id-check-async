@@ -33,7 +33,8 @@
     "constructs": "^10.0.0",
     "semver": "^7.5.2",
     "source-map-support": "^0.5.21",
-    "tough-cookie": "^4.1.3"
+    "tough-cookie": "^4.1.3",
+    "yarn": "^1.22.22"
   },
   "jest": {
     "moduleFileExtensions": [

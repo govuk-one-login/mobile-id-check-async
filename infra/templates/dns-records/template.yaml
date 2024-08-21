@@ -90,27 +90,7 @@ Resources:
         Name: !Sub "/${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN"
         Product: "ID Check V2 App"
         System: "ID Check Async"
-        Environment: !Sub "${Environment}"
-
-  QueryLoggingConfiguration:
-    Type: AWS::Route53Resolver::ResolverQueryLoggingConfig
-    Properties:
-      DestinationArn: !GetAtt QueryLoggingLogGroup.Arn
-      Name: DNSQueryLogging
-
-  DnsQueryLogging:
-    Type: AWS::Route53Resolver::ResolverQueryLoggingConfigAssociation
-    Properties:
-      ResolverQueryLogConfigId: !Ref QueryLoggingConfiguration
-      ResourceId: !ImportValue platform-vpc-VpcId
-  
-  QueryLoggingLogGroup:
-    # API Access Log not encrypted
-    # checkov:skip=CKV_AWS_158: No PII in logs
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/${AWS::StackName}/${Environment}
-      RetentionInDays: 30
+        Environment: !Sub "${Environment}" 
 
 Outputs:
   CertificateARN:
@@ -118,12 +98,3 @@ Outputs:
     Value: !Ref ExternalCertificate
     Export:
       Name: platform-dns-records-certificate-arn
-  QueryLoggingConfId:
-    Description: DNS Query Logging Configuration Id
-    Value: !Ref QueryLoggingConfiguration
-  QueryLoggingConfName:
-    Description: DNS Query Logging Configuration Name
-    Value: DNSQueryLogging
-  QueryLoggingLogGroupName:
-    Description: DNS Query Logging Group Name
-    Value: !Ref QueryLoggingLogGroup
