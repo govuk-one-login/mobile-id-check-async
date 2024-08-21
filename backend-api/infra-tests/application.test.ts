@@ -125,53 +125,62 @@ describe("Backend application infrastructure", () => {
         },
       });
     });
+  });
+  describe("Lambdas", () => {
+    describe("Globals", () => {
+      test("Global environment variables are set", () => {
+        const expectedGlobals = ["SIGNING_KEY_ID", "ISSUER", "TXMA_SQS"];
+        const envVars =
+          template.toJSON().Globals.Function.Environment.Variables;
+        Object.keys(envVars).every((envVar) => {
+          expectedGlobals.includes(envVar);
+        });
+        expect(expectedGlobals.length).toBe(Object.keys(envVars).length);
+      });
+    });
+    test("All lambdas have a FunctionName defined", () => {
+      const lambdas = template.findResources("AWS::Serverless::Function");
+      const lambda_list = Object.keys(lambdas);
+      lambda_list.forEach((lambda) => {
+        expect(lambdas[lambda].Properties.FunctionName).toBeTruthy();
+      });
+    });
+    test("All lambdas have a log group", () => {
+      const lambdas = template.findResources("AWS::Serverless::Function");
+      const lambda_list = Object.keys(lambdas);
+      lambda_list.forEach((lambda) => {
+        const functionName = lambdas[lambda].Properties.FunctionName["Fn::Sub"];
+        const expectedLogName = {
+          "Fn::Sub": `/aws/lambda/${functionName}`,
+        };
+        template.hasResourceProperties("AWS::Logs::LogGroup", {
+          LogGroupName: Match.objectLike(expectedLogName),
+        });
+      });
+    });
+    test("All log groups have a retention period", () => {
+      const logGroups = template.findResources("AWS::Logs::LogGroup");
+      const logGroupList = Object.keys(logGroups);
+      logGroupList.forEach((logGroup) => {
+        expect(logGroups[logGroup].Properties.RetentionInDays).toEqual(30);
+      });
+    });
 
-    describe("Lambdas", () => {
-      test("All lambdas have a FunctionName defined", () => {
-        const lambdas = template.findResources("AWS::Serverless::Function");
-        const lambda_list = Object.keys(lambdas);
-        lambda_list.forEach((lambda) => {
-          expect(lambdas[lambda].Properties.FunctionName).toBeTruthy();
-        });
-      });
-      test("All lambdas have a log group", () => {
-        const lambdas = template.findResources("AWS::Serverless::Function");
-        const lambda_list = Object.keys(lambdas);
-        lambda_list.forEach((lambda) => {
-          const functionName =
-            lambdas[lambda].Properties.FunctionName["Fn::Sub"];
-          const expectedLogName = {
-            "Fn::Sub": `/aws/lambda/${functionName}`,
-          };
-          template.hasResourceProperties("AWS::Logs::LogGroup", {
-            LogGroupName: Match.objectLike(expectedLogName),
-          });
-        });
-      });
-      test("All log groups have a retention period", () => {
-        const logGroups = template.findResources("AWS::Logs::LogGroup");
-        const logGroupList = Object.keys(logGroups);
-        logGroupList.forEach((logGroup) => {
-          expect(logGroups[logGroup].Properties.RetentionInDays).toEqual(30);
-        });
-      });
-
-      test("Create session lambdas have the client registry environment variable", () => {
-        const createSessionLambdaHandlers = [
-          "asyncTokenHandler.lambdaHandler",
-          "asyncCredentialHandler.lambdaHandler",
-        ];
-        createSessionLambdaHandlers.forEach((lambdaHandler) => {
-          template.hasResourceProperties("AWS::Serverless::Function", {
-            Handler: lambdaHandler,
-            Environment: {
-              Variables: {
-                CLIENT_REGISTRY_SECRET_NAME: {
-                  "Fn::Sub": "${Environment}/clientRegistry",
-                },
+    test("Create session lambdas have the client registry environment variable", () => {
+      const createSessionLambdaHandlers = [
+        "asyncTokenHandler.lambdaHandler",
+        "asyncCredentialHandler.lambdaHandler",
+      ];
+      createSessionLambdaHandlers.forEach((lambdaHandler) => {
+        template.hasResourceProperties("AWS::Serverless::Function", {
+          Handler: lambdaHandler,
+          Environment: {
+            Variables: {
+              CLIENT_REGISTRY_SECRET_NAME: {
+                "Fn::Sub": "${Environment}/clientRegistry",
               },
             },
-          });
+          },
         });
       });
     });
