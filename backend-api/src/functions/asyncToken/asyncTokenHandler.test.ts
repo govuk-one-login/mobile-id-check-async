@@ -29,8 +29,8 @@ describe("Async Token", () => {
   const env = {
     SIGNING_KEY_ID: "mockSigningKeyId",
     ISSUER: "mockIssuer",
-    SQS_QUEUE: "mockSQSQueue",
-    CLIENT_REGISTRY_PARAMETER_NAME: "mockParmaterName",
+    TXMA_SQS: "mockSQSQueue",
+    CLIENT_REGISTRY_SECRET_NAME: "mockParmaterName",
   };
 
   const validAuthorizationHeader =

@@ -13,8 +13,8 @@ const defaultPassingDependencies = {
   env: {
     SIGNING_KEY_ID: "mockSigningKeyId",
     ISSUER: "mockIssuer",
-    SQS_QUEUE: "mockSQSQueue",
-    CLIENT_REGISTRY_PARAMETER_NAME: "mockRegistryParameterName",
+    TXMA_SQS: "mockSQSQueue",
+    CLIENT_REGISTRY_SECRET_NAME: "mockRegistryParameterName",
   },
   eventService: () => new MockEventWriterSuccess(),
   logger: () => new Logger(new MockLoggingAdapter(), registeredLogs),
