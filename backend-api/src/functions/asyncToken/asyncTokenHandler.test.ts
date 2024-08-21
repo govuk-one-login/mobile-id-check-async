@@ -258,9 +258,7 @@ describe("Async Token", () => {
           );
         });
       });
-    });
 
-    describe("Request Authorization header validation", () => {
       describe("Given authorization header does not use Basic Authentication Scheme", () => {
         it('Returns Log with value "Invalid Request"', async () => {
           const result = await lambdaHandlerConstructor(
@@ -290,35 +288,35 @@ describe("Async Token", () => {
           );
         });
       });
+    });
 
-      describe("Decoding Authorization header", () => {
-        describe("Given Authorization header is not formatted correctly", () => {
-          it("Logs with invalid Authorization header format", async () => {
-            const result = await lambdaHandlerConstructor(
-              dependencies,
-              buildTokenHandlerRequest({
-                body: JSON.stringify({ grant_type: "client_credentials" }),
-                authorizationHeader: "Basic bW9ja0NsaWVuZElk", // decodes to Basic mockCliendId
-              }),
-              buildLambdaContext(),
-            );
+    describe("Decoding Authorization header", () => {
+      describe("Given Authorization header is not formatted correctly", () => {
+        it("Logs with invalid Authorization header format", async () => {
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            buildTokenHandlerRequest({
+              body: JSON.stringify({ grant_type: "client_credentials" }),
+              authorizationHeader: "Basic bW9ja0NsaWVuZElk", // decodes to Basic mockCliendId
+            }),
+            buildLambdaContext(),
+          );
 
-            expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-              message: "INVALID_REQUEST",
-              messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
-            });
-
-            expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
-              errorMessage: "Client secret incorrectly formatted",
-            });
-            expect(result.statusCode).toBe(400);
-            expect(JSON.parse(result.body).error).toEqual(
-              "invalid_authorization_header",
-            );
-            expect(JSON.parse(result.body).error_description).toEqual(
-              "Invalid authorization header",
-            );
+          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+            message: "INVALID_REQUEST",
+            messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
           });
+
+          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+            errorMessage: "Client secret incorrectly formatted",
+          });
+          expect(result.statusCode).toBe(400);
+          expect(JSON.parse(result.body).error).toEqual(
+            "invalid_authorization_header",
+          );
+          expect(JSON.parse(result.body).error_description).toEqual(
+            "Invalid authorization header",
+          );
         });
       });
     });
