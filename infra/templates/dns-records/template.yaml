@@ -25,7 +25,7 @@ Parameters:
       - build
       - staging
       - integration
-      - production  
+      - production
 
 Resources:
   ExternalCertificate:
@@ -90,7 +90,7 @@ Resources:
         Name: !Sub "/${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN"
         Product: "ID Check V2 App"
         System: "ID Check Async"
-        Environment: !Sub "${Environment}" 
+        Environment: !Sub "${Environment}"
 
 Outputs:
   CertificateARN:

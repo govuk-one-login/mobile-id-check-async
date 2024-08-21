@@ -2,6 +2,10 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Description: >-
   Creates the necessary components to manage DNS in the Async ID Check journey including logging and alternative record names.
+  It also configures DNS Query logging resources for the Route 53 service.
+  - A CloudWatch LogGroup
+  - AWS::Route53Resolver::ResolverQueryLoggingConfig to specify the config
+  - AWS::Route53Resolver::ResolverQueryLoggingConfigAssociation to associate it with the VPC.
 Parameters:
   Environment:
     Description: The name of the environment to deploy to
@@ -50,7 +54,27 @@ Resources:
         Name: !Sub "/${Environment}/Platform/Route53/PrimaryZoneID"
         Product: "ID Check V2 App"
         System: "ID Check Async"
-        Environment: !Sub "${Environment}" 
+        Environment: !Sub "${Environment}"
+
+  QueryLoggingConfiguration:
+    Type: AWS::Route53Resolver::ResolverQueryLoggingConfig
+    Properties:
+      DestinationArn: !GetAtt QueryLoggingLogGroup.Arn
+      Name: DNSQueryLogging
+
+  DnsQueryLogging:
+    Type: AWS::Route53Resolver::ResolverQueryLoggingConfigAssociation
+    Properties:
+      ResolverQueryLogConfigId: !Ref QueryLoggingConfiguration
+      ResourceId: !ImportValue devplatform-vpc-VpcId
+
+  QueryLoggingLogGroup:
+    # API Access Log not encrypted
+    # checkov:skip=CKV_AWS_158: No PII in logs
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/${AWS::StackName}/${Environment}
+      RetentionInDays: 30
  
 Outputs:
   PublicHostedZoneNameServers:
@@ -60,4 +84,13 @@ Outputs:
   PublicHostedZoneId:
     Value: !GetAtt PublicHostedZone.Id
     Export:
-      Name: PublicHostedZoneId  
+      Name: PublicHostedZoneId
+  QueryLoggingConfId:
+    Description: DNS Query Logging Configuration Id
+    Value: !Ref QueryLoggingConfiguration
+  QueryLoggingConfName:
+    Description: DNS Query Logging Configuration Name
+    Value: DNSQueryLogging
+  QueryLoggingLogGroupName:
+    Description: DNS Query Logging Group Name
+    Value: !Ref QueryLoggingLogGroup
