@@ -11,8 +11,8 @@ import {
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
-  context: Context,
   event: APIGatewayProxyEvent,
+  context: Context,
 ): Promise<APIGatewayProxyResult> {
   // Environment variables
 
