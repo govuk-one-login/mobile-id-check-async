@@ -6,7 +6,10 @@ import {
 import { Logger } from "../services/logging/logger";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import { buildLambdaContext } from "../testUtils/mockContext";
-import { buildTokenHandlerRequest } from "../testUtils/mockRequest";
+import {
+  buildRequest,
+  buildTokenHandlerRequest,
+} from "../testUtils/mockRequest";
 import { lambdaHandlerConstructor } from "./asyncTokenHandler";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { IAsyncTokenRequestDependencies } from "./handlerDependencies";
@@ -170,13 +173,70 @@ describe("Async Token", () => {
 
     describe("Authorization header validation", () => {
       // TODO -> ensure we have tests for when header value is null, empty string, not present (and present)
-      describe("Given request does not include authorization header", () => {
+      describe("Given authorization header is not present", () => {
+        it('Returns Log with value "Invalid Request"', async () => {
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            buildRequest({
+              body: JSON.stringify({ grant_type: "client_credentials" }),
+            }),
+            buildLambdaContext(),
+          );
+
+          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+            message: "INVALID_REQUEST",
+            messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
+          });
+
+          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+            errorMessage: "Missing authorization header",
+          });
+          expect(result.statusCode).toBe(400);
+          expect(JSON.parse(result.body).error).toEqual(
+            "invalid_authorization_header",
+          );
+          expect(JSON.parse(result.body).error_description).toEqual(
+            "Invalid authorization header",
+          );
+        });
+      });
+
+      describe("Given authorization header is null", () => {
         it('Returns Log with value "Invalid Request"', async () => {
           const result = await lambdaHandlerConstructor(
             dependencies,
             buildTokenHandlerRequest({
               body: JSON.stringify({ grant_type: "client_credentials" }),
               authorizationHeader: null,
+            }),
+            buildLambdaContext(),
+          );
+
+          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
+            message: "INVALID_REQUEST",
+            messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
+          });
+
+          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+            errorMessage: "Missing authorization header",
+          });
+          expect(result.statusCode).toBe(400);
+          expect(JSON.parse(result.body).error).toEqual(
+            "invalid_authorization_header",
+          );
+          expect(JSON.parse(result.body).error_description).toEqual(
+            "Invalid authorization header",
+          );
+        });
+      });
+
+      describe("Given authorization header is an empty string", () => {
+        it('Returns Log with value "Invalid Request"', async () => {
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            buildTokenHandlerRequest({
+              body: JSON.stringify({ grant_type: "client_credentials" }),
+              authorizationHeader: "",
             }),
             buildLambdaContext(),
           );
