@@ -18,6 +18,18 @@ Mappings:
     production: 
       ApiBurstLimit: 0
       ApiRateLimit: 0
+  TxMA:
+    dev:
+      TxmaAccount: arn:aws:iam::248098332657:root
+    build:
+      TxmaAccount: arn:aws:iam::750703655225:root
+    staging:
+      TxmaAccount: arn:aws:iam::178023842775:root
+    integration:
+      TxmaAccount: arn:aws:iam::729485541398:root
+    production:
+      TxmaAccount: arn:aws:iam::451773080033:root
+
 Parameters:
   Environment:
     Description: "The environment type"
@@ -29,7 +41,9 @@ Globals:
     Environment:
       Variables:
         SIGNING_KEY_ID: !ImportValue platform-kms-signing-key-arn
-
+        TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
+        # ISSUER should be updated with DNS once available
+        ISSUER: abc123 
 Resources:
 ### Private APIgw for Client Credentials grant flow
   BackendAsyncCredentialApi:
@@ -95,6 +109,9 @@ Resources:
             Method: post
             RestApiId: !Ref BackendAsyncCredentialApi
       Role: !GetAtt AsyncTokenLambdaRole.Arn
+      Environment:
+        Variables:
+          CLIENT_REGISTRY_SECRET_NAME: !Sub "${Environment}/clientRegistry"
 
   AsyncTokenFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -123,7 +140,16 @@ Resources:
               Service: lambda.amazonaws.com
             Action: 'sts:AssumeRole'
       Policies:
-        - PolicyName: AsyncTokenFunctionSsmPolicy
+        - PolicyName: AsyncTokenFunctionSecretsManagerPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource:
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistry*"
+        - PolicyName: AsyncTokenFunctionLoggingPolicy
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -133,12 +159,6 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: 'arn:aws:logs:*:*:*'
-              - Effect: Allow
-                Action:
-                  - secretsmanager:GetSecretValue
-                Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:SECRET_NAME-12345"
-                  
         - PolicyName: AsyncTokenFunctionKmsPolicy
           PolicyDocument:
             Version: '2012-10-17'
@@ -147,6 +167,28 @@ Resources:
                 Action:
                   - kms:Sign
                 Resource: !ImportValue platform-kms-signing-key-arn
+        - PolicyName: AsyncTokenFunctionKmsPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:Sign
+                Resource: !ImportValue platform-kms-signing-key-arn
+        - PolicyName: AsyncTokenFunctionSQSPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "sqs:SendMessage"
+                Resource: !GetAtt TxMASQSQueue.Arn
+              - Effect: Allow
+                Action:
+                  - "kms:Encrypt"
+                  - "kms:Decrypt"
+                  - "kms:GenerateDataKey"
+                Resource: !GetAtt TxMAKMSEncryptionKey.Arn
 
 ### Credential Lambda
   AsyncCredentialFunction:
@@ -216,7 +258,7 @@ Resources:
                 Action:
                   - secretsmanager:GetSecretValue
                 Resource:
-                  - !Sub "arn:aws:secretsmanager$:{AWS::Region}:${AWS::AccountId}:secret:SECRET_NAME-12345"
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistry*"
                   
         - PolicyName: AsyncTokenFunctionKmsPolicy
           PolicyDocument:
@@ -226,3 +268,76 @@ Resources:
                 Action:
                   - kms:Sign
                 Resource: !ImportValue platform-kms-signing-key-arn
+
+# TxMA Audit service
+  TxMASQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 604800
+      VisibilityTimeout: 60
+      KmsMasterKeyId: !Ref TxMAKMSEncryptionKey
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt TxMASQSQueueDeadLetterQueue.Arn
+        maxReceiveCount: 5
+
+
+# TxMA account consumes this queue
+  TxMASQSQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref TxMASQSQueue
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action:
+              - "sqs:DeleteMessage"
+              - "sqs:GetQueueAttributes"
+              - "sqs:ChangeMessageVisibility"
+              - "sqs:ReceiveMessage"
+            Resource:
+              - !GetAtt TxMASQSQueue.Arn
+            Principal:
+              AWS:
+                - !FindInMap [TxMA, !Ref Environment, TxmaAccount]
+
+  TxMASQSQueueDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 259200 # three days
+      KmsMasterKeyId: !Sub TxMAKMSEncryptionKey
+
+  TxMAKMSEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A KMS Key for encrypting the SQS Queue for TxMA
+      Enabled: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - "kms:*"
+            Resource:
+              - "*"
+          - Effect: Allow
+            Principal:
+              AWS: !FindInMap [TxMA, !Ref Environment, TxmaAccount]
+            Action:
+              - "kms:Encrypt"
+              - "kms:Decrypt"
+              - "kms:GenerateDataKey"
+            Resource:
+              - "*"
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyUsage: ENCRYPT_DECRYPT
+      MultiRegion: false
+      PendingWindowInDays: 7
+      Tags:
+        - Key: KeyType
+          Value: Encryption Key
+        - Key: Environment
+          Value: !Sub ${Environment}
