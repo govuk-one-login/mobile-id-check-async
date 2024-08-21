@@ -35,6 +35,12 @@ Parameters:
     Description: "The environment type"
     Type: "String"
     Default: dev
+    AllowedValues:
+      - "dev"
+      - "build"
+      - "staging"
+      - "integration"
+      - "production"
 
 Globals:
   Function:
