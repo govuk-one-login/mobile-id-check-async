@@ -278,7 +278,7 @@ Resources:
     Properties:
       MessageRetentionPeriod: 604800
       VisibilityTimeout: 60
-      KmsMasterKeyId: !Ref TxMAKMSEncryptionKey
+      KmsMasterKeyId: !Ref TxMAKeyAlias
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt TxMASQSQueueDeadLetterQueue.Arn
         maxReceiveCount: 5
@@ -344,3 +344,9 @@ Resources:
           Value: Encryption Key
         - Key: Environment
           Value: !Sub ${Environment}
+
+  TxMAKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-TxMAKMSEncryptionKey"
+      TargetKeyId: !Ref TxMAKMSEncryptionKey
