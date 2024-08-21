@@ -60,8 +60,8 @@ describe("Async Token", () => {
         delete dependencies.env[envVar];
         const result = await lambdaHandlerConstructor(
           dependencies,
-          buildLambdaContext(),
           request,
+          buildLambdaContext(),
         );
 
         expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
@@ -89,11 +89,11 @@ describe("Async Token", () => {
         it("Returns a log and 400 response", async () => {
           const result = await lambdaHandlerConstructor(
             dependencies,
-            buildLambdaContext(),
             buildTokenHandlerRequest({
               body: null,
               authorizationHeader: validAuthorizationHeader,
             }),
+            buildLambdaContext(),
           );
 
           expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
@@ -116,11 +116,11 @@ describe("Async Token", () => {
         it("Returns log and 400 response", async () => {
           const result = await lambdaHandlerConstructor(
             dependencies,
-            buildLambdaContext(),
             buildTokenHandlerRequest({
               body: JSON.stringify({}),
               authorizationHeader: validAuthorizationHeader,
             }),
+            buildLambdaContext(),
           );
 
           expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
@@ -143,11 +143,12 @@ describe("Async Token", () => {
         it("Returns Log with value Invalid grant_type", async () => {
           const result = await lambdaHandlerConstructor(
             dependencies,
-            buildLambdaContext(),
+
             buildTokenHandlerRequest({
               body: JSON.stringify({ grant_type: "invalidGrantType" }),
               authorizationHeader: validAuthorizationHeader,
             }),
+            buildLambdaContext(),
           );
 
           expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
@@ -172,11 +173,11 @@ describe("Async Token", () => {
         it('Returns Log with value "Invalid Request"', async () => {
           const result = await lambdaHandlerConstructor(
             dependencies,
-            buildLambdaContext(),
             buildTokenHandlerRequest({
               body: JSON.stringify({ grant_type: "client_credentials" }),
               authorizationHeader: null,
             }),
+            buildLambdaContext(),
           );
 
           expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
@@ -203,11 +204,12 @@ describe("Async Token", () => {
         it('Returns Log with value "Invalid Request"', async () => {
           const result = await lambdaHandlerConstructor(
             dependencies,
-            buildLambdaContext(),
+
             buildTokenHandlerRequest({
               body: JSON.stringify({ grant_type: "client_credentials" }),
               authorizationHeader: "missingBearerKeyword",
             }),
+            buildLambdaContext(),
           );
 
           expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
@@ -233,11 +235,11 @@ describe("Async Token", () => {
           it("Logs with invalid Authorization header format", async () => {
             const result = await lambdaHandlerConstructor(
               dependencies,
-              buildLambdaContext(),
               buildTokenHandlerRequest({
                 body: JSON.stringify({ grant_type: "client_credentials" }),
                 authorizationHeader: "Basic bW9ja0NsaWVuZElk", // decodes to Basic mockCliendId
               }),
+              buildLambdaContext(),
             );
 
             expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
@@ -270,8 +272,9 @@ describe("Async Token", () => {
 
           const result = await lambdaHandlerConstructor(
             dependencies,
-            buildLambdaContext(),
+
             request,
+            buildLambdaContext(),
           );
 
           expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
@@ -296,8 +299,9 @@ describe("Async Token", () => {
 
           const result = await lambdaHandlerConstructor(
             dependencies,
-            buildLambdaContext(),
+
             request,
+            buildLambdaContext(),
           );
 
           expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
@@ -325,8 +329,9 @@ describe("Async Token", () => {
 
         const result = await lambdaHandlerConstructor(
           dependencies,
-          buildLambdaContext(),
+
           request,
+          buildLambdaContext(),
         );
 
         expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
@@ -357,8 +362,8 @@ describe("Async Token", () => {
 
           const result = await lambdaHandlerConstructor(
             dependencies,
-            buildLambdaContext(),
             request,
+            buildLambdaContext(),
           );
 
           expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
@@ -383,8 +388,8 @@ describe("Async Token", () => {
           dependencies.eventService = () => mockEventWriter;
           const result = await lambdaHandlerConstructor(
             dependencies,
-            buildLambdaContext(),
             request,
+            buildLambdaContext(),
           );
           expect(mockLogger.getLogMessages()[0].logMessage).toMatchObject({
             message: "STARTED",
