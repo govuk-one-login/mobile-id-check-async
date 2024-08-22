@@ -255,7 +255,7 @@ Resources:
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
 
                 ### Credential Lambda
-      RoleName: !Sub ${AWS::StackName}--token-lambda
+      RoleName: !Sub ${AWS::StackName}-token-lambda
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
