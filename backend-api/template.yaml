@@ -256,6 +256,10 @@ Resources:
 
                 ### Credential Lambda
       RoleName: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${AWS::StackName}-token-lambda
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
 
   AsyncCredentialFunction:
     Type: AWS::Serverless::Function
@@ -330,6 +334,10 @@ Resources:
 
                   # TxMA Audit service
       RoleName: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${AWS::StackName}-credential-lambda
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
 
   TxMASQSQueue:
     Type: AWS::SQS::Queue
