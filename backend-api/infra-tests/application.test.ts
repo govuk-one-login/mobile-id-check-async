@@ -242,9 +242,8 @@ describe("Backend application infrastructure", () => {
         const roleName = iamRoles[iamRole].Properties.RoleName[
           "Fn::Sub"
         ] as string;
-        const roleNameConformsToStandards = roleName.startsWith(
-          "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${AWS::StackName}-",
-        );
+        const roleNameConformsToStandards =
+          roleName.startsWith("${AWS::StackName}-");
         expect(roleNameConformsToStandards).toBe(true);
       });
     });
