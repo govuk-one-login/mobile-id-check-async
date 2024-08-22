@@ -255,6 +255,12 @@ Resources:
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
 
                 ### Credential Lambda
+      RoleName: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${AWS::StackName}-token-lambda
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+
   AsyncCredentialFunction:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -327,6 +333,12 @@ Resources:
                   - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistry-?????? # wildcard as AWS automatically appends 6 characters to the end of a secret arn
 
                   # TxMA Audit service
+      RoleName: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${AWS::StackName}-credential-lambda
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+
   TxMASQSQueue:
     Type: AWS::SQS::Queue
     Properties:
@@ -399,9 +411,9 @@ Resources:
       KeyUsage: ENCRYPT_DECRYPT
       MultiRegion: false
       PendingWindowInDays: !FindInMap
-            - KMS
-            - !Ref Environment
-            - PendingDeletionInDays
+        - KMS
+        - !Ref Environment
+        - PendingDeletionInDays
 
   TxMAKeyAlias:
     Type: AWS::KMS::Alias
@@ -430,9 +442,9 @@ Resources:
       KeyUsage: SIGN_VERIFY
       MultiRegion: false
       PendingWindowInDays: !FindInMap
-            - KMS
-            - !Ref Environment
-            - PendingDeletionInDays
+        - KMS
+        - !Ref Environment
+        - PendingDeletionInDays
 
   KMSSigningKeyAlias:
     Type: AWS::KMS::Alias
@@ -459,9 +471,9 @@ Resources:
       KeyUsage: ENCRYPT_DECRYPT
       MultiRegion: false
       PendingWindowInDays: !FindInMap
-            - KMS
-            - !Ref Environment
-            - PendingDeletionInDays
+        - KMS
+        - !Ref Environment
+        - PendingDeletionInDays
 
   KMSEncryptionKeyAlias:
     Type: AWS::KMS::Alias
