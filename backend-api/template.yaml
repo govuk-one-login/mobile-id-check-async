@@ -63,6 +63,10 @@ Conditions:
       - Fn::Equals:
           - !Ref PermissionsBoundary
           - "none"
+  isNotDevOrBuild: !Or
+    - !Equals [!Ref Environment, staging]
+    - !Equals [!Ref Environment, integration]
+    - !Equals [!Ref Environment, production]
 
 Globals:
   Function:
@@ -307,6 +311,7 @@ Resources:
 # TxMA account consumes this queue
   TxMASQSQueuePolicy:
     Type: AWS::SQS::QueuePolicy
+    Condition: isNotDevOrBuild #Ensures TxMA can only integrate with SQS in Staging and higher
     Properties:
       Queues:
         - !Ref TxMASQSQueue
