@@ -254,7 +254,6 @@ Resources:
                   - kms:GenerateDataKey
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
 
-                ### Credential Lambda
       RoleName: !Sub ${AWS::StackName}-token-lambda
       PermissionsBoundary: !If
         - UsePermissionsBoundary
