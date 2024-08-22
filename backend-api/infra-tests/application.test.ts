@@ -185,4 +185,36 @@ describe("Backend application infrastructure", () => {
       });
     });
   });
+
+  describe("KMS", () => {
+    test("All keys have a retention window once deleted", () => {
+      const kmsKeys = template.findResources("AWS::KMS::Key");
+      const kmsKeyList = Object.keys(kmsKeys);
+      kmsKeyList.forEach((kmsKey) => {
+        expect(kmsKeys[kmsKey].Properties.PendingWindowInDays).toStrictEqual({
+          "Fn::FindInMap": [
+            "KMS",
+            { Ref: "Environment" },
+            "PendingDeletionInDays",
+          ],
+        });
+      });
+    });
+
+    test("Mappings are defined for retention window", () => {
+      const expectedKmsDeletionMapping = {
+        dev: 7,
+        build: 30,
+        staging: 30,
+        integration: 30,
+        production: 30,
+      };
+
+      const mappingHelper = new Mappings(template);
+      mappingHelper.validateKMSMapping({
+        environmentFlags: expectedKmsDeletionMapping,
+        mappingBottomLevelKey: "PendingDeletionInDays",
+      });
+    });
+  });
 });

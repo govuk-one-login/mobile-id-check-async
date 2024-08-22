@@ -56,6 +56,18 @@ Mappings:
     production:
       TxmaAccount: arn:aws:iam::451773080033:root
 
+  KMS:
+    dev:
+      PendingDeletionInDays: 7
+    build:
+      PendingDeletionInDays: 30
+    staging:
+      PendingDeletionInDays: 30
+    integration:
+      PendingDeletionInDays: 30
+    production:
+      PendingDeletionInDays: 30
+
 Conditions:
   UseCodeSigning: !Not
     - !Equals
@@ -386,7 +398,10 @@ Resources:
       KeySpec: SYMMETRIC_DEFAULT
       KeyUsage: ENCRYPT_DECRYPT
       MultiRegion: false
-      PendingWindowInDays: 7
+      PendingWindowInDays: !FindInMap
+            - KMS
+            - !Ref Environment
+            - PendingDeletionInDays
 
   TxMAKeyAlias:
     Type: AWS::KMS::Alias
@@ -414,7 +429,10 @@ Resources:
       KeySpec: ECC_NIST_P256
       KeyUsage: SIGN_VERIFY
       MultiRegion: false
-      PendingWindowInDays: 7
+      PendingWindowInDays: !FindInMap
+            - KMS
+            - !Ref Environment
+            - PendingDeletionInDays
 
   KMSSigningKeyAlias:
     Type: AWS::KMS::Alias
@@ -440,7 +458,10 @@ Resources:
       KeySpec: RSA_2048
       KeyUsage: ENCRYPT_DECRYPT
       MultiRegion: false
-      PendingWindowInDays: 7
+      PendingWindowInDays: !FindInMap
+            - KMS
+            - !Ref Environment
+            - PendingDeletionInDays
 
   KMSEncryptionKeyAlias:
     Type: AWS::KMS::Alias
