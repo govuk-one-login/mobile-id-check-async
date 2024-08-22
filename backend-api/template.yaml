@@ -1,23 +1,49 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Transform: AWS::Serverless-2016-10-31
+
 Description: async-backend SAM template for the ID Check v2 app
+
+Parameters:
+  Environment:
+    Description: The environment type
+    Type: String
+    AllowedValues:
+      - dev
+      - build
+      - staging
+      - integration
+      - production
+    Default: dev
+
+  CodeSigningConfigArn:
+    Description: |
+      The ARN of the Code Signing Config to use, provided by the deployment pipeline
+    Type: String
+    Default: none
+
+  PermissionsBoundary:
+    Description: |
+      The ARN of the permissions boundary to apply to any role created by the template
+    Type: String
+    Default: none
+
 Mappings:
   PrivateApigw:
-    dev: 
+    dev:
       ApiBurstLimit: 10
       ApiRateLimit: 10
-    build: 
+    build:
       ApiBurstLimit: 0
       ApiRateLimit: 0
-    staging: 
+    staging:
       ApiBurstLimit: 0
       ApiRateLimit: 0
-    integration: 
+    integration:
       ApiBurstLimit: 0
       ApiRateLimit: 0
-    production: 
+    production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+
   TxMA:
     dev:
       TxmaAccount: arn:aws:iam::248098332657:root
@@ -30,50 +56,36 @@ Mappings:
     production:
       TxmaAccount: arn:aws:iam::451773080033:root
 
-Parameters:
-  Environment:
-    Description: "The environment type"
-    Type: "String"
-    Default: dev
-    AllowedValues:
-      - "dev"
-      - "build"
-      - "staging"
-      - "integration"
-      - "production"
-  CodeSigningConfigArn:
-    Type: String
-    Description: >
-      The ARN of the Code Signing Config to use, provided by the deployment pipeline
-    Default: "none"
-  PermissionsBoundary:
-    Type: String
-    Description: >
-      The ARN of the permissions boundary to apply to any role created by the template
-    Default: "none"
-
 Conditions:
-  UseCodeSigning:
-    Fn::Not:
-      - Fn::Equals:
-          - !Ref CodeSigningConfigArn
-          - "none"
-  UsePermissionsBoundary:
-    Fn::Not:
-      - Fn::Equals:
-          - !Ref PermissionsBoundary
-          - "none"
+  UseCodeSigning: !Not
+    - !Equals
+      - !Ref CodeSigningConfigArn
+      - none
+
+  UsePermissionsBoundary: !Not
+    - !Equals
+      - !Ref PermissionsBoundary
+      - none
+
   isNotDevOrBuild: !Or
-    - !Equals [!Ref Environment, staging]
-    - !Equals [!Ref Environment, integration]
-    - !Equals [!Ref Environment, production]
+    - !Equals
+      - !Ref Environment
+      - staging
+    - !Equals
+      - !Ref Environment
+      - integration
+    - !Equals
+      - !Ref Environment
+      - production
+
+Transform: AWS::Serverless-2016-10-31
 
 Globals:
   Function:
     CodeSigningConfigArn: !If
-        - UseCodeSigning
-        - !Ref CodeSigningConfigArn
-        - !Ref AWS::NoValue
+      - UseCodeSigning
+      - !Ref CodeSigningConfigArn
+      - !Ref AWS::NoValue
     PermissionsBoundary: !If
       - UsePermissionsBoundary
       - !Ref PermissionsBoundary
@@ -82,41 +94,49 @@ Globals:
       Variables:
         SIGNING_KEY_ID: !ImportValue platform-kms-signing-key-arn
         TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
+
         # ISSUER should be updated with DNS once available
-        ISSUER: abc123 
+        ISSUER: abc123
 
 Resources:
-### Private APIgw for Client Credentials grant flow
+
+  ### Private APIgw for Client Credentials grant flow
   BackendAsyncCredentialApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub "${AWS::StackName}-private-api"
+      Name: !Sub ${AWS::StackName}-private-api
       Description: Private APIgw for Client Credentials flow
       EndpointConfiguration: PRIVATE
       Auth:
         ResourcePolicy:
           IntrinsicVpceWhitelist:
             - !ImportValue devplatform-vpc-ExecuteApiGatewayEndpointId
-      StageName: 
-        Ref: Environment
+      StageName: !Ref Environment
       OpenApiVersion: 3.0.1
       AccessLogSetting:
-        DestinationArn: !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialApiAccessLogs}"
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialApiAccessLogs}
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
       MethodSettings:
         - LoggingLevel: INFO
-          ResourcePath: "/*"
-          HttpMethod: "*"
+          ResourcePath: /*
+          HttpMethod: '*'
+
           # Disable data trace in production and integration to avoid logging customer sensitive information
           DataTraceEnabled: false # Client credentials used in headers
           MetricsEnabled: true
-          ThrottlingBurstLimit: !FindInMap [ PrivateApigw, !Ref Environment, ApiBurstLimit ]
-          ThrottlingRateLimit: !FindInMap [ PrivateApigw, !Ref Environment, ApiRateLimit ]
+          ThrottlingBurstLimit: !FindInMap
+            - PrivateApigw
+            - !Ref Environment
+            - ApiBurstLimit
+          ThrottlingRateLimit: !FindInMap
+            - PrivateApigw
+            - !Ref Environment
+            - ApiRateLimit
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: './openApiSpecs/async-private-spec.yaml'
+            Location: ./openApiSpecs/async-private-spec.yaml
 
   AsyncCredentialApiAccessLogs:
     Type: AWS::Logs::LogGroup
@@ -124,22 +144,22 @@ Resources:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
       RetentionInDays: 30
 
-### Token lambda
+      ### Token lambda
   AsyncTokenFunction:
-    DependsOn:
-      - "AsyncTokenLogGroup"
     Type: AWS::Serverless::Function
+    DependsOn:
+      - AsyncTokenLogGroup
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: "es2022"
+        Target: es2022
         Sourcemap: false
         EntryPoints:
           - src/functions/asyncToken/asyncTokenHandler.ts
     Properties:
       AutoPublishAlias: live
-      FunctionName: !Sub "${AWS::StackName}-token"
+      FunctionName: !Sub ${AWS::StackName}-token
       Runtime: nodejs20.x
       Handler: asyncTokenHandler.lambdaHandler
       Events:
@@ -152,7 +172,7 @@ Resources:
       Role: !GetAtt AsyncTokenLambdaRole.Arn
       Environment:
         Variables:
-          CLIENT_REGISTRY_SECRET_NAME: !Sub "${Environment}/clientRegistry"
+          CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
 
   AsyncTokenFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -160,49 +180,48 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt AsyncTokenFunction.Arn
       Principal: events.amazonaws.com
-      SourceAccount: !Sub "${AWS::AccountId}"
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialApi}/*/*/*"
-
+      SourceAccount: !Sub ${AWS::AccountId}
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialApi}/*/*/*
 
   AsyncTokenLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 30
-      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-token"
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-token
 
   AsyncTokenLambdaRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
               Service: lambda.amazonaws.com
-            Action: 'sts:AssumeRole'
+            Action: sts:AssumeRole
       Policies:
         - PolicyName: AsyncTokenFunctionSecretsManagerPolicy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
                   - secretsmanager:GetSecretValue
                 Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistry*"
+                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistry*
         - PolicyName: AsyncTokenFunctionLoggingPolicy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:PutLogEvents
-                Resource: 'arn:aws:logs:*:*:*'
+                Resource: arn:aws:logs:*:*:*
         - PolicyName: AsyncTokenFunctionKmsPolicy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
@@ -210,41 +229,41 @@ Resources:
                 Resource: !ImportValue platform-kms-signing-key-arn
         - PolicyName: AsyncTokenFunctionSQSPolicy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
-                  - "sqs:SendMessage"
+                  - sqs:SendMessage
                 Resource: !GetAtt TxMASQSQueue.Arn
               - Effect: Allow
                 Action:
-                  - "kms:Encrypt"
-                  - "kms:Decrypt"
-                  - "kms:GenerateDataKey"
+                  - kms:Encrypt
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
 
-### Credential Lambda
+                ### Credential Lambda
   AsyncCredentialFunction:
-    DependsOn:
-      - "AsyncCredentialLogGroup"
     Type: AWS::Serverless::Function
+    DependsOn:
+      - AsyncCredentialLogGroup
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: "es2022"
+        Target: es2022
         Sourcemap: false
         EntryPoints:
           - src/functions/asyncCredential/asyncCredentialHandler.ts
     Properties:
       AutoPublishAlias: live
-      FunctionName: !Sub "${AWS::StackName}-credential"
+      FunctionName: !Sub ${AWS::StackName}-credential
       Runtime: nodejs20.x
       Handler: asyncCredentialHandler.lambdaHandler
       Role: !GetAtt AsyncCredentialLambdaRole.Arn
       Environment:
         Variables:
-          CLIENT_REGISTRY_SECRET_NAME: !Sub "${Environment}/clientRegistry"
+          CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
       Events:
         AsyncCredential:
           Type: Api
@@ -257,8 +276,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 30
-      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-credential"
-
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-credential
 
   AsyncCredentialFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -266,37 +284,37 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt AsyncCredentialFunction.Arn
       Principal: events.amazonaws.com
-      SourceAccount: !Sub "${AWS::AccountId}"
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialApi}/*/*/*"
+      SourceAccount: !Sub ${AWS::AccountId}
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialApi}/*/*/*
 
   AsyncCredentialLambdaRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
               Service: lambda.amazonaws.com
-            Action: 'sts:AssumeRole'
+            Action: sts:AssumeRole
       Policies:
         - PolicyName: AsyncTokenFunctionSsmPolicy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:PutLogEvents
-                Resource: 'arn:aws:logs:*:*:*'
+                Resource: arn:aws:logs:*:*:*
               - Effect: Allow
                 Action:
                   - secretsmanager:GetSecretValue
                 Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistry*"
+                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistry*
 
-# TxMA Audit service
+                  # TxMA Audit service
   TxMASQSQueue:
     Type: AWS::SQS::Queue
     Properties:
@@ -307,28 +325,30 @@ Resources:
         deadLetterTargetArn: !GetAtt TxMASQSQueueDeadLetterQueue.Arn
         maxReceiveCount: 5
 
-
-# TxMA account consumes this queue
+        # TxMA account consumes this queue
   TxMASQSQueuePolicy:
     Type: AWS::SQS::QueuePolicy
-    Condition: isNotDevOrBuild #Ensures TxMA can only integrate with SQS in Staging and higher
     Properties:
       Queues:
         - !Ref TxMASQSQueue
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
-          - Effect: "Allow"
+          - Effect: Allow
             Action:
-              - "sqs:DeleteMessage"
-              - "sqs:GetQueueAttributes"
-              - "sqs:ChangeMessageVisibility"
-              - "sqs:ReceiveMessage"
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+              - sqs:ChangeMessageVisibility
+              - sqs:ReceiveMessage
             Resource:
               - !GetAtt TxMASQSQueue.Arn
             Principal:
               AWS:
-                - !FindInMap [TxMA, !Ref Environment, TxmaAccount]
+                - !FindInMap
+                  - TxMA
+                  - !Ref Environment
+                  - TxmaAccount
+    Condition: isNotDevOrBuild #Ensures TxMA can only integrate with SQS in Staging and higher
 
   TxMASQSQueueDeadLetterQueue:
     Type: AWS::SQS::Queue
@@ -346,20 +366,23 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
             Action:
-              - "kms:*"
+              - kms:*
             Resource:
-              - "*"
+              - '*'
           - Effect: Allow
             Principal:
-              AWS: !FindInMap [TxMA, !Ref Environment, TxmaAccount]
+              AWS: !FindInMap
+                - TxMA
+                - !Ref Environment
+                - TxmaAccount
             Action:
-              - "kms:Encrypt"
-              - "kms:Decrypt"
-              - "kms:GenerateDataKey"
+              - kms:Encrypt
+              - kms:Decrypt
+              - kms:GenerateDataKey
             Resource:
-              - "*"
+              - '*'
       KeySpec: SYMMETRIC_DEFAULT
       KeyUsage: ENCRYPT_DECRYPT
       MultiRegion: false
@@ -368,11 +391,10 @@ Resources:
   TxMAKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
-      AliasName: !Sub "alias/${AWS::StackName}-TxMAKMSEncryptionKey"
+      AliasName: !Sub alias/${AWS::StackName}-TxMAKMSEncryptionKey
       TargetKeyId: !Ref TxMAKMSEncryptionKey
 
-# Encryption and signing keys
-
+      # Encryption and signing keys
   KMSSigningKey:
     Type: AWS::KMS::Key
     Properties:
@@ -397,7 +419,7 @@ Resources:
   KMSSigningKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
-      AliasName: !Sub "alias/${AWS::StackName}-signing-key"
+      AliasName: !Sub alias/${AWS::StackName}-signing-key
       TargetKeyId: !Ref KMSSigningKey
 
   KMSEncryptionKey:
@@ -423,5 +445,5 @@ Resources:
   KMSEncryptionKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
-      AliasName: !Sub "alias/${AWS::StackName}-encryption-key"
+      AliasName: !Sub alias/${AWS::StackName}-encryption-key
       TargetKeyId: !Ref KMSEncryptionKey
