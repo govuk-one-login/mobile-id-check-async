@@ -40,16 +40,6 @@ To lint your code:
 npm run lint
 ```
 
-## Generate and Publish Signing Key Pair to S3
-There is a helper Node.js script for generating an asymmetric key pair and uploading the keys to an S3 bucket. Once uploaded, the public key is available at `/.well-known/jwks.json`.
-
-> For the following it is required to be logged into the ID Check `dev` or `build` AWS account.
-
-```shell
-cd jwks-helper-script
-sh publish_keys_to_s3.sh <stack-name>
-```
-
 ## Deploy to `dev`
 ### Manual Deployment
 To manually deploy changes made to the stack (i.e. resources or source code) to the `dev` AWS account, run the following command after assuming your credentials:
@@ -61,4 +51,14 @@ sam deploy --guided
 After saving the arguments to the SAM configuration file (`samconfig.toml`), future deployments can be made without the `--guided` flag:
 ```shell
 sam build --parallel --cached --beta-features && sam deploy --capabilities CAPABILITY_NAMED_IAM --stack-name sts-mock-ah     
+```
+
+## Generate and Publish Signing Key Pair to S3
+There is a helper Node.js script for generating an asymmetric key pair and uploading the keys to the S3 bucket. Once uploaded, the public key is available at `/.well-known/jwks.json`.
+
+> For the following it is required to be logged into the ID Check `dev` or `build` AWS account and have deployed the stack.
+
+```shell
+cd jwks-helper-script
+sh publish_keys_to_s3.sh <stack-name>
 ```
