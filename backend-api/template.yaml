@@ -255,7 +255,7 @@ Resources:
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
 
                 ### Credential Lambda
-      RoleName: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${AWS::StackName}-token-lambda
+      RoleName: !Sub ${AWS::StackName}--token-lambda
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
@@ -333,7 +333,7 @@ Resources:
                   - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistry-?????? # wildcard as AWS automatically appends 6 characters to the end of a secret arn
 
                   # TxMA Audit service
-      RoleName: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/${AWS::StackName}-credential-lambda
+      RoleName: !Sub ${AWS::StackName}-credential-lambda
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
