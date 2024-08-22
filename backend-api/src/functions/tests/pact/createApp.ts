@@ -15,8 +15,8 @@ export async function createApp(): Promise<Application> {
   app.post("/async/token", async (req: Request, res: Response) => {
     const result = await tokenLambdaHandlerConstructor(
       asyncTokenDependencies.dependencies,
-      buildLambdaContext(),
       buildRequest({ headers: req.headers, body: req.body }),
+      buildLambdaContext(),
     );
     res.status(result.statusCode);
     res.send(JSON.parse(result.body));
