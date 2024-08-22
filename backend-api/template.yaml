@@ -80,6 +80,7 @@ Globals:
         TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
         # ISSUER should be updated with DNS once available
         ISSUER: abc123 
+
 Resources:
 ### Private APIgw for Client Credentials grant flow
   BackendAsyncCredentialApi:
@@ -203,14 +204,6 @@ Resources:
                 Action:
                   - kms:Sign
                 Resource: !ImportValue platform-kms-signing-key-arn
-        - PolicyName: AsyncTokenFunctionKmsPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - kms:Sign
-                Resource: !ImportValue platform-kms-signing-key-arn
         - PolicyName: AsyncTokenFunctionSQSPolicy
           PolicyDocument:
             Version: '2012-10-17'
@@ -298,15 +291,6 @@ Resources:
                   - secretsmanager:GetSecretValue
                 Resource:
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistry*"
-                  
-        - PolicyName: AsyncTokenFunctionKmsPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - kms:Sign
-                Resource: !ImportValue platform-kms-signing-key-arn
 
 # TxMA Audit service
   TxMASQSQueue:
@@ -375,14 +359,64 @@ Resources:
       KeyUsage: ENCRYPT_DECRYPT
       MultiRegion: false
       PendingWindowInDays: 7
-      Tags:
-        - Key: KeyType
-          Value: Encryption Key
-        - Key: Environment
-          Value: !Sub ${Environment}
 
   TxMAKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
       AliasName: !Sub "alias/${AWS::StackName}-TxMAKMSEncryptionKey"
       TargetKeyId: !Ref TxMAKMSEncryptionKey
+
+# Encryption and signing keys
+
+  KMSSigningKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A KMS Key for signing.
+      Enabled: true
+      EnableKeyRotation: false
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action:
+              - kms:*
+            Resource:
+              - '*'
+      KeySpec: ECC_NIST_P256
+      KeyUsage: SIGN_VERIFY
+      MultiRegion: false
+      PendingWindowInDays: 7
+
+  KMSSigningKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-signing-key"
+      TargetKeyId: !Ref KMSSigningKey
+
+  KMSEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A KMS Key for encrypting.
+      Enabled: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action:
+              - kms:*
+            Resource:
+              - '*'
+      KeySpec: RSA_2048
+      KeyUsage: ENCRYPT_DECRYPT
+      MultiRegion: false
+      PendingWindowInDays: 7
+
+  KMSEncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-encryption-key"
+      TargetKeyId: !Ref KMSEncryptionKey
