@@ -6,7 +6,7 @@ JWKS_FILE_NAME="jwks.json";
 aws sts get-caller-identity >/dev/null 2>&1
 if [ $? -gt 0 ]; then
   echo "Not logged in to an AWS Account."
-  exit
+  exit 1
 fi
 
 if [ $# != 1 ]; then
