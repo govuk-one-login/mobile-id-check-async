@@ -1,4 +1,7 @@
-import { GetParameterCommand, SSMClient } from "@aws-sdk/client-ssm";
+import {
+  GetSecretValueCommand,
+  SecretsManagerClient,
+} from "@aws-sdk/client-secrets-manager";
 import { mockClient } from "aws-sdk-client-mock";
 import { ClientRegistryService } from "../clientRegistryService";
 
@@ -13,8 +16,8 @@ describe("Client Credentials Service", () => {
   describe("Get issuer from client secrets", () => {
     describe("Given there is an unexpected error retrieving the client registry", () => {
       it("Returns error result", async () => {
-        const ssmMock = mockClient(SSMClient);
-        ssmMock.on(GetParameterCommand).rejects("SSM Error");
+        const ssmMock = mockClient(SecretsManagerClient);
+        ssmMock.on(GetSecretValueCommand).rejects("SSM Error");
 
         const result =
           await clientCredentialsService.getRegisteredIssuerUsingClientSecrets({
@@ -34,8 +37,8 @@ describe("Client Credentials Service", () => {
       describe("Schema validation", () => {
         describe("Given no client registry was found", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({});
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({});
 
             const result =
               await clientCredentialsService.getRegisteredIssuerUsingClientSecrets(
@@ -55,11 +58,9 @@ describe("Client Credentials Service", () => {
 
         describe("Given client registry is not a valid JSON", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: "{{{",
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: "{{{",
             });
 
             const result =
@@ -80,11 +81,9 @@ describe("Client Credentials Service", () => {
 
         describe("Given client registry is not an array", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: "{}",
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: "{}",
             });
 
             const result =
@@ -104,11 +103,9 @@ describe("Client Credentials Service", () => {
         });
         describe("Given client registry is empty", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: "[]",
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: "[]",
             });
 
             const result =
@@ -128,19 +125,17 @@ describe("Client Credentials Service", () => {
         });
         describe("Given the clientId is missing", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    issuer: "mockIssuer",
-                    salt: "0vjPs=djeEHP",
-                    hashed_client_secret:
-                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
-                    redirect_uri: "https://mockRedirectUri.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  issuer: "mockIssuer",
+                  salt: "0vjPs=djeEHP",
+                  hashed_client_secret:
+                    "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                  redirect_uri: "https://mockRedirectUri.com",
+                },
+              ]),
             });
 
             const result =
@@ -161,20 +156,18 @@ describe("Client Credentials Service", () => {
 
         describe("Given the clientId is not a string", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: 1,
-                    issuer: "mockIssuer",
-                    salt: "0vjPs=djeEHP",
-                    hashed_client_secret:
-                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
-                    redirect_uri: "https://mockRedirectUri.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: 1,
+                  issuer: "mockIssuer",
+                  salt: "0vjPs=djeEHP",
+                  hashed_client_secret:
+                    "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                  redirect_uri: "https://mockRedirectUri.com",
+                },
+              ]),
             });
 
             const result =
@@ -195,19 +188,17 @@ describe("Client Credentials Service", () => {
 
         describe("Given the salt is missing", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "clientId",
-                    issuer: "mockIssuer",
-                    hashed_client_secret:
-                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
-                    redirect_uri: "https://mockRedirectUri.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "clientId",
+                  issuer: "mockIssuer",
+                  hashed_client_secret:
+                    "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                  redirect_uri: "https://mockRedirectUri.com",
+                },
+              ]),
             });
 
             const result =
@@ -227,20 +218,18 @@ describe("Client Credentials Service", () => {
         });
         describe("Given the salt is not a string", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "clientId",
-                    salt: 1,
-                    issuer: "mockIssuer",
-                    hashed_client_secret:
-                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
-                    redirect_uri: "https://mockRedirectUri.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "clientId",
+                  salt: 1,
+                  issuer: "mockIssuer",
+                  hashed_client_secret:
+                    "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                  redirect_uri: "https://mockRedirectUri.com",
+                },
+              ]),
             });
 
             const result =
@@ -261,19 +250,17 @@ describe("Client Credentials Service", () => {
 
         describe("Given the issuer is missing", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "clientId",
-                    salt: "salt",
-                    hashed_client_secret:
-                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
-                    redirect_uri: "https://mockRedirectUri.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "clientId",
+                  salt: "salt",
+                  hashed_client_secret:
+                    "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                  redirect_uri: "https://mockRedirectUri.com",
+                },
+              ]),
             });
 
             const result =
@@ -294,20 +281,18 @@ describe("Client Credentials Service", () => {
 
         describe("Given the issuer is not a string", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "clientId",
-                    salt: "salt",
-                    issuer: 1,
-                    hashed_client_secret:
-                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
-                    redirect_uri: "https://mockRedirectUri.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "clientId",
+                  salt: "salt",
+                  issuer: 1,
+                  hashed_client_secret:
+                    "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                  redirect_uri: "https://mockRedirectUri.com",
+                },
+              ]),
             });
 
             const result =
@@ -328,18 +313,16 @@ describe("Client Credentials Service", () => {
 
         describe("Given the hashed client secret is missing", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "clientId",
-                    salt: "salt",
-                    issuer: "issuer",
-                    redirect_uri: "https://mockRedirectUri.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "clientId",
+                  salt: "salt",
+                  issuer: "issuer",
+                  redirect_uri: "https://mockRedirectUri.com",
+                },
+              ]),
             });
 
             const result =
@@ -360,19 +343,17 @@ describe("Client Credentials Service", () => {
 
         describe("Given the hashed client secret is not a string", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "clientId",
-                    salt: "salt",
-                    issuer: "issuer",
-                    hashed_client_secret: 1,
-                    redirect_uri: "https://mockRedirectUri.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "clientId",
+                  salt: "salt",
+                  issuer: "issuer",
+                  hashed_client_secret: 1,
+                  redirect_uri: "https://mockRedirectUri.com",
+                },
+              ]),
             });
 
             const result =
@@ -393,18 +374,16 @@ describe("Client Credentials Service", () => {
 
         describe("Given the redirect_uri is missing", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "clientId",
-                    salt: "salt",
-                    issuer: "issuer",
-                    hashed_client_secret: "hashedSecret",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "clientId",
+                  salt: "salt",
+                  issuer: "issuer",
+                  hashed_client_secret: "hashedSecret",
+                },
+              ]),
             });
 
             const result =
@@ -425,19 +404,17 @@ describe("Client Credentials Service", () => {
 
         describe("Given the redirect_uri is not a URL", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "clientId",
-                    salt: "salt",
-                    issuer: "issuer",
-                    hashed_client_secret: "hashedSecret",
-                    redirect_uri: "invalidUrl",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "clientId",
+                  salt: "salt",
+                  issuer: "issuer",
+                  hashed_client_secret: "hashedSecret",
+                  redirect_uri: "invalidUrl",
+                },
+              ]),
             });
 
             const result =
@@ -458,24 +435,22 @@ describe("Client Credentials Service", () => {
 
         describe("Given more than one registered client fails validation", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "clientId",
-                    salt: "salt",
-                    issuer: "issuer",
-                    hashed_client_secret: "hashedSecret",
-                  },
-                  {
-                    client_id: "clientId",
-                    salt: "salt",
-                    issuer: "issuer",
-                    hashed_client_secret: "hashedSecret",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "clientId",
+                  salt: "salt",
+                  issuer: "issuer",
+                  hashed_client_secret: "hashedSecret",
+                },
+                {
+                  client_id: "clientId",
+                  salt: "salt",
+                  issuer: "issuer",
+                  hashed_client_secret: "hashedSecret",
+                },
+              ]),
             });
 
             const result =
@@ -496,25 +471,23 @@ describe("Client Credentials Service", () => {
 
         describe("Given only one registered client fails validation", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "clientId",
-                    salt: "salt",
-                    issuer: "issuer",
-                    hashed_client_secret: "hashedSecret",
-                    redirect_uri: "https://www.mockUrl.com",
-                  },
-                  {
-                    client_id: "clientId",
-                    salt: "salt",
-                    issuer: "issuer",
-                    hashed_client_secret: "hashedSecret",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "clientId",
+                  salt: "salt",
+                  issuer: "issuer",
+                  hashed_client_secret: "hashedSecret",
+                  redirect_uri: "https://www.mockUrl.com",
+                },
+                {
+                  client_id: "clientId",
+                  salt: "salt",
+                  issuer: "issuer",
+                  hashed_client_secret: "hashedSecret",
+                },
+              ]),
             });
 
             const result =
@@ -537,19 +510,17 @@ describe("Client Credentials Service", () => {
       describe("Credential validation", () => {
         describe("Given the client is not registered", () => {
           it("Returns false", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "mockClientId",
-                    issuer: "mockIssuer",
-                    salt: "mockSalt",
-                    hashed_client_secret: "mockHashedClientSecret",
-                    redirect_uri: "https://www.validUrl.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "mockClientId",
+                  issuer: "mockIssuer",
+                  salt: "mockSalt",
+                  hashed_client_secret: "mockHashedClientSecret",
+                  redirect_uri: "https://www.validUrl.com",
+                },
+              ]),
             });
 
             const result =
@@ -570,19 +541,17 @@ describe("Client Credentials Service", () => {
 
         describe("Given the client credentials are invalid", () => {
           it("Returns false", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "mockAnotherClientId",
-                    issuer: "mockIssuer",
-                    salt: "0vjPs=djeEHP",
-                    hashed_client_secret: "invalidHasedSecret", // mockClientSecret hashing with above salt
-                    redirect_uri: "https://www.validUrl.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "mockAnotherClientId",
+                  issuer: "mockIssuer",
+                  salt: "0vjPs=djeEHP",
+                  hashed_client_secret: "invalidHasedSecret", // mockClientSecret hashing with above salt
+                  redirect_uri: "https://www.validUrl.com",
+                },
+              ]),
             });
 
             const result =
@@ -603,20 +572,18 @@ describe("Client Credentials Service", () => {
 
         describe("Given the client credentials are valid", () => {
           it("Returns the issuer for the registered client", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "mockAnotherClientId",
-                    issuer: "mockIssuer",
-                    salt: "0vjPs=djeEHP",
-                    hashed_client_secret:
-                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
-                    redirect_uri: "https://mockRedirectUri.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "mockAnotherClientId",
+                  issuer: "mockIssuer",
+                  salt: "0vjPs=djeEHP",
+                  hashed_client_secret:
+                    "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                  redirect_uri: "https://mockRedirectUri.com",
+                },
+              ]),
             });
 
             const result =
@@ -632,19 +599,17 @@ describe("Client Credentials Service", () => {
           });
 
           it("Utilizes cache for subsequent requests", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "mockClientId",
-                    issuer: "mockIssuer",
-                    salt: "mockSalt",
-                    hashed_client_secret: "mockHashedClientSecret",
-                    redirect_uri: "https://www.validUrl.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "mockClientId",
+                  issuer: "mockIssuer",
+                  salt: "mockSalt",
+                  hashed_client_secret: "mockHashedClientSecret",
+                  redirect_uri: "https://www.validUrl.com",
+                },
+              ]),
             });
 
             clientCredentialsService.resetCache();
@@ -669,22 +634,20 @@ describe("Client Credentials Service", () => {
           });
 
           it("Refreshes cache after TTL expires", async () => {
-            const ssmMock = mockClient(SSMClient);
+            const ssmMock = mockClient(SecretsManagerClient);
 
             jest.useFakeTimers();
 
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "mockClientId",
-                    issuer: "mockIssuer",
-                    salt: "mockSalt",
-                    hashed_client_secret: "mockHashedClientSecret",
-                    redirect_uri: "https://www.validUrl.com",
-                  },
-                ]),
-              },
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "mockClientId",
+                  issuer: "mockIssuer",
+                  salt: "mockSalt",
+                  hashed_client_secret: "mockHashedClientSecret",
+                  redirect_uri: "https://www.validUrl.com",
+                },
+              ]),
             });
 
             clientCredentialsService.resetCache();
@@ -716,8 +679,8 @@ describe("Client Credentials Service", () => {
   describe("Get issuer and redirect_uri from client id", () => {
     describe("Given there is an unexpected error retrieving the client registry", () => {
       it("Returns error result", async () => {
-        const ssmMock = mockClient(SSMClient);
-        ssmMock.on(GetParameterCommand).rejects("SSM Error");
+        const ssmMock = mockClient(SecretsManagerClient);
+        ssmMock.on(GetSecretValueCommand).rejects("SSM Error");
 
         const result =
           await clientCredentialsService.getPartialRegisteredClientByClientId(
@@ -736,8 +699,8 @@ describe("Client Credentials Service", () => {
       describe("Schema validation", () => {
         describe("Given no client registry was found", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({});
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({});
 
             const result =
               await clientCredentialsService.getPartialRegisteredClientByClientId(
@@ -754,11 +717,9 @@ describe("Client Credentials Service", () => {
 
         describe("Given client registry is not a valid JSON", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: "{{{",
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: "{{{",
             });
 
             const result =
@@ -776,11 +737,9 @@ describe("Client Credentials Service", () => {
 
         describe("Given client registry is not an array", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: "{}",
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: "{}",
             });
 
             const result =
@@ -797,11 +756,9 @@ describe("Client Credentials Service", () => {
         });
         describe("Given client registry is empty", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: "[]",
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: "[]",
             });
 
             const result =
@@ -818,19 +775,17 @@ describe("Client Credentials Service", () => {
         });
         describe("Given the clientId is missing", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    issuer: "mockIssuer",
-                    salt: "0vjPs=djeEHP",
-                    hashed_client_secret:
-                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
-                    redirect_uri: "https://mockRedirectUri.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  issuer: "mockIssuer",
+                  salt: "0vjPs=djeEHP",
+                  hashed_client_secret:
+                    "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                  redirect_uri: "https://mockRedirectUri.com",
+                },
+              ]),
             });
 
             const result =
@@ -848,20 +803,18 @@ describe("Client Credentials Service", () => {
 
         describe("Given the clientId is not a string", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: 1,
-                    issuer: "mockIssuer",
-                    salt: "0vjPs=djeEHP",
-                    hashed_client_secret:
-                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
-                    redirect_uri: "https://mockRedirectUri.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: 1,
+                  issuer: "mockIssuer",
+                  salt: "0vjPs=djeEHP",
+                  hashed_client_secret:
+                    "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                  redirect_uri: "https://mockRedirectUri.com",
+                },
+              ]),
             });
 
             const result =
@@ -879,19 +832,17 @@ describe("Client Credentials Service", () => {
 
         describe("Given the salt is missing", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "clientId",
-                    issuer: "mockIssuer",
-                    hashed_client_secret:
-                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
-                    redirect_uri: "https://mockRedirectUri.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "clientId",
+                  issuer: "mockIssuer",
+                  hashed_client_secret:
+                    "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                  redirect_uri: "https://mockRedirectUri.com",
+                },
+              ]),
             });
 
             const result =
@@ -908,20 +859,18 @@ describe("Client Credentials Service", () => {
         });
         describe("Given the salt is not a string", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "clientId",
-                    salt: 1,
-                    issuer: "mockIssuer",
-                    hashed_client_secret:
-                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
-                    redirect_uri: "https://mockRedirectUri.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "clientId",
+                  salt: 1,
+                  issuer: "mockIssuer",
+                  hashed_client_secret:
+                    "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                  redirect_uri: "https://mockRedirectUri.com",
+                },
+              ]),
             });
 
             const result =
@@ -939,19 +888,17 @@ describe("Client Credentials Service", () => {
 
         describe("Given the issuer is missing", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "clientId",
-                    salt: "salt",
-                    hashed_client_secret:
-                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
-                    redirect_uri: "https://mockRedirectUri.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "clientId",
+                  salt: "salt",
+                  hashed_client_secret:
+                    "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                  redirect_uri: "https://mockRedirectUri.com",
+                },
+              ]),
             });
 
             const result =
@@ -969,20 +916,18 @@ describe("Client Credentials Service", () => {
 
         describe("Given the issuer is not a string", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "clientId",
-                    salt: "salt",
-                    issuer: 1,
-                    hashed_client_secret:
-                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
-                    redirect_uri: "https://mockRedirectUri.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "clientId",
+                  salt: "salt",
+                  issuer: 1,
+                  hashed_client_secret:
+                    "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                  redirect_uri: "https://mockRedirectUri.com",
+                },
+              ]),
             });
 
             const result =
@@ -1000,18 +945,16 @@ describe("Client Credentials Service", () => {
 
         describe("Given the hashed client secret is missing", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "clientId",
-                    salt: "salt",
-                    issuer: "issuer",
-                    redirect_uri: "https://mockRedirectUri.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "clientId",
+                  salt: "salt",
+                  issuer: "issuer",
+                  redirect_uri: "https://mockRedirectUri.com",
+                },
+              ]),
             });
 
             const result =
@@ -1029,19 +972,17 @@ describe("Client Credentials Service", () => {
 
         describe("Given the hashed client secret is not a string", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "clientId",
-                    salt: "salt",
-                    issuer: "issuer",
-                    hashed_client_secret: 1,
-                    redirect_uri: "https://mockRedirectUri.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "clientId",
+                  salt: "salt",
+                  issuer: "issuer",
+                  hashed_client_secret: 1,
+                  redirect_uri: "https://mockRedirectUri.com",
+                },
+              ]),
             });
 
             const result =
@@ -1059,18 +1000,16 @@ describe("Client Credentials Service", () => {
 
         describe("Given the redirect_uri is missing", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "clientId",
-                    salt: "salt",
-                    issuer: "issuer",
-                    hashed_client_secret: "hashedSecret",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "clientId",
+                  salt: "salt",
+                  issuer: "issuer",
+                  hashed_client_secret: "hashedSecret",
+                },
+              ]),
             });
 
             const result =
@@ -1087,19 +1026,17 @@ describe("Client Credentials Service", () => {
 
         describe("Given the redirect_uri is not a URL", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "clientId",
-                    salt: "salt",
-                    issuer: "issuer",
-                    hashed_client_secret: "hashedSecret",
-                    redirect_uri: "invalidUrl",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "clientId",
+                  salt: "salt",
+                  issuer: "issuer",
+                  hashed_client_secret: "hashedSecret",
+                  redirect_uri: "invalidUrl",
+                },
+              ]),
             });
 
             const result =
@@ -1117,24 +1054,22 @@ describe("Client Credentials Service", () => {
 
         describe("Given more than one registered client fails validation", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "clientId",
-                    salt: "salt",
-                    issuer: "issuer",
-                    hashed_client_secret: "hashedSecret",
-                  },
-                  {
-                    client_id: "clientId",
-                    salt: "salt",
-                    issuer: "issuer",
-                    hashed_client_secret: "hashedSecret",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "clientId",
+                  salt: "salt",
+                  issuer: "issuer",
+                  hashed_client_secret: "hashedSecret",
+                },
+                {
+                  client_id: "clientId",
+                  salt: "salt",
+                  issuer: "issuer",
+                  hashed_client_secret: "hashedSecret",
+                },
+              ]),
             });
 
             const result =
@@ -1152,25 +1087,23 @@ describe("Client Credentials Service", () => {
 
         describe("Given only one registered client fails validation", () => {
           it("Returns error result", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "clientId",
-                    salt: "salt",
-                    issuer: "issuer",
-                    hashed_client_secret: "hashedSecret",
-                    redirect_uri: "https://www.mockUrl.com",
-                  },
-                  {
-                    client_id: "clientId",
-                    salt: "salt",
-                    issuer: "issuer",
-                    hashed_client_secret: "hashedSecret",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "clientId",
+                  salt: "salt",
+                  issuer: "issuer",
+                  hashed_client_secret: "hashedSecret",
+                  redirect_uri: "https://www.mockUrl.com",
+                },
+                {
+                  client_id: "clientId",
+                  salt: "salt",
+                  issuer: "issuer",
+                  hashed_client_secret: "hashedSecret",
+                },
+              ]),
             });
 
             const result =
@@ -1190,19 +1123,17 @@ describe("Client Credentials Service", () => {
       describe("Credential validation", () => {
         describe("Given the client is not registered", () => {
           it("Returns false", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "mockClientId",
-                    issuer: "mockIssuer",
-                    salt: "mockSalt",
-                    hashed_client_secret: "mockHashedClientSecret",
-                    redirect_uri: "https://www.validUrl.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "mockClientId",
+                  issuer: "mockIssuer",
+                  salt: "mockSalt",
+                  hashed_client_secret: "mockHashedClientSecret",
+                  redirect_uri: "https://www.validUrl.com",
+                },
+              ]),
             });
 
             const result =
@@ -1220,20 +1151,18 @@ describe("Client Credentials Service", () => {
 
         describe("Given the client is registered", () => {
           it("Returns the issuer and redirect_uri for the registered client", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "mockRegisteredClientId",
-                    issuer: "mockIssuer",
-                    salt: "0vjPs=djeEHP",
-                    hashed_client_secret:
-                      "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
-                    redirect_uri: "https://mockRedirectUri.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "mockRegisteredClientId",
+                  issuer: "mockIssuer",
+                  salt: "0vjPs=djeEHP",
+                  hashed_client_secret:
+                    "964adf477e02f0fd3fac7fdd08655d1e70ba142f02c946e21e1e194f49a05379", // mockClientSecret hashing with above salt
+                  redirect_uri: "https://mockRedirectUri.com",
+                },
+              ]),
             });
 
             const result =
@@ -1249,19 +1178,17 @@ describe("Client Credentials Service", () => {
           });
 
           it("Utilizes cache for subsequent requests", async () => {
-            const ssmMock = mockClient(SSMClient);
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "mockRegisteredClientId",
-                    issuer: "mockIssuer",
-                    salt: "mockSalt",
-                    hashed_client_secret: "mockHashedClientSecret",
-                    redirect_uri: "https://www.validUrl.com",
-                  },
-                ]),
-              },
+            const ssmMock = mockClient(SecretsManagerClient);
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "mockRegisteredClientId",
+                  issuer: "mockIssuer",
+                  salt: "mockSalt",
+                  hashed_client_secret: "mockHashedClientSecret",
+                  redirect_uri: "https://www.validUrl.com",
+                },
+              ]),
             });
 
             clientCredentialsService.resetCache();
@@ -1280,22 +1207,20 @@ describe("Client Credentials Service", () => {
           });
 
           it("Refreshes cache after TTL expires", async () => {
-            const ssmMock = mockClient(SSMClient);
+            const ssmMock = mockClient(SecretsManagerClient);
 
             jest.useFakeTimers();
 
-            ssmMock.on(GetParameterCommand).resolves({
-              Parameter: {
-                Value: JSON.stringify([
-                  {
-                    client_id: "mockRegisteredClientId",
-                    issuer: "mockIssuer",
-                    salt: "mockSalt",
-                    hashed_client_secret: "mockHashedClientSecret",
-                    redirect_uri: "https://www.validUrl.com",
-                  },
-                ]),
-              },
+            ssmMock.on(GetSecretValueCommand).resolves({
+              SecretString: JSON.stringify([
+                {
+                  client_id: "mockRegisteredClientId",
+                  issuer: "mockIssuer",
+                  salt: "mockSalt",
+                  hashed_client_secret: "mockHashedClientSecret",
+                  redirect_uri: "https://www.validUrl.com",
+                },
+              ]),
             });
 
             clientCredentialsService.resetCache();

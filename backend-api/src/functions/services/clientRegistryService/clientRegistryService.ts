@@ -1,11 +1,9 @@
 import { createHash } from "crypto";
 import { Result, errorResult, successResult } from "../../utils/result";
 import {
-  GetParameterCommand,
-  GetParameterRequest,
-  SSMClient,
-} from "@aws-sdk/client-ssm";
-import { ssmClient } from "./ssmClient";
+  GetSecretValueCommand,
+  SecretsManagerClient,
+} from "@aws-sdk/client-secrets-manager";
 
 let cache: CacheEntry | null = null;
 
@@ -14,14 +12,14 @@ export class ClientRegistryService
     IGetRegisteredIssuerUsingClientSecrets,
     IGetPartialRegisteredClientByClientId
 {
-  ssmClient: SSMClient;
+  secretsManagerClient: SecretsManagerClient;
   cacheTTL: number;
-  clientRegistryParamterName: string;
+  clientRegistrySecretName: string;
 
-  constructor(clientRegistryParamterName: string) {
-    this.ssmClient = ssmClient;
+  constructor(clientRegistrySecretName: string) {
+    this.secretsManagerClient = new SecretsManagerClient();
     this.cacheTTL = 3600 * 1000;
-    this.clientRegistryParamterName = clientRegistryParamterName;
+    this.clientRegistrySecretName = clientRegistrySecretName;
   }
 
   getRegisteredIssuerUsingClientSecrets = async (
@@ -36,6 +34,7 @@ export class ClientRegistryService
       clientRegistry,
       secrets.clientId,
     );
+
     if (!registeredClient)
       return errorResult({
         errorMessage: "Client is not registered",
@@ -86,14 +85,13 @@ export class ClientRegistryService
     if (cache && cache.expiry > Date.now()) {
       return successResult(cache.data);
     }
-    const command: GetParameterRequest = {
-      Name: this.clientRegistryParamterName,
-      WithDecryption: true, // Parameter is encrypted at rest
-    };
+    const command = new GetSecretValueCommand({
+      SecretId: this.clientRegistrySecretName,
+    });
 
     let response;
     try {
-      response = await this.ssmClient.send(new GetParameterCommand(command));
+      response = await this.secretsManagerClient.send(command);
     } catch {
       return errorResult({
         errorMessage: "Error retrieving client secrets",
@@ -101,7 +99,7 @@ export class ClientRegistryService
       });
     }
 
-    const clientRegistryResponse = response.Parameter?.Value;
+    const clientRegistryResponse = response.SecretString;
 
     if (!clientRegistryResponse) {
       return errorResult({

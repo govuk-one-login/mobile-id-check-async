@@ -26,6 +26,12 @@ export class Mappings {
   }) {
     this.validateMapping({ ...args, mappingTopLevelKey: "PrivateApigw" });
   }
+  validateKMSMapping(args: {
+    environmentFlags: EnvironmentFlags;
+    mappingBottomLevelKey: string;
+  }) {
+    this.validateMapping({ ...args, mappingTopLevelKey: "KMS" });
+  }
 
   private validateMapping(args: {
     environmentFlags: EnvironmentFlags;

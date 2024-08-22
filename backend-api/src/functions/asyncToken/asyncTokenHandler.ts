@@ -11,8 +11,8 @@ import {
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
-  context: Context,
   event: APIGatewayProxyEvent,
+  context: Context,
 ): Promise<APIGatewayProxyResult> {
   // Environment variables
 
@@ -53,7 +53,7 @@ export async function lambdaHandlerConstructor(
 
   // Retrieving issuer and validating client secrets
   const clientRegistryService = dependencies.clientRegistryService(
-    config.CLIENT_REGISTRY_PARAMETER_NAME,
+    config.CLIENT_REGISTRY_SECRET_NAME,
   );
   const getRegisteredIssuerByClientSecretsResult =
     await clientRegistryService.getRegisteredIssuerUsingClientSecrets(
@@ -98,7 +98,7 @@ export async function lambdaHandlerConstructor(
   }
   const accessToken = mintTokenResult.value;
 
-  const eventWriter = dependencies.eventService(config.SQS_QUEUE);
+  const eventWriter = dependencies.eventService(config.TXMA_SQS);
   const writeEventResult = await eventWriter.writeCredentialTokenIssuedEvent({
     componentId: config.ISSUER,
     getNowInMilliseconds: Date.now,

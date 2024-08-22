@@ -88,7 +88,7 @@ export async function lambdaHandlerConstructor(
 
   // Fetching issuer and redirect_uri from client registry using the client_id from the incoming jwt
   const clientRegistryService = dependencies.clientRegistryService(
-    config.CLIENT_REGISTRY_PARAMETER_NAME,
+    config.CLIENT_REGISTRY_SECRET_NAME,
   );
   const getPartialRegisteredClientResponse =
     await clientRegistryService.getPartialRegisteredClientByClientId(
@@ -177,7 +177,7 @@ export async function lambdaHandlerConstructor(
   logger.setSessionId({ sessionId });
 
   // Write audit event
-  const eventService = dependencies.eventService(config.SQS_QUEUE);
+  const eventService = dependencies.eventService(config.TXMA_SQS);
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_START",
     sub: requestBody.sub,

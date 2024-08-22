@@ -17,7 +17,8 @@ export class RequestService implements IRequestService {
   getClientCredentials = (
     headers: APIGatewayProxyEventHeaders,
   ): Result<IDecodedClientSecrets> => {
-    const authorizationHeader = headers.Authorization;
+    const authorizationHeader =
+      headers["Authorization"] ?? headers["authorization"];
     if (!authorizationHeader) {
       return errorResult({
         errorMessage: "Missing authorization header",
