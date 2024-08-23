@@ -24,10 +24,9 @@ const defaultPassingDependencies = {
   clientRegistryService: () =>
     new MockClientRegistryServiceGetPartialClientSuccessResultIPV(),
   tokenService: () => new MockTokenServiceSuccessIPV(),
-  sessionService: (sessionTableName: string, sessionIndexName: string) =>
+  sessionService: (sessionTableName: string) =>
     new MockSessionServiceCreateSessionSuccessResult(
       sessionTableName,
-      sessionIndexName,
     ),
 };
 
