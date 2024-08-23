@@ -5,11 +5,9 @@ export class MockSessionServiceGetSessionBySubErrorResult
   implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
-  readonly indexName: string;
 
-  constructor(tableName: string, indexName: string) {
+  constructor(tableName: string) {
     this.tableName = tableName;
-    this.indexName = indexName;
   }
 
   getActiveSession = async (): Promise<Result<string | null>> => {
@@ -28,11 +26,9 @@ export class MockSessionServiceNoActiveSession
   implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
-  readonly indexName: string;
 
-  constructor(tableName: string, indexName: string) {
+  constructor(tableName: string) {
     this.tableName = tableName;
-    this.indexName = indexName;
   }
   getActiveSession = async (): Promise<Result<string | null>> => {
     return successResult(null);
@@ -47,11 +43,9 @@ export class MockSessionServiceGetActiveSessionSuccessResult
   implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
-  readonly indexName: string;
 
-  constructor(tableName: string, indexName: string) {
+  constructor(tableName: string) {
     this.tableName = tableName;
-    this.indexName = indexName;
   }
 
   getActiveSession = async (): Promise<Result<string | null>> => {
@@ -67,11 +61,9 @@ export class MockSessionServiceCreateSessionErrorResult
   implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
-  readonly indexName: string;
 
-  constructor(tableName: string, indexName: string) {
+  constructor(tableName: string) {
     this.tableName = tableName;
-    this.indexName = indexName;
   }
 
   getActiveSession = async (): Promise<Result<string | null>> => {
@@ -90,11 +82,9 @@ export class MockSessionServiceCreateSessionSuccessResult
   implements IGetActiveSession, ICreateSession
 {
   readonly tableName: string;
-  readonly indexName: string;
 
-  constructor(tableName: string, indexName: string) {
+  constructor(tableName: string) {
     this.tableName = tableName;
-    this.indexName = indexName;
   }
 
   getActiveSession = async (): Promise<Result<string | null>> => {

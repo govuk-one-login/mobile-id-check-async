@@ -57,10 +57,7 @@ describe("Async Credential", () => {
       clientRegistryService: () =>
         new MockClientRegistryServiceGetPartialClientSuccessResult(),
       sessionService: () =>
-        new MockSessionServiceNoActiveSession(
-          env.SESSION_TABLE_NAME,
-          env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
-        ),
+        new MockSessionServiceNoActiveSession(env.SESSION_TABLE_NAME),
       env,
     };
   });
@@ -783,7 +780,6 @@ describe("Async Credential", () => {
           dependencies.sessionService = () =>
             new MockSessionServiceGetSessionBySubErrorResult(
               env.SESSION_TABLE_NAME,
-              env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
 
           const result = await lambdaHandlerConstructor(dependencies, event);
@@ -823,7 +819,6 @@ describe("Async Credential", () => {
           dependencies.sessionService = () =>
             new MockSessionServiceGetActiveSessionSuccessResult(
               env.SESSION_TABLE_NAME,
-              env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
 
           const result = await lambdaHandlerConstructor(dependencies, event);
@@ -866,7 +861,6 @@ describe("Async Credential", () => {
           dependencies.sessionService = () =>
             new MockSessionServiceCreateSessionErrorResult(
               env.SESSION_TABLE_NAME,
-              env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
 
           const result = await lambdaHandlerConstructor(dependencies, event);
@@ -905,7 +899,6 @@ describe("Async Credential", () => {
             dependencies.sessionService = () =>
               new MockSessionServiceCreateSessionSuccessResult(
                 env.SESSION_TABLE_NAME,
-                env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
               );
 
             const result = await lambdaHandlerConstructor(dependencies, event);
@@ -948,7 +941,6 @@ describe("Async Credential", () => {
             dependencies.sessionService = () =>
               new MockSessionServiceCreateSessionSuccessResult(
                 env.SESSION_TABLE_NAME,
-                env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
               );
 
             const result = await lambdaHandlerConstructor(dependencies, event);

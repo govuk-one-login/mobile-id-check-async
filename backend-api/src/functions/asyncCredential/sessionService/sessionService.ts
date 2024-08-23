@@ -12,22 +12,20 @@ import { errorResult, Result, successResult } from "../../utils/result";
 
 export class SessionService implements IGetActiveSession, ICreateSession {
   readonly tableName: string;
-  readonly indexName: string;
   readonly dbClient: DynamoDBClient;
 
-  constructor(tableName: string, indexName: string) {
+  constructor(tableName: string) {
     this.tableName = tableName;
-    this.indexName = indexName;
     this.dbClient = dbClient;
   }
 
   async getActiveSession(
-    sub: string,
-    sessionTimeToLiveInMilliseconds: number,
+    sessionTimeToLiveInSeconds: number,
+    subjectIdentifier: string,
   ): Promise<Result<string | null>> {
     const queryCommandInput: QueryCommandInput = {
       TableName: this.tableName,
-      IndexName: this.indexName,
+      IndexName: "subjectIdentifier",
       KeyConditionExpression: "#sub = :sub and #sessionState = :sessionState",
       FilterExpression:
         ":currentTimeInMs < #issuedOn + :sessionTimeToLiveInMilliseconds",
@@ -38,13 +36,13 @@ export class SessionService implements IGetActiveSession, ICreateSession {
         "#sub": "sub",
       },
       ExpressionAttributeValues: {
-        ":sub": { S: sub },
+        ":sub": { S: subjectIdentifier },
         ":sessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
         ":currentTimeInMs": {
           S: Date.now().toString(),
         },
         ":sessionTtlInMs": {
-          S: sessionTimeToLiveInMilliseconds.toString(),
+          S: sessionTimeToLiveInSeconds.toString(),
         },
       },
       ProjectionExpression: "#sessionId",
@@ -184,8 +182,8 @@ interface IPutSessionConfig {
 
 export interface IGetActiveSession {
   getActiveSession: (
-    sub: string,
-    sessionTimeToLiveInMilliseconds: number,
+    sessionTimeToLiveInSeconds: number,
+    subjectIdentifier: string,
   ) => Promise<Result<string | null>>;
 }
 

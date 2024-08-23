@@ -143,14 +143,11 @@ export async function lambdaHandlerConstructor(
   }
 
   // Create a session
-  const sessionService = dependencies.sessionService(
-    config.SESSION_TABLE_NAME,
-    config.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
-  );
+  const sessionService = dependencies.sessionService(config.SESSION_TABLE_NAME);
 
   const activeSessionResult = await sessionService.getActiveSession(
-    requestBody.sub,
     config.SESSION_TTL_IN_MILLISECONDS,
+    requestBody.sub,
   );
   if (activeSessionResult.isError) {
     logger.log("ERROR_RETRIEVING_SESSION", {
