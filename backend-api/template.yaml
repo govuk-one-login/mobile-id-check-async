@@ -90,7 +90,7 @@ Conditions:
       - !Ref Environment
       - production
 
-  RegionalMockApiGwDeployment: !Or
+  MockPrivateApiDeployment: !Or
     - !Equals
       - !Ref Environment
       - dev
@@ -187,10 +187,11 @@ Resources:
       Auth:
         DefaultAuthorizer: AWS_IAM
         ApiKeyRequired: false
-    Condition: RegionalMockApiGwDeployment
+    Condition: MockPrivateApiDeployment
 
   MockPrivateApiAccessLogs:
     Type: AWS::Logs::LogGroup
+    Condition: MockPrivateApiDeployment
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-regional-api-access-logs
       RetentionInDays: 30
@@ -228,6 +229,7 @@ Resources:
 
   AsyncTokenFunctionMockPrivateApiPermission:
     Type: AWS::Lambda::Permission
+    Condition: MockPrivateApiDeployment
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt AsyncTokenFunction.Arn
@@ -336,8 +338,9 @@ Resources:
       SourceAccount: !Sub ${AWS::AccountId}
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApi}/*/*/*
 
-  AsyncCredentialFunctionPermission:
+  AsyncCredentialFunctionMockPrivateApiPermission:
     Type: AWS::Lambda::Permission
+    Condition: MockPrivateApiDeployment
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt AsyncCredentialFunction.Arn
