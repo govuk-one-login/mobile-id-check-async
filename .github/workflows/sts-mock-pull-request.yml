@@ -1,4 +1,4 @@
-name: backend-api pull request
+name: sts-mock pull request
 on:
   # Triggers the workflow on pull request events for all branches
   pull_request:
@@ -10,8 +10,9 @@ on:
       - ready_for_review
       - synchronize
     paths:
-      - "backend-api/**"
-      - ".github/workflows/backend-api-pull-request.yml"
+      - "sts-mock/**"
+      - ".github/workflows/sts-mock-pull-request.yml"
+
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -22,7 +23,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: backend-api
+        working-directory: sts-mock
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -35,7 +36,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: backend-api/package-lock.json
+          cache-dependency-path: sts-mock/package-lock.json
 
       - name: Install dependencies
         run: npm install
@@ -46,19 +47,6 @@ jobs:
       - name: Check formatting using Prettier
         run: npm run format:check
 
-      # Runs unit, infra and pact tests
+      # Runs unit and infrastructure tests
       - name: Run tests 
         run: npm run test
-
-      - name: "Run SonarCloud Scan"
-        uses: SonarSource/sonarcloud-github-action@e44258b109568baa0df60ed515909fc6c72cba92 # master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: SonarQube Quality Gate check
-        uses: Sonarsource/sonarqube-quality-gate-action@72f24ebf1f81eda168a979ce14b8203273b7c3ad # master
-        # Force to fail step after specific time
-        timeout-minutes: 5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

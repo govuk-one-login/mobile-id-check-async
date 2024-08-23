@@ -40,8 +40,8 @@ const env = {
   SESSION_TABLE_NAME: "mockTableName",
   SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: "mockIndexName",
   SESSION_TTL_IN_MILLISECONDS: "12345",
-  SQS_QUEUE: "mockSqsQueue",
-  CLIENT_REGISTRY_PARAMETER_NAME: "mockParmaterName",
+  TXMA_SQS: "mockSqsQueue",
+  CLIENT_REGISTRY_SECRET_NAME: "mockParmaterName",
 };
 
 describe("Async Credential", () => {
@@ -596,9 +596,9 @@ describe("Async Credential", () => {
         );
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
-          statusCode: 401,
+          statusCode: 400,
           body: JSON.stringify({
-            error: "Unauthorized",
+            error: "invalid_request",
             error_description: "Invalid signature",
           }),
         });
