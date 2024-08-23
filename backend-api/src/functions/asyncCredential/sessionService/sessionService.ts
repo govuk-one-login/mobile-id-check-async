@@ -20,8 +20,8 @@ export class SessionService implements IGetActiveSession, ICreateSession {
   }
 
   async getActiveSession(
-    sessionTimeToLiveInMilliseconds: number,
     subjectIdentifier: string,
+    sessionTimeToLiveInMilliseconds: number,
   ): Promise<Result<string | null>> {
     const queryCommandInput: QueryCommandInput = {
       TableName: this.tableName,
@@ -182,8 +182,8 @@ interface IPutSessionConfig {
 
 export interface IGetActiveSession {
   getActiveSession: (
-    sessionTimeToLiveInSeconds: number,
     subjectIdentifier: string,
+    sessionTimeToLiveInSeconds: number,
   ) => Promise<Result<string | null>>;
 }
 
