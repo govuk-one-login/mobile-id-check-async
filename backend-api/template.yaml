@@ -104,11 +104,11 @@ Globals:
       - !Ref AWS::NoValue
     Environment:
       Variables:
-        SIGNING_KEY_ID: !ImportValue platform-kms-signing-key-arn
+        SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
         TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
 
         # ISSUER should be updated with DNS once available
-        ISSUER: abc123
+        ISSUER: mockIssuer
         SESSION_TABLE_NAME: !Ref SessionsTable
 
 Resources:
@@ -239,7 +239,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - kms:Sign
-                Resource: !ImportValue platform-kms-signing-key-arn
+                Resource: !GetAtt KMSSigningKey.Arn
         - PolicyName: AsyncTokenFunctionSQSPolicy
           PolicyDocument:
             Version: "2012-10-17"
@@ -351,7 +351,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - kms:Verify
-                Resource: !ImportValue platform-kms-signing-key-arn
+                Resource: !GetAtt KMSSigningKey.Arn
         - PolicyName: AsyncTokenFunctionSQSPolicy
           PolicyDocument:
             Version: "2012-10-17"
