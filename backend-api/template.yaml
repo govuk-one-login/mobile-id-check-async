@@ -325,7 +325,7 @@ Resources:
                   - dynamodb:GetItem
                   - dynamodb:Query
                 Resource: !GetAtt SessionsTable.Arn
-        - PolicyName: AsyncTokenFunctionSecretsManagerPolicy
+        - PolicyName: AsyncCredentialFunctionSecretsManagerPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
