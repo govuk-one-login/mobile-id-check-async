@@ -20,7 +20,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
   }
 
   async getActiveSession(
-    sessionTimeToLiveInSeconds: number,
+    sessionTimeToLiveInMilliseconds: number,
     subjectIdentifier: string,
   ): Promise<Result<string | null>> {
     const queryCommandInput: QueryCommandInput = {
@@ -42,7 +42,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
           S: Date.now().toString(),
         },
         ":sessionTtlInMs": {
-          S: sessionTimeToLiveInSeconds.toString(),
+          S: sessionTimeToLiveInMilliseconds.toString(),
         },
       },
       ProjectionExpression: "#sessionId",
