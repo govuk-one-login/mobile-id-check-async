@@ -38,6 +38,7 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
       SigningAlgorithm: "ECDSA_SHA_256",
       Signature: format.joseToDer(signature, "ES256"),
       Message: Buffer.from(`${header}.${payload}`),
+      MessageType: "RAW"
     });
 
     const result = await kmsClient.send(verifyCommand);
