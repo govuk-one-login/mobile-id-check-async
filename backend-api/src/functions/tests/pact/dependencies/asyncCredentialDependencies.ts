@@ -25,9 +25,7 @@ const defaultPassingDependencies = {
     new MockClientRegistryServiceGetPartialClientSuccessResultIPV(),
   tokenService: () => new MockTokenServiceSuccessIPV(),
   sessionService: (sessionTableName: string) =>
-    new MockSessionServiceCreateSessionSuccessResult(
-      sessionTableName,
-    ),
+    new MockSessionServiceCreateSessionSuccessResult(sessionTableName),
 };
 
 export class AsyncCredentialDependencies {
