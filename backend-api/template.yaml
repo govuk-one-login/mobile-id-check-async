@@ -104,11 +104,12 @@ Globals:
       - !Ref AWS::NoValue
     Environment:
       Variables:
-        SIGNING_KEY_ID: !ImportValue platform-kms-signing-key-arn
+        SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
         TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
 
         # ISSUER should be updated with DNS once available
-        ISSUER: abc123
+        ISSUER: mockIssuer
+        SESSION_TABLE_NAME: !Ref SessionsTable
 
 Resources:
 
@@ -238,7 +239,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - kms:Sign
-                Resource: !ImportValue platform-kms-signing-key-arn
+                Resource: !GetAtt KMSSigningKey.Arn
         - PolicyName: AsyncTokenFunctionSQSPolicy
           PolicyDocument:
             Version: "2012-10-17"
@@ -253,7 +254,6 @@ Resources:
                   - kms:Decrypt
                   - kms:GenerateDataKey
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
-
       RoleName: !Sub ${AWS::StackName}-token-lambda
       PermissionsBoundary: !If
         - UsePermissionsBoundary
@@ -281,6 +281,7 @@ Resources:
       Environment:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
+          SESSION_TTL_IN_MILLISECONDS: 3600000 #Used to set time to live when creating sessions. Set to 1 day.
       Events:
         AsyncCredential:
           Type: Api
@@ -315,7 +316,25 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: AsyncTokenFunctionSsmPolicy
+        - PolicyName: DynamoReadSessionsTable
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:Query
+                Resource: !GetAtt SessionsTable.Arn
+        - PolicyName: AsyncCredentialFunctionSecretsManagerPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource:
+                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistry-?????? # wildcard as AWS automatically appends 6 characters to the end of a secret arn
+        - PolicyName: AsyncCredentialFunctionLoggingPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -325,19 +344,69 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
+        - PolicyName: AsyncCredentialFunctionKmsPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
               - Effect: Allow
                 Action:
-                  - secretsmanager:GetSecretValue
-                Resource:
-                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistry-?????? # wildcard as AWS automatically appends 6 characters to the end of a secret arn
+                  - kms:Verify
+                Resource: !GetAtt KMSSigningKey.Arn
+        - PolicyName: AsyncCredentialFunctionSQSPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                Resource: !GetAtt TxMASQSQueue.Arn
+              - Effect: Allow
+                Action:
+                  - kms:Encrypt
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Resource: !GetAtt TxMAKMSEncryptionKey.Arn
 
-                  # TxMA Audit service
+                # TxMA Audit service
       RoleName: !Sub ${AWS::StackName}-credential-lambda
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
 
+  SessionsTable:
+    Type: AWS::DynamoDB::Table
+
+    # Disabling check for point in time backup
+    # checkov:skip=CKV_AWS_28:Ensure Dynamodb point in time recovery (backup) is enabled
+    # checkov:skip=CKV_AWS_119:No PII in table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: sessionId
+          AttributeType: S
+        - AttributeName: subjectIdentifier
+          AttributeType: S
+      KeySchema:
+        - AttributeName: sessionId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: subjectIdentifier-index
+          KeySchema:
+            - AttributeName: subjectIdentifier
+              KeyType: HASH
+          Projection:
+            NonKeyAttributes:
+              - authSessionState
+              - sessionId
+            ProjectionType: INCLUDE
+      BillingMode: PAY_PER_REQUEST
+      SSESpecification:
+        SSEEnabled: true
+      TimeToLiveSpecification:
+        AttributeName: timeToLive
+        Enabled: true
+
+  # ------------------------------ #
   TxMASQSQueue:
     Type: AWS::SQS::Queue
     Properties:
