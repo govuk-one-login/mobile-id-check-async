@@ -352,7 +352,7 @@ Resources:
                 Action:
                   - kms:Verify
                 Resource: !GetAtt KMSSigningKey.Arn
-        - PolicyName: AsyncTokenFunctionSQSPolicy
+        - PolicyName: AsyncCredentialFunctionSQSPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
