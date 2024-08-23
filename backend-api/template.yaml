@@ -90,6 +90,14 @@ Conditions:
       - !Ref Environment
       - production
 
+  RegionalMockApiGwDeployment: !Or
+    - !Equals
+      - !Ref Environment
+      - dev
+    - !Equals
+      - !Ref Environment
+      - build
+
 Transform: AWS::Serverless-2016-10-31
 
 Globals:
@@ -110,15 +118,10 @@ Globals:
         # ISSUER should be updated with DNS once available
         ISSUER: abc123
 
-Conditions:
-  RegionalMockApiGwDeployment: !Or 
-    - !Equals [!Ref Environment, dev] 
-    - !Equals [!Ref Environment, build]
-
 Resources:
 
   ### Private APIgw for Client Credentials grant flow
-  BackendAsyncCredentialApi:
+  PrivateApi:
     Type: AWS::Serverless::Api
     Properties:
       Name: !Sub ${AWS::StackName}-private-api
@@ -161,49 +164,38 @@ Resources:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
       RetentionInDays: 30
 
-  MockIpvCoreRegionalApiGw:
+  MockPrivateApi:
     Type: AWS::Serverless::Api
-    Condition: RegionalMockApiGwDeployment
     Properties:
-      Name: !Sub MockIpvCore-regional-${Environment}-${AWS::StackName}-api
-      Description: Regional IPVCore API Gateway for mock calls.
+      Name: !Sub ${AWS::StackName}-MockPrivateApi
+      Description: Regional equivalent of the private Api to enable testing from outside AWS
       EndpointConfiguration: REGIONAL
       StageName: !Ref Environment
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: /openApiSpecs/async-public-spec.yaml
+            Location: ./openApiSpecs/async-private-spec.yaml
       MethodSettings:
         - LoggingLevel: INFO
           HttpMethod: '*'
-          ResourcePath: '/*'
+          ResourcePath: /*
           MetricsEnabled: true
       AccessLogSetting:
-        DestinationArn: !GetAtt RegionalApiGwAccessLogs.Arn
-        Format: >-
-          {
-            "requestId" : "$context.requestId",
-            "ip" : "$context.identity.sourceIp",
-            "requestTime" : "$context.requestTime",
-            "httpMethod" : "$context.httpMethod",
-            "path" : "$context.path",
-            "routeKey" : "$context.routeKey",
-            "status" : "$context.status",
-            "protocol" : "$context.protocol",
-            "responseLength" : "$context.responseLength",
-            "integrationError" : "$context.integrationErrorMessage"
-          }
+        DestinationArn: !GetAtt MockPrivateApiAccessLogs.Arn
+        Format: '{"requestId" : "$context.requestId","ip" : "$context.identity.sourceIp","requestTime" : "$context.requestTime","httpMethod" : "$context.httpMethod","path" : "$context.path","routeKey" : "$context.routeKey","status" : "$context.status","protocol" : "$context.protocol","responseLength" : "$context.responseLength","integrationError" : "$context.integrationErrorMessage"}'
       Auth:
         DefaultAuthorizer: AWS_IAM
+        ApiKeyRequired: false
+    Condition: RegionalMockApiGwDeployment
 
-  RegionalApiGwAccessLogs:
+  MockPrivateApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${StackName}-regional-api-access-logs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-regional-api-access-logs
       RetentionInDays: 30
 
-### Token lambda
+      ### Token lambda
   AsyncTokenFunction:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -217,17 +209,9 @@ Resources:
         EntryPoints:
           - src/functions/asyncToken/asyncTokenHandler.ts
     Properties:
-      AutoPublishAlias: live
       FunctionName: !Sub ${AWS::StackName}-token
       Runtime: nodejs20.x
       Handler: asyncTokenHandler.lambdaHandler
-      Events:
-        AsyncToken:
-          Type: Api
-          Properties:
-            Path: /async/token
-            Method: post
-            RestApiId: !Ref BackendAsyncCredentialApi
       Role: !GetAtt AsyncTokenLambdaRole.Arn
       Environment:
         Variables:
@@ -238,9 +222,18 @@ Resources:
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt AsyncTokenFunction.Arn
-      Principal: events.amazonaws.com
+      Principal: apigateway.amazonaws.com
       SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialApi}/*/*/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApi}/*/*/*
+
+  AsyncTokenFunctionMockPrivateApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt AsyncTokenFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceAccount: !Sub ${AWS::AccountId}
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MockPrivateApi}/*/*/*
 
   AsyncTokenLogGroup:
     Type: AWS::Logs::LogGroup
@@ -300,7 +293,6 @@ Resources:
                   - kms:Decrypt
                   - kms:GenerateDataKey
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
-
       RoleName: !Sub ${AWS::StackName}-token-lambda
       PermissionsBoundary: !If
         - UsePermissionsBoundary
@@ -328,13 +320,6 @@ Resources:
       Environment:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
-      Events:
-        AsyncCredential:
-          Type: Api
-          Properties:
-            Path: /async/credential
-            Method: post
-            RestApiId: !Ref BackendAsyncCredentialApi
 
   AsyncCredentialLogGroup:
     Type: AWS::Logs::LogGroup
@@ -347,9 +332,18 @@ Resources:
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt AsyncCredentialFunction.Arn
-      Principal: events.amazonaws.com
+      Principal: apigateway.amazonaws.com
       SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialApi}/*/*/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApi}/*/*/*
+
+  AsyncCredentialFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt AsyncCredentialFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceAccount: !Sub ${AWS::AccountId}
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MockPrivateApi}/*/*/*
 
   AsyncCredentialLambdaRole:
     Type: AWS::IAM::Role
