@@ -344,7 +344,7 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
-        - PolicyName: AsyncTokenFunctionKmsPolicy
+        - PolicyName: AsyncCredentialFunctionKmsPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
