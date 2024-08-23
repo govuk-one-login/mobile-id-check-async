@@ -271,6 +271,23 @@ describe("Token Service", () => {
     const mockJwt =
       "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.tyh-VfuzIxCyGYDlkBA7DfyjrqmSHu6pQ2hoZuFqUSLPNY2N0mpHb3nk5K17HWP_3cYHBw7AhHale5wky6-sVA";
 
+    describe("Given call to KMS returns an internal server error", () => {
+      it("Returns errorResult", async () => {
+        const kmsMock = mockClient(KMSClient);
+        kmsMock.on(VerifyCommand).rejects("Mock internal server error");
+        const tokenService = new TokenService();
+        const result = await tokenService.verifyTokenSignature(
+          "mockKeyId",
+          mockJwt,
+        );
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage:
+            "Unexpected error when verifying jwt signature with KMS",
+          errorCategory: "SERVER_ERROR",
+        });
+      });
+    });
     describe("Given KMS cannot calculate signature validity", () => {
       it("Returns a log", async () => {
         const kmsMock = mockClient(KMSClient);

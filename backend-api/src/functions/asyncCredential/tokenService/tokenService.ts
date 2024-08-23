@@ -38,10 +38,19 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
       SigningAlgorithm: "ECDSA_SHA_256",
       Signature: format.joseToDer(signature, "ES256"),
       Message: Buffer.from(`${header}.${payload}`),
-      MessageType: "RAW"
+      MessageType: "RAW",
     });
 
-    const result = await kmsClient.send(verifyCommand);
+    let result;
+    try {
+      result = await kmsClient.send(verifyCommand);
+    } catch {
+      return errorResult({
+        errorMessage: "Unexpected error when verifying jwt signature with KMS",
+        errorCategory: "SERVER_ERROR",
+      });
+    }
+
     if (result.SignatureValid !== true) {
       return errorResult({
         errorMessage: "Signature is invalid",
