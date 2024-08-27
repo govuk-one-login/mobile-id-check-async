@@ -644,7 +644,7 @@ Resources:
       Role: !GetAtt JsonWebKeysFunctionLambdaRole.Arn
       Environment:
         Variables:
-          KEY_IS: !ImportValue platform-kms-encryption-key-arn
+          KEY_ID: !ImportValue platform-kms-encryption-key-arn
           JWKS_BUCKET_NAME: !Ref JsonWebKeysBucket
           JWKS_FILE_NAME: .well-known/jwks.json
 
@@ -660,6 +660,8 @@ Resources:
               Service: lambda.amazonaws.com
             Action:
               - sts:AssumeRole
+#      ManagedPolicyArns:
+#        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Policies:
         - PolicyName: UploadPolicy
           PolicyDocument:
