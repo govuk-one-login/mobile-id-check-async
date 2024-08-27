@@ -692,7 +692,7 @@ Resources:
       Role: !GetAtt JsonWebKeysFunctionLambdaRole.Arn
       Environment:
         Variables:
-          KEY_ID: !ImportValue platform-kms-encryption-key-arn
+          KEY_ID: !Ref KMSEncryptionKey
           JWKS_BUCKET_NAME: !Ref JsonWebKeysBucket
           JWKS_FILE_NAME: .well-known/jwks.json
 
@@ -726,7 +726,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - kms:GetPublicKey
-                Resource: !ImportValue platform-kms-encryption-key-arn
+                Resource: !GetAtt KMSEncryptionKey.Arn
         - PolicyName: LoggingPolicy
           PolicyDocument:
             Version: 2012-10-17
