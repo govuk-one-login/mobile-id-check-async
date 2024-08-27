@@ -260,46 +260,73 @@ Resources:
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
 
-AsyncActiveSessionFunction:
-    Type: AWS::Serverless::Function
-    DependsOn:
-      - AsyncActiveSessionLogGroup
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: es2022
-        Sourcemap: false
-        EntryPoints:
-          - src/functions/asyncActiveSession/asyncActiveSessionHandler.ts
-    Properties:
-      AutoPublishAlias: live
-      FunctionName: !Sub ${AWS::StackName}-active-session
-      Runtime: nodejs20.x
-      Handler: asyncActiveSessionHandler.lambdaHandler
-      Events:
-        AsyncActiveSession:
-          Type: Api
-          Properties:
-            Path: /async/activeSession
-            Method: post
-            RestApiId: !Ref BackendAsyncCredentialApi
-      Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
+  AsyncActiveSessionFunction:
+      Type: AWS::Serverless::Function
+      DependsOn:
+        - AsyncActiveSessionLogGroup
+      Metadata:
+        BuildMethod: esbuild
+        BuildProperties:
+          Minify: true
+          Target: es2022
+          Sourcemap: false
+          EntryPoints:
+            - src/functions/asyncActiveSession/asyncActiveSessionHandler.ts
+      Properties:
+        AutoPublishAlias: live
+        FunctionName: !Sub ${AWS::StackName}-active-session
+        Runtime: nodejs20.x
+        Handler: asyncActiveSessionHandler.lambdaHandler
+        Events:
+          AsyncActiveSession:
+            Type: Api
+            Properties:
+              Path: /async/activeSession
+              Method: post
+              RestApiId: !Ref BackendAsyncCredentialApi
+        Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
 
-AsyncActiveSessionFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt AsyncActiveSessionFunction.Arn
-      Principal: events.amazonaws.com
-      SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialApi}/*/*/*
+  AsyncActiveSessionFunctionPermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        Action: lambda:InvokeFunction
+        FunctionName: !GetAtt AsyncActiveSessionFunction.Arn
+        Principal: events.amazonaws.com
+        SourceAccount: !Sub ${AWS::AccountId}
+        SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialApi}/*/*/*
 
-AsyncActiveSessionLogGroup:
-    Type: AWS::Logs::LogGroup
+  AsyncActiveSessionLogGroup:
+      Type: AWS::Logs::LogGroup
+      Properties:
+        RetentionInDays: 30
+        LogGroupName: !Sub /aws/lambda/${AWS::StackName}-active-session
+
+  AsyncActiveSessionLambdaRole:
+    Type: AWS::IAM::Role
     Properties:
-      RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-active-session
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AsyncActiveSessionFunctionLoggingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+      RoleName: !Sub ${AWS::StackName}-active-session-lambda
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
 
   AsyncCredentialFunction:
     Type: AWS::Serverless::Function
