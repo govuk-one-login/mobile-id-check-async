@@ -286,6 +286,15 @@ AsyncActiveSessionFunction:
             RestApiId: !Ref BackendAsyncCredentialApi
       Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
 
+AsyncActiveSessionFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt AsyncActiveSessionFunction.Arn
+      Principal: events.amazonaws.com
+      SourceAccount: !Sub ${AWS::AccountId}
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialApi}/*/*/*
+
   AsyncCredentialFunction:
     Type: AWS::Serverless::Function
     DependsOn:
