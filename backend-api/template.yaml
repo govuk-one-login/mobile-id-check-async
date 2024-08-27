@@ -295,6 +295,12 @@ AsyncActiveSessionFunctionPermission:
       SourceAccount: !Sub ${AWS::AccountId}
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialApi}/*/*/*
 
+AsyncActiveSessionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-active-session
+
   AsyncCredentialFunction:
     Type: AWS::Serverless::Function
     DependsOn:
