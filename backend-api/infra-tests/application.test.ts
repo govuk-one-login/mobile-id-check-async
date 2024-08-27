@@ -129,7 +129,12 @@ describe("Backend application infrastructure", () => {
   describe("Lambdas", () => {
     describe("Globals", () => {
       test("Global environment variables are set", () => {
-        const expectedGlobals = ["SIGNING_KEY_ID", "ISSUER", "TXMA_SQS"];
+        const expectedGlobals = [
+          "SIGNING_KEY_ID",
+          "ISSUER",
+          "TXMA_SQS",
+          "SESSION_TABLE_NAME",
+        ];
         const envVars =
           template.toJSON().Globals.Function.Environment.Variables;
         Object.keys(envVars).every((envVar) => {

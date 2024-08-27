@@ -5,7 +5,6 @@ export interface Config {
   SIGNING_KEY_ID: string;
   ISSUER: string;
   SESSION_TABLE_NAME: string;
-  SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: string;
   SESSION_TTL_IN_MILLISECONDS: number;
   TXMA_SQS: string;
   CLIENT_REGISTRY_SECRET_NAME: string;
@@ -26,11 +25,6 @@ export class ConfigService implements IGetConfig<Config> {
     if (!env.SESSION_TABLE_NAME)
       return errorResult({
         errorMessage: "No SESSION_TABLE_NAME",
-        errorCategory: "SERVER_ERROR",
-      });
-    if (!env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME)
-      return errorResult({
-        errorMessage: "No SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME",
         errorCategory: "SERVER_ERROR",
       });
     if (!env.SESSION_TTL_IN_MILLISECONDS)
@@ -58,8 +52,6 @@ export class ConfigService implements IGetConfig<Config> {
       SIGNING_KEY_ID: env.SIGNING_KEY_ID,
       ISSUER: env.ISSUER,
       SESSION_TABLE_NAME: env.SESSION_TABLE_NAME,
-      SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME:
-        env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
       SESSION_TTL_IN_MILLISECONDS: parseInt(env.SESSION_TTL_IN_MILLISECONDS),
       TXMA_SQS: env.TXMA_SQS,
       CLIENT_REGISTRY_SECRET_NAME: env.CLIENT_REGISTRY_SECRET_NAME,

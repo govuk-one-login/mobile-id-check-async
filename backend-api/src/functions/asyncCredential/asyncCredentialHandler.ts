@@ -77,8 +77,15 @@ export async function lambdaHandlerConstructor(
     encodedJwt,
   );
   if (verifyTokenSignatureResult.isError) {
+    const errorMessage = verifyTokenSignatureResult.value.errorMessage;
+    if (verifyTokenSignatureResult.value.errorCategory === "SERVER_ERROR") {
+      logger.log("ERROR_VERIFYING_SIGNATURE", {
+        errorMessage,
+      });
+      return serverError500Response;
+    }
     logger.log("TOKEN_SIGNATURE_INVALID", {
-      errorMessage: verifyTokenSignatureResult.value.errorMessage,
+      errorMessage,
     });
     return badRequestResponse({
       error: "invalid_request",
@@ -143,10 +150,7 @@ export async function lambdaHandlerConstructor(
   }
 
   // Create a session
-  const sessionService = dependencies.sessionService(
-    config.SESSION_TABLE_NAME,
-    config.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
-  );
+  const sessionService = dependencies.sessionService(config.SESSION_TABLE_NAME);
 
   const activeSessionResult = await sessionService.getActiveSession(
     requestBody.sub,

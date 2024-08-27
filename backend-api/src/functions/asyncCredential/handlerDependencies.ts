@@ -24,10 +24,7 @@ export interface IAsyncCredentialDependencies {
   clientRegistryService: (
     clientRegistryParameterName: string,
   ) => IGetPartialRegisteredClientByClientId;
-  sessionService: (
-    tableName: string,
-    indexName: string,
-  ) => IGetActiveSession & ICreateSession;
+  sessionService: (tableName: string) => IGetActiveSession & ICreateSession;
   env: NodeJS.ProcessEnv;
 }
 
@@ -38,6 +35,5 @@ export const dependencies: IAsyncCredentialDependencies = {
   clientRegistryService: (clientRegistryParameterName: string) =>
     new ClientRegistryService(clientRegistryParameterName),
   tokenService: () => new TokenService(),
-  sessionService: (tableName: string, indexName: string) =>
-    new SessionService(tableName, indexName),
+  sessionService: (tableName: string) => new SessionService(tableName),
 };

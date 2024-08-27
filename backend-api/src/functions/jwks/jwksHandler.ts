@@ -17,7 +17,6 @@ export const lambdaHandlerConstructor = (dependencies: IJwksDependencies) => {
     logger.addContext(context);
     logger.log("STARTED");
 
-
     const configResult = new ConfigService().getConfig(dependencies.env);
     if (configResult.isError) {
       logger.log("ENVIRONMENT_VARIABLE_MISSING", {

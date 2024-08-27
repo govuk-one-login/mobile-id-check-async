@@ -20,6 +20,7 @@ import {
   MockTokenServiceGetDecodedTokenErrorResult,
   MockTokenServiceInvalidSignatureErrorResult,
   MockTokenServiceSuccess,
+  MockTokenServiceUnexpectedErrorResult,
 } from "./tokenService/tests/mocks";
 import {
   MockClientRegistryServiceeGetPartialClientInternalServerResult,
@@ -38,7 +39,6 @@ const env = {
   SIGNING_KEY_ID: "mockKid",
   ISSUER: "mockIssuer",
   SESSION_TABLE_NAME: "mockTableName",
-  SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: "mockIndexName",
   SESSION_TTL_IN_MILLISECONDS: "12345",
   TXMA_SQS: "mockSqsQueue",
   CLIENT_REGISTRY_SECRET_NAME: "mockParmaterName",
@@ -57,10 +57,7 @@ describe("Async Credential", () => {
       clientRegistryService: () =>
         new MockClientRegistryServiceGetPartialClientSuccessResult(),
       sessionService: () =>
-        new MockSessionServiceNoActiveSession(
-          env.SESSION_TABLE_NAME,
-          env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
-        ),
+        new MockSessionServiceNoActiveSession(env.SESSION_TABLE_NAME),
       env,
     };
   });
@@ -568,39 +565,79 @@ describe("Async Credential", () => {
 
   describe("JWT signature verification", () => {
     describe("Given that the JWT signature verification fails", () => {
-      it("Returns 401 Unauthorized", async () => {
-        dependencies.tokenService = () =>
-          new MockTokenServiceInvalidSignatureErrorResult();
+      describe("Given there was an unexpected error when verifying signature", () => {
+        it("Returns 500 Internal error", async () => {
+          dependencies.tokenService = () =>
+            new MockTokenServiceUnexpectedErrorResult();
 
-        const jwtBuilder = new MockJWTBuilder();
-        const event = buildRequest({
-          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-          body: JSON.stringify({
-            state: "mockState",
-            sub: "mockSub",
-            client_id: "mockClientId",
-            govuk_signin_journey_id: "mockGovukSigninJourneyId",
-          }),
+          const jwtBuilder = new MockJWTBuilder();
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+            body: JSON.stringify({
+              state: "mockState",
+              sub: "mockSub",
+              client_id: "mockClientId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+            }),
+          });
+
+          const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
+            dependencies,
+            event,
+          );
+
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "ERROR_VERIFYING_SIGNATURE",
+          );
+          expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+            "Unexpected error",
+          );
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 500,
+            body: JSON.stringify({
+              error: "server_error",
+              error_description: "Server Error",
+            }),
+          });
         });
+      });
 
-        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-        );
+      describe("Given signature is invalid", () => {
+        it("Returns 401 Unauthorized", async () => {
+          dependencies.tokenService = () =>
+            new MockTokenServiceInvalidSignatureErrorResult();
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-          "TOKEN_SIGNATURE_INVALID",
-        );
-        expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
-          "Failed to verify token signature",
-        );
-        expect(result).toStrictEqual({
-          headers: { "Content-Type": "application/json" },
-          statusCode: 400,
-          body: JSON.stringify({
-            error: "invalid_request",
-            error_description: "Invalid signature",
-          }),
+          const jwtBuilder = new MockJWTBuilder();
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+            body: JSON.stringify({
+              state: "mockState",
+              sub: "mockSub",
+              client_id: "mockClientId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+            }),
+          });
+
+          const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
+            dependencies,
+            event,
+          );
+
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "TOKEN_SIGNATURE_INVALID",
+          );
+          expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+            "Failed to verify token signature",
+          );
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 400,
+            body: JSON.stringify({
+              error: "invalid_request",
+              error_description: "Invalid signature",
+            }),
+          });
         });
       });
     });
@@ -783,7 +820,6 @@ describe("Async Credential", () => {
           dependencies.sessionService = () =>
             new MockSessionServiceGetSessionBySubErrorResult(
               env.SESSION_TABLE_NAME,
-              env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
 
           const result = await lambdaHandlerConstructor(dependencies, event);
@@ -823,7 +859,6 @@ describe("Async Credential", () => {
           dependencies.sessionService = () =>
             new MockSessionServiceGetActiveSessionSuccessResult(
               env.SESSION_TABLE_NAME,
-              env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
 
           const result = await lambdaHandlerConstructor(dependencies, event);
@@ -866,7 +901,6 @@ describe("Async Credential", () => {
           dependencies.sessionService = () =>
             new MockSessionServiceCreateSessionErrorResult(
               env.SESSION_TABLE_NAME,
-              env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
             );
 
           const result = await lambdaHandlerConstructor(dependencies, event);
@@ -905,7 +939,6 @@ describe("Async Credential", () => {
             dependencies.sessionService = () =>
               new MockSessionServiceCreateSessionSuccessResult(
                 env.SESSION_TABLE_NAME,
-                env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
               );
 
             const result = await lambdaHandlerConstructor(dependencies, event);
@@ -948,7 +981,6 @@ describe("Async Credential", () => {
             dependencies.sessionService = () =>
               new MockSessionServiceCreateSessionSuccessResult(
                 env.SESSION_TABLE_NAME,
-                env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
               );
 
             const result = await lambdaHandlerConstructor(dependencies, event);
