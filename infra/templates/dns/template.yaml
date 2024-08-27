@@ -37,7 +37,7 @@ Resources:
             - review-b-async.account.gov.uk
             - !Sub review-b-async.${Environment}.account.gov.uk
         - Key: Product
-          Value: "ID Check V2 App"
+          Value: "ID Check Async"
         - Key: System
           Value: "ID Check Async"
         - Key: Environment
@@ -52,7 +52,7 @@ Resources:
       Value: !Ref PublicHostedZone
       Tags:
         Name: !Sub "/${Environment}/Platform/Route53/PrimaryZoneID"
-        Product: "ID Check V2 App"
+        Product: "ID Check Async"
         System: "ID Check Async"
         Environment: !Sub "${Environment}"
 

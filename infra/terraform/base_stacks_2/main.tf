@@ -1,5 +1,4 @@
 locals {
-  
   account_vars = {
     dev         = { account_id = "211125300205" }
     build       = { account_id = "058264551042" }

@@ -27,6 +27,11 @@ Parameters:
       - integration
       - production
 
+Conditions:
+  IsDevEnvironment: !Equals
+    - !Ref Environment
+    - dev
+
 Resources:
   ExternalCertificate:
     Type: AWS::CertificateManager::Certificate
@@ -39,15 +44,12 @@ Resources:
       - !Sub
         - "api.${DNSSUFFIX}"
         - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
-      - !Sub
-        - "www.${DNSSUFFIX}"
-        - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
-      - !Sub
-        - "app.${DNSSUFFIX}"
-        - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
-      - !Sub
-        - "*.${DNSSUFFIX}"
-        - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
+      - !If
+        - IsDevEnvironment  
+        - !Sub
+          - "*.${DNSSUFFIX}"
+          - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
+        - !Ref AWS::NoValue
 
       DomainValidationOptions:
         - DomainName: !Sub
@@ -57,15 +59,7 @@ Resources:
         - DomainName: !Sub
           - "api.${DNSSUFFIX}"
           - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
-          HostedZoneId: !ImportValue PublicHostedZoneId
-        - DomainName: !Sub
-          - "www.${DNSSUFFIX}"
-          - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
-          HostedZoneId: !ImportValue PublicHostedZoneId
-        - DomainName: !Sub
-          - "app.${DNSSUFFIX}"
-          - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
-          HostedZoneId: !ImportValue PublicHostedZoneId
+          HostedZoneId: !ImportValue PublicHostedZoneId        
       ValidationMethod: DNS
       Tags:
         - Key: Name
@@ -73,7 +67,7 @@ Resources:
             - "${DNSSUFFIX}"
             - DNSSUFFIX: !FindInMap [ PlatformConfiguration, !Ref Environment, DNSSUFFIX ]
         - Key: Product
-          Value: "ID Check V2 App"
+          Value: "ID Check Async"
         - Key: System
           Value: "ID Check Async"
         - Key: Environment
@@ -88,7 +82,7 @@ Resources:
       Value: !Ref ExternalCertificate
       Tags:
         Name: !Sub "/${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN"
-        Product: "ID Check V2 App"
+        Product: "ID Check Async"
         System: "ID Check Async"
         Environment: !Sub "${Environment}"
 
