@@ -570,7 +570,8 @@ Resources:
     Properties:
       FunctionName: !Sub ${AWS::StackName}-jwks
       Description: Convert ID Check public encryption keys to JWKS format and upload to S3
-      Handler: jwksHandler.handler
+      Runtime: nodejs20.x
+      Handler: jwksHandler.lambdaHandler
       Role: !GetAtt JwksUploaderFunctionLambdaRole.Arn
       Environment:
         Variables:

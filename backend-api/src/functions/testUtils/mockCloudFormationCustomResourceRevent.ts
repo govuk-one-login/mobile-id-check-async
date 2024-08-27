@@ -1,20 +1,20 @@
-import {CloudFormationCustomResourceEvent} from "aws-lambda";
+import { CloudFormationCustomResourceEvent } from "aws-lambda";
 
 export const getCloudFormationCustomResourceEvent = (
-    requestType: string = 'Create',
+  requestType: string = "Create",
 ): CloudFormationCustomResourceEvent => {
-    return {
-        RequestType: requestType,
-        ServiceToken: 'mockServiceToken',
-        ResponseURL: 'mockResponseUrl',
-        StackId: 'mockStackId',
-        RequestId: 'mockRequestId',
-        LogicalResourceId: 'mockLogicalResourceId',
-        ResourceType: 'AWS::CloudFormation::CustomResource',
-        PhysicalResourceId: 'mockPhysicalResourceId',
-        ResourceProperties: {
-            ServiceToken: 'mockServiceToken',
-            FunctionName: 'mockFunctionName',
-        },
-    } as CloudFormationCustomResourceEvent
-}
+  return {
+    RequestType: requestType,
+    ServiceToken: "mockServiceToken",
+    ResponseURL: "mockResponseUrl",
+    StackId: "mockStackId",
+    RequestId: "mockRequestId",
+    LogicalResourceId: "mockLogicalResourceId",
+    ResourceType: "AWS::CloudFormation::CustomResource",
+    PhysicalResourceId: "mockPhysicalResourceId",
+    ResourceProperties: {
+      ServiceToken: "mockServiceToken",
+      FunctionName: "mockFunctionName",
+    },
+  } as CloudFormationCustomResourceEvent;
+};
