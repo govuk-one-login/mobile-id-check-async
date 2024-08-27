@@ -417,7 +417,7 @@ paths:
                 type: "string"
       x-amazon-apigateway-integration:
         credentials:
-          Fn::GetAtt: [ "JsonWebKeysBucketRole", "Arn" ]
+          Fn::GetAtt: [ "JsonWebKeysBucketApiRole", "Arn" ]
         uri:
           Fn::Sub: "arn:aws:apigateway:${AWS::Region}:s3:path/${JsonWebKeysBucket}/.well-known/jwks.json"
         responses:

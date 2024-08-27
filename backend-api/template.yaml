@@ -43,6 +43,22 @@ Mappings:
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+  PublicApigw:
+    dev:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+    build:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    staging:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    integration:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    production:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
 
   TxMA:
     dev:
@@ -548,6 +564,38 @@ Resources:
       AliasName: !Sub alias/${AWS::StackName}-encryption-key
       TargetKeyId: !Ref KMSEncryptionKey
 
+  ### Regional APIgw
+  BackendAsyncPublicApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${AWS::StackName}-public-api
+      Description: Regional API Gateway
+      EndpointConfiguration: REGIONAL
+      StageName: !Ref Environment
+      OpenApiVersion: 3.0.0
+      AccessLogSetting:
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialApiAccessLogs}
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      MethodSettings:
+        - LoggingLevel: INFO
+          ResourcePath: /*
+          HttpMethod: '*'
+          DataTraceEnabled: false
+          MetricsEnabled: true
+          ThrottlingBurstLimit: !FindInMap
+            - PublicApigw
+            - !Ref Environment
+            - ApiBurstLimit
+          ThrottlingRateLimit: !FindInMap
+            - PublicApigw
+            - !Ref Environment
+            - ApiRateLimit
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./openApiSpecs/async-public-spec.yaml
+
   ### JWKS endpoint resources
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket
@@ -689,7 +737,6 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
-
 
   JsonWebKeysFunctionLogGroup:
     Type: AWS::Logs::LogGroup
