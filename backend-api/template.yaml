@@ -260,6 +260,32 @@ Resources:
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
 
+AsyncActiveSessionFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - AsyncActiveSessionLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2022
+        Sourcemap: false
+        EntryPoints:
+          - src/functions/asyncActiveSession/asyncActiveSessionHandler.ts
+    Properties:
+      AutoPublishAlias: live
+      FunctionName: !Sub ${AWS::StackName}-active-session
+      Runtime: nodejs20.x
+      Handler: asyncActiveSessionHandler.lambdaHandler
+      Events:
+        AsyncActiveSession:
+          Type: Api
+          Properties:
+            Path: /async/activeSession
+            Method: post
+            RestApiId: !Ref BackendAsyncCredentialApi
+      Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
+
   AsyncCredentialFunction:
     Type: AWS::Serverless::Function
     DependsOn:
