@@ -130,7 +130,7 @@ Globals:
 Resources:
 
   ### Private APIgw for Client Credentials grant flow
-  BackendAsyncCredentialApi:
+  BackendAsyncCredentialPrivateApi:
     Type: AWS::Serverless::Api
     Properties:
       Name: !Sub ${AWS::StackName}-private-api
@@ -197,7 +197,7 @@ Resources:
           Properties:
             Path: /async/token
             Method: post
-            RestApiId: !Ref BackendAsyncCredentialApi
+            RestApiId: !Ref BackendAsyncCredentialPrivateApi
       Role: !GetAtt AsyncTokenLambdaRole.Arn
       Environment:
         Variables:
@@ -210,7 +210,7 @@ Resources:
       FunctionName: !GetAtt AsyncTokenFunction.Arn
       Principal: events.amazonaws.com
       SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialApi}/*/*/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialPrivateApi}/*/*/*
 
   AsyncTokenLogGroup:
     Type: AWS::Logs::LogGroup
@@ -304,7 +304,7 @@ Resources:
           Properties:
             Path: /async/credential
             Method: post
-            RestApiId: !Ref BackendAsyncCredentialApi
+            RestApiId: !Ref BackendAsyncCredentialPrivateApi
 
   AsyncCredentialLogGroup:
     Type: AWS::Logs::LogGroup
@@ -319,7 +319,7 @@ Resources:
       FunctionName: !GetAtt AsyncCredentialFunction.Arn
       Principal: events.amazonaws.com
       SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialApi}/*/*/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialPrivateApi}/*/*/*
 
   AsyncCredentialLambdaRole:
     Type: AWS::IAM::Role
