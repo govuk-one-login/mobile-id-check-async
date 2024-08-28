@@ -43,6 +43,22 @@ Mappings:
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+  PublicApigw:
+    dev:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+    build:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    staging:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    integration:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    production:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
 
   TxMA:
     dev:
@@ -374,6 +390,70 @@ Resources:
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
 
+  SessionsTable:
+    Type: AWS::DynamoDB::Table
+
+    # Disabling check for point in time backup
+    # checkov:skip=CKV_AWS_28:Ensure Dynamodb point in time recovery (backup) is enabled
+    # checkov:skip=CKV_AWS_119:No PII in table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: sessionId
+          AttributeType: S
+        - AttributeName: subjectIdentifier
+          AttributeType: S
+      KeySchema:
+        - AttributeName: sessionId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: subjectIdentifier-index
+          KeySchema:
+            - AttributeName: subjectIdentifier
+              KeyType: HASH
+          Projection:
+            NonKeyAttributes:
+              - authSessionState
+              - sessionId
+            ProjectionType: INCLUDE
+      BillingMode: PAY_PER_REQUEST
+      SSESpecification:
+        SSEEnabled: true
+      TimeToLiveSpecification:
+        AttributeName: timeToLive
+        Enabled: true
+
+  ### Regional APIgw
+  BackendAsyncCredentialPublicApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${AWS::StackName}-public-api
+      Description: Regional API Gateway
+      EndpointConfiguration: REGIONAL
+      StageName: !Ref Environment
+      OpenApiVersion: 3.0.0
+      AccessLogSetting:
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialApiAccessLogs}
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      MethodSettings:
+        - LoggingLevel: INFO
+          ResourcePath: /*
+          HttpMethod: '*'
+          DataTraceEnabled: false
+          MetricsEnabled: true
+          ThrottlingBurstLimit: !FindInMap
+            - PublicApigw
+            - !Ref Environment
+            - ApiBurstLimit
+          ThrottlingRateLimit: !FindInMap
+            - PublicApigw
+            - !Ref Environment
+            - ApiRateLimit
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./openApiSpecs/async-public-spec.yaml
+
   AsyncActiveSessionFunction:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -397,7 +477,7 @@ Resources:
           Properties:
             Path: /async/activeSession
             Method: post
-            RestApiId: !Ref BackendAsyncCredentialApi
+            RestApiId: !Ref BackendAsyncCredentialPublicApi
       Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
 
   AsyncActiveSessionFunctionPermission:
@@ -407,7 +487,7 @@ Resources:
       FunctionName: !GetAtt AsyncActiveSessionFunction.Arn
       Principal: events.amazonaws.com
       SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialApi}/*/*/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialPublicApi}/*/*/*
 
   AsyncActiveSessionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -441,39 +521,6 @@ Resources:
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
-
-  SessionsTable:
-    Type: AWS::DynamoDB::Table
-
-    # Disabling check for point in time backup
-    # checkov:skip=CKV_AWS_28:Ensure Dynamodb point in time recovery (backup) is enabled
-    # checkov:skip=CKV_AWS_119:No PII in table
-    Properties:
-      AttributeDefinitions:
-        - AttributeName: sessionId
-          AttributeType: S
-        - AttributeName: subjectIdentifier
-          AttributeType: S
-      KeySchema:
-        - AttributeName: sessionId
-          KeyType: HASH
-      GlobalSecondaryIndexes:
-        - IndexName: subjectIdentifier-index
-          KeySchema:
-            - AttributeName: subjectIdentifier
-              KeyType: HASH
-          Projection:
-            NonKeyAttributes:
-              - authSessionState
-              - sessionId
-            ProjectionType: INCLUDE
-      BillingMode: PAY_PER_REQUEST
-      SSESpecification:
-        SSEEnabled: true
-      TimeToLiveSpecification:
-        AttributeName: timeToLive
-        Enabled: true
-
   # ------------------------------ #
   TxMASQSQueue:
     Type: AWS::SQS::Queue
