@@ -42,7 +42,7 @@ const customDomainConfiguration = () => {
     })
     const expectedConfiguration = {"Fn::ImportValue": "PublicHostedZoneId"}
     const attributes = attributesCapture.asArray()
-    const domainAttribute = attributes[2].HostedZoneId
+    const domainAttribute = attributes[1].HostedZoneId
     expect(domainAttribute).to.be.an('object').to.deep.include(expectedConfiguration)
 }
 
