@@ -91,4 +91,4 @@ Outputs:
     Description: The ARN for the ACM Certificate created in this template
     Value: !Ref ExternalCertificate
     Export:
-      Name: platform-dns-records-certificate-arn
+      Name: !Sub ${AWS::StackName}-certificate-arn
