@@ -2,16 +2,16 @@ import { IGetConfig } from "../../types/config";
 import { errorResult, Result, successResult } from "../../utils/result";
 
 export interface Config {
-  KEY_ID: string;
+  ENCRYPTION_KEY_ID: string;
   JWKS_BUCKET_NAME: string;
   JWKS_FILE_NAME: string;
 }
 
 export class ConfigService implements IGetConfig<Config> {
   getConfig = (env: NodeJS.ProcessEnv): Result<Config> => {
-    if (!env.KEY_ID)
+    if (!env.ENCRYPTION_KEY_ID)
       return errorResult({
-        errorMessage: "No KEY_ID",
+        errorMessage: "No ENCRYPTION_KEY_ID",
         errorCategory: "SERVER_ERROR",
       });
     if (!env.JWKS_BUCKET_NAME)
@@ -26,7 +26,7 @@ export class ConfigService implements IGetConfig<Config> {
       });
 
     return successResult({
-      KEY_ID: env.KEY_ID,
+      ENCRYPTION_KEY_ID: env.ENCRYPTION_KEY_ID,
       JWKS_BUCKET_NAME: env.JWKS_BUCKET_NAME,
       JWKS_FILE_NAME: env.JWKS_FILE_NAME,
     });
