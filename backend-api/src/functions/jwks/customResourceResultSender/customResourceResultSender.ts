@@ -1,5 +1,4 @@
 import { CloudFormationCustomResourceEvent, Context } from "aws-lambda";
-import { Result, successResult } from "../../utils/result";
 
 export class CustomResourceResultSender implements ICustomResourceResultSender {
   private readonly event: CloudFormationCustomResourceEvent;
@@ -10,7 +9,7 @@ export class CustomResourceResultSender implements ICustomResourceResultSender {
     this.context = context;
   }
 
-  async sendResult(status: "SUCCESS" | "FAILED") {
+  async sendResult(status: "SUCCESS" | "FAILED"): Promise<void> {
     const customResourceResponseBody = {
       Status: status,
       Reason:
@@ -28,11 +27,15 @@ export class CustomResourceResultSender implements ICustomResourceResultSender {
       body: JSON.stringify(customResourceResponseBody),
     };
 
-    await fetch(this.event.ResponseURL, params);
-    return successResult("");
+    const response = await fetch(this.event.ResponseURL, params);
+    if (response.status >= 400) {
+      return;
+    }
+
+    return;
   }
 }
 
 export interface ICustomResourceResultSender {
-  sendResult: (status: "SUCCESS" | "FAILED") => Promise<Result<string>>;
+  sendResult: (status: "SUCCESS" | "FAILED") => Promise<void>;
 }
