@@ -16,7 +16,7 @@ provider "aws" {
 
 terraform {
   backend "s3" {
-    # bucket = "dmica-${local.environment}-tfs" # set by ../_backend/${local.environment}.s3.tfbackend as variables are unable to be used here
+    # "bucket" name provided at run time. Check the ./terraform/README.md for details.
     key = "tf/base-stacks-2.tfstate"
   }
 }
