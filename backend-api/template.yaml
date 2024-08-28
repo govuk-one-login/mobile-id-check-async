@@ -381,7 +381,6 @@ Resources:
                   - kms:Decrypt
                   - kms:GenerateDataKey
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
-
                 # TxMA Audit service
       RoleName: !Sub ${AWS::StackName}-credential-lambda
       PermissionsBoundary: !If
@@ -574,7 +573,7 @@ Resources:
       StageName: !Ref Environment
       OpenApiVersion: 3.0.0
       AccessLogSetting:
-        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialApiAccessLogs}
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncPublicApiAccessLogs}
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
       MethodSettings:
         - LoggingLevel: INFO
@@ -595,6 +594,12 @@ Resources:
           Name: AWS::Include
           Parameters:
             Location: ./openApiSpecs/async-public-spec.yaml
+
+  AsyncPublicApiAccessLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-public-api-access-logs
+      RetentionInDays: 30
 
   ### JWKS endpoint resources
   JsonWebKeysBucket:
@@ -692,14 +697,14 @@ Resources:
       Role: !GetAtt JsonWebKeysFunctionLambdaRole.Arn
       Environment:
         Variables:
-          KEY_ID: !Ref KMSEncryptionKey
+          ENCRYPTION_KEY_ID: !Ref KMSEncryptionKey
           JWKS_BUCKET_NAME: !Ref JsonWebKeysBucket
           JWKS_FILE_NAME: .well-known/jwks.json
 
   JsonWebKeysFunctionLambdaRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-jwks
+      RoleName: !Sub ${AWS::StackName}-jwks-lambda
       Description: Role of JWKS function
       AssumeRolePolicyDocument:
         Statement:
@@ -737,6 +742,10 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
 
   JsonWebKeysFunctionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -753,6 +762,7 @@ Resources:
   JsonWebKeysBucketApiRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Sub ${AWS::StackName}-jwks-bucket
       AssumeRolePolicyDocument:
         Statement:
           - Action: sts:AssumeRole
