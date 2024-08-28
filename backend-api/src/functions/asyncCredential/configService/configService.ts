@@ -5,10 +5,9 @@ export interface Config {
   SIGNING_KEY_ID: string;
   ISSUER: string;
   SESSION_TABLE_NAME: string;
-  SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME: string;
   SESSION_TTL_IN_MILLISECONDS: number;
-  SQS_QUEUE: string;
-  CLIENT_REGISTRY_PARAMETER_NAME: string;
+  TXMA_SQS: string;
+  CLIENT_REGISTRY_SECRET_NAME: string;
 }
 
 export class ConfigService implements IGetConfig<Config> {
@@ -28,11 +27,6 @@ export class ConfigService implements IGetConfig<Config> {
         errorMessage: "No SESSION_TABLE_NAME",
         errorCategory: "SERVER_ERROR",
       });
-    if (!env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME)
-      return errorResult({
-        errorMessage: "No SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME",
-        errorCategory: "SERVER_ERROR",
-      });
     if (!env.SESSION_TTL_IN_MILLISECONDS)
       return errorResult({
         errorMessage: "No SESSION_TTL_IN_MILLISECONDS",
@@ -43,14 +37,14 @@ export class ConfigService implements IGetConfig<Config> {
         errorMessage: "SESSION_TTL_IN_MILLISECONDS is not a valid number",
         errorCategory: "SERVER_ERROR",
       });
-    if (!env.SQS_QUEUE)
+    if (!env.TXMA_SQS)
       return errorResult({
-        errorMessage: "No SQS_QUEUE",
+        errorMessage: "No TXMA_SQS",
         errorCategory: "SERVER_ERROR",
       });
-    if (!env.CLIENT_REGISTRY_PARAMETER_NAME)
+    if (!env.CLIENT_REGISTRY_SECRET_NAME)
       return errorResult({
-        errorMessage: "No CLIENT_REGISTRY_PARAMETER_NAME",
+        errorMessage: "No CLIENT_REGISTRY_SECRET_NAME",
         errorCategory: "SERVER_ERROR",
       });
 
@@ -58,11 +52,9 @@ export class ConfigService implements IGetConfig<Config> {
       SIGNING_KEY_ID: env.SIGNING_KEY_ID,
       ISSUER: env.ISSUER,
       SESSION_TABLE_NAME: env.SESSION_TABLE_NAME,
-      SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME:
-        env.SESSION_TABLE_SUBJECT_IDENTIFIER_INDEX_NAME,
       SESSION_TTL_IN_MILLISECONDS: parseInt(env.SESSION_TTL_IN_MILLISECONDS),
-      SQS_QUEUE: env.SQS_QUEUE,
-      CLIENT_REGISTRY_PARAMETER_NAME: env.CLIENT_REGISTRY_PARAMETER_NAME,
+      TXMA_SQS: env.TXMA_SQS,
+      CLIENT_REGISTRY_SECRET_NAME: env.CLIENT_REGISTRY_SECRET_NAME,
     });
   };
 }

@@ -125,35 +125,131 @@ describe("Backend application infrastructure", () => {
         },
       });
     });
+  });
+  describe("Lambdas", () => {
+    describe("Globals", () => {
+      test("Global environment variables are set", () => {
+        const expectedGlobals = [
+          "SIGNING_KEY_ID",
+          "ISSUER",
+          "TXMA_SQS",
+          "SESSION_TABLE_NAME",
+        ];
+        const envVars =
+          template.toJSON().Globals.Function.Environment.Variables;
+        Object.keys(envVars).every((envVar) => {
+          expectedGlobals.includes(envVar);
+        });
+        expect(expectedGlobals.length).toBe(Object.keys(envVars).length);
+      });
+    });
+    test("All lambdas have a FunctionName defined", () => {
+      const lambdas = template.findResources("AWS::Serverless::Function");
+      const lambda_list = Object.keys(lambdas);
+      lambda_list.forEach((lambda) => {
+        expect(lambdas[lambda].Properties.FunctionName).toBeTruthy();
+      });
+    });
+    test("All lambdas have a log group", () => {
+      const lambdas = template.findResources("AWS::Serverless::Function");
+      const lambda_list = Object.keys(lambdas);
+      lambda_list.forEach((lambda) => {
+        const functionName = lambdas[lambda].Properties.FunctionName["Fn::Sub"];
+        const expectedLogName = {
+          "Fn::Sub": `/aws/lambda/${functionName}`,
+        };
+        template.hasResourceProperties("AWS::Logs::LogGroup", {
+          LogGroupName: Match.objectLike(expectedLogName),
+        });
+      });
+    });
+    test("All log groups have a retention period", () => {
+      const logGroups = template.findResources("AWS::Logs::LogGroup");
+      const logGroupList = Object.keys(logGroups);
+      logGroupList.forEach((logGroup) => {
+        expect(logGroups[logGroup].Properties.RetentionInDays).toEqual(30);
+      });
+    });
 
-    describe("Lambdas", () => {
-      test("All lambdas have a FunctionName defined", () => {
-        const lambdas = template.findResources("AWS::Serverless::Function");
-        const lambda_list = Object.keys(lambdas);
-        lambda_list.forEach((lambda) => {
-          expect(lambdas[lambda].Properties.FunctionName).toBeTruthy();
+    test("Create session lambdas have the client registry environment variable", () => {
+      const createSessionLambdaHandlers = [
+        "asyncTokenHandler.lambdaHandler",
+        "asyncCredentialHandler.lambdaHandler",
+      ];
+      createSessionLambdaHandlers.forEach((lambdaHandler) => {
+        template.hasResourceProperties("AWS::Serverless::Function", {
+          Handler: lambdaHandler,
+          Environment: {
+            Variables: {
+              CLIENT_REGISTRY_SECRET_NAME: {
+                "Fn::Sub": "${Environment}/clientRegistry",
+              },
+            },
+          },
         });
       });
-      test("All lambdas have a log group", () => {
-        const lambdas = template.findResources("AWS::Serverless::Function");
-        const lambda_list = Object.keys(lambdas);
-        lambda_list.forEach((lambda) => {
-          const functionName =
-            lambdas[lambda].Properties.FunctionName["Fn::Sub"];
-          const expectedLogName = {
-            "Fn::Sub": `/aws/lambda/${functionName}`,
-          };
-          template.hasResourceProperties("AWS::Logs::LogGroup", {
-            LogGroupName: Match.objectLike(expectedLogName),
-          });
+    });
+  });
+
+  describe("KMS", () => {
+    test("All keys have a retention window once deleted", () => {
+      const kmsKeys = template.findResources("AWS::KMS::Key");
+      const kmsKeyList = Object.keys(kmsKeys);
+      kmsKeyList.forEach((kmsKey) => {
+        expect(kmsKeys[kmsKey].Properties.PendingWindowInDays).toStrictEqual({
+          "Fn::FindInMap": [
+            "KMS",
+            { Ref: "Environment" },
+            "PendingDeletionInDays",
+          ],
         });
       });
-      test("All log groups have a retention period", () => {
-        const logGroups = template.findResources("AWS::Logs::LogGroup");
-        const logGroupList = Object.keys(logGroups);
-        logGroupList.forEach((logGroup) => {
-          expect(logGroups[logGroup].Properties.RetentionInDays).toEqual(30);
+    });
+
+    test("Mappings are defined for retention window", () => {
+      const expectedKmsDeletionMapping = {
+        dev: 7,
+        build: 30,
+        staging: 30,
+        integration: 30,
+        production: 30,
+      };
+
+      const mappingHelper = new Mappings(template);
+      mappingHelper.validateKMSMapping({
+        environmentFlags: expectedKmsDeletionMapping,
+        mappingBottomLevelKey: "PendingDeletionInDays",
+      });
+    });
+  });
+
+  describe("IAM", () => {
+    // See: https://github.com/govuk-one-login/devplatform-deploy/blob/c298f297141f414798899a622509262fbb309260/sam-deploy-pipeline/template.yaml#L3759
+    test("Every IAM role has a permissions boundary", () => {
+      const iamRoles = template.findResources("AWS::IAM::Role");
+      const iamRolesList = Object.keys(iamRoles);
+      iamRolesList.forEach((iamRole) => {
+        expect(iamRoles[iamRole].Properties.PermissionsBoundary).toStrictEqual({
+          "Fn::If": [
+            "UsePermissionsBoundary",
+            { Ref: "PermissionsBoundary" },
+            { Ref: "AWS::NoValue" },
+          ],
         });
+      });
+    });
+
+    // See: https://github.com/govuk-one-login/devplatform-deploy/blob/c298f297141f414798899a622509262fbb309260/sam-deploy-pipeline/template.yaml#L3759
+    test("Every IAM role name conforms to dev platform naming standard", () => {
+      const iamRoles = template.findResources("AWS::IAM::Role");
+      const iamRolesList = Object.keys(iamRoles);
+      iamRolesList.forEach((iamRole) => {
+        const roleName = iamRoles[iamRole].Properties.RoleName[
+          "Fn::Sub"
+        ] as string;
+        const roleNameConformsToStandards =
+          roleName.startsWith("${AWS::StackName}-");
+        expect(roleNameConformsToStandards).toBe(true);
       });
     });
   });

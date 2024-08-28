@@ -4,7 +4,31 @@
   },
   "interactions": [
     {
-      "_id": "5a0752a32c5eb9c7363a48e68123a695063ee34a",
+      "description": "Valid credential request",
+      "providerStates": [
+        {
+          "name": "access token is missing"
+        }
+      ],
+      "request": {
+        "body": {
+          "client_id": "ipv-core",
+          "govuk_signin_journey_id": "dummyJourneyId",
+          "redirect_uri": "https://identity.staging.account.gov.uk/credential-issuer/callback?id=dcmawAsync",
+          "state": "DUMMY_RANDOM_OAUTH_STATE",
+          "sub": "dummySubjectId"
+        },
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "method": "POST",
+        "path": "/async/credential"
+      },
+      "response": {
+        "status": 401
+      }
+    },
+    {
       "description": "Valid credential request",
       "providerStates": [
         {
@@ -27,11 +51,10 @@
         "path": "/async/credential"
       },
       "response": {
-        "status": 401
+        "status": 400
       }
     },
     {
-      "_id": "8f0e7b179b60b70696091786cb2d7a2d874416ab",
       "description": "Invalid basic auth credentials",
       "providerStates": [
         {
@@ -42,7 +65,7 @@
         }
       ],
       "request": {
-        "body": "grant_type%3Dclient_credentials",
+        "body": "grant_type=client_credentials",
         "headers": {
           "Authorization": "Basic aXB2LWNvcmU6YmFkRHVtbXlTZWNyZXQ=",
           "Content-Type": "application/x-www-form-urlencoded"
@@ -55,7 +78,6 @@
       }
     },
     {
-      "_id": "b2fc8c776fe377170a280673bc457735c8e4080d",
       "description": "Valid credential request",
       "providerStates": [
         {
@@ -102,7 +124,6 @@
       }
     },
     {
-      "_id": "5327d667d5bdf05cac61e1409725008d26d73380",
       "description": "Valid basic auth credentials",
       "providerStates": [
         {
@@ -113,7 +134,7 @@
         }
       ],
       "request": {
-        "body": "grant_type%3Dclient_credentials",
+        "body": "grant_type=client_credentials",
         "headers": {
           "Authorization": "Basic aXB2LWNvcmU6ZHVtbXlTZWNyZXQ=",
           "Content-Type": "application/x-www-form-urlencoded"
@@ -188,6 +209,5 @@
   },
   "provider": {
     "name": "DcmawAsyncCriProvider"
-  },
-  "createdAt": "2024-07-10T15:32:48+00:00"
+  }
 }

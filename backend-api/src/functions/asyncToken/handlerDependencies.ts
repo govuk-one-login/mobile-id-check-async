@@ -7,6 +7,10 @@ import {
 import { EventService, IEventService } from "../services/events/eventService";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { IMintToken, TokenService } from "./tokenService/tokenService";
+import {
+  IRequestService,
+  RequestService,
+} from "./requestService/requestService";
 
 export interface IAsyncTokenRequestDependencies {
   env: NodeJS.ProcessEnv;
@@ -16,6 +20,7 @@ export interface IAsyncTokenRequestDependencies {
     clientRegistryParameterName: string,
   ) => IGetRegisteredIssuerUsingClientSecrets;
   tokenService: (signingKey: string) => IMintToken;
+  requestService: () => IRequestService;
 }
 
 export const dependencies: IAsyncTokenRequestDependencies = {
@@ -25,4 +30,5 @@ export const dependencies: IAsyncTokenRequestDependencies = {
   clientRegistryService: (clientRegistryParameterName: string) =>
     new ClientRegistryService(clientRegistryParameterName),
   tokenService: (signingKey: string) => new TokenService(signingKey),
+  requestService: () => new RequestService(),
 };
