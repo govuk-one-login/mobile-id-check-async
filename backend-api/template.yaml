@@ -457,7 +457,7 @@ Resources:
   AsyncCredentialPublicApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-public-api-access-logs
       RetentionInDays: 30
 
   AsyncActiveSessionFunction:
