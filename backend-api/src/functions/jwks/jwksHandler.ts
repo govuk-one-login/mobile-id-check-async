@@ -11,7 +11,6 @@ export async function lambdaHandlerConstructor(
 
   const logger = dependencies.logger();
   logger.addContext(context);
-  logger.log("STARTED");
 
   if (event.RequestType === "Delete") {
     await resultSender.sendResult("SUCCESS");

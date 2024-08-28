@@ -1,5 +1,5 @@
 export interface Jwks {
-  keys: JsonWebKey[];
+  keys: EncryptionJwk[];
 }
 export interface EncryptionJwk extends JsonWebKey {
   alg: EncryptionJwkAlgorithm;

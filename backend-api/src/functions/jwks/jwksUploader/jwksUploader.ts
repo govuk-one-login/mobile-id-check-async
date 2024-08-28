@@ -47,7 +47,6 @@ export class JwksUploader implements IJwksUploader {
 }
 
 export interface IJwksUploader {
-  // TODO: Define jwks type
   uploadJwks: (
     jwks: Jwks,
     bucketName: string,
