@@ -1,8 +1,8 @@
 import { lambdaHandler } from "./asyncActiveSessionHandler"
 
 describe("Async Active Session", () => {
-  describe("Given a request is made", () => {
-    it("Returns 200 Hello, World response", async () => {
+  describe("Given a request is received", () => {
+    it("Returns 200 response", async () => {
       const result = await lambdaHandler()
 
       expect(result).toStrictEqual({
