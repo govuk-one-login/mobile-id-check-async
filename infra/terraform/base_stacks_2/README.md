@@ -31,3 +31,10 @@ terraform apply \
 ```
 
 Ensure to review the plan before completing the apply.
+
+## Destroying a stack
+
+1. Remove the `aws_cloudformation_stack` resource from the configuration
+2. Run the steps in the [Applying Changes] section
+
+NOTE: Some stacks may be blocked from being deleted if the resources it owns cannot be destroyed. For example S3 buckets.
