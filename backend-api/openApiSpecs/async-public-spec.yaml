@@ -177,7 +177,7 @@ paths:
         requestTemplates:
           application/json:
             statusCode: 200
-        httpMethod: "GET"
+        httpMethod: "POST"
         passthroughBehavior: "when_no_match"
         uri:
           Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AsyncActiveSessionFunction}:live/invocations"
