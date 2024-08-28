@@ -133,9 +133,11 @@ paths:
         requestTemplates:
           application/json:
             statusCode: 200
-        httpMethod: "POST"
+        httpMethod: "GET"
         passthroughBehavior: "when_no_match"
-        type: "mock"
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AsyncActiveSessionFunction}:live/invocations"
+        type: "aws_proxy"
 
   /async/biometricToken:
     post:
