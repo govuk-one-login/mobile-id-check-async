@@ -135,7 +135,7 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("It uses the private async OpenAPI Spec", () => {
+    test("It uses the public async OpenAPI Spec", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
         Name: { "Fn::Sub": "${AWS::StackName}-public-api" },
         DefinitionBody: {
