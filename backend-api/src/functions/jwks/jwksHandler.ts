@@ -84,8 +84,6 @@ export async function lambdaHandlerConstructor(
   }
 
   logger.log("COMPLETED");
-
-  return;
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
