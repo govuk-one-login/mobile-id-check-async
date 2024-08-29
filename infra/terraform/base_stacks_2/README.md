@@ -8,7 +8,7 @@ This base_stacks_2 directory is only to be deployed after the deployment of the 
 
 After deploying base_stacks for the first time if you have not yet registered your domain name with the base Route53 record (https://github.com/govuk-one-login/domains), please read the team manual linked below.
 
-If your domain has already been registered then you can move to deploy base_stacks_2
+If your domain has already been registered with the base Route53 Hosted Zone in the domains repo then you can move to deploy base_stacks_2
 
 # Guide here for registering a new domain name within Digital Identity.
 
