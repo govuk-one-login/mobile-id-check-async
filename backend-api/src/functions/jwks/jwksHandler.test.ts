@@ -4,7 +4,7 @@ import { buildLambdaContext } from "../testUtils/mockContext";
 import { lambdaHandlerConstructor } from "./jwksHandler";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { IJwksDependencies } from "./handlerDependencies";
-import { getCloudFormationCustomResourceEvent } from "../testUtils/mockCloudFormationCustomResourceRevent";
+import { buildCloudFormationCustomResourceEvent } from "../testUtils/mockCloudFormationCustomResourceEvent";
 import {
   MockJwksBuilderErrorResult,
   MockJwksBuilderSuccessResult,
@@ -13,12 +13,12 @@ import {
   MockJwksUploaderErrorResult,
   MockJwksUploaderSuccessResult,
 } from "./jwksUploader/tests/mocks";
-import { MockCustomResourceResultSenderSuccessResult } from "./customResourceResultSender/tests/mocks";
+import { MockCustomResourceEventSenderSuccessResult } from "./customResourceEventSender/tests/mocks";
 
 describe("Json Web Keys", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;
   let dependencies: IJwksDependencies;
-  let mockCustomResourceResultSender: MockCustomResourceResultSenderSuccessResult;
+  let mockCustomResourceEventSender: MockCustomResourceEventSenderSuccessResult;
 
   const env = {
     ENCRYPTION_KEY_ID: "mockKeyId",
@@ -28,14 +28,14 @@ describe("Json Web Keys", () => {
 
   beforeEach(() => {
     mockLogger = new MockLoggingAdapter();
-    mockCustomResourceResultSender =
-      new MockCustomResourceResultSenderSuccessResult();
+    mockCustomResourceEventSender =
+      new MockCustomResourceEventSenderSuccessResult();
     dependencies = {
       env,
       logger: () => new Logger(mockLogger, registeredLogs),
       jwksBuilder: () => new MockJwksBuilderSuccessResult(),
       jwksUploader: () => new MockJwksUploaderSuccessResult(),
-      customResourceResultSender: () => mockCustomResourceResultSender,
+      customResourceResultSender: () => mockCustomResourceEventSender,
     };
   });
 
@@ -50,16 +50,16 @@ describe("Json Web Keys", () => {
 
             const result = await lambdaHandlerConstructor(
               dependencies,
-              getCloudFormationCustomResourceEvent(),
+              buildCloudFormationCustomResourceEvent(),
               buildLambdaContext(),
             );
-            expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
               "ENVIRONMENT_VARIABLE_MISSING",
             );
-            expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+            expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
               errorMessage: `No ${envVar}`,
             });
-            expect(mockCustomResourceResultSender.getResult()[0].result).toBe(
+            expect(mockCustomResourceEventSender.getResult()[0].result).toBe(
               "FAILED",
             );
             expect(result).toStrictEqual(undefined);
@@ -73,11 +73,11 @@ describe("Json Web Keys", () => {
         it("Sends a 'Success' result", async () => {
           const result = await lambdaHandlerConstructor(
             dependencies,
-            getCloudFormationCustomResourceEvent("Delete"),
+            buildCloudFormationCustomResourceEvent("Delete"),
             buildLambdaContext(),
           );
 
-          expect(mockCustomResourceResultSender.getResult()[0].result).toBe(
+          expect(mockCustomResourceEventSender.getResult()[0].result).toBe(
             "SUCCESS",
           );
           expect(result).toStrictEqual(undefined);
@@ -92,17 +92,17 @@ describe("Json Web Keys", () => {
 
           const result = await lambdaHandlerConstructor(
             dependencies,
-            getCloudFormationCustomResourceEvent(),
+            buildCloudFormationCustomResourceEvent(),
             buildLambdaContext(),
           );
 
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
             "INTERNAL_SERVER_ERROR",
           );
-          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
             errorMessage: "Error formatting public key as JWK",
           });
-          expect(mockCustomResourceResultSender.getResult()[0].result).toBe(
+          expect(mockCustomResourceEventSender.getResult()[0].result).toBe(
             "FAILED",
           );
           expect(result).toStrictEqual(undefined);
@@ -117,17 +117,17 @@ describe("Json Web Keys", () => {
 
           const result = await lambdaHandlerConstructor(
             dependencies,
-            getCloudFormationCustomResourceEvent(),
+            buildCloudFormationCustomResourceEvent(),
             buildLambdaContext(),
           );
 
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
             "INTERNAL_SERVER_ERROR",
           );
-          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
             errorMessage: "Error uploading file to S3",
           });
-          expect(mockCustomResourceResultSender.getResult()[0].result).toBe(
+          expect(mockCustomResourceEventSender.getResult()[0].result).toBe(
             "FAILED",
           );
           expect(result).toStrictEqual(undefined);
@@ -141,11 +141,11 @@ describe("Json Web Keys", () => {
       it("Sends a 'Success' result", async () => {
         const result = await lambdaHandlerConstructor(
           dependencies,
-          getCloudFormationCustomResourceEvent(),
+          buildCloudFormationCustomResourceEvent(),
           buildLambdaContext(),
         );
 
-        expect(mockCustomResourceResultSender.getResult()[0].result).toBe(
+        expect(mockCustomResourceEventSender.getResult()[0].result).toBe(
           "SUCCESS",
         );
         expect(result).toStrictEqual(undefined);

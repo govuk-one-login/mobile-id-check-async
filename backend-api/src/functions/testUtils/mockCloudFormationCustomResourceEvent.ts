@@ -1,6 +1,6 @@
 import { CloudFormationCustomResourceEvent } from "aws-lambda";
 
-export const getCloudFormationCustomResourceEvent = (
+export const buildCloudFormationCustomResourceEvent = (
   requestType: string = "Create",
 ): CloudFormationCustomResourceEvent => {
   return {

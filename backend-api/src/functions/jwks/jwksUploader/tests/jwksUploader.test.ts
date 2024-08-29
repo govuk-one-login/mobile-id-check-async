@@ -23,7 +23,7 @@ describe("JWKS Uploader", () => {
   let jwksUploader: JwksUploader;
 
   beforeEach(() => {
-    jwksUploader = new JwksUploader(new S3Client());
+    jwksUploader = new JwksUploader();
   });
 
   afterEach(() => {

@@ -5,9 +5,9 @@ import { CloudFormationCustomResourceEvent, Context } from "aws-lambda";
 import { IJwksBuilder, JwksBuilder } from "./jwksBuilder/jwksBuilder";
 import { IJwksUploader, JwksUploader } from "./jwksUploader/jwksUploader";
 import {
-  CustomResourceResultSender,
-  ICustomResourceResultSender,
-} from "./customResourceResultSender/customResourceResultSender";
+  CustomResourceEventSender,
+  ICustomResourceEventSender,
+} from "./customResourceEventSender/customResourceEventSender";
 
 export interface IJwksDependencies {
   env: NodeJS.ProcessEnv;
@@ -17,7 +17,7 @@ export interface IJwksDependencies {
   customResourceResultSender: (
     event: CloudFormationCustomResourceEvent,
     context: Context,
-  ) => ICustomResourceResultSender;
+  ) => ICustomResourceEventSender;
 }
 
 export const dependencies: IJwksDependencies = {
@@ -28,5 +28,5 @@ export const dependencies: IJwksDependencies = {
   customResourceResultSender: (
     event: CloudFormationCustomResourceEvent,
     context: Context,
-  ) => new CustomResourceResultSender(event, context),
+  ) => new CustomResourceEventSender(event, context),
 };
