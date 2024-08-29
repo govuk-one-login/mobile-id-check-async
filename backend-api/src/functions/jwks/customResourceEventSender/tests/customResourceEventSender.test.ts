@@ -24,7 +24,7 @@ describe("Custom Resource Event Sender", () => {
     jest.restoreAllMocks();
   });
 
-  describe("Given an error happens when trying to send the request ", () => {
+  describe("Given an error happens when trying to send the event", () => {
     it("Returns an error response", async () => {
       mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
         Promise.resolve({
@@ -44,7 +44,7 @@ describe("Custom Resource Event Sender", () => {
     });
   });
 
-  describe("Given an unexpected network error happens when trying to send the request ", () => {
+  describe("Given an unexpected network error happens when trying to send the event", () => {
     it("Returns an error response", async () => {
       mockFetch = jest.spyOn(global, "fetch").mockImplementationOnce(() => {
         throw new Error("Unexpected network error");
@@ -61,9 +61,9 @@ describe("Custom Resource Event Sender", () => {
     });
   });
 
-  describe("Given the event is sent successfully ", () => {
+  describe("Given the event is sent successfully", () => {
     describe("When the outcome is 'SUCCESS'", () => {
-      it("Sends status SUCCESS and returns an empty success response", async () => {
+      it("Sends status 'SUCCESS' in the request body and returns an empty success response", async () => {
         const sendEventResponse =
           await customResourceEventSender.sendEvent("SUCCESS");
 
@@ -77,7 +77,7 @@ describe("Custom Resource Event Sender", () => {
     });
 
     describe("When the outcome is 'FAILED'", () => {
-      it("Sends status SUCCESS and returns an empty success response", async () => {
+      it("Sends status 'FAILED' in the request body and returns an empty success response", async () => {
         const sendEventResponse =
           await customResourceEventSender.sendEvent("FAILED");
 
