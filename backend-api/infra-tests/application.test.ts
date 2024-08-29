@@ -35,30 +35,6 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    describe("APIgw access log group", () => {
-      test("Access log group is attached to APIgw", () => {
-        template.hasResourceProperties("AWS::Serverless::Api", {
-          Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
-          AccessLogSetting: {
-            DestinationArn: {
-              "Fn::Sub":
-                "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialApiAccessLogs}",
-            },
-          },
-        });
-      });
-
-      test("Access log group has a retention period", () => {
-        template.hasResourceProperties("AWS::Logs::LogGroup", {
-          RetentionInDays: 30,
-          LogGroupName: {
-            "Fn::Sub":
-              "/aws/apigateway/${AWS::StackName}-private-api-access-logs",
-          },
-        });
-      });
-    });
-
     describe("APIgw method settings", () => {
       test("Metrics are enabled", () => {
         const methodSettings = new Capture();
@@ -120,7 +96,7 @@ describe("Backend application infrastructure", () => {
   });
 
   describe("Public APIgw", () => {
-    test("The endpoints are Regional", () => {
+    test("The endpoints are REGIONAL", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
         Name: { "Fn::Sub": "${AWS::StackName}-public-api" },
         EndpointConfiguration: "REGIONAL",
@@ -139,27 +115,25 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    describe("APIgw access log group", () => {
-      test("Access log group is attached to APIgw", () => {
-        template.hasResourceProperties("AWS::Serverless::Api", {
-          Name: { "Fn::Sub": "${AWS::StackName}-public-api" },
-          AccessLogSetting: {
-            DestinationArn: {
-              "Fn::Sub":
-                "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncPublicApiAccessLogs}",
-            },
-          },
-        });
-      });
-
-      test("Access log group has a retention period", () => {
-        template.hasResourceProperties("AWS::Logs::LogGroup", {
-          RetentionInDays: 30,
-          LogGroupName: {
+    test("Access log group is attached to APIgw", () => {
+      template.hasResourceProperties("AWS::Serverless::Api", {
+        Name: { "Fn::Sub": "${AWS::StackName}-public-api" },
+        AccessLogSetting: {
+          DestinationArn: {
             "Fn::Sub":
-              "/aws/apigateway/${AWS::StackName}-public-api-access-logs",
+              "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialPublicApiAccessLogs}",
           },
-        });
+        },
+      });
+    });
+
+    test("Access log group has a retention period", () => {
+      template.hasResourceProperties("AWS::Logs::LogGroup", {
+        RetentionInDays: 30,
+        LogGroupName: {
+          "Fn::Sub":
+            "/aws/apigateway/${AWS::StackName}-private-api-access-logs",
+        },
       });
     });
 
@@ -314,7 +288,6 @@ describe("Backend application infrastructure", () => {
         integration: 30,
         production: 30,
       };
-
       const mappingHelper = new Mappings(template);
       mappingHelper.validateKMSMapping({
         environmentFlags: expectedKmsDeletionMapping,
