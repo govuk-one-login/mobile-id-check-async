@@ -172,7 +172,6 @@ paths:
                   required:
                     - error
                     - error_description
-# Created with mock integration, This needs to be replaced with lambda proxy integration when available
       x-amazon-apigateway-integration:
         requestTemplates:
           application/json:
