@@ -1,11 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: >-
-  Creates the necessary components to manage DNS in the Async ID Check journey including logging and alternative record names.
-  It also configures DNS Query logging resources for the Route 53 service.
-  - A CloudWatch LogGroup
-  - AWS::Route53Resolver::ResolverQueryLoggingConfig to specify the config
-  - AWS::Route53Resolver::ResolverQueryLoggingConfigAssociation to associate it with the VPC.
+Description: Creates the necessary components to manage DNS in the Async ID Check journey including logging and alternative record names. It also configures DNS Query logging resources for the Route 53 service. - A CloudWatch LogGroup - AWS::Route53Resolver::ResolverQueryLoggingConfig to specify the config - AWS::Route53Resolver::ResolverQueryLoggingConfigAssociation to associate it with the VPC.
+
 Parameters:
   Environment:
     Description: The name of the environment to deploy to
@@ -18,13 +14,15 @@ Parameters:
       - production
 
 Conditions:
-  IsProduction: !Equals [ !Ref Environment, production]
+  IsProduction: !Equals
+    - !Ref Environment
+    - production
 
 Resources:
   PublicHostedZone:
-    Type: AWS::Route53::HostedZone
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
+    Type: AWS::Route53::HostedZone
     Properties:
       Name: !If
         - IsProduction
@@ -37,24 +35,24 @@ Resources:
             - review-b-async.account.gov.uk
             - !Sub review-b-async.${Environment}.account.gov.uk
         - Key: Product
-          Value: "ID Check Async"
+          Value: ID Check Async
         - Key: System
-          Value: "ID Check Async"
+          Value: ID Check Async
         - Key: Environment
-          Value: !Sub "${Environment}"
+          Value: !Sub ${Environment}
 
   PublicHostedZoneSSM:
-    Type: AWS::SSM::Parameter    
-    Properties:    
+    Type: AWS::SSM::Parameter
+    Properties:
       Description: The ARN of hosted zone
-      Name: !Sub "/${Environment}/Platform/Route53/PrimaryZoneID"
+      Name: !Sub /${Environment}/Platform/Route53/PrimaryZoneID
       Type: String
       Value: !Ref PublicHostedZone
       Tags:
-        Name: !Sub "/${Environment}/Platform/Route53/PrimaryZoneID"
-        Product: "ID Check Async"
-        System: "ID Check Async"
-        Environment: !Sub "${Environment}"
+        Name: !Sub /${Environment}/Platform/Route53/PrimaryZoneID
+        Product: ID Check Async
+        System: ID Check Async
+        Environment: !Sub ${Environment}
 
   QueryLoggingConfiguration:
     Type: AWS::Route53Resolver::ResolverQueryLoggingConfig
@@ -75,22 +73,26 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/${AWS::StackName}/${Environment}
       RetentionInDays: 30
- 
+
 Outputs:
   PublicHostedZoneNameServers:
     Value: !Join
-          - ","
-          - !GetAtt PublicHostedZone.NameServers
+      - ','
+      - !GetAtt PublicHostedZone.NameServers
+
   PublicHostedZoneId:
     Value: !GetAtt PublicHostedZone.Id
     Export:
       Name: PublicHostedZoneId
+
   QueryLoggingConfId:
     Description: DNS Query Logging Configuration Id
     Value: !Ref QueryLoggingConfiguration
+
   QueryLoggingConfName:
     Description: DNS Query Logging Configuration Name
     Value: DNSQueryLogging
+
   QueryLoggingLogGroupName:
     Description: DNS Query Logging Group Name
     Value: !Ref QueryLoggingLogGroup
