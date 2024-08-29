@@ -10,7 +10,7 @@ export class CustomResourceEventSender implements ICustomResourceEventSender {
     this.context = context;
   }
 
-  async sendEvent(status: "SUCCESS" | "FAILED"): Promise<Result<string>> {
+  async sendEvent(status: "SUCCESS" | "FAILED"): Promise<Result<null>> {
     const customResourceResponseBody = {
       Status: status,
       Reason:
@@ -23,20 +23,20 @@ export class CustomResourceEventSender implements ICustomResourceEventSender {
       NoEcho: false,
     };
 
-    const params: RequestInit = {
+    const requestInit: RequestInit = {
       method: "PUT",
       body: JSON.stringify(customResourceResponseBody),
     };
 
     try {
-      const response = await fetch(this.event.ResponseURL, params);
+      const response = await fetch(this.event.ResponseURL, requestInit);
       if (!response.ok) {
         return errorResult({
           errorMessage: "Error sending Custom Resource event",
           errorCategory: "SERVER_ERROR",
         });
       } else {
-        return successResult("");
+        return successResult(null);
       }
     } catch {
       return errorResult({
@@ -48,5 +48,5 @@ export class CustomResourceEventSender implements ICustomResourceEventSender {
 }
 
 export interface ICustomResourceEventSender {
-  sendEvent: (status: "SUCCESS" | "FAILED") => Promise<Result<string>>;
+  sendEvent: (status: "SUCCESS" | "FAILED") => Promise<Result<null>>;
 }
