@@ -26,6 +26,12 @@ export class Mappings {
   }) {
     this.validateMapping({ ...args, mappingTopLevelKey: "PrivateApigw" });
   }
+  validatePublicAPIMapping(args: {
+    environmentFlags: EnvironmentFlags;
+    mappingBottomLevelKey: string;
+  }) {
+    this.validateMapping({ ...args, mappingTopLevelKey: "PublicApigw" });
+  }
   validateKMSMapping(args: {
     environmentFlags: EnvironmentFlags;
     mappingBottomLevelKey: string;
