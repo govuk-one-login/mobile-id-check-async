@@ -7,23 +7,23 @@ import { mockClient } from "aws-sdk-client-mock";
 import { JwksBuilder } from "../jwksBuilder";
 import { createPublicKey } from "node:crypto";
 
-const kmsMock = mockClient(KMSClient);
+const mockKmsClient = mockClient(KMSClient);
 
 describe("JWKS Builder", () => {
-  const mockKeyId = "mockKeyId";
+  const keyId = "test-key-id";
   let jwksBuilder: JwksBuilder;
 
   beforeEach(() => {
-    jwksBuilder = new JwksBuilder(mockKeyId);
+    jwksBuilder = new JwksBuilder(keyId);
   });
 
   afterEach(() => {
-    kmsMock.reset();
+    mockKmsClient.reset();
   });
 
   describe("Given an error happens getting the public key from KMS", () => {
     it("Returns an error response", async () => {
-      kmsMock
+      mockKmsClient
         .on(GetPublicKeyCommand)
         .rejects(new Error("Failed to get public key from KMS"));
 
@@ -62,7 +62,7 @@ describe("JWKS Builder", () => {
       ],
     ])("When the KMS response does not include the %s key", (key, response) => {
       it("Returns an error response", async () => {
-        kmsMock.on(GetPublicKeyCommand).resolves(response);
+        mockKmsClient.on(GetPublicKeyCommand).resolves(response);
 
         const buildJwksResponse = jwksBuilder.buildJwks();
 
@@ -76,7 +76,7 @@ describe("JWKS Builder", () => {
 
     describe("When the KeyUsage is not ENCRYPT_DECRYPT", () => {
       it("Returns an error response", async () => {
-        kmsMock.on(GetPublicKeyCommand).resolves({
+        mockKmsClient.on(GetPublicKeyCommand).resolves({
           KeyUsage: "SIGN_VERIFY",
           KeySpec: "RSA_2048",
           PublicKey: new Uint8Array(),
@@ -94,7 +94,7 @@ describe("JWKS Builder", () => {
 
     describe("When the KeySpec is not RSA_2048", () => {
       it("Returns an error response", async () => {
-        kmsMock.on(GetPublicKeyCommand).resolves({
+        mockKmsClient.on(GetPublicKeyCommand).resolves({
           KeyUsage: "ENCRYPT_DECRYPT",
           KeySpec: "RSA_4096",
           PublicKey: new Uint8Array(),
@@ -112,7 +112,7 @@ describe("JWKS Builder", () => {
 
     describe("When the public key cannot be formatted as a JWK", () => {
       it("Returns an error response", async () => {
-        kmsMock.on(GetPublicKeyCommand).resolves({
+        mockKmsClient.on(GetPublicKeyCommand).resolves({
           KeyUsage: "ENCRYPT_DECRYPT",
           KeySpec: "RSA_2048",
           PublicKey: new Uint8Array(),
@@ -141,7 +141,7 @@ describe("JWKS Builder", () => {
           },
           format: "jwk",
         }).export({ format: "der", type: "spki" });
-        kmsMock.on(GetPublicKeyCommand).resolves({
+        mockKmsClient.on(GetPublicKeyCommand).resolves({
           KeyUsage: "ENCRYPT_DECRYPT",
           KeySpec: "RSA_2048",
           PublicKey: new Uint8Array(mockPublicKey),
@@ -155,7 +155,7 @@ describe("JWKS Builder", () => {
             {
               alg: "RS256",
               e: "AQAB",
-              kid: mockKeyId,
+              kid: keyId,
               kty: "RSA",
               n: "kOBby1nEUcKc-94zIa2qCyqDSE1-2bLWkVjeF3DWY_0v2j9wlLSaR6asONen_HP40wftLOSPYRcKYv6Cjz3LOY7aQYznX14EXSgJxrDwQ7AleX2VS_HB34LMZEa3xmSSH7pLtw_vmJgCNss0zDQLCz1sQwZxlqphF18FdTTUrXbJ9Qk3xIrEzvL2naO2r6WoLBQ9tSr2Sz9TTcJQptfh6hOAHm66oPA6F9uCmbTDEQeI-wLiMMArtcKrGiPAFluo8f0qNkzLRMFIqyadnZ9OZ5u0-H_urOkmLJ2nbAnyTcO-9QeDlomdEMz3yEaJeUoq-jnPpVEfIbd8-07fl7M27w",
               use: "enc",
