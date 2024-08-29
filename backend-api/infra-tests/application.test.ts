@@ -121,7 +121,7 @@ describe("Backend application infrastructure", () => {
         RetentionInDays: 30,
         LogGroupName: {
           "Fn::Sub":
-            "/aws/apigateway/${AWS::StackName}-private-api-access-logs-2",
+            "/aws/apigateway/${AWS::StackName}-private-api-access-logs",
         },
       });
     });
