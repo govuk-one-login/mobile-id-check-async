@@ -18,9 +18,11 @@ export class MockCustomResourceEventSenderErrorResult
   implements ICustomResourceEventSender
 {
   async sendEvent(): Promise<Result<null>> {
-    return errorResult({
-      errorMessage: "Error sending Custom Resource event",
-      errorCategory: "SERVER_ERROR",
-    });
+    return Promise.resolve(
+      errorResult({
+        errorMessage: "Error sending Custom Resource event",
+        errorCategory: "SERVER_ERROR",
+      }),
+    );
   }
 }

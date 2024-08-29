@@ -25,7 +25,7 @@ export class JwksUploader implements IJwksUploader {
     jwks: Jwks,
     bucketName: string,
     fileName: string,
-  ): Promise<Result<string>> {
+  ): Promise<Result<null>> {
     const uploadParams: PutObjectCommandInput = {
       Body: JSON.stringify(jwks),
       Bucket: bucketName,
@@ -42,7 +42,7 @@ export class JwksUploader implements IJwksUploader {
       });
     }
 
-    return successResult("");
+    return successResult(null);
   }
 }
 
@@ -51,5 +51,5 @@ export interface IJwksUploader {
     jwks: Jwks,
     bucketName: string,
     fileName: string,
-  ) => Promise<Result<string>>;
+  ) => Promise<Result<null>>;
 }

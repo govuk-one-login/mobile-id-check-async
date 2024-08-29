@@ -36,14 +36,14 @@ describe("JWKS Uploader", () => {
         .on(PutObjectCommand)
         .rejects(new Error("Failed to upload object to S3"));
 
-      const uploadJwksResponse = jwksUploader.uploadJwks(
+      const uploadJwksResponse = await jwksUploader.uploadJwks(
         jwks,
         bucketName,
         fileName,
       );
 
-      expect((await uploadJwksResponse).isError).toBe(true);
-      expect((await uploadJwksResponse).value).toStrictEqual({
+      expect(uploadJwksResponse.isError).toBe(true);
+      expect(uploadJwksResponse.value).toStrictEqual({
         errorMessage: "Error uploading file to S3",
         errorCategory: "SERVER_ERROR",
       });
@@ -61,7 +61,7 @@ describe("JWKS Uploader", () => {
       );
 
       expect((await uploadJwksResponse).isError).toBe(false);
-      expect((await uploadJwksResponse).value).toStrictEqual("");
+      expect((await uploadJwksResponse).value).toStrictEqual(null);
     });
   });
 });

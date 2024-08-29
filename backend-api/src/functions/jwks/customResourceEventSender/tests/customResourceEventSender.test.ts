@@ -68,7 +68,7 @@ describe("Custom Resource Event Sender", () => {
           await customResourceEventSender.sendEvent("SUCCESS");
 
         expect(sendEventResponse.isError).toBe(false);
-        expect(sendEventResponse.value).toStrictEqual("");
+        expect(sendEventResponse.value).toStrictEqual(null);
         expect(mockFetch).toHaveBeenCalledWith("mockResponseUrl", {
           body: '{"Status":"SUCCESS","Reason":"See the details in CloudWatch Log Stream: logStream","PhysicalResourceId":"logStream","StackId":"mockStackId","RequestId":"mockRequestId","LogicalResourceId":"mockLogicalResourceId","NoEcho":false}',
           method: "PUT",
@@ -82,7 +82,7 @@ describe("Custom Resource Event Sender", () => {
           await customResourceEventSender.sendEvent("FAILED");
 
         expect(sendEventResponse.isError).toBe(false);
-        expect(sendEventResponse.value).toStrictEqual("");
+        expect(sendEventResponse.value).toStrictEqual(null);
         expect(mockFetch).toHaveBeenCalledWith("mockResponseUrl", {
           body: '{"Status":"FAILED","Reason":"See the details in CloudWatch Log Stream: logStream","PhysicalResourceId":"logStream","StackId":"mockStackId","RequestId":"mockRequestId","LogicalResourceId":"mockLogicalResourceId","NoEcho":false}',
           method: "PUT",

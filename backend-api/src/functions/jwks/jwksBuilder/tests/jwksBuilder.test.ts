@@ -27,10 +27,10 @@ describe("JWKS Builder", () => {
         .on(GetPublicKeyCommand)
         .rejects(new Error("Failed to get public key from KMS"));
 
-      const buildJwksResponse = jwksBuilder.buildJwks();
+      const buildJwksResponse = await jwksBuilder.buildJwks();
 
-      expect((await buildJwksResponse).isError).toBe(true);
-      expect((await buildJwksResponse).value).toStrictEqual({
+      expect(buildJwksResponse.isError).toBe(true);
+      expect(buildJwksResponse.value).toStrictEqual({
         errorMessage: "Error from KMS",
         errorCategory: "SERVER_ERROR",
       });
@@ -64,10 +64,10 @@ describe("JWKS Builder", () => {
       it("Returns an error response", async () => {
         mockKmsClient.on(GetPublicKeyCommand).resolves(response);
 
-        const buildJwksResponse = jwksBuilder.buildJwks();
+        const buildJwksResponse = await jwksBuilder.buildJwks();
 
-        expect((await buildJwksResponse).isError).toBe(true);
-        expect((await buildJwksResponse).value).toStrictEqual({
+        expect(buildJwksResponse.isError).toBe(true);
+        expect(buildJwksResponse.value).toStrictEqual({
           errorMessage: "KMS response is missing required fields",
           errorCategory: "SERVER_ERROR",
         });
@@ -82,10 +82,10 @@ describe("JWKS Builder", () => {
           PublicKey: new Uint8Array(),
         } as GetPublicKeyCommandOutput);
 
-        const buildJwksResponse = jwksBuilder.buildJwks();
+        const buildJwksResponse = await jwksBuilder.buildJwks();
 
-        expect((await buildJwksResponse).isError).toBe(true);
-        expect((await buildJwksResponse).value).toStrictEqual({
+        expect(buildJwksResponse.isError).toBe(true);
+        expect(buildJwksResponse.value).toStrictEqual({
           errorMessage: "KMS key usage is not supported",
           errorCategory: "SERVER_ERROR",
         });
@@ -100,10 +100,10 @@ describe("JWKS Builder", () => {
           PublicKey: new Uint8Array(),
         } as GetPublicKeyCommandOutput);
 
-        const buildJwksResponse = jwksBuilder.buildJwks();
+        const buildJwksResponse = await jwksBuilder.buildJwks();
 
-        expect((await buildJwksResponse).isError).toBe(true);
-        expect((await buildJwksResponse).value).toStrictEqual({
+        expect(await buildJwksResponse.isError).toBe(true);
+        expect(await buildJwksResponse.value).toStrictEqual({
           errorMessage: "KMS key algorithm is not supported",
           errorCategory: "SERVER_ERROR",
         });
@@ -118,10 +118,10 @@ describe("JWKS Builder", () => {
           PublicKey: new Uint8Array(),
         } as GetPublicKeyCommandOutput);
 
-        const buildJwksResponse = jwksBuilder.buildJwks();
+        const buildJwksResponse = await jwksBuilder.buildJwks();
 
-        expect((await buildJwksResponse).isError).toBe(true);
-        expect((await buildJwksResponse).value).toStrictEqual({
+        expect(buildJwksResponse.isError).toBe(true);
+        expect(buildJwksResponse.value).toStrictEqual({
           errorMessage: "Error formatting public key as JWK",
           errorCategory: "SERVER_ERROR",
         });
@@ -147,10 +147,10 @@ describe("JWKS Builder", () => {
           PublicKey: new Uint8Array(mockPublicKey),
         } as GetPublicKeyCommandOutput);
 
-        const buildJwksResponse = jwksBuilder.buildJwks();
+        const buildJwksResponse = await jwksBuilder.buildJwks();
 
-        expect((await buildJwksResponse).isError).toBe(false);
-        expect((await buildJwksResponse).value).toStrictEqual({
+        expect(buildJwksResponse.isError).toBe(false);
+        expect(buildJwksResponse.value).toStrictEqual({
           keys: [
             {
               alg: "RS256",

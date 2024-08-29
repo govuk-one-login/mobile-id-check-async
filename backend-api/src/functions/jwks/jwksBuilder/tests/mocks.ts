@@ -17,10 +17,10 @@ const mockJwks: Jwks = {
 
 export class MockJwksBuilderSuccessResult implements IJwksBuilder {
   async buildJwks(): Promise<Result<Jwks>> {
-    return successResult(mockJwks);
+    return Promise.resolve(successResult(mockJwks));
   }
   async getPublicKeyAsJwk(): Promise<Result<EncryptionJwk>> {
-    return successResult(mockEncryptionJwk);
+    return Promise.resolve(successResult(mockEncryptionJwk));
   }
   formatAsJwk(): Result<EncryptionJwk> {
     return successResult(mockEncryptionJwk);
@@ -29,13 +29,15 @@ export class MockJwksBuilderSuccessResult implements IJwksBuilder {
 
 export class MockJwksBuilderErrorResult implements IJwksBuilder {
   async buildJwks(): Promise<Result<Jwks>> {
-    return errorResult({
-      errorMessage: "Error formatting public key as JWK",
-      errorCategory: "SERVER_ERROR",
-    });
+    return Promise.resolve(
+      errorResult({
+        errorMessage: "Error formatting public key as JWK",
+        errorCategory: "SERVER_ERROR",
+      }),
+    );
   }
   async getPublicKeyAsJwk(): Promise<Result<EncryptionJwk>> {
-    return successResult(mockEncryptionJwk);
+    return Promise.resolve(successResult(mockEncryptionJwk));
   }
   formatAsJwk(): Result<EncryptionJwk> {
     return successResult(mockEncryptionJwk);
