@@ -37,6 +37,13 @@ paths:
         - bearerAuth: []
       summary: Look for an active session for a given user
       description: Query the session database to find an active session for a given user. If an active session is found it returns the sessionId if not return 404 session not found
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          description: "A valid service token (e.g.: Authorization:Bearer <service-token-value>)"
+          schema:
+            type: string
       responses:
         '200':
           description: OK
