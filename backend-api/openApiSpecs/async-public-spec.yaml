@@ -34,9 +34,16 @@ paths:
   /async/activeSession:
     get:
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       summary: Look for an active session for a given user
       description: Query the session database to find an active session for a given user. If an active session is found it returns the sessionId if not return 404 session not found
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          description: "A valid service token (e.g.: Authorization:Bearer <service-token-value>)"
+          schema:
+            type: string
       responses:
         '200':
           description: OK
@@ -46,10 +53,8 @@ paths:
                 success:
                   value:
                     {
-                      "sessionId": "37aae92b-a51e-4f68-b571-8e455fb0ec34",
-                      "govuk_signin_dcmaw_metadata": {
-                        "journey_type": "desktop_app_desktop"
-                      }
+                        "sessionId": "37aae92b-a51e-4f68-b571-8e455fb0ec34",
+                        "redirect_uri": "https://example/redirect"
                     }
               schema:
                 type: object
@@ -58,84 +63,131 @@ paths:
                     type: string
                     description: |
                       The id of an active session found for a given sub identifier
-                  govuk_signin_dcmaw_metadata:
-                    type: object
+                  redirect_uri:
+                    type: string
                     description: |
-                      Object containing properties related to the specific DCMAW journey
-                      being initiated by this request.
-                      journey_type parameter is defined which can be:
-                      desktop_app_desktop - indicates the journey was initiated on a device other than the mobile that the app is running on, so the app should not attempt any automatic handback
-                      mobile_app_mobile - indicates the journey was initiated on the same device that the app us running on, so the app can attempt an automatic handback
+                      Registered client redirect_uri where app should attempt to get the user back to once id check is complete
+                required:
+                  - sessionId
         '400':
-          description: Bad request
-          content:
-            application/json:
-              examples:
-                errorInvalidRequest:
-                  description: |
-                    The authorization header is missing from the header
-                  value:
-                    {
-                      "error": "invalid_request",
-                      "error_description": "Authorization header is missing"
-                    }
-              schema:
-                $ref: "#/components/schemas/Error"
+            description: Bad request
+            content:
+              application/json:
+                examples:
+                  missingRequiredHeader:
+                    description: |
+                      The authorization header is missing from the header
+                    value:
+                      {
+                        "error": "missing_required_header",
+                        "error_description": "Authorization header is missing"
+                      }
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      description: |
+                        The error code.
+                    error_description:
+                      type: string
+                      description: |
+                        A description of the error.
+                  required:
+                    - error
+                    - error_description
         '401':
-          description: Unauthorized
-          content:
-            application/json:
-              examples:
-                errorInvalidRequest:
-                  description: |
-                    Unauthorized, usually signifies a access_token is not valid,
-                    and the user should request for new access_token
-                  value:
-                    {
-                      "error": "invalid_request",
-                      "error_description": "Service token is invalid or expired"
-                    }
-              schema:
-                $ref: "#/components/schemas/Error"
+            description: Unauthorized
+            content:
+              application/json:
+                examples:
+                  invalidServiceToken:
+                    description: |
+                      Unauthorized, usually signifies a access_token is not valid,
+                      and the user should request for new access_token
+                    value:
+                      {
+                        "error": "invalid_request",
+                        "error_description": "Service token is invalid or expired"
+                      }
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      description: |
+                        The error code.
+                    error_description:
+                      type: string
+                      description: |
+                        A description of the error.
+                  required:
+                    - error
+                    - error_description
         '404':
-          description: Session not found
-          content:
-            application/json:
-              examples:
-                errorSessionNotFound:
-                  description: |
-                    The active session with correct state is not found for given sub identifier
-                  value:
-                    {
-                      "error": "session_not_found",
-                      "error_description": "No active session found for the given sub identifier"
-                    }
-              schema:
-                $ref: "#/components/schemas/Error"
+            description: Session not found
+            content:
+              application/json:
+                examples:
+                  sessionNotFound:
+                    description: |
+                      The active session with correct state is not found for given sub identifier
+                    value:
+                      {
+                        "error": "session_not_found",
+                        "error_description": "No active session found for the given sub identifier"
+                      }
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      description: |
+                        The error code.
+                    error_description:
+                      type: string
+                      description: |
+                        A description of the error.
+                  required:
+                    - error
+                    - error_description
         '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              examples:
-                internalServerError:
-                  description: |
-                    The server has encountered an unexpected condition or configuration problem that prevents 
-                    it from fulfilling the request made by the browser or client.
-                  value:
-                    {
-                      "error": "server_error",
-                      "error_description": "Internal server error"
-                    }
-              schema:
-                $ref: "#/components/schemas/Error"
-# Created with mock integration, This needs to be replaced with lambda proxy integration when available
+            description: Internal Server Error
+            content:
+              application/json:
+                examples:
+                  internalServerError:
+                    description: |
+                      The server has encountered an unexpected condition or configuration problem that prevents 
+                      it from fulfilling the request made by the browser or client.
+                    value:
+                      {
+                        "error": "internal_server_error",
+                        "error_description": "Internal server error"
+                      }
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      description: |
+                        The error code.
+                    error_description:
+                      type: string
+                      description: |
+                        A description of the error.
+                  required:
+                    - error
+                    - error_description
       x-amazon-apigateway-integration:
         requestTemplates:
           application/json:
             statusCode: 200
         httpMethod: "POST"
         passthroughBehavior: "when_no_match"
-        type: "mock"
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AsyncActiveSessionFunction}:live/invocations"
+        type: "aws_proxy"
 
   /async/biometricToken:
     post:

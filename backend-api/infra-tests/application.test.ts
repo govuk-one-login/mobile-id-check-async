@@ -110,7 +110,119 @@ describe("Backend application infrastructure", () => {
         AccessLogSetting: {
           DestinationArn: {
             "Fn::Sub":
-              "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialApiAccessLogs}",
+              "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialPrivateApiAccessLogs}",
+          },
+        },
+      });
+    });
+
+    test("Access log group has a retention period", () => {
+      template.hasResourceProperties("AWS::Logs::LogGroup", {
+        RetentionInDays: 30,
+        LogGroupName: {
+          "Fn::Sub":
+            "/aws/apigateway/${AWS::StackName}-private-api-access-logs",
+        },
+      });
+    });
+  });
+
+  describe("Public APIgw", () => {
+    test("The endpoints are REGIONAL", () => {
+      template.hasResourceProperties("AWS::Serverless::Api", {
+        Name: { "Fn::Sub": "${AWS::StackName}-public-api" },
+        EndpointConfiguration: "REGIONAL",
+      });
+    });
+
+    test("It uses the public async OpenAPI Spec", () => {
+      template.hasResourceProperties("AWS::Serverless::Api", {
+        Name: { "Fn::Sub": "${AWS::StackName}-public-api" },
+        DefinitionBody: {
+          "Fn::Transform": {
+            Name: "AWS::Include",
+            Parameters: { Location: "./openApiSpecs/async-public-spec.yaml" },
+          },
+        },
+      });
+    });
+
+    describe("APIgw method settings", () => {
+      test("Metrics are enabled", () => {
+        const methodSettings = new Capture();
+        template.hasResourceProperties(
+          "AWS::Serverless::Api",
+
+          {
+            Name: { "Fn::Sub": "${AWS::StackName}-public-api" },
+            MethodSettings: methodSettings,
+          },
+        );
+        expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
+      });
+
+      test("Rate and burst limit mappings are set", () => {
+        const expectedBurstLimits = {
+          dev: 10,
+          build: 0,
+          staging: 0,
+          integration: 0,
+          production: 0,
+        };
+
+        const expectedRateLimits = {
+          dev: 10,
+          build: 0,
+          staging: 0,
+          integration: 0,
+          production: 0,
+        };
+        const mappingHelper = new Mappings(template);
+        mappingHelper.validatePublicAPIMapping({
+          environmentFlags: expectedBurstLimits,
+          mappingBottomLevelKey: "ApiBurstLimit",
+        });
+        mappingHelper.validatePublicAPIMapping({
+          environmentFlags: expectedRateLimits,
+          mappingBottomLevelKey: "ApiRateLimit",
+        });
+      });
+
+      test("Rate limit and burst mappings are applied to the APIgw", () => {
+        const methodSettings = new Capture();
+        template.hasResourceProperties(
+          "AWS::Serverless::Api",
+
+          {
+            Name: { "Fn::Sub": "${AWS::StackName}-public-api" },
+            MethodSettings: methodSettings,
+          },
+        );
+        expect(methodSettings.asArray()[0].ThrottlingBurstLimit).toStrictEqual({
+          "Fn::FindInMap": [
+            "PublicApigw",
+            { Ref: "Environment" },
+            "ApiBurstLimit",
+          ],
+        });
+
+        expect(methodSettings.asArray()[0].ThrottlingRateLimit).toStrictEqual({
+          "Fn::FindInMap": [
+            "PublicApigw",
+            { Ref: "Environment" },
+            "ApiRateLimit",
+          ],
+        });
+      });
+    });
+
+    test("Access log group is attached to APIgw", () => {
+      template.hasResourceProperties("AWS::Serverless::Api", {
+        Name: { "Fn::Sub": "${AWS::StackName}-public-api" },
+        AccessLogSetting: {
+          DestinationArn: {
+            "Fn::Sub":
+              "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialPublicApiAccessLogs}",
           },
         },
       });

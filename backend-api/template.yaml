@@ -43,6 +43,22 @@ Mappings:
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+  PublicApigw:
+    dev:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+    build:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    staging:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    integration:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    production:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
 
   TxMA:
     dev:
@@ -114,7 +130,7 @@ Globals:
 Resources:
 
   ### Private APIgw for Client Credentials grant flow
-  BackendAsyncCredentialApi:
+  BackendAsyncCredentialPrivateApi:
     Type: AWS::Serverless::Api
     Properties:
       Name: !Sub ${AWS::StackName}-private-api
@@ -127,7 +143,7 @@ Resources:
       StageName: !Ref Environment
       OpenApiVersion: 3.0.1
       AccessLogSetting:
-        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialApiAccessLogs}
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialPrivateApiAccessLogs}
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
       MethodSettings:
         - LoggingLevel: INFO
@@ -151,7 +167,7 @@ Resources:
           Parameters:
             Location: ./openApiSpecs/async-private-spec.yaml
 
-  AsyncCredentialApiAccessLogs:
+  AsyncCredentialPrivateApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
@@ -181,7 +197,7 @@ Resources:
           Properties:
             Path: /async/token
             Method: post
-            RestApiId: !Ref BackendAsyncCredentialApi
+            RestApiId: !Ref BackendAsyncCredentialPrivateApi
       Role: !GetAtt AsyncTokenLambdaRole.Arn
       Environment:
         Variables:
@@ -194,7 +210,7 @@ Resources:
       FunctionName: !GetAtt AsyncTokenFunction.Arn
       Principal: events.amazonaws.com
       SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialApi}/*/*/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialPrivateApi}/*/*/*
 
   AsyncTokenLogGroup:
     Type: AWS::Logs::LogGroup
@@ -288,7 +304,7 @@ Resources:
           Properties:
             Path: /async/credential
             Method: post
-            RestApiId: !Ref BackendAsyncCredentialApi
+            RestApiId: !Ref BackendAsyncCredentialPrivateApi
 
   AsyncCredentialLogGroup:
     Type: AWS::Logs::LogGroup
@@ -303,7 +319,7 @@ Resources:
       FunctionName: !GetAtt AsyncCredentialFunction.Arn
       Principal: events.amazonaws.com
       SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialApi}/*/*/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialPrivateApi}/*/*/*
 
   AsyncCredentialLambdaRole:
     Type: AWS::IAM::Role
@@ -406,6 +422,111 @@ Resources:
         AttributeName: timeToLive
         Enabled: true
 
+  ### Regional APIgw
+  BackendAsyncCredentialPublicApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${AWS::StackName}-public-api
+      Description: Regional API Gateway
+      EndpointConfiguration: REGIONAL
+      StageName: !Ref Environment
+      OpenApiVersion: 3.0.1
+      AccessLogSetting:
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialPublicApiAccessLogs}
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      MethodSettings:
+        - LoggingLevel: INFO
+          ResourcePath: /*
+          HttpMethod: '*'
+          DataTraceEnabled: false
+          MetricsEnabled: true
+          ThrottlingBurstLimit: !FindInMap
+            - PublicApigw
+            - !Ref Environment
+            - ApiBurstLimit
+          ThrottlingRateLimit: !FindInMap
+            - PublicApigw
+            - !Ref Environment
+            - ApiRateLimit
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./openApiSpecs/async-public-spec.yaml
+
+  AsyncCredentialPublicApiAccessLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-public-api-access-logs
+      RetentionInDays: 30
+
+  AsyncActiveSessionFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - AsyncActiveSessionLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2022
+        Sourcemap: false
+        EntryPoints:
+          - src/functions/asyncActiveSession/asyncActiveSessionHandler.ts
+    Properties:
+      AutoPublishAlias: live
+      FunctionName: !Sub ${AWS::StackName}-active-session
+      Runtime: nodejs20.x
+      Handler: asyncActiveSessionHandler.lambdaHandler
+      Events:
+        AsyncActiveSession:
+          Type: Api
+          Properties:
+            Path: /async/activeSession
+            Method: get
+            RestApiId: !Ref BackendAsyncCredentialPublicApi
+      Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
+
+  AsyncActiveSessionFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt AsyncActiveSessionFunction.Arn
+      Principal: events.amazonaws.com
+      SourceAccount: !Sub ${AWS::AccountId}
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialPublicApi}/*/*/*
+
+  AsyncActiveSessionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-active-session
+
+  AsyncActiveSessionLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AsyncActiveSessionFunctionLoggingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+      RoleName: !Sub ${AWS::StackName}-active-session-lambda
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
   # ------------------------------ #
   TxMASQSQueue:
     Type: AWS::SQS::Queue
