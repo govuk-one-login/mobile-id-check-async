@@ -170,7 +170,7 @@ Resources:
   AsyncCredentialPrivateApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs-2
       RetentionInDays: 30
 
       ### Token lambda
