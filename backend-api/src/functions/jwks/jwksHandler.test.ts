@@ -53,6 +53,7 @@ describe("Json Web Keys", () => {
           buildCloudFormationCustomResourceEvent(),
           buildLambdaContext(),
         );
+
         expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
           "ENVIRONMENT_VARIABLE_MISSING",
         );
@@ -68,7 +69,6 @@ describe("Json Web Keys", () => {
       it("Logs ERROR_SENDING_CUSTOM_RESOURCE_EVENT when the custom resource result fails to send", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
         delete dependencies.env[envVar];
-
         dependencies.customResourceResultSender = () =>
           new MockCustomResourceEventSenderErrorResult();
 
@@ -77,6 +77,7 @@ describe("Json Web Keys", () => {
           buildCloudFormationCustomResourceEvent(),
           buildLambdaContext(),
         );
+
         expect(mockLogger.getLogMessages()[2].logMessage.message).toBe(
           "ERROR_SENDING_CUSTOM_RESOURCE_EVENT",
         );
@@ -94,6 +95,7 @@ describe("Json Web Keys", () => {
           buildCloudFormationCustomResourceEvent("Delete"),
           buildLambdaContext(),
         );
+
         expect(mockCustomResourceEventSender.getResult()[0].result).toBe(
           "SUCCESS",
         );
@@ -109,6 +111,7 @@ describe("Json Web Keys", () => {
           buildCloudFormationCustomResourceEvent("Delete"),
           buildLambdaContext(),
         );
+
         expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
           "ERROR_SENDING_CUSTOM_RESOURCE_EVENT",
         );
