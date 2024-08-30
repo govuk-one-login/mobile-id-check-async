@@ -8,7 +8,7 @@
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
     "lint": "./node_modules/.bin/eslint ./src/functions",
     "pact": "./node_modules/.bin/jest --testPathPattern=tests/pact",
-    "test": "./node_modules/.bin/jest",
+    "test": "./node_modules/.bin/jest --testPathIgnorePatterns=tests/api",
     "test:api": "./node_modules/.bin/jest --testPathPattern=tests/api",
     "test:infra": "./node_modules/.bin/jest --testPathPattern=infra-tests/",
     "test:pact": "npm run pact",
