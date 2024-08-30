@@ -12,7 +12,7 @@
     "test:api": "./node_modules/.bin/jest --testPathPattern=tests/api",
     "test:infra": "./node_modules/.bin/jest --testPathPattern=infra-tests/",
     "test:pact": "npm run pact",
-    "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/*",
+    "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/pact tests/api",
     "ci": "npm run test:unit && npm run format:check && npm run lint"
   },
   "engines": {
