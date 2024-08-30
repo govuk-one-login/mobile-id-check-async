@@ -51,7 +51,7 @@ describe("JWKS Uploader", () => {
   });
 
   describe("Given the JWKS is successfully uploaded to S3", () => {
-    it("Returns an empty success response", async () => {
+    it("Returns a success response", async () => {
       mockS3Client.on(PutObjectCommand).resolves({});
 
       const uploadJwksResponse = jwksUploader.uploadJwks(
