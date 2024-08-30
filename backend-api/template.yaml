@@ -128,12 +128,12 @@ Globals:
 
 Resources:
 
-  ### Private APIgw for Client Credentials grant flow
+  ### Private APIgw
   BackendAsyncCredentialPrivateApi:
     Type: AWS::Serverless::Api
     Properties:
       Name: !Sub ${AWS::StackName}-private-api
-      Description: Private APIgw for Client Credentials flow
+      Description: Private API gateway for Client Credentials flow
       EndpointConfiguration: PRIVATE
       Auth:
         ResourcePolicy:
@@ -425,7 +425,7 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       Name: !Sub ${AWS::StackName}-public-api
-      Description: Regional API Gateway
+      Description: Regional API gateway for Client Credentials flow
       EndpointConfiguration: REGIONAL
       StageName: !Ref Environment
       OpenApiVersion: 3.0.1
@@ -851,3 +851,8 @@ Resources:
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
+
+Outputs:
+  PublicAPIGWBaseURL:
+    Description: Public API Gateway base URL
+    Value: !Sub https://${BackendAsyncCredentialPublicApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/

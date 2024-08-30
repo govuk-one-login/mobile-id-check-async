@@ -26,10 +26,24 @@ git config --local core.hooksPath .github/hook-scripts
 
 ## Running tests
 
-To run unit and infra tests:
+### To run unit and infra tests
 
 ```bash
 npm run test:unit
+```
+
+### To run API tests
+
+1. Activate AWS credentials
+2. Deploy your stack
+3. Generate a `.env` file for your deployed stack
+```bash
+sh generate_env_file.sh <stack_name> .env
+```
+
+4. Run tests
+```bash
+npm run test:api
 ```
 
 ## Formatting
