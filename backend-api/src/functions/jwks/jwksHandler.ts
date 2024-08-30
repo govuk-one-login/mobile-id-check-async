@@ -14,10 +14,10 @@ export async function lambdaHandlerConstructor(
   const resultSender = dependencies.customResourceResultSender(event, context);
 
   if (event.RequestType === "Delete") {
-    const sendEventResponse = await resultSender.sendEvent("SUCCESS");
-    if (sendEventResponse.isError) {
+    const sendEventResult = await resultSender.sendEvent("SUCCESS");
+    if (sendEventResult.isError) {
       logger.log("ERROR_SENDING_CUSTOM_RESOURCE_EVENT", {
-        errorMessage: sendEventResponse.value.errorMessage,
+        errorMessage: sendEventResult.value.errorMessage,
       });
     }
     return;
@@ -28,10 +28,10 @@ export async function lambdaHandlerConstructor(
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
       errorMessage: configResult.value.errorMessage,
     });
-    const sendEventResponse = await resultSender.sendEvent("FAILED");
-    if (sendEventResponse.isError) {
+    const sendEventResult = await resultSender.sendEvent("FAILED");
+    if (sendEventResult.isError) {
       logger.log("ERROR_SENDING_CUSTOM_RESOURCE_EVENT", {
-        errorMessage: sendEventResponse.value.errorMessage,
+        errorMessage: sendEventResult.value.errorMessage,
       });
     }
     return;
@@ -47,10 +47,10 @@ export async function lambdaHandlerConstructor(
     logger.log("INTERNAL_SERVER_ERROR", {
       errorMessage: jwksBuilderResult.value.errorMessage,
     });
-    const sendEventResponse = await resultSender.sendEvent("FAILED");
-    if (sendEventResponse.isError) {
+    const sendEventResult = await resultSender.sendEvent("FAILED");
+    if (sendEventResult.isError) {
       logger.log("ERROR_SENDING_CUSTOM_RESOURCE_EVENT", {
-        errorMessage: sendEventResponse.value.errorMessage,
+        errorMessage: sendEventResult.value.errorMessage,
       });
     }
     return;
@@ -67,19 +67,19 @@ export async function lambdaHandlerConstructor(
     logger.log("INTERNAL_SERVER_ERROR", {
       errorMessage: jwksUploaderResult.value.errorMessage,
     });
-    const sendEventResponse = await resultSender.sendEvent("FAILED");
-    if (sendEventResponse.isError) {
+    const sendEventResult = await resultSender.sendEvent("FAILED");
+    if (sendEventResult.isError) {
       logger.log("ERROR_SENDING_CUSTOM_RESOURCE_EVENT", {
-        errorMessage: sendEventResponse.value.errorMessage,
+        errorMessage: sendEventResult.value.errorMessage,
       });
     }
     return;
   }
 
-  const sendEventResponse = await resultSender.sendEvent("SUCCESS");
-  if (sendEventResponse.isError) {
+  const sendEventResult = await resultSender.sendEvent("SUCCESS");
+  if (sendEventResult.isError) {
     logger.log("ERROR_SENDING_CUSTOM_RESOURCE_EVENT", {
-      errorMessage: sendEventResponse.value.errorMessage,
+      errorMessage: sendEventResult.value.errorMessage,
     });
   }
 
