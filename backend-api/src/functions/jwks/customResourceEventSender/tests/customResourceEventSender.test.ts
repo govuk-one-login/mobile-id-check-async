@@ -63,7 +63,7 @@ describe("Custom Resource Event Sender", () => {
 
   describe("Given the event is sent successfully", () => {
     describe("When the outcome is 'SUCCESS'", () => {
-      it("Sends status 'SUCCESS' in the request body and returns an empty success response", async () => {
+      it("Sends status 'SUCCESS' in the request body and returns a success response", async () => {
         const sendEventResponse =
           await customResourceEventSender.sendEvent("SUCCESS");
 
@@ -77,7 +77,7 @@ describe("Custom Resource Event Sender", () => {
     });
 
     describe("When the outcome is 'FAILED'", () => {
-      it("Sends status 'FAILED' in the request body and returns an empty success response", async () => {
+      it("Sends status 'FAILED' in the request body and returns a success response", async () => {
         const sendEventResponse =
           await customResourceEventSender.sendEvent("FAILED");
 
