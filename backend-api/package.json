@@ -54,6 +54,7 @@
     "node-jose": "2.2.0"
   },
   "overrides": {
-    "axios": "^1.7.4"
+    "axios": "^1.7.4",
+    "micromatch": "^4.0.8"
   }
 }
