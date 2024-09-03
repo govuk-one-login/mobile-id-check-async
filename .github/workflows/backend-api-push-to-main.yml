@@ -54,7 +54,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BACKEND_API_DEV_TEST_IMAGE_REPOSITORY: ${{ secrets.BACKEND_API_DEV_TEST_IMAGE_REPOSITORY }}
-      BACKEND_API_DEV_COSIGN_KEY: ${{secrets.BACKEND_API_DEV_COSIGN_KEY}}
+      BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY: ${{ secrets.BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY }}
+      ASYNC_BUILD_COSIGN_KEY: ${{secrets.ASYNC_BUILD_COSIGN_KEY}}
       IMAGE_TAG: latest
     defaults:
       run:
@@ -69,7 +70,7 @@ jobs:
 
     - name: Build test image
       run: |
-        docker build -t $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG . 
+        docker build -t $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG -t $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG . 
 
     - name: Configure AWS credentials for DEV
       uses: aws-actions/configure-aws-credentials@55f725fcb586ca16a5ed5b0d75d464defbfa831b #main
@@ -89,10 +90,13 @@ jobs:
       with:
         cosign-release: 'v1.9.0'
 
-    # Commenting out due to AWS permission issues
-    # - name: Sign the image in DEV
-    #   run: |
-    #     cosign sign --key awskms:///$BACKEND_API_DEV_COSIGN_KEY $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
+    - name: Sign the image in BUILD
+      run: |
+        cosign sign --key awskms:///$ASYNC_BUILD_COSIGN_KEY $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
+
+    - name: Push image to BUILD
+      run: |
+        docker push $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
 
   build-and-upload-sam-artifact:
     name: Validate & upload S3 artifact to dev
@@ -142,5 +146,19 @@ jobs:
         with:
           artifact-bucket-name: ${{ secrets.BACKEND_API_DEV_ARTIFACT_BUCKET }}
           signing-profile-name: ${{ secrets.BACKEND_API_DEV_SIGNING_PROFILE }}
+          template-file: .aws-sam/build/template.yaml
+          working-directory: backend-api
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@55f725fcb586ca16a5ed5b0d75d464defbfa831b #main
+        with:
+          aws-region: eu-west-2
+          role-to-assume: ${{ secrets.BACKEND_API_BUILD_GH_ACTIONS_ROLE_ARN }}
+
+      - name: Upload SAM artifact into the BUILD artifact bucket
+        uses: govuk-one-login/devplatform-upload-action@6985ccbaa306e2320a8826252c922af65242b283 #main
+        with:
+          artifact-bucket-name: ${{ secrets.BACKEND_API_BUILD_ARTIFACT_BUCKET }}
+          signing-profile-name: ${{ secrets.BACKEND_API_BUILD_SIGNING_PROFILE }}
           template-file: .aws-sam/build/template.yaml
           working-directory: backend-api
