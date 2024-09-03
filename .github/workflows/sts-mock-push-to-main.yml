@@ -38,14 +38,14 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-
-      # Generate test coverage report for Sonar main branch analysis
+      
       - name: Run Tests
         run: npm run test:unit
 
       - name: Run infra Tests
         run: npm run test:infra
 
+      # Generate test coverage report for Sonar main branch analysis
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@f5003fc9688ade81ce47b57a3fa97a8d3f12de4c #master
         env:
