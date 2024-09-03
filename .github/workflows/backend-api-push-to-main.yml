@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BACKEND_API_DEV_TEST_IMAGE_REPOSITORY: ${{ secrets.BACKEND_API_DEV_TEST_IMAGE_REPOSITORY }}
-      BACKEND_API_DEV_COSIGN_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
+      DEV_CONTAINER_SIGN_KMS_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
       IMAGE_TAG: latest
     defaults:
       run:
