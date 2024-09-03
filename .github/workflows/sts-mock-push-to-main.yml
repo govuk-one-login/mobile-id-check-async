@@ -57,8 +57,7 @@ jobs:
     needs: sts-mock-tests-and-sonar-scan
     runs-on: ubuntu-latest
     env:
-      STS_MOCK_DEV_TEST_IMAGE_REPOSITORY_URI: ${{ secrets.STS_MOCK_DEV_TEST_IMAGE_REPOSITORY_URI }}
-      BACKEND_API_DEV_COSIGN_KEY: ${{secrets.BACKEND_API_DEV_COSIGN_KEY}}
+      STS_MOCK_DEV_TEST_IMAGE_REPOSITORY_URI: ${{ secrets.STS_MOCK_DEV_TEST_IMAGE_REPOSITORY_URI }}      
       DEV_CONTAINER_SIGN_KMS_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
       IMAGE_TAG: latest
     defaults:
@@ -146,7 +145,7 @@ jobs:
         uses: govuk-one-login/devplatform-upload-action@6985ccbaa306e2320a8826252c922af65242b283 #main
         with:
           artifact-bucket-name: ${{ secrets.STS_MOCK_DEV_ARTIFACT_BUCKET }}
-          signing-profile-name: ${{ secrets.BACKEND_API_DEV_SIGNING_PROFILE }}
+          signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE }}
           template-file: .aws-sam/build/template.yaml
           working-directory: sts-mock
 
@@ -157,8 +156,7 @@ jobs:
       - build-and-push-test-image-to-dev
     runs-on: ubuntu-latest
     env:
-      STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI: ${{ secrets.STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI }}
-      BACKEND_API_BUILD_COSIGN_KEY: ${{secrets.BACKEND_API_BUILD_COSIGN_KEY}}
+      STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI: ${{ secrets.STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI }}      
       BUILD_CONTAINER_SIGN_KMS_KEY: ${{ secrets.BUILD_CONTAINER_SIGN_KMS_KEY }}
       IMAGE_TAG: latest
     defaults:
@@ -247,6 +245,6 @@ jobs:
         uses: govuk-one-login/devplatform-upload-action@6985ccbaa306e2320a8826252c922af65242b283 #main
         with:
           artifact-bucket-name: ${{ secrets.STS_MOCK_BUILD_ARTIFACT_BUCKET }}
-          signing-profile-name: ${{ secrets.BACKEND_API_DEV_SIGNING_PROFILE }}
+          signing-profile-name: ${{ secrets.BUILD_SIGNING_PROFILE }}
           template-file: .aws-sam/build/template.yaml
           working-directory: sts-mock
