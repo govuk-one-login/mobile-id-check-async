@@ -125,13 +125,13 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       Name: !Sub ${AWS::StackName}-private-api
-      StageName: !Ref Environment
       Description: Private APIgw for Client Credentials flow
       EndpointConfiguration: PRIVATE
       Auth:
         ResourcePolicy:
           IntrinsicVpceWhitelist:
             - !ImportValue devplatform-vpc-ExecuteApiGatewayEndpointId
+      StageName: !Ref Environment
       OpenApiVersion: 3.0.1
       AccessLogSetting:
         DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialApiAccessLogs}
@@ -168,52 +168,33 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       Name: !Sub ${AWS::StackName}-MockPrivateApi
-      StageName: !Ref Environment
       Description: Regional equivalent of the private Api to enable testing from outside AWS
       EndpointConfiguration: REGIONAL
+      StageName: !Ref Environment
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
             Location: ./openApiSpecs/async-private-spec.yaml
+      MethodSettings:
+        - LoggingLevel: INFO
+          HttpMethod: '*'
+          ResourcePath: /*
+          MetricsEnabled: true
+      AccessLogSetting:
+        DestinationArn: !GetAtt MockPrivateApiAccessLogs.Arn
+        Format: '{"requestId" : "$context.requestId","ip" : "$context.identity.sourceIp","requestTime" : "$context.requestTime","httpMethod" : "$context.httpMethod","path" : "$context.path","routeKey" : "$context.routeKey","status" : "$context.status","protocol" : "$context.protocol","responseLength" : "$context.responseLength","integrationError" : "$context.integrationErrorMessage"}'
+      Auth:
+        DefaultAuthorizer: AWS_IAM
+        ApiKeyRequired: false
     Condition: MockPrivateApiDeployment
 
-  MockPrivateApiAsyncResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      ParentId: !GetAtt MockPrivateApi.RootResourceId
-      PathPart: async
-      RestApiId: !Ref MockPrivateApi
-
-  MockPrivateApiTokenMethod:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      ParentId: !GetAtt MockPrivateApiAsyncResource.RootResourceId
-      PathPart: token
-      RestApiId: !Ref MockPrivateApi
-    Condition: MockPrivateApiDeployment
-
-  MockPrivateApiMethod:
-    Type: AWS::ApiGateway::Method
+  MockPrivateApiAccessLogs:
+    Type: AWS::Logs::LogGroup
     Condition: MockPrivateApiDeployment
     Properties:
-      HttpMethod: POST
-      ResourceId: !GetAtt MockPrivateApiTokenMethod.ResourceId
-      RestApiId: !Ref MockPrivateApi
-      AuthorizationType: AWS_IAM
-      Integration:
-        IntegrationHttpMethod: POST
-        Type: AWS_PROXY
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AsyncTokenFunction}/invocations"
-        RequestTemplates:
-          application/json: |
-            { 
-              "headers": 
-              { 
-                "Authentication": "$input.params('Custom-Auth')"
-              }, 
-              "body": $input.body 
-            }
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-regional-api-access-logs
+      RetentionInDays: 30
 
       ### Token lambda
   AsyncTokenFunction:
