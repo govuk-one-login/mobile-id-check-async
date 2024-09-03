@@ -90,13 +90,13 @@ jobs:
       with:
         cosign-release: 'v1.9.0'
 
-    # - name: Sign the image in BUILD
-    #   run: |
-    #     cosign sign --key awskms:///$ASYNC_BUILD_COSIGN_KEY $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
+    - name: Sign the image in BUILD
+      run: |
+        cosign sign --key awskms:///$ASYNC_BUILD_COSIGN_KEY $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
 
-    # - name: Push image to BUILD
-    #   run: |
-    #     docker push $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
+    - name: Push image to BUILD
+      run: |
+        docker push $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
 
   build-and-upload-sam-artifact:
     name: Validate & upload S3 artifact to dev
