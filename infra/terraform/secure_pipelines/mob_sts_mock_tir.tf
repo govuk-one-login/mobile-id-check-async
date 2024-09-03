@@ -11,7 +11,7 @@ resource "aws_cloudformation_stack" "mob_sts_mock_tir" {
   // Default parameters. Can be overwritten by using the locals below.
   parameters = merge(
     {
-      PipelineStackName  = "mob-sts-mock-pipeline"
+      PipelineStackName  = "mob-sts-mock-pl"
       RetainedImageCount = 25
     }
   )
