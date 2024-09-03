@@ -1,5 +1,5 @@
 resource "aws_cloudformation_stack" "mob_sts_mock_pipeline" {
-    name = "mob-sts-mock-pipeline"
+    name = "mob-sts-mock-pl"
 
     template_url = format(local.preformat_template_url,
     "sam-deploy-pipeline",             # https://github.com/govuk-one-login/devplatform-deploy/tree/main/sam-deploy-pipeline
@@ -10,7 +10,7 @@ resource "aws_cloudformation_stack" "mob_sts_mock_pipeline" {
   parameters = merge(
     {
       Environment  = var.environment
-      SAMStackName = "sts-mock"
+      SAMStackName = "mob-sts-mock"
 
       VpcStackName                     = "devplatform-vpc"
       CustomKmsKeyArns                 = "arn:aws:kms:eu-west-2:216552277552:key/4bc58ab5-c9bb-4702-a2c3-5d339604a8fe" # To support Dynatrace
@@ -39,7 +39,7 @@ locals {
       SigningProfileArn        = one(data.aws_cloudformation_stack.signer_dev[*].outputs["SigningProfileArn"])
       SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_dev[*].outputs["SigningProfileVersionArn"])
 
-      TestImageRepositoryUri = "211125300205.dkr.ecr.eu-west-2.amazonaws.com/mob-sts-mock-tir-testrunnerimagerepository-poubsup3aw8j"
+      TestImageRepositoryUri = one(aws_cloudformation_stack.mob_sts_mock_tir[*].outputs["TestRunnerImageEcrRepositoryUri"])
     }
 
     build = {
@@ -51,7 +51,7 @@ locals {
       SigningProfileArn        = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileArn"])
       SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileVersionArn"])
 
-      # TestImageRepositoryUri = To be added after pipeline and tir is deployed in Build
+      TestImageRepositoryUri = one(aws_cloudformation_stack.mob_sts_mock_tir[*].outputs["TestRunnerImageEcrRepositoryUri"])
     }
   }
 }
