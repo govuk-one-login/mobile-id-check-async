@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BACKEND_API_DEV_TEST_IMAGE_REPOSITORY: ${{ secrets.BACKEND_API_DEV_TEST_IMAGE_REPOSITORY }}
-      BACKEND_API_DEV_COSIGN_KEY: ${{secrets.BACKEND_API_DEV_COSIGN_KEY}}
+      BACKEND_API_DEV_COSIGN_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
       IMAGE_TAG: latest
     defaults:
       run:
@@ -92,7 +92,7 @@ jobs:
     # Commenting out due to AWS permission issues
     # - name: Sign the image in DEV
     #   run: |
-    #     cosign sign --key awskms:///$BACKEND_API_DEV_COSIGN_KEY $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
+    #     cosign sign --key awskms:///$DEV_CONTAINER_SIGN_KMS_KEY $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
 
   build-and-upload-sam-artifact:
     name: Validate & upload S3 artifact to dev
@@ -141,6 +141,6 @@ jobs:
         uses: govuk-one-login/devplatform-upload-action@6985ccbaa306e2320a8826252c922af65242b283 #main
         with:
           artifact-bucket-name: ${{ secrets.BACKEND_API_DEV_ARTIFACT_BUCKET }}
-          signing-profile-name: ${{ secrets.BACKEND_API_DEV_SIGNING_PROFILE }}
+          signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE }}
           template-file: .aws-sam/build/template.yaml
           working-directory: backend-api
