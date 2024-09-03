@@ -141,6 +141,6 @@ jobs:
         uses: govuk-one-login/devplatform-upload-action@6985ccbaa306e2320a8826252c922af65242b283 #main
         with:
           artifact-bucket-name: ${{ secrets.BACKEND_API_DEV_ARTIFACT_BUCKET }}
-          signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE }}
+          signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
           template-file: .aws-sam/build/template.yaml
           working-directory: backend-api

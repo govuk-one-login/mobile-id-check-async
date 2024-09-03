@@ -145,7 +145,7 @@ jobs:
         uses: govuk-one-login/devplatform-upload-action@6985ccbaa306e2320a8826252c922af65242b283 #main
         with:
           artifact-bucket-name: ${{ secrets.STS_MOCK_DEV_ARTIFACT_BUCKET }}
-          signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE }}
+          signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
           template-file: .aws-sam/build/template.yaml
           working-directory: sts-mock
 
@@ -245,6 +245,6 @@ jobs:
         uses: govuk-one-login/devplatform-upload-action@6985ccbaa306e2320a8826252c922af65242b283 #main
         with:
           artifact-bucket-name: ${{ secrets.STS_MOCK_BUILD_ARTIFACT_BUCKET }}
-          signing-profile-name: ${{ secrets.BUILD_SIGNING_PROFILE }}
+          signing-profile-name: ${{ secrets.BUILD_SIGNING_PROFILE_NAME }}
           template-file: .aws-sam/build/template.yaml
           working-directory: sts-mock
