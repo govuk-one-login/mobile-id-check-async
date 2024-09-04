@@ -1,0 +1,109 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: Creates the necessary components to manage DNS in the Async ID Check journey and the logging for the Route 53 service.
+
+Parameters:
+  Environment:
+    Description: The name of the environment to deploy to
+    Type: String
+    AllowedValues:
+      - dev
+      - build
+      - staging
+      - integration
+      - production
+
+Mappings:
+  PlatformConfiguration:
+    dev:
+      DNSSUFFIX: review-b-async.dev.account.gov.uk
+    build:
+      DNSSUFFIX: review-b-async.build.account.gov.uk
+    staging:
+      DNSSUFFIX: review-b-async.staging.account.gov.uk
+    integration:
+      DNSSUFFIX: review-b-async.integration.account.gov.uk
+    production:
+      DNSSUFFIX: review-b-async.account.gov.uk
+
+Conditions:
+  IsDevEnvironment: !Equals
+    - !Ref Environment
+    - dev
+
+Resources:
+  ExternalCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Sub
+        - ${DNSSUFFIX}
+        - DNSSUFFIX: !FindInMap
+            - PlatformConfiguration
+            - !Ref Environment
+            - DNSSUFFIX
+      SubjectAlternativeNames:
+        - !Sub
+          - api.${DNSSUFFIX}
+          - DNSSUFFIX: !FindInMap
+              - PlatformConfiguration
+              - !Ref Environment
+              - DNSSUFFIX
+        - !If
+          - IsDevEnvironment
+          - !Sub
+            - '*.${DNSSUFFIX}'
+            - DNSSUFFIX: !FindInMap
+                - PlatformConfiguration
+                - !Ref Environment
+                - DNSSUFFIX
+          - !Ref AWS::NoValue
+      DomainValidationOptions:
+        - DomainName: !Sub
+            - ${DNSSUFFIX}
+            - DNSSUFFIX: !FindInMap
+                - PlatformConfiguration
+                - !Ref Environment
+                - DNSSUFFIX
+          HostedZoneId: !ImportValue PublicHostedZoneId
+        - DomainName: !Sub
+            - api.${DNSSUFFIX}
+            - DNSSUFFIX: !FindInMap
+                - PlatformConfiguration
+                - !Ref Environment
+                - DNSSUFFIX
+          HostedZoneId: !ImportValue PublicHostedZoneId
+      ValidationMethod: DNS
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${DNSSUFFIX}
+            - DNSSUFFIX: !FindInMap
+                - PlatformConfiguration
+                - !Ref Environment
+                - DNSSUFFIX
+        - Key: Product
+          Value: ID Check Async
+        - Key: System
+          Value: ID Check Async
+        - Key: Environment
+          Value: !Sub ${Environment}
+
+  CertificateARNSSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: The Certificate ARN
+      Name: !Sub /${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN
+      Type: String
+      Value: !Ref ExternalCertificate
+      Tags:
+        Name: !Sub /${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN
+        Product: ID Check Async
+        System: ID Check Async
+        Environment: !Sub ${Environment}
+
+Outputs:
+  CertificateARN:
+    Description: The ARN for the ACM Certificate created in this template
+    Value: !Ref ExternalCertificate
+    Export:
+      Name: !Sub ${AWS::StackName}-certificate-arn

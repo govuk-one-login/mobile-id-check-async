@@ -222,8 +222,7 @@ describe("Backend application infrastructure", () => {
       template.hasResourceProperties("AWS::Logs::LogGroup", {
         RetentionInDays: 30,
         LogGroupName: {
-          "Fn::Sub":
-            "/aws/apigateway/${AWS::StackName}-private-api-access-logs",
+          "Fn::Sub": "/aws/apigateway/${AWS::StackName}-public-api-access-logs",
         },
       });
     });
