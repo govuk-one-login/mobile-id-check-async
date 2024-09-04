@@ -54,4 +54,31 @@ describe("Mock async token", () => {
       });
     });
   });
+  describe("Request Proxy Service", () => {
+    it("Log and returns a 500 response if there is an unexpected error getting the token", async () => {
+      const result = await lambdaHandlerConstructor(
+        dependencies,
+        request,
+        buildLambdaContext(),
+      );
+
+      expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
+        "INTERNAL_SERVER_ERROR",
+      );
+      expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+        errorMessage:
+          "Unexpected error when making a request to POST async/token",
+      });
+
+      expect(result).toStrictEqual({
+        headers: { "Content-Type": "application/json" },
+        statusCode: 500,
+        body: JSON.stringify({
+          error: "server_error",
+          error_description:
+            "Unexpected error when making a request to POST async/token",
+        }),
+      });
+    });
+  });
 });
