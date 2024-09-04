@@ -3,6 +3,8 @@ import {
   APIGatewayProxyResult,
   Context,
 } from "aws-lambda";
+
+import axios from "axios";
 import {
   dependencies,
   IAsyncTokenRequestDependencies,
@@ -18,6 +20,18 @@ export async function lambdaHandlerConstructor(
   const logger = dependencies.logger();
   logger.addContext(context);
   logger.log("STARTED");
+
+  const axiosInstance = axios.create({
+    validateStatus: (status: number) => {
+      return status < 500;
+    },
+  });
+  const result = await axiosInstance.post(
+    "https://ka0sgf3ub8.execute-api.eu-west-2.amazonaws.com/dev/async/token",
+    { grant_type: "client_credentials" },
+  );
+  console.log(result.status);
+  console.log(result.data);
   logger.log("COMPLETED");
 
   return {
@@ -27,7 +41,7 @@ export async function lambdaHandlerConstructor(
       Pragma: "no-cache",
     },
     statusCode: 200,
-    body: "",
+    body: JSON.stringify(result.data),
   };
 }
 

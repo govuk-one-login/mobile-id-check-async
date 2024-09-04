@@ -52,6 +52,7 @@
     "@aws-sdk/client-sqs": "^3.632.0",
     "@aws-sdk/node-http-handler": "3.374.0",
     "@types/node": "^20.16.1",
+    "axios": "1.7.7",
     "aws-cdk-lib": "^2.153.0",
     "dotenv": "16.4.5",
     "ecdsa-sig-formatter": "1.0.11",
@@ -60,7 +61,6 @@
     "node-jose": "2.2.0"
   },
   "overrides": {
-    "axios": "^1.7.4",
     "micromatch": "^4.0.8"
   }
 }
