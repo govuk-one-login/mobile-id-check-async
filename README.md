@@ -1,6 +1,6 @@
 # One Login Async Credential Service
 
-This is the backend service supporting the asyncronous journey within the One Login application.
+This is the backend service supporting the asynchronous journey within the One Login application.
 
 It follows the Client credentials grant flow from the OAuth2.0 Framework [see here for reference docs](https://datatracker.ietf.org/doc/html/rfc6749#section-4.4).
 
