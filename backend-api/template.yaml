@@ -119,7 +119,6 @@ Globals:
         ISSUER: abc123
 
 Resources:
-
   ### Private APIgw for Client Credentials grant flow
   PrivateApi:
     Type: AWS::Serverless::Api
@@ -175,7 +174,7 @@ Resources:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: ./openApiSpecs/async-private-spec.yaml
+            Location: ./openApiSpecs/async-mock-private-spec.yaml
       MethodSettings:
         - LoggingLevel: INFO
           HttpMethod: '*'
@@ -227,12 +226,40 @@ Resources:
       SourceAccount: !Sub ${AWS::AccountId}
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApi}/*/*/*
 
-  AsyncTokenFunctionMockPrivateApiPermission:
+  AsyncTokenFunctionPermission:
     Type: AWS::Lambda::Permission
     Condition: MockPrivateApiDeployment
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt AsyncTokenFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceAccount: !Sub ${AWS::AccountId}
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApi}/*/*/*
+
+  MockAsyncTokenFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - MockAsyncTokenLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2022
+        Sourcemap: false
+        EntryPoints:
+          - src/functions/mockAsyncToken/mockAsyncTokenHandler.ts
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-mock-token
+      Runtime: nodejs20.x
+      Handler: mockAsyncTokenHandler.lambdaHandler
+      Role: !GetAtt MockAsyncTokenLambdaRole.Arn
+
+  MockAsyncTokenFunctionMockPrivateApiPermission:
+    Type: AWS::Lambda::Permission
+    Condition: MockPrivateApiDeployment
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt MockAsyncTokenFunction.Arn
       Principal: apigateway.amazonaws.com
       SourceAccount: !Sub ${AWS::AccountId}
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MockPrivateApi}/*/*/*
@@ -242,6 +269,12 @@ Resources:
     Properties:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-token
+
+  MockAsyncTokenLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-mock-token
 
   AsyncTokenLambdaRole:
     Type: AWS::IAM::Role
@@ -296,6 +329,32 @@ Resources:
                   - kms:GenerateDataKey
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
       RoleName: !Sub ${AWS::StackName}-token-lambda
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+
+  MockAsyncTokenLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: MockAsyncTokenFunctionLoggingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary

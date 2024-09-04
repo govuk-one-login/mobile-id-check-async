@@ -2,8 +2,10 @@
   "name": "one-login-async-credentials",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "license": "MIT",
   "scripts": {
+    "generate-mock-open-api": "node ./generate-mock-private-openapi.js",
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
     "lint": "./node_modules/.bin/eslint ./src/functions",
@@ -11,7 +13,7 @@
     "test": "./node_modules/.bin/jest",
     "test:infra": "./node_modules/.bin/jest --testPathPattern=infra-tests/",
     "test:pact": "npm run pact",
-    "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/pact",
+    "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/pact --testPathPattern=src/",
     "test:e2e": "./node_modules/.bin/jest --testPathPattern=e2e-tests/",
     "ci": "npm run test:unit && npm run format:check && npm run lint"
   },
@@ -39,7 +41,8 @@
     "ts-node": "10.9.2",
     "typescript": "^5.5.4",
     "typescript-eslint": "^8.2.0",
-    "yaml-cfn": "^0.3.2"
+    "yaml-cfn": "^0.3.2",
+    "yaml": "2.5.0"
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.7.0",
@@ -57,6 +60,7 @@
     "node-jose": "2.2.0"
   },
   "overrides": {
-    "axios": "^1.7.4"
+    "axios": "^1.7.4",
+    "micromatch": "^4.0.8"
   }
 }
