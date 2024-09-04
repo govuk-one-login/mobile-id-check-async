@@ -18,3 +18,6 @@ docker-vars.env
 
 # IntelliJ IDEA
 .idea
+
+# .env generated for local API testing
+.env
