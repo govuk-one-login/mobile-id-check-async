@@ -26,16 +26,11 @@ git config --local core.hooksPath .github/hook-scripts
 
 ## Running tests
 
-### Unit tests
+### Unit, infra and pact tests
 
 ```bash
-npm run test:unit
-```
-
-### Unit infra
-
-```bash
-npm run test:infra
+# From /backend-api
+npm run test
 ```
 
 ### API tests
@@ -44,11 +39,13 @@ npm run test:infra
 2. Deploy your stack
 3. Generate a `.env` file for your deployed stack
 ```bash
+# From /backend-api
 sh generate_env_file.sh <stack_name> .env
 ```
 
 4. Run tests
 ```bash
+# From /backend-api
 npm run test:api
 ```
 
@@ -58,11 +55,13 @@ This repository uses Prettier as an opinionated formatter to ensure code style i
 
 To format your code:
 ```bash
+# From /backend-api
 npm run format
 ```
 
 To validate your code adheres to the formatting rules:
 ```bash
+# From /backend-api
 npm run format:check
 ```
 
@@ -70,5 +69,6 @@ npm run format:check
 
 To lint your code:
 ```bash
+# From /backend-api
 npm run lint
 ```
