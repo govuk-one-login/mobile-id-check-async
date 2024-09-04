@@ -4,34 +4,35 @@ import {
   Context,
 } from "aws-lambda";
 
-import axios from "axios";
-import {
-  dependencies,
-  IAsyncTokenRequestDependencies,
-} from "../asyncToken/handlerDependencies";
+import { IMockAsyncTokenDependencies } from "./handlerDependencies";
+import { ConfigService } from "./configService/configService";
 
 export async function lambdaHandlerConstructor(
-  dependencies: IAsyncTokenRequestDependencies,
+  dependencies: IMockAsyncTokenDependencies,
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
-  // Environment variables
-
   const logger = dependencies.logger();
-  logger.addContext(context);
-  logger.log("STARTED");
 
-  const axiosInstance = axios.create({
-    validateStatus: (status: number) => {
-      return status < 500;
-    },
-  });
-  const result = await axiosInstance.post(
-    "https://ka0sgf3ub8.execute-api.eu-west-2.amazonaws.com/dev/async/token",
-    { grant_type: "client_credentials" },
-  );
-  console.log(result.status);
-  console.log(result.data);
+  const configService = new ConfigService();
+  const configResult = configService.getConfig(dependencies.env);
+  logger.log("STARTED");
+  if (configResult.isError) {
+    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
+      errorMessage: configResult.value.errorMessage,
+    });
+    return {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      statusCode: 500,
+      body: JSON.stringify({
+        error: "server_error",
+        error_description: "Server Error",
+      }),
+    };
+  }
+  logger.addContext(context);
   logger.log("COMPLETED");
 
   return {
@@ -41,8 +42,8 @@ export async function lambdaHandlerConstructor(
       Pragma: "no-cache",
     },
     statusCode: 200,
-    body: JSON.stringify(result.data),
+    body: "",
   };
 }
 
-export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
+// export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
