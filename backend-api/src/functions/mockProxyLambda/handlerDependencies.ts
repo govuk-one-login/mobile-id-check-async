@@ -6,13 +6,13 @@ import {
   ProxyRequestService,
 } from "./proxyRequestService/proxyRequestService";
 
-export interface IMockAsyncTokenDependencies {
+export interface IMockProxyDependencies {
   env: NodeJS.ProcessEnv;
   logger: () => Logger<MessageName>;
   proxyRequestService: () => IMakeProxyRequest;
 }
 
-export const dependencies: IMockAsyncTokenDependencies = {
+export const dependencies: IMockProxyDependencies = {
   env: process.env,
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
   proxyRequestService: () => new ProxyRequestService(),

@@ -4,11 +4,11 @@ import {
   Context,
 } from "aws-lambda";
 
-import { IMockAsyncTokenDependencies } from "./handlerDependencies";
+import { IMockProxyDependencies } from "./handlerDependencies";
 import { ConfigService } from "./configService/configService";
 
 export async function lambdaHandlerConstructor(
-  dependencies: IMockAsyncTokenDependencies,
+  dependencies: IMockProxyDependencies,
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
@@ -32,6 +32,26 @@ export async function lambdaHandlerConstructor(
       }),
     };
   }
+
+  const { resourcePath } = event.requestContext;
+  const allowedResourcePaths = ["/async/token", "/async/credential"];
+
+  if (!allowedResourcePaths.includes(resourcePath)) {
+    logger.log("UNEXPECTED_RESOURCE_PATH", {
+      errorMessage: "Resource path is not one of the permitted values",
+    });
+    return {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      statusCode: 500,
+      body: JSON.stringify({
+        error: "server_error",
+        error_description: "Server Error",
+      }),
+    };
+  }
+
   logger.addContext(context);
 
   const proxyRequestService = dependencies.proxyRequestService();
@@ -48,7 +68,7 @@ export async function lambdaHandlerConstructor(
       statusCode: 500,
       body: JSON.stringify({
         error: "server_error",
-        error_description: proxyRequestResult.value.errorMessage,
+        error_description: "Server Error",
       }),
     };
   }

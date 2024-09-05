@@ -2,16 +2,16 @@ import { APIGatewayProxyEvent } from "aws-lambda";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { buildRequest } from "../testUtils/mockRequest";
-import { lambdaHandlerConstructor } from "./mockAsyncTokenHandler";
+import { lambdaHandlerConstructor } from "./mockProxyHandler";
 import { MessageName, registeredLogs } from "./registeredLogs";
-import { IMockAsyncTokenDependencies } from "./handlerDependencies";
+import { IMockProxyDependencies } from "./handlerDependencies";
 import { Logger } from "../services/logging/logger";
 import { errorResult, Result, successResult } from "../utils/result";
 
-describe("Mock async token", () => {
+describe("Mock Proxy", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;
   let request: APIGatewayProxyEvent;
-  let dependencies: IMockAsyncTokenDependencies;
+  let dependencies: IMockProxyDependencies;
 
   const env = {
     ASYNC_BACKEND_API_URL: "mockUrl",
@@ -23,7 +23,7 @@ describe("Mock async token", () => {
     dependencies = {
       env,
       logger: () => new Logger(mockLogger, registeredLogs),
-      proxyRequestService: () => new ProxyRequestServiceErrorResult(),
+      proxyRequestService: () => new ProxyRequestServiceSuccessResult(),
     };
   });
 
@@ -56,11 +56,42 @@ describe("Mock async token", () => {
       });
     });
   });
+
+  describe("Unrecognised endpoint", () => {
+    describe("Given the endpoint is not a recognised value", () => {
+      it("Logs and returns a 500 Server Error response", async () => {
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          buildRequest({ requestContext: { resourcePath: "async/unknown" } }),
+          buildLambdaContext(),
+        );
+
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
+          "UNEXPECTED_RESOURCE_PATH",
+        );
+        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: "Resource path is not one of the permitted values",
+        });
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
+        });
+      });
+    });
+  });
   describe("Request Proxy Service Failure", () => {
     it("Log and returns a 500 response if there is an unexpected error getting the token", async () => {
       const result = await lambdaHandlerConstructor(
-        dependencies,
-        request,
+        {
+          ...dependencies,
+          proxyRequestService: () => new ProxyRequestServiceErrorResult(),
+        },
+        buildRequest({ requestContext: { resourcePath: "/async/token" } }),
         buildLambdaContext(),
       );
 
@@ -76,7 +107,7 @@ describe("Mock async token", () => {
         statusCode: 500,
         body: JSON.stringify({
           error: "server_error",
-          error_description: "mockProxyRequestFailedErrorMessage",
+          error_description: "Server Error",
         }),
       });
     });
@@ -92,7 +123,7 @@ describe("Mock async token", () => {
           ...dependencies,
           proxyRequestService: () => new ProxyRequestServiceSuccessResult(),
         },
-        request,
+        buildRequest({ requestContext: { resourcePath: "/async/token" } }),
         buildLambdaContext(),
       );
 
