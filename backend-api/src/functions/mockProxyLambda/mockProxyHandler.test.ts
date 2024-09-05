@@ -19,7 +19,7 @@ describe("Mock Proxy", () => {
 
   beforeEach(() => {
     mockLogger = new MockLoggingAdapter();
-    request = buildRequest({ body: "grant_type=client_credentials" });
+    request = buildRequest();
     dependencies = {
       env,
       logger: () => new Logger(mockLogger, registeredLogs),
@@ -84,6 +84,37 @@ describe("Mock Proxy", () => {
       });
     });
   });
+
+  describe("Unrecognised method", () => {
+    describe("Given the method is not POST", () => {
+      it("Logs and returns a 500 Server Error response", async () => {
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          buildRequest({
+            requestContext: { resourcePath: "/async/token" },
+            httpMethod: "GET",
+          }),
+          buildLambdaContext(),
+        );
+
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
+          "UNEXPECTED_RESOURCE_METHOD",
+        );
+        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: "Method is not an accepted value",
+        });
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
+        });
+      });
+    });
+  });
   describe("Request Proxy Service Failure", () => {
     it("Log and returns a 500 response if there is an unexpected error getting the token", async () => {
       const result = await lambdaHandlerConstructor(
@@ -91,7 +122,10 @@ describe("Mock Proxy", () => {
           ...dependencies,
           proxyRequestService: () => new ProxyRequestServiceErrorResult(),
         },
-        buildRequest({ requestContext: { resourcePath: "/async/token" } }),
+        buildRequest({
+          requestContext: { resourcePath: "/async/token" },
+          httpMethod: "POST",
+        }),
         buildLambdaContext(),
       );
 
@@ -123,7 +157,10 @@ describe("Mock Proxy", () => {
           ...dependencies,
           proxyRequestService: () => new ProxyRequestServiceSuccessResult(),
         },
-        buildRequest({ requestContext: { resourcePath: "/async/token" } }),
+        buildRequest({
+          requestContext: { resourcePath: "/async/token" },
+          httpMethod: "POST",
+        }),
         buildLambdaContext(),
       );
 

@@ -7,6 +7,7 @@ import { RegisteredLogMessages } from "../services/logging/types";
 export type MessageName =
   | "PROXY_REQUEST_ERROR"
   | "UNEXPECTED_RESOURCE_PATH"
+  | "UNEXPECTED_RESOURCE_METHOD"
   | CommonMessageNames;
 
 export const registeredLogs: RegisteredLogMessages<MessageName> = {
@@ -15,6 +16,9 @@ export const registeredLogs: RegisteredLogMessages<MessageName> = {
   },
   UNEXPECTED_RESOURCE_PATH: {
     messageCode: "MOBILE_ASYNC_UNEXPECTED_RESOURCE_PATH",
+  },
+  UNEXPECTED_RESOURCE_METHOD: {
+    messageCode: "MOBILE_ASYNC_UNEXPECTED_RESOURCE_METHOD",
   },
   ...commonMessages,
 };

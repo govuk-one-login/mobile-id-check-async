@@ -1,28 +1,62 @@
-import { errorResult, Result } from "../../utils/result";
+import axios from "axios";
+import { errorResult, Result, successResult } from "../../utils/result";
 
+interface RequestOptions {
+  backendApiUrl: string;
+  body: string | null;
+  headers: { [key in string]: string | number | boolean };
+  method: "POST";
+  path: string;
+}
 export interface IMakeProxyRequest {
-  makeProxyRequest: () => Promise<Result<ProxySuccessResult>>;
+  makeProxyRequest: (
+    requestOptions: RequestOptions,
+  ) => Promise<Result<ProxySuccessResult>>;
 }
 
 interface ProxySuccessResult {
   statusCode: number;
   body: string;
-  headers: { [key in string]: string };
+  headers: { [key in string]: string | number | boolean };
 }
 
 export class ProxyRequestService implements IMakeProxyRequest {
-  makeProxyRequest = (): Promise<
-    Result<{
-      statusCode: number;
-      body: string;
-      headers: { [key in string]: string };
-    }>
-  > => {
-    return Promise.resolve(
-      errorResult({
+  makeProxyRequest = async (
+    requestOptions: RequestOptions,
+  ): Promise<Result<ProxySuccessResult>> => {
+    try {
+      const response = await axios.post(
+        `${requestOptions.backendApiUrl}${requestOptions.path}`,
+        requestOptions.body,
+        {
+          headers: requestOptions.headers,
+          validateStatus: (status) => status < 600,
+        },
+      );
+      const responseHeaders: { [key in string]: string | number | boolean } =
+        {};
+      const headerKeys = Object.keys(response.headers);
+      headerKeys.forEach((headerKey) => {
+        const headerValue = response.headers[headerKey];
+        if (
+          typeof headerValue === "string" ||
+          typeof headerValue === "number" ||
+          typeof headerValue === "boolean"
+        ) {
+          responseHeaders[headerKey] = headerValue;
+        }
+      });
+
+      return successResult({
+        statusCode: response.status,
+        body: response.data,
+        headers: responseHeaders,
+      });
+    } catch {
+      return errorResult({
         errorCategory: "SERVER_ERROR",
-        errorMessage: "unexpected error",
-      }),
-    );
+        errorMessage: "Error sending network request",
+      });
+    }
   };
 }
