@@ -86,7 +86,7 @@ Resources:
         Target: es2022
         Sourcemap: false
         EntryPoints:
-          - src/functions/token/tokenHandler.ts
+          - src/token/tokenHandler.ts
     Properties:
       Description: Mock STS token function for exchanging an access token for a service token
       AutoPublishAlias: live
