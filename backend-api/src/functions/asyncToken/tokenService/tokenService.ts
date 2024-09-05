@@ -37,7 +37,7 @@ export class TokenService implements IMintToken {
       signature: "",
     };
 
-    const unsignedToken = `${tokenComponents.header}.${tokenComponents.payload}.`;
+    const unsignedToken = `${tokenComponents.header}.${tokenComponents.payload}`;
 
     // Signing token
     let result: SignCommandOutput;

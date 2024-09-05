@@ -10,7 +10,7 @@ import { SessionService } from "../sessionService";
 describe("Session Service", () => {
   let service: SessionService;
   beforeEach(() => {
-    service = new SessionService("mockTableName", "mockIndexName");
+    service = new SessionService("mockTableName");
   });
 
   describe("Get active session", () => {

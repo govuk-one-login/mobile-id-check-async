@@ -43,6 +43,22 @@ Mappings:
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+  PublicApigw:
+    dev:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+    build:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    staging:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    integration:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    production:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
 
   TxMA:
     dev:
@@ -112,11 +128,12 @@ Globals:
       - !Ref AWS::NoValue
     Environment:
       Variables:
-        SIGNING_KEY_ID: !ImportValue platform-kms-signing-key-arn
+        SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
         TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
 
         # ISSUER should be updated with DNS once available
-        ISSUER: abc123
+        ISSUER: mockIssuer
+        SESSION_TABLE_NAME: !Ref SessionsTable
 
 Resources:
 
@@ -134,7 +151,7 @@ Resources:
       StageName: !Ref Environment
       OpenApiVersion: 3.0.1
       AccessLogSetting:
-        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialApiAccessLogs}
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialPrivateApiAccessLogs}
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
       MethodSettings:
         - LoggingLevel: INFO
@@ -158,7 +175,7 @@ Resources:
           Parameters:
             Location: ./openApiSpecs/async-private-spec.yaml
 
-  AsyncCredentialApiAccessLogs:
+  AsyncCredentialPrivateApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
@@ -194,7 +211,6 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceAccount: !Sub ${AWS::AccountId}
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApi}/*/*/*
-    Condition: MockPrivateApiDeployment
 
   AsyncTokenLogGroup:
     Type: AWS::Logs::LogGroup
@@ -239,7 +255,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - kms:Sign
-                Resource: !ImportValue platform-kms-signing-key-arn
+                Resource: !GetAtt KMSSigningKey.Arn
         - PolicyName: AsyncTokenFunctionSQSPolicy
           PolicyDocument:
             Version: "2012-10-17"
@@ -281,6 +297,7 @@ Resources:
       Environment:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
+          SESSION_TTL_IN_MILLISECONDS: 3600000 #Used to set time to live when creating sessions. Set to 1 day.
 
   AsyncCredentialLogGroup:
     Type: AWS::Logs::LogGroup
@@ -318,7 +335,25 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: AsyncTokenFunctionSsmPolicy
+        - PolicyName: DynamoReadSessionsTable
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:Query
+                Resource: !GetAtt SessionsTable.Arn
+        - PolicyName: AsyncCredentialFunctionSecretsManagerPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource:
+                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistry-?????? # wildcard as AWS automatically appends 6 characters to the end of a secret arn
+        - PolicyName: AsyncCredentialFunctionLoggingPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -328,19 +363,174 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
+        - PolicyName: AsyncCredentialFunctionKmsPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
               - Effect: Allow
                 Action:
-                  - secretsmanager:GetSecretValue
-                Resource:
-                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistry-?????? # wildcard as AWS automatically appends 6 characters to the end of a secret arn
+                  - kms:Verify
+                Resource: !GetAtt KMSSigningKey.Arn
+        - PolicyName: AsyncCredentialFunctionSQSPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                Resource: !GetAtt TxMASQSQueue.Arn
+              - Effect: Allow
+                Action:
+                  - kms:Encrypt
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Resource: !GetAtt TxMAKMSEncryptionKey.Arn
 
-                  # TxMA Audit service
+                # TxMA Audit service
       RoleName: !Sub ${AWS::StackName}-credential-lambda
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
 
+  SessionsTable:
+    Type: AWS::DynamoDB::Table
+
+    # Disabling check for point in time backup
+    # checkov:skip=CKV_AWS_28:Ensure Dynamodb point in time recovery (backup) is enabled
+    # checkov:skip=CKV_AWS_119:No PII in table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: sessionId
+          AttributeType: S
+        - AttributeName: subjectIdentifier
+          AttributeType: S
+      KeySchema:
+        - AttributeName: sessionId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: subjectIdentifier-index
+          KeySchema:
+            - AttributeName: subjectIdentifier
+              KeyType: HASH
+          Projection:
+            NonKeyAttributes:
+              - authSessionState
+              - sessionId
+            ProjectionType: INCLUDE
+      BillingMode: PAY_PER_REQUEST
+      SSESpecification:
+        SSEEnabled: true
+      TimeToLiveSpecification:
+        AttributeName: timeToLive
+        Enabled: true
+
+  ### Regional APIgw
+  BackendAsyncCredentialPublicApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${AWS::StackName}-public-api
+      Description: Regional API Gateway
+      EndpointConfiguration: REGIONAL
+      StageName: !Ref Environment
+      OpenApiVersion: 3.0.1
+      AccessLogSetting:
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialPublicApiAccessLogs}
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      MethodSettings:
+        - LoggingLevel: INFO
+          ResourcePath: /*
+          HttpMethod: '*'
+          DataTraceEnabled: false
+          MetricsEnabled: true
+          ThrottlingBurstLimit: !FindInMap
+            - PublicApigw
+            - !Ref Environment
+            - ApiBurstLimit
+          ThrottlingRateLimit: !FindInMap
+            - PublicApigw
+            - !Ref Environment
+            - ApiRateLimit
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./openApiSpecs/async-public-spec.yaml
+
+  AsyncCredentialPublicApiAccessLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-public-api-access-logs
+      RetentionInDays: 30
+
+  AsyncActiveSessionFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - AsyncActiveSessionLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2022
+        Sourcemap: false
+        EntryPoints:
+          - src/functions/asyncActiveSession/asyncActiveSessionHandler.ts
+    Properties:
+      AutoPublishAlias: live
+      FunctionName: !Sub ${AWS::StackName}-active-session
+      Runtime: nodejs20.x
+      Handler: asyncActiveSessionHandler.lambdaHandler
+      Events:
+        AsyncActiveSession:
+          Type: Api
+          Properties:
+            Path: /async/activeSession
+            Method: get
+            RestApiId: !Ref BackendAsyncCredentialPublicApi
+      Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
+
+  AsyncActiveSessionFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt AsyncActiveSessionFunction.Arn
+      Principal: events.amazonaws.com
+      SourceAccount: !Sub ${AWS::AccountId}
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialPublicApi}/*/*/*
+
+  AsyncActiveSessionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-active-session
+
+  AsyncActiveSessionLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AsyncActiveSessionFunctionLoggingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+      RoleName: !Sub ${AWS::StackName}-active-session-lambda
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+  # ------------------------------ #
   TxMASQSQueue:
     Type: AWS::SQS::Queue
     Properties:
