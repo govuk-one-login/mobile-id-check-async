@@ -101,8 +101,7 @@ jobs:
   build-and-upload-sam-artifact-to-dev:
     name: Validate & upload S3 artifact to dev
     runs-on: ubuntu-latest
-    # needs:
-    #   - build-and-push-test-image-to-dev
+    # needs: build-and-push-test-image-to-dev
     defaults:
       run:
         shell: bash
@@ -151,9 +150,7 @@ jobs:
 
   # build-and-push-test-image-to-build:
   #   name: Build and push test image to Build
-  #   needs: 
-  #     - sts-mock-tests-and-sonar-scan
-  #     - build-and-push-test-image-to-dev
+  #   needs: sts-mock-tests-and-sonar-scan  
   #   runs-on: ubuntu-latest
   #   env:
   #     STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI: ${{ secrets.STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI }}      
@@ -200,9 +197,7 @@ jobs:
   build-and-upload-sam-artifact-to-build:
     name: Validate & upload S3 artifact to Build
     runs-on: ubuntu-latest
-    needs:
-      # - build-and-push-test-image-to-build
-      - build-and-upload-sam-artifact-to-dev
+    # needs: build-and-push-test-image-to-build      
     defaults:
       run:
         shell: bash
