@@ -6,7 +6,7 @@ import { lambdaHandlerConstructor } from "./mockAsyncTokenHandler";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { IMockAsyncTokenDependencies } from "./handlerDependencies";
 import { Logger } from "../services/logging/logger";
-import { errorResult, Result } from "../utils/result";
+import { errorResult, Result, successResult } from "../utils/result";
 
 describe("Mock async token", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;
@@ -56,7 +56,7 @@ describe("Mock async token", () => {
       });
     });
   });
-  describe("Request Proxy Service", () => {
+  describe("Request Proxy Service Failure", () => {
     it("Log and returns a 500 response if there is an unexpected error getting the token", async () => {
       const result = await lambdaHandlerConstructor(
         dependencies,
@@ -81,6 +81,37 @@ describe("Mock async token", () => {
       });
     });
   });
+
+  describe("Request Proxy Service Success", () => {
+    // Success here means that there was a response from the request to the proxy
+    // It does not mean that the response from the proxy is a 2XX
+
+    it("Response contains the headers,body,status code from the proxy", async () => {
+      const result = await lambdaHandlerConstructor(
+        {
+          ...dependencies,
+          proxyRequestService: () => new ProxyRequestServiceSuccessResult(),
+        },
+        request,
+        buildLambdaContext(),
+      );
+
+      expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
+        "COMPLETED",
+      );
+
+      expect(result).toStrictEqual({
+        headers: {
+          mockHeader: "mockHeaderValue",
+          mockAnotherHeader: "mockAnotherHeaderValue",
+        },
+        statusCode: 201,
+        body: JSON.stringify({
+          mockKey: "mockValue",
+        }),
+      });
+    });
+  });
 });
 
 class ProxyRequestServiceErrorResult {
@@ -95,6 +126,27 @@ class ProxyRequestServiceErrorResult {
       errorResult({
         errorCategory: "SERVER_ERROR",
         errorMessage: "mockProxyRequestFailedErrorMessage",
+      }),
+    );
+  };
+}
+
+class ProxyRequestServiceSuccessResult {
+  makeProxyRequest = async (): Promise<
+    Result<{
+      statusCode: number;
+      body: string;
+      headers: { [key in string]: string };
+    }>
+  > => {
+    return Promise.resolve(
+      successResult({
+        statusCode: 201,
+        body: JSON.stringify({ mockKey: "mockValue" }),
+        headers: {
+          mockHeader: "mockHeaderValue",
+          mockAnotherHeader: "mockAnotherHeaderValue",
+        },
       }),
     );
   };

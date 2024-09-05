@@ -52,17 +52,9 @@ export async function lambdaHandlerConstructor(
       }),
     };
   }
-  logger.log("COMPLETED");
 
-  return {
-    headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "no-store",
-      Pragma: "no-cache",
-    },
-    statusCode: 200,
-    body: "",
-  };
+  logger.log("COMPLETED");
+  return proxyRequestResult.value;
 }
 
 // export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
