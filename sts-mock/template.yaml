@@ -86,14 +86,13 @@ Resources:
         Target: es2022
         Sourcemap: false
         EntryPoints:
-          - tokenHandler.ts
+          - src/functions/token/tokenHandler.ts
     Properties:
       Description: Mock STS token function for exchanging an access token for a service token
       AutoPublishAlias: live
       FunctionName: !Sub ${AWS::StackName}-token
       Runtime: nodejs20.x
-      Handler: tokenHandler.lambdaHandler
-      CodeUri: src/token/
+      Handler: tokenHandler.lambdaHandler      
       Events:
         Token:
           Type: Api
