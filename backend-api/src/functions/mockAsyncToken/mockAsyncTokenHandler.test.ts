@@ -6,6 +6,7 @@ import { lambdaHandlerConstructor } from "./mockAsyncTokenHandler";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { IMockAsyncTokenDependencies } from "./handlerDependencies";
 import { Logger } from "../services/logging/logger";
+import { errorResult, Result } from "../utils/result";
 
 describe("Mock async token", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;
@@ -22,6 +23,7 @@ describe("Mock async token", () => {
     dependencies = {
       env,
       logger: () => new Logger(mockLogger, registeredLogs),
+      proxyRequestService: () => new ProxyRequestServiceErrorResult(),
     };
   });
 
@@ -63,11 +65,10 @@ describe("Mock async token", () => {
       );
 
       expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
-        "INTERNAL_SERVER_ERROR",
+        "PROXY_REQUEST_ERROR",
       );
       expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
-        errorMessage:
-          "Unexpected error when making a request to POST async/token",
+        errorMessage: "mockProxyRequestFailedErrorMessage",
       });
 
       expect(result).toStrictEqual({
@@ -75,10 +76,26 @@ describe("Mock async token", () => {
         statusCode: 500,
         body: JSON.stringify({
           error: "server_error",
-          error_description:
-            "Unexpected error when making a request to POST async/token",
+          error_description: "mockProxyRequestFailedErrorMessage",
         }),
       });
     });
   });
 });
+
+class ProxyRequestServiceErrorResult {
+  makeProxyRequest = async (): Promise<
+    Result<{
+      statusCode: number;
+      body: string;
+      headers: { [key in string]: string };
+    }>
+  > => {
+    return Promise.resolve(
+      errorResult({
+        errorCategory: "SERVER_ERROR",
+        errorMessage: "mockProxyRequestFailedErrorMessage",
+      }),
+    );
+  };
+}

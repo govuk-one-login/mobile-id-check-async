@@ -33,6 +33,25 @@ export async function lambdaHandlerConstructor(
     };
   }
   logger.addContext(context);
+
+  const proxyRequestService = dependencies.proxyRequestService();
+  const proxyRequestResult = await proxyRequestService.makeProxyRequest();
+  if (proxyRequestResult.isError) {
+    logger.log("PROXY_REQUEST_ERROR", {
+      errorMessage: proxyRequestResult.value.errorMessage,
+    });
+
+    return {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      statusCode: 500,
+      body: JSON.stringify({
+        error: "server_error",
+        error_description: proxyRequestResult.value.errorMessage,
+      }),
+    };
+  }
   logger.log("COMPLETED");
 
   return {
