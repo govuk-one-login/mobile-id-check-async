@@ -162,7 +162,10 @@ describe("Mock Proxy", () => {
         },
         buildRequest({
           path: "/async/token",
-          headers: { "X-Custom-Auth": "mockCustomAuthHeaderValue" },
+          headers: {
+            "X-Custom-Auth": "mockCustomAuthHeaderValue",
+            "non-standard-header": undefined,
+          },
           httpMethod: "POST",
         }),
         buildLambdaContext(),

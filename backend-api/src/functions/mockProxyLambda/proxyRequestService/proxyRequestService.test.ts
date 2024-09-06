@@ -35,7 +35,10 @@ describe("Proxy Request Service", () => {
         data: "mockBody",
         status: 210,
         statusText: "statusText",
-        headers: { mockHeaderKey: "mockHeaderValue" },
+        headers: {
+          mockHeaderKey: "mockHeaderValue",
+          "non-standard-header": undefined,
+        },
       };
       mockedAxios.post.mockResolvedValueOnce(axiosResponse);
       const proxyRequestService = new ProxyRequestService();
@@ -51,7 +54,13 @@ describe("Proxy Request Service", () => {
       expect(mockedAxios.post).toHaveBeenCalledWith(
         "https://mockUrl.com/async/token",
         "mockBody",
-        { headers: { mockHeader: "mockHeaderValue" }, validateStatus },
+        {
+          headers: {
+            mockHeader: "mockHeaderValue",
+            "non-standard-header": undefined,
+          },
+          validateStatus,
+        },
       );
       expect(proxyRequestServiceResult.isError).toBe(false);
       expect(proxyRequestServiceResult.value).toStrictEqual({
