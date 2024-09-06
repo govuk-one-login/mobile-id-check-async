@@ -131,7 +131,10 @@ const standardiseApiGwHeaders = (
       typeof headerValue === "number" ||
       typeof headerValue === "boolean"
     ) {
-      standardisedHeaders[headerKey] = headerValue;
+      //TODO - refactor and move elsewhere. This fails TLS validation as the target of the request (private apigw execute-url isn't on the certificate)
+      if (headerKey !== "Host") {
+        standardisedHeaders[headerKey] = headerValue;
+      }
     }
   });
 
