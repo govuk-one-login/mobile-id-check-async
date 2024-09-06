@@ -4,7 +4,7 @@ import { errorResult, Result, successResult } from "../../utils/result";
 interface RequestOptions {
   backendApiUrl: string;
   body: string | null;
-  headers: { [key in string]: string | number | boolean };
+  headers: { [key in string]: string | number | boolean | undefined };
   method: "POST";
   path: string;
 }

@@ -62,15 +62,15 @@ describe("Mock Proxy", () => {
       it("Logs and returns a 500 Server Error response", async () => {
         const result = await lambdaHandlerConstructor(
           dependencies,
-          buildRequest({ requestContext: { resourcePath: "async/unknown" } }),
+          buildRequest({ path: "/async/unknown" }),
           buildLambdaContext(),
         );
 
         expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
-          "UNEXPECTED_RESOURCE_PATH",
+          "UNEXPECTED_PATH",
         );
         expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Resource path is not one of the permitted values",
+          errorMessage: "Path is not one of the permitted values",
         });
 
         expect(result).toStrictEqual({
@@ -90,15 +90,12 @@ describe("Mock Proxy", () => {
       it("Logs and returns a 500 Server Error response", async () => {
         const result = await lambdaHandlerConstructor(
           dependencies,
-          buildRequest({
-            requestContext: { resourcePath: "/async/token" },
-            httpMethod: "GET",
-          }),
+          buildRequest({ path: "/async/token", httpMethod: "GET" }),
           buildLambdaContext(),
         );
 
         expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
-          "UNEXPECTED_RESOURCE_METHOD",
+          "UNEXPECTED_HTTP_METHOD",
         );
         expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "Method is not an accepted value",
@@ -123,7 +120,7 @@ describe("Mock Proxy", () => {
           proxyRequestService: () => new ProxyRequestServiceErrorResult(),
         },
         buildRequest({
-          requestContext: { resourcePath: "/async/token" },
+          path: "/async/token",
           httpMethod: "POST",
         }),
         buildLambdaContext(),
@@ -158,7 +155,7 @@ describe("Mock Proxy", () => {
           proxyRequestService: () => new ProxyRequestServiceSuccessResult(),
         },
         buildRequest({
-          requestContext: { resourcePath: "/async/token" },
+          path: "/async/token",
           httpMethod: "POST",
         }),
         buildLambdaContext(),

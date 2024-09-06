@@ -34,12 +34,12 @@ export async function lambdaHandlerConstructor(
     };
   }
 
-  const { resourcePath } = event.requestContext;
-  const allowedResourcePaths = ["/async/token", "/async/credential"];
+  const { path } = event;
+  const allowedPaths = ["/async/token", "/async/credential"];
 
-  if (!allowedResourcePaths.includes(resourcePath)) {
-    logger.log("UNEXPECTED_RESOURCE_PATH", {
-      errorMessage: "Resource path is not one of the permitted values",
+  if (!allowedPaths.includes(path)) {
+    logger.log("UNEXPECTED_PATH", {
+      errorMessage: "Path is not one of the permitted values",
     });
     return {
       headers: {
@@ -56,7 +56,7 @@ export async function lambdaHandlerConstructor(
   const method = event.httpMethod;
 
   if (method !== "POST") {
-    logger.log("UNEXPECTED_RESOURCE_METHOD", {
+    logger.log("UNEXPECTED_HTTP_METHOD", {
       errorMessage: "Method is not an accepted value",
     });
     return {
@@ -75,7 +75,7 @@ export async function lambdaHandlerConstructor(
   const proxyRequestResult = await proxyRequestService.makeProxyRequest({
     backendApiUrl: configResult.value.ASYNC_BACKEND_API_URL,
     body: event.body,
-    path: resourcePath,
+    path,
     headers: event.headers,
     method: method,
   });
