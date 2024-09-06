@@ -1,11 +1,16 @@
 import {
   APIGatewayProxyEvent,
+  APIGatewayProxyEventHeaders,
   APIGatewayProxyResult,
   Context,
 } from "aws-lambda";
 
 import { dependencies, IMockProxyDependencies } from "./handlerDependencies";
 import { ConfigService } from "./configService/configService";
+
+export type StandardisedHeaders = {
+  [key in string]: string | number | boolean;
+};
 
 export async function lambdaHandlerConstructor(
   dependencies: IMockProxyDependencies,
@@ -72,12 +77,14 @@ export async function lambdaHandlerConstructor(
   }
 
   const incomingHeaders = event.headers;
+  const standardisedHeaders = standardiseApiGwHeaders(incomingHeaders);
 
   const customAuthHeaderValue =
-    incomingHeaders["X-Custom-Auth"] ?? incomingHeaders["x-custom-auth"];
+    standardisedHeaders["X-Custom-Auth"] ??
+    standardisedHeaders["x-custom-auth"];
 
   if (customAuthHeaderValue) {
-    incomingHeaders["Authorization"] = customAuthHeaderValue;
+    standardisedHeaders["Authorization"] = customAuthHeaderValue;
   }
 
   const proxyRequestService = dependencies.proxyRequestService();
@@ -85,7 +92,7 @@ export async function lambdaHandlerConstructor(
     backendApiUrl: configResult.value.ASYNC_BACKEND_API_URL,
     body: event.body,
     path,
-    headers: incomingHeaders,
+    headers: standardisedHeaders,
     method: method,
   });
   if (proxyRequestResult.isError) {
@@ -110,3 +117,22 @@ export async function lambdaHandlerConstructor(
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
+
+const standardiseApiGwHeaders = (
+  apiGwHeaders: APIGatewayProxyEventHeaders,
+): StandardisedHeaders => {
+  const standardisedHeaders: StandardisedHeaders = {};
+  const apiGwHeaderKeys = Object.keys(apiGwHeaders);
+  apiGwHeaderKeys.forEach((headerKey) => {
+    const headerValue = apiGwHeaders[headerKey];
+    if (
+      typeof headerValue === "string" ||
+      typeof headerValue === "number" ||
+      typeof headerValue === "boolean"
+    ) {
+      standardisedHeaders[headerKey] = headerValue;
+    }
+  });
+
+  return standardisedHeaders;
+};

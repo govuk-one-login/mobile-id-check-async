@@ -1,10 +1,11 @@
-import axios from "axios";
+import axios, { AxiosResponseHeaders, RawAxiosResponseHeaders } from "axios";
 import { errorResult, Result, successResult } from "../../utils/result";
+import { StandardisedHeaders } from "../mockProxyHandler";
 
 export interface RequestOptions {
   backendApiUrl: string;
   body: string | null;
-  headers: { [key in string]: string | number | boolean | undefined };
+  headers: StandardisedHeaders;
   method: "POST";
   path: string;
 }
@@ -17,7 +18,7 @@ export interface IMakeProxyRequest {
 interface ProxySuccessResult {
   statusCode: number;
   body: string;
-  headers: { [key in string]: string | number | boolean };
+  headers: StandardisedHeaders;
 }
 
 export class ProxyRequestService implements IMakeProxyRequest {
@@ -33,24 +34,11 @@ export class ProxyRequestService implements IMakeProxyRequest {
           validateStatus,
         },
       );
-      const responseHeaders: { [key in string]: string | number | boolean } =
-        {};
-      const headerKeys = Object.keys(response.headers);
-      headerKeys.forEach((headerKey) => {
-        const headerValue = response.headers[headerKey];
-        if (
-          typeof headerValue === "string" ||
-          typeof headerValue === "number" ||
-          typeof headerValue === "boolean"
-        ) {
-          responseHeaders[headerKey] = headerValue;
-        }
-      });
 
       return successResult({
         statusCode: response.status,
         body: response.data,
-        headers: responseHeaders,
+        headers: standardiseAxiosHeaders(response.headers),
       });
     } catch {
       return errorResult({
@@ -63,4 +51,23 @@ export class ProxyRequestService implements IMakeProxyRequest {
 
 export const validateStatus = (status: number) => {
   return status < 600;
+};
+
+const standardiseAxiosHeaders = (
+  axiosResponseHeaders: RawAxiosResponseHeaders | AxiosResponseHeaders,
+): StandardisedHeaders => {
+  const standardisedHeaders: StandardisedHeaders = {};
+  const headerKeys = Object.keys(axiosResponseHeaders);
+  headerKeys.forEach((headerKey) => {
+    const headerValue = axiosResponseHeaders[headerKey];
+    if (
+      typeof headerValue === "string" ||
+      typeof headerValue === "number" ||
+      typeof headerValue === "boolean"
+    ) {
+      standardisedHeaders[headerKey] = headerValue;
+    }
+  });
+
+  return standardisedHeaders;
 };
