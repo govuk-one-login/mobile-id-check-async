@@ -7,6 +7,10 @@ import { MessageName, registeredLogs } from "./registeredLogs";
 import { IMockProxyDependencies } from "./handlerDependencies";
 import { Logger } from "../services/logging/logger";
 import { errorResult, Result, successResult } from "../utils/result";
+import {
+  IMakeProxyRequest,
+  RequestOptions,
+} from "./proxyRequestService/proxyRequestService";
 
 describe("Mock Proxy", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;
@@ -149,13 +153,16 @@ describe("Mock Proxy", () => {
     // It does not mean that the response from the proxy is a 2XX
 
     it("Response contains the headers,body,status code from the proxy", async () => {
+      const mockProxyRequestServiceSuccessResult =
+        new ProxyRequestServiceSuccessResult();
       const result = await lambdaHandlerConstructor(
         {
           ...dependencies,
-          proxyRequestService: () => new ProxyRequestServiceSuccessResult(),
+          proxyRequestService: () => mockProxyRequestServiceSuccessResult,
         },
         buildRequest({
           path: "/async/token",
+          headers: { "X-Custom-Auth": "mockCustomAuthHeaderValue" },
           httpMethod: "POST",
         }),
         buildLambdaContext(),
@@ -164,6 +171,9 @@ describe("Mock Proxy", () => {
       expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
         "COMPLETED",
       );
+      expect(mockProxyRequestServiceSuccessResult.headers).toMatchObject([
+        { Authorization: "mockCustomAuthHeaderValue" },
+      ]);
 
       expect(result).toStrictEqual({
         headers: {
@@ -196,14 +206,18 @@ class ProxyRequestServiceErrorResult {
   };
 }
 
-class ProxyRequestServiceSuccessResult {
-  makeProxyRequest = async (): Promise<
+class ProxyRequestServiceSuccessResult implements IMakeProxyRequest {
+  readonly headers: unknown[] = [];
+  makeProxyRequest = async (
+    requestOptions: RequestOptions,
+  ): Promise<
     Result<{
       statusCode: number;
       body: string;
       headers: { [key in string]: string };
     }>
   > => {
+    this.headers.push(requestOptions.headers);
     return Promise.resolve(
       successResult({
         statusCode: 201,

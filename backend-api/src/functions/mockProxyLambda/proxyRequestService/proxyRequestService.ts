@@ -1,7 +1,7 @@
 import axios from "axios";
 import { errorResult, Result, successResult } from "../../utils/result";
 
-interface RequestOptions {
+export interface RequestOptions {
   backendApiUrl: string;
   body: string | null;
   headers: { [key in string]: string | number | boolean | undefined };

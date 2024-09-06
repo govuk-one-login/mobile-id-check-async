@@ -71,12 +71,21 @@ export async function lambdaHandlerConstructor(
     };
   }
 
+  const incomingHeaders = event.headers;
+
+  const customAuthHeaderValue =
+    incomingHeaders["X-Custom-Auth"] ?? incomingHeaders["x-custom-auth"];
+
+  if (customAuthHeaderValue) {
+    incomingHeaders["Authorization"] = customAuthHeaderValue;
+  }
+
   const proxyRequestService = dependencies.proxyRequestService();
   const proxyRequestResult = await proxyRequestService.makeProxyRequest({
     backendApiUrl: configResult.value.ASYNC_BACKEND_API_URL,
     body: event.body,
     path,
-    headers: event.headers,
+    headers: incomingHeaders,
     method: method,
   });
   if (proxyRequestResult.isError) {
