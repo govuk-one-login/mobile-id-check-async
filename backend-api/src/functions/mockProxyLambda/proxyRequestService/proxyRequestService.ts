@@ -30,7 +30,7 @@ export class ProxyRequestService implements IMakeProxyRequest {
         requestOptions.body,
         {
           headers: requestOptions.headers,
-          validateStatus: (status) => status < 600,
+          validateStatus,
         },
       );
       const responseHeaders: { [key in string]: string | number | boolean } =
@@ -60,3 +60,7 @@ export class ProxyRequestService implements IMakeProxyRequest {
     }
   };
 }
+
+export const validateStatus = (status: number) => {
+  return status < 600;
+};

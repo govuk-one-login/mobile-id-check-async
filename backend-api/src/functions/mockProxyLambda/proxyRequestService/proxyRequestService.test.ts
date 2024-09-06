@@ -1,4 +1,4 @@
-import { ProxyRequestService } from "./proxyRequestService";
+import { ProxyRequestService, validateStatus } from "./proxyRequestService";
 import axios, { AxiosResponse } from "axios";
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -42,11 +42,17 @@ describe("Proxy Request Service", () => {
       const proxyRequestServiceResult =
         await proxyRequestService.makeProxyRequest({
           backendApiUrl: "https://mockUrl.com",
-          body: "",
-          headers: {},
+          body: "mockBody",
+          headers: { mockHeader: "mockHeaderValue" },
           method: "POST",
           path: "/async/token",
         });
+
+      expect(mockedAxios.post).toHaveBeenCalledWith(
+        "https://mockUrl.com/async/token",
+        "mockBody",
+        { headers: { mockHeader: "mockHeaderValue" }, validateStatus },
+      );
       expect(proxyRequestServiceResult.isError).toBe(false);
       expect(proxyRequestServiceResult.value).toStrictEqual({
         statusCode: 210,
