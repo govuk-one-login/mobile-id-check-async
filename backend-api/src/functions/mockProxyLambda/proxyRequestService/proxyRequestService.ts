@@ -25,6 +25,7 @@ export class ProxyRequestService implements IMakeProxyRequest {
   makeProxyRequest = async (
     requestOptions: RequestOptions,
   ): Promise<Result<ProxySuccessResult>> => {
+    console.log(requestOptions);
     try {
       const response = await axios.post(
         `${requestOptions.backendApiUrl}${requestOptions.path}`,
@@ -37,7 +38,7 @@ export class ProxyRequestService implements IMakeProxyRequest {
 
       return successResult({
         statusCode: response.status,
-        body: response.data,
+        body: JSON.stringify(response.data),
         headers: standardiseAxiosHeaders(response.headers),
       });
     } catch {

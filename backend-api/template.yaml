@@ -107,7 +107,7 @@ Conditions:
       - !Ref Environment
       - production
 
-  MockPrivateApiDeployment: !Or
+  MockProxyApiDeployment: !Or
     - !Equals
       - !Ref Environment
       - dev
@@ -384,11 +384,11 @@ Resources:
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
 
-  ### Mock private APIgw to enable testing in lower environments. This acts as a proxy to the private APIgw under test.
-  MockPrivateApi:
+  ### Regional APIgw to enable testing of the Private APIgw in lower environments. This acts as a proxy to the private APIgw under test.
+  MockProxyApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub ${AWS::StackName}-MockPrivateApi
+      Name: !Sub ${AWS::StackName}-MockProxyApi
       Description: Regional equivalent of the private Api to enable testing from outside AWS
       EndpointConfiguration: REGIONAL
       StageName: !Ref Environment
@@ -403,21 +403,21 @@ Resources:
           ResourcePath: /*
           MetricsEnabled: true
       AccessLogSetting:
-        DestinationArn: !GetAtt MockPrivateApiAccessLogs.Arn
+        DestinationArn: !GetAtt MockProxyApiAccessLogs.Arn
         Format: '{"requestId" : "$context.requestId","ip" : "$context.identity.sourceIp","requestTime" : "$context.requestTime","httpMethod" : "$context.httpMethod","path" : "$context.path","routeKey" : "$context.routeKey","status" : "$context.status","protocol" : "$context.protocol","responseLength" : "$context.responseLength","integrationError" : "$context.integrationErrorMessage"}'
       Auth:
         DefaultAuthorizer: AWS_IAM
         ApiKeyRequired: false
-    Condition: MockPrivateApiDeployment
+    Condition: MockProxyApiDeployment
 
-  MockPrivateApiAccessLogs:
+  MockProxyApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-regional-api-access-logs
       RetentionInDays: 30
-    Condition: MockPrivateApiDeployment
+    Condition: MockProxyApiDeployment
 
-  MockLambdaPrivateSecurityGroup:
+  MockProxyLambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Lambda Security group ruleset.
@@ -429,33 +429,36 @@ Resources:
           ToPort: 443
       VpcId: !ImportValue devplatform-vpc-VpcId
 
-  MockAsyncTokenFunctionMockPrivateApiPermission:
+  MockProxyLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !GetAtt MockAsyncTokenFunction.Arn
+      FunctionName: !GetAtt MockProxyFunction.Arn
       Principal: apigateway.amazonaws.com
       SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MockPrivateApi}/*/*/*
-    Condition: MockPrivateApiDeployment
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MockProxyApi}/*/*/*
+    Condition: MockProxyApiDeployment
 
-  MockAsyncTokenFunction:
+  MockProxyFunction:
     Type: AWS::Serverless::Function
     DependsOn:
-      - MockAsyncTokenLogGroup
+      - MockProxyLogGroup
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
         Target: es2022
-        Sourcemap: false
+        Sourcemap: true
         EntryPoints:
-          - src/functions/mockAsyncToken/mockAsyncTokenHandler.ts
+          - src/functions/mockProxyLambda/mockProxyHandler.ts
     Properties:
+      Environment:
+        Variables:
+          ASYNC_BACKEND_API_URL: !Sub "https://${PrivateApi.RestApiId}.execute-api.eu-west-2.amazonaws.com/${Environment}"
       FunctionName: !Sub ${AWS::StackName}-mock-token
       Runtime: nodejs20.x
-      Handler: mockAsyncTokenHandler.lambdaHandler
-      Role: !GetAtt MockAsyncTokenLambdaRole.Arn
+      Handler: mockProxyHandler.lambdaHandler
+      Role: !GetAtt MockProxyLambdaRole.Arn
       Architectures:
         - arm64
       VpcConfig:
@@ -464,15 +467,15 @@ Resources:
           - !ImportValue devplatform-vpc-PrivateSubnetIdB
           - !ImportValue devplatform-vpc-PrivateSubnetIdC
         SecurityGroupIds:
-          - !Ref MockLambdaPrivateSecurityGroup
+          - !Ref MockProxyLambdaSecurityGroup
 
-  MockAsyncTokenLogGroup:
+  MockProxyLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-mock-token
 
-  MockAsyncTokenLambdaRole:
+  MockProxyLambdaRole:
     Type: AWS::IAM::Role
     Properties:
       RoleName: !Sub ${AWS::StackName}-mock-token-lambda
@@ -484,7 +487,7 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: MockAsyncTokenFunctionLoggingPolicy
+        - PolicyName: MockProxyFunctionLoggingPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -494,87 +497,7 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
-        - PolicyName: MockAsyncTokenENIPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ec2:DescribeNetworkInterfaces
-                  - ec2:CreateNetworkInterface
-                  - ec2:DeleteNetworkInterface
-                Resource: '*'
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-
-  AsyncCredentialFunctionMockPrivateApiPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt AsyncCredentialFunction.Arn
-      Principal: apigateway.amazonaws.com
-      SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MockPrivateApi}/*/*/*
-    Condition: MockPrivateApiDeployment
-
-  MockAsyncCredentialFunction:
-    Type: AWS::Serverless::Function
-    DependsOn:
-      - MockAsyncCredentialLogGroup
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: es2022
-        Sourcemap: false
-        EntryPoints:
-          - src/functions/mockAsyncCredential/mockAsyncCredentialHandler.ts
-    Properties:
-      FunctionName: !Sub ${AWS::StackName}-mock-token
-      Runtime: nodejs20.x
-      Handler: mockAsyncCredentialHandler.lambdaHandler
-      Role: !GetAtt MockAsyncCredentialLambdaRole.Arn
-      Architectures:
-        - arm64
-      VpcConfig:
-        SubnetIds:
-          - !ImportValue devplatform-vpc-PrivateSubnetIdA
-          - !ImportValue devplatform-vpc-PrivateSubnetIdB
-          - !ImportValue devplatform-vpc-PrivateSubnetIdC
-        SecurityGroupIds:
-          - !Ref MockLambdaPrivateSecurityGroup
-
-  MockAsyncCredentialLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-mock-token
-
-  MockAsyncCredentialLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      RoleName: !Sub ${AWS::StackName}-mock-credential-lambda
-      Policies:
-        - PolicyName: MockAsyncCredentialFunctionLoggingPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: arn:aws:logs:*:*:*
-        - PolicyName: MockAsyncCredentialENIPolicy
+        - PolicyName: MockProxyENIPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -591,7 +514,6 @@ Resources:
 
   SessionsTable:
     Type: AWS::DynamoDB::Table
-
     # Disabling check for point in time backup
     # checkov:skip=CKV_AWS_28:Ensure Dynamodb point in time recovery (backup) is enabled
     # checkov:skip=CKV_AWS_119:No PII in table

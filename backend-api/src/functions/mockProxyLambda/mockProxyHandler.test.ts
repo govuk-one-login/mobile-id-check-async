@@ -151,42 +151,73 @@ describe("Mock Proxy", () => {
   describe("Request Proxy Service Success", () => {
     // Success here means that there was a response from the request to the proxy
     // It does not mean that the response from the proxy is a 2XX
-
-    it("Response contains the headers,body,status code from the proxy", async () => {
-      const mockProxyRequestServiceSuccessResult =
-        new ProxyRequestServiceSuccessResult();
-      const result = await lambdaHandlerConstructor(
-        {
-          ...dependencies,
-          proxyRequestService: () => mockProxyRequestServiceSuccessResult,
-        },
-        buildRequest({
-          path: "/async/token",
-          headers: {
-            "X-Custom-Auth": "mockCustomAuthHeaderValue",
-            "non-standard-header": undefined,
+    describe("Given there are headers in the request", () => {
+      it("Response contains the headers,body,status code from the proxy", async () => {
+        const mockProxyRequestServiceSuccessResult =
+          new ProxyRequestServiceSuccessResult();
+        const result = await lambdaHandlerConstructor(
+          {
+            ...dependencies,
+            proxyRequestService: () => mockProxyRequestServiceSuccessResult,
           },
-          httpMethod: "POST",
-        }),
-        buildLambdaContext(),
-      );
+          buildRequest({
+            path: "/async/token",
+            headers: {
+              "X-Custom-Auth": "mockCustomAuthHeaderValue",
+              "non-standard-header": undefined,
+            },
+            httpMethod: "POST",
+          }),
+          buildLambdaContext(),
+        );
 
-      expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
-        "COMPLETED",
-      );
-      expect(mockProxyRequestServiceSuccessResult.headers).toMatchObject([
-        { Authorization: "mockCustomAuthHeaderValue" },
-      ]);
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
+          "COMPLETED",
+        );
+        expect(mockProxyRequestServiceSuccessResult.headers).toMatchObject([
+          { Authorization: "mockCustomAuthHeaderValue" },
+        ]);
 
-      expect(result).toStrictEqual({
-        headers: {
-          mockHeader: "mockHeaderValue",
-          mockAnotherHeader: "mockAnotherHeaderValue",
-        },
-        statusCode: 201,
-        body: JSON.stringify({
-          mockKey: "mockValue",
-        }),
+        expect(result).toStrictEqual({
+          headers: {
+            mockHeader: "mockHeaderValue",
+            mockAnotherHeader: "mockAnotherHeaderValue",
+          },
+          statusCode: 201,
+          body: JSON.stringify({
+            mockKey: "mockValue",
+          }),
+        });
+      });
+    });
+
+    describe("Given there are no headers in the request", () => {
+      it("Response contains the headers,body,status code from the proxy", async () => {
+        const result = await lambdaHandlerConstructor(
+          {
+            ...dependencies,
+            proxyRequestService: () =>
+              new ProxyRequestServiceSuccessResultWithoutHeaders(),
+          },
+          buildRequest({
+            path: "/async/token",
+            headers: undefined,
+            httpMethod: "POST",
+          }),
+          buildLambdaContext(),
+        );
+
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
+          "COMPLETED",
+        );
+
+        expect(result).toStrictEqual({
+          headers: {},
+          statusCode: 201,
+          body: JSON.stringify({
+            mockKey: "mockValue",
+          }),
+        });
       });
     });
   });
@@ -229,6 +260,25 @@ class ProxyRequestServiceSuccessResult implements IMakeProxyRequest {
           mockHeader: "mockHeaderValue",
           mockAnotherHeader: "mockAnotherHeaderValue",
         },
+      }),
+    );
+  };
+}
+class ProxyRequestServiceSuccessResultWithoutHeaders
+  implements IMakeProxyRequest
+{
+  makeProxyRequest = async (): Promise<
+    Result<{
+      statusCode: number;
+      body: string;
+      headers: { [key in string]: string };
+    }>
+  > => {
+    return Promise.resolve(
+      successResult({
+        statusCode: 201,
+        body: JSON.stringify({ mockKey: "mockValue" }),
+        headers: {},
       }),
     );
   };

@@ -122,6 +122,7 @@ const standardiseApiGwHeaders = (
   apiGwHeaders: APIGatewayProxyEventHeaders,
 ): StandardisedHeaders => {
   const standardisedHeaders: StandardisedHeaders = {};
+  if (!apiGwHeaders) return standardisedHeaders;
   const apiGwHeaderKeys = Object.keys(apiGwHeaders);
   apiGwHeaderKeys.forEach((headerKey) => {
     const headerValue = apiGwHeaders[headerKey];
