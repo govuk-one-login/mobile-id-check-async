@@ -413,9 +413,37 @@ Resources:
   MockProxyApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-regional-api-access-logs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-proxy-access-logs
       RetentionInDays: 30
     Condition: MockProxyApiDeployment
+
+  MockProxyApiDomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Sub mock-${AWS::StackName}.review-b-async.dev.account.gov.uk
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN}}'
+      SecurityPolicy: TLS_1_2
+
+  MockProxyApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    DependsOn: MockProxyApiDomainName
+    Properties:
+      DomainName: !Sub mock-${AWS::StackName}.review-b-async.dev.account.gov.uk
+      RestApiId: !Ref MockProxyApi
+      Stage: !Sub ${MockProxyApi.Stage}
+
+  MockProxyApiRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Sub mock-${AWS::StackName}.review-b-async.dev.account.gov.uk
+      Type: A
+      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
+      AliasTarget:
+        DNSName: !GetAtt MockProxyApiDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt MockProxyApiDomainName.RegionalHostedZoneId
 
   MockProxyLambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -433,16 +461,16 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !GetAtt MockProxyFunction.Arn
+      FunctionName: !GetAtt MockProxyLambda.Arn
       Principal: apigateway.amazonaws.com
       SourceAccount: !Sub ${AWS::AccountId}
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MockProxyApi}/*/*/*
     Condition: MockProxyApiDeployment
 
-  MockProxyFunction:
+  MockProxyLambda:
     Type: AWS::Serverless::Function
     DependsOn:
-      - MockProxyLogGroup
+      - MockProxyLambdaLogGroup
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -454,8 +482,8 @@ Resources:
     Properties:
       Environment:
         Variables:
-          ASYNC_BACKEND_API_URL: !Sub "https://${PrivateApi.RestApiId}.execute-api.eu-west-2.amazonaws.com/${Environment}"
-      FunctionName: !Sub ${AWS::StackName}-mock-token
+          ASYNC_BACKEND_API_URL: !Sub https://${PrivateApi.RestApiId}.execute-api.eu-west-2.amazonaws.com/${Environment}
+      FunctionName: !Sub ${AWS::StackName}-proxy
       Runtime: nodejs20.x
       Handler: mockProxyHandler.lambdaHandler
       Role: !GetAtt MockProxyLambdaRole.Arn
@@ -469,16 +497,16 @@ Resources:
         SecurityGroupIds:
           - !Ref MockProxyLambdaSecurityGroup
 
-  MockProxyLogGroup:
+  MockProxyLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-mock-token
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-mock-proxy-lambda
 
   MockProxyLambdaRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-mock-token-lambda
+      RoleName: !Sub ${AWS::StackName}-proxy-lambda-role
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -497,7 +525,7 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
-        - PolicyName: MockProxyENIPolicy
+        - PolicyName: MockAsyncTokenENIPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -514,6 +542,7 @@ Resources:
 
   SessionsTable:
     Type: AWS::DynamoDB::Table
+
     # Disabling check for point in time backup
     # checkov:skip=CKV_AWS_28:Ensure Dynamodb point in time recovery (backup) is enabled
     # checkov:skip=CKV_AWS_119:No PII in table
