@@ -4,7 +4,7 @@ import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
 
 const axiosInstance = axios.create({
   validateStatus: (status: number) => {
-    return status < 500;
+    return status < 600;
   },
 });
 const interceptor = aws4Interceptor({
@@ -27,7 +27,7 @@ describe("POST /token", () => {
   describe("Given there is no grant type", () => {
     it("Returns a 401 Unauthorized response", async () => {
       const response = await axiosInstance.post(
-        "https://apigw-execute-url/dev/async/token", //execute-url can be found from the Stage section of the APIgw
+        "https://mock-dcmaw-8456.review-b-async.dev.account.gov.uk/async/token", //execute-url can be found from the Stage section of the APIgw
         {},
       );
 
@@ -42,14 +42,15 @@ describe("POST /token", () => {
   describe("Given the client credentials are valid", () => {
     it("Returns an access token", async () => {
       const response = await axiosInstance.post(
-        "https://apigw-execute-url/dev/async/token", //execute-url can be found from the Stage section of the APIgw
+        "https://mock-dcmaw-8456.review-b-async.dev.account.gov.uk/async/token", //execute-url can be found from the Stage section of the APIgw
         { grant_type: "client_credentials" },
         {
           headers: {
-            authorization: "Bearer <validClientSecret>", //client secrets are stored in Secrets Manager
+            // authorization: "Bearer <validClientSecret>", //client secrets are stored in Secrets Manager
           },
         },
       );
+
       expect(response.data).toMatchObject({
         access_token: expect.any(String),
         token_type: "Bearer",
