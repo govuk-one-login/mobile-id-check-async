@@ -65,7 +65,7 @@ describe("Proxy Request Service", () => {
       expect(proxyRequestServiceResult.isError).toBe(false);
       expect(proxyRequestServiceResult.value).toStrictEqual({
         statusCode: 210,
-        body: "mockBody",
+        body: JSON.stringify("mockBody"),
         headers: { mockHeaderKey: "mockHeaderValue" },
       });
     });
