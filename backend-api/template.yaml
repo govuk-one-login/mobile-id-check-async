@@ -481,7 +481,7 @@ Resources:
       Environment:
         Variables:
           ASYNC_BACKEND_API_URL: !Sub https://${PrivateApi.RestApiId}.execute-api.eu-west-2.amazonaws.com/${Environment}
-      FunctionName: !Sub ${AWS::StackName}-proxy
+      FunctionName: !Sub ${AWS::StackName}-mock-proxy-lambda
       Runtime: nodejs20.x
       Handler: mockProxyHandler.lambdaHandler
       Role: !GetAtt MockProxyLambdaRole.Arn
