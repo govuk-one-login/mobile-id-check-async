@@ -4,7 +4,7 @@ set -eu
 if [ $# -ge 1 ] && [ -n "$1" ] ; then
   SAM_STACK="$1"
 else
-  SAM_STACK="TBC" #default stack name in dev
+  SAM_STACK="mob-async-backend" #default stack name in dev
 fi
 
 echo "Generating .env file for the $SAM_STACK stack"
