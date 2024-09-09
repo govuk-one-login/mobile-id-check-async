@@ -77,7 +77,7 @@ export async function lambdaHandlerConstructor(
   }
 
   const incomingHeaders = event.headers;
-  const standardisedHeaders = standardiseApiGwHeaders(incomingHeaders);
+  const standardisedHeaders = standardiseAndStripApiGwHeaders(incomingHeaders);
 
   const customAuthHeaderValue =
     standardisedHeaders["X-Custom-Auth"] ??
@@ -118,7 +118,7 @@ export async function lambdaHandlerConstructor(
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
 
-const standardiseApiGwHeaders = (
+const standardiseAndStripApiGwHeaders = (
   apiGwHeaders: APIGatewayProxyEventHeaders,
 ): StandardisedHeaders => {
   const standardisedHeaders: StandardisedHeaders = {};
@@ -131,7 +131,7 @@ const standardiseApiGwHeaders = (
       typeof headerValue === "number" ||
       typeof headerValue === "boolean"
     ) {
-      //TODO - refactor and move elsewhere. This fails TLS validation as the target of the request (private apigw execute-url isn't on the certificate)
+      // This fails TLS validation as the target of the request (private apigw execute-url isn't on the certificate for this DNS)
       if (headerKey !== "Host") {
         standardisedHeaders[headerKey] = headerValue;
       }
