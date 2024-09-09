@@ -724,7 +724,6 @@ Resources:
       OwnershipControls:
         Rules:
           - ObjectOwnership: ObjectWriter
-      AccessControl: LogDeliveryWrite
 
   JsonWebKeysBucketAccessLogsPolicy:
     Type: AWS::S3::BucketPolicy
