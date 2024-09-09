@@ -418,7 +418,7 @@ Resources:
   MockProxyApiDomainName:
     Type: AWS::ApiGateway::DomainName
     Properties:
-      DomainName: !Sub mock-${AWS::StackName}.review-b-async.dev.account.gov.uk
+      DomainName: !Sub proxy-${AWS::StackName}.review-b-async.dev.account.gov.uk
       EndpointConfiguration:
         Types:
           - REGIONAL
@@ -429,14 +429,14 @@ Resources:
     Type: AWS::ApiGateway::BasePathMapping
     DependsOn: MockProxyApiDomainName
     Properties:
-      DomainName: !Sub mock-${AWS::StackName}.review-b-async.dev.account.gov.uk
+      DomainName: !Sub proxy-${AWS::StackName}.review-b-async.dev.account.gov.uk
       RestApiId: !Ref MockProxyApi
       Stage: !Sub ${MockProxyApi.Stage}
 
   MockProxyApiRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
-      Name: !Sub mock-${AWS::StackName}.review-b-async.dev.account.gov.uk
+      Name: !Sub proxy-${AWS::StackName}.review-b-async.dev.account.gov.uk
       Type: A
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
       AliasTarget:
