@@ -1,3 +1,6 @@
+// This script generates the OpenAPI spec used for the Proxy mock. 
+// Through using the async-private-spec.yaml as the starting point, it ensures the proxy is as similar as possible to the original API spec.
+
 import { readFileSync, writeFileSync } from 'fs'
 import { parse, stringify } from 'yaml'
 
