@@ -129,6 +129,10 @@ jobs:
           aws-region: eu-west-2
           role-to-assume: ${{ secrets.BACKEND_API_DEV_GH_ACTIONS_ROLE_ARN }}
 
+      - name: Generate proxy Open API spec
+        run: |
+          npm run generate-proxy-open-api
+
       - name: Sam Validate
         run: |
           echo "SAM_CLI_TELEMETRY=0" >> $GITHUB_ENV
