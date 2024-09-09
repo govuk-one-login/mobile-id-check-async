@@ -1,4 +1,4 @@
-import { PUBLIC_API_INSTANCE } from "../src/functions/tests/utils/apiInstance";
+import { PUBLIC_API_INSTANCE } from "./utils/apiInstance";
 
 describe("GET /.well-known/jwks.json", () => {
   it("returns 200 status code and the Json Web Key Set", async () => {

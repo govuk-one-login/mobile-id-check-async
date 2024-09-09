@@ -10,12 +10,11 @@
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
     "lint": "./node_modules/.bin/eslint ./src/functions",
     "pact": "./node_modules/.bin/jest --testPathPattern=tests/pact",
-    "test": "./node_modules/.bin/jest --testPathIgnorePatterns=tests/api",
-    "test:api": "./node_modules/.bin/jest --testPathPattern=api-tests",
+    "test": "./node_modules/.bin/jest --testPathIgnorePatterns=api-tests/",
+    "test:api": "./node_modules/.bin/jest --testPathPattern=api-tests/",
     "test:infra": "./node_modules/.bin/jest --testPathPattern=infra-tests/",
     "test:pact": "npm run pact",
-    "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/pact --testPathIgnorePatterns tests/api",
-    "test:e2e": "./node_modules/.bin/jest --testPathPattern=e2e-tests/",
+    "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/pact api-tests",
     "ci": "npm run test:unit && npm run format:check && npm run lint"
   },
   "engines": {
