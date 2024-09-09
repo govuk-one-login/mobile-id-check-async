@@ -434,7 +434,7 @@ Resources:
     Properties:
       DomainName: !Sub proxy-${AWS::StackName}.review-b-async.dev.account.gov.uk
       RestApiId: !Ref ProxyApi
-      Stage: ProxyApi.Stage
+      Stage: !Ref ProxyApi.Stage
     Condition: ProxyApiDeployment
 
   ProxyApiRecordSet:
