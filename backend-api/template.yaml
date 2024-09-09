@@ -394,7 +394,7 @@ Resources:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: ./openApiSpecs/async-mock-private-spec.yaml # This is generated automatically in Github Actions
+            Location: ./openApiSpecs/async-proxy-private-spec.yaml # This is generated automatically in Github Actions
       MethodSettings:
         - LoggingLevel: INFO
           HttpMethod: '*'
