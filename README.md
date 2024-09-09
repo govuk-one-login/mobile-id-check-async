@@ -42,7 +42,7 @@ npm run test
 
 ```bash
 # From /backend-api
-sh generate_env_file.sh <stack_name> .env
+sh generate_env_file.sh <stack_name>
 ```
 
 4. Run tests
