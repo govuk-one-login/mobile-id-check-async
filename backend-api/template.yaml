@@ -107,7 +107,7 @@ Conditions:
       - !Ref Environment
       - production
 
-  MockProxyApiDeployment: !Or
+  ProxyApiDeployment: !Or
     - !Equals
       - !Ref Environment
       - dev
@@ -131,6 +131,7 @@ Globals:
       Variables:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
         TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
+
         # ISSUER should be updated with DNS once available
         ISSUER: mockIssuer
         SESSION_TABLE_NAME: !Ref SessionsTable
@@ -375,6 +376,7 @@ Resources:
                   - kms:Decrypt
                   - kms:GenerateDataKey
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
+
                 # TxMA Audit service
       RoleName: !Sub ${AWS::StackName}-credential-lambda
       PermissionsBoundary: !If
@@ -383,10 +385,10 @@ Resources:
         - !Ref AWS::NoValue
 
   ### Regional APIgw to enable testing of the Private APIgw in lower environments. This acts as a proxy to the private APIgw under test.
-  MockProxyApi:
+  ProxyApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub ${AWS::StackName}-MockProxyApi
+      Name: !Sub ${AWS::StackName}-ProxyApi
       Description: Regional equivalent of the private Api to enable testing from outside AWS
       EndpointConfiguration: REGIONAL
       StageName: !Ref Environment
@@ -401,21 +403,21 @@ Resources:
           ResourcePath: /*
           MetricsEnabled: true
       AccessLogSetting:
-        DestinationArn: !GetAtt MockProxyApiAccessLogs.Arn
+        DestinationArn: !GetAtt ProxyApiAccessLogs.Arn
         Format: '{"requestId" : "$context.requestId","ip" : "$context.identity.sourceIp","requestTime" : "$context.requestTime","httpMethod" : "$context.httpMethod","path" : "$context.path","routeKey" : "$context.routeKey","status" : "$context.status","protocol" : "$context.protocol","responseLength" : "$context.responseLength","integrationError" : "$context.integrationErrorMessage"}'
       Auth:
         DefaultAuthorizer: AWS_IAM
         ApiKeyRequired: false
-    Condition: MockProxyApiDeployment
+    Condition: ProxyApiDeployment
 
-  MockProxyApiAccessLogs:
+  ProxyApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-proxy-access-logs
       RetentionInDays: 30
-    Condition: MockProxyApiDeployment
+    Condition: ProxyApiDeployment
 
-  MockProxyApiDomainName:
+  ProxyApiDomainName:
     Type: AWS::ApiGateway::DomainName
     Properties:
       DomainName: !Sub proxy-${AWS::StackName}.review-b-async.dev.account.gov.uk
@@ -424,28 +426,32 @@ Resources:
           - REGIONAL
       RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN}}'
       SecurityPolicy: TLS_1_2
+    Condition: ProxyApiDeployment
 
-  MockProxyApiBasePathMapping:
+  ProxyApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
-    DependsOn: MockProxyApiDomainName
+    DependsOn: ProxyApiDomainName
     Properties:
       DomainName: !Sub proxy-${AWS::StackName}.review-b-async.dev.account.gov.uk
-      RestApiId: !Ref MockProxyApi
-      Stage: !Sub ${MockProxyApi.Stage}
+      RestApiId: !Ref ProxyApi
+      Stage: ProxyApi.Stage
+    Condition: ProxyApiDeployment
 
-  MockProxyApiRecordSet:
+  ProxyApiRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
       Name: !Sub proxy-${AWS::StackName}.review-b-async.dev.account.gov.uk
       Type: A
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
       AliasTarget:
-        DNSName: !GetAtt MockProxyApiDomainName.RegionalDomainName
-        HostedZoneId: !GetAtt MockProxyApiDomainName.RegionalHostedZoneId
+        DNSName: !GetAtt ProxyApiDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt ProxyApiDomainName.RegionalHostedZoneId
+    Condition: ProxyApiDeployment
 
-  MockProxyLambdaSecurityGroup:
+  ProxyLambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
+      GroupName: !Sub ${AWS::StackName}-proxy-sg
       GroupDescription: Lambda Security group ruleset.
       SecurityGroupEgress:
         - CidrIp: !ImportValue devplatform-vpc-VpcCidr
@@ -454,21 +460,22 @@ Resources:
           IpProtocol: tcp
           ToPort: 443
       VpcId: !ImportValue devplatform-vpc-VpcId
+    Condition: ProxyApiDeployment
 
-  MockProxyLambdaPermission:
+  ProxyLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !GetAtt MockProxyLambda.Arn
+      FunctionName: !GetAtt ProxyLambda.Arn
       Principal: apigateway.amazonaws.com
       SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MockProxyApi}/*/*/*
-    Condition: MockProxyApiDeployment
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ProxyApi}/*/*/*
+    Condition: ProxyApiDeployment
 
-  MockProxyLambda:
+  ProxyLambda:
     Type: AWS::Serverless::Function
     DependsOn:
-      - MockProxyLambdaLogGroup
+      - ProxyLambdaLogGroup
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -476,15 +483,15 @@ Resources:
         Target: es2022
         Sourcemap: true
         EntryPoints:
-          - src/functions/mockProxyLambda/mockProxyHandler.ts
+          - src/functions/proxy/proxyHandler.ts
     Properties:
       Environment:
         Variables:
           ASYNC_BACKEND_API_URL: !Sub https://${PrivateApi.RestApiId}.execute-api.eu-west-2.amazonaws.com/${Environment}
-      FunctionName: !Sub ${AWS::StackName}-mock-proxy-lambda
+      FunctionName: !Sub ${AWS::StackName}-proxy-lambda
       Runtime: nodejs20.x
-      Handler: mockProxyHandler.lambdaHandler
-      Role: !GetAtt MockProxyLambdaRole.Arn
+      Handler: proxyHandler.lambdaHandler
+      Role: !GetAtt ProxyLambdaRole.Arn
       Architectures:
         - arm64
       VpcConfig:
@@ -493,15 +500,17 @@ Resources:
           - !ImportValue devplatform-vpc-PrivateSubnetIdB
           - !ImportValue devplatform-vpc-PrivateSubnetIdC
         SecurityGroupIds:
-          - !Ref MockProxyLambdaSecurityGroup
+          - !Ref ProxyLambdaSecurityGroup
+    Condition: ProxyApiDeployment
 
-  MockProxyLambdaLogGroup:
+  ProxyLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-mock-proxy-lambda
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-proxy-lambda
+    Condition: ProxyApiDeployment
 
-  MockProxyLambdaRole:
+  ProxyLambdaRole:
     Type: AWS::IAM::Role
     Properties:
       RoleName: !Sub ${AWS::StackName}-proxy-lambda-role
@@ -513,7 +522,7 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: MockProxyFunctionLoggingPolicy
+        - PolicyName: ProxyFunctionLoggingPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -523,7 +532,7 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
-        - PolicyName: MockAsyncTokenENIPolicy
+        - PolicyName: ENIPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -537,6 +546,7 @@ Resources:
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
+    Condition: ProxyApiDeployment
 
   SessionsTable:
     Type: AWS::DynamoDB::Table
@@ -844,7 +854,7 @@ Resources:
     Properties:
       Bucket: !Ref JsonWebKeysBucket
       PolicyDocument:
-        Version: 2012-10-17
+        Version: "2012-10-17"
         Statement:
           - Effect: Deny
             Principal:
@@ -855,7 +865,7 @@ Resources:
               - bucketName: !Ref JsonWebKeysBucket
             Condition:
               Bool:
-                "aws:SecureTransport": false
+                aws:SecureTransport: false
 
   JsonWebKeysBucketAccessLogs:
     Type: AWS::S3::Bucket
@@ -882,7 +892,7 @@ Resources:
     Properties:
       Bucket: !Ref JsonWebKeysBucketAccessLogs
       PolicyDocument:
-        Version: 2012-10-17
+        Version: "2012-10-17"
         Statement:
           - Effect: Deny
             Principal:
@@ -893,7 +903,7 @@ Resources:
               - bucketName: !Ref JsonWebKeysBucketAccessLogs
             Condition:
               Bool:
-                "aws:SecureTransport": false
+                aws:SecureTransport: false
 
   JsonWebKeysFunction:
     Type: AWS::Serverless::Function
@@ -903,7 +913,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: "es2020"
+        Target: es2020
         Sourcemap: false
         EntryPoints:
           - src/functions/jwks/jwksHandler.ts
@@ -934,7 +944,7 @@ Resources:
       Policies:
         - PolicyName: UploadPolicy
           PolicyDocument:
-            Version: 2012-10-17
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
@@ -952,7 +962,7 @@ Resources:
                 Resource: !GetAtt KMSEncryptionKey.Arn
         - PolicyName: LoggingPolicy
           PolicyDocument:
-            Version: 2012-10-17
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
@@ -969,7 +979,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 30
-      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-jwks"
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-jwks
 
   JsonWebKeysCustomResource:
     Type: AWS::CloudFormation::CustomResource
@@ -987,11 +997,11 @@ Resources:
             Effect: Allow
             Principal:
               Service: apigateway.amazonaws.com
-        Version: 2012-10-17
+        Version: "2012-10-17"
       Policies:
         - PolicyName: JsonWebKeysBucketPolicy
           PolicyDocument:
-            Version: 2012-10-17
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:

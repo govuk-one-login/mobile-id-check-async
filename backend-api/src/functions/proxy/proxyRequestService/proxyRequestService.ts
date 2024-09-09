@@ -1,6 +1,6 @@
 import axios, { AxiosResponseHeaders, RawAxiosResponseHeaders } from "axios";
 import { errorResult, Result, successResult } from "../../utils/result";
-import { StandardisedHeaders } from "../mockProxyHandler";
+import { StandardisedHeaders } from "../proxyHandler";
 
 export interface RequestOptions {
   backendApiUrl: string;

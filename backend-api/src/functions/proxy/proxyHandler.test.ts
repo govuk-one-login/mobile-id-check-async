@@ -2,7 +2,7 @@ import { APIGatewayProxyEvent } from "aws-lambda";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { buildRequest } from "../testUtils/mockRequest";
-import { lambdaHandlerConstructor } from "./mockProxyHandler";
+import { lambdaHandlerConstructor } from "./proxyHandler";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { IMockProxyDependencies } from "./handlerDependencies";
 import { Logger } from "../services/logging/logger";
