@@ -2,6 +2,10 @@ import axios from "axios";
 import { aws4Interceptor } from "aws4-axios";
 import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
 
+import "dotenv/config";
+
+const apiBaseUrl = process.env.PROXY_API_URL;
+if (!apiBaseUrl) throw Error("PROXY_URL environment variable not set");
 const axiosInstance = axios.create({
   validateStatus: (status: number) => {
     return status < 600;
@@ -15,7 +19,7 @@ const interceptor = aws4Interceptor({
   credentials: {
     getCredentials: fromNodeProviderChain({
       timeout: 1000,
-      maxRetries: 0,
+      maxRetries: 1,
       profile: process.env.AWS_PROFILE,
     }),
   },
@@ -25,9 +29,9 @@ axiosInstance.interceptors.request.use(interceptor);
 
 describe("POST /token", () => {
   describe("Given there is no grant type", () => {
-    it("Returns a 401 Unauthorized response", async () => {
+    it("Returns a 400 Bad Request response", async () => {
       const response = await axiosInstance.post(
-        "https://mock-dcmaw-8456.review-b-async.dev.account.gov.uk/async/token", //execute-url can be found from the Stage section of the APIgw
+        `${apiBaseUrl}/async/token`, //execute-url can be found from the Stage section of the APIgw
         {},
       );
 
@@ -38,25 +42,21 @@ describe("POST /token", () => {
       expect(response.status).toBe(400);
     });
   });
+});
 
-  describe("Given the client credentials are valid", () => {
-    it("Returns an access token", async () => {
+describe("POST /credential", () => {
+  describe("Given there is no authorization header", () => {
+    it("Returns a 401 Unauthorized response", async () => {
       const response = await axiosInstance.post(
-        "https://mock-dcmaw-8456.review-b-async.dev.account.gov.uk/async/token", //execute-url can be found from the Stage section of the APIgw
-        { grant_type: "client_credentials" },
-        {
-          headers: {
-            // authorization: "Bearer <validClientSecret>", //client secrets are stored in Secrets Manager
-          },
-        },
+        `${apiBaseUrl}/async/credential`, //execute-url can be found from the Stage section of the APIgw
+        null,
       );
 
-      expect(response.data).toMatchObject({
-        access_token: expect.any(String),
-        token_type: "Bearer",
-        expires_in: 3600,
+      expect(response.data).toStrictEqual({
+        error: "Unauthorized",
+        error_description: "Invalid token",
       });
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(401);
     });
   });
 });
