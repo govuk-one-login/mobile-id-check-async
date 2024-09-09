@@ -122,19 +122,18 @@ Globals:
       Variables:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
         TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
-
         # ISSUER should be updated with DNS once available
         ISSUER: mockIssuer
         SESSION_TABLE_NAME: !Ref SessionsTable
 
 Resources:
 
-  ### Private APIgw for Client Credentials grant flow
+  ### Private APIgw
   BackendAsyncCredentialPrivateApi:
     Type: AWS::Serverless::Api
     Properties:
       Name: !Sub ${AWS::StackName}-private-api
-      Description: Private APIgw for Client Credentials flow
+      Description: Private API gateway for Client Credentials flow
       EndpointConfiguration: PRIVATE
       Auth:
         ResourcePolicy:
@@ -382,7 +381,6 @@ Resources:
                   - kms:Decrypt
                   - kms:GenerateDataKey
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
-
                 # TxMA Audit service
       RoleName: !Sub ${AWS::StackName}-credential-lambda
       PermissionsBoundary: !If
@@ -427,7 +425,7 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       Name: !Sub ${AWS::StackName}-public-api
-      Description: Regional API Gateway
+      Description: Regional API gateway for Client Credentials flow
       EndpointConfiguration: REGIONAL
       StageName: !Ref Environment
       OpenApiVersion: 3.0.1
@@ -669,3 +667,192 @@ Resources:
     Properties:
       AliasName: !Sub alias/${AWS::StackName}-encryption-key
       TargetKeyId: !Ref KMSEncryptionKey
+
+  ### JWKS endpoint resources
+  JsonWebKeysBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-jwks-${Environment}
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      LoggingConfiguration:
+        DestinationBucketName: !Ref JsonWebKeysBucketAccessLogs
+        LogFilePrefix: !Sub ${AWS::StackName}-jwks-${Environment}
+
+  JsonWebKeysBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref JsonWebKeysBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Deny
+            Principal:
+              AWS: '*'
+            Action: '*'
+            Resource: !Sub
+              - arn:aws:s3:::${bucketName}/*
+              - bucketName: !Ref JsonWebKeysBucket
+            Condition:
+              Bool:
+                "aws:SecureTransport": false
+
+  JsonWebKeysBucketAccessLogs:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-jwks-${Environment}-access-logs
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: ObjectWriter
+      AccessControl: LogDeliveryWrite
+
+  JsonWebKeysBucketAccessLogsPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref JsonWebKeysBucketAccessLogs
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Deny
+            Principal:
+              AWS: '*'
+            Action: '*'
+            Resource: !Sub
+              - arn:aws:s3:::${bucketName}/*
+              - bucketName: !Ref JsonWebKeysBucketAccessLogs
+            Condition:
+              Bool:
+                "aws:SecureTransport": false
+
+  JsonWebKeysFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - JsonWebKeysFunctionLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: false
+        EntryPoints:
+          - src/functions/jwks/jwksHandler.ts
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-jwks
+      Description: Convert ID Check public encryption keys to JWKS format and upload to S3
+      Runtime: nodejs20.x
+      Handler: jwksHandler.lambdaHandler
+      Role: !GetAtt JsonWebKeysFunctionLambdaRole.Arn
+      Environment:
+        Variables:
+          ENCRYPTION_KEY_ID: !Ref KMSEncryptionKey
+          JWKS_BUCKET_NAME: !Ref JsonWebKeysBucket
+          JWKS_FILE_NAME: .well-known/jwks.json
+
+  JsonWebKeysFunctionLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-jwks-lambda
+      Description: Role of JWKS function
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: UploadPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                Resource:
+                  - !Sub
+                    - arn:aws:s3:::${TargetBucket}/*
+                    - TargetBucket: !Ref JsonWebKeysBucket
+        - PolicyName: GetPublicKeyPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:GetPublicKey
+                Resource: !GetAtt KMSEncryptionKey.Arn
+        - PolicyName: LoggingPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+
+  JsonWebKeysFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-jwks"
+
+  JsonWebKeysCustomResource:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt JsonWebKeysFunction.Arn
+      ServiceTimeout: 30
+
+  JsonWebKeysBucketApiRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-jwks-bucket
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+        Version: 2012-10-17
+      Policies:
+        - PolicyName: JsonWebKeysBucketPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource:
+                  - !Sub ${JsonWebKeysBucket.Arn}/.well-known/jwks.json
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+
+Outputs:
+  PublicAPIGWBaseURL:
+    Description: Public API Gateway base URL
+    Value: !Sub https://${BackendAsyncCredentialPublicApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/

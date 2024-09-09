@@ -38,14 +38,10 @@ describe("Backend application infrastructure", () => {
     describe("APIgw method settings", () => {
       test("Metrics are enabled", () => {
         const methodSettings = new Capture();
-        template.hasResourceProperties(
-          "AWS::Serverless::Api",
-
-          {
-            Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
-            MethodSettings: methodSettings,
-          },
-        );
+        template.hasResourceProperties("AWS::Serverless::Api", {
+          Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
+          MethodSettings: methodSettings,
+        });
         expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
       });
 
@@ -57,7 +53,6 @@ describe("Backend application infrastructure", () => {
           integration: 0,
           production: 0,
         };
-
         const expectedRateLimits = {
           dev: 10,
           build: 0,
@@ -78,14 +73,10 @@ describe("Backend application infrastructure", () => {
 
       test("Rate limit and burst mappings are applied to the APIgw", () => {
         const methodSettings = new Capture();
-        template.hasResourceProperties(
-          "AWS::Serverless::Api",
-
-          {
-            Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
-            MethodSettings: methodSettings,
-          },
-        );
+        template.hasResourceProperties("AWS::Serverless::Api", {
+          Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
+          MethodSettings: methodSettings,
+        });
         expect(methodSettings.asArray()[0].ThrottlingBurstLimit).toStrictEqual({
           "Fn::FindInMap": [
             "PrivateApigw",
@@ -93,7 +84,6 @@ describe("Backend application infrastructure", () => {
             "ApiBurstLimit",
           ],
         });
-
         expect(methodSettings.asArray()[0].ThrottlingRateLimit).toStrictEqual({
           "Fn::FindInMap": [
             "PrivateApigw",
@@ -237,6 +227,7 @@ describe("Backend application infrastructure", () => {
       });
     });
   });
+
   describe("Lambdas", () => {
     describe("Globals", () => {
       test("Global environment variables are set", () => {
@@ -254,6 +245,7 @@ describe("Backend application infrastructure", () => {
         expect(expectedGlobals.length).toBe(Object.keys(envVars).length);
       });
     });
+
     test("All lambdas have a FunctionName defined", () => {
       const lambdas = template.findResources("AWS::Serverless::Function");
       const lambda_list = Object.keys(lambdas);
@@ -261,6 +253,7 @@ describe("Backend application infrastructure", () => {
         expect(lambdas[lambda].Properties.FunctionName).toBeTruthy();
       });
     });
+
     test("All lambdas have a log group", () => {
       const lambdas = template.findResources("AWS::Serverless::Function");
       const lambda_list = Object.keys(lambdas);
@@ -274,6 +267,7 @@ describe("Backend application infrastructure", () => {
         });
       });
     });
+
     test("All log groups have a retention period", () => {
       const logGroups = template.findResources("AWS::Logs::LogGroup");
       const logGroupList = Object.keys(logGroups);
@@ -325,7 +319,6 @@ describe("Backend application infrastructure", () => {
         integration: 30,
         production: 30,
       };
-
       const mappingHelper = new Mappings(template);
       mappingHelper.validateKMSMapping({
         environmentFlags: expectedKmsDeletionMapping,
@@ -361,6 +354,65 @@ describe("Backend application infrastructure", () => {
         const roleNameConformsToStandards =
           roleName.startsWith("${AWS::StackName}-");
         expect(roleNameConformsToStandards).toBe(true);
+      });
+    });
+  });
+
+  describe("S3", () => {
+    test("All buckets have a name", () => {
+      const buckets = template.findResources("AWS::S3::Bucket");
+      const bucketList = Object.keys(buckets);
+      bucketList.forEach((bucket) => {
+        expect(buckets[bucket].Properties.BucketName).toBeTruthy();
+      });
+    });
+
+    test("All buckets have an associated bucket policy", () => {
+      const buckets = template.findResources("AWS::S3::Bucket");
+      const bucketList = Object.keys(buckets);
+      bucketList.forEach((bucket) => {
+        template.hasResourceProperties(
+          "AWS::S3::BucketPolicy",
+          Match.objectLike({
+            Bucket: { Ref: bucket },
+          }),
+        );
+      });
+    });
+
+    test("All buckets have public access blocked", () => {
+      const buckets = template.findResources("AWS::S3::Bucket");
+      const bucketList = Object.keys(buckets);
+      bucketList.forEach((bucket) => {
+        expect(
+          buckets[bucket].Properties.PublicAccessBlockConfiguration,
+        ).toEqual(
+          expect.objectContaining({
+            BlockPublicAcls: true,
+            BlockPublicPolicy: true,
+            IgnorePublicAcls: true,
+            RestrictPublicBuckets: true,
+          }),
+        );
+      });
+    });
+
+    test("All buckets have encryption enabled", () => {
+      const buckets = template.findResources("AWS::S3::Bucket");
+      const bucketList = Object.keys(buckets);
+      bucketList.forEach((bucket) => {
+        expect(
+          buckets[bucket].Properties.BucketEncryption
+            .ServerSideEncryptionConfiguration,
+        ).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              ServerSideEncryptionByDefault: expect.objectContaining({
+                SSEAlgorithm: expect.any(String),
+              }),
+            }),
+          ]),
+        );
       });
     });
   });
