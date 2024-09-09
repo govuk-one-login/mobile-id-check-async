@@ -672,7 +672,7 @@ Resources:
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-jwks-${Environment}
+      BucketName: !Sub ${AWS::StackName}-jwks-keys
       VersioningConfiguration:
         Status: Enabled
       PublicAccessBlockConfiguration:
@@ -686,7 +686,7 @@ Resources:
               SSEAlgorithm: AES256
       LoggingConfiguration:
         DestinationBucketName: !Ref JsonWebKeysBucketAccessLogs
-        LogFilePrefix: !Sub ${AWS::StackName}-jwks-${Environment}
+        LogFilePrefix: !Sub ${AWS::StackName}-jwks-keys
 
   JsonWebKeysBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -709,7 +709,7 @@ Resources:
   JsonWebKeysBucketAccessLogs:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-jwks-${Environment}-access-logs
+      BucketName: !Sub ${AWS::StackName}-jwks-keys-access-logs
       VersioningConfiguration:
         Status: Enabled
       PublicAccessBlockConfiguration:
