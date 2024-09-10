@@ -49,13 +49,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-  build-and-push-test-image:
+  build-and-push-test-image-to-dev:
+    name: 'Build, tag and push docker test image to registry in Dev'
     needs: sonar-scan
     runs-on: ubuntu-latest
     env:
       BACKEND_API_DEV_TEST_IMAGE_REPOSITORY: ${{ secrets.BACKEND_API_DEV_TEST_IMAGE_REPOSITORY }}
       BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY: ${{ secrets.BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY }}
       ASYNC_BUILD_COSIGN_KEY: ${{secrets.ASYNC_BUILD_COSIGN_KEY}}
+      DEV_CONTAINER_SIGN_KMS_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
       IMAGE_TAG: latest
     defaults:
       run:
@@ -98,11 +100,11 @@ jobs:
       run: |
         docker push $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
 
-  build-and-upload-sam-artifact:
+  build-and-upload-sam-artifact-to-dev:
     name: Validate & upload S3 artifact to dev
     runs-on: ubuntu-latest
     needs:
-      - build-and-push-test-image
+      - build-and-push-test-image-to-dev
     defaults:
       run:
         shell: bash
@@ -145,7 +147,7 @@ jobs:
         uses: govuk-one-login/devplatform-upload-action@6985ccbaa306e2320a8826252c922af65242b283 #main
         with:
           artifact-bucket-name: ${{ secrets.BACKEND_API_DEV_ARTIFACT_BUCKET }}
-          signing-profile-name: ${{ secrets.BACKEND_API_DEV_SIGNING_PROFILE }}
+          signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
           template-file: .aws-sam/build/template.yaml
           working-directory: backend-api
 

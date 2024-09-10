@@ -4,7 +4,8 @@ export type CommonMessageNames =
   | "STARTED"
   | "COMPLETED"
   | "ENVIRONMENT_VARIABLE_MISSING"
-  | "ERROR_WRITING_AUDIT_EVENT";
+  | "ERROR_WRITING_AUDIT_EVENT"
+  | "ERROR_SENDING_CUSTOM_RESOURCE_EVENT";
 
 export const commonMessages: RegisteredLogMessages<CommonMessageNames> = {
   STARTED: {
@@ -18,5 +19,8 @@ export const commonMessages: RegisteredLogMessages<CommonMessageNames> = {
   },
   ERROR_WRITING_AUDIT_EVENT: {
     messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+  },
+  ERROR_SENDING_CUSTOM_RESOURCE_EVENT: {
+    messageCode: "MOBILE_ASYNC_ERROR_SENDING_CUSTOM_RESOURCE_EVENT",
   },
 };
