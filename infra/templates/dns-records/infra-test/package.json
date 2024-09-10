@@ -11,8 +11,6 @@
     "cdk": "cdk"
   },
   "devDependencies": {
-    "@aws-cdk/assertions": "^1.172.0",
-    "@aws-cdk/yaml-cfn": "^1.172.0",
     "@types/chai": "^4.3.0",
     "@types/jest": "^27.5.2",
     "@types/js-yaml": "^4.0.5",
