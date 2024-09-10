@@ -116,7 +116,8 @@ jobs:
         working-directory: backend-api
 
   build-and-push-to-build:
-    name: Push test image and SAM artifact to dev
+    name: Push test image and SAM artifact to build
+    needs: sonar-scan
     runs-on: ubuntu-latest
     env:
       BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY: ${{ secrets.BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY }}
