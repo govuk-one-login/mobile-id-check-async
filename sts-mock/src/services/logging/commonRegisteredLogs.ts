@@ -1,8 +1,6 @@
 import { RegisteredLogMessages } from "./types";
 
-export type CommonMessageNames =
-  | "STARTED"
-  | "COMPLETED"
+export type CommonMessageNames = "STARTED" | "COMPLETED";
 
 export const commonMessages: RegisteredLogMessages<CommonMessageNames> = {
   STARTED: {
@@ -10,5 +8,5 @@ export const commonMessages: RegisteredLogMessages<CommonMessageNames> = {
   },
   COMPLETED: {
     messageCode: "STS_MOCK_COMPLETED",
-  }
+  },
 };

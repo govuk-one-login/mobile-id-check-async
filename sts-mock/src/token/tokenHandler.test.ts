@@ -1,14 +1,23 @@
+import { Logger } from "../services/logging/logger";
+import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
+import { buildLambdaContext } from "../testUtils/mockContext";
+import { registeredLogs } from "./registeredLogs";
 import { lambdaHandlerConstructor } from "./tokenHandler";
 
 describe("Token", () => {
   describe("Given lambdaHandler is called", () => {
     it("Returns 200 response", async () => {
-      const result = await lambdaHandlerConstructor();
-
-      expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-        "STARTED",
+      const mockLogger = new MockLoggingAdapter();
+      const dependencies = {
+        env: {},
+        logger: () => new Logger(mockLogger, registeredLogs),
+      };
+      const result = await lambdaHandlerConstructor(
+        dependencies,
+        buildLambdaContext(),
       );
 
+      expect(mockLogger.getLogMessages()[0].logMessage.message).toBe("STARTED");
       expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
         "COMPLETED",
       );
