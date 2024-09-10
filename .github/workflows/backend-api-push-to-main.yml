@@ -68,13 +68,6 @@ jobs:
         submodules: true
         fetch-depth: 0
 
-    - name: Setup nodeJS v20
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20
-        cache: npm
-        cache-dependency-path: backend-api/package-lock.json
-
     - name: Setup SAM CLI
       uses: aws-actions/setup-sam@2360ef6d90015369947b45b496193ab9976a9b04 #main
       with:
@@ -132,13 +125,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-
-      - name: Setup nodeJS v20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: backend-api/package-lock.json
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382 #main
