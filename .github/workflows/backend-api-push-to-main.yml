@@ -103,11 +103,11 @@ jobs:
         echo "SAM_CLI_TELEMETRY=0" >> $GITHUB_ENV
         sam validate --lint
 
-    - name: SAM Build
+    - name: SAM build
       run: |
         sam build
 
-    - name: Upload SAM artifact into the DEV artifact bucket
+    - name: Upload SAM artifact into the S3 artifact bucket
       uses: govuk-one-login/devplatform-upload-action@6985ccbaa306e2320a8826252c922af65242b283 #main
       with:
         artifact-bucket-name: ${{ secrets.BACKEND_API_DEV_ARTIFACT_BUCKET }}
@@ -173,7 +173,7 @@ jobs:
           echo "SAM_CLI_TELEMETRY=0" >> $GITHUB_ENV
           sam validate --lint
 
-      - name: Sam Build
+      - name: Sam build
         run: |
           sam build --cached
 
