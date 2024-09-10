@@ -1,7 +1,7 @@
 import { buildLambdaContext } from "../../../testUtils/mockContext";
 import { Logger } from "../logger";
 import { RegisteredLogMessages } from "../types";
-import { MockLoggingAdapter } from "./mockLogger";
+import { MockLoggingAdapter } from "./mockLoggingAdapter";
 
 describe("Logger", () => {
   describe("Given there is a message to log", () => {
