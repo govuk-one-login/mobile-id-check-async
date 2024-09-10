@@ -92,7 +92,7 @@ jobs:
 
     - name: Build test image
       run: |
-        docker build -t $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG -t $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG . 
+        docker build -t $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG . 
 
     - name: Push image
       run: |
@@ -116,8 +116,12 @@ jobs:
         working-directory: backend-api
 
   build-and-push-to-build:
-    name: Validate & upload S3 artifact to build
+    name: Push test image and SAM artifact to dev
     runs-on: ubuntu-latest
+    env:
+      BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY: ${{ secrets.BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY }}
+      BUILD_CONTAINER_SIGN_KMS_KEY: ${{ secrets.BUILD_CONTAINER_SIGN_KMS_KEY }}
+      IMAGE_TAG: latest
     defaults:
       run:
         shell: bash
@@ -158,7 +162,7 @@ jobs:
 
       - name: Sign the image
         run: |
-          cosign sign --key awskms:///$ASYNC_BUILD_COSIGN_KEY $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
+          cosign sign --key awskms:///$BUILD_CONTAINER_SIGN_KMS_KEY $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
 
       - name: Push image
         run: |
@@ -177,6 +181,6 @@ jobs:
         uses: govuk-one-login/devplatform-upload-action@6985ccbaa306e2320a8826252c922af65242b283 #main
         with:
           artifact-bucket-name: ${{ secrets.BACKEND_API_BUILD_ARTIFACT_BUCKET }}
-          signing-profile-name: ${{ secrets.BACKEND_API_BUILD_SIGNING_PROFILE }}
+          signing-profile-name: ${{ secrets.BUILD_SIGNING_PROFILE_NAME}}
           template-file: .aws-sam/build/template.yaml
           working-directory: backend-api
