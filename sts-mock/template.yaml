@@ -237,7 +237,7 @@ Resources:
   JwksBucketAccessLogs:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-jwks-access-logs
+      BucketName: !Sub ${AWS::StackName}-jwks-access-logs-2
       VersioningConfiguration:
         Status: Enabled
       PublicAccessBlockConfiguration:
