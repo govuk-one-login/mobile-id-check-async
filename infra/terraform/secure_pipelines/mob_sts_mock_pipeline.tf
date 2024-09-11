@@ -51,7 +51,7 @@ locals {
       IncludePromotion = "No"
       AllowedAccounts  = local.account_vars.staging.account_id
 
-      ContainerSignerKmsKeyArn = one(data.aws_cloudformation_stack.container_signer_dev[*].outputs["ContainerSignerKmsKeyArn"])
+      ContainerSignerKmsKeyArn = one(data.aws_cloudformation_stack.container_signer_build[*].outputs["ContainerSignerKmsKeyArn"])
       RequireTestContainerSignatureValidation = "Yes"
 
       SigningProfileArn        = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileArn"])
