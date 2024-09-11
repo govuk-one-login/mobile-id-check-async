@@ -98,6 +98,10 @@ jobs:
       run: |
         docker push $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
 
+    - name: Sign the image
+      run: |
+        cosign sign --key awskms:///$DEV_CONTAINER_SIGN_KMS_KEY $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
+
     - name: SAM validate and lint
       run: |
         echo "SAM_CLI_TELEMETRY=0" >> $GITHUB_ENV
