@@ -117,6 +117,37 @@ describe("STS mock infrastructure", () => {
     });
   });
 
+  describe("IAM", () => {
+    // See: https://github.com/govuk-one-login/devplatform-deploy/blob/c298f297141f414798899a622509262fbb309260/sam-deploy-pipeline/template.yaml#L3759
+    test("Every IAM role has a permissions boundary", () => {
+      const iamRoles = template.findResources("AWS::IAM::Role");
+      const iamRolesList = Object.keys(iamRoles);
+      iamRolesList.forEach((iamRole) => {
+        expect(iamRoles[iamRole].Properties.PermissionsBoundary).toStrictEqual({
+          "Fn::If": [
+            "UsePermissionsBoundary",
+            { Ref: "PermissionsBoundary" },
+            { Ref: "AWS::NoValue" },
+          ],
+        });
+      });
+    });
+
+    // See: https://github.com/govuk-one-login/devplatform-deploy/blob/c298f297141f414798899a622509262fbb309260/sam-deploy-pipeline/template.yaml#L3759
+    test("Every IAM role name conforms to dev platform naming standard", () => {
+      const iamRoles = template.findResources("AWS::IAM::Role");
+      const iamRolesList = Object.keys(iamRoles);
+      iamRolesList.forEach((iamRole) => {
+        const roleName = iamRoles[iamRole].Properties.RoleName[
+          "Fn::Sub"
+        ] as string;
+        const roleNameConformsToStandards =
+          roleName.startsWith("${AWS::StackName}-");
+        expect(roleNameConformsToStandards).toBe(true);
+      });
+    });
+  });
+
   describe("Lambda", () => {
     test("all lambdas have a name", () => {
       const lambdas = template.findResources("AWS::Serverless::Function");
