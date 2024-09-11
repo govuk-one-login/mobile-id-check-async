@@ -1,6 +1,9 @@
 AWSTemplateFormatVersion: "2010-09-09"
+
 Transform: AWS::Serverless-2016-10-31
+
 Description: SAM template for the STS mock
+
 Mappings:
   StsMockApiGateway:
     dev: 
@@ -9,6 +12,13 @@ Mappings:
     build: 
       ApiBurstLimit: 0
       ApiRateLimit: 0
+
+Globals:
+  Function:
+    PermissionsBoundary: !If
+      - UsePermissionsBoundary
+      - !Ref PermissionsBoundary
+      - !Ref AWS::NoValue
 
 Parameters:
   Environment:
