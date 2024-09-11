@@ -75,6 +75,11 @@ jobs:
         cache: npm
         cache-dependency-path: backend-api/package-lock.json
 
+    - name: Install Cosign
+      uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382 #main
+      with:
+        cosign-release: 'v1.9.0'
+
     - name: Setup SAM CLI
       uses: aws-actions/setup-sam@2360ef6d90015369947b45b496193ab9976a9b04 #main
       with:
@@ -97,6 +102,10 @@ jobs:
     - name: Push image
       run: |
         docker push $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
+
+    - name: Sign the image
+      run: |
+        cosign sign --key awskms:///$DEV_CONTAINER_SIGN_KMS_KEY $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
 
     - name: SAM validate and lint
       run: |

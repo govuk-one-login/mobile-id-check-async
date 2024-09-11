@@ -26,7 +26,7 @@ resource "aws_cloudformation_stack" "mob_async_backend_pl" {
 }
 
 locals {
-  // Define environemnt specific parameters here. Will be merged and take precedence over the
+  // Define environment specific parameters here. Will be merged and take precedence over the
   // parameters defined in the resource above.
   // https://developer.hashicorp.com/terraform/language/functions/merge
   // https://developer.hashicorp.com/terraform/language/functions/one
@@ -35,6 +35,9 @@ locals {
       OneLoginRepositoryName = "mobile-id-check-async"
 
       IncludePromotion = "No"
+
+      ContainerSignerKmsKeyArn = one(data.aws_cloudformation_stack.container_signer_dev[*].outputs["ContainerSignerKmsKeyArn"])
+      RequireTestContainerSignatureValidation = "Yes"
 
       SigningProfileArn        = one(data.aws_cloudformation_stack.signer_dev[*].outputs["SigningProfileArn"])
       SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_dev[*].outputs["SigningProfileVersionArn"])
@@ -47,6 +50,9 @@ locals {
 
       IncludePromotion = "Yes"
       AllowedAccounts  = local.account_vars.staging.account_id
+
+      ContainerSignerKmsKeyArn = one(data.aws_cloudformation_stack.container_signer_build[*].outputs["ContainerSignerKmsKeyArn"])
+      RequireTestContainerSignatureValidation = "Yes"
 
       SigningProfileArn        = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileArn"])
       SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileVersionArn"])
