@@ -27,16 +27,7 @@ export async function lambdaHandlerConstructor(
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
       errorMessage: configResult.value.errorMessage,
     });
-    return {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      statusCode: 500,
-      body: JSON.stringify({
-        error: "server_error",
-        error_description: "Server Error",
-      }),
-    };
+    return internalServerErrorResponse;
   }
 
   const { path } = event;
@@ -46,16 +37,7 @@ export async function lambdaHandlerConstructor(
     logger.log("UNEXPECTED_PATH", {
       errorMessage: "Path is not one of the permitted values",
     });
-    return {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      statusCode: 500,
-      body: JSON.stringify({
-        error: "server_error",
-        error_description: "Server Error",
-      }),
-    };
+    return internalServerErrorResponse;
   }
 
   const method = event.httpMethod;
@@ -64,16 +46,7 @@ export async function lambdaHandlerConstructor(
     logger.log("UNEXPECTED_HTTP_METHOD", {
       errorMessage: "Method is not an accepted value",
     });
-    return {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      statusCode: 500,
-      body: JSON.stringify({
-        error: "server_error",
-        error_description: "Server Error",
-      }),
-    };
+    return internalServerErrorResponse;
   }
 
   const incomingHeaders = event.headers;
@@ -93,23 +66,14 @@ export async function lambdaHandlerConstructor(
     body: event.body,
     path,
     headers: standardisedHeaders,
-    method: method,
+    method,
   });
   if (proxyRequestResult.isError) {
     logger.log("PROXY_REQUEST_ERROR", {
       errorMessage: proxyRequestResult.value.errorMessage,
     });
 
-    return {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      statusCode: 500,
-      body: JSON.stringify({
-        error: "server_error",
-        error_description: "Server Error",
-      }),
-    };
+    return internalServerErrorResponse;
   }
 
   logger.log("COMPLETED");
@@ -139,4 +103,15 @@ const standardiseAndStripApiGwHeaders = (
   });
 
   return standardisedHeaders;
+};
+
+const internalServerErrorResponse = {
+  headers: {
+    "Content-Type": "application/json",
+  },
+  statusCode: 500,
+  body: JSON.stringify({
+    error: "server_error",
+    error_description: "Server Error",
+  }),
 };
