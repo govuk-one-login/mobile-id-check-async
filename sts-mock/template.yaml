@@ -9,6 +9,7 @@ Mappings:
     build: 
       ApiBurstLimit: 0
       ApiRateLimit: 0
+
 Parameters:
   Environment:
     Description: The name of the environment to deploy to
@@ -18,11 +19,11 @@ Parameters:
       - dev
       - build
 
-PermissionsBoundary:
-    Description: |
-      The ARN of the permissions boundary to apply to any role created by the template
-    Type: String
-    Default: none
+  PermissionsBoundary:
+      Description: |
+        The ARN of the permissions boundary to apply to any role created by the template
+      Type: String
+      Default: none
 
 Conditions:
   UsePermissionsBoundary: !Not
