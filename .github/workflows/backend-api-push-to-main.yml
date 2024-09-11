@@ -49,8 +49,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-  build-and-push-test-image-to-dev:
-    name: 'Build, tag and push docker test image to registry in Dev'
+  build-and-push-to-dev:
+    name: 'Push test image and SAM artifact to dev'
     needs: sonar-scan
     runs-on: ubuntu-latest
     env:
@@ -68,38 +68,61 @@ jobs:
         submodules: true
         fetch-depth: 0
 
-    - name: Build test image
-      run: |
-        docker build -t $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG . 
+    - name: Setup nodeJS v20
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: npm
+        cache-dependency-path: backend-api/package-lock.json
 
-    - name: Configure AWS credentials for DEV
+    - name: Setup SAM CLI
+      uses: aws-actions/setup-sam@2360ef6d90015369947b45b496193ab9976a9b04 #main
+      with:
+        use-installer: true
+        version: 1.123.0
+
+    - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@55f725fcb586ca16a5ed5b0d75d464defbfa831b #main
       with:
         aws-region: eu-west-2
         role-to-assume: ${{ secrets.BACKEND_API_DEV_GH_ACTIONS_ROLE_ARN }}
 
-    - name: Login to Amazon ECR DEV
+    - name: Login to Amazon ECR
       uses: aws-actions/amazon-ecr-login@a81a5945e74802f35ca53aa274a9e00436e6210e #main
 
-    - name: Push image to DEV
+    - name: Build test image
+      run: |
+        docker build -t $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG . 
+
+    - name: Push image
       run: |
         docker push $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
 
-    - name: Install Cosign
-      uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382 #main
+    - name: SAM validate and lint
+      run: |
+        echo "SAM_CLI_TELEMETRY=0" >> $GITHUB_ENV
+        sam validate --lint
+
+    - name: SAM build
+      run: |
+        sam build
+
+    - name: Upload SAM artifact into the S3 artifact bucket
+      uses: govuk-one-login/devplatform-upload-action@6985ccbaa306e2320a8826252c922af65242b283 #main
       with:
-        cosign-release: 'v1.9.0'
+        artifact-bucket-name: ${{ secrets.BACKEND_API_DEV_ARTIFACT_BUCKET }}
+        signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
+        template-file: .aws-sam/build/template.yaml
+        working-directory: backend-api
 
-    # Commenting out due to AWS permission issues
-    # - name: Sign the image in DEV
-    #   run: |
-    #     cosign sign --key awskms:///$DEV_CONTAINER_SIGN_KMS_KEY $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
-
-  build-and-upload-sam-artifact-to-dev:
-    name: Validate & upload S3 artifact to dev
+  build-and-push-to-build:
+    name: Push test image and SAM artifact to build
+    needs: sonar-scan
     runs-on: ubuntu-latest
-    needs:
-      - build-and-push-test-image-to-dev
+    env:
+      BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY: ${{ secrets.BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY }}
+      BUILD_CONTAINER_SIGN_KMS_KEY: ${{ secrets.BUILD_CONTAINER_SIGN_KMS_KEY }}
+      IMAGE_TAG: latest
     defaults:
       run:
         shell: bash
@@ -117,6 +140,11 @@ jobs:
           cache: npm
           cache-dependency-path: backend-api/package-lock.json
 
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382 #main
+        with:
+          cosign-release: 'v1.9.0'
+
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@2360ef6d90015369947b45b496193ab9976a9b04 #main
         with:
@@ -127,21 +155,36 @@ jobs:
         uses: aws-actions/configure-aws-credentials@55f725fcb586ca16a5ed5b0d75d464defbfa831b #main
         with:
           aws-region: eu-west-2
-          role-to-assume: ${{ secrets.BACKEND_API_DEV_GH_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.BACKEND_API_BUILD_GH_ACTIONS_ROLE_ARN }}
 
-      - name: Sam Validate
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@a81a5945e74802f35ca53aa274a9e00436e6210e #main
+
+      - name: Build test image
+        run: |
+          docker build -t $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG . 
+
+      - name: Push image
+        run: |
+          docker push $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
+
+      - name: Sign the image
+        run: |
+          cosign sign --key awskms:///$BUILD_CONTAINER_SIGN_KMS_KEY $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
+
+      - name: Sam validate and lint
         run: |
           echo "SAM_CLI_TELEMETRY=0" >> $GITHUB_ENV
           sam validate --lint
 
-      - name: Sam Build
+      - name: Sam build
         run: |
           sam build --cached
 
-      - name: Upload SAM artifact into the DEV artifact bucket
+      - name: Upload SAM artifact into the S3 artifact bucket
         uses: govuk-one-login/devplatform-upload-action@6985ccbaa306e2320a8826252c922af65242b283 #main
         with:
-          artifact-bucket-name: ${{ secrets.BACKEND_API_DEV_ARTIFACT_BUCKET }}
-          signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
+          artifact-bucket-name: ${{ secrets.BACKEND_API_BUILD_ARTIFACT_BUCKET }}
+          signing-profile-name: ${{ secrets.BUILD_SIGNING_PROFILE_NAME}}
           template-file: .aws-sam/build/template.yaml
           working-directory: backend-api
