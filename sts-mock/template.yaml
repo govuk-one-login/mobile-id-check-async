@@ -56,6 +56,11 @@ Resources:
   JwksBucketApiRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Sub ${AWS::StackName}-jwks-bucket-api
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
       AssumeRolePolicyDocument:
         Statement:
           - Action: sts:AssumeRole
@@ -120,8 +125,12 @@ Resources:
   TokenFunctionLambdaRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-token
       Description: Execution role for the token function
+      RoleName: !Sub ${AWS::StackName}-token
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
