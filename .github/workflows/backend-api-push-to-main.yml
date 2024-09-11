@@ -161,13 +161,13 @@ jobs:
         run: |
           docker build -t $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG . 
 
-      - name: Sign the image
-        run: |
-          cosign sign --key awskms:///$BUILD_CONTAINER_SIGN_KMS_KEY $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
-
       - name: Push image
         run: |
           docker push $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
+
+      - name: Sign the image
+        run: |
+          cosign sign --key awskms:///$BUILD_CONTAINER_SIGN_KMS_KEY $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
 
       - name: Sam validate and lint
         run: |
