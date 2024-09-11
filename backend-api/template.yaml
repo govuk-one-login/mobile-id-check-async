@@ -672,7 +672,7 @@ Resources:
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-jwks-keys
+      BucketName: !Sub ${AWS::StackName}-jwks-keys-${Environment}
       VersioningConfiguration:
         Status: Enabled
       PublicAccessBlockConfiguration:
