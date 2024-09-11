@@ -102,7 +102,7 @@ describe("Mock Proxy", () => {
           "UNEXPECTED_HTTP_METHOD",
         );
         expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Method is not an accepted value",
+          errorMessage: "API method is not POST",
         });
 
         expect(result).toStrictEqual({

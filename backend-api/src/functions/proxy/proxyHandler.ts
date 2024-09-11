@@ -44,7 +44,7 @@ export async function lambdaHandlerConstructor(
 
   if (method !== "POST") {
     logger.log("UNEXPECTED_HTTP_METHOD", {
-      errorMessage: "Method is not an accepted value",
+      errorMessage: "API method is not POST",
     });
     return internalServerErrorResponse;
   }
