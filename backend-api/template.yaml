@@ -709,7 +709,7 @@ Resources:
   JsonWebKeysBucketAccessLogs:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-jwks-keys-access-logs
+      BucketName: !Sub ${AWS::StackName}-jwks-keys-access-logs-${Environment}
       VersioningConfiguration:
         Status: Enabled
       PublicAccessBlockConfiguration:
