@@ -200,7 +200,7 @@ Resources:
   JwksBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-jwks
+      BucketName: !Sub ${AWS::StackName}-jwks-${Environment}
       VersioningConfiguration:
         Status: Enabled
       PublicAccessBlockConfiguration:
@@ -237,7 +237,7 @@ Resources:
   JwksBucketAccessLogs:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-jwks-access-logs-2
+      BucketName: !Sub ${AWS::StackName}-jwks-access-logs-${Environment}
       VersioningConfiguration:
         Status: Enabled
       PublicAccessBlockConfiguration:
