@@ -157,6 +157,9 @@ jobs:
           aws-region: eu-west-2
           role-to-assume: ${{ secrets.BACKEND_API_BUILD_GH_ACTIONS_ROLE_ARN }}
 
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@a81a5945e74802f35ca53aa274a9e00436e6210e #main
+
       - name: Build test image
         run: |
           docker build -t $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG . 
