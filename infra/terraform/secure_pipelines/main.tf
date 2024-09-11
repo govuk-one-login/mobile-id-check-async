@@ -64,3 +64,15 @@ data "aws_cloudformation_stack" "signer_build" {
   count    = contains(["build", "staging", "integration", "production"], var.environment) ? 1 : 0
   name     = "devplatform-signer"
 }
+
+data "aws_cloudformation_stack" "container_signer_dev" {
+  provider = aws.dev
+  count    = contains(["dev"], var.environment) ? 1 : 0
+  name     = "devplatform-container-signer"
+}
+
+data "aws_cloudformation_stack" "container_signer_build" {
+  provider = aws.build
+  count    = contains(["build"], var.environment) ? 1 : 0
+  name     = "devplatform-container-signer"
+}
