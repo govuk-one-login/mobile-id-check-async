@@ -95,7 +95,9 @@ const standardiseAndStripApiGwHeaders = (
       typeof headerValue === "number" ||
       typeof headerValue === "boolean"
     ) {
-      // This fails TLS validation as the target of the request (private apigw execute-url isn't on the certificate for this DNS)
+      // This header is sent by the proxy API and should not be included in downstream network requests.
+      // The presence of the header causes TLS Certificate failures as the target of the request is not a domain registered on the certificate.
+
       if (headerKey !== "Host") {
         standardisedHeaders[headerKey] = headerValue;
       }
