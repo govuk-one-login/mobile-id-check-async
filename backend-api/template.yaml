@@ -340,6 +340,15 @@ Resources:
                   - dynamodb:PutItem
                   - dynamodb:Query
                 Resource: !GetAtt SessionsTable.Arn
+                Condition:
+                  ForAllValues:StringEquals:
+                    dynamodb:Attributes:
+                      - sessionId
+                      - sessionState
+                      - issuedOn
+                      - sub
+                  StringEquals:
+                    dynamodb:Select: SPECIFIC_ATTRIBUTES
         - PolicyName: AsyncCredentialFunctionSecretsManagerPolicy
           PolicyDocument:
             Version: "2012-10-17"
