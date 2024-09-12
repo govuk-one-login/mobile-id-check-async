@@ -341,6 +341,7 @@ Resources:
                   - dynamodb:Query
                 Resource:
                   - Fn::GetAtt: [ "SessionsTable", "Arn" ]
+                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier
                 Condition:
                   ForAllValues:StringEquals:
                     dynamodb:Attributes:
@@ -416,7 +417,7 @@ Resources:
         - AttributeName: sessionId
           KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: subjectIdentifier-index
+        - IndexName: subjectIdentifier
           KeySchema:
             - AttributeName: subjectIdentifier
               KeyType: HASH
