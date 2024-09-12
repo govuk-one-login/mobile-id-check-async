@@ -1051,6 +1051,15 @@ Resources:
         - !Ref AWS::NoValue
 
 Outputs:
-  PublicAPIGWBaseURL:
+  PublicApiUrl:
     Description: Public API Gateway base URL
     Value: !Sub https://${BackendAsyncCredentialPublicApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/
+
+  ProxyApiUrl:
+    Description: Proxy API Gateway Pretty DNS
+    Value: !Sub
+      - https://proxy-${AWS::StackName}.${DNS_RECORD}
+      - DNS_RECORD: !FindInMap
+          - DNS
+          - !Ref Environment
+          - BaseDns
