@@ -339,7 +339,18 @@ Resources:
                 Action:
                   - dynamodb:PutItem
                   - dynamodb:Query
-                Resource: !GetAtt SessionsTable.Arn
+                Resource:
+                  - Fn::GetAtt: [ "SessionsTable", "Arn" ]
+                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier
+                Condition:
+                  ForAllValues:StringEquals:
+                    dynamodb:Attributes:
+                      - sessionId
+                      - sessionState
+                      - issuedOn
+                      - subjectIdentifier
+                  StringEquals:
+                    dynamodb:Select: SPECIFIC_ATTRIBUTES
         - PolicyName: AsyncCredentialFunctionSecretsManagerPolicy
           PolicyDocument:
             Version: "2012-10-17"
@@ -400,18 +411,22 @@ Resources:
           AttributeType: S
         - AttributeName: subjectIdentifier
           AttributeType: S
+        - AttributeName: "issuedOn"
+          AttributeType: N
       KeySchema:
         - AttributeName: sessionId
           KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: subjectIdentifier-index
+        - IndexName: subjectIdentifier
           KeySchema:
             - AttributeName: subjectIdentifier
               KeyType: HASH
+            - AttributeName: issuedOn
+              KeyType: RANGE
           Projection:
             NonKeyAttributes:
-              - authSessionState
-              - sessionId
+              - sessionState
+              - sessionTtlExpiry
             ProjectionType: INCLUDE
       BillingMode: PAY_PER_REQUEST
       SSESpecification:
