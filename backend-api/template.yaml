@@ -76,6 +76,18 @@ Mappings:
       ApiBurstLimit: 0
       ApiRateLimit: 0
 
+  Lambda:
+    dev:
+      ReservedConcurrentExecutions: 15
+    build:
+      ReservedConcurrentExecutions: 15
+    staging:
+      ReservedConcurrentExecutions: 0
+    integration:
+      ReservedConcurrentExecutions: 0
+    production:
+      ReservedConcurrentExecutions: 0
+
   TxMA:
     dev:
       TxmaAccount: arn:aws:iam::248098332657:root
@@ -146,6 +158,10 @@ Transform: AWS::Serverless-2016-10-31
 
 Globals:
   Function:
+    ReservedConcurrentExecutions: !FindInMap
+      - Lambda
+      - !Ref Environment
+      - ReservedConcurrentExecutions
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn

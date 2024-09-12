@@ -346,6 +346,42 @@ describe("Backend application infrastructure", () => {
         });
         expect(expectedGlobals.length).toBe(Object.keys(envVars).length);
       });
+
+      test("Global reserved concurrency is set", () => {
+        const reservedConcurrentExecutionMapping =
+          template.findMappings("Lambda");
+
+        expect(reservedConcurrentExecutionMapping).toStrictEqual({
+          Lambda: {
+            dev: {
+              ReservedConcurrentExecutions: 15,
+            },
+            build: {
+              ReservedConcurrentExecutions: 15,
+            },
+            staging: {
+              ReservedConcurrentExecutions: 0,
+            },
+
+            integration: {
+              ReservedConcurrentExecutions: 0,
+            },
+            production: {
+              ReservedConcurrentExecutions: 0,
+            },
+          },
+        });
+
+        const reservedConcurrentExecutions =
+          template.toJSON().Globals.Function.ReservedConcurrentExecutions;
+        expect(reservedConcurrentExecutions).toStrictEqual({
+          "Fn::FindInMap": [
+            "Lambda",
+            { Ref: "Environment" },
+            "ReservedConcurrentExecutions",
+          ],
+        });
+      });
     });
 
     test("All lambdas have a FunctionName defined", () => {
