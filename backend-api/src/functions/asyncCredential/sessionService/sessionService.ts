@@ -52,8 +52,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     let result: QueryCommandOutput;
     try {
       result = await dbClient.send(new QueryCommand(queryCommandInput));
-    } catch (err) {
-      console.log("ERROR >>>", err)
+    } catch {
       return errorResult({
         errorMessage:
           "Unexpected error when querying session table whilst checking for an active session",
