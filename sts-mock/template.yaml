@@ -1,6 +1,9 @@
 AWSTemplateFormatVersion: "2010-09-09"
+
 Transform: AWS::Serverless-2016-10-31
+
 Description: SAM template for the STS mock
+
 Mappings:
   StsMockApiGateway:
     dev: 
@@ -9,6 +12,18 @@ Mappings:
     build: 
       ApiBurstLimit: 0
       ApiRateLimit: 0
+
+Globals:
+  Function:
+    CodeSigningConfigArn: !If
+      - UseCodeSigning
+      - !Ref CodeSigningConfigArn
+      - !Ref AWS::NoValue
+    PermissionsBoundary: !If
+      - UsePermissionsBoundary
+      - !Ref PermissionsBoundary
+      - !Ref AWS::NoValue
+
 Parameters:
   Environment:
     Description: The name of the environment to deploy to
@@ -17,6 +32,30 @@ Parameters:
     AllowedValues:
       - dev
       - build
+
+  CodeSigningConfigArn:
+    Type: String
+    Description: >
+      The ARN of the Code Signing Config to use, provided by the deployment pipeline
+    Default: "none"
+
+  PermissionsBoundary:
+      Description: |
+        The ARN of the permissions boundary to apply to any role created by the template
+      Type: String
+      Default: none
+
+Conditions:
+  UseCodeSigning:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref CodeSigningConfigArn
+          - "none"
+
+  UsePermissionsBoundary: !Not
+    - !Equals
+      - !Ref PermissionsBoundary
+      - none
 
 Resources:
 ### Public API gateway for STS Mock
@@ -56,6 +95,11 @@ Resources:
   JwksBucketApiRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Sub ${AWS::StackName}-jwks-bucket-api
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
       AssumeRolePolicyDocument:
         Statement:
           - Action: sts:AssumeRole
@@ -86,14 +130,13 @@ Resources:
         Target: es2022
         Sourcemap: false
         EntryPoints:
-          - tokenHandler.ts
+          - src/token/tokenHandler.ts
     Properties:
       Description: Mock STS token function for exchanging an access token for a service token
       AutoPublishAlias: live
       FunctionName: !Sub ${AWS::StackName}-token
       Runtime: nodejs20.x
-      Handler: tokenHandler.lambdaHandler
-      CodeUri: src/token/
+      Handler: tokenHandler.lambdaHandler      
       Events:
         Token:
           Type: Api
@@ -121,8 +164,12 @@ Resources:
   TokenFunctionLambdaRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-token
       Description: Execution role for the token function
+      RoleName: !Sub ${AWS::StackName}-token
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -153,7 +200,7 @@ Resources:
   JwksBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-jwks
+      BucketName: !Sub ${AWS::StackName}-jwks-${Environment}
       VersioningConfiguration:
         Status: Enabled
       PublicAccessBlockConfiguration:
@@ -190,7 +237,7 @@ Resources:
   JwksBucketAccessLogs:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-jwks-access-logs
+      BucketName: !Sub ${AWS::StackName}-jwks-access-logs-${Environment}
       VersioningConfiguration:
         Status: Enabled
       PublicAccessBlockConfiguration:
