@@ -44,7 +44,7 @@ jobs:
         run: npm run test:unit
 
       - name: SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@f5003fc9688ade81ce47b57a3fa97a8d3f12de4c #master
+        uses: sonarsource/sonarcloud-github-action@eb211723266fe8e83102bac7361f0a05c3ac1d1b #master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -87,13 +87,13 @@ jobs:
         version: 1.123.0
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@55f725fcb586ca16a5ed5b0d75d464defbfa831b #main
+      uses: aws-actions/configure-aws-credentials@1ceaabc2d4208b18ff52a76e80c3a28df83f0277 #main
       with:
         aws-region: eu-west-2
         role-to-assume: ${{ secrets.BACKEND_API_DEV_GH_ACTIONS_ROLE_ARN }}
 
     - name: Login to Amazon ECR
-      uses: aws-actions/amazon-ecr-login@a81a5945e74802f35ca53aa274a9e00436e6210e #main
+      uses: aws-actions/amazon-ecr-login@08fda13c2502925256496fadb53b7718f48b28c5 #main
 
     - name: Build test image
       run: |
@@ -117,7 +117,7 @@ jobs:
         sam build
 
     - name: Upload SAM artifact into the S3 artifact bucket
-      uses: govuk-one-login/devplatform-upload-action@6985ccbaa306e2320a8826252c922af65242b283 #main
+      uses: govuk-one-login/devplatform-upload-action@b7994fb959f70cc1440295de9e823f317ffa197e #main
       with:
         artifact-bucket-name: ${{ secrets.BACKEND_API_DEV_ARTIFACT_BUCKET }}
         signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
@@ -161,13 +161,13 @@ jobs:
           version: 1.123.0
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@55f725fcb586ca16a5ed5b0d75d464defbfa831b #main
+        uses: aws-actions/configure-aws-credentials@1ceaabc2d4208b18ff52a76e80c3a28df83f0277 #main
         with:
           aws-region: eu-west-2
           role-to-assume: ${{ secrets.BACKEND_API_BUILD_GH_ACTIONS_ROLE_ARN }}
 
       - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@a81a5945e74802f35ca53aa274a9e00436e6210e #main
+        uses: aws-actions/amazon-ecr-login@08fda13c2502925256496fadb53b7718f48b28c5 #main
 
       - name: Build test image
         run: |
@@ -191,7 +191,7 @@ jobs:
           sam build --cached
 
       - name: Upload SAM artifact into the S3 artifact bucket
-        uses: govuk-one-login/devplatform-upload-action@6985ccbaa306e2320a8826252c922af65242b283 #main
+        uses: govuk-one-login/devplatform-upload-action@b7994fb959f70cc1440295de9e823f317ffa197e #main
         with:
           artifact-bucket-name: ${{ secrets.BACKEND_API_BUILD_ARTIFACT_BUCKET }}
           signing-profile-name: ${{ secrets.BUILD_SIGNING_PROFILE_NAME}}
