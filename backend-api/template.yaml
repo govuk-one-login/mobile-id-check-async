@@ -30,8 +30,8 @@ Mappings:
       ApiBurstLimit: 10
       ApiRateLimit: 10
     build:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
     staging:
       ApiBurstLimit: 0
       ApiRateLimit: 0
@@ -49,6 +49,23 @@ Mappings:
     build:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+    staging:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    integration:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    production:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+
+  ProxyApigw:
+    dev:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+    build:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
     staging:
       ApiBurstLimit: 0
       ApiRateLimit: 0
@@ -398,7 +415,7 @@ Resources:
   ProxyApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub ${AWS::StackName}-ProxyApi
+      Name: !Sub ${AWS::StackName}-proxy-api
       Description: Regional equivalent of the private Api to enable testing from outside AWS
       EndpointConfiguration: REGIONAL
       StageName: !Ref Environment
@@ -412,6 +429,14 @@ Resources:
           HttpMethod: '*'
           ResourcePath: /*
           MetricsEnabled: true
+          ThrottlingBurstLimit: !FindInMap
+            - ProxyApigw
+            - !Ref Environment
+            - ApiBurstLimit
+          ThrottlingRateLimit: !FindInMap
+            - ProxyApigw
+            - !Ref Environment
+            - ApiRateLimit
       AccessLogSetting:
         DestinationArn: !GetAtt ProxyApiAccessLogs.Arn
         Format: '{"requestId" : "$context.requestId","ip" : "$context.identity.sourceIp","requestTime" : "$context.requestTime","httpMethod" : "$context.httpMethod","path" : "$context.path","routeKey" : "$context.routeKey","status" : "$context.status","protocol" : "$context.protocol","responseLength" : "$context.responseLength","integrationError" : "$context.integrationErrorMessage"}'
@@ -423,7 +448,7 @@ Resources:
   ProxyApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-proxy-access-logs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-proxy-api-access-logs
       RetentionInDays: 30
     Condition: ProxyApiDeployment
 

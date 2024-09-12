@@ -48,14 +48,14 @@ describe("Backend application infrastructure", () => {
       test("Rate and burst limit mappings are set", () => {
         const expectedBurstLimits = {
           dev: 10,
-          build: 0,
+          build: 10,
           staging: 0,
           integration: 0,
           production: 0,
         };
         const expectedRateLimits = {
           dev: 10,
-          build: 0,
+          build: 10,
           staging: 0,
           integration: 0,
           production: 0,
@@ -223,6 +223,108 @@ describe("Backend application infrastructure", () => {
         RetentionInDays: 30,
         LogGroupName: {
           "Fn::Sub": "/aws/apigateway/${AWS::StackName}-public-api-access-logs",
+        },
+      });
+    });
+  });
+
+  describe("Proxy APIgw", () => {
+    test("The endpoints are Regional", () => {
+      template.hasResourceProperties("AWS::Serverless::Api", {
+        Name: { "Fn::Sub": "${AWS::StackName}-proxy-api" },
+        EndpointConfiguration: "REGIONAL",
+      });
+    });
+
+    test("It uses the proxy async OpenAPI Spec", () => {
+      template.hasResourceProperties("AWS::Serverless::Api", {
+        Name: { "Fn::Sub": "${AWS::StackName}-proxy-api" },
+        DefinitionBody: {
+          "Fn::Transform": {
+            Name: "AWS::Include",
+            Parameters: {
+              Location: "./openApiSpecs/async-proxy-private-spec.yaml",
+            },
+          },
+        },
+      });
+    });
+
+    describe("APIgw method settings", () => {
+      test("Metrics are enabled", () => {
+        const methodSettings = new Capture();
+        template.hasResourceProperties("AWS::Serverless::Api", {
+          Name: { "Fn::Sub": "${AWS::StackName}-proxy-api" },
+          MethodSettings: methodSettings,
+        });
+        expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
+      });
+
+      test("Rate and burst limit mappings are set", () => {
+        const expectedBurstLimits = {
+          dev: 10,
+          build: 10,
+          staging: 0,
+          integration: 0,
+          production: 0,
+        };
+        const expectedRateLimits = {
+          dev: 10,
+          build: 10,
+          staging: 0,
+          integration: 0,
+          production: 0,
+        };
+        const mappingHelper = new Mappings(template);
+        mappingHelper.validateProxyAPIMapping({
+          environmentFlags: expectedBurstLimits,
+          mappingBottomLevelKey: "ApiBurstLimit",
+        });
+        mappingHelper.validateProxyAPIMapping({
+          environmentFlags: expectedRateLimits,
+          mappingBottomLevelKey: "ApiRateLimit",
+        });
+      });
+
+      test("Rate limit and burst mappings are applied to the APIgw", () => {
+        const methodSettings = new Capture();
+        template.hasResourceProperties("AWS::Serverless::Api", {
+          Name: { "Fn::Sub": "${AWS::StackName}-proxy-api" },
+          MethodSettings: methodSettings,
+        });
+        expect(methodSettings.asArray()[0].ThrottlingBurstLimit).toStrictEqual({
+          "Fn::FindInMap": [
+            "ProxyApigw",
+            { Ref: "Environment" },
+            "ApiBurstLimit",
+          ],
+        });
+        expect(methodSettings.asArray()[0].ThrottlingRateLimit).toStrictEqual({
+          "Fn::FindInMap": [
+            "ProxyApigw",
+            { Ref: "Environment" },
+            "ApiRateLimit",
+          ],
+        });
+      });
+    });
+
+    test("Access log group is attached to APIgw", () => {
+      template.hasResourceProperties("AWS::Serverless::Api", {
+        Name: { "Fn::Sub": "${AWS::StackName}-proxy-api" },
+        AccessLogSetting: {
+          DestinationArn: {
+            "Fn::GetAtt": ["ProxyApiAccessLogs", "Arn"],
+          },
+        },
+      });
+    });
+
+    test("Access log group has a retention period", () => {
+      template.hasResourceProperties("AWS::Logs::LogGroup", {
+        RetentionInDays: 30,
+        LogGroupName: {
+          "Fn::Sub": "/aws/apigateway/${AWS::StackName}-proxy-api-access-logs",
         },
       });
     });
