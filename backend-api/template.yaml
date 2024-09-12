@@ -553,7 +553,7 @@ Resources:
     Properties:
       Environment:
         Variables:
-          ASYNC_BACKEND_API_URL: !Sub https://${PrivateApi.RestApiId}.execute-api.eu-west-2.amazonaws.com/${Environment}
+          PRIVATE_API_URL: !Sub https://${PrivateApi.RestApiId}.execute-api.eu-west-2.amazonaws.com/${Environment}
       FunctionName: !Sub ${AWS::StackName}-proxy-lambda
       Runtime: nodejs20.x
       Handler: proxyHandler.lambdaHandler

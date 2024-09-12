@@ -62,7 +62,7 @@ export async function lambdaHandlerConstructor(
 
   const proxyRequestService = dependencies.proxyRequestService();
   const proxyRequestResult = await proxyRequestService.makeProxyRequest({
-    backendApiUrl: configResult.value.ASYNC_BACKEND_API_URL,
+    backendApiUrl: configResult.value.PRIVATE_API_URL,
     body: event.body,
     path,
     headers: standardisedHeaders,

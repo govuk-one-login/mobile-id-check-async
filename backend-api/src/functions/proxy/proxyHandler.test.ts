@@ -18,7 +18,7 @@ describe("Mock Proxy", () => {
   let dependencies: IMockProxyDependencies;
 
   const env = {
-    ASYNC_BACKEND_API_URL: "mockUrl",
+    PRIVATE_API_URL: "mockUrl",
   };
 
   beforeEach(() => {
