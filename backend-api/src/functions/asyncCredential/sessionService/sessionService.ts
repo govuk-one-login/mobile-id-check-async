@@ -23,12 +23,14 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     subjectIdentifier: string,
     sessionTimeToLiveInMilliseconds: number,
   ): Promise<Result<string | null>> {
+    const currentTimeInMs = Date.now()
+    const sessionTtlExpiry = currentTimeInMs - sessionTimeToLiveInMilliseconds
+
     const queryCommandInput: QueryCommandInput = {
       TableName: this.tableName,
       IndexName: "subjectIdentifier",
       KeyConditionExpression: "#sub = :sub and #sessionState = :sessionState",
-      FilterExpression:
-        ":currentTimeInMs < #issuedOn + :sessionTimeToLiveInMilliseconds",
+      FilterExpression: "#issuedOn > :sessionTtlExpiry",
       ExpressionAttributeNames: {
         "#issuedOn": "issuedOn",
         "#sessionId": "sessionId",
@@ -38,11 +40,8 @@ export class SessionService implements IGetActiveSession, ICreateSession {
       ExpressionAttributeValues: {
         ":sub": { S: subjectIdentifier },
         ":sessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
-        ":currentTimeInMs": {
-          S: Date.now().toString(),
-        },
-        ":sessionTtlInMs": {
-          S: sessionTimeToLiveInMilliseconds.toString(),
+        ":sessionTtlExpiry": {
+          N: sessionTtlExpiry.toString(),
         },
       },
       ProjectionExpression: "#sessionId",
@@ -53,7 +52,8 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     let result: QueryCommandOutput;
     try {
       result = await dbClient.send(new QueryCommand(queryCommandInput));
-    } catch {
+    } catch (err) {
+      console.log("ERROR >>>", err)
       return errorResult({
         errorMessage:
           "Unexpected error when querying session table whilst checking for an active session",
