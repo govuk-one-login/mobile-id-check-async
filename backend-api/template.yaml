@@ -10,8 +10,6 @@ Parameters:
       - dev
       - build
       - staging
-      - integration
-      - production
     Default: dev
 
   CodeSigningConfigArn:
@@ -84,6 +82,18 @@ Mappings:
       PendingDeletionInDays: 30
     production:
       PendingDeletionInDays: 30
+
+  DNS:
+    dev:
+      BaseDns: review-b-async.dev.account.gov.uk
+    build:
+      BaseDns: review-b-async.build.account.gov.uk
+    staging:
+      BaseDns: review-b-async.staging.account.gov.uk
+    integration:
+      BaseDns: review-b-async.integration.account.gov.uk
+    production:
+      BaseDns: review-b-async.account.gov.uk
 
 Conditions:
   UseCodeSigning: !Not
@@ -420,7 +430,13 @@ Resources:
   ProxyApiDomainName:
     Type: AWS::ApiGateway::DomainName
     Properties:
-      DomainName: !Sub proxy-${AWS::StackName}.review-b-async.dev.account.gov.uk
+      DomainName: !Sub 
+        - proxy-${AWS::StackName}.${DNS_RECORD}
+        - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+
       EndpointConfiguration:
         Types:
           - REGIONAL
@@ -432,7 +448,12 @@ Resources:
     Type: AWS::ApiGateway::BasePathMapping
     DependsOn: ProxyApiDomainName
     Properties:
-      DomainName: !Sub proxy-${AWS::StackName}.review-b-async.dev.account.gov.uk
+      DomainName: !Sub 
+        - proxy-${AWS::StackName}.${DNS_RECORD}
+        - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
       RestApiId: !Ref ProxyApi
       Stage: !Ref ProxyApi.Stage
     Condition: ProxyApiDeployment
@@ -440,7 +461,12 @@ Resources:
   ProxyApiRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
-      Name: !Sub proxy-${AWS::StackName}.review-b-async.dev.account.gov.uk
+      Name: !Sub 
+        - proxy-${AWS::StackName}.${DNS_RECORD}
+        - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
       Type: A
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
       AliasTarget:
