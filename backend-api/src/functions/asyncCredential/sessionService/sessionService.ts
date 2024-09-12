@@ -23,13 +23,14 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     subjectIdentifier: string,
     sessionTimeToLiveInMilliseconds: number,
   ): Promise<Result<string | null>> {
-    const currentTimeInMs = Date.now()
-    const sessionTtlExpiry = currentTimeInMs - sessionTimeToLiveInMilliseconds
+    const currentTimeInMs = Date.now();
+    const sessionTtlExpiry = currentTimeInMs - sessionTimeToLiveInMilliseconds;
 
     const queryCommandInput: QueryCommandInput = {
       TableName: this.tableName,
       IndexName: "subjectIdentifier",
-      KeyConditionExpression: "#subjectIdentifier = :subjectIdentifier and #issuedOn > :sessionTtlExpiry",
+      KeyConditionExpression:
+        "#subjectIdentifier = :subjectIdentifier and #issuedOn > :sessionTtlExpiry",
       FilterExpression: "#sessionState = :sessionState",
       ExpressionAttributeNames: {
         "#issuedOn": "issuedOn",
