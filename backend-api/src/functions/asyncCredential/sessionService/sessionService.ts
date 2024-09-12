@@ -29,16 +29,16 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     const queryCommandInput: QueryCommandInput = {
       TableName: this.tableName,
       IndexName: "subjectIdentifier",
-      KeyConditionExpression: "#sub = :sub and #sessionState = :sessionState",
+      KeyConditionExpression: "#subjectIdentifier = :subjectIdentifier and #sessionState = :sessionState",
       FilterExpression: "#issuedOn > :sessionTtlExpiry",
       ExpressionAttributeNames: {
         "#issuedOn": "issuedOn",
         "#sessionId": "sessionId",
         "#sessionState": "sessionState",
-        "#sub": "sub",
+        "#subjectIdentifier": "subjectIdentifier",
       },
       ExpressionAttributeValues: {
-        ":sub": { S: subjectIdentifier },
+        ":subjectIdentifier": { S: subjectIdentifier },
         ":sessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
         ":sessionTtlExpiry": {
           N: sessionTtlExpiry.toString(),

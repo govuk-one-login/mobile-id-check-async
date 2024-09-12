@@ -339,14 +339,15 @@ Resources:
                 Action:
                   - dynamodb:PutItem
                   - dynamodb:Query
-                Resource: !GetAtt SessionsTable.Arn
+                Resource:
+                  - Fn::GetAtt: [ "SessionsTable", "Arn" ]
                 Condition:
                   ForAllValues:StringEquals:
                     dynamodb:Attributes:
                       - sessionId
                       - sessionState
                       - issuedOn
-                      - sub
+                      - subjectIdentifier
                   StringEquals:
                     dynamodb:Select: SPECIFIC_ATTRIBUTES
         - PolicyName: AsyncCredentialFunctionSecretsManagerPolicy
@@ -409,6 +410,8 @@ Resources:
           AttributeType: S
         - AttributeName: subjectIdentifier
           AttributeType: S
+        - AttributeName: "issuedOn"
+          AttributeType: S
       KeySchema:
         - AttributeName: sessionId
           KeyType: HASH
@@ -417,10 +420,12 @@ Resources:
           KeySchema:
             - AttributeName: subjectIdentifier
               KeyType: HASH
+            - AttributeName: issuedOn
+              KeyType: RANGE
           Projection:
             NonKeyAttributes:
-              - authSessionState
-              - sessionId
+              - sessionState
+              - sessionTtlExpiry
             ProjectionType: INCLUDE
       BillingMode: PAY_PER_REQUEST
       SSESpecification:
