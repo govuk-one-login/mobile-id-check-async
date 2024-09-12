@@ -412,7 +412,7 @@ Resources:
         - AttributeName: subjectIdentifier
           AttributeType: S
         - AttributeName: "issuedOn"
-          AttributeType: S
+          AttributeType: N
       KeySchema:
         - AttributeName: sessionId
           KeyType: HASH
