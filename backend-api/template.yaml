@@ -430,13 +430,12 @@ Resources:
   ProxyApiDomainName:
     Type: AWS::ApiGateway::DomainName
     Properties:
-      DomainName: !Sub 
+      DomainName: !Sub
         - proxy-${AWS::StackName}.${DNS_RECORD}
         - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
-
+            - DNS
+            - !Ref Environment
+            - BaseDns
       EndpointConfiguration:
         Types:
           - REGIONAL
@@ -448,12 +447,12 @@ Resources:
     Type: AWS::ApiGateway::BasePathMapping
     DependsOn: ProxyApiDomainName
     Properties:
-      DomainName: !Sub 
+      DomainName: !Sub
         - proxy-${AWS::StackName}.${DNS_RECORD}
         - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
+            - DNS
+            - !Ref Environment
+            - BaseDns
       RestApiId: !Ref ProxyApi
       Stage: !Ref ProxyApi.Stage
     Condition: ProxyApiDeployment
@@ -461,12 +460,12 @@ Resources:
   ProxyApiRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
-      Name: !Sub 
+      Name: !Sub
         - proxy-${AWS::StackName}.${DNS_RECORD}
         - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
+            - DNS
+            - !Ref Environment
+            - BaseDns
       Type: A
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
       AliasTarget:
