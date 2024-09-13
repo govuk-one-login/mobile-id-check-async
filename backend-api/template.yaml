@@ -337,7 +337,6 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - dynamodb:PutItem
                   - dynamodb:Query
                 Resource:
                   - Fn::GetAtt: [ "SessionsTable", "Arn" ]
@@ -354,6 +353,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - dynamodb:GetItem
+                  - dynamodb:PutItem
                 Resource: !GetAtt SessionsTable.Arn
         - PolicyName: AsyncCredentialFunctionSecretsManagerPolicy
           PolicyDocument:
