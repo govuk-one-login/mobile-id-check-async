@@ -828,7 +828,7 @@ describe("Async Credential", () => {
             "ERROR_RETRIEVING_SESSION",
           );
           expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-            errorMessage: "Unexpected error checking for existing session",
+            errorMessage: "Mock failing DB call",
           });
 
           expect(result).toStrictEqual({

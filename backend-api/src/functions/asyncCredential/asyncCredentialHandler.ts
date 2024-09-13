@@ -158,7 +158,7 @@ export async function lambdaHandlerConstructor(
   );
   if (activeSessionResult.isError) {
     logger.log("ERROR_RETRIEVING_SESSION", {
-      errorMessage: "Unexpected error checking for existing session",
+      errorMessage: activeSessionResult.value.errorMessage,
     });
     return serverError500Response;
   }
