@@ -7,9 +7,7 @@ remove_quotes() {
   echo "$1" | tr -d '"'
 }
 export PROXY_API_URL=$(remove_quotes "$CFN_ProxyApiUrl")
-echo "$PROXY_API_URL"
 export PUBLIC_API_URL=$(remove_quotes "$CFN_PublicApiUrl")
-echo "$PUBLIC_API_URL"
 
 mkdir -pv results
 
