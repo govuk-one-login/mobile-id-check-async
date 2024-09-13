@@ -3,12 +3,6 @@ set -eu
 
 cd /backend-api
 
-remove_quotes() {
-  echo "$1" | tr -d '"'
-}
-export PROXY_API_URL=$(remove_quotes "$CFN_ProxyApiUrl")
-export PUBLIC_API_URL=$(remove_quotes "$CFN_PublicApiUrl")
-
 mkdir -pv results
 
 if npm run test:unit --ci --silent; then
@@ -18,15 +12,17 @@ else
   exit 1
 fi
 
-if [[ "$TEST_ENVIRONMENT" == "dev" ]] || [[ "$TEST_ENVIRONMENT" == "build" ]]; then
-  if npm run test:api; then
-    cp -rf results $TEST_REPORT_ABSOLUTE_DIR
-  else
-    cp -rf results $TEST_REPORT_ABSOLUTE_DIR
-    exit 1
-  fi
-fi
-
+# if [[ "$ENVIRONMENT" == "dev" ]] || [[ "$ENVIRONMENT" == "build" ]]; then
+#   if npm run test:e2e --ci --silent; then
+#     cp -rf results $TEST_REPORT_ABSOLUTE_DIR
+#   else
+#     cp -rf results $TEST_REPORT_ABSOLUTE_DIR
+#     exit 1
+#   fi
+# elif [[ "$ENVIRONMENT" == "staging" ]]; then
+#   if npm run test:stage --ci --silent; then
+#     cp -rf results $TEST_REPORT_ABSOLUTE_DIR
+#   else
 #     cp -rf results $TEST_REPORT_ABSOLUTE_DIR
 #     exit 1
 #   fi

@@ -14,10 +14,10 @@ function getInstance(baseUrl: string) {
 }
 
 function getAsyncBackendPublicApiInstance() {
-  const publicApiUrl = process.env.PUBLIC_API_URL;
-  if (!publicApiUrl)
-    throw new Error("PUBLIC_API_URL needs to be defined for API tests");
-  return getInstance(publicApiUrl);
+  const publicApiInstance = process.env.SELF_PUBLIC;
+  if (!publicApiInstance)
+    throw new Error("SELF_PUBLIC needs to be defined for API tests");
+  return getInstance(publicApiInstance);
 }
 
 export const PUBLIC_API_INSTANCE = getAsyncBackendPublicApiInstance();
