@@ -30,10 +30,10 @@ export class SessionService implements IGetActiveSession, ICreateSession {
       TableName: this.tableName,
       IndexName: "subjectIdentifier",
       KeyConditionExpression:
-        "#subjectIdentifier = :subjectIdentifier and #issuedOn > :sessionTtlExpiry",
+        "#subjectIdentifier = :subjectIdentifier and #createdAt > :sessionTtlExpiry",
       FilterExpression: "#sessionState = :sessionState",
       ExpressionAttributeNames: {
-        "#issuedOn": "issuedOn",
+        "#createdAt": "createdAt",
         "#sessionId": "sessionId",
         "#sessionState": "sessionState",
         "#subjectIdentifier": "subjectIdentifier",
@@ -131,7 +131,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
       Item: {
         clientId: { S: client_id },
         govukSigninJourneyId: { S: govuk_signin_journey_id },
-        issuedOn: { N: Date.now().toString() },
+        createdAt: { N: Date.now().toString() },
         issuer: { S: issuer },
         sessionId: { S: sessionId },
         sessionState: { S: "ASYNC_AUTH_SESSION_CREATED" },
@@ -166,7 +166,7 @@ interface ISessionPutItemCommandInput {
   Item: {
     clientId: { S: string };
     govukSigninJourneyId: { S: string };
-    issuedOn: { N: string };
+    createdAt: { N: string };
     issuer: { S: string };
     redirectUri?: { S: string };
     sessionId: { S: string };

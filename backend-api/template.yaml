@@ -346,7 +346,7 @@ Resources:
                     dynamodb:Attributes:
                       - sessionId
                       - sessionState
-                      - issuedOn
+                      - createdAt
                       - subjectIdentifier
                   StringEquals:
                     dynamodb:Select: SPECIFIC_ATTRIBUTES
@@ -416,7 +416,7 @@ Resources:
           AttributeType: S
         - AttributeName: subjectIdentifier
           AttributeType: S
-        - AttributeName: "issuedOn"
+        - AttributeName: "createdAt"
           AttributeType: N
       KeySchema:
         - AttributeName: sessionId
@@ -426,7 +426,7 @@ Resources:
           KeySchema:
             - AttributeName: subjectIdentifier
               KeyType: HASH
-            - AttributeName: issuedOn
+            - AttributeName: createdAt
               KeyType: RANGE
           Projection:
             NonKeyAttributes:
