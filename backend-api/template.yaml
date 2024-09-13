@@ -416,7 +416,7 @@ Resources:
           AttributeType: S
         - AttributeName: subjectIdentifier
           AttributeType: S
-        - AttributeName: "createdAt"
+        - AttributeName: createdAt
           AttributeType: N
       KeySchema:
         - AttributeName: sessionId
