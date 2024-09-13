@@ -29,10 +29,6 @@ if [[ "$TEST_ENVIRONMENT" == "dev" ]] || [[ "$TEST_ENVIRONMENT" == "build" ]]; t
   fi
 fi
 
-# elif [[ "$TEST_ENVIRONMENT" == "staging" ]]; then
-#   if npm run test:stage --ci --silent; then
-#     cp -rf results $TEST_REPORT_ABSOLUTE_DIR
-#   else
 #     cp -rf results $TEST_REPORT_ABSOLUTE_DIR
 #     exit 1
 #   fi
