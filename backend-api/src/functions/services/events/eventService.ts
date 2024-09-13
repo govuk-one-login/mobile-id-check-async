@@ -67,9 +67,6 @@ export class EventService implements IEventService {
       component_id: eventConfig.componentId,
       timestamp: Math.floor(timestampInMillis / 1000),
       event_timestamp_ms: timestampInMillis,
-      extensions: {
-        client_id: eventConfig.clientId,
-      },
     };
   };
 }
@@ -112,14 +109,10 @@ interface CredentialTokenIssuedEvent {
   event_timestamp_ms: number;
   event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
   component_id: string;
-  extensions: {
-    client_id: string;
-  };
 }
 
 export interface CredentialTokenIssuedEventConfig {
   getNowInMilliseconds: () => number;
   componentId: string;
   eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
-  clientId: string;
 }

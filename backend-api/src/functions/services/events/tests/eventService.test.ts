@@ -89,7 +89,6 @@ describe("Event Service", () => {
             getNowInMilliseconds: () => 1609462861000,
             componentId: "mockComponentId",
             eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
-            clientId: "mockClientId",
           });
 
           expect(result.isError).toBe(true);
@@ -104,9 +103,6 @@ describe("Event Service", () => {
               component_id: "mockComponentId",
               timestamp: 1609462861,
               event_timestamp_ms: 1609462861000,
-              extensions: {
-                client_id: "mockClientId",
-              },
             }),
             QueueUrl: "mockSqsQueue",
           });
@@ -123,7 +119,6 @@ describe("Event Service", () => {
             getNowInMilliseconds: () => 1609462861000,
             componentId: "mockComponentId",
             eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
-            clientId: "mockClientId",
           });
 
           expect(result.isError).toBe(false);
@@ -135,9 +130,6 @@ describe("Event Service", () => {
               component_id: "mockComponentId",
               timestamp: 1609462861,
               event_timestamp_ms: 1609462861000,
-              extensions: {
-                client_id: "mockClientId",
-              },
             }),
             QueueUrl: "mockSqsQueue",
           });
