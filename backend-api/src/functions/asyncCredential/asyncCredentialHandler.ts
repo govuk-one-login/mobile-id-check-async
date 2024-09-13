@@ -174,7 +174,9 @@ export async function lambdaHandlerConstructor(
   });
 
   if (createSessionResult.isError) {
-    logger.log("ERROR_CREATING_SESSION");
+    logger.log("ERROR_CREATING_SESSION", {
+      errorMessage: createSessionResult.value.errorMessage,
+    });
     return serverError500Response;
   }
   const sessionId = createSessionResult.value;
