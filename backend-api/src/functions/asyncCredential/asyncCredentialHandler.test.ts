@@ -828,7 +828,7 @@ describe("Async Credential", () => {
             "ERROR_RETRIEVING_SESSION",
           );
           expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-            errorMessage: "Unexpected error checking for existing session",
+            errorMessage: "Mock failing DB call",
           });
 
           expect(result).toStrictEqual({
@@ -908,6 +908,9 @@ describe("Async Credential", () => {
           expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
             "ERROR_CREATING_SESSION",
           );
+          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+            errorMessage: "Mock error",
+          });
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 500,

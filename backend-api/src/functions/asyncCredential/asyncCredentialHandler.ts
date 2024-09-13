@@ -158,7 +158,7 @@ export async function lambdaHandlerConstructor(
   );
   if (activeSessionResult.isError) {
     logger.log("ERROR_RETRIEVING_SESSION", {
-      errorMessage: "Unexpected error checking for existing session",
+      errorMessage: activeSessionResult.value.errorMessage,
     });
     return serverError500Response;
   }
@@ -174,7 +174,9 @@ export async function lambdaHandlerConstructor(
   });
 
   if (createSessionResult.isError) {
-    logger.log("ERROR_CREATING_SESSION");
+    logger.log("ERROR_CREATING_SESSION", {
+      errorMessage: createSessionResult.value.errorMessage,
+    });
     return serverError500Response;
   }
   const sessionId = createSessionResult.value;

@@ -337,7 +337,6 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - dynamodb:PutItem
                   - dynamodb:Query
                 Resource:
                   - Fn::GetAtt: [ "SessionsTable", "Arn" ]
@@ -347,10 +346,15 @@ Resources:
                     dynamodb:Attributes:
                       - sessionId
                       - sessionState
-                      - issuedOn
+                      - createdAt
                       - subjectIdentifier
                   StringEquals:
                     dynamodb:Select: SPECIFIC_ATTRIBUTES
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                Resource: !GetAtt SessionsTable.Arn
         - PolicyName: AsyncCredentialFunctionSecretsManagerPolicy
           PolicyDocument:
             Version: "2012-10-17"
@@ -406,13 +410,13 @@ Resources:
     # checkov:skip=CKV_AWS_28:Ensure Dynamodb point in time recovery (backup) is enabled
     # checkov:skip=CKV_AWS_119:No PII in table
     Properties:
-      TableName: !Sub ${AWS::StackName}-sessions-table-${Environment}
+      TableName: !Sub ${AWS::StackName}-sessions-table-${Environment}-2
       AttributeDefinitions:
         - AttributeName: sessionId
           AttributeType: S
         - AttributeName: subjectIdentifier
           AttributeType: S
-        - AttributeName: "issuedOn"
+        - AttributeName: createdAt
           AttributeType: N
       KeySchema:
         - AttributeName: sessionId
@@ -422,7 +426,7 @@ Resources:
           KeySchema:
             - AttributeName: subjectIdentifier
               KeyType: HASH
-            - AttributeName: issuedOn
+            - AttributeName: createdAt
               KeyType: RANGE
           Projection:
             NonKeyAttributes:

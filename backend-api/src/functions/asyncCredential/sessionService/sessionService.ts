@@ -30,10 +30,10 @@ export class SessionService implements IGetActiveSession, ICreateSession {
       TableName: this.tableName,
       IndexName: "subjectIdentifier",
       KeyConditionExpression:
-        "#subjectIdentifier = :subjectIdentifier and #issuedOn > :sessionTtlExpiry",
+        "#subjectIdentifier = :subjectIdentifier and #createdAt > :sessionTtlExpiry",
       FilterExpression: "#sessionState = :sessionState",
       ExpressionAttributeNames: {
-        "#issuedOn": "issuedOn",
+        "#createdAt": "createdAt",
         "#sessionId": "sessionId",
         "#sessionState": "sessionState",
         "#subjectIdentifier": "subjectIdentifier",
@@ -68,7 +68,9 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     return successResult(result.Items[0].sessionId.S);
   }
 
-  async createSession(config: ICreateSessionConfig): Promise<Result<string>> {
+  async createSession(
+    config: ICreateSessionAttributes,
+  ): Promise<Result<string>> {
     const sessionId = randomUUID();
     const putSessionConfig = this.buildPutItemCommandInput(sessionId, config);
 
@@ -91,7 +93,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     }
 
     try {
-      await this.putSessionInDb(putSessionConfig);
+      await dbClient.send(new PutItemCommand(putSessionConfig));
     } catch {
       return errorResult({
         errorMessage:
@@ -115,28 +117,28 @@ export class SessionService implements IGetActiveSession, ICreateSession {
 
   private buildPutItemCommandInput(
     sessionId: string,
-    config: ICreateSessionConfig,
+    config: ICreateSessionAttributes,
   ) {
     const {
-      state,
-      sub,
       client_id,
       govuk_signin_journey_id,
-      redirect_uri,
       issuer,
+      redirect_uri,
+      state,
+      sub,
     } = config;
 
-    const putSessionConfig: IPutSessionConfig = {
+    const putSessionConfig: ISessionPutItemCommandInput = {
       TableName: this.tableName,
       Item: {
-        sessionId: { S: sessionId },
-        state: { S: state },
-        sub: { S: sub },
         clientId: { S: client_id },
         govukSigninJourneyId: { S: govuk_signin_journey_id },
+        createdAt: { N: Date.now().toString() },
         issuer: { S: issuer },
+        sessionId: { S: sessionId },
         sessionState: { S: "ASYNC_AUTH_SESSION_CREATED" },
-        issuedOn: { S: Date.now().toString() },
+        state: { S: state },
+        subjectIdentifier: { S: sub },
       },
     };
 
@@ -159,24 +161,20 @@ export class SessionService implements IGetActiveSession, ICreateSession {
 
     return output.Item != null;
   }
-
-  private async putSessionInDb(config: IPutSessionConfig) {
-    await dbClient.send(new PutItemCommand(config));
-  }
 }
 
-interface IPutSessionConfig {
+interface ISessionPutItemCommandInput {
   TableName: string;
   Item: {
-    sessionId: { S: string };
-    state: { S: string };
-    sub: { S: string };
     clientId: { S: string };
     govukSigninJourneyId: { S: string };
+    createdAt: { N: string };
     issuer: { S: string };
-    sessionState: { S: string };
-    issuedOn: { S: string };
     redirectUri?: { S: string };
+    sessionId: { S: string };
+    sessionState: { S: string };
+    state: { S: string };
+    subjectIdentifier: { S: string };
   };
 }
 
@@ -187,17 +185,19 @@ export interface IGetActiveSession {
   ) => Promise<Result<string | null>>;
 }
 
-interface ICreateSessionConfig {
-  state: string;
-  sub: string;
+interface ICreateSessionAttributes {
   client_id: string;
   govuk_signin_journey_id: string;
   issuer: string;
   redirect_uri?: string;
+  state: string;
+  sub: string;
 }
 
 export interface ICreateSession {
-  createSession: (config: ICreateSessionConfig) => Promise<Result<string>>;
+  createSession: (
+    attributes: ICreateSessionAttributes,
+  ) => Promise<Result<string>>;
 }
 
 type IQueryCommandOutputType = {
