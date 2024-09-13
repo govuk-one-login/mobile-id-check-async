@@ -10,6 +10,8 @@ Parameters:
       - dev
       - build
       - staging
+      - integration
+      - production
     Default: dev
 
   CodeSigningConfigArn:
@@ -30,8 +32,8 @@ Mappings:
       ApiBurstLimit: 10
       ApiRateLimit: 10
     build:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
     staging:
       ApiBurstLimit: 0
       ApiRateLimit: 0
@@ -41,7 +43,6 @@ Mappings:
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
-
   PublicApigw:
     dev:
       ApiBurstLimit: 10
@@ -58,35 +59,6 @@ Mappings:
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
-
-  ProxyApigw:
-    dev:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
-    build:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
-    staging:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
-    integration:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
-    production:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
-
-  Lambda:
-    dev:
-      ReservedConcurrentExecutions: 15
-    build:
-      ReservedConcurrentExecutions: 15
-    staging:
-      ReservedConcurrentExecutions: 0
-    integration:
-      ReservedConcurrentExecutions: 0
-    production:
-      ReservedConcurrentExecutions: 0
 
   TxMA:
     dev:
@@ -112,18 +84,6 @@ Mappings:
     production:
       PendingDeletionInDays: 30
 
-  DNS:
-    dev:
-      BaseDns: review-b-async.dev.account.gov.uk
-    build:
-      BaseDns: review-b-async.build.account.gov.uk
-    staging:
-      BaseDns: review-b-async.staging.account.gov.uk
-    integration:
-      BaseDns: review-b-async.integration.account.gov.uk
-    production:
-      BaseDns: review-b-async.account.gov.uk
-
 Conditions:
   UseCodeSigning: !Not
     - !Equals
@@ -146,22 +106,10 @@ Conditions:
       - !Ref Environment
       - production
 
-  ProxyApiDeployment: !Or
-    - !Equals
-      - !Ref Environment
-      - dev
-    - !Equals
-      - !Ref Environment
-      - build
-
 Transform: AWS::Serverless-2016-10-31
 
 Globals:
   Function:
-    ReservedConcurrentExecutions: !FindInMap
-      - Lambda
-      - !Ref Environment
-      - ReservedConcurrentExecutions
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
@@ -170,21 +118,18 @@ Globals:
       - UsePermissionsBoundary
       - !Ref PermissionsBoundary
       - !Ref AWS::NoValue
-    Architectures:
-      - arm64
     Environment:
       Variables:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
         TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
-
         # ISSUER should be updated with DNS once available
         ISSUER: mockIssuer
         SESSION_TABLE_NAME: !Ref SessionsTable
 
 Resources:
 
-  ### Private API Gateway for Client Credentials grant flow
-  PrivateApi:
+  ### Private APIgw
+  BackendAsyncCredentialPrivateApi:
     Type: AWS::Serverless::Api
     Properties:
       Name: !Sub ${AWS::StackName}-private-api
@@ -241,9 +186,17 @@ Resources:
         EntryPoints:
           - src/functions/asyncToken/asyncTokenHandler.ts
     Properties:
+      AutoPublishAlias: live
       FunctionName: !Sub ${AWS::StackName}-token
       Runtime: nodejs20.x
       Handler: asyncTokenHandler.lambdaHandler
+      Events:
+        AsyncToken:
+          Type: Api
+          Properties:
+            Path: /async/token
+            Method: post
+            RestApiId: !Ref BackendAsyncCredentialPrivateApi
       Role: !GetAtt AsyncTokenLambdaRole.Arn
       Environment:
         Variables:
@@ -254,9 +207,9 @@ Resources:
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt AsyncTokenFunction.Arn
-      Principal: apigateway.amazonaws.com
+      Principal: events.amazonaws.com
       SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApi}/*/*/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialPrivateApi}/*/*/*
 
   AsyncTokenLogGroup:
     Type: AWS::Logs::LogGroup
@@ -344,6 +297,13 @@ Resources:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
           SESSION_TTL_IN_MILLISECONDS: 3600000 #Used to set time to live when creating sessions. Set to 1 day.
+      Events:
+        AsyncCredential:
+          Type: Api
+          Properties:
+            Path: /async/credential
+            Method: post
+            RestApiId: !Ref BackendAsyncCredentialPrivateApi
 
   AsyncCredentialLogGroup:
     Type: AWS::Logs::LogGroup
@@ -356,9 +316,9 @@ Resources:
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt AsyncCredentialFunction.Arn
-      Principal: apigateway.amazonaws.com
+      Principal: events.amazonaws.com
       SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApi}/*/*/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialPrivateApi}/*/*/*
 
   AsyncCredentialLambdaRole:
     Type: AWS::IAM::Role
@@ -436,198 +396,12 @@ Resources:
                   - kms:Decrypt
                   - kms:GenerateDataKey
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
-
                 # TxMA Audit service
       RoleName: !Sub ${AWS::StackName}-credential-lambda
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
-
-  ### Regional APIgw to enable testing of the Private APIgw in lower environments. This acts as a proxy to the private APIgw under test.
-  ProxyApi:
-    Type: AWS::Serverless::Api
-    Properties:
-      Name: !Sub ${AWS::StackName}-proxy-api
-      Description: Regional equivalent of the private Api to enable testing from outside AWS
-      EndpointConfiguration: REGIONAL
-      StageName: !Ref Environment
-      DefinitionBody:
-        Fn::Transform:
-          Name: AWS::Include
-          Parameters:
-            Location: ./openApiSpecs/async-proxy-private-spec.yaml # This is generated automatically in Github Actions
-      MethodSettings:
-        - LoggingLevel: INFO
-          HttpMethod: '*'
-          ResourcePath: /*
-          MetricsEnabled: true
-          ThrottlingBurstLimit: !FindInMap
-            - ProxyApigw
-            - !Ref Environment
-            - ApiBurstLimit
-          ThrottlingRateLimit: !FindInMap
-            - ProxyApigw
-            - !Ref Environment
-            - ApiRateLimit
-      AccessLogSetting:
-        DestinationArn: !GetAtt ProxyApiAccessLogs.Arn
-        Format: '{"requestId" : "$context.requestId","ip" : "$context.identity.sourceIp","requestTime" : "$context.requestTime","httpMethod" : "$context.httpMethod","path" : "$context.path","routeKey" : "$context.routeKey","status" : "$context.status","protocol" : "$context.protocol","responseLength" : "$context.responseLength","integrationError" : "$context.integrationErrorMessage"}'
-      Auth:
-        DefaultAuthorizer: AWS_IAM
-        ApiKeyRequired: false
-    Condition: ProxyApiDeployment
-
-  ProxyApiAccessLogs:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-proxy-api-access-logs
-      RetentionInDays: 30
-    Condition: ProxyApiDeployment
-
-  ProxyApiDomainName:
-    Type: AWS::ApiGateway::DomainName
-    Properties:
-      DomainName: !Sub
-        - proxy-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
-      EndpointConfiguration:
-        Types:
-          - REGIONAL
-      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN}}'
-      SecurityPolicy: TLS_1_2
-    Condition: ProxyApiDeployment
-
-  ProxyApiBasePathMapping:
-    Type: AWS::ApiGateway::BasePathMapping
-    DependsOn: ProxyApiDomainName
-    Properties:
-      DomainName: !Sub
-        - proxy-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
-      RestApiId: !Ref ProxyApi
-      Stage: !Ref ProxyApi.Stage
-    Condition: ProxyApiDeployment
-
-  ProxyApiRecordSet:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      Name: !Sub
-        - proxy-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
-      Type: A
-      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
-      AliasTarget:
-        DNSName: !GetAtt ProxyApiDomainName.RegionalDomainName
-        HostedZoneId: !GetAtt ProxyApiDomainName.RegionalHostedZoneId
-    Condition: ProxyApiDeployment
-
-  ProxyLambdaSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: !Sub ${AWS::StackName}-proxy-sg
-      GroupDescription: Lambda Security group ruleset.
-      SecurityGroupEgress:
-        - CidrIp: !ImportValue devplatform-vpc-VpcCidr
-          Description: TCP HTTPS outbound to vpc.
-          FromPort: 443
-          IpProtocol: tcp
-          ToPort: 443
-      VpcId: !ImportValue devplatform-vpc-VpcId
-    Condition: ProxyApiDeployment
-
-  ProxyLambdaPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt ProxyLambda.Arn
-      Principal: apigateway.amazonaws.com
-      SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ProxyApi}/*/*/*
-    Condition: ProxyApiDeployment
-
-  ProxyLambda:
-    Type: AWS::Serverless::Function
-    DependsOn:
-      - ProxyLambdaLogGroup
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: es2022
-        Sourcemap: false
-        EntryPoints:
-          - src/functions/proxy/proxyHandler.ts
-    Properties:
-      Environment:
-        Variables:
-          PRIVATE_API_URL: !Sub https://${PrivateApi.RestApiId}.execute-api.eu-west-2.amazonaws.com/${Environment}
-      FunctionName: !Sub ${AWS::StackName}-proxy-lambda
-      Runtime: nodejs20.x
-      Handler: proxyHandler.lambdaHandler
-      Role: !GetAtt ProxyLambdaRole.Arn
-      VpcConfig:
-        SubnetIds:
-          - !ImportValue devplatform-vpc-PrivateSubnetIdA
-          - !ImportValue devplatform-vpc-PrivateSubnetIdB
-          - !ImportValue devplatform-vpc-PrivateSubnetIdC
-        SecurityGroupIds:
-          - !Ref ProxyLambdaSecurityGroup
-    Condition: ProxyApiDeployment
-
-  ProxyLambdaLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-proxy-lambda
-    Condition: ProxyApiDeployment
-
-  ProxyLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub ${AWS::StackName}-proxy-lambda-role
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: ProxyFunctionLoggingPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: !GetAtt ProxyLambdaLogGroup.Arn
-        - PolicyName: ENIPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ec2:DescribeNetworkInterfaces
-                  - ec2:CreateNetworkInterface
-                  - ec2:DeleteNetworkInterface
-                Resource: '*'
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-    Condition: ProxyApiDeployment
 
   SessionsTable:
     Type: AWS::DynamoDB::Table
@@ -771,7 +545,6 @@ Resources:
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
-
   # ------------------------------ #
   TxMASQSQueue:
     Type: AWS::SQS::Queue
@@ -940,7 +713,7 @@ Resources:
     Properties:
       Bucket: !Ref JsonWebKeysBucket
       PolicyDocument:
-        Version: "2012-10-17"
+        Version: 2012-10-17
         Statement:
           - Effect: Deny
             Principal:
@@ -951,7 +724,7 @@ Resources:
               - bucketName: !Ref JsonWebKeysBucket
             Condition:
               Bool:
-                aws:SecureTransport: false
+                "aws:SecureTransport": false
 
   JsonWebKeysBucketAccessLogs:
     Type: AWS::S3::Bucket
@@ -977,7 +750,7 @@ Resources:
     Properties:
       Bucket: !Ref JsonWebKeysBucketAccessLogs
       PolicyDocument:
-        Version: "2012-10-17"
+        Version: 2012-10-17
         Statement:
           - Action: '*'
             Condition:
@@ -1011,7 +784,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: es2020
+        Target: "es2020"
         Sourcemap: false
         EntryPoints:
           - src/functions/jwks/jwksHandler.ts
@@ -1042,7 +815,7 @@ Resources:
       Policies:
         - PolicyName: UploadPolicy
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
@@ -1060,7 +833,7 @@ Resources:
                 Resource: !GetAtt KMSEncryptionKey.Arn
         - PolicyName: LoggingPolicy
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
@@ -1077,7 +850,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-jwks
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-jwks"
 
   JsonWebKeysCustomResource:
     Type: AWS::CloudFormation::CustomResource
@@ -1095,11 +868,11 @@ Resources:
             Effect: Allow
             Principal:
               Service: apigateway.amazonaws.com
-        Version: "2012-10-17"
+        Version: 2012-10-17
       Policies:
         - PolicyName: JsonWebKeysBucketPolicy
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
@@ -1112,15 +885,6 @@ Resources:
         - !Ref AWS::NoValue
 
 Outputs:
-  PublicApiUrl:
+  PublicAPIGWBaseURL:
     Description: Public API Gateway base URL
     Value: !Sub https://${BackendAsyncCredentialPublicApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/
-
-  ProxyApiUrl:
-    Description: Proxy API Gateway Pretty DNS
-    Value: !Sub
-      - https://proxy-${AWS::StackName}.${DNS_RECORD}
-      - DNS_RECORD: !FindInMap
-          - DNS
-          - !Ref Environment
-          - BaseDns

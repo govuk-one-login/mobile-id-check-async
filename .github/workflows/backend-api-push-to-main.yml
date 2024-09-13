@@ -181,10 +181,6 @@ jobs:
         run: |
           cosign sign --key awskms:///$BUILD_CONTAINER_SIGN_KMS_KEY $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
 
-      - name: Generate proxy Open API spec
-        run: |
-          npm run generate-proxy-open-api
-
       - name: Sam validate and lint
         run: |
           echo "SAM_CLI_TELEMETRY=0" >> $GITHUB_ENV
