@@ -42,7 +42,7 @@ describe("Async Token", () => {
   beforeEach(() => {
     // Header decodes to base64encoded mockClientId:mockClientSecret
     request = buildTokenHandlerRequest({
-      body: JSON.stringify({ grant_type: "client_credentials" }),
+      body: "grant_type=client_credentials",
       authorizationHeader: validAuthorizationHeader,
     });
     mockLogger = new MockLoggingAdapter();
