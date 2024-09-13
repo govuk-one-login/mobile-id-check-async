@@ -73,7 +73,7 @@ jobs:
   #       docker build -t $STS_MOCK_DEV_TEST_IMAGE_REPOSITORY_URI:$IMAGE_TAG . 
 
   #   - name: Configure AWS credentials for DEV
-  #     uses: aws-actions/configure-aws-credentials@1ceaabc2d4208b18ff52a76e80c3a28df83f0277 #main
+  #     uses: aws-actions/configure-aws-credentials@bd1354327e55c2330d56537b3ac2006a8d97c566 #main
   #     with:
   #       aws-region: eu-west-2
   #       role-to-assume: ${{ secrets.STS_MOCK_DEV_GH_ACTIONS_ROLE_ARN }}
@@ -123,7 +123,7 @@ jobs:
           version: 1.123.0
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@1ceaabc2d4208b18ff52a76e80c3a28df83f0277 #main
+        uses: aws-actions/configure-aws-credentials@bd1354327e55c2330d56537b3ac2006a8d97c566 #main
         with:
           aws-region: eu-west-2
           role-to-assume: ${{ secrets.STS_MOCK_DEV_GH_ACTIONS_ROLE_ARN }}
@@ -169,7 +169,7 @@ jobs:
   #       docker build -t $STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI:$IMAGE_TAG . 
 
   #   - name: Configure AWS credentials for BUILD
-  #     uses: aws-actions/configure-aws-credentials@1ceaabc2d4208b18ff52a76e80c3a28df83f0277 #main
+  #     uses: aws-actions/configure-aws-credentials@bd1354327e55c2330d56537b3ac2006a8d97c566 #main
   #     with:
   #       aws-region: eu-west-2
   #       role-to-assume: ${{ secrets.STS_MOCK_BUILD_GH_ACTIONS_ROLE_ARN }}
@@ -219,7 +219,7 @@ jobs:
           version: 1.123.0
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@1ceaabc2d4208b18ff52a76e80c3a28df83f0277 #main
+        uses: aws-actions/configure-aws-credentials@bd1354327e55c2330d56537b3ac2006a8d97c566 #main
         with:
           aws-region: eu-west-2
           role-to-assume: ${{ secrets.STS_MOCK_BUILD_GH_ACTIONS_ROLE_ARN }}
