@@ -547,7 +547,7 @@ Resources:
       BuildProperties:
         Minify: true
         Target: es2022
-        Sourcemap: true
+        Sourcemap: false
         EntryPoints:
           - src/functions/proxy/proxyHandler.ts
     Properties:
