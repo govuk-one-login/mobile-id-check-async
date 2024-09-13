@@ -68,7 +68,9 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     return successResult(result.Items[0].sessionId.S);
   }
 
-  async createSession(config: ICreateSessionAttributes): Promise<Result<string>> {
+  async createSession(
+    config: ICreateSessionAttributes,
+  ): Promise<Result<string>> {
     const sessionId = randomUUID();
     const putSessionConfig = this.buildPutItemCommandInput(sessionId, config);
 
@@ -193,7 +195,9 @@ interface ICreateSessionAttributes {
 }
 
 export interface ICreateSession {
-  createSession: (attributes: ICreateSessionAttributes) => Promise<Result<string>>;
+  createSession: (
+    attributes: ICreateSessionAttributes,
+  ) => Promise<Result<string>>;
 }
 
 type IQueryCommandOutputType = {
