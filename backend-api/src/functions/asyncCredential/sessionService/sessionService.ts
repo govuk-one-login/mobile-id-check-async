@@ -23,26 +23,26 @@ export class SessionService implements IGetActiveSession, ICreateSession {
     subjectIdentifier: string,
     sessionTimeToLiveInMilliseconds: number,
   ): Promise<Result<string | null>> {
+    const currentTimeInMs = Date.now();
+    const sessionTtlExpiry = currentTimeInMs - sessionTimeToLiveInMilliseconds;
+
     const queryCommandInput: QueryCommandInput = {
       TableName: this.tableName,
       IndexName: "subjectIdentifier",
-      KeyConditionExpression: "#sub = :sub and #sessionState = :sessionState",
-      FilterExpression:
-        ":currentTimeInMs < #issuedOn + :sessionTimeToLiveInMilliseconds",
+      KeyConditionExpression:
+        "#subjectIdentifier = :subjectIdentifier and #issuedOn > :sessionTtlExpiry",
+      FilterExpression: "#sessionState = :sessionState",
       ExpressionAttributeNames: {
         "#issuedOn": "issuedOn",
         "#sessionId": "sessionId",
         "#sessionState": "sessionState",
-        "#sub": "sub",
+        "#subjectIdentifier": "subjectIdentifier",
       },
       ExpressionAttributeValues: {
-        ":sub": { S: subjectIdentifier },
+        ":subjectIdentifier": { S: subjectIdentifier },
         ":sessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
-        ":currentTimeInMs": {
-          S: Date.now().toString(),
-        },
-        ":sessionTtlInMs": {
-          S: sessionTimeToLiveInMilliseconds.toString(),
+        ":sessionTtlExpiry": {
+          N: sessionTtlExpiry.toString(),
         },
       },
       ProjectionExpression: "#sessionId",
