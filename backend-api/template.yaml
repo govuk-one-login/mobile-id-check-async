@@ -170,6 +170,8 @@ Globals:
       - UsePermissionsBoundary
       - !Ref PermissionsBoundary
       - !Ref AWS::NoValue
+    Architectures:
+      - arm64
     Environment:
       Variables:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
@@ -558,8 +560,6 @@ Resources:
       Runtime: nodejs20.x
       Handler: proxyHandler.lambdaHandler
       Role: !GetAtt ProxyLambdaRole.Arn
-      Architectures:
-        - arm64
       VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-PrivateSubnetIdA
