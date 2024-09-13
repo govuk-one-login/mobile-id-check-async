@@ -32,12 +32,6 @@ export class Mappings {
   }) {
     this.validateMapping({ ...args, mappingTopLevelKey: "PublicApigw" });
   }
-  validateProxyAPIMapping(args: {
-    environmentFlags: EnvironmentFlags;
-    mappingBottomLevelKey: string;
-  }) {
-    this.validateMapping({ ...args, mappingTopLevelKey: "ProxyApigw" });
-  }
   validateKMSMapping(args: {
     environmentFlags: EnvironmentFlags;
     mappingBottomLevelKey: string;
