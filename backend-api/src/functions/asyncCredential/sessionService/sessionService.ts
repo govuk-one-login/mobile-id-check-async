@@ -131,12 +131,12 @@ export class SessionService implements IGetActiveSession, ICreateSession {
       Item: {
         sessionId: { S: sessionId },
         state: { S: state },
-        sub: { S: sub },
+        subjectIdentifier: { S: sub },
         clientId: { S: client_id },
         govukSigninJourneyId: { S: govuk_signin_journey_id },
         issuer: { S: issuer },
         sessionState: { S: "ASYNC_AUTH_SESSION_CREATED" },
-        issuedOn: { S: Date.now().toString() },
+        issuedOn: { N: Date.now().toString() },
       },
     };
 
@@ -170,12 +170,12 @@ interface IPutSessionConfig {
   Item: {
     sessionId: { S: string };
     state: { S: string };
-    sub: { S: string };
+    subjectIdentifier: { S: string };
     clientId: { S: string };
     govukSigninJourneyId: { S: string };
     issuer: { S: string };
     sessionState: { S: string };
-    issuedOn: { S: string };
+    issuedOn: { N: string };
     redirectUri?: { S: string };
   };
 }
