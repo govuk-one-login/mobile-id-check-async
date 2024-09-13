@@ -103,7 +103,6 @@ export async function lambdaHandlerConstructor(
     componentId: config.ISSUER,
     getNowInMilliseconds: Date.now,
     eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
-    clientId: clientCredentials.clientId,
   });
   if (writeEventResult.isError) {
     logger.log("ERROR_WRITING_AUDIT_EVENT", {
