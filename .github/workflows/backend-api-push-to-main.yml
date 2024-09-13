@@ -86,9 +86,6 @@ jobs:
         use-installer: true
         version: 1.123.0
 
-    - name: Install dependencies
-      run: npm install
-
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@1ceaabc2d4208b18ff52a76e80c3a28df83f0277 #main
       with:
@@ -109,10 +106,6 @@ jobs:
     - name: Sign the image
       run: |
         cosign sign --key awskms:///$DEV_CONTAINER_SIGN_KMS_KEY $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
-
-    - name: Generate proxy Open API spec
-      run: |
-        npm run generate-proxy-open-api
 
     - name: SAM validate and lint
       run: |
@@ -167,9 +160,6 @@ jobs:
           use-installer: true
           version: 1.123.0
 
-      - name: Install dependencies
-        run: npm install
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@1ceaabc2d4208b18ff52a76e80c3a28df83f0277 #main
         with:
@@ -190,10 +180,6 @@ jobs:
       - name: Sign the image
         run: |
           cosign sign --key awskms:///$BUILD_CONTAINER_SIGN_KMS_KEY $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
-
-      - name: Generate proxy Open API spec
-        run: |
-          npm run generate-proxy-open-api
 
       - name: Sam validate and lint
         run: |
