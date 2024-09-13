@@ -58,7 +58,7 @@ export class RequestService implements IRequestService {
     }
     const searchParams = new URLSearchParams(body);
 
-    const grantType = searchParams.get('grant_type')
+    const grantType = searchParams.get("grant_type");
     if (!grantType) {
       return errorResult({
         errorMessage: "Missing grant_type",
