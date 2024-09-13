@@ -21,5 +21,3 @@ docker-vars.env
 
 # .env generated for local API testing
 .env
-
-async-proxy-private-spec.yaml
