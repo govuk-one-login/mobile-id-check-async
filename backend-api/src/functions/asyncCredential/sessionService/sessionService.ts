@@ -128,6 +128,8 @@ export class SessionService implements IGetActiveSession, ICreateSession {
       sub,
     } = config;
 
+    const timeToLive = Date.now() + 3600000
+
     const putSessionConfig: ISessionPutItemCommandInput = {
       TableName: this.tableName,
       Item: {
@@ -139,6 +141,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
         sessionState: { S: "ASYNC_AUTH_SESSION_CREATED" },
         state: { S: state },
         subjectIdentifier: { S: sub },
+        timeToLive: { N: timeToLive.toString() }
       },
     };
 
@@ -175,6 +178,7 @@ interface ISessionPutItemCommandInput {
     sessionState: { S: string };
     state: { S: string };
     subjectIdentifier: { S: string };
+    timeToLive: { N: string }
   };
 }
 
