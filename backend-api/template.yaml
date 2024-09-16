@@ -296,7 +296,7 @@ Resources:
       Environment:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
-          SESSION_TTL_IN_MILLISECONDS: 3600000 #Used to set time to live when creating sessions. Set to 1 day.
+          SESSION_DURATION_IN_MILLISECONDS: 3600000 #Used to set time to live when creating sessions. Set to 1 hour.
       Events:
         AsyncCredential:
           Type: Api
@@ -340,14 +340,14 @@ Resources:
                   - dynamodb:Query
                 Resource:
                   - Fn::GetAtt: [ "SessionsTable", "Arn" ]
-                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier
+                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-timeToLive-index
                 Condition:
                   ForAllValues:StringEquals:
                     dynamodb:Attributes:
                       - sessionId
                       - sessionState
-                      - createdAt
                       - subjectIdentifier
+                      - timeToLive
                   StringEquals:
                     dynamodb:Select: SPECIFIC_ATTRIBUTES
               - Effect: Allow
@@ -410,28 +410,27 @@ Resources:
     # checkov:skip=CKV_AWS_28:Ensure Dynamodb point in time recovery (backup) is enabled
     # checkov:skip=CKV_AWS_119:No PII in table
     Properties:
-      TableName: !Sub ${AWS::StackName}-sessions-table-${Environment}-2
+      TableName: !Sub ${AWS::StackName}-sessions-table-${Environment}
       AttributeDefinitions:
         - AttributeName: sessionId
           AttributeType: S
         - AttributeName: subjectIdentifier
           AttributeType: S
-        - AttributeName: createdAt
+        - AttributeName: timeToLive
           AttributeType: N
       KeySchema:
         - AttributeName: sessionId
           KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: subjectIdentifier
+        - IndexName: subjectIdentifier-timeToLive-index
           KeySchema:
             - AttributeName: subjectIdentifier
               KeyType: HASH
-            - AttributeName: createdAt
+            - AttributeName: timeToLive
               KeyType: RANGE
           Projection:
             NonKeyAttributes:
               - sessionState
-              - sessionTtlExpiry
             ProjectionType: INCLUDE
       BillingMode: PAY_PER_REQUEST
       SSESpecification:
