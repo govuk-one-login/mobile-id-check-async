@@ -26,7 +26,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
 
     const queryCommandInput: QueryCommandInput = {
       TableName: this.tableName,
-      IndexName: "subjectIdentifier",
+      IndexName: "subjectIdentifier-timeToLive-index",
       KeyConditionExpression:
         "#subjectIdentifier = :subjectIdentifier and :currentTimeInMs < #timeToLive",
       FilterExpression: "#sessionState = :sessionState",

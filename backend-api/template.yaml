@@ -410,7 +410,7 @@ Resources:
     # checkov:skip=CKV_AWS_28:Ensure Dynamodb point in time recovery (backup) is enabled
     # checkov:skip=CKV_AWS_119:No PII in table
     Properties:
-      TableName: !Sub ${AWS::StackName}-sessions-table-${Environment}-2
+      TableName: !Sub ${AWS::StackName}-sessions-table-${Environment}
       AttributeDefinitions:
         - AttributeName: sessionId
           AttributeType: S
@@ -422,7 +422,7 @@ Resources:
         - AttributeName: sessionId
           KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: subjectIdentifier
+        - IndexName: subjectIdentifier-timeToLive-index
           KeySchema:
             - AttributeName: subjectIdentifier
               KeyType: HASH
