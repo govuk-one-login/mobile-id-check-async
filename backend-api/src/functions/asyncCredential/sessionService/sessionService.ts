@@ -119,7 +119,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
   private buildPutItemCommandInput(
     sessionId: string,
     attributes: ICreateSessionAttributes,
-  ) {
+  ): ISessionPutItemCommandInput {
     const {
       client_id,
       govuk_signin_journey_id,
