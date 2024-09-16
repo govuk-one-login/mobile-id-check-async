@@ -120,8 +120,8 @@ describe("Session Service", () => {
             govuk_signin_journey_id: "mockJourneyId",
             redirect_uri: "https://mockRedirectUri.com",
             issuer: "mockIssuer",
+            sessionDurationInMilliseconds: 12345,
           },
-          12345,
         );
 
         expect(result.isError).toBe(true);
@@ -148,10 +148,10 @@ describe("Session Service", () => {
             sub: "mockSub",
             client_id: "mockClientId",
             govuk_signin_journey_id: "mockJourneyId",
+            sessionDurationInMilliseconds: 12345,
             redirect_uri: "https://mockRedirectUri.com",
             issuer: "mockIssuer",
           },
-          12345,
         );
 
         expect(result.isError).toBe(true);
@@ -174,10 +174,10 @@ describe("Session Service", () => {
             sub: "mockSub",
             client_id: "mockClientId",
             govuk_signin_journey_id: "mockJourneyId",
+            sessionDurationInMilliseconds: 12345,
             redirect_uri: "https://mockRedirectUri.com",
             issuer: "mockIssuer",
           },
-          12345,
         );
 
         expect(result.isError).toBe(true);
@@ -203,8 +203,8 @@ describe("Session Service", () => {
               client_id: "mockClientId",
               govuk_signin_journey_id: "mockJourneyId",
               issuer: "mockIssuer",
+              sessionDurationInMilliseconds: 12345,
             },
-            12345,
           );
 
           expect(result.isError).toBe(false);
@@ -226,8 +226,8 @@ describe("Session Service", () => {
               govuk_signin_journey_id: "mockJourneyId",
               redirect_uri: "https://mockRedirectUri.com",
               issuer: "mockIssuer",
+              sessionDurationInMilliseconds: 12345,
             },
-            12345,
           );
 
           expect(result.isError).toBe(false);

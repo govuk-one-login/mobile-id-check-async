@@ -171,8 +171,8 @@ export async function lambdaHandlerConstructor(
     {
       ...requestBody,
       issuer: jwtPayload.iss,
+      sessionDurationInMilliseconds: config.SESSION_DURATION_IN_MILLISECONDS
     },
-    config.SESSION_DURATION_IN_MILLISECONDS,
   );
 
   if (createSessionResult.isError) {

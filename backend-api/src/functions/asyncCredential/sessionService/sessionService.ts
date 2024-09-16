@@ -67,14 +67,12 @@ export class SessionService implements IGetActiveSession, ICreateSession {
   }
 
   async createSession(
-    config: ICreateSessionAttributes,
-    sessionDurationInMilliseconds: number,
+    attributes: ICreateSessionAttributes,
   ): Promise<Result<string>> {
     const sessionId = randomUUID();
     const putSessionConfig = this.buildPutItemCommandInput(
       sessionId,
-      config,
-      sessionDurationInMilliseconds,
+      attributes,
     );
 
     let doesSessionExist;
@@ -121,13 +119,13 @@ export class SessionService implements IGetActiveSession, ICreateSession {
   private buildPutItemCommandInput(
     sessionId: string,
     attributes: ICreateSessionAttributes,
-    sessionDurationInMilliseconds: number,
   ) {
     const {
       client_id,
       govuk_signin_journey_id,
       issuer,
       redirect_uri,
+      sessionDurationInMilliseconds,
       state,
       sub,
     } = attributes;
@@ -197,6 +195,7 @@ interface ICreateSessionAttributes {
   govuk_signin_journey_id: string;
   issuer: string;
   redirect_uri?: string;
+  sessionDurationInMilliseconds: number,
   state: string;
   sub: string;
 }
@@ -204,7 +203,6 @@ interface ICreateSessionAttributes {
 export interface ICreateSession {
   createSession: (
     attributes: ICreateSessionAttributes,
-    sessionDurationInMilliseconds: number,
   ) => Promise<Result<string>>;
 }
 
