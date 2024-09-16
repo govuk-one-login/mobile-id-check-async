@@ -195,7 +195,7 @@ interface ICreateSessionAttributes {
   govuk_signin_journey_id: string;
   issuer: string;
   redirect_uri?: string;
-  sessionDurationInMilliseconds: number,
+  sessionDurationInMilliseconds: number;
   state: string;
   sub: string;
 }
