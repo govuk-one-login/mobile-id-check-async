@@ -100,7 +100,8 @@ describe("Async Credential", () => {
           "ENVIRONMENT_VARIABLE_MISSING",
         );
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-          errorMessage: "SESSION_DURATION_IN_MILLISECONDS is not a valid number",
+          errorMessage:
+            "SESSION_DURATION_IN_MILLISECONDS is not a valid number",
         });
 
         expect(result).toStrictEqual({
