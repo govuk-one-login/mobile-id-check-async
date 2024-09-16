@@ -56,15 +56,16 @@ export class RequestService implements IRequestService {
         errorCategory: "CLIENT_ERROR",
       });
     }
+    const searchParams = new URLSearchParams(body);
 
-    const { grant_type } = JSON.parse(body);
-    if (!grant_type) {
+    const grantType = searchParams.get("grant_type");
+    if (!grantType) {
       return errorResult({
         errorMessage: "Missing grant_type",
         errorCategory: "CLIENT_ERROR",
       });
     }
-    if (grant_type !== "client_credentials") {
+    if (grantType !== "client_credentials") {
       return errorResult({
         errorMessage: "Invalid grant_type",
         errorCategory: "CLIENT_ERROR",
