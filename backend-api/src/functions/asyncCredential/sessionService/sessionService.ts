@@ -68,13 +68,13 @@ export class SessionService implements IGetActiveSession, ICreateSession {
 
   async createSession(
     config: ICreateSessionAttributes,
-    sessionTimeToLiveInMilliseconds: number,
+    sessionDurationInMilliseconds: number,
   ): Promise<Result<string>> {
     const sessionId = randomUUID();
     const putSessionConfig = this.buildPutItemCommandInput(
       sessionId,
       config,
-      sessionTimeToLiveInMilliseconds,
+      sessionDurationInMilliseconds,
     );
 
     let doesSessionExist;
