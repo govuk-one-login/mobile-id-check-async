@@ -168,10 +168,13 @@ export async function lambdaHandlerConstructor(
     return activeSessionFoundResponse(requestBody.sub);
   }
 
-  const createSessionResult = await sessionService.createSession({
-    ...requestBody,
-    issuer: jwtPayload.iss,
-  });
+  const createSessionResult = await sessionService.createSession(
+    {
+      ...requestBody,
+      issuer: jwtPayload.iss,
+    },
+    config.SESSION_TTL_IN_MILLISECONDS,
+  );
 
   if (createSessionResult.isError) {
     logger.log("ERROR_CREATING_SESSION", {

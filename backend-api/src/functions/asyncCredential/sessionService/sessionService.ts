@@ -70,9 +70,14 @@ export class SessionService implements IGetActiveSession, ICreateSession {
 
   async createSession(
     config: ICreateSessionAttributes,
+    sessionTimeToLiveInMilliseconds: number,
   ): Promise<Result<string>> {
     const sessionId = randomUUID();
-    const putSessionConfig = this.buildPutItemCommandInput(sessionId, config);
+    const putSessionConfig = this.buildPutItemCommandInput(
+      sessionId,
+      config,
+      sessionTimeToLiveInMilliseconds,
+    );
 
     let doesSessionExist;
     try {
@@ -117,7 +122,8 @@ export class SessionService implements IGetActiveSession, ICreateSession {
 
   private buildPutItemCommandInput(
     sessionId: string,
-    config: ICreateSessionAttributes,
+    attributes: ICreateSessionAttributes,
+    sessionTimeToLiveInMilliseconds: number,
   ) {
     const {
       client_id,
@@ -126,9 +132,9 @@ export class SessionService implements IGetActiveSession, ICreateSession {
       redirect_uri,
       state,
       sub,
-    } = config;
+    } = attributes;
 
-    const timeToLive = Date.now() + 3600000
+    const timeToLive = Date.now() + sessionTimeToLiveInMilliseconds;
 
     const putSessionConfig: ISessionPutItemCommandInput = {
       TableName: this.tableName,
@@ -141,7 +147,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
         sessionState: { S: "ASYNC_AUTH_SESSION_CREATED" },
         state: { S: state },
         subjectIdentifier: { S: sub },
-        timeToLive: { N: timeToLive.toString() }
+        timeToLive: { N: timeToLive.toString() },
       },
     };
 
@@ -178,7 +184,7 @@ interface ISessionPutItemCommandInput {
     sessionState: { S: string };
     state: { S: string };
     subjectIdentifier: { S: string };
-    timeToLive: { N: string }
+    timeToLive: { N: string };
   };
 }
 
@@ -201,6 +207,7 @@ interface ICreateSessionAttributes {
 export interface ICreateSession {
   createSession: (
     attributes: ICreateSessionAttributes,
+    sessionTimeToLiveInMilliseconds: number,
   ) => Promise<Result<string>>;
 }
 
