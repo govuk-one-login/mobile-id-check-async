@@ -21,19 +21,17 @@ export class SessionService implements IGetActiveSession, ICreateSession {
 
   async getActiveSession(
     subjectIdentifier: string,
-    sessionTimeToLiveInMilliseconds: number,
   ): Promise<Result<string | null>> {
     const currentTimeInMs = Date.now();
-    const sessionTtlExpiry = currentTimeInMs - sessionTimeToLiveInMilliseconds;
 
     const queryCommandInput: QueryCommandInput = {
       TableName: this.tableName,
-      IndexName: "subjectIdentifier",
+      IndexName: "subjectIdentifier-timeToLive-index",
       KeyConditionExpression:
-        "#subjectIdentifier = :subjectIdentifier and #createdAt > :sessionTtlExpiry",
+        "#subjectIdentifier = :subjectIdentifier and :currentTimeInMs < #timeToLive",
       FilterExpression: "#sessionState = :sessionState",
       ExpressionAttributeNames: {
-        "#createdAt": "createdAt",
+        "#timeToLive": "timeToLive",
         "#sessionId": "sessionId",
         "#sessionState": "sessionState",
         "#subjectIdentifier": "subjectIdentifier",
@@ -41,8 +39,8 @@ export class SessionService implements IGetActiveSession, ICreateSession {
       ExpressionAttributeValues: {
         ":subjectIdentifier": { S: subjectIdentifier },
         ":sessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
-        ":sessionTtlExpiry": {
-          N: sessionTtlExpiry.toString(),
+        ":currentTimeInMs": {
+          N: currentTimeInMs.toString(),
         },
       },
       ProjectionExpression: "#sessionId",
@@ -69,10 +67,13 @@ export class SessionService implements IGetActiveSession, ICreateSession {
   }
 
   async createSession(
-    config: ICreateSessionAttributes,
+    attributes: ICreateSessionAttributes,
   ): Promise<Result<string>> {
     const sessionId = randomUUID();
-    const putSessionConfig = this.buildPutItemCommandInput(sessionId, config);
+    const putSessionConfig = this.buildPutItemCommandInput(
+      sessionId,
+      attributes,
+    );
 
     let doesSessionExist;
     try {
@@ -117,16 +118,19 @@ export class SessionService implements IGetActiveSession, ICreateSession {
 
   private buildPutItemCommandInput(
     sessionId: string,
-    config: ICreateSessionAttributes,
-  ) {
+    attributes: ICreateSessionAttributes,
+  ): ISessionPutItemCommandInput {
     const {
       client_id,
       govuk_signin_journey_id,
       issuer,
       redirect_uri,
+      sessionDurationInMilliseconds,
       state,
       sub,
-    } = config;
+    } = attributes;
+
+    const timeToLive = Date.now() + sessionDurationInMilliseconds;
 
     const putSessionConfig: ISessionPutItemCommandInput = {
       TableName: this.tableName,
@@ -139,6 +143,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
         sessionState: { S: "ASYNC_AUTH_SESSION_CREATED" },
         state: { S: state },
         subjectIdentifier: { S: sub },
+        timeToLive: { N: timeToLive.toString() },
       },
     };
 
@@ -175,13 +180,13 @@ interface ISessionPutItemCommandInput {
     sessionState: { S: string };
     state: { S: string };
     subjectIdentifier: { S: string };
+    timeToLive: { N: string };
   };
 }
 
 export interface IGetActiveSession {
   getActiveSession: (
     subjectIdentifier: string,
-    sessionTimeToLiveInSeconds: number,
   ) => Promise<Result<string | null>>;
 }
 
@@ -190,6 +195,7 @@ interface ICreateSessionAttributes {
   govuk_signin_journey_id: string;
   issuer: string;
   redirect_uri?: string;
+  sessionDurationInMilliseconds: number;
   state: string;
   sub: string;
 }
