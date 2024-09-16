@@ -340,7 +340,7 @@ Resources:
                   - dynamodb:Query
                 Resource:
                   - Fn::GetAtt: [ "SessionsTable", "Arn" ]
-                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier
+                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-timeToLive-index
                 Condition:
                   ForAllValues:StringEquals:
                     dynamodb:Attributes:
