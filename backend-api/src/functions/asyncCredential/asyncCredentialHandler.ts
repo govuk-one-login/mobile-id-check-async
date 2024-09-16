@@ -154,7 +154,6 @@ export async function lambdaHandlerConstructor(
 
   const activeSessionResult = await sessionService.getActiveSession(
     requestBody.sub,
-    config.SESSION_TTL_IN_MILLISECONDS,
   );
   if (activeSessionResult.isError) {
     logger.log("ERROR_RETRIEVING_SESSION", {
@@ -171,6 +170,7 @@ export async function lambdaHandlerConstructor(
   const createSessionResult = await sessionService.createSession({
     ...requestBody,
     issuer: jwtPayload.iss,
+    sessionDurationInMilliseconds: config.SESSION_DURATION_IN_MILLISECONDS,
   });
 
   if (createSessionResult.isError) {
