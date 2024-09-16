@@ -346,7 +346,6 @@ Resources:
                     dynamodb:Attributes:
                       - sessionId
                       - sessionState
-                      - createdAt
                       - subjectIdentifier
                       - timeToLive
                   StringEquals:
@@ -432,8 +431,6 @@ Resources:
           Projection:
             NonKeyAttributes:
               - sessionState
-              - sessionTtlExpiry
-              - createdAt
             ProjectionType: INCLUDE
       BillingMode: PAY_PER_REQUEST
       SSESpecification:
