@@ -2,8 +2,10 @@
   "name": "one-login-async-credentials",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "license": "MIT",
   "scripts": {
+    "generate-proxy-open-api": "node ./generate-proxy-private-openapi.js",
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
     "lint": "./node_modules/.bin/eslint ./src/functions",
@@ -12,13 +14,14 @@
     "test:api": "./node_modules/.bin/jest --testPathPattern=api-tests/",
     "test:infra": "./node_modules/.bin/jest --testPathPattern=infra-tests/",
     "test:pact": "npm run pact",
-    "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/pact api-test",
+    "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/pact api-tests",
     "ci": "npm run test:unit && npm run format:check && npm run lint"
   },
   "engines": {
     "node": "20"
   },
   "devDependencies": {
+    "@aws-sdk/credential-providers": "3.637.0",
     "@eslint/js": "^9.10.0",
     "@pact-foundation/pact": "^13.1.2",
     "@types/aws-lambda": "8.10.145",
@@ -29,6 +32,7 @@
     "@types/node-jose": "^1.1.13",
     "axios-retry": "^4.5.0",
     "aws-sdk-client-mock": "4.0.1",
+    "aws4-axios": "^3.3.7",
     "eslint": "^9.10.0",
     "express": "^4.20.0",
     "jest": "29.7.0",
@@ -38,7 +42,8 @@
     "ts-node": "10.9.2",
     "typescript": "^5.6.2",
     "typescript-eslint": "^8.5.0",
-    "yaml-cfn": "^0.3.2"
+    "yaml-cfn": "^0.3.2",
+    "yaml": "2.5.0"
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.7.0",
@@ -49,6 +54,7 @@
     "@aws-sdk/client-sqs": "^3.645.0",
     "@aws-sdk/node-http-handler": "3.374.0",
     "@types/node": "^20.16.5",
+    "axios": "1.7.7",
     "aws-cdk-lib": "^2.157.0",
     "dotenv": "16.4.5",
     "ecdsa-sig-formatter": "1.0.11",
@@ -57,7 +63,6 @@
     "node-jose": "2.2.0"
   },
   "overrides": {
-    "axios": "^1.7.4",
     "micromatch": "^4.0.8"
   }
 }
