@@ -48,6 +48,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: backend-api
 
   build-and-push-to-dev:
     name: 'Push test image and SAM artifact to dev'
