@@ -476,6 +476,8 @@ Resources:
       Auth:
         DefaultAuthorizer: AWS_IAM
         ApiKeyRequired: false
+        ResourcePolicy:
+          AwsAccountWhitelist: !Sub ${AWS::AccountId}
     Condition: ProxyApiDeployment
 
   ProxyApiAccessLogs:
