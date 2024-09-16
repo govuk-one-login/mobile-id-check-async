@@ -42,7 +42,7 @@ describe("Async Token", () => {
   beforeEach(() => {
     // Header decodes to base64encoded mockClientId:mockClientSecret
     request = buildTokenHandlerRequest({
-      body: JSON.stringify({ grant_type: "client_credentials" }),
+      body: "grant_type=client_credentials",
       authorizationHeader: validAuthorizationHeader,
     });
     mockLogger = new MockLoggingAdapter();
@@ -148,7 +148,7 @@ describe("Async Token", () => {
             dependencies,
 
             buildTokenHandlerRequest({
-              body: JSON.stringify({ grant_type: "invalidGrantType" }),
+              body: "grant_type=invalidGrantType",
               authorizationHeader: validAuthorizationHeader,
             }),
             buildLambdaContext(),
@@ -177,7 +177,7 @@ describe("Async Token", () => {
           const result = await lambdaHandlerConstructor(
             dependencies,
             buildRequest({
-              body: JSON.stringify({ grant_type: "client_credentials" }),
+              body: "grant_type=client_credentials",
             }),
             buildLambdaContext(),
           );
@@ -205,7 +205,7 @@ describe("Async Token", () => {
           const result = await lambdaHandlerConstructor(
             dependencies,
             buildTokenHandlerRequest({
-              body: JSON.stringify({ grant_type: "client_credentials" }),
+              body: "grant_type=client_credentials",
               authorizationHeader: null,
             }),
             buildLambdaContext(),
@@ -234,7 +234,7 @@ describe("Async Token", () => {
           const result = await lambdaHandlerConstructor(
             dependencies,
             buildTokenHandlerRequest({
-              body: JSON.stringify({ grant_type: "client_credentials" }),
+              body: "grant_type=client_credentials",
               authorizationHeader: "",
             }),
             buildLambdaContext(),
@@ -264,7 +264,7 @@ describe("Async Token", () => {
             dependencies,
 
             buildTokenHandlerRequest({
-              body: JSON.stringify({ grant_type: "client_credentials" }),
+              body: "grant_type=client_credentials",
               authorizationHeader: "missingBearerKeyword",
             }),
             buildLambdaContext(),
@@ -295,7 +295,7 @@ describe("Async Token", () => {
           const result = await lambdaHandlerConstructor(
             dependencies,
             buildTokenHandlerRequest({
-              body: JSON.stringify({ grant_type: "client_credentials" }),
+              body: "grant_type=client_credentials",
               authorizationHeader: "Basic bW9ja0NsaWVuZElk", // decodes to Basic mockCliendId
             }),
             buildLambdaContext(),
