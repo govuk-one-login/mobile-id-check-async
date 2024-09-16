@@ -21,19 +21,17 @@ export class SessionService implements IGetActiveSession, ICreateSession {
 
   async getActiveSession(
     subjectIdentifier: string,
-    sessionTimeToLiveInMilliseconds: number,
   ): Promise<Result<string | null>> {
     const currentTimeInMs = Date.now();
-    const sessionTtlExpiry = currentTimeInMs - sessionTimeToLiveInMilliseconds;
 
     const queryCommandInput: QueryCommandInput = {
       TableName: this.tableName,
       IndexName: "subjectIdentifier",
       KeyConditionExpression:
-        "#subjectIdentifier = :subjectIdentifier and #createdAt > :sessionTtlExpiry",
+        "#subjectIdentifier = :subjectIdentifier and :currentTimeInMs < #timeToLive",
       FilterExpression: "#sessionState = :sessionState",
       ExpressionAttributeNames: {
-        "#createdAt": "createdAt",
+        "#timeToLive": "timeToLive",
         "#sessionId": "sessionId",
         "#sessionState": "sessionState",
         "#subjectIdentifier": "subjectIdentifier",
@@ -41,8 +39,8 @@ export class SessionService implements IGetActiveSession, ICreateSession {
       ExpressionAttributeValues: {
         ":subjectIdentifier": { S: subjectIdentifier },
         ":sessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
-        ":sessionTtlExpiry": {
-          N: sessionTtlExpiry.toString(),
+        ":currentTimeInMs": {
+          N: currentTimeInMs.toString(),
         },
       },
       ProjectionExpression: "#sessionId",
@@ -191,7 +189,6 @@ interface ISessionPutItemCommandInput {
 export interface IGetActiveSession {
   getActiveSession: (
     subjectIdentifier: string,
-    sessionTimeToLiveInSeconds: number,
   ) => Promise<Result<string | null>>;
 }
 

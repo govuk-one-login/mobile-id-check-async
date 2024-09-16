@@ -154,7 +154,6 @@ export async function lambdaHandlerConstructor(
 
   const activeSessionResult = await sessionService.getActiveSession(
     requestBody.sub,
-    config.SESSION_TTL_IN_MILLISECONDS,
   );
   if (activeSessionResult.isError) {
     logger.log("ERROR_RETRIEVING_SESSION", {

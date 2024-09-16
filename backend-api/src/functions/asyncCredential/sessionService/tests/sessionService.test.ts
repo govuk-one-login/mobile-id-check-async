@@ -19,7 +19,7 @@ describe("Session Service", () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).rejects("Mock DB Error");
 
-        const result = await service.getActiveSession("mockSub", 12345);
+        const result = await service.getActiveSession("mockSub");
 
         expect(result.value).toStrictEqual({
           errorMessage:
@@ -36,7 +36,7 @@ describe("Session Service", () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).resolves({});
 
-        const result = await service.getActiveSession("mockSub", 12345);
+        const result = await service.getActiveSession("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -48,7 +48,7 @@ describe("Session Service", () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).resolves({ Items: [] });
 
-        const result = await service.getActiveSession("mockSub", 12345);
+        const result = await service.getActiveSession("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -62,7 +62,7 @@ describe("Session Service", () => {
           Items: [{}],
         });
 
-        const result = await service.getActiveSession("mockSub", 12345);
+        const result = await service.getActiveSession("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -80,7 +80,7 @@ describe("Session Service", () => {
           ],
         });
 
-        const result = await service.getActiveSession("mockSub", 12345);
+        const result = await service.getActiveSession("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toBe(null);
@@ -98,7 +98,7 @@ describe("Session Service", () => {
           ],
         });
 
-        const result = await service.getActiveSession("mockSub", 12345);
+        const result = await service.getActiveSession("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual("mockSessionId");
