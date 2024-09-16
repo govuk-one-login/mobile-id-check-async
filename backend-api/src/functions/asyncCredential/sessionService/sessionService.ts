@@ -121,7 +121,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
   private buildPutItemCommandInput(
     sessionId: string,
     attributes: ICreateSessionAttributes,
-    sessionTimeToLiveInMilliseconds: number,
+    sessionDurationInMilliseconds: number,
   ) {
     const {
       client_id,
@@ -132,7 +132,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
       sub,
     } = attributes;
 
-    const timeToLive = Date.now() + sessionTimeToLiveInMilliseconds;
+    const timeToLive = Date.now() + sessionDurationInMilliseconds;
 
     const putSessionConfig: ISessionPutItemCommandInput = {
       TableName: this.tableName,
@@ -204,7 +204,7 @@ interface ICreateSessionAttributes {
 export interface ICreateSession {
   createSession: (
     attributes: ICreateSessionAttributes,
-    sessionTimeToLiveInMilliseconds: number,
+    sessionDurationInMilliseconds: number,
   ) => Promise<Result<string>>;
 }
 
