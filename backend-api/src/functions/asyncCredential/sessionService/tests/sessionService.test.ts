@@ -19,7 +19,7 @@ describe("Session Service", () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).rejects("Mock DB Error");
 
-        const result = await service.getActiveSession("mockSub", 12345);
+        const result = await service.getActiveSession("mockSub");
 
         expect(result.value).toStrictEqual({
           errorMessage:
@@ -36,7 +36,7 @@ describe("Session Service", () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).resolves({});
 
-        const result = await service.getActiveSession("mockSub", 12345);
+        const result = await service.getActiveSession("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -48,7 +48,7 @@ describe("Session Service", () => {
         const dbMock = mockClient(DynamoDBClient);
         dbMock.on(QueryCommand).resolves({ Items: [] });
 
-        const result = await service.getActiveSession("mockSub", 12345);
+        const result = await service.getActiveSession("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -62,7 +62,7 @@ describe("Session Service", () => {
           Items: [{}],
         });
 
-        const result = await service.getActiveSession("mockSub", 12345);
+        const result = await service.getActiveSession("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -80,7 +80,7 @@ describe("Session Service", () => {
           ],
         });
 
-        const result = await service.getActiveSession("mockSub", 12345);
+        const result = await service.getActiveSession("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toBe(null);
@@ -98,7 +98,7 @@ describe("Session Service", () => {
           ],
         });
 
-        const result = await service.getActiveSession("mockSub", 12345);
+        const result = await service.getActiveSession("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual("mockSessionId");
@@ -119,6 +119,7 @@ describe("Session Service", () => {
           govuk_signin_journey_id: "mockJourneyId",
           redirect_uri: "https://mockRedirectUri.com",
           issuer: "mockIssuer",
+          sessionDurationInMilliseconds: 12345,
         });
 
         expect(result.isError).toBe(true);
@@ -144,6 +145,7 @@ describe("Session Service", () => {
           sub: "mockSub",
           client_id: "mockClientId",
           govuk_signin_journey_id: "mockJourneyId",
+          sessionDurationInMilliseconds: 12345,
           redirect_uri: "https://mockRedirectUri.com",
           issuer: "mockIssuer",
         });
@@ -167,6 +169,7 @@ describe("Session Service", () => {
           sub: "mockSub",
           client_id: "mockClientId",
           govuk_signin_journey_id: "mockJourneyId",
+          sessionDurationInMilliseconds: 12345,
           redirect_uri: "https://mockRedirectUri.com",
           issuer: "mockIssuer",
         });
@@ -193,6 +196,7 @@ describe("Session Service", () => {
             client_id: "mockClientId",
             govuk_signin_journey_id: "mockJourneyId",
             issuer: "mockIssuer",
+            sessionDurationInMilliseconds: 12345,
           });
 
           expect(result.isError).toBe(false);
@@ -213,6 +217,7 @@ describe("Session Service", () => {
             govuk_signin_journey_id: "mockJourneyId",
             redirect_uri: "https://mockRedirectUri.com",
             issuer: "mockIssuer",
+            sessionDurationInMilliseconds: 12345,
           });
 
           expect(result.isError).toBe(false);
