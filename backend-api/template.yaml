@@ -296,7 +296,7 @@ Resources:
       Environment:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
-          SESSION_TTL_IN_MILLISECONDS: 3600000 #Used to set time to live when creating sessions. Set to 1 day.
+          SESSION_TTL_IN_MILLISECONDS: 3600000 #Used to set time to live when creating sessions. Set to 1 hour.
       Events:
         AsyncCredential:
           Type: Api
