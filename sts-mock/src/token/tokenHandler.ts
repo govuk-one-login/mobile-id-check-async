@@ -1,8 +1,10 @@
-import { APIGatewayProxyResult, Context } from "aws-lambda";
+import {APIGatewayProxyEvent, APIGatewayProxyResult, Context} from "aws-lambda";
 import { Dependencies, dependencies } from "./handlerDependencies";
+import {validateServiceTokenRequestBody} from "./validateServiceTokenRequestBody";
 
 export async function lambdaHandlerConstructor(
   dependencies: Dependencies,
+  event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
@@ -10,7 +12,23 @@ export async function lambdaHandlerConstructor(
 
   logger.log("STARTED");
 
-  const accessToken = "accessToken";
+  const result = validateServiceTokenRequestBody(event.body);
+
+  if (result.isError) {
+    logger.log("INVALID_REQUEST", {
+      errorMessage: result.value.errorMessage,
+    });
+    return errorResponse(
+        'invalid_request',
+        result.value.errorMessage,
+        400,
+    )
+  }
+
+  const { sub } = result.value;
+
+  const serviceToken = await generateServiceToken(sub);
+
 
   logger.log("COMPLETED");
 
@@ -22,7 +40,7 @@ export async function lambdaHandlerConstructor(
     },
     statusCode: 200,
     body: JSON.stringify({
-      access_token: accessToken,
+      access_token: serviceToken,
       token_type: "Bearer",
       expires_in: 3600,
     }),
@@ -30,3 +48,19 @@ export async function lambdaHandlerConstructor(
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
+
+
+function errorResponse(
+    error: string,
+    errorDescription: string,
+    statusCode: number,
+): APIGatewayProxyResult {
+  return {
+    statusCode,
+    body: JSON.stringify({
+      error,
+      error_description: errorDescription,
+    }),
+    headers: { "Content-Type": "application/json" },
+  }
+}

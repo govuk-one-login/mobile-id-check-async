@@ -96,7 +96,7 @@ paths:
     post:
       operationId: postToken
       summary: Obtain a service token.
-      description: Exchange a Mock STS-issued access token for a service token.
+      description: Exchange an access token for a mock service token.
       requestBody:
         required: true
         content:
