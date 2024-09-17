@@ -1,10 +1,15 @@
 import {errorResult, Result, successResult} from "../utils/result";
 
-export type ValidServiceTokenSub = {
+export type IValidateServiceTokenRequestBody = (
+    requestBody: string | null,
+) => Result<ValidServiceTokenRequestBodyParams>
+
+export type ValidServiceTokenRequestBodyParams = {
     sub: string
+    scope: string
 }
 
-export function validateServiceTokenRequestBody(requestBody: string | null): Result<ValidServiceTokenSub> {
+export const validateServiceTokenRequestBody: IValidateServiceTokenRequestBody = requestBody => {
     if (requestBody == null) {
         return errorResult({
             errorMessage: "Missing request body",
@@ -13,30 +18,21 @@ export function validateServiceTokenRequestBody(requestBody: string | null): Res
     }
     const searchParams = new URLSearchParams(requestBody);
 
-    const sub = searchParams.get("subject_token");
-    if (!sub) {
+    const subjectToken = searchParams.get("subject_token");
+    if (!subjectToken) {
         return errorResult({
             errorMessage: "Missing subject_token",
             errorCategory: "CLIENT_ERROR",
         });
     }
 
-    //
-    // const grantType = searchParams.get("grant_type");
-    // if (!grantType) {
-    //     return errorResult({
-    //         errorMessage: "Missing grant_type",
-    //         errorCategory: "CLIENT_ERROR",
-    //     });
-    // }
-    // if (grantType !== "urn:ietf:params:oauth:grant-type:token-exchange") {
-    //     return errorResult({
-    //         errorMessage: "Invalid grant_type",
-    //         errorCategory: "CLIENT_ERROR",
-    //     });
-    // }
+    const scope = searchParams.get("scope");
+    if (!scope) {
+        return errorResult({
+            errorMessage: "Missing scope",
+            errorCategory: "CLIENT_ERROR",
+        });
+    }
 
-    // const requiredParams = ['grant_type', 'scope', 'subject_token_type', 'subject_token']
-
-    return successResult({sub: sub});
+    return successResult({sub: subjectToken, scope: scope});
 }

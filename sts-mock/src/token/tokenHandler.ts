@@ -1,6 +1,7 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult, Context} from "aws-lambda";
 import { Dependencies, dependencies } from "./handlerDependencies";
 import {validateServiceTokenRequestBody} from "./validateServiceTokenRequestBody";
+import {ConfigService} from "./configService/configService";
 
 export async function lambdaHandlerConstructor(
   dependencies: Dependencies,
@@ -11,6 +12,20 @@ export async function lambdaHandlerConstructor(
   logger.addContext(context);
 
   logger.log("STARTED");
+
+  const configResult = new ConfigService().getConfig(dependencies.env);
+  if (configResult.isError) {
+    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
+      errorMessage: configResult.value.errorMessage,
+    });
+    return errorResponse(
+        'server_error',
+        "Server Error",
+        500,
+    )
+  }
+
+  const config = configResult.value;
 
   const result = validateServiceTokenRequestBody(event.body);
 
@@ -25,9 +40,10 @@ export async function lambdaHandlerConstructor(
     )
   }
 
-  const { sub } = result.value;
+  const { sub, scope } = result.value;
 
-  const serviceToken = await generateServiceToken(sub);
+  const serviceTokenGenerator = dependencies.serviceTokenGenerator(config);
+
 
 
   logger.log("COMPLETED");
