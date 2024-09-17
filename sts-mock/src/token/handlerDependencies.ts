@@ -16,6 +16,7 @@ export interface Dependencies {
     keyStorageBucket: string,
     subjectId: string,
     scope: string,
+    tokenTimeToLive: number,
   ) => ServiceTokenGenerator;
 }
 
@@ -28,11 +29,13 @@ export const dependencies: Dependencies = {
     keyStorageBucket: string,
     subjectId: string,
     scope: string,
+    tokenTimeToLive: number,
   ) =>
     new ServiceTokenGenerator(
       stsMockBaseUrl,
       keyStorageBucket,
       subjectId,
       scope,
+      tokenTimeToLive,
     ),
 };

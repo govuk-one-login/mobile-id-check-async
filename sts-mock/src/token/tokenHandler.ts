@@ -7,6 +7,8 @@ import { Dependencies, dependencies } from "./handlerDependencies";
 import { validateServiceTokenRequest } from "./validateServiceTokenRequest";
 import { ConfigService } from "./configService/configService";
 
+const SERVICE_TOKEN_TTL_IN_SECS = 180;
+
 export async function lambdaHandlerConstructor(
   dependencies: Dependencies,
   event: APIGatewayProxyEvent,
@@ -25,8 +27,6 @@ export async function lambdaHandlerConstructor(
     return serverError();
   }
 
-  const config = getConfigResult.value;
-
   const validateServiceTokenRequestResult = validateServiceTokenRequest(
     event.body,
   );
@@ -37,13 +37,15 @@ export async function lambdaHandlerConstructor(
     });
     return badRequestError(errorMessage);
   }
-  const { subjectId, scope } = validateServiceTokenRequestResult.value;
 
+  const config = getConfigResult.value;
+  const { subjectId, scope } = validateServiceTokenRequestResult.value;
   const serviceTokenGenerator = dependencies.serviceTokenGenerator(
     config.MOCK_STS_BASE_URL,
     config.KEY_STORAGE_BUCKET,
     subjectId,
     scope,
+    SERVICE_TOKEN_TTL_IN_SECS,
   );
   const generateServiceTokenResult =
     await serviceTokenGenerator.generateServiceToken();
@@ -66,7 +68,7 @@ export async function lambdaHandlerConstructor(
     body: JSON.stringify({
       access_token: generateServiceTokenResult.value,
       token_type: "Bearer",
-      expires_in: 180,
+      expires_in: SERVICE_TOKEN_TTL_IN_SECS,
     }),
   };
 }
