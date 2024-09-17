@@ -45,7 +45,7 @@ npm run lint
 To manually deploy changes made to the stack (i.e. resources or source code) to the `dev` AWS account, run the following command after assuming your credentials:
 ```shell
 sam build --parallel --cached --beta-features
-sam deploy --guided
+sam deploy --guided --capabilities CAPABILITY_NAMED_IAM
 ```
 
 After saving the arguments to the SAM configuration file (`samconfig.toml`), future deployments can be made without the `--guided` flag:
@@ -60,5 +60,5 @@ There is a helper Node.js script for generating an asymmetric key pair and uploa
 
 ```shell
 cd jwks-helper-script
-sh publish_keys_to_s3.sh <stack-name>
+sh publish_keys_to_s3.sh <stack-name> <enviroment-name>
 ```

@@ -5,9 +5,9 @@ import {
 import { RegisteredLogMessages } from "../services/logging/types";
 
 export type MessageName =
-    | "INVALID_REQUEST"
-    | "INTERNAL_SERVER_ERROR"
-    | CommonMessageNames;
+  | "INVALID_REQUEST"
+  | "INTERNAL_SERVER_ERROR"
+  | CommonMessageNames;
 
 export const registeredLogs: RegisteredLogMessages<MessageName> = {
   INVALID_REQUEST: {

@@ -2,26 +2,26 @@ import { IGetConfig } from "../../types/config";
 import { errorResult, Result, successResult } from "../../utils/result";
 
 export interface Config {
-  ENCRYPTION_KEY_ID: string;
-  SIGNING_KEY_ID: string;
+  MOCK_STS_BASE_URL: string;
+  KEY_STORAGE_BUCKET: string;
 }
 
 export class ConfigService implements IGetConfig<Config> {
   getConfig = (env: NodeJS.ProcessEnv): Result<Config> => {
-    if (!env.ENCRYPTION_KEY_ID)
+    if (!env.MOCK_STS_BASE_URL)
       return errorResult({
-        errorMessage: "No ENCRYPTION_KEY_ID",
+        errorMessage: "No MOCK_STS_BASE_URL",
         errorCategory: "SERVER_ERROR",
       });
-    if (!env.SIGNING_KEY_ID)
+    if (!env.KEY_STORAGE_BUCKET)
       return errorResult({
-        errorMessage: "No SIGNING_KEY_ID",
+        errorMessage: "No KEY_STORAGE_BUCKET",
         errorCategory: "SERVER_ERROR",
       });
 
     return successResult({
-      ENCRYPTION_KEY_ID: env.ENCRYPTION_KEY_ID,
-      SIGNING_KEY_ID: env.SIGNING_KEY_ID,
+      MOCK_STS_BASE_URL: env.MOCK_STS_BASE_URL,
+      KEY_STORAGE_BUCKET: env.KEY_STORAGE_BUCKET,
     });
   };
 }

@@ -1,7 +1,11 @@
-import {APIGatewayProxyEvent, APIGatewayProxyResult, Context} from "aws-lambda";
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context,
+} from "aws-lambda";
 import { Dependencies, dependencies } from "./handlerDependencies";
-import {validateServiceTokenRequestBody} from "./validateServiceTokenRequestBody";
-import {ConfigService} from "./configService/configService";
+import { validateServiceTokenRequest } from "./validateServiceTokenRequest";
+import { ConfigService } from "./configService/configService";
 
 export async function lambdaHandlerConstructor(
   dependencies: Dependencies,
@@ -13,38 +17,42 @@ export async function lambdaHandlerConstructor(
 
   logger.log("STARTED");
 
-  const configResult = new ConfigService().getConfig(dependencies.env);
-  if (configResult.isError) {
+  const getConfigResult = new ConfigService().getConfig(dependencies.env);
+  if (getConfigResult.isError) {
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
-      errorMessage: configResult.value.errorMessage,
+      errorMessage: getConfigResult.value.errorMessage,
     });
-    return errorResponse(
-        'server_error',
-        "Server Error",
-        500,
-    )
+    return serverError();
   }
 
-  const config = configResult.value;
+  const config = getConfigResult.value;
 
-  const result = validateServiceTokenRequestBody(event.body);
-
-  if (result.isError) {
+  const validateServiceTokenRequestResult = validateServiceTokenRequest(
+    event.body,
+  );
+  if (validateServiceTokenRequestResult.isError) {
+    const { errorMessage } = validateServiceTokenRequestResult.value;
     logger.log("INVALID_REQUEST", {
-      errorMessage: result.value.errorMessage,
+      errorMessage,
     });
-    return errorResponse(
-        'invalid_request',
-        result.value.errorMessage,
-        400,
-    )
+    return badRequestError(errorMessage);
   }
+  const { subjectId, scope } = validateServiceTokenRequestResult.value;
 
-  const { sub, scope } = result.value;
-
-  const serviceTokenGenerator = dependencies.serviceTokenGenerator(config);
-
-
+  const serviceTokenGenerator = dependencies.serviceTokenGenerator(
+    config.MOCK_STS_BASE_URL,
+    config.KEY_STORAGE_BUCKET,
+    subjectId,
+    scope,
+  );
+  const generateServiceTokenResult =
+    await serviceTokenGenerator.generateServiceToken();
+  if (generateServiceTokenResult.isError) {
+    logger.log("INTERNAL_SERVER_ERROR", {
+      errorMessage: generateServiceTokenResult.value.errorMessage,
+    });
+    return serverError();
+  }
 
   logger.log("COMPLETED");
 
@@ -56,20 +64,19 @@ export async function lambdaHandlerConstructor(
     },
     statusCode: 200,
     body: JSON.stringify({
-      access_token: serviceToken,
+      access_token: generateServiceTokenResult.value,
       token_type: "Bearer",
-      expires_in: 3600,
+      expires_in: 180,
     }),
   };
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
 
-
 function errorResponse(
-    error: string,
-    errorDescription: string,
-    statusCode: number,
+  error: string,
+  errorDescription: string,
+  statusCode: number,
 ): APIGatewayProxyResult {
   return {
     statusCode,
@@ -78,5 +85,13 @@ function errorResponse(
       error_description: errorDescription,
     }),
     headers: { "Content-Type": "application/json" },
-  }
+  };
+}
+
+function serverError() {
+  return errorResponse("server_error", "Server Error", 500);
+}
+
+function badRequestError(errorDescription: string) {
+  return errorResponse("invalid_request", errorDescription, 400);
 }
