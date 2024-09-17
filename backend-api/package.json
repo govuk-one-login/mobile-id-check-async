@@ -63,7 +63,10 @@
     "node-jose": "2.2.0"
   },
   "overrides": {
+    "express": {
+      "path-to-regexp": "0.1.11"
+    },
     "micromatch": "^4.0.8",
-    "path-to-regexp": "^0.1.11"
+    "path-to-regexp": "^8.1.0"
   }
 }
