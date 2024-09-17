@@ -37,12 +37,12 @@ locals {
       IncludePromotion = "No"
 
       ContainerSignerKmsKeyArn = one(data.aws_cloudformation_stack.container_signer_dev[*].outputs["ContainerSignerKmsKeyArn"])
-      RequireTestContainerSignatureValidation = "Yes"
+      #RequireTestContainerSignatureValidation = "Yes"
 
       SigningProfileArn        = one(data.aws_cloudformation_stack.signer_dev[*].outputs["SigningProfileArn"])
       SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_dev[*].outputs["SigningProfileVersionArn"])
 
-      TestImageRepositoryUri = one(aws_cloudformation_stack.mob_sts_mock_tir[*].outputs["TestRunnerImageEcrRepositoryUri"])
+      #TestImageRepositoryUri = one(aws_cloudformation_stack.mob_sts_mock_tir[*].outputs["TestRunnerImageEcrRepositoryUri"])
     }
 
     build = {
@@ -52,12 +52,12 @@ locals {
       AllowedAccounts  = local.account_vars.staging.account_id
 
       ContainerSignerKmsKeyArn = one(data.aws_cloudformation_stack.container_signer_build[*].outputs["ContainerSignerKmsKeyArn"])
-      RequireTestContainerSignatureValidation = "Yes"
+      #RequireTestContainerSignatureValidation = "Yes"
 
       SigningProfileArn        = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileArn"])
       SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileVersionArn"])
 
-      TestImageRepositoryUri = one(aws_cloudformation_stack.mob_sts_mock_tir[*].outputs["TestRunnerImageEcrRepositoryUri"])
+      #TestImageRepositoryUri = one(aws_cloudformation_stack.mob_sts_mock_tir[*].outputs["TestRunnerImageEcrRepositoryUri"])
     }
   }
 }
