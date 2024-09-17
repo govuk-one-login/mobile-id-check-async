@@ -36,13 +36,15 @@ locals {
 
       IncludePromotion = "No"
 
+      # Test image and container values commented out here until Dockerfile.test is created and we can run the tests in the pipeline
+
       ContainerSignerKmsKeyArn = one(data.aws_cloudformation_stack.container_signer_dev[*].outputs["ContainerSignerKmsKeyArn"])
       #RequireTestContainerSignatureValidation = "Yes"
 
       SigningProfileArn        = one(data.aws_cloudformation_stack.signer_dev[*].outputs["SigningProfileArn"])
       SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_dev[*].outputs["SigningProfileVersionArn"])
 
-      #TestImageRepositoryUri = one(aws_cloudformation_stack.mob_sts_mock_tir[*].outputs["TestRunnerImageEcrRepositoryUri"])
+      TestImageRepositoryUri = one(aws_cloudformation_stack.mob_sts_mock_tir[*].outputs["TestRunnerImageEcrRepositoryUri"])
     }
 
     build = {
@@ -50,6 +52,8 @@ locals {
 
       IncludePromotion = "No"
       AllowedAccounts  = local.account_vars.staging.account_id
+
+      # Test image and container values commented out here until Dockerfile.test is created and we can run the tests in the pipeline
 
       ContainerSignerKmsKeyArn = one(data.aws_cloudformation_stack.container_signer_build[*].outputs["ContainerSignerKmsKeyArn"])
       #RequireTestContainerSignatureValidation = "Yes"
