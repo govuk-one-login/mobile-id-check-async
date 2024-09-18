@@ -3,11 +3,12 @@ import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { importJWK, JWK, JWTPayload, SignJWT, KeyLike } from "jose";
 
 export class ServiceTokenGenerator implements IServiceToken {
-  private readonly stsMockBaseUrl: string;
-  private readonly keyStorageBucket: string;
-  private readonly subjectId: string;
+  private readonly issuer: string;
+  private readonly bucketName: string;
+  private readonly fileName: string;
+  private readonly sub: string;
   private readonly scope: string;
-  private readonly tokenTimeToLive: number;
+  private readonly tokenExpiry: number;
   private s3Client = new S3Client([
     {
       region: "eu-west-2",
@@ -17,16 +18,18 @@ export class ServiceTokenGenerator implements IServiceToken {
 
   constructor(
     stsMockBaseUrl: string,
-    keyStorageBucket: string,
+    keyStorageBucketName: string,
+    privateKeyFileName: string,
+    serviceTokenTimeToLive: number,
     subjectId: string,
     scope: string,
-    tokenTimeToLive: number,
   ) {
-    this.stsMockBaseUrl = stsMockBaseUrl;
-    this.keyStorageBucket = keyStorageBucket;
-    this.subjectId = subjectId;
+    this.issuer = stsMockBaseUrl;
+    this.bucketName = keyStorageBucketName;
+    this.fileName = privateKeyFileName;
+    this.sub = subjectId;
     this.scope = scope;
-    this.tokenTimeToLive = tokenTimeToLive;
+    this.tokenExpiry = serviceTokenTimeToLive;
   }
 
   async generateServiceToken(): Promise<Result<string>> {
@@ -35,47 +38,44 @@ export class ServiceTokenGenerator implements IServiceToken {
       return getPrivateKeyFromS3Result;
     }
 
-    const formatKeyAsKeyLikeResult = await this.formatKeyAsKeyLike(
-      getPrivateKeyFromS3Result.value,
-    );
-    if (formatKeyAsKeyLikeResult.isError) {
-      return formatKeyAsKeyLikeResult;
+    const keyUnformatted = getPrivateKeyFromS3Result.value;
+    const formatKeyResult = await this.formatKey(keyUnformatted);
+    if (formatKeyResult.isError) {
+      return formatKeyResult;
     }
 
     const tokenPayload = this.createServiceTokenPayload();
 
-    const signingResult = await this.signServiceToken(
+    const signServiceTokenResult = await this.signServiceToken(
       tokenPayload,
-      formatKeyAsKeyLikeResult.value,
+      formatKeyResult.value,
     );
-    if (signingResult.isError) {
-      return signingResult;
+    if (signServiceTokenResult.isError) {
+      return signServiceTokenResult;
     }
 
-    return successResult(signingResult.value);
+    return successResult(signServiceTokenResult.value);
   }
 
   private async getPrivateKeyFromS3(): Promise<Result<string>> {
-    const retrieveParams = {
-      Bucket: this.keyStorageBucket,
-      Key: "private-key.json",
+    const commandInput = {
+      Bucket: this.bucketName,
+      Key: this.fileName,
     };
+
+    let response;
     try {
-      const response = await this.s3Client.send(
-        new GetObjectCommand(retrieveParams),
-      );
-      return successResult(await response.Body!.transformToString());
+      response = await this.s3Client.send(new GetObjectCommand(commandInput));
     } catch {
       return errorResult({
         errorMessage: "Unable to fetch file from S3",
         errorCategory: "SERVER_ERROR",
       });
     }
+    return successResult(await response.Body!.transformToString());
   }
 
-  private async formatKeyAsKeyLike(
-    key: string,
-  ): Promise<Result<KeyLike | Uint8Array>> {
+  private async formatKey(key: string): Promise<Result<KeyLike | Uint8Array>> {
     let privateKey;
     try {
       const jwk = JSON.parse(key) as JWK;
@@ -93,10 +93,10 @@ export class ServiceTokenGenerator implements IServiceToken {
     const nowInSeconds = Math.floor(Date.now() / 1000);
     return {
       aud: "TBC",
-      iss: this.stsMockBaseUrl,
-      sub: this.subjectId,
+      iss: this.issuer,
+      sub: this.sub,
       iat: nowInSeconds,
-      exp: nowInSeconds + this.tokenTimeToLive,
+      exp: nowInSeconds + this.tokenExpiry,
       scope: this.scope,
     };
   }

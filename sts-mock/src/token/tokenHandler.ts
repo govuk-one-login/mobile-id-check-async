@@ -8,6 +8,7 @@ import { validateServiceTokenRequest } from "./validateServiceTokenRequest";
 import { ConfigService } from "./configService/configService";
 
 const SERVICE_TOKEN_TTL_IN_SECS = 180;
+const PRIVATE_KEY_FILE_NAME = "private-key.json";
 
 export async function lambdaHandlerConstructor(
   dependencies: Dependencies,
@@ -42,10 +43,11 @@ export async function lambdaHandlerConstructor(
   const { subjectId, scope } = validateServiceTokenRequestResult.value;
   const serviceTokenGenerator = dependencies.serviceTokenGenerator(
     config.MOCK_STS_BASE_URL,
-    config.KEY_STORAGE_BUCKET,
+    config.KEY_STORAGE_BUCKET_NAME,
+    PRIVATE_KEY_FILE_NAME,
+    SERVICE_TOKEN_TTL_IN_SECS,
     subjectId,
     scope,
-    SERVICE_TOKEN_TTL_IN_SECS,
   );
   const generateServiceTokenResult =
     await serviceTokenGenerator.generateServiceToken();

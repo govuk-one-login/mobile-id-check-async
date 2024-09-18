@@ -1,15 +1,15 @@
 import { errorResult, Result, successResult } from "../utils/result";
 
-export type IValidateServiceTokenRequestBody = (
+export type IValidateServiceTokenRequest = (
   requestBody: string | null,
-) => Result<ValidServiceTokenRequestBodyParams>;
+) => Result<ValidServiceTokenRequestParams>;
 
-export type ValidServiceTokenRequestBodyParams = {
+export type ValidServiceTokenRequestParams = {
   subjectId: string;
   scope: string;
 };
 
-export const validateServiceTokenRequest: IValidateServiceTokenRequestBody = (
+export const validateServiceTokenRequest: IValidateServiceTokenRequest = (
   requestBody,
 ) => {
   if (requestBody == null) {

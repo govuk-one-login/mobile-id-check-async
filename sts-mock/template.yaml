@@ -149,7 +149,7 @@ Resources:
         Variables:
           # MOCK_STS_BASE_URL to be updated once available
           MOCK_STS_BASE_URL: MockStsBaseUrl
-          KEY_STORAGE_BUCKET: !Ref JwksBucket
+          KEY_STORAGE_BUCKET_NAME: !Ref JwksBucket
 
   TokenFunctionPermission:
     Type: AWS::Lambda::Permission

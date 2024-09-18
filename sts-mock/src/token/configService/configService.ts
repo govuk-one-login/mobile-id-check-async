@@ -3,7 +3,7 @@ import { errorResult, Result, successResult } from "../../utils/result";
 
 export interface Config {
   MOCK_STS_BASE_URL: string;
-  KEY_STORAGE_BUCKET: string;
+  KEY_STORAGE_BUCKET_NAME: string;
 }
 
 export class ConfigService implements IGetConfig<Config> {
@@ -13,15 +13,15 @@ export class ConfigService implements IGetConfig<Config> {
         errorMessage: "No MOCK_STS_BASE_URL",
         errorCategory: "SERVER_ERROR",
       });
-    if (!env.KEY_STORAGE_BUCKET)
+    if (!env.KEY_STORAGE_BUCKET_NAME)
       return errorResult({
-        errorMessage: "No KEY_STORAGE_BUCKET",
+        errorMessage: "No KEY_STORAGE_BUCKET_NAME",
         errorCategory: "SERVER_ERROR",
       });
 
     return successResult({
       MOCK_STS_BASE_URL: env.MOCK_STS_BASE_URL,
-      KEY_STORAGE_BUCKET: env.KEY_STORAGE_BUCKET,
+      KEY_STORAGE_BUCKET_NAME: env.KEY_STORAGE_BUCKET_NAME,
     });
   };
 }

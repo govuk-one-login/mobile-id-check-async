@@ -2,7 +2,7 @@ import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
 import {
-  IValidateServiceTokenRequestBody,
+  IValidateServiceTokenRequest,
   validateServiceTokenRequest,
 } from "./validateServiceTokenRequest";
 import { ServiceTokenGenerator } from "./serviceTokenGenerator/serviceTokenGenerator";
@@ -10,13 +10,14 @@ import { ServiceTokenGenerator } from "./serviceTokenGenerator/serviceTokenGener
 export interface Dependencies {
   env: NodeJS.ProcessEnv;
   logger: () => Logger<MessageName>;
-  validateServiceTokenRequestBody: IValidateServiceTokenRequestBody;
+  validateServiceTokenRequestBody: IValidateServiceTokenRequest;
   serviceTokenGenerator: (
     stsMockBaseUrl: string,
-    keyStorageBucket: string,
+    keyStorageBucketName: string,
+    privateKeyFileName: string,
+    serviceTokenTimeToLive: number,
     subjectId: string,
     scope: string,
-    tokenTimeToLive: number,
   ) => ServiceTokenGenerator;
 }
 
@@ -26,16 +27,18 @@ export const dependencies: Dependencies = {
   validateServiceTokenRequestBody: validateServiceTokenRequest,
   serviceTokenGenerator: (
     stsMockBaseUrl: string,
-    keyStorageBucket: string,
+    keyStorageBucketName: string,
+    privateKeyFileName: string,
+    serviceTokenTimeToLive: number,
     subjectId: string,
     scope: string,
-    tokenTimeToLive: number,
   ) =>
     new ServiceTokenGenerator(
       stsMockBaseUrl,
-      keyStorageBucket,
+      keyStorageBucketName,
+      privateKeyFileName,
+      serviceTokenTimeToLive,
       subjectId,
       scope,
-      tokenTimeToLive,
     ),
 };
