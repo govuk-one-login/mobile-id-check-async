@@ -10,7 +10,7 @@ if [ $? -gt 0 ]; then
 fi
 
 if [ $# != 2 ]; then
-  echo "Incorrect number of parameters supplied. Supply the stack name." 1>&2
+  echo "Incorrect number of parameters supplied. Supply both the stack name and environment name." 1>&2
   exit 1
 fi
 
