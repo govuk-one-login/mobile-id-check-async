@@ -170,7 +170,7 @@ export async function lambdaHandlerConstructor(
   const createSessionResult = await sessionService.createSession({
     ...requestBody,
     issuer: jwtPayload.iss,
-    sessionDurationInMilliseconds: config.SESSION_DURATION_IN_MILLISECONDS,
+    sessionDurationInMilliseconds: config.SESSION_DURATION_IN_SECONDS,
   });
 
   if (createSessionResult.isError) {

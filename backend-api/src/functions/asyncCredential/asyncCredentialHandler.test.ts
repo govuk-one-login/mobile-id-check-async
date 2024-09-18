@@ -39,7 +39,7 @@ const env = {
   SIGNING_KEY_ID: "mockKid",
   ISSUER: "mockIssuer",
   SESSION_TABLE_NAME: "mockTableName",
-  SESSION_DURATION_IN_MILLISECONDS: "12345",
+  SESSION_DURATION_IN_SECONDS: "12345",
   TXMA_SQS: "mockSqsQueue",
   CLIENT_REGISTRY_SECRET_NAME: "mockParmaterName",
 };
@@ -88,10 +88,10 @@ describe("Async Credential", () => {
       });
     });
 
-    describe("Given SESSION_DURATION_IN_MILLISECONDS value is not a number", () => {
+    describe("Given SESSION_DURATION_IN_SECONDS value is not a number", () => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
-        dependencies.env["SESSION_DURATION_IN_MILLISECONDS"] =
+        dependencies.env["SESSION_DURATION_IN_SECONDS"] =
           "mockInvalidSessionTtlMs";
         const event = buildRequest();
         const result = await lambdaHandlerConstructor(dependencies, event);
@@ -101,7 +101,7 @@ describe("Async Credential", () => {
         );
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
           errorMessage:
-            "SESSION_DURATION_IN_MILLISECONDS is not a valid number",
+            "SESSION_DURATION_IN_SECONDS is not a valid number",
         });
 
         expect(result).toStrictEqual({
