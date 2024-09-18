@@ -4,7 +4,7 @@ import { Logger } from "../services/logging/logger";
 import {
   IValidateServiceTokenRequest,
   validateServiceTokenRequest,
-} from "./validateServiceTokenRequest";
+} from "./validateServiceTokenRequest/validateServiceTokenRequest";
 import {
   IServiceTokenGenerator,
   ServiceTokenGenerator,

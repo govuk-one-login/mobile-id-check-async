@@ -4,8 +4,8 @@ import {
   Context,
 } from "aws-lambda";
 import { ITokenDependencies, dependencies } from "./handlerDependencies";
-import { validateServiceTokenRequest } from "./validateServiceTokenRequest";
 import { ConfigService } from "./configService/configService";
+import { validateServiceTokenRequest } from "./validateServiceTokenRequest/validateServiceTokenRequest";
 
 const SERVICE_TOKEN_TTL_IN_SECS = 180;
 const PRIVATE_KEY_FILE_NAME = "private-key.json";

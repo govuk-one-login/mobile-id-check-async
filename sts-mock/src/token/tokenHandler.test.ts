@@ -6,13 +6,13 @@ import { lambdaHandlerConstructor } from "./tokenHandler";
 import { APIGatewayProxyEvent } from "aws-lambda";
 import { ITokenDependencies } from "./handlerDependencies";
 import { buildTokenRequest } from "../testUtils/mockRequest";
-import { validateServiceTokenRequest } from "./validateServiceTokenRequest";
 import {
   MockServiceTokenGeneratorErrorResult,
   MockServiceTokenGeneratorSuccessResult,
 } from "./serviceTokenGenerator/tests/mocks";
+import { validateServiceTokenRequest } from "./validateServiceTokenRequest/validateServiceTokenRequest";
 
-describe("Token", () => {
+describe("Token Handler", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;
   let event: APIGatewayProxyEvent;
   let dependencies: ITokenDependencies;
@@ -63,8 +63,8 @@ describe("Token", () => {
   });
 
   describe("Validate Service Token Request", () => {
-    describe("Given the request body is undefined", () => {
-      it("Returns 400 Bad Request and 'Missing request body'", async () => {
+    describe("Given the request body is invalid (e.g. undefined)", () => {
+      it("Returns 400 Bad Request", async () => {
         event = buildTokenRequest(undefined);
 
         const result = await lambdaHandlerConstructor(
@@ -82,54 +82,6 @@ describe("Token", () => {
         expect(result.statusCode).toStrictEqual(400);
         expect(result.body).toStrictEqual(
           '{"error":"invalid_request","error_description":"Missing request body"}',
-        );
-      });
-    });
-
-    describe("Given the request body is missing the key 'subject_token'", () => {
-      it("Returns 400 Bad Request and 'Missing subject_token'", async () => {
-        event = buildTokenRequest(
-          "scope=mock_service_name.mock_apiName.mock_accessLevel",
-        );
-
-        const result = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-          buildLambdaContext(),
-        );
-
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-          "STARTED",
-        );
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
-          "INVALID_REQUEST",
-        );
-        expect(result.statusCode).toStrictEqual(400);
-        expect(result.body).toStrictEqual(
-          '{"error":"invalid_request","error_description":"Missing subject_token"}',
-        );
-      });
-    });
-
-    describe("Given the request body is missing the key 'scope'", () => {
-      it("Returns 400 Bad Request and 'Missing scope'", async () => {
-        event = buildTokenRequest("subject_token=testSub");
-
-        const result = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-          buildLambdaContext(),
-        );
-
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-          "STARTED",
-        );
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
-          "INVALID_REQUEST",
-        );
-        expect(result.statusCode).toStrictEqual(400);
-        expect(result.body).toStrictEqual(
-          '{"error":"invalid_request","error_description":"Missing scope"}',
         );
       });
     });
