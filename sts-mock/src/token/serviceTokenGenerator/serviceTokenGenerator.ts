@@ -6,9 +6,9 @@ export class ServiceTokenGenerator implements IServiceTokenGenerator {
   private readonly issuer: string;
   private readonly bucketName: string;
   private readonly fileName: string;
+  private readonly tokenExpiry: number;
   private readonly sub: string;
   private readonly scope: string;
-  private readonly tokenExpiry: number;
   private s3Client = new S3Client([
     {
       region: "eu-west-2",
@@ -44,11 +44,12 @@ export class ServiceTokenGenerator implements IServiceTokenGenerator {
       return formatKeyResult;
     }
 
+    const privateKey = formatKeyResult.value;
     const tokenPayload = this.createServiceTokenPayload();
 
     const signServiceTokenResult = await this.signServiceToken(
       tokenPayload,
-      formatKeyResult.value,
+      privateKey,
     );
     if (signServiceTokenResult.isError) {
       return signServiceTokenResult;
@@ -63,30 +64,35 @@ export class ServiceTokenGenerator implements IServiceTokenGenerator {
       Key: this.fileName,
     };
 
-    let response;
     try {
-      response = await this.s3Client.send(new GetObjectCommand(commandInput));
+      const response = await this.s3Client.send(
+        new GetObjectCommand(commandInput),
+      );
+      return successResult(await response.Body!.transformToString());
     } catch {
       return errorResult({
-        errorMessage: "Unable to fetch file from S3",
+        errorMessage: "Error getting object from S3",
         errorCategory: "SERVER_ERROR",
       });
     }
-    return successResult(await response.Body!.transformToString());
   }
 
   private async formatKey(key: string): Promise<Result<KeyLike | Uint8Array>> {
-    let privateKey;
     try {
-      const jwk = JSON.parse(key) as JWK;
-      privateKey = await importJWK(jwk);
+      const jwk = this.parseAsJwk(key);
+      // Convert from JWK to a runtime-specific key representation (KeyLike).
+      const privateKey = await importJWK(jwk);
+      return successResult(privateKey);
     } catch {
       return errorResult({
         errorMessage: "Error formatting private key",
         errorCategory: "SERVER_ERROR",
       });
     }
-    return successResult(privateKey);
+  }
+
+  private parseAsJwk(key: string): JWK {
+    return JSON.parse(key) as JWK;
   }
 
   private createServiceTokenPayload() {
