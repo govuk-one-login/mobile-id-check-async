@@ -92,7 +92,7 @@ describe("Async Credential", () => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
         dependencies.env["SESSION_DURATION_IN_SECONDS"] =
-          "mockInvalidSessionTtlMs";
+          "mockInvalidSessionTtlSecs";
         const event = buildRequest();
         const result = await lambdaHandlerConstructor(dependencies, event);
 
