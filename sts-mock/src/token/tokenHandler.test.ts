@@ -7,7 +7,10 @@ import { APIGatewayProxyEvent } from "aws-lambda";
 import { ITokenDependencies } from "./handlerDependencies";
 import { buildTokenRequest } from "../testUtils/mockRequest";
 import { validateServiceTokenRequest } from "./validateServiceTokenRequest";
-import { MockServiceTokenGeneratorSuccessResult } from "./serviceTokenGenerator/tests/mocks";
+import {
+  MockServiceTokenGeneratorErrorResult,
+  MockServiceTokenGeneratorSuccessResult,
+} from "./serviceTokenGenerator/tests/mocks";
 
 describe("Token", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;
@@ -132,31 +135,60 @@ describe("Token", () => {
     });
   });
 
-  describe("Given lambdaHandler is called", () => {
-    it("Returns 200 response", async () => {
-      const result = await lambdaHandlerConstructor(
-        dependencies,
-        event,
-        buildLambdaContext(),
-      );
+  describe("Service Token Generator", () => {
+    describe("Given an error happens trying to generate the service token", () => {
+      it("Returns 500 Server Error", async () => {
+        dependencies.serviceTokenGenerator = () =>
+          new MockServiceTokenGeneratorErrorResult();
 
-      expect(mockLogger.getLogMessages()[0].logMessage.message).toBe("STARTED");
-      expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
-        "COMPLETED",
-      );
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+          buildLambdaContext(),
+        );
 
-      expect(result).toStrictEqual({
-        headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-store",
-          Pragma: "no-cache",
-        },
-        statusCode: 200,
-        body: JSON.stringify({
-          access_token: "mockServiceToken",
-          token_type: "Bearer",
-          expires_in: 180,
-        }),
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "STARTED",
+        );
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
+          "INTERNAL_SERVER_ERROR",
+        );
+        expect(result.statusCode).toStrictEqual(500);
+        expect(result.body).toStrictEqual(
+          '{"error":"server_error","error_description":"Server Error"}',
+        );
+      });
+    });
+  });
+
+  describe("Issue service token", () => {
+    describe("Given the request is valid and the service token is generated", () => {
+      it("Returns 200 and the service token", async () => {
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+          buildLambdaContext(),
+        );
+
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "STARTED",
+        );
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
+          "COMPLETED",
+        );
+        expect(result).toStrictEqual({
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-store",
+            Pragma: "no-cache",
+          },
+          statusCode: 200,
+          body: JSON.stringify({
+            access_token: "mockServiceToken",
+            token_type: "Bearer",
+            expires_in: 180,
+          }),
+        });
       });
     });
   });
