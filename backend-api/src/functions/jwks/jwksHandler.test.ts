@@ -49,19 +49,19 @@ describe("Json Web Keys", () => {
         delete dependencies.env[envVar];
 
         const result = await lambdaHandlerConstructor(
-            dependencies,
-            buildCloudFormationCustomResourceEvent(),
-            buildLambdaContext(),
+          dependencies,
+          buildCloudFormationCustomResourceEvent(),
+          buildLambdaContext(),
         );
 
         expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
-            "ENVIRONMENT_VARIABLE_MISSING",
+          "ENVIRONMENT_VARIABLE_MISSING",
         );
         expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
           errorMessage: `No ${envVar}`,
         });
         expect(mockCustomResourceEventSender.getResult()[0].result).toBe(
-            "FAILED",
+          "FAILED",
         );
         expect(result).toStrictEqual(undefined);
       });
@@ -70,16 +70,16 @@ describe("Json Web Keys", () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
         delete dependencies.env[envVar];
         dependencies.customResourceResultSender = () =>
-            new MockCustomResourceEventSenderErrorResult();
+          new MockCustomResourceEventSenderErrorResult();
 
         const result = await lambdaHandlerConstructor(
-            dependencies,
-            buildCloudFormationCustomResourceEvent(),
-            buildLambdaContext(),
+          dependencies,
+          buildCloudFormationCustomResourceEvent(),
+          buildLambdaContext(),
         );
 
         expect(mockLogger.getLogMessages()[2].logMessage.message).toBe(
-            "ERROR_SENDING_CUSTOM_RESOURCE_EVENT",
+          "ERROR_SENDING_CUSTOM_RESOURCE_EVENT",
         );
         expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
           errorMessage: "Error sending Custom Resource event",
@@ -87,7 +87,6 @@ describe("Json Web Keys", () => {
         expect(result).toStrictEqual(undefined);
       });
     });
-  });
 
     describe("Given the RequestType is 'Delete'", () => {
       it("Sends a 'SUCCESS' custom resource result", async () => {
@@ -212,6 +211,7 @@ describe("Json Web Keys", () => {
         });
       });
     });
+  });
 
   describe("Given the JWKS is uploaded successfully", () => {
     it("Sends a 'SUCCESS' custom event result", async () => {
