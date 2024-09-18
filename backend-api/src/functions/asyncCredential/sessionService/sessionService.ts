@@ -130,7 +130,7 @@ export class SessionService implements IGetActiveSession, ICreateSession {
       sub,
     } = attributes;
 
-    const currentTimeInSeconds = Math.floor(Date.now() / 1000)
+    const currentTimeInSeconds = Math.floor(Date.now() / 1000);
     const timeToLive = currentTimeInSeconds + sessionDurationInSeconds;
 
     const putSessionConfig: ISessionPutItemCommandInput = {

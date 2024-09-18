@@ -52,9 +52,7 @@ export class ConfigService implements IGetConfig<Config> {
       SIGNING_KEY_ID: env.SIGNING_KEY_ID,
       ISSUER: env.ISSUER,
       SESSION_TABLE_NAME: env.SESSION_TABLE_NAME,
-      SESSION_DURATION_IN_SECONDS: parseInt(
-        env.SESSION_DURATION_IN_SECONDS,
-      ),
+      SESSION_DURATION_IN_SECONDS: parseInt(env.SESSION_DURATION_IN_SECONDS),
       TXMA_SQS: env.TXMA_SQS,
       CLIENT_REGISTRY_SECRET_NAME: env.CLIENT_REGISTRY_SECRET_NAME,
     });
