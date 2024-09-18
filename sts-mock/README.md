@@ -13,7 +13,7 @@ This stack manages the following resources needed for the STS mock API:
 ## Quickstart
 ### Installing dependencies
 ```bash
-npm run install
+npm install
 ```
 
 ## Testing
@@ -44,13 +44,44 @@ npm run lint
 ### Manual Deployment
 To manually deploy changes made to the stack (i.e. resources or source code) to the `dev` AWS account, run the following command after assuming your credentials:
 ```shell
-sam build --parallel --cached --beta-features
+sam build --cached --beta-features
 sam deploy --guided --capabilities CAPABILITY_NAMED_IAM
 ```
 
-After saving the arguments to the SAM configuration file (`samconfig.toml`), future deployments can be made without the `--guided` flag:
+Follow the AWS SAM CLI interactive flow to configure your application settings:
+
 ```shell
-sam build --parallel --cached --beta-features && sam deploy --capabilities CAPABILITY_NAMED_IAM --stack-name sts-mock-ah     
+Configuring SAM deploy
+======================
+
+	Looking for config file [samconfig.toml] :  Found
+	Reading default arguments  :  Success
+
+	Setting default arguments for 'sam deploy'
+	=========================================
+	Stack Name []: ENTER YOUR STACK NAME
+	AWS Region [eu-west-2]:
+	Parameter Environment []: dev
+	Parameter CodeSigningConfigArn [none]:
+	Parameter PermissionsBoundary [none]:
+	#Shows you resources changes to be deployed and require a 'Y' to initiate deploy
+	Confirm changes before deploy [Y/n]: y
+	#SAM needs permission to be able to create roles to connect to the resources in your template
+	Allow SAM CLI IAM role creation [Y/n]: y
+	#Preserves the state of previously provisioned resources when an operation fails
+	Disable rollback [y/N]: n
+	TokenFunction has no authentication. Is this okay? [y/N]: y
+
+	#Found code signing configurations in your function definitions
+	Do you want to sign your code? [Y/n]: n
+	Save arguments to configuration file [Y/n]: y
+	SAM configuration file [samconfig.toml]:
+	SAM configuration environment [default]:
+```
+
+After saving the above arguments to the SAM configuration file (`samconfig.toml`), future deployments can be made without the `--guided` flag:
+```shell
+sam build --cached --beta-features && sam deploy --capabilities CAPABILITY_NAMED_IAM --stack-name <stack-name>   
 ```
 
 ## Generate and Publish Signing Key Pair to S3
