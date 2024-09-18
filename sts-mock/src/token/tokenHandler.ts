@@ -27,7 +27,7 @@ export async function lambdaHandlerConstructor(
     });
     return serverError();
   }
-  console.log(event.body);
+
   const validateServiceTokenRequestResult = validateServiceTokenRequest(
     event.body,
   );

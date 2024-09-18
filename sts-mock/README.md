@@ -61,7 +61,7 @@ Configuring SAM deploy
 	=========================================
 	Stack Name []: ENTER YOUR STACK NAME
 	AWS Region [eu-west-2]:
-	Parameter Environment []: dev
+	Parameter Environment [dev]:
 	Parameter CodeSigningConfigArn [none]:
 	Parameter PermissionsBoundary [none]:
 	#Shows you resources changes to be deployed and require a 'Y' to initiate deploy

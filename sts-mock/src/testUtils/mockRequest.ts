@@ -1,11 +1,11 @@
 import { APIGatewayEventIdentity, APIGatewayProxyEvent } from "aws-lambda";
 
-export function buildTokenRequest(requestBody?: string): APIGatewayProxyEvent {
-  const body = requestBody ?? "defaultBody";
-
+export function buildTokenRequest(
+  requestBody: string | undefined,
+): APIGatewayProxyEvent {
   return {
     httpMethod: "post",
-    body,
+    body: requestBody,
     pathParameters: {},
     queryStringParameters: {},
     requestContext: {

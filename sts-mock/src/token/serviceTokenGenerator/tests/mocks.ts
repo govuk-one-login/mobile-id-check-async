@@ -10,12 +10,14 @@ export class MockServiceTokenGeneratorSuccessResult
 }
 
 export class MockServiceTokenGeneratorErrorResult
-    implements IServiceTokenGenerator
+  implements IServiceTokenGenerator
 {
   async generateServiceToken(): Promise<Result<string>> {
-    return Promise.resolve(errorResult({
-      errorMessage: "Some S3 error",
-      errorCategory: "SERVER_ERROR",
-    }));
+    return Promise.resolve(
+      errorResult({
+        errorMessage: "Some S3 error",
+        errorCategory: "SERVER_ERROR",
+      }),
+    );
   }
 }
