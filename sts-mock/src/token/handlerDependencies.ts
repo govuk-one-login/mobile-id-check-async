@@ -5,9 +5,12 @@ import {
   IValidateServiceTokenRequest,
   validateServiceTokenRequest,
 } from "./validateServiceTokenRequest";
-import { ServiceTokenGenerator } from "./serviceTokenGenerator/serviceTokenGenerator";
+import {
+  IServiceTokenGenerator,
+  ServiceTokenGenerator,
+} from "./serviceTokenGenerator/serviceTokenGenerator";
 
-export interface Dependencies {
+export interface ITokenDependencies {
   env: NodeJS.ProcessEnv;
   logger: () => Logger<MessageName>;
   validateServiceTokenRequestBody: IValidateServiceTokenRequest;
@@ -18,10 +21,10 @@ export interface Dependencies {
     serviceTokenTimeToLive: number,
     subjectId: string,
     scope: string,
-  ) => ServiceTokenGenerator;
+  ) => IServiceTokenGenerator;
 }
 
-export const dependencies: Dependencies = {
+export const dependencies: ITokenDependencies = {
   env: process.env,
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
   validateServiceTokenRequestBody: validateServiceTokenRequest,

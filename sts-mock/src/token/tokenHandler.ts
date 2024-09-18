@@ -3,7 +3,7 @@ import {
   APIGatewayProxyResult,
   Context,
 } from "aws-lambda";
-import { Dependencies, dependencies } from "./handlerDependencies";
+import { ITokenDependencies, dependencies } from "./handlerDependencies";
 import { validateServiceTokenRequest } from "./validateServiceTokenRequest";
 import { ConfigService } from "./configService/configService";
 
@@ -11,7 +11,7 @@ const SERVICE_TOKEN_TTL_IN_SECS = 180;
 const PRIVATE_KEY_FILE_NAME = "private-key.json";
 
 export async function lambdaHandlerConstructor(
-  dependencies: Dependencies,
+  dependencies: ITokenDependencies,
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
@@ -27,7 +27,7 @@ export async function lambdaHandlerConstructor(
     });
     return serverError();
   }
-
+  console.log(event.body);
   const validateServiceTokenRequestResult = validateServiceTokenRequest(
     event.body,
   );

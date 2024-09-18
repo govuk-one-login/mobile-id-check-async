@@ -2,7 +2,7 @@ import { errorResult, Result, successResult } from "../../utils/result";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { importJWK, JWK, JWTPayload, SignJWT, KeyLike } from "jose";
 
-export class ServiceTokenGenerator implements IServiceToken {
+export class ServiceTokenGenerator implements IServiceTokenGenerator {
   private readonly issuer: string;
   private readonly bucketName: string;
   private readonly fileName: string;
@@ -121,6 +121,6 @@ export class ServiceTokenGenerator implements IServiceToken {
   }
 }
 
-export interface IServiceToken {
+export interface IServiceTokenGenerator {
   generateServiceToken: () => Promise<Result<string>>;
 }
