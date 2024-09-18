@@ -22,13 +22,13 @@ export class SessionService implements IGetActiveSession, ICreateSession {
   async getActiveSession(
     subjectIdentifier: string,
   ): Promise<Result<string | null>> {
-    const currentTimeInMs = Date.now();
+    const currentTimeInSeconds = Math.floor(Date.now() / 1000);
 
     const queryCommandInput: QueryCommandInput = {
       TableName: this.tableName,
       IndexName: "subjectIdentifier-timeToLive-index",
       KeyConditionExpression:
-        "#subjectIdentifier = :subjectIdentifier and :currentTimeInMs < #timeToLive",
+        "#subjectIdentifier = :subjectIdentifier and :currentTimeInSeconds < #timeToLive",
       FilterExpression: "#sessionState = :sessionState",
       ExpressionAttributeNames: {
         "#timeToLive": "timeToLive",
@@ -39,8 +39,8 @@ export class SessionService implements IGetActiveSession, ICreateSession {
       ExpressionAttributeValues: {
         ":subjectIdentifier": { S: subjectIdentifier },
         ":sessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
-        ":currentTimeInMs": {
-          N: currentTimeInMs.toString(),
+        ":currentTimeInSeconds": {
+          N: currentTimeInSeconds.toString(),
         },
       },
       ProjectionExpression: "#sessionId",
@@ -125,12 +125,13 @@ export class SessionService implements IGetActiveSession, ICreateSession {
       govuk_signin_journey_id,
       issuer,
       redirect_uri,
-      sessionDurationInMilliseconds,
+      sessionDurationInSeconds,
       state,
       sub,
     } = attributes;
 
-    const timeToLive = Date.now() + sessionDurationInMilliseconds;
+    const currentTimeInSeconds = Math.floor(Date.now() / 1000);
+    const timeToLive = currentTimeInSeconds + sessionDurationInSeconds;
 
     const putSessionConfig: ISessionPutItemCommandInput = {
       TableName: this.tableName,
@@ -195,7 +196,7 @@ interface ICreateSessionAttributes {
   govuk_signin_journey_id: string;
   issuer: string;
   redirect_uri?: string;
-  sessionDurationInMilliseconds: number;
+  sessionDurationInSeconds: number;
   state: string;
   sub: string;
 }
