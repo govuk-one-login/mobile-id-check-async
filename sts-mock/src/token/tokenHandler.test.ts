@@ -7,9 +7,13 @@ import { APIGatewayProxyEvent } from "aws-lambda";
 import { ITokenDependencies } from "./handlerDependencies";
 import { buildTokenRequest } from "../testUtils/mockRequest";
 import {
-  MockServiceTokenGeneratorErrorResult,
-  MockServiceTokenGeneratorSuccessResult,
-} from "./serviceTokenGenerator/tests/mocks";
+  MockTokenSignerErrorResult,
+  MockTokenSignerSuccessResult,
+} from "./tokenSigner/tests/mocks";
+import {
+  MockKeyRetrieverErrorResult,
+  MockKeyRetrieverSuccessResult,
+} from "./keyRetriever/tests/mocks";
 import { validateServiceTokenRequest } from "./validateServiceTokenRequest/validateServiceTokenRequest";
 
 describe("Token Handler", () => {
@@ -32,7 +36,8 @@ describe("Token Handler", () => {
       env,
       logger: () => new Logger(mockLogger, registeredLogs),
       validateServiceTokenRequestBody: validateServiceTokenRequest,
-      serviceTokenGenerator: () => new MockServiceTokenGeneratorSuccessResult(),
+      tokenSigner: () => new MockTokenSignerSuccessResult(),
+      keyRetriever: () => new MockKeyRetrieverSuccessResult(),
     };
   });
 
@@ -87,11 +92,10 @@ describe("Token Handler", () => {
     });
   });
 
-  describe("Service Token Generator", () => {
-    describe("Given an error happens trying to generate the service token", () => {
+  describe("Key Retriever", () => {
+    describe("Given an error happens trying to get the signing key from S3", () => {
       it("Returns 500 Server Error", async () => {
-        dependencies.serviceTokenGenerator = () =>
-          new MockServiceTokenGeneratorErrorResult();
+        dependencies.keyRetriever = () => new MockKeyRetrieverErrorResult();
 
         const result = await lambdaHandlerConstructor(
           dependencies,
@@ -105,6 +109,32 @@ describe("Token Handler", () => {
         expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
           "INTERNAL_SERVER_ERROR",
         );
+        expect(result.statusCode).toStrictEqual(500);
+        expect(result.body).toStrictEqual(
+          '{"error":"server_error","error_description":"Server Error"}',
+        );
+      });
+    });
+  });
+
+  describe("Token Signer", () => {
+    describe("Given an error happens trying to crate a signed token", () => {
+      it("Returns 500 Server Error", async () => {
+        dependencies.tokenSigner = () => new MockTokenSignerErrorResult();
+
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+          buildLambdaContext(),
+        );
+
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "STARTED",
+        );
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
+          "INTERNAL_SERVER_ERROR",
+        );
+
         expect(result.statusCode).toStrictEqual(500);
         expect(result.body).toStrictEqual(
           '{"error":"server_error","error_description":"Server Error"}',

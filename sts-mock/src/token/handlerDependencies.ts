@@ -5,43 +5,21 @@ import {
   IValidateServiceTokenRequest,
   validateServiceTokenRequest,
 } from "./validateServiceTokenRequest/validateServiceTokenRequest";
-import {
-  IServiceTokenGenerator,
-  ServiceTokenGenerator,
-} from "./serviceTokenGenerator/serviceTokenGenerator";
+import { ITokenSigner, TokenSigner } from "./tokenSigner/tokenSigner";
+import { IKeyRetriever, KeyRetriever } from "./keyRetriever/keyRetriever";
 
 export interface ITokenDependencies {
   env: NodeJS.ProcessEnv;
   logger: () => Logger<MessageName>;
   validateServiceTokenRequestBody: IValidateServiceTokenRequest;
-  serviceTokenGenerator: (
-    stsMockBaseUrl: string,
-    keyStorageBucketName: string,
-    privateKeyFileName: string,
-    serviceTokenTimeToLive: number,
-    subjectId: string,
-    scope: string,
-  ) => IServiceTokenGenerator;
+  keyRetriever: () => IKeyRetriever;
+  tokenSigner: () => ITokenSigner;
 }
 
 export const dependencies: ITokenDependencies = {
   env: process.env,
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
   validateServiceTokenRequestBody: validateServiceTokenRequest,
-  serviceTokenGenerator: (
-    stsMockBaseUrl: string,
-    keyStorageBucketName: string,
-    privateKeyFileName: string,
-    serviceTokenTimeToLive: number,
-    subjectId: string,
-    scope: string,
-  ) =>
-    new ServiceTokenGenerator(
-      stsMockBaseUrl,
-      keyStorageBucketName,
-      privateKeyFileName,
-      serviceTokenTimeToLive,
-      subjectId,
-      scope,
-    ),
+  keyRetriever: () => new KeyRetriever(),
+  tokenSigner: () => new TokenSigner(),
 };

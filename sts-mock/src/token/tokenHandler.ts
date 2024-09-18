@@ -6,6 +6,7 @@ import {
 import { ITokenDependencies, dependencies } from "./handlerDependencies";
 import { ConfigService } from "./configService/configService";
 import { validateServiceTokenRequest } from "./validateServiceTokenRequest/validateServiceTokenRequest";
+import { JWTPayload } from "jose";
 
 const SERVICE_TOKEN_TTL_IN_SECS = 180;
 const PRIVATE_KEY_FILE_NAME = "private-key.json";
@@ -40,20 +41,32 @@ export async function lambdaHandlerConstructor(
   }
 
   const config = getConfigResult.value;
+
+  const getKeyResult = await dependencies
+    .keyRetriever()
+    .getKey(config.KEY_STORAGE_BUCKET_NAME, PRIVATE_KEY_FILE_NAME);
+  if (getKeyResult.isError) {
+    logger.log("INTERNAL_SERVER_ERROR", {
+      errorMessage: getKeyResult.value.errorMessage,
+    });
+    return serverError();
+  }
+
   const { subjectId, scope } = validateServiceTokenRequestResult.value;
-  const serviceTokenGenerator = dependencies.serviceTokenGenerator(
+  const payload = getServiceTokenPayload(
     config.MOCK_STS_BASE_URL,
-    config.KEY_STORAGE_BUCKET_NAME,
-    PRIVATE_KEY_FILE_NAME,
     SERVICE_TOKEN_TTL_IN_SECS,
     subjectId,
     scope,
   );
-  const generateServiceTokenResult =
-    await serviceTokenGenerator.generateServiceToken();
-  if (generateServiceTokenResult.isError) {
+  const signingKey = getKeyResult.value;
+
+  const signTokenResult = await dependencies
+    .tokenSigner()
+    .sign(payload, signingKey);
+  if (signTokenResult.isError) {
     logger.log("INTERNAL_SERVER_ERROR", {
-      errorMessage: generateServiceTokenResult.value.errorMessage,
+      errorMessage: signTokenResult.value.errorMessage,
     });
     return serverError();
   }
@@ -70,7 +83,7 @@ export async function lambdaHandlerConstructor(
     },
     statusCode: 200,
     body: JSON.stringify({
-      access_token: generateServiceTokenResult.value,
+      access_token: signTokenResult.value,
       token_type: "Bearer",
       expires_in: SERVICE_TOKEN_TTL_IN_SECS,
     }),
@@ -100,4 +113,21 @@ function serverError() {
 
 function badRequestError(errorDescription: string) {
   return errorResponse("invalid_request", errorDescription, 400);
+}
+
+function getServiceTokenPayload(
+  issuer: string,
+  tokenExpiry: number,
+  sub: string,
+  scope: string,
+): JWTPayload {
+  const nowInSeconds = Math.floor(Date.now() / 1000);
+  return {
+    aud: "TBC",
+    iss: issuer,
+    sub: sub,
+    iat: nowInSeconds,
+    exp: nowInSeconds + tokenExpiry,
+    scope: scope,
+  };
 }
