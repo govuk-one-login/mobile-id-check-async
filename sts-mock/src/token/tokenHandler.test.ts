@@ -22,8 +22,9 @@ describe("Token Handler", () => {
   let dependencies: Dependencies;
 
   const env = {
-    MOCK_STS_BASE_URL: "mockStsBaseUrl",
-    KEY_STORAGE_BUCKET_NAME: "mockKeyStorageBucketName",
+    MOCK_STS_BASE_URL: "dummyMockStsBaseUrl",
+    ASYNC_BACKEND_BASE_URL: "dummyAsyncBackendBaseUrl",
+    KEY_STORAGE_BUCKET_NAME: "dummyKeyStorageBucketName",
   };
 
   beforeEach(() => {

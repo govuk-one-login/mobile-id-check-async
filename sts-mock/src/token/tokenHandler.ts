@@ -54,6 +54,7 @@ export async function lambdaHandlerConstructor(
 
   const payload = getServiceTokenPayload(
     config.MOCK_STS_BASE_URL,
+    config.ASYNC_BACKEND_BASE_URL,
     SERVICE_TOKEN_TTL_IN_SECS,
     subjectId,
     scope,
@@ -115,13 +116,14 @@ function badRequestError(errorDescription: string) {
 
 function getServiceTokenPayload(
   issuer: string,
+  audience: string,
   tokenExpiry: number,
   sub: string,
   scope: string,
 ): JWTPayload {
   const nowInSeconds = Math.floor(Date.now() / 1000);
   return {
-    aud: "TBC",
+    aud: audience,
     iss: issuer,
     sub: sub,
     iat: nowInSeconds,
