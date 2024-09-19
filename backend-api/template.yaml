@@ -668,7 +668,7 @@ Resources:
         Enabled: true
 
   ### Regional APIgw
-  BackendAsyncCredentialPublicApi:
+  PublicApi:
     Type: AWS::Serverless::Api
     Properties:
       Name: !Sub ${AWS::StackName}-public-api
@@ -705,6 +705,49 @@ Resources:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-public-api-access-logs
       RetentionInDays: 30
 
+  PublicApiDomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Sub
+        - public-${AWS::StackName}.${DNS_RECORD}
+        - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN}}'
+      SecurityPolicy: TLS_1_2
+
+  PublicApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    DependsOn: PublicApiDomainName
+    Properties:
+      DomainName: !Sub
+        - public-${AWS::StackName}.${DNS_RECORD}
+        - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      RestApiId: !Ref PublicApi
+      Stage: !Ref PublicApi.Stage
+
+  PublicApiRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Sub
+        - public-${AWS::StackName}.${DNS_RECORD}
+        - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      Type: A
+      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
+      AliasTarget:
+        DNSName: !GetAtt PublicApiDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt PublicApiDomainName.RegionalHostedZoneId
+
   AsyncActiveSessionFunction:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -728,7 +771,7 @@ Resources:
           Properties:
             Path: /async/activeSession
             Method: get
-            RestApiId: !Ref BackendAsyncCredentialPublicApi
+            RestApiId: !Ref PublicApi
       Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
 
   AsyncActiveSessionFunctionPermission:
@@ -738,7 +781,7 @@ Resources:
       FunctionName: !GetAtt AsyncActiveSessionFunction.Arn
       Principal: events.amazonaws.com
       SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${BackendAsyncCredentialPublicApi}/*/*/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PublicApi}/*/*/*
 
   AsyncActiveSessionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -1115,7 +1158,12 @@ Resources:
 Outputs:
   PublicApiUrl:
     Description: Public API Gateway base URL
-    Value: !Sub https://${BackendAsyncCredentialPublicApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/
+    Value: !Sub
+      - https://public-${AWS::StackName}.${DNS_RECORD}
+      - DNS_RECORD: !FindInMap
+          - DNS
+          - !Ref Environment
+          - BaseDns
 
   ProxyApiUrl:
     Description: Proxy API Gateway Pretty DNS
