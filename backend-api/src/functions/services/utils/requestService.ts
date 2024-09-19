@@ -1,6 +1,6 @@
 import { errorResult, Result, successResult } from "../../utils/result";
 
-export const getAuthorizationHeader = (
+export const getBearerToken = (
   authorizationHeader: string | undefined,
 ): Result<string> => {
   if (authorizationHeader == null) {

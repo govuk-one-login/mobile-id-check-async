@@ -1,6 +1,6 @@
 import { errorResult, Result, successResult } from "../../utils/result";
 import { IRequestBody } from "../asyncCredentialHandler";
-import { getAuthorizationHeader } from "../../services/utils/requestService";
+import { getBearerToken } from "../../services/utils/requestService";
 
 export interface IRequestService {
   getAuthorizationHeader: (
@@ -14,7 +14,7 @@ export interface IRequestService {
 
 export class RequestService implements IRequestService {
   getAuthorizationHeader = (authorizationHeader: string | undefined) => {
-    return getAuthorizationHeader(authorizationHeader)
+    return getBearerToken(authorizationHeader)
   };
 
   getRequestBody = (
