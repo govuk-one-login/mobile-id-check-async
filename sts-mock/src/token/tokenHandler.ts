@@ -27,6 +27,7 @@ export async function lambdaHandlerConstructor(
     });
     return serverError();
   }
+  const config = getConfigResult.value;
 
   const validateServiceTokenRequestResult =
     dependencies.validateServiceTokenRequest(event.body);
@@ -38,8 +39,6 @@ export async function lambdaHandlerConstructor(
     return badRequestError(errorMessage);
   }
 
-  const config = getConfigResult.value;
-
   const getKeyResult = await dependencies
     .keyRetriever()
     .getKey(config.KEY_STORAGE_BUCKET_NAME, PRIVATE_KEY_FILE_NAME);
@@ -49,8 +48,10 @@ export async function lambdaHandlerConstructor(
     });
     return serverError();
   }
+  const { signingKey, keyId } = getKeyResult.value;
 
   const { subjectId, scope } = validateServiceTokenRequestResult.value;
+
   const payload = getServiceTokenPayload(
     config.MOCK_STS_BASE_URL,
     SERVICE_TOKEN_TTL_IN_SECS,
@@ -58,7 +59,6 @@ export async function lambdaHandlerConstructor(
     scope,
   );
 
-  const { signingKey, keyId } = getKeyResult.value;
   const signTokenResult = await dependencies
     .tokenSigner()
     .sign(keyId, payload, signingKey);

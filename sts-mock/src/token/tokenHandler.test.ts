@@ -17,7 +17,7 @@ import {
 import { validateServiceTokenRequest } from "./validateServiceTokenRequest/validateServiceTokenRequest";
 
 describe("Token Handler", () => {
-  let mockLogger: MockLoggingAdapter<MessageName>;
+  let mockLoggingAdapter: MockLoggingAdapter<MessageName>;
   let event: APIGatewayProxyEvent;
   let dependencies: Dependencies;
 
@@ -30,11 +30,10 @@ describe("Token Handler", () => {
     event = buildTokenRequest(
       "subject_token=testSub&scope=mock_service_name.mock_apiName.mock_accessLevel",
     );
-
-    mockLogger = new MockLoggingAdapter();
+    mockLoggingAdapter = new MockLoggingAdapter();
     dependencies = {
       env,
-      logger: () => new Logger(mockLogger, registeredLogs),
+      logger: () => new Logger(mockLoggingAdapter, registeredLogs),
       validateServiceTokenRequest: validateServiceTokenRequest,
       tokenSigner: () => new MockTokenSignerSuccessResult(),
       keyRetriever: () => new MockKeyRetrieverSuccessResult(),
@@ -53,10 +52,10 @@ describe("Token Handler", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
-          "ENVIRONMENT_VARIABLE_MISSING",
-        );
-        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+        expect(
+          mockLoggingAdapter.getLogMessages()[1].logMessage.message,
+        ).toStrictEqual("ENVIRONMENT_VARIABLE_MISSING");
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: `No ${envVar}`,
         });
         expect(result.statusCode).toStrictEqual(500);
@@ -78,13 +77,13 @@ describe("Token Handler", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toStrictEqual(
-          "STARTED",
-        );
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
-          "INVALID_REQUEST",
-        );
-        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+        expect(
+          mockLoggingAdapter.getLogMessages()[0].logMessage.message,
+        ).toStrictEqual("STARTED");
+        expect(
+          mockLoggingAdapter.getLogMessages()[1].logMessage.message,
+        ).toStrictEqual("INVALID_REQUEST");
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "Missing request body",
         });
         expect(result.statusCode).toStrictEqual(400);
@@ -106,13 +105,13 @@ describe("Token Handler", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toStrictEqual(
-          "STARTED",
-        );
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
-          "INTERNAL_SERVER_ERROR",
-        );
-        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+        expect(
+          mockLoggingAdapter.getLogMessages()[0].logMessage.message,
+        ).toStrictEqual("STARTED");
+        expect(
+          mockLoggingAdapter.getLogMessages()[1].logMessage.message,
+        ).toStrictEqual("INTERNAL_SERVER_ERROR");
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "Some S3 error",
         });
         expect(result.statusCode).toStrictEqual(500);
@@ -134,13 +133,13 @@ describe("Token Handler", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toStrictEqual(
-          "STARTED",
-        );
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
-          "INTERNAL_SERVER_ERROR",
-        );
-        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+        expect(
+          mockLoggingAdapter.getLogMessages()[0].logMessage.message,
+        ).toStrictEqual("STARTED");
+        expect(
+          mockLoggingAdapter.getLogMessages()[1].logMessage.message,
+        ).toStrictEqual("INTERNAL_SERVER_ERROR");
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "Some signing error",
         });
         expect(result.statusCode).toStrictEqual(500);
@@ -160,12 +159,12 @@ describe("Token Handler", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toStrictEqual(
-          "STARTED",
-        );
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
-          "COMPLETED",
-        );
+        expect(
+          mockLoggingAdapter.getLogMessages()[0].logMessage.message,
+        ).toStrictEqual("STARTED");
+        expect(
+          mockLoggingAdapter.getLogMessages()[1].logMessage.message,
+        ).toStrictEqual("COMPLETED");
         expect(result).toStrictEqual({
           headers: {
             "Content-Type": "application/json",
