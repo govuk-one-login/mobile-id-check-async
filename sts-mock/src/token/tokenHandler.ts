@@ -5,7 +5,6 @@ import {
 } from "aws-lambda";
 import { ITokenDependencies, dependencies } from "./handlerDependencies";
 import { ConfigService } from "./configService/configService";
-import { validateServiceTokenRequest } from "./validateServiceTokenRequest/validateServiceTokenRequest";
 import { JWTPayload } from "jose";
 
 const SERVICE_TOKEN_TTL_IN_SECS = 180;
@@ -29,9 +28,8 @@ export async function lambdaHandlerConstructor(
     return serverError();
   }
 
-  const validateServiceTokenRequestResult = validateServiceTokenRequest(
-    event.body,
-  );
+  const validateServiceTokenRequestResult =
+    dependencies.validateServiceTokenRequest(event.body);
   if (validateServiceTokenRequestResult.isError) {
     const { errorMessage } = validateServiceTokenRequestResult.value;
     logger.log("INVALID_REQUEST", {

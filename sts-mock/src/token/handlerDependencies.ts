@@ -11,7 +11,7 @@ import { IKeyRetriever, KeyRetriever } from "./keyRetriever/keyRetriever";
 export interface ITokenDependencies {
   env: NodeJS.ProcessEnv;
   logger: () => Logger<MessageName>;
-  validateServiceTokenRequestBody: IValidateServiceTokenRequest;
+  validateServiceTokenRequest: IValidateServiceTokenRequest;
   keyRetriever: () => IKeyRetriever;
   tokenSigner: () => ITokenSigner;
 }
@@ -19,7 +19,7 @@ export interface ITokenDependencies {
 export const dependencies: ITokenDependencies = {
   env: process.env,
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
-  validateServiceTokenRequestBody: validateServiceTokenRequest,
+  validateServiceTokenRequest: validateServiceTokenRequest,
   keyRetriever: () => new KeyRetriever(),
   tokenSigner: () => new TokenSigner(),
 };

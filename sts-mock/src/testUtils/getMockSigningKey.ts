@@ -11,6 +11,6 @@ export function getMockSigningKey(): SigningKey {
     kid: "iyVpkshZ0QKq5ORWz7mc76x0dAKUp4RS113tiHACjpQ",
   };
   const privateKey = createPrivateKey({ key: jwk, format: "jwk" });
-  const keyId = jwk.kid!;
+  const keyId = jwk.kid;
   return { signingKey: privateKey, keyId };
 }

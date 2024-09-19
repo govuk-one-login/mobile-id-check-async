@@ -35,7 +35,7 @@ describe("Token Handler", () => {
     dependencies = {
       env,
       logger: () => new Logger(mockLogger, registeredLogs),
-      validateServiceTokenRequestBody: validateServiceTokenRequest,
+      validateServiceTokenRequest: validateServiceTokenRequest,
       tokenSigner: () => new MockTokenSignerSuccessResult(),
       keyRetriever: () => new MockKeyRetrieverSuccessResult(),
     };
