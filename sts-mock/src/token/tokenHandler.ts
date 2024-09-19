@@ -8,7 +8,7 @@ import { ConfigService } from "./configService/configService";
 import { JWTPayload } from "jose";
 
 const SERVICE_TOKEN_TTL_IN_SECS = 180;
-const PRIVATE_KEY_FILE_NAME = "private-key.json";
+const PRIVATE_KEY_JWK_FILE_NAME = "private-key.json";
 
 export async function lambdaHandlerConstructor(
   dependencies: Dependencies,
@@ -41,7 +41,7 @@ export async function lambdaHandlerConstructor(
 
   const getKeyResult = await dependencies
     .keyRetriever()
-    .getKey(config.KEY_STORAGE_BUCKET_NAME, PRIVATE_KEY_FILE_NAME);
+    .getKey(config.KEY_STORAGE_BUCKET_NAME, PRIVATE_KEY_JWK_FILE_NAME);
   if (getKeyResult.isError) {
     logger.log("INTERNAL_SERVER_ERROR", {
       errorMessage: getKeyResult.value.errorMessage,

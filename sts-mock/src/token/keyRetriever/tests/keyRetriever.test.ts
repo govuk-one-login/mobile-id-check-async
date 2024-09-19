@@ -27,7 +27,7 @@ describe("Key Retriever", () => {
     mockS3Client.reset();
   });
 
-  describe("Given an error happens trying to retrieve the private key from S3", () => {
+  describe("Given an error happens trying to retrieve the signing key from S3", () => {
     it("Returns an error response", async () => {
       mockS3Client
         .on(GetObjectCommand)
@@ -43,10 +43,10 @@ describe("Key Retriever", () => {
     });
   });
 
-  describe("Given an error happens trying to format the private key retrieved from S3", () => {
+  describe("Given an error happens trying to format the signing key retrieved from S3", () => {
     it("Returns an error response", async () => {
       mockS3Client.on(GetObjectCommand).resolves({
-        Body: mockS3Response("notAValidPrivateKey"),
+        Body: mockS3Response("notAValidSigningKey"),
       } as GetObjectCommandOutput);
 
       const result = await keyRetriever.getKey(bucketName, fileName);
@@ -59,7 +59,7 @@ describe("Key Retriever", () => {
     });
   });
 
-  describe("Given the private key is retrieved from S3 and formatted successfully", () => {
+  describe("Given the signing key is retrieved from S3 and formatted successfully", () => {
     it("Returns a success response", async () => {
       mockS3Client.on(GetObjectCommand).resolves({
         Body: mockS3Response(

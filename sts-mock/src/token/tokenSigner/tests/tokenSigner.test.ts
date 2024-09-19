@@ -21,15 +21,11 @@ describe("Token Signer", () => {
 
   describe("Given an error happens when trying to sign the token payload", () => {
     it("Returns an error response", async () => {
-      const invalidPrivateKeyRsa = generateKeyPairSync("rsa", {
+      const invalidSigningKey = generateKeyPairSync("rsa", {
         modulusLength: 2048,
       }).privateKey;
       // Attempting to sign with an RSA key instead of EC key raises an exception
-      const result = await tokenSigner.sign(
-        keyId,
-        payload,
-        invalidPrivateKeyRsa,
-      );
+      const result = await tokenSigner.sign(keyId, payload, invalidSigningKey);
 
       expect(result.isError).toStrictEqual(true);
       expect(result.value).toStrictEqual({
