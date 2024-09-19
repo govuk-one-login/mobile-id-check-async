@@ -26,7 +26,9 @@ awk '{ printf("CFN_%s=\"%s\"\n", $1, $2) }' cf-output.txt >>docker-vars.env
   echo SAM_STACK_NAME="$stack_name"
 } >>docker-vars.env
 
-docker build --file Dockerfile.test --tag testcontainer .
+aws configure export-credentials --format env-no-export >> docker-vars.env
+
+docker build --tag testcontainer .
 
 docker run --rm --interactive --tty \
   --user root \

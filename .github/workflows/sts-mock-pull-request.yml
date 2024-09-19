@@ -50,3 +50,20 @@ jobs:
       # Runs unit and infrastructure tests
       - name: Run tests 
         run: npm run test
+
+      - name: "Run SonarCloud Scan"
+        uses: SonarSource/sonarcloud-github-action@eb211723266fe8e83102bac7361f0a05c3ac1d1b # master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectBaseDir: sts-mock
+
+      - name: SonarQube Quality Gate check
+        uses: Sonarsource/sonarqube-quality-gate-action@dc2f7b0dd95544cd550de3028f89193576e958b9 # master
+        # Force to fail step after specific time
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          scanMetadataReportFile: sts-mock/.scannerwork/report-task.txt

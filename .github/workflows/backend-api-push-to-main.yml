@@ -48,6 +48,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: backend-api
 
   build-and-push-to-dev:
     name: 'Push test image and SAM artifact to dev'
@@ -86,6 +88,9 @@ jobs:
         use-installer: true
         version: 1.123.0
 
+    - name: Install dependencies
+      run: npm install
+
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@bd1354327e55c2330d56537b3ac2006a8d97c566 #main
       with:
@@ -106,6 +111,10 @@ jobs:
     - name: Sign the image
       run: |
         cosign sign --key awskms:///$DEV_CONTAINER_SIGN_KMS_KEY $BACKEND_API_DEV_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
+
+    - name: Generate proxy Open API spec
+      run: |
+        npm run generate-proxy-open-api
 
     - name: SAM validate and lint
       run: |
@@ -160,6 +169,9 @@ jobs:
           use-installer: true
           version: 1.123.0
 
+      - name: Install dependencies
+        run: npm install
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@bd1354327e55c2330d56537b3ac2006a8d97c566 #main
         with:
@@ -180,6 +192,10 @@ jobs:
       - name: Sign the image
         run: |
           cosign sign --key awskms:///$BUILD_CONTAINER_SIGN_KMS_KEY $BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY:$IMAGE_TAG
+
+      - name: Generate proxy Open API spec
+        run: |
+          npm run generate-proxy-open-api
 
       - name: Sam validate and lint
         run: |

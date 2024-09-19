@@ -5,7 +5,7 @@ export interface Config {
   SIGNING_KEY_ID: string;
   ISSUER: string;
   SESSION_TABLE_NAME: string;
-  SESSION_TTL_IN_MILLISECONDS: number;
+  SESSION_DURATION_IN_SECONDS: number;
   TXMA_SQS: string;
   CLIENT_REGISTRY_SECRET_NAME: string;
 }
@@ -27,14 +27,14 @@ export class ConfigService implements IGetConfig<Config> {
         errorMessage: "No SESSION_TABLE_NAME",
         errorCategory: "SERVER_ERROR",
       });
-    if (!env.SESSION_TTL_IN_MILLISECONDS)
+    if (!env.SESSION_DURATION_IN_SECONDS)
       return errorResult({
-        errorMessage: "No SESSION_TTL_IN_MILLISECONDS",
+        errorMessage: "No SESSION_DURATION_IN_SECONDS",
         errorCategory: "SERVER_ERROR",
       });
-    if (isNaN(Number(env.SESSION_TTL_IN_MILLISECONDS)))
+    if (isNaN(Number(env.SESSION_DURATION_IN_SECONDS)))
       return errorResult({
-        errorMessage: "SESSION_TTL_IN_MILLISECONDS is not a valid number",
+        errorMessage: "SESSION_DURATION_IN_SECONDS is not a valid number",
         errorCategory: "SERVER_ERROR",
       });
     if (!env.TXMA_SQS)
@@ -52,7 +52,7 @@ export class ConfigService implements IGetConfig<Config> {
       SIGNING_KEY_ID: env.SIGNING_KEY_ID,
       ISSUER: env.ISSUER,
       SESSION_TABLE_NAME: env.SESSION_TABLE_NAME,
-      SESSION_TTL_IN_MILLISECONDS: parseInt(env.SESSION_TTL_IN_MILLISECONDS),
+      SESSION_DURATION_IN_SECONDS: parseInt(env.SESSION_DURATION_IN_SECONDS),
       TXMA_SQS: env.TXMA_SQS,
       CLIENT_REGISTRY_SECRET_NAME: env.CLIENT_REGISTRY_SECRET_NAME,
     });
