@@ -50,10 +50,10 @@ export class KeyRetriever implements IKeyRetriever {
       });
     }
 
-    return await this.formatKeyAsKeyObject(key);
+    return this.formatKeyAsKeyObject(key);
   }
 
-  private async formatKeyAsKeyObject(key: string): Promise<Result<SigningKey>> {
+  private formatKeyAsKeyObject(key: string): Result<SigningKey> {
     try {
       const jwk = this.parseAsJwk(key);
 
