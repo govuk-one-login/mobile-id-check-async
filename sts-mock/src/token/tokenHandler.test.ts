@@ -4,7 +4,7 @@ import { buildLambdaContext } from "../testUtils/mockContext";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { lambdaHandlerConstructor } from "./tokenHandler";
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { Dependencies } from "./handlerDependencies";
+import { TokenDependencies } from "./handlerDependencies";
 import { buildTokenRequest } from "../testUtils/mockRequest";
 import {
   MockTokenSignerErrorResult,
@@ -19,7 +19,7 @@ import { validateServiceTokenRequest } from "./validateServiceTokenRequest/valid
 describe("Token Handler", () => {
   let mockLoggingAdapter: MockLoggingAdapter<MessageName>;
   let event: APIGatewayProxyEvent;
-  let dependencies: Dependencies;
+  let dependencies: TokenDependencies;
 
   const env = {
     MOCK_STS_BASE_URL: "dummyMockStsBaseUrl",
@@ -29,7 +29,7 @@ describe("Token Handler", () => {
 
   beforeEach(() => {
     event = buildTokenRequest(
-      "subject_token=testSub&scope=mock_service_name.mock_apiName.mock_accessLevel",
+      "subject_token=testSub&scope=idCheck.activeSession.read",
     );
     mockLoggingAdapter = new MockLoggingAdapter();
     dependencies = {
@@ -124,7 +124,7 @@ describe("Token Handler", () => {
   });
 
   describe("Token Signer", () => {
-    describe("Given an error happens trying to crate a signed token", () => {
+    describe("Given an error happens trying to create a signed token", () => {
       it("Returns 500 Server Error", async () => {
         dependencies.tokenSigner = () => new MockTokenSignerErrorResult();
 

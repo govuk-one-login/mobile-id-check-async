@@ -2,6 +2,7 @@ import { errorResult, Result, successResult } from "../../utils/result";
 
 export type IValidateServiceTokenRequest = (
   requestBody: string | null,
+  supportedServiceScope: string,
 ) => Result<ValidServiceTokenRequestParams>;
 
 export type ValidServiceTokenRequestParams = {
@@ -11,6 +12,7 @@ export type ValidServiceTokenRequestParams = {
 
 export const validateServiceTokenRequest: IValidateServiceTokenRequest = (
   requestBody,
+  supportedServiceScope,
 ) => {
   if (requestBody == null) {
     return errorResult({
@@ -32,6 +34,13 @@ export const validateServiceTokenRequest: IValidateServiceTokenRequest = (
   if (!scope) {
     return errorResult({
       errorMessage: "Missing scope",
+      errorCategory: "CLIENT_ERROR",
+    });
+  }
+
+  if (scope !== supportedServiceScope) {
+    return errorResult({
+      errorMessage: "Unsupported scope",
       errorCategory: "CLIENT_ERROR",
     });
   }

@@ -3,15 +3,16 @@ import {
   APIGatewayProxyResult,
   Context,
 } from "aws-lambda";
-import { Dependencies, dependencies } from "./handlerDependencies";
+import { TokenDependencies, dependencies } from "./handlerDependencies";
 import { ConfigService } from "./configService/configService";
 import { JWTPayload } from "jose";
 
 const SERVICE_TOKEN_TTL_IN_SECS = 180;
 const PRIVATE_KEY_JWK_FILE_NAME = "private-key.json";
+const SUPPORTED_SERVICE_SCOPE = "idCheck.activeSession.read";
 
 export async function lambdaHandlerConstructor(
-  dependencies: Dependencies,
+  dependencies: TokenDependencies,
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
@@ -30,7 +31,10 @@ export async function lambdaHandlerConstructor(
   const config = getConfigResult.value;
 
   const validateServiceTokenRequestResult =
-    dependencies.validateServiceTokenRequest(event.body);
+    dependencies.validateServiceTokenRequest(
+      event.body,
+      SUPPORTED_SERVICE_SCOPE,
+    );
   if (validateServiceTokenRequestResult.isError) {
     const { errorMessage } = validateServiceTokenRequestResult.value;
     logger.log("INVALID_REQUEST", {

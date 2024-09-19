@@ -8,7 +8,7 @@ import {
 import { ITokenSigner, TokenSigner } from "./tokenSigner/tokenSigner";
 import { IKeyRetriever, KeyRetriever } from "./keyRetriever/keyRetriever";
 
-export interface Dependencies {
+export interface TokenDependencies {
   env: NodeJS.ProcessEnv;
   logger: () => Logger<MessageName>;
   validateServiceTokenRequest: IValidateServiceTokenRequest;
@@ -16,7 +16,7 @@ export interface Dependencies {
   tokenSigner: () => ITokenSigner;
 }
 
-export const dependencies: Dependencies = {
+export const dependencies: TokenDependencies = {
   env: process.env,
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
   validateServiceTokenRequest: validateServiceTokenRequest,
