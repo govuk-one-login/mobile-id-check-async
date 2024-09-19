@@ -57,11 +57,11 @@ export class KeyRetriever implements IKeyRetriever {
     try {
       const jwk = this.parseAsJwk(key);
 
-      // Convert from JWK to a runtime-specific key representation (KeyObject).
-      const privateKey = createPrivateKey({ key: jwk, format: "jwk" });
+      // Convert from JWK to a runtime-specific key representation (KeyObject)
+      const signingKey = createPrivateKey({ key: jwk, format: "jwk" });
       const keyId = jwk.kid;
 
-      return successResult({ signingKey: privateKey, keyId });
+      return successResult({ signingKey, keyId });
     } catch {
       return errorResult({
         errorMessage: "Error formatting key",

@@ -10,7 +10,7 @@ export function getMockSigningKey(): SigningKey {
     d: "eswmWYW980vOl7x0MZBqzAkxN215eogA0fFJCu6umfw",
     kid: "iyVpkshZ0QKq5ORWz7mc76x0dAKUp4RS113tiHACjpQ",
   };
-  const privateKey = createPrivateKey({ key: jwk, format: "jwk" });
+  const signingKey = createPrivateKey({ key: jwk, format: "jwk" });
   const keyId = jwk.kid;
-  return { signingKey: privateKey, keyId };
+  return { signingKey, keyId };
 }
