@@ -43,6 +43,22 @@ describe("Key Retriever", () => {
     });
   });
 
+  describe("Given the object retrieved from S3 is empty", () => {
+    it("Returns an error response", async () => {
+      mockS3Client
+        .on(GetObjectCommand)
+        .resolves({ Body: undefined } as GetObjectCommandOutput);
+
+      const result = await keyRetriever.getKey(bucketName, fileName);
+
+      expect(result.isError).toStrictEqual(true);
+      expect(result.value).toStrictEqual({
+        errorMessage: "Empty object retrieved from S3",
+        errorCategory: "SERVER_ERROR",
+      });
+    });
+  });
+
   describe("Given an error happens trying to format the signing key retrieved from S3", () => {
     it("Returns an error response", async () => {
       mockS3Client.on(GetObjectCommand).resolves({

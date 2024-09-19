@@ -37,12 +37,9 @@ export class KeyRetriever implements IKeyRetriever {
       Key: fileName,
     };
 
-    let key;
+    let response;
     try {
-      const response = await this.s3Client.send(
-        new GetObjectCommand(commandInput),
-      );
-      key = await response.Body!.transformToString();
+      response = await this.s3Client.send(new GetObjectCommand(commandInput));
     } catch {
       return errorResult({
         errorMessage: "Error getting object from S3",
@@ -50,7 +47,17 @@ export class KeyRetriever implements IKeyRetriever {
       });
     }
 
-    return this.formatKeyAsKeyObject(key);
+    const { Body } = response;
+    if (!Body) {
+      return errorResult({
+        errorMessage: "Empty object retrieved from S3",
+        errorCategory: "SERVER_ERROR",
+      });
+    }
+
+    const signingKey = await Body.transformToString();
+
+    return this.formatKeyAsKeyObject(signingKey);
   }
 
   private formatKeyAsKeyObject(key: string): Result<SigningKey> {
