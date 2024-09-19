@@ -22,7 +22,7 @@ export async function lambdaHandlerConstructor(
     });
     return unauthorizedResponse;
   }
-  // const authorizationHeader = authorizationHeaderResult.value;
+
   return {
     statusCode: 200,
     body: "Hello, World",
