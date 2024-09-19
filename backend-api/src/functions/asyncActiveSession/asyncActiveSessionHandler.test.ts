@@ -8,12 +8,12 @@ import { Logger } from "../services/logging/logger";
 
 describe("Async Active Session", () => {
   let dependencies: IAsyncActiveSessionDependencies;
-  let mockLogger: MockLoggingAdapter<MessageName>;
+  let mockLoggingAdapter: MockLoggingAdapter<MessageName>;
 
   beforeEach(() => {
-    mockLogger = new MockLoggingAdapter();
+    mockLoggingAdapter = new MockLoggingAdapter();
     dependencies = {
-      logger: () => new Logger(mockLogger, registeredLogs),
+      logger: () => new Logger(mockLoggingAdapter, registeredLogs),
     };
   });
 
@@ -27,10 +27,10 @@ describe("Async Active Session", () => {
           event,
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+        expect(mockLoggingAdapter.getLogMessages()[0].logMessage.message).toBe(
           "AUTHENTICATION_HEADER_INVALID",
         );
-        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+        expect(mockLoggingAdapter.getLogMessages()[0].data).toStrictEqual({
           errorMessage: "No Authentication header present",
         });
 
@@ -56,10 +56,10 @@ describe("Async Active Session", () => {
           event,
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+        expect(mockLoggingAdapter.getLogMessages()[0].logMessage.message).toBe(
           "AUTHENTICATION_HEADER_INVALID",
         );
-        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+        expect(mockLoggingAdapter.getLogMessages()[0].data).toStrictEqual({
           errorMessage:
             "Invalid authentication header format - does not start with Bearer",
         });
@@ -86,10 +86,10 @@ describe("Async Active Session", () => {
           event,
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+        expect(mockLoggingAdapter.getLogMessages()[0].logMessage.message).toBe(
           "AUTHENTICATION_HEADER_INVALID",
         );
-        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+        expect(mockLoggingAdapter.getLogMessages()[0].data).toStrictEqual({
           errorMessage:
             "Invalid authentication header format - contains spaces",
         });
@@ -116,10 +116,10 @@ describe("Async Active Session", () => {
           event,
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+        expect(mockLoggingAdapter.getLogMessages()[0].logMessage.message).toBe(
           "AUTHENTICATION_HEADER_INVALID",
         );
-        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+        expect(mockLoggingAdapter.getLogMessages()[0].data).toStrictEqual({
           errorMessage: "Invalid authentication header format - missing token",
         });
 
