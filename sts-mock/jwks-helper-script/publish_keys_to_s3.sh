@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Script for publishing a public key and a private key to an S3 bucket
+
 PRIVATE_KEY_JWK_FILE_NAME="private-key.json";
 PUBLIC_KEY_JWKS_FILE_NAME="jwks.json";
 
