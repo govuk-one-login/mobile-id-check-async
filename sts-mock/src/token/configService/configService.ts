@@ -1,9 +1,12 @@
-import { IGetConfig } from "../../types/config";
 import { errorResult, Result, successResult } from "../../utils/result";
 
 export interface Config {
   MOCK_STS_BASE_URL: string;
   KEY_STORAGE_BUCKET_NAME: string;
+}
+
+export interface IGetConfig<T> {
+  getConfig: (env: NodeJS.ProcessEnv) => Result<T>;
 }
 
 export class ConfigService implements IGetConfig<Config> {
