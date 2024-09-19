@@ -1,12 +1,24 @@
 import { errorResult, Result, successResult } from "../../utils/result";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { JWK } from "jose";
-import { createPrivateKey, KeyObject } from "node:crypto";
+import { createPrivateKey, KeyObject, JsonWebKey } from "node:crypto";
 
 export type SigningKey = {
   signingKey: KeyObject;
   keyId: string;
 };
+
+type PrivateKeyJwk = JsonWebKey & {
+  kid: string;
+  kty: "EC";
+  crv: "P-256";
+  d: string;
+  x: string;
+  y: string;
+};
+
+export interface IKeyRetriever {
+  getKey: (bucketName: string, fileName: string) => Promise<Result<SigningKey>>;
+}
 
 export class KeyRetriever implements IKeyRetriever {
   private s3Client = new S3Client([
@@ -47,7 +59,7 @@ export class KeyRetriever implements IKeyRetriever {
 
       // Convert from JWK to a runtime-specific key representation (KeyObject).
       const privateKey = createPrivateKey({ key: jwk, format: "jwk" });
-      const keyId = jwk.kid!;
+      const keyId = jwk.kid;
 
       return successResult({ signingKey: privateKey, keyId });
     } catch {
@@ -58,11 +70,7 @@ export class KeyRetriever implements IKeyRetriever {
     }
   }
 
-  private parseAsJwk(key: string): JWK {
-    return JSON.parse(key) as JWK;
+  private parseAsJwk(key: string): PrivateKeyJwk {
+    return JSON.parse(key) as PrivateKeyJwk;
   }
-}
-
-export interface IKeyRetriever {
-  getKey: (bucketName: string, fileName: string) => Promise<Result<SigningKey>>;
 }

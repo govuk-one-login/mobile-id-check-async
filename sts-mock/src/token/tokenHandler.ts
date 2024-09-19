@@ -3,7 +3,7 @@ import {
   APIGatewayProxyResult,
   Context,
 } from "aws-lambda";
-import { ITokenDependencies, dependencies } from "./handlerDependencies";
+import { Dependencies, dependencies } from "./handlerDependencies";
 import { ConfigService } from "./configService/configService";
 import { JWTPayload } from "jose";
 
@@ -11,7 +11,7 @@ const SERVICE_TOKEN_TTL_IN_SECS = 180;
 const PRIVATE_KEY_FILE_NAME = "private-key.json";
 
 export async function lambdaHandlerConstructor(
-  dependencies: ITokenDependencies,
+  dependencies: Dependencies,
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {

@@ -2,6 +2,14 @@ import { errorResult, Result, successResult } from "../../utils/result";
 import { JWTPayload, SignJWT } from "jose";
 import { KeyObject } from "node:crypto";
 
+export interface ITokenSigner {
+  sign: (
+    keyId: string,
+    payload: JWTPayload,
+    signingKey: KeyObject,
+  ) => Promise<Result<string>>;
+}
+
 export class TokenSigner implements ITokenSigner {
   async sign(
     keyId: string,
@@ -20,12 +28,4 @@ export class TokenSigner implements ITokenSigner {
       });
     }
   }
-}
-
-export interface ITokenSigner {
-  sign: (
-    keyId: string,
-    payload: JWTPayload,
-    signingKey: KeyObject,
-  ) => Promise<Result<string>>;
 }

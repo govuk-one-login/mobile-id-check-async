@@ -4,7 +4,7 @@ import { buildLambdaContext } from "../testUtils/mockContext";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { lambdaHandlerConstructor } from "./tokenHandler";
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { ITokenDependencies } from "./handlerDependencies";
+import { Dependencies } from "./handlerDependencies";
 import { buildTokenRequest } from "../testUtils/mockRequest";
 import {
   MockTokenSignerErrorResult,
@@ -19,7 +19,7 @@ import { validateServiceTokenRequest } from "./validateServiceTokenRequest/valid
 describe("Token Handler", () => {
   let mockLogger: MockLoggingAdapter<MessageName>;
   let event: APIGatewayProxyEvent;
-  let dependencies: ITokenDependencies;
+  let dependencies: Dependencies;
 
   const env = {
     MOCK_STS_BASE_URL: "mockStsBaseUrl",
