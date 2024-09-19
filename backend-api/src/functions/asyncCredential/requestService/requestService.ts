@@ -14,7 +14,7 @@ export interface IRequestService {
 
 export class RequestService implements IRequestService {
   getAuthorizationHeader = (authorizationHeader: string | undefined) => {
-    return getBearerToken(authorizationHeader)
+    return getBearerToken(authorizationHeader);
   };
 
   getRequestBody = (

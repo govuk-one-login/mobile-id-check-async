@@ -33,4 +33,4 @@ export const getBearerToken = (
   }
 
   return successResult(authorizationHeader);
-}
+};
