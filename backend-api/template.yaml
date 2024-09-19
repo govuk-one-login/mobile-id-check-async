@@ -1112,6 +1112,33 @@ Resources:
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
 
+  JsonWebKeysWarningAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: True
+      AlarmDescription: ".well-known endpoint has returned atleast 2 5XX status codes"
+      AlarmName: !Sub "${AWS::StackName}-WellKnown5XXApiGwAlarm"
+      AlarmActions:
+        - !GetAtt ChatbotChannelWarningConfiguration.Arn
+      OKActions:
+        - !GetAtt ChatbotChannelWarningConfiguration.Arn
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      TreatMissingData: notBreaching
+      Metrics:
+        - Id: 
+          Label:
+          Expression:
+          ReturnData: True
+
+      
+
+      
+
+
+
+
 Outputs:
   PublicApiUrl:
     Description: Public API Gateway base URL
