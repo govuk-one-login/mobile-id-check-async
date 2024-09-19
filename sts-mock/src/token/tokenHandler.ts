@@ -59,11 +59,11 @@ export async function lambdaHandlerConstructor(
     subjectId,
     scope,
   );
-  const signingKey = getKeyResult.value;
 
+  const { signingKey, keyId } = getKeyResult.value;
   const signTokenResult = await dependencies
     .tokenSigner()
-    .sign(payload, signingKey);
+    .sign(keyId, payload, signingKey);
   if (signTokenResult.isError) {
     logger.log("INTERNAL_SERVER_ERROR", {
       errorMessage: signTokenResult.value.errorMessage,

@@ -1,15 +1,17 @@
 import { errorResult, Result, successResult } from "../../utils/result";
-import { JWTPayload, SignJWT, KeyLike } from "jose";
+import { JWTPayload, SignJWT } from "jose";
+import { KeyObject } from "node:crypto";
 
 export class TokenSigner implements ITokenSigner {
   async sign(
+    keyId: string,
     payload: JWTPayload,
-    signingKey: KeyLike | Uint8Array,
+    signingKey: KeyObject,
   ): Promise<Result<string>> {
     {
       try {
         const jwt = await new SignJWT(payload)
-          .setProtectedHeader({ alg: "ES256", typ: "JWT" })
+          .setProtectedHeader({ alg: "ES256", typ: "JWT", kid: keyId })
           .sign(signingKey);
         return successResult(jwt);
       } catch {
@@ -24,7 +26,8 @@ export class TokenSigner implements ITokenSigner {
 
 export interface ITokenSigner {
   sign: (
+    keyId: string,
     payload: JWTPayload,
-    signingKey: KeyLike | Uint8Array,
+    signingKey: KeyObject,
   ) => Promise<Result<string>>;
 }

@@ -1,6 +1,12 @@
 import { errorResult, Result, successResult } from "../../utils/result";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { importJWK, JWK, KeyLike } from "jose";
+import { JWK } from "jose";
+import { createPrivateKey, KeyObject } from "node:crypto";
+
+export type SigningKey = {
+  signingKey: KeyObject;
+  keyId: string;
+};
 
 export class KeyRetriever implements IKeyRetriever {
   private s3Client = new S3Client([
@@ -13,18 +19,18 @@ export class KeyRetriever implements IKeyRetriever {
   async getKey(
     bucketName: string,
     fileName: string,
-  ): Promise<Result<KeyLike | Uint8Array>> {
+  ): Promise<Result<SigningKey>> {
     const commandInput = {
       Bucket: bucketName,
       Key: fileName,
     };
 
-    let keyUnformatted;
+    let key;
     try {
       const response = await this.s3Client.send(
         new GetObjectCommand(commandInput),
       );
-      keyUnformatted = await response.Body!.transformToString();
+      key = await response.Body!.transformToString();
     } catch {
       return errorResult({
         errorMessage: "Error getting object from S3",
@@ -32,14 +38,18 @@ export class KeyRetriever implements IKeyRetriever {
       });
     }
 
-    return await this.formatKey(keyUnformatted);
+    return await this.formatKeyAsKeyObject(key);
   }
 
-  private async formatKey(key: string): Promise<Result<KeyLike | Uint8Array>> {
+  private async formatKeyAsKeyObject(key: string): Promise<Result<SigningKey>> {
     try {
       const jwk = this.parseAsJwk(key);
-      // Convert from JWK to a runtime-specific key representation (KeyLike).
-      return successResult(await importJWK(jwk));
+
+      // Convert from JWK to a runtime-specific key representation (KeyObject).
+      const privateKey = createPrivateKey({ key: jwk, format: "jwk" });
+      const keyId = jwk.kid!;
+
+      return successResult({ signingKey: privateKey, keyId });
     } catch {
       return errorResult({
         errorMessage: "Error formatting key",
@@ -54,8 +64,5 @@ export class KeyRetriever implements IKeyRetriever {
 }
 
 export interface IKeyRetriever {
-  getKey: (
-    bucketName: string,
-    fileName: string,
-  ) => Promise<Result<KeyLike | Uint8Array>>;
+  getKey: (bucketName: string, fileName: string) => Promise<Result<SigningKey>>;
 }

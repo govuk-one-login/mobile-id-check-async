@@ -4,7 +4,7 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { mockClient } from "aws-sdk-client-mock";
-import { KeyRetriever } from "../keyRetriever";
+import { KeyRetriever, SigningKey } from "../keyRetriever";
 
 const mockS3Client = mockClient(S3Client);
 const mockS3Response = (content: string) => {
@@ -35,7 +35,7 @@ describe("Key Retriever", () => {
 
       const result = await keyRetriever.getKey(bucketName, fileName);
 
-      expect(result.isError).toBe(true);
+      expect(result.isError).toStrictEqual(true);
       expect(result.value).toStrictEqual({
         errorMessage: "Error getting object from S3",
         errorCategory: "SERVER_ERROR",
@@ -43,15 +43,15 @@ describe("Key Retriever", () => {
     });
   });
 
-  describe("Given an error happens trying to format the key retrieved from S3", () => {
+  describe("Given an error happens trying to format the private key retrieved from S3", () => {
     it("Returns an error response", async () => {
       mockS3Client.on(GetObjectCommand).resolves({
-        Body: mockS3Response("notAValidKey"),
+        Body: mockS3Response("notAValidPrivateKey"),
       } as GetObjectCommandOutput);
 
       const result = await keyRetriever.getKey(bucketName, fileName);
 
-      expect(result.isError).toBe(true);
+      expect(result.isError).toStrictEqual(true);
       expect(result.value).toStrictEqual({
         errorMessage: "Error formatting key",
         errorCategory: "SERVER_ERROR",
@@ -59,17 +59,22 @@ describe("Key Retriever", () => {
     });
   });
 
-  describe("Given the key is retrieved from S3 and formatted successfully", () => {
-    it("Returns a success response and the key", async () => {
+  describe("Given the private key is retrieved from S3 and formatted successfully", () => {
+    it("Returns a success response", async () => {
       mockS3Client.on(GetObjectCommand).resolves({
         Body: mockS3Response(
-          '{"kty":"EC","x":"Fu8jCR5SKk4U7GgEpwhWcAskSaNijIWatBDTlq9wtLE","y":"JWPbl4IH21CzX-xIT56BcohswoudKGprHNyoA3Q7MnY","crv":"P-256","d":"hrOBzfJwnr-XSY-I4j-aCgNjcDq7_TfOd2W9u7al56Y"}',
+          '{"kty":"EC","x":"Fu8jCR5SKk4U7GgEpwhWcAskSaNijIWatBDTlq9wtLE","y":"JWPbl4IH21CzX-xIT56BcohswoudKGprHNyoA3Q7MnY","crv":"P-256","d":"hrOBzfJwnr-XSY-I4j-aCgNjcDq7_TfOd2W9u7al56Y","kid":"iyVpkshZ0QKq5ORWz7mc76x0dAKUp4RS113tiHACjpQ"}',
         ),
       } as GetObjectCommandOutput);
 
       const result = await keyRetriever.getKey(bucketName, fileName);
-      expect(result.isError).toBe(false);
-      expect(result.value.constructor.name).toStrictEqual("PrivateKeyObject");
+      const { keyId, signingKey } = result.value as SigningKey;
+
+      expect(result.isError).toStrictEqual(false);
+      expect(keyId).toStrictEqual(
+        "iyVpkshZ0QKq5ORWz7mc76x0dAKUp4RS113tiHACjpQ",
+      );
+      expect(signingKey.constructor.name).toStrictEqual("PrivateKeyObject");
     });
   });
 });

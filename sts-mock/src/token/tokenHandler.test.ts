@@ -53,7 +53,7 @@ describe("Token Handler", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
           "ENVIRONMENT_VARIABLE_MISSING",
         );
         expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
@@ -78,12 +78,15 @@ describe("Token Handler", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toStrictEqual(
           "STARTED",
         );
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
           "INVALID_REQUEST",
         );
+        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: "Missing request body",
+        });
         expect(result.statusCode).toStrictEqual(400);
         expect(result.body).toStrictEqual(
           '{"error":"invalid_request","error_description":"Missing request body"}',
@@ -103,12 +106,15 @@ describe("Token Handler", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toStrictEqual(
           "STARTED",
         );
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
           "INTERNAL_SERVER_ERROR",
         );
+        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: "Some S3 error",
+        });
         expect(result.statusCode).toStrictEqual(500);
         expect(result.body).toStrictEqual(
           '{"error":"server_error","error_description":"Server Error"}',
@@ -128,13 +134,15 @@ describe("Token Handler", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toStrictEqual(
           "STARTED",
         );
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
           "INTERNAL_SERVER_ERROR",
         );
-
+        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: "Some signing error",
+        });
         expect(result.statusCode).toStrictEqual(500);
         expect(result.body).toStrictEqual(
           '{"error":"server_error","error_description":"Server Error"}',
@@ -152,10 +160,10 @@ describe("Token Handler", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toStrictEqual(
           "STARTED",
         );
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
           "COMPLETED",
         );
         expect(result).toStrictEqual({

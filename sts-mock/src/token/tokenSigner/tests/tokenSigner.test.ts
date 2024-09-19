@@ -1,7 +1,9 @@
 import { TokenSigner } from "../tokenSigner";
-import { decodeJwt, decodeProtectedHeader, importJWK } from "jose";
+import { decodeJwt, decodeProtectedHeader } from "jose";
+import { generateKeyPairSync } from "node:crypto";
+import { getMockSigningKey } from "../../../testUtils/getMockSigningKey";
 
-describe("TokenSigner", () => {
+describe("Token Signer", () => {
   const payload = {
     aud: "TBC",
     iss: "MockStsBaseUrl",
@@ -10,19 +12,26 @@ describe("TokenSigner", () => {
     exp: 1726658757,
     scope: "test.scope.blah",
   };
-
+  const { signingKey, keyId } = getMockSigningKey();
   let tokenSigner: TokenSigner;
 
   beforeEach(() => {
     tokenSigner = new TokenSigner();
   });
 
-  describe("Given an error happens when trying to sign the token", () => {
+  describe("Given an error happens when trying to sign the token payload", () => {
     it("Returns an error response", async () => {
-      const invalidSigningKey = new Uint8Array();
-      const result = await tokenSigner.sign(payload, invalidSigningKey);
+      const invalidPrivateKeyRsa = generateKeyPairSync("rsa", {
+        modulusLength: 2048,
+      }).privateKey;
+      // Attempting to sign with an RSA key instead of EC key raises an exception
+      const result = await tokenSigner.sign(
+        keyId,
+        payload,
+        invalidPrivateKeyRsa,
+      );
 
-      expect(result.isError).toBe(true);
+      expect(result.isError).toStrictEqual(true);
       expect(result.value).toStrictEqual({
         errorMessage: "Error signing token",
         errorCategory: "SERVER_ERROR",
@@ -30,25 +39,19 @@ describe("TokenSigner", () => {
     });
   });
 
-  describe("Given the service token is successfully generated", () => {
-    it("Returns a success response which includes the token", async () => {
-      const signingKey = await importJWK({
-        kty: "EC",
-        x: "Fu8jCR5SKk4U7GgEpwhWcAskSaNijIWatBDTlq9wtLE",
-        y: "JWPbl4IH21CzX-xIT56BcohswoudKGprHNyoA3Q7MnY",
-        crv: "P-256",
-        d: "hrOBzfJwnr-XSY-I4j-aCgNjcDq7_TfOd2W9u7al56Y",
-      });
-      const result = await tokenSigner.sign(payload, signingKey);
-
-      expect(result.isError).toBe(false);
-      expect(result.value).toBeDefined();
-
+  describe("Given the token payload is successfully signed", () => {
+    it("Returns a success response", async () => {
+      const result = await tokenSigner.sign(keyId, payload, signingKey);
       const tokenHeader = decodeProtectedHeader(result.value as string);
       const tokenClaims = decodeJwt(result.value as string);
 
+      expect(result.isError).toStrictEqual(false);
       expect(tokenHeader).toHaveProperty("alg", "ES256");
       expect(tokenHeader).toHaveProperty("typ", "JWT");
+      expect(tokenHeader).toHaveProperty(
+        "kid",
+        "iyVpkshZ0QKq5ORWz7mc76x0dAKUp4RS113tiHACjpQ",
+      );
       expect(tokenClaims).toHaveProperty("aud", "TBC");
       expect(tokenClaims).toHaveProperty("sub", "testSub");
       expect(tokenClaims).toHaveProperty("scope", "test.scope.blah");
