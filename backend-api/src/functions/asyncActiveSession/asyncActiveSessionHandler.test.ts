@@ -196,6 +196,37 @@ describe("Async Active Session", () => {
   });
 
   describe("Get sub from access token", () => {
+    describe("Given an unexpected error is returned", () => {
+      it('Logs and returns 500 Server Error response', async () => {
+        const jwtBuilder = new MockJWTBuilder();
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+        });
+
+        dependencies.tokenService = () => new MockTokenServiceServerError()
+
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+        );
+
+        expect(mockLoggingAdapter.getLogMessages()[0].logMessage.message).toBe(
+          "JWT_CLAIM_INVALID",
+        );
+        expect(mockLoggingAdapter.getLogMessages()[0].data).toStrictEqual({
+          errorMessage: "Invalid token",
+        });
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Mock server error",
+          }),
+        });
+      })
+    })
     describe("Given token is invalid", () => {
       it("Logs and returns 400 Bad Request response", async () => {
         const jwtBuilder = new MockJWTBuilder();
@@ -203,7 +234,7 @@ describe("Async Active Session", () => {
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
 
-        dependencies.tokenService = () => MockTokenServiceDecodeTokenfailure()
+        dependencies.tokenService = () => new MockTokenServiceDecodeTokenfailure()
 
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
@@ -229,6 +260,15 @@ describe("Async Active Session", () => {
     });
   })
 });
+
+class MockTokenServiceServerError {
+  getSubFromToken(): Result<string> {
+    return errorResult({
+      errorMessage: "Server error",
+      errorCategory: "SERVER_ERROR",
+    })
+  }
+}
 
 class MockTokenServiceDecodeTokenfailure {
   getSubFromToken(): Result<string> {
