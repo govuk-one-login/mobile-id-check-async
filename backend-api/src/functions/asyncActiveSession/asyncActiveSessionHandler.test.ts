@@ -47,6 +47,32 @@ describe("Async Active Session", () => {
         });
       });
     });
+
+    describe("Given the STS_JWKS_ENDPOINT is not a URL", () => {
+      it("Returns a 500 Server Error response", async () => {
+        dependencies.env = JSON.parse(JSON.stringify(env));
+        dependencies.env["STS_JWKS_ENDPOINT"] =
+          "mockInvalidSessionTtlSecs";
+        const event = buildRequest();
+        const result = await lambdaHandlerConstructor(dependencies, event);
+
+        expect(mockLoggingAdapter.getLogMessages()[0].logMessage.message).toBe(
+          "ENVIRONMENT_VARIABLE_MISSING",
+        );
+        expect(mockLoggingAdapter.getLogMessages()[0].data).toStrictEqual({
+          errorMessage: "STS_JWKS_ENDPOINT is not a valid URL",
+        });
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
+        });
+      });
+    });
   });
 
   describe("Access token validation", () => {
