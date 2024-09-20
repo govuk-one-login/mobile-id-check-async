@@ -5,6 +5,7 @@ import { IAsyncActiveSessionDependencies } from "./handlerDependencies";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
+import { MockJWTBuilder } from "../testUtils/mockJwt";
 
 const env = {
   STS_JWKS_ENDPOINT: "https://mockUrl.com",
@@ -191,4 +192,39 @@ describe("Async Active Session", () => {
       });
     });
   });
+
+  describe("Get sub from access token", () => {
+    describe("Given decoding token fails", () => {
+      it("Logs and returns 400 Bad Request response", async () => {
+        const jwtBuilder = new MockJWTBuilder();
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+        });
+
+        dependencies.tokenService = () =>
+          // TODO: mock to be added
+
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+        );
+
+        expect(mockLoggingAdapter.getLogMessages()[0].logMessage.message).toBe(
+          "JWT_CLAIM_INVALID",
+        );
+        expect(mockLoggingAdapter.getLogMessages()[0].data).toStrictEqual({
+          errorMessage: "Mock decoding token error",
+        });
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description: "Mock decoding token error",
+          }),
+        });
+      });
+    });
+  })
 });
