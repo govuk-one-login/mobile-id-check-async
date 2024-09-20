@@ -51,8 +51,7 @@ describe("Async Active Session", () => {
     describe("Given the STS_JWKS_ENDPOINT is not a URL", () => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
-        dependencies.env["STS_JWKS_ENDPOINT"] =
-          "mockInvalidSessionTtlSecs";
+        dependencies.env["STS_JWKS_ENDPOINT"] = "mockInvalidSessionTtlSecs";
         const event = buildRequest();
         const result = await lambdaHandlerConstructor(dependencies, event);
 
@@ -60,7 +59,7 @@ describe("Async Active Session", () => {
           "ENVIRONMENT_VARIABLE_MISSING",
         );
         expect(mockLoggingAdapter.getLogMessages()[0].data).toStrictEqual({
-          errorMessage: "STS_JWKS_ENDPOINT is not a valid URL",
+          errorMessage: "STS_JWKS_ENDPOINT is not a URL",
         });
 
         expect(result).toStrictEqual({
