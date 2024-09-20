@@ -125,6 +125,18 @@ Mappings:
     production:
       BaseDns: review-b-async.account.gov.uk
 
+  EnvironmentVariables:
+    dev:
+      STSJWKSENDPOINT: 'https://sts-mock.review-b-async.dev.account.gov.uk/.well-known/jwks.json'
+    build:
+      STSJWKSENDPOINT: 'https://sts-mock.review-b-async.build.account.gov.uk/.well-known/jwks.json'
+    # staging:
+    #   STSJWKSENDPOINT: '' TODO: Mock should only be used in dev and build. Update this value
+    # integration:
+    #   STSJWKSENDPOINT: '' TODO: Mock should only be used in dev and build. Update this value
+    # production:
+    #   STSJWKSENDPOINT: '' TODO: Mock should only be used in dev and build. Update this value
+
 Conditions:
   UseCodeSigning: !Not
     - !Equals
@@ -729,6 +741,10 @@ Resources:
             Method: get
             RestApiId: !Ref BackendAsyncCredentialPublicApi
       Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
+      Environment:
+        Variables:
+          STS_JWKS_ENDPOINT:
+            !FindInMap [EnvironmentVariables, !Ref Environment, STSJWKSENDPOINT]
 
   AsyncActiveSessionFunctionPermission:
     Type: AWS::Lambda::Permission
