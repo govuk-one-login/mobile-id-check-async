@@ -7,6 +7,7 @@ import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
 import { MockJWTBuilder } from "../testUtils/mockJwt";
 import { errorResult, Result } from "../utils/result";
+import { TokenService } from "./tokenService/tokenService";
 
 const env = {
   STS_JWKS_ENDPOINT: "https://mockUrl.com",
@@ -227,6 +228,7 @@ describe("Async Active Session", () => {
         });
       })
     })
+
     describe("Given token is invalid", () => {
       it("Logs and returns 400 Bad Request response", async () => {
         const jwtBuilder = new MockJWTBuilder();
