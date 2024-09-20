@@ -8,6 +8,10 @@ describe("Token Service", () => {
     tokenService = new TokenService();
   });
 
+  afterEach(() => {
+    mockFetch.mockRestore();
+  });
+
   describe("Get Sub From Token", () => {
     describe("Retrieving STS public key", () => {
       describe("Given an unexpected error retrieving the public key", () => {
