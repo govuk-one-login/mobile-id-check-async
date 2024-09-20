@@ -5,9 +5,11 @@ import { MessageName, registeredLogs } from "./registeredLogs";
 export interface IAsyncActiveSessionDependencies {
   env: NodeJS.ProcessEnv;
   logger: () => Logger<MessageName>;
+  tokenService: () => //TODO: add interface
 }
 
 export const dependencies: IAsyncActiveSessionDependencies = {
   env: process.env,
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
+  tokenService: () => new TokenService()
 };

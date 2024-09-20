@@ -6,6 +6,7 @@ import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
 import { MockJWTBuilder } from "../testUtils/mockJwt";
+import { errorResult, Result } from "../utils/result";
 
 const env = {
   STS_JWKS_ENDPOINT: "https://mockUrl.com",
@@ -20,6 +21,7 @@ describe("Async Active Session", () => {
     dependencies = {
       env,
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
+      tokenService: new TokenService()
     };
   });
 
@@ -194,15 +196,14 @@ describe("Async Active Session", () => {
   });
 
   describe("Get sub from access token", () => {
-    describe("Given decoding token fails", () => {
+    describe("Given token is invalid", () => {
       it("Logs and returns 400 Bad Request response", async () => {
         const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
 
-        dependencies.tokenService = () =>
-          // TODO: mock to be added
+        dependencies.tokenService = () => MockTokenServiceDecodeTokenfailure()
 
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
@@ -213,7 +214,7 @@ describe("Async Active Session", () => {
           "JWT_CLAIM_INVALID",
         );
         expect(mockLoggingAdapter.getLogMessages()[0].data).toStrictEqual({
-          errorMessage: "Mock decoding token error",
+          errorMessage: "Invalid token",
         });
 
         expect(result).toStrictEqual({
@@ -228,3 +229,12 @@ describe("Async Active Session", () => {
     });
   })
 });
+
+class MockTokenServiceDecodeTokenfailure {
+  getSubFromToken(): Result<string> {
+    return errorResult({
+      errorMessage: "Invalid token",
+      errorCategory: "CLIENT_ERROR",
+    })
+  }
+}
