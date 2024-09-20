@@ -6,6 +6,10 @@ import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
 
+const env = {
+  STS_JWKS_ENDPOINT: "https://mockUrl.com",
+};
+
 describe("Async Active Session", () => {
   let dependencies: IAsyncActiveSessionDependencies;
   let mockLoggingAdapter: MockLoggingAdapter<MessageName>;
@@ -13,8 +17,36 @@ describe("Async Active Session", () => {
   beforeEach(() => {
     mockLoggingAdapter = new MockLoggingAdapter();
     dependencies = {
+      env,
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
     };
+  });
+
+  describe("Environment variable validation", () => {
+    describe.each(Object.keys(env))("Given %s is missing", (envVar: string) => {
+      it("Returns a 500 Server Error response", async () => {
+        dependencies.env = JSON.parse(JSON.stringify(env));
+        delete dependencies.env[envVar];
+        const event = buildRequest();
+        const result = await lambdaHandlerConstructor(dependencies, event);
+
+        expect(mockLoggingAdapter.getLogMessages()[0].logMessage.message).toBe(
+          "ENVIRONMENT_VARIABLE_MISSING",
+        );
+        expect(mockLoggingAdapter.getLogMessages()[0].data).toStrictEqual({
+          errorMessage: `No ${envVar}`,
+        });
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
+        });
+      });
+    });
   });
 
   describe("Access token validation", () => {
