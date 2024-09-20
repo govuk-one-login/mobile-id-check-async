@@ -197,7 +197,7 @@ Resources:
       Environment:
         Variables:
           MOCK_STS_BASE_URL: !Sub https://${StsMockApiDomainName}
-          ASYNC_BACKEND_BASE_URL: !Sub https://mob-async-backend.review-b-async.${Environment}.account.gov.uk
+          ASYNC_BACKEND_BASE_URL: !Sub https://public-mob-async-backend.review-b-async.${Environment}.account.gov.uk
           KEY_STORAGE_BUCKET_NAME: !Ref JwksBucket
 
   TokenFunctionPermission:
