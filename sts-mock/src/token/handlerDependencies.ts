@@ -7,6 +7,10 @@ import {
 } from "./validateServiceTokenRequest/validateServiceTokenRequest";
 import { ITokenSigner, TokenSigner } from "./tokenSigner/tokenSigner";
 import { IKeyRetriever, KeyRetriever } from "./keyRetriever/keyRetriever";
+import {
+  ITokenEncrypter,
+  TokenEncrypter,
+} from "./tokenEncrypter/tokenEncrypter";
 
 export interface TokenDependencies {
   env: NodeJS.ProcessEnv;
@@ -14,6 +18,7 @@ export interface TokenDependencies {
   validateServiceTokenRequest: IValidateServiceTokenRequest;
   keyRetriever: () => IKeyRetriever;
   tokenSigner: () => ITokenSigner;
+  tokenEncrypter: (jwksUri: string) => ITokenEncrypter;
 }
 
 export const dependencies: TokenDependencies = {
@@ -22,4 +27,5 @@ export const dependencies: TokenDependencies = {
   validateServiceTokenRequest: validateServiceTokenRequest,
   keyRetriever: () => new KeyRetriever(),
   tokenSigner: () => new TokenSigner(),
+  tokenEncrypter: (jwksUri: string) => new TokenEncrypter(jwksUri),
 };

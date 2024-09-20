@@ -73,8 +73,21 @@ export async function lambdaHandlerConstructor(
     });
     return serverError();
   }
+  const jwt = signTokenResult.value;
 
-  // CREATE NEW CLASS THAT FETCHES PUBLIC ENCRYPTION KEY AND ENCRYPTS SERVICE TOKEN BEFORE RETURNING IT
+  const protectedServiceJwksUri =
+    config.ASYNC_BACKEND_BASE_URL + "/.well-known/jwks.json";
+  const tokenEncrypterResult = await dependencies
+    .tokenEncrypter(protectedServiceJwksUri)
+    .encrypt(jwt);
+  if (tokenEncrypterResult.isError) {
+    logger.log("INTERNAL_SERVER_ERROR", {
+      errorMessage: tokenEncrypterResult.value.errorMessage,
+    });
+    return serverError();
+  }
+
+  const serviceToken = tokenEncrypterResult.value;
 
   logger.log("COMPLETED");
 
@@ -86,7 +99,7 @@ export async function lambdaHandlerConstructor(
     },
     statusCode: 200,
     body: JSON.stringify({
-      access_token: signTokenResult.value,
+      access_token: serviceToken,
       token_type: "Bearer",
       expires_in: SERVICE_TOKEN_TTL_IN_SECS,
     }),
