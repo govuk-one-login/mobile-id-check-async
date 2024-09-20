@@ -1,28 +1,19 @@
-// import { ICustomResourceEventSender } from "../customResourceEventSender";
-// import { errorResult, Result, successResult } from "../../../utils/result";
-//
-// export class MockCustomResourceEventSenderSuccessResult
-//   implements ICustomResourceEventSender
-// {
-//   private result: { result: string }[] = [];
-//   async sendEvent(result: string): Promise<Result<null>> {
-//     this.result.push({ result: result });
-//     return Promise.resolve(successResult(null));
-//   }
-//   getResult = (): { result: string }[] => {
-//     return this.result;
-//   };
-// }
-//
-// export class MockCustomResourceEventSenderErrorResult
-//   implements ICustomResourceEventSender
-// {
-//   async sendEvent(): Promise<Result<null>> {
-//     return Promise.resolve(
-//       errorResult({
-//         errorMessage: "Error sending Custom Resource event",
-//         errorCategory: "SERVER_ERROR",
-//       }),
-//     );
-//   }
-// }
+import { ITokenEncrypter, JWE } from "../tokenEncrypter";
+import { errorResult, Result, successResult } from "../../../utils/result";
+
+export class MockTokenEncrypterSuccessResult implements ITokenEncrypter {
+  async encrypt(): Promise<Result<JWE>> {
+    return Promise.resolve(
+      successResult("header.encrypted_key.iv.ciphertext.tag" as JWE),
+    );
+  }
+}
+
+export class MockTokenEncrypterErrorResult implements ITokenEncrypter {
+  async encrypt(): Promise<Result<JWE>> {
+    return errorResult({
+      errorMessage: "Error encrypting token",
+      errorCategory: "SERVER_ERROR",
+    });
+  }
+}
