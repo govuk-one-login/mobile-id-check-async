@@ -15,6 +15,10 @@ import {
   MockKeyRetrieverSuccessResult,
 } from "./keyRetriever/tests/mocks";
 import { validateServiceTokenRequest } from "./validateServiceTokenRequest/validateServiceTokenRequest";
+import {
+  MockTokenEncrypterErrorResult,
+  MockTokenEncrypterSuccessResult,
+} from "./tokenEncrypter/tests/mocks";
 
 describe("Token Handler", () => {
   let mockLoggingAdapter: MockLoggingAdapter<MessageName>;
@@ -22,7 +26,7 @@ describe("Token Handler", () => {
   let dependencies: TokenDependencies;
 
   const env = {
-    MOCK_STS_BASE_URL: "dummyMockStsBaseUrl",
+    STS_MOCK_BASE_URL: "dummyStsMocksBaseUrl",
     ASYNC_BACKEND_BASE_URL: "dummyAsyncBackendBaseUrl",
     KEY_STORAGE_BUCKET_NAME: "dummyKeyStorageBucketName",
   };
@@ -38,6 +42,7 @@ describe("Token Handler", () => {
       validateServiceTokenRequest: validateServiceTokenRequest,
       tokenSigner: () => new MockTokenSignerSuccessResult(),
       keyRetriever: () => new MockKeyRetrieverSuccessResult(),
+      tokenEncrypter: () => new MockTokenEncrypterSuccessResult(),
     };
   });
 
@@ -233,6 +238,34 @@ describe("Token Handler", () => {
     });
   });
 
+  describe("Token Encrypter", () => {
+    describe("Given an error happens trying to encrypt the token", () => {
+      it("Returns 500 Server Error", async () => {
+        dependencies.tokenEncrypter = () => new MockTokenEncrypterErrorResult();
+
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+          buildLambdaContext(),
+        );
+
+        expect(
+          mockLoggingAdapter.getLogMessages()[0].logMessage.message,
+        ).toStrictEqual("STARTED");
+        expect(
+          mockLoggingAdapter.getLogMessages()[1].logMessage.message,
+        ).toStrictEqual("INTERNAL_SERVER_ERROR");
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: "Some error encrypting token",
+        });
+        expect(result.statusCode).toStrictEqual(500);
+        expect(result.body).toStrictEqual(
+          '{"error":"server_error","error_description":"Server Error"}',
+        );
+      });
+    });
+  });
+
   describe("Issue service token", () => {
     describe("Given the request is valid and the service token is generated", () => {
       it("Returns 200 and the service token", async () => {
@@ -256,7 +289,7 @@ describe("Token Handler", () => {
           },
           statusCode: 200,
           body: JSON.stringify({
-            access_token: "mockServiceToken",
+            access_token: "header.encrypted_key.iv.ciphertext.tag",
             token_type: "Bearer",
             expires_in: 180,
           }),

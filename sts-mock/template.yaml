@@ -196,7 +196,7 @@ Resources:
       Role: !GetAtt TokenFunctionLambdaRole.Arn
       Environment:
         Variables:
-          MOCK_STS_BASE_URL: !Sub https://${StsMockApiDomainName}
+          STS_MOCK_BASE_URL: !Sub https://${StsMockApiDomainName}
           ASYNC_BACKEND_BASE_URL: !Sub https://public-mob-async-backend.review-b-async.${Environment}.account.gov.uk
           KEY_STORAGE_BUCKET_NAME: !Ref JwksBucket
 

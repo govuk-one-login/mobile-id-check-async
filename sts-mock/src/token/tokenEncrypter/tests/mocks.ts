@@ -12,7 +12,7 @@ export class MockTokenEncrypterSuccessResult implements ITokenEncrypter {
 export class MockTokenEncrypterErrorResult implements ITokenEncrypter {
   async encrypt(): Promise<Result<JWE>> {
     return errorResult({
-      errorMessage: "Error encrypting token",
+      errorMessage: "Some error encrypting token",
       errorCategory: "SERVER_ERROR",
     });
   }

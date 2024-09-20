@@ -57,7 +57,7 @@ export async function lambdaHandlerConstructor(
   const { subjectId, scope } = validateServiceTokenRequestResult.value;
 
   const payload = getServiceTokenPayload(
-    config.MOCK_STS_BASE_URL,
+    config.STS_MOCK_BASE_URL,
     config.ASYNC_BACKEND_BASE_URL,
     SERVICE_TOKEN_TTL_IN_SECS,
     subjectId,
