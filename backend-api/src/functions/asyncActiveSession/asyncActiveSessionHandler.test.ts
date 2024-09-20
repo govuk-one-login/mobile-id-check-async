@@ -22,7 +22,7 @@ describe("Async Active Session", () => {
     dependencies = {
       env,
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
-      tokenService: new TokenService()
+      tokenService: new TokenService(),
     };
   });
 
@@ -198,13 +198,13 @@ describe("Async Active Session", () => {
 
   describe("Get sub from access token", () => {
     describe("Given an unexpected error is returned", () => {
-      it('Logs and returns 500 Server Error response', async () => {
+      it("Logs and returns 500 Server Error response", async () => {
         const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
 
-        dependencies.tokenService = () => new MockTokenServiceServerError()
+        dependencies.tokenService = () => new MockTokenServiceServerError();
 
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
@@ -226,8 +226,8 @@ describe("Async Active Session", () => {
             error_description: "Mock server error",
           }),
         });
-      })
-    })
+      });
+    });
 
     describe("Given token is invalid", () => {
       it("Logs and returns 400 Bad Request response", async () => {
@@ -236,7 +236,8 @@ describe("Async Active Session", () => {
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
 
-        dependencies.tokenService = () => new MockTokenServiceDecodeTokenfailure()
+        dependencies.tokenService = () =>
+          new MockTokenServiceDecodeTokenfailure();
 
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
@@ -260,7 +261,7 @@ describe("Async Active Session", () => {
         });
       });
     });
-  })
+  });
 });
 
 class MockTokenServiceServerError {
@@ -268,7 +269,7 @@ class MockTokenServiceServerError {
     return errorResult({
       errorMessage: "Server error",
       errorCategory: "SERVER_ERROR",
-    })
+    });
   }
 }
 
@@ -277,6 +278,6 @@ class MockTokenServiceDecodeTokenfailure {
     return errorResult({
       errorMessage: "Invalid token",
       errorCategory: "CLIENT_ERROR",
-    })
+    });
   }
 }
