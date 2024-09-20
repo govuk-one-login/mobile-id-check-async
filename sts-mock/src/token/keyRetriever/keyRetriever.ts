@@ -47,15 +47,14 @@ export class KeyRetriever implements IKeyRetriever {
       });
     }
 
-    const { Body } = response;
-    if (!Body) {
+    if (!response.Body) {
       return errorResult({
         errorMessage: "Empty object retrieved from S3",
         errorCategory: "SERVER_ERROR",
       });
     }
 
-    const signingKey = await Body.transformToString();
+    const signingKey = await response.Body.transformToString();
 
     return this.formatKeyAsKeyObject(signingKey);
   }

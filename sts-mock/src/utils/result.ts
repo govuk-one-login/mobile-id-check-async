@@ -20,7 +20,7 @@ export const successResult = <S>(value: S): SuccessResult<S> => {
 export const errorResult = (value: {
   errorMessage: string;
   errorCategory: ErrorCategory;
-} ): ErrorResult => {
+}): ErrorResult => {
   return {
     isError: true,
     value,
