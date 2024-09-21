@@ -199,6 +199,26 @@ Resources:
           STS_MOCK_BASE_URL: !Sub https://${StsMockApiDomainName}
           ASYNC_BACKEND_BASE_URL: !Sub https://public-mob-async-backend.review-b-async.${Environment}.account.gov.uk
           KEY_STORAGE_BUCKET_NAME: !Ref JwksBucket
+      VpcConfig:
+        SubnetIds:
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+        SecurityGroupIds:
+          - !Ref TokenLambdaSecurityGroup
+
+  TokenLambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${AWS::StackName}-token-sg
+      GroupDescription: Lambda Security group ruleset.
+      SecurityGroupEgress:
+        - CidrIp: !ImportValue devplatform-vpc-VpcCidr
+          Description: TCP HTTPS outbound to vpc.
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      VpcId: !ImportValue devplatform-vpc-VpcId
 
   TokenFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -253,6 +273,16 @@ Resources:
                   - !Sub
                     - arn:aws:s3:::${TargetBucket}/*
                     - TargetBucket: !Ref JwksBucket
+        - PolicyName: TokenFunctionENIPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
 
   JwksBucket:
     Type: AWS::S3::Bucket
