@@ -63,7 +63,7 @@ export class TokenEncrypter implements ITokenEncrypter {
 
     let body: object;
     try {
-      body = await response.json();
+      body = JSON.parse(await response.text());
       return successResult(body);
     } catch {
       return errorResult({
@@ -76,12 +76,19 @@ export class TokenEncrypter implements ITokenEncrypter {
   private getEncryptionKey(responseBody: object): Result<KeyObject> {
     if (!("keys" in responseBody) || !Array.isArray(responseBody.keys)) {
       return errorResult({
-        errorMessage: "Not a valid JWK",
+        errorMessage: "Not a valid JWKS",
         errorCategory: "SERVER_ERROR",
       });
     }
 
     const jwk = responseBody.keys.find((key: JsonWebKey) => key.use === "enc");
+    if (!jwk) {
+      return errorResult({
+        errorMessage: "No encryption key in JWKS",
+        errorCategory: "SERVER_ERROR",
+      });
+    }
+
     try {
       const encryptionKey = createPublicKey({ key: jwk, format: "jwk" });
       return successResult(encryptionKey);
