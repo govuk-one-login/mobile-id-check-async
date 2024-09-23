@@ -13,11 +13,11 @@ function getInstance(baseUrl: string) {
   return apiInstance;
 }
 
-function getAsyncBackendPublicApiInstance() {
-  const publicApiUrl = process.env.PUBLIC_API_URL;
-  if (!publicApiUrl)
-    throw new Error("PUBLIC_API_URL needs to be defined for API tests");
-  return getInstance(publicApiUrl);
+function getSessionsApiInstance() {
+  const sessionsApiUrl = process.env.SESSIONS_API_URL;
+  if (!sessionsApiUrl)
+    throw new Error("SESSIONS_API_URL needs to be defined for API tests");
+  return getInstance(sessionsApiUrl);
 }
 
-export const PUBLIC_API_INSTANCE = getAsyncBackendPublicApiInstance();
+export const SESSIONS_API_INSTANCE = getSessionsApiInstance();
