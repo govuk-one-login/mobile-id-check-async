@@ -197,7 +197,7 @@ Resources:
       Environment:
         Variables:
           STS_MOCK_BASE_URL: !Sub https://${StsMockApiDomainName}
-          ASYNC_BACKEND_BASE_URL: !Sub https://ez88efroye.execute-api.eu-west-2.amazonaws.com/${Environment}
+          ASYNC_BACKEND_BASE_URL: !Sub https://sessions-mob-async-backend.review-b-async.${Environment}.account.gov.uk
           KEY_STORAGE_BUCKET_NAME: !Ref JwksBucket
 
   TokenFunctionPermission:
