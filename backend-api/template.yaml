@@ -1158,18 +1158,8 @@ Resources:
 Outputs:
   SessionsApiUrl:
     Description: Sessions API Gateway base URL
-    Value: !Sub
-      - https://sessions-${AWS::StackName}.${DNS_RECORD}
-      - DNS_RECORD: !FindInMap
-          - DNS
-          - !Ref Environment
-          - BaseDns
+    Value: !Sub https://${SessionsApiDomainName}
 
   ProxyApiUrl:
     Description: Proxy API Gateway Pretty DNS
-    Value: !Sub
-      - https://proxy-${AWS::StackName}.${DNS_RECORD}
-      - DNS_RECORD: !FindInMap
-          - DNS
-          - !Ref Environment
-          - BaseDns
+    Value: !Sub https://${ProxyApiDomainName}
