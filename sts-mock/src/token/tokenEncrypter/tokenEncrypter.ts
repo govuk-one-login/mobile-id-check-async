@@ -31,8 +31,11 @@ export class TokenEncrypter implements ITokenEncrypter {
       enc: "A256GCM",
     };
 
+    const textEncoder = new TextEncoder();
+
     try {
-      const jwe = (await new CompactEncrypt(new TextEncoder().encode(jwt))
+      const jwtEncoded = new CompactEncrypt(textEncoder.encode(jwt));
+      const jwe = (await jwtEncoded
         .setProtectedHeader(header)
         .encrypt(encryptionKey)) as JWE;
       return successResult(jwe);
