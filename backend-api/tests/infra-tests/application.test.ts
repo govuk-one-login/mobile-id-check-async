@@ -117,17 +117,17 @@ describe("Backend application infrastructure", () => {
     });
   });
 
-  describe("Public APIgw", () => {
+  describe("Sessions APIgw", () => {
     test("The endpoints are REGIONAL", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: { "Fn::Sub": "${AWS::StackName}-public-api" },
+        Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
         EndpointConfiguration: "REGIONAL",
       });
     });
 
     test("It uses the public async OpenAPI Spec", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: { "Fn::Sub": "${AWS::StackName}-public-api" },
+        Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
         DefinitionBody: {
           "Fn::Transform": {
             Name: "AWS::Include",
@@ -144,7 +144,7 @@ describe("Backend application infrastructure", () => {
           "AWS::Serverless::Api",
 
           {
-            Name: { "Fn::Sub": "${AWS::StackName}-public-api" },
+            Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
             MethodSettings: methodSettings,
           },
         );
@@ -168,11 +168,11 @@ describe("Backend application infrastructure", () => {
           production: 0,
         };
         const mappingHelper = new Mappings(template);
-        mappingHelper.validatePublicAPIMapping({
+        mappingHelper.validateSessionsApiMapping({
           environmentFlags: expectedBurstLimits,
           mappingBottomLevelKey: "ApiBurstLimit",
         });
-        mappingHelper.validatePublicAPIMapping({
+        mappingHelper.validateSessionsApiMapping({
           environmentFlags: expectedRateLimits,
           mappingBottomLevelKey: "ApiRateLimit",
         });
@@ -184,13 +184,13 @@ describe("Backend application infrastructure", () => {
           "AWS::Serverless::Api",
 
           {
-            Name: { "Fn::Sub": "${AWS::StackName}-public-api" },
+            Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
             MethodSettings: methodSettings,
           },
         );
         expect(methodSettings.asArray()[0].ThrottlingBurstLimit).toStrictEqual({
           "Fn::FindInMap": [
-            "PublicApigw",
+            "SessionsApigw",
             { Ref: "Environment" },
             "ApiBurstLimit",
           ],
@@ -198,7 +198,7 @@ describe("Backend application infrastructure", () => {
 
         expect(methodSettings.asArray()[0].ThrottlingRateLimit).toStrictEqual({
           "Fn::FindInMap": [
-            "PublicApigw",
+            "SessionsApigw",
             { Ref: "Environment" },
             "ApiRateLimit",
           ],
@@ -208,11 +208,11 @@ describe("Backend application infrastructure", () => {
 
     test("Access log group is attached to APIgw", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: { "Fn::Sub": "${AWS::StackName}-public-api" },
+        Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
         AccessLogSetting: {
           DestinationArn: {
             "Fn::Sub":
-              "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialPublicApiAccessLogs}",
+              "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${SessionsApiAccessLogs}",
           },
         },
       });
@@ -222,7 +222,8 @@ describe("Backend application infrastructure", () => {
       template.hasResourceProperties("AWS::Logs::LogGroup", {
         RetentionInDays: 30,
         LogGroupName: {
-          "Fn::Sub": "/aws/apigateway/${AWS::StackName}-public-api-access-logs",
+          "Fn::Sub":
+            "/aws/apigateway/${AWS::StackName}-sessions-api-access-logs",
         },
       });
     });

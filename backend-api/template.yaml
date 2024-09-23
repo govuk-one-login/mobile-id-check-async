@@ -42,7 +42,7 @@ Mappings:
       ApiBurstLimit: 0
       ApiRateLimit: 0
 
-  PublicApigw:
+  SessionsApigw:
     dev:
       ApiBurstLimit: 10
       ApiRateLimit: 10
@@ -668,16 +668,16 @@ Resources:
         Enabled: true
 
   ### Regional APIgw
-  PublicApi:
+  SessionsApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub ${AWS::StackName}-public-api
+      Name: !Sub ${AWS::StackName}-sessions-api
       Description: Regional API gateway for Client Credentials flow
       EndpointConfiguration: REGIONAL
       StageName: !Ref Environment
       OpenApiVersion: 3.0.1
       AccessLogSetting:
-        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialPublicApiAccessLogs}
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${SessionsApiAccessLogs}
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
       MethodSettings:
         - LoggingLevel: INFO
@@ -686,11 +686,11 @@ Resources:
           DataTraceEnabled: false
           MetricsEnabled: true
           ThrottlingBurstLimit: !FindInMap
-            - PublicApigw
+            - SessionsApigw
             - !Ref Environment
             - ApiBurstLimit
           ThrottlingRateLimit: !FindInMap
-            - PublicApigw
+            - SessionsApigw
             - !Ref Environment
             - ApiRateLimit
       DefinitionBody:
@@ -699,17 +699,17 @@ Resources:
           Parameters:
             Location: ./openApiSpecs/async-public-spec.yaml
 
-  AsyncCredentialPublicApiAccessLogs:
+  SessionsApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-public-api-access-logs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sessions-api-access-logs
       RetentionInDays: 30
 
-  PublicApiDomainName:
+  SessionsApiDomainName:
     Type: AWS::ApiGateway::DomainName
     Properties:
       DomainName: !Sub
-        - public-${AWS::StackName}.${DNS_RECORD}
+        - sessions-${AWS::StackName}.${DNS_RECORD}
         - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
@@ -720,24 +720,24 @@ Resources:
       RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN}}'
       SecurityPolicy: TLS_1_2
 
-  PublicApiBasePathMapping:
+  SessionsApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
-    DependsOn: PublicApiDomainName
+    DependsOn: SessionsApiDomainName
     Properties:
       DomainName: !Sub
-        - public-${AWS::StackName}.${DNS_RECORD}
+        - sessions-${AWS::StackName}.${DNS_RECORD}
         - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
             - BaseDns
-      RestApiId: !Ref PublicApi
-      Stage: !Ref PublicApi.Stage
+      RestApiId: !Ref SessionsApi
+      Stage: !Ref SessionsApi.Stage
 
-  PublicApiRecordSet:
+  SessionsApiRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
       Name: !Sub
-        - public-${AWS::StackName}.${DNS_RECORD}
+        - sessions-${AWS::StackName}.${DNS_RECORD}
         - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
@@ -745,8 +745,8 @@ Resources:
       Type: A
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
       AliasTarget:
-        DNSName: !GetAtt PublicApiDomainName.RegionalDomainName
-        HostedZoneId: !GetAtt PublicApiDomainName.RegionalHostedZoneId
+        DNSName: !GetAtt SessionsApiDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt SessionsApiDomainName.RegionalHostedZoneId
 
   AsyncActiveSessionFunction:
     Type: AWS::Serverless::Function
@@ -771,7 +771,7 @@ Resources:
           Properties:
             Path: /async/activeSession
             Method: get
-            RestApiId: !Ref PublicApi
+            RestApiId: !Ref SessionsApi
       Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
 
   AsyncActiveSessionFunctionPermission:
@@ -781,7 +781,7 @@ Resources:
       FunctionName: !GetAtt AsyncActiveSessionFunction.Arn
       Principal: events.amazonaws.com
       SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PublicApi}/*/*/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SessionsApi}/*/*/*
 
   AsyncActiveSessionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -1156,10 +1156,10 @@ Resources:
         - !Ref AWS::NoValue
 
 Outputs:
-  PublicApiUrl:
-    Description: Public API Gateway base URL
+  SessionsApiUrl:
+    Description: Sessions API Gateway base URL
     Value: !Sub
-      - https://public-${AWS::StackName}.${DNS_RECORD}
+      - https://sessions-${AWS::StackName}.${DNS_RECORD}
       - DNS_RECORD: !FindInMap
           - DNS
           - !Ref Environment
