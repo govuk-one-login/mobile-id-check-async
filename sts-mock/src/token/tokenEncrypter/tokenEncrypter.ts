@@ -63,7 +63,7 @@ export class TokenEncrypter implements ITokenEncrypter {
 
     let body: object;
     try {
-      body = JSON.parse(await response.text());
+      body = await response.json();
       return successResult(body);
     } catch {
       return errorResult({

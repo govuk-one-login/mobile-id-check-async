@@ -12,10 +12,19 @@ describe("Token Encrypter", () => {
       Promise.resolve({
         status: 200,
         ok: true,
-        text: () =>
-          Promise.resolve(
-            '{"keys":[{"kty":"RSA","n":"0wLh4PMAjSt17zLNFw9nnBdV901AWp0uuHQzGaz1-Wz1lAs-jN7nI90sQAyiv8MDlYWLrfUZKcQAAA0yjISp9UyTr8qgqsyAKiFBIcnoH7l4qV-U-VXe3rcMjr5BzrKdVK664YiF9coGaal-QDDd1VY0fvvom3DhGnh8MoezBQPKl6pynIaSiDHZUdSe8B9LdsjsKHt4SujGRR_QlERYISC0s4pCQu2gA9qsP-pFDfcklbLtskFtWa_utiPe48Y5xgrhj5r-hMz9Zi4R55mX6nymC9gypk7q6iiXGEQcMzxPMy0kgF4437PqA-0GmjJE24pGmVhnr33UL2i0tsfviw","e":"AQAB","use":"enc","alg":"RS256","kid":"456d2da6-9ca8-4e1d-b8c8-081109d73015"}]}',
-          ),
+        json: () =>
+          Promise.resolve({
+            keys: [
+              {
+                kty: "RSA",
+                n: "0wLh4PMAjSt17zLNFw9nnBdV901AWp0uuHQzGaz1-Wz1lAs-jN7nI90sQAyiv8MDlYWLrfUZKcQAAA0yjISp9UyTr8qgqsyAKiFBIcnoH7l4qV-U-VXe3rcMjr5BzrKdVK664YiF9coGaal-QDDd1VY0fvvom3DhGnh8MoezBQPKl6pynIaSiDHZUdSe8B9LdsjsKHt4SujGRR_QlERYISC0s4pCQu2gA9qsP-pFDfcklbLtskFtWa_utiPe48Y5xgrhj5r-hMz9Zi4R55mX6nymC9gypk7q6iiXGEQcMzxPMy0kgF4437PqA-0GmjJE24pGmVhnr33UL2i0tsfviw",
+                e: "AQAB",
+                use: "enc",
+                alg: "RS256",
+                kid: "456d2da6-9ca8-4e1d-b8c8-081109d73015",
+              },
+            ],
+          }),
       } as Response),
     );
   });
@@ -65,7 +74,7 @@ describe("Token Encrypter", () => {
         Promise.resolve({
           status: 200,
           ok: true,
-          text: () => Promise.resolve("notAValidJSON"),
+          json: () => Promise.reject("notAValidJSON"),
         } as Response),
       );
 
@@ -85,7 +94,7 @@ describe("Token Encrypter", () => {
         Promise.resolve({
           status: 200,
           ok: true,
-          text: () => Promise.resolve("{}"),
+          json: () => Promise.resolve({}),
         } as Response),
       );
 
@@ -105,7 +114,7 @@ describe("Token Encrypter", () => {
         Promise.resolve({
           status: 200,
           ok: true,
-          text: () => Promise.resolve('{"keys":"notAnArray"}'),
+          json: () => Promise.resolve({ keys: "notAnArray" }),
         } as Response),
       );
 
@@ -125,7 +134,7 @@ describe("Token Encrypter", () => {
         Promise.resolve({
           status: 200,
           ok: true,
-          text: () => Promise.resolve('{"keys":[{"kty":"RSA","use":"sig"}]}'),
+          json: () => Promise.resolve({ keys: [{ kty: "RSA", use: "sig" }] }),
         } as Response),
       );
 
@@ -145,7 +154,7 @@ describe("Token Encrypter", () => {
         Promise.resolve({
           status: 200,
           ok: true,
-          text: () => Promise.resolve('{"keys":[{"kty":"RSA","use":"enc"}]}'),
+          json: () => Promise.resolve({ keys: [{ kty: "RSA", use: "enc" }] }),
         } as Response),
       );
 
@@ -165,7 +174,7 @@ describe("Token Encrypter", () => {
         Promise.resolve({
           status: 200,
           ok: true,
-          text: () => Promise.resolve('{"keys":[{"kty":"RSA","use":"enc"}]}'),
+          json: () => Promise.resolve({ keys: [{ kty: "RSA", use: "enc" }] }),
         } as Response),
       );
 
@@ -185,10 +194,20 @@ describe("Token Encrypter", () => {
         Promise.resolve({
           status: 200,
           ok: true,
-          text: () =>
-            Promise.resolve(
-              '{"keys":[{"kty":"EC","x":"-JBGGl6V4K-9VJZ_UfPljiHlteQCqTwbbMHEAxv0_NA","y":"ZgDwVZCrtEHfdrJwgq3n7a2pdPUFLabCYLUu6Un3VXE","crv":"P-256","kid":"SNFJEFlxy-FxCkRtvj1VD38VuotQ-ta6a2w7p4j6jhY","use":"enc","alg":"ES256"}]}',
-            ),
+          json: () =>
+            Promise.resolve({
+              keys: [
+                {
+                  kty: "EC",
+                  x: "-JBGGl6V4K-9VJZ_UfPljiHlteQCqTwbbMHEAxv0_NA",
+                  y: "ZgDwVZCrtEHfdrJwgq3n7a2pdPUFLabCYLUu6Un3VXE",
+                  crv: "P-256",
+                  kid: "SNFJEFlxy-FxCkRtvj1VD38VuotQ-ta6a2w7p4j6jhY",
+                  use: "enc",
+                  alg: "ES256",
+                },
+              ],
+            }),
         } as Response),
       );
 
