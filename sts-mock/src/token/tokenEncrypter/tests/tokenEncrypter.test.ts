@@ -148,27 +148,7 @@ describe("Token Encrypter", () => {
     });
   });
 
-  describe("Given the encryption JWK is invalid and therefore cannot be parsed as a KeyObject", () => {
-    it("Returns an error response", async () => {
-      jest.spyOn(global, "fetch").mockImplementation(() =>
-        Promise.resolve({
-          status: 200,
-          ok: true,
-          json: () => Promise.resolve({ keys: [{ kty: "RSA", use: "enc" }] }),
-        } as Response),
-      );
-
-      const result = await tokenEncrypter.encrypt(dummyJwt);
-
-      expect(result.isError).toBe(true);
-      expect(result.value).toStrictEqual({
-        errorMessage: "Error creating public encryption key",
-        errorCategory: "SERVER_ERROR",
-      });
-    });
-  });
-
-  describe("Given the encryption JWK is invalid as it's missing required fields", () => {
+  describe("Given the encryption JWK is invalid (i.e. missing required fields) and cannot be parsed as a KeyObject", () => {
     it("Returns an error response", async () => {
       jest.spyOn(global, "fetch").mockImplementation(() =>
         Promise.resolve({
