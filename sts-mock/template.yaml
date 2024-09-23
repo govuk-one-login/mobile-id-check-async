@@ -345,3 +345,6 @@ Outputs:
   StsMockApiUrl:
     Description: STS Mock API Gateway DNS
     Value: !Sub https://${StsMockApiDomainName}
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-StsMockApiUrl
