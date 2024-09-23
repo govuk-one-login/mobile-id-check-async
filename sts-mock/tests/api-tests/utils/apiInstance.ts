@@ -17,7 +17,6 @@ function getStsMockApiInstance() {
   const stsMockApiUrl = process.env.STS_MOCK_API_URL;
   if (!stsMockApiUrl)
     throw new Error("STS_MOCK_API_URL needs to be defined for API tests");
-  console.log(stsMockApiUrl);
   return getInstance(stsMockApiUrl);
 }
 
