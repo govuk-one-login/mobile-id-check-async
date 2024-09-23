@@ -33,7 +33,7 @@ describe("Token Handler", () => {
 
   beforeEach(() => {
     event = buildTokenRequest(
-      "subject_token=testSub&scope=idCheck.activeSession.read",
+      "subject_token=testSub&scope=idCheck.activeSession.read&subject_token_type=urn:ietf:params:oauth:token-type:access_token&grant_type=urn:ietf:params:oauth:grant-type:token-exchange",
     );
     mockLoggingAdapter = new MockLoggingAdapter();
     dependencies = {
@@ -74,7 +74,7 @@ describe("Token Handler", () => {
 
   describe("Validate Service Token Request", () => {
     describe("Given the request body is falsy", () => {
-      it("Returns 400 Bad Request and the message 'Missing request body'", async () => {
+      it("Logs INVALID_REQUEST and returns 400 Bad Request", async () => {
         event = buildTokenRequest(undefined);
 
         const result = await lambdaHandlerConstructor(
@@ -99,87 +99,93 @@ describe("Token Handler", () => {
       });
     });
 
-    describe("Given the request body is missing the key 'subject_token'", () => {
-      it("Returns 400 Bad Request and the message 'Missing subject_token'", async () => {
-        event = buildTokenRequest(
-          "scope=testServiceName.testApiName.testAccessLevel",
-        );
+    describe.each([
+      [
+        "subject_token",
+        "scope=idCheck.activeSession.read&subject_token_type=urn:ietf:params:oauth:token-type:access_token&grant_type=urn:ietf:params:oauth:grant-type:token-exchange",
+      ],
+      [
+        "scope",
+        "subject_token=testSub&subject_token_type=urn:ietf:params:oauth:token-type:access_token&grant_type=urn:ietf:params:oauth:grant-type:token-exchange",
+      ],
+      [
+        "subject_token_type",
+        "subject_token=testSub&scope=idCheck.activeSession.read&grant_type=urn:ietf:params:oauth:grant-type:token-exchange",
+      ],
+      [
+        "grant_type",
+        "subject_token=testSub&scope=idCheck.activeSession.read&subject_token_type=urn:ietf:params:oauth:token-type:access_token",
+      ],
+    ])(
+      "Given the request body is missing the param '%s'",
+      (param: string, body: string) => {
+        it("Logs INVALID_REQUEST and returns 400 Bad Request", async () => {
+          event = buildTokenRequest(body);
 
-        const result = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-          buildLambdaContext(),
-        );
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            event,
+            buildLambdaContext(),
+          );
 
-        expect(
-          mockLoggingAdapter.getLogMessages()[0].logMessage.message,
-        ).toStrictEqual("STARTED");
-        expect(
-          mockLoggingAdapter.getLogMessages()[1].logMessage.message,
-        ).toStrictEqual("INVALID_REQUEST");
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Missing subject_token",
+          expect(
+            mockLoggingAdapter.getLogMessages()[0].logMessage.message,
+          ).toStrictEqual("STARTED");
+          expect(
+            mockLoggingAdapter.getLogMessages()[1].logMessage.message,
+          ).toStrictEqual("INVALID_REQUEST");
+          expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+            errorMessage: `Missing ${param}`,
+          });
+          expect(result.statusCode).toStrictEqual(400);
+          expect(result.body).toStrictEqual(
+            `{"error":"invalid_request","error_description":"Missing ${param}"}`,
+          );
         });
-        expect(result.statusCode).toStrictEqual(400);
-        expect(result.body).toStrictEqual(
-          '{"error":"invalid_request","error_description":"Missing subject_token"}',
-        );
-      });
-    });
+      },
+    );
 
-    describe("Given the request body is missing the key 'scope'", () => {
-      it("Returns 400 Bad Request and the message 'Missing scope'", async () => {
-        event = buildTokenRequest("subject_token=testSub");
+    describe.each([
+      [
+        "scope",
+        "subject_token=testSub&scope=invalidScope&subject_token_type=urn:ietf:params:oauth:token-type:access_token&grant_type=urn:ietf:params:oauth:grant-type:token-exchange",
+      ],
+      [
+        "subject_token_type",
+        "subject_token=testSub&scope=idCheck.activeSession.read&subject_token_type=invalidSubjectTokenType&grant_type=urn:ietf:params:oauth:grant-type:token-exchange",
+      ],
+      [
+        "grant_type",
+        "subject_token=testSub&scope=idCheck.activeSession.read&subject_token_type=urn:ietf:params:oauth:token-type:access_token&grant_type=invalidGrantType",
+      ],
+    ])(
+      "Given the value of the '%s' param is invalid/not supported",
+      (param: string, body: string) => {
+        it("Logs INVALID_REQUEST and returns 400 Bad Request", async () => {
+          event = buildTokenRequest(body);
 
-        const result = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-          buildLambdaContext(),
-        );
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            event,
+            buildLambdaContext(),
+          );
 
-        expect(
-          mockLoggingAdapter.getLogMessages()[0].logMessage.message,
-        ).toStrictEqual("STARTED");
-        expect(
-          mockLoggingAdapter.getLogMessages()[1].logMessage.message,
-        ).toStrictEqual("INVALID_REQUEST");
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Missing scope",
+          expect(
+            mockLoggingAdapter.getLogMessages()[0].logMessage.message,
+          ).toStrictEqual("STARTED");
+          expect(
+            mockLoggingAdapter.getLogMessages()[1].logMessage.message,
+          ).toStrictEqual("INVALID_REQUEST");
+          expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+            errorMessage: `Unsupported ${param}`,
+          });
+          expect(result.statusCode).toStrictEqual(400);
+          expect(result.body).toStrictEqual(
+            `{"error":"invalid_request","error_description":"Unsupported ${param}"}`,
+          );
         });
-        expect(result.statusCode).toStrictEqual(400);
-        expect(result.body).toStrictEqual(
-          '{"error":"invalid_request","error_description":"Missing scope"}',
-        );
-      });
-    });
-
-    describe("Given the requested scope is not a supported scope", () => {
-      it("Returns 400 Bad Request and the message 'Unsupported scope'", async () => {
-        event = buildTokenRequest(
-          "subject_token=testSub&scope=testServiceName.not.supported",
-        );
-
-        const result = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-          buildLambdaContext(),
-        );
-
-        expect(
-          mockLoggingAdapter.getLogMessages()[0].logMessage.message,
-        ).toStrictEqual("STARTED");
-        expect(
-          mockLoggingAdapter.getLogMessages()[1].logMessage.message,
-        ).toStrictEqual("INVALID_REQUEST");
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Unsupported scope",
-        });
-        expect(result.statusCode).toStrictEqual(400);
-        expect(result.body).toStrictEqual(
-          '{"error":"invalid_request","error_description":"Unsupported scope"}',
-        );
-      });
-    });
+      },
+    );
   });
 
   describe("Key Retriever", () => {

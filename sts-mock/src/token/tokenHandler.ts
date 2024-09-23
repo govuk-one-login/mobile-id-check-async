@@ -9,7 +9,6 @@ import { JWTPayload } from "jose";
 
 const SERVICE_TOKEN_TTL_IN_SECS = 180;
 const PRIVATE_KEY_JWK_FILE_NAME = "private-key.json";
-const SUPPORTED_SERVICE_SCOPE = "idCheck.activeSession.read";
 
 export async function lambdaHandlerConstructor(
   dependencies: TokenDependencies,
@@ -31,10 +30,7 @@ export async function lambdaHandlerConstructor(
   const config = getConfigResult.value;
 
   const validateServiceTokenRequestResult =
-    dependencies.validateServiceTokenRequest(
-      event.body,
-      SUPPORTED_SERVICE_SCOPE,
-    );
+    dependencies.validateServiceTokenRequest(event.body);
   if (validateServiceTokenRequestResult.isError) {
     const { errorMessage } = validateServiceTokenRequestResult.value;
     logger.log("INVALID_REQUEST", {
