@@ -116,24 +116,14 @@ Resources:
     Type: AWS::ApiGateway::BasePathMapping
     DependsOn: StsMockApiDomainName
     Properties:
-      DomainName: !Sub
-        - ${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+      DomainName: !Sub ${StsMockApiDomainName}
       RestApiId: !Ref StsMockApi
       Stage: !Ref StsMockApi.Stage
 
   StsMockApiRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
-      Name: !Sub
-        - ${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+      Name: !Sub ${StsMockApiDomainName}
       Type: A
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
       AliasTarget:
