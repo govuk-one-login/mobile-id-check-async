@@ -96,7 +96,7 @@ paths:
     post:
       operationId: postToken
       summary: Obtain a service token.
-      description: Exchange a Mock STS-issued access token for a service token.
+      description: Exchange an access token (subject token) for a mock service token.
       requestBody:
         required: true
         content:
@@ -108,7 +108,7 @@ paths:
                   type: string
                   enum:
                     - urn:ietf:params:oauth:grant-type:token-exchange
-                  description: Exchange an access token for a service token.
+                  description: Required to exchange an access token (subject token) for a service token.
                 scope:
                   type: string
                   description: |

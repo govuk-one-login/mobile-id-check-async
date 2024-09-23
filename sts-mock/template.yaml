@@ -136,7 +136,7 @@ Resources:
       AutoPublishAlias: live
       FunctionName: !Sub ${AWS::StackName}-token
       Runtime: nodejs20.x
-      Handler: tokenHandler.lambdaHandler      
+      Handler: tokenHandler.lambdaHandler
       Events:
         Token:
           Type: Api
@@ -145,6 +145,12 @@ Resources:
             Method: post
             RestApiId: !Ref StsMockApi
       Role: !GetAtt TokenFunctionLambdaRole.Arn
+      Environment:
+        Variables:
+          # MOCK_STS_BASE_URL to be updated once available
+          MOCK_STS_BASE_URL: MockStsBaseUrl
+          ASYNC_BACKEND_BASE_URL: !Sub https://mob-async-backend.review-b-async.${Environment}.account.gov.uk
+          KEY_STORAGE_BUCKET_NAME: !Ref JwksBucket
 
   TokenFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -195,7 +201,10 @@ Resources:
               - Effect: Allow
                 Action:
                   - s3:GetObject
-                Resource: !GetAtt JwksBucket.Arn
+                Resource:
+                  - !Sub
+                    - arn:aws:s3:::${TargetBucket}/*
+                    - TargetBucket: !Ref JwksBucket
 
   JwksBucket:
     Type: AWS::S3::Bucket
@@ -228,8 +237,8 @@ Resources:
               AWS: "*"
             Action: "*"
             Resource: !Sub
-              - arn:aws:s3:::${bucketName}/*
-              - bucketName: !Ref JwksBucket
+              - arn:aws:s3:::${TargetBucket}/*
+              - TargetBucket: !Ref JwksBucket
             Condition:
               Bool:
                 "aws:SecureTransport": false
