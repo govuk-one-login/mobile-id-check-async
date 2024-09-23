@@ -1161,5 +1161,6 @@ Outputs:
     Value: !Sub https://${SessionsApiDomainName}
 
   ProxyApiUrl:
+    Condition: ProxyApiDeployment
     Description: Proxy API Gateway Pretty DNS
     Value: !Sub https://${ProxyApiDomainName}
