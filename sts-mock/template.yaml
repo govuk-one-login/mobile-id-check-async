@@ -159,7 +159,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: !Sub ${AWS::StackName}-token-sg
-      GroupDescription: Lambda Security group ruleset.
+      GroupDescription: Lambda Security group ruleset
       SecurityGroupEgress:
         - CidrIp: !ImportValue devplatform-vpc-VpcCidr
           Description: TCP HTTPS outbound to vpc.
@@ -193,7 +193,7 @@ Resources:
             Path: /token
             Method: post
             RestApiId: !Ref StsMockApi
-      Role: !GetAtt TokenFunctionLambdaRole.Arn
+      Role: !GetAtt TokenFunctionRole.Arn
       Environment:
         Variables:
           STS_MOCK_BASE_URL: !Sub https://${StsMockApiDomainName}
@@ -222,7 +222,7 @@ Resources:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-token
 
-  TokenFunctionLambdaRole:
+  TokenFunctionRole:
     Type: AWS::IAM::Role
     Properties:
       Description: Execution role for the token function
