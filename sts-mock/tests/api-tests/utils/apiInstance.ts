@@ -13,11 +13,11 @@ function getInstance(baseUrl: string) {
   return apiInstance;
 }
 
-function getSessionsApiInstance() {
-  const sessionsApiUrl = process.env.SESSIONS_API_URL;
-  if (!sessionsApiUrl)
-    throw new Error("SESSIONS_API_URL needs to be defined for API tests");
-  return getInstance(sessionsApiUrl);
+function getStsMockApiInstance() {
+  const stsMockApiUrl = process.env.STS_MOCK_API_URL;
+  if (!stsMockApiUrl)
+    throw new Error("STS_MOCK_API_URL needs to be defined for API tests");
+  return getInstance(stsMockApiUrl);
 }
 
-export const SESSIONS_API_INSTANCE = getSessionsApiInstance();
+export const STS_MOCK_API_INSTANCE = getStsMockApiInstance();

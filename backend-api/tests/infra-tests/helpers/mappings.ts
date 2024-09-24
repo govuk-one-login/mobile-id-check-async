@@ -26,11 +26,11 @@ export class Mappings {
   }) {
     this.validateMapping({ ...args, mappingTopLevelKey: "PrivateApigw" });
   }
-  validatePublicAPIMapping(args: {
+  validateSessionsApiMapping(args: {
     environmentFlags: EnvironmentFlags;
     mappingBottomLevelKey: string;
   }) {
-    this.validateMapping({ ...args, mappingTopLevelKey: "PublicApigw" });
+    this.validateMapping({ ...args, mappingTopLevelKey: "SessionsApigw" });
   }
   validateProxyAPIMapping(args: {
     environmentFlags: EnvironmentFlags;
