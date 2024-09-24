@@ -1112,7 +1112,7 @@ Resources:
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
 
-  WellKnown5XXWarningAlarm:    
+  WellKnown5XXLowThresholdWarningAlarm:    
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
@@ -1172,7 +1172,7 @@ Resources:
           ReturnData: false
           Expression: (errorSum5XX/invocations) * 100
 
-  WellKnown5XXCriticalAlarm:    
+  WellKnown5XXHighThresholdCriticalAlarm:    
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
