@@ -1,4 +1,6 @@
+import { DecryptCommand, KMSClient } from "@aws-sdk/client-kms";
 import { ITokenService, TokenService } from "../tokenService";
+import { mockClient } from "aws-sdk-client-mock";
 
 describe("Token Service", () => {
   let mockFetch: jest.SpyInstance;
@@ -95,5 +97,28 @@ describe("Token Service", () => {
         });
       });
     });
+
+    describe("Decrypting token", () => {
+      describe("Given there is an unexpected error calling KMS", () => {
+        it("Returns an error result", async () => {
+          const kmsMock = mockClient(KMSClient);
+          kmsMock.on(DecryptCommand).rejects({
+            name: 'InternalErrorException',
+            message: 'Mock server error occurred',
+            $fault: 'server',
+          });
+
+          const result = await tokenService.getSubFromToken(
+            "https://mockJwksEndpoint.com",
+          );
+
+          expect(result.isError).toBe(true);
+          expect(result.value).toStrictEqual({
+            errorMessage: "Unexpected error decrypting with KMS",
+            errorCategory: "SERVER_ERROR",
+          });
+        })
+      })
+    })
   });
 });
