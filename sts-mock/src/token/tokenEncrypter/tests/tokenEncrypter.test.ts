@@ -6,7 +6,7 @@ describe("Token Encrypter", () => {
   const dummyJwt = "header.payload.signature";
 
   beforeEach(() => {
-    tokenEncrypter = new TokenEncrypter("dummyJwksUrl");
+    tokenEncrypter = new TokenEncrypter("dummyUrl.gov.uk/.well-known/jwks.json");
 
     jest.spyOn(global, "fetch").mockImplementation(() =>
       Promise.resolve({
