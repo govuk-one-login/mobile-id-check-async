@@ -7,7 +7,8 @@ updates:
       time: "03:00"
     ignore:
       - dependency-name: "govuk-one-login/devplatform-upload-action"
-        versions: [ "b7994fb959f70cc1440295de9e823f317ffa197e" ]
+        versions:
+          - "b7994fb959f70cc1440295de9e823f317ffa197e"
     open-pull-requests-limit: 5
     groups:
       gha-version:
