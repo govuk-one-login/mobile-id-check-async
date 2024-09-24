@@ -6,7 +6,9 @@ describe("Token Encrypter", () => {
   const dummyJwt = "header.payload.signature";
 
   beforeEach(() => {
-    tokenEncrypter = new TokenEncrypter("dummyUrl.gov.uk/.well-known/jwks.json");
+    tokenEncrypter = new TokenEncrypter(
+      "dummyUrl.gov.uk/.well-known/jwks.json",
+    );
 
     jest.spyOn(global, "fetch").mockImplementation(() =>
       Promise.resolve({
@@ -168,7 +170,12 @@ describe("Token Encrypter", () => {
     });
   });
 
-  describe("Given an error happens trying to encrypt the JWT (e.g. JWK type is not compatible with encryption algorithm)", () => {
+  /*
+  This tests what happens in our codebase when 'jose.encrypt' throws an error. The intention is not to test the library
+  behaviour but the code behaviour when an error is thrown while trying to encrypt the token. In the test below, the
+  JWK type is not compatible with the required encryption algorithm, which causes 'encrypt' to throw an error.
+  */
+  describe("Given there is an unexpected error encrypting the JWT", () => {
     it("Returns an error response", async () => {
       jest.spyOn(global, "fetch").mockImplementation(() =>
         Promise.resolve({
