@@ -66,9 +66,33 @@ describe("Token Service", () => {
           });
         });
 
-        // describe("Given ", () => {
+        describe("Given the response is not valid JSON", () => {
+          it("Returns an error response", async () => {
+            mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
+              Promise.resolve({
+                status: 200,
+                ok: true,
+                json: () => Promise.reject(new Error("mockInvalidJSON")),
+              } as Response),
+            );
 
-        // })
+            const result = await tokenService.getSubFromToken(
+              "https://mockJwksEndpoint.com",
+            );
+
+            expect(mockFetch).toHaveBeenCalledWith(
+              "https://mockJwksEndpoint.com",
+              {
+                method: "GET",
+              },
+            );
+            expect(result.isError).toBe(true);
+            expect(result.value).toStrictEqual({
+              errorMessage: "Invalid JSON in response",
+              errorCategory: "SERVER_ERROR",
+            });
+          });
+        });
       });
     });
   });

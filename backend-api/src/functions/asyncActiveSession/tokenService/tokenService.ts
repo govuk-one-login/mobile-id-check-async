@@ -16,14 +16,12 @@ export class TokenService implements ITokenService {
 
   private fetchPublicKey = async (
     stsJwksEndpoint: string,
-  ): Promise<Result<string>> => {
-    // let publicKey;
+  ): Promise<Result<JSON>> => {
     let response;
     try {
       response = await fetch(stsJwksEndpoint, {
         method: "GET",
       });
-      // publicKey = await response.json();
     } catch {
       return errorResult({
         errorMessage: "Unexpected error retrieving STS public key",
@@ -38,7 +36,17 @@ export class TokenService implements ITokenService {
       });
     }
 
-    return successResult("");
+    let publicKey;
+    try {
+      publicKey = await response.json();
+    } catch {
+      return errorResult({
+        errorMessage: "Invalid JSON in response",
+        errorCategory: "SERVER_ERROR",
+      });
+    }
+
+    return successResult(publicKey);
   };
 }
 
