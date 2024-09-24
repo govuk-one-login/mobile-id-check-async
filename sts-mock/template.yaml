@@ -114,7 +114,6 @@ Resources:
 
   StsMockApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
-    DependsOn: StsMockApiDomainName
     Properties:
       DomainName: !Sub ${StsMockApiDomainName}
       RestApiId: !Ref StsMockApi
