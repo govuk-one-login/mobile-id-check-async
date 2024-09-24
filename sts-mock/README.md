@@ -17,10 +17,26 @@ npm install
 ```
 
 ## Testing
-To run unit and infrastructure tests:
-
+### Unit tests
 ```bash
 npm run test:unit
+```
+
+### Infrastructure tests
+```bash
+npm run test:infra
+```
+
+### API tests
+1. Activate AWS credentials
+2. [Deploy your stack](#deploy-to-dev)
+3. Generate a `.env` file for your deployed stack
+```bash
+sh generate_env_file.sh <stack_name>
+```
+4. Run tests
+```bash
+npm run test:api
 ```
 
 ### Formatting
