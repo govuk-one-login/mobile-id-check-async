@@ -92,7 +92,7 @@ jobs:
       run: npm install
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@909c963c254b4e2e2f5aa6ef17217c4d7a7c4a31 #main
+      uses: aws-actions/configure-aws-credentials@050bf7aae915badb82daa8e68fd95c9070706953 #main
       with:
         aws-region: eu-west-2
         role-to-assume: ${{ secrets.BACKEND_API_DEV_GH_ACTIONS_ROLE_ARN }}
@@ -126,7 +126,7 @@ jobs:
         sam build
 
     - name: Upload SAM artifact into the S3 artifact bucket
-      uses: govuk-one-login/devplatform-upload-action@6985ccbaa306e2320a8826252c922af65242b283 #main
+      uses: govuk-one-login/devplatform-upload-action@b7994fb959f70cc1440295de9e823f317ffa197e #main
       with:
         artifact-bucket-name: ${{ secrets.BACKEND_API_DEV_ARTIFACT_BUCKET }}
         signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
@@ -173,7 +173,7 @@ jobs:
         run: npm install
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@909c963c254b4e2e2f5aa6ef17217c4d7a7c4a31 #main
+        uses: aws-actions/configure-aws-credentials@050bf7aae915badb82daa8e68fd95c9070706953 #main
         with:
           aws-region: eu-west-2
           role-to-assume: ${{ secrets.BACKEND_API_BUILD_GH_ACTIONS_ROLE_ARN }}
@@ -207,7 +207,7 @@ jobs:
           sam build --cached
 
       - name: Upload SAM artifact into the S3 artifact bucket
-        uses: govuk-one-login/devplatform-upload-action@6985ccbaa306e2320a8826252c922af65242b283 #main
+        uses: govuk-one-login/devplatform-upload-action@b7994fb959f70cc1440295de9e823f317ffa197e #main
         with:
           artifact-bucket-name: ${{ secrets.BACKEND_API_BUILD_ARTIFACT_BUCKET }}
           signing-profile-name: ${{ secrets.BUILD_SIGNING_PROFILE_NAME}}
