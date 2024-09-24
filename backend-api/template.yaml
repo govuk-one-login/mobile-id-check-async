@@ -1116,7 +1116,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
-      AlarmDescription: "/.well-known endpoint has returned atleast 2 5XX status codes in the last 5 minutes"
+      AlarmDescription: "/.well-known/jwks.json endpoint has returned at least 2 5XX status codes twice in the past 5 minutes"
       AlarmName: !Sub "${AWS::StackName}-LowThresholdWellKnown5XXApiGwAlarm"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -1131,7 +1131,7 @@ Resources:
         - Id: errorThreshold
           Label: errorThreshold
           ReturnData: true
-          Expression: IF(errorSum5XX>1,errorSum5XX,0)
+          Expression: IF((invocations>4) && (errorSum5XX>2) && (errorPercentage5XX>1),errorPercentage5XX,0)
         - Id: invocations
           ReturnData: false
           MetricStat:
@@ -1142,7 +1142,7 @@ Resources:
                 - Name: Method
                   Value: GET
                 - Name: ApiName
-                  Value: !Ref BackendAsyncCredentialPublicApi
+                  Value: !Sub ${AWS::StackName}-public-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
@@ -1160,7 +1160,7 @@ Resources:
                 - Name: Method
                   Value: GET
                 - Name: ApiName
-                  Value: !Ref BackendAsyncCredentialPublicApi
+                  Value: !Sub ${AWS::StackName}-public-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
@@ -1172,65 +1172,65 @@ Resources:
           ReturnData: false
           Expression: (errorSum5XX/invocations) * 100
 
-  # WellKnown5XXCriticalAlarm:    
-  #   Type: AWS::CloudWatch::Alarm
-  #   Properties:
-  #     ActionsEnabled: true
-  #     AlarmDescription: "/."
-  #     AlarmName: !Sub "${AWS::StackName}-LowThresholdWellKnown5XXApiGwAlarm"
-  #     AlarmActions:
-  #       - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
-  #     OKActions:
-  #       - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
-  #     ComparisonOperator: GreaterThanOrEqualToThreshold
-  #     DatapointsToAlarm: 2
-  #     EvaluationPeriods: 5
-  #     TreatMissingData: notBreaching
-  #     Threshold: 2
-  #     Metrics:
-  #       - Id: errorThreshold
-  #         Label: errorThreshold
-  #         ReturnData: true
-  #         Expression: 
-  #       - Id: invocations
-  #         ReturnData: false
-  #         MetricStat:
-  #           Metric:
-  #             Namespace: AWS/ApiGateway
-  #             MetricName: Count
-  #             Dimensions:
-  #               - Name: Method
-  #                 Value: GET
-  #               - Name: ApiName
-  #                 Value: !Ref BackendAsyncCredentialPublicApi
-  #               - Name: Stage
-  #                 Value: !Ref Environment
-  #               - Name: Resource
-  #                 Value: /.well-known/jwks.json
-  #           Period: 60
-  #           Stat: Sum
-  #       - Id: errorSum5XX
-  #         Label: "Number of 5XX errors"
-  #         ReturnData: false
-  #         MetricStat:
-  #           Metric:
-  #             Namespace: AWS/ApiGateway
-  #             MetricName: 5XXError
-  #             Dimensions:
-  #               - Name: Method
-  #                 Value: GET
-  #               - Name: ApiName
-  #                 Value: !Ref BackendAsyncCredentialPublicApi
-  #               - Name: Stage
-  #                 Value: !Ref Environment
-  #               - Name: Resource
-  #                 Value: /.well-known/jwks.json
-  #           Period: 60
-  #           Stat: Sum
-  #       - Id: errorPercentage5XX
-  #         Label: "Number of 5XX errors returned as a percentage"
-  #         ReturnData: false
-  #         Expression: (errorSum5XX/invocations) * 100
+  WellKnown5XXCriticalAlarm:    
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmDescription: "80% or more of requests are failing on the /.well-known/jwks.json endpoint"
+      AlarmName: !Sub "${AWS::StackName}-HighThresholdWellKnown5XXApiGwAlarm"
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      TreatMissingData: notBreaching
+      Threshold: 80
+      Metrics:
+        - Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+          Expression: IF(errorPercentage5XX>=80,errorPercentage5XX,0)
+        - Id: invocations
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: Count
+              Dimensions:
+                - Name: Method
+                  Value: GET
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-public-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /.well-known/jwks.json
+            Period: 60
+            Stat: Sum
+        - Id: errorSum5XX
+          Label: "Number of 5XX errors"
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: 5XXError
+              Dimensions:
+                - Name: Method
+                  Value: GET
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-public-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /.well-known/jwks.json
+            Period: 60
+            Stat: Sum
+        - Id: errorPercentage5XX
+          Label: "Number of 5XX errors returned as a percentage"
+          ReturnData: false
+          Expression: (errorSum5XX/invocations) * 100
 
 Outputs:
   PublicApiUrl:
