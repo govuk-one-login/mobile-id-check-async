@@ -1,3 +1,4 @@
+import { response } from "express";
 import { errorResult, Result, successResult } from "../../utils/result";
 
 export class TokenService implements ITokenService {
@@ -16,13 +17,14 @@ export class TokenService implements ITokenService {
 
   private fetchPublicKey = async (
     stsJwksEndpoint: string,
-  ): Promise<Result<JSON>> => {
-    let publicKey;
+  ): Promise<Result<string>> => {
+    // let publicKey;
+    let response;
     try {
-      const response = await fetch(stsJwksEndpoint, {
+      response = await fetch(stsJwksEndpoint, {
         method: "GET",
       });
-      publicKey = await response.json();
+      // publicKey = await response.json();
     } catch {
       return errorResult({
         errorMessage: "Unexpected error retrieving STS public key",
@@ -30,7 +32,14 @@ export class TokenService implements ITokenService {
       });
     }
 
-    return successResult(publicKey);
+    if (!response.ok) {
+      return errorResult({
+        errorMessage: "Error retrieving STS public key",
+        errorCategory: "SERVER_ERROR",
+      });
+    }
+
+    return successResult("");
   };
 }
 
