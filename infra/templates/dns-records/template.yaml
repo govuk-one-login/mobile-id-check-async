@@ -31,6 +31,10 @@ Conditions:
     - !Ref Environment
     - dev
 
+  IsBuildOrStagingEnvironment: !Or 
+    - !Equals [!Ref Environment, build]
+    - !Equals [!Ref Environment, staging]
+
 Resources:
   ExternalCertificate:
     Type: AWS::CertificateManager::Certificate
@@ -42,12 +46,30 @@ Resources:
             - !Ref Environment
             - DNSSUFFIX
       SubjectAlternativeNames:
-        - !Sub
-          - api.${DNSSUFFIX}
-          - DNSSUFFIX: !FindInMap
-              - PlatformConfiguration
-              - !Ref Environment
-              - DNSSUFFIX
+        - !If
+          - IsBuildOrStagingEnvironment
+          - !Sub
+            - sessions-mob-async-backend.${DNSSUFFIX}
+            - DNSSUFFIX: !FindInMap
+                - PlatformConfiguration
+                - !Ref Environment
+                - DNSSUFFIX
+        - !If
+          - IsBuildOrStagingEnvironment
+          - !Sub
+            - mob-sts-mock.${DNSSUFFIX}
+            - DNSSUFFIX: !FindInMap
+                - PlatformConfiguration
+                - !Ref Environment
+                - DNSSUFFIX
+        - !If
+          - IsBuildOrStagingEnvironment
+          - !Sub
+            - proxy-mob-async-backend.${DNSSUFFIX}
+            - DNSSUFFIX: !FindInMap
+                - PlatformConfiguration
+                - !Ref Environment
+                - DNSSUFFIX
         - !If
           - IsDevEnvironment
           - !Sub
@@ -65,13 +87,33 @@ Resources:
                 - !Ref Environment
                 - DNSSUFFIX
           HostedZoneId: !ImportValue PublicHostedZoneId
-        - DomainName: !Sub
-            - api.${DNSSUFFIX}
-            - DNSSUFFIX: !FindInMap
-                - PlatformConfiguration
-                - !Ref Environment
-                - DNSSUFFIX
-          HostedZoneId: !ImportValue PublicHostedZoneId
+        - !If
+          - IsBuildOrStagingEnvironment
+          - DomainName: !Sub
+              - sessions-mob-async-backend.${DNSSUFFIX}
+              - DNSSUFFIX: !FindInMap
+                  - PlatformConfiguration
+                  - !Ref Environment
+                  - DNSSUFFIX
+            HostedZoneId: !ImportValue PublicHostedZoneId
+          - !If
+          - IsBuildOrStagingEnvironment
+          - DomainName: !Sub
+              - mob-sts-mock.${DNSSUFFIX}
+              - DNSSUFFIX: !FindInMap
+                  - PlatformConfiguration
+                  - !Ref Environment
+                  - DNSSUFFIX
+            HostedZoneId: !ImportValue PublicHostedZoneId
+          - !If
+          - IsBuildOrStagingEnvironment
+          - DomainName: !Sub
+              - proxy-mob-async-backend.${DNSSUFFIX}
+              - DNSSUFFIX: !FindInMap
+                  - PlatformConfiguration
+                  - !Ref Environment
+                  - DNSSUFFIX
+            HostedZoneId: !ImportValue PublicHostedZoneId
       ValidationMethod: DNS
       Tags:
         - Key: Name
