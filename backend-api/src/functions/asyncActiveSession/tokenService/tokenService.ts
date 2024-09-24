@@ -1,4 +1,3 @@
-import { response } from "express";
 import { errorResult, Result, successResult } from "../../utils/result";
 
 export class TokenService implements ITokenService {
