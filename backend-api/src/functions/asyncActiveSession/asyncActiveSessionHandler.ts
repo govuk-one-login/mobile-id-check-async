@@ -19,6 +19,7 @@ export async function lambdaHandlerConstructor(
     });
     return serverError500Response;
   }
+  const config = configResult.value
 
   const requestService = new RequestService();
   const authorizationHeaderResult = requestService.getAuthorizationHeader(
@@ -29,6 +30,15 @@ export async function lambdaHandlerConstructor(
       errorMessage: authorizationHeaderResult.value.errorMessage,
     });
     return unauthorizedResponse;
+  }
+
+  const tokenService = dependencies.tokenService()
+  const getSubFromTokenResult = await tokenService.getSubFromToken(config.STS_JWKS_ENDPOINT)
+  if (getSubFromTokenResult.isError) {
+    logger.log("INTERNAL_SERVER_ERROR", {
+      errorMessage: getSubFromTokenResult.value.errorMessage,
+    });
+    return serverError500Response;
   }
 
   return {
