@@ -229,38 +229,37 @@ describe("Async Active Session", () => {
       });
     });
 
-  //   describe("Given token is invalid", () => {
-  //     it("Logs and returns 400 Bad Request response", async () => {
-  //       const jwtBuilder = new MockJWTBuilder();
-  //       const event = buildRequest({
-  //         headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-  //       });
+    describe("Given decrypting access token failed", () => {
+      it("Logs and returns 400 Bad Request response", async () => {
+        const jwtBuilder = new MockJWTBuilder();
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+        });
 
-  //       dependencies.tokenService = () =>
-  //         new MockTokenServiceDecodeTokenfailure();
+        dependencies.tokenService = () => new MockTokenServiceDecryptionFailed()
 
-  //       const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-  //         dependencies,
-  //         event,
-  //       );
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+        );
 
-  //       expect(mockLoggingAdapter.getLogMessages()[0].logMessage.message).toBe(
-  //         "JWT_CLAIM_INVALID",
-  //       );
-  //       expect(mockLoggingAdapter.getLogMessages()[0].data).toStrictEqual({
-  //         errorMessage: "Invalid token",
-  //       });
+        expect(mockLoggingAdapter.getLogMessages()[0].logMessage.message).toBe(
+          "INVALID REQUEST",
+        );
+        expect(mockLoggingAdapter.getLogMessages()[0].data).toStrictEqual({
+          errorMessage: "Mock decryption error",
+        });
 
-  //       expect(result).toStrictEqual({
-  //         headers: { "Content-Type": "application/json" },
-  //         statusCode: 400,
-  //         body: JSON.stringify({
-  //           error: "invalid_request",
-  //           error_description: "Mock decoding token error",
-  //         }),
-  //       });
-  //     });
-  //   });
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description: "failed decrypting service token jwt",
+          }),
+        });
+      })
+    })
   });
 });
 
@@ -273,11 +272,11 @@ class MockTokenServiceServerError implements ITokenService {
   }
 }
 
-// class MockTokenServiceDecodeTokenfailure {
-//   getSubFromToken(): Result<string> {
-//     return errorResult({
-//       errorMessage: "Invalid token",
-//       errorCategory: "CLIENT_ERROR",
-//     });
-//   }
-// }
+class MockTokenServiceDecryptionFailed {
+  async getSubFromToken(): Promise<Result<string>> {
+    return errorResult({
+      errorMessage: "Mock decryption error",
+      errorCategory: "CLIENT_ERROR",
+    });
+  }
+}
