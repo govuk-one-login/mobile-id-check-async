@@ -13,6 +13,12 @@ Mappings:
       ApiBurstLimit: 0
       ApiRateLimit: 0
 
+  DNS:
+    dev:
+      BaseDns: review-b-async.dev.account.gov.uk
+    build:
+      BaseDns: review-b-async.build.account.gov.uk
+
 Globals:
   Function:
     CodeSigningConfigArn: !If
@@ -91,6 +97,38 @@ Resources:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sts-mock-api-access-logs
       RetentionInDays: 30
 
+  StsMockApiDomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Sub
+        - ${AWS::StackName}.${DNS_RECORD}
+        - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN}}'
+      SecurityPolicy: TLS_1_2
+
+  StsMockApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !Sub ${StsMockApiDomainName}
+      RestApiId: !Ref StsMockApi
+      Stage: !Ref StsMockApi.Stage
+
+  StsMockApiRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Sub ${StsMockApiDomainName}
+      Type: A
+      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
+      AliasTarget:
+        DNSName: !GetAtt StsMockApiDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt StsMockApiDomainName.RegionalHostedZoneId
+
   # Role to allow API Gateway to retrieve JWKS from S3
   JwksBucketApiRole:
     Type: AWS::IAM::Role
@@ -118,7 +156,7 @@ Resources:
                 Resource:
                   - !Sub ${JwksBucket.Arn}/.well-known/jwks.json
 
-### Token lambda
+### Token Lambda
   TokenFunction:
     DependsOn:
       - TokenFunctionLogGroup
@@ -147,9 +185,8 @@ Resources:
       Role: !GetAtt TokenFunctionLambdaRole.Arn
       Environment:
         Variables:
-          # MOCK_STS_BASE_URL to be updated once available
-          MOCK_STS_BASE_URL: MockStsBaseUrl
-          ASYNC_BACKEND_BASE_URL: !Sub https://mob-async-backend.review-b-async.${Environment}.account.gov.uk
+          STS_MOCK_BASE_URL: !Sub https://${StsMockApiDomainName}
+          ASYNC_BACKEND_BASE_URL: !Sub https://sessions-mob-async-backend.review-b-async.${Environment}.account.gov.uk
           KEY_STORAGE_BUCKET_NAME: !Ref JwksBucket
 
   TokenFunctionPermission:
@@ -292,3 +329,8 @@ Resources:
                 aws:SourceArn: !GetAtt JwksBucket.Arn
               StringEquals:
                 aws:SourceAccount: !Ref AWS::AccountId
+
+Outputs:
+  StsMockApiUrl:
+    Description: STS Mock API Gateway DNS
+    Value: !Sub https://${StsMockApiDomainName}

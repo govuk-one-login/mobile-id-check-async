@@ -9,7 +9,6 @@ import { JWTPayload } from "jose";
 
 const SERVICE_TOKEN_TTL_IN_SECS = 180;
 const PRIVATE_KEY_JWK_FILE_NAME = "private-key.json";
-const SUPPORTED_SERVICE_SCOPE = "idCheck.activeSession.read";
 
 export async function lambdaHandlerConstructor(
   dependencies: TokenDependencies,
@@ -31,10 +30,7 @@ export async function lambdaHandlerConstructor(
   const config = getConfigResult.value;
 
   const validateServiceTokenRequestResult =
-    dependencies.validateServiceTokenRequest(
-      event.body,
-      SUPPORTED_SERVICE_SCOPE,
-    );
+    dependencies.validateServiceTokenRequest(event.body);
   if (validateServiceTokenRequestResult.isError) {
     const { errorMessage } = validateServiceTokenRequestResult.value;
     logger.log("INVALID_REQUEST", {
@@ -57,7 +53,7 @@ export async function lambdaHandlerConstructor(
   const { subjectId, scope } = validateServiceTokenRequestResult.value;
 
   const payload = getServiceTokenPayload(
-    config.MOCK_STS_BASE_URL,
+    config.STS_MOCK_BASE_URL,
     config.ASYNC_BACKEND_BASE_URL,
     SERVICE_TOKEN_TTL_IN_SECS,
     subjectId,
@@ -73,8 +69,21 @@ export async function lambdaHandlerConstructor(
     });
     return serverError();
   }
+  const jwt = signTokenResult.value;
 
-  // CREATE NEW CLASS THAT FETCHES PUBLIC ENCRYPTION KEY AND ENCRYPTS SERVICE TOKEN BEFORE RETURNING IT
+  const protectedServiceJwksUri =
+    config.ASYNC_BACKEND_BASE_URL + "/.well-known/jwks.json";
+  const tokenEncrypterResult = await dependencies
+    .tokenEncrypter(protectedServiceJwksUri)
+    .encrypt(jwt);
+  if (tokenEncrypterResult.isError) {
+    logger.log("INTERNAL_SERVER_ERROR", {
+      errorMessage: tokenEncrypterResult.value.errorMessage,
+    });
+    return serverError();
+  }
+
+  const serviceToken = tokenEncrypterResult.value;
 
   logger.log("COMPLETED");
 
@@ -86,7 +95,7 @@ export async function lambdaHandlerConstructor(
     },
     statusCode: 200,
     body: JSON.stringify({
-      access_token: signTokenResult.value,
+      access_token: serviceToken,
       token_type: "Bearer",
       expires_in: SERVICE_TOKEN_TTL_IN_SECS,
     }),

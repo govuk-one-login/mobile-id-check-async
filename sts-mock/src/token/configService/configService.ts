@@ -1,7 +1,7 @@
 import { errorResult, Result, successResult } from "../../utils/result";
 
 export interface Config {
-  MOCK_STS_BASE_URL: string;
+  STS_MOCK_BASE_URL: string;
   ASYNC_BACKEND_BASE_URL: string;
   KEY_STORAGE_BUCKET_NAME: string;
 }
@@ -12,9 +12,9 @@ export interface IGetConfig<T> {
 
 export class ConfigService implements IGetConfig<Config> {
   getConfig = (env: NodeJS.ProcessEnv): Result<Config> => {
-    if (!env.MOCK_STS_BASE_URL)
+    if (!env.STS_MOCK_BASE_URL)
       return errorResult({
-        errorMessage: "No MOCK_STS_BASE_URL",
+        errorMessage: "No STS_MOCK_BASE_URL",
         errorCategory: "SERVER_ERROR",
       });
     if (!env.ASYNC_BACKEND_BASE_URL)
@@ -29,7 +29,7 @@ export class ConfigService implements IGetConfig<Config> {
       });
 
     return successResult({
-      MOCK_STS_BASE_URL: env.MOCK_STS_BASE_URL,
+      STS_MOCK_BASE_URL: env.STS_MOCK_BASE_URL,
       ASYNC_BACKEND_BASE_URL: env.ASYNC_BACKEND_BASE_URL,
       KEY_STORAGE_BUCKET_NAME: env.KEY_STORAGE_BUCKET_NAME,
     });
