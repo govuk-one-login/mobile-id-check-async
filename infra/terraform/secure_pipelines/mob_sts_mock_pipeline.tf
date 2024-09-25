@@ -1,6 +1,8 @@
 resource "aws_cloudformation_stack" "mob_sts_mock_pipeline" {
     name = "mob-sts-mock-pl"
 
+    count    = contains(["dev, build"], var.environment) ? 1 : 0
+
     template_url = format(local.preformat_template_url,
     "sam-deploy-pipeline",             # https://github.com/govuk-one-login/devplatform-deploy/tree/main/sam-deploy-pipeline
     "T6TI2U6b_eZjNorsTP6sDXGa4zfdOKAL" # v2.68.1

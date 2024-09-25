@@ -64,7 +64,6 @@ Conditions:
       - none
 
 Resources:
-### Public API gateway for STS Mock
   StsMockApi:
     Type: AWS::Serverless::Api
     Properties:
@@ -146,7 +145,7 @@ Resources:
               Service: apigateway.amazonaws.com
         Version: 2012-10-17
       Policies:
-        - PolicyName: JwksBucketPolicy
+        - PolicyName: S3Policy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -156,7 +155,19 @@ Resources:
                 Resource:
                   - !Sub ${JwksBucket.Arn}/.well-known/jwks.json
 
-### Token Lambda
+  TokenFunctionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${AWS::StackName}-token-sg
+      GroupDescription: Lambda Security group ruleset
+      SecurityGroupEgress:
+        - CidrIp: !ImportValue devplatform-vpc-VpcCidr
+          Description: TCP HTTPS outbound to vpc.
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      VpcId: !ImportValue devplatform-vpc-VpcId
+
   TokenFunction:
     DependsOn:
       - TokenFunctionLogGroup
@@ -182,12 +193,19 @@ Resources:
             Path: /token
             Method: post
             RestApiId: !Ref StsMockApi
-      Role: !GetAtt TokenFunctionLambdaRole.Arn
+      Role: !GetAtt TokenFunctionRole.Arn
       Environment:
         Variables:
           STS_MOCK_BASE_URL: !Sub https://${StsMockApiDomainName}
           ASYNC_BACKEND_BASE_URL: !Sub https://sessions-mob-async-backend.review-b-async.${Environment}.account.gov.uk
           KEY_STORAGE_BUCKET_NAME: !Ref JwksBucket
+      VpcConfig:
+        SubnetIds:
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+        SecurityGroupIds:
+          - !Ref TokenFunctionSecurityGroup
 
   TokenFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -204,7 +222,7 @@ Resources:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-token
 
-  TokenFunctionLambdaRole:
+  TokenFunctionRole:
     Type: AWS::IAM::Role
     Properties:
       Description: Execution role for the token function
@@ -221,7 +239,7 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: TokenFunctionLogsPolicy
+        - PolicyName: LogsPolicy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -231,7 +249,7 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
-        - PolicyName: TokenFunctionS3Policy
+        - PolicyName: S3Policy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -242,6 +260,16 @@ Resources:
                   - !Sub
                     - arn:aws:s3:::${TargetBucket}/*
                     - TargetBucket: !Ref JwksBucket
+        - PolicyName: ENIPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
 
   JwksBucket:
     Type: AWS::S3::Bucket
