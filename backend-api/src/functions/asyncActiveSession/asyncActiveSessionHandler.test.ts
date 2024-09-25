@@ -6,8 +6,9 @@ import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
 import { MockJWTBuilder } from "../testUtils/mockJwt";
-import { errorResult, Result } from "../utils/result";
+import { errorResult, Result, successResult } from "../utils/result";
 import { ITokenService, TokenService } from "./tokenService/tokenService";
+import { KMSAdapter } from "../adapters/kmsAdapter";
 
 const env = {
   STS_JWKS_ENDPOINT: "https://mockUrl.com",
@@ -22,7 +23,7 @@ describe("Async Active Session", () => {
     dependencies = {
       env,
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
-      tokenService: () => new TokenService(),
+      tokenService: () => new TokenService(new KMSAdapter("mockKidArn")),
     };
   });
 
@@ -245,7 +246,7 @@ describe("Async Active Session", () => {
         );
 
         expect(mockLoggingAdapter.getLogMessages()[0].logMessage.message).toBe(
-          "INVALID REQUEST",
+          "FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN",
         );
         expect(mockLoggingAdapter.getLogMessages()[0].data).toStrictEqual({
           errorMessage: "Mock decryption error",
@@ -281,3 +282,19 @@ class MockTokenServiceDecryptionFailed {
     });
   }
 }
+
+// class MockKMSAdapter implements IKmsAdapter {
+//   async decrypt() {
+//     return Promise.resolve(successResult({
+//       Plaintext: Uint8Array.from([1, 2, 3, 4, 5]),
+//       KeyId: 'mockKeyId',
+//       EncryptionAlgorithm: 'RSAES_OAEP_SHA_256',
+//       $metadata: {
+//         httpStatusCode: 200,
+//         requestId: 'EXAMPLE-REQUEST-ID',
+//         attempts: 1,
+//         totalRetryDelay: 0,
+//       },
+//     }))
+//   }
+// }

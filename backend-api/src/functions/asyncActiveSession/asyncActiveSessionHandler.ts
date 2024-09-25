@@ -37,6 +37,13 @@ export async function lambdaHandlerConstructor(
     config.STS_JWKS_ENDPOINT,
   );
   if (getSubFromTokenResult.isError) {
+    if(getSubFromTokenResult.value.errorCategory === "CLIENT_ERROR") {
+      logger.log("FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN", {
+        errorMessage: getSubFromTokenResult.value.errorMessage,
+      });
+      return badRequestResponse
+    }
+
     logger.log("INTERNAL_SERVER_ERROR", {
       errorMessage: getSubFromTokenResult.value.errorMessage,
     });
@@ -66,5 +73,14 @@ const unauthorizedResponse: APIGatewayProxyResult = {
   body: JSON.stringify({
     error: "Unauthorized",
     error_description: "Invalid token",
+  }),
+};
+
+const badRequestResponse: APIGatewayProxyResult = {
+  headers: { "Content-Type": "application/json" },
+  statusCode: 400,
+  body: JSON.stringify({
+    error: "invalid_request",
+    error_description: "Invalid request",
   }),
 };

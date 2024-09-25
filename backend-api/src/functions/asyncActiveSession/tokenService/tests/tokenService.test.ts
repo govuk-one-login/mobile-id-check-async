@@ -103,6 +103,20 @@ describe("Token Service", () => {
     });
 
     describe("Decrypting token", () => {
+      describe("Given the JWE does not consist of five components", () => {
+        it("Returns an error result", async () => {
+          const result = await tokenService.getSubFromToken(
+            "https://mockJwksEndpoint.com",
+          );
+
+          expect(result.isError).toBe(true);
+          expect(result.value).toStrictEqual({
+            errorMessage: "JWE does not consist of five componants",
+            errorCategory: "CLIENT_ERROR",
+          });
+        })
+      })
+
       describe("Given there is a server error when calling KMS", () => {
         it("Returns an error result", async () => {
           const kmsMock = mockClient(KMSClient);
