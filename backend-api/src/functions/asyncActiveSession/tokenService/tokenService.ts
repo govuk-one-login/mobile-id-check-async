@@ -1,6 +1,12 @@
 import { errorResult, Result, successResult } from "../../utils/result";
 
 export class TokenService implements ITokenService {
+  private kmsAdapter: IKmsAdapter;
+
+  constructor(kmsAdapter: IKmsAdapter) {
+    this.kmsAdapter = kmsAdapter;
+  }
+
   getSubFromToken = async (
     stsJwksEndpoint: string,
   ): Promise<Result<string>> => {
@@ -48,6 +54,8 @@ export class TokenService implements ITokenService {
 
     return successResult(publicKey);
   };
+
+  private getEncryptionKey() {}
 }
 
 export interface ITokenService {
