@@ -1,3 +1,4 @@
+import { IKmsAdapter } from "../../adapters/kmsAdapter";
 import { errorResult, Result, successResult } from "../../utils/result";
 
 export class TokenService implements ITokenService {
@@ -55,7 +56,25 @@ export class TokenService implements ITokenService {
     return successResult(publicKey);
   };
 
-  private getEncryptionKey() {}
+  private async getEncryptionKey(): Promise<Result<Uint8Array>> {
+    const decryptKeyResult = await this.kmsAdapter.decrypt()
+    if (decryptKeyResult.isError) {
+      return errorResult({
+        errorMessage: decryptKeyResult.value.errorMessage,
+        errorCategory: decryptKeyResult.value.errorCategory
+      })
+    }
+
+    const encryptionKey = decryptKeyResult.value.Plaintext ?? null;
+    if (encryptionKey === null) {
+      return errorResult({
+        errorMessage: "No Plaintext received when calling KMS to decrypt the Encryption Key",
+        errorCategory: "SERVER_ERROR"
+      })
+    }
+
+    return successResult(encryptionKey);
+  }
 }
 
 export interface ITokenService {

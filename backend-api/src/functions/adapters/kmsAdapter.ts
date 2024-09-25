@@ -4,6 +4,7 @@ import {
   KMSClient,
 } from "@aws-sdk/client-kms";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
+import { errorResult, Result, successResult } from "../utils/result";
 
 export class KMSAdapter {
   private readonly kidArn: string;
@@ -12,22 +13,24 @@ export class KMSAdapter {
     this.kidArn = kidArn;
   }
 
-  async decrypt(encryptionKey: Uint8Array): Promise<Uint8Array> {
-    const output: DecryptCommandOutput = await KmsClient.send(
-      new DecryptCommand({
-        KeyId: this.kidArn,
-        CiphertextBlob: encryptionKey,
-        EncryptionAlgorithm: "RSAES_OAEP_SHA_256",
-      }),
-    );
-
-    const plaintext = output.Plaintext ?? null;
-    if (plaintext === null) {
-      throw new Error(
-        "No Plaintext received when calling KMS to decrypt the Encryption Key",
+  async decrypt(encryptionKey: Uint8Array): Promise<Result<DecryptCommandOutput>> {
+    let output: DecryptCommandOutput
+    try {
+      output = await KmsClient.send(
+        new DecryptCommand({
+          KeyId: this.kidArn,
+          CiphertextBlob: encryptionKey,
+          EncryptionAlgorithm: "RSAES_OAEP_SHA_256",
+        }),
       );
+    } catch {
+      return errorResult({
+        errorMessage: "Error decrypting encryption key",
+        errorCategory: "SERVER_ERROR"
+      })
     }
-    return plaintext;
+
+    return successResult(output)
   }
 }
 
@@ -39,3 +42,7 @@ const KmsClient = new KMSClient({
   }),
   maxAttempts: 3,
 });
+
+export interface IKmsAdapter {
+  decrypt: (encryptionKey: Uint8Array) => Promise<Result<DecryptCommandOutput>>
+}
