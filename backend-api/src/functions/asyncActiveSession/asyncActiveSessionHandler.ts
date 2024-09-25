@@ -37,11 +37,11 @@ export async function lambdaHandlerConstructor(
     config.STS_JWKS_ENDPOINT,
   );
   if (getSubFromTokenResult.isError) {
-    if(getSubFromTokenResult.value.errorCategory === "CLIENT_ERROR") {
+    if (getSubFromTokenResult.value.errorCategory === "CLIENT_ERROR") {
       logger.log("FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN", {
         errorMessage: getSubFromTokenResult.value.errorMessage,
       });
-      return badRequestResponse
+      return badRequestResponse;
     }
 
     logger.log("INTERNAL_SERVER_ERROR", {

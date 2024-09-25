@@ -13,8 +13,10 @@ export class KMSAdapter {
     this.kidArn = kidArn;
   }
 
-  async decrypt(encryptionKey: Uint8Array): Promise<Result<DecryptCommandOutput>> {
-    let output: DecryptCommandOutput
+  async decrypt(
+    encryptionKey: Uint8Array,
+  ): Promise<Result<DecryptCommandOutput>> {
+    let output: DecryptCommandOutput;
     try {
       output = await KmsClient.send(
         new DecryptCommand({
@@ -26,11 +28,11 @@ export class KMSAdapter {
     } catch {
       return errorResult({
         errorMessage: "Error decrypting encryption key",
-        errorCategory: "SERVER_ERROR"
-      })
+        errorCategory: "SERVER_ERROR",
+      });
     }
 
-    return successResult(output)
+    return successResult(output);
   }
 }
 
@@ -44,5 +46,5 @@ const KmsClient = new KMSClient({
 });
 
 export interface IKmsAdapter {
-  decrypt: (encryptionKey: Uint8Array) => Promise<Result<DecryptCommandOutput>>
+  decrypt: (encryptionKey: Uint8Array) => Promise<Result<DecryptCommandOutput>>;
 }

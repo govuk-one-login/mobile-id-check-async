@@ -114,8 +114,8 @@ describe("Token Service", () => {
             errorMessage: "JWE does not consist of five componants",
             errorCategory: "CLIENT_ERROR",
           });
-        })
-      })
+        });
+      });
 
       describe("Given there is a server error when calling KMS", () => {
         it("Returns an error result", async () => {
