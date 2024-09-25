@@ -1,4 +1,8 @@
-import { DecryptCommand, KeyUnavailableException, KMSClient } from "@aws-sdk/client-kms";
+import {
+  DecryptCommand,
+  KeyUnavailableException,
+  KMSClient,
+} from "@aws-sdk/client-kms";
 import { ITokenService, TokenService } from "../tokenService";
 import { mockClient } from "aws-sdk-client-mock";
 
@@ -105,7 +109,7 @@ describe("Token Service", () => {
           kmsMock.on(DecryptCommand).rejects(
             new KeyUnavailableException({
               $metadata: {},
-              message: 'message',
+              message: "message",
             }),
           );
 
@@ -118,8 +122,8 @@ describe("Token Service", () => {
             errorMessage: "Server error decrypting with KMS",
             errorCategory: "SERVER_ERROR",
           });
-        })
-      })
-    })
+        });
+      });
+    });
   });
 });

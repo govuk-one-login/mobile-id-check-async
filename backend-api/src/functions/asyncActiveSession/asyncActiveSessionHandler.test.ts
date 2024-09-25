@@ -236,7 +236,8 @@ describe("Async Active Session", () => {
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
 
-        dependencies.tokenService = () => new MockTokenServiceDecryptionFailed()
+        dependencies.tokenService = () =>
+          new MockTokenServiceDecryptionFailed();
 
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
@@ -258,8 +259,8 @@ describe("Async Active Session", () => {
             error_description: "failed decrypting service token jwt",
           }),
         });
-      })
-    })
+      });
+    });
   });
 });
 
