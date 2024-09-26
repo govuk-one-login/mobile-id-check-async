@@ -165,6 +165,24 @@ describe("Token Service", () => {
           });
         });
       });
+
+      describe("Given KMS response does not include Plaintext value", () => {
+        it("Returns error result", async () => {
+          const kmsMock = mockClient(KMSClient);
+          kmsMock.on(DecryptCommand).resolves({})
+
+          const result = await tokenService.getSubFromToken(
+            "https://mockJwksEndpoint.com",
+            "one.two.three.four.five"
+          );
+
+          expect(result.isError).toBe(true);
+          expect(result.value).toStrictEqual({
+            errorMessage: "No Plaintext received when calling KMS to decrypt the Content Encryption Key",
+            errorCategory: "SERVER_ERROR",
+          });
+        })
+      })
     });
   });
 });
