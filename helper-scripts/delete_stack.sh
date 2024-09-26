@@ -5,13 +5,6 @@ if [ "$(aws sts get-caller-identity --output text --query 'Account')" != "211125
   exit 1
 fi
 
-#
-# USAGE:
-# export STACK_NAME=backend-stack-name    # REQUIRED
-# export TMP_DIR=./tmp                    # OPTIONAL
-# ./be_destroy.sh
-#
-
 if [ -z "${STACK_NAME}" ]; then
   echo "STACK_NAME not set"
   exit 1
