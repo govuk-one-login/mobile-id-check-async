@@ -3,7 +3,7 @@ resource "aws_cloudformation_stack" "mob_async_backend_pl" {
 
   template_url = format(local.preformat_template_url,
     "sam-deploy-pipeline",             # https://github.com/govuk-one-login/devplatform-deploy/tree/main/sam-deploy-pipeline
-    "NGOxM_hPmNoY1pTz6vo8P_El2EqVz6sa" # v2.61.1
+    "T6TI2U6b_eZjNorsTP6sDXGa4zfdOKAL" # v2.68.1
   )
 
   // Default parameters. Can be overwritten by using the locals below.
