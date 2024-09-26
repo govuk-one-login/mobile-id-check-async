@@ -23,6 +23,7 @@ describe("Async Active Session", () => {
     dependencies = {
       env,
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
+      kmsAdapter: () => new KMSAdapter("mockKidArn"),
       tokenService: () => new TokenService(new KMSAdapter("mockKidArn")),
     };
   });
@@ -273,6 +274,15 @@ class MockTokenServiceServerError implements ITokenService {
     });
   }
 }
+
+// class MockTokenServiceJWENotValid {
+//   async getSubFromToken(): Promise<Result<string>> {
+//     return errorResult({
+//       errorMessage: "Mock invalid JWE error",
+//       errorCategory: "CLIENT_ERROR",
+//     });
+//   }
+// }
 
 class MockTokenServiceDecryptionFailed {
   async getSubFromToken(): Promise<Result<string>> {

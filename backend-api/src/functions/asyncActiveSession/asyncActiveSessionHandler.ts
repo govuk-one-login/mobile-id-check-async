@@ -32,7 +32,8 @@ export async function lambdaHandlerConstructor(
     return unauthorizedResponse;
   }
 
-  const tokenService = dependencies.tokenService();
+  const kmsAdapter = dependencies.kmsAdapter(config.)
+  const tokenService = dependencies.tokenService(kmsAdapter);
   const getSubFromTokenResult = await tokenService.getSubFromToken(
     config.STS_JWKS_ENDPOINT,
   );

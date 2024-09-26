@@ -56,8 +56,8 @@ export class TokenService implements ITokenService {
     return successResult(publicKey);
   };
 
-  private async getEncryptionKey(): Promise<Result<Uint8Array>> {
-    const decryptKeyResult = await this.kmsAdapter.decrypt();
+  private async getEncryptionKey(encryptedKey: Uint8Array): Promise<Result<Uint8Array>> {
+    const decryptKeyResult = await this.kmsAdapter.decrypt(encryptedKey);
     if (decryptKeyResult.isError) {
       return errorResult({
         errorMessage: decryptKeyResult.value.errorMessage,

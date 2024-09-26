@@ -5,13 +5,28 @@ import {
 } from "@aws-sdk/client-kms";
 import { ITokenService, TokenService } from "../tokenService";
 import { mockClient } from "aws-sdk-client-mock";
+import { KMSAdapter } from "../../../adapters/kmsAdapter";
 
 describe("Token Service", () => {
   let mockFetch: jest.SpyInstance;
   let tokenService: ITokenService;
 
   beforeEach(() => {
-    tokenService = new TokenService();
+    tokenService = new TokenService(new KMSAdapter("mockKidArn"));
+    mockFetch = jest
+    .spyOn(global, "fetch")
+    .mockImplementation(() => Promise.resolve({
+      status: 200,
+      ok: true,
+      json: () => Promise.resolve({
+        kty: "mockKty",
+        x: "mockX",
+        y: "mockY",
+        crv: "mockCrv",
+        d: "mockD",
+        kid: "mockKid",
+      }),
+    } as Response));
   });
 
   afterEach(() => {
@@ -105,6 +120,9 @@ describe("Token Service", () => {
     describe("Decrypting token", () => {
       describe("Given the JWE does not consist of five components", () => {
         it("Returns an error result", async () => {
+          const kmsMock = mockClient(KMSClient);
+          kmsMock.on(DecryptCommand).resolves({});
+
           const result = await tokenService.getSubFromToken(
             "https://mockJwksEndpoint.com",
           );
