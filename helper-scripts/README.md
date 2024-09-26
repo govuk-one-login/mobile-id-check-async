@@ -8,6 +8,5 @@ This script provides the ability to:
 
 ```bash
 export STACK_NAME=backend-stack-name    (REQUIRED)
-export TMP_DIR=./tmp                    (OPTIONAL)
 ./delete_stack.sh
 ```

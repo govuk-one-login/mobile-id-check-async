@@ -10,10 +10,7 @@ if [ -z "${STACK_NAME}" ]; then
   exit 1
 fi
 
-TMP_DIR=${TMP_DIR:-.}
-
 echo "Stack Name: $STACK_NAME"
-echo "Temp Directory: $TMP_DIR"
 
 buckets=$(
   aws cloudformation list-stack-resources \
@@ -42,7 +39,7 @@ delete() {
   aws s3api delete-objects \
     --bucket "${1}" \
     --delete "$(list_500 "${1}" "${2}")" \
-    >"${TMP_DIR}/delete_response_${1}_${2}_${i}.json"
+    >"./delete_response_${1}_${2}_${i}.json"
 }
 
 for bucket in $buckets; do
