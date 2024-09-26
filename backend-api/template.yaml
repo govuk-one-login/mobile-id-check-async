@@ -127,9 +127,9 @@ Mappings:
 
   EnvironmentVariables:
     dev:
-      STSJWKSENDPOINT: 'https://sts-mock.review-b-async.dev.account.gov.uk/.well-known/jwks.json'
+      STSJWKSENDPOINT: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk/.well-known/jwks.json'
     build:
-      STSJWKSENDPOINT: 'https://sts-mock.review-b-async.build.account.gov.uk/.well-known/jwks.json'
+      STSJWKSENDPOINT: 'https://mob-sts-mock.review-b-async.build.account.gov.uk/.well-known/jwks.json'
     # staging:
     #   STSJWKSENDPOINT: '' TODO: Mock should only be used in dev and build. Update this value
     # integration:
