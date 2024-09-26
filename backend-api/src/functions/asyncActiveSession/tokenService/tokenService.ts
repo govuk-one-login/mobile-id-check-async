@@ -31,7 +31,7 @@ export class TokenService implements ITokenService {
 
     const [
       protectedHeader,
-      encryptedKey,
+      encryptedCek,
       iv,
       ciphertext,
       tag
@@ -75,25 +75,25 @@ export class TokenService implements ITokenService {
     return successResult(publicKey);
   };
 
-  private async getEncryptionKey(encryptedKey: Uint8Array): Promise<Result<Uint8Array>> {
-    const decryptKeyResult = await this.kmsAdapter.decrypt(encryptedKey);
-    if (decryptKeyResult.isError) {
+  private async getCek(encryptedCek: Uint8Array): Promise<Result<Uint8Array>> {
+    const decryptCekResult = await this.kmsAdapter.decrypt(encryptedCek);
+    if (decryptCekResult.isError) {
       return errorResult({
-        errorMessage: decryptKeyResult.value.errorMessage,
-        errorCategory: decryptKeyResult.value.errorCategory,
+        errorMessage: decryptCekResult.value.errorMessage,
+        errorCategory: decryptCekResult.value.errorCategory,
       });
     }
 
-    const encryptionKey = decryptKeyResult.value.Plaintext ?? null;
-    if (encryptionKey === null) {
+    const cek = decryptCekResult.value.Plaintext ?? null;
+    if (cek === null) {
       return errorResult({
         errorMessage:
-          "No Plaintext received when calling KMS to decrypt the Encryption Key",
+          "No Plaintext received when calling KMS to decrypt the Content Encryption Key",
         errorCategory: "SERVER_ERROR",
       });
     }
 
-    return successResult(encryptionKey);
+    return successResult(cek);
   }
 }
 
