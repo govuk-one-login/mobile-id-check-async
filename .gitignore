@@ -15,6 +15,7 @@ docker-vars.env
 
 # VSCode
 .vscode
+.DS_Store
 
 # IntelliJ IDEA
 .idea
@@ -23,3 +24,4 @@ docker-vars.env
 .env
 
 async-proxy-private-spec.yaml
+
