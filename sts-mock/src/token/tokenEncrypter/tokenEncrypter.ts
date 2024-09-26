@@ -50,7 +50,6 @@ export class TokenEncrypter implements ITokenEncrypter {
   private async getJwks(): Promise<Result<object>> {
     let response;
     try {
-      console.log(this.jwksUri)
       response = await fetch(this.jwksUri, { method: "GET" });
       if (!response.ok) {
         return errorResult({
@@ -58,8 +57,7 @@ export class TokenEncrypter implements ITokenEncrypter {
           errorCategory: "SERVER_ERROR",
         });
       }
-    } catch (error) {
-      console.log(error)
+    } catch {
       return errorResult({
         errorMessage: "Unexpected network error fetching JWKS",
         errorCategory: "SERVER_ERROR",
