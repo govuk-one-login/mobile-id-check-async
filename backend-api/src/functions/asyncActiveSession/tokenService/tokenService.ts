@@ -29,13 +29,15 @@ export class TokenService implements ITokenService {
       });
     }
 
-    const [
-      protectedHeader,
-      encryptedCek,
-      iv,
-      ciphertext,
-      tag
-    ] = jweComponents
+    // const [
+    //   protectedHeader,
+    //   encryptedCek,
+    //   iv,
+    //   ciphertext,
+    //   tag
+    // ] = jweComponents
+
+    const encryptedCek = jweComponents[1]
 
     const getCekResult = await this.getCek(new Uint8Array(Buffer.from(encryptedCek, "base64")))
     if (getCekResult.isError) {
