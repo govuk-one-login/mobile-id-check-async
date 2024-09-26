@@ -32,13 +32,13 @@ export async function lambdaHandlerConstructor(
     return unauthorizedResponse;
   }
 
-  const jwe = authorizationHeaderResult.value
+  const jwe = authorizationHeaderResult.value;
 
-  const kmsAdapter = dependencies.kmsAdapter(config.KID_ARN)
+  const kmsAdapter = dependencies.kmsAdapter(config.KID_ARN);
   const tokenService = dependencies.tokenService(kmsAdapter);
   const getSubFromTokenResult = await tokenService.getSubFromToken(
     config.STS_JWKS_ENDPOINT,
-    jwe
+    jwe,
   );
   if (getSubFromTokenResult.isError) {
     if (getSubFromTokenResult.value.errorCategory === "CLIENT_ERROR") {

@@ -20,12 +20,12 @@ export class TokenService implements ITokenService {
       });
     }
 
-    const jweComponents = jwe.split('.')
+    const jweComponents = jwe.split(".");
 
     if (jweComponents.length !== 5) {
       return errorResult({
         errorMessage: "JWE does not consist of five components",
-        errorCategory: 'CLIENT_ERROR',
+        errorCategory: "CLIENT_ERROR",
       });
     }
 
@@ -37,9 +37,11 @@ export class TokenService implements ITokenService {
     //   tag
     // ] = jweComponents
 
-    const encryptedCek = jweComponents[1]
+    const encryptedCek = jweComponents[1];
 
-    const getCekResult = await this.getCek(new Uint8Array(Buffer.from(encryptedCek, "base64")))
+    const getCekResult = await this.getCek(
+      new Uint8Array(Buffer.from(encryptedCek, "base64")),
+    );
     if (getCekResult.isError) {
       return errorResult({
         errorMessage: getCekResult.value.errorMessage,
@@ -108,5 +110,8 @@ export class TokenService implements ITokenService {
 }
 
 export interface ITokenService {
-  getSubFromToken: (stsJwksEndpoint: string, jwe: string) => Promise<Result<string>>;
+  getSubFromToken: (
+    stsJwksEndpoint: string,
+    jwe: string,
+  ) => Promise<Result<string>>;
 }

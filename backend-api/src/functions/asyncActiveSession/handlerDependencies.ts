@@ -7,7 +7,7 @@ import { IKmsAdapter, KMSAdapter } from "../adapters/kmsAdapter";
 export interface IAsyncActiveSessionDependencies {
   env: NodeJS.ProcessEnv;
   logger: () => Logger<MessageName>;
-  kmsAdapter: (kidArn: string) => IKmsAdapter
+  kmsAdapter: (kidArn: string) => IKmsAdapter;
   tokenService: (kmsAdapter: IKmsAdapter) => ITokenService;
 }
 

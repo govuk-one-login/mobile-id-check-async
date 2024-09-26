@@ -13,24 +13,25 @@ describe("Token Service", () => {
 
   beforeEach(() => {
     tokenService = new TokenService(new KMSAdapter("mockKidArn"));
-    mockFetch = jest
-    .spyOn(global, "fetch")
-    .mockImplementation(() => Promise.resolve({
-      status: 200,
-      ok: true,
-      json: () => Promise.resolve({
-        keys: [
-          {
-            kty: "mockKty",
-            x: "mockX",
-            y: "mockY",
-            crv: "mockCrv",
-            d: "mockD",
-            kid: "mockKid",
-          }
-        ]
-      }),
-    } as Response));
+    mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
+      Promise.resolve({
+        status: 200,
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            keys: [
+              {
+                kty: "mockKty",
+                x: "mockX",
+                y: "mockY",
+                crv: "mockCrv",
+                d: "mockD",
+                kid: "mockKid",
+              },
+            ],
+          }),
+      } as Response),
+    );
   });
 
   afterEach(() => {
@@ -48,7 +49,7 @@ describe("Token Service", () => {
 
             const result = await tokenService.getSubFromToken(
               "https://mockJwksEndpoint.com",
-              "mockJwe"
+              "mockJwe",
             );
 
             expect(mockFetch).toHaveBeenCalledWith(
@@ -76,7 +77,7 @@ describe("Token Service", () => {
 
             const result = await tokenService.getSubFromToken(
               "https://mockJwksEndpoint.com",
-              "mockJwe"
+              "mockJwe",
             );
 
             expect(mockFetch).toHaveBeenCalledWith(
@@ -155,7 +156,7 @@ describe("Token Service", () => {
 
           const result = await tokenService.getSubFromToken(
             "https://mockJwksEndpoint.com",
-            "one.two.three.four.five"
+            "one.two.three.four.five",
           );
 
           expect(result.isError).toBe(true);
@@ -169,20 +170,21 @@ describe("Token Service", () => {
       describe("Given KMS response does not include Plaintext value", () => {
         it("Returns error result", async () => {
           const kmsMock = mockClient(KMSClient);
-          kmsMock.on(DecryptCommand).resolves({})
+          kmsMock.on(DecryptCommand).resolves({});
 
           const result = await tokenService.getSubFromToken(
             "https://mockJwksEndpoint.com",
-            "one.two.three.four.five"
+            "one.two.three.four.five",
           );
 
           expect(result.isError).toBe(true);
           expect(result.value).toStrictEqual({
-            errorMessage: "No Plaintext received when calling KMS to decrypt the Content Encryption Key",
+            errorMessage:
+              "No Plaintext received when calling KMS to decrypt the Content Encryption Key",
             errorCategory: "SERVER_ERROR",
           });
-        })
-      })
+        });
+      });
     });
   });
 });

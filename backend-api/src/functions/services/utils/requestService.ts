@@ -25,7 +25,7 @@ export const getBearerTokenFromHeader = (
     });
   }
 
-  const jwe = authorizationHeader.split(" ")[1]
+  const jwe = authorizationHeader.split(" ")[1];
 
   if (jwe.length == 0) {
     return errorResult({

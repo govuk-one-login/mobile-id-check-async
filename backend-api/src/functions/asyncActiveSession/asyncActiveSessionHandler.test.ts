@@ -12,7 +12,7 @@ import { KMSAdapter } from "../adapters/kmsAdapter";
 
 const env = {
   STS_JWKS_ENDPOINT: "https://mockUrl.com",
-  KID_ARN: "mockKidArn"
+  KID_ARN: "mockKidArn",
 };
 
 describe("Async Active Session", () => {
