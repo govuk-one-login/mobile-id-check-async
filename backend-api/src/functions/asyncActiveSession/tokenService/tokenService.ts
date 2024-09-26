@@ -10,6 +10,7 @@ export class TokenService implements ITokenService {
 
   getSubFromToken = async (
     stsJwksEndpoint: string,
+    jwe: string,
   ): Promise<Result<string>> => {
     const fetchPublicKeyResult = await this.fetchPublicKey(stsJwksEndpoint);
     if (fetchPublicKeyResult.isError) {
@@ -18,6 +19,24 @@ export class TokenService implements ITokenService {
         errorCategory: fetchPublicKeyResult.value.errorCategory,
       });
     }
+
+    const jweComponents = jwe.split('.')
+
+    if (jweComponents.length !== 5) {
+      return errorResult({
+        errorMessage: "JWE does not consist of five components",
+        errorCategory: 'CLIENT_ERROR',
+      });
+    }
+
+    const [
+      protectedHeader,
+      encryptedKey,
+      iv,
+      ciphertext,
+      tag
+    ] = jweComponents
+
     return successResult("");
   };
 
@@ -79,5 +98,5 @@ export class TokenService implements ITokenService {
 }
 
 export interface ITokenService {
-  getSubFromToken: (stsJwksEndpoint: string) => Promise<Result<string>>;
+  getSubFromToken: (stsJwksEndpoint: string, jwe: string) => Promise<Result<string>>;
 }
