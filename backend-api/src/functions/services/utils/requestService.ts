@@ -25,12 +25,14 @@ export const getBearerTokenFromHeader = (
     });
   }
 
-  if (authorizationHeader.split(" ")[1].length == 0) {
+  const jwe = authorizationHeader.split(" ")[1]
+
+  if (jwe.length == 0) {
     return errorResult({
       errorMessage: "Invalid authentication header format - missing token",
       errorCategory: "CLIENT_ERROR",
     });
   }
 
-  return successResult(authorizationHeader);
+  return successResult(jwe);
 };
