@@ -127,8 +127,10 @@ Mappings:
 
   EnvironmentVariables:
     dev:
+      KIDARN: ''
       STSJWKSENDPOINT: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk/.well-known/jwks.json'
     build:
+      KIDARN: ''
       STSJWKSENDPOINT: 'https://mob-sts-mock.review-b-async.build.account.gov.uk/.well-known/jwks.json'
     # staging:
     #   STSJWKSENDPOINT: '' TODO: Mock should only be used in dev and build. Update this value
@@ -786,6 +788,8 @@ Resources:
       Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
       Environment:
         Variables:
+          KID_ARN:
+            !FindInMap [EnvironmentVariables, !Ref Environment, KIDARN]
           STS_JWKS_ENDPOINT:
             !FindInMap [EnvironmentVariables, !Ref Environment, STSJWKSENDPOINT]
 

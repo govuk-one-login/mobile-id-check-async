@@ -2,16 +2,25 @@ import { IGetConfig } from "../../types/config";
 import { errorResult, Result, successResult } from "../../utils/result";
 
 export interface Config {
+  KID_ARN: string;
   STS_JWKS_ENDPOINT: string;
 }
 
 export class ConfigService implements IGetConfig<Config> {
   getConfig = (env: NodeJS.ProcessEnv): Result<Config> => {
-    if (!env.STS_JWKS_ENDPOINT)
+    if (!env.KID_ARN) {
+      return errorResult({
+        errorMessage: "No KID_ARN",
+        errorCategory: "SERVER_ERROR",
+      });
+    }
+
+    if (!env.STS_JWKS_ENDPOINT) {
       return errorResult({
         errorMessage: "No STS_JWKS_ENDPOINT",
         errorCategory: "SERVER_ERROR",
       });
+    }
     try {
       new URL(env.STS_JWKS_ENDPOINT);
     } catch {
@@ -22,6 +31,7 @@ export class ConfigService implements IGetConfig<Config> {
     }
 
     return successResult({
+      KID_ARN: env.KID_ARN,
       STS_JWKS_ENDPOINT: env.STS_JWKS_ENDPOINT,
     });
   };
