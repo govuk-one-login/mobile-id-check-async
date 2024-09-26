@@ -213,7 +213,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       Description: Execution role for the token function
-      RoleName: !Sub ${AWS::StackName}-token-2
+      RoleName: !Sub ${AWS::StackName}-token
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
