@@ -14,20 +14,20 @@ export class KMSAdapter {
   }
 
   async decrypt(
-    encryptionKey: Uint8Array,
+    encryptedCek: Uint8Array,
   ): Promise<Result<DecryptCommandOutput>> {
     let output: DecryptCommandOutput;
     try {
       output = await KmsClient.send(
         new DecryptCommand({
           KeyId: this.kidArn,
-          CiphertextBlob: encryptionKey,
+          CiphertextBlob: encryptedCek,
           EncryptionAlgorithm: "RSAES_OAEP_SHA_256",
         }),
       );
     } catch {
       return errorResult({
-        errorMessage: "Error decrypting encryption key",
+        errorMessage: "Error decrypting key with KMS",
         errorCategory: "SERVER_ERROR",
       });
     }

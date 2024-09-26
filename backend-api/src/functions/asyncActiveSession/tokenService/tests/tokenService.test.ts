@@ -143,27 +143,28 @@ describe("Token Service", () => {
         });
       });
 
-      // describe("Given there is a server error when calling KMS", () => {
-      //   it("Returns an error result", async () => {
-      //     const kmsMock = mockClient(KMSClient);
-      //     kmsMock.on(DecryptCommand).rejects(
-      //       new KeyUnavailableException({
-      //         $metadata: {},
-      //         message: "message",
-      //       }),
-      //     );
+      describe("Given there is a server error when calling KMS", () => {
+        it("Returns an error result", async () => {
+          const kmsMock = mockClient(KMSClient);
+          kmsMock.on(DecryptCommand).rejects(
+            new KeyUnavailableException({
+              $metadata: {},
+              message: "message",
+            }),
+          );
 
-      //     const result = await tokenService.getSubFromToken(
-      //       "https://mockJwksEndpoint.com",
-      //     );
+          const result = await tokenService.getSubFromToken(
+            "https://mockJwksEndpoint.com",
+            "one.two.three.four.five"
+          );
 
-      //     expect(result.isError).toBe(true);
-      //     expect(result.value).toStrictEqual({
-      //       errorMessage: "Server error decrypting with KMS",
-      //       errorCategory: "SERVER_ERROR",
-      //     });
-      //   });
-      // });
+          expect(result.isError).toBe(true);
+          expect(result.value).toStrictEqual({
+            errorMessage: "Error decrypting key with KMS",
+            errorCategory: "SERVER_ERROR",
+          });
+        });
+      });
     });
   });
 });

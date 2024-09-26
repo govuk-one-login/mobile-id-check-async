@@ -37,6 +37,14 @@ export class TokenService implements ITokenService {
       tag
     ] = jweComponents
 
+    const getCekResult = await this.getCek(new Uint8Array(Buffer.from(encryptedCek, "base64")))
+    if (getCekResult.isError) {
+      return errorResult({
+        errorMessage: getCekResult.value.errorMessage,
+        errorCategory: getCekResult.value.errorCategory,
+      });
+    }
+
     return successResult("");
   };
 
