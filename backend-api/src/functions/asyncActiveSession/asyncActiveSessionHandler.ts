@@ -32,10 +32,13 @@ export async function lambdaHandlerConstructor(
     return unauthorizedResponse;
   }
 
-  const kmsAdapter = dependencies.kmsAdapter(config.)
+  const jwe = authorizationHeaderResult.value
+
+  const kmsAdapter = dependencies.kmsAdapter('mockKid')
   const tokenService = dependencies.tokenService(kmsAdapter);
   const getSubFromTokenResult = await tokenService.getSubFromToken(
     config.STS_JWKS_ENDPOINT,
+    jwe
   );
   if (getSubFromTokenResult.isError) {
     if (getSubFromTokenResult.value.errorCategory === "CLIENT_ERROR") {
@@ -82,6 +85,6 @@ const badRequestResponse: APIGatewayProxyResult = {
   statusCode: 400,
   body: JSON.stringify({
     error: "invalid_request",
-    error_description: "Invalid request",
+    error_description: "failed decrypting service token jwt",
   }),
 };

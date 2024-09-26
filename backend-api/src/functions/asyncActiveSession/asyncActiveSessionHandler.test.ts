@@ -6,7 +6,7 @@ import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
 import { MockJWTBuilder } from "../testUtils/mockJwt";
-import { errorResult, Result, successResult } from "../utils/result";
+import { errorResult, Result } from "../utils/result";
 import { ITokenService, TokenService } from "./tokenService/tokenService";
 import { KMSAdapter } from "../adapters/kmsAdapter";
 
@@ -275,15 +275,6 @@ class MockTokenServiceServerError implements ITokenService {
   }
 }
 
-// class MockTokenServiceJWENotValid {
-//   async getSubFromToken(): Promise<Result<string>> {
-//     return errorResult({
-//       errorMessage: "Mock invalid JWE error",
-//       errorCategory: "CLIENT_ERROR",
-//     });
-//   }
-// }
-
 class MockTokenServiceDecryptionFailed {
   async getSubFromToken(): Promise<Result<string>> {
     return errorResult({
@@ -292,19 +283,3 @@ class MockTokenServiceDecryptionFailed {
     });
   }
 }
-
-// class MockKMSAdapter implements IKmsAdapter {
-//   async decrypt() {
-//     return Promise.resolve(successResult({
-//       Plaintext: Uint8Array.from([1, 2, 3, 4, 5]),
-//       KeyId: 'mockKeyId',
-//       EncryptionAlgorithm: 'RSAES_OAEP_SHA_256',
-//       $metadata: {
-//         httpStatusCode: 200,
-//         requestId: 'EXAMPLE-REQUEST-ID',
-//         attempts: 1,
-//         totalRetryDelay: 0,
-//       },
-//     }))
-//   }
-// }
