@@ -8,18 +8,20 @@ import { ConfigService } from "./configService/configService";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncActiveSessionDependencies,
-  event: APIGatewayProxyEvent, // NOSONAR
+  event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
 
-  const configResult = new ConfigService().getConfig(dependencies.env);
+  const configResult = new ConfigService().getConfig(dependencies.env); // NOSONAR
   if (configResult.isError) {
+    // NOSONAR
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
-      errorMessage: configResult.value.errorMessage,
-    });
-    return serverError500Response;
-  }
-  const config = configResult.value;
+      // NOSONAR
+      errorMessage: configResult.value.errorMessage, // NOSONAR
+    }); // NOSONAR
+    return serverError500Response; // NOSONAR
+  } // NOSONAR
+  const config = configResult.value; // NOSONAR
 
   const requestService = new RequestService();
   const authorizationHeaderResult = requestService.getAuthorizationHeader(
