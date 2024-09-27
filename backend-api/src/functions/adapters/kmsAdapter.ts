@@ -37,7 +37,7 @@ export class KMSAdapter {
 }
 
 const KmsClient = new KMSClient({
-  region: process.env.REGION,
+  region: 'eu-west-2',
   requestHandler: new NodeHttpHandler({
     requestTimeout: 29000,
     connectionTimeout: 5000,
