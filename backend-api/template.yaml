@@ -826,6 +826,14 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
+        - PolicyName: KMSDecryptPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                Resource: !GetAtt KMSEncryptionKey.Arn
       RoleName: !Sub ${AWS::StackName}-active-session-lambda
       PermissionsBoundary: !If
         - UsePermissionsBoundary
