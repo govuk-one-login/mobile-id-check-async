@@ -1,4 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
 
 Description: async-backend SAM template for the ID Check v2 app
 
@@ -124,6 +125,18 @@ Mappings:
     production:
       BaseDns: review-b-async.account.gov.uk
 
+  EnvironmentVariables:
+    dev:
+      STSJWKSENDPOINT: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk/.well-known/jwks.json'
+    build:
+      STSJWKSENDPOINT: 'https://mob-sts-mock.review-b-async.build.account.gov.uk/.well-known/jwks.json'
+    # staging:
+    #   STSJWKSENDPOINT: '' TODO: Mock should only be used in dev and build. Update this value
+    # integration:
+    #   STSJWKSENDPOINT: '' TODO: Mock should only be used in dev and build. Update this value
+    # production:
+    #   STSJWKSENDPOINT: '' TODO: Mock should only be used in dev and build. Update this value
+
 Conditions:
   UseCodeSigning: !Not
     - !Equals
@@ -153,8 +166,6 @@ Conditions:
     - !Equals
       - !Ref Environment
       - build
-
-Transform: AWS::Serverless-2016-10-31
 
 Globals:
   Function:
@@ -773,6 +784,11 @@ Resources:
             Method: get
             RestApiId: !Ref SessionsApi
       Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
+      Environment:
+        Variables:
+          ENCRYPTION_KEY_ARN: !GetAtt KMSEncryptionKey.Arn
+          STS_JWKS_ENDPOINT:
+            !FindInMap [EnvironmentVariables, !Ref Environment, STSJWKSENDPOINT]
 
   AsyncActiveSessionFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -810,6 +826,14 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
+        - PolicyName: KMSDecryptPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                Resource: !GetAtt KMSEncryptionKey.Arn
       RoleName: !Sub ${AWS::StackName}-active-session-lambda
       PermissionsBoundary: !If
         - UsePermissionsBoundary
