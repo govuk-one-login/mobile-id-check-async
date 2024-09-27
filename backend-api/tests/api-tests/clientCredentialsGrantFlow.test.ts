@@ -1,7 +1,6 @@
 import axios from "axios";
 import { aws4Interceptor } from "aws4-axios";
 import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
-
 import "dotenv/config";
 import {
   GetSecretValueCommand,
@@ -32,17 +31,21 @@ const interceptor = aws4Interceptor({
 axiosInstance.interceptors.request.use(interceptor);
 
 describe("POST /token", () => {
-  let clientDetails: string;
+  let clientIdAndSecret: string;
 
   beforeAll(async () => {
-    clientDetails = await getClientDetails();
+    const clientDetails = await getFirstClientDetails();
+    clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
   });
 
-  describe("Given there is no grant type", () => {
+  describe("Given there is no grant_type in the request", () => {
     it("Returns a 400 Bad Request response", async () => {
       const response = await axiosInstance.post(
-        `${apiBaseUrl}/async/token`, //execute-url can be found from the Stage section of the APIgw
-        {},
+        `${apiBaseUrl}/async/token`,
+        "",
+        {
+          headers: { "x-custom-auth": "Basic " + toBase64(clientIdAndSecret) },
+        },
       );
 
       expect(response.data).toStrictEqual({
@@ -53,7 +56,27 @@ describe("POST /token", () => {
     });
   });
 
-  describe("Given there is no Authorization header", () => {
+  describe("Given the grant_type value is invalid", () => {
+    it("Returns a 400 Bad Request response", async () => {
+      const response = await axiosInstance.post(
+        `${apiBaseUrl}/async/token`,
+        "grant_type=invalid_grant_type",
+        {
+          headers: {
+            "x-custom-auth": "Basic " + toBase64(clientIdAndSecret),
+          },
+        },
+      );
+
+      expect(response.data).toStrictEqual({
+        error: "invalid_grant",
+        error_description: "Invalid grant type or grant type not specified",
+      });
+      expect(response.status).toBe(400);
+    });
+  });
+
+  describe("Given there is no Authorization header in the request", () => {
     it("Returns a 400 Bad Request response", async () => {
       const response = await axiosInstance.post(
         `${apiBaseUrl}/async/token`,
@@ -68,46 +91,76 @@ describe("POST /token", () => {
     });
   });
 
-  describe("Given the Authorization header value is invalid", () => {
+  describe("Given the supplied client is not a registered client", () => {
     it("Returns a 400 Bad Request response", async () => {
+      const invalidClientIdAndSecret = "invalidClient:invalidClientSecret";
       const response = await axiosInstance.post(
         `${apiBaseUrl}/async/token`,
         "grant_type=client_credentials",
-        { headers: { Authorization: "Basic INVALID" } },
+        {
+          headers: {
+            "x-custom-auth": "Basic " + toBase64(invalidClientIdAndSecret),
+          },
+        },
       );
 
       expect(response.data).toStrictEqual({
-        error: "invalid_authorization_header",
-        error_description: "Invalid authorization header",
+        error: "invalid_client",
+        error_description: "Supplied client credentials not recognised",
       });
       expect(response.status).toBe(400);
     });
   });
 
   describe("Given the request is valid", () => {
-    it("Returns a 400 Bad Request response", async () => {
-      const encodedClientDetails = base64Encode(clientDetails);
+    it("Returns a 200 OK response and the access token", async () => {
       const response = await axiosInstance.post(
         `${apiBaseUrl}/async/token`,
         "grant_type=client_credentials",
-        { headers: { Authorization: `Basic ${encodedClientDetails}` } },
+        {
+          headers: { "x-custom-auth": "Basic " + toBase64(clientIdAndSecret) },
+        },
       );
 
-      expect(response.data).toStrictEqual({
-        error: "invalid_authorization_header",
-        error_description: "Invalid authorization header",
-      });
-      expect(response.status).toBe(400);
+      const { header, payload } = getDecodedTokenParts(
+        response.data.access_token,
+      );
+      console.log(response.data.access_token);
+
+      expect(response.data).toHaveProperty("access_token");
+      expect(header).toHaveProperty("kid");
+      expect(header).toHaveProperty("alg", "ES256");
+      expect(header).toHaveProperty("typ", "JWT");
+      expect(payload).toHaveProperty("aud");
+      expect(payload).toHaveProperty("client_id");
+      expect(payload).toHaveProperty("exp");
+      expect(payload).toHaveProperty("iss");
+      expect(payload).toHaveProperty("scope", "dcmaw.session.async_create");
+      expect(response.data).toHaveProperty("expires_in", 3600);
+      expect(response.data).toHaveProperty("token_type", "Bearer");
+      expect(response.status).toBe(200);
     });
   });
 });
 
 describe("POST /credential", () => {
-  describe("Given there is no authorization header", () => {
+  let credentialRequestBody: CredentialRequestBody;
+  let accessToken: string;
+
+  beforeAll(async () => {
+    const clientDetails = await getFirstClientDetails();
+    const clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
+
+    accessToken = await getAccessToken(clientIdAndSecret);
+    console.log(accessToken);
+    credentialRequestBody = getRequestBody(clientDetails);
+  });
+
+  describe("Given there is no Authorization header in the request", () => {
     it("Returns a 401 Unauthorized response", async () => {
       const response = await axiosInstance.post(
-        `${apiBaseUrl}/async/credential`, //execute-url can be found from the Stage section of the APIgw
-        null,
+        `${apiBaseUrl}/async/credential`,
+        credentialRequestBody,
       );
 
       expect(response.data).toStrictEqual({
@@ -117,9 +170,126 @@ describe("POST /credential", () => {
       expect(response.status).toBe(401);
     });
   });
+
+  describe("Given the Bearer token in the Authorization header is invalid", () => {
+    it("Returns a 400 Bad Request response", async () => {
+      const response = await axiosInstance.post(
+        `${apiBaseUrl}/async/credential`,
+        credentialRequestBody,
+        {
+          headers: {
+            "X-Custom-Auth":
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+          },
+        },
+      );
+
+      expect(response.data).toStrictEqual({
+        error: "invalid_token",
+        error_description: "Missing exp claim",
+      });
+      expect(response.status).toBe(400);
+    });
+  });
+
+  describe("Given the request body is invalid", () => {
+    it("Returns a 400 Bad Request response", async () => {
+      const response = await axiosInstance.post(
+        `${apiBaseUrl}/async/credential`,
+        "invalidRequestBody",
+        {
+          headers: {
+            "X-Custom-Auth": "Bearer " + accessToken,
+          },
+        },
+      );
+
+      expect(response.data).toStrictEqual({
+        error: "invalid_request",
+        error_description: "Request body validation failed",
+      });
+      expect(response.status).toBe(400);
+    });
+  });
+
+  describe("Given the access token signature is invalid", () => {
+    it("Returns 500 Server Error", async () => {
+      const invalidAccessToken = invalidateAccessTokenSignature(
+        accessToken,
+        "notARealSignature",
+      );
+
+      const response = await axiosInstance.post(
+        `${apiBaseUrl}/async/credential`,
+        credentialRequestBody,
+        {
+          headers: {
+            "X-Custom-Auth": "Bearer " + invalidAccessToken,
+          },
+        },
+      );
+
+      expect(response.data).toStrictEqual({
+        "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
+        sub: "testSub",
+      });
+      expect(response.status).toBe(200);
+    });
+  });
+
+  describe("Given the access token signature could not be verified", () => {
+    it("Returns 400 Bad Request", async () => {
+      const invalidAccessToken = invalidateAccessTokenSignature(
+        accessToken,
+        "6T5a8kCTyXsmw_2ATkyPgtLRzsuot-_ZIXWnuXNftZP8SHHkNxwFyMaZxEnqqtQst-99AoRrUDZnPov0oztbSA",
+      );
+
+      const response = await axiosInstance.post(
+        `${apiBaseUrl}/async/credential`,
+        credentialRequestBody,
+        {
+          headers: {
+            "X-Custom-Auth": "Bearer " + invalidAccessToken,
+          },
+        },
+      );
+
+      expect(response.data).toStrictEqual({
+        "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
+        sub: "testSub",
+      });
+      expect(response.status).toBe(200);
+    });
+  });
+
+  describe("Given the request is valid and an active session is found", () => {
+    it("Returns 200 OK and a response body", async () => {
+      const response = await axiosInstance.post(
+        `${apiBaseUrl}/async/credential`,
+        credentialRequestBody,
+        {
+          headers: {
+            "X-Custom-Auth": "Bearer " + accessToken,
+          },
+        },
+      );
+
+      expect(response.data).toStrictEqual({
+        "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
+        sub: "testSub",
+      });
+      expect(response.status).toBe(200);
+    });
+  });
 });
 
-async function getClientDetails(): Promise<string> {
+interface ClientDetails {
+  client_id: string;
+  client_secret: string;
+  redirect_uri: string;
+}
+
+async function getClientDetails(): Promise<ClientDetails[]> {
   process.env.TEST_ENVIRONMENT = "dev";
   const secretsManagerClient = new SecretsManagerClient({
     region: "eu-west-2",
@@ -129,9 +299,65 @@ async function getClientDetails(): Promise<string> {
     SecretId: secretName,
   });
   const response = await secretsManagerClient.send(command);
-  console.log(response);
-  return response.SecretString!;
+  return JSON.parse(response.SecretString!);
 }
 
-const base64Encode = (value: string): string =>
-  Buffer.from(value, "binary").toString("base64");
+async function getFirstClientDetails(): Promise<ClientDetails> {
+  const clientsDetails = await getClientDetails();
+  return clientsDetails[0];
+}
+
+function getDecodedTokenParts(accessToken: string): {
+  header: object;
+  payload: object;
+} {
+  const accessTokenParts = accessToken.split(".");
+  const header = JSON.parse(fromBase64(accessTokenParts[0])) as object;
+  const payload = JSON.parse(fromBase64(accessTokenParts[1])) as object;
+  return { header, payload };
+}
+
+function toBase64(value: string): string {
+  return Buffer.from(value).toString("base64");
+}
+
+function fromBase64(value: string): string {
+  return Buffer.from(value, "base64").toString();
+}
+
+async function getAccessToken(clientIdAndSecret: string): Promise<string> {
+  const response = await axiosInstance.post(
+    `${apiBaseUrl}/async/token`,
+    "grant_type=client_credentials",
+    {
+      headers: { "x-custom-auth": "Basic " + toBase64(clientIdAndSecret) },
+    },
+  );
+  return response.data.access_token as string;
+}
+
+interface CredentialRequestBody {
+  sub: string;
+  govuk_signin_journey_id: string;
+  client_id: string;
+  state: string;
+  redirect_uri: string;
+}
+
+function getRequestBody(clientDetails: ClientDetails): CredentialRequestBody {
+  return <CredentialRequestBody>{
+    sub: "testSub",
+    govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
+    client_id: clientDetails.client_id,
+    state: "testState",
+    redirect_uri: clientDetails.redirect_uri,
+  };
+}
+
+function invalidateAccessTokenSignature(
+  accessToken: string,
+  newSignature: string,
+) {
+  accessToken = accessToken.substring(0, accessToken.lastIndexOf(".") + 1);
+  return accessToken + newSignature;
+}
