@@ -67,7 +67,7 @@ Resources:
   StsMockApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub ${AWS::StackName}-sts-mock-api
+      Name: !Sub ${AWS::StackName}-api
       Description: Public API gateway for STS Mock
       EndpointConfiguration: REGIONAL
       StageName: 
@@ -93,7 +93,7 @@ Resources:
   StsMockApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sts-mock-api-access-logs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-api-access-logs
       RetentionInDays: 30
 
   StsMockApiDomainName:
@@ -145,7 +145,7 @@ Resources:
               Service: apigateway.amazonaws.com
         Version: 2012-10-17
       Policies:
-        - PolicyName: S3Policy
+        - PolicyName: JwksBucketPolicy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -154,19 +154,6 @@ Resources:
                   - s3:GetObject
                 Resource:
                   - !Sub ${JwksBucket.Arn}/.well-known/jwks.json
-
-  TokenFunctionSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: !Sub ${AWS::StackName}-token-sg
-      GroupDescription: Lambda Security group ruleset
-      SecurityGroupEgress:
-        - CidrIp: !ImportValue devplatform-vpc-VpcCidr
-          Description: TCP HTTPS outbound to vpc.
-          FromPort: 443
-          IpProtocol: tcp
-          ToPort: 443
-      VpcId: !ImportValue devplatform-vpc-VpcId
 
   TokenFunction:
     DependsOn:
@@ -205,7 +192,7 @@ Resources:
           - !ImportValue devplatform-vpc-ProtectedSubnetIdB
           - !ImportValue devplatform-vpc-ProtectedSubnetIdC
         SecurityGroupIds:
-          - !Ref TokenFunctionSecurityGroup
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
 
   TokenFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -238,18 +225,10 @@ Resources:
             Principal:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
       Policies:
-        - PolicyName: LogsPolicy
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: arn:aws:logs:*:*:*
-        - PolicyName: S3Policy
+        - PolicyName: S3ReadPolicy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -260,16 +239,6 @@ Resources:
                   - !Sub
                     - arn:aws:s3:::${TargetBucket}/*
                     - TargetBucket: !Ref JwksBucket
-        - PolicyName: ENIPolicy
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ec2:DescribeNetworkInterfaces
-                  - ec2:CreateNetworkInterface
-                  - ec2:DeleteNetworkInterface
-                Resource: '*'
 
   JwksBucket:
     Type: AWS::S3::Bucket
