@@ -33,7 +33,6 @@ export async function lambdaHandlerConstructor(
     return unauthorizedResponse;
   }
 
-
   const jwe = authorizationHeaderResult.value;
 
   const kmsAdapter = dependencies.kmsAdapter(config.ENCRYPTION_KEY_ARN);
