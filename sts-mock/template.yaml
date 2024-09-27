@@ -67,7 +67,7 @@ Resources:
   StsMockApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub ${AWS::StackName}-sts-mock-api
+      Name: !Sub ${AWS::StackName}-api
       Description: Public API gateway for STS Mock
       EndpointConfiguration: REGIONAL
       StageName: 
@@ -93,7 +93,7 @@ Resources:
   StsMockApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sts-mock-api-access-logs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-api-access-logs
       RetentionInDays: 30
 
   StsMockApiDomainName:
