@@ -52,7 +52,7 @@ export class TokenService implements ITokenService {
     return successResult("");
   };
 
-  private fetchPublicKey = async (
+  private readonly fetchPublicKey = async (
     stsJwksEndpoint: string,
   ): Promise<Result<JSON>> => {
     let response;
