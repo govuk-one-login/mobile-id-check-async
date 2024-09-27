@@ -9,8 +9,7 @@ import { ConfigService } from "./configService/configService";
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncActiveSessionDependencies,
   // Ignoring Sonar flagging code duplication
-  // NOSONAR
-  event: APIGatewayProxyEvent,
+  event: APIGatewayProxyEvent, // NOSONAR
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
 
@@ -33,7 +32,7 @@ export async function lambdaHandlerConstructor(
     });
     return unauthorizedResponse;
   }
-  // NOSONAR
+
 
   const jwe = authorizationHeaderResult.value;
 
