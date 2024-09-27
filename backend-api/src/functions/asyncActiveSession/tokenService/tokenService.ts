@@ -2,7 +2,7 @@ import { IKmsAdapter } from "../../adapters/kmsAdapter";
 import { errorResult, Result, successResult } from "../../utils/result";
 
 export class TokenService implements ITokenService {
-  private kmsAdapter: IKmsAdapter;
+  private readonly kmsAdapter: IKmsAdapter;
 
   constructor(kmsAdapter: IKmsAdapter) {
     this.kmsAdapter = kmsAdapter;
