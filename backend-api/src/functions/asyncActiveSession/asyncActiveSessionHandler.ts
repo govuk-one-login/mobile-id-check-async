@@ -8,7 +8,6 @@ import { ConfigService } from "./configService/configService";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncActiveSessionDependencies,
-  // Ignoring Sonar flagging code duplication
   event: APIGatewayProxyEvent, // NOSONAR
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
