@@ -12,16 +12,16 @@ export async function lambdaHandlerConstructor(
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
 
-  const configResult = new ConfigService().getConfig(dependencies.env); // NOSONAR
+  const configResult = new ConfigService().getConfig(dependencies.env);
   if (configResult.isError) {
-    // NOSONAR
+
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
-      // NOSONAR
-      errorMessage: configResult.value.errorMessage, // NOSONAR
-    }); // NOSONAR
-    return serverError500Response; // NOSONAR
-  } // NOSONAR
-  const config = configResult.value; // NOSONAR
+
+      errorMessage: configResult.value.errorMessage,
+    });
+    return serverError500Response;
+  }
+  const config = configResult.value;
 
   const requestService = new RequestService();
   const authorizationHeaderResult = requestService.getAuthorizationHeader(
