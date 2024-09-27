@@ -14,9 +14,7 @@ export async function lambdaHandlerConstructor(
 
   const configResult = new ConfigService().getConfig(dependencies.env);
   if (configResult.isError) {
-
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
-
       errorMessage: configResult.value.errorMessage,
     });
     return serverError500Response;
