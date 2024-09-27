@@ -7,10 +7,10 @@ import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { errorResult, Result, successResult } from "../utils/result";
 
 export class KMSAdapter {
-  private readonly kidArn: string;
+  private readonly encryptionKeyArn: string;
 
-  constructor(kidArn: string) {
-    this.kidArn = kidArn;
+  constructor(encryptionKeyArn: string) {
+    this.encryptionKeyArn = encryptionKeyArn;
   }
 
   async decrypt(
@@ -20,7 +20,7 @@ export class KMSAdapter {
     try {
       output = await KmsClient.send(
         new DecryptCommand({
-          KeyId: this.kidArn,
+          KeyId: this.encryptionKeyArn,
           CiphertextBlob: encryptedCek,
           EncryptionAlgorithm: "RSAES_OAEP_SHA_256",
         }),

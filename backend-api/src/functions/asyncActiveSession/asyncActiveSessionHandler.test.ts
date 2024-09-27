@@ -12,7 +12,7 @@ import { KMSAdapter } from "../adapters/kmsAdapter";
 
 const env = {
   STS_JWKS_ENDPOINT: "https://mockUrl.com",
-  KID_ARN: "mockKidArn",
+  ENCRYPTION_KEY_ARN: "mockEncryptionKeyArn",
 };
 
 describe("Async Active Session", () => {
@@ -24,8 +24,9 @@ describe("Async Active Session", () => {
     dependencies = {
       env,
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
-      kmsAdapter: () => new KMSAdapter("mockKidArn"),
-      tokenService: () => new TokenService(new KMSAdapter("mockKidArn")),
+      kmsAdapter: () => new KMSAdapter("mockEncryptionKeyArn"),
+      tokenService: () =>
+        new TokenService(new KMSAdapter("mockEncryptionKeyArn")),
     };
   });
 

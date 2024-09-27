@@ -34,7 +34,7 @@ export async function lambdaHandlerConstructor(
 
   const jwe = authorizationHeaderResult.value;
 
-  const kmsAdapter = dependencies.kmsAdapter(config.KID_ARN);
+  const kmsAdapter = dependencies.kmsAdapter(config.ENCRYPTION_KEY_ARN);
   const tokenService = dependencies.tokenService(kmsAdapter);
   const getSubFromTokenResult = await tokenService.getSubFromToken(
     config.STS_JWKS_ENDPOINT,

@@ -12,7 +12,7 @@ describe("Token Service", () => {
   let tokenService: ITokenService;
 
   beforeEach(() => {
-    tokenService = new TokenService(new KMSAdapter("mockKidArn"));
+    tokenService = new TokenService(new KMSAdapter("mockEncryptionKeyArn"));
     mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
       Promise.resolve({
         status: 200,

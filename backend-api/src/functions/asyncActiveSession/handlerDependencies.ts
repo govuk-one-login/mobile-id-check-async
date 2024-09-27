@@ -7,13 +7,13 @@ import { IKmsAdapter, KMSAdapter } from "../adapters/kmsAdapter";
 export interface IAsyncActiveSessionDependencies {
   env: NodeJS.ProcessEnv;
   logger: () => Logger<MessageName>;
-  kmsAdapter: (kidArn: string) => IKmsAdapter;
+  kmsAdapter: (encryptionKeyArn: string) => IKmsAdapter;
   tokenService: (kmsAdapter: IKmsAdapter) => ITokenService;
 }
 
 export const dependencies: IAsyncActiveSessionDependencies = {
   env: process.env,
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
-  kmsAdapter: (kidArn: string) => new KMSAdapter(kidArn),
+  kmsAdapter: (encryptionKeyArn: string) => new KMSAdapter(encryptionKeyArn),
   tokenService: (kmsAdapter: IKmsAdapter) => new TokenService(kmsAdapter),
 };

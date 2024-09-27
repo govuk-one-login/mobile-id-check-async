@@ -2,15 +2,15 @@ import { IGetConfig } from "../../types/config";
 import { errorResult, Result, successResult } from "../../utils/result";
 
 export interface Config {
-  KID_ARN: string;
+  ENCRYPTION_KEY_ARN: string;
   STS_JWKS_ENDPOINT: string;
 }
 
 export class ConfigService implements IGetConfig<Config> {
   getConfig = (env: NodeJS.ProcessEnv): Result<Config> => {
-    if (!env.KID_ARN) {
+    if (!env.ENCRYPTION_KEY_ARN) {
       return errorResult({
-        errorMessage: "No KID_ARN",
+        errorMessage: "No ENCRYPTION_KEY_ARN",
         errorCategory: "SERVER_ERROR",
       });
     }
@@ -31,7 +31,7 @@ export class ConfigService implements IGetConfig<Config> {
     }
 
     return successResult({
-      KID_ARN: env.KID_ARN,
+      ENCRYPTION_KEY_ARN: env.ENCRYPTION_KEY_ARN,
       STS_JWKS_ENDPOINT: env.STS_JWKS_ENDPOINT,
     });
   };
