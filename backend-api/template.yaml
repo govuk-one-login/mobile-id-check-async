@@ -1164,3 +1164,7 @@ Outputs:
     Condition: ProxyApiDeployment
     Description: Proxy API Gateway Pretty DNS
     Value: !Sub https://${ProxyApiDomainName}
+
+  SessionsTableName:
+    Description: Sessions DynamoDB table name
+    Value: !Ref SessionsTable

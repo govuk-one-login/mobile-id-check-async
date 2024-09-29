@@ -13,6 +13,8 @@ echo "Generating .env file for the $SAM_STACK stack"
 
 SESSIONS_API_URL=$(aws cloudformation describe-stacks --stack-name "$SAM_STACK" --query "Stacks[0].Outputs[?OutputKey=='SessionsApiUrl'].OutputValue" --output text)
 PROXY_API_URL=$(aws cloudformation describe-stacks --stack-name "$SAM_STACK" --query "Stacks[0].Outputs[?OutputKey=='ProxyApiUrl'].OutputValue" --output text)
+SESSIONS_TABLE_NAME=$(aws cloudformation describe-stacks --stack-name "$SAM_STACK" --query "Stacks[0].Outputs[?OutputKey=='SessionsTableName'].OutputValue" --output text)
 
 echo "SESSIONS_API_URL=$SESSIONS_API_URL" > .env
 echo "PROXY_API_URL=$PROXY_API_URL" >> .env
+echo "SESSIONS_TABLE_NAME=$SESSIONS_TABLE_NAME" >> .env
