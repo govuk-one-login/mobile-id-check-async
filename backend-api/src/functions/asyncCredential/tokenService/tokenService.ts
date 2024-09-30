@@ -5,7 +5,7 @@ import { errorResult, Result, successResult } from "../../utils/result";
 
 export class TokenService implements IDecodeToken, IVerifyTokenSignature {
   getDecodedToken(config: IDecodeTokenConfig): Result<IDecodedToken> {
-    const encodedJwt = config.authorizationHeader.split(" ")[1];
+    const encodedJwt = config.authorizationHeader
 
     const decodedJwtResult = this.decodeToken(encodedJwt);
     if (decodedJwtResult.isError) {
