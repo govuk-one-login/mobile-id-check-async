@@ -12,13 +12,18 @@ export class TokenService implements ITokenService {
     stsJwksEndpoint: string,
     jwe: string,
   ): Promise<Result<string>> => {
-    const fetchPublicKeyResult = await this.fetchPublicKey(stsJwksEndpoint);
-    if (fetchPublicKeyResult.isError) {
-      return errorResult({
-        errorMessage: fetchPublicKeyResult.value.errorMessage,
-        errorCategory: fetchPublicKeyResult.value.errorCategory,
-      });
-    }
+
+
+    const publicKey = this.fetchPublicKeyWithRetries(stsJwksEndpoint)
+
+    // const fetchPublicKeyResult = await this.fetchPublicKey(stsJwksEndpoint);
+
+    // if (fetchPublicKeyResult.isError) {
+    //   return errorResult({
+    //     errorMessage: fetchPublicKeyResult.value.errorMessage,
+    //     errorCategory: fetchPublicKeyResult.value.errorCategory,
+    //   });
+    // }
 
     const jweComponents = jwe.split(".");
 
@@ -51,6 +56,28 @@ export class TokenService implements ITokenService {
 
     return successResult("");
   };
+
+  private async fetchPublicKeyWithRetries(stsJwksEndpoint: string) {
+    let retries = 0
+    const maxRetries = 2
+    const delay = 1000
+
+    let fetchPublicKeyResult
+    while(retries <= maxRetries) {
+      fetchPublicKeyResult = await this.fetchPublicKey(stsJwksEndpoint);
+
+      if (!fetchPublicKeyResult.isError) {
+        return fetchPublicKeyResult.value
+      }
+
+      retries++
+      if (retries > maxRetries) {
+        return fetchPublicKeyResult;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, delay))
+    }
+  }
 
   private readonly fetchPublicKey = async (
     stsJwksEndpoint: string,
