@@ -1,6 +1,6 @@
 import { errorResult, Result, successResult } from "../../utils/result";
 
-export const getBearerTokenFromHeader = (
+export const getBearerToken = (
   authorizationHeader: string | undefined,
 ): Result<string> => {
   if (authorizationHeader == null) {
@@ -25,14 +25,14 @@ export const getBearerTokenFromHeader = (
     });
   }
 
-  const jwe = authorizationHeader.split(" ")[1];
+  const token = authorizationHeader.split(" ")[1];
 
-  if (jwe.length == 0) {
+  if (token.length == 0) {
     return errorResult({
       errorMessage: "Invalid authentication header format - missing token",
       errorCategory: "CLIENT_ERROR",
     });
   }
 
-  return successResult(jwe);
+  return successResult(token);
 };
