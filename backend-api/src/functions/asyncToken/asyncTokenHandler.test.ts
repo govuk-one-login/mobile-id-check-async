@@ -191,11 +191,9 @@ describe("Async Token", () => {
             errorMessage: "Missing authorization header",
           });
           expect(result.statusCode).toBe(400);
-          expect(JSON.parse(result.body).error).toEqual(
-            "invalid_authorization_header",
-          );
+          expect(JSON.parse(result.body).error).toEqual("invalid_client");
           expect(JSON.parse(result.body).error_description).toEqual(
-            "Invalid authorization header",
+            "Supplied client credentials not recognised",
           );
         });
       });
@@ -220,11 +218,9 @@ describe("Async Token", () => {
             errorMessage: "Missing authorization header",
           });
           expect(result.statusCode).toBe(400);
-          expect(JSON.parse(result.body).error).toEqual(
-            "invalid_authorization_header",
-          );
+          expect(JSON.parse(result.body).error).toEqual("invalid_client");
           expect(JSON.parse(result.body).error_description).toEqual(
-            "Invalid authorization header",
+            "Supplied client credentials not recognised",
           );
         });
       });
@@ -249,11 +245,9 @@ describe("Async Token", () => {
             errorMessage: "Missing authorization header",
           });
           expect(result.statusCode).toBe(400);
-          expect(JSON.parse(result.body).error).toEqual(
-            "invalid_authorization_header",
-          );
+          expect(JSON.parse(result.body).error).toEqual("invalid_client");
           expect(JSON.parse(result.body).error_description).toEqual(
-            "Invalid authorization header",
+            "Supplied client credentials not recognised",
           );
         });
       });
@@ -265,7 +259,7 @@ describe("Async Token", () => {
 
             buildTokenHandlerRequest({
               body: "grant_type=client_credentials",
-              authorizationHeader: "missingBearerKeyword",
+              authorizationHeader: "missingBasicKeyword",
             }),
             buildLambdaContext(),
           );
@@ -279,11 +273,9 @@ describe("Async Token", () => {
             errorMessage: "Invalid authorization header",
           });
           expect(result.statusCode).toBe(400);
-          expect(JSON.parse(result.body).error).toEqual(
-            "invalid_authorization_header",
-          );
+          expect(JSON.parse(result.body).error).toEqual("invalid_client");
           expect(JSON.parse(result.body).error_description).toEqual(
-            "Invalid authorization header",
+            "Supplied client credentials not recognised",
           );
         });
       });
@@ -310,11 +302,9 @@ describe("Async Token", () => {
             errorMessage: "Client secret incorrectly formatted",
           });
           expect(result.statusCode).toBe(400);
-          expect(JSON.parse(result.body).error).toEqual(
-            "invalid_authorization_header",
-          );
+          expect(JSON.parse(result.body).error).toEqual("invalid_client");
           expect(JSON.parse(result.body).error_description).toEqual(
-            "Invalid authorization header",
+            "Supplied client credentials not recognised",
           );
         });
       });

@@ -46,7 +46,7 @@ export async function lambdaHandlerConstructor(
     logger.log("INVALID_REQUEST", {
       errorMessage: eventHeadersResult.value.errorMessage,
     });
-    return badRequestResponseInvalidAuthorizationHeader;
+    return badRequestResponseInvalidCredentials;
   }
 
   const clientCredentials = eventHeadersResult.value;
@@ -132,15 +132,6 @@ const badRequestResponseInvalidGrant: APIGatewayProxyResult = {
   body: JSON.stringify({
     error: "invalid_grant",
     error_description: "Invalid grant type or grant type not specified",
-  }),
-};
-
-const badRequestResponseInvalidAuthorizationHeader: APIGatewayProxyResult = {
-  headers: { "Content-Type": "application/json" },
-  statusCode: 400,
-  body: JSON.stringify({
-    error: "invalid_authorization_header",
-    error_description: "Invalid authorization header",
   }),
 };
 
