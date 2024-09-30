@@ -19,7 +19,7 @@ export async function lambdaHandlerConstructor(
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
       errorMessage: configResult.value.errorMessage,
     });
-    return serverError500Response;
+    return serverErrorResponse;
   }
   const config = configResult.value;
 
@@ -46,10 +46,7 @@ export async function lambdaHandlerConstructor(
     logger.log("JWT_CLAIM_INVALID", {
       errorMessage: validTokenClaimsResult.value.errorMessage,
     });
-    return badRequestResponse({
-      error: "invalid_token",
-      errorDescription: validTokenClaimsResult.value.errorMessage,
-    });
+    return unauthorizedResponse;
   }
   const { encodedJwt, jwtPayload } =
     validTokenClaimsResult.value as IDecodedToken;
@@ -64,10 +61,7 @@ export async function lambdaHandlerConstructor(
       errorMessage: requestBodyResult.value.errorMessage,
     });
 
-    return badRequestResponse({
-      error: "invalid_request",
-      errorDescription: "Request body validation failed",
-    });
+    return badRequestResponse("Request body validation failed");
   }
   const requestBody = requestBodyResult.value;
 
@@ -82,15 +76,12 @@ export async function lambdaHandlerConstructor(
       logger.log("ERROR_VERIFYING_SIGNATURE", {
         errorMessage,
       });
-      return serverError500Response;
+      return serverErrorResponse;
     }
     logger.log("TOKEN_SIGNATURE_INVALID", {
       errorMessage,
     });
-    return badRequestResponse({
-      error: "invalid_request",
-      errorDescription: "Invalid signature",
-    });
+    return badRequestResponse("Invalid signature");
   }
 
   // Fetching issuer and redirect_uri from client registry using the client_id from the incoming jwt
@@ -108,16 +99,13 @@ export async function lambdaHandlerConstructor(
       logger.log("ERROR_RETRIEVING_REGISTERED_CLIENT", {
         errorMessage: getPartialRegisteredClientResponse.value.errorMessage,
       });
-      return serverError500Response;
+      return serverErrorResponse;
     }
 
     logger.log("CLIENT_CREDENTIALS_INVALID", {
       errorMessage: getPartialRegisteredClientResponse.value.errorMessage,
     });
-    return badRequestResponse({
-      errorDescription: "Supplied client not recognised",
-      error: "invalid_client",
-    });
+    return badRequestResponse("Supplied client not recognised");
   }
 
   // Validate issuer and redirect_uri against client registry
@@ -130,10 +118,7 @@ export async function lambdaHandlerConstructor(
       errorMessage: "issuer does not match value from client registry",
     });
 
-    return badRequestResponse({
-      error: "invalid_request",
-      errorDescription: "Request body validation failed",
-    });
+    return badRequestResponse("Request body validation failed");
   }
 
   if (requestBody.redirect_uri) {
@@ -142,10 +127,7 @@ export async function lambdaHandlerConstructor(
         errorMessage: "redirect_uri does not match value from client registry",
       });
 
-      return badRequestResponse({
-        error: "invalid_request",
-        errorDescription: "Request body validation failed",
-      });
+      return badRequestResponse("Request body validation failed");
     }
   }
 
@@ -159,7 +141,7 @@ export async function lambdaHandlerConstructor(
     logger.log("ERROR_RETRIEVING_SESSION", {
       errorMessage: activeSessionResult.value.errorMessage,
     });
-    return serverError500Response;
+    return serverErrorResponse;
   }
   if (activeSessionResult.value) {
     logger.setSessionId({ sessionId: activeSessionResult.value });
@@ -177,7 +159,7 @@ export async function lambdaHandlerConstructor(
     logger.log("ERROR_CREATING_SESSION", {
       errorMessage: createSessionResult.value.errorMessage,
     });
-    return serverError500Response;
+    return serverErrorResponse;
   }
   const sessionId = createSessionResult.value;
   logger.setSessionId({ sessionId });
@@ -196,37 +178,34 @@ export async function lambdaHandlerConstructor(
     logger.log("ERROR_WRITING_AUDIT_EVENT", {
       errorMessage: "Unexpected error writing the DCMAW_ASYNC_CRI_START event",
     });
-    return serverError500Response;
+    return serverErrorResponse;
   }
 
   logger.log("COMPLETED");
   return sessionCreatedResponse(requestBody.sub);
 }
 
-const badRequestResponse = (responseInput: {
-  error: string;
-  errorDescription: string;
-}) => {
-  return {
-    headers: { "Content-Type": "application/json" },
-    statusCode: 400,
-    body: JSON.stringify({
-      error: responseInput.error,
-      error_description: responseInput.errorDescription,
-    }),
-  };
-};
-
 const unauthorizedResponse = {
   headers: { "Content-Type": "application/json" },
   statusCode: 401,
   body: JSON.stringify({
-    error: "Unauthorized",
+    error: "invalid_token",
     error_description: "Invalid token",
   }),
 };
 
-const serverError500Response: APIGatewayProxyResult = {
+const badRequestResponse = (errorDescription: string) => {
+  return {
+    headers: { "Content-Type": "application/json" },
+    statusCode: 400,
+    body: JSON.stringify({
+      error: "invalid_request",
+      error_description: errorDescription,
+    }),
+  };
+};
+
+const serverErrorResponse: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 500,
   body: JSON.stringify({
