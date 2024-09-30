@@ -1159,7 +1159,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
-      AlarmDescription: "/.well-known/jwks.json endpoint has returned at least 2 5XX status codes twice in the past 5 minutes"
+      AlarmDescription: "1% or more of requests are failing on the /.well-known/jwks.json endpoint"
       AlarmName: !Sub "${AWS::StackName}-LowThresholdWellKnown5XXApiGwAlarm"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -1234,7 +1234,7 @@ Resources:
         - Id: errorThreshold
           Label: errorThreshold
           ReturnData: true
-          Expression: IF(errorPercentage5XX>=80,errorPercentage5XX,0)
+          Expression: IF(invocations>=10,errorPercentage5XX,0)
         - Id: invocations
           ReturnData: false
           MetricStat:
