@@ -1155,7 +1155,7 @@ Resources:
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
 
-  WellKnown5XXLowThresholdWarningAlarm:    
+  WellKnown5XXLowThresholdAlarm:    
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
@@ -1169,12 +1169,12 @@ Resources:
       DatapointsToAlarm: 2
       EvaluationPeriods: 5
       TreatMissingData: notBreaching
-      Threshold: 2
+      Threshold: 1
       Metrics:
         - Id: errorThreshold
           Label: errorThreshold
           ReturnData: true
-          Expression: IF((invocations>4) && (errorSum5XX>2) && (errorPercentage5XX>1),errorPercentage5XX,0)
+          Expression: IF((invocations>=4) && (errorSum5XX>=2) && (errorPercentage5XX>=1),errorPercentage5XX,0)
         - Id: invocations
           ReturnData: false
           MetricStat:
@@ -1185,7 +1185,7 @@ Resources:
                 - Name: Method
                   Value: GET
                 - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-public-api
+                  Value: !Sub ${AWS::StackName}-sessions-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
@@ -1203,7 +1203,7 @@ Resources:
                 - Name: Method
                   Value: GET
                 - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-public-api
+                  Value: !Sub ${AWS::StackName}-sessions-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
@@ -1215,7 +1215,7 @@ Resources:
           ReturnData: false
           Expression: (errorSum5XX/invocations) * 100
 
-  WellKnown5XXHighThresholdCriticalAlarm:    
+  WellKnown5XXHighThresholdAlarm:    
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
@@ -1245,7 +1245,7 @@ Resources:
                 - Name: Method
                   Value: GET
                 - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-public-api
+                  Value: !Sub ${AWS::StackName}-sessions-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
@@ -1263,7 +1263,7 @@ Resources:
                 - Name: Method
                   Value: GET
                 - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-public-api
+                  Value: !Sub ${AWS::StackName}-sessions-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
