@@ -12,12 +12,11 @@ export class TokenService implements ITokenService {
     stsJwksEndpoint: string,
     jwe: string,
   ): Promise<Result<string>> => {
-
-
-    const fetchPublicKeyResult = await this.fetchPublicKeyWithRetries(stsJwksEndpoint)
+    const fetchPublicKeyResult =
+      await this.fetchPublicKeyWithRetries(stsJwksEndpoint);
 
     if (fetchPublicKeyResult.isError) {
-      return fetchPublicKeyResult
+      return fetchPublicKeyResult;
     }
 
     const jweComponents = jwe.split(".");
@@ -52,7 +51,9 @@ export class TokenService implements ITokenService {
     return successResult("");
   };
 
-  private async fetchPublicKeyWithRetries(stsJwksEndpoint: string): Promise<Result<JSON>> {
+  private async fetchPublicKeyWithRetries(
+    stsJwksEndpoint: string,
+  ): Promise<Result<JSON>> {
     const maxRetries = 2;
     const delayInMs = 1000;
 
@@ -73,8 +74,9 @@ export class TokenService implements ITokenService {
     // After all retries, check if fetchPublicKeyResult was assigned and handle the case where it was not assigned (should not happen)
     if (fetchPublicKeyResult == null) {
       return errorResult({
-        errorMessage: 'Unexpected error in retry policy when fetching STS public keys',
-        errorCategory: 'SERVER_ERROR',
+        errorMessage:
+          "Unexpected error in retry policy when fetching STS public keys",
+        errorCategory: "SERVER_ERROR",
       });
     }
 
