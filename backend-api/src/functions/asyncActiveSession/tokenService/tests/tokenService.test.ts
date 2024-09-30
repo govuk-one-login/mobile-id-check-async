@@ -129,45 +129,6 @@ describe("Token Service", () => {
               mockFetch = jest
                 .spyOn(global, "fetch")
                 .mockImplementationOnce(() =>
-                  Promise.resolve({
-                    status: 200,
-                    ok: true,
-                    json: () =>
-                      Promise.resolve({
-                        keys: [
-                          {
-                            kty: "mockKty",
-                            x: "mockX",
-                            y: "mockY",
-                            crv: "mockCrv",
-                            d: "mockD",
-                            kid: "mockKid",
-                          },
-                        ],
-                      }),
-                  } as Response),
-                );
-
-              await tokenService.getSubFromToken(
-                "https://mockJwksEndpoint.com",
-                "mockJwe",
-              );
-
-              expect(mockFetch).toHaveBeenCalledWith(
-                "https://mockJwksEndpoint.com",
-                {
-                  method: "GET",
-                },
-              );
-              expect(mockFetch).toHaveBeenCalledTimes(1);
-            });
-          });
-
-          describe("Given there is an error retrieving the public key on the second attempt", () => {
-            it("Makes third attempt to get STS key", async () => {
-              mockFetch = jest
-                .spyOn(global, "fetch")
-                .mockImplementationOnce(() =>
                   Promise.reject(new Error("mockError")),
                 )
                 .mockImplementationOnce(() =>
@@ -202,6 +163,51 @@ describe("Token Service", () => {
                 },
               );
               expect(mockFetch).toHaveBeenCalledTimes(2);
+            });
+          });
+
+          describe("Given there is an error retrieving the public key on the second attempt", () => {
+            it("Makes third attempt to get STS key", async () => {
+              mockFetch = jest
+                .spyOn(global, "fetch")
+                .mockImplementationOnce(() =>
+                  Promise.reject(new Error("mockError")),
+                )
+                .mockImplementationOnce(() =>
+                  Promise.reject(new Error("mockError")),
+                )
+                .mockImplementationOnce(() =>
+                  Promise.resolve({
+                    status: 200,
+                    ok: true,
+                    json: () =>
+                      Promise.resolve({
+                        keys: [
+                          {
+                            kty: "mockKty",
+                            x: "mockX",
+                            y: "mockY",
+                            crv: "mockCrv",
+                            d: "mockD",
+                            kid: "mockKid",
+                          },
+                        ],
+                      }),
+                  } as Response),
+                );
+
+              await tokenService.getSubFromToken(
+                "https://mockJwksEndpoint.com",
+                "mockJwe",
+              );
+
+              expect(mockFetch).toHaveBeenCalledWith(
+                "https://mockJwksEndpoint.com",
+                {
+                  method: "GET",
+                },
+              );
+              expect(mockFetch).toHaveBeenCalledTimes(3);
             });
           });
 
