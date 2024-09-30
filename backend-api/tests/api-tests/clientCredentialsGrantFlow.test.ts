@@ -87,8 +87,8 @@ describe("POST /token", () => {
       );
 
       expect(response.data).toStrictEqual({
-        error: "invalid_authorization_header",
-        error_description: "Invalid authorization header",
+        error: "invalid_client",
+        error_description: "Supplied client credentials not recognised",
       });
       expect(response.status).toBe(400);
     });
@@ -165,7 +165,7 @@ describe("POST /credential", () => {
       );
 
       expect(response.data).toStrictEqual({
-        error: "Unauthorized",
+        error: "invalid_token",
         error_description: "Invalid token",
       });
       expect(response.status).toBe(401);
@@ -239,6 +239,17 @@ describe("POST /credential", () => {
 
   describe("Given the request is valid and an active session is found for a given sub", () => {
     it("Returns 200 OK", async () => {
+      // Create session if it does not exist
+      await axiosInstance.post(
+        `${apiBaseUrl}/async/credential`,
+        credentialRequestBody,
+        {
+          headers: {
+            "X-Custom-Auth": "Bearer " + accessToken,
+          },
+        },
+      );
+
       const response = await axiosInstance.post(
         `${apiBaseUrl}/async/credential`,
         credentialRequestBody,
