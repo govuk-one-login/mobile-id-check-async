@@ -296,7 +296,7 @@ describe("POST /credential", () => {
         "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
         sub: randomSub,
       });
-      expect(response.status).toStrictEqual(201);
+      expect(response.status).toBe(201);
     });
   });
 });
