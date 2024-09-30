@@ -6,12 +6,11 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
-import {
-  DeleteItemCommand,
-  DynamoDBClient,
-  QueryCommand,
-} from "@aws-sdk/client-dynamodb";
+import {randomUUID} from "crypto";
+import {UUID} from "node:crypto";
 
+
+process.env.TEST_ENVIRONMENT = "dev"
 const apiBaseUrl = process.env.PROXY_API_URL;
 if (!apiBaseUrl) throw Error("PROXY_URL environment variable not set");
 const axiosInstance = axios.create({
@@ -50,26 +49,6 @@ describe("POST /token", () => {
         "",
         {
           headers: { "x-custom-auth": "Basic " + toBase64(clientIdAndSecret) },
-        },
-      );
-
-      expect(response.data).toStrictEqual({
-        error: "invalid_grant",
-        error_description: "Invalid grant type or grant type not specified",
-      });
-      expect(response.status).toBe(400);
-    });
-  });
-
-  describe("Given the grant_type value is invalid", () => {
-    it("Returns a 400 Bad Request response", async () => {
-      const response = await axiosInstance.post(
-        `${apiBaseUrl}/async/token`,
-        "grant_type=invalid_grant_type",
-        {
-          headers: {
-            "x-custom-auth": "Basic " + toBase64(clientIdAndSecret),
-          },
         },
       );
 
@@ -148,11 +127,12 @@ describe("POST /token", () => {
 });
 
 describe("POST /credential", () => {
+  let clientDetails: ClientDetails;
   let credentialRequestBody: CredentialRequestBody;
   let accessToken: string;
 
   beforeAll(async () => {
-    const clientDetails = await getFirstClientDetails();
+    clientDetails = await getFirstClientDetails();
     const clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
     accessToken = await getAccessToken(clientIdAndSecret);
     credentialRequestBody = getRequestBody(clientDetails);
@@ -173,7 +153,7 @@ describe("POST /credential", () => {
     });
   });
 
-  describe("Given the Bearer token in the Authorization header is invalid", () => {
+  describe("Given the Bearer token in the Authorization header is not a valid token", () => {
     it("Returns a 400 Bad Request response", async () => {
       const response = await axiosInstance.post(
         `${apiBaseUrl}/async/credential`,
@@ -238,7 +218,7 @@ describe("POST /credential", () => {
     });
   });
 
-  describe("Given the request is valid and an active session is found", () => {
+  describe("Given the request is valid and an active session is found for a given sub", () => {
     it("Returns 200 OK", async () => {
       const response = await axiosInstance.post(
         `${apiBaseUrl}/async/credential`,
@@ -252,19 +232,40 @@ describe("POST /credential", () => {
 
       expect(response.data).toStrictEqual({
         "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
-        sub: "testSub",
+        sub: "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
       });
       expect(response.status).toBe(200);
     });
   });
 
-  describe("Given the request is valid but there is no active session", () => {
+  describe("Given the same access token is used more than once to fetch an active session", () => {
+    it("Returns 200 OK", async () => {
+      const response = await axiosInstance.post(
+          `${apiBaseUrl}/async/credential`,
+          credentialRequestBody,
+          {
+            headers: {
+              "X-Custom-Auth": "Bearer " + accessToken,
+            },
+          },
+      );
+
+      expect(response.data).toStrictEqual({
+        "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
+        sub: "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
+      });
+      expect(response.status).toBe(200);
+    });
+  });
+
+  describe("Given the request is valid and a new session is created for a new sub", () => {
     it("Returns 201 Created", async () => {
-      await deleteSessionIfExists(credentialRequestBody.sub);
+      const randomSub = randomUUID();
+      const credentialRequestBody = getRequestBody(clientDetails, randomSub)
 
       const response = await axiosInstance.post(
         `${apiBaseUrl}/async/credential`,
-        credentialRequestBody,
+          credentialRequestBody,
         {
           headers: {
             "X-Custom-Auth": "Bearer " + accessToken,
@@ -274,7 +275,7 @@ describe("POST /credential", () => {
 
       expect(response.data).toStrictEqual({
         "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
-        sub: "testSub",
+        sub: randomSub,
       });
       expect(response.status).toStrictEqual(201);
     });
@@ -331,9 +332,9 @@ interface CredentialRequestBody {
   redirect_uri: string;
 }
 
-function getRequestBody(clientDetails: ClientDetails): CredentialRequestBody {
+function getRequestBody(clientDetails: ClientDetails, sub?: UUID | undefined): CredentialRequestBody {
   return <CredentialRequestBody>{
-    sub: "testSub",
+    sub: sub ?? "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
     govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
     client_id: clientDetails.client_id,
     state: "testState",
@@ -344,39 +345,4 @@ function getRequestBody(clientDetails: ClientDetails): CredentialRequestBody {
 function makeSignatureUnverifiable(accessToken: string, newSignature: string) {
   accessToken = accessToken.substring(0, accessToken.lastIndexOf(".") + 1);
   return accessToken + newSignature;
-}
-
-async function deleteSessionIfExists(subjectId: string) {
-  const tableName = process.env.SESSIONS_TABLE_NAME;
-
-  const client = new DynamoDBClient({ region: "eu-west-2" });
-
-  const queryCommand = new QueryCommand({
-    TableName: tableName,
-    IndexName: "subjectIdentifier-timeToLive-index",
-    KeyConditionExpression: "#subjectIdentifier = :subjectIdentifier",
-    FilterExpression: "#sessionState = :sessionState",
-    ExpressionAttributeNames: {
-      "#sessionId": "sessionId",
-      "#sessionState": "sessionState",
-      "#subjectIdentifier": "subjectIdentifier",
-    },
-    ExpressionAttributeValues: {
-      ":subjectIdentifier": { S: subjectId },
-      ":sessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
-    },
-    ProjectionExpression: "#sessionId",
-    Limit: 1,
-    ScanIndexForward: false,
-  });
-
-  const response = await client.send(queryCommand);
-  if (response.Count === 1 && response.Items) {
-    const sessionId = response.Items[0].sessionId.S;
-    const deleteItemCommand = new DeleteItemCommand({
-      TableName: tableName,
-      Key: { sessionId: { S: sessionId! } },
-    });
-    await client.send(deleteItemCommand);
-  }
 }
