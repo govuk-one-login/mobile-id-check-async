@@ -10,7 +10,7 @@ describe("Token Service", () => {
         const tokenService = new TokenService();
         const invalidJson =
           "eyJhbGciOiJIUzI1NiIsInR5cGUiOiJKV1QifQ.eyJpc3MiOiJtb2NrSXNzdWVyIiwiYXVkIjoibW9ja0lzc3VlciIsInNjb3BlIjoiZGNtYXcuc2Vzc2lvbi5hc3luY19jcmVhdGUiCJjbGllbnRfaWQiOiJtb2NrQ2xpZW50SWQifQ.fFnJIXCCkFY-LdzcUB7JmedN-97sE2J-J1FT74HJd7o";
-        const authorizationHeader = `Bearer ${invalidJson}`;
+        const authorizationHeader = `${invalidJson}`;
 
         const result = tokenService.getDecodedToken({
           authorizationHeader,
@@ -30,7 +30,7 @@ describe("Token Service", () => {
           const tokenService = new TokenService();
           const jwtBuilder = new MockJWTBuilder();
           jwtBuilder.deleteExp();
-          const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
+          const authorizationHeader = `${jwtBuilder.getEncodedJwt()}`;
 
           const result = tokenService.getDecodedToken({
             authorizationHeader,
@@ -50,7 +50,7 @@ describe("Token Service", () => {
           const tokenService = new TokenService();
           const jwtBuilder = new MockJWTBuilder();
           jwtBuilder.setExp(Math.floor(Date.now() - 1000) / 1000);
-          const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
+          const authorizationHeader = `${jwtBuilder.getEncodedJwt()}`;
 
           const result = tokenService.getDecodedToken({
             authorizationHeader,
@@ -72,7 +72,7 @@ describe("Token Service", () => {
           const tokenService = new TokenService();
           const jwtBuilder = new MockJWTBuilder();
           jwtBuilder.setIat(Math.floor(Date.now() + 1000) / 1000);
-          const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
+          const authorizationHeader = `${jwtBuilder.getEncodedJwt()}`;
 
           const result = tokenService.getDecodedToken({
             authorizationHeader,
@@ -94,7 +94,7 @@ describe("Token Service", () => {
           const tokenService = new TokenService();
           const jwtBuilder = new MockJWTBuilder();
           jwtBuilder.setNbf(Date.now() + 1000);
-          const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
+          const authorizationHeader = `${jwtBuilder.getEncodedJwt()}`;
 
           const result = tokenService.getDecodedToken({
             authorizationHeader,
@@ -116,7 +116,7 @@ describe("Token Service", () => {
           const tokenService = new TokenService();
           const jwtBuilder = new MockJWTBuilder();
           jwtBuilder.deleteIss();
-          const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
+          const authorizationHeader = `${jwtBuilder.getEncodedJwt()}`;
 
           const result = tokenService.getDecodedToken({
             authorizationHeader,
@@ -136,7 +136,7 @@ describe("Token Service", () => {
           const tokenService = new TokenService();
           const jwtBuilder = new MockJWTBuilder();
           jwtBuilder.setIss("invalidIss");
-          const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
+          const authorizationHeader = `${jwtBuilder.getEncodedJwt()}`;
 
           const result = tokenService.getDecodedToken({
             authorizationHeader,
@@ -159,7 +159,7 @@ describe("Token Service", () => {
           const tokenService = new TokenService();
           const jwtBuilder = new MockJWTBuilder();
           jwtBuilder.deleteScope();
-          const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
+          const authorizationHeader = `${jwtBuilder.getEncodedJwt()}`;
 
           const result = tokenService.getDecodedToken({
             authorizationHeader,
@@ -178,7 +178,7 @@ describe("Token Service", () => {
           const tokenService = new TokenService();
           const jwtBuilder = new MockJWTBuilder();
           jwtBuilder.setScope("invalidScope");
-          const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
+          const authorizationHeader = `${jwtBuilder.getEncodedJwt()}`;
 
           const result = tokenService.getDecodedToken({
             authorizationHeader,
@@ -200,7 +200,7 @@ describe("Token Service", () => {
           const tokenService = new TokenService();
           const jwtBuilder = new MockJWTBuilder();
           jwtBuilder.deleteClientId();
-          const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
+          const authorizationHeader = `${jwtBuilder.getEncodedJwt()}`;
 
           const result = tokenService.getDecodedToken({
             authorizationHeader,
@@ -222,7 +222,7 @@ describe("Token Service", () => {
           const tokenService = new TokenService();
           const jwtBuilder = new MockJWTBuilder();
           jwtBuilder.deleteAud();
-          const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
+          const authorizationHeader = `${jwtBuilder.getEncodedJwt()}`;
 
           const result = tokenService.getDecodedToken({
             authorizationHeader,
@@ -243,7 +243,7 @@ describe("Token Service", () => {
         const tokenService = new TokenService();
         const jwtBuilder = new MockJWTBuilder();
         jwtBuilder.setExp(1721901143000);
-        const authorizationHeader = `Bearer ${jwtBuilder.getEncodedJwt()}`;
+        const authorizationHeader = `${jwtBuilder.getEncodedJwt()}`;
 
         const result = tokenService.getDecodedToken({
           authorizationHeader,
