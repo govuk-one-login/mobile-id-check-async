@@ -173,7 +173,7 @@ describe("POST /credential", () => {
   });
 
   describe("Given the Bearer token in the Authorization header is not a valid token", () => {
-    it("Returns a 400 Bad Request response", async () => {
+    it("Returns a 401 Unauthorized response", async () => {
       const response = await axiosInstance.post(
         `${apiBaseUrl}/async/credential`,
         credentialRequestBody,
@@ -186,9 +186,9 @@ describe("POST /credential", () => {
 
       expect(response.data).toStrictEqual({
         error: "invalid_token",
-        error_description: "JWT payload not valid JSON",
+        error_description: "Invalid token",
       });
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(401);
     });
   });
 
