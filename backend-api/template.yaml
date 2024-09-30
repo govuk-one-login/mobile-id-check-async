@@ -1174,7 +1174,7 @@ Resources:
         - Id: errorThreshold
           Label: errorThreshold
           ReturnData: true
-          Expression: IF((invocations>=4) && (errorSum5XX>=2) && (errorPercentage5XX>=1),errorPercentage5XX,0)
+          Expression: IF((invocations>=4) && (errorSum5XX>=2),errorPercentage5XX,0)
         - Id: invocations
           ReturnData: false
           MetricStat:
