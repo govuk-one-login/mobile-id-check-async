@@ -9,15 +9,17 @@ components:
     basicAuth:
       type: http
       scheme: basic
-    bearerAuth:            # arbitrary name for the security scheme
+    bearerAuth:
       type: http
       scheme: bearer
   schemas:
-    Error:
+    InternalServerError:
       type: object
       properties:
         error:
           type: string
+          enum:
+            - server_error
           description: |
             The error code.
         error_description:
@@ -100,18 +102,29 @@ paths:
                     }
                 errorInvalidGrant:
                   description: |
-                    The authorisation code is invalid or expired. This is also the error which would return if the redirect URL given in the authorisation request does not match the URL provided in this access token request.
+                    The grant type is missing or the value provided is not supported by the server.
                   value:
                     {
                       "error": "invalid_grant",
                       "error_description": "Invalid grant"
                     }
               schema:
-                $ref: "#/components/schemas/Error"
-        '401':
-          description: |
-            Unauthorized, usually signifies a refresh_token is no longer valid,
-            and the user should re-authorize
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum:
+                      - invalid_grant
+                      - invalid_client
+                    description: |
+                      The error code.
+                  error_description:
+                    type: string
+                    description: |
+                      A description of the error.
+                required:
+                  - error
+                  - error_description
         '500':
           description: Internal Server Error
           content:
@@ -126,8 +139,7 @@ paths:
                       "error_description": "Server Error"
                     }
               schema:
-                $ref: "#/components/schemas/Error"
-# Created with mock integration, This needs to be replaced with lambda proxy integration when available
+                $ref: "#/components/schemas/InternalServerError"
       x-amazon-apigateway-integration:
         requestTemplates:
           application/json:
@@ -198,7 +210,7 @@ paths:
                       "error_description": "Authorization header is missing"
                     }
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/InternalServerError"
         '401':
           description: |
             Unauthorized, usually signifies the access_token is not valid
@@ -230,8 +242,7 @@ paths:
                       "error_description": "Internal server error"
                     }
               schema:
-                $ref: "#/components/schemas/Error"
-# Created with mock integration, This needs to be replaced with lambda proxy integration when available
+                $ref: "#/components/schemas/InternalServerError"
       x-amazon-apigateway-integration:
         requestTemplates:
           application/json:
