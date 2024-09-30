@@ -122,6 +122,116 @@ describe("Token Service", () => {
             });
           });
         });
+
+        describe("Retry policy", () => {
+          describe("Given there is an error retrieving the public key on the first attempt", () => {
+            it("Makes second attempt to get STS key", async () => {
+              mockFetch = jest
+              .spyOn(global, "fetch")
+              .mockImplementationOnce(() =>
+                Promise.resolve({
+                  status: 200,
+                  ok: true,
+                  json: () =>
+                    Promise.resolve({
+                      keys: [
+                        {
+                          kty: "mockKty",
+                          x: "mockX",
+                          y: "mockY",
+                          crv: "mockCrv",
+                          d: "mockD",
+                          kid: "mockKid",
+                        },
+                      ],
+                    }),
+                } as Response),
+              )
+
+              await tokenService.getSubFromToken(
+                "https://mockJwksEndpoint.com",
+                "mockJwe",
+              );
+
+              expect(mockFetch).toHaveBeenCalledWith(
+                "https://mockJwksEndpoint.com",
+                {
+                  method: "GET",
+                },
+              );
+              expect(mockFetch).toHaveBeenCalledTimes(2)
+            })
+          })
+
+          describe("Given there is an error retrieving the public key on the second attempt", () => {
+            it("Makes third attempt to get STS key", async () => {
+              mockFetch = jest
+              .spyOn(global, "fetch")
+              .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
+              .mockImplementationOnce(() =>
+                Promise.resolve({
+                  status: 200,
+                  ok: true,
+                  json: () =>
+                    Promise.resolve({
+                      keys: [
+                        {
+                          kty: "mockKty",
+                          x: "mockX",
+                          y: "mockY",
+                          crv: "mockCrv",
+                          d: "mockD",
+                          kid: "mockKid",
+                        },
+                      ],
+                    }),
+                } as Response),
+              )
+
+              await tokenService.getSubFromToken(
+                "https://mockJwksEndpoint.com",
+                "mockJwe",
+              );
+
+              expect(mockFetch).toHaveBeenCalledWith(
+                "https://mockJwksEndpoint.com",
+                {
+                  method: "GET",
+                },
+              );
+              expect(mockFetch).toHaveBeenCalledTimes(3)
+            })
+          })
+
+          describe("Given there is an error retrieving the public key on the third attempt", () => {
+            it("Returns error result", async () => {
+              mockFetch = jest
+              .spyOn(global, "fetch")
+              .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
+              .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
+              .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
+
+              const result = await tokenService.getSubFromToken(
+                "https://mockJwksEndpoint.com",
+                "mockJwe",
+              );
+
+              expect(mockFetch).toHaveBeenCalledWith(
+                "https://mockJwksEndpoint.com",
+                {
+                  method: "GET",
+                },
+              );
+              expect(mockFetch).toHaveBeenCalledTimes(3)
+
+              expect(result.isError).toBe(true);
+              expect(result.value).toStrictEqual({
+                errorMessage: "Unexpected error retrieving STS public key",
+                errorCategory: "SERVER_ERROR",
+              });
+            })
+          })
+        })
       });
     });
 
