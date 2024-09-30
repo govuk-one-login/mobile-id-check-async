@@ -14,16 +14,11 @@ export class TokenService implements ITokenService {
   ): Promise<Result<string>> => {
 
 
-    const publicKey = this.fetchPublicKeyWithRetries(stsJwksEndpoint)
+    const fetchPublicKeyResult = await this.fetchPublicKeyWithRetries(stsJwksEndpoint)
 
-    // const fetchPublicKeyResult = await this.fetchPublicKey(stsJwksEndpoint);
-
-    // if (fetchPublicKeyResult.isError) {
-    //   return errorResult({
-    //     errorMessage: fetchPublicKeyResult.value.errorMessage,
-    //     errorCategory: fetchPublicKeyResult.value.errorCategory,
-    //   });
-    // }
+    if (fetchPublicKeyResult.isError) {
+      return fetchPublicKeyResult
+    }
 
     const jweComponents = jwe.split(".");
 
@@ -57,26 +52,33 @@ export class TokenService implements ITokenService {
     return successResult("");
   };
 
-  private async fetchPublicKeyWithRetries(stsJwksEndpoint: string) {
-    let retries = 0
-    const maxRetries = 2
-    const delay = 1000
+  private async fetchPublicKeyWithRetries(stsJwksEndpoint: string): Promise<Result<JSON>> {
+    const maxRetries = 2;
+    const delayInMs = 1000;
 
-    let fetchPublicKeyResult
-    while(retries <= maxRetries) {
+    let fetchPublicKeyResult: Result<JSON> | undefined;
+
+    for (let retries = 0; retries <= maxRetries; retries++) {
       fetchPublicKeyResult = await this.fetchPublicKey(stsJwksEndpoint);
 
       if (!fetchPublicKeyResult.isError) {
-        return fetchPublicKeyResult.value
-      }
-
-      retries++
-      if (retries > maxRetries) {
         return fetchPublicKeyResult;
       }
 
-      await new Promise((resolve) => setTimeout(resolve, delay))
+      if (retries < maxRetries) {
+        await new Promise((resolve) => setTimeout(resolve, delayInMs));
+      }
     }
+
+    // After all retries, check if fetchPublicKeyResult was assigned and handle the case where it was not assigned (should not happen)
+    if (fetchPublicKeyResult == null) {
+      return errorResult({
+        errorMessage: 'Unexpected error in retry policy when fetching STS public keys',
+        errorCategory: 'SERVER_ERROR',
+      });
+    }
+
+    return fetchPublicKeyResult;
   }
 
   private readonly fetchPublicKey = async (
