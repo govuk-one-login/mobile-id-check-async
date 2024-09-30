@@ -9,9 +9,11 @@ components:
     basicAuth:
       type: http
       scheme: basic
+      in: header
     bearerAuth:
       type: http
       scheme: bearer
+      in: header
   schemas:
     InternalServerError:
       type: object
@@ -29,6 +31,22 @@ components:
       required:
         - error
         - error_description
+    CredentialResponse:
+      type: object
+      properties:
+        sub:
+          type: string
+          description: |
+            The access token value is a DCMAW-signed JWT which you can use with DCMAW APIs.
+        "https://vocab.account.gov.uk/v1/credentialStatus":
+          type: string
+          enum:
+            - pending
+          description: |
+            The status of the request at the time of creation.
+      required:
+        - sub
+        - "https://vocab.account.gov.uk/v1/credentialStatus"
 
 paths:
   /async/token:
@@ -161,13 +179,27 @@ paths:
             schema:
               type: object
               properties:
-                request:
+                sub:
                   type: string
-                  example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NDg1NjYzMDcsImlhdCI6MTY0ODU2MjcwNywibmJmIjoxNjQ4NTYyNzA3LCJhdWQiOiJodHRwczovL2R3cC5nb3YudWsvIiwiaXNzIjoiaHR0cHM6Ly9pcHYuY29yZS5hY2NvdW50Lmdvdi51ayIsInN1YiI6InVybjpmZGM6Z292LnVrOjIwMjI6NTZQNENNc0doXzAyWU9sV3BkOFBBT0ktMnNWbEIybnNOVTdtY0xaWWhZdz0iLCJnb3Z1a19zaWduaW5fam91cm5leV9pZCI6IjQ0NDQ0NDQ0LTQ0NDQtNDQ0NC00NDQ0LTQ0NDQ0NDQ0NDQ0NCIsImNsaWVudF9pZCI6IkNMSUVOVF9JRCIsInN0YXRlIjoiUkFORE9NX1ZBTFVFIiwic2hhcmVkX2NsYWltcyI6eyJuYW1lIjpbeyJuYW1lUGFydHMiOlt7InZhbHVlIjoiQWxpY2UiLCJ0eXBlIjoiR2l2ZW5OYW1lIn0seyJ2YWx1ZSI6IkphbmUiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XX1dLCJiaXJ0aERhdGUiOlt7InZhbHVlIjoiMTk3MC0wMS0wMSJ9XX19.ktFWVwPs_9AEsRU48hrKeQLBSxYW13DscODR81Tua__08Djwi-kXt1hca5PvcQllQg-qKVgmk_uRvAQwUc9epJ6_56SB8SHxTEGt2bmqwfrhwP30EOyyOfB9A9R6dolNVrJb_h_jPTiVaKF7_EX8R_wirTvkDmggSJFPRFE5kXRC2qHT0Hs_cciFz-cJnmFLhJTYyLDFkF33S6ycErRFrei2KOVeNprpeacXqKBFr7FAMuooxHyhK3TH2P9BvoE7AwgT2gumEjwnd19y_uabbXIWiJp6yiUwRce9P4cEkQevTl_JrkaCwmbJogkJJMsAIV_gSgjNrtOQgmQXFZpRXw
-                  description: |
-                    JWT-Secured Authorization Request (JAR)
+                  example: urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=
+                govuk_signin_journey_id:
+                  type: string
+                  example: 44444444-4444-4444-4444-444444444444
+                client_id:
+                  type: string
+                  example: CLIENT_ID
+                state:
+                  type: string
+                  example: RANDOM_VALUE
+                redirect_uri:
+                  type: string
+                  example: https://example/redirect
               required:
-                - request
+                - sub
+                - govuk_signin_journey_id
+                - client_id
+                - state
+                - redirect_uri
       responses:
         '201':
           description: Created
@@ -181,21 +213,20 @@ paths:
                       "https://vocab.account.gov.uk/v1/credentialStatus": "pending"
                     }
               schema:
-                type: object
-                properties:
-                  sub:
-                    type: string
-                    description: |
-                      The access token value is an access token represented as a DCMAW-signed JWT which you can use with DCMAW APIs
-                  "https://vocab.account.gov.uk/v1/credentialStatus":
-                    type: string
-                    enum:
-                      - pending
-                    description: |
-                      The status of the request at the time of creation.
-                required:
-                  - sub
-                  - "https://vocab.account.gov.uk/v1/credentialStatus"
+                $ref: "#/components/schemas/CredentialResponse"
+        '200':
+          description: OK
+          content:
+            application/json:
+              examples:
+                success:
+                  value:
+                    {
+                      "sub": "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
+                      "https://vocab.account.gov.uk/v1/credentialStatus": "pending"
+                    }
+              schema:
+                $ref: "#/components/schemas/CredentialResponse"
         '400':
           description: Bad request
           content:
@@ -207,13 +238,27 @@ paths:
                   value:
                     {
                       "error": "invalid_request",
-                      "error_description": "Authorization header is missing"
+                      "error_description": "Request body validation failed"
                     }
               schema:
-                $ref: "#/components/schemas/InternalServerError"
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum:
+                      - invalid_request
+                    description: |
+                      The error code.
+                  error_description:
+                    type: string
+                    description: |
+                      A description of the error.
+                required:
+                  - error
+                  - error_description
         '401':
           description: |
-            Unauthorized, usually signifies the access_token is not valid
+            Unauthorized, usually signifies the access_token is not valid.
           content:
             application/json:
               examples:
@@ -226,7 +271,21 @@ paths:
                       "error_description": "Invalid access token"
                     }
               schema:
-                $ref: "#/components/schemas/Error"
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum:
+                      - invalid_token
+                    description: |
+                      The error code.
+                  error_description:
+                    type: string
+                    description: |
+                      A description of the error.
+                required:
+                  - error
+                  - error_description
         '500':
           description: Internal Server Error
           content:
@@ -239,7 +298,7 @@ paths:
                   value:
                     {
                       "error": "server_error",
-                      "error_description": "Internal server error"
+                      "error_description": "Server error"
                     }
               schema:
                 $ref: "#/components/schemas/InternalServerError"
