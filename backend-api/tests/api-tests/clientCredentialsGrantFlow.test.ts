@@ -6,11 +6,10 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
-import {randomUUID} from "crypto";
-import {UUID} from "node:crypto";
+import { randomUUID } from "crypto";
+import { UUID } from "node:crypto";
 
-
-process.env.TEST_ENVIRONMENT = "dev"
+process.env.TEST_ENVIRONMENT = "dev";
 const apiBaseUrl = process.env.PROXY_API_URL;
 if (!apiBaseUrl) throw Error("PROXY_URL environment variable not set");
 const axiosInstance = axios.create({
@@ -49,6 +48,26 @@ describe("POST /token", () => {
         "",
         {
           headers: { "x-custom-auth": "Basic " + toBase64(clientIdAndSecret) },
+        },
+      );
+
+      expect(response.data).toStrictEqual({
+        error: "invalid_grant",
+        error_description: "Invalid grant type or grant type not specified",
+      });
+      expect(response.status).toBe(400);
+    });
+  });
+
+  describe("Given the grant_type value is invalid", () => {
+    it("Returns a 400 Bad Request response", async () => {
+      const response = await axiosInstance.post(
+        `${apiBaseUrl}/async/token`,
+        "grant_type=invalid_grant_type",
+        {
+          headers: {
+            "x-custom-auth": "Basic " + toBase64(clientIdAndSecret),
+          },
         },
       );
 
@@ -241,13 +260,13 @@ describe("POST /credential", () => {
   describe("Given the same access token is used more than once to fetch an active session", () => {
     it("Returns 200 OK", async () => {
       const response = await axiosInstance.post(
-          `${apiBaseUrl}/async/credential`,
-          credentialRequestBody,
-          {
-            headers: {
-              "X-Custom-Auth": "Bearer " + accessToken,
-            },
+        `${apiBaseUrl}/async/credential`,
+        credentialRequestBody,
+        {
+          headers: {
+            "X-Custom-Auth": "Bearer " + accessToken,
           },
+        },
       );
 
       expect(response.data).toStrictEqual({
@@ -261,11 +280,11 @@ describe("POST /credential", () => {
   describe("Given the request is valid and a new session is created for a new sub", () => {
     it("Returns 201 Created", async () => {
       const randomSub = randomUUID();
-      const credentialRequestBody = getRequestBody(clientDetails, randomSub)
+      const credentialRequestBody = getRequestBody(clientDetails, randomSub);
 
       const response = await axiosInstance.post(
         `${apiBaseUrl}/async/credential`,
-          credentialRequestBody,
+        credentialRequestBody,
         {
           headers: {
             "X-Custom-Auth": "Bearer " + accessToken,
@@ -332,9 +351,13 @@ interface CredentialRequestBody {
   redirect_uri: string;
 }
 
-function getRequestBody(clientDetails: ClientDetails, sub?: UUID | undefined): CredentialRequestBody {
+function getRequestBody(
+  clientDetails: ClientDetails,
+  sub?: UUID | undefined,
+): CredentialRequestBody {
   return <CredentialRequestBody>{
-    sub: sub ?? "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
+    sub:
+      sub ?? "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
     govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
     client_id: clientDetails.client_id,
     state: "testState",
