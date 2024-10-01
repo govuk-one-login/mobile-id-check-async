@@ -9,6 +9,8 @@ import {
 import { randomUUID } from "crypto";
 import { UUID } from "node:crypto";
 
+process.env.TEST_ENVIRONMENT = 'dev'
+
 const apiBaseUrl = process.env.PROXY_API_URL;
 if (!apiBaseUrl) throw Error("PROXY_URL environment variable not set");
 const axiosInstance = axios.create({
@@ -36,7 +38,7 @@ describe("POST /token", () => {
   let clientIdAndSecret: string;
 
   beforeAll(async () => {
-    const clientDetails = await getFirstClientDetails();
+    const clientDetails = await getFirstRegisteredClient();
     clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
   });
 
@@ -114,7 +116,7 @@ describe("POST /token", () => {
     });
   });
 
-  describe("Given the request is valid", () => {
+  describe("Given the request is valid and the client is registered", () => {
     it("Returns a 200 OK response and the access token", async () => {
       const response = await axiosInstance.post(
         `${apiBaseUrl}/async/token`,
@@ -150,7 +152,7 @@ describe("POST /credential", () => {
   let accessToken: string;
 
   beforeAll(async () => {
-    clientDetails = await getFirstClientDetails();
+    clientDetails = await getFirstRegisteredClient();
     const clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
     accessToken = await getAccessToken(clientIdAndSecret);
     credentialRequestBody = getRequestBody(clientDetails);
@@ -185,9 +187,9 @@ describe("POST /credential", () => {
 
       expect(response.data).toStrictEqual({
         error: "invalid_token",
-        error_description: "Invalid token",
+        error_description: "JWT payload not valid JSON",
       });
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(400);
     });
   });
 
@@ -317,11 +319,11 @@ interface ClientDetails {
   redirect_uri: string;
 }
 
-async function getClientDetails(): Promise<ClientDetails[]> {
+async function getRegisteredClients(): Promise<ClientDetails[]> {
   const secretsManagerClient = new SecretsManagerClient({
     region: "eu-west-2",
   });
-  const secretName = `${process.env.TEST_ENVIRONMENT}/clientDetails`;
+  const secretName = `${process.env.TEST_ENVIRONMENT}/clientRegistryApiTest`;
   const command = new GetSecretValueCommand({
     SecretId: secretName,
   });
@@ -329,8 +331,8 @@ async function getClientDetails(): Promise<ClientDetails[]> {
   return JSON.parse(response.SecretString!);
 }
 
-async function getFirstClientDetails(): Promise<ClientDetails> {
-  const clientsDetails = await getClientDetails();
+async function getFirstRegisteredClient(): Promise<ClientDetails> {
+  const clientsDetails = await getRegisteredClients();
   return clientsDetails[0];
 }
 
