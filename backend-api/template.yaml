@@ -259,13 +259,13 @@ Resources:
       Environment:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
-      # VpcConfig:
-      #   SubnetIds:
-      #     - !ImportValue devplatform-vpc-PrivateSubnetIdA
-      #     - !ImportValue devplatform-vpc-PrivateSubnetIdB
-      #     - !ImportValue devplatform-vpc-PrivateSubnetIdC
-      #   SecurityGroupIds:
-      #     - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+      VpcConfig:
+        SubnetIds:
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
 
   AsyncTokenFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -285,6 +285,7 @@ Resources:
   AsyncTokenLambdaRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Sub ${AWS::StackName}-token-lambda
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -334,7 +335,16 @@ Resources:
                   - kms:Decrypt
                   - kms:GenerateDataKey
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
-      RoleName: !Sub ${AWS::StackName}-token-lambda
+        - PolicyName: ENIPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
