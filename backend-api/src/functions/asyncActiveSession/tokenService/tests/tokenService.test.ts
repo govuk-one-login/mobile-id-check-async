@@ -1,5 +1,6 @@
 import {
   DecryptCommand,
+  IncorrectKeyException,
   InvalidCiphertextException,
   KeyUnavailableException,
   KMSClient,
@@ -145,8 +146,8 @@ describe("Token Service", () => {
         });
       });
 
-      describe("Given the encrypted key is invalid and cannot be decrypted", () => {
-        it("Returns an error result", async () => {
+      describe("Given KMS throws InvalidCiphertextException when trying to decrypt the key", () => {
+        it("Returns a CLIENT_ERROR error result", async () => {
           const kmsMock = mockClient(KMSClient);
           kmsMock.on(DecryptCommand).rejects(
             new InvalidCiphertextException({
@@ -170,8 +171,33 @@ describe("Token Service", () => {
         });
       });
 
+      describe("Given KMS throws IncorrectKeyException when trying to decrypt the key", () => {
+        it("Returns a CLIENT_ERROR error result", async () => {
+          const kmsMock = mockClient(KMSClient);
+          kmsMock.on(DecryptCommand).rejects(
+            new IncorrectKeyException({
+              $metadata: {},
+              message: "message",
+            }),
+          );
+
+          const result = await tokenService.getSubFromToken(
+            "https://mockJwksEndpoint.com",
+            "mockEncryptionKeyArn",
+            "one.two.three.four.five",
+          );
+
+          expect(result.isError).toBe(true);
+          expect(result.value).toStrictEqual({
+            errorMessage:
+              "Encrypted data could not be decrypted with provided key",
+            errorCategory: "CLIENT_ERROR",
+          });
+        });
+      });
+
       describe("Given there is an unexpected error when calling KMS to decrypt the key", () => {
-        it("Returns an error result", async () => {
+        it("Returns a SERVER_ERROR error result", async () => {
           const kmsMock = mockClient(KMSClient);
           kmsMock.on(DecryptCommand).rejects(
             new KeyUnavailableException({
