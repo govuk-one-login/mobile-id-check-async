@@ -25,8 +25,9 @@ export class TokenService implements ITokenService {
 
     const stsJwksEndpointResponse = stsJwksEndpointResponseResult.value;
 
-    const getJwksFromResponseResult =
-      await this.getJwksFromResponse(stsJwksEndpointResponse);
+    const getJwksFromResponseResult = await this.getJwksFromResponse(
+      stsJwksEndpointResponse,
+    );
 
     if (getJwksFromResponseResult.isError) {
       return getJwksFromResponseResult;
