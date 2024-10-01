@@ -1,50 +1,63 @@
 import {
   DecryptCommand,
   DecryptCommandOutput,
-  KMSClient,
+  IncorrectKeyException,
+  InvalidCiphertextException,
 } from "@aws-sdk/client-kms";
-import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { errorResult, Result, successResult } from "../utils/result";
+import { kmsClient } from "../clients/kmsClient";
 
 export class KMSAdapter {
-  private readonly encryptionKeyArn: string;
-
-  constructor(encryptionKeyArn: string) {
-    this.encryptionKeyArn = encryptionKeyArn;
-  }
-
   async decrypt(
-    encryptedCek: Uint8Array,
-  ): Promise<Result<DecryptCommandOutput>> {
-    let output: DecryptCommandOutput;
+    keyArn: string,
+    ciphertext: Uint8Array,
+  ): Promise<Result<Uint8Array>> {
+    let decryptCommandOutput: DecryptCommandOutput;
     try {
-      output = await KmsClient.send(
+      decryptCommandOutput = await kmsClient.send(
         new DecryptCommand({
-          KeyId: this.encryptionKeyArn,
-          CiphertextBlob: encryptedCek,
+          KeyId: keyArn,
+          CiphertextBlob: ciphertext,
           EncryptionAlgorithm: "RSAES_OAEP_SHA_256",
         }),
       );
-    } catch {
+    } catch (error) {
+      console.log(error);
+      if (
+        error instanceof InvalidCiphertextException ||
+        error instanceof IncorrectKeyException
+      ) {
+        console.log("oi");
+
+        return errorResult({
+          errorMessage:
+            "Encrypted data could not be decrypted with provided key",
+          errorCategory: "CLIENT_ERROR",
+        });
+      } else {
+        console.log("chao");
+
+        return errorResult({
+          errorMessage: "Error decrypting data with KMS",
+          errorCategory: "SERVER_ERROR",
+        });
+      }
+    }
+
+    if (decryptCommandOutput.Plaintext == null) {
       return errorResult({
-        errorMessage: "Error decrypting key with KMS",
+        errorMessage: "Decrypted plaintext data was null",
         errorCategory: "SERVER_ERROR",
       });
     }
 
-    return successResult(output);
+    return successResult(decryptCommandOutput.Plaintext);
   }
 }
 
-const KmsClient = new KMSClient({
-  region: "eu-west-2",
-  requestHandler: new NodeHttpHandler({
-    requestTimeout: 29000,
-    connectionTimeout: 5000,
-  }),
-  maxAttempts: 3,
-});
-
 export interface IKmsAdapter {
-  decrypt: (encryptionKey: Uint8Array) => Promise<Result<DecryptCommandOutput>>;
+  decrypt: (
+    keyArn: string,
+    ciphertext: Uint8Array,
+  ) => Promise<Result<Uint8Array>>;
 }

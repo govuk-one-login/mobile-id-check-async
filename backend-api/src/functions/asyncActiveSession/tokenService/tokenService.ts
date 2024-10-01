@@ -1,23 +1,15 @@
-import { IKmsAdapter } from "../../adapters/kmsAdapter";
 import { errorResult, Result, successResult } from "../../utils/result";
+import { KMSAdapter } from "../../adapters/kmsAdapter";
 
 export class TokenService implements ITokenService {
-  private readonly kmsAdapter: IKmsAdapter;
-
-  constructor(kmsAdapter: IKmsAdapter) {
-    this.kmsAdapter = kmsAdapter;
-  }
-
   getSubFromToken = async (
     stsJwksEndpoint: string,
+    encryptionKeyArn: string,
     jwe: string,
   ): Promise<Result<string>> => {
     const fetchPublicKeyResult = await this.fetchPublicKey(stsJwksEndpoint);
     if (fetchPublicKeyResult.isError) {
-      return errorResult({
-        errorMessage: fetchPublicKeyResult.value.errorMessage,
-        errorCategory: fetchPublicKeyResult.value.errorCategory,
-      });
+      return fetchPublicKeyResult;
     }
 
     const jweComponents = jwe.split(".");
@@ -39,15 +31,16 @@ export class TokenService implements ITokenService {
 
     const encryptedCek = jweComponents[1];
 
-    const getCekResult = await this.getCek(
+    const decryptResult = await new KMSAdapter().decrypt(
+      encryptionKeyArn,
       new Uint8Array(Buffer.from(encryptedCek, "base64")),
     );
-    if (getCekResult.isError) {
-      return errorResult({
-        errorMessage: getCekResult.value.errorMessage,
-        errorCategory: getCekResult.value.errorCategory,
-      });
+    if (decryptResult.isError) {
+      return decryptResult;
     }
+
+    const cek = decryptResult.value;
+    console.log(cek);
 
     return successResult("");
   };
@@ -86,32 +79,12 @@ export class TokenService implements ITokenService {
 
     return successResult(publicKey);
   };
-
-  private async getCek(encryptedCek: Uint8Array): Promise<Result<Uint8Array>> {
-    const decryptCekResult = await this.kmsAdapter.decrypt(encryptedCek);
-    if (decryptCekResult.isError) {
-      return errorResult({
-        errorMessage: decryptCekResult.value.errorMessage,
-        errorCategory: decryptCekResult.value.errorCategory,
-      });
-    }
-
-    const cek = decryptCekResult.value.Plaintext ?? null;
-    if (cek === null) {
-      return errorResult({
-        errorMessage:
-          "No Plaintext received when calling KMS to decrypt the Content Encryption Key",
-        errorCategory: "SERVER_ERROR",
-      });
-    }
-
-    return successResult(cek);
-  }
 }
 
 export interface ITokenService {
   getSubFromToken: (
     stsJwksEndpoint: string,
+    encryptionKeyArn: string,
     jwe: string,
   ) => Promise<Result<string>>;
 }

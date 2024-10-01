@@ -1,18 +1,18 @@
 import {
   DecryptCommand,
+  InvalidCiphertextException,
   KeyUnavailableException,
   KMSClient,
 } from "@aws-sdk/client-kms";
 import { ITokenService, TokenService } from "../tokenService";
 import { mockClient } from "aws-sdk-client-mock";
-import { KMSAdapter } from "../../../adapters/kmsAdapter";
 
 describe("Token Service", () => {
   let mockFetch: jest.SpyInstance;
   let tokenService: ITokenService;
 
   beforeEach(() => {
-    tokenService = new TokenService(new KMSAdapter("mockEncryptionKeyArn"));
+    tokenService = new TokenService();
     mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
       Promise.resolve({
         status: 200,
@@ -49,6 +49,7 @@ describe("Token Service", () => {
 
             const result = await tokenService.getSubFromToken(
               "https://mockJwksEndpoint.com",
+              "mockEncryptionKeyArn",
               "mockJwe",
             );
 
@@ -77,6 +78,7 @@ describe("Token Service", () => {
 
             const result = await tokenService.getSubFromToken(
               "https://mockJwksEndpoint.com",
+              "mockEncryptionKeyArn",
               "mockJwe",
             );
 
@@ -106,6 +108,7 @@ describe("Token Service", () => {
 
             const result = await tokenService.getSubFromToken(
               "https://mockJwksEndpoint.com",
+              "mockEncryptionKeyArn",
               "mockJwe",
             );
 
@@ -128,11 +131,9 @@ describe("Token Service", () => {
     describe("Decrypting token", () => {
       describe("Given the JWE does not consist of five components", () => {
         it("Returns an error result", async () => {
-          const kmsMock = mockClient(KMSClient);
-          kmsMock.on(DecryptCommand).resolves({});
-
           const result = await tokenService.getSubFromToken(
             "https://mockJwksEndpoint.com",
+            "mockEncryptionKeyArn",
             "one.two.three.four",
           );
 
@@ -144,7 +145,32 @@ describe("Token Service", () => {
         });
       });
 
-      describe("Given there is a server error when calling KMS", () => {
+      describe("Given the encrypted key is invalid and cannot be decrypted", () => {
+        it("Returns an error result", async () => {
+          const kmsMock = mockClient(KMSClient);
+          kmsMock.on(DecryptCommand).rejects(
+            new InvalidCiphertextException({
+              $metadata: {},
+              message: "message",
+            }),
+          );
+
+          const result = await tokenService.getSubFromToken(
+            "https://mockJwksEndpoint.com",
+            "mockEncryptionKeyArn",
+            "one.two.three.four.five",
+          );
+
+          expect(result.isError).toBe(true);
+          expect(result.value).toStrictEqual({
+            errorMessage:
+              "Encrypted data could not be decrypted with provided key",
+            errorCategory: "CLIENT_ERROR",
+          });
+        });
+      });
+
+      describe("Given there is an unexpected error when calling KMS to decrypt the key", () => {
         it("Returns an error result", async () => {
           const kmsMock = mockClient(KMSClient);
           kmsMock.on(DecryptCommand).rejects(
@@ -156,12 +182,13 @@ describe("Token Service", () => {
 
           const result = await tokenService.getSubFromToken(
             "https://mockJwksEndpoint.com",
+            "mockEncryptionKeyArn",
             "one.two.three.four.five",
           );
 
           expect(result.isError).toBe(true);
           expect(result.value).toStrictEqual({
-            errorMessage: "Error decrypting key with KMS",
+            errorMessage: "Error decrypting data with KMS",
             errorCategory: "SERVER_ERROR",
           });
         });
@@ -174,13 +201,13 @@ describe("Token Service", () => {
 
           const result = await tokenService.getSubFromToken(
             "https://mockJwksEndpoint.com",
+            "mockEncryptionKeyArn",
             "one.two.three.four.five",
           );
 
           expect(result.isError).toBe(true);
           expect(result.value).toStrictEqual({
-            errorMessage:
-              "No Plaintext received when calling KMS to decrypt the Content Encryption Key",
+            errorMessage: "Decrypted plaintext data was null",
             errorCategory: "SERVER_ERROR",
           });
         });
