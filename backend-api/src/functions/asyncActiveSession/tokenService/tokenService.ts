@@ -19,10 +19,7 @@ export class TokenService implements ITokenService {
   ): Promise<Result<string>> => {
     const stsJwksEndpointResponseResult = await sendHttpRequest(
       { url: stsJwksEndpoint, method: "GET" },
-      {
-        maxAttempts: retryConfig.maxAttempts,
-        delayInMillis: retryConfig.delayInMillis,
-      },
+      retryConfig,
     );
 
     if (stsJwksEndpointResponseResult.isError) {
