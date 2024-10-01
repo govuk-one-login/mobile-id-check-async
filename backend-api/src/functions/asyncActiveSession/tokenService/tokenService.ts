@@ -127,6 +127,18 @@ export class TokenService implements ITokenService {
     return successResult(jwks);
   };
 
+  private isJwks = (data: unknown): data is IJwks => {
+    return (
+      typeof data === "object" &&
+      data !== null &&
+      "keys" in data &&
+      Array.isArray((data as { keys: unknown }).keys) &&
+      (data as { keys: unknown[] }).keys.every(
+        (key) => typeof key === "object" && key !== null,
+      )
+    );
+  };
+
   private async getCek(encryptedCek: Uint8Array): Promise<Result<Uint8Array>> {
     const decryptCekResult = await this.kmsAdapter.decrypt(encryptedCek);
     if (decryptCekResult.isError) {
@@ -147,18 +159,6 @@ export class TokenService implements ITokenService {
 
     return successResult(cek);
   }
-
-  private isJwks = (data: unknown): data is IJwks => {
-    return (
-      typeof data === "object" &&
-      data !== null &&
-      "keys" in data &&
-      Array.isArray((data as { keys: unknown }).keys) &&
-      (data as { keys: unknown[] }).keys.every(
-        (key) => typeof key === "object" && key !== null,
-      )
-    );
-  };
 }
 
 export interface ITokenService {
