@@ -1,7 +1,7 @@
 import { errorResult, Result, successResult } from "../../utils/result";
 
 const DEFAULT_MAX_ATTEMPTS = 3;
-const DEFAULT_BASE_DELAY_MILLIS = 100;
+const DEFAULT_DELAY_MILLIS = 100;
 
 export const sendHttpRequest: ISendHttpRequest = async (
   httpRequest,
@@ -14,8 +14,7 @@ export const sendHttpRequest: ISendHttpRequest = async (
     attempt++;
 
     const maxAttempts = retryConfig?.maxAttempts ?? DEFAULT_MAX_ATTEMPTS;
-    const baseDelayMillis =
-      retryConfig?.baseDelayMillis ?? DEFAULT_BASE_DELAY_MILLIS;
+    const delayInMillis = retryConfig?.delayInMillis ?? DEFAULT_DELAY_MILLIS;
 
     let response: Response;
     try {
@@ -26,7 +25,7 @@ export const sendHttpRequest: ISendHttpRequest = async (
       });
 
       if (!response.ok && attempt < maxAttempts) {
-        return retry(request, baseDelayMillis);
+        return retry(request, delayInMillis);
       }
 
       if (!response.ok) {
@@ -37,7 +36,7 @@ export const sendHttpRequest: ISendHttpRequest = async (
       }
     } catch {
       if (attempt < maxAttempts) {
-        return retry(request, baseDelayMillis);
+        return retry(request, delayInMillis);
       }
 
       return errorResult({
@@ -54,9 +53,9 @@ export const sendHttpRequest: ISendHttpRequest = async (
 
 async function retry(
   request: () => Promise<Result<Response>>,
-  baseDelayMillis: number,
+  delayInMillis: number,
 ) {
-  await wait(baseDelayMillis);
+  await wait(delayInMillis);
   return await request();
 }
 
@@ -66,7 +65,7 @@ async function wait(delayMillis: number): Promise<void> {
 
 export type RetryConfig = {
   maxAttempts?: number;
-  baseDelayMillis?: number;
+  delayInMillis?: number;
 };
 
 export type HttpMethod =
