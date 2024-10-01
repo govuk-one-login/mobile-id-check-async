@@ -150,7 +150,7 @@ describe("Token Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage:
-                "Response does not match the expected public key structure",
+                "Response does not match the expected JWKS structure",
               errorCategory: "SERVER_ERROR",
             });
           });

@@ -13,11 +13,10 @@ export class TokenService implements ITokenService {
     stsJwksEndpoint: string,
     jwe: string,
   ): Promise<Result<string>> => {
-    const fetchPublicKeyResult =
-      await this.fetchJwksWithRetries(stsJwksEndpoint);
+    const fetchJwksResult = await this.fetchJwksWithRetries(stsJwksEndpoint);
 
-    if (fetchPublicKeyResult.isError) {
-      return fetchPublicKeyResult;
+    if (fetchJwksResult.isError) {
+      return fetchJwksResult;
     }
 
     const jweComponents = jwe.split(".");
@@ -58,13 +57,13 @@ export class TokenService implements ITokenService {
     const maxRetries = 2;
     const delayInMs = 1000;
 
-    let fetchPublicKeyResult: Result<IJwks> | undefined;
+    let fetchJwksResult: Result<IJwks> | undefined;
 
     for (let retries = 0; retries <= maxRetries; retries++) {
-      fetchPublicKeyResult = await this.fetchJwks(stsJwksEndpoint);
+      fetchJwksResult = await this.fetchJwks(stsJwksEndpoint);
 
-      if (!fetchPublicKeyResult.isError) {
-        return fetchPublicKeyResult;
+      if (!fetchJwksResult.isError) {
+        return fetchJwksResult;
       }
 
       if (retries < maxRetries) {
@@ -72,8 +71,8 @@ export class TokenService implements ITokenService {
       }
     }
 
-    // After all retries, check if fetchPublicKeyResult was assigned and handle the case where it was not assigned (should not happen)
-    if (fetchPublicKeyResult == null) {
+    // After all retries, check if fetchJwksResult was assigned and handle the case where it was not assigned (should not happen)
+    if (fetchJwksResult == null) {
       return errorResult({
         errorMessage:
           "Unexpected error in retry policy when fetching STS public keys",
@@ -81,7 +80,7 @@ export class TokenService implements ITokenService {
       });
     }
 
-    return fetchPublicKeyResult;
+    return fetchJwksResult;
   }
 
   private readonly fetchJwks = async (
@@ -118,8 +117,7 @@ export class TokenService implements ITokenService {
 
     if (!this.isJwks(jwks)) {
       return errorResult({
-        errorMessage:
-          "Response does not match the expected public key structure",
+        errorMessage: "Response does not match the expected JWKS structure",
         errorCategory: "SERVER_ERROR",
       });
     }
