@@ -1,3 +1,4 @@
+import { fetchAdapter } from "../../adapters/fetchAdapter";
 import { IKmsAdapter } from "../../adapters/kmsAdapter";
 import { errorResult, Result, successResult } from "../../utils/result";
 
@@ -88,7 +89,7 @@ export class TokenService implements ITokenService {
   ): Promise<Result<IPublicKey>> => {
     let response;
     try {
-      response = await fetch(stsJwksEndpoint, {
+      response = await fetchAdapter(stsJwksEndpoint, {
         method: "GET",
       });
     } catch {
