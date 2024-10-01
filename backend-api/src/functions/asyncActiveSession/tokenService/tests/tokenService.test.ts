@@ -137,7 +137,8 @@ describe("Token Service", () => {
                       },
                     ],
                   }),
-              } as Response));
+              } as Response),
+            );
 
             const result = await tokenService.getSubFromToken(
               "https://mockJwksEndpoint.com",
@@ -152,7 +153,8 @@ describe("Token Service", () => {
             );
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
-              errorMessage: "Response does not match the expected public key structure",
+              errorMessage:
+                "Response does not match the expected public key structure",
               errorCategory: "SERVER_ERROR",
             });
           });

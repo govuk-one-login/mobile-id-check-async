@@ -107,7 +107,7 @@ export class TokenService implements ITokenService {
 
     let publicKey;
     try {
-      publicKey = await response.json()
+      publicKey = await response.json();
     } catch {
       return errorResult({
         errorMessage: "Invalid JSON in response",
@@ -115,11 +115,12 @@ export class TokenService implements ITokenService {
       });
     }
 
-    if(!isPublicKey(publicKey)) {
+    if (!isPublicKey(publicKey)) {
       return errorResult({
-        errorMessage: "Response does not match the expected public key structure",
-        errorCategory: "SERVER_ERROR"
-      })
+        errorMessage:
+          "Response does not match the expected public key structure",
+        errorCategory: "SERVER_ERROR",
+      });
     }
 
     return successResult(publicKey);
@@ -165,10 +166,9 @@ interface IPublicKey {
   }>;
 }
 
-
 const isPublicKey = (publicKey: unknown): publicKey is IPublicKey => {
   if (
-    typeof publicKey === 'object' &&
+    typeof publicKey === "object" &&
     publicKey !== null &&
     hasKeysProperty(publicKey)
   ) {
@@ -181,29 +181,29 @@ const isPublicKey = (publicKey: unknown): publicKey is IPublicKey => {
 };
 
 const hasKeysProperty = (data: object): data is { keys: unknown } => {
-  return 'keys' in data;
+  return "keys" in data;
 };
 
-const isValidKey = (key: unknown): key is IPublicKey['keys'][number] => {
-  if (typeof key !== 'object' || key === null) {
+const isValidKey = (key: unknown): key is IPublicKey["keys"][number] => {
+  if (typeof key !== "object" || key === null) {
     return false;
   }
   return (
-    hasStringProperty(key, 'kty') &&
-    hasStringProperty(key, 'x') &&
-    hasStringProperty(key, 'y') &&
-    hasStringProperty(key, 'crv') &&
-    hasStringProperty(key, 'd') &&
-    hasStringProperty(key, 'kid')
+    hasStringProperty(key, "kty") &&
+    hasStringProperty(key, "x") &&
+    hasStringProperty(key, "y") &&
+    hasStringProperty(key, "crv") &&
+    hasStringProperty(key, "d") &&
+    hasStringProperty(key, "kid")
   );
 };
 
 const hasStringProperty = (
   obj: object,
-  property: string
+  property: string,
 ): obj is { [key in typeof property]: string } => {
   return (
     property in obj &&
-    typeof (obj as { [key: string]: unknown })[property] === 'string'
+    typeof (obj as { [key: string]: unknown })[property] === "string"
   );
 };
