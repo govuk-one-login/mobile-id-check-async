@@ -1,5 +1,5 @@
-import { fetchAdapter } from "../../adapters/fetchAdapter";
 import { IKmsAdapter } from "../../adapters/kmsAdapter";
+import { sendHttpRequest } from "../../services/http/sendHttpRequest";
 import { errorResult, Result, successResult } from "../../utils/result";
 
 export class TokenService implements ITokenService {
@@ -13,10 +13,22 @@ export class TokenService implements ITokenService {
     stsJwksEndpoint: string,
     jwe: string,
   ): Promise<Result<string>> => {
-    const fetchJwksResult = await this.fetchJwksWithRetries(stsJwksEndpoint);
+    const fetchJwksResult = await sendHttpRequest(
+      { url: stsJwksEndpoint, method: "GET" },
+      { maxAttempts: 3, baseDelayMillis: 1000 },
+    );
 
     if (fetchJwksResult.isError) {
       return fetchJwksResult;
+    }
+
+    const fetchJwtResponse = fetchJwksResult.value;
+
+    const getJwksFromResponseResult =
+      await this.getJwksFromResponse(fetchJwtResponse);
+
+    if (getJwksFromResponseResult.isError) {
+      return getJwksFromResponseResult;
     }
 
     const jweComponents = jwe.split(".");
@@ -51,80 +63,6 @@ export class TokenService implements ITokenService {
     return successResult("");
   };
 
-  private async fetchJwksWithRetries(
-    stsJwksEndpoint: string,
-  ): Promise<Result<IJwks>> {
-    const maxRetries = 2;
-    const delayInMs = 1000;
-
-    let fetchJwksResult: Result<IJwks> | undefined;
-
-    for (let retries = 0; retries <= maxRetries; retries++) {
-      fetchJwksResult = await this.fetchJwks(stsJwksEndpoint);
-
-      if (!fetchJwksResult.isError) {
-        return fetchJwksResult;
-      }
-
-      if (retries < maxRetries) {
-        await new Promise((resolve) => setTimeout(resolve, delayInMs));
-      }
-    }
-
-    // After all retries, check if fetchJwksResult was assigned and handle the case where it was not assigned (should not happen)
-    if (fetchJwksResult == null) {
-      return errorResult({
-        errorMessage:
-          "Unexpected error in retry policy when fetching STS public keys",
-        errorCategory: "SERVER_ERROR",
-      });
-    }
-
-    return fetchJwksResult;
-  }
-
-  private readonly fetchJwks = async (
-    stsJwksEndpoint: string,
-  ): Promise<Result<IJwks>> => {
-    let response;
-    try {
-      response = await fetchAdapter(stsJwksEndpoint, {
-        method: "GET",
-      });
-    } catch {
-      return errorResult({
-        errorMessage: "Unexpected error retrieving STS public keys",
-        errorCategory: "SERVER_ERROR",
-      });
-    }
-
-    if (!response.ok) {
-      return errorResult({
-        errorMessage: "Error retrieving STS public keys",
-        errorCategory: "SERVER_ERROR",
-      });
-    }
-
-    let jwks;
-    try {
-      jwks = await response.json();
-    } catch {
-      return errorResult({
-        errorMessage: "Invalid JSON in response",
-        errorCategory: "SERVER_ERROR",
-      });
-    }
-
-    if (!this.isJwks(jwks)) {
-      return errorResult({
-        errorMessage: "Response does not match the expected JWKS structure",
-        errorCategory: "SERVER_ERROR",
-      });
-    }
-
-    return successResult(jwks);
-  };
-
   private readonly isJwks = (data: unknown): data is IJwks => {
     return (
       typeof data === "object" &&
@@ -156,6 +94,29 @@ export class TokenService implements ITokenService {
     }
 
     return successResult(cek);
+  }
+
+  private async getJwksFromResponse(
+    response: Response,
+  ): Promise<Result<IJwks>> {
+    let jwks;
+    try {
+      jwks = await response.json();
+    } catch {
+      return errorResult({
+        errorMessage: "Invalid JSON in response",
+        errorCategory: "SERVER_ERROR",
+      });
+    }
+
+    if (!this.isJwks(jwks)) {
+      return errorResult({
+        errorMessage: "Response does not match the expected JWKS structure",
+        errorCategory: "SERVER_ERROR",
+      });
+    }
+
+    return successResult(jwks);
   }
 }
 
