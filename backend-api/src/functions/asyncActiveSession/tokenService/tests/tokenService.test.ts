@@ -60,7 +60,7 @@ describe("Token Service", () => {
             );
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
-              errorMessage: "Unexpected error retrieving STS public key",
+              errorMessage: "Unexpected error retrieving STS public keys",
               errorCategory: "SERVER_ERROR",
             });
           });
@@ -88,7 +88,7 @@ describe("Token Service", () => {
             );
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
-              errorMessage: "Error retrieving STS public key",
+              errorMessage: "Error retrieving STS public keys",
               errorCategory: "SERVER_ERROR",
             });
           });
@@ -131,11 +131,7 @@ describe("Token Service", () => {
                 ok: true,
                 json: () =>
                   Promise.resolve({
-                    keys: [
-                      {
-                        kty: "mockKty",
-                      },
-                    ],
+                    keys: ["mockNotAnObject"],
                   }),
               } as Response),
             );
@@ -277,7 +273,7 @@ describe("Token Service", () => {
 
               expect(result.isError).toBe(true);
               expect(result.value).toStrictEqual({
-                errorMessage: "Unexpected error retrieving STS public key",
+                errorMessage: "Unexpected error retrieving STS public keys",
                 errorCategory: "SERVER_ERROR",
               });
             });

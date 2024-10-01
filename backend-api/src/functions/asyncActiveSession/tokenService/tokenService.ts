@@ -14,7 +14,7 @@ export class TokenService implements ITokenService {
     jwe: string,
   ): Promise<Result<string>> => {
     const fetchPublicKeyResult =
-      await this.fetchPublicKeyWithRetries(stsJwksEndpoint);
+      await this.fetchJwksWithRetries(stsJwksEndpoint);
 
     if (fetchPublicKeyResult.isError) {
       return fetchPublicKeyResult;
@@ -52,16 +52,16 @@ export class TokenService implements ITokenService {
     return successResult("");
   };
 
-  private async fetchPublicKeyWithRetries(
+  private async fetchJwksWithRetries(
     stsJwksEndpoint: string,
-  ): Promise<Result<IPublicKey>> {
+  ): Promise<Result<IJwks>> {
     const maxRetries = 2;
     const delayInMs = 1000;
 
-    let fetchPublicKeyResult: Result<IPublicKey> | undefined;
+    let fetchPublicKeyResult: Result<IJwks> | undefined;
 
     for (let retries = 0; retries <= maxRetries; retries++) {
-      fetchPublicKeyResult = await this.fetchPublicKey(stsJwksEndpoint);
+      fetchPublicKeyResult = await this.fetchJwks(stsJwksEndpoint);
 
       if (!fetchPublicKeyResult.isError) {
         return fetchPublicKeyResult;
@@ -84,9 +84,9 @@ export class TokenService implements ITokenService {
     return fetchPublicKeyResult;
   }
 
-  private readonly fetchPublicKey = async (
+  private readonly fetchJwks = async (
     stsJwksEndpoint: string,
-  ): Promise<Result<IPublicKey>> => {
+  ): Promise<Result<IJwks>> => {
     let response;
     try {
       response = await fetchAdapter(stsJwksEndpoint, {
@@ -94,21 +94,21 @@ export class TokenService implements ITokenService {
       });
     } catch {
       return errorResult({
-        errorMessage: "Unexpected error retrieving STS public key",
+        errorMessage: "Unexpected error retrieving STS public keys",
         errorCategory: "SERVER_ERROR",
       });
     }
 
     if (!response.ok) {
       return errorResult({
-        errorMessage: "Error retrieving STS public key",
+        errorMessage: "Error retrieving STS public keys",
         errorCategory: "SERVER_ERROR",
       });
     }
 
-    let publicKey;
+    let jwks;
     try {
-      publicKey = await response.json();
+      jwks = await response.json();
     } catch {
       return errorResult({
         errorMessage: "Invalid JSON in response",
@@ -116,7 +116,7 @@ export class TokenService implements ITokenService {
       });
     }
 
-    if (!isPublicKey(publicKey)) {
+    if (!this.isJwks(jwks)) {
       return errorResult({
         errorMessage:
           "Response does not match the expected public key structure",
@@ -124,7 +124,7 @@ export class TokenService implements ITokenService {
       });
     }
 
-    return successResult(publicKey);
+    return successResult(jwks);
   };
 
   private async getCek(encryptedCek: Uint8Array): Promise<Result<Uint8Array>> {
@@ -147,6 +147,18 @@ export class TokenService implements ITokenService {
 
     return successResult(cek);
   }
+
+  private isJwks = (data: unknown): data is IJwks => {
+    return (
+      typeof data === "object" &&
+      data !== null &&
+      "keys" in data &&
+      Array.isArray((data as { keys: unknown }).keys) &&
+      (data as { keys: unknown[] }).keys.every(
+        (key) => typeof key === "object" && key !== null,
+      )
+    );
+  };
 }
 
 export interface ITokenService {
@@ -156,55 +168,6 @@ export interface ITokenService {
   ) => Promise<Result<string>>;
 }
 
-interface IPublicKey {
-  keys: Array<{
-    kty: string;
-    x: string;
-    y: string;
-    crv: string;
-    d: string;
-    kid: string;
-  }>;
+interface IJwks {
+  keys: object[];
 }
-
-const isPublicKey = (publicKey: unknown): publicKey is IPublicKey => {
-  if (
-    typeof publicKey === "object" &&
-    publicKey !== null &&
-    hasKeysProperty(publicKey)
-  ) {
-    const { keys } = publicKey;
-    if (Array.isArray(keys)) {
-      return keys.every(isValidKey);
-    }
-  }
-  return false;
-};
-
-const hasKeysProperty = (data: object): data is { keys: unknown } => {
-  return "keys" in data;
-};
-
-const isValidKey = (key: unknown): key is IPublicKey["keys"][number] => {
-  if (typeof key !== "object" || key === null) {
-    return false;
-  }
-  return (
-    hasStringProperty(key, "kty") &&
-    hasStringProperty(key, "x") &&
-    hasStringProperty(key, "y") &&
-    hasStringProperty(key, "crv") &&
-    hasStringProperty(key, "d") &&
-    hasStringProperty(key, "kid")
-  );
-};
-
-const hasStringProperty = (
-  obj: object,
-  property: string,
-): obj is { [key in typeof property]: string } => {
-  return (
-    property in obj &&
-    typeof (obj as { [key: string]: unknown })[property] === "string"
-  );
-};
