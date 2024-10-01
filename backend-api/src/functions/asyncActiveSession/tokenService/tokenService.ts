@@ -1,5 +1,8 @@
 import { IKmsAdapter } from "../../adapters/kmsAdapter";
-import { sendHttpRequest } from "../../services/http/sendHttpRequest";
+import {
+  RetryConfig,
+  sendHttpRequest,
+} from "../../services/http/sendHttpRequest";
 import { errorResult, Result, successResult } from "../../utils/result";
 
 export class TokenService implements ITokenService {
@@ -12,11 +15,14 @@ export class TokenService implements ITokenService {
   getSubFromToken = async (
     stsJwksEndpoint: string,
     jwe: string,
-    retryDelayInMs: number,
+    retryConfig: RetryConfig,
   ): Promise<Result<string>> => {
     const stsJwksEndpointResponseResult = await sendHttpRequest(
       { url: stsJwksEndpoint, method: "GET" },
-      { maxAttempts: 3, delayInMillis: retryDelayInMs },
+      {
+        maxAttempts: retryConfig.maxAttempts,
+        delayInMillis: retryConfig.delayInMillis,
+      },
     );
 
     if (stsJwksEndpointResponseResult.isError) {
@@ -120,7 +126,7 @@ export interface ITokenService {
   getSubFromToken: (
     stsJwksEndpoint: string,
     jwe: string,
-    retryDelayInMs: number,
+    retryConfig: RetryConfig,
   ) => Promise<Result<string>>;
 }
 

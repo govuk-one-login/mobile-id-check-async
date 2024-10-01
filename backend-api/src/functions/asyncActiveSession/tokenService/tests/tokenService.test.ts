@@ -50,7 +50,7 @@ describe("Token Service", () => {
             const result = await tokenService.getSubFromToken(
               "https://mockJwksEndpoint.com",
               "mockJwe",
-              100,
+              { maxAttempts: 3, delayInMillis: 100 },
             );
 
             expect(mockFetch).toHaveBeenCalledWith(
@@ -80,7 +80,7 @@ describe("Token Service", () => {
             const result = await tokenService.getSubFromToken(
               "https://mockJwksEndpoint.com",
               "mockJwe",
-              100,
+              { maxAttempts: 3, delayInMillis: 100 },
             );
 
             expect(mockFetch).toHaveBeenCalledWith(
@@ -110,7 +110,7 @@ describe("Token Service", () => {
             const result = await tokenService.getSubFromToken(
               "https://mockJwksEndpoint.com",
               "mockJwe",
-              100,
+              { maxAttempts: 3, delayInMillis: 100 },
             );
 
             expect(mockFetch).toHaveBeenCalledWith(
@@ -143,7 +143,7 @@ describe("Token Service", () => {
             const result = await tokenService.getSubFromToken(
               "https://mockJwksEndpoint.com",
               "mockJwe",
-              100,
+              { maxAttempts: 3, delayInMillis: 100 },
             );
 
             expect(mockFetch).toHaveBeenCalledWith(
@@ -192,7 +192,7 @@ describe("Token Service", () => {
               await tokenService.getSubFromToken(
                 "https://mockJwksEndpoint.com",
                 "mockJwe",
-                100,
+                { maxAttempts: 3, delayInMillis: 100 },
               );
 
               expect(mockFetch).toHaveBeenCalledWith(
@@ -238,7 +238,7 @@ describe("Token Service", () => {
               await tokenService.getSubFromToken(
                 "https://mockJwksEndpoint.com",
                 "mockJwe",
-                100,
+                { maxAttempts: 3, delayInMillis: 100 },
               );
 
               expect(mockFetch).toHaveBeenCalledWith(
@@ -268,7 +268,7 @@ describe("Token Service", () => {
               const result = await tokenService.getSubFromToken(
                 "https://mockJwksEndpoint.com",
                 "mockJwe",
-                100,
+                { maxAttempts: 3, delayInMillis: 100 },
               );
 
               expect(mockFetch).toHaveBeenCalledWith(
@@ -299,7 +299,7 @@ describe("Token Service", () => {
           const result = await tokenService.getSubFromToken(
             "https://mockJwksEndpoint.com",
             "one.two.three.four",
-            100,
+            { maxAttempts: 3, delayInMillis: 100 },
           );
 
           expect(result.isError).toBe(true);
@@ -323,7 +323,7 @@ describe("Token Service", () => {
           const result = await tokenService.getSubFromToken(
             "https://mockJwksEndpoint.com",
             "one.two.three.four.five",
-            100,
+            { maxAttempts: 3, delayInMillis: 100 },
           );
 
           expect(result.isError).toBe(true);
@@ -342,7 +342,7 @@ describe("Token Service", () => {
           const result = await tokenService.getSubFromToken(
             "https://mockJwksEndpoint.com",
             "one.two.three.four.five",
-            100,
+            { maxAttempts: 3, delayInMillis: 100 },
           );
 
           expect(result.isError).toBe(true);

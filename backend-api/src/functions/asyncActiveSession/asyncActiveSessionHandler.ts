@@ -38,7 +38,10 @@ export async function lambdaHandlerConstructor(
   const getSubFromTokenResult = await tokenService.getSubFromToken(
     config.STS_JWKS_ENDPOINT,
     serviceToken,
-    config.STS_JWKS_ENDPOINT_RETRY_DELAY_IN_MS,
+    {
+      maxAttempts: config.STS_JWKS_ENDPOINT_MAX_ATTEMPTS,
+      delayInMillis: config.STS_JWKS_ENDPOINT_RETRY_DELAY_IN_MS,
+    },
   );
   if (getSubFromTokenResult.isError) {
     if (getSubFromTokenResult.value.errorCategory === "CLIENT_ERROR") {
