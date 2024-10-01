@@ -125,7 +125,7 @@ export class TokenService implements ITokenService {
     return successResult(jwks);
   };
 
-  private isJwks = (data: unknown): data is IJwks => {
+  private readonly isJwks = (data: unknown): data is IJwks => {
     return (
       typeof data === "object" &&
       data !== null &&
