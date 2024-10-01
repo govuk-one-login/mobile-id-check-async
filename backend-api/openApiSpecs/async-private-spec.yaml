@@ -15,7 +15,7 @@ components:
       scheme: bearer
       in: header
   schemas:
-    InternalServerError:
+    ServerError:
       type: object
       properties:
         error:
@@ -51,7 +51,7 @@ components:
 paths:
   /async/token:
     post:
-      summary: Exchange Client Credentials for a scoped access token
+      summary: Exchange Client Credentials for a scoped access token.
       security:
         - basicAuth: []
       requestBody:
@@ -67,7 +67,7 @@ paths:
                     - client_credentials
                   example: client_credentials
                   description: |
-                    For client credentials grant flow this value must be specified as above
+                    For client credentials grant flow this value must be specified as above.
               required:
                 - grant_type
       responses:
@@ -89,7 +89,7 @@ paths:
                   access_token:
                     type: string
                     description: |
-                      The access token value is an access token represented as a DCMAW-signed JWT which you can use with DCMAW APIs
+                      The access token value is an access token represented as a DCMAW-signed JWT which you can use with DCMAW APIs.
                   token_type:
                     type: string
                     enum:
@@ -99,7 +99,7 @@ paths:
                   expires_in:
                     type: integer
                     description: |
-                      The length of time the token is valid for. This is displayed in seconds.
+                      The length of time the token is valid for in seconds.
                 required:
                   - access_token
                   - token_type
@@ -144,20 +144,20 @@ paths:
                   - error
                   - error_description
         '500':
-          description: Internal Server Error
+          description: Internal server error
           content:
             application/json:
               examples:
-                errorInvalidClient:
+                error:
                   description: |
-                    The service encountered an unrecoverable error when trying to access its internal resources
+                    The service encountered an unrecoverable error when trying to access its internal resources.
                   value:
                     {
                       "error": "server_error",
                       "error_description": "Server Error"
                     }
               schema:
-                $ref: "#/components/schemas/InternalServerError"
+                $ref: "#/components/schemas/ServerError"
       x-amazon-apigateway-integration:
         requestTemplates:
           application/json:
@@ -169,7 +169,7 @@ paths:
         type: "aws_proxy"
   /async/credential:
     post:
-      summary: Submit a JAR to start a new DCMAW session
+      summary: Submit a JAR to start a new DCMAW session.
       security:
         - bearerAuth: []
       requestBody:
@@ -234,11 +234,27 @@ paths:
               examples:
                 errorInvalidRequest:
                   description: |
-                    The request is missing a header or body so the server cannot proceed with the request.
+                    The request body is missing or is invalid.
                   value:
                     {
                       "error": "invalid_request",
                       "error_description": "Request body validation failed"
+                    }
+                errorInvalidToken:
+                  description: |
+                    The access token could not be decoded or its payload is invalid.
+                  value:
+                    {
+                      "error": "invalid_token",
+                      "error_description": "Missing scope claim"
+                    }
+                errorInvalidClient:
+                  description: |
+                    The provided client details do not match a registered client.
+                  value:
+                    {
+                      "error": "invalid_client",
+                      "error_description": "Supplied client not recognised"
                     }
               schema:
                 type: object
@@ -247,6 +263,8 @@ paths:
                     type: string
                     enum:
                       - invalid_request
+                      - invalid_token
+                      - invalid_client
                     description: |
                       The error code.
                   error_description:
@@ -257,18 +275,17 @@ paths:
                   - error
                   - error_description
         '401':
-          description: |
-            Unauthorized, usually signifies the access_token is not valid.
+          description: Bad request
           content:
             application/json:
               examples:
                 errorInvalidAccessToken:
                   description: |
-                    Authentication failed, which could be caused by the request containing an invalid access token.
+                    Unauthorized, usually signifies the access_token is missing or is invalid.
                   value:
                     {
                       "error": "invalid_token",
-                      "error_description": "Invalid access token"
+                      "error_description": "Invalid token"
                     }
               schema:
                 type: object
@@ -287,11 +304,11 @@ paths:
                   - error
                   - error_description
         '500':
-          description: Internal Server Error
+          description: Internal server error
           content:
             application/json:
               examples:
-                internalServerError:
+                error:
                   description: |
                     The server has encountered an unexpected condition or configuration problem that prevents 
                     it from fulfilling the request made by the browser or client.
@@ -301,7 +318,7 @@ paths:
                       "error_description": "Server error"
                     }
               schema:
-                $ref: "#/components/schemas/InternalServerError"
+                $ref: "#/components/schemas/ServerError"
       x-amazon-apigateway-integration:
         requestTemplates:
           application/json:
