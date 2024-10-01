@@ -117,6 +117,56 @@ describe("Backend application infrastructure", () => {
     });
   });
 
+  describe("CloudWatch alarms", () => {
+    test("apiGateway WellKnown5XXHighThresholdAlarm should have a runbook if alarm is enabled", () => {
+      const actionsEnabledCapture = new Capture();
+      const snsTopicCapture = new Capture();
+      template.hasResourceProperties("AWS::CloudWatch::Alarm", {
+        AlarmName: {
+          "Fn::Sub": "${AWS::StackName}-HighThresholdWellKnown5XXApiGwAlarm",
+        },
+        ActionsEnabled: actionsEnabledCapture,
+        AlarmActions: snsTopicCapture,
+      });
+
+      const alarmActions = snsTopicCapture.asArray();
+
+      const isCriticalAlert =
+        alarmActions[0]["Fn::Sub"] ===
+        "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical";
+
+      const isRunbookCreated = false; // to be updated only when a runbook exists for this alarm
+      const isActionsEnabled = actionsEnabledCapture.asBoolean();
+      if (isActionsEnabled && isCriticalAlert) {
+        expect(isActionsEnabled).toEqual(isRunbookCreated);
+      }
+    });
+
+    test("apiGateway WellKnown5XXLowThresholdAlarm should have a runbook if alarm is enabled", () => {
+      const actionsEnabledCapture = new Capture();
+      const snsTopicCapture = new Capture();
+      template.hasResourceProperties("AWS::CloudWatch::Alarm", {
+        AlarmName: {
+          "Fn::Sub": "${AWS::StackName}-LowThresholdWellKnown5XXApiGwAlarm",
+        },
+        ActionsEnabled: actionsEnabledCapture,
+        AlarmActions: snsTopicCapture,
+      });
+
+      const alarmActions = snsTopicCapture.asArray();
+
+      const isCriticalAlert =
+        alarmActions[0]["Fn::Sub"] ===
+        "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning";
+
+      const isRunbookCreated = true; // to be updated only when a runbook exists for this alarm
+      const isActionsEnabled = actionsEnabledCapture.asBoolean();
+      if (isActionsEnabled && isCriticalAlert) {
+        expect(isActionsEnabled).toEqual(isRunbookCreated);
+      }
+    });
+  });
+
   describe("Sessions APIgw", () => {
     test("The endpoints are REGIONAL", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
