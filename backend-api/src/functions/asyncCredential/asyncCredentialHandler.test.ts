@@ -235,7 +235,7 @@ describe("Async Credential", () => {
 
   describe("Get decoded token", () => {
     describe("Given decoding token fails", () => {
-      it("Returns 401 Unauthorized response", async () => {
+      it("Logs and returns 400 Bad Request response", async () => {
         const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
@@ -258,10 +258,10 @@ describe("Async Credential", () => {
 
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
-          statusCode: 401,
+          statusCode: 400,
           body: JSON.stringify({
             error: "invalid_token",
-            error_description: "Invalid token",
+            error_description: "Mock decoding token error",
           }),
         });
       });
@@ -796,7 +796,7 @@ describe("Async Credential", () => {
         headers: { "Content-Type": "application/json" },
         statusCode: 400,
         body: JSON.stringify({
-          error: "invalid_request",
+          error: "invalid_client",
           error_description: "Supplied client not recognised",
         }),
       });

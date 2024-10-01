@@ -46,7 +46,10 @@ export async function lambdaHandlerConstructor(
     logger.log("JWT_CLAIM_INVALID", {
       errorMessage: validTokenClaimsResult.value.errorMessage,
     });
-    return unauthorizedResponse;
+    return badRequestResponse({
+      error: "invalid_token",
+      errorDescription: validTokenClaimsResult.value.errorMessage,
+    });
   }
   const { encodedJwt, jwtPayload } =
     validTokenClaimsResult.value as IDecodedToken;
@@ -61,7 +64,10 @@ export async function lambdaHandlerConstructor(
       errorMessage: requestBodyResult.value.errorMessage,
     });
 
-    return badRequestResponse("Request body validation failed");
+    return badRequestResponse({
+      error: "invalid_request",
+      errorDescription: "Request body validation failed",
+    });
   }
   const requestBody = requestBodyResult.value;
 
@@ -81,7 +87,10 @@ export async function lambdaHandlerConstructor(
     logger.log("TOKEN_SIGNATURE_INVALID", {
       errorMessage,
     });
-    return badRequestResponse("Invalid signature");
+    return badRequestResponse({
+      error: "invalid_request",
+      errorDescription: "Invalid signature",
+    });
   }
 
   // Fetching issuer and redirect_uri from client registry using the client_id from the incoming jwt
@@ -105,7 +114,10 @@ export async function lambdaHandlerConstructor(
     logger.log("CLIENT_CREDENTIALS_INVALID", {
       errorMessage: getPartialRegisteredClientResponse.value.errorMessage,
     });
-    return badRequestResponse("Supplied client not recognised");
+    return badRequestResponse({
+      errorDescription: "Supplied client not recognised",
+      error: "invalid_client",
+    });
   }
 
   // Validate issuer and redirect_uri against client registry
@@ -118,7 +130,10 @@ export async function lambdaHandlerConstructor(
       errorMessage: "issuer does not match value from client registry",
     });
 
-    return badRequestResponse("Request body validation failed");
+    return badRequestResponse({
+      error: "invalid_request",
+      errorDescription: "Request body validation failed",
+    });
   }
 
   if (requestBody.redirect_uri) {
@@ -127,7 +142,10 @@ export async function lambdaHandlerConstructor(
         errorMessage: "redirect_uri does not match value from client registry",
       });
 
-      return badRequestResponse("Request body validation failed");
+      return badRequestResponse({
+        error: "invalid_request",
+        errorDescription: "Request body validation failed",
+      });
     }
   }
 
@@ -185,6 +203,20 @@ export async function lambdaHandlerConstructor(
   return sessionCreatedResponse(requestBody.sub);
 }
 
+const badRequestResponse = (responseInput: {
+  error: string;
+  errorDescription: string;
+}) => {
+  return {
+    headers: { "Content-Type": "application/json" },
+    statusCode: 400,
+    body: JSON.stringify({
+      error: responseInput.error,
+      error_description: responseInput.errorDescription,
+    }),
+  };
+};
+
 const unauthorizedResponse = {
   headers: { "Content-Type": "application/json" },
   statusCode: 401,
@@ -192,17 +224,6 @@ const unauthorizedResponse = {
     error: "invalid_token",
     error_description: "Invalid token",
   }),
-};
-
-const badRequestResponse = (errorDescription: string) => {
-  return {
-    headers: { "Content-Type": "application/json" },
-    statusCode: 400,
-    body: JSON.stringify({
-      error: "invalid_request",
-      error_description: errorDescription,
-    }),
-  };
 };
 
 const serverErrorResponse: APIGatewayProxyResult = {
