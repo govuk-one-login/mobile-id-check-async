@@ -3,18 +3,30 @@ import {
   DecryptCommandOutput,
   IncorrectKeyException,
   InvalidCiphertextException,
+  KMSClient,
 } from "@aws-sdk/client-kms";
 import { errorResult, Result, successResult } from "../utils/result";
-import { kmsClient } from "../clients/kmsClient";
+import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
 
 export class KMSAdapter {
+  private kmsClient = new KMSClient([
+    {
+      region: "eu-west-2",
+      maxAttempts: 2,
+      requestHandler: new NodeHttpHandler({
+        connectionTimeout: 29000,
+        requestTimeout: 29000,
+      }),
+    },
+  ]);
+
   async decrypt(
     keyArn: string,
     ciphertext: Uint8Array,
   ): Promise<Result<Uint8Array>> {
     let decryptCommandOutput: DecryptCommandOutput;
     try {
-      decryptCommandOutput = await kmsClient.send(
+      decryptCommandOutput = await this.kmsClient.send(
         new DecryptCommand({
           KeyId: keyArn,
           CiphertextBlob: ciphertext,
