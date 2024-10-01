@@ -174,7 +174,7 @@ describe("POST /credential", () => {
   });
 
   describe("Given the Bearer token in the Authorization header is not a valid token", () => {
-    it("Returns a 401 Unauthorized response", async () => {
+    it("Returns a 400 Bad Request response", async () => {
       const response = await axiosInstance.post(
         `${apiBaseUrl}/async/credential`,
         credentialRequestBody,
