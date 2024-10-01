@@ -53,11 +53,11 @@ export class TokenService implements ITokenService {
 
   private async fetchPublicKeyWithRetries(
     stsJwksEndpoint: string,
-  ): Promise<Result<JSON>> {
+  ): Promise<Result<IPublicKey>> {
     const maxRetries = 2;
     const delayInMs = 1000;
 
-    let fetchPublicKeyResult: Result<JSON> | undefined;
+    let fetchPublicKeyResult: Result<IPublicKey> | undefined;
 
     for (let retries = 0; retries <= maxRetries; retries++) {
       fetchPublicKeyResult = await this.fetchPublicKey(stsJwksEndpoint);
@@ -85,7 +85,7 @@ export class TokenService implements ITokenService {
 
   private readonly fetchPublicKey = async (
     stsJwksEndpoint: string,
-  ): Promise<Result<JSON>> => {
+  ): Promise<Result<IPublicKey>> => {
     let response;
     try {
       response = await fetch(stsJwksEndpoint, {
@@ -107,12 +107,19 @@ export class TokenService implements ITokenService {
 
     let publicKey;
     try {
-      publicKey = await response.json();
+      publicKey = await response.json()
     } catch {
       return errorResult({
         errorMessage: "Invalid JSON in response",
         errorCategory: "SERVER_ERROR",
       });
+    }
+
+    if(!isPublicKey(publicKey)) {
+      return errorResult({
+        errorMessage: "Response does not match the expected public key structure",
+        errorCategory: "SERVER_ERROR"
+      })
     }
 
     return successResult(publicKey);
@@ -146,3 +153,57 @@ export interface ITokenService {
     jwe: string,
   ) => Promise<Result<string>>;
 }
+
+interface IPublicKey {
+  keys: Array<{
+    kty: string;
+    x: string;
+    y: string;
+    crv: string;
+    d: string;
+    kid: string;
+  }>;
+}
+
+
+const isPublicKey = (publicKey: unknown): publicKey is IPublicKey => {
+  if (
+    typeof publicKey === 'object' &&
+    publicKey !== null &&
+    hasKeysProperty(publicKey)
+  ) {
+    const { keys } = publicKey;
+    if (Array.isArray(keys)) {
+      return keys.every(isValidKey);
+    }
+  }
+  return false;
+};
+
+const hasKeysProperty = (data: object): data is { keys: unknown } => {
+  return 'keys' in data;
+};
+
+const isValidKey = (key: unknown): key is IPublicKey['keys'][number] => {
+  if (typeof key !== 'object' || key === null) {
+    return false;
+  }
+  return (
+    hasStringProperty(key, 'kty') &&
+    hasStringProperty(key, 'x') &&
+    hasStringProperty(key, 'y') &&
+    hasStringProperty(key, 'crv') &&
+    hasStringProperty(key, 'd') &&
+    hasStringProperty(key, 'kid')
+  );
+};
+
+const hasStringProperty = (
+  obj: object,
+  property: string
+): obj is { [key in typeof property]: string } => {
+  return (
+    property in obj &&
+    typeof (obj as { [key: string]: unknown })[property] === 'string'
+  );
+};
