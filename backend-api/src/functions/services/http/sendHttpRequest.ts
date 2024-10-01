@@ -1,7 +1,7 @@
 import { errorResult, Result, successResult } from "../../utils/result";
 
 const DEFAULT_MAX_ATTEMPTS = 3;
-const DEFAULT_DELAY_MILLIS = 100;
+const DEFAULT_DELAY_IN_MILLIS = 100;
 
 export const sendHttpRequest: ISendHttpRequest = async (
   httpRequest,
@@ -14,7 +14,7 @@ export const sendHttpRequest: ISendHttpRequest = async (
     attempt++;
 
     const maxAttempts = retryConfig?.maxAttempts ?? DEFAULT_MAX_ATTEMPTS;
-    const delayInMillis = retryConfig?.delayInMillis ?? DEFAULT_DELAY_MILLIS;
+    const delayInMillis = retryConfig?.delayInMillis ?? DEFAULT_DELAY_IN_MILLIS;
 
     let response: Response;
     try {
