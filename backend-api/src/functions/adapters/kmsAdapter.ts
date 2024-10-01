@@ -34,21 +34,16 @@ export class KMSAdapter {
         }),
       );
     } catch (error) {
-      console.log(error);
       if (
         error instanceof InvalidCiphertextException ||
         error instanceof IncorrectKeyException
       ) {
-        console.log("oi");
-
         return errorResult({
           errorMessage:
             "Encrypted data could not be decrypted with provided key",
           errorCategory: "CLIENT_ERROR",
         });
       } else {
-        console.log("chao");
-
         return errorResult({
           errorMessage: "Error decrypting data with KMS",
           errorCategory: "SERVER_ERROR",
