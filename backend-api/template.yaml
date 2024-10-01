@@ -789,6 +789,7 @@ Resources:
           ENCRYPTION_KEY_ARN: !GetAtt KMSEncryptionKey.Arn
           STS_JWKS_ENDPOINT:
             !FindInMap [EnvironmentVariables, !Ref Environment, STSJWKSENDPOINT]
+          STS_JWKS_ENDPOINT_RETRY_DELAY_IN_MS: 1000
 
   AsyncActiveSessionFunctionPermission:
     Type: AWS::Lambda::Permission

@@ -12,10 +12,11 @@ export class TokenService implements ITokenService {
   getSubFromToken = async (
     stsJwksEndpoint: string,
     jwe: string,
+    retryDelayInMs: number,
   ): Promise<Result<string>> => {
     const fetchJwksResult = await sendHttpRequest(
       { url: stsJwksEndpoint, method: "GET" },
-      { maxAttempts: 3, baseDelayMillis: 1000 },
+      { maxAttempts: 3, baseDelayMillis: retryDelayInMs },
     );
 
     if (fetchJwksResult.isError) {
@@ -124,6 +125,7 @@ export interface ITokenService {
   getSubFromToken: (
     stsJwksEndpoint: string,
     jwe: string,
+    retryDelayInMs: number,
   ) => Promise<Result<string>>;
 }
 
