@@ -14,19 +14,19 @@ export class TokenService implements ITokenService {
     jwe: string,
     retryDelayInMs: number,
   ): Promise<Result<string>> => {
-    const fetchJwksResult = await sendHttpRequest(
+    const stsJwksEndpointResponseResult = await sendHttpRequest(
       { url: stsJwksEndpoint, method: "GET" },
       { maxAttempts: 3, baseDelayMillis: retryDelayInMs },
     );
 
-    if (fetchJwksResult.isError) {
-      return fetchJwksResult;
+    if (stsJwksEndpointResponseResult.isError) {
+      return stsJwksEndpointResponseResult;
     }
 
-    const fetchJwtResponse = fetchJwksResult.value;
+    const stsJwksEndpointResponse = stsJwksEndpointResponseResult.value;
 
     const getJwksFromResponseResult =
-      await this.getJwksFromResponse(fetchJwtResponse);
+      await this.getJwksFromResponse(stsJwksEndpointResponse);
 
     if (getJwksFromResponseResult.isError) {
       return getJwksFromResponseResult;
