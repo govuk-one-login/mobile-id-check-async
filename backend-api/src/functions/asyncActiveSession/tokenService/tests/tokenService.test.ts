@@ -61,7 +61,7 @@ describe("Token Service", () => {
             );
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
-              errorMessage: "Unexpected error retrieving STS public keys",
+              errorMessage: "Unexpected network error: Error: mockError",
               errorCategory: "SERVER_ERROR",
             });
           });
@@ -73,6 +73,7 @@ describe("Token Service", () => {
               Promise.resolve({
                 status: 500,
                 ok: false,
+                text: () => Promise.resolve("mockErrorInformaton"),
               } as Response),
             );
 
@@ -90,7 +91,7 @@ describe("Token Service", () => {
             );
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
-              errorMessage: "Error retrieving STS public keys",
+              errorMessage: "Error making http request: mockErrorInformaton",
               errorCategory: "SERVER_ERROR",
             });
           });
@@ -280,7 +281,7 @@ describe("Token Service", () => {
 
               expect(result.isError).toBe(true);
               expect(result.value).toStrictEqual({
-                errorMessage: "Unexpected error retrieving STS public keys",
+                errorMessage: "Unexpected network error: Error: mockError",
                 errorCategory: "SERVER_ERROR",
               });
             });

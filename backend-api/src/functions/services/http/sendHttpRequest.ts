@@ -30,17 +30,17 @@ export const sendHttpRequest: ISendHttpRequest = async (
 
       if (!response.ok) {
         return errorResult({
-          errorMessage: "Error retrieving STS public keys",
+          errorMessage: `Error making http request: ${await response.text()}`,
           errorCategory: "SERVER_ERROR",
         });
       }
-    } catch {
+    } catch (error) {
       if (attempt < maxAttempts) {
         return retry(request, delayInMillis);
       }
 
       return errorResult({
-        errorMessage: "Unexpected error retrieving STS public keys",
+        errorMessage: `Unexpected network error: ${error}`,
         errorCategory: "SERVER_ERROR",
       });
     }
