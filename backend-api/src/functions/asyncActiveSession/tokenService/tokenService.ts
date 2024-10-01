@@ -56,10 +56,7 @@ export class TokenService implements ITokenService {
       new Uint8Array(Buffer.from(encryptedCek, "base64")),
     );
     if (getCekResult.isError) {
-      return errorResult({
-        errorMessage: getCekResult.value.errorMessage,
-        errorCategory: getCekResult.value.errorCategory,
-      });
+      return getCekResult;
     }
 
     return successResult("");
@@ -80,10 +77,7 @@ export class TokenService implements ITokenService {
   private async getCek(encryptedCek: Uint8Array): Promise<Result<Uint8Array>> {
     const decryptCekResult = await this.kmsAdapter.decrypt(encryptedCek);
     if (decryptCekResult.isError) {
-      return errorResult({
-        errorMessage: decryptCekResult.value.errorMessage,
-        errorCategory: decryptCekResult.value.errorCategory,
-      });
+      return decryptCekResult;
     }
 
     const cek = decryptCekResult.value.Plaintext ?? null;
