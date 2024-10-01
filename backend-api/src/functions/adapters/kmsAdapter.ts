@@ -9,7 +9,7 @@ import { errorResult, Result, successResult } from "../utils/result";
 import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
 
 export class KMSAdapter implements IKmsAdapter {
-  private kmsClient = new KMSClient([
+  private readonly kmsClient = new KMSClient([
     {
       region: "eu-west-2",
       maxAttempts: 2,
