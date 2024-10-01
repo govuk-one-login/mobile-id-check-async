@@ -123,6 +123,41 @@ describe("Token Service", () => {
           });
         });
 
+        describe("Given the response is not in the shape of a public key", () => {
+          it("Returns an error response", async () => {
+            mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
+              Promise.resolve({
+                status: 200,
+                ok: true,
+                json: () =>
+                  Promise.resolve({
+                    keys: [
+                      {
+                        kty: "mockKty",
+                      },
+                    ],
+                  }),
+              } as Response));
+
+            const result = await tokenService.getSubFromToken(
+              "https://mockJwksEndpoint.com",
+              "mockJwe",
+            );
+
+            expect(mockFetch).toHaveBeenCalledWith(
+              "https://mockJwksEndpoint.com",
+              {
+                method: "GET",
+              },
+            );
+            expect(result.isError).toBe(true);
+            expect(result.value).toStrictEqual({
+              errorMessage: "Response does not match the expected public key structure",
+              errorCategory: "SERVER_ERROR",
+            });
+          });
+        });
+
         describe("Retry policy", () => {
           describe("Given there is an error retrieving the public key on the first attempt", () => {
             it("Makes second attempt to get STS key", async () => {
