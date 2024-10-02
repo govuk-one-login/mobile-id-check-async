@@ -10,7 +10,7 @@ export const sendHttpRequest: ISendHttpRequest = async (
   const { url, method, headers, body } = httpRequest;
 
   let attempt = 0;
-  async function request(): Promise<Result<Response>> {
+  async function request(): Promise<Result<SuccessfulHttpResponse>> {
     attempt++;
 
     const maxAttempts = retryConfig?.maxAttempts ?? DEFAULT_MAX_ATTEMPTS;
@@ -45,14 +45,18 @@ export const sendHttpRequest: ISendHttpRequest = async (
       });
     }
 
-    return successResult(response);
+    return successResult({
+      statusCode: response.status,
+      body: await response.text(),
+      headers: Object.fromEntries(response.headers.entries()),
+    });
   }
 
   return await request();
 };
 
 async function retry(
-  request: () => Promise<Result<Response>>,
+  request: () => Promise<Result<SuccessfulHttpResponse>>,
   delayInMillis: number,
 ) {
   await wait(delayInMillis);
@@ -93,4 +97,10 @@ export type HttpRequest = {
 export type ISendHttpRequest = (
   httpRequest: HttpRequest,
   retryConfig?: RetryConfig,
-) => Promise<Result<Response>>;
+) => Promise<Result<SuccessfulHttpResponse>>;
+
+export type SuccessfulHttpResponse = {
+  statusCode: number;
+  body?: string;
+  headers: HttpHeaders;
+};
