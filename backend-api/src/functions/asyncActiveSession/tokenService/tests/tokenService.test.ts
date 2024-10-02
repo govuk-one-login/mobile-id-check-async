@@ -120,6 +120,7 @@ describe("Token Service", () => {
 
             const result = await tokenService.getSubFromToken(
               "https://mockJwksEndpoint.com",
+              "mockEncryptionKeyArn",
               "mockJwe",
               { maxAttempts: 3, delayInMillis: 1 },
             );
@@ -192,6 +193,7 @@ describe("Token Service", () => {
 
             const result = await tokenService.getSubFromToken(
               "https://mockJwksEndpoint.com",
+              "mockEncryptionKeyArn",
               "mockJwe",
               { maxAttempts: 3, delayInMillis: 1 },
             );
@@ -246,6 +248,7 @@ describe("Token Service", () => {
 
               await tokenService.getSubFromToken(
                 "https://mockJwksEndpoint.com",
+                "mockEncryptionKeyArn",
                 "mockJwe",
                 { maxAttempts: 3, delayInMillis: 1 },
               );
@@ -297,6 +300,7 @@ describe("Token Service", () => {
 
               await tokenService.getSubFromToken(
                 "https://mockJwksEndpoint.com",
+                "mockEncryptionKeyArn",
                 "mockJwe",
                 { maxAttempts: 3, delayInMillis: 1 },
               );
@@ -327,6 +331,7 @@ describe("Token Service", () => {
 
               const result = await tokenService.getSubFromToken(
                 "https://mockJwksEndpoint.com",
+                "mockEncryptionKeyArn",
                 "mockJwe",
                 { maxAttempts: 3, delayInMillis: 1 },
               );
@@ -382,6 +387,7 @@ describe("Token Service", () => {
             "https://mockJwksEndpoint.com",
             "mockEncryptionKeyArn",
             "one.two.three.four.five",
+            { maxAttempts: 3, delayInMillis: 1 },
           );
 
           expect(result.isError).toBe(true);
@@ -407,6 +413,7 @@ describe("Token Service", () => {
             "https://mockJwksEndpoint.com",
             "mockEncryptionKeyArn",
             "one.two.three.four.five",
+            { maxAttempts: 3, delayInMillis: 1 },
           );
 
           expect(result.isError).toBe(true);

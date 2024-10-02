@@ -1,4 +1,3 @@
-import { IKmsAdapter } from "../../adapters/kmsAdapter";
 import {
   RetryConfig,
   sendHttpRequest,
@@ -52,15 +51,15 @@ export class TokenService implements ITokenService {
 
     const encryptedCek = jweComponents[1];
 
-      const decryptResult = await new KMSAdapter().decrypt(
-          encryptionKeyArn,
-          new Uint8Array(Buffer.from(encryptedCek, "base64")),
-      );
-      if (decryptResult.isError) {
-          return decryptResult;
-      }
+    const decryptResult = await new KMSAdapter().decrypt(
+      encryptionKeyArn,
+      new Uint8Array(Buffer.from(encryptedCek, "base64")),
+    );
+    if (decryptResult.isError) {
+      return decryptResult;
+    }
 
-      // const cek = decryptResult.value;
+    // const cek = decryptResult.value;
 
     return successResult("");
   };
