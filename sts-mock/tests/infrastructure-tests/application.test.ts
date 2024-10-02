@@ -177,6 +177,15 @@ describe("STS mock infrastructure", () => {
         expect(logGroups[logGroup].Properties.RetentionInDays).toEqual(30);
       });
     });
+
+    test("all lambdas are attached to a VPC and subnets are protected", () => {
+      const lambdas = template.findResources("AWS::Serverless::Function");
+      const lambdaList = Object.keys(lambdas);
+      lambdaList.forEach((lambda) => {
+        expect(lambdas[lambda].Properties.VpcConfig.SubnetIds).toEqual([{"Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdA"}, {"Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdB"}, {"Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdC"}])
+        expect(lambdas[lambda].Properties.VpcConfig.SecurityGroupIds).toEqual([{"Fn::ImportValue": "devplatform-vpc-AWSServicesEndpointSecurityGroupId"}])
+      });
+    });
   });
 
   describe("S3", () => {

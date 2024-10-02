@@ -127,9 +127,9 @@ Mappings:
 
   EnvironmentVariables:
     dev:
-      STSJWKSENDPOINT: 'https://sts-mock-ah.review-b-async.dev.account.gov.uk/.well-known/jwks.json'
+      STSJWKSENDPOINT: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk/.well-known/jwks.json'
     build:
-      STSJWKSENDPOINT: 'https://sts-mock-ah.review-b-async.build.account.gov.uk/.well-known/jwks.json'
+      STSJWKSENDPOINT: 'https://mob-sts-mock.review-b-async.build.account.gov.uk/.well-known/jwks.json'
     # staging:
     #   STSJWKSENDPOINT: '' TODO: Mock should only be used in dev and build. Update this value
     # integration:
@@ -576,7 +576,7 @@ Resources:
         HostedZoneId: !GetAtt ProxyApiDomainName.RegionalHostedZoneId
     Condition: ProxyApiDeployment
 
-  LambdaEgressSecurityGroup:
+  ProxyLambdaSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: !Sub ${AWS::StackName}-proxy-sg
@@ -626,7 +626,7 @@ Resources:
           - !ImportValue devplatform-vpc-PrivateSubnetIdB
           - !ImportValue devplatform-vpc-PrivateSubnetIdC
         SecurityGroupIds:
-          - !Ref LambdaEgressSecurityGroup
+          - !Ref ProxyLambdaSecurityGroup
     Condition: ProxyApiDeployment
 
   ProxyLambdaLogGroup:
@@ -1145,9 +1145,9 @@ Resources:
           JWKS_FILE_NAME: .well-known/jwks.json
       VpcConfig:
         SubnetIds:
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
 
