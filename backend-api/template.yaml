@@ -1143,6 +1143,13 @@ Resources:
           ENCRYPTION_KEY_ID: !Ref KMSEncryptionKey
           JWKS_BUCKET_NAME: !Ref JsonWebKeysBucket
           JWKS_FILE_NAME: .well-known/jwks.json
+      VpcConfig:
+        SubnetIds:
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
 
   JsonWebKeysFunctionLambdaRole:
     Type: AWS::IAM::Role
@@ -1185,6 +1192,16 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
+        - PolicyName: ENIPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
