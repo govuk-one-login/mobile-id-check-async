@@ -21,7 +21,7 @@ export interface IKeyRetriever {
 }
 
 export class KeyRetriever implements IKeyRetriever {
-  private s3Client = new S3Client([
+  private readonly s3Client = new S3Client([
     {
       region: "eu-west-2",
       maxAttempts: 2,
