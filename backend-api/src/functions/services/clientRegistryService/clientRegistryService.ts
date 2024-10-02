@@ -81,7 +81,7 @@ export class ClientRegistryService
     });
   };
 
-  private getClientRegistry = async (): Promise<Result<IClientRegistry>> => {
+  readonly getClientRegistry = async (): Promise<Result<IClientRegistry>> => {
     if (cache && cache.expiry > Date.now()) {
       return successResult(cache.data);
     }
@@ -151,7 +151,7 @@ export class ClientRegistryService
     return successResult(clientRegistry);
   };
 
-  private isValidUrl = (rawUrl: string): boolean => {
+  readonly isValidUrl = (rawUrl: string): boolean => {
     try {
       new URL(rawUrl);
     } catch {
@@ -159,7 +159,7 @@ export class ClientRegistryService
     }
     return true;
   };
-  private getRegisteredClientByClientId = (
+  readonly getRegisteredClientByClientId = (
     clientRegistry: IClientRegistry,
     clientId: string,
   ): IRegisteredClient | undefined => {
@@ -171,7 +171,7 @@ export class ClientRegistryService
 
     return registeredClient;
   };
-  private validateClientSecrets = (
+  readonly validateClientSecrets = (
     registeredClientSecrets: { hashedClientSecret: string; salt: string },
     incomingClientSecrets: { clientId: string; clientSecret: string },
   ): boolean => {
