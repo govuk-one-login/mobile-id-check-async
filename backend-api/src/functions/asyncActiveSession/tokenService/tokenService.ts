@@ -70,10 +70,8 @@ export class TokenService implements ITokenService {
       typeof data === "object" &&
       data !== null &&
       "keys" in data &&
-      Array.isArray((data as { keys: unknown }).keys) &&
-      (data as { keys: unknown[] }).keys.every(
-        (key) => typeof key === "object" && key !== null,
-      )
+      Array.isArray(data.keys) &&
+      data.keys.every((key) => typeof key === "object" && key !== null)
     );
   };
 
