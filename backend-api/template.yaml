@@ -335,7 +335,7 @@ Resources:
                   - kms:Decrypt
                   - kms:GenerateDataKey
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
-        - PolicyName: ENIPolicy
+        - PolicyName: VpcPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -472,7 +472,7 @@ Resources:
                   - kms:Decrypt
                   - kms:GenerateDataKey
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
-        - PolicyName: ENIPolicy
+        - PolicyName: VpcPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -658,7 +658,7 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: !GetAtt ProxyLambdaLogGroup.Arn
-        - PolicyName: ENIPolicy
+        - PolicyName: VpcPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -874,7 +874,7 @@ Resources:
                 Action:
                   - kms:Decrypt
                 Resource: !GetAtt KMSEncryptionKey.Arn
-        - PolicyName: ENIPolicy
+        - PolicyName: VpcPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -1192,7 +1192,7 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
-        - PolicyName: ENIPolicy
+        - PolicyName: VpcPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
