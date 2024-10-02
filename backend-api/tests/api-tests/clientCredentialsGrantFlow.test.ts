@@ -9,8 +9,6 @@ import {
 import { randomUUID } from "crypto";
 import { UUID } from "node:crypto";
 
-process.env.TEST_ENVIRONMENT = "dev";
-
 const apiBaseUrl = process.env.PROXY_API_URL;
 if (!apiBaseUrl) throw Error("PROXY_URL environment variable not set");
 const axiosInstance = axios.create({
@@ -89,7 +87,7 @@ describe("POST /token", () => {
 
       expect(response.data).toStrictEqual({
         error: "invalid_client",
-        error_description: "Supplied client credentials not recognised",
+        error_description: "Invalid authorization header",
       });
       expect(response.status).toBe(400);
     });
