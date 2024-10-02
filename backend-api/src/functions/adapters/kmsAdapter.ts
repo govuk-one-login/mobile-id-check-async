@@ -1,8 +1,6 @@
 import {
   DecryptCommand,
   DecryptCommandOutput,
-  IncorrectKeyException,
-  InvalidCiphertextException,
   KMSClient,
 } from "@aws-sdk/client-kms";
 import { errorResult, Result, successResult } from "../utils/result";
@@ -33,22 +31,11 @@ export class KMSAdapter implements IKmsAdapter {
           EncryptionAlgorithm: "RSAES_OAEP_SHA_256",
         }),
       );
-    } catch (error) {
-      if (
-        error instanceof InvalidCiphertextException ||
-        error instanceof IncorrectKeyException
-      ) {
-        return errorResult({
-          errorMessage:
-            "Encrypted data could not be decrypted with provided key",
-          errorCategory: "CLIENT_ERROR",
-        });
-      } else {
-        return errorResult({
-          errorMessage: "Error decrypting data with KMS",
-          errorCategory: "SERVER_ERROR",
-        });
-      }
+    } catch {
+      return errorResult({
+        errorMessage: "Error decrypting data with KMS",
+        errorCategory: "SERVER_ERROR",
+      });
     }
 
     if (decryptCommandOutput.Plaintext == null) {

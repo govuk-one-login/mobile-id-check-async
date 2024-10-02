@@ -1,7 +1,5 @@
 import {
   DecryptCommand,
-  IncorrectKeyException,
-  InvalidCiphertextException,
   KeyUnavailableException,
   KMSClient,
 } from "@aws-sdk/client-kms";
@@ -373,59 +371,7 @@ describe("Token Service", () => {
         });
       });
 
-      describe("Given KMS throws InvalidCiphertextException when trying to decrypt the key", () => {
-        it("Returns a CLIENT_ERROR error result", async () => {
-          const kmsMock = mockClient(KMSClient);
-          kmsMock.on(DecryptCommand).rejects(
-            new InvalidCiphertextException({
-              $metadata: {},
-              message: "message",
-            }),
-          );
-
-          const result = await tokenService.getSubFromToken(
-            "https://mockJwksEndpoint.com",
-            "mockEncryptionKeyArn",
-            "one.two.three.four.five",
-            { maxAttempts: 3, delayInMillis: 1 },
-          );
-
-          expect(result.isError).toBe(true);
-          expect(result.value).toStrictEqual({
-            errorMessage:
-              "Encrypted data could not be decrypted with provided key",
-            errorCategory: "CLIENT_ERROR",
-          });
-        });
-      });
-
-      describe("Given KMS throws IncorrectKeyException when trying to decrypt the key", () => {
-        it("Returns a CLIENT_ERROR error result", async () => {
-          const kmsMock = mockClient(KMSClient);
-          kmsMock.on(DecryptCommand).rejects(
-            new IncorrectKeyException({
-              $metadata: {},
-              message: "message",
-            }),
-          );
-
-          const result = await tokenService.getSubFromToken(
-            "https://mockJwksEndpoint.com",
-            "mockEncryptionKeyArn",
-            "one.two.three.four.five",
-            { maxAttempts: 3, delayInMillis: 1 },
-          );
-
-          expect(result.isError).toBe(true);
-          expect(result.value).toStrictEqual({
-            errorMessage:
-              "Encrypted data could not be decrypted with provided key",
-            errorCategory: "CLIENT_ERROR",
-          });
-        });
-      });
-
-      describe("Given there is an unexpected error when calling KMS to decrypt the key", () => {
+      describe("Given an error happens when calling KMS to decrypt the key", () => {
         it("Returns a SERVER_ERROR error result", async () => {
           const kmsMock = mockClient(KMSClient);
           kmsMock.on(DecryptCommand).rejects(
