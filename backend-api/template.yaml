@@ -1,4 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
 
 Description: async-backend SAM template for the ID Check v2 app
 
@@ -124,6 +125,18 @@ Mappings:
     production:
       BaseDns: review-b-async.account.gov.uk
 
+  EnvironmentVariables:
+    dev:
+      STSJWKSENDPOINT: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk/.well-known/jwks.json'
+    build:
+      STSJWKSENDPOINT: 'https://mob-sts-mock.review-b-async.build.account.gov.uk/.well-known/jwks.json'
+    # staging:
+    #   STSJWKSENDPOINT: '' TODO: Mock should only be used in dev and build. Update this value
+    # integration:
+    #   STSJWKSENDPOINT: '' TODO: Mock should only be used in dev and build. Update this value
+    # production:
+    #   STSJWKSENDPOINT: '' TODO: Mock should only be used in dev and build. Update this value
+
 Conditions:
   UseCodeSigning: !Not
     - !Equals
@@ -153,8 +166,6 @@ Conditions:
     - !Equals
       - !Ref Environment
       - build
-
-Transform: AWS::Serverless-2016-10-31
 
 Globals:
   Function:
@@ -773,6 +784,11 @@ Resources:
             Method: get
             RestApiId: !Ref SessionsApi
       Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
+      Environment:
+        Variables:
+          ENCRYPTION_KEY_ARN: !GetAtt KMSEncryptionKey.Arn
+          STS_JWKS_ENDPOINT:
+            !FindInMap [EnvironmentVariables, !Ref Environment, STSJWKSENDPOINT]
 
   AsyncActiveSessionFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -810,6 +826,14 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
+        - PolicyName: KMSDecryptPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                Resource: !GetAtt KMSEncryptionKey.Arn
       RoleName: !Sub ${AWS::StackName}-active-session-lambda
       PermissionsBoundary: !If
         - UsePermissionsBoundary
@@ -1154,6 +1178,126 @@ Resources:
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
+
+  WellKnown5XXLowThresholdAlarm:    
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmDescription: "1% or more of requests are failing on the /.well-known/jwks.json endpoint"
+      AlarmName: !Sub "${AWS::StackName}-LowThresholdWellKnown5XXApiGwAlarm"
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      TreatMissingData: notBreaching
+      Threshold: 1
+      Metrics:
+        - Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+          Expression: IF((invocations>=4) && (errorSum5XX>=2),errorPercentage5XX,0)
+        - Id: invocations
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: Count
+              Dimensions:
+                - Name: Method
+                  Value: GET
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /.well-known/jwks.json
+            Period: 60
+            Stat: Sum
+        - Id: errorSum5XX
+          Label: "Number of 5XX errors"
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: 5XXError
+              Dimensions:
+                - Name: Method
+                  Value: GET
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /.well-known/jwks.json
+            Period: 60
+            Stat: Sum
+        - Id: errorPercentage5XX
+          Label: "Number of 5XX errors returned as a percentage"
+          ReturnData: false
+          Expression: (errorSum5XX/invocations) * 100
+
+  WellKnown5XXHighThresholdAlarm:    
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmDescription: "80% or more of requests are failing on the /.well-known/jwks.json endpoint"
+      AlarmName: !Sub "${AWS::StackName}-HighThresholdWellKnown5XXApiGwAlarm"
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      TreatMissingData: notBreaching
+      Threshold: 80
+      Metrics:
+        - Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+          Expression: IF(invocations>=10,errorPercentage5XX,0)
+        - Id: invocations
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: Count
+              Dimensions:
+                - Name: Method
+                  Value: GET
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /.well-known/jwks.json
+            Period: 60
+            Stat: Sum
+        - Id: errorSum5XX
+          Label: "Number of 5XX errors"
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: 5XXError
+              Dimensions:
+                - Name: Method
+                  Value: GET
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /.well-known/jwks.json
+            Period: 60
+            Stat: Sum
+        - Id: errorPercentage5XX
+          Label: "Number of 5XX errors returned as a percentage"
+          ReturnData: false
+          Expression: (errorSum5XX/invocations) * 100
 
 Outputs:
   SessionsApiUrl:

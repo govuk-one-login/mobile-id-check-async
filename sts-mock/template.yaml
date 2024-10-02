@@ -64,11 +64,10 @@ Conditions:
       - none
 
 Resources:
-### Public API gateway for STS Mock
   StsMockApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub ${AWS::StackName}-sts-mock-api
+      Name: !Sub ${AWS::StackName}-api
       Description: Public API gateway for STS Mock
       EndpointConfiguration: REGIONAL
       StageName: 
@@ -94,7 +93,7 @@ Resources:
   StsMockApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sts-mock-api-access-logs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-api-access-logs
       RetentionInDays: 30
 
   StsMockApiDomainName:
@@ -156,7 +155,6 @@ Resources:
                 Resource:
                   - !Sub ${JwksBucket.Arn}/.well-known/jwks.json
 
-### Token Lambda
   TokenFunction:
     DependsOn:
       - TokenFunctionLogGroup
@@ -182,12 +180,19 @@ Resources:
             Path: /token
             Method: post
             RestApiId: !Ref StsMockApi
-      Role: !GetAtt TokenFunctionLambdaRole.Arn
+      Role: !GetAtt TokenFunctionRole.Arn
       Environment:
         Variables:
           STS_MOCK_BASE_URL: !Sub https://${StsMockApiDomainName}
           ASYNC_BACKEND_BASE_URL: !Sub https://sessions-mob-async-backend.review-b-async.${Environment}.account.gov.uk
           KEY_STORAGE_BUCKET_NAME: !Ref JwksBucket
+      VpcConfig:
+        SubnetIds:
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
 
   TokenFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -204,7 +209,7 @@ Resources:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-token
 
-  TokenFunctionLambdaRole:
+  TokenFunctionRole:
     Type: AWS::IAM::Role
     Properties:
       Description: Execution role for the token function
@@ -220,18 +225,10 @@ Resources:
             Principal:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
       Policies:
-        - PolicyName: TokenFunctionLogsPolicy
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: arn:aws:logs:*:*:*
-        - PolicyName: TokenFunctionS3Policy
+        - PolicyName: S3ReadPolicy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
