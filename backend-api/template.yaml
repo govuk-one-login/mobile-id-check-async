@@ -265,7 +265,7 @@ Resources:
           - !ImportValue devplatform-vpc-PrivateSubnetIdB
           - !ImportValue devplatform-vpc-PrivateSubnetIdC
         SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+          - !Ref LambdaEgressSecurityGroup
 
   AsyncTokenFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -378,7 +378,7 @@ Resources:
           - !ImportValue devplatform-vpc-PrivateSubnetIdB
           - !ImportValue devplatform-vpc-PrivateSubnetIdC
         SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+          - !Ref LambdaEgressSecurityGroup
 
   AsyncCredentialLogGroup:
     Type: AWS::Logs::LogGroup
@@ -827,7 +827,7 @@ Resources:
           - !ImportValue devplatform-vpc-ProtectedSubnetIdB
           - !ImportValue devplatform-vpc-ProtectedSubnetIdC
         SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+          - !Ref LambdaEgressSecurityGroup
 
   AsyncActiveSessionFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -1149,7 +1149,7 @@ Resources:
           - !ImportValue devplatform-vpc-ProtectedSubnetIdB
           - !ImportValue devplatform-vpc-ProtectedSubnetIdC
         SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+          - !Ref LambdaEgressSecurityGroup
 
   JsonWebKeysFunctionLambdaRole:
     Type: AWS::IAM::Role
