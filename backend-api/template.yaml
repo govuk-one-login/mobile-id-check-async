@@ -127,9 +127,9 @@ Mappings:
 
   EnvironmentVariables:
     dev:
-      STSJWKSENDPOINT: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk/.well-known/jwks.json'
+      STSJWKSENDPOINT: 'https://sts-mock-ah.review-b-async.dev.account.gov.uk/.well-known/jwks.json'
     build:
-      STSJWKSENDPOINT: 'https://mob-sts-mock.review-b-async.build.account.gov.uk/.well-known/jwks.json'
+      STSJWKSENDPOINT: 'https://sts-mock-ah.review-b-async.build.account.gov.uk/.well-known/jwks.json'
     # staging:
     #   STSJWKSENDPOINT: '' TODO: Mock should only be used in dev and build. Update this value
     # integration:
@@ -1145,9 +1145,9 @@ Resources:
           JWKS_FILE_NAME: .well-known/jwks.json
       VpcConfig:
         SubnetIds:
-          - !ImportValue devplatform-vpc-PrivateSubnetIdA
-          - !ImportValue devplatform-vpc-PrivateSubnetIdB
-          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
 
