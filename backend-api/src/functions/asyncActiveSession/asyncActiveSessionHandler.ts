@@ -38,6 +38,10 @@ export async function lambdaHandlerConstructor(
   const getSubFromTokenResult = await tokenService.getSubFromToken(
     config.STS_JWKS_ENDPOINT,
     serviceToken,
+    {
+      maxAttempts: 3,
+      delayInMillis: 100,
+    },
   );
   if (getSubFromTokenResult.isError) {
     if (getSubFromTokenResult.value.errorCategory === "CLIENT_ERROR") {
