@@ -6,7 +6,7 @@ import {
   KMSClient,
 } from "@aws-sdk/client-kms";
 import { errorResult, Result, successResult } from "../utils/result";
-import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
+import { NodeHttpHandler } from "@smithy/node-http-handler";
 
 export class KMSAdapter implements IKmsAdapter {
   private readonly kmsClient = new KMSClient([
