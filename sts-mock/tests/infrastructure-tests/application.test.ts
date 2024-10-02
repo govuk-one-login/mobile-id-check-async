@@ -182,8 +182,17 @@ describe("STS mock infrastructure", () => {
       const lambdas = template.findResources("AWS::Serverless::Function");
       const lambdaList = Object.keys(lambdas);
       lambdaList.forEach((lambda) => {
-        expect(lambdas[lambda].Properties.VpcConfig.SubnetIds).toEqual([{"Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdA"}, {"Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdB"}, {"Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdC"}])
-        expect(lambdas[lambda].Properties.VpcConfig.SecurityGroupIds).toEqual([{"Fn::ImportValue": "devplatform-vpc-AWSServicesEndpointSecurityGroupId"}])
+        expect(lambdas[lambda].Properties.VpcConfig.SubnetIds).toEqual([
+          { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdA" },
+          { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdB" },
+          { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdC" },
+        ]);
+        expect(lambdas[lambda].Properties.VpcConfig.SecurityGroupIds).toEqual([
+          {
+            "Fn::ImportValue":
+              "devplatform-vpc-AWSServicesEndpointSecurityGroupId",
+          },
+        ]);
       });
     });
   });
