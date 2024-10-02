@@ -2,6 +2,7 @@ import { IKmsAdapter } from "../../adapters/kmsAdapter";
 import {
   RetryConfig,
   sendHttpRequest,
+  SuccessfulHttpResponse,
 } from "../../services/http/sendHttpRequest";
 import { errorResult, Result, successResult } from "../../utils/result";
 
@@ -94,11 +95,17 @@ export class TokenService implements ITokenService {
   }
 
   private async getJwksFromResponse(
-    response: Response,
+    response: SuccessfulHttpResponse,
   ): Promise<Result<IJwks>> {
     let jwks;
+    if (!response.body) {
+      return errorResult({
+        errorMessage: "Response body empty",
+        errorCategory: "SERVER_ERROR",
+      });
+    }
     try {
-      jwks = await response.json();
+      jwks = JSON.parse(response.body);
     } catch {
       return errorResult({
         errorMessage: "Invalid JSON in response",

@@ -17,19 +17,24 @@ describe("Token Service", () => {
       Promise.resolve({
         status: 200,
         ok: true,
-        json: () =>
-          Promise.resolve({
-            keys: [
-              {
-                kty: "mockKty",
-                x: "mockX",
-                y: "mockY",
-                crv: "mockCrv",
-                d: "mockD",
-                kid: "mockKid",
-              },
-            ],
-          }),
+        headers: new Headers({
+          header: "mockHeader",
+        }),
+        text: () =>
+          Promise.resolve(
+            JSON.stringify({
+              keys: [
+                {
+                  kty: "mockKty",
+                  x: "mockX",
+                  y: "mockY",
+                  crv: "mockCrv",
+                  d: "mockD",
+                  kid: "mockKid",
+                },
+              ],
+            }),
+          ),
       } as Response),
     );
   });
@@ -97,13 +102,49 @@ describe("Token Service", () => {
           });
         });
 
+        describe("Given the response is empty", () => {
+          it("Returns an error response", async () => {
+            mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
+              Promise.resolve({
+                status: 200,
+                ok: true,
+                headers: new Headers({
+                  header: "mockHeader",
+                }),
+                text: () => Promise.resolve(""),
+              } as Response),
+            );
+
+            const result = await tokenService.getSubFromToken(
+              "https://mockJwksEndpoint.com",
+              "mockJwe",
+              { maxAttempts: 3, delayInMillis: 1 },
+            );
+
+            expect(mockFetch).toHaveBeenCalledWith(
+              "https://mockJwksEndpoint.com",
+              {
+                method: "GET",
+              },
+            );
+            expect(result.isError).toBe(true);
+            expect(result.value).toStrictEqual({
+              errorMessage: "Response body empty",
+              errorCategory: "SERVER_ERROR",
+            });
+          });
+        });
+
         describe("Given the response is not valid JSON", () => {
           it("Returns an error response", async () => {
             mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
               Promise.resolve({
                 status: 200,
                 ok: true,
-                json: () => Promise.reject(new Error("mockInvalidJSON")),
+                headers: new Headers({
+                  header: "mockHeader",
+                }),
+                text: () => Promise.resolve("undefined"),
               } as Response),
             );
 
@@ -133,10 +174,15 @@ describe("Token Service", () => {
               Promise.resolve({
                 status: 200,
                 ok: true,
-                json: () =>
-                  Promise.resolve({
-                    keys: ["mockNotAnObject"],
-                  }),
+                headers: new Headers({
+                  header: "mockHeader",
+                }),
+                text: () =>
+                  Promise.resolve(
+                    JSON.stringify({
+                      keys: ["mockNotAnObject"],
+                    }),
+                  ),
               } as Response),
             );
 
@@ -173,19 +219,24 @@ describe("Token Service", () => {
                   Promise.resolve({
                     status: 200,
                     ok: true,
-                    json: () =>
-                      Promise.resolve({
-                        keys: [
-                          {
-                            kty: "mockKty",
-                            x: "mockX",
-                            y: "mockY",
-                            crv: "mockCrv",
-                            d: "mockD",
-                            kid: "mockKid",
-                          },
-                        ],
-                      }),
+                    headers: new Headers({
+                      header: "mockHeader",
+                    }),
+                    text: () =>
+                      Promise.resolve(
+                        JSON.stringify({
+                          keys: [
+                            {
+                              kty: "mockKty",
+                              x: "mockX",
+                              y: "mockY",
+                              crv: "mockCrv",
+                              d: "mockD",
+                              kid: "mockKid",
+                            },
+                          ],
+                        }),
+                      ),
                   } as Response),
                 );
 
@@ -219,19 +270,24 @@ describe("Token Service", () => {
                   Promise.resolve({
                     status: 200,
                     ok: true,
-                    json: () =>
-                      Promise.resolve({
-                        keys: [
-                          {
-                            kty: "mockKty",
-                            x: "mockX",
-                            y: "mockY",
-                            crv: "mockCrv",
-                            d: "mockD",
-                            kid: "mockKid",
-                          },
-                        ],
-                      }),
+                    headers: new Headers({
+                      header: "mockHeader",
+                    }),
+                    text: () =>
+                      Promise.resolve(
+                        JSON.stringify({
+                          keys: [
+                            {
+                              kty: "mockKty",
+                              x: "mockX",
+                              y: "mockY",
+                              crv: "mockCrv",
+                              d: "mockD",
+                              kid: "mockKid",
+                            },
+                          ],
+                        }),
+                      ),
                   } as Response),
                 );
 
