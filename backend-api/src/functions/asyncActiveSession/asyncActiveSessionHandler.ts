@@ -40,7 +40,7 @@ export async function lambdaHandlerConstructor(
     serviceToken,
     {
       maxAttempts: 3,
-      delayInMillis: 1000,
+      delayInMillis: 100,
     },
   );
   if (getSubFromTokenResult.isError) {
