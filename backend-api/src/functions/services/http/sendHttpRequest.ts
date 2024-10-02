@@ -72,16 +72,7 @@ export type RetryConfig = {
   delayInMillis?: number;
 };
 
-export type HttpMethod =
-  | "GET"
-  | "HEAD"
-  | "POST"
-  | "PUT"
-  | "DELETE"
-  | "CONNECT"
-  | "OPTIONS"
-  | "TRACE"
-  | "PATCH";
+export type HttpMethod = "GET";
 
 export type HttpHeaders = {
   [key: string]: string;
