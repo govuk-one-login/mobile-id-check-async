@@ -1,3 +1,9 @@
+import { IKmsAdapter } from "../../adapters/kmsAdapter";
+import {
+  RetryConfig,
+  sendHttpRequest,
+  SuccessfulHttpResponse,
+} from "../../services/http/sendHttpRequest";
 import { errorResult, Result, successResult } from "../../utils/result";
 import { KMSAdapter } from "../../adapters/kmsAdapter";
 
@@ -6,10 +12,25 @@ export class TokenService implements ITokenService {
     stsJwksEndpoint: string,
     encryptionKeyArn: string,
     jwe: string,
+    retryConfig: RetryConfig,
   ): Promise<Result<string>> => {
-    const fetchPublicKeyResult = await this.fetchPublicKey(stsJwksEndpoint);
-    if (fetchPublicKeyResult.isError) {
-      return fetchPublicKeyResult;
+    const stsJwksEndpointResponseResult = await sendHttpRequest(
+      { url: stsJwksEndpoint, method: "GET" },
+      retryConfig,
+    );
+
+    if (stsJwksEndpointResponseResult.isError) {
+      return stsJwksEndpointResponseResult;
+    }
+
+    const stsJwksEndpointResponse = stsJwksEndpointResponseResult.value;
+
+    const getJwksFromResponseResult = await this.getJwksFromResponse(
+      stsJwksEndpointResponse,
+    );
+
+    if (getJwksFromResponseResult.isError) {
+      return getJwksFromResponseResult;
     }
 
     const jweComponents = jwe.split(".");
@@ -31,45 +52,41 @@ export class TokenService implements ITokenService {
 
     const encryptedCek = jweComponents[1];
 
-    const decryptResult = await new KMSAdapter().decrypt(
-      encryptionKeyArn,
-      new Uint8Array(Buffer.from(encryptedCek, "base64")),
-    );
-    if (decryptResult.isError) {
-      return decryptResult;
-    }
+      const decryptResult = await new KMSAdapter().decrypt(
+          encryptionKeyArn,
+          new Uint8Array(Buffer.from(encryptedCek, "base64")),
+      );
+      if (decryptResult.isError) {
+          return decryptResult;
+      }
 
-    const cek = decryptResult.value;
-    console.log(cek);
+      // const cek = decryptResult.value;
 
     return successResult("");
   };
 
-  private readonly fetchPublicKey = async (
-    stsJwksEndpoint: string,
-  ): Promise<Result<JSON>> => {
-    let response;
-    try {
-      response = await fetch(stsJwksEndpoint, {
-        method: "GET",
-      });
-    } catch {
+  private readonly isJwks = (data: unknown): data is IJwks => {
+    return (
+      typeof data === "object" &&
+      data !== null &&
+      "keys" in data &&
+      Array.isArray(data.keys) &&
+      data.keys.every((key) => typeof key === "object" && key !== null)
+    );
+  };
+
+  private async getJwksFromResponse(
+    response: SuccessfulHttpResponse,
+  ): Promise<Result<IJwks>> {
+    let jwks;
+    if (!response.body) {
       return errorResult({
-        errorMessage: "Unexpected error retrieving STS public key",
+        errorMessage: "Response body empty",
         errorCategory: "SERVER_ERROR",
       });
     }
-
-    if (!response.ok) {
-      return errorResult({
-        errorMessage: "Error retrieving STS public key",
-        errorCategory: "SERVER_ERROR",
-      });
-    }
-
-    let publicKey;
     try {
-      publicKey = await response.json();
+      jwks = JSON.parse(response.body);
     } catch {
       return errorResult({
         errorMessage: "Invalid JSON in response",
@@ -77,8 +94,15 @@ export class TokenService implements ITokenService {
       });
     }
 
-    return successResult(publicKey);
-  };
+    if (!this.isJwks(jwks)) {
+      return errorResult({
+        errorMessage: "Response does not match the expected JWKS structure",
+        errorCategory: "SERVER_ERROR",
+      });
+    }
+
+    return successResult(jwks);
+  }
 }
 
 export interface ITokenService {
@@ -86,5 +110,10 @@ export interface ITokenService {
     stsJwksEndpoint: string,
     encryptionKeyArn: string,
     jwe: string,
+    retryConfig: RetryConfig,
   ) => Promise<Result<string>>;
+}
+
+interface IJwks {
+  keys: object[];
 }
