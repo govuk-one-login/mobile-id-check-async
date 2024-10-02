@@ -576,7 +576,7 @@ Resources:
         HostedZoneId: !GetAtt ProxyApiDomainName.RegionalHostedZoneId
     Condition: ProxyApiDeployment
 
-  ProxyLambdaSecurityGroup:
+  LambdaEgressSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: !Sub ${AWS::StackName}-proxy-sg
@@ -626,7 +626,7 @@ Resources:
           - !ImportValue devplatform-vpc-PrivateSubnetIdB
           - !ImportValue devplatform-vpc-PrivateSubnetIdC
         SecurityGroupIds:
-          - !Ref ProxyLambdaSecurityGroup
+          - !Ref LambdaEgressSecurityGroup
     Condition: ProxyApiDeployment
 
   ProxyLambdaLogGroup:
