@@ -13,8 +13,6 @@ import { KMSAdapter } from "../adapters/kmsAdapter";
 const env = {
   STS_JWKS_ENDPOINT: "https://mockUrl.com",
   ENCRYPTION_KEY_ARN: "mockEncryptionKeyArn",
-  STS_JWKS_ENDPOINT_RETRY_DELAY_IN_MS: "1000",
-  STS_JWKS_ENDPOINT_MAX_ATTEMPTS: "3",
 };
 
 describe("Async Active Session", () => {

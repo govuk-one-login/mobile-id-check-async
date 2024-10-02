@@ -4,8 +4,6 @@ import { errorResult, Result, successResult } from "../../utils/result";
 export interface Config {
   ENCRYPTION_KEY_ARN: string;
   STS_JWKS_ENDPOINT: string;
-  STS_JWKS_ENDPOINT_RETRY_DELAY_IN_MS: number;
-  STS_JWKS_ENDPOINT_MAX_ATTEMPTS: number;
 }
 
 export class ConfigService implements IGetConfig<Config> {
@@ -32,28 +30,9 @@ export class ConfigService implements IGetConfig<Config> {
       });
     }
 
-    if (!env.STS_JWKS_ENDPOINT_RETRY_DELAY_IN_MS) {
-      return errorResult({
-        errorMessage: "No STS_JWKS_ENDPOINT_RETRY_DELAY_IN_MS",
-        errorCategory: "SERVER_ERROR",
-      });
-    }
-    if (!env.STS_JWKS_ENDPOINT_MAX_ATTEMPTS) {
-      return errorResult({
-        errorMessage: "No STS_JWKS_ENDPOINT_MAX_ATTEMPTS",
-        errorCategory: "SERVER_ERROR",
-      });
-    }
-
     return successResult({
       ENCRYPTION_KEY_ARN: env.ENCRYPTION_KEY_ARN,
       STS_JWKS_ENDPOINT: env.STS_JWKS_ENDPOINT,
-      STS_JWKS_ENDPOINT_RETRY_DELAY_IN_MS: parseInt(
-        env.STS_JWKS_ENDPOINT_RETRY_DELAY_IN_MS,
-      ),
-      STS_JWKS_ENDPOINT_MAX_ATTEMPTS: parseInt(
-        env.STS_JWKS_ENDPOINT_MAX_ATTEMPTS,
-      ),
     });
   };
 }

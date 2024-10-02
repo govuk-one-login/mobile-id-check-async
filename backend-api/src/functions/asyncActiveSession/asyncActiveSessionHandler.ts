@@ -39,8 +39,8 @@ export async function lambdaHandlerConstructor(
     config.STS_JWKS_ENDPOINT,
     serviceToken,
     {
-      maxAttempts: config.STS_JWKS_ENDPOINT_MAX_ATTEMPTS,
-      delayInMillis: config.STS_JWKS_ENDPOINT_RETRY_DELAY_IN_MS,
+      maxAttempts: 3,
+      delayInMillis: 1000,
     },
   );
   if (getSubFromTokenResult.isError) {
