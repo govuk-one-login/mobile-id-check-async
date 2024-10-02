@@ -190,10 +190,12 @@ describe("Async Token", () => {
           expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
             errorMessage: "Missing authorization header",
           });
-          expect(result.statusCode).toBe(400);
-          expect(JSON.parse(result.body).error).toEqual("invalid_client");
+          expect(result.statusCode).toBe(401);
+          expect(JSON.parse(result.body).error).toEqual(
+            "invalid_authorization_header",
+          );
           expect(JSON.parse(result.body).error_description).toEqual(
-            "Supplied client credentials not recognised",
+            "Invalid authorization header",
           );
         });
       });
@@ -217,10 +219,12 @@ describe("Async Token", () => {
           expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
             errorMessage: "Missing authorization header",
           });
-          expect(result.statusCode).toBe(400);
-          expect(JSON.parse(result.body).error).toEqual("invalid_client");
+          expect(result.statusCode).toBe(401);
+          expect(JSON.parse(result.body).error).toEqual(
+            "invalid_authorization_header",
+          );
           expect(JSON.parse(result.body).error_description).toEqual(
-            "Supplied client credentials not recognised",
+            "Invalid authorization header",
           );
         });
       });
@@ -244,10 +248,12 @@ describe("Async Token", () => {
           expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
             errorMessage: "Missing authorization header",
           });
-          expect(result.statusCode).toBe(400);
-          expect(JSON.parse(result.body).error).toEqual("invalid_client");
+          expect(result.statusCode).toBe(401);
+          expect(JSON.parse(result.body).error).toEqual(
+            "invalid_authorization_header",
+          );
           expect(JSON.parse(result.body).error_description).toEqual(
-            "Supplied client credentials not recognised",
+            "Invalid authorization header",
           );
         });
       });
@@ -272,10 +278,12 @@ describe("Async Token", () => {
           expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
             errorMessage: "Invalid authorization header",
           });
-          expect(result.statusCode).toBe(400);
-          expect(JSON.parse(result.body).error).toEqual("invalid_client");
+          expect(result.statusCode).toBe(401);
+          expect(JSON.parse(result.body).error).toEqual(
+            "invalid_authorization_header",
+          );
           expect(JSON.parse(result.body).error_description).toEqual(
-            "Supplied client credentials not recognised",
+            "Invalid authorization header",
           );
         });
       });
@@ -301,10 +309,12 @@ describe("Async Token", () => {
           expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
             errorMessage: "Client secret incorrectly formatted",
           });
-          expect(result.statusCode).toBe(400);
-          expect(JSON.parse(result.body).error).toEqual("invalid_client");
+          expect(result.statusCode).toBe(401);
+          expect(JSON.parse(result.body).error).toEqual(
+            "invalid_authorization_header",
+          );
           expect(JSON.parse(result.body).error_description).toEqual(
-            "Supplied client credentials not recognised",
+            "Invalid authorization header",
           );
         });
       });
