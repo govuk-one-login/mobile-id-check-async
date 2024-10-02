@@ -275,7 +275,7 @@ paths:
                   - error
                   - error_description
         '401':
-          description: Bad request
+          description: Unauthorized
           content:
             application/json:
               examples:
