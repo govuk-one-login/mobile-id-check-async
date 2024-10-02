@@ -49,6 +49,34 @@ sh generate_env_file.sh <stack_name>
 npm run test:api
 ```
 
+## Deploying a custom stack into Dev
+
+### Deploy a custom STS Mock stack
+
+Follow the instructions in STS Mock [README](../sts-mock/README.md) to deploy the custom STS Mock stack.
+Ensure the deployment includes an update to the `ASYNC_BACKEND_BASE_URL` environment variable which can be found in the STS Mock [template](../sts-mock/template.yaml). The new value for this URL should be:
+
+```bash
+https://sessions-<your-be-api-stack-name>.review-b-async.dev.account.gov.uk
+```
+
+Please note, although you have not deployed your backend-api stack at this point, you can still decide what that name will be and use the value here.
+
+### Update Environment Variables for Backend API
+In the backend-api [template](template.yaml), update the environment variable `STSJWKSENDPOINT` for the dev environment with the following value:
+
+```bash
+<your-sts-mock-stack-name>-sts-mock.review-b-async.dev.account.gov.uk/.well-known/jwks.json
+```
+
+### Deploy backend-api
+
+Assume the relevant AWS credentials and use the following command:
+
+```bash
+sam build && sam deploy --stack-name <your-be-api-stack-name> --capabilities CAPABILITY_NAMED_IAM --resolve-s3
+```
+
 ## Formatting
 
 This repository uses Prettier as an opinionated formatter to ensure code style is consistent.
