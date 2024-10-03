@@ -5,11 +5,8 @@ import {
 } from "../services/clientRegistryService/clientRegistryService";
 import { IEventService, EventService } from "../services/events/eventService";
 import { MessageName, registeredLogs } from "./registeredLogs";
-import {
-  IGetActiveSession,
-  ICreateSession,
-  SessionService,
-} from "./sessionService/sessionService";
+import { DynamoDbSessionRepository } from "../repositories/session/dynamoDbSessionRepository";
+import { ISessionRepository } from "../repositories/session/sessionRepository";
 import {
   IDecodeToken,
   IVerifyTokenSignature,
@@ -24,7 +21,7 @@ export interface IAsyncCredentialDependencies {
   clientRegistryService: (
     clientRegistryParameterName: string,
   ) => IGetPartialRegisteredClientByClientId;
-  sessionService: (tableName: string) => IGetActiveSession & ICreateSession;
+  dynamoDbSessionRepository: (tableName: string) => ISessionRepository;
   env: NodeJS.ProcessEnv;
 }
 
@@ -35,5 +32,6 @@ export const dependencies: IAsyncCredentialDependencies = {
   clientRegistryService: (clientRegistryParameterName: string) =>
     new ClientRegistryService(clientRegistryParameterName),
   tokenService: () => new TokenService(),
-  sessionService: (tableName: string) => new SessionService(tableName),
+  dynamoDbSessionRepository: (tableName: string) =>
+    new DynamoDbSessionRepository(tableName),
 };

@@ -150,24 +150,24 @@ export async function lambdaHandlerConstructor(
   }
 
   // Create a session
-  const sessionService = dependencies.sessionService(config.SESSION_TABLE_NAME);
-
-  const activeSessionResult = await sessionService.getActiveSession(
-    requestBody.sub,
+  const sessionRepository = dependencies.dynamoDbSessionRepository(
+    config.SESSION_TABLE_NAME,
   );
+
+  const activeSessionResult = await sessionRepository.read(requestBody.sub);
   if (activeSessionResult.isError) {
     logger.log("ERROR_RETRIEVING_SESSION", {
       errorMessage: activeSessionResult.value.errorMessage,
     });
     return serverError500Response;
   }
-  if (activeSessionResult.value) {
-    logger.setSessionId({ sessionId: activeSessionResult.value });
+  if (activeSessionResult.value !== null) {
+    logger.setSessionId({ sessionId: activeSessionResult.value.sessionId });
     logger.log("COMPLETED");
     return activeSessionFoundResponse(requestBody.sub);
   }
 
-  const createSessionResult = await sessionService.createSession({
+  const createSessionResult = await sessionRepository.create({
     ...requestBody,
     issuer: jwtPayload.iss,
     sessionDurationInSeconds: config.SESSION_DURATION_IN_SECONDS,
