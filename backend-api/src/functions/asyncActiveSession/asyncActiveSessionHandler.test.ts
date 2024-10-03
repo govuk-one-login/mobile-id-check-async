@@ -8,7 +8,6 @@ import { Logger } from "../services/logging/logger";
 import { MockJWTBuilder } from "../testUtils/mockJwt";
 import { errorResult, Result } from "../utils/result";
 import { ITokenService, TokenService } from "./tokenService/tokenService";
-import { KMSAdapter } from "../adapters/kmsAdapter";
 
 const env = {
   STS_JWKS_ENDPOINT: "https://mockUrl.com",
@@ -24,9 +23,7 @@ describe("Async Active Session", () => {
     dependencies = {
       env,
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
-      kmsAdapter: () => new KMSAdapter("mockEncryptionKeyArn"),
-      tokenService: () =>
-        new TokenService(new KMSAdapter("mockEncryptionKeyArn")),
+      tokenService: () => new TokenService(),
     };
   });
 

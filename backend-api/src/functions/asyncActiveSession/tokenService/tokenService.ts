@@ -1,20 +1,15 @@
-import { IKmsAdapter } from "../../adapters/kmsAdapter";
 import {
   RetryConfig,
   sendHttpRequest,
   SuccessfulHttpResponse,
 } from "../../services/http/sendHttpRequest";
 import { errorResult, Result, successResult } from "../../utils/result";
+import { KMSAdapter } from "../../adapters/kmsAdapter";
 
 export class TokenService implements ITokenService {
-  private readonly kmsAdapter: IKmsAdapter;
-
-  constructor(kmsAdapter: IKmsAdapter) {
-    this.kmsAdapter = kmsAdapter;
-  }
-
   getSubFromToken = async (
     stsJwksEndpoint: string,
+    encryptionKeyArn: string,
     jwe: string,
     retryConfig: RetryConfig,
   ): Promise<Result<string>> => {
@@ -56,12 +51,15 @@ export class TokenService implements ITokenService {
 
     const encryptedCek = jweComponents[1];
 
-    const getCekResult = await this.getCek(
+    const decryptResult = await new KMSAdapter().decrypt(
+      encryptionKeyArn,
       new Uint8Array(Buffer.from(encryptedCek, "base64")),
     );
-    if (getCekResult.isError) {
-      return getCekResult;
+    if (decryptResult.isError) {
+      return decryptResult;
     }
+
+    // const cek = decryptResult.value;
 
     return successResult("");
   };
@@ -75,24 +73,6 @@ export class TokenService implements ITokenService {
       data.keys.every((key) => typeof key === "object" && key !== null)
     );
   };
-
-  private async getCek(encryptedCek: Uint8Array): Promise<Result<Uint8Array>> {
-    const decryptCekResult = await this.kmsAdapter.decrypt(encryptedCek);
-    if (decryptCekResult.isError) {
-      return decryptCekResult;
-    }
-
-    const cek = decryptCekResult.value.Plaintext ?? null;
-    if (cek === null) {
-      return errorResult({
-        errorMessage:
-          "No Plaintext received when calling KMS to decrypt the Content Encryption Key",
-        errorCategory: "SERVER_ERROR",
-      });
-    }
-
-    return successResult(cek);
-  }
 
   private async getJwksFromResponse(
     response: SuccessfulHttpResponse,
@@ -127,6 +107,7 @@ export class TokenService implements ITokenService {
 export interface ITokenService {
   getSubFromToken: (
     stsJwksEndpoint: string,
+    encryptionKeyArn: string,
     jwe: string,
     retryConfig: RetryConfig,
   ) => Promise<Result<string>>;

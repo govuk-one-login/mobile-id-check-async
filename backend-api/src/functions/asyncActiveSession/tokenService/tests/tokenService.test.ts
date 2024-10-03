@@ -5,14 +5,13 @@ import {
 } from "@aws-sdk/client-kms";
 import { ITokenService, TokenService } from "../tokenService";
 import { mockClient } from "aws-sdk-client-mock";
-import { KMSAdapter } from "../../../adapters/kmsAdapter";
 
 describe("Token Service", () => {
   let mockFetch: jest.SpyInstance;
   let tokenService: ITokenService;
 
   beforeEach(() => {
-    tokenService = new TokenService(new KMSAdapter("mockEncryptionKeyArn"));
+    tokenService = new TokenService();
     mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
       Promise.resolve({
         status: 200,
@@ -54,6 +53,7 @@ describe("Token Service", () => {
 
             const result = await tokenService.getSubFromToken(
               "https://mockJwksEndpoint.com",
+              "mockEncryptionKeyArn",
               "mockJwe",
               { maxAttempts: 3, delayInMillis: 1 },
             );
@@ -84,6 +84,7 @@ describe("Token Service", () => {
 
             const result = await tokenService.getSubFromToken(
               "https://mockJwksEndpoint.com",
+              "mockEncryptionKeyArn",
               "mockJwe",
               { maxAttempts: 3, delayInMillis: 1 },
             );
@@ -117,6 +118,7 @@ describe("Token Service", () => {
 
             const result = await tokenService.getSubFromToken(
               "https://mockJwksEndpoint.com",
+              "mockEncryptionKeyArn",
               "mockJwe",
               { maxAttempts: 3, delayInMillis: 1 },
             );
@@ -150,6 +152,7 @@ describe("Token Service", () => {
 
             const result = await tokenService.getSubFromToken(
               "https://mockJwksEndpoint.com",
+              "mockEncryptionKeyArn",
               "mockJwe",
               { maxAttempts: 3, delayInMillis: 1 },
             );
@@ -188,6 +191,7 @@ describe("Token Service", () => {
 
             const result = await tokenService.getSubFromToken(
               "https://mockJwksEndpoint.com",
+              "mockEncryptionKeyArn",
               "mockJwe",
               { maxAttempts: 3, delayInMillis: 1 },
             );
@@ -242,6 +246,7 @@ describe("Token Service", () => {
 
               await tokenService.getSubFromToken(
                 "https://mockJwksEndpoint.com",
+                "mockEncryptionKeyArn",
                 "mockJwe",
                 { maxAttempts: 3, delayInMillis: 1 },
               );
@@ -293,6 +298,7 @@ describe("Token Service", () => {
 
               await tokenService.getSubFromToken(
                 "https://mockJwksEndpoint.com",
+                "mockEncryptionKeyArn",
                 "mockJwe",
                 { maxAttempts: 3, delayInMillis: 1 },
               );
@@ -323,6 +329,7 @@ describe("Token Service", () => {
 
               const result = await tokenService.getSubFromToken(
                 "https://mockJwksEndpoint.com",
+                "mockEncryptionKeyArn",
                 "mockJwe",
                 { maxAttempts: 3, delayInMillis: 1 },
               );
@@ -349,11 +356,9 @@ describe("Token Service", () => {
     describe("Decrypting token", () => {
       describe("Given the JWE does not consist of five components", () => {
         it("Returns an error result", async () => {
-          const kmsMock = mockClient(KMSClient);
-          kmsMock.on(DecryptCommand).resolves({});
-
           const result = await tokenService.getSubFromToken(
             "https://mockJwksEndpoint.com",
+            "mockEncryptionKeyArn",
             "one.two.three.four",
             { maxAttempts: 3, delayInMillis: 1 },
           );
@@ -366,8 +371,8 @@ describe("Token Service", () => {
         });
       });
 
-      describe("Given there is a server error when calling KMS", () => {
-        it("Returns an error result", async () => {
+      describe("Given an error happens when calling KMS to decrypt the key", () => {
+        it("Returns a SERVER_ERROR error result", async () => {
           const kmsMock = mockClient(KMSClient);
           kmsMock.on(DecryptCommand).rejects(
             new KeyUnavailableException({
@@ -378,13 +383,14 @@ describe("Token Service", () => {
 
           const result = await tokenService.getSubFromToken(
             "https://mockJwksEndpoint.com",
+            "mockEncryptionKeyArn",
             "one.two.three.four.five",
             { maxAttempts: 3, delayInMillis: 1 },
           );
 
           expect(result.isError).toBe(true);
           expect(result.value).toStrictEqual({
-            errorMessage: "Error decrypting key with KMS",
+            errorMessage: "Error decrypting data with KMS",
             errorCategory: "SERVER_ERROR",
           });
         });
@@ -397,14 +403,14 @@ describe("Token Service", () => {
 
           const result = await tokenService.getSubFromToken(
             "https://mockJwksEndpoint.com",
+            "mockEncryptionKeyArn",
             "one.two.three.four.five",
             { maxAttempts: 3, delayInMillis: 1 },
           );
 
           expect(result.isError).toBe(true);
           expect(result.value).toStrictEqual({
-            errorMessage:
-              "No Plaintext received when calling KMS to decrypt the Content Encryption Key",
+            errorMessage: "Decrypted plaintext data was null",
             errorCategory: "SERVER_ERROR",
           });
         });
