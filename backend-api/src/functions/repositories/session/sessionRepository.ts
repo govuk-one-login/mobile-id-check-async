@@ -18,11 +18,11 @@ export type CreateSessionAttributes = {
 export type Session = {
   clientId: string;
   govukSigninJourneyId: string;
-  createdAt: string;
+  createdAt: number;
   issuer: string;
   sessionId: string;
-  sessionState: "ASYNC_AUTH_SESSION_CREATED";
+  sessionState: string;
   state: string;
   subjectIdentifier: string;
-  timeToLive: string;
+  timeToLive: number;
 };

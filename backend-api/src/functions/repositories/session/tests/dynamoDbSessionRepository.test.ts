@@ -5,7 +5,7 @@ import {
   QueryCommand,
 } from "@aws-sdk/client-dynamodb";
 import { mockClient } from "aws-sdk-client-mock";
-import { DynamoDbSessionRepository } from "./dynamoDbSessionRepository";
+import { DynamoDbSessionRepository } from "../dynamoDbSessionRepository";
 
 describe("DynamoDB Session Repository", () => {
   let dynamoDbSessionRepository: DynamoDbSessionRepository;

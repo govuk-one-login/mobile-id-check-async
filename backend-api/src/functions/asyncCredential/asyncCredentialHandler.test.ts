@@ -27,12 +27,12 @@ import {
   MockClientRegistryServiceGetPartialClientSuccessResult,
 } from "../services/clientRegistryService/tests/mocks";
 import {
-  MockSessionServiceCreateSessionErrorResult,
-  MockSessionServiceCreateSessionSuccessResult,
-  MockSessionServiceGetActiveSessionSuccessResult,
-  MockSessionServiceGetSessionBySubErrorResult,
-  MockSessionServiceNoActiveSession,
-} from "./sessionService/tests/mocks";
+  MockDynamoDbSessionRepositoryReadErrorResult,
+  MockDynamoDbSessionRepositoryNoSessionFound,
+  MockDynamoDbSessionRepositorySessionFound,
+  MockDynamoDbSessionRepositoryCreateErrorResult,
+  MockDynamoDbSessionRepositorySessionCreated,
+} from "../repositories/session/tests/mocks";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -55,8 +55,8 @@ describe("Async Credential", () => {
       tokenService: () => new MockTokenServiceSuccess(),
       clientRegistryService: () =>
         new MockClientRegistryServiceGetPartialClientSuccessResult(),
-      sessionService: () =>
-        new MockSessionServiceNoActiveSession(env.SESSION_TABLE_NAME),
+      dynamoDbSessionRepository: () =>
+        new MockDynamoDbSessionRepositoryNoSessionFound(env.SESSION_TABLE_NAME),
       env,
     };
   });
@@ -751,8 +751,8 @@ describe("Async Credential", () => {
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
             }),
           });
-          dependencies.sessionService = () =>
-            new MockSessionServiceGetSessionBySubErrorResult(
+          dependencies.dynamoDbSessionRepository = () =>
+            new MockDynamoDbSessionRepositoryReadErrorResult(
               env.SESSION_TABLE_NAME,
             );
 
@@ -762,7 +762,7 @@ describe("Async Credential", () => {
             "ERROR_RETRIEVING_SESSION",
           );
           expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-            errorMessage: "Mock failing DB call",
+            errorMessage: "Mock error",
           });
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
@@ -789,8 +789,8 @@ describe("Async Credential", () => {
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
             }),
           });
-          dependencies.sessionService = () =>
-            new MockSessionServiceGetActiveSessionSuccessResult(
+          dependencies.dynamoDbSessionRepository = () =>
+            new MockDynamoDbSessionRepositorySessionFound(
               env.SESSION_TABLE_NAME,
             );
 
@@ -829,8 +829,8 @@ describe("Async Credential", () => {
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
             }),
           });
-          dependencies.sessionService = () =>
-            new MockSessionServiceCreateSessionErrorResult(
+          dependencies.dynamoDbSessionRepository = () =>
+            new MockDynamoDbSessionRepositoryCreateErrorResult(
               env.SESSION_TABLE_NAME,
             );
 
@@ -870,8 +870,8 @@ describe("Async Credential", () => {
             });
             dependencies.eventService = () =>
               new MockEventServiceFailToWrite("DCMAW_ASYNC_CRI_START");
-            dependencies.sessionService = () =>
-              new MockSessionServiceCreateSessionSuccessResult(
+            dependencies.dynamoDbSessionRepository = () =>
+              new MockDynamoDbSessionRepositorySessionCreated(
                 env.SESSION_TABLE_NAME,
               );
 
@@ -910,8 +910,8 @@ describe("Async Credential", () => {
             });
             const mockEventService = new MockEventWriterSuccess();
             dependencies.eventService = () => mockEventService;
-            dependencies.sessionService = () =>
-              new MockSessionServiceCreateSessionSuccessResult(
+            dependencies.dynamoDbSessionRepository = () =>
+              new MockDynamoDbSessionRepositorySessionCreated(
                 env.SESSION_TABLE_NAME,
               );
 
