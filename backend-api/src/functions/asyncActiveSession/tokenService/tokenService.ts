@@ -65,8 +65,6 @@ export class TokenService implements ITokenService {
       return decryptedJweResult
     }
 
-    console.log("What is this?", decryptedJweResult);
-
     return successResult("");
   };
 
@@ -130,16 +128,24 @@ export class TokenService implements ITokenService {
       })
     }
 
-    const decryptedBuffer = await webcrypto.subtle.decrypt(
-      {
-        name: "AES-GCM",
-        iv,
-        additionalData,
-        tagLength: 128,
-      },
-      cek,
-      Buffer.concat([new Uint8Array(ciphertext), new Uint8Array(tag)]),
-    );
+    let decryptedBuffer: ArrayBuffer
+    try {
+      decryptedBuffer = await webcrypto.subtle.decrypt(
+        {
+          name: "AES-GCM",
+          iv,
+          additionalData,
+          tagLength: 128,
+        },
+        cek,
+        Buffer.concat([new Uint8Array(ciphertext), new Uint8Array(tag)]),
+      );
+    } catch (error) {
+      return errorResult({
+        errorMessage: `Error decrypting JWE. ${error}`,
+        errorCategory: "SERVER_ERROR"
+      })
+    }
 
     return successResult(new Uint8Array(decryptedBuffer));
   }
