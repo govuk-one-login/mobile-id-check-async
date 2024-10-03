@@ -68,6 +68,7 @@ describe("Async Credential", () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
         delete dependencies.env[envVar];
         const event = buildRequest();
+
         const result = await lambdaHandlerConstructor(dependencies, event);
 
         expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
@@ -76,7 +77,6 @@ describe("Async Credential", () => {
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
           errorMessage: `No ${envVar}`,
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 500,
@@ -94,6 +94,7 @@ describe("Async Credential", () => {
         dependencies.env["SESSION_DURATION_IN_SECONDS"] =
           "mockInvalidSessionTtlSecs";
         const event = buildRequest();
+
         const result = await lambdaHandlerConstructor(dependencies, event);
 
         expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
@@ -102,7 +103,6 @@ describe("Async Credential", () => {
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
           errorMessage: "SESSION_DURATION_IN_SECONDS is not a valid number",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 500,
@@ -131,7 +131,6 @@ describe("Async Credential", () => {
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
           errorMessage: "No Authentication header present",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -161,7 +160,6 @@ describe("Async Credential", () => {
           errorMessage:
             "Invalid authentication header format - does not start with Bearer",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -191,7 +189,6 @@ describe("Async Credential", () => {
           errorMessage:
             "Invalid authentication header format - contains spaces",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -220,7 +217,6 @@ describe("Async Credential", () => {
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
           errorMessage: "Invalid authentication header format - missing token",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -240,7 +236,6 @@ describe("Async Credential", () => {
         const event = buildRequest({
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
-
         dependencies.tokenService = () =>
           new MockTokenServiceGetDecodedTokenErrorResult();
 
@@ -255,7 +250,6 @@ describe("Async Credential", () => {
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
           errorMessage: "Mock decoding token error",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -276,7 +270,6 @@ describe("Async Credential", () => {
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           body: undefined,
         });
-
         dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
@@ -290,7 +283,6 @@ describe("Async Credential", () => {
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
           errorMessage: "Missing request body",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -317,7 +309,6 @@ describe("Async Credential", () => {
             headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
             body: invalidJson,
           });
-
           dependencies.tokenService = () => new MockTokenServiceSuccess();
 
           const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
@@ -331,7 +322,6 @@ describe("Async Credential", () => {
           expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
             errorMessage: "Invalid JSON in request body",
           });
-
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
@@ -351,7 +341,6 @@ describe("Async Credential", () => {
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           body: JSON.stringify({}),
         });
-
         dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
@@ -365,7 +354,6 @@ describe("Async Credential", () => {
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
           errorMessage: "Missing state in request body",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -386,7 +374,6 @@ describe("Async Credential", () => {
             state: "mockState",
           }),
         });
-
         dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
@@ -400,7 +387,6 @@ describe("Async Credential", () => {
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
           errorMessage: "Missing sub in request body",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -422,7 +408,6 @@ describe("Async Credential", () => {
             sub: "mockSub",
           }),
         });
-
         dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
@@ -436,7 +421,6 @@ describe("Async Credential", () => {
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
           errorMessage: "Missing client_id in request body",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -459,7 +443,6 @@ describe("Async Credential", () => {
             client_id: "mockInvalidClientId",
           }),
         });
-
         dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
@@ -474,7 +457,6 @@ describe("Async Credential", () => {
           errorMessage:
             "client_id in request body does not match value in access_token",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -497,7 +479,6 @@ describe("Async Credential", () => {
             client_id: "mockClientId",
           }),
         });
-
         dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
@@ -511,7 +492,6 @@ describe("Async Credential", () => {
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
           errorMessage: "Missing govuk_signin_journey_id in request body",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -536,7 +516,6 @@ describe("Async Credential", () => {
             redirect_uri: "mockInvalidUrl",
           }),
         });
-
         dependencies.tokenService = () => new MockTokenServiceSuccess();
 
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
@@ -550,7 +529,6 @@ describe("Async Credential", () => {
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
           errorMessage: "redirect_uri in request body is not a URL",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -569,7 +547,6 @@ describe("Async Credential", () => {
         it("Returns 500 Internal error", async () => {
           dependencies.tokenService = () =>
             new MockTokenServiceUnexpectedErrorResult();
-
           const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
             headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
@@ -607,7 +584,6 @@ describe("Async Credential", () => {
         it("Returns 401 Unauthorized", async () => {
           dependencies.tokenService = () =>
             new MockTokenServiceInvalidSignatureErrorResult();
-
           const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
             headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
@@ -746,7 +722,6 @@ describe("Async Credential", () => {
               return Promise.resolve(successResult(null));
             }
           }
-
           dependencies.tokenService = () => new MockTokenServiceInvalidIssuer();
 
           const result = await lambdaHandlerConstructor(dependencies, event);
@@ -830,7 +805,6 @@ describe("Async Credential", () => {
           expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
             errorMessage: "Mock failing DB call",
           });
-
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 500,
@@ -866,11 +840,9 @@ describe("Async Credential", () => {
           expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
             "COMPLETED",
           );
-
           expect(mockLogger.getLogMessages()[0].logMessage.sessionId).toBe(
             "mockSessionId",
           );
-
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 200,
@@ -952,7 +924,6 @@ describe("Async Credential", () => {
             expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
               "Unexpected error writing the DCMAW_ASYNC_CRI_START event",
             );
-
             expect(result).toStrictEqual({
               headers: { "Content-Type": "application/json" },
               statusCode: 500,
@@ -978,7 +949,6 @@ describe("Async Credential", () => {
                 govuk_signin_journey_id: "mockGovukSigninJourneyId",
               }),
             });
-
             const mockEventService = new MockEventWriterSuccess();
             dependencies.eventService = () => mockEventService;
             dependencies.sessionService = () =>
@@ -991,15 +961,12 @@ describe("Async Credential", () => {
             expect(mockEventService.auditEvents[0]).toEqual(
               "DCMAW_ASYNC_CRI_START",
             );
-
             expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
               "COMPLETED",
             );
-
             expect(mockLogger.getLogMessages()[0].logMessage.sessionId).toEqual(
               "mockSessionId",
             );
-
             expect(result).toStrictEqual({
               headers: { "Content-Type": "application/json" },
               statusCode: 201,
