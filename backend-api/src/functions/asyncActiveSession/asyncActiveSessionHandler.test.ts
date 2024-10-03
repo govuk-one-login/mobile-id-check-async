@@ -278,7 +278,6 @@ describe("Async Active Session", () => {
         expect(mockLoggingAdapter.getLogMessages()[0].logMessage.message).toBe(
           "STARTED",
         );
-
         expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
           "COMPLETED",
         );
