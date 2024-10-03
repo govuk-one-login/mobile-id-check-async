@@ -109,18 +109,11 @@ paths:
           content:
             application/json:
               examples:
-                errorInvalidClient:
-                  description: |
-                    Client authentication failed, which could be caused by the request containing an invalid client ID.
-                    To resolve, check your client ID matches the client ID you had when you [registered your service to use GOV.UK One Login](https://docs.sign-in.service.gov.uk/integrate-with-integration-environment/manage-your-service-s-configuration/#register-your-service-to-use-gov-uk-one-login).
-                  value:
-                    {
-                      "error": "invalid_client",
-                      "error_description": "Invalid client"
-                    }
                 errorInvalidGrant:
                   description: |
                     The grant type is missing or the value provided is not supported by the server.
+                    OR
+                    Client authentication failed because the client ID provided is not a registered one. To resolve, check your client ID matches the client ID you had when you [registered your service to use GOV.UK One Login](https://docs.sign-in.service.gov.uk/integrate-with-integration-environment/manage-your-service-s-configuration/#register-your-service-to-use-gov-uk-one-login).
                   value:
                     {
                       "error": "invalid_grant",
@@ -133,6 +126,34 @@ paths:
                     type: string
                     enum:
                       - invalid_grant
+                    description: |
+                      The error code.
+                  error_description:
+                    type: string
+                    description: |
+                      A description of the error.
+                required:
+                  - error
+                  - error_description
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              examples:
+                errorInvalidClient:
+                  description: |
+                    The authorization header is missing or is invalid.
+                  value:
+                    {
+                      "error": "invalid_client",
+                      "error_description": "Invalid or missing authorization header"
+                    }
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    enum:
                       - invalid_client
                     description: |
                       The error code.

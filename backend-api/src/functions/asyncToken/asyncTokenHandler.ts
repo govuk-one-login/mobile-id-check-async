@@ -14,8 +14,6 @@ export async function lambdaHandlerConstructor(
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
-  // Environment variables
-
   const logger = dependencies.logger();
   logger.addContext(context);
   logger.log("STARTED");
@@ -38,7 +36,7 @@ export async function lambdaHandlerConstructor(
     logger.log("INVALID_REQUEST", {
       errorMessage: eventBodyResult.value.errorMessage,
     });
-    return badRequestResponseInvalidGrant;
+    return badRequestResponse("Invalid grant type or grant type not specified");
   }
 
   const eventHeadersResult = requestService.getClientCredentials(event.headers);
@@ -46,7 +44,7 @@ export async function lambdaHandlerConstructor(
     logger.log("INVALID_REQUEST", {
       errorMessage: eventHeadersResult.value.errorMessage,
     });
-    return badRequestResponseInvalidAuthorizationHeader;
+    return unauthorizedResponse;
   }
 
   const clientCredentials = eventHeadersResult.value;
@@ -73,7 +71,7 @@ export async function lambdaHandlerConstructor(
     logger.log("INVALID_REQUEST", {
       errorMessage: getRegisteredIssuerByClientSecretsResult.value.errorMessage,
     });
-    return badRequestResponseInvalidCredentials;
+    return badRequestResponse("Supplied client credentials not recognised");
   }
 
   const registeredIssuer = getRegisteredIssuerByClientSecretsResult.value;
@@ -126,30 +124,26 @@ export async function lambdaHandlerConstructor(
     }),
   };
 }
-const badRequestResponseInvalidGrant: APIGatewayProxyResult = {
-  headers: { "Content-Type": "application/json" },
-  statusCode: 400,
-  body: JSON.stringify({
-    error: "invalid_grant",
-    error_description: "Invalid grant type or grant type not specified",
-  }),
+
+const badRequestResponse = (
+  errorDescription: string,
+): APIGatewayProxyResult => {
+  return {
+    headers: { "Content-Type": "application/json" },
+    statusCode: 400,
+    body: JSON.stringify({
+      error: "invalid_grant",
+      error_description: errorDescription,
+    }),
+  };
 };
 
-const badRequestResponseInvalidAuthorizationHeader: APIGatewayProxyResult = {
+const unauthorizedResponse: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
-  statusCode: 400,
+  statusCode: 401,
   body: JSON.stringify({
     error: "invalid_client",
-    error_description: "Invalid authorization header",
-  }),
-};
-
-const badRequestResponseInvalidCredentials: APIGatewayProxyResult = {
-  headers: { "Content-Type": "application/json" },
-  statusCode: 400,
-  body: JSON.stringify({
-    error: "invalid_client",
-    error_description: "Supplied client credentials not recognised",
+    error_description: "Invalid or missing authorization header",
   }),
 };
 
