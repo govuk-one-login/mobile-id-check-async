@@ -430,7 +430,8 @@ describe("Token Service", () => {
 
           expect(result.isError).toBe(true);
           expect(result.value).toStrictEqual({
-            errorMessage: "Error converting cek to CryptoKey. DataError: Invalid key length",
+            errorMessage:
+              "Error converting cek to CryptoKey. DataError: Invalid key length",
             errorCategory: "SERVER_ERROR",
           });
         });
@@ -438,9 +439,11 @@ describe("Token Service", () => {
 
       describe("Given decryping JWE fails", () => {
         it("Returns error result", async () => {
-          const buffer = new ArrayBuffer(16)
+          const buffer = new ArrayBuffer(16);
           const kmsMock = mockClient(KMSClient);
-          kmsMock.on(DecryptCommand).resolves({ Plaintext: new Uint8Array(buffer) });
+          kmsMock
+            .on(DecryptCommand)
+            .resolves({ Plaintext: new Uint8Array(buffer) });
 
           const result = await tokenService.getSubFromToken(
             "https://mockJwksEndpoint.com",
@@ -451,7 +454,8 @@ describe("Token Service", () => {
 
           expect(result.isError).toBe(true);
           expect(result.value).toStrictEqual({
-            errorMessage: "Error decrypting JWE. OperationError: The provided data is too small.",
+            errorMessage:
+              "Error decrypting JWE. OperationError: The provided data is too small.",
             errorCategory: "SERVER_ERROR",
           });
         });
