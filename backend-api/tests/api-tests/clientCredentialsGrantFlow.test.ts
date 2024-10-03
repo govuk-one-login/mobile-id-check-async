@@ -8,6 +8,8 @@ import {
 } from "@aws-sdk/client-secrets-manager";
 import { randomUUID, UUID } from "crypto";
 
+process.env.TEST_ENVIRONMENT = "dev";
+
 const apiBaseUrl = process.env.PROXY_API_URL;
 if (!apiBaseUrl) throw Error("PROXY_URL environment variable not set");
 const axiosInstance = axios.create({
@@ -211,7 +213,7 @@ describe("POST /credential", () => {
   });
 
   describe("Given the access token signature could not be verified", () => {
-    it("Returns 500 Server Error", async () => {
+    it("Returns 400 Bad Request", async () => {
       const accessTokenWithInvalidSignature = makeSignatureUnverifiable(
         accessToken,
         "6T5a8kCTyXsmw_2ATkyPgtLRzsuot-_ZIXWnuXNftZP8SHHkNxwFyMaZxEnqqtQst-99AoRrUDZnPov0oztbSA",
@@ -228,10 +230,10 @@ describe("POST /credential", () => {
       );
 
       expect(response.data).toStrictEqual({
-        error: "server_error",
-        error_description: "Server Error",
+        error: "invalid_request",
+        error_description: "Invalid signature",
       });
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(400);
     });
   });
 
