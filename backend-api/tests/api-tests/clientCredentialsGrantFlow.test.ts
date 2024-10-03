@@ -6,8 +6,9 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
-import { randomUUID } from "crypto";
-import { UUID } from "node:crypto";
+import { randomUUID, UUID } from "crypto";
+
+process.env.TEST_ENVIRONMENT = "dev";
 
 const apiBaseUrl = process.env.PROXY_API_URL;
 if (!apiBaseUrl) throw Error("PROXY_URL environment variable not set");
@@ -79,7 +80,7 @@ describe("POST /token", () => {
   });
 
   describe("Given there is no Authorization header in the request", () => {
-    it("Returns a 400 Bad Request response", async () => {
+    it("Returns a 401 Unauthorized response", async () => {
       const response = await axiosInstance.post(
         `${apiBaseUrl}/async/token`,
         "grant_type=client_credentials",
@@ -87,9 +88,9 @@ describe("POST /token", () => {
 
       expect(response.data).toStrictEqual({
         error: "invalid_client",
-        error_description: "Invalid authorization header",
+        error_description: "Invalid or missing authorization header",
       });
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(401);
     });
   });
 
@@ -107,7 +108,7 @@ describe("POST /token", () => {
       );
 
       expect(response.data).toStrictEqual({
-        error: "invalid_client",
+        error: "invalid_grant",
         error_description: "Supplied client credentials not recognised",
       });
       expect(response.status).toBe(400);
@@ -165,7 +166,7 @@ describe("POST /credential", () => {
 
       expect(response.data).toStrictEqual({
         error: "invalid_token",
-        error_description: "Invalid token",
+        error_description: "Invalid or missing authorization header",
       });
       expect(response.status).toBe(401);
     });
@@ -269,7 +270,8 @@ describe("POST /credential", () => {
 
   describe("Given the same access token is used more than once to fetch an active session", () => {
     it("Returns 200 OK", async () => {
-      const response = await axiosInstance.post(
+      // first use
+      const responseOne = await axiosInstance.post(
         `${apiBaseUrl}/async/credential`,
         credentialRequestBody,
         {
@@ -279,11 +281,27 @@ describe("POST /credential", () => {
         },
       );
 
-      expect(response.data).toStrictEqual({
+      // second use
+      const responseTwo = await axiosInstance.post(
+        `${apiBaseUrl}/async/credential`,
+        credentialRequestBody,
+        {
+          headers: {
+            "X-Custom-Auth": "Bearer " + accessToken,
+          },
+        },
+      );
+
+      expect(responseOne.data).toStrictEqual({
         "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
         sub: "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
       });
-      expect(response.status).toBe(200);
+      expect(responseOne.status).toBe(200);
+      expect(responseTwo.data).toStrictEqual({
+        "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
+        sub: "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
+      });
+      expect(responseTwo.status).toBe(200);
     });
   });
 
