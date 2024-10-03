@@ -430,7 +430,7 @@ describe("Token Service", () => {
 
           expect(result.isError).toBe(true);
           expect(result.value).toStrictEqual({
-            errorMessage: "Error converting cek to crypto key",
+            errorMessage: "Error converting cek to CryptoKey. DataError: Invalid key length",
             errorCategory: "SERVER_ERROR",
           });
         });

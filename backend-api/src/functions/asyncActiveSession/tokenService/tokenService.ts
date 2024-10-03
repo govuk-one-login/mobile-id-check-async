@@ -61,6 +61,10 @@ export class TokenService implements ITokenService {
       Buffer.from(tag, "base64"),
       new Uint8Array(Buffer.from(protectedHeader)),
     );
+    if(decryptedJweResult.isError) {
+      return decryptedJweResult
+    }
+
     console.log("What is this?", decryptedJweResult);
 
     return successResult("");
@@ -111,11 +115,20 @@ export class TokenService implements ITokenService {
     ciphertext: Uint8Array,
     tag: Uint8Array,
     additionalData: Uint8Array,
-  ) {
+  ): Promise<Result<Uint8Array>> {
     const webcrypto = crypto.webcrypto as unknown as Crypto;
-    const cek = await webcrypto.subtle.importKey("raw", key, "AES-GCM", false, [
-      "decrypt",
-    ]);
+
+    let cek: CryptoKey
+    try {
+      cek = await webcrypto.subtle.importKey("raw", key, "AES-GCM", false, [
+        "decrypt",
+      ]);
+    } catch (error) {
+      return errorResult({
+        errorMessage: `Error converting cek to CryptoKey. ${error}`,
+        errorCategory: "SERVER_ERROR"
+      })
+    }
 
     const decryptedBuffer = await webcrypto.subtle.decrypt(
       {
@@ -128,7 +141,7 @@ export class TokenService implements ITokenService {
       Buffer.concat([new Uint8Array(ciphertext), new Uint8Array(tag)]),
     );
 
-    return new Uint8Array(decryptedBuffer);
+    return successResult(new Uint8Array(decryptedBuffer));
   }
 }
 
