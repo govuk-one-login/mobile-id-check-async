@@ -78,13 +78,7 @@ export async function lambdaHandlerConstructor(
   );
   if (verifyTokenSignatureResult.isError) {
     const errorMessage = verifyTokenSignatureResult.value.errorMessage;
-    if (verifyTokenSignatureResult.value.errorCategory === "SERVER_ERROR") {
-      logger.log("ERROR_VERIFYING_SIGNATURE", {
-        errorMessage,
-      });
-      return serverErrorResponse;
-    }
-    logger.log("TOKEN_SIGNATURE_INVALID", {
+    logger.log("ERROR_VERIFYING_SIGNATURE", {
       errorMessage,
     });
     return badRequestResponse({

@@ -18,9 +18,8 @@ import {
 } from "./tokenService/tokenService";
 import {
   MockTokenServiceGetDecodedTokenErrorResult,
-  MockTokenServiceInvalidSignatureErrorResult,
   MockTokenServiceSuccess,
-  MockTokenServiceUnexpectedErrorResult,
+  MockTokenServiceErrorResult,
 } from "./tokenService/tests/mocks";
 import {
   MockClientRegistryServiceeGetPartialClientInternalServerResult,
@@ -543,77 +542,37 @@ describe("Async Credential", () => {
 
   describe("JWT signature verification", () => {
     describe("Given that the JWT signature verification fails", () => {
-      describe("Given there was an unexpected error when verifying signature", () => {
-        it("Returns 500 Internal error", async () => {
-          dependencies.tokenService = () =>
-            new MockTokenServiceUnexpectedErrorResult();
-          const jwtBuilder = new MockJWTBuilder();
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-            body: JSON.stringify({
-              state: "mockState",
-              sub: "mockSub",
-              client_id: "mockClientId",
-              govuk_signin_journey_id: "mockGovukSigninJourneyId",
-            }),
-          });
-
-          const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-            dependencies,
-            event,
-          );
-
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "ERROR_VERIFYING_SIGNATURE",
-          );
-          expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
-            "Unexpected error",
-          );
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 500,
-            body: JSON.stringify({
-              error: "server_error",
-              error_description: "Server Error",
-            }),
-          });
+      it("Returns 400 Bad Request", async () => {
+        dependencies.tokenService = () => new MockTokenServiceErrorResult();
+        const jwtBuilder = new MockJWTBuilder();
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+          }),
         });
-      });
 
-      describe("Given signature is invalid", () => {
-        it("Returns 401 Unauthorized", async () => {
-          dependencies.tokenService = () =>
-            new MockTokenServiceInvalidSignatureErrorResult();
-          const jwtBuilder = new MockJWTBuilder();
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-            body: JSON.stringify({
-              state: "mockState",
-              sub: "mockSub",
-              client_id: "mockClientId",
-              govuk_signin_journey_id: "mockGovukSigninJourneyId",
-            }),
-          });
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+        );
 
-          const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-            dependencies,
-            event,
-          );
-
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "TOKEN_SIGNATURE_INVALID",
-          );
-          expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
-            "Failed to verify token signature",
-          );
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 400,
-            body: JSON.stringify({
-              error: "invalid_request",
-              error_description: "Invalid signature",
-            }),
-          });
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "ERROR_VERIFYING_SIGNATURE",
+        );
+        expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+          "Some error",
+        );
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description: "Invalid signature",
+          }),
         });
       });
     });
