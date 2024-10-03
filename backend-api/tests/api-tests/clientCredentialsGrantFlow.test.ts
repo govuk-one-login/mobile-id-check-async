@@ -303,7 +303,7 @@ describe("POST /credential", () => {
     });
   });
 
-  describe("Given the request is valid and a new session is created for a new sub", () => {
+  describe("Given the request is valid and there is no active session for the given sub", () => {
     it("Returns 201 Created", async () => {
       const randomSub = randomUUID();
       const credentialRequestBody = getRequestBody(clientDetails, randomSub);
