@@ -5,8 +5,7 @@ import {
 } from "../../services/http/sendHttpRequest";
 import { errorResult, Result, successResult } from "../../utils/result";
 import { KMSAdapter } from "../../adapters/kmsAdapter";
-import crypto from 'crypto'
-import { importJWK, compactDecrypt } from 'jose'
+import crypto from "crypto";
 
 export class TokenService implements ITokenService {
   getSubFromToken = async (
@@ -43,15 +42,7 @@ export class TokenService implements ITokenService {
       });
     }
 
-    // const [
-    //   protectedHeader,
-    //   encryptedCek,
-    //   iv,
-    //   ciphertext,
-    //   tag
-    // ] = jweComponents
-
-    const encryptedCek = jweComponents[1];
+    const [protectedHeader, encryptedCek, iv, ciphertext, tag] = jweComponents;
 
     const decryptCekResult = await new KMSAdapter().decrypt(
       encryptionKeyArn,
@@ -63,7 +54,14 @@ export class TokenService implements ITokenService {
 
     const cek = decryptCekResult.value;
 
-    this.decryptJwe(jwe, cek)
+    const decryptedJweResult = await this.decryptJwe(
+      cek,
+      Buffer.from(iv, "base64"),
+      Buffer.from(ciphertext, "base64"),
+      Buffer.from(tag, "base64"),
+      new Uint8Array(Buffer.from(protectedHeader)),
+    );
+    console.log("What is this?", decryptedJweResult);
 
     return successResult("");
   };
@@ -107,31 +105,31 @@ export class TokenService implements ITokenService {
     return successResult(jwks);
   }
 
-  private async decryptJwe(jwe: string, key: Uint8Array) {
-    // const convertedCek = await importJWK(key)
-    // let cek
-    let content
-    try {
-      const { plaintext } = await compactDecrypt(jwe, key)
-      content = plaintext
-    } catch (error) {
-      console.log("Caught error", error)
-    }
+  private async decryptJwe(
+    key: Uint8Array,
+    iv: Uint8Array,
+    ciphertext: Uint8Array,
+    tag: Uint8Array,
+    additionalData: Uint8Array,
+  ) {
+    const webcrypto = crypto.webcrypto as unknown as Crypto;
+    const cek = await webcrypto.subtle.importKey("raw", key, "AES-GCM", false, [
+      "decrypt",
+    ]);
 
-    console.log("Decrypted plaintext", content)
+    const decryptedBuffer = await webcrypto.subtle.decrypt(
+      {
+        name: "AES-GCM",
+        iv,
+        additionalData,
+        tagLength: 128,
+      },
+      cek,
+      Buffer.concat([new Uint8Array(ciphertext), new Uint8Array(tag)]),
+    );
+
+    return new Uint8Array(decryptedBuffer);
   }
-
-  // private async decryptJwe(key: Uint8Array) {
-  //   const webcrypto = crypto.webcrypto as unknown as Crypto
-  //   let cek
-  //   try {
-  //     cek = await webcrypto.subtle.importKey('raw', key, 'AES-GCM', false, ['decrypt'])
-  //   } catch (error) {
-  //     console.log("Caught error", error)
-  //   }
-
-  //   console.log("Converted CEK",cek)
-  // }
 }
 
 export interface ITokenService {
