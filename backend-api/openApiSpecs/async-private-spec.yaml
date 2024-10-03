@@ -113,7 +113,7 @@ paths:
                   description: |
                     The grant type is missing or the value provided is not supported by the server.
                     OR
-                    Client authentication failed because the client ID provided is not a registered one. To resolve, check your client ID matches the client ID you had when you [registered your service to use GOV.UK One Login](https://docs.sign-in.service.gov.uk/integrate-with-integration-environment/manage-your-service-s-configuration/#register-your-service-to-use-gov-uk-one-login).
+                    Client authentication failed because the provided client details do not match a registered client. To resolve, check your client ID matches the client ID you had when you [registered your service to use GOV.UK One Login](https://docs.sign-in.service.gov.uk/integrate-with-integration-environment/manage-your-service-s-configuration/#register-your-service-to-use-gov-uk-one-login).
                   value:
                     {
                       "error": "invalid_grant",
@@ -263,11 +263,11 @@ paths:
                     }
                 errorInvalidToken:
                   description: |
-                    The access token could not be decoded or its payload is invalid.
+                    The access token could not be decoded, its payload is invalid or its signature could not be verified.
                   value:
                     {
                       "error": "invalid_token",
-                      "error_description": "Missing scope claim"
+                      "error_description": "Invalid signature"
                     }
                 errorInvalidClient:
                   description: |
@@ -302,11 +302,11 @@ paths:
               examples:
                 errorInvalidAccessToken:
                   description: |
-                    Unauthorized, usually signifies the access_token is missing or is invalid.
+                    The authorization header is missing or is invalid.
                   value:
                     {
                       "error": "invalid_token",
-                      "error_description": "Invalid token"
+                      "error_description": "Invalid or missing authorization header"
                     }
               schema:
                 type: object

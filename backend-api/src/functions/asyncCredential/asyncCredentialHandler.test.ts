@@ -137,7 +137,7 @@ describe("Async Credential", () => {
           statusCode: 401,
           body: JSON.stringify({
             error: "invalid_token",
-            error_description: "Invalid token",
+            error_description: "Invalid or missing authorization header",
           }),
         });
       });
@@ -167,7 +167,7 @@ describe("Async Credential", () => {
           statusCode: 401,
           body: JSON.stringify({
             error: "invalid_token",
-            error_description: "Invalid token",
+            error_description: "Invalid or missing authorization header",
           }),
         });
       });
@@ -197,7 +197,7 @@ describe("Async Credential", () => {
           statusCode: 401,
           body: JSON.stringify({
             error: "invalid_token",
-            error_description: "Invalid token",
+            error_description: "Invalid or missing authorization header",
           }),
         });
       });
@@ -226,7 +226,7 @@ describe("Async Credential", () => {
           statusCode: 401,
           body: JSON.stringify({
             error: "invalid_token",
-            error_description: "Invalid token",
+            error_description: "Invalid or missing authorization header",
           }),
         });
       });
