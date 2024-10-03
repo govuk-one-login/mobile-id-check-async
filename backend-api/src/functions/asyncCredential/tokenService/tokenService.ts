@@ -41,19 +41,11 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
       MessageType: "RAW",
     });
 
-    let result;
     try {
-      result = await kmsClient.send(verifyCommand);
+      await kmsClient.send(verifyCommand);
     } catch {
       return errorResult({
-        errorMessage: "Unexpected error when verifying jwt signature with KMS",
-        errorCategory: "SERVER_ERROR",
-      });
-    }
-
-    if (result.SignatureValid !== true) {
-      return errorResult({
-        errorMessage: "Signature is invalid",
+        errorMessage: "Signature could not be verified",
         errorCategory: "CLIENT_ERROR",
       });
     }

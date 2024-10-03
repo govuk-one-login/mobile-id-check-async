@@ -31,7 +31,7 @@ export class MockTokenServiceGetDecodedTokenErrorResult
   }
 }
 
-export class MockTokenServiceUnexpectedErrorResult
+export class MockTokenServiceErrorResult
   implements IDecodeToken, IVerifyTokenSignature
 {
   getDecodedToken(): Result<IDecodedToken> {
@@ -40,23 +40,7 @@ export class MockTokenServiceUnexpectedErrorResult
   verifyTokenSignature(): Promise<Result<null>> {
     return Promise.resolve(
       errorResult({
-        errorMessage: "Unexpected error",
-        errorCategory: "SERVER_ERROR",
-      }),
-    );
-  }
-}
-
-export class MockTokenServiceInvalidSignatureErrorResult
-  implements IDecodeToken, IVerifyTokenSignature
-{
-  getDecodedToken(): Result<IDecodedToken> {
-    return successResult(getDecodedTokenSuccessResult);
-  }
-  verifyTokenSignature(): Promise<Result<null>> {
-    return Promise.resolve(
-      errorResult({
-        errorMessage: "Failed to verify token signature",
+        errorMessage: "Some error",
         errorCategory: "CLIENT_ERROR",
       }),
     );
