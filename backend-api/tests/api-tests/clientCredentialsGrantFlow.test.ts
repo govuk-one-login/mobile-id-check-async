@@ -8,8 +8,6 @@ import {
 } from "@aws-sdk/client-secrets-manager";
 import { randomUUID, UUID } from "crypto";
 
-process.env.TEST_ENVIRONMENT = "dev";
-
 const apiBaseUrl = process.env.PROXY_API_URL;
 if (!apiBaseUrl) throw Error("PROXY_URL environment variable not set");
 const axiosInstance = axios.create({
