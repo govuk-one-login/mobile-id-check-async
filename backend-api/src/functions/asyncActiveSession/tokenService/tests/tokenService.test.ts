@@ -416,7 +416,7 @@ describe("Token Service", () => {
         });
       });
 
-      describe("Given converting CEK to crypto key fails", () => {
+      describe("Given converting CEK to CryptoKey fails", () => {
         it("Returns error result", async () => {
           const kmsMock = mockClient(KMSClient);
           kmsMock.on(DecryptCommand).resolves({ Plaintext: new Uint8Array() });
