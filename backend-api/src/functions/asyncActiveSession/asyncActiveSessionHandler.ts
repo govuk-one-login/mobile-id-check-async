@@ -11,6 +11,7 @@ export async function lambdaHandlerConstructor(
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
+  logger.log("STARTED");
 
   console.log(1)
 
@@ -64,12 +65,15 @@ export async function lambdaHandlerConstructor(
     return serverError500Response;
   }
 
+
   console.log(5)
 
 
   const datastore = dependencies.datastore(config.SESSION_TABLE_NAME)
   const readResult = await datastore.read("mockSub1", ["state", "sessionId", "redirectUri"])
   console.log(readResult)
+
+    logger.log("COMPLETED");
 
   return {
     statusCode: 200,
