@@ -1,41 +1,42 @@
 import {
-  ConditionalCheckFailedException,
-  PutItemCommandInput,
+  ConditionalCheckFailedException, DynamoDBClient, PutItemCommand,
+  PutItemCommandInput, QueryCommand,
   QueryCommandInput,
 } from "@aws-sdk/client-dynamodb";
 import { errorResult, Result, successResult } from "../../utils/result";
 import { randomUUID } from "crypto";
-import { DynamoDb } from "./dynamoDb";
 import {
+  IDataStore,
   CreateSessionAttributes,
-  ISessionRepository,
   Session,
-} from "./sessionRepository";
+} from "./datastore";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
+import {NodeHttpHandler} from "@smithy/node-http-handler";
 
-export class DynamoDbSessionRepository implements ISessionRepository {
+export class DynamoDbAdapter implements IDataStore {
   private readonly tableName: string;
-  private readonly dynamoDbService = new DynamoDb();
+  private readonly dynamoDbClient = new DynamoDBClient({
+    region: process.env.REGION,
+    maxAttempts: 2,
+    requestHandler: new NodeHttpHandler({
+      connectionTimeout: 29000,
+      requestTimeout: 29000,
+    }),
+  });
 
   constructor(tableName: string) {
     this.tableName = tableName;
   }
 
-  async read(subjectIdentifier: string): Promise<Result<Session | null>> {
+  async read(subjectIdentifier: string, desiredAttributes: string[] ): Promise<Result<Session | null>> {
     const currentTimeInSeconds = Math.floor(Date.now() / 1000);
 
-    const commandInput: QueryCommandInput = {
+    const input: QueryCommandInput = {
       TableName: this.tableName,
       IndexName: "subjectIdentifier-timeToLive-index",
       KeyConditionExpression:
-        "#subjectIdentifier = :subjectIdentifier and :currentTimeInSeconds < #timeToLive",
-      FilterExpression: "#sessionState = :sessionState",
-      ExpressionAttributeNames: {
-        "#timeToLive": "timeToLive",
-        "#sessionId": "sessionId",
-        "#sessionState": "sessionState",
-        "#subjectIdentifier": "subjectIdentifier",
-      },
+        "subjectIdentifier = :subjectIdentifier and :currentTimeInSeconds < timeToLive",
+      FilterExpression: "sessionState = :sessionState",
       ExpressionAttributeValues: {
         ":subjectIdentifier": { S: subjectIdentifier },
         ":sessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
@@ -43,15 +44,16 @@ export class DynamoDbSessionRepository implements ISessionRepository {
           N: currentTimeInSeconds.toString(),
         },
       },
-      ProjectionExpression: "#sessionId",
+      ProjectionExpression: desiredAttributes.join(""),
       Limit: 1,
       ScanIndexForward: false,
     };
 
-    let queryOutput;
+    let output;
     try {
-      queryOutput = await this.dynamoDbService.query(commandInput);
-    } catch {
+      output = await this.dynamoDbClient.send(new QueryCommand(input));
+    } catch (error){
+      console.log(error)
       return errorResult({
         errorMessage:
           "Unexpected error when querying database for an active session",
@@ -59,11 +61,11 @@ export class DynamoDbSessionRepository implements ISessionRepository {
       });
     }
 
-    if (queryOutput.Items === undefined || queryOutput.Items.length === 0) {
+    if (output.Items === undefined || output.Items.length === 0) {
       return successResult(null);
     }
 
-    return successResult(unmarshall(queryOutput.Items[0]) as Session);
+    return successResult(unmarshall(output.Items[0]) as Session);
   }
 
   async create(attributes: CreateSessionAttributes): Promise<Result<string>> {
@@ -80,7 +82,7 @@ export class DynamoDbSessionRepository implements ISessionRepository {
     const currentTimeInSeconds = Math.floor(Date.now() / 1000);
     const timeToLive = currentTimeInSeconds + sessionDurationInSeconds;
 
-    const commandInput: PutItemCommandInput = {
+    const input: PutItemCommandInput = {
       TableName: this.tableName,
       Item: marshall({
         clientId: client_id,
@@ -97,11 +99,11 @@ export class DynamoDbSessionRepository implements ISessionRepository {
     };
 
     if (redirect_uri) {
-      commandInput.Item!.redirectUri = { S: redirect_uri };
+      input.Item!.redirectUri = { S: redirect_uri };
     }
 
     try {
-      await this.dynamoDbService.putItem(commandInput);
+      await this.dynamoDbClient.send(new PutItemCommand(input))
     } catch (error) {
       if (error instanceof ConditionalCheckFailedException) {
         return errorResult({

@@ -5,14 +5,14 @@ import {
 } from "../services/clientRegistryService/clientRegistryService";
 import { IEventService, EventService } from "../services/events/eventService";
 import { MessageName, registeredLogs } from "./registeredLogs";
-import { DynamoDbSessionRepository } from "../repositories/session/dynamoDbSessionRepository";
-import { ISessionRepository } from "../repositories/session/sessionRepository";
 import {
   IDecodeToken,
   IVerifyTokenSignature,
   TokenService,
 } from "./tokenService/tokenService";
 import { Logger } from "../services/logging/logger";
+import {DynamoDbAdapter} from "../adapters/session/dynamoDbAdapter";
+import {IDataStore} from "../adapters/session/datastore";
 
 export interface IAsyncCredentialDependencies {
   logger: () => Logger<MessageName>;
@@ -21,7 +21,7 @@ export interface IAsyncCredentialDependencies {
   clientRegistryService: (
     clientRegistryParameterName: string,
   ) => IGetPartialRegisteredClientByClientId;
-  dynamoDbSessionRepository: (tableName: string) => ISessionRepository;
+  datastore: (tableName: string) => IDataStore;
   env: NodeJS.ProcessEnv;
 }
 
@@ -32,6 +32,6 @@ export const dependencies: IAsyncCredentialDependencies = {
   clientRegistryService: (clientRegistryParameterName: string) =>
     new ClientRegistryService(clientRegistryParameterName),
   tokenService: () => new TokenService(),
-  dynamoDbSessionRepository: (tableName: string) =>
-    new DynamoDbSessionRepository(tableName),
+  datastore: (tableName: string) =>
+    new DynamoDbAdapter(tableName),
 };

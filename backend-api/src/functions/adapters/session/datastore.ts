@@ -1,8 +1,8 @@
 import { Result } from "../../utils/result";
 
-export interface ISessionRepository {
+export interface IDataStore {
   create: (attributes: CreateSessionAttributes) => Promise<Result<string>>;
-  read: (subjectIdentifier: string) => Promise<Result<Session | null>>;
+  read: (subjectIdentifier: string, desiredAttributes: string[]) => Promise<Result<Session | null>>;
 }
 
 export type CreateSessionAttributes = {

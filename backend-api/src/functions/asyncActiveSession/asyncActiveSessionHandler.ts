@@ -12,6 +12,8 @@ export async function lambdaHandlerConstructor(
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
 
+  console.log(1)
+
   const configResult = new ConfigService().getConfig(dependencies.env);
   if (configResult.isError) {
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
@@ -20,6 +22,7 @@ export async function lambdaHandlerConstructor(
     return serverError500Response;
   }
   const config = configResult.value;
+  console.log(2)
 
   const authorizationHeaderResult = new RequestService().getAuthorizationHeader(
     event.headers["Authorization"] ?? event.headers["authorization"],
@@ -30,6 +33,8 @@ export async function lambdaHandlerConstructor(
     });
     return unauthorizedResponse;
   }
+  console.log(3)
+
 
   const serviceToken = authorizationHeaderResult.value;
 
@@ -43,6 +48,8 @@ export async function lambdaHandlerConstructor(
       delayInMillis: 100,
     },
   );
+  console.log(4)
+
   if (getSubFromTokenResult.isError) {
     if (getSubFromTokenResult.value.errorCategory === "CLIENT_ERROR") {
       logger.log("FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN", {
@@ -56,6 +63,13 @@ export async function lambdaHandlerConstructor(
     });
     return serverError500Response;
   }
+
+  console.log(5)
+
+
+  const datastore = dependencies.datastore(config.SESSION_TABLE_NAME)
+  const readResult = await datastore.read("mockSub1", ["state", "sessionId", "redirectUri"])
+  console.log(readResult)
 
   return {
     statusCode: 200,

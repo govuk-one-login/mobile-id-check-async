@@ -55,7 +55,7 @@ describe("Async Credential", () => {
       tokenService: () => new MockTokenServiceSuccess(),
       clientRegistryService: () =>
         new MockClientRegistryServiceGetPartialClientSuccessResult(),
-      dynamoDbSessionRepository: () =>
+      datastore: () =>
         new MockDynamoDbSessionRepositoryNoSessionFound(env.SESSION_TABLE_NAME),
       env,
     };
@@ -751,7 +751,7 @@ describe("Async Credential", () => {
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
             }),
           });
-          dependencies.dynamoDbSessionRepository = () =>
+          dependencies.datastore = () =>
             new MockDynamoDbSessionRepositoryReadErrorResult(
               env.SESSION_TABLE_NAME,
             );
@@ -789,7 +789,7 @@ describe("Async Credential", () => {
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
             }),
           });
-          dependencies.dynamoDbSessionRepository = () =>
+          dependencies.datastore = () =>
             new MockDynamoDbSessionRepositorySessionFound(
               env.SESSION_TABLE_NAME,
             );
@@ -829,7 +829,7 @@ describe("Async Credential", () => {
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
             }),
           });
-          dependencies.dynamoDbSessionRepository = () =>
+          dependencies.datastore = () =>
             new MockDynamoDbSessionRepositoryCreateErrorResult(
               env.SESSION_TABLE_NAME,
             );
@@ -870,7 +870,7 @@ describe("Async Credential", () => {
             });
             dependencies.eventService = () =>
               new MockEventServiceFailToWrite("DCMAW_ASYNC_CRI_START");
-            dependencies.dynamoDbSessionRepository = () =>
+            dependencies.datastore = () =>
               new MockDynamoDbSessionRepositorySessionCreated(
                 env.SESSION_TABLE_NAME,
               );
@@ -910,7 +910,7 @@ describe("Async Credential", () => {
             });
             const mockEventService = new MockEventWriterSuccess();
             dependencies.eventService = () => mockEventService;
-            dependencies.dynamoDbSessionRepository = () =>
+            dependencies.datastore = () =>
               new MockDynamoDbSessionRepositorySessionCreated(
                 env.SESSION_TABLE_NAME,
               );

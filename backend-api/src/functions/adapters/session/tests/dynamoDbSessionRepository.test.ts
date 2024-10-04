@@ -5,12 +5,12 @@ import {
   QueryCommand,
 } from "@aws-sdk/client-dynamodb";
 import { mockClient } from "aws-sdk-client-mock";
-import { DynamoDbSessionRepository } from "../dynamoDbSessionRepository";
+import { DynamoDbAdapter } from "../dynamoDbAdapter";
 
 describe("DynamoDB Session Repository", () => {
-  let dynamoDbSessionRepository: DynamoDbSessionRepository;
+  let dynamoDbSessionRepository: DynamoDbAdapter;
   beforeEach(() => {
-    dynamoDbSessionRepository = new DynamoDbSessionRepository("mockTableName");
+    dynamoDbSessionRepository = new DynamoDbAdapter("mockTableName");
   });
 
   beforeAll(() => {
