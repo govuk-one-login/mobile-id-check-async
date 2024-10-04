@@ -1374,3 +1374,7 @@ Outputs:
     Condition: ProxyApiDeployment
     Description: Proxy API Gateway Pretty DNS
     Value: !Sub https://${ProxyApiDomainName}
+
+  PrivateApiUrl:
+    Description: Private API Gateway base URL
+    Value: !Sub https://${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/
