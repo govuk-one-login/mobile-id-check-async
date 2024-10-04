@@ -462,5 +462,28 @@ describe("Token Service", () => {
         });
       });
     });
+
+    describe("Token signature verification", () => {
+      describe("Given kid is not present in JWKS", async () => {
+        const buffer = new ArrayBuffer(16);
+        const kmsMock = mockClient(KMSClient);
+        kmsMock
+          .on(DecryptCommand)
+          .resolves({ Plaintext: new Uint8Array(buffer) });
+
+        const result = await tokenService.getSubFromToken(
+          "https://mockJwksEndpoint.com",
+          "mockEncryptionKeyArn",
+          "one.two.three.four.five",
+          { maxAttempts: 3, delayInMillis: 1 },
+        );
+
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Failed verifying service token signature: kid not found.",
+          errorCategory: "CLIENT_ERROR",
+        });
+      })
+    })
   });
 });
