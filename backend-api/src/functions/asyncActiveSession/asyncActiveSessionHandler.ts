@@ -11,6 +11,7 @@ export async function lambdaHandlerConstructor(
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
+  logger.log("STARTED");
 
   const configResult = new ConfigService().getConfig(dependencies.env);
   if (configResult.isError) {
@@ -56,6 +57,8 @@ export async function lambdaHandlerConstructor(
     });
     return serverError500Response;
   }
+
+  logger.log("COMPLETED");
 
   return {
     statusCode: 200,
