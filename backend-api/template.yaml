@@ -1377,4 +1377,4 @@ Outputs:
 
   PrivateApiUrl:
     Description: Private API Gateway base URL
-    Value: !Sub https://${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/
+    Value: !Sub https://${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
