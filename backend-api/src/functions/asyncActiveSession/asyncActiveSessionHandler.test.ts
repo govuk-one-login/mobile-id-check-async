@@ -263,6 +263,39 @@ describe("Async Active Session", () => {
       });
     });
 
+    describe("Given validating the access token signature failed", () => {
+      it("Logs and returns 400 Bad Request response", async () => {
+        const jwtBuilder = new MockJWTBuilder();
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+        });
+
+        dependencies.tokenService = () =>
+          new MockTokenServiceSignatureVerificationFailed();
+
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+        );
+
+        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+          "FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN",
+        );
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: "Mock signature validation error",
+        });
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description: "Failed verifying service token signature",
+          }),
+        });
+      })
+    })
+
     describe("Given valid request is made", () => {
       it("Returns 200 Hello, World response", async () => {
         const jwtBuilder = new MockJWTBuilder();
@@ -304,6 +337,15 @@ class MockTokenServiceDecryptionFailed {
   async getSubFromToken(): Promise<Result<string>> {
     return errorResult({
       errorMessage: "Mock decryption error",
+      errorCategory: "CLIENT_ERROR",
+    });
+  }
+}
+
+class MockTokenServiceSignatureVerificationFailed {
+  async getSubFromToken(): Promise<Result<string>> {
+    return errorResult({
+      errorMessage: "Mock signature verification error",
       errorCategory: "CLIENT_ERROR",
     });
   }
