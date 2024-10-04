@@ -366,7 +366,7 @@ describe("Token Service", () => {
           expect(result.isError).toBe(true);
           expect(result.value).toStrictEqual({
             errorMessage:
-              "Failed decrypting service token jwt - JWE does not consist of five components",
+              "Decrypt service token failure: JWE does not consist of five components",
             errorCategory: "CLIENT_ERROR",
           });
         });
