@@ -113,7 +113,7 @@ export class TokenService implements ITokenService {
     ciphertext: Uint8Array,
     tag: Uint8Array,
     additionalData: Uint8Array,
-  ): Promise<Result<Uint8Array>> {
+  ): Promise<Result<string>> {
     const webcrypto = crypto.webcrypto as unknown as Crypto;
 
     let cek: CryptoKey;
@@ -147,7 +147,8 @@ export class TokenService implements ITokenService {
       });
     }
 
-    return successResult(new Uint8Array(decryptedBuffer));
+    const decoder = new TextDecoder();
+    return successResult(decoder.decode(decryptedBuffer));
   }
 }
 
