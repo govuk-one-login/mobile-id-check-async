@@ -464,26 +464,43 @@ describe("Token Service", () => {
     });
 
     describe("Token signature verification", () => {
-      describe("Given kid is not present in JWKS", async () => {
-        const buffer = new ArrayBuffer(16);
-        const kmsMock = mockClient(KMSClient);
-        kmsMock
-          .on(DecryptCommand)
-          .resolves({ Plaintext: new Uint8Array(buffer) });
+      describe("Given kid is not present in JWKS", () => {
+        it("Returns error result", async () => {
+          const kmsMock = mockClient(KMSClient);
+          kmsMock.on(DecryptCommand).resolves({
+            $metadata: {
+              httpStatusCode: 200,
+              requestId: "bed04b9f-163d-451d-baf6-fc892e586972",
+              extendedRequestId: undefined,
+              cfId: undefined,
+              attempts: 1,
+              totalRetryDelay: 0,
+            },
+            EncryptionAlgorithm: "RSAES_OAEP_SHA_256",
+            KeyId:
+              "arn:aws:kms:eu-west-2:211125300205:key/7f6d8b26-8089-462a-9ff5-d1af8eb2e7a1",
+            Plaintext: new Uint8Array([
+              206, 38, 204, 170, 46, 201, 136, 104, 62, 25, 208, 99, 129, 151,
+              132, 145, 193, 80, 218, 195, 201, 168, 7, 1, 255, 30, 215, 58, 84,
+              51, 47, 78,
+            ]),
+          });
 
-        const result = await tokenService.getSubFromToken(
-          "https://mockJwksEndpoint.com",
-          "mockEncryptionKeyArn",
-          "one.two.three.four.five",
-          { maxAttempts: 3, delayInMillis: 1 },
-        );
+          const result = await tokenService.getSubFromToken(
+            "https://mockJwksEndpoint.com",
+            "https://mockEncryptionKeyArn.com",
+            "eyJhbGciOiJSU0EtT0FFUC0yNTYiLCJlbmMiOiJBMjU2R0NNIn0.TbpJTOgSQ0svK6eh0ZBS_jl-ebU9DFK99YA_qaOo5aafy-XiFXvi_Vc19zmzMHafn0mi0GSU2PkJd3jV-QcJOoS-ZCJ14rwHhsiO1YSvU3pEiflDNrslT24yTCd4DeMGAdJaZNOpBAb1In04c2VgbtvMQkpKvkvZ6xb_07-MU6jQPgzknWH4DQnaJ5hWplsAudqDzp2cCyOW5YRm4huSVWxLbMJccHee9BgUtFfhzzHxBYrfvpN8q-gMveiQfZJvEVqfIR8n5zzdybmfpasTbcXEPAmkoLpvjgTm6HKYnoodXfSwr9p1SCIFzEZQd9JF9WSrIA_LRHPwjTtLHiKjUg.ILKKprrdKL4pNmVJ.dr-7Mohe0_3C9T-3cFP9-ABmmy861rO1rwRrGYgyaPZqSRPlIIut-UWPAz3XN9XM1rpYoqV3r5wZzkR5ezgDIk0VxzSBvvx6o57LvH-uq-yIBafGaaXm3Vcl0bqyMnkW26aB1UzxJUSayOqNJyo8SCvqPmdwBdoP2KbpoUZ8zJHnYIJOsyPcXc7gGk5O-q6OUyNzFlDM1QM9W7PtRAKcZOnV3CGcI8EJSRwSOnNFlVLv4Kh9_0f4dH0jOMrz2Zb4Nta1gCBsfEVdM80rWRwZplp7p64gfLh16T_NTwsfW-d-F69gpf3umtHs6AR6byWUOcxDH6RKee5xrJxqIrQuP352p3DMekvDtVbIC_mwdqhci7Rg5lIlrRfv4UwqUw5CI167MfZl9HtR47lVz-jKuBEldEKYrlcxEJvYwT2ctWHL3ZlBnRC44a81E588Rr7Wz2W0paRk0X0_rRcHeDwbsIOXZpp193WrcylhPoS5Uw7Q6jDW4fluOPfT6WjZQKbu3qLEMrwMNiNtHWmqkHQLxbYVlFxJgd0zl8y_Ge4z8YzaSjApXF5u41kZWoSTB2q5_R0ICgQQpUSQ1yuAIKgiml92li2eY5FQlaqDj2KVe-zgm2ZLjjcjTyUSccPBoqMayY6wqZW5.XF1Jo9QvkYqtOJFLC1UAaA",
+            { maxAttempts: 3, delayInMillis: 1 },
+          );
 
-        expect(result.isError).toBe(true);
-        expect(result.value).toStrictEqual({
-          errorMessage: "Failed verifying service token signature: kid not found.",
-          errorCategory: "CLIENT_ERROR",
+          expect(result.isError).toBe(true);
+          expect(result.value).toStrictEqual({
+            errorMessage:
+              "Failed verifying service token signature: kid not found.",
+            errorCategory: "CLIENT_ERROR",
+          });
         });
-      })
-    })
+      });
+    });
   });
 });
