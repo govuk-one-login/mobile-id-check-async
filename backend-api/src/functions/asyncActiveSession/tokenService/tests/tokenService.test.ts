@@ -438,7 +438,7 @@ describe("Token Service", () => {
         });
       });
 
-      describe("Given decryping JWE fails", () => {
+      describe("Given decrypting JWE fails", () => {
         it("Returns error result", async () => {
           const buffer = new ArrayBuffer(16);
           const kmsMock = mockClient(KMSClient);
