@@ -37,7 +37,8 @@ export class TokenService implements ITokenService {
 
     if (jweComponents.length !== 5) {
       return errorResult({
-        errorMessage: "JWE does not consist of five components",
+        errorMessage:
+          "Failed decrypting service token jwt - JWE does not consist of five components",
         errorCategory: "CLIENT_ERROR",
       });
     }
