@@ -121,8 +121,7 @@ describe.each(APIS_TO_TEST)(
           },
         );
 
-        console.log("124 Response:", JSON.stringify(response));
-        console.log("125 Response Data:", JSON.stringify(response.data));
+        console.log("124 Response Data:", JSON.stringify(response.data));
 
         const accessTokenParts = response.data.access_token.split(".");
         const header = JSON.parse(fromBase64(accessTokenParts[0])) as object;
@@ -378,7 +377,7 @@ async function getAccessToken(
     },
   );
 
-  console.log("374 Response:", JSON.stringify(response));
+  console.log("380 Response:", JSON.stringify(response.data));
 
   return response.data.access_token as string;
 }
