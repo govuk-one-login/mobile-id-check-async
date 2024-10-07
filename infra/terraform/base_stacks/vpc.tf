@@ -14,6 +14,7 @@ resource "aws_cloudformation_stack" "vpc" {
     DynamoDBApiEnabled       = "Yes"
     ExecuteApiGatewayEnabled = "Yes"
     KMSApiEnabled            = "Yes"
+    LogsApiEnabled            = "Yes"
     S3ApiEnabled             = "Yes"
     SQSApiEnabled            = "Yes"
     SecretsManagerApiEnabled = "Yes"
