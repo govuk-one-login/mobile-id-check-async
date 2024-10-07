@@ -39,6 +39,8 @@ export async function lambdaHandlerConstructor(
     return badRequestResponse("Invalid grant type or grant type not specified");
   }
 
+  console.log(JSON.stringify(event.headers));
+
   const eventHeadersResult = requestService.getClientCredentials(event.headers);
   if (eventHeadersResult.isError) {
     logger.log("INVALID_REQUEST", {

@@ -25,6 +25,8 @@ export async function lambdaHandlerConstructor(
 
   const requestService = new RequestService();
 
+  console.log(JSON.stringify(event.headers));
+
   const authorizationHeaderResult = requestService.getAuthorizationHeader(
     event.headers["Authorization"] ?? event.headers["authorization"],
   );
