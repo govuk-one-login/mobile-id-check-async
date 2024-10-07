@@ -175,7 +175,7 @@ describe.each(APIS_TO_TEST)(
             credentialRequestBody,
             {
               headers: {
-                "X-Custom-Auth": "Bearer invalid.access.token",
+                [authorizationHeader]: "Bearer invalid.access.token",
               },
             },
           );
@@ -195,7 +195,7 @@ describe.each(APIS_TO_TEST)(
             "invalidRequestBody",
             {
               headers: {
-                "X-Custom-Auth": "Bearer " + accessToken,
+                [authorizationHeader]: "Bearer " + accessToken,
               },
             },
           );
@@ -220,7 +220,8 @@ describe.each(APIS_TO_TEST)(
             credentialRequestBody,
             {
               headers: {
-                "X-Custom-Auth": "Bearer " + accessTokenWithInvalidSignature,
+                [authorizationHeader]:
+                  "Bearer " + accessTokenWithInvalidSignature,
               },
             },
           );
@@ -238,7 +239,7 @@ describe.each(APIS_TO_TEST)(
           // Create session if it does not exist
           await apiInstance.post(`/async/credential`, credentialRequestBody, {
             headers: {
-              "X-Custom-Auth": "Bearer " + accessToken,
+              [authorizationHeader]: "Bearer " + accessToken,
             },
           });
 
@@ -247,7 +248,7 @@ describe.each(APIS_TO_TEST)(
             credentialRequestBody,
             {
               headers: {
-                "X-Custom-Auth": "Bearer " + accessToken,
+                [authorizationHeader]: "Bearer " + accessToken,
               },
             },
           );
@@ -268,7 +269,7 @@ describe.each(APIS_TO_TEST)(
             credentialRequestBody,
             {
               headers: {
-                "X-Custom-Auth": "Bearer " + accessToken,
+                [authorizationHeader]: "Bearer " + accessToken,
               },
             },
           );
@@ -279,7 +280,7 @@ describe.each(APIS_TO_TEST)(
             credentialRequestBody,
             {
               headers: {
-                "X-Custom-Auth": "Bearer " + accessToken,
+                [authorizationHeader]: "Bearer " + accessToken,
               },
             },
           );
@@ -310,7 +311,7 @@ describe.each(APIS_TO_TEST)(
             credentialRequestBody,
             {
               headers: {
-                "X-Custom-Auth": "Bearer " + accessToken,
+                [authorizationHeader]: "Bearer " + accessToken,
               },
             },
           );
