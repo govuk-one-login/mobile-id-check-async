@@ -1,17 +1,22 @@
 import {
-  ConditionalCheckFailedException, DynamoDBClient, PutItemCommand,
-  PutItemCommandInput, QueryCommand,
+  ConditionalCheckFailedException,
+  DynamoDBClient,
+  PutItemCommand,
+  PutItemCommandInput,
+  QueryCommand,
   QueryCommandInput,
+  QueryCommandOutput,
 } from "@aws-sdk/client-dynamodb";
 import { errorResult, Result, successResult } from "../../utils/result";
 import { randomUUID } from "crypto";
 import {
   IDataStore,
   CreateSessionAttributes,
-  Session,
+  SessionId,
+  SessionDetails,
 } from "./datastore";
-import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
-import {NodeHttpHandler} from "@smithy/node-http-handler";
+import { marshall } from "@aws-sdk/util-dynamodb";
+import { NodeHttpHandler } from "@smithy/node-http-handler";
 
 export class DynamoDbAdapter implements IDataStore {
   private readonly tableName: string;
@@ -28,7 +33,9 @@ export class DynamoDbAdapter implements IDataStore {
     this.tableName = tableName;
   }
 
-  async read(subjectIdentifier: string, desiredAttributes: string[] ): Promise<Result<Session | null>> {
+  async readSessionId(
+    subjectIdentifier: string,
+  ): Promise<Result<SessionId | null>> {
     const currentTimeInSeconds = Math.floor(Date.now() / 1000);
 
     const input: QueryCommandInput = {
@@ -44,28 +51,101 @@ export class DynamoDbAdapter implements IDataStore {
           N: currentTimeInSeconds.toString(),
         },
       },
-      ProjectionExpression: desiredAttributes.join(""),
+      ProjectionExpression: "sessionId",
       Limit: 1,
       ScanIndexForward: false,
     };
 
-    let output;
+    let output: QueryCommandOutput;
     try {
       output = await this.dynamoDbClient.send(new QueryCommand(input));
-    } catch (error){
-      console.log(error)
+    } catch (error) {
+      console.log(error);
       return errorResult({
         errorMessage:
-          "Unexpected error when querying database for an active session",
+          "Unexpected error when querying database to get active session ID",
         errorCategory: "SERVER_ERROR",
       });
     }
 
-    if (output.Items === undefined || output.Items.length === 0) {
+    const retrievedItems = output.Items;
+
+    if (!retrievedItems || retrievedItems.length === 0) {
       return successResult(null);
     }
 
-    return successResult(unmarshall(output.Items[0]) as Session);
+    const retrievedItem = retrievedItems[0];
+    const sessionId = retrievedItem.sessionId?.S;
+    if (!sessionId) {
+      return errorResult({
+        errorMessage: "Session is malformed",
+        errorCategory: "SERVER_ERROR",
+      });
+    }
+
+    return successResult(sessionId as SessionId);
+  }
+
+  async readSessionDetails(
+    subjectIdentifier: string,
+  ): Promise<Result<SessionDetails | null>> {
+    const currentTimeInSeconds = Math.floor(Date.now() / 1000);
+
+    const input: QueryCommandInput = {
+      TableName: this.tableName,
+      IndexName: "subjectIdentifier-timeToLive-index",
+      KeyConditionExpression:
+        "subjectIdentifier = :subjectIdentifier and :currentTimeInSeconds < timeToLive",
+      FilterExpression: "sessionState = :sessionState",
+      ExpressionAttributeValues: {
+        ":subjectIdentifier": { S: subjectIdentifier },
+        ":sessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
+        ":currentTimeInSeconds": {
+          N: currentTimeInSeconds.toString(),
+        },
+      },
+      ExpressionAttributeNames: { "#state": "state" },
+      ProjectionExpression: "sessionId, redirect_uri, #state",
+      Limit: 1,
+      ScanIndexForward: false,
+    };
+
+    let output: QueryCommandOutput;
+    try {
+      output = await this.dynamoDbClient.send(new QueryCommand(input));
+    } catch (error) {
+      console.log(error);
+      return errorResult({
+        errorMessage:
+          "Unexpected error when querying database to get active session details",
+        errorCategory: "SERVER_ERROR",
+      });
+    }
+
+    const retrievedItems = output.Items;
+
+    if (!retrievedItems || retrievedItems.length === 0) {
+      return successResult(null);
+    }
+
+    const retrievedItem = retrievedItems[0];
+    const sessionId = retrievedItem.sessionId?.S;
+    const state = retrievedItem.state?.S;
+    if (!sessionId || !state) {
+      return errorResult({
+        errorMessage: "Session is malformed",
+        errorCategory: "SERVER_ERROR",
+      });
+    }
+
+    const redirectUri: string | undefined = retrievedItem.redirectUri?.S;
+    const sessionDetails: SessionDetails = {
+      sessionId,
+      state,
+      ...(redirectUri && { redirectUri: retrievedItem.redirectUri?.S }),
+    };
+
+    return successResult(sessionDetails);
   }
 
   async create(attributes: CreateSessionAttributes): Promise<Result<string>> {
@@ -103,7 +183,7 @@ export class DynamoDbAdapter implements IDataStore {
     }
 
     try {
-      await this.dynamoDbClient.send(new PutItemCommand(input))
+      await this.dynamoDbClient.send(new PutItemCommand(input));
     } catch (error) {
       if (error instanceof ConditionalCheckFailedException) {
         return errorResult({

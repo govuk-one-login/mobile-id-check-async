@@ -144,11 +144,9 @@ export async function lambdaHandlerConstructor(
   }
 
   // Create a session
-  const datastore = dependencies.datastore(
-    config.SESSION_TABLE_NAME,
-  );
+  const datastore = dependencies.datastore(config.SESSION_TABLE_NAME);
 
-  const activeSessionResult = await datastore.read(requestBody.sub, ["sessionId"]);
+  const activeSessionResult = await datastore.readSessionId(requestBody.sub);
   if (activeSessionResult.isError) {
     logger.log("ERROR_RETRIEVING_SESSION", {
       errorMessage: activeSessionResult.value.errorMessage,
@@ -156,7 +154,7 @@ export async function lambdaHandlerConstructor(
     return serverErrorResponse;
   }
   if (activeSessionResult.value !== null) {
-    logger.setSessionId({ sessionId: activeSessionResult.value.sessionId });
+    logger.setSessionId({ sessionId: activeSessionResult.value });
     logger.log("COMPLETED");
     return activeSessionFoundResponse(requestBody.sub);
   }

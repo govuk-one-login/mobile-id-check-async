@@ -11,8 +11,8 @@ import {
   TokenService,
 } from "./tokenService/tokenService";
 import { Logger } from "../services/logging/logger";
-import {DynamoDbAdapter} from "../adapters/session/dynamoDbAdapter";
-import {IDataStore} from "../adapters/session/datastore";
+import { DynamoDbAdapter } from "../adapters/session/dynamoDbAdapter";
+import { IDataStore } from "../adapters/session/datastore";
 
 export interface IAsyncCredentialDependencies {
   logger: () => Logger<MessageName>;
@@ -32,6 +32,5 @@ export const dependencies: IAsyncCredentialDependencies = {
   clientRegistryService: (clientRegistryParameterName: string) =>
     new ClientRegistryService(clientRegistryParameterName),
   tokenService: () => new TokenService(),
-  datastore: (tableName: string) =>
-    new DynamoDbAdapter(tableName),
+  datastore: (tableName: string) => new DynamoDbAdapter(tableName),
 };

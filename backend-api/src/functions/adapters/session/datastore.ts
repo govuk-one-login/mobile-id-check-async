@@ -2,7 +2,12 @@ import { Result } from "../../utils/result";
 
 export interface IDataStore {
   create: (attributes: CreateSessionAttributes) => Promise<Result<string>>;
-  read: (subjectIdentifier: string, desiredAttributes: string[]) => Promise<Result<Session | null>>;
+  readSessionId: (
+    subjectIdentifier: string,
+  ) => Promise<Result<SessionId | null>>;
+  readSessionDetails: (
+    subjectIdentifier: string,
+  ) => Promise<Result<SessionDetails | null>>;
 }
 
 export type CreateSessionAttributes = {
@@ -15,14 +20,10 @@ export type CreateSessionAttributes = {
   sub: string;
 };
 
-export type Session = {
-  clientId: string;
-  govukSigninJourneyId: string;
-  createdAt: number;
-  issuer: string;
+export type SessionId = string;
+
+export type SessionDetails = {
   sessionId: string;
-  sessionState: string;
+  redirectUri?: string;
   state: string;
-  subjectIdentifier: string;
-  timeToLive: number;
 };

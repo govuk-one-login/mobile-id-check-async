@@ -677,7 +677,6 @@ Resources:
 
   SessionsTable:
     Type: AWS::DynamoDB::Table
-
     # Disabling check for point in time backup
     # checkov:skip=CKV_AWS_28:Ensure Dynamodb point in time recovery (backup) is enabled
     # checkov:skip=CKV_AWS_119:No PII in table
@@ -857,6 +856,27 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
+        - PolicyName: DynamoReadSessionsTable
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:Query
+                Resource:
+                  - Fn::GetAtt: [ "SessionsTable", "Arn" ]
+                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-timeToLive-index
+#                Condition:
+#                  ForAllValues:StringEquals:
+#                    dynamodb:Attributes:
+#                      - sessionId
+#                      - sessionState
+#                      - subjectIdentifier
+#                      - timeToLive
+#                      - state
+#                      - redirectUri
+#                  StringEquals:
+#                    dynamodb:Select: SPECIFIC_ATTRIBUTES
         - PolicyName: AsyncActiveSessionFunctionLoggingPolicy
           PolicyDocument:
             Version: "2012-10-17"

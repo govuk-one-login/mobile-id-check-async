@@ -13,17 +13,14 @@ export async function lambdaHandlerConstructor(
   const logger = dependencies.logger();
   logger.log("STARTED");
 
-  console.log(1)
-
   const configResult = new ConfigService().getConfig(dependencies.env);
   if (configResult.isError) {
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
       errorMessage: configResult.value.errorMessage,
     });
-    return serverError500Response;
+    return serverErrorResponse;
   }
   const config = configResult.value;
-  console.log(2)
 
   const authorizationHeaderResult = new RequestService().getAuthorizationHeader(
     event.headers["Authorization"] ?? event.headers["authorization"],
@@ -34,8 +31,6 @@ export async function lambdaHandlerConstructor(
     });
     return unauthorizedResponse;
   }
-  console.log(3)
-
 
   const serviceToken = authorizationHeaderResult.value;
 
@@ -49,7 +44,6 @@ export async function lambdaHandlerConstructor(
       delayInMillis: 100,
     },
   );
-  console.log(4)
 
   if (getSubFromTokenResult.isError) {
     if (getSubFromTokenResult.value.errorCategory === "CLIENT_ERROR") {
@@ -62,28 +56,36 @@ export async function lambdaHandlerConstructor(
     logger.log("INTERNAL_SERVER_ERROR", {
       errorMessage: getSubFromTokenResult.value.errorMessage,
     });
-    return serverError500Response;
+    return serverErrorResponse;
   }
 
+  console.log(5);
 
-  console.log(5)
+  const datastore = dependencies.datastore(config.SESSION_TABLE_NAME);
+  const readResult = await datastore.readSessionDetails("mockSub1");
 
+  console.log(readResult);
 
-  const datastore = dependencies.datastore(config.SESSION_TABLE_NAME)
-  const readResult = await datastore.read("mockSub1", ["state", "sessionId", "redirectUri"])
-  console.log(readResult)
+  if (readResult.isError) {
+    return serverErrorResponse;
+  }
 
-    logger.log("COMPLETED");
+  const sessionDetails = readResult.value;
+  if (sessionDetails === null) {
+    return notFoundResponse;
+  }
+
+  logger.log("COMPLETED");
 
   return {
     statusCode: 200,
-    body: "Hello, World",
+    body: JSON.stringify(sessionDetails),
   };
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
 
-const serverError500Response: APIGatewayProxyResult = {
+const serverErrorResponse: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 500,
   body: JSON.stringify({
@@ -107,5 +109,14 @@ const badRequestResponse: APIGatewayProxyResult = {
   body: JSON.stringify({
     error: "invalid_request",
     error_description: "failed decrypting service token jwt",
+  }),
+};
+
+const notFoundResponse: APIGatewayProxyResult = {
+  headers: { "Content-Type": "application/json" },
+  statusCode: 404,
+  body: JSON.stringify({
+    error: "session_not_found",
+    error_description: "No active session found for the given sub identifier",
   }),
 };
