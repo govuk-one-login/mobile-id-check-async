@@ -40,7 +40,7 @@ locals {
 
       ContainerSignerKmsKeyArn = one(data.aws_cloudformation_stack.container_signer_dev[*].outputs["ContainerSignerKmsKeyArn"])
       RequireTestContainerSignatureValidation = "Yes"
-      RunTestContainerInVPC = "True"
+      RunTestContainerInVPC    = "True"
       SigningProfileArn        = one(data.aws_cloudformation_stack.signer_dev[*].outputs["SigningProfileArn"])
       SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_dev[*].outputs["SigningProfileVersionArn"])
 
