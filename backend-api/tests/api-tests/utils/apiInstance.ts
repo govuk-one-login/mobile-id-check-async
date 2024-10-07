@@ -4,7 +4,7 @@ import "dotenv/config";
 import { aws4Interceptor } from "aws4-axios";
 import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
 
-function getInstance(baseUrl: string, isProxyApi: boolean = false) {
+function getInstance(baseUrl: string, useAwsSigv4Signing: boolean = false) {
   const apiInstance = axios.create({ baseURL: baseUrl });
   axiosRetry(apiInstance, {
     retries: 2,
@@ -12,7 +12,7 @@ function getInstance(baseUrl: string, isProxyApi: boolean = false) {
   });
   apiInstance.defaults.validateStatus = () => true;
 
-  if (isProxyApi) {
+  if (useAwsSigv4Signing) {
     const interceptor = aws4Interceptor({
       options: {
         region: "eu-west-2",
