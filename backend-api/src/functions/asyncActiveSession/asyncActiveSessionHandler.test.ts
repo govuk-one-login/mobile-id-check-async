@@ -8,6 +8,7 @@ import { Logger } from "../services/logging/logger";
 import { MockJWTBuilder } from "../testUtils/mockJwt";
 import { errorResult, Result, successResult } from "../utils/result";
 import { ITokenService } from "./tokenService/tokenService";
+import { DynamoDbAdapter } from "../adapters/session/dynamoDbAdapter";
 
 const env = {
   STS_JWKS_ENDPOINT: "https://mockUrl.com",
@@ -24,6 +25,7 @@ describe("Async Active Session", () => {
       env,
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
       tokenService: () => new MockTokenServiceSuccess(),
+      datastore: (tableName: string) => new DynamoDbAdapter(tableName),
     };
   });
 
