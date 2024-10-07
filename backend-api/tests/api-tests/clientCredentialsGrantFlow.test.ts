@@ -7,11 +7,11 @@ import { randomUUID, UUID } from "crypto";
 import { PRIVATE_API_INSTANCE, PROXY_API_INSTANCE } from "./utils/apiInstance";
 import { AxiosInstance } from "axios";
 
-const getApisToTest = (): Array<{
+const getApisToTest = (): {
   apiName: string;
   axiosInstance: AxiosInstance;
   authorizationHeader: string;
-}> => {
+}[] => {
   const proxyApiConfig = {
     apiName: "Proxy API",
     axiosInstance: PROXY_API_INSTANCE,
