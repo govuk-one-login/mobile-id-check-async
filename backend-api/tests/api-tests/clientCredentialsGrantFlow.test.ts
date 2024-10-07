@@ -20,7 +20,7 @@ const getApisToTest = (): Array<{
   const privateApiConfig = {
     apiName: "Private API",
     api: PRIVATE_API_INSTANCE,
-    authorizationHeader: "x-custom-auth",
+    authorizationHeader: "Authorization",
   };
 
   if (process.env.IS_LOCAL_TEST === "true") {
