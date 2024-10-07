@@ -5,31 +5,35 @@ import {
 } from "@aws-sdk/client-kms";
 import { ITokenService, TokenService } from "../tokenService";
 import { mockClient } from "aws-sdk-client-mock";
-import { KMSAdapter } from "../../../adapters/kmsAdapter";
 
 describe("Token Service", () => {
   let mockFetch: jest.SpyInstance;
   let tokenService: ITokenService;
 
   beforeEach(() => {
-    tokenService = new TokenService(new KMSAdapter("mockEncryptionKeyArn"));
+    tokenService = new TokenService();
     mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
       Promise.resolve({
         status: 200,
         ok: true,
-        json: () =>
-          Promise.resolve({
-            keys: [
-              {
-                kty: "mockKty",
-                x: "mockX",
-                y: "mockY",
-                crv: "mockCrv",
-                d: "mockD",
-                kid: "mockKid",
-              },
-            ],
-          }),
+        headers: new Headers({
+          header: "mockHeader",
+        }),
+        text: () =>
+          Promise.resolve(
+            JSON.stringify({
+              keys: [
+                {
+                  kty: "mockKty",
+                  x: "mockX",
+                  y: "mockY",
+                  crv: "mockCrv",
+                  d: "mockD",
+                  kid: "mockKid",
+                },
+              ],
+            }),
+          ),
       } as Response),
     );
   });
@@ -49,7 +53,9 @@ describe("Token Service", () => {
 
             const result = await tokenService.getSubFromToken(
               "https://mockJwksEndpoint.com",
+              "mockEncryptionKeyArn",
               "mockJwe",
+              { maxAttempts: 3, delayInMillis: 1 },
             );
 
             expect(mockFetch).toHaveBeenCalledWith(
@@ -60,7 +66,7 @@ describe("Token Service", () => {
             );
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
-              errorMessage: "Unexpected error retrieving STS public key",
+              errorMessage: "Unexpected network error: Error: mockError",
               errorCategory: "SERVER_ERROR",
             });
           });
@@ -72,12 +78,15 @@ describe("Token Service", () => {
               Promise.resolve({
                 status: 500,
                 ok: false,
+                text: () => Promise.resolve("mockErrorInformaton"),
               } as Response),
             );
 
             const result = await tokenService.getSubFromToken(
               "https://mockJwksEndpoint.com",
+              "mockEncryptionKeyArn",
               "mockJwe",
+              { maxAttempts: 3, delayInMillis: 1 },
             );
 
             expect(mockFetch).toHaveBeenCalledWith(
@@ -88,7 +97,41 @@ describe("Token Service", () => {
             );
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
-              errorMessage: "Error retrieving STS public key",
+              errorMessage: "Error making http request: mockErrorInformaton",
+              errorCategory: "SERVER_ERROR",
+            });
+          });
+        });
+
+        describe("Given the response is empty", () => {
+          it("Returns an error response", async () => {
+            mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
+              Promise.resolve({
+                status: 200,
+                ok: true,
+                headers: new Headers({
+                  header: "mockHeader",
+                }),
+                text: () => Promise.resolve(""),
+              } as Response),
+            );
+
+            const result = await tokenService.getSubFromToken(
+              "https://mockJwksEndpoint.com",
+              "mockEncryptionKeyArn",
+              "mockJwe",
+              { maxAttempts: 3, delayInMillis: 1 },
+            );
+
+            expect(mockFetch).toHaveBeenCalledWith(
+              "https://mockJwksEndpoint.com",
+              {
+                method: "GET",
+              },
+            );
+            expect(result.isError).toBe(true);
+            expect(result.value).toStrictEqual({
+              errorMessage: "Response body empty",
               errorCategory: "SERVER_ERROR",
             });
           });
@@ -100,13 +143,18 @@ describe("Token Service", () => {
               Promise.resolve({
                 status: 200,
                 ok: true,
-                json: () => Promise.reject(new Error("mockInvalidJSON")),
+                headers: new Headers({
+                  header: "mockHeader",
+                }),
+                text: () => Promise.resolve("undefined"),
               } as Response),
             );
 
             const result = await tokenService.getSubFromToken(
               "https://mockJwksEndpoint.com",
+              "mockEncryptionKeyArn",
               "mockJwe",
+              { maxAttempts: 3, delayInMillis: 1 },
             );
 
             expect(mockFetch).toHaveBeenCalledWith(
@@ -122,18 +170,197 @@ describe("Token Service", () => {
             });
           });
         });
+
+        describe("Given the response is not in the shape of a public key", () => {
+          it("Returns an error response", async () => {
+            mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
+              Promise.resolve({
+                status: 200,
+                ok: true,
+                headers: new Headers({
+                  header: "mockHeader",
+                }),
+                text: () =>
+                  Promise.resolve(
+                    JSON.stringify({
+                      keys: ["mockNotAnObject"],
+                    }),
+                  ),
+              } as Response),
+            );
+
+            const result = await tokenService.getSubFromToken(
+              "https://mockJwksEndpoint.com",
+              "mockEncryptionKeyArn",
+              "mockJwe",
+              { maxAttempts: 3, delayInMillis: 1 },
+            );
+
+            expect(mockFetch).toHaveBeenCalledWith(
+              "https://mockJwksEndpoint.com",
+              {
+                method: "GET",
+              },
+            );
+            expect(result.isError).toBe(true);
+            expect(result.value).toStrictEqual({
+              errorMessage:
+                "Response does not match the expected JWKS structure",
+              errorCategory: "SERVER_ERROR",
+            });
+          });
+        });
+
+        describe("Retry policy", () => {
+          describe("Given there is an error retrieving the public key on the first attempt", () => {
+            it("Makes second attempt to get STS key", async () => {
+              mockFetch = jest
+                .spyOn(global, "fetch")
+                .mockImplementationOnce(() =>
+                  Promise.reject(new Error("mockError")),
+                )
+                .mockImplementationOnce(() =>
+                  Promise.resolve({
+                    status: 200,
+                    ok: true,
+                    headers: new Headers({
+                      header: "mockHeader",
+                    }),
+                    text: () =>
+                      Promise.resolve(
+                        JSON.stringify({
+                          keys: [
+                            {
+                              kty: "mockKty",
+                              x: "mockX",
+                              y: "mockY",
+                              crv: "mockCrv",
+                              d: "mockD",
+                              kid: "mockKid",
+                            },
+                          ],
+                        }),
+                      ),
+                  } as Response),
+                );
+
+              await tokenService.getSubFromToken(
+                "https://mockJwksEndpoint.com",
+                "mockEncryptionKeyArn",
+                "mockJwe",
+                { maxAttempts: 3, delayInMillis: 1 },
+              );
+
+              expect(mockFetch).toHaveBeenCalledWith(
+                "https://mockJwksEndpoint.com",
+                {
+                  method: "GET",
+                },
+              );
+              expect(mockFetch).toHaveBeenCalledTimes(2);
+            });
+          });
+
+          describe("Given there is an error retrieving the public key on the second attempt", () => {
+            it("Makes third attempt to get STS key", async () => {
+              mockFetch = jest
+                .spyOn(global, "fetch")
+                .mockImplementationOnce(() =>
+                  Promise.reject(new Error("mockError")),
+                )
+                .mockImplementationOnce(() =>
+                  Promise.reject(new Error("mockError")),
+                )
+                .mockImplementationOnce(() =>
+                  Promise.resolve({
+                    status: 200,
+                    ok: true,
+                    headers: new Headers({
+                      header: "mockHeader",
+                    }),
+                    text: () =>
+                      Promise.resolve(
+                        JSON.stringify({
+                          keys: [
+                            {
+                              kty: "mockKty",
+                              x: "mockX",
+                              y: "mockY",
+                              crv: "mockCrv",
+                              d: "mockD",
+                              kid: "mockKid",
+                            },
+                          ],
+                        }),
+                      ),
+                  } as Response),
+                );
+
+              await tokenService.getSubFromToken(
+                "https://mockJwksEndpoint.com",
+                "mockEncryptionKeyArn",
+                "mockJwe",
+                { maxAttempts: 3, delayInMillis: 1 },
+              );
+
+              expect(mockFetch).toHaveBeenCalledWith(
+                "https://mockJwksEndpoint.com",
+                {
+                  method: "GET",
+                },
+              );
+              expect(mockFetch).toHaveBeenCalledTimes(3);
+            });
+          });
+
+          describe("Given there is an error retrieving the public key on the third attempt", () => {
+            it("Returns error result", async () => {
+              mockFetch = jest
+                .spyOn(global, "fetch")
+                .mockImplementationOnce(() =>
+                  Promise.reject(new Error("mockError")),
+                )
+                .mockImplementationOnce(() =>
+                  Promise.reject(new Error("mockError")),
+                )
+                .mockImplementationOnce(() =>
+                  Promise.reject(new Error("mockError")),
+                );
+
+              const result = await tokenService.getSubFromToken(
+                "https://mockJwksEndpoint.com",
+                "mockEncryptionKeyArn",
+                "mockJwe",
+                { maxAttempts: 3, delayInMillis: 1 },
+              );
+
+              expect(mockFetch).toHaveBeenCalledWith(
+                "https://mockJwksEndpoint.com",
+                {
+                  method: "GET",
+                },
+              );
+              expect(mockFetch).toHaveBeenCalledTimes(3);
+
+              expect(result.isError).toBe(true);
+              expect(result.value).toStrictEqual({
+                errorMessage: "Unexpected network error: Error: mockError",
+                errorCategory: "SERVER_ERROR",
+              });
+            });
+          });
+        });
       });
     });
 
     describe("Decrypting token", () => {
       describe("Given the JWE does not consist of five components", () => {
         it("Returns an error result", async () => {
-          const kmsMock = mockClient(KMSClient);
-          kmsMock.on(DecryptCommand).resolves({});
-
           const result = await tokenService.getSubFromToken(
             "https://mockJwksEndpoint.com",
+            "mockEncryptionKeyArn",
             "one.two.three.four",
+            { maxAttempts: 3, delayInMillis: 1 },
           );
 
           expect(result.isError).toBe(true);
@@ -144,8 +371,8 @@ describe("Token Service", () => {
         });
       });
 
-      describe("Given there is a server error when calling KMS", () => {
-        it("Returns an error result", async () => {
+      describe("Given an error happens when calling KMS to decrypt the key", () => {
+        it("Returns a SERVER_ERROR error result", async () => {
           const kmsMock = mockClient(KMSClient);
           kmsMock.on(DecryptCommand).rejects(
             new KeyUnavailableException({
@@ -156,12 +383,14 @@ describe("Token Service", () => {
 
           const result = await tokenService.getSubFromToken(
             "https://mockJwksEndpoint.com",
+            "mockEncryptionKeyArn",
             "one.two.three.four.five",
+            { maxAttempts: 3, delayInMillis: 1 },
           );
 
           expect(result.isError).toBe(true);
           expect(result.value).toStrictEqual({
-            errorMessage: "Error decrypting key with KMS",
+            errorMessage: "Error decrypting data with KMS",
             errorCategory: "SERVER_ERROR",
           });
         });
@@ -174,13 +403,59 @@ describe("Token Service", () => {
 
           const result = await tokenService.getSubFromToken(
             "https://mockJwksEndpoint.com",
+            "mockEncryptionKeyArn",
             "one.two.three.four.five",
+            { maxAttempts: 3, delayInMillis: 1 },
+          );
+
+          expect(result.isError).toBe(true);
+          expect(result.value).toStrictEqual({
+            errorMessage: "Decrypted plaintext data was null",
+            errorCategory: "SERVER_ERROR",
+          });
+        });
+      });
+
+      describe("Given converting CEK to CryptoKey fails", () => {
+        it("Returns error result", async () => {
+          const kmsMock = mockClient(KMSClient);
+          kmsMock.on(DecryptCommand).resolves({ Plaintext: new Uint8Array() });
+
+          const result = await tokenService.getSubFromToken(
+            "https://mockJwksEndpoint.com",
+            "mockEncryptionKeyArn",
+            "one.two.three.four.five",
+            { maxAttempts: 3, delayInMillis: 1 },
           );
 
           expect(result.isError).toBe(true);
           expect(result.value).toStrictEqual({
             errorMessage:
-              "No Plaintext received when calling KMS to decrypt the Content Encryption Key",
+              "Error converting cek to CryptoKey. DataError: Invalid key length",
+            errorCategory: "SERVER_ERROR",
+          });
+        });
+      });
+
+      describe("Given decryping JWE fails", () => {
+        it("Returns error result", async () => {
+          const buffer = new ArrayBuffer(16);
+          const kmsMock = mockClient(KMSClient);
+          kmsMock
+            .on(DecryptCommand)
+            .resolves({ Plaintext: new Uint8Array(buffer) });
+
+          const result = await tokenService.getSubFromToken(
+            "https://mockJwksEndpoint.com",
+            "mockEncryptionKeyArn",
+            "one.two.three.four.five",
+            { maxAttempts: 3, delayInMillis: 1 },
+          );
+
+          expect(result.isError).toBe(true);
+          expect(result.value).toStrictEqual({
+            errorMessage:
+              "Error decrypting JWE. OperationError: The provided data is too small.",
             errorCategory: "SERVER_ERROR",
           });
         });

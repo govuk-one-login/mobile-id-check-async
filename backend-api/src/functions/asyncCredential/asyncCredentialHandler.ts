@@ -19,11 +19,13 @@ export async function lambdaHandlerConstructor(
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
       errorMessage: configResult.value.errorMessage,
     });
-    return serverError500Response;
+    return serverErrorResponse;
   }
   const config = configResult.value;
 
   const requestService = new RequestService();
+
+  console.log(JSON.stringify(event.headers));
 
   const authorizationHeaderResult = requestService.getAuthorizationHeader(
     event.headers["Authorization"] ?? event.headers["authorization"],
@@ -78,13 +80,7 @@ export async function lambdaHandlerConstructor(
   );
   if (verifyTokenSignatureResult.isError) {
     const errorMessage = verifyTokenSignatureResult.value.errorMessage;
-    if (verifyTokenSignatureResult.value.errorCategory === "SERVER_ERROR") {
-      logger.log("ERROR_VERIFYING_SIGNATURE", {
-        errorMessage,
-      });
-      return serverError500Response;
-    }
-    logger.log("TOKEN_SIGNATURE_INVALID", {
+    logger.log("ERROR_VERIFYING_SIGNATURE", {
       errorMessage,
     });
     return badRequestResponse({
@@ -108,7 +104,7 @@ export async function lambdaHandlerConstructor(
       logger.log("ERROR_RETRIEVING_REGISTERED_CLIENT", {
         errorMessage: getPartialRegisteredClientResponse.value.errorMessage,
       });
-      return serverError500Response;
+      return serverErrorResponse;
     }
 
     logger.log("CLIENT_CREDENTIALS_INVALID", {
@@ -159,7 +155,7 @@ export async function lambdaHandlerConstructor(
     logger.log("ERROR_RETRIEVING_SESSION", {
       errorMessage: activeSessionResult.value.errorMessage,
     });
-    return serverError500Response;
+    return serverErrorResponse;
   }
   if (activeSessionResult.value) {
     logger.setSessionId({ sessionId: activeSessionResult.value });
@@ -177,7 +173,7 @@ export async function lambdaHandlerConstructor(
     logger.log("ERROR_CREATING_SESSION", {
       errorMessage: createSessionResult.value.errorMessage,
     });
-    return serverError500Response;
+    return serverErrorResponse;
   }
   const sessionId = createSessionResult.value;
   logger.setSessionId({ sessionId });
@@ -196,7 +192,7 @@ export async function lambdaHandlerConstructor(
     logger.log("ERROR_WRITING_AUDIT_EVENT", {
       errorMessage: "Unexpected error writing the DCMAW_ASYNC_CRI_START event",
     });
-    return serverError500Response;
+    return serverErrorResponse;
   }
 
   logger.log("COMPLETED");
@@ -221,12 +217,12 @@ const unauthorizedResponse = {
   headers: { "Content-Type": "application/json" },
   statusCode: 401,
   body: JSON.stringify({
-    error: "Unauthorized",
-    error_description: "Invalid token",
+    error: "invalid_token",
+    error_description: "Invalid or missing authorization header",
   }),
 };
 
-const serverError500Response: APIGatewayProxyResult = {
+const serverErrorResponse: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 500,
   body: JSON.stringify({

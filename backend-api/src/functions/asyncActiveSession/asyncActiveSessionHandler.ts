@@ -11,6 +11,7 @@ export async function lambdaHandlerConstructor(
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
+  logger.log("STARTED");
 
   const configResult = new ConfigService().getConfig(dependencies.env);
   if (configResult.isError) {
@@ -33,11 +34,15 @@ export async function lambdaHandlerConstructor(
 
   const serviceToken = authorizationHeaderResult.value;
 
-  const kmsAdapter = dependencies.kmsAdapter(config.ENCRYPTION_KEY_ARN);
-  const tokenService = dependencies.tokenService(kmsAdapter);
+  const tokenService = dependencies.tokenService();
   const getSubFromTokenResult = await tokenService.getSubFromToken(
     config.STS_JWKS_ENDPOINT,
+    config.ENCRYPTION_KEY_ARN,
     serviceToken,
+    {
+      maxAttempts: 3,
+      delayInMillis: 100,
+    },
   );
   if (getSubFromTokenResult.isError) {
     if (getSubFromTokenResult.value.errorCategory === "CLIENT_ERROR") {
@@ -52,6 +57,8 @@ export async function lambdaHandlerConstructor(
     });
     return serverError500Response;
   }
+
+  logger.log("COMPLETED");
 
   return {
     statusCode: 200,

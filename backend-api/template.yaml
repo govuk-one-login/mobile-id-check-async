@@ -259,6 +259,13 @@ Resources:
       Environment:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
+      VpcConfig:
+        SubnetIds:
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
 
   AsyncTokenFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -278,6 +285,7 @@ Resources:
   AsyncTokenLambdaRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Sub ${AWS::StackName}-token-lambda
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -327,7 +335,16 @@ Resources:
                   - kms:Decrypt
                   - kms:GenerateDataKey
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
-      RoleName: !Sub ${AWS::StackName}-token-lambda
+        - PolicyName: VpcPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
@@ -355,6 +372,13 @@ Resources:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
           SESSION_DURATION_IN_SECONDS: 3600 #Used to set time to live when creating sessions. Set to 1 hour.
+      VpcConfig:
+        SubnetIds:
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
 
   AsyncCredentialLogGroup:
     Type: AWS::Logs::LogGroup
@@ -374,6 +398,7 @@ Resources:
   AsyncCredentialLambdaRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Sub ${AWS::StackName}-credential-lambda
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -447,9 +472,16 @@ Resources:
                   - kms:Decrypt
                   - kms:GenerateDataKey
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
-
-                # TxMA Audit service
-      RoleName: !Sub ${AWS::StackName}-credential-lambda
+        - PolicyName: VpcPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
@@ -626,7 +658,7 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: !GetAtt ProxyLambdaLogGroup.Arn
-        - PolicyName: ENIPolicy
+        - PolicyName: VpcPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -789,6 +821,13 @@ Resources:
           ENCRYPTION_KEY_ARN: !GetAtt KMSEncryptionKey.Arn
           STS_JWKS_ENDPOINT:
             !FindInMap [EnvironmentVariables, !Ref Environment, STSJWKSENDPOINT]
+      VpcConfig:
+        SubnetIds:
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
 
   AsyncActiveSessionFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -808,6 +847,7 @@ Resources:
   AsyncActiveSessionLambdaRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Sub ${AWS::StackName}-active-session-lambda
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -834,7 +874,16 @@ Resources:
                 Action:
                   - kms:Decrypt
                 Resource: !GetAtt KMSEncryptionKey.Arn
-      RoleName: !Sub ${AWS::StackName}-active-session-lambda
+        - PolicyName: VpcPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
@@ -1094,6 +1143,13 @@ Resources:
           ENCRYPTION_KEY_ID: !Ref KMSEncryptionKey
           JWKS_BUCKET_NAME: !Ref JsonWebKeysBucket
           JWKS_FILE_NAME: .well-known/jwks.json
+      VpcConfig:
+        SubnetIds:
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
 
   JsonWebKeysFunctionLambdaRole:
     Type: AWS::IAM::Role
@@ -1136,6 +1192,16 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
+        - PolicyName: VpcPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
@@ -1308,3 +1374,7 @@ Outputs:
     Condition: ProxyApiDeployment
     Description: Proxy API Gateway Pretty DNS
     Value: !Sub https://${ProxyApiDomainName}
+
+  PrivateApiUrl:
+    Description: Private API Gateway base URL
+    Value: !Sub https://${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
