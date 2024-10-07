@@ -7,25 +7,34 @@ import { randomUUID, UUID } from "crypto";
 import { PRIVATE_API_INSTANCE, PROXY_API_INSTANCE } from "./utils/apiInstance";
 import { AxiosInstance } from "axios";
 
-const APIS_TO_TEST: [
-  apiInstanceName: string,
-  apiInstace: AxiosInstance,
-  authorizationHeader: string,
-][] =
-  process.env.IS_LOCAL_TEST === "true"
-    ? [["Proxy API Instance", PROXY_API_INSTANCE, "x-custom-auth"]]
-    : [
-        ["Proxy API Instance", PROXY_API_INSTANCE, "x-custom-auth"],
-        ["Private API Instance", PRIVATE_API_INSTANCE, "Authorization"],
-      ];
+const getApisToTest = (): {
+  apiName: string;
+  axiosInstance: AxiosInstance;
+  authorizationHeader: string;
+}[] => {
+  const proxyApiConfig = {
+    apiName: "Proxy API",
+    axiosInstance: PROXY_API_INSTANCE,
+    authorizationHeader: "x-custom-auth",
+  };
+  const privateApiConfig = {
+    apiName: "Private API",
+    axiosInstance: PRIVATE_API_INSTANCE,
+    authorizationHeader: "Authorization",
+  };
 
-describe.each(APIS_TO_TEST)(
-  "Test %s",
-  (
-    apiInstanceName: string,
-    apiInstance: AxiosInstance,
-    authorizationHeader: string,
-  ) => {
+  if (process.env.IS_LOCAL_TEST === "true") {
+    return [proxyApiConfig]; // test only proxy API locally
+  } else {
+    return [proxyApiConfig, privateApiConfig]; // test both proxy and private APIs in the pipeline
+  }
+};
+
+const apis = getApisToTest();
+
+describe.each(apis)(
+  "Test $apiName",
+  ({ axiosInstance, authorizationHeader }) => {
     let clientIdAndSecret: string;
 
     beforeAll(async () => {
@@ -35,7 +44,7 @@ describe.each(APIS_TO_TEST)(
 
     describe("Given there is no grant_type in the request body", () => {
       it("Returns a 400 Bad Request response", async () => {
-        const response = await apiInstance.post(`/async/token`, "", {
+        const response = await axiosInstance.post(`/async/token`, "", {
           headers: {
             [authorizationHeader]: "Basic " + toBase64(clientIdAndSecret),
           },
@@ -51,7 +60,7 @@ describe.each(APIS_TO_TEST)(
 
     describe("Given the grant_type value is invalid", () => {
       it("Returns a 400 Bad Request response", async () => {
-        const response = await apiInstance.post(
+        const response = await axiosInstance.post(
           `/async/token`,
           "grant_type=invalid_grant_type",
           {
@@ -71,7 +80,7 @@ describe.each(APIS_TO_TEST)(
 
     describe("Given there is no Authorization header in the request", () => {
       it("Returns a 401 Unauthorized response", async () => {
-        const response = await apiInstance.post(
+        const response = await axiosInstance.post(
           `/async/token`,
           "grant_type=client_credentials",
         );
@@ -87,7 +96,7 @@ describe.each(APIS_TO_TEST)(
     describe("Given the client in the Authorization header is not a registered client", () => {
       it("Returns a 400 Bad Request response", async () => {
         const invalidClientIdAndSecret = "invalidClient:invalidClientSecret";
-        const response = await apiInstance.post(
+        const response = await axiosInstance.post(
           `/async/token`,
           "grant_type=client_credentials",
           {
@@ -108,7 +117,7 @@ describe.each(APIS_TO_TEST)(
 
     describe("Given the request is valid and the client is registered", () => {
       it("Returns a 200 OK response and the access token", async () => {
-        const response = await apiInstance.post(
+        const response = await axiosInstance.post(
           `/async/token`,
           "grant_type=client_credentials",
           {
@@ -146,7 +155,7 @@ describe.each(APIS_TO_TEST)(
         clientDetails = await getFirstRegisteredClient();
         const clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
         accessToken = await getAccessToken(
-          apiInstance,
+          axiosInstance,
           clientIdAndSecret,
           authorizationHeader,
         );
@@ -155,7 +164,7 @@ describe.each(APIS_TO_TEST)(
 
       describe("Given there is no Authorization header in the request", () => {
         it("Returns a 401 Unauthorized response", async () => {
-          const response = await apiInstance.post(
+          const response = await axiosInstance.post(
             `/async/credential`,
             credentialRequestBody,
           );
@@ -170,7 +179,7 @@ describe.each(APIS_TO_TEST)(
 
       describe("Given the Bearer token in the Authorization header is not a valid token", () => {
         it("Returns a 400 Bad Request response", async () => {
-          const response = await apiInstance.post(
+          const response = await axiosInstance.post(
             `/async/credential`,
             credentialRequestBody,
             {
@@ -190,7 +199,7 @@ describe.each(APIS_TO_TEST)(
 
       describe("Given the request body is invalid", () => {
         it("Returns a 400 Bad Request response", async () => {
-          const response = await apiInstance.post(
+          const response = await axiosInstance.post(
             `/async/credential`,
             "invalidRequestBody",
             {
@@ -215,7 +224,7 @@ describe.each(APIS_TO_TEST)(
             "6T5a8kCTyXsmw_2ATkyPgtLRzsuot-_ZIXWnuXNftZP8SHHkNxwFyMaZxEnqqtQst-99AoRrUDZnPov0oztbSA",
           );
 
-          const response = await apiInstance.post(
+          const response = await axiosInstance.post(
             `/async/credential`,
             credentialRequestBody,
             {
@@ -237,13 +246,13 @@ describe.each(APIS_TO_TEST)(
       describe("Given the request is valid and an active session is found for a given sub", () => {
         it("Returns 200 OK", async () => {
           // Create session if it does not exist
-          await apiInstance.post(`/async/credential`, credentialRequestBody, {
+          await axiosInstance.post(`/async/credential`, credentialRequestBody, {
             headers: {
               [authorizationHeader]: "Bearer " + accessToken,
             },
           });
 
-          const response = await apiInstance.post(
+          const response = await axiosInstance.post(
             `/async/credential`,
             credentialRequestBody,
             {
@@ -264,7 +273,7 @@ describe.each(APIS_TO_TEST)(
       describe("Given the same access token is used more than once to fetch an active session", () => {
         it("Returns 200 OK", async () => {
           // use access token once
-          const responseOne = await apiInstance.post(
+          const responseOne = await axiosInstance.post(
             `/async/credential`,
             credentialRequestBody,
             {
@@ -275,7 +284,7 @@ describe.each(APIS_TO_TEST)(
           );
 
           // use access token twice
-          const responseTwo = await apiInstance.post(
+          const responseTwo = await axiosInstance.post(
             `/async/credential`,
             credentialRequestBody,
             {
@@ -306,7 +315,7 @@ describe.each(APIS_TO_TEST)(
             randomSub,
           );
 
-          const response = await apiInstance.post(
+          const response = await axiosInstance.post(
             `/async/credential`,
             credentialRequestBody,
             {
