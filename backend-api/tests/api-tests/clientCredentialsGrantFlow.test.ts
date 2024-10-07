@@ -121,6 +121,9 @@ describe.each(APIS_TO_TEST)(
           },
         );
 
+        console.log("124 Response:", JSON.stringify(response));
+        console.log("125 Response Data:", JSON.stringify(response.data));
+
         const accessTokenParts = response.data.access_token.split(".");
         const header = JSON.parse(fromBase64(accessTokenParts[0])) as object;
         const payload = JSON.parse(fromBase64(accessTokenParts[1])) as object;
@@ -148,7 +151,11 @@ describe.each(APIS_TO_TEST)(
       beforeAll(async () => {
         clientDetails = await getFirstRegisteredClient();
         const clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
-        accessToken = await getAccessToken(apiInstance, clientIdAndSecret);
+        accessToken = await getAccessToken(
+          apiInstance,
+          clientIdAndSecret,
+          authorizationHeader,
+        );
         credentialRequestBody = getRequestBody(clientDetails);
       });
 
@@ -359,14 +366,20 @@ function fromBase64(value: string): string {
 async function getAccessToken(
   apiInstance: AxiosInstance,
   clientIdAndSecret: string,
+  authorizationHeader: string,
 ): Promise<string> {
   const response = await apiInstance.post(
     `/async/token`,
     "grant_type=client_credentials",
     {
-      headers: { "x-custom-auth": "Basic " + toBase64(clientIdAndSecret) },
+      headers: {
+        [authorizationHeader]: "Basic " + toBase64(clientIdAndSecret),
+      },
     },
   );
+
+  console.log("374 Response:", JSON.stringify(response));
+
   return response.data.access_token as string;
 }
 
