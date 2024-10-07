@@ -66,6 +66,8 @@ export class TokenService implements ITokenService {
       return decryptedJweResult;
     }
 
+    const verifySignatureResult = this.verifySignature()
+
     return successResult("");
   };
 
@@ -150,6 +152,26 @@ export class TokenService implements ITokenService {
 
     const decoder = new TextDecoder();
     return successResult(decoder.decode(decryptedBuffer));
+  }
+
+  private verifySignature(jwe: string, jwks: IJwks): Result<string> {
+    const [header, payload, signature] = jwe.split('.')
+
+    let result
+    try {
+      result = {
+        header: JSON.parse(Buffer.from(header, 'base64url').toString()),
+        payload: JSON.parse(Buffer.from(payload, 'base64url').toString()),
+        signature
+      }
+    } catch (error) {
+      return errorResult({
+        errorMessage: `Failed verifying service token signature. ${error}`,
+        errorCategory: "SERVER_ERROR",
+      });
+    }
+
+    return successResult("")
   }
 }
 
