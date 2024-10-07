@@ -7,17 +7,28 @@ import { randomUUID, UUID } from "crypto";
 import { PRIVATE_API_INSTANCE, PROXY_API_INSTANCE } from "./utils/apiInstance";
 import { AxiosInstance } from "axios";
 
-const APIS_TO_TEST: [apiInstace: AxiosInstance, authorizationHeader: string][] =
+const APIS_TO_TEST: [
+  apiInstanceName: string,
+  apiInstace: AxiosInstance,
+  authorizationHeader: string,
+][] =
   process.env.IS_LOCAL_TEST === "true"
-    ? [[PROXY_API_INSTANCE, "x-custom-auth"]]
+    ? [["Proxy API Instance", PROXY_API_INSTANCE, "x-custom-auth"]]
     : [
-        [PROXY_API_INSTANCE, "x-custom-auth"],
-        [PRIVATE_API_INSTANCE, "Authorization"],
+        ["Proxy API Instance", PROXY_API_INSTANCE, "x-custom-auth"],
+        ["Private API Instance", PRIVATE_API_INSTANCE, "Authorization"],
       ];
 
 describe.each(APIS_TO_TEST)(
-  "Testing $PROXY_API_INSTANCE",
-  (apiInstance: AxiosInstance, authorizationHeader: string) => {
+  "Test %s",
+  (
+    apiInstanceName: string,
+    apiInstance: AxiosInstance,
+    authorizationHeader: string,
+  ) => {
+    console.log(
+      `apiInstanceName ${apiInstanceName} & authorizationHeader ${authorizationHeader}`,
+    );
     let clientIdAndSecret: string;
 
     beforeAll(async () => {
