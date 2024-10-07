@@ -480,16 +480,17 @@ describe("Token Service", () => {
             KeyId:
               "arn:aws:kms:eu-west-2:211125300205:key/7f6d8b26-8089-462a-9ff5-d1af8eb2e7a1",
             Plaintext: new Uint8Array([
-              206, 38, 204, 170, 46, 201, 136, 104, 62, 25, 208, 99, 129, 151,
-              132, 145, 193, 80, 218, 195, 201, 168, 7, 1, 255, 30, 215, 58, 84,
-              51, 47, 78,
+              32, 246, 101, 201,  76,  14, 171, 166,
+              187, 133,   5,  20,  88, 166,  67,  87,
+              219,  77, 117, 132,  24, 205, 191, 201,
+              17,  37, 209,  89, 227, 142,  98,  12
             ]),
           });
 
           const result = await tokenService.getSubFromToken(
             "https://mockJwksEndpoint.com",
             "https://mockEncryptionKeyArn.com",
-            "eyJhbGciOiJSU0EtT0FFUC0yNTYiLCJlbmMiOiJBMjU2R0NNIn0.TbpJTOgSQ0svK6eh0ZBS_jl-ebU9DFK99YA_qaOo5aafy-XiFXvi_Vc19zmzMHafn0mi0GSU2PkJd3jV-QcJOoS-ZCJ14rwHhsiO1YSvU3pEiflDNrslT24yTCd4DeMGAdJaZNOpBAb1In04c2VgbtvMQkpKvkvZ6xb_07-MU6jQPgzknWH4DQnaJ5hWplsAudqDzp2cCyOW5YRm4huSVWxLbMJccHee9BgUtFfhzzHxBYrfvpN8q-gMveiQfZJvEVqfIR8n5zzdybmfpasTbcXEPAmkoLpvjgTm6HKYnoodXfSwr9p1SCIFzEZQd9JF9WSrIA_LRHPwjTtLHiKjUg.ILKKprrdKL4pNmVJ.dr-7Mohe0_3C9T-3cFP9-ABmmy861rO1rwRrGYgyaPZqSRPlIIut-UWPAz3XN9XM1rpYoqV3r5wZzkR5ezgDIk0VxzSBvvx6o57LvH-uq-yIBafGaaXm3Vcl0bqyMnkW26aB1UzxJUSayOqNJyo8SCvqPmdwBdoP2KbpoUZ8zJHnYIJOsyPcXc7gGk5O-q6OUyNzFlDM1QM9W7PtRAKcZOnV3CGcI8EJSRwSOnNFlVLv4Kh9_0f4dH0jOMrz2Zb4Nta1gCBsfEVdM80rWRwZplp7p64gfLh16T_NTwsfW-d-F69gpf3umtHs6AR6byWUOcxDH6RKee5xrJxqIrQuP352p3DMekvDtVbIC_mwdqhci7Rg5lIlrRfv4UwqUw5CI167MfZl9HtR47lVz-jKuBEldEKYrlcxEJvYwT2ctWHL3ZlBnRC44a81E588Rr7Wz2W0paRk0X0_rRcHeDwbsIOXZpp193WrcylhPoS5Uw7Q6jDW4fluOPfT6WjZQKbu3qLEMrwMNiNtHWmqkHQLxbYVlFxJgd0zl8y_Ge4z8YzaSjApXF5u41kZWoSTB2q5_R0ICgQQpUSQ1yuAIKgiml92li2eY5FQlaqDj2KVe-zgm2ZLjjcjTyUSccPBoqMayY6wqZW5.XF1Jo9QvkYqtOJFLC1UAaA",
+            "eyJhbGciOiJSU0EtT0FFUC0yNTYiLCJlbmMiOiJBMjU2R0NNIn0.gIpE-M0GXa5em7kWpV-UqfPDQZX1y0z55qx4YpBX5fJO3qc3EBNCaMaGn8Tc1wol0IWconi-zPq5189o8Ln-bor9JFqG5JBj14ZbsPe4Zl5kAi3uouJo3x_JhGI9pxtUVJpBBsXEMk1c6snipJoObWautKUVn5Tz6Z7mAynycGDNMOagOfVOKseAKr22n6Mo7vffENgKBE6b8RQoq5E3XaEUKJTLU_HIRKKNTZv91QDZI7J6Awy1FVoBbILYXyaQ5JRvupm8i6hGzf6ONNeUOhQTFDJWWt8L29mnYm24Iapaz00moAjuO0BYuyRfFmnmzjPHbvzadXSl4v2Ks8AMuQ.zZi9c9a7uPc6oPhT.m4eKptOJBmtkZiu6z6arzE6CNNBEPYJXDeiFQPXl9RNm2whME9zsUSD-DJvGkuvHpuQU6qgmnk5yBgy9M7KbhByeMY46iQyTcgMVC0QPgzrzdCk5cq8zpI1oBrBqax21oqpAVkhLzr5aL96eyfmmqBOxch-ew_XxWD_fsNPA53PL4rK4CCHRRIJ2KMvRN7-NlPqeIfuSaNTDA7g4ScDqOz4udbjHp4tGHxOxWn7lZLiFGIf4XRiMPhNDfz0L1wS6DtZEzy1ZtHgORF9w0SvSOZvJb1YF7HwxAGCAwNB4Qs_igPl2bbCsd5vOlFtUMDzt1nykS0oR23002g-Lp36DlBwpvKQ1bifb291w84afvNINe6MnWLetsmMfBjIz9fmqcTs-NjKwTOcmrS2221zzDEzbfycafk23wsocMTpsxPzX9TcedJGicVtH82vu66tQCL9tJGg57iI3esscfUVb3N7zUlkZ_xQqq1F8Il3NigiHmyJftE8KiO0MJ5qtMTHzuUbR0W7SvsMbOCgRGEbEzETYApyiCdNX_A3LvRx1edAd2vAKk5BwLXV5QE-s7QdiH3dpXwFHkFg_Y6raUPpr5pzM1FXAIbxOSY5BFPLY4GB0iYCv0yz3VoseN6JY49bg4RAVrUuv.GrExLB-mKRFXa8y4ZWgsLw",
             { maxAttempts: 3, delayInMillis: 1 },
           );
 
