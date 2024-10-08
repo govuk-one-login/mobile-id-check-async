@@ -1,8 +1,8 @@
 import { errorResult, Result, successResult } from "../../../utils/result";
-import { IDataStore, SessionDetails, SessionId } from "../datastore";
+import { IDataStore, SessionDetails } from "../datastore";
 
 export class MockDynamoDbAdapterReadErrorResult implements IDataStore {
-  readSessionId = async (): Promise<Result<SessionId | null>> => {
+  readSessionId = async (): Promise<Result<string | null>> => {
     return errorResult({
       errorMessage: "Mock error when reading session ID",
       errorCategory: "SERVER_ERROR",
@@ -22,7 +22,7 @@ export class MockDynamoDbAdapterReadErrorResult implements IDataStore {
 }
 
 export class MockDynamoDbAdapterReadNullSuccessResult implements IDataStore {
-  readSessionId = async (): Promise<Result<SessionId | null>> => {
+  readSessionId = async (): Promise<Result<string | null>> => {
     return successResult(null);
   };
 
@@ -36,7 +36,7 @@ export class MockDynamoDbAdapterReadNullSuccessResult implements IDataStore {
 }
 
 export class MockDynamoDbAdapterReadSuccessResult implements IDataStore {
-  readSessionId = async (): Promise<Result<SessionId | null>> => {
+  readSessionId = async (): Promise<Result<string | null>> => {
     return successResult("mockSessionId");
   };
 
@@ -54,7 +54,7 @@ export class MockDynamoDbAdapterReadSuccessResult implements IDataStore {
 }
 
 export class MockDynamoDbAdapterCreateSuccessResult implements IDataStore {
-  readSessionId = async (): Promise<Result<SessionId | null>> => {
+  readSessionId = async (): Promise<Result<string | null>> => {
     return successResult(null);
   };
 
@@ -68,7 +68,7 @@ export class MockDynamoDbAdapterCreateSuccessResult implements IDataStore {
 }
 
 export class MockDynamoDbAdapterCreateErrorResult implements IDataStore {
-  readSessionId = async (): Promise<Result<SessionId | null>> => {
+  readSessionId = async (): Promise<Result<string | null>> => {
     return successResult(null);
   };
 

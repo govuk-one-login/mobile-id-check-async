@@ -12,7 +12,6 @@ import { randomUUID } from "crypto";
 import {
   IDataStore,
   CreateSessionAttributes,
-  SessionId,
   SessionDetails,
 } from "./datastore";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
@@ -34,7 +33,7 @@ export class DynamoDbAdapter implements IDataStore {
 
   async readSessionId(
     subjectIdentifier: string,
-  ): Promise<Result<SessionId | null>> {
+  ): Promise<Result<string | null>> {
     const currentTimeInSeconds = Math.floor(Date.now() / 1000);
 
     const input: QueryCommandInput = {
@@ -82,7 +81,7 @@ export class DynamoDbAdapter implements IDataStore {
       });
     }
 
-    return successResult(sessionId as SessionId);
+    return successResult(sessionId);
   }
 
   async readSessionDetails(

@@ -4,9 +4,7 @@ export interface IDataStore {
   createSession: (
     attributes: CreateSessionAttributes,
   ) => Promise<Result<string>>;
-  readSessionId: (
-    subjectIdentifier: string,
-  ) => Promise<Result<SessionId | null>>;
+  readSessionId: (subjectIdentifier: string) => Promise<Result<string | null>>;
   readSessionDetails: (
     subjectIdentifier: string,
   ) => Promise<Result<SessionDetails | null>>;
@@ -21,8 +19,6 @@ export type CreateSessionAttributes = {
   state: string;
   sub: string;
 };
-
-export type SessionId = string;
 
 export type SessionDetails = {
   sessionId: string;
