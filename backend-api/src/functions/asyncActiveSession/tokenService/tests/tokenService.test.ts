@@ -5,6 +5,8 @@ import {
 } from "@aws-sdk/client-kms";
 import { ITokenService, TokenService } from "../tokenService";
 import { mockClient } from "aws-sdk-client-mock";
+import * as jose from "jose";
+import { JWTHeaderParameters } from "jose";
 
 describe("Token Service", () => {
   let mockFetch: jest.SpyInstance;
@@ -39,7 +41,8 @@ describe("Token Service", () => {
   });
 
   afterEach(() => {
-    mockFetch.mockRestore();
+    // mockFetch.mockRestore();
+    jest.restoreAllMocks()
   });
 
   describe("Get Sub From Token", () => {
@@ -464,8 +467,32 @@ describe("Token Service", () => {
     });
 
     describe("Token signature verification", () => {
-      describe("Given kid is not present in JWKS", () => {
+      describe("Given kid from JWT header is not found in JWKS", () => {
         it("Returns error result", async () => {
+          jest.spyOn(global, "fetch").mockImplementation(() =>
+            Promise.resolve({
+              status: 200,
+              ok: true,
+              headers: new Headers({
+                header: "mockHeader",
+              }),
+              text: () =>
+                Promise.resolve(
+                  JSON.stringify({
+                    keys: [
+                      {
+                        kty: "mockKty",
+                        x: "mockX",
+                        y: "mockY",
+                        crv: "mockCrv",
+                        d: "mockD",
+                        // kid: "yZO1V-NGU0KwdeGq5kW6pWQUQ5FdLCSnOlSAuSSgchE"
+                      },
+                    ],
+                  }),
+                ),
+            } as Response),
+          );
           const kmsMock = mockClient(KMSClient);
           kmsMock.on(DecryptCommand).resolves({
             Plaintext: new Uint8Array([
@@ -474,7 +501,15 @@ describe("Token Service", () => {
               142, 98, 12,
             ]),
           });
-
+          jest.spyOn(jose, "importJWK").mockResolvedValueOnce(
+            new Uint8Array()
+          )
+          jest.spyOn(jose, "jwtVerify").mockResolvedValueOnce(
+            {
+              payload: {},
+              protectedHeader: {} as JWTHeaderParameters,
+            } as unknown as Promise<jose.JWTVerifyResult & jose.ResolvedKey>
+          );
           const result = await tokenService.getSubFromToken(
             "https://mockJwksEndpoint.com",
             "https://mockKeyArn.com",
@@ -482,10 +517,12 @@ describe("Token Service", () => {
             { maxAttempts: 3, delayInMillis: 1 },
           );
 
+          console.log("<<<<< TEST RESULT >>>>>>", result)
+
           expect(result.isError).toBe(true);
           expect(result.value).toStrictEqual({
             errorMessage:
-              "Failed verifying service token signature: kid not found.",
+              "Failed verifying service token signature: JWK not found",
             errorCategory: "CLIENT_ERROR",
           });
         });
