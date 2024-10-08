@@ -53,7 +53,6 @@
     "@aws-sdk/client-secrets-manager": "3.666.0",
     "@aws-sdk/client-sqs": "^3.666.0",
     "@aws-sdk/node-http-handler": "3.374.0",
-    "@aws-sdk/util-dynamodb": "^3.662.0",
     "@types/node": "^20.16.11",
     "axios": "1.7.7",
     "aws-cdk-lib": "^2.161.1",

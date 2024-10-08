@@ -15,7 +15,6 @@ import {
   SessionId,
   SessionDetails,
 } from "./datastore";
-import { marshall } from "@aws-sdk/util-dynamodb";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 
 export class DynamoDbAdapter implements IDataStore {
@@ -166,17 +165,17 @@ export class DynamoDbAdapter implements IDataStore {
 
     const input: PutItemCommandInput = {
       TableName: this.tableName,
-      Item: marshall({
-        clientId: client_id,
-        govukSigninJourneyId: govuk_signin_journey_id,
-        createdAt: Date.now(),
-        issuer: issuer,
-        sessionId: sessionId,
-        sessionState: "ASYNC_AUTH_SESSION_CREATED",
-        state: state,
-        subjectIdentifier: sub,
-        timeToLive: timeToLive,
-      }),
+      Item: {
+        clientId: { S: client_id },
+        govukSigninJourneyId: { S: govuk_signin_journey_id },
+        createdAt: { N: Date.now().toString() },
+        issuer: { S: issuer },
+        sessionId: { S: sessionId },
+        sessionState: { S: "ASYNC_AUTH_SESSION_CREATED" },
+        state: { S: state },
+        subjectIdentifier: { S: sub },
+        timeToLive: { N: timeToLive.toString() },
+      },
       ConditionExpression: "attribute_not_exists(sessionId)",
     };
 
