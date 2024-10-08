@@ -1,7 +1,9 @@
 import { Result } from "../../utils/result";
 
 export interface IDataStore {
-  create: (attributes: CreateSessionAttributes) => Promise<Result<string>>;
+  createSession: (
+    attributes: CreateSessionAttributes,
+  ) => Promise<Result<string>>;
   readSessionId: (
     subjectIdentifier: string,
   ) => Promise<Result<SessionId | null>>;

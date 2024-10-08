@@ -159,7 +159,7 @@ export async function lambdaHandlerConstructor(
     return activeSessionFoundResponse(requestBody.sub);
   }
 
-  const createSessionResult = await datastore.create({
+  const createSessionResult = await datastore.createSession({
     ...requestBody,
     issuer: jwtPayload.iss,
     sessionDurationInSeconds: config.SESSION_DURATION_IN_SECONDS,

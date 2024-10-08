@@ -148,7 +148,9 @@ export class DynamoDbAdapter implements IDataStore {
     return successResult(sessionDetails);
   }
 
-  async create(attributes: CreateSessionAttributes): Promise<Result<string>> {
+  async createSession(
+    attributes: CreateSessionAttributes,
+  ): Promise<Result<string>> {
     const {
       client_id,
       govuk_signin_journey_id,

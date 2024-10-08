@@ -1,18 +1,26 @@
 import {
   ConditionalCheckFailedException,
   DynamoDBClient,
+  DynamoDBClientResolvedConfig,
   PutItemCommand,
   QueryCommand,
+  ServiceInputTypes,
+  ServiceOutputTypes,
 } from "@aws-sdk/client-dynamodb";
-import { mockClient } from "aws-sdk-client-mock";
+import { AwsStub, mockClient } from "aws-sdk-client-mock";
 import { DynamoDbAdapter } from "../dynamoDbAdapter";
 
-describe("DynamoDB Session Repository", () => {
+describe("DynamoDB Adapter", () => {
   let dynamoDbSessionRepository: DynamoDbAdapter;
-  const dynamoDbMockClient = mockClient(DynamoDBClient);
+  let dynamoDbMockClient: AwsStub<
+    ServiceInputTypes,
+    ServiceOutputTypes,
+    DynamoDBClientResolvedConfig
+  >;
 
   beforeEach(() => {
     dynamoDbSessionRepository = new DynamoDbAdapter("mockTableName");
+    dynamoDbMockClient = mockClient(DynamoDBClient);
   });
 
   beforeAll(() => {
@@ -168,13 +176,11 @@ describe("DynamoDB Session Repository", () => {
 
     describe("Given the item returned does not have the attribute redirectUri", () => {
       it("Returns a success response with the session ID and state as value", async () => {
-        dynamoDbMockClient
-          .on(QueryCommand)
-          .resolvesOnce({
-            Items: [
-              { sessionId: { S: "mockSessionId" }, state: { S: "mockState" } },
-            ],
-          });
+        dynamoDbMockClient.on(QueryCommand).resolvesOnce({
+          Items: [
+            { sessionId: { S: "mockSessionId" }, state: { S: "mockState" } },
+          ],
+        });
 
         const result =
           await dynamoDbSessionRepository.readSessionDetails("mockSub");
@@ -189,17 +195,15 @@ describe("DynamoDB Session Repository", () => {
 
     describe("Given the item returned has the attribute redirectUri", () => {
       it("Returns a success response with the session ID, state and redirectUri as value", async () => {
-        dynamoDbMockClient
-          .on(QueryCommand)
-          .resolvesOnce({
-            Items: [
-              {
-                sessionId: { S: "mockSessionId" },
-                state: { S: "mockState" },
-                redirectUri: { S: "redirectUri" },
-              },
-            ],
-          });
+        dynamoDbMockClient.on(QueryCommand).resolvesOnce({
+          Items: [
+            {
+              sessionId: { S: "mockSessionId" },
+              state: { S: "mockState" },
+              redirectUri: { S: "redirectUri" },
+            },
+          ],
+        });
 
         const result =
           await dynamoDbSessionRepository.readSessionDetails("mockSub");
@@ -214,93 +218,94 @@ describe("DynamoDB Session Repository", () => {
     });
   });
 
-  describe("Session creation", () => {
-    //   describe("Given there is an unexpected error when creating session", () => {
-    //     it("Returns error response", async () => {
-    //       const dbMock = mockClient(DynamoDBClient);
-    //       dbMock.on(PutItemCommand).rejects("Mock DB Error");
-    //
-    //       const result = await dynamoDbSessionRepository.create({
-    //         state: "mockValidState",
-    //         sub: "mockSub",
-    //         client_id: "mockClientId",
-    //         govuk_signin_journey_id: "mockJourneyId",
-    //         redirect_uri: "https://mockRedirectUri.com",
-    //         issuer: "mockIssuer",
-    //         sessionDurationInSeconds: 3600,
-    //       });
-    //
-    //       expect(result.isError).toBe(true);
-    //       expect(result.value).toStrictEqual({
-    //         errorMessage: "Unexpected error while creating a new session",
-    //         errorCategory: "SERVER_ERROR",
-    //       });
-    //     });
-    //   });
-    // describe("Given sessionId already exists", () => {
-    //   it("Returns error response", async () => {
-    //     const dbMock = mockClient(DynamoDBClient);
-    //     const mockError = new ConditionalCheckFailedException({
-    //       $metadata: {},
-    //       message: "Some mock error message",
-    //     });
-    //     dbMock.on(PutItemCommand).rejects(mockError);
-    //
-    //     const result = await dynamoDbSessionRepository.create({
-    //       state: "mockValidState",
-    //       sub: "mockSub",
-    //       client_id: "mockClientId",
-    //       govuk_signin_journey_id: "mockJourneyId",
-    //       sessionDurationInSeconds: 12345,
-    //       redirect_uri: "https://mockRedirectUri.com",
-    //       issuer: "mockIssuer",
-    //     });
-    //
-    //     expect(result.isError).toBe(true);
-    //     expect(result.value).toStrictEqual({
-    //       errorMessage: "Session already exists with this ID",
-    //       errorCategory: "SERVER_ERROR",
-    //     });
-    //   });
-    // });
-    // describe("Given creating a session is successful", () => {
-    //   describe("Given 'redirect_uri' is not present", () => {
-    //     it("Returns success response", async () => {
-    //       const dynamoDbMock = mockClient(DynamoDBClient);
-    //       dynamoDbMock.on(PutItemCommand).resolves({});
-    //
-    //       const result = await dynamoDbSessionRepository.create({
-    //         state: "mockValidState",
-    //         sub: "mockSub",
-    //         client_id: "mockClientId",
-    //         govuk_signin_journey_id: "mockJourneyId",
-    //         issuer: "mockIssuer",
-    //         sessionDurationInSeconds: 12345,
-    //       });
-    //
-    //       expect(result.isError).toBe(false);
-    //       expect(result.value).toEqual(expect.any(String));
-    //     });
-    //   });
-    // describe("Given 'redirect_uri' is present", () => {
-    //   it("Returns success response", async () => {
-    //     const dbMock = mockClient(DynamoDBClient);
-    //     dbMock.on(PutItemCommand).resolves({});
-    //
-    //     const result = await dynamoDbSessionRepository.create({
-    //       state: "mockValidState",
-    //       sub: "mockSub",
-    //       client_id: "mockClientId",
-    //       govuk_signin_journey_id: "mockJourneyId",
-    //       redirect_uri: "https://mockRedirectUri.com",
-    //       issuer: "mockIssuer",
-    //       sessionDurationInSeconds: 12345,
-    //     });
-    //
-    //     expect(result.isError).toBe(false);
-    //     expect(result.value).toEqual(expect.any(String));
-    //   });
-    // });
-    // });
+  describe("Create session", () => {
+    describe("Given there is an unexpected error when creating session", () => {
+      it("Returns error response", async () => {
+        dynamoDbMockClient.on(PutItemCommand).rejectsOnce("Mock DB Error");
+
+        const result = await dynamoDbSessionRepository.createSession({
+          state: "mockValidState",
+          sub: "mockSub",
+          client_id: "mockClientId",
+          govuk_signin_journey_id: "mockJourneyId",
+          redirect_uri: "https://mockRedirectUri.com",
+          issuer: "mockIssuer",
+          sessionDurationInSeconds: 3600,
+        });
+
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Unexpected error while creating a new session",
+          errorCategory: "SERVER_ERROR",
+        });
+      });
+    });
+
+    describe("Given a session with the same session ID already exists", () => {
+      it("Returns error response", async () => {
+        const mockError = new ConditionalCheckFailedException({
+          $metadata: {},
+          message: "Conditional check failed",
+        });
+        dynamoDbMockClient.on(PutItemCommand).rejects(mockError);
+
+        const result = await dynamoDbSessionRepository.createSession({
+          state: "mockValidState",
+          sub: "mockSub",
+          client_id: "mockClientId",
+          govuk_signin_journey_id: "mockJourneyId",
+          sessionDurationInSeconds: 12345,
+          redirect_uri: "https://mockRedirectUri.com",
+          issuer: "mockIssuer",
+        });
+
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Session already exists with this ID",
+          errorCategory: "SERVER_ERROR",
+        });
+      });
+    });
+
+    describe("Given creating a session is successful", () => {
+      describe("Given the function input does not contain the key redirect_uri", () => {
+        it("Returns success response", async () => {
+          const dynamoDbMock = mockClient(DynamoDBClient);
+          dynamoDbMock.on(PutItemCommand).resolves({});
+
+          const result = await dynamoDbSessionRepository.createSession({
+            state: "mockValidState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockJourneyId",
+            issuer: "mockIssuer",
+            sessionDurationInSeconds: 12345,
+          });
+
+          expect(result.isError).toBe(false);
+          expect(result.value).toEqual(expect.any(String));
+        });
+      });
+
+      describe("Given the function input contains the key redirect_uri", () => {
+        it("Returns success response", async () => {
+          const dbMock = mockClient(DynamoDBClient);
+          dbMock.on(PutItemCommand).resolves({});
+
+          const result = await dynamoDbSessionRepository.createSession({
+            state: "mockValidState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockJourneyId",
+            redirect_uri: "https://mockRedirectUri.com",
+            issuer: "mockIssuer",
+            sessionDurationInSeconds: 12345,
+          });
+
+          expect(result.isError).toBe(false);
+          expect(result.value).toEqual(expect.any(String));
+        });
+      });
+    });
   });
 });
