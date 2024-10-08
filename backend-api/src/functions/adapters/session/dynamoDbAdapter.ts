@@ -57,8 +57,7 @@ export class DynamoDbAdapter implements IDataStore {
     let output: QueryCommandOutput;
     try {
       output = await this.dynamoDbClient.send(new QueryCommand(input));
-    } catch (error) {
-      console.log(error);
+    } catch {
       return errorResult({
         errorMessage:
           "Unexpected error when querying database to get an active session's ID",
@@ -109,8 +108,7 @@ export class DynamoDbAdapter implements IDataStore {
     let output: QueryCommandOutput;
     try {
       output = await this.dynamoDbClient.send(new QueryCommand(input));
-    } catch (error) {
-      console.log(error);
+    } catch {
       return errorResult({
         errorMessage:
           "Unexpected error when querying database to get an active session's details",
