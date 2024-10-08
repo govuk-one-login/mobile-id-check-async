@@ -32,41 +32,42 @@ locals {
   // https://developer.hashicorp.com/terraform/language/functions/one
   mob_async_backend_pl = {
     dev = {
-      OneLoginRepositoryName = "mobile-id-check-async"
-
-      IncludePromotion = "No"
-
-      ContainerSignerKmsKeyArn = one(data.aws_cloudformation_stack.container_signer_dev[*].outputs["ContainerSignerKmsKeyArn"])
-      RequireTestContainerSignatureValidation = "Yes"
-
-      SigningProfileArn        = one(data.aws_cloudformation_stack.signer_dev[*].outputs["SigningProfileArn"])
-      SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_dev[*].outputs["SigningProfileVersionArn"])
-
-      TestImageRepositoryUri = one(aws_cloudformation_stack.mob_async_backend_tir[*].outputs["TestRunnerImageEcrRepositoryUri"])
+      AllowedServiceOne                         = "EC2"
+      AllowedServiceTwo                         = "SQS"
+      AllowedServiceThree                       = "DynamoDB"
+      ContainerSignerKmsKeyArn                  = one(data.aws_cloudformation_stack.container_signer_dev[*].outputs["ContainerSignerKmsKeyArn"])
+      IncludePromotion                          = "No"
+      OneLoginRepositoryName                    = "mobile-id-check-async"
+      ProgrammaticPermissionsBoundary           = "True"
+      RequireTestContainerSignatureValidation   = "Yes"
+      RunTestContainerInVPC                     = "True"
+      SigningProfileArn                         = one(data.aws_cloudformation_stack.signer_dev[*].outputs["SigningProfileArn"])
+      SigningProfileVersionArn                  = one(data.aws_cloudformation_stack.signer_dev[*].outputs["SigningProfileVersionArn"])
+      TestImageRepositoryUri                    = one(aws_cloudformation_stack.mob_async_backend_tir[*].outputs["TestRunnerImageEcrRepositoryUri"])
     }
 
     build = {
-      OneLoginRepositoryName = "mobile-id-check-async"
-
-      IncludePromotion = "Yes"
-      AllowedAccounts  = local.account_vars.staging.account_id
-
-      ContainerSignerKmsKeyArn = one(data.aws_cloudformation_stack.container_signer_build[*].outputs["ContainerSignerKmsKeyArn"])
-      RequireTestContainerSignatureValidation = "Yes"
-
-      SigningProfileArn        = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileArn"])
-      SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileVersionArn"])
-
-      TestImageRepositoryUri = one(aws_cloudformation_stack.mob_async_backend_tir[*].outputs["TestRunnerImageEcrRepositoryUri"])
+      AllowedAccounts                           = local.account_vars.staging.account_id
+      AllowedServiceOne                         = "EC2"
+      AllowedServiceTwo                         = "SQS"
+      AllowedServiceThree                       = "DynamoDB"
+      ContainerSignerKmsKeyArn                  = one(data.aws_cloudformation_stack.container_signer_build[*].outputs["ContainerSignerKmsKeyArn"])
+      IncludePromotion                          = "Yes"
+      OneLoginRepositoryName                    = "mobile-id-check-async"
+      ProgrammaticPermissionsBoundary           = "True"
+      RequireTestContainerSignatureValidation   = "Yes"
+      RunTestContainerInVPC                     = "True"
+      SigningProfileArn                         = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileArn"])
+      SigningProfileVersionArn                  = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileVersionArn"])
+      TestImageRepositoryUri                    = one(aws_cloudformation_stack.mob_async_backend_tir[*].outputs["TestRunnerImageEcrRepositoryUri"])
     }
 
     staging = {
       ArtifactSourceBucketArn                 = one(data.aws_cloudformation_stack.mob_async_backend_pl_build[*].outputs["ArtifactPromotionBucketArn"])
       ArtifactSourceBucketEventTriggerRoleArn = one(data.aws_cloudformation_stack.mob_async_backend_pl_build[*].outputs["ArtifactPromotionBucketEventTriggerRoleArn"])
+      AllowedAccounts  = null # join(",", [local.account_vars.integration.account_id, local.account_vars.production.account_id])  # Stopping promotion at staging
 
-      # Stopping promotion at staging
-      IncludePromotion = "No" # "Yes"
-      AllowedAccounts  = null # join(",", [local.account_vars.integration.account_id, local.account_vars.production.account_id])
+      IncludePromotion = "No" # "Yes"  # Stopping promotion at staging
 
       SigningProfileArn        = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileArn"])
       SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileVersionArn"])
