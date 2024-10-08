@@ -66,13 +66,11 @@ export class DynamoDbAdapter implements IDataStore {
       });
     }
 
-    const retrievedItems = output.Items;
-
-    if (!retrievedItems || retrievedItems.length === 0) {
+    if (!output.Items || output.Items.length === 0) {
       return successResult(null);
     }
 
-    const retrievedItem = retrievedItems[0];
+    const retrievedItem = output.Items[0];
     const sessionId = retrievedItem.sessionId?.S;
     if (!sessionId) {
       return errorResult({
@@ -120,13 +118,11 @@ export class DynamoDbAdapter implements IDataStore {
       });
     }
 
-    const retrievedItems = output.Items;
-
-    if (!retrievedItems || retrievedItems.length === 0) {
+    if (!output.Items || output.Items.length === 0) {
       return successResult(null);
     }
 
-    const retrievedItem = retrievedItems[0];
+    const retrievedItem = output.Items[0];
     const sessionId = retrievedItem.sessionId?.S;
     const state = retrievedItem.state?.S;
     if (!sessionId || !state) {
@@ -135,7 +131,6 @@ export class DynamoDbAdapter implements IDataStore {
         errorCategory: "SERVER_ERROR",
       });
     }
-
     const redirectUri: string | undefined = retrievedItem.redirectUri?.S;
     const sessionDetails: SessionDetails = {
       sessionId,
