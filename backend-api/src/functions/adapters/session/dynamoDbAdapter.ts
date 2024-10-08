@@ -63,7 +63,7 @@ export class DynamoDbAdapter implements IDataStore {
       console.log(error);
       return errorResult({
         errorMessage:
-          "Unexpected error when querying database to get active session ID",
+          "Unexpected error when querying database to get an active session's ID",
         errorCategory: "SERVER_ERROR",
       });
     }
@@ -117,7 +117,7 @@ export class DynamoDbAdapter implements IDataStore {
       console.log(error);
       return errorResult({
         errorMessage:
-          "Unexpected error when querying database to get active session details",
+          "Unexpected error when querying database to get an active session's details",
         errorCategory: "SERVER_ERROR",
       });
     }
