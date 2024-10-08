@@ -1,5 +1,5 @@
 import { registeredLogs } from "../../../asyncCredential/registeredLogs";
-import { MockSessionServiceCreateSessionSuccessResult } from "../../../asyncCredential/sessionService/tests/mocks";
+import { MockDynamoDbAdapterCreateSuccessResult } from "../../../adapters/session/tests/mocks";
 import {
   MockTokenServiceGetDecodedTokenErrorResult,
   MockTokenServiceSuccessIPV,
@@ -24,8 +24,7 @@ const defaultPassingDependencies = {
   clientRegistryService: () =>
     new MockClientRegistryServiceGetPartialClientSuccessResultIPV(),
   tokenService: () => new MockTokenServiceSuccessIPV(),
-  sessionService: (sessionTableName: string) =>
-    new MockSessionServiceCreateSessionSuccessResult(sessionTableName),
+  datastore: () => new MockDynamoDbAdapterCreateSuccessResult(),
 };
 
 export class AsyncCredentialDependencies {
