@@ -35,7 +35,6 @@ export const sendHttpRequest: ISendHttpRequest = async (
         });
       }
     } catch (error) {
-      console.log(error);
       if (attempt < maxAttempts) {
         return retry(request, delayInMillis);
       }
