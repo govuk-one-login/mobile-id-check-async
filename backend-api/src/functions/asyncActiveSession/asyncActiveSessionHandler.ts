@@ -59,18 +59,18 @@ export async function lambdaHandlerConstructor(
     return serverErrorResponse;
   }
 
-  console.log(5);
-
   const datastore = dependencies.datastore(config.SESSION_TABLE_NAME);
-  const readResult = await datastore.readSessionDetails("mockSub1");
+  const readSessionDetailsResult =
+    await datastore.readSessionDetails("mockSub1");
 
-  console.log(readResult);
-
-  if (readResult.isError) {
+  if (readSessionDetailsResult.isError) {
+    logger.log("INTERNAL_SERVER_ERROR", {
+      errorMessage: readSessionDetailsResult.value.errorMessage,
+    });
     return serverErrorResponse;
   }
 
-  const sessionDetails = readResult.value;
+  const sessionDetails = readSessionDetailsResult.value;
   if (sessionDetails === null) {
     return notFoundResponse;
   }
@@ -78,6 +78,7 @@ export async function lambdaHandlerConstructor(
   logger.log("COMPLETED");
 
   return {
+    headers: { "Content-Type": "application/json" },
     statusCode: 200,
     body: JSON.stringify(sessionDetails),
   };

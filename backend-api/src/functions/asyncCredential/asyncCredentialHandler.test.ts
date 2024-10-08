@@ -757,7 +757,7 @@ describe("Async Credential", () => {
           "ERROR_RETRIEVING_SESSION",
         );
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-          errorMessage: "Mock error",
+          errorMessage: "Mock error when reading session ID",
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
@@ -827,7 +827,7 @@ describe("Async Credential", () => {
           "ERROR_CREATING_SESSION",
         );
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-          errorMessage: "Mock error",
+          errorMessage: "Mock error when creating session",
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },

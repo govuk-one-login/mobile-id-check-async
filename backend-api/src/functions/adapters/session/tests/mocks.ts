@@ -4,14 +4,14 @@ import { IDataStore, SessionDetails, SessionId } from "../datastore";
 export class MockDynamoDbAdapterReadErrorResult implements IDataStore {
   readSessionId = async (): Promise<Result<SessionId | null>> => {
     return errorResult({
-      errorMessage: "Mock error",
+      errorMessage: "Mock error when reading session ID",
       errorCategory: "SERVER_ERROR",
     });
   };
 
   readSessionDetails = async (): Promise<Result<SessionDetails | null>> => {
     return errorResult({
-      errorMessage: "Mock error",
+      errorMessage: "Mock error when reading session details",
       errorCategory: "SERVER_ERROR",
     });
   };
@@ -43,7 +43,7 @@ export class MockDynamoDbAdapterReadSuccessResult implements IDataStore {
   readSessionDetails = async (): Promise<Result<SessionDetails | null>> => {
     return successResult({
       sessionId: "mockSessionId",
-      redirectUri: "mockRedirectUri",
+      redirectUri: "https://mockUrl.com/redirect",
       state: "mockState",
     });
   };
@@ -78,7 +78,7 @@ export class MockDynamoDbAdapterCreateErrorResult implements IDataStore {
 
   createSession = async (): Promise<Result<string>> => {
     return errorResult({
-      errorMessage: "Mock error",
+      errorMessage: "Mock error when creating session",
       errorCategory: "SERVER_ERROR",
     });
   };
