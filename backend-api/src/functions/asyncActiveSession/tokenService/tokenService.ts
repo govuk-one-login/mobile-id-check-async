@@ -52,6 +52,16 @@ export class TokenService implements ITokenService {
 
     const jwt = decryptJweResult.value
 
+    const jwtComponents = jwt.split('.')
+
+    // if (jwtComponents.length !== 3) {
+    //   return errorResult({
+    //     errorMessage:
+    //       "Decrypt service token failure: JWT does not consist of three components",
+    //     errorCategory: "CLIENT_ERROR",
+    //   });
+    // }
+
     const getPublicKeyFromJwksResult = await this.getPublicKeyFromJwks(jwt, jwks)
     if (getPublicKeyFromJwksResult.isError) {
       return getPublicKeyFromJwksResult
@@ -119,16 +129,6 @@ export class TokenService implements ITokenService {
   }
 
   private async getPublicKeyFromJwks(jwt: string, jwks: IJwks): Promise<Result<Uint8Array | KeyLike>> {
-    const jwtComponents = jwt.split('.')
-
-    if (jwtComponents.length !== 3) {
-      return errorResult({
-        errorMessage:
-          "Decrypt service token failure: JWT does not consist of three components",
-        errorCategory: "CLIENT_ERROR",
-      });
-    }
-
     let decodedProtectedHeader: ProtectedHeaderParameters
     try {
       decodedProtectedHeader = decodeProtectedHeader(jwt)
