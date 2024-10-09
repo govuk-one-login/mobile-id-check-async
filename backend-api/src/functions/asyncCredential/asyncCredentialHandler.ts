@@ -13,8 +13,6 @@ export async function lambdaHandlerConstructor(
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
 
-  logger.log("STARTED");
-
   // Get environment variables
   const configResult = new ConfigService().getConfig(dependencies.env);
   if (configResult.isError) {
