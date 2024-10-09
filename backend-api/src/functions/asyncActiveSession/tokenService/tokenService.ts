@@ -14,35 +14,19 @@ export class TokenService implements ITokenService {
     jwe: string,
     retryConfig: RetryConfig,
   ): Promise<Result<string>> => {
-    const stsJwksEndpointResponseResult = await sendHttpRequest(
-      { url: stsJwksEndpoint, method: "GET" },
-      retryConfig,
-    );
-
+    const stsJwksEndpointResponseResult = await this.getJwks(stsJwksEndpoint, retryConfig);
     if (stsJwksEndpointResponseResult.isError) {
-      return stsJwksEndpointResponseResult;
+      return stsJwksEndpointResponseResult
     }
 
-    const stsJwksEndpointResponse = stsJwksEndpointResponseResult.value;
+    const jwks = stsJwksEndpointResponseResult.value
 
-    const getJwksFromResponseResult = await this.getJwksFromResponse(
-      stsJwksEndpointResponse,
-    );
-
-    if (getJwksFromResponseResult.isError) {
-      return getJwksFromResponseResult;
+    const getJweComponentsResult = this.getJweComponents(jwe);
+    if (getJweComponentsResult.isError) {
+      return getJweComponentsResult
     }
 
-    const jweComponents = jwe.split(".");
-
-    if (jweComponents.length !== 5) {
-      return errorResult({
-        errorMessage: "JWE does not consist of five components",
-        errorCategory: "CLIENT_ERROR",
-      });
-    }
-
-    const [protectedHeader, encryptedCek, iv, ciphertext, tag] = jweComponents;
+    const [protectedHeader, encryptedCek, iv, ciphertext, tag] = getJweComponentsResult.value;
 
     const decryptCekResult = await new KMSAdapter().decrypt(
       encryptionKeyArn,
@@ -68,15 +52,42 @@ export class TokenService implements ITokenService {
     return successResult("");
   };
 
-  private readonly isJwks = (data: unknown): data is IJwks => {
-    return (
-      typeof data === "object" &&
-      data !== null &&
-      "keys" in data &&
-      Array.isArray(data.keys) &&
-      data.keys.every((key) => typeof key === "object" && key !== null)
+  private async getJwks(stsJwksEndpoint: string, retryConfig: RetryConfig): Promise<Result<IJwks>> {
+    const sendHttpRequestResult = await sendHttpRequest(
+      { url: stsJwksEndpoint, method: "GET" },
+      retryConfig
     );
-  };
+
+    if (sendHttpRequestResult.isError) {
+      return sendHttpRequestResult;
+    }
+
+    const stsJwksEndpointResponse = sendHttpRequestResult.value;
+
+    const getJwksFromResponseResult = await this.getJwksFromResponse(
+      stsJwksEndpointResponse,
+    );
+
+    if (getJwksFromResponseResult.isError) {
+      return getJwksFromResponseResult;
+    }
+
+    const jwks = getJwksFromResponseResult.value
+
+    return successResult(jwks)
+  }
+
+  private getJweComponents(jwe: string): Result<string[]> {
+    const jweComponents =  jwe.split(".");
+    if (jweComponents.length !== 5) {
+      return errorResult({
+        errorMessage: "JWE does not consist of five components",
+        errorCategory: "CLIENT_ERROR",
+      });
+    }
+
+    return successResult(jweComponents)
+  }
 
   private async getJwksFromResponse(
     response: SuccessfulHttpResponse,
@@ -106,6 +117,16 @@ export class TokenService implements ITokenService {
 
     return successResult(jwks);
   }
+
+  private readonly isJwks = (data: unknown): data is IJwks => {
+    return (
+      typeof data === "object" &&
+      data !== null &&
+      "keys" in data &&
+      Array.isArray(data.keys) &&
+      data.keys.every((key) => typeof key === "object" && key !== null)
+    );
+  };
 
   private async decryptJwe(
     key: Uint8Array,
