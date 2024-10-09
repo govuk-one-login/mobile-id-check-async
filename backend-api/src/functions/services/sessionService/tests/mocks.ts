@@ -4,7 +4,7 @@ import { ISessionService, SessionDetails } from "../sessionService";
 export class MockSessionServiceGetErrorResult implements ISessionService {
   getActiveSessionId = async (): Promise<Result<string | null>> => {
     return errorResult({
-      errorMessage: "Mock error when reading session ID",
+      errorMessage: "Mock error when getting session ID",
       errorCategory: "SERVER_ERROR",
     });
   };
@@ -13,7 +13,7 @@ export class MockSessionServiceGetErrorResult implements ISessionService {
     Result<SessionDetails | null>
   > => {
     return errorResult({
-      errorMessage: "Mock error when reading session details",
+      errorMessage: "Mock error when getting session details",
       errorCategory: "SERVER_ERROR",
     });
   };

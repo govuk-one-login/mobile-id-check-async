@@ -264,7 +264,7 @@ describe("Async Active Session", () => {
     });
 
     describe("Session Service", () => {
-      describe("Given an error happens when trying to get the active session", () => {
+      describe("Given an error happens when trying to get an active session", () => {
         it("Returns 500 Server Error", async () => {
           const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
@@ -282,7 +282,7 @@ describe("Async Active Session", () => {
             mockLoggingAdapter.getLogMessages()[1].logMessage.message,
           ).toBe("INTERNAL_SERVER_ERROR");
           expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-            errorMessage: "Mock error when reading session details",
+            errorMessage: "Mock error when getting session details",
           });
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
