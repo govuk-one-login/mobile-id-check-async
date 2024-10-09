@@ -89,7 +89,7 @@ export class DynamoDbAdapter {
         },
       },
       ExpressionAttributeNames: { "#state": "state" },
-      ProjectionExpression: "sessionId, redirect_uri, #state",
+      ProjectionExpression: "sessionId, redirectUri, #state",
       Limit: 1,
       ScanIndexForward: false,
     };

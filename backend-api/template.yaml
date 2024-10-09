@@ -127,9 +127,9 @@ Mappings:
 
   EnvironmentVariables:
     dev:
-      STSJWKSENDPOINT: 'https://sts-mock-ah.review-b-async.dev.account.gov.uk/.well-known/jwks.json'
+      STSJWKSENDPOINT: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk/.well-known/jwks.json'
     build:
-      STSJWKSENDPOINT: 'https://sts-mock-ah.review-b-async.build.account.gov.uk/.well-known/jwks.json'
+      STSJWKSENDPOINT: 'https://mob-sts-mock.review-b-async.build.account.gov.uk/.well-known/jwks.json'
     # staging:
     #   STSJWKSENDPOINT: '' TODO: Mock should only be used in dev and build. Update this value
     # integration:
@@ -169,7 +169,6 @@ Conditions:
 
 Globals:
   Function:
-    Timeout: 10
     ReservedConcurrentExecutions: !FindInMap
       - Lambda
       - !Ref Environment
@@ -429,7 +428,6 @@ Resources:
                     dynamodb:Select: SPECIFIC_ATTRIBUTES
               - Effect: Allow
                 Action:
-                  - dynamodb:GetItem
                   - dynamodb:PutItem
                 Resource: !GetAtt SessionsTable.Arn
         - PolicyName: AsyncCredentialFunctionSecretsManagerPolicy
@@ -702,6 +700,8 @@ Resources:
           Projection:
             NonKeyAttributes:
               - sessionState
+              - state
+              - redirectUri
             ProjectionType: INCLUDE
       BillingMode: PAY_PER_REQUEST
       SSESpecification:
@@ -866,17 +866,17 @@ Resources:
                 Resource:
                   - Fn::GetAtt: [ "SessionsTable", "Arn" ]
                   - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-timeToLive-index
-#                Condition:
-#                  ForAllValues:StringEquals:
-#                    dynamodb:Attributes:
-#                      - sessionId
-#                      - sessionState
-#                      - subjectIdentifier
-#                      - timeToLive
-#                      - state
-#                      - redirectUri
-#                  StringEquals:
-#                    dynamodb:Select: SPECIFIC_ATTRIBUTES
+                Condition:
+                  ForAllValues:StringEquals:
+                    dynamodb:Attributes:
+                      - sessionId
+                      - sessionState
+                      - subjectIdentifier
+                      - timeToLive
+                      - state
+                      - redirectUri
+                  StringEquals:
+                    dynamodb:Select: SPECIFIC_ATTRIBUTES
         - PolicyName: AsyncActiveSessionFunctionLoggingPolicy
           PolicyDocument:
             Version: "2012-10-17"
