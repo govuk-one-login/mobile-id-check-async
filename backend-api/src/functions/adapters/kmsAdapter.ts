@@ -7,14 +7,16 @@ import { errorResult, Result, successResult } from "../utils/result";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 
 export class KMSAdapter implements IKmsAdapter {
-  private readonly kmsClient = new KMSClient({
-    region: "eu-west-2",
-    maxAttempts: 2,
-    requestHandler: new NodeHttpHandler({
-      connectionTimeout: 29000,
-      requestTimeout: 29000,
-    }),
-  });
+  private readonly kmsClient = new KMSClient([
+    {
+      region: "eu-west-2",
+      maxAttempts: 2,
+      requestHandler: new NodeHttpHandler({
+        connectionTimeout: 29000,
+        requestTimeout: 29000,
+      }),
+    },
+  ]);
 
   async decrypt(
     keyArn: string,
