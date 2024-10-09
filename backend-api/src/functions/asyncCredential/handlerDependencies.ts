@@ -11,8 +11,10 @@ import {
   TokenService,
 } from "./tokenService/tokenService";
 import { Logger } from "../services/logging/logger";
-import { DynamoDbAdapter } from "../adapters/session/dynamoDbAdapter";
-import { IDataStore } from "../adapters/session/datastore";
+import {
+  ISessionService,
+  SessionService,
+} from "../services/sessionService/sessionService";
 
 export interface IAsyncCredentialDependencies {
   logger: () => Logger<MessageName>;
@@ -21,7 +23,7 @@ export interface IAsyncCredentialDependencies {
   clientRegistryService: (
     clientRegistryParameterName: string,
   ) => IGetPartialRegisteredClientByClientId;
-  datastore: (tableName: string) => IDataStore;
+  sessionService: (tableName: string) => ISessionService;
   env: NodeJS.ProcessEnv;
 }
 
@@ -32,5 +34,5 @@ export const dependencies: IAsyncCredentialDependencies = {
   clientRegistryService: (clientRegistryParameterName: string) =>
     new ClientRegistryService(clientRegistryParameterName),
   tokenService: () => new TokenService(),
-  datastore: (tableName: string) => new DynamoDbAdapter(tableName),
+  sessionService: (tableName: string) => new SessionService(tableName),
 };

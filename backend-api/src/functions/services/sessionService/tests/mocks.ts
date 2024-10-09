@@ -1,15 +1,17 @@
 import { errorResult, Result, successResult } from "../../../utils/result";
-import { IDataStore, SessionDetails } from "../datastore";
+import { ISessionService, SessionDetails } from "../sessionService";
 
-export class MockDynamoDbAdapterReadErrorResult implements IDataStore {
-  readSessionId = async (): Promise<Result<string | null>> => {
+export class MockSessionServiceGetErrorResult implements ISessionService {
+  getActiveSessionId = async (): Promise<Result<string | null>> => {
     return errorResult({
       errorMessage: "Mock error when reading session ID",
       errorCategory: "SERVER_ERROR",
     });
   };
 
-  readSessionDetails = async (): Promise<Result<SessionDetails | null>> => {
+  getActiveSessionDetails = async (): Promise<
+    Result<SessionDetails | null>
+  > => {
     return errorResult({
       errorMessage: "Mock error when reading session details",
       errorCategory: "SERVER_ERROR",
@@ -21,12 +23,14 @@ export class MockDynamoDbAdapterReadErrorResult implements IDataStore {
   };
 }
 
-export class MockDynamoDbAdapterReadNullSuccessResult implements IDataStore {
-  readSessionId = async (): Promise<Result<string | null>> => {
+export class MockSessionServiceGetNullSuccessResult implements ISessionService {
+  getActiveSessionId = async (): Promise<Result<string | null>> => {
     return successResult(null);
   };
 
-  readSessionDetails = async (): Promise<Result<SessionDetails | null>> => {
+  getActiveSessionDetails = async (): Promise<
+    Result<SessionDetails | null>
+  > => {
     return successResult(null);
   };
 
@@ -35,12 +39,14 @@ export class MockDynamoDbAdapterReadNullSuccessResult implements IDataStore {
   };
 }
 
-export class MockDynamoDbAdapterReadSuccessResult implements IDataStore {
-  readSessionId = async (): Promise<Result<string | null>> => {
+export class MockSessionServiceGetSuccessResult implements ISessionService {
+  getActiveSessionId = async (): Promise<Result<string | null>> => {
     return successResult("mockSessionId");
   };
 
-  readSessionDetails = async (): Promise<Result<SessionDetails | null>> => {
+  getActiveSessionDetails = async (): Promise<
+    Result<SessionDetails | null>
+  > => {
     return successResult({
       sessionId: "mockSessionId",
       redirectUri: "https://mockUrl.com/redirect",
@@ -53,12 +59,14 @@ export class MockDynamoDbAdapterReadSuccessResult implements IDataStore {
   };
 }
 
-export class MockDynamoDbAdapterCreateSuccessResult implements IDataStore {
-  readSessionId = async (): Promise<Result<string | null>> => {
+export class MockSessionServiceCreateSuccessResult implements ISessionService {
+  getActiveSessionId = async (): Promise<Result<string | null>> => {
     return successResult(null);
   };
 
-  readSessionDetails = async (): Promise<Result<SessionDetails | null>> => {
+  getActiveSessionDetails = async (): Promise<
+    Result<SessionDetails | null>
+  > => {
     return successResult(null);
   };
 
@@ -67,12 +75,14 @@ export class MockDynamoDbAdapterCreateSuccessResult implements IDataStore {
   };
 }
 
-export class MockDynamoDbAdapterCreateErrorResult implements IDataStore {
-  readSessionId = async (): Promise<Result<string | null>> => {
+export class MockSessionServiceCreateErrorResult implements ISessionService {
+  getActiveSessionId = async (): Promise<Result<string | null>> => {
     return successResult(null);
   };
 
-  readSessionDetails = async (): Promise<Result<SessionDetails | null>> => {
+  getActiveSessionDetails = async (): Promise<
+    Result<SessionDetails | null>
+  > => {
     return successResult(null);
   };
 

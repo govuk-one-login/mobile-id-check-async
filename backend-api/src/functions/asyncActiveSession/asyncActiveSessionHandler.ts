@@ -59,9 +59,9 @@ export async function lambdaHandlerConstructor(
     return serverErrorResponse;
   }
 
-  const datastore = dependencies.datastore(config.SESSION_TABLE_NAME);
+  const sessionService = dependencies.sessionService(config.SESSION_TABLE_NAME);
   const readSessionDetailsResult =
-    await datastore.readSessionDetails("mockSub1");
+    await sessionService.getActiveSessionDetails("mockSub1");
 
   if (readSessionDetailsResult.isError) {
     logger.log("INTERNAL_SERVER_ERROR", {
