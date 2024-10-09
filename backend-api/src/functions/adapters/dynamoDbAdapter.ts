@@ -54,12 +54,12 @@ export class DynamoDbAdapter {
       ScanIndexForward: false,
     };
 
-    const readSessionResponse = await this.query(input);
-    if (readSessionResponse.isError || readSessionResponse.value === null) {
-      return readSessionResponse;
+    const queryResponse = await this.query(input);
+    if (queryResponse.isError || queryResponse.value === null) {
+      return queryResponse;
     }
 
-    const session: DynamoDbRecord = readSessionResponse.value;
+    const session: DynamoDbRecord = queryResponse.value;
     const sessionId = session.sessionId?.S;
     if (!sessionId) {
       return errorResult({
@@ -94,12 +94,12 @@ export class DynamoDbAdapter {
       ScanIndexForward: false,
     };
 
-    const readSessionResponse = await this.query(input);
-    if (readSessionResponse.isError || readSessionResponse.value === null) {
-      return readSessionResponse;
+    const queryResponse = await this.query(input);
+    if (queryResponse.isError || queryResponse.value === null) {
+      return queryResponse;
     }
 
-    const session: DynamoDbRecord = readSessionResponse.value;
+    const session: DynamoDbRecord = queryResponse.value;
     const sessionId = session.sessionId?.S;
     const state = session.state?.S;
     if (!sessionId || !state) {
