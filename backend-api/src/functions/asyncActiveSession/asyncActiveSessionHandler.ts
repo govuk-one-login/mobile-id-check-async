@@ -34,7 +34,8 @@ export async function lambdaHandlerConstructor(
 
   const serviceToken = authorizationHeaderResult.value;
 
-  const tokenService = dependencies.tokenService();
+  const tokenServiceDependencies = dependencies.tokenServiceDependencies
+  const tokenService = dependencies.tokenService(tokenServiceDependencies);
   const getSubFromTokenResult = await tokenService.getSubFromToken(
     config.STS_JWKS_ENDPOINT,
     config.ENCRYPTION_KEY_ARN,

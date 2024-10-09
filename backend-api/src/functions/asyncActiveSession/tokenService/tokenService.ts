@@ -6,9 +6,16 @@ import {
 import { errorResult, Result, successResult } from "../../utils/result";
 import { KMSAdapter } from "../../adapters/kmsAdapter";
 import crypto from "crypto";
-import { decodeProtectedHeader, importJWK, jwtVerify, JWTVerifyResult, KeyLike, ProtectedHeaderParameters } from "jose";
+import { jwtVerify, JWTVerifyResult, KeyLike } from "jose";
+import { IJwks, IPublicKeyGetter } from "./publicKeyGetter";
 
 export class TokenService implements ITokenService {
+  private readonly dependencies: ITokenServiceDependencies
+
+  constructor(dependencies: ITokenServiceDependencies) {
+    this.dependencies = dependencies
+  }
+
   getSubFromToken = async (
     stsJwksEndpoint: string,
     encryptionKeyArn: string,
@@ -52,7 +59,8 @@ export class TokenService implements ITokenService {
 
     const jwt = decryptJweResult.value
 
-    const getPublicKeyFromJwksResult = await this.getPublicKeyFromJwks(jwt, jwks)
+    const publicKeyGetter = this.dependencies.publicKeyGetter()
+    const getPublicKeyFromJwksResult = await publicKeyGetter.getPublicKey(jwt, jwks)
     if (getPublicKeyFromJwksResult.isError) {
       return getPublicKeyFromJwksResult
     }
@@ -118,54 +126,56 @@ export class TokenService implements ITokenService {
     return successResult(jweComponents)
   }
 
-  private async getPublicKeyFromJwks(jwt: string, jwks: IJwks): Promise<Result<Uint8Array | KeyLike>> {
-    let decodedProtectedHeader: ProtectedHeaderParameters
-    try {
-      decodedProtectedHeader = decodeProtectedHeader(jwt)
-    } catch (error) {
-      return errorResult({
-        errorMessage: `Failed verifying service token signature. ${error}`,
-        errorCategory: "CLIENT_ERROR", // CLIENT or SERVER error?
-      });
-    }
 
-    const keyId = decodedProtectedHeader.kid
 
-    if(!keyId) {
-      return errorResult({
-        errorMessage: "Failed verifying service token signature: kid not present in JWT header",
-        errorCategory: "CLIENT_ERROR",
-      });
-    }
+  // private async getPublicKeyFromJwks(jwt: string, jwks: IJwks): Promise<Result<Uint8Array | KeyLike>> {
+  //   let decodedProtectedHeader: ProtectedHeaderParameters
+  //   try {
+  //     decodedProtectedHeader = decodeProtectedHeader(jwt)
+  //   } catch (error) {
+  //     return errorResult({
+  //       errorMessage: `Failed verifying service token signature. ${error}`,
+  //       errorCategory: "CLIENT_ERROR", // CLIENT or SERVER error?
+  //     });
+  //   }
 
-    const jwk = jwks.keys.find((key) => key.kid === keyId);
+  //   const keyId = decodedProtectedHeader.kid
 
-    if (!jwk) {
-      return errorResult({
-        errorMessage: "Failed verifying service token signature: JWK not found",
-        errorCategory: "CLIENT_ERROR",
-      });
-    }
+  //   if(!keyId) {
+  //     return errorResult({
+  //       errorMessage: "Failed verifying service token signature: kid not present in JWT header",
+  //       errorCategory: "CLIENT_ERROR",
+  //     });
+  //   }
 
-    let publicKey
-    try {
-      publicKey = await importJWK(jwk, jwk.alg);
-    } catch (error) {
-      return errorResult({
-        errorMessage: "Failed verifying service token signature: Error converting JWK to key object",
-        errorCategory: "SERVER_ERROR", // SERVER / CLIENT ERROR?
-      });
-    }
+  //   const jwk = jwks.keys.find((key) => key.kid === keyId);
 
-    if (!publicKey) {
-      return errorResult({
-        errorMessage: "Failed verifying service token signature: Error converting JWK to key object",
-        errorCategory: "CLIENT_ERROR",
-      });
-    }
+  //   if (!jwk) {
+  //     return errorResult({
+  //       errorMessage: "Failed verifying service token signature: JWK not found",
+  //       errorCategory: "CLIENT_ERROR",
+  //     });
+  //   }
 
-    return successResult(publicKey)
-  }
+  //   let publicKey
+  //   try {
+  //     publicKey = await importJWK(jwk, jwk.alg);
+  //   } catch (error) {
+  //     return errorResult({
+  //       errorMessage: "Failed verifying service token signature: Error converting JWK to key object",
+  //       errorCategory: "SERVER_ERROR", // SERVER / CLIENT ERROR?
+  //     });
+  //   }
+
+  //   if (!publicKey) {
+  //     return errorResult({
+  //       errorMessage: "Failed verifying service token signature: Error converting JWK to key object",
+  //       errorCategory: "CLIENT_ERROR",
+  //     });
+  //   }
+
+  //   return successResult(publicKey)
+  // }
 
   private async getJwksFromResponse(
     response: SuccessfulHttpResponse,
@@ -267,13 +277,6 @@ export interface ITokenService {
   ) => Promise<Result<string>>;
 }
 
-interface IJwks {
-  keys: IJwk[]
-}
-
-interface IJwk extends JsonWebKey {
-  alg: "ES256"
-  kid: string
-  kty: "EC"
-  use: "sig"
+export interface ITokenServiceDependencies {
+  publicKeyGetter: () => IPublicKeyGetter
 }

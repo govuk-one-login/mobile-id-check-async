@@ -3,17 +3,20 @@ import {
   KeyUnavailableException,
   KMSClient,
 } from "@aws-sdk/client-kms";
-import { ITokenService, TokenService } from "../tokenService";
+import { ITokenService, ITokenServiceDependencies, TokenService } from "../tokenService";
 import { mockClient } from "aws-sdk-client-mock";
-import * as jose from "jose";
-import { JWTHeaderParameters } from "jose";
+import { MockPubicKeyGetterGetPublicKeyError, MockPubicKeyGetterGetPublicKeySuccess } from "./mocks";
 
 describe("Token Service", () => {
   let mockFetch: jest.SpyInstance;
   let tokenService: ITokenService;
+  let dependencies: ITokenServiceDependencies
 
   beforeEach(() => {
-    tokenService = new TokenService();
+    dependencies = {
+      publicKeyGetter: () => new MockPubicKeyGetterGetPublicKeySuccess()
+    }
+    tokenService = new TokenService(dependencies);
     mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
       Promise.resolve({
         status: 200,
@@ -469,6 +472,8 @@ describe("Token Service", () => {
     describe("Token signature verification", () => {
       describe("Given kid from JWT header is not found in JWKS", () => {
         it("Returns error result", async () => {
+          dependencies.publicKeyGetter = () => new MockPubicKeyGetterGetPublicKeyError()
+          tokenService = new TokenService(dependencies)
           jest.spyOn(global, "fetch").mockImplementation(() =>
             Promise.resolve({
               status: 200,
@@ -500,15 +505,15 @@ describe("Token Service", () => {
               142, 98, 12,
             ]),
           });
-          jest.spyOn(jose, "importJWK").mockResolvedValueOnce(
-            new Uint8Array()
-          )
-          jest.spyOn(jose, "jwtVerify").mockResolvedValueOnce(
-            {
-              payload: {},
-              protectedHeader: {} as JWTHeaderParameters,
-            } as unknown as Promise<jose.JWTVerifyResult & jose.ResolvedKey>
-          );
+          // jest.spyOn(jose, "importJWK").mockResolvedValueOnce(
+          //   new Uint8Array()
+          // )
+          // jest.spyOn(jose, "jwtVerify").mockResolvedValueOnce(
+          //   {
+          //     payload: {},
+          //     protectedHeader: {} as JWTHeaderParameters,
+          //   } as unknown as Promise<jose.JWTVerifyResult & jose.ResolvedKey>
+          // );
           const result = await tokenService.getSubFromToken(
             "https://mockJwksEndpoint.com",
             "https://mockKeyArn.com",
@@ -519,7 +524,7 @@ describe("Token Service", () => {
           expect(result.isError).toBe(true);
           expect(result.value).toStrictEqual({
             errorMessage:
-              "Failed verifying service token signature: JWK not found",
+              "Failed to get public key",
             errorCategory: "CLIENT_ERROR",
           });
         });

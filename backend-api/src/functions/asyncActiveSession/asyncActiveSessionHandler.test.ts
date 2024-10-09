@@ -8,6 +8,7 @@ import { Logger } from "../services/logging/logger";
 import { MockJWTBuilder } from "../testUtils/mockJwt";
 import { errorResult, Result, successResult } from "../utils/result";
 import { ITokenService } from "./tokenService/tokenService";
+import { MockPubicKeyGetterGetPublicKeyError } from "./tokenService/tests/mocks";
 
 const env = {
   STS_JWKS_ENDPOINT: "https://mockUrl.com",
@@ -23,6 +24,9 @@ describe("Async Active Session", () => {
     dependencies = {
       env,
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
+      tokenServiceDependencies: {
+        publicKeyGetter: () => new MockPubicKeyGetterGetPublicKeyError()
+      },
       tokenService: () => new MockTokenServiceSuccess(),
     };
   });
