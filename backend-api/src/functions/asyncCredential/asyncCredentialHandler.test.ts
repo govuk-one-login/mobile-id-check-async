@@ -736,7 +736,7 @@ describe("Async Credential", () => {
     });
   });
 
-  describe("Datastore", () => {
+  describe("Session Service", () => {
     describe("Given there is an error checking for an existing session", () => {
       it("Returns 500 Server Error", async () => {
         const jwtBuilder = new MockJWTBuilder();
@@ -758,7 +758,7 @@ describe("Async Credential", () => {
           "ERROR_RETRIEVING_SESSION",
         );
         expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-          errorMessage: "Mock error when reading session ID",
+          errorMessage: "Mock error when getting session ID",
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
