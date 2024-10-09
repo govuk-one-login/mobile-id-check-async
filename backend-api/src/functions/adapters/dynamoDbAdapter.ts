@@ -59,8 +59,8 @@ export class DynamoDbAdapter {
       return queryResponse;
     }
 
-    const session: DynamoDbRecord = queryResponse.value;
-    const sessionId = session.sessionId?.S;
+    const record: DynamoDbRecord = queryResponse.value;
+    const sessionId = record.sessionId?.S;
     if (!sessionId) {
       return errorResult({
         errorMessage: "Session is malformed",
@@ -99,20 +99,20 @@ export class DynamoDbAdapter {
       return queryResponse;
     }
 
-    const session: DynamoDbRecord = queryResponse.value;
-    const sessionId = session.sessionId?.S;
-    const state = session.state?.S;
+    const record: DynamoDbRecord = queryResponse.value;
+    const sessionId = record.sessionId?.S;
+    const state = record.state?.S;
     if (!sessionId || !state) {
       return errorResult({
         errorMessage: "Session is malformed",
         errorCategory: "SERVER_ERROR",
       });
     }
-    const redirectUri: string | undefined = session.redirectUri?.S;
+    const redirectUri: string | undefined = record.redirectUri?.S;
     const sessionDetails: SessionDetails = {
       sessionId,
       state,
-      ...(redirectUri && { redirectUri: session.redirectUri?.S }),
+      ...(redirectUri && { redirectUri: record.redirectUri?.S }),
     };
 
     return successResult(sessionDetails);
