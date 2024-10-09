@@ -46,15 +46,81 @@ Resources:
             - !Ref Environment
             - DNSSUFFIX
       SubjectAlternativeNames:
+        - !Sub
+          - api.${DNSSUFFIX}
+          - DNSSUFFIX: !FindInMap
+              - PlatformConfiguration
+              - !Ref Environment
+              - DNSSUFFIX
         - !If
-          - IsBuildOrStagingEnvironment
+          - IsDevEnvironment
           - !Sub
-            - sessions-mob-async-backend.${DNSSUFFIX}
+            - '*.${DNSSUFFIX}'
             - DNSSUFFIX: !FindInMap
                 - PlatformConfiguration
                 - !Ref Environment
                 - DNSSUFFIX
           - !Ref AWS::NoValue
+      DomainValidationOptions:
+        - DomainName: !Sub
+            - ${DNSSUFFIX}
+            - DNSSUFFIX: !FindInMap
+                - PlatformConfiguration
+                - !Ref Environment
+                - DNSSUFFIX
+          HostedZoneId: !ImportValue PublicHostedZoneId
+        - DomainName: !Sub
+            - api.${DNSSUFFIX}
+            - DNSSUFFIX: !FindInMap
+                - PlatformConfiguration
+                - !Ref Environment
+                - DNSSUFFIX
+          HostedZoneId: !ImportValue PublicHostedZoneId
+      ValidationMethod: DNS
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${DNSSUFFIX}
+            - DNSSUFFIX: !FindInMap
+                - PlatformConfiguration
+                - !Ref Environment
+                - DNSSUFFIX
+        - Key: Product
+          Value: ID Check Async
+        - Key: System
+          Value: ID Check Async
+        - Key: Environment
+          Value: !Sub ${Environment}
+
+  CertificateARNSSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: The Certificate ARN
+      Name: !Sub /${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN
+      Type: String
+      Value: !Ref ExternalCertificate
+      Tags:
+        Name: !Sub /${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN
+        Product: ID Check Async
+        System: ID Check Async
+        Environment: !Sub ${Environment}
+# New resources below to be kept
+  AsyncExternalCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Sub
+        - ${DNSSUFFIX}
+        - DNSSUFFIX: !FindInMap
+            - PlatformConfiguration
+            - !Ref Environment
+            - DNSSUFFIX
+      SubjectAlternativeNames:
+        - !Sub 
+          - sessions-mob-async-backend.${DNSSUFFIX}
+          - DNSSUFFIX: !FindInMap
+              - PlatformConfiguration
+              - !Ref Environment
+              - DNSSUFFIX            
         - !If
           - IsBuildOrStagingEnvironment
           - !Sub
@@ -90,14 +156,12 @@ Resources:
                 - !Ref Environment
                 - DNSSUFFIX
           HostedZoneId: !ImportValue PublicHostedZoneId
-        - !If
-          - IsBuildOrStagingEnvironment
-          - DomainName: !Sub
-              - sessions-mob-async-backend.${DNSSUFFIX}
-              - DNSSUFFIX: !FindInMap
-                  - PlatformConfiguration
-                  - !Ref Environment
-                  - DNSSUFFIX
+        - DomainName: !Sub
+          - sessions-mob-async-backend.${DNSSUFFIX}
+          - DNSSUFFIX: !FindInMap
+              - PlatformConfiguration
+              - !Ref Environment
+              - DNSSUFFIX
             HostedZoneId: !ImportValue PublicHostedZoneId
           - !Ref AWS::NoValue
         - !If
@@ -136,15 +200,15 @@ Resources:
         - Key: Environment
           Value: !Sub ${Environment}
 
-  CertificateARNSSM:
+  AsyncCertificateARNSSM:
     Type: AWS::SSM::Parameter
     Properties:
       Description: The Certificate ARN
-      Name: !Sub /${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN
+      Name: !Sub /${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN
       Type: String
-      Value: !Ref ExternalCertificate
+      Value: !Ref AsyncExternalCertificate
       Tags:
-        Name: !Sub /${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN
+        Name: !Sub /${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN
         Product: ID Check Async
         System: ID Check Async
         Environment: !Sub ${Environment}
@@ -155,3 +219,8 @@ Outputs:
     Value: !Ref ExternalCertificate
     Export:
       Name: !Sub ${AWS::StackName}-certificate-arn
+  AsyncCertificateARN:
+    Description: The ARN for the ACM Certificate created in this template
+    Value: !Ref AsyncExternalCertificate
+    Export:
+      Name: !Sub ${AWS::StackName}-async-certificate-arn
