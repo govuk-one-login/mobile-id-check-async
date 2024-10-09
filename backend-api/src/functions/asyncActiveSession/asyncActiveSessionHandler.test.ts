@@ -263,7 +263,7 @@ describe("Async Active Session", () => {
       });
     });
 
-    describe("Datastore", () => {
+    describe("Session Service", () => {
       describe("Given an error happens when trying to get the active session", () => {
         it("Returns 500 Server Error", async () => {
           const jwtBuilder = new MockJWTBuilder();
