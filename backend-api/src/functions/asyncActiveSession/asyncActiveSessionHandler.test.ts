@@ -9,10 +9,10 @@ import { MockJWTBuilder } from "../testUtils/mockJwt";
 import { errorResult, Result, successResult } from "../utils/result";
 import { ITokenService } from "./tokenService/tokenService";
 import {
-  MockDynamoDbAdapterReadErrorResult,
-  MockDynamoDbAdapterReadNullSuccessResult,
-  MockDynamoDbAdapterReadSuccessResult,
-} from "../adapters/session/tests/mocks";
+  MockSessionServiceGetErrorResult,
+  MockSessionServiceGetSuccessResult,
+  MockSessionServiceGetNullSuccessResult,
+} from "../services/sessionService/tests/mocks";
 
 const env = {
   STS_JWKS_ENDPOINT: "https://mockUrl.com",
@@ -30,7 +30,7 @@ describe("Async Active Session", () => {
       env,
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
       tokenService: () => new MockTokenServiceSuccess(),
-      datastore: () => new MockDynamoDbAdapterReadSuccessResult(),
+      sessionService: () => new MockSessionServiceGetSuccessResult(),
     };
   });
 
@@ -270,8 +270,8 @@ describe("Async Active Session", () => {
           const event = buildRequest({
             headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
-          dependencies.datastore = () =>
-            new MockDynamoDbAdapterReadErrorResult();
+          dependencies.sessionService = () =>
+            new MockSessionServiceGetErrorResult();
 
           const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
             dependencies,
@@ -301,8 +301,8 @@ describe("Async Active Session", () => {
           const event = buildRequest({
             headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
-          dependencies.datastore = () =>
-            new MockDynamoDbAdapterReadNullSuccessResult();
+          dependencies.sessionService = () =>
+            new MockSessionServiceGetNullSuccessResult();
 
           const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
             dependencies,
@@ -327,8 +327,8 @@ describe("Async Active Session", () => {
           const event = buildRequest({
             headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
           });
-          dependencies.datastore = () =>
-            new MockDynamoDbAdapterReadSuccessResult();
+          dependencies.sessionService = () =>
+            new MockSessionServiceGetSuccessResult();
 
           const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
             dependencies,

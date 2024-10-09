@@ -8,10 +8,10 @@ import {
   ServiceOutputTypes,
 } from "@aws-sdk/client-dynamodb";
 import { AwsStub, mockClient } from "aws-sdk-client-mock";
-import { DynamoDbAdapter } from "../dynamoDbAdapter";
+import { ISessionService, SessionService } from "../sessionService";
 
-describe("DynamoDB Adapter", () => {
-  let dynamoDbSessionRepository: DynamoDbAdapter;
+describe("Session Service", () => {
+  let sessionService: ISessionService;
   let dynamoDbMockClient: AwsStub<
     ServiceInputTypes,
     ServiceOutputTypes,
@@ -19,7 +19,7 @@ describe("DynamoDB Adapter", () => {
   >;
 
   beforeEach(() => {
-    dynamoDbSessionRepository = new DynamoDbAdapter("mockTableName");
+    sessionService = new SessionService("mockTableName");
     dynamoDbMockClient = mockClient(DynamoDBClient);
   });
 
@@ -32,11 +32,10 @@ describe("DynamoDB Adapter", () => {
       it("Returns an error response", async () => {
         dynamoDbMockClient.on(QueryCommand).rejectsOnce("Mock DB Error");
 
-        const result = await dynamoDbSessionRepository.readSessionId("mockSub");
+        const result = await sessionService.getActiveSessionId("mockSub");
 
         expect(result.value).toStrictEqual({
-          errorMessage:
-            "Unexpected error when querying database to get an active session's ID",
+          errorMessage: "Unexpected error when querying database",
           errorCategory: "SERVER_ERROR",
         });
         expect(result.isError).toBe(true);
@@ -47,7 +46,7 @@ describe("DynamoDB Adapter", () => {
       it("Returns success response will value of null", async () => {
         dynamoDbMockClient.on(QueryCommand).resolvesOnce({});
 
-        const result = await dynamoDbSessionRepository.readSessionId("mockSub");
+        const result = await sessionService.getActiveSessionId("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -58,7 +57,7 @@ describe("DynamoDB Adapter", () => {
       it("Returns success response will value of null", async () => {
         dynamoDbMockClient.on(QueryCommand).resolvesOnce({ Items: [] });
 
-        const result = await dynamoDbSessionRepository.readSessionId("mockSub");
+        const result = await sessionService.getActiveSessionId("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -71,7 +70,7 @@ describe("DynamoDB Adapter", () => {
           .on(QueryCommand)
           .resolvesOnce({ Items: [{ dummyKey: { S: "dummyValue" } }] });
 
-        const result = await dynamoDbSessionRepository.readSessionId("mockSub");
+        const result = await sessionService.getActiveSessionId("mockSub");
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual({
@@ -91,7 +90,7 @@ describe("DynamoDB Adapter", () => {
           ],
         });
 
-        const result = await dynamoDbSessionRepository.readSessionId("mockSub");
+        const result = await sessionService.getActiveSessionId("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual("mockSessionId");
@@ -104,12 +103,10 @@ describe("DynamoDB Adapter", () => {
       it("Returns an error response", async () => {
         dynamoDbMockClient.on(QueryCommand).rejectsOnce("Mock DB Error");
 
-        const result =
-          await dynamoDbSessionRepository.readSessionDetails("mockSub");
+        const result = await sessionService.getActiveSessionDetails("mockSub");
 
         expect(result.value).toStrictEqual({
-          errorMessage:
-            "Unexpected error when querying database to get an active session's details",
+          errorMessage: "Unexpected error when querying database",
           errorCategory: "SERVER_ERROR",
         });
         expect(result.isError).toBe(true);
@@ -120,8 +117,7 @@ describe("DynamoDB Adapter", () => {
       it("Returns success response will value of null", async () => {
         dynamoDbMockClient.on(QueryCommand).resolvesOnce({});
 
-        const result =
-          await dynamoDbSessionRepository.readSessionDetails("mockSub");
+        const result = await sessionService.getActiveSessionDetails("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -132,8 +128,7 @@ describe("DynamoDB Adapter", () => {
       it("Returns success response will value of null", async () => {
         dynamoDbMockClient.on(QueryCommand).resolvesOnce({ Items: [] });
 
-        const result =
-          await dynamoDbSessionRepository.readSessionDetails("mockSub");
+        const result = await sessionService.getActiveSessionDetails("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -146,8 +141,7 @@ describe("DynamoDB Adapter", () => {
           .on(QueryCommand)
           .resolvesOnce({ Items: [{ dummyKey: { S: "dummyValue" } }] });
 
-        const result =
-          await dynamoDbSessionRepository.readSessionDetails("mockSub");
+        const result = await sessionService.getActiveSessionDetails("mockSub");
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual({
@@ -163,8 +157,7 @@ describe("DynamoDB Adapter", () => {
           .on(QueryCommand)
           .resolvesOnce({ Items: [{ sessionId: { S: "mockSessionId" } }] });
 
-        const result =
-          await dynamoDbSessionRepository.readSessionDetails("mockSub");
+        const result = await sessionService.getActiveSessionDetails("mockSub");
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual({
@@ -182,8 +175,7 @@ describe("DynamoDB Adapter", () => {
           ],
         });
 
-        const result =
-          await dynamoDbSessionRepository.readSessionDetails("mockSub");
+        const result = await sessionService.getActiveSessionDetails("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual({
@@ -205,8 +197,7 @@ describe("DynamoDB Adapter", () => {
           ],
         });
 
-        const result =
-          await dynamoDbSessionRepository.readSessionDetails("mockSub");
+        const result = await sessionService.getActiveSessionDetails("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toStrictEqual({
@@ -218,12 +209,12 @@ describe("DynamoDB Adapter", () => {
     });
   });
 
-  describe("Create session", () => {
-    describe("Given there is an unexpected error when creating session", () => {
+  describe("Create sa ession", () => {
+    describe("Given there is an unexpected error when creating a session", () => {
       it("Returns error response", async () => {
         dynamoDbMockClient.on(PutItemCommand).rejectsOnce("Mock DB Error");
 
-        const result = await dynamoDbSessionRepository.createSession({
+        const result = await sessionService.createSession({
           state: "mockValidState",
           sub: "mockSub",
           client_id: "mockClientId",
@@ -247,9 +238,9 @@ describe("DynamoDB Adapter", () => {
           $metadata: {},
           message: "Conditional check failed",
         });
-        dynamoDbMockClient.on(PutItemCommand).rejects(mockError);
+        dynamoDbMockClient.on(PutItemCommand).rejectsOnce(mockError);
 
-        const result = await dynamoDbSessionRepository.createSession({
+        const result = await sessionService.createSession({
           state: "mockValidState",
           sub: "mockSub",
           client_id: "mockClientId",
@@ -270,10 +261,9 @@ describe("DynamoDB Adapter", () => {
     describe("Given creating a session is successful", () => {
       describe("Given the function input does not contain the key redirect_uri", () => {
         it("Returns success response", async () => {
-          const dynamoDbMock = mockClient(DynamoDBClient);
-          dynamoDbMock.on(PutItemCommand).resolves({});
+          dynamoDbMockClient.on(PutItemCommand).resolvesOnce({});
 
-          const result = await dynamoDbSessionRepository.createSession({
+          const result = await sessionService.createSession({
             state: "mockValidState",
             sub: "mockSub",
             client_id: "mockClientId",
@@ -289,10 +279,9 @@ describe("DynamoDB Adapter", () => {
 
       describe("Given the function input contains the key redirect_uri", () => {
         it("Returns success response", async () => {
-          const dbMock = mockClient(DynamoDBClient);
-          dbMock.on(PutItemCommand).resolves({});
+          dynamoDbMockClient.on(PutItemCommand).resolvesOnce({});
 
-          const result = await dynamoDbSessionRepository.createSession({
+          const result = await sessionService.createSession({
             state: "mockValidState",
             sub: "mockSub",
             client_id: "mockClientId",

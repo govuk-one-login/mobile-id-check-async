@@ -27,11 +27,11 @@ import {
   MockClientRegistryServiceGetPartialClientSuccessResult,
 } from "../services/clientRegistryService/tests/mocks";
 import {
-  MockDynamoDbAdapterCreateErrorResult,
-  MockDynamoDbAdapterCreateSuccessResult,
-  MockDynamoDbAdapterReadErrorResult,
-  MockDynamoDbAdapterReadSuccessResult,
-} from "../adapters/session/tests/mocks";
+  MockSessionServiceGetErrorResult,
+  MockSessionServiceCreateErrorResult,
+  MockSessionServiceCreateSuccessResult,
+  MockSessionServiceGetSuccessResult,
+} from "../services/sessionService/tests/mocks";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -54,7 +54,7 @@ describe("Async Credential", () => {
       tokenService: () => new MockTokenServiceSuccess(),
       clientRegistryService: () =>
         new MockClientRegistryServiceGetPartialClientSuccessResult(),
-      datastore: () => new MockDynamoDbAdapterReadSuccessResult(),
+      sessionService: () => new MockSessionServiceGetSuccessResult(),
       env,
     };
   });
@@ -749,7 +749,8 @@ describe("Async Credential", () => {
             govuk_signin_journey_id: "mockGovukSigninJourneyId",
           }),
         });
-        dependencies.datastore = () => new MockDynamoDbAdapterReadErrorResult();
+        dependencies.sessionService = () =>
+          new MockSessionServiceGetErrorResult();
 
         const result = await lambdaHandlerConstructor(dependencies, event);
 
@@ -818,8 +819,8 @@ describe("Async Credential", () => {
             govuk_signin_journey_id: "mockGovukSigninJourneyId",
           }),
         });
-        dependencies.datastore = () =>
-          new MockDynamoDbAdapterCreateErrorResult();
+        dependencies.sessionService = () =>
+          new MockSessionServiceCreateErrorResult();
 
         const result = await lambdaHandlerConstructor(dependencies, event);
 
@@ -857,8 +858,8 @@ describe("Async Credential", () => {
           });
           dependencies.eventService = () =>
             new MockEventServiceFailToWrite("DCMAW_ASYNC_CRI_START");
-          dependencies.datastore = () =>
-            new MockDynamoDbAdapterCreateSuccessResult();
+          dependencies.sessionService = () =>
+            new MockSessionServiceCreateSuccessResult();
 
           const result = await lambdaHandlerConstructor(dependencies, event);
 
@@ -895,8 +896,8 @@ describe("Async Credential", () => {
           });
           const mockEventService = new MockEventWriterSuccess();
           dependencies.eventService = () => mockEventService;
-          dependencies.datastore = () =>
-            new MockDynamoDbAdapterCreateSuccessResult();
+          dependencies.sessionService = () =>
+            new MockSessionServiceCreateSuccessResult();
 
           const result = await lambdaHandlerConstructor(dependencies, event);
 
