@@ -42,8 +42,8 @@ describe("Session Service", () => {
       });
     });
 
-    describe("Given the query response does not contain the field Items", () => {
-      it("Returns success response will value of null", async () => {
+    describe("Given the query response does not contain the Items field", () => {
+      it("Returns success response with value of null", async () => {
         dynamoDbMockClient.on(QueryCommand).resolvesOnce({});
 
         const result = await sessionService.getActiveSessionId("mockSub");
@@ -54,7 +54,7 @@ describe("Session Service", () => {
     });
 
     describe("Given the query response does not return any items", () => {
-      it("Returns success response will value of null", async () => {
+      it("Returns success response with value of null", async () => {
         dynamoDbMockClient.on(QueryCommand).resolvesOnce({ Items: [] });
 
         const result = await sessionService.getActiveSessionId("mockSub");
@@ -113,8 +113,8 @@ describe("Session Service", () => {
       });
     });
 
-    describe("Given the query response does not contain the field Items", () => {
-      it("Returns success response will value of null", async () => {
+    describe("Given the query response does not contain the Items field", () => {
+      it("Returns success response with value of null", async () => {
         dynamoDbMockClient.on(QueryCommand).resolvesOnce({});
 
         const result = await sessionService.getActiveSessionDetails("mockSub");
@@ -125,7 +125,7 @@ describe("Session Service", () => {
     });
 
     describe("Given the query response does not return any items", () => {
-      it("Returns success response will value of null", async () => {
+      it("Returns success response with value of null", async () => {
         dynamoDbMockClient.on(QueryCommand).resolvesOnce({ Items: [] });
 
         const result = await sessionService.getActiveSessionDetails("mockSub");
