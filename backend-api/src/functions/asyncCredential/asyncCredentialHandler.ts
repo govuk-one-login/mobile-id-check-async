@@ -155,7 +155,7 @@ export async function lambdaHandlerConstructor(
     });
     return serverErrorResponse;
   }
-  if (activeSessionResult.value !== null) {
+  if (activeSessionResult.value) {
     logger.setSessionId({ sessionId: activeSessionResult.value });
     logger.log("COMPLETED");
     return activeSessionFoundResponse(requestBody.sub);
