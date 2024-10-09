@@ -5,7 +5,7 @@ export const sqsClient = new SQSClient({
   region: process.env.REGION,
   maxAttempts: 3,
   requestHandler: new NodeHttpHandler({
-    connectionTimeout: 29000,
-    requestTimeout: 29000,
+    connectionTimeout: 5000,
+    requestTimeout: 5000,
   }),
 });

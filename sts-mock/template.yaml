@@ -173,6 +173,7 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-token
       Runtime: nodejs20.x
       Handler: tokenHandler.lambdaHandler
+      Timeout: 5
       Events:
         Token:
           Type: Api

@@ -169,6 +169,7 @@ Conditions:
 
 Globals:
   Function:
+    Timeout: 5
     ReservedConcurrentExecutions: !FindInMap
       - Lambda
       - !Ref Environment
