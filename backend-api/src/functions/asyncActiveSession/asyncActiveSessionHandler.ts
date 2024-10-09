@@ -60,17 +60,17 @@ export async function lambdaHandlerConstructor(
   }
 
   const sessionService = dependencies.sessionService(config.SESSION_TABLE_NAME);
-  const readSessionDetailsResult =
-    await sessionService.getActiveSessionDetails("mockSub1");
+  const getActiveSessionDetailsResult =
+    await sessionService.getActiveSessionDetails("mockSub1"); // temporary sub until we have implemented the logic to extract the sub from the JWT
 
-  if (readSessionDetailsResult.isError) {
+  if (getActiveSessionDetailsResult.isError) {
     logger.log("INTERNAL_SERVER_ERROR", {
-      errorMessage: readSessionDetailsResult.value.errorMessage,
+      errorMessage: getActiveSessionDetailsResult.value.errorMessage,
     });
     return serverErrorResponse;
   }
 
-  const sessionDetails = readSessionDetailsResult.value;
+  const sessionDetails = getActiveSessionDetailsResult.value;
   if (sessionDetails === null) {
     return notFoundResponse;
   }
