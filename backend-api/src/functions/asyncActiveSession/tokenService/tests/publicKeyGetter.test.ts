@@ -99,7 +99,7 @@ describe("Public Key Getter", () => {
       expect(result.value).toStrictEqual({
         errorMessage:
           'Failed verifying service token signature: Error converting JWK to key object: TypeError [ERR_INVALID_ARG_TYPE]: The "key.crv" property must be of type string. Received undefined',
-        errorCategory: "SERVER_ERROR",
+        errorCategory: "CLIENT_ERROR",
       });
     });
   });

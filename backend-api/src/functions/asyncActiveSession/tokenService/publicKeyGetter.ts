@@ -43,14 +43,6 @@ export class PublicKeyGetter implements IPublicKeyGetter {
     } catch (error) {
       return errorResult({
         errorMessage: `Failed verifying service token signature: Error converting JWK to key object: ${error}`,
-        errorCategory: "SERVER_ERROR", // SERVER / CLIENT ERROR?
-      });
-    }
-
-    if (!publicKey) {
-      return errorResult({
-        errorMessage:
-          "Failed verifying service token signature: Error converting JWK to key object",
         errorCategory: "CLIENT_ERROR",
       });
     }
