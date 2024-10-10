@@ -33,11 +33,17 @@ export async function lambdaHandlerConstructor(
   }
 
   const serviceToken = authorizationHeaderResult.value;
+  const gcmAdapter = dependencies.gcmDecryptor();
+  const kmsAdapter = dependencies.kmsAdapter(config.ENCRYPTION_KEY_ARN);
+  const rsaDecryptorAdapter = dependencies.rsaDecryptor(kmsAdapter);
+  const jweDecryptor = dependencies.jweDecryptor(
+    rsaDecryptorAdapter,
+    gcmAdapter,
+  );
+  const tokenService = dependencies.tokenService(jweDecryptor);
 
-  const tokenService = dependencies.tokenService();
   const getSubFromTokenResult = await tokenService.getSubFromToken(
     config.STS_JWKS_ENDPOINT,
-    config.ENCRYPTION_KEY_ARN,
     serviceToken,
     {
       maxAttempts: 3,

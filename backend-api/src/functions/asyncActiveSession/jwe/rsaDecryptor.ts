@@ -1,17 +1,17 @@
-import { KMSAdapter } from '../../adapters/kmsAdapter'
+import { KMSAdapter } from "../../adapters/kmsAdapter";
 
 export class RsaDecryptor implements IDecryptAsymmetric {
-    private readonly kmsAdapter
+  private readonly kmsAdapter;
 
-    constructor (kmsAdapter: KMSAdapter) {
-        this.kmsAdapter = kmsAdapter
-    }
+  constructor(kmsAdapter: KMSAdapter) {
+    this.kmsAdapter = kmsAdapter;
+  }
 
-    async decrypt (encryptedCek: Uint8Array): Promise<Uint8Array> {
-        return await this.kmsAdapter.decrypt(encryptedCek)
-    }
+  async decrypt(encryptedCek: Uint8Array): Promise<Uint8Array> {
+    return await this.kmsAdapter.decrypt(encryptedCek);
+  }
 }
 
 export interface IDecryptAsymmetric {
-    decrypt: (cek: Uint8Array) => Promise<Uint8Array>
+  decrypt: (cek: Uint8Array) => Promise<Uint8Array>;
 }
