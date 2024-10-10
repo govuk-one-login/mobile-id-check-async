@@ -513,15 +513,6 @@ describe("Token Service", () => {
               142, 98, 12,
             ]),
           });
-          // jest.spyOn(jose, "importJWK").mockResolvedValueOnce(
-          //   new Uint8Array()
-          // )
-          // jest.spyOn(jose, "jwtVerify").mockResolvedValueOnce(
-          //   {
-          //     payload: {},
-          //     protectedHeader: {} as JWTHeaderParameters,
-          //   } as unknown as Promise<jose.JWTVerifyResult & jose.ResolvedKey>
-          // );
           const result = await tokenService.getSubFromToken(
             "https://mockJwksEndpoint.com",
             "https://mockKeyArn.com",
