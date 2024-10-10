@@ -14,8 +14,8 @@ export class JwksUploader implements IJwksUploader {
         region: "eu-west-2",
         maxAttempts: 2,
         requestHandler: new NodeHttpHandler({
-          connectionTimeout: 29000,
-          requestTimeout: 29000,
+          connectionTimeout: 5000,
+          requestTimeout: 5000,
         }),
       },
     ]),
