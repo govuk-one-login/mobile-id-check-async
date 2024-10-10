@@ -169,6 +169,7 @@ Conditions:
 
 Globals:
   Function:
+    Timeout: 5
     ReservedConcurrentExecutions: !FindInMap
       - Lambda
       - !Ref Environment
@@ -542,7 +543,7 @@ Resources:
       EndpointConfiguration:
         Types:
           - REGIONAL
-      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN}}'
+      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN}}'
       SecurityPolicy: TLS_1_2
     Condition: ProxyApiDeployment
 
@@ -760,7 +761,7 @@ Resources:
       EndpointConfiguration:
         Types:
           - REGIONAL
-      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN}}'
+      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN}}'
       SecurityPolicy: TLS_1_2
 
   SessionsApiBasePathMapping:
@@ -1374,3 +1375,7 @@ Outputs:
     Condition: ProxyApiDeployment
     Description: Proxy API Gateway Pretty DNS
     Value: !Sub https://${ProxyApiDomainName}
+
+  PrivateApiUrl:
+    Description: Private API Gateway base URL
+    Value: !Sub https://${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}

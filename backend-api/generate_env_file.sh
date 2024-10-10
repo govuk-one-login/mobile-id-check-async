@@ -1,8 +1,6 @@
 #!/bin/bash
 set -eu
 
-ENV="dev"
-
 if [ $# -ge 1 ] && [ -n "$1" ] ; then
   SAM_STACK="$1"
 else
@@ -13,6 +11,8 @@ echo "Generating .env file for the $SAM_STACK stack"
 
 SESSIONS_API_URL=$(aws cloudformation describe-stacks --stack-name "$SAM_STACK" --query "Stacks[0].Outputs[?OutputKey=='SessionsApiUrl'].OutputValue" --output text)
 PROXY_API_URL=$(aws cloudformation describe-stacks --stack-name "$SAM_STACK" --query "Stacks[0].Outputs[?OutputKey=='ProxyApiUrl'].OutputValue" --output text)
+PRIVATE_API_URL=$(aws cloudformation describe-stacks --stack-name "$SAM_STACK" --query "Stacks[0].Outputs[?OutputKey=='PrivateApiUrl'].OutputValue" --output text)
 
 echo "SESSIONS_API_URL=$SESSIONS_API_URL" > .env
 echo "PROXY_API_URL=$PROXY_API_URL" >> .env
+echo "PRIVATE_API_URL=$PRIVATE_API_URL" >> .env
