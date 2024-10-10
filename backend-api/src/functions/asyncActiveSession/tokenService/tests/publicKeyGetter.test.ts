@@ -55,4 +55,24 @@ describe("Public Key Getter", () => {
       });
     });
   });
+
+  describe("Given kid is not found in JWKS", () => {
+    it("Return error result", async () => {
+      mockEncodedJwt = await new MockJWTBuilder()
+        .setHeader({ alg: "HS256", type: "JWT", kid: "mockInvalidKid" })
+        .buildEncodedJwt();
+      const result = await publicKeyGetter.getPublicKey(
+        mockEncodedJwt,
+        mockJwks,
+      );
+
+      expect(result.isError).toBe(true);
+      expect(result.value).toStrictEqual({
+        errorMessage:
+          "Failed verifying service token signature: JWK not found",
+        errorCategory: "CLIENT_ERROR",
+      });
+    });
+  });
+
 });
