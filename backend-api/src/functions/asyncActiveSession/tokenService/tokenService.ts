@@ -10,10 +10,10 @@ import { jwtVerify, JWTVerifyResult, KeyLike } from "jose";
 import { IJwks, IPublicKeyGetter } from "./publicKeyGetter";
 
 export class TokenService implements ITokenService {
-  private readonly dependencies: ITokenServiceDependencies
+  private readonly dependencies: ITokenServiceDependencies;
 
   constructor(dependencies: ITokenServiceDependencies) {
-    this.dependencies = dependencies
+    this.dependencies = dependencies;
   }
 
   getSubFromToken = async (
@@ -22,19 +22,23 @@ export class TokenService implements ITokenService {
     jwe: string,
     retryConfig: RetryConfig,
   ): Promise<Result<string>> => {
-    const stsJwksEndpointResponseResult = await this.getJwks(stsJwksEndpoint, retryConfig);
+    const stsJwksEndpointResponseResult = await this.getJwks(
+      stsJwksEndpoint,
+      retryConfig,
+    );
     if (stsJwksEndpointResponseResult.isError) {
-      return stsJwksEndpointResponseResult
+      return stsJwksEndpointResponseResult;
     }
 
-    const jwks = stsJwksEndpointResponseResult.value
+    const jwks = stsJwksEndpointResponseResult.value;
 
     const getJweComponentsResult = this.getJweComponents(jwe);
     if (getJweComponentsResult.isError) {
-      return getJweComponentsResult
+      return getJweComponentsResult;
     }
 
-    const [protectedHeader, encryptedCek, iv, ciphertext, tag] = getJweComponentsResult.value
+    const [protectedHeader, encryptedCek, iv, ciphertext, tag] =
+      getJweComponentsResult.value;
 
     const decryptCekResult = await new KMSAdapter().decrypt(
       encryptionKeyArn,
@@ -57,22 +61,28 @@ export class TokenService implements ITokenService {
       return decryptJweResult;
     }
 
-    const jwt = decryptJweResult.value
+    const jwt = decryptJweResult.value;
 
-    const publicKeyGetter = this.dependencies.publicKeyGetter()
-    const getPublicKeyFromJwksResult = await publicKeyGetter.getPublicKey(jwt, jwks)
+    const publicKeyGetter = this.dependencies.publicKeyGetter();
+    const getPublicKeyFromJwksResult = await publicKeyGetter.getPublicKey(
+      jwt,
+      jwks,
+    );
     if (getPublicKeyFromJwksResult.isError) {
-      return getPublicKeyFromJwksResult
+      return getPublicKeyFromJwksResult;
     }
 
-    const publicKey = getPublicKeyFromJwksResult.value
+    const publicKey = getPublicKeyFromJwksResult.value;
 
-    const verifyTokenSignatureResult = await this.verifyTokenSignature(jwt, publicKey)
+    const verifyTokenSignatureResult = await this.verifyTokenSignature(
+      jwt,
+      publicKey,
+    );
     if (verifyTokenSignatureResult.isError) {
-      return verifyTokenSignatureResult
+      return verifyTokenSignatureResult;
     }
 
-    const { payload } = verifyTokenSignatureResult.value
+    const { payload } = verifyTokenSignatureResult.value;
 
     return successResult("");
   };
@@ -87,10 +97,13 @@ export class TokenService implements ITokenService {
     );
   };
 
-  private async getJwks(stsJwksEndpoint: string, retryConfig: RetryConfig): Promise<Result<IJwks>> {
+  private async getJwks(
+    stsJwksEndpoint: string,
+    retryConfig: RetryConfig,
+  ): Promise<Result<IJwks>> {
     const sendHttpRequestResult = await sendHttpRequest(
       { url: stsJwksEndpoint, method: "GET" },
-      retryConfig
+      retryConfig,
     );
 
     if (sendHttpRequestResult.isError) {
@@ -99,17 +112,16 @@ export class TokenService implements ITokenService {
 
     const jwksEndpointResponse = sendHttpRequestResult.value;
 
-    const getJwksFromResponseResult = await this.getJwksFromResponse(
-      jwksEndpointResponse,
-    );
+    const getJwksFromResponseResult =
+      await this.getJwksFromResponse(jwksEndpointResponse);
 
     if (getJwksFromResponseResult.isError) {
       return getJwksFromResponseResult;
     }
 
-    const jwks = getJwksFromResponseResult.value
+    const jwks = getJwksFromResponseResult.value;
 
-    return successResult(jwks)
+    return successResult(jwks);
   }
 
   private getJweComponents(jwe: string): Result<string[]> {
@@ -123,10 +135,8 @@ export class TokenService implements ITokenService {
       });
     }
 
-    return successResult(jweComponents)
+    return successResult(jweComponents);
   }
-
-
 
   // private async getPublicKeyFromJwks(jwt: string, jwks: IJwks): Promise<Result<Uint8Array | KeyLike>> {
   //   let decodedProtectedHeader: ProtectedHeaderParameters
@@ -217,9 +227,13 @@ export class TokenService implements ITokenService {
 
     let cek: CryptoKey;
     try {
-      cek = await webcrypto.subtle.importKey("raw", decryptedCek, "AES-GCM", false, [
-        "decrypt",
-      ]);
+      cek = await webcrypto.subtle.importKey(
+        "raw",
+        decryptedCek,
+        "AES-GCM",
+        false,
+        ["decrypt"],
+      );
     } catch (error) {
       return errorResult({
         errorMessage: `Error converting cek to CryptoKey. ${error}`,
@@ -252,9 +266,9 @@ export class TokenService implements ITokenService {
 
   private async verifyTokenSignature(
     jwt: string,
-    publicKey: Uint8Array | KeyLike
-  ): Promise<Result<{ payload: any; protectedHeader: any; }>> {
-    let result: JWTVerifyResult
+    publicKey: Uint8Array | KeyLike,
+  ): Promise<Result<{ payload: any; protectedHeader: any }>> {
+    let result: JWTVerifyResult;
     try {
       result = await jwtVerify(jwt, publicKey);
     } catch (error) {
@@ -264,7 +278,7 @@ export class TokenService implements ITokenService {
       });
     }
 
-    return successResult(result)
+    return successResult(result);
   }
 }
 
@@ -278,5 +292,5 @@ export interface ITokenService {
 }
 
 export interface ITokenServiceDependencies {
-  publicKeyGetter: () => IPublicKeyGetter
+  publicKeyGetter: () => IPublicKeyGetter;
 }

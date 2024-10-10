@@ -25,7 +25,7 @@ describe("Async Active Session", () => {
       env,
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
       tokenServiceDependencies: {
-        publicKeyGetter: () => new MockPubicKeyGetterGetPublicKeyError()
+        publicKeyGetter: () => new MockPubicKeyGetterGetPublicKeyError(),
       },
       tokenService: () => new MockTokenServiceSuccess(),
     };
