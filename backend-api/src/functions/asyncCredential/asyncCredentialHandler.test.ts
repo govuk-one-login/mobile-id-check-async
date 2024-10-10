@@ -27,12 +27,11 @@ import {
   MockClientRegistryServiceGetPartialClientSuccessResult,
 } from "../services/clientRegistryService/tests/mocks";
 import {
-  MockSessionServiceCreateSessionErrorResult,
-  MockSessionServiceCreateSessionSuccessResult,
-  MockSessionServiceGetActiveSessionSuccessResult,
-  MockSessionServiceGetSessionBySubErrorResult,
-  MockSessionServiceNoActiveSession,
-} from "./sessionService/tests/mocks";
+  MockSessionServiceGetErrorResult,
+  MockSessionServiceCreateErrorResult,
+  MockSessionServiceCreateSuccessResult,
+  MockSessionServiceGetSuccessResult,
+} from "../services/sessionService/tests/mocks";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -55,8 +54,7 @@ describe("Async Credential", () => {
       tokenService: () => new MockTokenServiceSuccess(),
       clientRegistryService: () =>
         new MockClientRegistryServiceGetPartialClientSuccessResult(),
-      sessionService: () =>
-        new MockSessionServiceNoActiveSession(env.SESSION_TABLE_NAME),
+      sessionService: () => new MockSessionServiceGetSuccessResult(),
       env,
     };
   });
@@ -703,6 +701,7 @@ describe("Async Credential", () => {
       });
     });
   });
+
   describe("Given client is not registered", () => {
     it("Returns 400 Bad Request response", async () => {
       const jwtBuilder = new MockJWTBuilder();
@@ -738,85 +737,113 @@ describe("Async Credential", () => {
   });
 
   describe("Session Service", () => {
-    describe("Check for active session", () => {
-      describe("Given there is an error checking for an existing session", () => {
-        it("Returns 500 Server Error", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-            body: JSON.stringify({
-              state: "mockState",
-              sub: "mockSub",
-              client_id: "mockClientId",
-              govuk_signin_journey_id: "mockGovukSigninJourneyId",
-            }),
-          });
-          dependencies.sessionService = () =>
-            new MockSessionServiceGetSessionBySubErrorResult(
-              env.SESSION_TABLE_NAME,
-            );
-
-          const result = await lambdaHandlerConstructor(dependencies, event);
-
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "ERROR_RETRIEVING_SESSION",
-          );
-          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-            errorMessage: "Mock failing DB call",
-          });
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 500,
-            body: JSON.stringify({
-              error: "server_error",
-              error_description: "Server Error",
-            }),
-          });
+    describe("Given there is an error checking for an existing session", () => {
+      it("Returns 500 Server Error", async () => {
+        const jwtBuilder = new MockJWTBuilder();
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+          }),
         });
-      });
+        dependencies.sessionService = () =>
+          new MockSessionServiceGetErrorResult();
 
-      describe("Given there is an active session", () => {
-        it("Logs and returns 200 active session found response", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          const event = buildRequest({
-            headers: {
-              Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}`,
-            },
-            body: JSON.stringify({
-              state: "mockState",
-              sub: "mockSub",
-              client_id: "mockClientId",
-              govuk_signin_journey_id: "mockGovukSigninJourneyId",
-            }),
-          });
-          dependencies.sessionService = () =>
-            new MockSessionServiceGetActiveSessionSuccessResult(
-              env.SESSION_TABLE_NAME,
-            );
+        const result = await lambdaHandlerConstructor(dependencies, event);
 
-          const result = await lambdaHandlerConstructor(dependencies, event);
-
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "COMPLETED",
-          );
-          expect(mockLogger.getLogMessages()[0].logMessage.sessionId).toBe(
-            "mockSessionId",
-          );
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 200,
-            body: JSON.stringify({
-              sub: "mockSub",
-              "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
-            }),
-          });
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "ERROR_RETRIEVING_SESSION",
+        );
+        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+          errorMessage: "Mock error when getting session ID",
+        });
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
         });
       });
     });
 
-    describe("Session creation", () => {
-      describe("Given there is an error creating the session", () => {
-        it("Logs and returns a 500 Internal Server Error", async () => {
+    describe("Given there is an active session", () => {
+      it("Returns 200 OK", async () => {
+        const jwtBuilder = new MockJWTBuilder();
+        const event = buildRequest({
+          headers: {
+            Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}`,
+          },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+          }),
+        });
+
+        const result = await lambdaHandlerConstructor(dependencies, event);
+
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "COMPLETED",
+        );
+        expect(mockLogger.getLogMessages()[0].logMessage.sessionId).toBe(
+          "mockSessionId",
+        );
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 200,
+          body: JSON.stringify({
+            sub: "mockSub",
+            "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
+          }),
+        });
+      });
+    });
+
+    describe("Given there is an error creating a session", () => {
+      it("Returns 500 Server Error", async () => {
+        const jwtBuilder = new MockJWTBuilder();
+        const event = buildRequest({
+          headers: {
+            Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}`,
+          },
+          body: JSON.stringify({
+            state: "mockState",
+            sub: "mockSub",
+            client_id: "mockClientId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+          }),
+        });
+        dependencies.sessionService = () =>
+          new MockSessionServiceCreateErrorResult();
+
+        const result = await lambdaHandlerConstructor(dependencies, event);
+
+        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+          "ERROR_CREATING_SESSION",
+        );
+        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+          errorMessage: "Mock error when creating session",
+        });
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
+        });
+      });
+    });
+
+    describe("Given a session has been created", () => {
+      describe("Given it fails to write the DCMAW_ASYNC_CRI_START event to TxMA", () => {
+        it("Returns 500 Server Error", async () => {
           const jwtBuilder = new MockJWTBuilder();
           const event = buildRequest({
             headers: {
@@ -829,19 +856,19 @@ describe("Async Credential", () => {
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
             }),
           });
+          dependencies.eventService = () =>
+            new MockEventServiceFailToWrite("DCMAW_ASYNC_CRI_START");
           dependencies.sessionService = () =>
-            new MockSessionServiceCreateSessionErrorResult(
-              env.SESSION_TABLE_NAME,
-            );
+            new MockSessionServiceCreateSuccessResult();
 
           const result = await lambdaHandlerConstructor(dependencies, event);
 
           expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "ERROR_CREATING_SESSION",
+            "ERROR_WRITING_AUDIT_EVENT",
           );
-          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
-            errorMessage: "Mock error",
-          });
+          expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
+            "Unexpected error writing the DCMAW_ASYNC_CRI_START event",
+          );
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 500,
@@ -853,87 +880,43 @@ describe("Async Credential", () => {
         });
       });
 
-      describe("Given the session has been created", () => {
-        describe("Given it fails to write the DCMAW_ASYNC_CRI_START event to TxMA", () => {
-          it("Logs and returns a 500 Internal Server Error", async () => {
-            const jwtBuilder = new MockJWTBuilder();
-            const event = buildRequest({
-              headers: {
-                Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}`,
-              },
-              body: JSON.stringify({
-                state: "mockState",
-                sub: "mockSub",
-                client_id: "mockClientId",
-                govuk_signin_journey_id: "mockGovukSigninJourneyId",
-              }),
-            });
-            dependencies.eventService = () =>
-              new MockEventServiceFailToWrite("DCMAW_ASYNC_CRI_START");
-            dependencies.sessionService = () =>
-              new MockSessionServiceCreateSessionSuccessResult(
-                env.SESSION_TABLE_NAME,
-              );
-
-            const result = await lambdaHandlerConstructor(dependencies, event);
-
-            expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-              "ERROR_WRITING_AUDIT_EVENT",
-            );
-            expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
-              "Unexpected error writing the DCMAW_ASYNC_CRI_START event",
-            );
-            expect(result).toStrictEqual({
-              headers: { "Content-Type": "application/json" },
-              statusCode: 500,
-              body: JSON.stringify({
-                error: "server_error",
-                error_description: "Server Error",
-              }),
-            });
+      describe("Given it successfully writes the DCMAW_ASYNC_CRI_START event to TxMA", () => {
+        it("Returns 201 Created", async () => {
+          const jwtBuilder = new MockJWTBuilder();
+          const event = buildRequest({
+            headers: {
+              Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}`,
+            },
+            body: JSON.stringify({
+              state: "mockState",
+              sub: "mockSub",
+              client_id: "mockClientId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+            }),
           });
-        });
+          const mockEventService = new MockEventWriterSuccess();
+          dependencies.eventService = () => mockEventService;
+          dependencies.sessionService = () =>
+            new MockSessionServiceCreateSuccessResult();
 
-        describe("Given it successfully writes the DCMAW_ASYNC_CRI_START event to TxMA", () => {
-          it("Logs and returns 201 session created response", async () => {
-            const jwtBuilder = new MockJWTBuilder();
-            const event = buildRequest({
-              headers: {
-                Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}`,
-              },
-              body: JSON.stringify({
-                state: "mockState",
-                sub: "mockSub",
-                client_id: "mockClientId",
-                govuk_signin_journey_id: "mockGovukSigninJourneyId",
-              }),
-            });
-            const mockEventService = new MockEventWriterSuccess();
-            dependencies.eventService = () => mockEventService;
-            dependencies.sessionService = () =>
-              new MockSessionServiceCreateSessionSuccessResult(
-                env.SESSION_TABLE_NAME,
-              );
+          const result = await lambdaHandlerConstructor(dependencies, event);
 
-            const result = await lambdaHandlerConstructor(dependencies, event);
-
-            expect(mockEventService.auditEvents[0]).toEqual(
-              "DCMAW_ASYNC_CRI_START",
-            );
-            expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-              "COMPLETED",
-            );
-            expect(mockLogger.getLogMessages()[0].logMessage.sessionId).toEqual(
-              "mockSessionId",
-            );
-            expect(result).toStrictEqual({
-              headers: { "Content-Type": "application/json" },
-              statusCode: 201,
-              body: JSON.stringify({
-                sub: "mockSub",
-                "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
-              }),
-            });
+          expect(mockEventService.auditEvents[0]).toEqual(
+            "DCMAW_ASYNC_CRI_START",
+          );
+          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
+            "COMPLETED",
+          );
+          expect(mockLogger.getLogMessages()[0].logMessage.sessionId).toEqual(
+            "mockSessionId",
+          );
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 201,
+            body: JSON.stringify({
+              sub: "mockSub",
+              "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
+            }),
           });
         });
       });

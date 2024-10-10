@@ -3,6 +3,7 @@ import { errorResult, Result, successResult } from "../../utils/result";
 
 export interface Config {
   ENCRYPTION_KEY_ARN: string;
+  SESSION_TABLE_NAME: string;
   STS_JWKS_ENDPOINT: string;
 }
 
@@ -14,7 +15,12 @@ export class ConfigService implements IGetConfig<Config> {
         errorCategory: "SERVER_ERROR",
       });
     }
-
+    if (!env.SESSION_TABLE_NAME) {
+      return errorResult({
+        errorMessage: "No SESSION_TABLE_NAME",
+        errorCategory: "SERVER_ERROR",
+      });
+    }
     if (!env.STS_JWKS_ENDPOINT) {
       return errorResult({
         errorMessage: "No STS_JWKS_ENDPOINT",
@@ -32,6 +38,7 @@ export class ConfigService implements IGetConfig<Config> {
 
     return successResult({
       ENCRYPTION_KEY_ARN: env.ENCRYPTION_KEY_ARN,
+      SESSION_TABLE_NAME: env.SESSION_TABLE_NAME,
       STS_JWKS_ENDPOINT: env.STS_JWKS_ENDPOINT,
     });
   };

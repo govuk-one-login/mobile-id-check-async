@@ -146,7 +146,7 @@ export async function lambdaHandlerConstructor(
   // Create a session
   const sessionService = dependencies.sessionService(config.SESSION_TABLE_NAME);
 
-  const activeSessionResult = await sessionService.getActiveSession(
+  const activeSessionResult = await sessionService.getActiveSessionId(
     requestBody.sub,
   );
   if (activeSessionResult.isError) {
