@@ -8,6 +8,7 @@ import { Logger } from "../services/logging/logger";
 import { MockJWTBuilder } from "../testUtils/mockJwt";
 import { errorResult, Result, successResult } from "../utils/result";
 import { ITokenService } from "./tokenService/tokenService";
+import { MockPubicKeyGetterGetPublicKeyError } from "./tokenService/tests/mocks";
 
 const env = {
   STS_JWKS_ENDPOINT: "https://mockUrl.com",
@@ -23,6 +24,9 @@ describe("Async Active Session", () => {
     dependencies = {
       env,
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
+      tokenServiceDependencies: {
+        publicKeyGetter: () => new MockPubicKeyGetterGetPublicKeyError(),
+      },
       tokenService: () => new MockTokenServiceSuccess(),
     };
   });
@@ -230,7 +234,7 @@ describe("Async Active Session", () => {
       });
     });
 
-    describe("Given decrypting access token failed", () => {
+    describe("Given service token is invalid", () => {
       it("Logs and returns 400 Bad Request response", async () => {
         const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
@@ -238,7 +242,7 @@ describe("Async Active Session", () => {
         });
 
         dependencies.tokenService = () =>
-          new MockTokenServiceDecryptionFailed();
+          new MockTokenServiceInvalidServiceToken();
 
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
@@ -249,7 +253,7 @@ describe("Async Active Session", () => {
           "FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Mock decryption error",
+          errorMessage: "Mock invalid service token error",
         });
 
         expect(result).toStrictEqual({
@@ -257,7 +261,7 @@ describe("Async Active Session", () => {
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "failed decrypting service token jwt",
+            error_description: "Mock invalid service token error",
           }),
         });
       });
@@ -300,10 +304,10 @@ class MockTokenServiceServerError implements ITokenService {
   }
 }
 
-class MockTokenServiceDecryptionFailed {
+class MockTokenServiceInvalidServiceToken {
   async getSubFromToken(): Promise<Result<string>> {
     return errorResult({
-      errorMessage: "Mock decryption error",
+      errorMessage: "Mock invalid service token error",
       errorCategory: "CLIENT_ERROR",
     });
   }
