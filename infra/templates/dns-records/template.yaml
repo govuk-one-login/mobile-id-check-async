@@ -31,6 +31,10 @@ Conditions:
     - !Ref Environment
     - dev
 
+  IsBuildOrStagingEnvironment: !Or 
+    - !Equals [!Ref Environment, build]
+    - !Equals [!Ref Environment, staging]
+
 Resources:
   ExternalCertificate:
     Type: AWS::CertificateManager::Certificate
@@ -100,6 +104,113 @@ Resources:
         Product: ID Check Async
         System: ID Check Async
         Environment: !Sub ${Environment}
+# New resources below to be kept
+  AsyncExternalCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Sub
+        - ${DNSSUFFIX}
+        - DNSSUFFIX: !FindInMap
+            - PlatformConfiguration
+            - !Ref Environment
+            - DNSSUFFIX
+      SubjectAlternativeNames:        
+        - !Sub 
+          - sessions-mob-async-backend.${DNSSUFFIX}
+          - DNSSUFFIX: !FindInMap
+              - PlatformConfiguration
+              - !Ref Environment
+              - DNSSUFFIX            
+        - !If
+          - IsBuildOrStagingEnvironment
+          - !Sub
+            - mob-sts-mock.${DNSSUFFIX}
+            - DNSSUFFIX: !FindInMap
+                - PlatformConfiguration
+                - !Ref Environment
+                - DNSSUFFIX
+          - !Ref AWS::NoValue
+        - !If
+          - IsBuildOrStagingEnvironment
+          - !Sub
+            - proxy-mob-async-backend.${DNSSUFFIX}
+            - DNSSUFFIX: !FindInMap
+                - PlatformConfiguration
+                - !Ref Environment
+                - DNSSUFFIX
+          - !Ref AWS::NoValue
+        - !If
+          - IsDevEnvironment
+          - !Sub
+            - '*.${DNSSUFFIX}'
+            - DNSSUFFIX: !FindInMap
+                - PlatformConfiguration
+                - !Ref Environment
+                - DNSSUFFIX
+          - !Ref AWS::NoValue
+      DomainValidationOptions:
+        - DomainName: !Sub
+            - ${DNSSUFFIX}
+            - DNSSUFFIX: !FindInMap
+                - PlatformConfiguration
+                - !Ref Environment
+                - DNSSUFFIX
+          HostedZoneId: !ImportValue PublicHostedZoneId
+        - DomainName: !Sub
+          - sessions-mob-async-backend.${DNSSUFFIX}
+          - DNSSUFFIX: !FindInMap
+              - PlatformConfiguration
+              - !Ref Environment
+              - DNSSUFFIX
+          HostedZoneId: !ImportValue PublicHostedZoneId   
+        - !If
+          - IsBuildOrStagingEnvironment
+          - DomainName: !Sub
+              - mob-sts-mock.${DNSSUFFIX}
+              - DNSSUFFIX: !FindInMap
+                  - PlatformConfiguration
+                  - !Ref Environment
+                  - DNSSUFFIX
+            HostedZoneId: !ImportValue PublicHostedZoneId
+          - !Ref AWS::NoValue
+        - !If
+          - IsBuildOrStagingEnvironment
+          - DomainName: !Sub
+              - proxy-mob-async-backend.${DNSSUFFIX}
+              - DNSSUFFIX: !FindInMap
+                  - PlatformConfiguration
+                  - !Ref Environment
+                  - DNSSUFFIX
+            HostedZoneId: !ImportValue PublicHostedZoneId
+          - !Ref AWS::NoValue
+      ValidationMethod: DNS
+      Tags:
+        - Key: Name
+          Value: !Sub
+            - ${DNSSUFFIX}
+            - DNSSUFFIX: !FindInMap
+                - PlatformConfiguration
+                - !Ref Environment
+                - DNSSUFFIX
+        - Key: Product
+          Value: ID Check Async
+        - Key: System
+          Value: ID Check Async
+        - Key: Environment
+          Value: !Sub ${Environment}
+
+  AsyncCertificateARNSSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: The Certificate ARN
+      Name: !Sub /${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN
+      Type: String
+      Value: !Ref AsyncExternalCertificate
+      Tags:
+        Name: !Sub /${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN
+        Product: ID Check Async
+        System: ID Check Async
+        Environment: !Sub ${Environment}
 
 Outputs:
   CertificateARN:
@@ -107,3 +218,8 @@ Outputs:
     Value: !Ref ExternalCertificate
     Export:
       Name: !Sub ${AWS::StackName}-certificate-arn
+  AsyncCertificateARN:
+    Description: The ARN for the ACM Certificate created in this template
+    Value: !Ref AsyncExternalCertificate
+    Export:
+      Name: !Sub ${AWS::StackName}-async-certificate-arn
