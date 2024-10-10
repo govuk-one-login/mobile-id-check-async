@@ -114,7 +114,7 @@ Resources:
             - PlatformConfiguration
             - !Ref Environment
             - DNSSUFFIX
-      SubjectAlternativeNames:
+      SubjectAlternativeNames:        
         - !Sub 
           - sessions-mob-async-backend.${DNSSUFFIX}
           - DNSSUFFIX: !FindInMap
@@ -162,8 +162,7 @@ Resources:
               - PlatformConfiguration
               - !Ref Environment
               - DNSSUFFIX
-            HostedZoneId: !ImportValue PublicHostedZoneId
-          - !Ref AWS::NoValue
+          HostedZoneId: !ImportValue PublicHostedZoneId   
         - !If
           - IsBuildOrStagingEnvironment
           - DomainName: !Sub
