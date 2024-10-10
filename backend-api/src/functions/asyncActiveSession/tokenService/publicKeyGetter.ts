@@ -42,8 +42,7 @@ export class PublicKeyGetter implements IPublicKeyGetter {
       publicKey = await importJWK(jwk, jwk.alg);
     } catch (error) {
       return errorResult({
-        errorMessage:
-          "Failed verifying service token signature: Error converting JWK to key object",
+        errorMessage: `Failed verifying service token signature: Error converting JWK to key object: ${error}`,
         errorCategory: "SERVER_ERROR", // SERVER / CLIENT ERROR?
       });
     }

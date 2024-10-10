@@ -15,6 +15,18 @@ describe("Public Key Getter", () => {
           kid: "mockKid",
           kty: "EC",
           use: "sig",
+          crv: "P-256",
+          x: "NYmnFqCEFMVXQsmnSngTkiJK-Q9ixSBxLAXx6ZsBGlc",
+          y: "9fpDnWl3rBP-T6z6e60Bmgym3ymjRK_VSdJ7wU_Nwvg",
+        },
+        {
+          alg: "ES256",
+          kid: "mockKid2",
+          kty: "EC",
+          use: "sig",
+          crv: "P-256",
+          x: "NYmnFqCEFMVXQsmnSngTkiJK-Q9ixSBxLAXx6ZsBGlc",
+          y: "9fpDnWl3rBP-T6z6e60Bmgym3ymjRK_VSdJ7wU_Nwvg",
         },
       ],
     };
@@ -68,11 +80,27 @@ describe("Public Key Getter", () => {
 
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
-        errorMessage:
-          "Failed verifying service token signature: JWK not found",
+        errorMessage: "Failed verifying service token signature: JWK not found",
         errorCategory: "CLIENT_ERROR",
       });
     });
   });
 
+  describe("Given converting JWK to a key object fails", () => {
+    it("Return error result", async () => {
+      mockEncodedJwt = await new MockJWTBuilder().buildEncodedJwt();
+      delete mockJwks.keys[0].crv;
+      const result = await publicKeyGetter.getPublicKey(
+        mockEncodedJwt,
+        mockJwks,
+      );
+
+      expect(result.isError).toBe(true);
+      expect(result.value).toStrictEqual({
+        errorMessage:
+          'Failed verifying service token signature: Error converting JWK to key object: TypeError [ERR_INVALID_ARG_TYPE]: The "key.crv" property must be of type string. Received undefined',
+        errorCategory: "SERVER_ERROR",
+      });
+    });
+  });
 });
