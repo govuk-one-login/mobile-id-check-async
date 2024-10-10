@@ -82,7 +82,7 @@ export class TokenService implements ITokenService {
       return verifyTokenSignatureResult;
     }
 
-    const { payload } = verifyTokenSignatureResult.value;
+    // const { payload } = verifyTokenSignatureResult.value;
 
     return successResult("");
   };
@@ -218,7 +218,7 @@ export class TokenService implements ITokenService {
   private async verifyTokenSignature(
     jwt: string,
     publicKey: Uint8Array | KeyLike,
-  ): Promise<Result<{ payload: any; protectedHeader: any }>> {
+  ): Promise<Result<JWTVerifyResult>> {
     let result: JWTVerifyResult;
     try {
       result = await jwtVerify(jwt, publicKey);
