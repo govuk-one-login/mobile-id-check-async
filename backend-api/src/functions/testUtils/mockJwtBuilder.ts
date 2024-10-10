@@ -23,7 +23,7 @@ export class MockJWTBuilder {
     };
   }
 
-  setHeader(headerOverrides: IMockJwtPayload) {
+  setHeader(headerOverrides: IMockJwtHeader) {
     this.jwt.header = { ...this.jwt.header, ...headerOverrides };
     return this;
   }
