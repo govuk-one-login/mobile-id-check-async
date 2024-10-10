@@ -31,14 +31,22 @@ export async function lambdaHandlerConstructor(
     });
     return unauthorizedResponse;
   }
-
   const serviceToken = authorizationHeaderResult.value;
 
+  const decryptResult = await dependencies
+    .jweDecryptor(config.ENCRYPTION_KEY_ARN)
+    .decrypt(serviceToken);
+
+  if (decryptResult.isError) {
+    return badRequestResponse;
+  }
+
+  const jwt = decryptResult.value;
+
   const tokenService = dependencies.tokenService();
+
   const getSubFromTokenResult = await tokenService.getSubFromToken(
     config.STS_JWKS_ENDPOINT,
-    config.ENCRYPTION_KEY_ARN,
-    serviceToken,
     {
       maxAttempts: 3,
       delayInMillis: 100,

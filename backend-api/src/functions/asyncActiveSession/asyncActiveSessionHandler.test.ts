@@ -8,6 +8,10 @@ import { Logger } from "../services/logging/logger";
 import { MockJWTBuilder } from "../testUtils/mockJwt";
 import { errorResult, Result, successResult } from "../utils/result";
 import { ITokenService } from "./tokenService/tokenService";
+import {
+  MockJweDecryptorFailure,
+  MockJweDecryptorSuccess,
+} from "./jwe/tests/mocks";
 
 const env = {
   STS_JWKS_ENDPOINT: "https://mockUrl.com",
@@ -16,13 +20,14 @@ const env = {
 
 describe("Async Active Session", () => {
   let dependencies: IAsyncActiveSessionDependencies;
-  let mockLoggingAdapter: MockLoggingAdapter<MessageName>;
+  let loggingAdapter: MockLoggingAdapter<MessageName>;
 
   beforeEach(() => {
-    mockLoggingAdapter = new MockLoggingAdapter();
+    loggingAdapter = new MockLoggingAdapter();
     dependencies = {
       env,
-      logger: () => new Logger(mockLoggingAdapter, registeredLogs),
+      logger: () => new Logger(loggingAdapter, registeredLogs),
+      jweDecryptor: () => new MockJweDecryptorSuccess(),
       tokenService: () => new MockTokenServiceSuccess(),
     };
   });
@@ -35,10 +40,10 @@ describe("Async Active Session", () => {
         const event = buildRequest();
         const result = await lambdaHandlerConstructor(dependencies, event);
 
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+        expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
           "ENVIRONMENT_VARIABLE_MISSING",
         );
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: `No ${envVar}`,
         });
 
@@ -60,10 +65,10 @@ describe("Async Active Session", () => {
         const event = buildRequest();
         const result = await lambdaHandlerConstructor(dependencies, event);
 
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+        expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
           "ENVIRONMENT_VARIABLE_MISSING",
         );
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "STS_JWKS_ENDPOINT is not a URL",
         });
 
@@ -89,10 +94,10 @@ describe("Async Active Session", () => {
           event,
         );
 
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+        expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
           "AUTHENTICATION_HEADER_INVALID",
         );
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "No Authentication header present",
         });
 
@@ -118,10 +123,10 @@ describe("Async Active Session", () => {
           event,
         );
 
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+        expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
           "AUTHENTICATION_HEADER_INVALID",
         );
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage:
             "Invalid authentication header format - does not start with Bearer",
         });
@@ -148,10 +153,10 @@ describe("Async Active Session", () => {
           event,
         );
 
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+        expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
           "AUTHENTICATION_HEADER_INVALID",
         );
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage:
             "Invalid authentication header format - contains spaces",
         });
@@ -178,10 +183,10 @@ describe("Async Active Session", () => {
           event,
         );
 
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+        expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
           "AUTHENTICATION_HEADER_INVALID",
         );
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "Invalid authentication header format - missing token",
         });
 
@@ -191,6 +196,41 @@ describe("Async Active Session", () => {
           body: JSON.stringify({
             error: "Unauthorized",
             error_description: "Invalid token",
+          }),
+        });
+      });
+    });
+  });
+
+  describe("Decrypt JWE", () => {
+    describe("Given decrypting the service token fails", () => {
+      it("Logs and returns 400 Bad Request response", async () => {
+        dependencies.jweDecryptor = () => new MockJweDecryptorFailure();
+
+        const event = buildRequest({
+          headers: {
+            Authorization: "Bearer protectedHeader.encryptedKey.iv.ciphertext",
+          },
+        });
+
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+        );
+
+        expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+          "FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN",
+        );
+        expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: "Mock decryption error",
+        });
+
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description: "failed decrypting service token jwt",
           }),
         });
       });
@@ -212,10 +252,10 @@ describe("Async Active Session", () => {
           event,
         );
 
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+        expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
           "INTERNAL_SERVER_ERROR",
         );
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "Mock server error",
         });
 
@@ -229,63 +269,30 @@ describe("Async Active Session", () => {
         });
       });
     });
+  });
 
-    describe("Given decrypting access token failed", () => {
-      it("Logs and returns 400 Bad Request response", async () => {
-        const jwtBuilder = new MockJWTBuilder();
-        const event = buildRequest({
-          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-        });
-
-        dependencies.tokenService = () =>
-          new MockTokenServiceDecryptionFailed();
-
-        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-        );
-
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN",
-        );
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Mock decryption error",
-        });
-
-        expect(result).toStrictEqual({
-          headers: { "Content-Type": "application/json" },
-          statusCode: 400,
-          body: JSON.stringify({
-            error: "invalid_request",
-            error_description: "failed decrypting service token jwt",
-          }),
-        });
+  describe("Given valid request is made", () => {
+    it("Returns 200 Hello, World response", async () => {
+      const jwtBuilder = new MockJWTBuilder();
+      const event = buildRequest({
+        headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
       });
-    });
 
-    describe("Given valid request is made", () => {
-      it("Returns 200 Hello, World response", async () => {
-        const jwtBuilder = new MockJWTBuilder();
-        const event = buildRequest({
-          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-        });
+      const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
+        dependencies,
+        event,
+      );
 
-        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-        );
+      expect(loggingAdapter.getLogMessages()[0].logMessage.message).toBe(
+        "STARTED",
+      );
+      expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+        "COMPLETED",
+      );
 
-        expect(mockLoggingAdapter.getLogMessages()[0].logMessage.message).toBe(
-          "STARTED",
-        );
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "COMPLETED",
-        );
-
-        expect(result).toStrictEqual({
-          statusCode: 200,
-          body: "Hello, World",
-        });
+      expect(result).toStrictEqual({
+        statusCode: 200,
+        body: "Hello, World",
       });
     });
   });
@@ -296,15 +303,6 @@ class MockTokenServiceServerError implements ITokenService {
     return errorResult({
       errorMessage: "Mock server error",
       errorCategory: "SERVER_ERROR",
-    });
-  }
-}
-
-class MockTokenServiceDecryptionFailed {
-  async getSubFromToken(): Promise<Result<string>> {
-    return errorResult({
-      errorMessage: "Mock decryption error",
-      errorCategory: "CLIENT_ERROR",
     });
   }
 }

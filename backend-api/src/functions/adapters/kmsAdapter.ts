@@ -3,53 +3,41 @@ import {
   DecryptCommandOutput,
   KMSClient,
 } from "@aws-sdk/client-kms";
-import { errorResult, Result, successResult } from "../utils/result";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 
-export class KMSAdapter implements IKmsAdapter {
-  private readonly kmsClient = new KMSClient({
-    region: "eu-west-2",
-    maxAttempts: 2,
-    requestHandler: new NodeHttpHandler({
-      connectionTimeout: 5000,
-      requestTimeout: 5000,
-    }),
-  });
+const kmsClient = new KMSClient({
+  region: "eu-west-2",
+  maxAttempts: 2,
+  requestHandler: new NodeHttpHandler({
+    connectionTimeout: 5000,
+    requestTimeout: 5000,
+  }),
+});
 
+export class KMSAdapter implements IDecryptAsymmetric {
   async decrypt(
-    keyArn: string,
     ciphertext: Uint8Array,
-  ): Promise<Result<Uint8Array>> {
-    let decryptCommandOutput: DecryptCommandOutput;
-    try {
-      decryptCommandOutput = await this.kmsClient.send(
-        new DecryptCommand({
-          KeyId: keyArn,
-          CiphertextBlob: ciphertext,
-          EncryptionAlgorithm: "RSAES_OAEP_SHA_256",
-        }),
-      );
-    } catch {
-      return errorResult({
-        errorMessage: "Error decrypting data with KMS",
-        errorCategory: "SERVER_ERROR",
-      });
-    }
+    encryptionKeyId: string,
+  ): Promise<Uint8Array> {
+    const decryptCommandOutput: DecryptCommandOutput = await kmsClient.send(
+      new DecryptCommand({
+        KeyId: encryptionKeyId,
+        CiphertextBlob: ciphertext,
+        EncryptionAlgorithm: "RSAES_OAEP_SHA_256",
+      }),
+    );
 
     if (decryptCommandOutput.Plaintext == null) {
-      return errorResult({
-        errorMessage: "Decrypted plaintext data was null",
-        errorCategory: "SERVER_ERROR",
-      });
+      throw new Error("Decrypted plaintext data was null");
     }
 
-    return successResult(decryptCommandOutput.Plaintext);
+    return decryptCommandOutput.Plaintext;
   }
 }
 
-export interface IKmsAdapter {
+export interface IDecryptAsymmetric {
   decrypt: (
-    keyArn: string,
     ciphertext: Uint8Array,
-  ) => Promise<Result<Uint8Array>>;
+    encryptionKeyId: string,
+  ) => Promise<Uint8Array>;
 }
