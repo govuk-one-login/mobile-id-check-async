@@ -543,7 +543,7 @@ Resources:
       EndpointConfiguration:
         Types:
           - REGIONAL
-      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN}}'
+      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN}}'
       SecurityPolicy: TLS_1_2
     Condition: ProxyApiDeployment
 
@@ -761,7 +761,7 @@ Resources:
       EndpointConfiguration:
         Types:
           - REGIONAL
-      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN}}'
+      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN}}'
       SecurityPolicy: TLS_1_2
 
   SessionsApiBasePathMapping:
