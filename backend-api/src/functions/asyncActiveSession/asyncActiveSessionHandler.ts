@@ -31,20 +31,22 @@ export async function lambdaHandlerConstructor(
     });
     return unauthorizedResponse;
   }
-
   const serviceToken = authorizationHeaderResult.value;
-  const gcmAdapter = dependencies.gcmDecryptor();
-  const kmsAdapter = dependencies.kmsAdapter(config.ENCRYPTION_KEY_ARN);
-  const rsaDecryptorAdapter = dependencies.rsaDecryptor(kmsAdapter);
-  const jweDecryptor = dependencies.jweDecryptor(
-    rsaDecryptorAdapter,
-    gcmAdapter,
-  );
-  const tokenService = dependencies.tokenService(jweDecryptor);
+
+  const decryptResult = await dependencies
+    .jweDecryptor(config.ENCRYPTION_KEY_ARN)
+    .decrypt(serviceToken);
+
+  if (decryptResult.isError) {
+    return badRequestResponse;
+  }
+
+  const jwt = decryptResult.value;
+
+  const tokenService = dependencies.tokenService();
 
   const getSubFromTokenResult = await tokenService.getSubFromToken(
     config.STS_JWKS_ENDPOINT,
-    serviceToken,
     {
       maxAttempts: 3,
       delayInMillis: 100,

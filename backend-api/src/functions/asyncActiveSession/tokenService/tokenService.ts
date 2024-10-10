@@ -5,15 +5,8 @@ import {
 } from "../../services/http/sendHttpRequest";
 import { errorResult, Result, successResult } from "../../utils/result";
 import crypto from "crypto";
-import { IDecryptJwe } from "../jwe/jweDecryptor";
 
 export class TokenService implements ITokenService {
-  private readonly jweDecryptor;
-
-  constructor(jweDecryptor: IDecryptJwe) {
-    this.jweDecryptor = jweDecryptor;
-  }
-
   // TO BE ADDED IN THE NEXT PR
   // async decryptJwe(jwe: string) {
   //   try {
@@ -26,20 +19,8 @@ export class TokenService implements ITokenService {
 
   getSubFromToken = async (
     stsJwksEndpoint: string,
-    jwe: string,
     retryConfig: RetryConfig,
   ): Promise<Result<string>> => {
-    let jwt;
-    try {
-      jwt = await this.jweDecryptor.decrypt(jwe);
-    } catch (error) {
-      return errorResult({
-        errorMessage: `Request failed to be decrypted: ${error}`,
-        errorCategory: "",
-      });
-    }
-    console.log(jwt);
-
     const stsJwksEndpointResponseResult = await sendHttpRequest(
       { url: stsJwksEndpoint, method: "GET" },
       retryConfig,
@@ -149,7 +130,6 @@ export class TokenService implements ITokenService {
 export interface ITokenService {
   getSubFromToken: (
     stsJwksEndpoint: string,
-    jwe: string,
     retryConfig: RetryConfig,
   ) => Promise<Result<string>>;
 }

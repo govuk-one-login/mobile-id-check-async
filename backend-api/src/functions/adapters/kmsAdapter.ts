@@ -14,26 +14,18 @@ const kmsClient = new KMSClient({
   }),
 });
 
-export class KMSAdapter implements IKmsAdapter {
-  private readonly keyId;
-
-  constructor(keyId: string) {
-    this.keyId = keyId;
-  }
-
-  async decrypt(ciphertext: Uint8Array): Promise<Uint8Array> {
-    let decryptCommandOutput: DecryptCommandOutput;
-    try {
-      decryptCommandOutput = await kmsClient.send(
-        new DecryptCommand({
-          KeyId: this.keyId,
-          CiphertextBlob: ciphertext,
-          EncryptionAlgorithm: "RSAES_OAEP_SHA_256",
-        }),
-      );
-    } catch (error) {
-      throw new Error(`KMS decryption error: ${error}`);
-    }
+export class KMSAdapter implements IDecryptAsymmetric {
+  async decrypt(
+    ciphertext: Uint8Array,
+    encryptionKeyId: string,
+  ): Promise<Uint8Array> {
+    const decryptCommandOutput: DecryptCommandOutput = await kmsClient.send(
+      new DecryptCommand({
+        KeyId: encryptionKeyId,
+        CiphertextBlob: ciphertext,
+        EncryptionAlgorithm: "RSAES_OAEP_SHA_256",
+      }),
+    );
 
     if (decryptCommandOutput.Plaintext == null) {
       throw new Error("Decrypted plaintext data was null");
@@ -43,6 +35,9 @@ export class KMSAdapter implements IKmsAdapter {
   }
 }
 
-export interface IKmsAdapter {
-  decrypt: (ciphertext: Uint8Array) => Promise<Uint8Array>;
+export interface IDecryptAsymmetric {
+  decrypt: (
+    ciphertext: Uint8Array,
+    encryptionKeyId: string,
+  ) => Promise<Uint8Array>;
 }

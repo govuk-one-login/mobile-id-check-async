@@ -1,28 +1,43 @@
-import { jwtUtils } from "../../utils/jwtUtils";
-import { IDecryptSymmetric } from "./gcmDecryptor";
-import { IDecryptAsymmetric } from "./rsaDecryptor";
+import { SymmetricDecryptor, IDecryptSymmetric } from "./symmetricDecryptor";
+import { errorResult, Result, successResult } from "../../utils/result";
+import { IDecryptAsymmetric, KMSAdapter } from "../../adapters/kmsAdapter";
 
 export interface IDecryptJwe {
-  decrypt: (jwe: string) => Promise<string>;
+  decrypt: (jwe: string) => Promise<Result<string>>;
 }
 
-export class JweDecryptor implements IDecryptJwe {
+export type JweDecryptorDependencies = {
   asymmetricDecryptor: IDecryptAsymmetric;
   symmetricDecryptor: IDecryptSymmetric;
+};
+
+const jweDecryptorDependencies: JweDecryptorDependencies = {
+  asymmetricDecryptor: new KMSAdapter(),
+  symmetricDecryptor: new SymmetricDecryptor(),
+};
+
+export class JweDecryptor implements IDecryptJwe {
+  private readonly encryptionKeyId: string;
+  private readonly asymmetricDecryptor: IDecryptAsymmetric;
+  private readonly symmetricDecryptor: IDecryptSymmetric;
 
   constructor(
-    asymmetricDecryptor: IDecryptAsymmetric,
-    symmetricDecryptor: IDecryptSymmetric,
+    encryptionKeyId: string,
+    dependencies = jweDecryptorDependencies,
   ) {
-    this.asymmetricDecryptor = asymmetricDecryptor;
-    this.symmetricDecryptor = symmetricDecryptor;
+    this.encryptionKeyId = encryptionKeyId;
+    this.asymmetricDecryptor = dependencies.asymmetricDecryptor;
+    this.symmetricDecryptor = dependencies.symmetricDecryptor;
   }
 
-  async decrypt(serializedJwe: string): Promise<string> {
+  async decrypt(serializedJwe: string): Promise<Result<string>> {
     const jweComponents = serializedJwe.split(".");
 
     if (jweComponents.length !== 5) {
-      throw new Error("Error decrypting JWE: Missing component");
+      return errorResult({
+        errorMessage: "Error decrypting JWE: Missing component",
+        errorCategory: "CLIENT_ERROR",
+      });
     }
 
     const [protectedHeader, encryptedKey, iv, ciphertext, tag] = jweComponents;
@@ -30,35 +45,32 @@ export class JweDecryptor implements IDecryptJwe {
     let cek: Uint8Array;
     try {
       cek = await this.asymmetricDecryptor.decrypt(
-        jwtUtils.base64DecodeToUint8Array(encryptedKey),
+        Buffer.from(encryptedKey, "base64url"),
+        this.encryptionKeyId,
       );
     } catch (error) {
-      throw new Error(
-        `Error decrypting JWE: Unable to decrypt encryption key via KMS: ${error}`,
-      );
+      return errorResult({
+        errorMessage: `Error decrypting JWE: Unable to decrypt encryption key: ${error}`,
+        errorCategory: "CLIENT_ERROR",
+      });
     }
 
-    let payload: Uint8Array;
+    let payload: string;
     try {
       payload = await this.symmetricDecryptor.decrypt(
         cek,
-        jwtUtils.base64DecodeToUint8Array(iv),
-        jwtUtils.base64DecodeToUint8Array(ciphertext),
-        jwtUtils.base64DecodeToUint8Array(tag),
-        new Uint8Array(Buffer.from(protectedHeader)),
+        Buffer.from(iv, "base64url"),
+        Buffer.from(ciphertext, "base64url"),
+        Buffer.from(tag, "base64url"),
+        Buffer.from(protectedHeader),
       );
     } catch (error) {
-      throw new Error(
-        `Error decrypting JWE: Unable to decrypt payload via Crypto: ${error}`,
-      );
+      return errorResult({
+        errorMessage: `Error decrypting JWE: Unable to decrypt payload: ${error}`,
+        errorCategory: "CLIENT_ERROR",
+      });
     }
 
-    try {
-      return jwtUtils.decode(payload);
-    } catch (error) {
-      throw new Error(
-        `Error decrypting JWE: Unable to decode the decrypted payload: ${error}`,
-      );
-    }
+    return successResult(payload);
   }
 }
