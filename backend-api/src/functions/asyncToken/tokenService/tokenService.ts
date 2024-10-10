@@ -8,16 +8,14 @@ import { errorResult, Result, successResult } from "../../utils/result";
 
 export class TokenService implements IMintToken {
   readonly kidArn: string;
-  private kmsClient = new KMSClient([
-    {
-      region: "eu-west-2",
-      maxAttempts: 2,
-      requestHandler: new NodeHttpHandler({
-        connectionTimeout: 29000,
-        requestTimeout: 29000,
-      }),
-    },
-  ]);
+  private kmsClient = new KMSClient({
+    region: "eu-west-2",
+    maxAttempts: 2,
+    requestHandler: new NodeHttpHandler({
+      connectionTimeout: 5000,
+      requestTimeout: 5000,
+    }),
+  });
 
   constructor(kidArn: string) {
     this.kidArn = kidArn;

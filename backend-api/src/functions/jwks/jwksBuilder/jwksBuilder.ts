@@ -16,16 +16,14 @@ import {
 export class JwksBuilder implements IJwksBuilder {
   constructor(
     private readonly keyId: string,
-    private readonly kmsClient = new KMSClient([
-      {
-        region: "eu-west-2",
-        maxAttempts: 2,
-        requestHandler: new NodeHttpHandler({
-          connectionTimeout: 29000,
-          requestTimeout: 29000,
-        }),
-      },
-    ]),
+    private readonly kmsClient = new KMSClient({
+      region: "eu-west-2",
+      maxAttempts: 2,
+      requestHandler: new NodeHttpHandler({
+        connectionTimeout: 5000,
+        requestTimeout: 5000,
+      }),
+    }),
   ) {}
 
   async buildJwks(): Promise<Result<Jwks>> {
