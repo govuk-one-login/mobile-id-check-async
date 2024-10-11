@@ -112,7 +112,7 @@ export class DynamoDbAdapter {
     return Math.floor(Date.now() / 1000);
   }
 
-  formatAttributesToGet(attributes: string[]): string {
+  private formatAttributesToGet(attributes: string[]): string {
     return attributes.join(", ");
   }
 }
