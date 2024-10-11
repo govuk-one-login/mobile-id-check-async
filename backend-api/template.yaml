@@ -701,7 +701,6 @@ Resources:
           Projection:
             NonKeyAttributes:
               - sessionState
-              - state
               - redirectUri
             ProjectionType: INCLUDE
       BillingMode: PAY_PER_REQUEST

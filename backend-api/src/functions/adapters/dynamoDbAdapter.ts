@@ -23,8 +23,8 @@ export class DynamoDbAdapter {
     region: process.env.REGION,
     maxAttempts: 2,
     requestHandler: new NodeHttpHandler({
-      connectionTimeout: 29000,
-      requestTimeout: 29000,
+      connectionTimeout: 5000,
+      requestTimeout: 5000,
     }),
   });
 
