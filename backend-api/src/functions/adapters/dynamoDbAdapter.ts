@@ -65,6 +65,10 @@ export class DynamoDbAdapter {
     return unmarshall(items[0]);
   }
 
+  private formatAsProjectionExpression(attributes: string[]): string {
+    return attributes.join(", ");
+  }
+
   async createSession(
     attributes: CreateSessionAttributes,
     sessionId: string,
@@ -110,9 +114,5 @@ export class DynamoDbAdapter {
 
   private getTimeNowInSeconds() {
     return Math.floor(Date.now() / 1000);
-  }
-
-  private formatAsProjectionExpression(attributes: string[]): string {
-    return attributes.join(", ");
   }
 }
