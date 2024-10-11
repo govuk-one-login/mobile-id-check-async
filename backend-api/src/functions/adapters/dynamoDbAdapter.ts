@@ -93,7 +93,7 @@ export class DynamoDbAdapter {
         issuer: { S: issuer },
         sessionId: { S: sessionId },
         sessionState: { S: sessionStates.ASYNC_AUTH_SESSION_CREATED },
-        state: { S: state },
+        clientState: { S: state },
         subjectIdentifier: { S: sub },
         timeToLive: { N: timeToLive.toString() },
         ...(redirect_uri && { redirectUri: { S: redirect_uri } }),

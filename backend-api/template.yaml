@@ -700,7 +700,7 @@ Resources:
               KeyType: RANGE
           Projection:
             NonKeyAttributes:
-              - sessionState
+              - clientState
               - redirectUri
             ProjectionType: INCLUDE
       BillingMode: PAY_PER_REQUEST
@@ -874,6 +874,7 @@ Resources:
                       - subjectIdentifier
                       - timeToLive
                       - redirectUri
+                      - clientState
                   StringEquals:
                     dynamodb:Select: SPECIFIC_ATTRIBUTES
         - PolicyName: AsyncActiveSessionFunctionLoggingPolicy

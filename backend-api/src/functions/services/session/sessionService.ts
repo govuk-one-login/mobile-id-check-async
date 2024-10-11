@@ -30,7 +30,7 @@ export type CreateSessionAttributes = {
 export type Session = {
   sessionId: string;
   redirectUri?: string;
-  sessionState: string;
+  state: string;
 };
 
 export class SessionService implements ISessionService {
@@ -93,7 +93,7 @@ export class SessionService implements ISessionService {
   async getActiveSession(
     subjectIdentifier: string,
   ): Promise<Result<Session | null>> {
-    const attributesToGet = ["sessionId", "sessionState", "redirectUri"];
+    const attributesToGet = ["sessionId", "clientState", "redirectUri"];
 
     let record: DatabaseRecord | null;
     try {
@@ -113,8 +113,8 @@ export class SessionService implements ISessionService {
     }
 
     const sessionId = record.sessionId;
-    const sessionState = record.sessionState;
-    if (!sessionId || !sessionState) {
+    const state = record.clientState;
+    if (!sessionId || !state) {
       return errorResult({
         errorMessage: "Session is malformed",
         errorCategory: "SERVER_ERROR",
@@ -123,7 +123,7 @@ export class SessionService implements ISessionService {
 
     const session: Session = {
       sessionId,
-      sessionState,
+      state,
       ...(record.redirectUri && { redirectUri: record.redirectUri }),
     };
 

@@ -151,7 +151,7 @@ describe("Session Service", () => {
       });
     });
 
-    describe("Given the item returned is missing the attribute sessionState", () => {
+    describe("Given the item returned is missing the attribute clientState", () => {
       it("Returns an error response", async () => {
         dynamoDbMockClient
           .on(QueryCommand)
@@ -173,7 +173,7 @@ describe("Session Service", () => {
           Items: [
             {
               sessionId: { S: "mockSessionId" },
-              sessionState: { S: "mockSessionState" },
+              clientState: { S: "mockClientState" },
             },
           ],
         });
@@ -183,7 +183,7 @@ describe("Session Service", () => {
         expect(result.isError).toBe(false);
         expect(result.value).toEqual({
           sessionId: "mockSessionId",
-          sessionState: "mockSessionState",
+          state: "mockClientState",
         });
       });
     });
@@ -194,7 +194,7 @@ describe("Session Service", () => {
           Items: [
             {
               sessionId: { S: "mockSessionId" },
-              sessionState: { S: "mockSessionState" },
+              clientState: { S: "mockClientSate" },
               redirectUri: { S: "mockRedirectUri" },
             },
           ],
@@ -205,7 +205,7 @@ describe("Session Service", () => {
         expect(result.isError).toBe(false);
         expect(result.value).toStrictEqual({
           sessionId: "mockSessionId",
-          sessionState: "mockSessionState",
+          state: "mockClientSate",
           redirectUri: "mockRedirectUri",
         });
       });

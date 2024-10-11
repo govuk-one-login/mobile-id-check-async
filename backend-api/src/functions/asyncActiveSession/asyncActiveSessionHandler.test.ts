@@ -341,7 +341,7 @@ describe("Async Active Session", () => {
             body: JSON.stringify({
               sessionId: "mockSessionId",
               redirectUri: "https://mockUrl.com/redirect",
-              sessionState: "mockSessionState",
+              state: "mockClientState",
             }),
           });
         });
