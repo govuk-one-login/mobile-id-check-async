@@ -8,10 +8,16 @@ import { Logger } from "../services/logging/logger";
 import { MockJWTBuilder } from "../testUtils/mockJwt";
 import { errorResult, Result, successResult } from "../utils/result";
 import { ITokenService } from "./tokenService/tokenService";
+import {
+  MockSessionServiceGetErrorResult,
+  MockSessionServiceGetSuccessResult,
+  MockSessionServiceGetNullSuccessResult,
+} from "../services/session/tests/mocks";
 
 const env = {
   STS_JWKS_ENDPOINT: "https://mockUrl.com",
   ENCRYPTION_KEY_ARN: "mockEncryptionKeyArn",
+  SESSION_TABLE_NAME: "mockSessionTableName",
 };
 
 describe("Async Active Session", () => {
@@ -24,6 +30,7 @@ describe("Async Active Session", () => {
       env,
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
       tokenService: () => new MockTokenServiceSuccess(),
+      sessionService: () => new MockSessionServiceGetSuccessResult(),
     };
   });
 
@@ -33,6 +40,7 @@ describe("Async Active Session", () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
         delete dependencies.env[envVar];
         const event = buildRequest();
+
         const result = await lambdaHandlerConstructor(dependencies, event);
 
         expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
@@ -41,7 +49,6 @@ describe("Async Active Session", () => {
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: `No ${envVar}`,
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 500,
@@ -58,6 +65,7 @@ describe("Async Active Session", () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
         dependencies.env["STS_JWKS_ENDPOINT"] = "mockInvalidSessionTtlSecs";
         const event = buildRequest();
+
         const result = await lambdaHandlerConstructor(dependencies, event);
 
         expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
@@ -66,7 +74,6 @@ describe("Async Active Session", () => {
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "STS_JWKS_ENDPOINT is not a URL",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 500,
@@ -95,7 +102,6 @@ describe("Async Active Session", () => {
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "No Authentication header present",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -125,7 +131,6 @@ describe("Async Active Session", () => {
           errorMessage:
             "Invalid authentication header format - does not start with Bearer",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -155,7 +160,6 @@ describe("Async Active Session", () => {
           errorMessage:
             "Invalid authentication header format - contains spaces",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -184,7 +188,6 @@ describe("Async Active Session", () => {
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "Invalid authentication header format - missing token",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -218,7 +221,6 @@ describe("Async Active Session", () => {
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "Mock server error",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 500,
@@ -236,7 +238,6 @@ describe("Async Active Session", () => {
         const event = buildRequest({
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
-
         dependencies.tokenService = () =>
           new MockTokenServiceDecryptionFailed();
 
@@ -251,7 +252,6 @@ describe("Async Active Session", () => {
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "Mock decryption error",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -263,28 +263,87 @@ describe("Async Active Session", () => {
       });
     });
 
-    describe("Given valid request is made", () => {
-      it("Returns 200 Hello, World response", async () => {
-        const jwtBuilder = new MockJWTBuilder();
-        const event = buildRequest({
-          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+    describe("Session Service", () => {
+      describe("Given an error happens when trying to get an active session", () => {
+        it("Returns 500 Server Error", async () => {
+          const jwtBuilder = new MockJWTBuilder();
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+          });
+          dependencies.sessionService = () =>
+            new MockSessionServiceGetErrorResult();
+
+          const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
+            dependencies,
+            event,
+          );
+
+          expect(
+            mockLoggingAdapter.getLogMessages()[1].logMessage.message,
+          ).toBe("INTERNAL_SERVER_ERROR");
+          expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+            errorMessage: "Mock error when getting session details",
+          });
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 500,
+            body: JSON.stringify({
+              error: "server_error",
+              error_description: "Server Error",
+            }),
+          });
         });
+      });
 
-        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-        );
+      describe("Given an active session is not found", () => {
+        it("Returns 404 Not Found", async () => {
+          const jwtBuilder = new MockJWTBuilder();
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+          });
+          dependencies.sessionService = () =>
+            new MockSessionServiceGetNullSuccessResult();
 
-        expect(mockLoggingAdapter.getLogMessages()[0].logMessage.message).toBe(
-          "STARTED",
-        );
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "COMPLETED",
-        );
+          const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
+            dependencies,
+            event,
+          );
 
-        expect(result).toStrictEqual({
-          statusCode: 200,
-          body: "Hello, World",
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 404,
+            body: JSON.stringify({
+              error: "session_not_found",
+              error_description:
+                "No active session found for the given sub identifier",
+            }),
+          });
+        });
+      });
+
+      describe("Given an active session is found", () => {
+        it("Returns 200 and the session details", async () => {
+          const jwtBuilder = new MockJWTBuilder();
+          const event = buildRequest({
+            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+          });
+          dependencies.sessionService = () =>
+            new MockSessionServiceGetSuccessResult();
+
+          const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
+            dependencies,
+            event,
+          );
+
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 200,
+            body: JSON.stringify({
+              sessionId: "mockSessionId",
+              redirectUri: "https://mockUrl.com/redirect",
+              state: "mockClientState",
+            }),
+          });
         });
       });
     });
