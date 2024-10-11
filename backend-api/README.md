@@ -51,7 +51,7 @@ npm run test:api
 
 ## Deploying a custom stack into Dev
 
-### Define a backend-api stack name
+### Export a backend-api stack name
 
 ```bash
 export backend-stack-name=<stack-name>
