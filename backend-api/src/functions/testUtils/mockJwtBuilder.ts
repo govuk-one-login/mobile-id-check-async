@@ -96,28 +96,6 @@ export class MockJWTBuilder {
   };
 }
 
-// interface IMockJwt {
-//   header: IMockJwtHeader;
-//   payload: IMockJwtPayload;
-//   signature: string;
-// }
-
-// interface IMockJwtHeader {
-//   alg: string;
-//   type: string;
-//   kid?: string;
-// }
-
-// interface IMockJwtPayload {
-//   nbf?: number;
-//   exp?: number;
-//   iat?: number;
-//   iss?: string;
-//   scope?: string;
-//   client_id?: string;
-//   aud?: string;
-// }
-
 interface IMockJwt {
   header: {
     alg: string;
