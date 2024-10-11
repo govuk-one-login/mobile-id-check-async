@@ -71,8 +71,7 @@ locals {
 
       SigningProfileArn        = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileArn"])
       SigningProfileVersionArn = one(data.aws_cloudformation_stack.signer_build[*].outputs["SigningProfileVersionArn"])
-
-      TestImageRepositoryUri = one(data.aws_cloudformation_stack.mob_async_backend_tir_build[*].outputs["TestRunnerImageEcrRepositoryUri"])
+      
     }
 
     integration = {
