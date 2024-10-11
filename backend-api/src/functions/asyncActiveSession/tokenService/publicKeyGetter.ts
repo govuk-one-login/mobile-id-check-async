@@ -22,8 +22,7 @@ export class PublicKeyGetter implements IPublicKeyGetter {
     const keyId = decodedProtectedHeader.kid;
     if (!keyId) {
       return errorResult({
-        errorMessage:
-          "kid not present in JWT header",
+        errorMessage: "kid not present in JWT header",
         errorCategory: "CLIENT_ERROR",
       });
     }

@@ -7,9 +7,7 @@ describe("Public Key Getter", () => {
   let mockEncodedJwt: string;
 
   beforeEach(async () => {
-    mockEncodedJwt = new MockJWTBuilder()
-      .setKid("mockKid")
-      .getEncodedJwt();
+    mockEncodedJwt = new MockJWTBuilder().setKid("mockKid").getEncodedJwt();
     mockJwks = {
       keys: [
         {
@@ -44,8 +42,7 @@ describe("Public Key Getter", () => {
 
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
-        errorMessage:
-          "TypeError: Invalid Token or Protected Header formatting",
+        errorMessage: "TypeError: Invalid Token or Protected Header formatting",
         errorCategory: "CLIENT_ERROR",
       });
     });
@@ -53,9 +50,7 @@ describe("Public Key Getter", () => {
 
   describe("Given kid is not present in JWT header", () => {
     it("Return error result", async () => {
-      mockEncodedJwt = new MockJWTBuilder()
-        .deleteKid()
-        .getEncodedJwt();
+      mockEncodedJwt = new MockJWTBuilder().deleteKid().getEncodedJwt();
       const result = await publicKeyGetter.getPublicKey(
         mockJwks,
         mockEncodedJwt,
@@ -63,8 +58,7 @@ describe("Public Key Getter", () => {
 
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
-        errorMessage:
-          "kid not present in JWT header",
+        errorMessage: "kid not present in JWT header",
         errorCategory: "CLIENT_ERROR",
       });
     });

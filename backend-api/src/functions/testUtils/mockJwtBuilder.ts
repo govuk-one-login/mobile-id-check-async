@@ -100,7 +100,7 @@ interface IMockJwt {
   header: {
     alg: string;
     type: string;
-    kid?: string
+    kid?: string;
   };
   payload: {
     nbf?: number;
