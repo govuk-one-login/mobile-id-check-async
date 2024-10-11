@@ -68,7 +68,7 @@ https://sessions-<backend-api-stack-name>.review-b-async.dev.account.gov.uk
 
 Please note:
 
-* You can still update this value even if you have not actually deployed a `backend-api` custom stack
+* You can still update this value even if you have not actually deployed a `backend-api` custom stack yet
 * You can skip this step if you are deploying/testing the STS mock in isolation
 
 ### Manual Deployment
