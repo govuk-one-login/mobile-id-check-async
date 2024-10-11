@@ -44,7 +44,7 @@ export class MockSessionServiceGetSuccessResult implements ISessionService {
     return successResult({
       sessionId: "mockSessionId",
       redirectUri: "https://mockUrl.com/redirect",
-      sessionState: "mockState",
+      sessionState: "mockSessionState",
     });
   };
 
