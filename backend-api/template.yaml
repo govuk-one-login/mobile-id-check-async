@@ -874,7 +874,6 @@ Resources:
                       - sessionState
                       - subjectIdentifier
                       - timeToLive
-                      - state
                       - redirectUri
                   StringEquals:
                     dynamodb:Select: SPECIFIC_ATTRIBUTES
