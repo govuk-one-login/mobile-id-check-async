@@ -1,6 +1,9 @@
 import { randomUUID } from "crypto";
 import { errorResult, Result, successResult } from "../../utils/result";
-import { DynamoDbAdapter } from "../../adapters/dynamoDbAdapter";
+import {
+  DatabaseRecord,
+  DynamoDbAdapter,
+} from "../../adapters/dynamoDbAdapter";
 
 export interface ISessionService {
   createSession: (
@@ -92,7 +95,7 @@ export class SessionService implements ISessionService {
   ): Promise<Result<Session | null>> {
     const attributesToGet = ["sessionId", "sessionState", "redirectUri"];
 
-    let record;
+    let record: DatabaseRecord | null;
     try {
       record = await this.dynamoDbAdapter.getActiveSession(
         subjectIdentifier,
@@ -109,7 +112,6 @@ export class SessionService implements ISessionService {
       return successResult(null);
     }
 
-    const redirectUri = record.redirectUri;
     const sessionId = record.sessionId;
     const sessionState = record.sessionState;
     if (!sessionId || !sessionState) {
@@ -122,7 +124,7 @@ export class SessionService implements ISessionService {
     const session: Session = {
       sessionId,
       sessionState,
-      ...(redirectUri && { redirectUri }),
+      ...(record.redirectUri && { redirectUri: record.redirectUri }),
     };
 
     return successResult(session);

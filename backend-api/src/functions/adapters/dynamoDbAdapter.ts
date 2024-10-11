@@ -15,6 +15,8 @@ const sessionStates = {
   ASYNC_AUTH_SESSION_CREATED: "ASYNC_AUTH_SESSION_CREATED",
 };
 
+export type DatabaseRecord = Record<string, NativeAttributeValue>;
+
 export class DynamoDbAdapter {
   private readonly tableName: string;
   private readonly dynamoDbClient = new DynamoDBClient({
@@ -33,7 +35,7 @@ export class DynamoDbAdapter {
   async getActiveSession(
     subjectIdentifier: string,
     attributesToGet: string[],
-  ): Promise<Record<string, NativeAttributeValue> | null> {
+  ): Promise<DatabaseRecord | null> {
     const input: QueryCommandInput = {
       TableName: this.tableName,
       IndexName: "subjectIdentifier-timeToLive-index",
@@ -90,13 +92,10 @@ export class DynamoDbAdapter {
         state: { S: state },
         subjectIdentifier: { S: sub },
         timeToLive: { N: timeToLive.toString() },
+        ...(redirect_uri && { redirectUri: { S: redirect_uri } }),
       },
       ConditionExpression: "attribute_not_exists(sessionId)",
     };
-
-    if (redirect_uri) {
-      input.Item!.redirectUri = { S: redirect_uri };
-    }
 
     try {
       await this.dynamoDbClient.send(new PutItemCommand(input));
