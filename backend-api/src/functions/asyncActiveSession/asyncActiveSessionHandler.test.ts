@@ -12,7 +12,7 @@ import {
   MockSessionServiceGetErrorResult,
   MockSessionServiceGetSuccessResult,
   MockSessionServiceGetNullSuccessResult,
-} from "../services/sessionService/tests/mocks";
+} from "../services/session/tests/mocks";
 
 const env = {
   STS_JWKS_ENDPOINT: "https://mockUrl.com",

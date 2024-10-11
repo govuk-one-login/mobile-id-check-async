@@ -14,7 +14,7 @@ import { Logger } from "../services/logging/logger";
 import {
   ISessionService,
   SessionService,
-} from "../services/sessionService/sessionService";
+} from "../services/session/sessionService";
 
 export interface IAsyncCredentialDependencies {
   logger: () => Logger<MessageName>;

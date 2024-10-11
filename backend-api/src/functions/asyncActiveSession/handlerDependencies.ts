@@ -5,7 +5,7 @@ import { ITokenService, TokenService } from "./tokenService/tokenService";
 import {
   ISessionService,
   SessionService,
-} from "../services/sessionService/sessionService";
+} from "../services/session/sessionService";
 
 export interface IAsyncActiveSessionDependencies {
   env: NodeJS.ProcessEnv;

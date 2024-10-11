@@ -7,7 +7,7 @@ import {
   QueryCommandInput,
   QueryCommandOutput,
 } from "@aws-sdk/client-dynamodb";
-import { CreateSessionAttributes } from "../services/sessionService/sessionService";
+import { CreateSessionAttributes } from "../services/session/sessionService";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { NativeAttributeValue, unmarshall } from "@aws-sdk/util-dynamodb";
 

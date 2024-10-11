@@ -31,7 +31,7 @@ import {
   MockSessionServiceCreateErrorResult,
   MockSessionServiceCreateSuccessResult,
   MockSessionServiceGetSuccessResult,
-} from "../services/sessionService/tests/mocks";
+} from "../services/session/tests/mocks";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
