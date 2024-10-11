@@ -11,7 +11,7 @@ export class MockJweDecryptorSuccess implements IDecryptJwe {
 export class MockJweDecryptorFailure implements IDecryptJwe {
   async decrypt(): Promise<Result<string>> {
     return errorResult({
-      errorMessage: "Some decryption error",
+      errorMessage: "Some mock decryption error",
       errorCategory: "SERVER_ERROR",
     });
   }

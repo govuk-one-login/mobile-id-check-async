@@ -222,12 +222,11 @@ describe("Async Active Session", () => {
         );
 
         expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN",
+          "JWE_DECRYPTION_ERROR",
         );
         expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Mock decryption error",
+          errorMessage: "Some mock decryption error",
         });
-
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,

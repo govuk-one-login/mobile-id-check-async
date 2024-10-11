@@ -11,6 +11,7 @@ export async function lambdaHandlerConstructor(
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
+
   logger.log("STARTED");
 
   const configResult = new ConfigService().getConfig(dependencies.env);
@@ -38,10 +39,13 @@ export async function lambdaHandlerConstructor(
     .decrypt(serviceToken);
 
   if (decryptResult.isError) {
+    logger.log("JWE_DECRYPTION_ERROR", {
+      errorMessage: decryptResult.value.errorMessage,
+    });
     return badRequestResponse;
   }
 
-  const jwt = decryptResult.value;
+  // const jwt = decryptResult.value;
 
   const tokenService = dependencies.tokenService();
 
