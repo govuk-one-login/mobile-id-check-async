@@ -49,7 +49,7 @@ export class DynamoDbAdapter {
           N: this.getTimeNowInSeconds().toString(),
         },
       },
-      ProjectionExpression: this.formatAttributesToGet(attributesToGet),
+      ProjectionExpression: this.formatAsProjectionExpression(attributesToGet),
       Limit: 1,
       ScanIndexForward: false,
     };
@@ -112,7 +112,7 @@ export class DynamoDbAdapter {
     return Math.floor(Date.now() / 1000);
   }
 
-  private formatAttributesToGet(attributes: string[]): string {
+  private formatAsProjectionExpression(attributes: string[]): string {
     return attributes.join(", ");
   }
 }
