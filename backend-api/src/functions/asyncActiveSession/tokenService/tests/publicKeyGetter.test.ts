@@ -1,5 +1,5 @@
 import { IJwks, IPublicKeyGetter, PublicKeyGetter } from "../publicKeyGetter";
-import { MockJWTBuilder } from "../../../testUtils/mockJwtBuilder";
+import { MockJWTBuilder } from "../../../testUtils/mockJwt";
 
 describe("Public Key Getter", () => {
   let mockJwks: IJwks;
@@ -7,7 +7,9 @@ describe("Public Key Getter", () => {
   let mockEncodedJwt: string;
 
   beforeEach(async () => {
-    mockEncodedJwt = await new MockJWTBuilder().buildEncodedJwt();
+    mockEncodedJwt = new MockJWTBuilder()
+      .setKid("mockKid")
+      .getEncodedJwt();
     mockJwks = {
       keys: [
         {
@@ -51,9 +53,9 @@ describe("Public Key Getter", () => {
 
   describe("Given kid is not present in JWT header", () => {
     it("Return error result", async () => {
-      mockEncodedJwt = await new MockJWTBuilder()
-        .deleteHeaderValue("kid")
-        .buildEncodedJwt();
+      mockEncodedJwt = new MockJWTBuilder()
+        .deleteKid()
+        .getEncodedJwt();
       const result = await publicKeyGetter.getPublicKey(
         mockEncodedJwt,
         mockJwks,
@@ -70,9 +72,9 @@ describe("Public Key Getter", () => {
 
   describe("Given kid is not found in JWKS", () => {
     it("Return error result", async () => {
-      mockEncodedJwt = await new MockJWTBuilder()
-        .setHeader({ alg: "HS256", type: "JWT", kid: "mockInvalidKid" })
-        .buildEncodedJwt();
+      mockEncodedJwt = new MockJWTBuilder()
+        .setKid("mockInvalidKid")
+        .getEncodedJwt();
       const result = await publicKeyGetter.getPublicKey(
         mockEncodedJwt,
         mockJwks,
@@ -88,7 +90,6 @@ describe("Public Key Getter", () => {
 
   describe("Given converting JWK to a key object fails", () => {
     it("Return error result", async () => {
-      mockEncodedJwt = await new MockJWTBuilder().buildEncodedJwt();
       delete mockJwks.keys[0].crv;
       const result = await publicKeyGetter.getPublicKey(
         mockEncodedJwt,
