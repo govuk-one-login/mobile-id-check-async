@@ -65,8 +65,8 @@ export class TokenService implements ITokenService {
 
     const publicKeyGetter = this.dependencies.publicKeyGetter();
     const getPublicKeyFromJwksResult = await publicKeyGetter.getPublicKey(
-      jwt,
       jwks,
+      jwt,
     );
     if (getPublicKeyFromJwksResult.isError) {
       return getPublicKeyFromJwksResult;

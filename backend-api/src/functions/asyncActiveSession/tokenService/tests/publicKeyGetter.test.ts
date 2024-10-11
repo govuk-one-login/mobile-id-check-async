@@ -38,8 +38,8 @@ describe("Public Key Getter", () => {
   describe("Given decoding the protected header fails", () => {
     it("Return error result", async () => {
       const result = await publicKeyGetter.getPublicKey(
-        "mockInvalidJWT",
         mockJwks,
+        "mockInvalidJWT",
       );
 
       expect(result.isError).toBe(true);
@@ -57,8 +57,8 @@ describe("Public Key Getter", () => {
         .deleteKid()
         .getEncodedJwt();
       const result = await publicKeyGetter.getPublicKey(
-        mockEncodedJwt,
         mockJwks,
+        mockEncodedJwt,
       );
 
       expect(result.isError).toBe(true);
@@ -76,8 +76,8 @@ describe("Public Key Getter", () => {
         .setKid("mockInvalidKid")
         .getEncodedJwt();
       const result = await publicKeyGetter.getPublicKey(
-        mockEncodedJwt,
         mockJwks,
+        mockEncodedJwt,
       );
 
       expect(result.isError).toBe(true);
@@ -92,8 +92,8 @@ describe("Public Key Getter", () => {
     it("Return error result", async () => {
       delete mockJwks.keys[0].crv;
       const result = await publicKeyGetter.getPublicKey(
-        mockEncodedJwt,
         mockJwks,
+        mockEncodedJwt,
       );
 
       expect(result.isError).toBe(true);

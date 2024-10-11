@@ -8,8 +8,8 @@ import { errorResult, Result, successResult } from "../../utils/result";
 
 export class PublicKeyGetter implements IPublicKeyGetter {
   async getPublicKey(
-    jwt: string,
     jwks: IJwks,
+    jwt: string,
   ): Promise<Result<Uint8Array | KeyLike>> {
     const getDecodedProtectedHeaderResult =
       await this.getDecodeProtectedHeader(jwt);
@@ -68,8 +68,8 @@ export class PublicKeyGetter implements IPublicKeyGetter {
 
 export interface IPublicKeyGetter {
   getPublicKey: (
-    jwt: string,
     jwks: IJwks,
+    jwt: string,
   ) => Promise<Result<KeyLike | Uint8Array>>;
 }
 
