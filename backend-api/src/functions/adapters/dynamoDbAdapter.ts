@@ -34,7 +34,6 @@ export class DynamoDbAdapter {
     subjectIdentifier: string,
     attributesToGet: string[],
   ): Promise<Record<string, NativeAttributeValue> | null> {
-    const currentTimeInSeconds = this.geTimeNowInSeconds();
     const input: QueryCommandInput = {
       TableName: this.tableName,
       IndexName: "subjectIdentifier-timeToLive-index",
@@ -45,7 +44,7 @@ export class DynamoDbAdapter {
         ":subjectIdentifier": { S: subjectIdentifier },
         ":sessionState": { S: sessionStates.ASYNC_AUTH_SESSION_CREATED },
         ":currentTimeInSeconds": {
-          N: currentTimeInSeconds.toString(),
+          N: this.getTimeNowInSeconds().toString(),
         },
       },
       ProjectionExpression: this.formatAttributesToGet(attributesToGet),
@@ -77,8 +76,7 @@ export class DynamoDbAdapter {
       state,
       sub,
     } = attributes;
-    const currentTimeInSeconds = this.geTimeNowInSeconds();
-    const timeToLive = currentTimeInSeconds + sessionDurationInSeconds;
+    const timeToLive = this.getTimeNowInSeconds() + sessionDurationInSeconds;
 
     const input: PutItemCommandInput = {
       TableName: this.tableName,
@@ -111,7 +109,7 @@ export class DynamoDbAdapter {
     }
   }
 
-  private geTimeNowInSeconds() {
+  private getTimeNowInSeconds() {
     return Math.floor(Date.now() / 1000);
   }
 
