@@ -51,8 +51,7 @@ describe("Token Service", () => {
   });
 
   afterEach(() => {
-    // mockFetch.mockRestore();
-    jest.restoreAllMocks();
+    mockFetch.mockRestore();
   });
 
   describe("Get Sub From Token", () => {
