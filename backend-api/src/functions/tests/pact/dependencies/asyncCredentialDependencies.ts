@@ -7,7 +7,7 @@ import { MockClientRegistryServiceGetPartialClientSuccessResultIPV } from "../..
 import { MockEventWriterSuccess } from "../../../services/events/tests/mocks";
 import { Logger } from "../../../services/logging/logger";
 import { MockLoggingAdapter } from "../../../services/logging/tests/mockLogger";
-import { MockSessionServiceCreateSuccessResult } from "../../../services/sessionService/tests/mocks";
+import { MockSessionServiceCreateSuccessResult } from "../../../services/session/tests/mocks";
 
 const defaultPassingDependencies = {
   env: {
