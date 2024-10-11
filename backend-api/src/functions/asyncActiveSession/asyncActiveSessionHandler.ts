@@ -42,7 +42,7 @@ export async function lambdaHandlerConstructor(
     logger.log("JWE_DECRYPTION_ERROR", {
       errorMessage: decryptResult.value.errorMessage,
     });
-    return badRequestResponse;
+    return badRequestResponse("Failed decrypting service token JWT");
   }
 
   // const jwt = decryptResult.value;
@@ -62,7 +62,7 @@ export async function lambdaHandlerConstructor(
       logger.log("FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN", {
         errorMessage: getSubFromTokenResult.value.errorMessage,
       });
-      return badRequestResponse;
+      return badRequestResponse("Failed validating the service token payload"); // Temporary message until TokenService is finalised
     }
 
     logger.log("INTERNAL_SERVER_ERROR", {
@@ -116,13 +116,17 @@ const unauthorizedResponse: APIGatewayProxyResult = {
   }),
 };
 
-const badRequestResponse: APIGatewayProxyResult = {
-  headers: { "Content-Type": "application/json" },
-  statusCode: 400,
-  body: JSON.stringify({
-    error: "invalid_request",
-    error_description: "failed decrypting service token jwt",
-  }),
+const badRequestResponse = (
+  errorDescription: string,
+): APIGatewayProxyResult => {
+  return {
+    headers: { "Content-Type": "application/json" },
+    statusCode: 400,
+    body: JSON.stringify({
+      error: "invalid_request",
+      error_description: errorDescription,
+    }),
+  };
 };
 
 const notFoundResponse: APIGatewayProxyResult = {
