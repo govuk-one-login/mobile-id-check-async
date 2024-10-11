@@ -6,7 +6,7 @@ info:
 
 components:
   securitySchemes:
-    bearerAuth:            # arbitrary name for the security scheme
+    bearerAuth:
       type: http
       scheme: bearer
   schemas:
@@ -29,14 +29,30 @@ components:
       required:
         - error
         - error_description
+    ServerError:
+      type: object
+      properties:
+        error:
+          type: string
+          enum:
+            - server_error
+          description: |
+            The error code.
+        error_description:
+          type: string
+          description: |
+            A description of the error.
+      required:
+        - error
+        - error_description
 
 paths:
   /async/activeSession:
     get:
       security:
         - bearerAuth: []
-      summary: Look for an active session for a given user
-      description: Query the session database to find an active session for a given user. If an active session is found it returns the sessionId if not return 404 session not found
+      summary: Look for an active session for a given user.
+      description: Query the session database to find an active session for a given user and returns it.
       parameters:
         - name: Authorization
           in: header
@@ -53,8 +69,9 @@ paths:
                 success:
                   value:
                     {
-                        "sessionId": "37aae92b-a51e-4f68-b571-8e455fb0ec34",
-                        "redirect_uri": "https://example/redirect"
+                      "sessionId": "37aae92b-a51e-4f68-b571-8e455fb0ec34",
+                      "redirectUri": "https://example/redirect",
+                      "state": "11112222333344445555666677778888"
                     }
               schema:
                 type: object
@@ -62,31 +79,38 @@ paths:
                   sessionId:
                     type: string
                     description: |
-                      The id of an active session found for a given sub identifier
-                  redirect_uri:
+                      The ID of an active session found for a given sub identifier.
+                  state:
                     type: string
                     description: |
-                      Registered client redirect_uri where app should attempt to get the user back to once id check is complete
+                      Cryptographically secure random string provided by IPV when session created and stored in authSession table.
+                  redirectUri:
+                    type: string
+                    description: |
+                      Registered client redirect_uri where app should attempt to get the user back to once ID check is complete.
                 required:
                   - sessionId
+                  - state
         '400':
-            description: Bad request
+            description: Bad Request
             content:
               application/json:
                 examples:
-                  missingRequiredHeader:
+                  errorInvalidRequest:
                     description: |
-                      The authorization header is missing from the header
+                      The service token could not be decrypted OR the service token signature could not be verified OR the service token payload is invalid.
                     value:
                       {
-                        "error": "missing_required_header",
-                        "error_description": "Authorization header is missing"
+                        "error": "invalid_request",
+                        "error_description": "Failed decrypting service token"
                       }
                 schema:
                   type: object
                   properties:
                     error:
                       type: string
+                      enum:
+                        - invalid_request
                       description: |
                         The error code.
                     error_description:
@@ -107,14 +131,16 @@ paths:
                       and the user should request for new access_token
                     value:
                       {
-                        "error": "invalid_request",
-                        "error_description": "Service token is invalid or expired"
+                        "error": "unauthorized",
+                        "error_description": "Invalid authorization header"
                       }
                 schema:
                   type: object
                   properties:
                     error:
                       type: string
+                      enum:
+                        - unauthorized
                       description: |
                         The error code.
                     error_description:
@@ -131,7 +157,7 @@ paths:
                 examples:
                   sessionNotFound:
                     description: |
-                      The active session with correct state is not found for given sub identifier
+                      The active session with correct state is not found for given sub identifier.
                     value:
                       {
                         "error": "session_not_found",
@@ -139,6 +165,8 @@ paths:
                       }
                 schema:
                   type: object
+                  enum:
+                    - session_not_found
                   properties:
                     error:
                       type: string
@@ -152,33 +180,20 @@ paths:
                     - error
                     - error_description
         '500':
-            description: Internal Server Error
-            content:
-              application/json:
-                examples:
-                  internalServerError:
-                    description: |
-                      The server has encountered an unexpected condition or configuration problem that prevents 
-                      it from fulfilling the request made by the browser or client.
-                    value:
-                      {
-                        "error": "internal_server_error",
-                        "error_description": "Internal server error"
-                      }
-                schema:
-                  type: object
-                  properties:
-                    error:
-                      type: string
-                      description: |
-                        The error code.
-                    error_description:
-                      type: string
-                      description: |
-                        A description of the error.
-                  required:
-                    - error
-                    - error_description
+          description: Internal server error
+          content:
+            application/json:
+              examples:
+                error:
+                  description: |
+                    The service encountered an unrecoverable error when trying to access its internal resources.
+                  value:
+                    {
+                      "error": "server_error",
+                      "error_description": "Server Error"
+                    }
+              schema:
+                $ref: "#/components/schemas/ServerError"
       x-amazon-apigateway-integration:
         requestTemplates:
           application/json:
@@ -277,7 +292,7 @@ paths:
                       "error_description": "Internal server error"
                     }
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/ServerError"
 # Created with mock integration, This needs to be replaced with lambda proxy integration when available
       x-amazon-apigateway-integration:
         requestTemplates:
@@ -286,6 +301,7 @@ paths:
         httpMethod: "POST"
         passthroughBehavior: "when_no_match"
         type: "mock"
+
   /async/finishBiometricSession:
     post:
       summary: App signifies to backend that user interaction for biometric session is complete
@@ -361,7 +377,7 @@ paths:
                       "error_description": "Internal server error"
                     }
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/ServerError"
 # Created with mock integration, This needs to be replaced with lambda proxy integration when available
       x-amazon-apigateway-integration:
         requestTemplates:
@@ -370,6 +386,7 @@ paths:
         httpMethod: "POST"
         passthroughBehavior: "when_no_match"
         type: "mock"
+
   /.well-known/jwks.json:
     get:
       operationId: getWellKnownJwks

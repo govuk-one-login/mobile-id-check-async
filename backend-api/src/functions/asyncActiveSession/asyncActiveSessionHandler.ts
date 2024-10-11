@@ -99,8 +99,8 @@ const unauthorizedResponse: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 401,
   body: JSON.stringify({
-    error: "Unauthorized",
-    error_description: "Invalid token",
+    error: "unauthorized",
+    error_description: "Invalid authorization header",
   }),
 };
 
@@ -109,7 +109,7 @@ const badRequestResponse: APIGatewayProxyResult = {
   statusCode: 400,
   body: JSON.stringify({
     error: "invalid_request",
-    error_description: "failed decrypting service token jwt",
+    error_description: "Failed decrypting service token",
   }),
 };
 
