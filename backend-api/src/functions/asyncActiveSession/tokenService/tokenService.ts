@@ -5,6 +5,7 @@ import {
 } from "../../services/http/sendHttpRequest";
 import { errorResult, Result, successResult } from "../../utils/result";
 import { KMSAdapter } from "../../adapters/kmsAdapter";
+import crypto from "crypto";
 
 export class TokenService implements ITokenService {
   getSubFromToken = async (
@@ -41,25 +42,28 @@ export class TokenService implements ITokenService {
       });
     }
 
-    // const [
-    //   protectedHeader,
-    //   encryptedCek,
-    //   iv,
-    //   ciphertext,
-    //   tag
-    // ] = jweComponents
+    const [protectedHeader, encryptedCek, iv, ciphertext, tag] = jweComponents;
 
-    const encryptedCek = jweComponents[1];
-
-    const decryptResult = await new KMSAdapter().decrypt(
+    const decryptCekResult = await new KMSAdapter().decrypt(
       encryptionKeyArn,
       new Uint8Array(Buffer.from(encryptedCek, "base64")),
     );
-    if (decryptResult.isError) {
-      return decryptResult;
+    if (decryptCekResult.isError) {
+      return decryptCekResult;
     }
 
-    // const cek = decryptResult.value;
+    const cek = decryptCekResult.value;
+
+    const decryptedJweResult = await this.decryptJwe(
+      cek,
+      Buffer.from(iv, "base64"),
+      Buffer.from(ciphertext, "base64"),
+      Buffer.from(tag, "base64"),
+      new Uint8Array(Buffer.from(protectedHeader)),
+    );
+    if (decryptedJweResult.isError) {
+      return decryptedJweResult;
+    }
 
     return successResult("");
   };
@@ -101,6 +105,50 @@ export class TokenService implements ITokenService {
     }
 
     return successResult(jwks);
+  }
+
+  private async decryptJwe(
+    key: Uint8Array,
+    iv: Uint8Array,
+    ciphertext: Uint8Array,
+    tag: Uint8Array,
+    additionalData: Uint8Array,
+  ): Promise<Result<string>> {
+    const webcrypto = crypto.webcrypto as unknown as Crypto;
+
+    let cek: CryptoKey;
+    try {
+      cek = await webcrypto.subtle.importKey("raw", key, "AES-GCM", false, [
+        "decrypt",
+      ]);
+    } catch (error) {
+      return errorResult({
+        errorMessage: `Error converting cek to CryptoKey. ${error}`,
+        errorCategory: "SERVER_ERROR",
+      });
+    }
+
+    let decryptedBuffer: ArrayBuffer;
+    try {
+      decryptedBuffer = await webcrypto.subtle.decrypt(
+        {
+          name: "AES-GCM",
+          iv,
+          additionalData,
+          tagLength: 128,
+        },
+        cek,
+        Buffer.concat([new Uint8Array(ciphertext), new Uint8Array(tag)]),
+      );
+    } catch (error) {
+      return errorResult({
+        errorMessage: `Error decrypting JWE. ${error}`,
+        errorCategory: "SERVER_ERROR",
+      });
+    }
+
+    const decoder = new TextDecoder();
+    return successResult(decoder.decode(decryptedBuffer));
   }
 }
 

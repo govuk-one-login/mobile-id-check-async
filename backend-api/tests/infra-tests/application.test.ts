@@ -204,7 +204,7 @@ describe("Backend application infrastructure", () => {
       test("Rate and burst limit mappings are set", () => {
         const expectedBurstLimits = {
           dev: 10,
-          build: 0,
+          build: 10,
           staging: 0,
           integration: 0,
           production: 0,
@@ -212,7 +212,7 @@ describe("Backend application infrastructure", () => {
 
         const expectedRateLimits = {
           dev: 10,
-          build: 0,
+          build: 10,
           staging: 0,
           integration: 0,
           production: 0,
@@ -465,7 +465,7 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("Create session lambdas have the client registry environment variable", () => {
+    test("Token and Credential lambdas have the client registry environment variable", () => {
       const createSessionLambdaHandlers = [
         "asyncTokenHandler.lambdaHandler",
         "asyncCredentialHandler.lambdaHandler",
@@ -479,6 +479,64 @@ describe("Backend application infrastructure", () => {
                 "Fn::Sub": "${Environment}/clientRegistry",
               },
             },
+          },
+        });
+      });
+    });
+
+    test("All lambdas are attached to a VPC ", () => {
+      const lambdas = template.findResources("AWS::Serverless::Function");
+      const lambda_list = Object.keys(lambdas);
+      lambda_list.forEach((lambda) => {
+        expect(lambdas[lambda].Properties.VpcConfig).toBeTruthy();
+      });
+    });
+
+    test("Token, Credential and JWKS lambdas are attached to a VPC and subnets are private", () => {
+      const lambdaHandlers = [
+        "asyncTokenHandler.lambdaHandler",
+        "asyncCredentialHandler.lambdaHandler",
+        "jwksHandler.lambdaHandler",
+      ];
+      lambdaHandlers.forEach((lambdaHandler) => {
+        template.hasResourceProperties("AWS::Serverless::Function", {
+          Handler: lambdaHandler,
+          VpcConfig: {
+            SubnetIds: [
+              { "Fn::ImportValue": "devplatform-vpc-PrivateSubnetIdA" },
+              { "Fn::ImportValue": "devplatform-vpc-PrivateSubnetIdB" },
+              { "Fn::ImportValue": "devplatform-vpc-PrivateSubnetIdC" },
+            ],
+            SecurityGroupIds: [
+              {
+                "Fn::ImportValue":
+                  "devplatform-vpc-AWSServicesEndpointSecurityGroupId",
+              },
+            ],
+          },
+        });
+      });
+    });
+
+    test("ActiveSession lambda is attached to a VPC and subnets are protected", () => {
+      const activeSessionLambdaHandlers = [
+        "asyncActiveSessionHandler.lambdaHandler",
+      ];
+      activeSessionLambdaHandlers.forEach((lambdaHandler) => {
+        template.hasResourceProperties("AWS::Serverless::Function", {
+          Handler: lambdaHandler,
+          VpcConfig: {
+            SubnetIds: [
+              { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdA" },
+              { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdB" },
+              { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdC" },
+            ],
+            SecurityGroupIds: [
+              {
+                "Fn::ImportValue":
+                  "devplatform-vpc-AWSServicesEndpointSecurityGroupId",
+              },
+            ],
           },
         });
       });
