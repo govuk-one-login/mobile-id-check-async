@@ -51,6 +51,12 @@ npm run test:api
 
 ## Deploying a custom stack into Dev
 
+### Define a backend-api stack name
+
+```bash
+export backend-stack-name=<stack-name>
+```
+
 ### Deploy a custom STS Mock stack
 
 Follow the instructions in STS Mock [README](../sts-mock/README.md) to deploy the custom STS Mock stack.
@@ -68,7 +74,7 @@ In the backend-api [template](template.yaml), update the environment variable `S
 Assume the relevant AWS credentials and use the following command:
 
 ```bash
-sam build --cached --beta-features && sam deploy --stack-name <your-be-api-stack-name> --capabilities CAPABILITY_NAMED_IAM --resolve-s3
+sam build --cached --beta-features && sam deploy --stack-name ${backend-stack-name} --capabilities CAPABILITY_NAMED_IAM --resolve-s3
 ```
 
 ### Remember to delete your stack
