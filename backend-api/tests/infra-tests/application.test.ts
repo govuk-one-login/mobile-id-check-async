@@ -204,7 +204,7 @@ describe("Backend application infrastructure", () => {
       test("Rate and burst limit mappings are set", () => {
         const expectedBurstLimits = {
           dev: 10,
-          build: 0,
+          build: 10,
           staging: 0,
           integration: 0,
           production: 0,
@@ -212,7 +212,7 @@ describe("Backend application infrastructure", () => {
 
         const expectedRateLimits = {
           dev: 10,
-          build: 0,
+          build: 10,
           staging: 0,
           integration: 0,
           production: 0,
