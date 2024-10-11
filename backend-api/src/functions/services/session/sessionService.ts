@@ -30,7 +30,7 @@ export type CreateSessionAttributes = {
 export type Session = {
   sessionId: string;
   redirectUri?: string;
-  state: string;
+  sessionState: string;
 };
 
 export class SessionService implements ISessionService {
