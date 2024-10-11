@@ -24,7 +24,7 @@ export interface IAsyncActiveSessionDependencies {
 export const dependencies: IAsyncActiveSessionDependencies = {
   env: process.env,
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
-  tokenServiceDependencies: tokenServiceDependencies,
+  tokenServiceDependencies,
   tokenService: (tokenServiceDependencies: ITokenServiceDependencies) =>
     new TokenService(tokenServiceDependencies),
 };
