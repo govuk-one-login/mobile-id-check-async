@@ -15,6 +15,25 @@ describe("Backend application infrastructure", () => {
     template = Template.fromJSON(yamltemplate);
   });
 
+  describe("EnvironmentVariable mapping values", () => {
+    test("STS jwks endpoint only assigned to Dev and Build", () => {
+      const expectedEnvironmentVariablesValues = {
+        dev: "https://mob-sts-mock.review-b-async.dev.account.gov.uk/.well-known/jwks.json",
+        build:
+          "https://mob-sts-mock.review-b-async.build.account.gov.uk/.well-known/jwks.json",
+        staging: "",
+        integration: "",
+        production: "",
+      };
+
+      const mappingHelper = new Mappings(template);
+      mappingHelper.validateEnvironmentVariablesMapping({
+        environmentFlags: expectedEnvironmentVariablesValues,
+        mappingBottomLevelKey: "STSJWKSENDPOINT",
+      });
+    });
+  });
+
   describe("Private APIgw", () => {
     test("The endpoints are Private", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
