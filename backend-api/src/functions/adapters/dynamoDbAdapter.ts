@@ -9,7 +9,11 @@ import {
 } from "@aws-sdk/client-dynamodb";
 import { CreateSessionAttributes } from "../services/session/sessionService";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
-import { NativeAttributeValue, unmarshall } from "@aws-sdk/util-dynamodb";
+import {
+  marshall,
+  NativeAttributeValue,
+  unmarshall,
+} from "@aws-sdk/util-dynamodb";
 
 const sessionStates = {
   ASYNC_AUTH_SESSION_CREATED: "ASYNC_AUTH_SESSION_CREATED",
@@ -43,11 +47,9 @@ export class DynamoDbAdapter {
         "subjectIdentifier = :subjectIdentifier and :currentTimeInSeconds < timeToLive",
       FilterExpression: "sessionState = :sessionState",
       ExpressionAttributeValues: {
-        ":subjectIdentifier": { S: subjectIdentifier },
-        ":sessionState": { S: sessionStates.ASYNC_AUTH_SESSION_CREATED },
-        ":currentTimeInSeconds": {
-          N: this.getTimeNowInSeconds().toString(),
-        },
+        ":subjectIdentifier": marshall(subjectIdentifier),
+        ":sessionState": marshall(sessionStates.ASYNC_AUTH_SESSION_CREATED),
+        ":currentTimeInSeconds": marshall(this.getTimeNowInSeconds()),
       },
       ProjectionExpression: this.formatAsProjectionExpression(attributesToGet),
       Limit: 1,
@@ -86,18 +88,18 @@ export class DynamoDbAdapter {
 
     const input: PutItemCommandInput = {
       TableName: this.tableName,
-      Item: {
-        clientId: { S: client_id },
-        govukSigninJourneyId: { S: govuk_signin_journey_id },
-        createdAt: { N: Date.now().toString() },
-        issuer: { S: issuer },
-        sessionId: { S: sessionId },
-        sessionState: { S: sessionStates.ASYNC_AUTH_SESSION_CREATED },
-        clientState: { S: state },
-        subjectIdentifier: { S: sub },
-        timeToLive: { N: timeToLive.toString() },
-        ...(redirect_uri && { redirectUri: { S: redirect_uri } }),
-      },
+      Item: marshall({
+        clientId: client_id,
+        govukSigninJourneyId: govuk_signin_journey_id,
+        createdAt: Date.now(),
+        issuer: issuer,
+        sessionId: sessionId,
+        sessionState: sessionStates.ASYNC_AUTH_SESSION_CREATED,
+        clientState: state,
+        subjectIdentifier: sub,
+        timeToLive: timeToLive,
+        ...(redirect_uri && { redirectUri: redirect_uri }),
+      }),
       ConditionExpression: "attribute_not_exists(sessionId)",
     };
 

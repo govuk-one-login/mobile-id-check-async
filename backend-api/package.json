@@ -56,6 +56,7 @@
     "@aws-sdk/util-dynamodb": "^3.669.0",
     "@types/node": "^20.16.11",
     "aws-cdk-lib": "^2.161.1",
+    "aws-sdk-client-mock-jest": "^4.0.2",
     "axios": "1.7.7",
     "dotenv": "16.4.5",
     "ecdsa-sig-formatter": "1.0.11",

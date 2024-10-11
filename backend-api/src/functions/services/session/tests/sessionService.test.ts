@@ -3,12 +3,15 @@ import {
   DynamoDBClient,
   DynamoDBClientResolvedConfig,
   PutItemCommand,
+  PutItemCommandInput,
   QueryCommand,
+  QueryCommandInput,
   ServiceInputTypes,
   ServiceOutputTypes,
 } from "@aws-sdk/client-dynamodb";
 import { AwsStub, mockClient } from "aws-sdk-client-mock";
 import { ISessionService, SessionService } from "../sessionService";
+import "aws-sdk-client-mock-jest";
 
 describe("Session Service", () => {
   let sessionService: ISessionService;
@@ -82,6 +85,21 @@ describe("Session Service", () => {
 
     describe("Given the session ID of an active session is found", () => {
       it("Returns a success response with the session ID as value", async () => {
+        const expectedCommandInput: QueryCommandInput = {
+          ExpressionAttributeValues: {
+            ":currentTimeInSeconds": { N: "1710028800" },
+            ":sessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
+            ":subjectIdentifier": { S: "mockSub" },
+          },
+          FilterExpression: "sessionState = :sessionState",
+          IndexName: "subjectIdentifier-timeToLive-index",
+          KeyConditionExpression:
+            "subjectIdentifier = :subjectIdentifier and :currentTimeInSeconds < timeToLive",
+          Limit: 1,
+          ProjectionExpression: "sessionId",
+          ScanIndexForward: false,
+          TableName: "mockTableName",
+        };
         dynamoDbMockClient.on(QueryCommand).resolves({
           Items: [
             {
@@ -94,6 +112,10 @@ describe("Session Service", () => {
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual("mockSessionId");
+        expect(dynamoDbMockClient).toHaveReceivedCommandWith(
+          QueryCommand,
+          expectedCommandInput,
+        );
       });
     });
   });
@@ -264,7 +286,22 @@ describe("Session Service", () => {
 
     describe("Given creating a session is successful", () => {
       describe("Given the function input does not contain the key redirect_uri", () => {
-        it("Returns success response", async () => {
+        it("Does not include redirectUri in the session", async () => {
+          const expectedCommandInput: PutItemCommandInput = {
+            ConditionExpression: "attribute_not_exists(sessionId)",
+            Item: {
+              clientId: { S: "mockClientId" },
+              clientState: { S: "mockValidState" },
+              createdAt: { N: "1710028800000" },
+              govukSigninJourneyId: { S: "mockJourneyId" },
+              issuer: { S: "mockIssuer" },
+              sessionId: { S: expect.any(String) },
+              sessionState: { S: "ASYNC_AUTH_SESSION_CREATED" },
+              subjectIdentifier: { S: "mockSub" },
+              timeToLive: { N: "1710041145" },
+            },
+            TableName: "mockTableName",
+          };
           dynamoDbMockClient.on(PutItemCommand).resolvesOnce({});
 
           const result = await sessionService.createSession({
@@ -278,11 +315,31 @@ describe("Session Service", () => {
 
           expect(result.isError).toBe(false);
           expect(result.value).toEqual(expect.any(String));
+          expect(dynamoDbMockClient).toHaveReceivedCommandWith(
+            PutItemCommand,
+            expectedCommandInput,
+          );
         });
       });
 
       describe("Given the function input contains the key redirect_uri", () => {
-        it("Returns success response", async () => {
+        it("Includes redirectUri in the session", async () => {
+          const expectedCommandInput: PutItemCommandInput = {
+            ConditionExpression: "attribute_not_exists(sessionId)",
+            Item: {
+              clientId: { S: "mockClientId" },
+              clientState: { S: "mockValidState" },
+              createdAt: { N: "1710028800000" },
+              govukSigninJourneyId: { S: "mockJourneyId" },
+              issuer: { S: "mockIssuer" },
+              redirectUri: { S: "https://mockRedirectUri.com" },
+              sessionId: { S: expect.any(String) },
+              sessionState: { S: "ASYNC_AUTH_SESSION_CREATED" },
+              subjectIdentifier: { S: "mockSub" },
+              timeToLive: { N: "1710041145" },
+            },
+            TableName: "mockTableName",
+          };
           dynamoDbMockClient.on(PutItemCommand).resolvesOnce({});
 
           const result = await sessionService.createSession({
@@ -297,6 +354,10 @@ describe("Session Service", () => {
 
           expect(result.isError).toBe(false);
           expect(result.value).toEqual(expect.any(String));
+          expect(dynamoDbMockClient).toHaveReceivedCommandWith(
+            PutItemCommand,
+            expectedCommandInput,
+          );
         });
       });
     });
