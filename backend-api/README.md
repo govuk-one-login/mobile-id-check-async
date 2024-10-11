@@ -69,7 +69,7 @@ In the backend-api [template](template.yaml), update the environment variable `S
 <sts-mock-stack-name>.review-b-async.dev.account.gov.uk/.well-known/jwks.json
 ```
 
-### Deploy backend-api
+### Build and deploy backend-api
 
 Assume the relevant AWS credentials and use the following command:
 
