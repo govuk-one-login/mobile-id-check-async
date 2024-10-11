@@ -1,5 +1,5 @@
 import { IJwks, IPublicKeyGetter, PublicKeyGetter } from "../publicKeyGetter";
-import { MockJWTBuilder } from "../../../testUtils/mockJwt";
+import { MockJWTBuilder } from "../../../testUtils/mockJwtBuilder";
 
 describe("Public Key Getter", () => {
   let mockJwks: IJwks;

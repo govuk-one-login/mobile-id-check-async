@@ -5,7 +5,7 @@ import { IAsyncActiveSessionDependencies } from "./handlerDependencies";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
-import { MockJWTBuilder } from "../testUtils/mockJwt";
+import { MockJWTBuilder } from "../testUtils/mockJwtBuilder";
 import { errorResult, Result, successResult } from "../utils/result";
 import { ITokenService } from "./tokenService/tokenService";
 import { MockPubicKeyGetterGetPublicKeyError } from "./tokenService/tests/mocks";

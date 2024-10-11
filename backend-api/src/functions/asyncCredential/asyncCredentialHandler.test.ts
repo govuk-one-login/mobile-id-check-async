@@ -5,7 +5,7 @@ import {
 } from "../services/events/tests/mocks";
 import { Logger } from "../services/logging/logger";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
-import { MockJWTBuilder } from "../testUtils/mockJwt";
+import { MockJWTBuilder } from "../testUtils/mockJwtBuilder";
 import { buildRequest } from "../testUtils/mockRequest";
 import { Result, successResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncCredentialHandler";
