@@ -1,5 +1,4 @@
 import {
-  AttributeValue,
   ConditionalCheckFailedException,
   DynamoDBClient,
   PutItemCommand,
@@ -8,14 +7,13 @@ import {
   QueryCommandInput,
   QueryCommandOutput,
 } from "@aws-sdk/client-dynamodb";
-import { errorResult, Result, successResult } from "../utils/result";
-import {
-  CreateSessionAttributes,
-  SessionDetails,
-} from "../services/sessionService/sessionService";
+import { CreateSessionAttributes } from "../services/sessionService/sessionService";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
+import { NativeAttributeValue, unmarshall } from "@aws-sdk/util-dynamodb";
 
-type DynamoDbRecord = Record<string, AttributeValue>;
+const sessionStates = {
+  ASYNC_AUTH_SESSION_CREATED: "ASYNC_AUTH_SESSION_CREATED",
+};
 
 export class DynamoDbAdapter {
   private readonly tableName: string;
@@ -32,10 +30,11 @@ export class DynamoDbAdapter {
     this.tableName = tableName;
   }
 
-  async readSessionId(
+  async getActiveSession(
     subjectIdentifier: string,
-  ): Promise<Result<string | null>> {
-    const currentTimeInSeconds = Math.floor(Date.now() / 1000);
+    attributesToGet: string[],
+  ): Promise<Record<string, NativeAttributeValue> | null> {
+    const currentTimeInSeconds = this.geTimeNowInSeconds();
     const input: QueryCommandInput = {
       TableName: this.tableName,
       IndexName: "subjectIdentifier-timeToLive-index",
@@ -44,84 +43,31 @@ export class DynamoDbAdapter {
       FilterExpression: "sessionState = :sessionState",
       ExpressionAttributeValues: {
         ":subjectIdentifier": { S: subjectIdentifier },
-        ":sessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
+        ":sessionState": { S: sessionStates.ASYNC_AUTH_SESSION_CREATED },
         ":currentTimeInSeconds": {
           N: currentTimeInSeconds.toString(),
         },
       },
-      ProjectionExpression: "sessionId",
+      ProjectionExpression: this.formatAttributesToGet(attributesToGet),
       Limit: 1,
       ScanIndexForward: false,
     };
 
-    const queryResponse = await this.query(input);
-    if (queryResponse.isError || queryResponse.value === null) {
-      return queryResponse;
+    const queryCommandOutput: QueryCommandOutput =
+      await this.dynamoDbClient.send(new QueryCommand(input));
+
+    const items = queryCommandOutput.Items;
+    if (!items || items.length === 0) {
+      return null;
     }
 
-    const record: DynamoDbRecord = queryResponse.value;
-    const sessionId = record.sessionId?.S;
-    if (!sessionId) {
-      return errorResult({
-        errorMessage: "Session is malformed",
-        errorCategory: "SERVER_ERROR",
-      });
-    }
-
-    return successResult(sessionId);
-  }
-
-  async readSessionDetails(
-    subjectIdentifier: string,
-  ): Promise<Result<SessionDetails | null>> {
-    const currentTimeInSeconds = Math.floor(Date.now() / 1000);
-    const input: QueryCommandInput = {
-      TableName: this.tableName,
-      IndexName: "subjectIdentifier-timeToLive-index",
-      KeyConditionExpression:
-        "subjectIdentifier = :subjectIdentifier and :currentTimeInSeconds < timeToLive",
-      FilterExpression: "sessionState = :sessionState",
-      ExpressionAttributeValues: {
-        ":subjectIdentifier": { S: subjectIdentifier },
-        ":sessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
-        ":currentTimeInSeconds": {
-          N: currentTimeInSeconds.toString(),
-        },
-      },
-      ExpressionAttributeNames: { "#state": "state" },
-      ProjectionExpression: "sessionId, redirectUri, #state",
-      Limit: 1,
-      ScanIndexForward: false,
-    };
-
-    const queryResponse = await this.query(input);
-    if (queryResponse.isError || queryResponse.value === null) {
-      return queryResponse;
-    }
-
-    const record: DynamoDbRecord = queryResponse.value;
-    const sessionId = record.sessionId?.S;
-    const state = record.state?.S;
-    if (!sessionId || !state) {
-      return errorResult({
-        errorMessage: "Session is malformed",
-        errorCategory: "SERVER_ERROR",
-      });
-    }
-    const redirectUri: string | undefined = record.redirectUri?.S;
-    const sessionDetails: SessionDetails = {
-      sessionId,
-      state,
-      ...(redirectUri && { redirectUri: record.redirectUri?.S }),
-    };
-
-    return successResult(sessionDetails);
+    return unmarshall(items[0]);
   }
 
   async createSession(
     attributes: CreateSessionAttributes,
     sessionId: string,
-  ): Promise<Result<string>> {
+  ): Promise<void> {
     const {
       client_id,
       govuk_signin_journey_id,
@@ -131,7 +77,7 @@ export class DynamoDbAdapter {
       state,
       sub,
     } = attributes;
-    const currentTimeInSeconds = Math.floor(Date.now() / 1000);
+    const currentTimeInSeconds = this.geTimeNowInSeconds();
     const timeToLive = currentTimeInSeconds + sessionDurationInSeconds;
 
     const input: PutItemCommandInput = {
@@ -142,7 +88,7 @@ export class DynamoDbAdapter {
         createdAt: { N: Date.now().toString() },
         issuer: { S: issuer },
         sessionId: { S: sessionId },
-        sessionState: { S: "ASYNC_AUTH_SESSION_CREATED" },
+        sessionState: { S: sessionStates.ASYNC_AUTH_SESSION_CREATED },
         state: { S: state },
         subjectIdentifier: { S: sub },
         timeToLive: { N: timeToLive.toString() },
@@ -158,38 +104,18 @@ export class DynamoDbAdapter {
       await this.dynamoDbClient.send(new PutItemCommand(input));
     } catch (error) {
       if (error instanceof ConditionalCheckFailedException) {
-        return errorResult({
-          errorMessage: "Session already exists with this ID",
-          errorCategory: "SERVER_ERROR",
-        });
+        throw new Error("Session already exists with this ID");
       } else {
-        return errorResult({
-          errorMessage: "Unexpected error while creating a new session",
-          errorCategory: "SERVER_ERROR",
-        });
+        throw error;
       }
     }
-
-    return successResult(sessionId);
   }
 
-  private async query(
-    input: QueryCommandInput,
-  ): Promise<Result<DynamoDbRecord> | Result<null>> {
-    let output: QueryCommandOutput;
-    try {
-      output = await this.dynamoDbClient.send(new QueryCommand(input));
-    } catch {
-      return errorResult({
-        errorMessage: "Unexpected error when querying database",
-        errorCategory: "SERVER_ERROR",
-      });
-    }
+  private geTimeNowInSeconds() {
+    return Math.floor(Date.now() / 1000);
+  }
 
-    if (!output.Items || output.Items.length === 0) {
-      return successResult(null);
-    }
-
-    return successResult(output.Items[0]);
+  formatAttributesToGet(attributes: string[]): string {
+    return attributes.join(", ");
   }
 }

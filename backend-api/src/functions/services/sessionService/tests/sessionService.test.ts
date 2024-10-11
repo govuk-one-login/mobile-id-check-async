@@ -35,7 +35,7 @@ describe("Session Service", () => {
         const result = await sessionService.getActiveSessionId("mockSub");
 
         expect(result.value).toStrictEqual({
-          errorMessage: "Unexpected error when querying database",
+          errorMessage: "Error getting session ID - Error: Mock DB Error",
           errorCategory: "SERVER_ERROR",
         });
         expect(result.isError).toBe(true);
@@ -80,7 +80,7 @@ describe("Session Service", () => {
       });
     });
 
-    describe("Given an active session is found", () => {
+    describe("Given the session ID of an active session is found", () => {
       it("Returns a success response with the session ID as value", async () => {
         dynamoDbMockClient.on(QueryCommand).resolves({
           Items: [
@@ -103,10 +103,10 @@ describe("Session Service", () => {
       it("Returns an error response", async () => {
         dynamoDbMockClient.on(QueryCommand).rejectsOnce("Mock DB Error");
 
-        const result = await sessionService.getActiveSessionDetails("mockSub");
+        const result = await sessionService.getActiveSession("mockSub");
 
         expect(result.value).toStrictEqual({
-          errorMessage: "Unexpected error when querying database",
+          errorMessage: "Error getting session - Error: Mock DB Error",
           errorCategory: "SERVER_ERROR",
         });
         expect(result.isError).toBe(true);
@@ -117,7 +117,7 @@ describe("Session Service", () => {
       it("Returns success response with value of null", async () => {
         dynamoDbMockClient.on(QueryCommand).resolvesOnce({});
 
-        const result = await sessionService.getActiveSessionDetails("mockSub");
+        const result = await sessionService.getActiveSession("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -128,7 +128,7 @@ describe("Session Service", () => {
       it("Returns success response with value of null", async () => {
         dynamoDbMockClient.on(QueryCommand).resolvesOnce({ Items: [] });
 
-        const result = await sessionService.getActiveSessionDetails("mockSub");
+        const result = await sessionService.getActiveSession("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
@@ -141,7 +141,7 @@ describe("Session Service", () => {
           .on(QueryCommand)
           .resolvesOnce({ Items: [{ dummyKey: { S: "dummyValue" } }] });
 
-        const result = await sessionService.getActiveSessionDetails("mockSub");
+        const result = await sessionService.getActiveSession("mockSub");
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual({
@@ -151,13 +151,13 @@ describe("Session Service", () => {
       });
     });
 
-    describe("Given the item returned is missing the attribute state", () => {
+    describe("Given the item returned is missing the attribute sessionState", () => {
       it("Returns an error response", async () => {
         dynamoDbMockClient
           .on(QueryCommand)
           .resolvesOnce({ Items: [{ sessionId: { S: "mockSessionId" } }] });
 
-        const result = await sessionService.getActiveSessionDetails("mockSub");
+        const result = await sessionService.getActiveSession("mockSub");
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual({
@@ -171,16 +171,19 @@ describe("Session Service", () => {
       it("Returns a success response with the session ID and state as value", async () => {
         dynamoDbMockClient.on(QueryCommand).resolvesOnce({
           Items: [
-            { sessionId: { S: "mockSessionId" }, state: { S: "mockState" } },
+            {
+              sessionId: { S: "mockSessionId" },
+              sessionState: { S: "mockSessionState" },
+            },
           ],
         });
 
-        const result = await sessionService.getActiveSessionDetails("mockSub");
+        const result = await sessionService.getActiveSession("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual({
           sessionId: "mockSessionId",
-          state: "mockState",
+          sessionState: "mockSessionState",
         });
       });
     });
@@ -191,25 +194,25 @@ describe("Session Service", () => {
           Items: [
             {
               sessionId: { S: "mockSessionId" },
-              state: { S: "mockState" },
-              redirectUri: { S: "redirectUri" },
+              sessionState: { S: "mockSessionState" },
+              redirectUri: { S: "mockRedirectUri" },
             },
           ],
         });
 
-        const result = await sessionService.getActiveSessionDetails("mockSub");
+        const result = await sessionService.getActiveSession("mockSub");
 
         expect(result.isError).toBe(false);
         expect(result.value).toStrictEqual({
           sessionId: "mockSessionId",
-          state: "mockState",
-          redirectUri: "redirectUri",
+          sessionState: "mockSessionState",
+          redirectUri: "mockRedirectUri",
         });
       });
     });
   });
 
-  describe("Create sa ession", () => {
+  describe("Creates a session", () => {
     describe("Given there is an unexpected error when creating a session", () => {
       it("Returns error response", async () => {
         dynamoDbMockClient.on(PutItemCommand).rejectsOnce("Mock DB Error");
@@ -226,7 +229,7 @@ describe("Session Service", () => {
 
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
-          errorMessage: "Unexpected error while creating a new session",
+          errorMessage: "Error creating session - Error: Mock DB Error",
           errorCategory: "SERVER_ERROR",
         });
       });
@@ -252,7 +255,8 @@ describe("Session Service", () => {
 
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
-          errorMessage: "Session already exists with this ID",
+          errorMessage:
+            "Error creating session - Error: Session already exists with this ID",
           errorCategory: "SERVER_ERROR",
         });
       });
