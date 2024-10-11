@@ -18,7 +18,7 @@ export async function lambdaHandlerConstructor(
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
       errorMessage: configResult.value.errorMessage,
     });
-    return serverError500Response;
+    return serverErrorResponse;
   }
   const config = configResult.value;
 
@@ -45,6 +45,7 @@ export async function lambdaHandlerConstructor(
       delayInMillis: 100,
     },
   );
+
   if (getSubFromTokenResult.isError) {
     if (getSubFromTokenResult.value.errorCategory === "CLIENT_ERROR") {
       logger.log("FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN", {
@@ -56,20 +57,37 @@ export async function lambdaHandlerConstructor(
     logger.log("INTERNAL_SERVER_ERROR", {
       errorMessage: getSubFromTokenResult.value.errorMessage,
     });
-    return serverError500Response;
+    return serverErrorResponse;
+  }
+
+  const sessionService = dependencies.sessionService(config.SESSION_TABLE_NAME);
+  const getActiveSessionResult =
+    await sessionService.getActiveSession("mockSub1"); // temporary sub until we have implemented the logic to extract the sub from the JWT
+
+  if (getActiveSessionResult.isError) {
+    logger.log("INTERNAL_SERVER_ERROR", {
+      errorMessage: getActiveSessionResult.value.errorMessage,
+    });
+    return serverErrorResponse;
+  }
+
+  const session = getActiveSessionResult.value;
+  if (session === null) {
+    return notFoundResponse;
   }
 
   logger.log("COMPLETED");
 
   return {
+    headers: { "Content-Type": "application/json" },
     statusCode: 200,
-    body: "Hello, World",
+    body: JSON.stringify(session),
   };
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
 
-const serverError500Response: APIGatewayProxyResult = {
+const serverErrorResponse: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 500,
   body: JSON.stringify({
@@ -96,4 +114,13 @@ const badRequestResponse = (errorDescription: string) => {
       error_description: errorDescription,
     }),
   };
+};
+
+const notFoundResponse: APIGatewayProxyResult = {
+  headers: { "Content-Type": "application/json" },
+  statusCode: 404,
+  body: JSON.stringify({
+    error: "session_not_found",
+    error_description: "No active session found for the given sub identifier",
+  }),
 };
