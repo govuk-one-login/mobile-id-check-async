@@ -59,7 +59,7 @@ export class PublicKeyGetter implements IPublicKeyGetter {
     } catch (error) {
       return errorResult({
         errorMessage: `${error}`,
-        errorCategory: "CLIENT_ERROR", // CLIENT or SERVER error?
+        errorCategory: "CLIENT_ERROR",
       });
     }
     return successResult(decodedProtectedHeader);

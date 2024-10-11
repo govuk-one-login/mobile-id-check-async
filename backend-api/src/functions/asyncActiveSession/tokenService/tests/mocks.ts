@@ -6,7 +6,7 @@ export class MockPubicKeyGetterGetPublicKeyError implements IPublicKeyGetter {
     return Promise.resolve(
       errorResult({
         errorMessage: "Failed to get public key",
-        errorCategory: "CLIENT_ERROR", // CLIENT or SERVER error?
+        errorCategory: "CLIENT_ERROR",
       }),
     );
   }
