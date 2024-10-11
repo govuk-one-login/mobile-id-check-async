@@ -377,8 +377,7 @@ describe("Token Service", () => {
 
           expect(result.isError).toBe(true);
           expect(result.value).toStrictEqual({
-            errorMessage:
-              "JWE does not consist of five components",
+            errorMessage: "JWE does not consist of five components",
             errorCategory: "CLIENT_ERROR",
           });
         });
