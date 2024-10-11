@@ -130,7 +130,7 @@ export class TokenService implements ITokenService {
     if (jweComponents.length !== 5) {
       return errorResult({
         errorMessage:
-          "Decrypt service token failure: JWE does not consist of five components",
+          "JWE does not consist of five components",
         errorCategory: "CLIENT_ERROR",
       });
     }
