@@ -16,13 +16,13 @@ const kmsClient = new KMSClient({
 
 export class KMSAdapter implements IDecryptAsymmetric {
   async decrypt(
-    ciphertext: Uint8Array,
+    encryptedData: Uint8Array,
     encryptionKeyId: string,
   ): Promise<Uint8Array> {
     const decryptCommandOutput: DecryptCommandOutput = await kmsClient.send(
       new DecryptCommand({
         KeyId: encryptionKeyId,
-        CiphertextBlob: ciphertext,
+        CiphertextBlob: encryptedData,
         EncryptionAlgorithm: "RSAES_OAEP_SHA_256",
       }),
     );

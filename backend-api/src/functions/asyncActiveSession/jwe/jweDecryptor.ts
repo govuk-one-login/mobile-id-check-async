@@ -40,7 +40,13 @@ export class JweDecryptor implements IDecryptJwe {
       });
     }
 
-    const [protectedHeader, encryptedKey, iv, ciphertext, tag] = jweComponents;
+    const [
+      protectedHeader,
+      encryptedKey,
+      initializationVector,
+      encryptedData,
+      authenticationTag,
+    ] = jweComponents;
 
     let cek: Uint8Array;
     try {
@@ -59,9 +65,9 @@ export class JweDecryptor implements IDecryptJwe {
     try {
       payload = await this.symmetricDecryptor.decrypt(
         cek,
-        Buffer.from(iv, "base64url"),
-        Buffer.from(ciphertext, "base64url"),
-        Buffer.from(tag, "base64url"),
+        Buffer.from(initializationVector, "base64url"),
+        Buffer.from(encryptedData, "base64url"),
+        Buffer.from(authenticationTag, "base64url"),
         Buffer.from(protectedHeader),
       );
     } catch (error) {
