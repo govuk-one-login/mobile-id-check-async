@@ -23,7 +23,7 @@ export class PublicKeyGetter implements IPublicKeyGetter {
     if (!keyId) {
       return errorResult({
         errorMessage:
-          "Failed verifying service token signature: kid not present in JWT header",
+          "kid not present in JWT header",
         errorCategory: "CLIENT_ERROR",
       });
     }
@@ -32,7 +32,7 @@ export class PublicKeyGetter implements IPublicKeyGetter {
 
     if (!jwk) {
       return errorResult({
-        errorMessage: "Failed verifying service token signature: JWK not found",
+        errorMessage: "JWKS did not include the provided kid",
         errorCategory: "CLIENT_ERROR",
       });
     }
@@ -42,7 +42,7 @@ export class PublicKeyGetter implements IPublicKeyGetter {
       publicKey = await importJWK(jwk, jwk.alg);
     } catch (error) {
       return errorResult({
-        errorMessage: `Failed verifying service token signature: Error converting JWK to key object: ${error}`,
+        errorMessage: `Error converting JWK to key object: ${error}`,
         errorCategory: "CLIENT_ERROR",
       });
     }
@@ -58,7 +58,7 @@ export class PublicKeyGetter implements IPublicKeyGetter {
       decodedProtectedHeader = decodeProtectedHeader(jwt);
     } catch (error) {
       return errorResult({
-        errorMessage: `Failed verifying service token signature. ${error}`,
+        errorMessage: `${error}`,
         errorCategory: "CLIENT_ERROR", // CLIENT or SERVER error?
       });
     }

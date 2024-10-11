@@ -45,7 +45,7 @@ describe("Public Key Getter", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage:
-          "Failed verifying service token signature. TypeError: Invalid Token or Protected Header formatting",
+          "TypeError: Invalid Token or Protected Header formatting",
         errorCategory: "CLIENT_ERROR",
       });
     });
@@ -64,7 +64,7 @@ describe("Public Key Getter", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage:
-          "Failed verifying service token signature: kid not present in JWT header",
+          "kid not present in JWT header",
         errorCategory: "CLIENT_ERROR",
       });
     });
@@ -82,7 +82,7 @@ describe("Public Key Getter", () => {
 
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
-        errorMessage: "Failed verifying service token signature: JWK not found",
+        errorMessage: "JWKS did not include the provided kid",
         errorCategory: "CLIENT_ERROR",
       });
     });
@@ -99,7 +99,7 @@ describe("Public Key Getter", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage:
-          'Failed verifying service token signature: Error converting JWK to key object: TypeError [ERR_INVALID_ARG_TYPE]: The "key.crv" property must be of type string. Received undefined',
+          'Error converting JWK to key object: TypeError [ERR_INVALID_ARG_TYPE]: The "key.crv" property must be of type string. Received undefined',
         errorCategory: "CLIENT_ERROR",
       });
     });
