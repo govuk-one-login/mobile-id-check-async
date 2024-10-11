@@ -27,4 +27,4 @@ export const errorResult = (value: {
   };
 };
 
-type ErrorCategory = "SERVER_ERROR" | "CLIENT_ERROR" | "";
+type ErrorCategory = "SERVER_ERROR" | "CLIENT_ERROR";

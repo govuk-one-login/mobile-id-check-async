@@ -31,14 +31,14 @@ describe("Json Web Keys", () => {
 
   beforeEach(() => {
     mockLogger = new MockLoggingAdapter();
-
+    mockCustomResourceEventSender =
+      new MockCustomResourceEventSenderSuccessResult();
     dependencies = {
       env,
       logger: () => new Logger(mockLogger, registeredLogs),
       jwksBuilder: () => new MockJwksBuilderSuccessResult(),
       jwksUploader: () => new MockJwksUploaderSuccessResult(),
-      customResourceResultSender: () =>
-        new MockCustomResourceEventSenderSuccessResult(),
+      customResourceResultSender: () => mockCustomResourceEventSender,
     };
   });
 
