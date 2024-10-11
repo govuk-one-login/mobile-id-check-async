@@ -57,6 +57,20 @@ npm run lint
 ```
 
 ## Deploy to `dev`
+
+### Testing changes with a custom backend-api stack
+
+Update `ASYNC_BACKEND_BASE_URL` environment variable in the STS Mock [template](../template.yaml). The new value for this URL should be:
+
+```bash
+https://sessions-<backend-api-stack-name>.review-b-async.dev.account.gov.uk
+```
+
+Please note:
+
+* You can still update this value even if you have not actually deployed a `backend-api` custom stack
+* You can skip this step if you are deploying/testing the STS mock in isolation
+
 ### Manual Deployment
 To manually deploy changes made to the stack (i.e. resources or source code) to the `dev` AWS account, run the following command after assuming your credentials:
 ```shell
