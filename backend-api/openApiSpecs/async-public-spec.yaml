@@ -52,7 +52,7 @@ paths:
       security:
         - bearerAuth: []
       summary: Look for an active session for a given user.
-      description: Query the session database to find an active session for a given user and returns it.
+      description: Query the session database to find an active session for a given user and returns it if found.
       parameters:
         - name: Authorization
           in: header
@@ -92,11 +92,11 @@ paths:
                   - sessionId
                   - state
         '400':
-            description: Bad Request
+            description: Bad request
             content:
               application/json:
                 examples:
-                  errorInvalidRequest:
+                  invalidServiceToken:
                     description: |
                       The service token could not be decrypted OR the service token signature could not be verified OR the service token payload is invalid.
                     value:
@@ -125,10 +125,9 @@ paths:
             content:
               application/json:
                 examples:
-                  invalidServiceToken:
+                  invalidAuthorizationHeader:
                     description: |
-                      Unauthorized, usually signifies a access_token is not valid,
-                      and the user should request for new access_token
+                      Unauthorized, usually signifies the authorization bearer access token is missing or is malformed.
                     value:
                       {
                         "error": "unauthorized",
@@ -184,7 +183,7 @@ paths:
           content:
             application/json:
               examples:
-                error:
+                serverError:
                   description: |
                     The service encountered an unrecoverable error when trying to access its internal resources.
                   value:
@@ -248,7 +247,7 @@ paths:
                   accessToken:
                     type: string
         '400':
-          description: Bad Request
+          description: Bad request
           content:
             application/json:
               examples:
