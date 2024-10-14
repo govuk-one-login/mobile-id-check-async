@@ -50,7 +50,7 @@ describe("KMS Adapter", () => {
     it("Returns the decrypted data", async () => {
       mockKmsClient
         .on(DecryptCommand)
-        .resolves({ Plaintext: new Uint8Array(10)});
+        .resolves({ Plaintext: new Uint8Array(10) });
 
       const response = await kmsAdapter.decrypt(new Uint8Array(), "mockKeyId");
       expect(response).toEqual(new Uint8Array(10));
