@@ -281,12 +281,12 @@ describe("Async Active Session", () => {
         dependencies.tokenService = () => new MockTokenServiceClientError();
 
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-            dependencies,
-            event,
+          dependencies,
+          event,
         );
 
         expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-            "FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN",
+          "FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN",
         );
         expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "Mock client error",
