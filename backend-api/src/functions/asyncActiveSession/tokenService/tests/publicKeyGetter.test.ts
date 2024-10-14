@@ -34,7 +34,7 @@ describe("Public Key Getter", () => {
   });
 
   describe("Given decoding the protected header fails", () => {
-    it("Return error result", async () => {
+    it("Returns error result", async () => {
       const result = await publicKeyGetter.getPublicKey(
         mockJwks,
         "mockInvalidJWT",
@@ -49,7 +49,7 @@ describe("Public Key Getter", () => {
   });
 
   describe("Given kid is not present in JWT header", () => {
-    it("Return error result", async () => {
+    it("Returns error result", async () => {
       mockEncodedJwt = new MockJWTBuilder().deleteKid().getEncodedJwt();
       const result = await publicKeyGetter.getPublicKey(
         mockJwks,
@@ -64,8 +64,8 @@ describe("Public Key Getter", () => {
     });
   });
 
-  describe("Given kid is not found in JWKS", () => {
-    it("Return error result", async () => {
+  describe("Given JWKS does not contain key matching provided key ID", () => {
+    it("Returns error result", async () => {
       mockEncodedJwt = new MockJWTBuilder()
         .setKid("mockInvalidKid")
         .getEncodedJwt();
@@ -83,7 +83,7 @@ describe("Public Key Getter", () => {
   });
 
   describe("Given converting JWK to a key object fails", () => {
-    it("Return error result", async () => {
+    it("Returns error result", async () => {
       delete mockJwks.keys[0].crv;
       const result = await publicKeyGetter.getPublicKey(
         mockJwks,
