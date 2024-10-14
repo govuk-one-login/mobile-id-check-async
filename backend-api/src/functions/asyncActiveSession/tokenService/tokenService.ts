@@ -7,16 +7,6 @@ import { errorResult, Result, successResult } from "../../utils/result";
 import crypto from "crypto";
 
 export class TokenService implements ITokenService {
-  // TO BE ADDED IN THE NEXT PR
-  // async decryptJwe(jwe: string) {
-  //   try {
-  //     const jwt = await this.jweDecryptor.decrypt(jwe);
-  //     return  successResult(jwt);
-  //   } catch (error) {
-  //     return errorResult({errorMessage: `Request failed to be decrypted: ${error}`, errorCategory: ""})
-  //   }
-  // }
-
   getSubFromToken = async (
     stsJwksEndpoint: string,
     retryConfig: RetryConfig,
