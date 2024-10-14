@@ -29,7 +29,7 @@ export class PublicKeyGetter implements IPublicKeyGetter {
       });
     }
 
-    const jwk = jwks.keys.find((key) => key.kid === keyId);
+    const jwk = jwks.keys.find((key) => key.kid && key.kid === keyId);
 
     if (!jwk) {
       return errorResult({
