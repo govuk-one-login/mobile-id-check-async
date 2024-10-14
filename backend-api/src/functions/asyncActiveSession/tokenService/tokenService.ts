@@ -18,7 +18,7 @@ export class TokenService implements ITokenService {
   getSubFromToken = async (
     stsJwksEndpoint: string,
     retryConfig: RetryConfig,
-    jwt: string
+    jwt: string,
   ): Promise<Result<string>> => {
     const stsJwksEndpointResponseResult = await this.getJwks(
       stsJwksEndpoint,
@@ -203,7 +203,7 @@ export interface ITokenService {
   getSubFromToken: (
     stsJwksEndpoint: string,
     retryConfig: RetryConfig,
-    jwt: string
+    jwt: string,
   ) => Promise<Result<string>>;
 }
 

@@ -34,8 +34,8 @@ describe("Async Active Session", () => {
     dependencies = {
       env,
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
-        jweDecryptor: () => new MockJweDecryptorSuccess(),
-        tokenServiceDependencies: {
+      jweDecryptor: () => new MockJweDecryptorSuccess(),
+      tokenServiceDependencies: {
         publicKeyGetter: () => new MockPubicKeyGetterGetPublicKeySuccess(),
       },
       tokenService: () => new MockTokenServiceSuccess(),
@@ -305,6 +305,7 @@ describe("Async Active Session", () => {
         });
       });
     });
+  });
 
   describe("Session Service", () => {
     describe("Given an error happens when trying to get an active session", () => {
@@ -401,17 +402,17 @@ class MockTokenServiceServerError implements ITokenService {
   }
 }
 
-class MockTokenServiceInvalidServiceToken {
-  async getSubFromToken(): Promise<Result<string>> {
-    return errorResult({
-      errorMessage: "Mock invalid service token error",
-      errorCategory: "CLIENT_ERROR",
-    });
-  }
-}
-
-class MockTokenServiceSuccess {
-  async getSubFromToken(): Promise<Result<string>> {
-    return successResult("mockSub");
-  }
-}
+// class MockTokenServiceInvalidServiceToken {
+//   async getSubFromToken(): Promise<Result<string>> {
+//     return errorResult({
+//       errorMessage: "Mock invalid service token error",
+//       errorCategory: "CLIENT_ERROR",
+//     });
+//   }
+// }
+//
+// class MockTokenServiceSuccess {
+//   async getSubFromToken(): Promise<Result<string>> {
+//     return successResult("mockSub");
+//   }
+// }

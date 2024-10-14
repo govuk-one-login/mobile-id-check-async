@@ -20,8 +20,8 @@ const tokenServiceDependencies: ITokenServiceDependencies = {
 export interface IAsyncActiveSessionDependencies {
   env: NodeJS.ProcessEnv;
   logger: () => Logger<MessageName>;
-    jweDecryptor: (encryptionKeyId: string) => IDecryptJwe;
-    tokenServiceDependencies: ITokenServiceDependencies;
+  jweDecryptor: (encryptionKeyId: string) => IDecryptJwe;
+  tokenServiceDependencies: ITokenServiceDependencies;
   tokenService: (
     tokenServiceDependencies: ITokenServiceDependencies,
   ) => ITokenService;
@@ -31,8 +31,8 @@ export interface IAsyncActiveSessionDependencies {
 export const dependencies: IAsyncActiveSessionDependencies = {
   env: process.env,
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
-    jweDecryptor: (encryptionKeyId: string) => new JweDecryptor(encryptionKeyId),
-    tokenServiceDependencies,
+  jweDecryptor: (encryptionKeyId: string) => new JweDecryptor(encryptionKeyId),
+  tokenServiceDependencies,
   tokenService: (tokenServiceDependencies: ITokenServiceDependencies) =>
     new TokenService(tokenServiceDependencies),
   sessionService: (tableName: string) => new SessionService(tableName),
