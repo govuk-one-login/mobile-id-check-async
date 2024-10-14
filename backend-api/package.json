@@ -31,6 +31,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/node-jose": "^1.1.13",
     "aws-sdk-client-mock": "4.0.2",
+    "aws-sdk-client-mock-jest": "^4.0.2",
     "aws4-axios": "^3.3.8",
     "axios-retry": "^4.5.0",
     "eslint": "^9.12.0",
@@ -60,6 +61,7 @@
     "dotenv": "16.4.5",
     "ecdsa-sig-formatter": "1.0.11",
     "esbuild": "^0.24.0",
+    "jose": "^5.9.3",
     "js-yaml": "^4.1.0",
     "node-jose": "2.2.0"
   },

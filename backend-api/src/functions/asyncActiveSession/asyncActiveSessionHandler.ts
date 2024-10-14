@@ -11,7 +11,6 @@ export async function lambdaHandlerConstructor(
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
-
   logger.log("STARTED");
 
   const configResult = new ConfigService().getConfig(dependencies.env);
@@ -32,29 +31,31 @@ export async function lambdaHandlerConstructor(
     });
     return unauthorizedResponse;
   }
+
   const serviceToken = authorizationHeaderResult.value;
 
-  const decryptResult = await dependencies
-    .jweDecryptor(config.ENCRYPTION_KEY_ARN)
-    .decrypt(serviceToken);
+    const decryptResult = await dependencies
+        .jweDecryptor(config.ENCRYPTION_KEY_ARN)
+        .decrypt(serviceToken);
 
-  if (decryptResult.isError) {
-    logger.log("JWE_DECRYPTION_ERROR", {
-      errorMessage: decryptResult.value.errorMessage,
-    });
-    return badRequestResponse("Failed decrypting service token JWE");
-  }
+    if (decryptResult.isError) {
+        logger.log("JWE_DECRYPTION_ERROR", {
+            errorMessage: decryptResult.value.errorMessage,
+        });
+        return badRequestResponse("Failed decrypting service token JWE");
+    }
 
-  // const jwt = decryptResult.value;
+    const jwt = decryptResult.value;
 
-  const tokenService = dependencies.tokenService();
-
+  const tokenServiceDependencies = dependencies.tokenServiceDependencies;
+  const tokenService = dependencies.tokenService(tokenServiceDependencies);
   const getSubFromTokenResult = await tokenService.getSubFromToken(
     config.STS_JWKS_ENDPOINT,
     {
       maxAttempts: 3,
       delayInMillis: 100,
     },
+      jwt
   );
 
   if (getSubFromTokenResult.isError) {
@@ -62,7 +63,7 @@ export async function lambdaHandlerConstructor(
       logger.log("FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN", {
         errorMessage: getSubFromTokenResult.value.errorMessage,
       });
-      return badRequestResponse("Failed validating the service token payload"); // Temporary message until TokenService is finalised
+      return badRequestResponse(getSubFromTokenResult.value.errorMessage);
     }
 
     logger.log("INTERNAL_SERVER_ERROR", {
@@ -111,8 +112,8 @@ const unauthorizedResponse: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 401,
   body: JSON.stringify({
-    error: "Unauthorized",
-    error_description: "Invalid token",
+    error: "unauthorized",
+    error_description: "Invalid authorization header",
   }),
 };
 

@@ -5,30 +5,51 @@ import {
 } from "../../services/http/sendHttpRequest";
 import { errorResult, Result, successResult } from "../../utils/result";
 import crypto from "crypto";
+import { jwtVerify, JWTVerifyResult, KeyLike } from "jose";
+import { IJwks, IPublicKeyGetter } from "./publicKeyGetter";
 
 export class TokenService implements ITokenService {
+  private readonly dependencies: ITokenServiceDependencies;
+
+  constructor(dependencies: ITokenServiceDependencies) {
+    this.dependencies = dependencies;
+  }
+
   getSubFromToken = async (
     stsJwksEndpoint: string,
     retryConfig: RetryConfig,
+    jwt: string
   ): Promise<Result<string>> => {
-    const stsJwksEndpointResponseResult = await sendHttpRequest(
-      { url: stsJwksEndpoint, method: "GET" },
+    const stsJwksEndpointResponseResult = await this.getJwks(
+      stsJwksEndpoint,
       retryConfig,
     );
-
     if (stsJwksEndpointResponseResult.isError) {
       return stsJwksEndpointResponseResult;
     }
 
-    const stsJwksEndpointResponse = stsJwksEndpointResponseResult.value;
+    const jwks = stsJwksEndpointResponseResult.value;
 
-    const getJwksFromResponseResult = await this.getJwksFromResponse(
-      stsJwksEndpointResponse,
+    const publicKeyGetter = this.dependencies.publicKeyGetter();
+    const getPublicKeyFromJwksResult = await publicKeyGetter.getPublicKey(
+      jwks,
+      jwt,
     );
-
-    if (getJwksFromResponseResult.isError) {
-      return getJwksFromResponseResult;
+    if (getPublicKeyFromJwksResult.isError) {
+      return getPublicKeyFromJwksResult;
     }
+
+    const publicKey = getPublicKeyFromJwksResult.value;
+
+    const verifyTokenSignatureResult = await this.verifyTokenSignature(
+      jwt,
+      publicKey,
+    );
+    if (verifyTokenSignatureResult.isError) {
+      return verifyTokenSignatureResult;
+    }
+
+    // const { payload } = verifyTokenSignatureResult.value;
 
     return successResult("");
   };
@@ -42,6 +63,46 @@ export class TokenService implements ITokenService {
       data.keys.every((key) => typeof key === "object" && key !== null)
     );
   };
+
+  private async getJwks(
+    stsJwksEndpoint: string,
+    retryConfig: RetryConfig,
+  ): Promise<Result<IJwks>> {
+    const sendHttpRequestResult = await sendHttpRequest(
+      { url: stsJwksEndpoint, method: "GET" },
+      retryConfig,
+    );
+
+    if (sendHttpRequestResult.isError) {
+      return sendHttpRequestResult;
+    }
+
+    const jwksEndpointResponse = sendHttpRequestResult.value;
+
+    const getJwksFromResponseResult =
+      await this.getJwksFromResponse(jwksEndpointResponse);
+
+    if (getJwksFromResponseResult.isError) {
+      return getJwksFromResponseResult;
+    }
+
+    const jwks = getJwksFromResponseResult.value;
+
+    return successResult(jwks);
+  }
+
+  private getJweComponents(jwe: string): Result<string[]> {
+    const jweComponents = jwe.split(".");
+
+    if (jweComponents.length !== 5) {
+      return errorResult({
+        errorMessage: "JWE does not consist of five components",
+        errorCategory: "CLIENT_ERROR",
+      });
+    }
+
+    return successResult(jweComponents);
+  }
 
   private async getJwksFromResponse(
     response: SuccessfulHttpResponse,
@@ -73,7 +134,7 @@ export class TokenService implements ITokenService {
   }
 
   private async decryptJwe(
-    key: Uint8Array,
+    decryptedCek: Uint8Array,
     iv: Uint8Array,
     ciphertext: Uint8Array,
     tag: Uint8Array,
@@ -83,9 +144,13 @@ export class TokenService implements ITokenService {
 
     let cek: CryptoKey;
     try {
-      cek = await webcrypto.subtle.importKey("raw", key, "AES-GCM", false, [
-        "decrypt",
-      ]);
+      cek = await webcrypto.subtle.importKey(
+        "raw",
+        decryptedCek,
+        "AES-GCM",
+        false,
+        ["decrypt"],
+      );
     } catch (error) {
       return errorResult({
         errorMessage: `Error converting cek to CryptoKey. ${error}`,
@@ -115,15 +180,33 @@ export class TokenService implements ITokenService {
     const decoder = new TextDecoder();
     return successResult(decoder.decode(decryptedBuffer));
   }
+
+  private async verifyTokenSignature(
+    jwt: string,
+    publicKey: Uint8Array | KeyLike,
+  ): Promise<Result<JWTVerifyResult>> {
+    let result: JWTVerifyResult;
+    try {
+      result = await jwtVerify(jwt, publicKey);
+    } catch (error) {
+      return errorResult({
+        errorMessage: `Failed verifying service token signature. ${error}`,
+        errorCategory: "SERVER_ERROR",
+      });
+    }
+
+    return successResult(result);
+  }
 }
 
 export interface ITokenService {
   getSubFromToken: (
     stsJwksEndpoint: string,
     retryConfig: RetryConfig,
+    jwt: string
   ) => Promise<Result<string>>;
 }
 
-interface IJwks {
-  keys: object[];
+export interface ITokenServiceDependencies {
+  publicKeyGetter: () => IPublicKeyGetter;
 }

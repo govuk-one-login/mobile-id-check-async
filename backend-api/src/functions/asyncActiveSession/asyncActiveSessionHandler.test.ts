@@ -5,9 +5,10 @@ import { IAsyncActiveSessionDependencies } from "./handlerDependencies";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
-import { MockJWTBuilder } from "../testUtils/mockJwt";
+import { MockJWTBuilder } from "../testUtils/mockJwtBuilder";
 import { errorResult, Result, successResult } from "../utils/result";
 import { ITokenService } from "./tokenService/tokenService";
+import { MockPubicKeyGetterGetPublicKeySuccess } from "./tokenService/tests/mocks";
 import {
   MockSessionServiceGetErrorResult,
   MockSessionServiceGetSuccessResult,
@@ -33,7 +34,10 @@ describe("Async Active Session", () => {
     dependencies = {
       env,
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
-      jweDecryptor: () => new MockJweDecryptorSuccess(),
+        jweDecryptor: () => new MockJweDecryptorSuccess(),
+        tokenServiceDependencies: {
+        publicKeyGetter: () => new MockPubicKeyGetterGetPublicKeySuccess(),
+      },
       tokenService: () => new MockTokenServiceSuccess(),
       sessionService: () => new MockSessionServiceGetSuccessResult(),
     };
@@ -111,8 +115,8 @@ describe("Async Active Session", () => {
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
           body: JSON.stringify({
-            error: "Unauthorized",
-            error_description: "Invalid token",
+            error: "unauthorized",
+            error_description: "Invalid authorization header",
           }),
         });
       });
@@ -140,8 +144,8 @@ describe("Async Active Session", () => {
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
           body: JSON.stringify({
-            error: "Unauthorized",
-            error_description: "Invalid token",
+            error: "unauthorized",
+            error_description: "Invalid authorization header",
           }),
         });
       });
@@ -169,8 +173,8 @@ describe("Async Active Session", () => {
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
           body: JSON.stringify({
-            error: "Unauthorized",
-            error_description: "Invalid token",
+            error: "unauthorized",
+            error_description: "Invalid authorization header",
           }),
         });
       });
@@ -197,8 +201,8 @@ describe("Async Active Session", () => {
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
           body: JSON.stringify({
-            error: "Unauthorized",
-            error_description: "Invalid token",
+            error: "unauthorized",
+            error_description: "Invalid authorization header",
           }),
         });
       });
@@ -271,14 +275,14 @@ describe("Async Active Session", () => {
       });
     });
 
-    describe("Given the sub cannot be extracted from the token due to a client error", () => {
+    describe("Given service token is invalid", () => {
       it("Logs and returns 400 Bad Request response", async () => {
         const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
-
-        dependencies.tokenService = () => new MockTokenServiceClientError();
+        dependencies.tokenService = () =>
+          new MockTokenServiceInvalidServiceToken();
 
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
@@ -289,19 +293,18 @@ describe("Async Active Session", () => {
           "FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Mock client error",
+          errorMessage: "Mock invalid service token error",
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "Failed validating the service token payload",
+            error_description: "Mock invalid service token error",
           }),
         });
       });
     });
-  });
 
   describe("Session Service", () => {
     describe("Given an error happens when trying to get an active session", () => {
@@ -398,10 +401,10 @@ class MockTokenServiceServerError implements ITokenService {
   }
 }
 
-class MockTokenServiceClientError implements ITokenService {
+class MockTokenServiceInvalidServiceToken {
   async getSubFromToken(): Promise<Result<string>> {
     return errorResult({
-      errorMessage: "Mock client error",
+      errorMessage: "Mock invalid service token error",
       errorCategory: "CLIENT_ERROR",
     });
   }
