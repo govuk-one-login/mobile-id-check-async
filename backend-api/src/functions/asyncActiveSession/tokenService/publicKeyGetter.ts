@@ -11,13 +11,15 @@ export class PublicKeyGetter implements IPublicKeyGetter {
     jwks: IJwks,
     jwt: string,
   ): Promise<Result<Uint8Array | KeyLike>> {
-    const getDecodedProtectedHeaderResult =
-      await this.getDecodeProtectedHeader(jwt);
-    if (getDecodedProtectedHeaderResult.isError) {
-      return getDecodedProtectedHeaderResult;
+    let decodedProtectedHeader: ProtectedHeaderParameters;
+    try {
+      decodedProtectedHeader = decodeProtectedHeader(jwt);
+    } catch (error) {
+      return errorResult({
+        errorMessage: `${error}`,
+        errorCategory: "CLIENT_ERROR",
+      });
     }
-
-    const decodedProtectedHeader = getDecodedProtectedHeaderResult.value;
 
     const keyId = decodedProtectedHeader.kid;
     if (!keyId) {
@@ -47,21 +49,6 @@ export class PublicKeyGetter implements IPublicKeyGetter {
     }
 
     return successResult(publicKey);
-  }
-
-  private async getDecodeProtectedHeader(
-    jwt: string,
-  ): Promise<Result<ProtectedHeaderParameters>> {
-    let decodedProtectedHeader: ProtectedHeaderParameters;
-    try {
-      decodedProtectedHeader = decodeProtectedHeader(jwt);
-    } catch (error) {
-      return errorResult({
-        errorMessage: `${error}`,
-        errorCategory: "CLIENT_ERROR",
-      });
-    }
-    return successResult(decodedProtectedHeader);
   }
 }
 
