@@ -1,4 +1,4 @@
-import { JweDecryptor, JweDecryptorDependencies } from "../jweDecryptor";
+import { JweDecrypter, JweDecrypterDependencies } from "../jweDecrypter";
 import {
   MockSymmetricDecrypterFailure,
   MockSymmetricDecrypterSuccess,
@@ -9,18 +9,18 @@ import {
 } from "../../../adapters/tests/mocks";
 
 describe("Decrypt JWE", () => {
-  let dependencies: JweDecryptorDependencies;
+  let dependencies: JweDecrypterDependencies;
 
   beforeEach(() => {
     dependencies = {
-      symmetricDecryptor: new MockSymmetricDecrypterSuccess(),
-      asymmetricDecryptor: new MockAsymmetricDecrypterSuccess(),
+      symmetricDecrypter: new MockSymmetricDecrypterSuccess(),
+      asymmetricDecrypter: new MockAsymmetricDecrypterSuccess(),
     };
   });
 
   describe("Given the JWE does not consist of five components", () => {
     it("Returns an error result", async () => {
-      const result = await new JweDecryptor("keyId", dependencies).decrypt(
+      const result = await new JweDecrypter("keyId", dependencies).decrypt(
         "protectedHeader.encryptedKey.iv.ciphertext",
       );
 
@@ -34,8 +34,8 @@ describe("Decrypt JWE", () => {
 
   describe("Given an error happens trying to decrypt the CEK", () => {
     it("Returns a SERVER_ERROR error result", async () => {
-      dependencies.asymmetricDecryptor = new MockAsymmetricDecrypterFailure();
-      const result = await new JweDecryptor("keyId", dependencies).decrypt(
+      dependencies.asymmetricDecrypter = new MockAsymmetricDecrypterFailure();
+      const result = await new JweDecrypter("keyId", dependencies).decrypt(
         "protectedHeader.encryptedKey.iv.ciphertext.tag",
       );
 
@@ -50,8 +50,8 @@ describe("Decrypt JWE", () => {
 
   describe("Given decrypting JWE fails", () => {
     it("Returns error result", async () => {
-      dependencies.symmetricDecryptor = new MockSymmetricDecrypterFailure();
-      const result = await new JweDecryptor("keyId", dependencies).decrypt(
+      dependencies.symmetricDecrypter = new MockSymmetricDecrypterFailure();
+      const result = await new JweDecrypter("keyId", dependencies).decrypt(
         "protectedHeader.encryptedKey.iv.ciphertext.tag",
       );
 
@@ -66,7 +66,7 @@ describe("Decrypt JWE", () => {
 
   describe("Given decrypting JWE succeeds", () => {
     it("Returns success result", async () => {
-      const result = await new JweDecryptor("keyId", dependencies).decrypt(
+      const result = await new JweDecrypter("keyId", dependencies).decrypt(
         "protectedHeader.encryptedKey.iv.ciphertext.tag",
       );
 

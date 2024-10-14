@@ -1,6 +1,6 @@
 import { createDecipheriv } from "node:crypto";
 
-export class SymmetricDecryptor implements IDecryptSymmetric {
+export class SymmetricDecrypter implements IDecryptSymmetric {
   async decrypt(
     encryptionKey: Uint8Array,
     initializationVector: Uint8Array,

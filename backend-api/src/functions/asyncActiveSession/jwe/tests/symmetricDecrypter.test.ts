@@ -1,11 +1,11 @@
-import { IDecryptSymmetric, SymmetricDecryptor } from "../symmetricDecryptor";
+import { IDecryptSymmetric, SymmetricDecrypter } from "../symmetricDecrypter";
 import { createCipheriv, randomBytes } from "node:crypto";
 
-describe("Symmetric Decryptor", () => {
-  let symmetricDecryptor: IDecryptSymmetric;
+describe("Symmetric Decrypter", () => {
+  let symmetricDecrypter: IDecryptSymmetric;
 
   beforeEach(() => {
-    symmetricDecryptor = new SymmetricDecryptor();
+    symmetricDecrypter = new SymmetricDecrypter();
   });
 
   const symmetricEncryptionKey = randomBytes(32);
@@ -23,7 +23,7 @@ describe("Symmetric Decryptor", () => {
       const invalidSymmetricKey = new Buffer(10);
 
       await expect(() =>
-        symmetricDecryptor.decrypt(
+        symmetricDecrypter.decrypt(
           invalidSymmetricKey,
           initializationVector,
           encryptedData,
@@ -36,7 +36,7 @@ describe("Symmetric Decryptor", () => {
 
   describe("Given the encrypted data is successfully decrypted", () => {
     it("Returns the decrypted data", async () => {
-      const result = await symmetricDecryptor.decrypt(
+      const result = await symmetricDecrypter.decrypt(
         symmetricEncryptionKey,
         initializationVector,
         encryptedData,

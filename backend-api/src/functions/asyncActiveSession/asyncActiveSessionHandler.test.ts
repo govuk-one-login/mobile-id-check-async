@@ -6,7 +6,7 @@ import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
 import { MockJWTBuilder } from "../testUtils/mockJwtBuilder";
-import {errorResult, Result, successResult} from "../utils/result";
+import { errorResult, Result, successResult } from "../utils/result";
 import { ITokenService } from "./tokenService/tokenService";
 import { MockPubicKeyGetterGetPublicKeySuccess } from "./tokenService/tests/mocks";
 import {
@@ -15,8 +15,8 @@ import {
   MockSessionServiceGetNullSuccessResult,
 } from "../services/session/tests/mocks";
 import {
-  MockJweDecryptorFailure,
-  MockJweDecryptorSuccess,
+  MockJweDecrypterFailure,
+  MockJweDecrypterSuccess,
 } from "./jwe/tests/mocks";
 
 const env = {
@@ -34,7 +34,7 @@ describe("Async Active Session", () => {
     dependencies = {
       env,
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
-      jweDecryptor: () => new MockJweDecryptorSuccess(),
+      jweDecrypter: () => new MockJweDecrypterSuccess(),
       tokenServiceDependencies: {
         publicKeyGetter: () => new MockPubicKeyGetterGetPublicKeySuccess(),
       },
@@ -212,7 +212,7 @@ describe("Async Active Session", () => {
   describe("Decrypt JWE", () => {
     describe("Given decrypting the service token fails", () => {
       it("Logs and returns 400 Bad Request response", async () => {
-        dependencies.jweDecryptor = () => new MockJweDecryptorFailure();
+        dependencies.jweDecrypter = () => new MockJweDecrypterFailure();
 
         const event = buildRequest({
           headers: {

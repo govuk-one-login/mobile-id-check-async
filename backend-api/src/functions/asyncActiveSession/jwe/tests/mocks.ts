@@ -1,14 +1,14 @@
-import { IDecryptSymmetric } from "../symmetricDecryptor";
-import { IDecryptJwe } from "../jweDecryptor";
+import { IDecryptSymmetric } from "../symmetricDecrypter";
+import { IDecryptJwe } from "../jweDecrypter";
 import { errorResult, Result, successResult } from "../../../utils/result";
 
-export class MockJweDecryptorSuccess implements IDecryptJwe {
+export class MockJweDecrypterSuccess implements IDecryptJwe {
   async decrypt(): Promise<Result<string>> {
     return Promise.resolve(successResult("header.payload.signature"));
   }
 }
 
-export class MockJweDecryptorFailure implements IDecryptJwe {
+export class MockJweDecrypterFailure implements IDecryptJwe {
   async decrypt(): Promise<Result<string>> {
     return errorResult({
       errorMessage: "Some mock decryption error",

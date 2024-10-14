@@ -11,7 +11,7 @@ import {
   ITokenServiceDependencies,
   TokenService,
 } from "./tokenService/tokenService";
-import { IDecryptJwe, JweDecryptor } from "./jwe/jweDecryptor";
+import { IDecryptJwe, JweDecrypter } from "./jwe/jweDecrypter";
 
 const tokenServiceDependencies: ITokenServiceDependencies = {
   publicKeyGetter: () => new PublicKeyGetter(),
@@ -20,7 +20,7 @@ const tokenServiceDependencies: ITokenServiceDependencies = {
 export interface IAsyncActiveSessionDependencies {
   env: NodeJS.ProcessEnv;
   logger: () => Logger<MessageName>;
-  jweDecryptor: (encryptionKeyId: string) => IDecryptJwe;
+  jweDecrypter: (encryptionKeyId: string) => IDecryptJwe;
   tokenServiceDependencies: ITokenServiceDependencies;
   tokenService: (
     tokenServiceDependencies: ITokenServiceDependencies,
@@ -31,7 +31,7 @@ export interface IAsyncActiveSessionDependencies {
 export const dependencies: IAsyncActiveSessionDependencies = {
   env: process.env,
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
-  jweDecryptor: (encryptionKeyId: string) => new JweDecryptor(encryptionKeyId),
+  jweDecrypter: (encryptionKeyId: string) => new JweDecrypter(encryptionKeyId),
   tokenServiceDependencies,
   tokenService: (tokenServiceDependencies: ITokenServiceDependencies) =>
     new TokenService(tokenServiceDependencies),

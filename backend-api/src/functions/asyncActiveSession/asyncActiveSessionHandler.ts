@@ -35,7 +35,7 @@ export async function lambdaHandlerConstructor(
   const serviceToken = authorizationHeaderResult.value;
 
   const decryptResult = await dependencies
-    .jweDecryptor(config.ENCRYPTION_KEY_ARN)
+    .jweDecrypter(config.ENCRYPTION_KEY_ARN)
     .decrypt(serviceToken);
 
   if (decryptResult.isError) {
