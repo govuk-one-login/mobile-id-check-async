@@ -1,5 +1,6 @@
 import { IJwks, IPublicKeyGetter, PublicKeyGetter } from "../publicKeyGetter";
 import { MockJWTBuilder } from "../../../testUtils/mockJwtBuilder";
+import { exportJWK, importJWK, KeyLike } from "jose";
 
 describe("Public Key Getter", () => {
   let mockJwks: IJwks;
@@ -96,6 +97,26 @@ describe("Public Key Getter", () => {
           'Error converting JWK to key object: TypeError [ERR_INVALID_ARG_TYPE]: The "key.crv" property must be of type string. Received undefined',
         errorCategory: "CLIENT_ERROR",
       });
+    });
+  });
+
+  describe("Given retrieving public key is successful", () => {
+    it("Returns public key", async () => {
+      const result = await publicKeyGetter.getPublicKey(
+        mockJwks,
+        mockEncodedJwt,
+      );
+
+      expect(result.isError).toBe(false);
+      expect(result.value).toEqual(await importJWK({
+        alg: "ES256",
+        kid: "mockKid",
+        kty: "EC",
+        use: "sig",
+        crv: "P-256",
+        x: "NYmnFqCEFMVXQsmnSngTkiJK-Q9ixSBxLAXx6ZsBGlc",
+        y: "9fpDnWl3rBP-T6z6e60Bmgym3ymjRK_VSdJ7wU_Nwvg",
+      }, "ES256"))
     });
   });
 });
