@@ -14,7 +14,7 @@ const kmsClient = new KMSClient({
   }),
 });
 
-export class KMSAdapter implements IDecryptAsymmetric {
+export class KMSAdapter implements IKmsAdapter {
   async decrypt(
     encryptedData: Uint8Array,
     encryptionKeyId: string,
@@ -27,15 +27,15 @@ export class KMSAdapter implements IDecryptAsymmetric {
       }),
     );
 
-    if (decryptCommandOutput.Plaintext == null) {
-      throw new Error("Decrypted plaintext data was null");
+    if (!decryptCommandOutput.Plaintext) {
+      throw new Error("Decrypted plaintext data is missing");
     }
 
     return decryptCommandOutput.Plaintext;
   }
 }
 
-export interface IDecryptAsymmetric {
+export interface IKmsAdapter {
   decrypt: (
     ciphertext: Uint8Array,
     encryptionKeyId: string,

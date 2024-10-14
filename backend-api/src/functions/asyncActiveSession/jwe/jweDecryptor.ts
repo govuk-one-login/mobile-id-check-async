@@ -1,13 +1,13 @@
 import { SymmetricDecryptor, IDecryptSymmetric } from "./symmetricDecryptor";
 import { errorResult, Result, successResult } from "../../utils/result";
-import { IDecryptAsymmetric, KMSAdapter } from "../../adapters/kmsAdapter";
+import { IKmsAdapter, KMSAdapter } from "../../adapters/kmsAdapter";
 
 export interface IDecryptJwe {
   decrypt: (jwe: string) => Promise<Result<string>>;
 }
 
 export type JweDecryptorDependencies = {
-  asymmetricDecryptor: IDecryptAsymmetric;
+  asymmetricDecryptor: IKmsAdapter;
   symmetricDecryptor: IDecryptSymmetric;
 };
 
@@ -18,7 +18,7 @@ const jweDecryptorDependencies: JweDecryptorDependencies = {
 
 export class JweDecryptor implements IDecryptJwe {
   private readonly encryptionKeyId: string;
-  private readonly asymmetricDecryptor: IDecryptAsymmetric;
+  private readonly asymmetricDecryptor: IKmsAdapter;
   private readonly symmetricDecryptor: IDecryptSymmetric;
 
   constructor(
