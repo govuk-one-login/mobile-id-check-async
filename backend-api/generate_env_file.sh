@@ -16,3 +16,5 @@ PRIVATE_API_URL=$(aws cloudformation describe-stacks --stack-name "$SAM_STACK" -
 echo "SESSIONS_API_URL=$SESSIONS_API_URL" > .env
 echo "PROXY_API_URL=$PROXY_API_URL" >> .env
 echo "PRIVATE_API_URL=$PRIVATE_API_URL" >> .env
+echo "TEST_ENVIRONMENT=dev" >> .env
+echo "IS_LOCAL_TEST=true" >> .env

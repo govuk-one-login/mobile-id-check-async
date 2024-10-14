@@ -100,12 +100,14 @@ const unauthorizedResponse: APIGatewayProxyResult = {
   headers: { "Content-Type": "application/json" },
   statusCode: 401,
   body: JSON.stringify({
-    error: "Unauthorized",
-    error_description: "Invalid token",
+    error: "unauthorized",
+    error_description: "Invalid authorization header",
   }),
 };
 
-const badRequestResponse = (errorDescription: string) => {
+const badRequestResponse = (
+  errorDescription: string,
+): APIGatewayProxyResult => {
   return {
     headers: { "Content-Type": "application/json" },
     statusCode: 400,
