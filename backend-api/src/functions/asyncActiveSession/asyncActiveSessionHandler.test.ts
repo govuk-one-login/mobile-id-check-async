@@ -5,9 +5,10 @@ import { IAsyncActiveSessionDependencies } from "./handlerDependencies";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
-import { MockJWTBuilder } from "../testUtils/mockJwt";
+import { MockJWTBuilder } from "../testUtils/mockJwtBuilder";
 import { errorResult, Result, successResult } from "../utils/result";
 import { ITokenService } from "./tokenService/tokenService";
+import { MockPubicKeyGetterGetPublicKeySuccess } from "./tokenService/tests/mocks";
 import {
   MockSessionServiceGetErrorResult,
   MockSessionServiceGetSuccessResult,
@@ -29,6 +30,9 @@ describe("Async Active Session", () => {
     dependencies = {
       env,
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
+      tokenServiceDependencies: {
+        publicKeyGetter: () => new MockPubicKeyGetterGetPublicKeySuccess(),
+      },
       tokenService: () => new MockTokenServiceSuccess(),
       sessionService: () => new MockSessionServiceGetSuccessResult(),
     };
@@ -232,14 +236,14 @@ describe("Async Active Session", () => {
       });
     });
 
-    describe("Given decrypting access token failed", () => {
+    describe("Given service token is invalid", () => {
       it("Logs and returns 400 Bad Request response", async () => {
         const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
         dependencies.tokenService = () =>
-          new MockTokenServiceDecryptionFailed();
+          new MockTokenServiceInvalidServiceToken();
 
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
@@ -250,14 +254,14 @@ describe("Async Active Session", () => {
           "FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Mock decryption error",
+          errorMessage: "Mock invalid service token error",
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "failed decrypting service token jwt",
+            error_description: "Mock invalid service token error",
           }),
         });
       });
@@ -359,10 +363,10 @@ class MockTokenServiceServerError implements ITokenService {
   }
 }
 
-class MockTokenServiceDecryptionFailed {
+class MockTokenServiceInvalidServiceToken {
   async getSubFromToken(): Promise<Result<string>> {
     return errorResult({
-      errorMessage: "Mock decryption error",
+      errorMessage: "Mock invalid service token error",
       errorCategory: "CLIENT_ERROR",
     });
   }

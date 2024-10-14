@@ -34,7 +34,8 @@ export async function lambdaHandlerConstructor(
 
   const serviceToken = authorizationHeaderResult.value;
 
-  const tokenService = dependencies.tokenService();
+  const tokenServiceDependencies = dependencies.tokenServiceDependencies;
+  const tokenService = dependencies.tokenService(tokenServiceDependencies);
   const getSubFromTokenResult = await tokenService.getSubFromToken(
     config.STS_JWKS_ENDPOINT,
     config.ENCRYPTION_KEY_ARN,
@@ -50,7 +51,7 @@ export async function lambdaHandlerConstructor(
       logger.log("FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN", {
         errorMessage: getSubFromTokenResult.value.errorMessage,
       });
-      return badRequestResponse;
+      return badRequestResponse(getSubFromTokenResult.value.errorMessage);
     }
 
     logger.log("INTERNAL_SERVER_ERROR", {
@@ -104,13 +105,15 @@ const unauthorizedResponse: APIGatewayProxyResult = {
   }),
 };
 
-const badRequestResponse: APIGatewayProxyResult = {
-  headers: { "Content-Type": "application/json" },
-  statusCode: 400,
-  body: JSON.stringify({
-    error: "invalid_request",
-    error_description: "failed decrypting service token jwt",
-  }),
+const badRequestResponse = (errorDescription: string) => {
+  return {
+    headers: { "Content-Type": "application/json" },
+    statusCode: 400,
+    body: JSON.stringify({
+      error: "invalid_request",
+      error_description: errorDescription,
+    }),
+  };
 };
 
 const notFoundResponse: APIGatewayProxyResult = {
