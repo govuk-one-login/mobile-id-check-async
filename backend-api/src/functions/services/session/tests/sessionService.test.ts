@@ -94,7 +94,7 @@ describe("Session Service", () => {
         expect(result.value).toEqual("mockSessionId");
         const expectedCommandInput: QueryCommandInput = {
           ExpressionAttributeValues: {
-            ":currentTimeInSeconds": { N: "1710028800" },
+            ":currentTimeInSeconds": { N: "1710028800" }, // jest.useFakeTimers().setSystemTime(new Date("2024-03-10"))
             ":sessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
             ":subjectIdentifier": { S: "mockSub" },
           },
@@ -220,7 +220,7 @@ describe("Session Service", () => {
         });
         const expectedCommandInput: QueryCommandInput = {
           ExpressionAttributeValues: {
-            ":currentTimeInSeconds": { N: "1710028800" },
+            ":currentTimeInSeconds": { N: "1710028800" }, // jest.useFakeTimers().setSystemTime(new Date("2024-03-10"))
             ":sessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
             ":subjectIdentifier": { S: "mockSub" },
           },
@@ -309,13 +309,13 @@ describe("Session Service", () => {
             Item: {
               clientId: { S: "mockClientId" },
               clientState: { S: "mockValidState" },
-              createdAt: { N: "1710028800000" },
+              createdAt: { N: "1710028800000" }, // jest.useFakeTimers().setSystemTime(new Date("2024-03-10"))
               govukSigninJourneyId: { S: "mockJourneyId" },
               issuer: { S: "mockIssuer" },
               sessionId: { S: expect.any(String) },
               sessionState: { S: "ASYNC_AUTH_SESSION_CREATED" },
               subjectIdentifier: { S: "mockSub" },
-              timeToLive: { N: "1710041145" },
+              timeToLive: { N: "1710041145" }, // jest.useFakeTimers().setSystemTime(new Date("2024-03-10"))
             },
             TableName: "mockTableName",
           };
@@ -346,14 +346,14 @@ describe("Session Service", () => {
             Item: {
               clientId: { S: "mockClientId" },
               clientState: { S: "mockValidState" },
-              createdAt: { N: "1710028800000" },
+              createdAt: { N: "1710028800000" }, // jest.useFakeTimers().setSystemTime(new Date("2024-03-10"))
               govukSigninJourneyId: { S: "mockJourneyId" },
               issuer: { S: "mockIssuer" },
               redirectUri: { S: "https://mockRedirectUri.com" },
               sessionId: { S: expect.any(String) },
               sessionState: { S: "ASYNC_AUTH_SESSION_CREATED" },
               subjectIdentifier: { S: "mockSub" },
-              timeToLive: { N: "1710041145" },
+              timeToLive: { N: "1710041145" }, // jest.useFakeTimers().setSystemTime(new Date("2024-03-10"))
             },
             TableName: "mockTableName",
           };
