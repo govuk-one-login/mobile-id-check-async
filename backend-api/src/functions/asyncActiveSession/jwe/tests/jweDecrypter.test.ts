@@ -7,6 +7,8 @@ import {
   MockAsymmetricDecrypterFailure,
   MockAsymmetricDecrypterSuccess,
 } from "../../../adapters/tests/mocks";
+import {SymmetricDecrypter} from "../symmetricDecrypter";
+import {KMSAdapter} from "../../../adapters/kmsAdapter";
 
 describe("Decrypt JWE", () => {
   let dependencies: JweDecrypterDependencies;
@@ -17,6 +19,12 @@ describe("Decrypt JWE", () => {
       asymmetricDecrypter: new MockAsymmetricDecrypterSuccess(),
     };
   });
+
+    it("Should instantiate the class", async () => {
+      const result = new JweDecrypter("keyId", {symmetricDecrypter: new SymmetricDecrypter(), asymmetricDecrypter: new KMSAdapter()})
+
+      expect(result).toBeInstanceOf(JweDecrypter);
+    });
 
   describe("Given the JWE does not consist of five components", () => {
     it("Returns an error result", async () => {
