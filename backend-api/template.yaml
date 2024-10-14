@@ -130,12 +130,12 @@ Mappings:
       STSJWKSENDPOINT: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk/.well-known/jwks.json'
     build:
       STSJWKSENDPOINT: 'https://mob-sts-mock.review-b-async.build.account.gov.uk/.well-known/jwks.json'
-    # staging:
-    #   STSJWKSENDPOINT: '' TODO: Mock should only be used in dev and build. Update this value
-    # integration:
-    #   STSJWKSENDPOINT: '' TODO: Mock should only be used in dev and build. Update this value
-    # production:
-    #   STSJWKSENDPOINT: '' TODO: Mock should only be used in dev and build. Update this value
+    staging:
+      STSJWKSENDPOINT: '' #TODO: Update this value with 'real' STS URLs
+    integration:
+      STSJWKSENDPOINT: '' #TODO: Update this value with 'real' STS URLs
+    production:
+      STSJWKSENDPOINT: '' #TODO: Update this value with 'real' STS URLs
 
 Conditions:
   UseCodeSigning: !Not
@@ -680,7 +680,7 @@ Resources:
     # checkov:skip=CKV_AWS_28:Ensure Dynamodb point in time recovery (backup) is enabled
     # checkov:skip=CKV_AWS_119:No PII in table
     Properties:
-      TableName: !Sub ${AWS::StackName}-sessions-table-${Environment}-temp
+      TableName: !Sub ${AWS::StackName}-to-revert-${Environment}
       AttributeDefinitions:
         - AttributeName: sessionId
           AttributeType: S

@@ -44,6 +44,15 @@ export class Mappings {
   }) {
     this.validateMapping({ ...args, mappingTopLevelKey: "KMS" });
   }
+  validateEnvironmentVariablesMapping(args: {
+    environmentFlags: EnvironmentFlags;
+    mappingBottomLevelKey: string;
+  }) {
+    this.validateMapping({
+      ...args,
+      mappingTopLevelKey: "EnvironmentVariables",
+    });
+  }
 
   private validateMapping(args: {
     environmentFlags: EnvironmentFlags;
