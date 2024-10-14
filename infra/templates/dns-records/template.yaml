@@ -31,11 +31,15 @@ Conditions:
     - !Ref Environment
     - dev
 
-  IsBuildOrStagingEnvironment: !Or 
-    - !Equals [!Ref Environment, build]
-    - !Equals [!Ref Environment, staging]
+  IsBuildOrStagingEnvironment: !Or
+    - !Equals
+      - !Ref Environment
+      - build
+    - !Equals
+      - !Ref Environment
+      - staging
 
-Resources:  
+Resources:
   AsyncExternalCertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
@@ -45,13 +49,13 @@ Resources:
             - PlatformConfiguration
             - !Ref Environment
             - DNSSUFFIX
-      SubjectAlternativeNames:        
-        - !Sub 
+      SubjectAlternativeNames:
+        - !Sub
           - sessions-mob-async-backend.${DNSSUFFIX}
           - DNSSUFFIX: !FindInMap
               - PlatformConfiguration
               - !Ref Environment
-              - DNSSUFFIX            
+              - DNSSUFFIX
         - !If
           - IsBuildOrStagingEnvironment
           - !Sub
@@ -88,12 +92,12 @@ Resources:
                 - DNSSUFFIX
           HostedZoneId: !ImportValue PublicHostedZoneId
         - DomainName: !Sub
-          - sessions-mob-async-backend.${DNSSUFFIX}
-          - DNSSUFFIX: !FindInMap
-              - PlatformConfiguration
-              - !Ref Environment
-              - DNSSUFFIX
-          HostedZoneId: !ImportValue PublicHostedZoneId   
+            - sessions-mob-async-backend.${DNSSUFFIX}
+            - DNSSUFFIX: !FindInMap
+                - PlatformConfiguration
+                - !Ref Environment
+                - DNSSUFFIX
+          HostedZoneId: !ImportValue PublicHostedZoneId
         - !If
           - IsBuildOrStagingEnvironment
           - DomainName: !Sub
@@ -143,7 +147,7 @@ Resources:
         System: ID Check Async
         Environment: !Sub ${Environment}
 
-Outputs:  
+Outputs:
   AsyncCertificateARN:
     Description: The ARN for the ACM Certificate created in this template
     Value: !Ref AsyncExternalCertificate
