@@ -42,10 +42,12 @@ export async function lambdaHandlerConstructor(
     logger.log("JWE_DECRYPTION_ERROR", {
       errorMessage: decryptResult.value.errorMessage,
     });
-    return badRequestResponse("Failed decrypting service token JWT");
+    return badRequestResponse("Failed decrypting service token JWE");
   }
 
-  // const jwt = decryptResult.value;
+  const jwt = decryptResult.value;
+
+  console.log("DECRYPTED JWE:", jwt);
 
   const tokenService = dependencies.tokenService();
 
