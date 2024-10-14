@@ -6,16 +6,15 @@ import {
 import { IEventService, EventService } from "../services/events/eventService";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import {
-  IGetActiveSession,
-  ICreateSession,
-  SessionService,
-} from "./sessionService/sessionService";
-import {
   IDecodeToken,
   IVerifyTokenSignature,
   TokenService,
 } from "./tokenService/tokenService";
 import { Logger } from "../services/logging/logger";
+import {
+  ISessionService,
+  SessionService,
+} from "../services/session/sessionService";
 
 export interface IAsyncCredentialDependencies {
   logger: () => Logger<MessageName>;
@@ -24,7 +23,7 @@ export interface IAsyncCredentialDependencies {
   clientRegistryService: (
     clientRegistryParameterName: string,
   ) => IGetPartialRegisteredClientByClientId;
-  sessionService: (tableName: string) => IGetActiveSession & ICreateSession;
+  sessionService: (tableName: string) => ISessionService;
   env: NodeJS.ProcessEnv;
 }
 
