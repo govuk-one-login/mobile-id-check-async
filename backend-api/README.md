@@ -40,14 +40,7 @@ npm run test
 # From /backend-api
 sh generate_env_file.sh <stack_name>
 ```
-
-4. Add the following environment variables to the `.env` file:
-```
-TEST_ENVIRONMENT=dev
-IS_LOCAL_TEST=true
-```
-
-5. Run tests
+4. Run tests
 ```bash
 # From /backend-api
 npm run test:api
