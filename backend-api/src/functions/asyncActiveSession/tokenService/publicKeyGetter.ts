@@ -33,7 +33,7 @@ export class PublicKeyGetter implements IPublicKeyGetter {
 
     if (!jwk) {
       return errorResult({
-        errorMessage: "JWKS did not include the provided kid",
+        errorMessage: "JWKS does not contain key matching provided key ID",
         errorCategory: "CLIENT_ERROR",
       });
     }

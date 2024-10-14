@@ -76,7 +76,7 @@ describe("Public Key Getter", () => {
 
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
-        errorMessage: "JWKS did not include the provided kid",
+        errorMessage: "JWKS does not contain key matching provided key ID",
         errorCategory: "CLIENT_ERROR",
       });
     });
