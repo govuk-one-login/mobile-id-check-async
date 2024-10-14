@@ -1,24 +1,7 @@
 import jose from "node-jose";
 
-interface mockJwt {
-  header: {
-    alg: string;
-    type: string;
-  };
-  payload: {
-    nbf?: number;
-    exp?: number;
-    iat?: number;
-    iss?: string;
-    scope?: string;
-    client_id?: string;
-    aud?: string;
-  };
-  signature: string;
-}
-
 export class MockJWTBuilder {
-  private jwt: mockJwt = {
+  private jwt: IMockJwt = {
     header: { alg: "HS256", type: "JWT" },
     payload: {
       exp: Date.now() + 1000,
@@ -28,6 +11,16 @@ export class MockJWTBuilder {
       client_id: "mockClientId",
     },
     signature: "Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
+  };
+
+  setKid = (kid: string): this => {
+    this.jwt.header.kid = kid;
+    return this;
+  };
+
+  deleteKid = (): this => {
+    delete this.jwt.header.kid;
+    return this;
   };
 
   setAud = (aud: string): this => {
@@ -40,8 +33,13 @@ export class MockJWTBuilder {
     return this;
   };
 
-  setNbf = (nbf: number): this => {
-    this.jwt.payload.nbf = nbf;
+  setClientId = (clientId: string): this => {
+    this.jwt.payload.client_id = clientId;
+    return this;
+  };
+
+  deleteClientId = (): this => {
+    delete this.jwt.payload.client_id;
     return this;
   };
 
@@ -64,8 +62,14 @@ export class MockJWTBuilder {
     this.jwt.payload.iss = iss;
     return this;
   };
+
   deleteIss = (): this => {
     delete this.jwt.payload.iss;
+    return this;
+  };
+
+  setNbf = (nbf: number): this => {
+    this.jwt.payload.nbf = nbf;
     return this;
   };
 
@@ -76,16 +80,6 @@ export class MockJWTBuilder {
 
   deleteScope = (): this => {
     delete this.jwt.payload.scope;
-    return this;
-  };
-
-  setClientId = (clientId: string): this => {
-    this.jwt.payload.client_id = clientId;
-    return this;
-  };
-
-  deleteClientId = (): this => {
-    delete this.jwt.payload.client_id;
     return this;
   };
 
@@ -100,4 +94,22 @@ export class MockJWTBuilder {
     );
     return `${header}.${payload}.${this.jwt.signature}`;
   };
+}
+
+interface IMockJwt {
+  header: {
+    alg: string;
+    type: string;
+    kid?: string;
+  };
+  payload: {
+    nbf?: number;
+    exp?: number;
+    iat?: number;
+    iss?: string;
+    scope?: string;
+    client_id?: string;
+    aud?: string;
+  };
+  signature: string;
 }

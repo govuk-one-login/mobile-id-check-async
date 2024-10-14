@@ -48,8 +48,8 @@ Mappings:
       ApiBurstLimit: 10
       ApiRateLimit: 10
     build:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
     staging:
       ApiBurstLimit: 0
       ApiRateLimit: 0
@@ -130,12 +130,12 @@ Mappings:
       STSJWKSENDPOINT: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk/.well-known/jwks.json'
     build:
       STSJWKSENDPOINT: 'https://mob-sts-mock.review-b-async.build.account.gov.uk/.well-known/jwks.json'
-    # staging:
-    #   STSJWKSENDPOINT: '' TODO: Mock should only be used in dev and build. Update this value
-    # integration:
-    #   STSJWKSENDPOINT: '' TODO: Mock should only be used in dev and build. Update this value
-    # production:
-    #   STSJWKSENDPOINT: '' TODO: Mock should only be used in dev and build. Update this value
+    staging:
+      STSJWKSENDPOINT: '' #TODO: Update this value with 'real' STS URLs
+    integration:
+      STSJWKSENDPOINT: '' #TODO: Update this value with 'real' STS URLs
+    production:
+      STSJWKSENDPOINT: '' #TODO: Update this value with 'real' STS URLs
 
 Conditions:
   UseCodeSigning: !Not
@@ -429,7 +429,6 @@ Resources:
                     dynamodb:Select: SPECIFIC_ATTRIBUTES
               - Effect: Allow
                 Action:
-                  - dynamodb:GetItem
                   - dynamodb:PutItem
                 Resource: !GetAtt SessionsTable.Arn
         - PolicyName: AsyncCredentialFunctionSecretsManagerPolicy
@@ -543,7 +542,7 @@ Resources:
       EndpointConfiguration:
         Types:
           - REGIONAL
-      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN}}'
+      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN}}'
       SecurityPolicy: TLS_1_2
     Condition: ProxyApiDeployment
 
@@ -677,7 +676,6 @@ Resources:
 
   SessionsTable:
     Type: AWS::DynamoDB::Table
-
     # Disabling check for point in time backup
     # checkov:skip=CKV_AWS_28:Ensure Dynamodb point in time recovery (backup) is enabled
     # checkov:skip=CKV_AWS_119:No PII in table
@@ -703,6 +701,8 @@ Resources:
           Projection:
             NonKeyAttributes:
               - sessionState
+              - redirectUri
+              - clientState
             ProjectionType: INCLUDE
       BillingMode: PAY_PER_REQUEST
       SSESpecification:
@@ -761,7 +761,7 @@ Resources:
       EndpointConfiguration:
         Types:
           - REGIONAL
-      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/PrimaryZoneWildcardCertificateARN}}'
+      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN}}'
       SecurityPolicy: TLS_1_2
 
   SessionsApiBasePathMapping:
@@ -857,6 +857,27 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
+        - PolicyName: DynamoReadSessionsTable
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:Query
+                Resource:
+                  - Fn::GetAtt: [ "SessionsTable", "Arn" ]
+                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-timeToLive-index
+                Condition:
+                  ForAllValues:StringEquals:
+                    dynamodb:Attributes:
+                      - sessionId
+                      - sessionState
+                      - subjectIdentifier
+                      - timeToLive
+                      - redirectUri
+                      - clientState
+                  StringEquals:
+                    dynamodb:Select: SPECIFIC_ATTRIBUTES
         - PolicyName: AsyncActiveSessionFunctionLoggingPolicy
           PolicyDocument:
             Version: "2012-10-17"

@@ -15,6 +15,25 @@ describe("Backend application infrastructure", () => {
     template = Template.fromJSON(yamltemplate);
   });
 
+  describe("EnvironmentVariable mapping values", () => {
+    test("STS jwks endpoint only assigned to Dev and Build", () => {
+      const expectedEnvironmentVariablesValues = {
+        dev: "https://mob-sts-mock.review-b-async.dev.account.gov.uk/.well-known/jwks.json",
+        build:
+          "https://mob-sts-mock.review-b-async.build.account.gov.uk/.well-known/jwks.json",
+        staging: "",
+        integration: "",
+        production: "",
+      };
+
+      const mappingHelper = new Mappings(template);
+      mappingHelper.validateEnvironmentVariablesMapping({
+        environmentFlags: expectedEnvironmentVariablesValues,
+        mappingBottomLevelKey: "STSJWKSENDPOINT",
+      });
+    });
+  });
+
   describe("Private APIgw", () => {
     test("The endpoints are Private", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
@@ -204,7 +223,7 @@ describe("Backend application infrastructure", () => {
       test("Rate and burst limit mappings are set", () => {
         const expectedBurstLimits = {
           dev: 10,
-          build: 0,
+          build: 10,
           staging: 0,
           integration: 0,
           production: 0,
@@ -212,7 +231,7 @@ describe("Backend application infrastructure", () => {
 
         const expectedRateLimits = {
           dev: 10,
-          build: 0,
+          build: 10,
           staging: 0,
           integration: 0,
           production: 0,
