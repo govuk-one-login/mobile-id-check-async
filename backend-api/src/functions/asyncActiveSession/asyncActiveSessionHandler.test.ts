@@ -26,13 +26,13 @@ const env = {
 
 describe("Async Active Session", () => {
   let dependencies: IAsyncActiveSessionDependencies;
-  let loggingAdapter: MockLoggingAdapter<MessageName>;
+  let mockLoggingAdapter: MockLoggingAdapter<MessageName>;
 
   beforeEach(() => {
-    loggingAdapter = new MockLoggingAdapter();
+    mockLoggingAdapter = new MockLoggingAdapter();
     dependencies = {
       env,
-      logger: () => new Logger(loggingAdapter, registeredLogs),
+      logger: () => new Logger(mockLoggingAdapter, registeredLogs),
       jweDecryptor: () => new MockJweDecryptorSuccess(),
       tokenService: () => new MockTokenServiceSuccess(),
       sessionService: () => new MockSessionServiceGetSuccessResult(),
@@ -48,10 +48,10 @@ describe("Async Active Session", () => {
 
         const result = await lambdaHandlerConstructor(dependencies, event);
 
-        expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
           "ENVIRONMENT_VARIABLE_MISSING",
         );
-        expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: `No ${envVar}`,
         });
         expect(result).toStrictEqual({
@@ -73,10 +73,10 @@ describe("Async Active Session", () => {
 
         const result = await lambdaHandlerConstructor(dependencies, event);
 
-        expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
           "ENVIRONMENT_VARIABLE_MISSING",
         );
-        expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "STS_JWKS_ENDPOINT is not a URL",
         });
         expect(result).toStrictEqual({
@@ -101,10 +101,10 @@ describe("Async Active Session", () => {
           event,
         );
 
-        expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
           "AUTHENTICATION_HEADER_INVALID",
         );
-        expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "No Authentication header present",
         });
         expect(result).toStrictEqual({
@@ -129,10 +129,10 @@ describe("Async Active Session", () => {
           event,
         );
 
-        expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
           "AUTHENTICATION_HEADER_INVALID",
         );
-        expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage:
             "Invalid authentication header format - does not start with Bearer",
         });
@@ -158,10 +158,10 @@ describe("Async Active Session", () => {
           event,
         );
 
-        expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
           "AUTHENTICATION_HEADER_INVALID",
         );
-        expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage:
             "Invalid authentication header format - contains spaces",
         });
@@ -187,10 +187,10 @@ describe("Async Active Session", () => {
           event,
         );
 
-        expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
           "AUTHENTICATION_HEADER_INVALID",
         );
-        expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "Invalid authentication header format - missing token",
         });
         expect(result).toStrictEqual({
@@ -221,10 +221,10 @@ describe("Async Active Session", () => {
           event,
         );
 
-        expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
           "JWE_DECRYPTION_ERROR",
         );
-        expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "Some mock decryption error",
         });
         expect(result).toStrictEqual({
@@ -254,10 +254,10 @@ describe("Async Active Session", () => {
           event,
         );
 
-        expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
           "INTERNAL_SERVER_ERROR",
         );
-        expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "Mock server error",
         });
         expect(result).toStrictEqual({
@@ -285,10 +285,10 @@ describe("Async Active Session", () => {
           event,
         );
 
-        expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
           "FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN",
         );
-        expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "Mock client error",
         });
         expect(result).toStrictEqual({
@@ -318,10 +318,10 @@ describe("Async Active Session", () => {
           event,
         );
 
-        expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
           "INTERNAL_SERVER_ERROR",
         );
-        expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "Mock error when getting session details",
         });
         expect(result).toStrictEqual({
