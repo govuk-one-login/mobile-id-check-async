@@ -6,7 +6,7 @@ import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
 import { MockJWTBuilder } from "../testUtils/mockJwtBuilder";
-import { errorResult, Result, successResult } from "../utils/result";
+import { errorResult, Result } from "../utils/result";
 import { ITokenService } from "./tokenService/tokenService";
 import { MockPubicKeyGetterGetPublicKeySuccess } from "./tokenService/tests/mocks";
 import {
