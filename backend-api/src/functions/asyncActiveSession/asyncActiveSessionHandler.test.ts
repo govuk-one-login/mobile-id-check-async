@@ -270,6 +270,37 @@ describe("Async Active Session", () => {
         });
       });
     });
+
+    describe("Given the sub cannot be extracted from the token due to a client error", () => {
+      it("Logs and returns 400 Bad Request response", async () => {
+        const jwtBuilder = new MockJWTBuilder();
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+        });
+
+        dependencies.tokenService = () => new MockTokenServiceClientError();
+
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
+            dependencies,
+            event,
+        );
+
+        expect(loggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+            "FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN",
+        );
+        expect(loggingAdapter.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: "Mock client error",
+        });
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description: "Failed validating the service token payload",
+          }),
+        });
+      });
+    });
   });
 
   describe("Session Service", () => {
@@ -363,6 +394,15 @@ class MockTokenServiceServerError implements ITokenService {
     return errorResult({
       errorMessage: "Mock server error",
       errorCategory: "SERVER_ERROR",
+    });
+  }
+}
+
+class MockTokenServiceClientError implements ITokenService {
+  async getSubFromToken(): Promise<Result<string>> {
+    return errorResult({
+      errorMessage: "Mock client error",
+      errorCategory: "CLIENT_ERROR",
     });
   }
 }
