@@ -6,7 +6,6 @@ describe("Public Key Getter", () => {
   let mockJwks: IJwks;
   let publicKeyGetter: IPublicKeyGetter;
   let mockEncodedJwt: string;
-
   let mockSendHttpRequest;
 
   beforeEach(async () => {
@@ -78,6 +77,75 @@ describe("Public Key Getter", () => {
     });
   });
 
+  describe("Given a request error happens when tyring to get the JWKS", () => {
+    it("Returns error result", async () => {
+      mockSendHttpRequest = jest.fn().mockRejectedValueOnce("Some HTTP error");
+      publicKeyGetter = new PublicKeyGetter({
+        sendHttpRequest: mockSendHttpRequest,
+      });
+      const result = await publicKeyGetter.getPublicKey(
+        "https://mockJwksEndpoint.com",
+        mockEncodedJwt,
+      );
+
+      expect(result.isError).toBe(true);
+      expect(result.value).toStrictEqual({
+        errorMessage: "Error getting public key: Some HTTP error",
+        errorCategory: "SERVER_ERROR",
+      });
+    });
+  });
+
+  describe("Given the response is empty", () => {
+    it("Returns error result", async () => {
+      mockSendHttpRequest = jest.fn().mockResolvedValue({
+        statusCode: 200,
+        headers: {
+          "Cache-Control": "max-age=60",
+        },
+      });
+      publicKeyGetter = new PublicKeyGetter({
+        sendHttpRequest: mockSendHttpRequest,
+      });
+      const result = await publicKeyGetter.getPublicKey(
+        "https://mockJwksEndpoint.com",
+        mockEncodedJwt,
+      );
+
+      expect(result.isError).toBe(true);
+      expect(result.value).toStrictEqual({
+        errorMessage: "Error getting public key: Error: Empty response body",
+        errorCategory: "SERVER_ERROR",
+      });
+    });
+  });
+
+  describe("Given the response is not a valid JWKS", () => {
+    it("Returns error result", async () => {
+      mockSendHttpRequest = jest.fn().mockResolvedValue({
+        statusCode: 200,
+        body: JSON.stringify("notJson"),
+        headers: {
+          "Cache-Control": "max-age=60",
+        },
+      });
+      publicKeyGetter = new PublicKeyGetter({
+        sendHttpRequest: mockSendHttpRequest,
+      });
+      const result = await publicKeyGetter.getPublicKey(
+        "https://mockJwksEndpoint.com",
+        mockEncodedJwt,
+      );
+
+      expect(result.isError).toBe(true);
+      expect(result.value).toStrictEqual({
+        errorMessage:
+          "Error getting public key: Error: Response does not match the expected JWKS structure",
+        errorCategory: "SERVER_ERROR",
+      });
+    });
+  });
+
   describe("Given JWKS does not contain key matching provided key ID", () => {
     it("Returns error result", async () => {
       mockEncodedJwt = new MockJWTBuilder()
@@ -124,7 +192,7 @@ describe("Public Key Getter", () => {
     });
   });
 
-  describe("Given retrieving public key is successful", () => {
+  describe("Given getting the public key is successful", () => {
     it("Returns the public key", async () => {
       const result = await publicKeyGetter.getPublicKey(
         "https://mockJwksEndpoint.com",
