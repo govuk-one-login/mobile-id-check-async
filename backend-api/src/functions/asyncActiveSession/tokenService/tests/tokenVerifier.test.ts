@@ -2,35 +2,6 @@ import { KeyLike } from "jose";
 import { MockJWTBuilder } from "../../../testUtils/mockJwtBuilder";
 import { ITokenVerifier, TokenVerifier } from "../tokenVerifier";
 
-const MOCK_PUBLIC_KEY = {
-  alg: "ES256",
-  crv: "P-256",
-  kid: "sThKMT3oxcTXG-sgMw2EVPTE9Y8W43wLXfqu7zT46-w",
-  kty: "EC",
-  use: "sig",
-  x: "YMoiJArVzO9RIVR7J9mUlGixqWyXCAYrZLtdc8EhuO8",
-  y: "47JYyUr0qlg3VksGlHCAdpwR_w1dixXfcTi7hBEfrRo",
-};
-
-const MOCK_INCORRECT_PULIC_KEY = {
-  alg: "ES256",
-  crv: "P-256",
-  kid: "mockKid",
-  kty: "EC",
-  use: "sig",
-  x: "NYmnFqCEFMVXQsmnSngTkiJK-Q9ixSBxLAXx6ZsBGlc",
-  y: "9fpDnWl3rBP-T6z6e60Bmgym3ymjRK_VSdJ7wU_Nwvg",
-};
-
-const MOCK_PRIVATE_KEY = {
-  crv: "P-256",
-  d: "IMeUPld6UA1WUKJF34HDwZGT2tArxZslpl_dVYzOLKU",
-  kid: "sThKMT3oxcTXG-sgMw2EVPTE9Y8W43wLXfqu7zT46-w",
-  kty: "EC",
-  x: "YMoiJArVzO9RIVR7J9mUlGixqWyXCAYrZLtdc8EhuO8",
-  y: "47JYyUr0qlg3VksGlHCAdpwR_w1dixXfcTi7hBEfrRo",
-};
-
 describe("Token Verifier", () => {
   let tokenVerifier: ITokenVerifier;
   let mockPublicKey: KeyLike | Uint8Array;
@@ -90,3 +61,32 @@ describe("Token Verifier", () => {
     });
   });
 });
+
+const MOCK_PUBLIC_KEY = {
+  alg: "ES256",
+  crv: "P-256",
+  kid: "sThKMT3oxcTXG-sgMw2EVPTE9Y8W43wLXfqu7zT46-w",
+  kty: "EC",
+  use: "sig",
+  x: "YMoiJArVzO9RIVR7J9mUlGixqWyXCAYrZLtdc8EhuO8",
+  y: "47JYyUr0qlg3VksGlHCAdpwR_w1dixXfcTi7hBEfrRo",
+};
+
+const MOCK_INCORRECT_PULIC_KEY = {
+  alg: "ES256",
+  crv: "P-256",
+  kid: "mockKid",
+  kty: "EC",
+  use: "sig",
+  x: "NYmnFqCEFMVXQsmnSngTkiJK-Q9ixSBxLAXx6ZsBGlc",
+  y: "9fpDnWl3rBP-T6z6e60Bmgym3ymjRK_VSdJ7wU_Nwvg",
+};
+
+const MOCK_PRIVATE_KEY = {
+  crv: "P-256",
+  d: "IMeUPld6UA1WUKJF34HDwZGT2tArxZslpl_dVYzOLKU",
+  kid: "sThKMT3oxcTXG-sgMw2EVPTE9Y8W43wLXfqu7zT46-w",
+  kty: "EC",
+  x: "YMoiJArVzO9RIVR7J9mUlGixqWyXCAYrZLtdc8EhuO8",
+  y: "47JYyUr0qlg3VksGlHCAdpwR_w1dixXfcTi7hBEfrRo",
+};
