@@ -111,8 +111,8 @@ describe("Async Active Session", () => {
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
           body: JSON.stringify({
-            error: "Unauthorized",
-            error_description: "Invalid token",
+            error: "unauthorized",
+            error_description: "Invalid authorization header",
           }),
         });
       });
@@ -140,8 +140,8 @@ describe("Async Active Session", () => {
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
           body: JSON.stringify({
-            error: "Unauthorized",
-            error_description: "Invalid token",
+            error: "unauthorized",
+            error_description: "Invalid authorization header",
           }),
         });
       });
@@ -169,8 +169,8 @@ describe("Async Active Session", () => {
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
           body: JSON.stringify({
-            error: "Unauthorized",
-            error_description: "Invalid token",
+            error: "unauthorized",
+            error_description: "Invalid authorization header",
           }),
         });
       });
@@ -197,8 +197,8 @@ describe("Async Active Session", () => {
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
           body: JSON.stringify({
-            error: "Unauthorized",
-            error_description: "Invalid token",
+            error: "unauthorized",
+            error_description: "Invalid authorization header",
           }),
         });
       });
