@@ -2,7 +2,7 @@ import jose from "node-jose";
 
 export class MockJWTBuilder {
   private jwt: IMockJwt = {
-    header: { alg: "HS256", type: "JWT" },
+    header: { alg: "ES256", typ: "JWT" },
     payload: {
       exp: Date.now() + 1000,
       iss: "mockIssuer",
@@ -99,7 +99,7 @@ export class MockJWTBuilder {
 interface IMockJwt {
   header: {
     alg: string;
-    type: string;
+    typ: string;
     kid?: string;
   };
   payload: {
