@@ -8,7 +8,6 @@ import { Logger } from "../services/logging/logger";
 import { MockJWTBuilder } from "../testUtils/mockJwtBuilder";
 import { errorResult, Result, successResult } from "../utils/result";
 import { ITokenService } from "./tokenService/tokenService";
-import { MockPubicKeyGetterGetPublicKeySuccess } from "./tokenService/tests/mocks";
 import {
   MockSessionServiceGetErrorResult,
   MockSessionServiceGetSuccessResult,
@@ -35,9 +34,6 @@ describe("Async Active Session", () => {
       env,
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
       jweDecrypter: () => new MockJweDecrypterSuccess(),
-      tokenServiceDependencies: {
-        publicKeyGetter: () => new MockPubicKeyGetterGetPublicKeySuccess(),
-      },
       tokenService: () => new MockTokenServiceSuccess(),
       sessionService: () => new MockSessionServiceGetSuccessResult(),
     };
@@ -394,7 +390,7 @@ describe("Async Active Session", () => {
 });
 
 class MockTokenServiceServerError implements ITokenService {
-  async getSubFromToken(): Promise<Result<string>> {
+  async getSubFromServiceToken(): Promise<Result<string>> {
     return errorResult({
       errorMessage: "Mock server error",
       errorCategory: "SERVER_ERROR",
@@ -403,7 +399,7 @@ class MockTokenServiceServerError implements ITokenService {
 }
 
 class MockTokenServiceInvalidServiceToken {
-  async getSubFromToken(): Promise<Result<string>> {
+  async getSubFromServiceToken(): Promise<Result<string>> {
     return errorResult({
       errorMessage: "Mock invalid service token error",
       errorCategory: "CLIENT_ERROR",
@@ -412,7 +408,7 @@ class MockTokenServiceInvalidServiceToken {
 }
 
 class MockTokenServiceSuccess {
-  async getSubFromToken(): Promise<Result<string>> {
+  async getSubFromServiceToken(): Promise<Result<string>> {
     return successResult("mockSub");
   }
 }

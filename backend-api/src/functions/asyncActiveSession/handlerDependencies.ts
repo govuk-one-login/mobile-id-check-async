@@ -5,26 +5,14 @@ import {
   ISessionService,
   SessionService,
 } from "../services/session/sessionService";
-import { PublicKeyGetter } from "./tokenService/publicKeyGetter";
-import {
-  ITokenService,
-  ITokenServiceDependencies,
-  TokenService,
-} from "./tokenService/tokenService";
+import { ITokenService, TokenService } from "./tokenService/tokenService";
 import { IDecryptJwe, JweDecrypter } from "./jwe/jweDecrypter";
-
-const tokenServiceDependencies: ITokenServiceDependencies = {
-  publicKeyGetter: () => new PublicKeyGetter(),
-};
 
 export interface IAsyncActiveSessionDependencies {
   env: NodeJS.ProcessEnv;
   logger: () => Logger<MessageName>;
   jweDecrypter: (encryptionKeyId: string) => IDecryptJwe;
-  tokenServiceDependencies: ITokenServiceDependencies;
-  tokenService: (
-    tokenServiceDependencies: ITokenServiceDependencies,
-  ) => ITokenService;
+  tokenService: (jwksUri: string) => ITokenService;
   sessionService: (tableName: string) => ISessionService;
 }
 
@@ -32,8 +20,6 @@ export const dependencies: IAsyncActiveSessionDependencies = {
   env: process.env,
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
   jweDecrypter: (encryptionKeyId: string) => new JweDecrypter(encryptionKeyId),
-  tokenServiceDependencies,
-  tokenService: (tokenServiceDependencies: ITokenServiceDependencies) =>
-    new TokenService(tokenServiceDependencies),
+  tokenService: (jwksUri: string) => new TokenService(jwksUri),
   sessionService: (tableName: string) => new SessionService(tableName),
 };

@@ -47,11 +47,14 @@ export async function lambdaHandlerConstructor(
 
   const serviceTokenJwt = decryptResult.value;
 
-  const tokenServiceDependencies = dependencies.tokenServiceDependencies;
-  const tokenService = dependencies.tokenService(tokenServiceDependencies);
-  const getSubFromTokenResult = await tokenService.getSubFromToken(
-    config.STS_JWKS_ENDPOINT,
-      serviceTokenJwt,
+  const tokenService = dependencies.tokenService(config.STS_JWKS_ENDPOINT);
+  const getSubFromTokenResult = await tokenService.getSubFromServiceToken(
+    serviceTokenJwt,
+    {
+      aud: "aud",
+      iss: "iss",
+      scope: "idCheck.activeSession.read",
+    },
   );
 
   if (getSubFromTokenResult.isError) {
