@@ -32,11 +32,11 @@ export async function lambdaHandlerConstructor(
     return unauthorizedResponse;
   }
 
-  const serviceToken = authorizationHeaderResult.value;
+  const serviceTokenJwe = authorizationHeaderResult.value;
 
   const decryptResult = await dependencies
     .jweDecrypter(config.ENCRYPTION_KEY_ARN)
-    .decrypt(serviceToken);
+    .decrypt(serviceTokenJwe);
 
   if (decryptResult.isError) {
     logger.log("JWE_DECRYPTION_ERROR", {
@@ -45,7 +45,7 @@ export async function lambdaHandlerConstructor(
     return badRequestResponse("Failed decrypting service token JWE");
   }
 
-  const jwt = decryptResult.value;
+  const serviceTokenJwt = decryptResult.value;
 
   const tokenServiceDependencies = dependencies.tokenServiceDependencies;
   const tokenService = dependencies.tokenService(tokenServiceDependencies);
@@ -55,7 +55,7 @@ export async function lambdaHandlerConstructor(
       maxAttempts: 3,
       delayInMillis: 100,
     },
-    jwt,
+    serviceTokenJwt,
   );
 
   if (getSubFromTokenResult.isError) {
