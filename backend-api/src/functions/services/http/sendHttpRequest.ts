@@ -21,15 +21,15 @@ export const sendHttpRequest: ISendHttpRequest = async (
         headers,
         body,
       });
-
-      if (!response.ok && attempt < maxAttempts) {
-        return retry(request, delayInMillis);
-      }
     } catch (error) {
       if (attempt < maxAttempts) {
         return retry(request, delayInMillis);
       }
       throw new Error(`Unexpected network error: ${error}`);
+    }
+
+    if (!response.ok && attempt < maxAttempts) {
+      return retry(request, delayInMillis);
     }
 
     if (!response.ok) {
