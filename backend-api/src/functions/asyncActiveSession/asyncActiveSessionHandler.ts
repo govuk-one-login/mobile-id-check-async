@@ -62,7 +62,7 @@ export async function lambdaHandlerConstructor(
       logger.log("FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN", {
         errorMessage: getSubFromTokenResult.value.errorMessage,
       });
-      return badRequestResponse(getSubFromTokenResult.value.errorMessage);
+      return badRequestResponse("Failed to verify service token");
     }
 
     logger.log("INTERNAL_SERVER_ERROR", {
@@ -71,9 +71,10 @@ export async function lambdaHandlerConstructor(
     return serverErrorResponse;
   }
 
+  const sub = getSubFromTokenResult.value;
+
   const sessionService = dependencies.sessionService(config.SESSION_TABLE_NAME);
-  const getActiveSessionResult =
-    await sessionService.getActiveSession("mockSub1"); // temporary sub until we have implemented the logic to extract the sub from the JWT
+  const getActiveSessionResult = await sessionService.getActiveSession(sub);
 
   if (getActiveSessionResult.isError) {
     logger.log("INTERNAL_SERVER_ERROR", {

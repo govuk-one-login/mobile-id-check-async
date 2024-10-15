@@ -1,5 +1,6 @@
 import { errorResult, Result, successResult } from "../../utils/result";
 import { decodeJwt } from "jose";
+import { ITokenVerifier, TokenVerifier } from "./tokenVerifier";
 
 export type ExpectedClaims = {
   aud: string;
@@ -7,34 +8,42 @@ export type ExpectedClaims = {
   scope: "idCheck.activeSession.read";
 };
 
-export class TokenService implements ITokenService {
-  private readonly jwksUri: string;
-  // private readonly verifyTokenSignature: ITokenVerifier
+export type TokenServicesDependencies = {
+  tokenVerifier: ITokenVerifier;
+};
 
-  constructor(jwksUri: string) {
+const tokenServiceDependencies: TokenServicesDependencies = {
+  tokenVerifier: new TokenVerifier(),
+};
+
+export class TokenService implements ITokenService {
+  private readonly tokenVerifier: ITokenVerifier;
+  private jwksUri: string;
+
+  constructor(jwksUri: string, dependencies = tokenServiceDependencies) {
     this.jwksUri = jwksUri;
-    // this.verifyTokenSignature = new TokenVerifier(jwksUri)
+    this.tokenVerifier = dependencies.tokenVerifier;
   }
 
   async getSubFromServiceToken(
-    token: string,
+    jwt: string,
     expectedClaims: ExpectedClaims,
   ): Promise<Result<string>> {
     let payload;
     try {
-      payload = this.validateServiceTokenClaims(token, expectedClaims);
+      payload = this.validateServiceTokenClaims(jwt, expectedClaims);
     } catch (error) {
       return errorResult({
         errorCategory: "CLIENT_ERROR",
-        errorMessage: `Invalid token - ${error}`,
+        errorMessage: `${error}`,
       });
     }
 
-    // try {
-    //     await verifyTokenSignature.verify();
-    // } catch (error) {
-    //     return errorResult({errorCategory: "CLIENT_ERROR", errorMessage: `Invalid token - ${error}` })
-    // }
+    const verifyResult = await this.tokenVerifier.verify(jwt, this.jwksUri);
+
+    if (verifyResult.isError) {
+      return verifyResult;
+    }
 
     return successResult(payload.sub);
   }
@@ -43,12 +52,17 @@ export class TokenService implements ITokenService {
     serviceToken: string,
     expectedClaims: ExpectedClaims,
   ) {
-    const payload = decodeJwt(serviceToken);
+    let payload;
+    try {
+      payload = decodeJwt(serviceToken);
+    } catch {
+      throw new Error("Invalid token");
+    }
 
     const currentTime = Math.floor(Date.now() / 1000);
 
     if (payload.nbf) {
-      if (!this.hasValidNbf(payload, currentTime)) {
+      if (!this.hasValidNotBefore(payload, currentTime)) {
         throw new Error("Invalid not-before claim");
       }
     }
@@ -69,11 +83,11 @@ export class TokenService implements ITokenService {
       throw new Error("Invalid sub claim");
     }
 
-    if (!this.hasValidExp(payload, currentTime)) {
+    if (!this.hasValidExpiry(payload, currentTime)) {
       throw new Error("Token expiry time is in the past");
     }
 
-    if (!this.hasValidIat(payload, currentTime)) {
+    if (!this.hasValidIssuedAtTime(payload, currentTime)) {
       throw new Error("Token issue at time is in the future");
     }
 
@@ -109,7 +123,7 @@ export class TokenService implements ITokenService {
     return "sub" in payload && typeof payload.sub === "string";
   }
 
-  hasValidIat(
+  hasValidIssuedAtTime(
     payload: object,
     currentTime: number,
   ): payload is Record<"iat", number> {
@@ -120,7 +134,7 @@ export class TokenService implements ITokenService {
     );
   }
 
-  hasValidExp(
+  hasValidExpiry(
     payload: object,
     currentTime: number,
   ): payload is Record<"exp", number> {
@@ -131,7 +145,7 @@ export class TokenService implements ITokenService {
     );
   }
 
-  hasValidNbf(
+  hasValidNotBefore(
     payload: object,
     currentTime: number,
   ): payload is Record<"nbf", number> {
