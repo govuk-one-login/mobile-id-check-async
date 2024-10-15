@@ -4,7 +4,6 @@ import {
   SuccessfulHttpResponse,
 } from "../../services/http/sendHttpRequest";
 import { errorResult, Result, successResult } from "../../utils/result";
-import crypto from "crypto";
 import { jwtVerify, JWTVerifyResult, KeyLike } from "jose";
 import { IJwks, IPublicKeyGetter } from "./publicKeyGetter";
 
@@ -49,8 +48,6 @@ export class TokenService implements ITokenService {
       return verifyTokenSignatureResult;
     }
 
-    // const { payload } = verifyTokenSignatureResult.value;
-
     return successResult("");
   };
 
@@ -91,19 +88,6 @@ export class TokenService implements ITokenService {
     return successResult(jwks);
   }
 
-  private getJweComponents(jwe: string): Result<string[]> {
-    const jweComponents = jwe.split(".");
-
-    if (jweComponents.length !== 5) {
-      return errorResult({
-        errorMessage: "JWE does not consist of five components",
-        errorCategory: "CLIENT_ERROR",
-      });
-    }
-
-    return successResult(jweComponents);
-  }
-
   private async getJwksFromResponse(
     response: SuccessfulHttpResponse,
   ): Promise<Result<IJwks>> {
@@ -131,54 +115,6 @@ export class TokenService implements ITokenService {
     }
 
     return successResult(jwks);
-  }
-
-  private async decryptJwe(
-    decryptedCek: Uint8Array,
-    iv: Uint8Array,
-    ciphertext: Uint8Array,
-    tag: Uint8Array,
-    additionalData: Uint8Array,
-  ): Promise<Result<string>> {
-    const webcrypto = crypto.webcrypto as unknown as Crypto;
-
-    let cek: CryptoKey;
-    try {
-      cek = await webcrypto.subtle.importKey(
-        "raw",
-        decryptedCek,
-        "AES-GCM",
-        false,
-        ["decrypt"],
-      );
-    } catch (error) {
-      return errorResult({
-        errorMessage: `Error converting cek to CryptoKey. ${error}`,
-        errorCategory: "SERVER_ERROR",
-      });
-    }
-
-    let decryptedBuffer: ArrayBuffer;
-    try {
-      decryptedBuffer = await webcrypto.subtle.decrypt(
-        {
-          name: "AES-GCM",
-          iv,
-          additionalData,
-          tagLength: 128,
-        },
-        cek,
-        Buffer.concat([new Uint8Array(ciphertext), new Uint8Array(tag)]),
-      );
-    } catch (error) {
-      return errorResult({
-        errorMessage: `Error decrypting JWE. ${error}`,
-        errorCategory: "SERVER_ERROR",
-      });
-    }
-
-    const decoder = new TextDecoder();
-    return successResult(decoder.decode(decryptedBuffer));
   }
 
   private async verifyTokenSignature(
