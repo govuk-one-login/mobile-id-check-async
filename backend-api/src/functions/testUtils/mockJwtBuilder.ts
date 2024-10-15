@@ -84,19 +84,19 @@ export class MockJWTBuilder {
     return this;
   };
 
-  static getPublicKey = async (publicKey: any) => {
-    return await importJWK(publicKey)
-  }
+  static getPublicKey = async (publicKey: IMockPublicKey) => {
+    return await importJWK(publicKey);
+  };
 
-  getSignedEncodedJwt = async (privateKey: any) => {
-    this.jwt.header.typ = "JWT"
-    const signingKey = await importJWK(privateKey)
+  getSignedEncodedJwt = async (privateKey: IMockPrivateKey) => {
+    this.jwt.header.typ = "JWT";
+    const signingKey = await importJWK(privateKey);
     const signedEncodedJwt = await new SignJWT(this.jwt.payload)
       .setProtectedHeader(this.jwt.header)
-      .sign(signingKey)
+      .sign(signingKey);
 
-    return signedEncodedJwt
-  }
+    return signedEncodedJwt;
+  };
 
   getEncodedJwt = () => {
     const header = jose.util.base64url.encode(
@@ -127,4 +127,23 @@ interface IMockJwt {
     aud?: string;
   };
   signature: string;
+}
+
+interface IMockPublicKey {
+  alg: string;
+  crv: string;
+  kid: string;
+  kty: string;
+  use: string;
+  x: string;
+  y: string;
+}
+
+interface IMockPrivateKey {
+  crv: string;
+  d: string;
+  kid: string;
+  kty: string;
+  x: string;
+  y: string;
 }

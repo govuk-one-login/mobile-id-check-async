@@ -23,7 +23,7 @@ describe("Token Service", () => {
   beforeEach(() => {
     dependencies = {
       publicKeyGetter: () => new MockPubicKeyGetterGetPublicKeySuccess(),
-      tokenVerifier: () => new MockTokenVerifierVerifySuccess()
+      tokenVerifier: () => new MockTokenVerifierVerifySuccess(),
     };
     tokenService = new TokenService(dependencies);
     mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>

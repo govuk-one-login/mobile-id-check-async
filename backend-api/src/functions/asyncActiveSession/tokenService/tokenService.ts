@@ -1,12 +1,11 @@
+import crypto from "crypto";
+import { KMSAdapter } from "../../adapters/kmsAdapter";
 import {
   RetryConfig,
   sendHttpRequest,
   SuccessfulHttpResponse,
 } from "../../services/http/sendHttpRequest";
 import { errorResult, Result, successResult } from "../../utils/result";
-import { KMSAdapter } from "../../adapters/kmsAdapter";
-import crypto from "crypto";
-import { jwtVerify, JWTVerifyResult, KeyLike } from "jose";
 import { IJwks, IPublicKeyGetter } from "./publicKeyGetter";
 import { ITokenVerifier } from "./tokenVerifier";
 
@@ -75,7 +74,7 @@ export class TokenService implements ITokenService {
 
     const publicKey = getPublicKeyFromJwksResult.value;
 
-    const tokenVerifier = this.dependencies.tokenVerifier()
+    const tokenVerifier = this.dependencies.tokenVerifier();
     const verifyTokenSignatureResult = await tokenVerifier.verify(
       jwt,
       publicKey,

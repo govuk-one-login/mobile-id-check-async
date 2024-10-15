@@ -63,7 +63,7 @@ export interface IJwks {
   keys: IJwk[];
 }
 
-interface IJwk extends JsonWebKey {
+export interface IJwk extends JsonWebKey {
   alg: "ES256";
   kid: string;
   kty: "EC";

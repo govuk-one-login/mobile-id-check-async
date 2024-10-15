@@ -1,10 +1,11 @@
 import { jwtVerify, JWTVerifyResult, KeyLike } from "jose";
 import { errorResult, Result, successResult } from "../../utils/result";
 
-
-
 export class TokenVerifier implements ITokenVerifier {
-  async verify(jwt: string, key: KeyLike | Uint8Array): Promise<Result<JWTVerifyResult>> {
+  async verify(
+    jwt: string,
+    key: KeyLike | Uint8Array,
+  ): Promise<Result<JWTVerifyResult>> {
     let result: JWTVerifyResult;
     try {
       result = await jwtVerify(jwt, key);
@@ -20,5 +21,8 @@ export class TokenVerifier implements ITokenVerifier {
 }
 
 export interface ITokenVerifier {
-  verify: (jwt: string, key: KeyLike | Uint8Array) => Promise<Result<JWTVerifyResult>>
+  verify: (
+    jwt: string,
+    key: KeyLike | Uint8Array,
+  ) => Promise<Result<JWTVerifyResult>>;
 }
