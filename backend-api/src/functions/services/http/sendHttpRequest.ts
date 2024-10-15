@@ -1,5 +1,3 @@
-import { errorResult, Result, successResult } from "../../utils/result";
-
 const DEFAULT_MAX_ATTEMPTS = 3;
 const DEFAULT_DELAY_IN_MILLIS = 100;
 
@@ -10,7 +8,7 @@ export const sendHttpRequest: ISendHttpRequest = async (
   const { url, method, headers, body } = httpRequest;
 
   let attempt = 0;
-  async function request(): Promise<Result<SuccessfulHttpResponse>> {
+  async function request(): Promise<SuccessfulHttpResponse> {
     attempt++;
 
     const maxAttempts = retryConfig?.maxAttempts ?? DEFAULT_MAX_ATTEMPTS;
@@ -27,36 +25,29 @@ export const sendHttpRequest: ISendHttpRequest = async (
       if (!response.ok && attempt < maxAttempts) {
         return retry(request, delayInMillis);
       }
-
-      if (!response.ok) {
-        return errorResult({
-          errorMessage: `Error making http request: ${await response.text()}`,
-          errorCategory: "SERVER_ERROR",
-        });
-      }
     } catch (error) {
       if (attempt < maxAttempts) {
         return retry(request, delayInMillis);
       }
-
-      return errorResult({
-        errorMessage: `Unexpected network error: ${error}`,
-        errorCategory: "SERVER_ERROR",
-      });
+      throw new Error(`Unexpected network error: ${error}`);
     }
 
-    return successResult({
+    if (!response.ok) {
+      throw new Error(`Error making http request: ${await response.text()}`);
+    }
+
+    return {
       statusCode: response.status,
       body: await response.text(),
       headers: Object.fromEntries(response.headers.entries()),
-    });
+    };
   }
 
   return await request();
 };
 
 async function retry(
-  request: () => Promise<Result<SuccessfulHttpResponse>>,
+  request: () => Promise<SuccessfulHttpResponse>,
   delayInMillis: number,
 ) {
   await wait(delayInMillis);
@@ -88,7 +79,7 @@ export type HttpRequest = {
 export type ISendHttpRequest = (
   httpRequest: HttpRequest,
   retryConfig?: RetryConfig,
-) => Promise<Result<SuccessfulHttpResponse>>;
+) => Promise<SuccessfulHttpResponse>;
 
 export type SuccessfulHttpResponse = {
   statusCode: number;
