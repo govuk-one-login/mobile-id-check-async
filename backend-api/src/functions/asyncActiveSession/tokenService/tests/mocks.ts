@@ -1,5 +1,7 @@
-import { errorResult, successResult } from "../../../utils/result";
+import { KeyLike, JWTVerifyResult } from "jose";
+import { errorResult, Result, successResult } from "../../../utils/result";
 import { IPublicKeyGetter } from "../publicKeyGetter";
+import { ITokenVerifier } from "../tokenVerifier";
 
 export class MockPubicKeyGetterGetPublicKeyError implements IPublicKeyGetter {
   getPublicKey() {
@@ -15,5 +17,29 @@ export class MockPubicKeyGetterGetPublicKeyError implements IPublicKeyGetter {
 export class MockPubicKeyGetterGetPublicKeySuccess implements IPublicKeyGetter {
   getPublicKey() {
     return Promise.resolve(successResult(new Uint8Array()));
+  }
+}
+
+export class MockTokenVerifierVerifyError implements ITokenVerifier {
+  verify(jwt: string, key: KeyLike | Uint8Array): Promise<Result<JWTVerifyResult>> {
+    return Promise.reject("Error verifying token signature")
+  }
+}
+
+export class MockTokenVerifierVerifySuccess implements ITokenVerifier {
+  verify(jwt: string, key: KeyLike | Uint8Array): Promise<Result<JWTVerifyResult>> {
+    return Promise.resolve(successResult({
+      "protectedHeader": {
+        "alg": "ES256",
+        "typ": "JWT",
+      },
+      "payload": {
+        "aud": "mockIssuer",
+        "client_id": "mockClientId",
+        "exp": 1728994993626,
+        "iss": "mockIssuer",
+        "scope": "dcmaw.session.async_create",
+      }
+    }))
   }
 }

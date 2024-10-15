@@ -12,6 +12,7 @@ import { mockClient } from "aws-sdk-client-mock";
 import {
   MockPubicKeyGetterGetPublicKeyError,
   MockPubicKeyGetterGetPublicKeySuccess,
+  MockTokenVerifierVerifySuccess,
 } from "./mocks";
 
 describe("Token Service", () => {
@@ -22,6 +23,7 @@ describe("Token Service", () => {
   beforeEach(() => {
     dependencies = {
       publicKeyGetter: () => new MockPubicKeyGetterGetPublicKeySuccess(),
+      tokenVerifier: () => new MockTokenVerifierVerifySuccess()
     };
     tokenService = new TokenService(dependencies);
     mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>

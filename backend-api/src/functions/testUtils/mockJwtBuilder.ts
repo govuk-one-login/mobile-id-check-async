@@ -1,3 +1,4 @@
+import { importJWK, SignJWT } from "jose";
 import jose from "node-jose";
 
 export class MockJWTBuilder {
@@ -82,6 +83,20 @@ export class MockJWTBuilder {
     delete this.jwt.payload.scope;
     return this;
   };
+
+  static getPublicKey = async (publicKey: any) => {
+    return await importJWK(publicKey)
+  }
+
+  getSignedEncodedJwt = async (privateKey: any) => {
+    this.jwt.header.typ = "JWT"
+    const signingKey = await importJWK(privateKey)
+    const signedEncodedJwt = await new SignJWT(this.jwt.payload)
+      .setProtectedHeader(this.jwt.header)
+      .sign(signingKey)
+
+    return signedEncodedJwt
+  }
 
   getEncodedJwt = () => {
     const header = jose.util.base64url.encode(

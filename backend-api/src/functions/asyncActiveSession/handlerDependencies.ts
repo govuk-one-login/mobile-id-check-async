@@ -11,9 +11,11 @@ import {
   ITokenServiceDependencies,
   TokenService,
 } from "./tokenService/tokenService";
+import { TokenVerifier } from "./tokenService/tokenVerifier";
 
 const tokenServiceDependencies: ITokenServiceDependencies = {
   publicKeyGetter: () => new PublicKeyGetter(),
+  tokenVerifier: () => new TokenVerifier()
 };
 
 export interface IAsyncActiveSessionDependencies {
