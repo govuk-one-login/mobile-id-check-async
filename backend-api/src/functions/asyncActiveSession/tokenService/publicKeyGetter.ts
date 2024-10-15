@@ -77,7 +77,7 @@ export class PublicKeyGetter implements IPublicKeyGetter {
         url: jwksEndpoint,
         method: "GET",
       },
-      { maxAttempts: 3, delayInMillis: 1 },
+      { maxAttempts: 3, delayInMillis: 100 },
     );
 
     const { body } = response;
