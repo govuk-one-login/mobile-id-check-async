@@ -1,16 +1,17 @@
-import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
 import { Logger } from "../services/logging/logger";
+import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
+import { MessageName, registeredLogs } from "./registeredLogs";
 import {
   ISessionService,
   SessionService,
 } from "../services/session/sessionService";
-import { MessageName, registeredLogs } from "./registeredLogs";
 import { PublicKeyGetter } from "./tokenService/publicKeyGetter";
 import {
   ITokenService,
   ITokenServiceDependencies,
   TokenService,
 } from "./tokenService/tokenService";
+import { IDecryptJwe, JweDecrypter } from "./jwe/jweDecrypter";
 
 const tokenServiceDependencies: ITokenServiceDependencies = {
   publicKeyGetter: () => new PublicKeyGetter(),
@@ -19,6 +20,7 @@ const tokenServiceDependencies: ITokenServiceDependencies = {
 export interface IAsyncActiveSessionDependencies {
   env: NodeJS.ProcessEnv;
   logger: () => Logger<MessageName>;
+  jweDecrypter: (encryptionKeyId: string) => IDecryptJwe;
   tokenServiceDependencies: ITokenServiceDependencies;
   tokenService: (
     tokenServiceDependencies: ITokenServiceDependencies,
@@ -29,6 +31,7 @@ export interface IAsyncActiveSessionDependencies {
 export const dependencies: IAsyncActiveSessionDependencies = {
   env: process.env,
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
+  jweDecrypter: (encryptionKeyId: string) => new JweDecrypter(encryptionKeyId),
   tokenServiceDependencies,
   tokenService: (tokenServiceDependencies: ITokenServiceDependencies) =>
     new TokenService(tokenServiceDependencies),
