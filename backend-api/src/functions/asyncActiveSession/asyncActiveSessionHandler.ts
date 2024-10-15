@@ -40,10 +40,6 @@ export async function lambdaHandlerConstructor(
     config.STS_JWKS_ENDPOINT,
     config.ENCRYPTION_KEY_ARN,
     serviceToken,
-    {
-      maxAttempts: 3,
-      delayInMillis: 100,
-    },
   );
 
   if (getSubFromTokenResult.isError) {
