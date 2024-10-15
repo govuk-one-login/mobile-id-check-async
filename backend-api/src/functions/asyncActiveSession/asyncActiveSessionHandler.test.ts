@@ -17,6 +17,10 @@ import {
   MockSessionServiceGetSuccessResult,
   MockSessionServiceGetNullSuccessResult,
 } from "../services/session/tests/mocks";
+import {
+  MockJweDecrypterFailure,
+  MockJweDecrypterSuccess,
+} from "./jwe/tests/mocks";
 
 const env = {
   STS_JWKS_ENDPOINT: "https://mockUrl.com",
@@ -33,6 +37,7 @@ describe("Async Active Session", () => {
     dependencies = {
       env,
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
+      jweDecrypter: () => new MockJweDecrypterSuccess(),
       tokenServiceDependencies: {
         publicKeyGetter: () => new MockPubicKeyGetterGetPublicKeySuccess(),
         tokenVerifier: () => new MockTokenVerifierVerifySuccess(),
@@ -208,6 +213,40 @@ describe("Async Active Session", () => {
     });
   });
 
+  describe("Decrypt JWE", () => {
+    describe("Given decrypting the service token fails", () => {
+      it("Logs and returns 400 Bad Request response", async () => {
+        dependencies.jweDecrypter = () => new MockJweDecrypterFailure();
+
+        const event = buildRequest({
+          headers: {
+            Authorization: "Bearer protectedHeader.encryptedKey.iv.ciphertext",
+          },
+        });
+
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+        );
+
+        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+          "JWE_DECRYPTION_ERROR",
+        );
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: "Some mock decryption error",
+        });
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description: "Failed decrypting service token JWE",
+          }),
+        });
+      });
+    });
+  });
+
   describe("Get sub from access token", () => {
     describe("Given an unexpected error is returned", () => {
       it("Logs and returns 500 Server Error response", async () => {
@@ -270,88 +309,88 @@ describe("Async Active Session", () => {
         });
       });
     });
+  });
 
-    describe("Session Service", () => {
-      describe("Given an error happens when trying to get an active session", () => {
-        it("Returns 500 Server Error", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-          });
-          dependencies.sessionService = () =>
-            new MockSessionServiceGetErrorResult();
+  describe("Session Service", () => {
+    describe("Given an error happens when trying to get an active session", () => {
+      it("Returns 500 Server Error", async () => {
+        const jwtBuilder = new MockJWTBuilder();
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+        });
+        dependencies.sessionService = () =>
+          new MockSessionServiceGetErrorResult();
 
-          const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-            dependencies,
-            event,
-          );
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+        );
 
-          expect(
-            mockLoggingAdapter.getLogMessages()[1].logMessage.message,
-          ).toBe("INTERNAL_SERVER_ERROR");
-          expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-            errorMessage: "Mock error when getting session details",
-          });
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 500,
-            body: JSON.stringify({
-              error: "server_error",
-              error_description: "Server Error",
-            }),
-          });
+        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+          "INTERNAL_SERVER_ERROR",
+        );
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: "Mock error when getting session details",
+        });
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
         });
       });
+    });
 
-      describe("Given an active session is not found", () => {
-        it("Returns 404 Not Found", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-          });
-          dependencies.sessionService = () =>
-            new MockSessionServiceGetNullSuccessResult();
+    describe("Given an active session is not found", () => {
+      it("Returns 404 Not Found", async () => {
+        const jwtBuilder = new MockJWTBuilder();
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+        });
+        dependencies.sessionService = () =>
+          new MockSessionServiceGetNullSuccessResult();
 
-          const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-            dependencies,
-            event,
-          );
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+        );
 
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 404,
-            body: JSON.stringify({
-              error: "session_not_found",
-              error_description:
-                "No active session found for the given sub identifier",
-            }),
-          });
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 404,
+          body: JSON.stringify({
+            error: "session_not_found",
+            error_description:
+              "No active session found for the given sub identifier",
+          }),
         });
       });
+    });
 
-      describe("Given an active session is found", () => {
-        it("Returns 200 and the session details", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-          });
-          dependencies.sessionService = () =>
-            new MockSessionServiceGetSuccessResult();
+    describe("Given an active session is found", () => {
+      it("Returns 200 and the session details", async () => {
+        const jwtBuilder = new MockJWTBuilder();
+        const event = buildRequest({
+          headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+        });
+        dependencies.sessionService = () =>
+          new MockSessionServiceGetSuccessResult();
 
-          const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-            dependencies,
-            event,
-          );
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+        );
 
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 200,
-            body: JSON.stringify({
-              sessionId: "mockSessionId",
-              redirectUri: "https://mockUrl.com/redirect",
-              state: "mockClientState",
-            }),
-          });
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 200,
+          body: JSON.stringify({
+            sessionId: "mockSessionId",
+            redirectUri: "https://mockUrl.com/redirect",
+            state: "mockClientState",
+          }),
         });
       });
     });
