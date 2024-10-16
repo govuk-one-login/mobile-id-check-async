@@ -60,7 +60,7 @@ describe("Public Key Getter", () => {
     });
   });
 
-  describe("Given the response is empty", () => {
+  describe("Given there is no response body", () => {
     it("Returns error result", async () => {
       mockSendHttpRequest = jest.fn().mockResolvedValue({
         statusCode: 200,
@@ -84,7 +84,7 @@ describe("Public Key Getter", () => {
     });
   });
 
-  describe("Given the response is not a valid JWKS", () => {
+  describe("Given the response does not contain valid JWKS", () => {
     it("Returns error result", async () => {
       mockSendHttpRequest = jest.fn().mockResolvedValue({
         statusCode: 200,
@@ -153,7 +153,7 @@ describe("Public Key Getter", () => {
     });
   });
 
-  describe("Given getting the public key is successful", () => {
+  describe("Given getting a matching public key is successful", () => {
     it("Returns the public key", async () => {
       const result = await publicKeyGetter.getPublicKey(
         "https://mockJwksEndpoint.com",
