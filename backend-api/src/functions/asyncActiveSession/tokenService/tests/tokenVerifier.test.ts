@@ -29,8 +29,8 @@ describe("Token Verifier", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage:
-            "Error verifying token signature: JWSSignatureVerificationFailed: signature verification failed",
-          errorCategory: "SERVER_ERROR",
+            "Error verifying token signature",
+          errorCategory: "CLIENT_ERROR",
         });
       });
     });

@@ -9,10 +9,10 @@ export class TokenVerifier implements ITokenVerifier {
     let result: JWTVerifyResult;
     try {
       result = await jwtVerify(jwt, key);
-    } catch (error) {
+    } catch {
       return errorResult({
-        errorMessage: `Error verifying token signature: ${error}`,
-        errorCategory: "SERVER_ERROR",
+        errorMessage: `Error verifying token signature`,
+        errorCategory: "CLIENT_ERROR",
       });
     }
 
