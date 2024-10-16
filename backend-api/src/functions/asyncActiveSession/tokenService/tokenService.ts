@@ -87,7 +87,7 @@ export class TokenService implements ITokenService {
       throw new Error("Invalid issuer claim");
     }
 
-    if (!this.hasValidAudience(payload, expectedClaims.iss)) {
+    if (!this.hasValidAudience(payload, expectedClaims.aud)) {
       throw new Error("Invalid audience claim");
     }
 
@@ -100,11 +100,11 @@ export class TokenService implements ITokenService {
     }
 
     if (!this.hasValidExpiry(payload, currentTime)) {
-      throw new Error("Token expiry time is in the past");
+      throw new Error("Token expiry time is missing or is in the past");
     }
 
     if (!this.hasValidIssuedAtTime(payload, currentTime)) {
-      throw new Error("Token issued at time is in the future");
+      throw new Error("Token issued at time is missing or is in the future");
     }
 
     return { sub: payload.sub };
@@ -168,7 +168,7 @@ export class TokenService implements ITokenService {
     return (
       "nbf" in payload &&
       typeof payload.nbf === "number" &&
-      currentTime < payload.nbf
+      currentTime > payload.nbf
     );
   }
 

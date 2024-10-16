@@ -2,13 +2,14 @@ import jose from "node-jose";
 
 export class MockJWTBuilder {
   private jwt: IMockJwt = {
-    header: { alg: "HS256", type: "JWT" },
+    header: { alg: "HS256", type: "JWT", kid: "mockKid" },
     payload: {
       exp: Date.now() + 1000,
       iss: "mockIssuer",
-      aud: "mockIssuer",
+      aud: "mockAudience",
       scope: "dcmaw.session.async_create",
       client_id: "mockClientId",
+      sub: "testSub",
     },
     signature: "Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
   };
@@ -83,6 +84,11 @@ export class MockJWTBuilder {
     return this;
   };
 
+  deleteSub = (): this => {
+    delete this.jwt.payload.sub;
+    return this;
+  };
+
   getEncodedJwt = () => {
     const header = jose.util.base64url.encode(
       Buffer.from(JSON.stringify(this.jwt.header)),
@@ -110,6 +116,7 @@ interface IMockJwt {
     scope?: string;
     client_id?: string;
     aud?: string;
+    sub?: string;
   };
   signature: string;
 }

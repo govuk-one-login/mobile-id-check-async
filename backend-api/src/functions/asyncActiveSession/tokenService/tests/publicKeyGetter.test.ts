@@ -1,11 +1,9 @@
 import { IJwks, IPublicKeyGetter, PublicKeyGetter } from "../publicKeyGetter";
-import { MockJWTBuilder } from "../../../testUtils/mockJwtBuilder";
 import { importJWK } from "jose";
 
 describe("Public Key Getter", () => {
   let mockJwks: IJwks;
   let publicKeyGetter: IPublicKeyGetter;
-  let mockEncodedJwt: string;
   let mockSendHttpRequest;
 
   beforeEach(async () => {
@@ -41,40 +39,6 @@ describe("Public Key Getter", () => {
     publicKeyGetter = new PublicKeyGetter({
       sendHttpRequest: mockSendHttpRequest,
     });
-    mockEncodedJwt = new MockJWTBuilder().setKid("mockKid").getEncodedJwt();
-  });
-
-  describe("Given decoding the protected header fails", () => {
-    it("Returns error result", async () => {
-      const result = await publicKeyGetter.getPublicKey(
-        "https://mockJwksEndpoint.com",
-        "mockInvalidJWT",
-      );
-
-      expect(result.isError).toBe(true);
-      expect(result.value).toStrictEqual({
-        errorMessage:
-          "Error getting public key: TypeError: Invalid Token or Protected Header formatting",
-        errorCategory: "CLIENT_ERROR",
-      });
-    });
-  });
-
-  describe("Given kid is not present in JWT header", () => {
-    it("Returns error result", async () => {
-      mockEncodedJwt = new MockJWTBuilder().deleteKid().getEncodedJwt();
-      const result = await publicKeyGetter.getPublicKey(
-        "https://mockJwksEndpoint.com",
-        mockEncodedJwt,
-      );
-
-      expect(result.isError).toBe(true);
-      expect(result.value).toStrictEqual({
-        errorMessage:
-          "Error getting public key: Error: kid not present in JWT header",
-        errorCategory: "CLIENT_ERROR",
-      });
-    });
   });
 
   describe("Given a request error happens when tyring to get the JWKS", () => {
@@ -85,7 +49,7 @@ describe("Public Key Getter", () => {
       });
       const result = await publicKeyGetter.getPublicKey(
         "https://mockJwksEndpoint.com",
-        mockEncodedJwt,
+        "mockKid",
       );
 
       expect(result.isError).toBe(true);
@@ -109,7 +73,7 @@ describe("Public Key Getter", () => {
       });
       const result = await publicKeyGetter.getPublicKey(
         "https://mockJwksEndpoint.com",
-        mockEncodedJwt,
+        "mockKid",
       );
 
       expect(result.isError).toBe(true);
@@ -134,7 +98,7 @@ describe("Public Key Getter", () => {
       });
       const result = await publicKeyGetter.getPublicKey(
         "https://mockJwksEndpoint.com",
-        mockEncodedJwt,
+        "mockKid",
       );
 
       expect(result.isError).toBe(true);
@@ -148,12 +112,9 @@ describe("Public Key Getter", () => {
 
   describe("Given JWKS does not contain key matching provided key ID", () => {
     it("Returns error result", async () => {
-      mockEncodedJwt = new MockJWTBuilder()
-        .setKid("mockDifferentKid")
-        .getEncodedJwt();
       const result = await publicKeyGetter.getPublicKey(
         "https://mockJwksEndpoint.com",
-        mockEncodedJwt,
+        "unexpectedMockKid",
       );
 
       expect(result.isError).toBe(true);
@@ -180,7 +141,7 @@ describe("Public Key Getter", () => {
       });
       const result = await publicKeyGetter.getPublicKey(
         "https://mockJwksEndpoint.com",
-        mockEncodedJwt,
+        "mockKid",
       );
 
       expect(result.isError).toBe(true);
@@ -196,7 +157,7 @@ describe("Public Key Getter", () => {
     it("Returns the public key", async () => {
       const result = await publicKeyGetter.getPublicKey(
         "https://mockJwksEndpoint.com",
-        mockEncodedJwt,
+        "mockKid",
       );
 
       const expectedPublicKey = await importJWK(

@@ -1,6 +1,7 @@
 import { errorResult, Result, successResult } from "../../../utils/result";
 import { IPublicKeyGetter } from "../publicKeyGetter";
 import { ITokenService } from "../tokenService";
+import { ITokenVerifier } from "../tokenVerifier";
 
 // export class MockPubicKeyGetterGetPublicKeyError implements IPublicKeyGetter {
 //   getPublicKey() {
@@ -37,8 +38,23 @@ export class MockTokenServiceClientError implements ITokenService {
   }
 }
 
-export class MockTokenServiceSuccess {
+export class MockTokenServiceSuccess implements ITokenService {
   async validateServiceToken(): Promise<Result<string>> {
     return successResult("mockSub");
+  }
+}
+
+export class MockTokenVerifierError implements ITokenVerifier {
+  async verify(): Promise<Result<null>> {
+    return errorResult({
+      errorMessage: "Mock signature verification error",
+      errorCategory: "CLIENT_ERROR",
+    });
+  }
+}
+
+export class MockTokenVerifierSuccess implements ITokenVerifier {
+  async verify(): Promise<Result<null>> {
+    return successResult(null);
   }
 }
