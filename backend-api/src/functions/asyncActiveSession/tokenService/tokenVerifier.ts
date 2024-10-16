@@ -38,7 +38,7 @@ export class TokenVerifier implements ITokenVerifier {
     } catch {
       return errorResult({
         errorMessage: "Error verifying token signature",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: "CLIENT_ERROR",
       });
     }
 

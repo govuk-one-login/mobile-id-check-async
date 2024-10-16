@@ -48,7 +48,7 @@ export async function lambdaHandlerConstructor(
   const serviceTokenJwt = decryptResult.value;
 
   const tokenService = dependencies.tokenService(config.STS_JWKS_ENDPOINT);
-  const getSubFromTokenResult = await tokenService.getSubFromServiceToken(
+  const getSubFromTokenResult = await tokenService.validateServiceToken(
     serviceTokenJwt,
     {
       aud: "aud",

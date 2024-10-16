@@ -25,7 +25,7 @@ export class TokenService implements ITokenService {
     this.tokenVerifier = dependencies.tokenVerifier;
   }
 
-  async getSubFromServiceToken(
+  async validateServiceToken(
     token: string,
     expectedClaims: ExpectedClaims,
   ): Promise<Result<string>> {
@@ -195,7 +195,7 @@ export class TokenService implements ITokenService {
 }
 
 export interface ITokenService {
-  getSubFromServiceToken: (
+  validateServiceToken: (
     token: string,
     expectedClaims: ExpectedClaims,
   ) => Promise<Result<string>>;

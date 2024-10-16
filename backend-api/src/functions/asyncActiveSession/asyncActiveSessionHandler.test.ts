@@ -390,7 +390,7 @@ describe("Async Active Session", () => {
 });
 
 class MockTokenServiceServerError implements ITokenService {
-  async getSubFromServiceToken(): Promise<Result<string>> {
+  async validateServiceToken(): Promise<Result<string>> {
     return errorResult({
       errorMessage: "Mock server error",
       errorCategory: "SERVER_ERROR",
