@@ -161,7 +161,6 @@ describe("Token Service", () => {
         const mockEncodedJwt = new MockJWTBuilder()
           .deleteScope()
           .getEncodedJwt();
-        console.log(mockEncodedJwt);
         const result = await tokenService.validateServiceToken(
           mockEncodedJwt,
           mockExpectedClaims,
@@ -197,9 +196,7 @@ describe("Token Service", () => {
       it("Returns a client error result", async () => {
         const mockEncodedJwt = new MockJWTBuilder()
           .setScope("idCheck.activeSession.read")
-          .deleteSub()
           .getEncodedJwt();
-        console.log(mockEncodedJwt);
         const result = await tokenService.validateServiceToken(
           mockEncodedJwt,
           mockExpectedClaims,
@@ -217,6 +214,7 @@ describe("Token Service", () => {
       it("Returns a client error result", async () => {
         const mockEncodedJwt = new MockJWTBuilder()
           .setScope("idCheck.activeSession.read")
+          .setSub("mockSub")
           .deleteExp()
           .getEncodedJwt();
         const result = await tokenService.validateServiceToken(
@@ -236,6 +234,7 @@ describe("Token Service", () => {
       it("Returns a client error result", async () => {
         const mockEncodedJwt = new MockJWTBuilder()
           .setScope("idCheck.activeSession.read")
+          .setSub("mockSub")
           .setExp(1706783129)
           .getEncodedJwt();
         const result = await tokenService.validateServiceToken(
@@ -255,6 +254,7 @@ describe("Token Service", () => {
       it("Returns a client error result", async () => {
         const mockEncodedJwt = new MockJWTBuilder()
           .setScope("idCheck.activeSession.read")
+          .setSub("mockSub")
           .getEncodedJwt();
         const result = await tokenService.validateServiceToken(
           mockEncodedJwt,
@@ -273,8 +273,8 @@ describe("Token Service", () => {
     describe("Given the issued at time claim value is in the future", () => {
       it("Returns a client error result", async () => {
         const mockEncodedJwt = new MockJWTBuilder()
-          .setKid("mockKid")
           .setScope("idCheck.activeSession.read")
+          .setSub("mockSub")
           .setIat(1728555929)
           .getEncodedJwt();
         const result = await tokenService.validateServiceToken(
@@ -297,6 +297,7 @@ describe("Token Service", () => {
       it("Returns a client error result", async () => {
         const mockEncodedJwt = new MockJWTBuilder()
           .setScope("idCheck.activeSession.read")
+          .setSub("mockSub")
           .setIat(1710028700)
           .getEncodedJwt();
         tokenService = new TokenService("testJwksUri", {
@@ -319,6 +320,7 @@ describe("Token Service", () => {
       it("Returns the sub claim", async () => {
         const mockEncodedJwt = new MockJWTBuilder()
           .setScope("idCheck.activeSession.read")
+          .setSub("mockSub")
           .setIat(1710028700)
           .getEncodedJwt();
         const result = await tokenService.validateServiceToken(
@@ -327,7 +329,7 @@ describe("Token Service", () => {
         );
 
         expect(result.isError).toBe(false);
-        expect(result.value).toStrictEqual("testSub");
+        expect(result.value).toStrictEqual("mockSub");
       });
     });
   });

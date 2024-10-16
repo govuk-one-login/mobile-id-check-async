@@ -1,5 +1,4 @@
 import { errorResult, Result, successResult } from "../../../utils/result";
-import { IPublicKeyGetter } from "../publicKeyGetter";
 import { ITokenService } from "../tokenService";
 import { ITokenVerifier } from "../tokenVerifier";
 

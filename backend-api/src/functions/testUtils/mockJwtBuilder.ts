@@ -3,14 +3,13 @@ import jose from "node-jose";
 
 export class MockJWTBuilder {
   private jwt: IMockJwt = {
-    header: { alg: "ES256", typ: "JWT", kid: "mockKid"},
+    header: { alg: "ES256", typ: "JWT", kid: "mockKid" },
     payload: {
       exp: Date.now() + 1000,
       iss: "mockIssuer",
       aud: "mockAudience",
       scope: "dcmaw.session.async_create",
       client_id: "mockClientId",
-      sub: "testSub",
     },
     signature: "Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
   };
@@ -82,6 +81,11 @@ export class MockJWTBuilder {
 
   deleteScope = (): this => {
     delete this.jwt.payload.scope;
+    return this;
+  };
+
+  setSub = (sub: string): this => {
+    this.jwt.payload.sub = sub;
     return this;
   };
 
