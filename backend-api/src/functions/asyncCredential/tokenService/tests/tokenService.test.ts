@@ -253,9 +253,9 @@ describe("Token Service", () => {
         expect(result.isError).toEqual(false);
         expect(result.value).toEqual({
           encodedJwt:
-            "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjE5MDExNDMwMDAsImlzcyI6Im1vY2tJc3N1ZXIiLCJhdWQiOiJtb2NrSXNzdWVyIiwic2NvcGUiOiJkY21hdy5zZXNzaW9uLmFzeW5jX2NyZWF0ZSIsImNsaWVudF9pZCI6Im1vY2tDbGllbnRJZCJ9.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
+            "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1vY2tLaWQifQ.eyJleHAiOjE3MjE5MDExNDMwMDAsImlzcyI6Im1vY2tJc3N1ZXIiLCJhdWQiOiJtb2NrQXVkaWVuY2UiLCJzY29wZSI6ImRjbWF3LnNlc3Npb24uYXN5bmNfY3JlYXRlIiwiY2xpZW50X2lkIjoibW9ja0NsaWVudElkIn0.Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
           jwtPayload: {
-            aud: "mockIssuer",
+            aud: "mockAudience",
             client_id: "mockClientId",
             exp: 1721901143000,
             iss: "mockIssuer",

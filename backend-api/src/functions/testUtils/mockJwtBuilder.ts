@@ -89,11 +89,9 @@ export class MockJWTBuilder {
     return this;
   };
 
-  static getPublicKey = async (publicKey: IMockPublicKey) => {
-    return await importJWK(publicKey);
-  };
-
-  getSignedEncodedJwt = async (privateKey: IMockPrivateKey) => {
+  getSignedEncodedJwt = async (
+    privateKey: IMockPrivateKey = MOCK_PRIVATE_KEY,
+  ) => {
     this.jwt.header.typ = "JWT";
     const signingKey = await importJWK(privateKey);
     const signedEncodedJwt = await new SignJWT(this.jwt.payload)
@@ -116,6 +114,15 @@ export class MockJWTBuilder {
   };
 }
 
+const MOCK_PRIVATE_KEY = {
+  crv: "P-256",
+  d: "IMeUPld6UA1WUKJF34HDwZGT2tArxZslpl_dVYzOLKU",
+  kid: "sThKMT3oxcTXG-sgMw2EVPTE9Y8W43wLXfqu7zT46-w",
+  kty: "EC",
+  x: "YMoiJArVzO9RIVR7J9mUlGixqWyXCAYrZLtdc8EhuO8",
+  y: "47JYyUr0qlg3VksGlHCAdpwR_w1dixXfcTi7hBEfrRo",
+};
+
 interface IMockJwt {
   header: {
     alg: string;
@@ -133,16 +140,6 @@ interface IMockJwt {
     sub?: string;
   };
   signature: string;
-}
-
-interface IMockPublicKey {
-  alg: string;
-  crv: string;
-  kid: string;
-  kty: string;
-  use: string;
-  x: string;
-  y: string;
 }
 
 interface IMockPrivateKey {

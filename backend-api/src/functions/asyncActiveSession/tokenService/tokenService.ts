@@ -2,6 +2,13 @@ import { errorResult, Result, successResult } from "../../utils/result";
 import { decodeJwt, decodeProtectedHeader } from "jose";
 import { ITokenVerifier, TokenVerifier } from "./tokenVerifier";
 
+export interface ITokenService {
+  validateServiceToken: (
+    token: string,
+    expectedClaims: ExpectedClaims,
+  ) => Promise<Result<string>>;
+}
+
 export type ExpectedClaims = {
   aud: string;
   iss: string;
@@ -18,10 +25,10 @@ const tokenServiceDependencies: TokenServicesDependencies = {
 
 export class TokenService implements ITokenService {
   private readonly tokenVerifier: ITokenVerifier;
-  private jwksUri: string;
+  private jwksEndpoint: string;
 
-  constructor(jwksUri: string, dependencies = tokenServiceDependencies) {
-    this.jwksUri = jwksUri;
+  constructor(jwksEndpoint: string, dependencies = tokenServiceDependencies) {
+    this.jwksEndpoint = jwksEndpoint;
     this.tokenVerifier = dependencies.tokenVerifier;
   }
 
@@ -29,28 +36,27 @@ export class TokenService implements ITokenService {
     token: string,
     expectedClaims: ExpectedClaims,
   ): Promise<Result<string>> {
-
-    const validateServiceTokenHeaderResult = this.validateServiceTokenHeader(token);
+    const validateServiceTokenHeaderResult =
+      this.validateServiceTokenHeader(token);
     if (validateServiceTokenHeaderResult.isError) {
       return validateServiceTokenHeaderResult;
     }
-
     const { kid } = validateServiceTokenHeaderResult.value;
 
-
-    const validateServiceTokenPayloadResult = this.validateServiceTokenPayload(token, expectedClaims);
+    const validateServiceTokenPayloadResult = this.validateServiceTokenPayload(
+      token,
+      expectedClaims,
+    );
     if (validateServiceTokenPayloadResult.isError) {
       return validateServiceTokenPayloadResult;
     }
-
     const { sub } = validateServiceTokenPayloadResult.value;
 
     const verifyResult = await this.tokenVerifier.verify(
       token,
       kid,
-      this.jwksUri,
+      this.jwksEndpoint,
     );
-
     if (verifyResult.isError) {
       return verifyResult;
     }
@@ -126,7 +132,7 @@ export class TokenService implements ITokenService {
     }
 
     return successResult({
-      sub: payload.sub
+      sub: payload.sub,
     });
   }
 
@@ -218,11 +224,4 @@ export class TokenService implements ITokenService {
   hasValidKid(decodedHeader: object): decodedHeader is Record<"kid", string> {
     return "kid" in decodedHeader && typeof decodedHeader.kid === "string";
   }
-}
-
-export interface ITokenService {
-  validateServiceToken: (
-    token: string,
-    expectedClaims: ExpectedClaims,
-  ) => Promise<Result<string>>;
 }

@@ -263,8 +263,7 @@ describe("Token Service", () => {
 
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
-          errorMessage:
-            "Token issued at time is missing or is in the future",
+          errorMessage: "Token issued at time is missing or is in the future",
           errorCategory: "CLIENT_ERROR",
         });
       });
@@ -284,8 +283,7 @@ describe("Token Service", () => {
 
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
-          errorMessage:
-            "Token issued at time is missing or is in the future",
+          errorMessage: "Token issued at time is missing or is in the future",
           errorCategory: "CLIENT_ERROR",
         });
       });
