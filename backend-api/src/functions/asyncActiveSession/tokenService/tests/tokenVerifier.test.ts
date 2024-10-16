@@ -28,8 +28,7 @@ describe("Token Verifier", () => {
 
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
-          errorMessage:
-            "Error verifying token signature",
+          errorMessage: "Error verifying token signature",
           errorCategory: "CLIENT_ERROR",
         });
       });

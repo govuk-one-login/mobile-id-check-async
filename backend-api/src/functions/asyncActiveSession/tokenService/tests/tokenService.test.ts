@@ -400,7 +400,7 @@ describe("Token Service", () => {
 
       describe("Given there is an error verifying token signature", () => {
         it("Returns error result", async () => {
-          dependencies.tokenVerifier = () => new MockTokenVerifierVerifyError()
+          dependencies.tokenVerifier = () => new MockTokenVerifierVerifyError();
           tokenService = new TokenService(dependencies);
           jest.spyOn(global, "fetch").mockImplementation(() =>
             Promise.resolve({

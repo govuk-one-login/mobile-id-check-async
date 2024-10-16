@@ -22,10 +22,12 @@ export class MockPubicKeyGetterGetPublicKeySuccess implements IPublicKeyGetter {
 
 export class MockTokenVerifierVerifyError implements ITokenVerifier {
   verify(): Promise<Result<JWTVerifyResult>> {
-    return Promise.resolve(errorResult({
-      errorMessage: "Error verifying token signature",
-      errorCategory: "CLIENT_ERROR"
-    }));
+    return Promise.resolve(
+      errorResult({
+        errorMessage: "Error verifying token signature",
+        errorCategory: "CLIENT_ERROR",
+      }),
+    );
   }
 }
 
