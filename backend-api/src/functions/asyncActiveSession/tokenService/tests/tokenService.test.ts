@@ -355,7 +355,7 @@ describe("Token Service", () => {
     });
 
     describe("Token signature verification", () => {
-      describe("Given there is an error getting public key from JWKS (e.g. kid from JWT header is not found in JWKS)", () => {
+      describe("Given there is an error getting public key from JWKS (e.g. when kid from JWT header is not found in JWKS)", () => {
         it("Returns error result", async () => {
           dependencies.publicKeyGetter = () =>
             new MockPubicKeyGetterGetPublicKeyError();
