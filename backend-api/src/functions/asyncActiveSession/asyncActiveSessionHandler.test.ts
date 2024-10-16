@@ -22,9 +22,10 @@ import {
 } from "./tokenService/tests/mocks";
 
 const env = {
-  STS_JWKS_ENDPOINT: "https://mockUrl.com",
   ENCRYPTION_KEY_ARN: "mockEncryptionKeyArn",
   SESSION_TABLE_NAME: "mockSessionTableName",
+  ISSUER: "mockIssuer",
+  STS_BASE_URL: "https://mockUrl.com/",
 };
 
 describe("Async Active Session", () => {
@@ -68,10 +69,10 @@ describe("Async Active Session", () => {
       });
     });
 
-    describe("Given the STS_JWKS_ENDPOINT is not a URL", () => {
+    describe("Given the STS_BASE_URL is not a URL", () => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
-        dependencies.env["STS_JWKS_ENDPOINT"] = "mockInvalidSessionTtlSecs";
+        dependencies.env["STS_BASE_URL"] = "mockInvalidSessionTtlSecs";
         const event = buildRequest();
 
         const result = await lambdaHandlerConstructor(dependencies, event);
@@ -80,7 +81,7 @@ describe("Async Active Session", () => {
           "ENVIRONMENT_VARIABLE_MISSING",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "STS_JWKS_ENDPOINT is not a URL",
+          errorMessage: "STS_BASE_URL is not a URL",
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },

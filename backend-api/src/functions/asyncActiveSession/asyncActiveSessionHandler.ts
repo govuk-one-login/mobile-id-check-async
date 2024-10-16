@@ -51,8 +51,8 @@ export async function lambdaHandlerConstructor(
   const validateServiceTokenResult = await tokenService.validateServiceToken(
     serviceTokenJwt,
     {
-      aud: "aud",
-      iss: "iss",
+      aud: config.ISSUER,
+      iss: config.STS_BASE_URL,
       scope: "idCheck.activeSession.read",
     },
   );

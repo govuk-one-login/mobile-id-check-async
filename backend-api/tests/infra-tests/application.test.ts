@@ -16,11 +16,10 @@ describe("Backend application infrastructure", () => {
   });
 
   describe("EnvironmentVariable mapping values", () => {
-    test("STS jwks endpoint only assigned to Dev and Build", () => {
+    test("STS base url only assigned to Dev and Build", () => {
       const expectedEnvironmentVariablesValues = {
-        dev: "https://mob-sts-mock.review-b-async.dev.account.gov.uk/.well-known/jwks.json",
-        build:
-          "https://mob-sts-mock.review-b-async.build.account.gov.uk/.well-known/jwks.json",
+        dev: "https://mob-sts-mock.review-b-async.dev.account.gov.uk",
+        build: "https://mob-sts-mock.review-b-async.build.account.gov.uk",
         staging: "",
         integration: "",
         production: "",
@@ -29,7 +28,7 @@ describe("Backend application infrastructure", () => {
       const mappingHelper = new Mappings(template);
       mappingHelper.validateEnvironmentVariablesMapping({
         environmentFlags: expectedEnvironmentVariablesValues,
-        mappingBottomLevelKey: "STSJWKSENDPOINT",
+        mappingBottomLevelKey: "STSBASEURL",
       });
     });
   });
