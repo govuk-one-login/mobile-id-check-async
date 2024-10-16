@@ -1,5 +1,5 @@
 import { errorResult, Result, successResult } from "../../utils/result";
-import { decodeJwt } from "jose";
+import { decodeJwt, decodeProtectedHeader } from "jose";
 import { ITokenVerifier, TokenVerifier } from "./tokenVerifier";
 
 export type ExpectedClaims = {
@@ -26,37 +26,53 @@ export class TokenService implements ITokenService {
   }
 
   async getSubFromServiceToken(
-    jwt: string,
+    token: string,
     expectedClaims: ExpectedClaims,
   ): Promise<Result<string>> {
+    let header;
+    try {
+      header = this.validateServiceTokenHeader(token);
+    } catch (error) {
+      return errorResult({
+        errorMessage: `${error}`,
+        errorCategory: "CLIENT_ERROR",
+      });
+    }
+    const { kid } = header;
+
     let payload;
     try {
-      payload = this.validateServiceTokenClaims(jwt, expectedClaims);
+      payload = this.validateServiceTokenPayload(token, expectedClaims);
     } catch (error) {
       return errorResult({
         errorCategory: "CLIENT_ERROR",
         errorMessage: `${error}`,
       });
     }
+    const { sub } = payload;
 
-    const verifyResult = await this.tokenVerifier.verify(jwt, this.jwksUri);
+    const verifyResult = await this.tokenVerifier.verify(
+      token,
+      kid,
+      this.jwksUri,
+    );
 
     if (verifyResult.isError) {
       return verifyResult;
     }
 
-    return successResult(payload.sub);
+    return successResult(sub);
   }
 
-  validateServiceTokenClaims(
-    serviceToken: string,
+  validateServiceTokenPayload(
+    token: string,
     expectedClaims: ExpectedClaims,
-  ) {
+  ): { sub: string } {
     let payload;
     try {
-      payload = decodeJwt(serviceToken);
+      payload = decodeJwt(token);
     } catch {
-      throw new Error("Invalid token");
+      throw new Error("Failed to decode token payload");
     }
 
     const currentTime = Math.floor(Date.now() / 1000);
@@ -88,10 +104,10 @@ export class TokenService implements ITokenService {
     }
 
     if (!this.hasValidIssuedAtTime(payload, currentTime)) {
-      throw new Error("Token issue at time is in the future");
+      throw new Error("Token issued at time is in the future");
     }
 
-    return payload;
+    return { sub: payload.sub };
   }
 
   hasValidIssuer(
@@ -154,6 +170,27 @@ export class TokenService implements ITokenService {
       typeof payload.nbf === "number" &&
       currentTime < payload.nbf
     );
+  }
+
+  validateServiceTokenHeader(token: string): { kid: string } {
+    let header;
+    try {
+      header = decodeProtectedHeader(token);
+    } catch {
+      throw new Error("Failed to decode token header");
+    }
+
+    if (!this.hasValidKid(header)) {
+      throw new Error("Invalid kid claim");
+    }
+
+    return {
+      kid: header.kid,
+    };
+  }
+
+  hasValidKid(decodedHeader: object): decodedHeader is Record<"kid", string> {
+    return "kid" in decodedHeader && typeof decodedHeader.kid === "string";
   }
 }
 

@@ -1,9 +1,4 @@
-import {
-  decodeProtectedHeader,
-  importJWK,
-  KeyLike,
-  ProtectedHeaderParameters,
-} from "jose";
+import { importJWK, KeyLike } from "jose";
 import { errorResult, Result, successResult } from "../../utils/result";
 import {
   ISendHttpRequest,
@@ -26,18 +21,8 @@ export class PublicKeyGetter implements IPublicKeyGetter {
 
   async getPublicKey(
     jwksEndpoint: string,
-    jwt: string,
+    kid: string,
   ): Promise<Result<Uint8Array | KeyLike>> {
-    let kid;
-    try {
-      kid = this.getTokenKid(jwt);
-    } catch (error) {
-      return errorResult({
-        errorMessage: `Error getting public key: ${error}`,
-        errorCategory: "CLIENT_ERROR",
-      });
-    }
-
     let jwk;
     try {
       jwk = await this.getJwk(jwksEndpoint, kid);
@@ -59,16 +44,6 @@ export class PublicKeyGetter implements IPublicKeyGetter {
     }
 
     return successResult(publicKey);
-  }
-
-  private getTokenKid(jwt: string): string {
-    const decodedProtectedHeader: ProtectedHeaderParameters =
-      decodeProtectedHeader(jwt);
-    const { kid } = decodedProtectedHeader;
-    if (!kid) {
-      throw new Error("kid not present in JWT header");
-    }
-    return kid;
   }
 
   private async getJwk(jwksEndpoint: string, kid: string): Promise<IJwk> {
@@ -120,7 +95,7 @@ export class PublicKeyGetter implements IPublicKeyGetter {
 export interface IPublicKeyGetter {
   getPublicKey: (
     jwksEndpoint: string,
-    jwt: string,
+    kid: string,
   ) => Promise<Result<KeyLike | Uint8Array>>;
 }
 

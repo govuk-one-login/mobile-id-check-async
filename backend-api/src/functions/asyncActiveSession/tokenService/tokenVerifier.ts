@@ -17,10 +17,14 @@ export class TokenVerifier implements ITokenVerifier {
     this.publicKeyGetter = dependencies.publicKeyGetter;
   }
 
-  async verify(jwt: string, jwksUri: string): Promise<Result<JWTVerifyResult>> {
+  async verify(
+    token: string,
+    kid: string,
+    jwksUri: string,
+  ): Promise<Result<JWTVerifyResult>> {
     const getPublicKeyResult = await this.publicKeyGetter.getPublicKey(
       jwksUri,
-      jwt,
+      kid,
     );
     if (getPublicKeyResult.isError) {
       return getPublicKeyResult;
@@ -30,7 +34,7 @@ export class TokenVerifier implements ITokenVerifier {
 
     let result: JWTVerifyResult;
     try {
-      result = await jwtVerify(jwt, publicKey);
+      result = await jwtVerify(token, publicKey);
     } catch {
       return errorResult({
         errorMessage: "Error verifying token signature",
@@ -43,5 +47,9 @@ export class TokenVerifier implements ITokenVerifier {
 }
 
 export interface ITokenVerifier {
-  verify: (jwt: string, jwksUri: string) => Promise<Result<JWTVerifyResult>>;
+  verify: (
+    token: string,
+    kid: string,
+    jwksUri: string,
+  ) => Promise<Result<JWTVerifyResult>>;
 }
