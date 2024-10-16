@@ -2,7 +2,7 @@ import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 
 describe("GET /async/activeSession", () => {
   describe("Given service token is missing in the request header", () => {
-    it("Returns 401 status code with error", async () => {
+    it("Returns an error and 401 status code", async () => {
       const response = await SESSIONS_API_INSTANCE.get("/async/activeSession");
 
       expect(response.status).toBe(401);
