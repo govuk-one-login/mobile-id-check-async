@@ -8,6 +8,7 @@ export type MessageName =
   | "AUTHENTICATION_HEADER_INVALID"
   | "FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN"
   | "INTERNAL_SERVER_ERROR"
+  | "JWE_DECRYPTION_ERROR"
   | CommonMessageNames;
 
 export const registeredLogs: RegisteredLogMessages<MessageName> = {
@@ -19,6 +20,9 @@ export const registeredLogs: RegisteredLogMessages<MessageName> = {
   },
   INTERNAL_SERVER_ERROR: {
     messageCode: "MOBILE_ASYNC_INTERNAL_SERVER_ERROR",
+  },
+  JWE_DECRYPTION_ERROR: {
+    messageCode: "MOBILE_ASYNC_JWE_DECRYPTION_ERROR",
   },
   ...commonMessages,
 };
