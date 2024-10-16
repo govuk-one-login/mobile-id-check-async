@@ -1,8 +1,9 @@
+import { importJWK, SignJWT } from "jose";
 import jose from "node-jose";
 
 export class MockJWTBuilder {
   private jwt: IMockJwt = {
-    header: { alg: "HS256", type: "JWT" },
+    header: { alg: "ES256", typ: "JWT" },
     payload: {
       exp: Date.now() + 1000,
       iss: "mockIssuer",
@@ -83,6 +84,20 @@ export class MockJWTBuilder {
     return this;
   };
 
+  static getPublicKey = async (publicKey: IMockPublicKey) => {
+    return await importJWK(publicKey);
+  };
+
+  getSignedEncodedJwt = async (privateKey: IMockPrivateKey) => {
+    this.jwt.header.typ = "JWT";
+    const signingKey = await importJWK(privateKey);
+    const signedEncodedJwt = await new SignJWT(this.jwt.payload)
+      .setProtectedHeader(this.jwt.header)
+      .sign(signingKey);
+
+    return signedEncodedJwt;
+  };
+
   getEncodedJwt = () => {
     const header = jose.util.base64url.encode(
       Buffer.from(JSON.stringify(this.jwt.header)),
@@ -99,7 +114,7 @@ export class MockJWTBuilder {
 interface IMockJwt {
   header: {
     alg: string;
-    type: string;
+    typ: string;
     kid?: string;
   };
   payload: {
@@ -112,4 +127,23 @@ interface IMockJwt {
     aud?: string;
   };
   signature: string;
+}
+
+interface IMockPublicKey {
+  alg: string;
+  crv: string;
+  kid: string;
+  kty: string;
+  use: string;
+  x: string;
+  y: string;
+}
+
+interface IMockPrivateKey {
+  crv: string;
+  d: string;
+  kid: string;
+  kty: string;
+  x: string;
+  y: string;
 }

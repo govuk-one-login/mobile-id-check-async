@@ -4,8 +4,8 @@ import {
   SuccessfulHttpResponse,
 } from "../../services/http/sendHttpRequest";
 import { errorResult, Result, successResult } from "../../utils/result";
-import { jwtVerify, JWTVerifyResult, KeyLike } from "jose";
 import { IJwks, IPublicKeyGetter } from "./publicKeyGetter";
+import { ITokenVerifier } from "./tokenVerifier";
 
 export class TokenService implements ITokenService {
   private readonly dependencies: ITokenServiceDependencies;
@@ -40,7 +40,8 @@ export class TokenService implements ITokenService {
 
     const publicKey = getPublicKeyFromJwksResult.value;
 
-    const verifyTokenSignatureResult = await this.verifyTokenSignature(
+    const tokenVerifier = this.dependencies.tokenVerifier();
+    const verifyTokenSignatureResult = await tokenVerifier.verify(
       jwt,
       publicKey,
     );
@@ -116,23 +117,6 @@ export class TokenService implements ITokenService {
 
     return successResult(jwks);
   }
-
-  private async verifyTokenSignature(
-    jwt: string,
-    publicKey: Uint8Array | KeyLike,
-  ): Promise<Result<JWTVerifyResult>> {
-    let result: JWTVerifyResult;
-    try {
-      result = await jwtVerify(jwt, publicKey);
-    } catch (error) {
-      return errorResult({
-        errorMessage: `Failed verifying service token signature. ${error}`,
-        errorCategory: "SERVER_ERROR",
-      });
-    }
-
-    return successResult(result);
-  }
 }
 
 export interface ITokenService {
@@ -145,4 +129,5 @@ export interface ITokenService {
 
 export interface ITokenServiceDependencies {
   publicKeyGetter: () => IPublicKeyGetter;
+  tokenVerifier: () => ITokenVerifier;
 }

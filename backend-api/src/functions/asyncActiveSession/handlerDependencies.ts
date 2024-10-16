@@ -11,10 +11,12 @@ import {
   ITokenServiceDependencies,
   TokenService,
 } from "./tokenService/tokenService";
+import { TokenVerifier } from "./tokenService/tokenVerifier";
 import { IDecryptJwe, JweDecrypter } from "./jwe/jweDecrypter";
 
 const tokenServiceDependencies: ITokenServiceDependencies = {
   publicKeyGetter: () => new PublicKeyGetter(),
+  tokenVerifier: () => new TokenVerifier(),
 };
 
 export interface IAsyncActiveSessionDependencies {
