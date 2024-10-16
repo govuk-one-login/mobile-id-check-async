@@ -1,13 +1,13 @@
 import { createDecipheriv } from "node:crypto";
 
 export class SymmetricDecrypter implements IDecryptSymmetric {
-  async decrypt(
+  decrypt(
     encryptionKey: Uint8Array,
     initializationVector: Uint8Array,
     encryptedData: Uint8Array,
     authenticationTag: Uint8Array,
     additionalAuthenticatedData: Buffer,
-  ): Promise<string> {
+  ): string {
     const decipher = createDecipheriv(
       "aes-256-gcm",
       encryptionKey,
@@ -30,5 +30,5 @@ export interface IDecryptSymmetric {
     encryptedData: Uint8Array,
     authenticationTag: Uint8Array,
     additionalAuthenticatedData: Buffer,
-  ) => Promise<string>;
+  ) => string;
 }

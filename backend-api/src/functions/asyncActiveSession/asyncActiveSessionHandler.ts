@@ -31,20 +31,23 @@ export async function lambdaHandlerConstructor(
     });
     return unauthorizedResponse;
   }
-
   const serviceTokenJwe = authorizationHeaderResult.value;
 
   const decryptResult = await dependencies
     .jweDecrypter(config.ENCRYPTION_KEY_ARN)
     .decrypt(serviceTokenJwe);
-
   if (decryptResult.isError) {
-    logger.log("JWE_DECRYPTION_ERROR", {
+    if (decryptResult.value.errorCategory === "CLIENT_ERROR") {
+      logger.log("JWE_DECRYPTION_ERROR", {
+        errorMessage: decryptResult.value.errorMessage,
+      });
+      return badRequestResponse("Failed to decrypt service token");
+    }
+    logger.log("INTERNAL_SERVER_ERROR", {
       errorMessage: decryptResult.value.errorMessage,
     });
-    return badRequestResponse("Failed decrypting service token JWE");
+    return serverErrorResponse;
   }
-
   const serviceTokenJwt = decryptResult.value;
 
   const tokenService = dependencies.tokenService(config.STS_JWKS_ENDPOINT);
@@ -56,7 +59,6 @@ export async function lambdaHandlerConstructor(
       scope: "idCheck.activeSession.read",
     },
   );
-
   if (validateServiceTokenResult.isError) {
     if (validateServiceTokenResult.value.errorCategory === "CLIENT_ERROR") {
       logger.log("SERVICE_TOKEN_VALIDATION_ERROR", {
@@ -64,7 +66,6 @@ export async function lambdaHandlerConstructor(
       });
       return badRequestResponse("Failed to validate service token");
     }
-
     logger.log("INTERNAL_SERVER_ERROR", {
       errorMessage: validateServiceTokenResult.value.errorMessage,
     });

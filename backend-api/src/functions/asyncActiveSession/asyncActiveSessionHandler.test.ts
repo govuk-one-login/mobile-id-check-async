@@ -12,7 +12,8 @@ import {
   MockSessionServiceGetNullSuccessResult,
 } from "../services/session/tests/mocks";
 import {
-  MockJweDecrypterFailure,
+  MockJweDecrypterClientError,
+  MockJweDecrypterServerError,
   MockJweDecrypterSuccess,
 } from "./jwe/tests/mocks";
 import {
@@ -210,9 +211,41 @@ describe("Async Active Session", () => {
   });
 
   describe("Decrypt JWE", () => {
-    describe("Given decrypting the service token fails", () => {
+    describe("Given decrypting the service token fails due to a server error", () => {
+      it("Logs and returns 500 Server Error response", async () => {
+        dependencies.jweDecrypter = () => new MockJweDecrypterServerError();
+
+        const event = buildRequest({
+          headers: {
+            Authorization: "Bearer protectedHeader.encryptedKey.iv.ciphertext",
+          },
+        });
+
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+        );
+
+        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+          "INTERNAL_SERVER_ERROR",
+        );
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: "Some mock decryption server error",
+        });
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
+        });
+      });
+    });
+
+    describe("Given decrypting the service token fails due to a client error", () => {
       it("Logs and returns 400 Bad Request response", async () => {
-        dependencies.jweDecrypter = () => new MockJweDecrypterFailure();
+        dependencies.jweDecrypter = () => new MockJweDecrypterClientError();
 
         const event = buildRequest({
           headers: {
@@ -229,14 +262,14 @@ describe("Async Active Session", () => {
           "JWE_DECRYPTION_ERROR",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Some mock decryption error",
+          errorMessage: "Some mock decryption client error",
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "Failed decrypting service token JWE",
+            error_description: "Failed to decrypt service token JWE",
           }),
         });
       });

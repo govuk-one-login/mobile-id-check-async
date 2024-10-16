@@ -57,13 +57,13 @@ export class JweDecrypter implements IDecryptJwe {
     } catch (error) {
       return errorResult({
         errorMessage: `Error decrypting JWE: Unable to decrypt encryption key: ${error}`,
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: "SERVER_ERROR",
       });
     }
 
     let payload: string;
     try {
-      payload = await this.symmetricDecrypter.decrypt(
+      payload = this.symmetricDecrypter.decrypt(
         cek,
         Buffer.from(initializationVector, "base64url"),
         Buffer.from(encryptedData, "base64url"),

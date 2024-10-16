@@ -8,23 +8,32 @@ export class MockJweDecrypterSuccess implements IDecryptJwe {
   }
 }
 
-export class MockJweDecrypterFailure implements IDecryptJwe {
+export class MockJweDecrypterServerError implements IDecryptJwe {
   async decrypt(): Promise<Result<string>> {
     return errorResult({
-      errorMessage: "Some mock decryption error",
+      errorMessage: "Some mock decryption server error",
       errorCategory: "SERVER_ERROR",
     });
   }
 }
 
+export class MockJweDecrypterClientError implements IDecryptJwe {
+  async decrypt(): Promise<Result<string>> {
+    return errorResult({
+      errorMessage: "Some mock decryption client error",
+      errorCategory: "CLIENT_ERROR",
+    });
+  }
+}
+
 export class MockSymmetricDecrypterSuccess implements IDecryptSymmetric {
-  async decrypt(): Promise<string> {
-    return Promise.resolve("header.payload.signature");
+  decrypt(): string {
+    return "header.payload.signature";
   }
 }
 
 export class MockSymmetricDecrypterFailure implements IDecryptSymmetric {
-  async decrypt(): Promise<string> {
-    return Promise.reject("Some mock symmetric decryption error");
+  decrypt(): string {
+    throw new Error("Some mock symmetric decryption error");
   }
 }

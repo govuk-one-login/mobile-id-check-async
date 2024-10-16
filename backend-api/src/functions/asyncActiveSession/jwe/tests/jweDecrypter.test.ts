@@ -43,7 +43,7 @@ describe("Decrypt JWE", () => {
       expect(result.value).toStrictEqual({
         errorMessage:
           "Error decrypting JWE: Unable to decrypt encryption key: Some mock asymmetric decryption error",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: "SERVER_ERROR",
       });
     });
   });
@@ -58,7 +58,7 @@ describe("Decrypt JWE", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage:
-          "Error decrypting JWE: Unable to decrypt payload: Some mock symmetric decryption error",
+          "Error decrypting JWE: Unable to decrypt payload: Error: Some mock symmetric decryption error",
         errorCategory: "CLIENT_ERROR",
       });
     });
