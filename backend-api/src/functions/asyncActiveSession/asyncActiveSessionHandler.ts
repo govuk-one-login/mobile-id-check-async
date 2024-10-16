@@ -49,7 +49,6 @@ export async function lambdaHandlerConstructor(
     return serverErrorResponse;
   }
   const serviceTokenJwt = decryptResult.value;
-  console.log(serviceTokenJwt);
 
   const tokenService = dependencies.tokenService(config.STS_JWKS_ENDPOINT);
   const validateServiceTokenResult = await tokenService.validateServiceToken(
@@ -72,21 +71,16 @@ export async function lambdaHandlerConstructor(
     });
     return serverErrorResponse;
   }
-
   const sub = validateServiceTokenResult.value;
-
-  console.log(sub);
 
   const sessionService = dependencies.sessionService(config.SESSION_TABLE_NAME);
   const getActiveSessionResult = await sessionService.getActiveSession(sub);
-
   if (getActiveSessionResult.isError) {
     logger.log("INTERNAL_SERVER_ERROR", {
       errorMessage: getActiveSessionResult.value.errorMessage,
     });
     return serverErrorResponse;
   }
-
   const session = getActiveSessionResult.value;
   if (session === null) {
     return notFoundResponse;
