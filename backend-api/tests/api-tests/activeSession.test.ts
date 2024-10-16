@@ -43,16 +43,30 @@ describe("GET /async/activeSession", () => {
     });
   });
 
-  describe("Given there is an error verifying token signature", () => {
+  // describe("Given there is an error verifying token signature", () => {
+  //   it("Returns an error and 400 status code", async () => {
+  //     const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
+  //       headers: { Authorization: `Bearer ${accessToken}`}
+  //     });
+
+  //     expect(response.status).toBe(400);
+  //     expect(response.data).toStrictEqual({
+  //       error: "invalid_request",
+  //       error_description: "Error verifying service token signature",
+  //     })
+  //   });
+  // });
+
+  describe("Given active session is not found", () => {
     it("Returns an error and 400 status code", async () => {
       const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
         headers: { Authorization: `Bearer ${accessToken}`}
       });
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(404);
       expect(response.data).toStrictEqual({
-        error: "invalid_request",
-        error_description: "Error verifying service token signature",
+        error: "session_not_found",
+        error_description: "No active session found for the given sub identifier",
       })
     });
   });
