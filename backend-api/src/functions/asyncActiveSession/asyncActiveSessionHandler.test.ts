@@ -8,7 +8,10 @@ import { Logger } from "../services/logging/logger";
 import { MockJWTBuilder } from "../testUtils/mockJwtBuilder";
 import { errorResult, Result, successResult } from "../utils/result";
 import { ITokenService } from "./tokenService/tokenService";
-import { MockPubicKeyGetterGetPublicKeySuccess } from "./tokenService/tests/mocks";
+import {
+  MockPubicKeyGetterGetPublicKeySuccess,
+  MockTokenVerifierVerifySuccess,
+} from "./tokenService/tests/mocks";
 import {
   MockSessionServiceGetErrorResult,
   MockSessionServiceGetSuccessResult,
@@ -37,6 +40,7 @@ describe("Async Active Session", () => {
       jweDecrypter: () => new MockJweDecrypterSuccess(),
       tokenServiceDependencies: {
         publicKeyGetter: () => new MockPubicKeyGetterGetPublicKeySuccess(),
+        tokenVerifier: () => new MockTokenVerifierVerifySuccess(),
       },
       tokenService: () => new MockTokenServiceSuccess(),
       sessionService: () => new MockSessionServiceGetSuccessResult(),

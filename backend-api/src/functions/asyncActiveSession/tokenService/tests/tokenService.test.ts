@@ -6,6 +6,8 @@ import {
 import {
   MockPubicKeyGetterGetPublicKeyError,
   MockPubicKeyGetterGetPublicKeySuccess,
+  MockTokenVerifierVerifyError,
+  MockTokenVerifierVerifySuccess,
 } from "./mocks";
 
 describe("Token Service", () => {
@@ -16,6 +18,7 @@ describe("Token Service", () => {
   beforeEach(() => {
     dependencies = {
       publicKeyGetter: () => new MockPubicKeyGetterGetPublicKeySuccess(),
+      tokenVerifier: () => new MockTokenVerifierVerifySuccess(),
     };
     tokenService = new TokenService(dependencies);
     mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
@@ -352,7 +355,7 @@ describe("Token Service", () => {
     });
 
     describe("Token signature verification", () => {
-      describe("Given kid from JWT header is not found in JWKS", () => {
+      describe("Given there is an error getting public key from JWKS (e.g. when kid from JWT header is not found in JWKS)", () => {
         it("Returns error result", async () => {
           dependencies.publicKeyGetter = () =>
             new MockPubicKeyGetterGetPublicKeyError();
@@ -369,11 +372,11 @@ describe("Token Service", () => {
                   JSON.stringify({
                     keys: [
                       {
+                        crv: "mockCrv",
+                        d: "mockD",
                         kty: "mockKty",
                         x: "mockX",
                         y: "mockY",
-                        crv: "mockCrv",
-                        d: "mockD",
                       },
                     ],
                   }),
@@ -389,6 +392,48 @@ describe("Token Service", () => {
           expect(result.isError).toBe(true);
           expect(result.value).toStrictEqual({
             errorMessage: "Failed to get public key",
+            errorCategory: "CLIENT_ERROR",
+          });
+        });
+      });
+
+      describe("Given there is an error verifying token signature", () => {
+        it("Returns error result", async () => {
+          dependencies.tokenVerifier = () => new MockTokenVerifierVerifyError();
+          tokenService = new TokenService(dependencies);
+          jest.spyOn(global, "fetch").mockImplementation(() =>
+            Promise.resolve({
+              status: 200,
+              ok: true,
+              headers: new Headers({
+                header: "mockHeader",
+              }),
+              text: () =>
+                Promise.resolve(
+                  JSON.stringify({
+                    keys: [
+                      {
+                        crv: "mockCrv",
+                        d: "mockD",
+                        kid: "mockKid",
+                        kty: "mockKty",
+                        x: "mockX",
+                        y: "mockY",
+                      },
+                    ],
+                  }),
+                ),
+            } as Response),
+          );
+          const result = await tokenService.getSubFromToken(
+            "https://mockJwksEndpoint.com",
+            { maxAttempts: 3, delayInMillis: 1 },
+            "dummy.signed.token",
+          );
+
+          expect(result.isError).toBe(true);
+          expect(result.value).toStrictEqual({
+            errorMessage: "Error verifying token signature",
             errorCategory: "CLIENT_ERROR",
           });
         });
