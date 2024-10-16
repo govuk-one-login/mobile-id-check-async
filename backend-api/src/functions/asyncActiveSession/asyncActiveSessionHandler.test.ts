@@ -25,7 +25,7 @@ import {
 const env = {
   ENCRYPTION_KEY_ARN: "mockEncryptionKeyArn",
   SESSION_TABLE_NAME: "mockSessionTableName",
-  ISSUER: "mockIssuer",
+  AUDIENCE: "https://mockAudience.com/",
   STS_BASE_URL: "https://mockUrl.com/",
 };
 

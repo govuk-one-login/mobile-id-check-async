@@ -188,6 +188,8 @@ Globals:
       Variables:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
         TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
+        # ISSUER should be updated with DNS once available
+        ISSUER: mockIssuer
         SESSION_TABLE_NAME: !Ref SessionsTable
 
 Resources:
@@ -257,7 +259,6 @@ Resources:
       Environment:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
-          ISSUER: mockIssuer # Update with DNS once available
       VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-PrivateSubnetIdA
@@ -371,7 +372,6 @@ Resources:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
           SESSION_DURATION_IN_SECONDS: 3600 #Used to set time to live when creating sessions. Set to 1 hour.
-          ISSUER: mockIssuer # Update with DNS once available
       VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-PrivateSubnetIdA
@@ -821,7 +821,7 @@ Resources:
           ENCRYPTION_KEY_ARN: !GetAtt KMSEncryptionKey.Arn
           STS_BASE_URL:
             !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
-          ISSUER: !Sub https://${SessionsApiDomainName}
+          AUDIENCE: !Sub https://${SessionsApiDomainName}
       VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-ProtectedSubnetIdA

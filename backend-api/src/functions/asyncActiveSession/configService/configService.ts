@@ -4,7 +4,7 @@ import { errorResult, Result, successResult } from "../../utils/result";
 export interface Config {
   ENCRYPTION_KEY_ARN: string;
   SESSION_TABLE_NAME: string;
-  ISSUER: string;
+  AUDIENCE: string;
   STS_BASE_URL: string;
   STS_JWKS_ENDPOINT: string;
 }
@@ -23,9 +23,17 @@ export class ConfigService implements IGetConfig<Config> {
         errorCategory: "SERVER_ERROR",
       });
     }
-    if (!env.ISSUER) {
+    if (!env.AUDIENCE) {
       return errorResult({
-        errorMessage: "No ISSUER",
+        errorMessage: "No AUDIENCE",
+        errorCategory: "SERVER_ERROR",
+      });
+    }
+    try {
+      new URL(env.AUDIENCE);
+    } catch {
+      return errorResult({
+        errorMessage: "AUDIENCE is not a URL",
         errorCategory: "SERVER_ERROR",
       });
     }
@@ -49,7 +57,7 @@ export class ConfigService implements IGetConfig<Config> {
       SESSION_TABLE_NAME: env.SESSION_TABLE_NAME,
       STS_BASE_URL: env.STS_BASE_URL,
       STS_JWKS_ENDPOINT: env.STS_BASE_URL + "/.well-known/jwks.json",
-      ISSUER: env.ISSUER,
+      AUDIENCE: env.AUDIENCE,
     });
   };
 }

@@ -49,12 +49,13 @@ export async function lambdaHandlerConstructor(
     return serverErrorResponse;
   }
   const serviceTokenJwt = decryptResult.value;
+  console.log(serviceTokenJwt);
 
   const tokenService = dependencies.tokenService(config.STS_JWKS_ENDPOINT);
   const validateServiceTokenResult = await tokenService.validateServiceToken(
     serviceTokenJwt,
     {
-      aud: config.ISSUER,
+      aud: config.AUDIENCE,
       iss: config.STS_BASE_URL,
       scope: "idCheck.activeSession.read",
     },
@@ -73,6 +74,8 @@ export async function lambdaHandlerConstructor(
   }
 
   const sub = validateServiceTokenResult.value;
+
+  console.log(sub);
 
   const sessionService = dependencies.sessionService(config.SESSION_TABLE_NAME);
   const getActiveSessionResult = await sessionService.getActiveSession(sub);
