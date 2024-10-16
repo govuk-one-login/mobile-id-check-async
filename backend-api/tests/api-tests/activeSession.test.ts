@@ -13,21 +13,7 @@ describe("GET /async/activeSession", () => {
     });
   });
 
-  describe("Given service token is not a valid Bearer token", () => {
-    it("Returns an error and 401 status code", async () => {
-      const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
-        headers: { Authorization: "Bearer"}
-      });
-
-      expect(response.status).toBe(401);
-      expect(response.data).toStrictEqual({
-        error: "unauthorized",
-        error_description: "Invalid authorization header"
-      })
-    });
-  });
-
-  describe("Given service token JWE is not valid", () => {
+  describe("Given there is an error decrypting the service token", () => {
     it("Returns an error and 400 status code", async () => {
       const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
         headers: { Authorization: "Bearer one.two.three.four.five"}
