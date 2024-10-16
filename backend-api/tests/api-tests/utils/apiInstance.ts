@@ -53,6 +53,14 @@ function getPrivateApiInstance() {
   return getInstance(apiUrl);
 }
 
+function getStsMockInstance() {
+  const apiUrl = process.env.STS_MOCK_API_URL;
+  if (!apiUrl)
+    throw new Error("STS_MOCK_API_URL needs to be defined for API tests");
+  return getInstance(apiUrl);
+}
+
 export const SESSIONS_API_INSTANCE = getSessionsApiInstance();
 export const PROXY_API_INSTANCE = getProxyApiInstance();
 export const PRIVATE_API_INSTANCE = getPrivateApiInstance();
+export const STS_MOCK_API_INSTANCE = getStsMockInstance();
