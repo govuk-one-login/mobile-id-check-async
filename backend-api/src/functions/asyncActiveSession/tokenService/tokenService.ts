@@ -25,7 +25,7 @@ const tokenServiceDependencies: TokenServicesDependencies = {
 
 export class TokenService implements ITokenService {
   private readonly tokenVerifier: ITokenVerifier;
-  private jwksEndpoint: string;
+  private readonly jwksEndpoint: string;
 
   constructor(jwksEndpoint: string, dependencies = tokenServiceDependencies) {
     this.jwksEndpoint = jwksEndpoint;

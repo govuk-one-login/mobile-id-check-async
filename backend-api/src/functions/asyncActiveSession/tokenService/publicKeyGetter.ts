@@ -5,6 +5,24 @@ import {
   sendHttpRequest,
 } from "../../services/http/sendHttpRequest";
 
+export interface IPublicKeyGetter {
+  getPublicKey: (
+    jwksEndpoint: string,
+    kid: string,
+  ) => Promise<Result<KeyLike | Uint8Array>>;
+}
+
+export interface IJwks {
+  keys: IJwk[];
+}
+
+export interface IJwk extends JsonWebKey {
+  alg: "ES256";
+  kid: string;
+  kty: "EC";
+  use: "sig";
+}
+
 export type PublicKeyGetterDependencies = {
   sendHttpRequest: ISendHttpRequest;
 };
@@ -90,22 +108,4 @@ export class PublicKeyGetter implements IPublicKeyGetter {
       data.keys.every((key) => typeof key === "object" && key !== null)
     );
   };
-}
-
-export interface IPublicKeyGetter {
-  getPublicKey: (
-    jwksEndpoint: string,
-    kid: string,
-  ) => Promise<Result<KeyLike | Uint8Array>>;
-}
-
-export interface IJwks {
-  keys: IJwk[];
-}
-
-export interface IJwk extends JsonWebKey {
-  alg: "ES256";
-  kid: string;
-  kty: "EC";
-  use: "sig";
 }

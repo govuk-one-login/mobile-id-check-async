@@ -2,6 +2,14 @@ import { jwtVerify } from "jose";
 import { errorResult, Result, successResult } from "../../utils/result";
 import { IPublicKeyGetter, PublicKeyGetter } from "./publicKeyGetter";
 
+export interface ITokenVerifier {
+  verify: (
+    token: string,
+    kid: string,
+    jwksUri: string,
+  ) => Promise<Result<null>>;
+}
+
 export type TokenVerifierDependencies = {
   publicKeyGetter: IPublicKeyGetter;
 };
@@ -43,12 +51,4 @@ export class TokenVerifier implements ITokenVerifier {
 
     return successResult(null);
   }
-}
-
-export interface ITokenVerifier {
-  verify: (
-    token: string,
-    kid: string,
-    jwksUri: string,
-  ) => Promise<Result<null>>;
 }
