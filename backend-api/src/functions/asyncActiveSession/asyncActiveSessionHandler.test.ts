@@ -6,8 +6,6 @@ import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
 import { MockJWTBuilder } from "../testUtils/mockJwtBuilder";
-import { errorResult, Result, successResult } from "../utils/result";
-import { ITokenService } from "./tokenService/tokenService";
 import {
   MockSessionServiceGetErrorResult,
   MockSessionServiceGetSuccessResult,
@@ -17,6 +15,11 @@ import {
   MockJweDecrypterFailure,
   MockJweDecrypterSuccess,
 } from "./jwe/tests/mocks";
+import {
+  MockTokenServiceClientError,
+  MockTokenServiceServerError,
+  MockTokenServiceSuccess,
+} from "./tokenService/tests/mocks";
 
 const env = {
   STS_JWKS_ENDPOINT: "https://mockUrl.com",
@@ -91,7 +94,7 @@ describe("Async Active Session", () => {
     });
   });
 
-  describe("Access token validation", () => {
+  describe("Request Service", () => {
     describe("Given Authentication header is missing", () => {
       it("Returns 401 Unauthorized", async () => {
         const event = buildRequest();
@@ -102,7 +105,7 @@ describe("Async Active Session", () => {
         );
 
         expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "AUTHENTICATION_HEADER_INVALID",
+          "INVALID_AUTHENTICATION_HEADER",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "No Authentication header present",
@@ -130,7 +133,7 @@ describe("Async Active Session", () => {
         );
 
         expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "AUTHENTICATION_HEADER_INVALID",
+          "INVALID_AUTHENTICATION_HEADER",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage:
@@ -159,7 +162,7 @@ describe("Async Active Session", () => {
         );
 
         expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "AUTHENTICATION_HEADER_INVALID",
+          "INVALID_AUTHENTICATION_HEADER",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage:
@@ -188,7 +191,7 @@ describe("Async Active Session", () => {
         );
 
         expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "AUTHENTICATION_HEADER_INVALID",
+          "INVALID_AUTHENTICATION_HEADER",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "Invalid authentication header format - missing token",
@@ -239,16 +242,14 @@ describe("Async Active Session", () => {
     });
   });
 
-  describe("Get sub from access token", () => {
-    describe("Given an unexpected error is returned", () => {
+  describe("Token Service", () => {
+    describe("Given the service token fails to validate due to an internal server error", () => {
       it("Logs and returns 500 Server Error response", async () => {
         const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
-
         dependencies.tokenService = () => new MockTokenServiceServerError();
-
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
           event,
@@ -271,32 +272,30 @@ describe("Async Active Session", () => {
       });
     });
 
-    describe("Given service token is invalid", () => {
+    describe("Given the service token fails to validate due to a client error", () => {
       it("Logs and returns 400 Bad Request response", async () => {
         const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
-        dependencies.tokenService = () =>
-          new MockTokenServiceInvalidServiceToken();
-
+        dependencies.tokenService = () => new MockTokenServiceClientError();
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
           event,
         );
 
         expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN",
+          "SERVICE_TOKEN_VALIDATION_ERROR",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Mock invalid service token error",
+          errorMessage: "Mock client error",
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "Mock invalid service token error",
+            error_description: "Failed to validate service token",
           }),
         });
       });
@@ -388,27 +387,3 @@ describe("Async Active Session", () => {
     });
   });
 });
-
-class MockTokenServiceServerError implements ITokenService {
-  async validateServiceToken(): Promise<Result<string>> {
-    return errorResult({
-      errorMessage: "Mock server error",
-      errorCategory: "SERVER_ERROR",
-    });
-  }
-}
-
-class MockTokenServiceInvalidServiceToken {
-  async getSubFromServiceToken(): Promise<Result<string>> {
-    return errorResult({
-      errorMessage: "Mock invalid service token error",
-      errorCategory: "CLIENT_ERROR",
-    });
-  }
-}
-
-class MockTokenServiceSuccess {
-  async getSubFromServiceToken(): Promise<Result<string>> {
-    return successResult("mockSub");
-  }
-}

@@ -34,8 +34,8 @@ export class TokenService implements ITokenService {
       header = this.validateServiceTokenHeader(token);
     } catch (error) {
       return errorResult({
-        errorMessage: `${error}`,
         errorCategory: "CLIENT_ERROR",
+        errorMessage: `${error}`,
       });
     }
     const { kid } = header;

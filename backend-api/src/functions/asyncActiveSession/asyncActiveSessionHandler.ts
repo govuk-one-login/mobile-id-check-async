@@ -26,7 +26,7 @@ export async function lambdaHandlerConstructor(
     event.headers["Authorization"] ?? event.headers["authorization"],
   );
   if (authorizationHeaderResult.isError) {
-    logger.log("AUTHENTICATION_HEADER_INVALID", {
+    logger.log("INVALID_AUTHENTICATION_HEADER", {
       errorMessage: authorizationHeaderResult.value.errorMessage,
     });
     return unauthorizedResponse;
@@ -48,7 +48,7 @@ export async function lambdaHandlerConstructor(
   const serviceTokenJwt = decryptResult.value;
 
   const tokenService = dependencies.tokenService(config.STS_JWKS_ENDPOINT);
-  const getSubFromTokenResult = await tokenService.validateServiceToken(
+  const validateServiceTokenResult = await tokenService.validateServiceToken(
     serviceTokenJwt,
     {
       aud: "aud",
@@ -57,21 +57,21 @@ export async function lambdaHandlerConstructor(
     },
   );
 
-  if (getSubFromTokenResult.isError) {
-    if (getSubFromTokenResult.value.errorCategory === "CLIENT_ERROR") {
-      logger.log("FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN", {
-        errorMessage: getSubFromTokenResult.value.errorMessage,
+  if (validateServiceTokenResult.isError) {
+    if (validateServiceTokenResult.value.errorCategory === "CLIENT_ERROR") {
+      logger.log("SERVICE_TOKEN_VALIDATION_ERROR", {
+        errorMessage: validateServiceTokenResult.value.errorMessage,
       });
-      return badRequestResponse("Failed to verify service token");
+      return badRequestResponse("Failed to validate service token");
     }
 
     logger.log("INTERNAL_SERVER_ERROR", {
-      errorMessage: getSubFromTokenResult.value.errorMessage,
+      errorMessage: validateServiceTokenResult.value.errorMessage,
     });
     return serverErrorResponse;
   }
 
-  const sub = getSubFromTokenResult.value;
+  const sub = validateServiceTokenResult.value;
 
   const sessionService = dependencies.sessionService(config.SESSION_TABLE_NAME);
   const getActiveSessionResult = await sessionService.getActiveSession(sub);
