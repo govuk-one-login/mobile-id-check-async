@@ -29,27 +29,21 @@ export class TokenService implements ITokenService {
     token: string,
     expectedClaims: ExpectedClaims,
   ): Promise<Result<string>> {
-    let header;
-    try {
-      header = this.validateServiceTokenHeader(token);
-    } catch (error) {
-      return errorResult({
-        errorCategory: "CLIENT_ERROR",
-        errorMessage: `${error}`,
-      });
-    }
-    const { kid } = header;
 
-    let payload;
-    try {
-      payload = this.validateServiceTokenPayload(token, expectedClaims);
-    } catch (error) {
-      return errorResult({
-        errorCategory: "CLIENT_ERROR",
-        errorMessage: `${error}`,
-      });
+    const validateServiceTokenHeaderResult = this.validateServiceTokenHeader(token);
+    if (validateServiceTokenHeaderResult.isError) {
+      return validateServiceTokenHeaderResult;
     }
-    const { sub } = payload;
+
+    const { kid } = validateServiceTokenHeaderResult.value;
+
+
+    const validateServiceTokenPayloadResult = this.validateServiceTokenPayload(token, expectedClaims);
+    if (validateServiceTokenPayloadResult.isError) {
+      return validateServiceTokenPayloadResult;
+    }
+
+    const { sub } = validateServiceTokenPayloadResult.value;
 
     const verifyResult = await this.tokenVerifier.verify(
       token,
@@ -67,47 +61,73 @@ export class TokenService implements ITokenService {
   validateServiceTokenPayload(
     token: string,
     expectedClaims: ExpectedClaims,
-  ): { sub: string } {
+  ): Result<{ sub: string }> {
     let payload;
     try {
       payload = decodeJwt(token);
     } catch {
-      throw new Error("Failed to decode token payload");
+      return errorResult({
+        errorCategory: "CLIENT_ERROR",
+        errorMessage: "Failed to decode token payload",
+      });
     }
 
     const currentTime = Math.floor(Date.now() / 1000);
 
     if (payload.nbf) {
       if (!this.hasValidNotBefore(payload, currentTime)) {
-        throw new Error("Invalid not-before claim");
+        return errorResult({
+          errorCategory: "CLIENT_ERROR",
+          errorMessage: "Invalid not-before claim",
+        });
       }
     }
 
     if (!this.hasValidIssuer(payload, expectedClaims.iss)) {
-      throw new Error("Invalid issuer claim");
+      return errorResult({
+        errorCategory: "CLIENT_ERROR",
+        errorMessage: "Invalid issuer claim",
+      });
     }
 
     if (!this.hasValidAudience(payload, expectedClaims.aud)) {
-      throw new Error("Invalid audience claim");
+      return errorResult({
+        errorCategory: "CLIENT_ERROR",
+        errorMessage: "Invalid audience claim",
+      });
     }
 
     if (!this.hasValidScope(payload, expectedClaims.scope)) {
-      throw new Error("Invalid scope claim");
+      return errorResult({
+        errorCategory: "CLIENT_ERROR",
+        errorMessage: "Invalid scope claim",
+      });
     }
 
     if (!this.hasValidSubject(payload)) {
-      throw new Error("Invalid sub claim");
+      return errorResult({
+        errorCategory: "CLIENT_ERROR",
+        errorMessage: "Invalid sub claim",
+      });
     }
 
     if (!this.hasValidExpiry(payload, currentTime)) {
-      throw new Error("Token expiry time is missing or is in the past");
+      return errorResult({
+        errorCategory: "CLIENT_ERROR",
+        errorMessage: "Token expiry time is missing or is in the past",
+      });
     }
 
     if (!this.hasValidIssuedAtTime(payload, currentTime)) {
-      throw new Error("Token issued at time is missing or is in the future");
+      return errorResult({
+        errorCategory: "CLIENT_ERROR",
+        errorMessage: "Token issued at time is missing or is in the future",
+      });
     }
 
-    return { sub: payload.sub };
+    return successResult({
+      sub: payload.sub
+    });
   }
 
   hasValidIssuer(
@@ -172,21 +192,27 @@ export class TokenService implements ITokenService {
     );
   }
 
-  validateServiceTokenHeader(token: string): { kid: string } {
+  validateServiceTokenHeader(token: string): Result<{ kid: string }> {
     let header;
     try {
       header = decodeProtectedHeader(token);
     } catch {
-      throw new Error("Failed to decode token header");
+      return errorResult({
+        errorCategory: "CLIENT_ERROR",
+        errorMessage: "Failed to decode token header",
+      });
     }
 
     if (!this.hasValidKid(header)) {
-      throw new Error("Invalid kid claim");
+      return errorResult({
+        errorCategory: "CLIENT_ERROR",
+        errorMessage: "Invalid kid claim",
+      });
     }
 
-    return {
+    return successResult({
       kid: header.kid,
-    };
+    });
   }
 
   hasValidKid(decodedHeader: object): decodedHeader is Record<"kid", string> {
