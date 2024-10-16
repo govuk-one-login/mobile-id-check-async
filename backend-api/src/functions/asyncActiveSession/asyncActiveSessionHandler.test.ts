@@ -269,7 +269,7 @@ describe("Async Active Session", () => {
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "Failed to decrypt service token JWE",
+            error_description: "Failed to decrypt service token",
           }),
         });
       });
