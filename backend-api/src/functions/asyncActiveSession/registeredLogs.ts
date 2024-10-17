@@ -5,15 +5,15 @@ import {
 import { RegisteredLogMessages } from "../services/logging/types";
 
 export type MessageName =
-  | "INVALID_AUTHENTICATION_HEADER"
+  | "AUTHENTICATION_HEADER_INVALID"
   | "SERVICE_TOKEN_VALIDATION_ERROR"
   | "INTERNAL_SERVER_ERROR"
   | "JWE_DECRYPTION_ERROR"
   | CommonMessageNames;
 
 export const registeredLogs: RegisteredLogMessages<MessageName> = {
-  INVALID_AUTHENTICATION_HEADER: {
-    messageCode: "MOBILE_ASYNC_INVALID_AUTHENTICATION_HEADER",
+  AUTHENTICATION_HEADER_INVALID: {
+    messageCode: "MOBILE_ASYNC_AUTHENTICATION_HEADER_INVALID",
   },
   SERVICE_TOKEN_VALIDATION_ERROR: {
     messageCode: "MOBILE_ASYNC_SERVICE_TOKEN_VALIDATION_ERROR",

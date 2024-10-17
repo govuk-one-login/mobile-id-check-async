@@ -107,7 +107,7 @@ describe("Async Active Session", () => {
         );
 
         expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "INVALID_AUTHENTICATION_HEADER",
+          "AUTHENTICATION_HEADER_INVALID",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "No Authentication header present",
@@ -135,7 +135,7 @@ describe("Async Active Session", () => {
         );
 
         expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "INVALID_AUTHENTICATION_HEADER",
+          "AUTHENTICATION_HEADER_INVALID",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage:
@@ -164,7 +164,7 @@ describe("Async Active Session", () => {
         );
 
         expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "INVALID_AUTHENTICATION_HEADER",
+          "AUTHENTICATION_HEADER_INVALID",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage:
@@ -193,7 +193,7 @@ describe("Async Active Session", () => {
         );
 
         expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "INVALID_AUTHENTICATION_HEADER",
+          "AUTHENTICATION_HEADER_INVALID",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "Invalid authentication header format - missing token",

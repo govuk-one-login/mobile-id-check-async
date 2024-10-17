@@ -25,7 +25,7 @@ export const sendHttpRequest: ISendHttpRequest = async (
       if (attempt < maxAttempts) {
         return retry(request, delayInMillis);
       }
-      throw new Error(`Unexpected network error: ${error}`);
+      throw new Error(`Unexpected network error - ${error}`);
     }
 
     if (!response.ok && attempt < maxAttempts) {
@@ -33,7 +33,7 @@ export const sendHttpRequest: ISendHttpRequest = async (
     }
 
     if (!response.ok) {
-      throw new Error(`Error making http request: ${await response.text()}`);
+      throw new Error(`Error making http request - ${await response.text()}`);
     }
 
     return {

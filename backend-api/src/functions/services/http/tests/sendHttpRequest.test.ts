@@ -24,7 +24,7 @@ describe("Send HTTP request", () => {
     it("Throws the error", async () => {
       mockFetch = jest
         .spyOn(global, "fetch")
-        .mockImplementation(() => Promise.reject("mockError"));
+        .mockImplementation(() => Promise.reject(new Error("mockError")));
 
       await expect(
         sendHttpRequest(
@@ -34,7 +34,7 @@ describe("Send HTTP request", () => {
           },
           { maxAttempts: 3, delayInMillis: 1 },
         ),
-      ).rejects.toThrow("Unexpected network error: mockError");
+      ).rejects.toThrow("Unexpected network error - Error: mockError");
     });
   });
 
@@ -56,7 +56,7 @@ describe("Send HTTP request", () => {
           },
           { maxAttempts: 3, delayInMillis: 1 },
         ),
-      ).rejects.toThrow("Error making http request: mockErrorInformation");
+      ).rejects.toThrow("Error making http request - mockErrorInformation");
     });
   });
 
@@ -65,7 +65,7 @@ describe("Send HTTP request", () => {
       it("Attempts to send the request a second time", async () => {
         mockFetch = jest
           .spyOn(global, "fetch")
-          .mockImplementationOnce(() => Promise.reject("mockError"))
+          .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
           .mockImplementationOnce(() =>
             Promise.resolve({
               status: 200,
@@ -98,8 +98,8 @@ describe("Send HTTP request", () => {
       it("Attempts to send the request a third time", async () => {
         mockFetch = jest
           .spyOn(global, "fetch")
-          .mockImplementationOnce(() => Promise.reject("mockError"))
-          .mockImplementationOnce(() => Promise.reject("mockError"))
+          .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
+          .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
           .mockImplementationOnce(() =>
             Promise.resolve({
               status: 200,
@@ -132,9 +132,9 @@ describe("Send HTTP request", () => {
       it("Throws an error", async () => {
         mockFetch = jest
           .spyOn(global, "fetch")
-          .mockImplementationOnce(() => Promise.reject("mockError"))
-          .mockImplementationOnce(() => Promise.reject("mockError"))
-          .mockImplementationOnce(() => Promise.reject("mockError"));
+          .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
+          .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
+          .mockImplementationOnce(() => Promise.reject(new Error("mockError")));
 
         await expect(
           sendHttpRequest(
@@ -144,7 +144,7 @@ describe("Send HTTP request", () => {
             },
             { maxAttempts: 3, delayInMillis: 1 },
           ),
-        ).rejects.toThrow("Unexpected network error: mockError");
+        ).rejects.toThrow("Unexpected network error - Error: mockError");
         expect(mockFetch).toHaveBeenCalledTimes(3);
       });
     });

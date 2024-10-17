@@ -26,7 +26,7 @@ export async function lambdaHandlerConstructor(
     event.headers["Authorization"] ?? event.headers["authorization"],
   );
   if (authorizationHeaderResult.isError) {
-    logger.log("INVALID_AUTHENTICATION_HEADER", {
+    logger.log("AUTHENTICATION_HEADER_INVALID", {
       errorMessage: authorizationHeaderResult.value.errorMessage,
     });
     return unauthorizedResponse;
