@@ -90,7 +90,7 @@ export class MockJWTBuilder {
   };
 
   getSignedEncodedJwt = async (
-    privateKey: IMockPrivateKey = MOCK_PRIVATE_KEY,
+    privateKey: IMockPrivateKey = MOCK_SIGNING_KEY,
   ) => {
     this.jwt.header.typ = "JWT";
     const signingKey = await importJWK(privateKey);
@@ -114,7 +114,8 @@ export class MockJWTBuilder {
   };
 }
 
-const MOCK_PRIVATE_KEY = {
+// Signing key used in unit tests only
+const MOCK_SIGNING_KEY = {
   crv: "P-256",
   d: "IMeUPld6UA1WUKJF34HDwZGT2tArxZslpl_dVYzOLKU",
   kid: "sThKMT3oxcTXG-sgMw2EVPTE9Y8W43wLXfqu7zT46-w",
