@@ -26,7 +26,7 @@ describe("Decrypt JWE", () => {
 
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
-        errorMessage: "Error decrypting JWE: Missing component",
+        errorMessage: "JWE is missing component",
         errorCategory: "CLIENT_ERROR",
       });
     });
@@ -42,8 +42,8 @@ describe("Decrypt JWE", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage:
-          "Error decrypting JWE: Unable to decrypt encryption key: Some mock asymmetric decryption error",
-        errorCategory: "CLIENT_ERROR",
+          "Unable to decrypt encryption key - Some mock asymmetric decryption error",
+        errorCategory: "SERVER_ERROR",
       });
     });
   });
@@ -58,7 +58,7 @@ describe("Decrypt JWE", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage:
-          "Error decrypting JWE: Unable to decrypt payload: Some mock symmetric decryption error",
+          "Unable to decrypt payload - Error: Some mock symmetric decryption error",
         errorCategory: "CLIENT_ERROR",
       });
     });

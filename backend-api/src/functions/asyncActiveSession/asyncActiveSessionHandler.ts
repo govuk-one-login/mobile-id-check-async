@@ -31,58 +31,53 @@ export async function lambdaHandlerConstructor(
     });
     return unauthorizedResponse;
   }
-
   const serviceTokenJwe = authorizationHeaderResult.value;
 
   const decryptResult = await dependencies
     .jweDecrypter(config.ENCRYPTION_KEY_ARN)
     .decrypt(serviceTokenJwe);
-
   if (decryptResult.isError) {
-    logger.log("JWE_DECRYPTION_ERROR", {
-      errorMessage: decryptResult.value.errorMessage,
-    });
-    return badRequestResponse("Failed decrypting service token JWE");
-  }
-
-  const serviceTokenJwt = decryptResult.value;
-
-  const tokenServiceDependencies = dependencies.tokenServiceDependencies;
-  const tokenService = dependencies.tokenService(tokenServiceDependencies);
-  const getSubFromTokenResult = await tokenService.getSubFromToken(
-    config.STS_JWKS_ENDPOINT,
-    {
-      maxAttempts: 3,
-      delayInMillis: 100,
-    },
-    serviceTokenJwt,
-  );
-
-  if (getSubFromTokenResult.isError) {
-    if (getSubFromTokenResult.value.errorCategory === "CLIENT_ERROR") {
-      logger.log("FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN", {
-        errorMessage: getSubFromTokenResult.value.errorMessage,
+    if (decryptResult.value.errorCategory === "CLIENT_ERROR") {
+      logger.log("JWE_DECRYPTION_ERROR", {
+        errorMessage: decryptResult.value.errorMessage,
       });
-      return badRequestResponse(getSubFromTokenResult.value.errorMessage);
+      return badRequestResponse("Failed to decrypt service token");
     }
-
     logger.log("INTERNAL_SERVER_ERROR", {
-      errorMessage: getSubFromTokenResult.value.errorMessage,
+      errorMessage: decryptResult.value.errorMessage,
     });
     return serverErrorResponse;
   }
+  const serviceTokenJwt = decryptResult.value;
+
+  const tokenService = dependencies.tokenService();
+  const validateServiceTokenResult = await tokenService.validateServiceToken(
+    serviceTokenJwt,
+    config.AUDIENCE,
+    config.STS_BASE_URL,
+  );
+  if (validateServiceTokenResult.isError) {
+    if (validateServiceTokenResult.value.errorCategory === "CLIENT_ERROR") {
+      logger.log("SERVICE_TOKEN_VALIDATION_ERROR", {
+        errorMessage: validateServiceTokenResult.value.errorMessage,
+      });
+      return badRequestResponse("Failed to validate service token");
+    }
+    logger.log("INTERNAL_SERVER_ERROR", {
+      errorMessage: validateServiceTokenResult.value.errorMessage,
+    });
+    return serverErrorResponse;
+  }
+  const sub = validateServiceTokenResult.value;
 
   const sessionService = dependencies.sessionService(config.SESSION_TABLE_NAME);
-  const getActiveSessionResult =
-    await sessionService.getActiveSession("mockSub1"); // temporary sub until we have implemented the logic to extract the sub from the JWT
-
+  const getActiveSessionResult = await sessionService.getActiveSession(sub);
   if (getActiveSessionResult.isError) {
     logger.log("INTERNAL_SERVER_ERROR", {
       errorMessage: getActiveSessionResult.value.errorMessage,
     });
     return serverErrorResponse;
   }
-
   const session = getActiveSessionResult.value;
   if (session === null) {
     return notFoundResponse;

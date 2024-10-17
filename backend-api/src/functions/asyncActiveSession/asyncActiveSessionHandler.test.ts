@@ -6,26 +6,27 @@ import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { Logger } from "../services/logging/logger";
 import { MockJWTBuilder } from "../testUtils/mockJwtBuilder";
-import { errorResult, Result, successResult } from "../utils/result";
-import { ITokenService } from "./tokenService/tokenService";
-import {
-  MockPubicKeyGetterGetPublicKeySuccess,
-  MockTokenVerifierVerifySuccess,
-} from "./tokenService/tests/mocks";
 import {
   MockSessionServiceGetErrorResult,
   MockSessionServiceGetSuccessResult,
   MockSessionServiceGetNullSuccessResult,
 } from "../services/session/tests/mocks";
 import {
-  MockJweDecrypterFailure,
+  MockJweDecrypterClientError,
+  MockJweDecrypterServerError,
   MockJweDecrypterSuccess,
 } from "./jwe/tests/mocks";
+import {
+  MockTokenServiceClientError,
+  MockTokenServiceServerError,
+  MockTokenServiceSuccess,
+} from "./tokenService/tests/mocks";
 
 const env = {
-  STS_JWKS_ENDPOINT: "https://mockUrl.com",
   ENCRYPTION_KEY_ARN: "mockEncryptionKeyArn",
   SESSION_TABLE_NAME: "mockSessionTableName",
+  AUDIENCE: "https://mockAudience.com/",
+  STS_BASE_URL: "https://mockUrl.com/",
 };
 
 describe("Async Active Session", () => {
@@ -38,10 +39,6 @@ describe("Async Active Session", () => {
       env,
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
       jweDecrypter: () => new MockJweDecrypterSuccess(),
-      tokenServiceDependencies: {
-        publicKeyGetter: () => new MockPubicKeyGetterGetPublicKeySuccess(),
-        tokenVerifier: () => new MockTokenVerifierVerifySuccess(),
-      },
       tokenService: () => new MockTokenServiceSuccess(),
       sessionService: () => new MockSessionServiceGetSuccessResult(),
     };
@@ -73,10 +70,10 @@ describe("Async Active Session", () => {
       });
     });
 
-    describe("Given the STS_JWKS_ENDPOINT is not a URL", () => {
+    describe("Given the STS_BASE_URL is not a URL", () => {
       it("Returns a 500 Server Error response", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
-        dependencies.env["STS_JWKS_ENDPOINT"] = "mockInvalidSessionTtlSecs";
+        dependencies.env["STS_BASE_URL"] = "mockInvalidSessionTtlSecs";
         const event = buildRequest();
 
         const result = await lambdaHandlerConstructor(dependencies, event);
@@ -85,7 +82,7 @@ describe("Async Active Session", () => {
           "ENVIRONMENT_VARIABLE_MISSING",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "STS_JWKS_ENDPOINT is not a URL",
+          errorMessage: "STS_BASE_URL is not a URL",
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
@@ -99,7 +96,7 @@ describe("Async Active Session", () => {
     });
   });
 
-  describe("Access token validation", () => {
+  describe("Request Service", () => {
     describe("Given Authentication header is missing", () => {
       it("Returns 401 Unauthorized", async () => {
         const event = buildRequest();
@@ -214,9 +211,41 @@ describe("Async Active Session", () => {
   });
 
   describe("Decrypt JWE", () => {
-    describe("Given decrypting the service token fails", () => {
+    describe("Given decrypting the service token fails due to a server error", () => {
+      it("Logs and returns 500 Server Error response", async () => {
+        dependencies.jweDecrypter = () => new MockJweDecrypterServerError();
+
+        const event = buildRequest({
+          headers: {
+            Authorization: "Bearer protectedHeader.encryptedKey.iv.ciphertext",
+          },
+        });
+
+        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+        );
+
+        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+          "INTERNAL_SERVER_ERROR",
+        );
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: "Some mock decryption server error",
+        });
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
+        });
+      });
+    });
+
+    describe("Given decrypting the service token fails due to a client error", () => {
       it("Logs and returns 400 Bad Request response", async () => {
-        dependencies.jweDecrypter = () => new MockJweDecrypterFailure();
+        dependencies.jweDecrypter = () => new MockJweDecrypterClientError();
 
         const event = buildRequest({
           headers: {
@@ -233,30 +262,28 @@ describe("Async Active Session", () => {
           "JWE_DECRYPTION_ERROR",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Some mock decryption error",
+          errorMessage: "Some mock decryption client error",
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "Failed decrypting service token JWE",
+            error_description: "Failed to decrypt service token",
           }),
         });
       });
     });
   });
 
-  describe("Get sub from access token", () => {
-    describe("Given an unexpected error is returned", () => {
+  describe("Token Service", () => {
+    describe("Given the service token fails to validate due to an internal server error", () => {
       it("Logs and returns 500 Server Error response", async () => {
         const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
-
         dependencies.tokenService = () => new MockTokenServiceServerError();
-
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
           event,
@@ -279,32 +306,30 @@ describe("Async Active Session", () => {
       });
     });
 
-    describe("Given service token is invalid", () => {
+    describe("Given the service token fails to validate due to a client error", () => {
       it("Logs and returns 400 Bad Request response", async () => {
         const jwtBuilder = new MockJWTBuilder();
         const event = buildRequest({
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
-        dependencies.tokenService = () =>
-          new MockTokenServiceInvalidServiceToken();
-
+        dependencies.tokenService = () => new MockTokenServiceClientError();
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
           event,
         );
 
         expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "FAILED_TO_GET_SUB_FROM_SERVICE_TOKEN",
+          "SERVICE_TOKEN_VALIDATION_ERROR",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Mock invalid service token error",
+          errorMessage: "Mock client error",
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "Mock invalid service token error",
+            error_description: "Failed to validate service token",
           }),
         });
       });
@@ -396,27 +421,3 @@ describe("Async Active Session", () => {
     });
   });
 });
-
-class MockTokenServiceServerError implements ITokenService {
-  async getSubFromToken(): Promise<Result<string>> {
-    return errorResult({
-      errorMessage: "Mock server error",
-      errorCategory: "SERVER_ERROR",
-    });
-  }
-}
-
-class MockTokenServiceInvalidServiceToken {
-  async getSubFromToken(): Promise<Result<string>> {
-    return errorResult({
-      errorMessage: "Mock invalid service token error",
-      errorCategory: "CLIENT_ERROR",
-    });
-  }
-}
-
-class MockTokenServiceSuccess {
-  async getSubFromToken(): Promise<Result<string>> {
-    return successResult("mockSub");
-  }
-}

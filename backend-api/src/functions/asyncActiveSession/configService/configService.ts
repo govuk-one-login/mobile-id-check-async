@@ -4,7 +4,8 @@ import { errorResult, Result, successResult } from "../../utils/result";
 export interface Config {
   ENCRYPTION_KEY_ARN: string;
   SESSION_TABLE_NAME: string;
-  STS_JWKS_ENDPOINT: string;
+  AUDIENCE: string;
+  STS_BASE_URL: string;
 }
 
 export class ConfigService implements IGetConfig<Config> {
@@ -21,17 +22,31 @@ export class ConfigService implements IGetConfig<Config> {
         errorCategory: "SERVER_ERROR",
       });
     }
-    if (!env.STS_JWKS_ENDPOINT) {
+    if (!env.AUDIENCE) {
       return errorResult({
-        errorMessage: "No STS_JWKS_ENDPOINT",
+        errorMessage: "No AUDIENCE",
         errorCategory: "SERVER_ERROR",
       });
     }
     try {
-      new URL(env.STS_JWKS_ENDPOINT);
+      new URL(env.AUDIENCE);
     } catch {
       return errorResult({
-        errorMessage: "STS_JWKS_ENDPOINT is not a URL",
+        errorMessage: "AUDIENCE is not a URL",
+        errorCategory: "SERVER_ERROR",
+      });
+    }
+    if (!env.STS_BASE_URL) {
+      return errorResult({
+        errorMessage: "No STS_BASE_URL",
+        errorCategory: "SERVER_ERROR",
+      });
+    }
+    try {
+      new URL(env.STS_BASE_URL);
+    } catch {
+      return errorResult({
+        errorMessage: "STS_BASE_URL is not a URL",
         errorCategory: "SERVER_ERROR",
       });
     }
@@ -39,7 +54,8 @@ export class ConfigService implements IGetConfig<Config> {
     return successResult({
       ENCRYPTION_KEY_ARN: env.ENCRYPTION_KEY_ARN,
       SESSION_TABLE_NAME: env.SESSION_TABLE_NAME,
-      STS_JWKS_ENDPOINT: env.STS_JWKS_ENDPOINT,
+      STS_BASE_URL: env.STS_BASE_URL,
+      AUDIENCE: env.AUDIENCE,
     });
   };
 }

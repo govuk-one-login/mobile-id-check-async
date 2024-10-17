@@ -1,442 +1,344 @@
-import {
-  ITokenService,
-  ITokenServiceDependencies,
-  TokenService,
-} from "../tokenService";
-import {
-  MockPubicKeyGetterGetPublicKeyError,
-  MockPubicKeyGetterGetPublicKeySuccess,
-  MockTokenVerifierVerifyError,
-  MockTokenVerifierVerifySuccess,
-} from "./mocks";
+import { MockJWTBuilder } from "../../../testUtils/mockJwtBuilder";
+import { ITokenService, TokenService } from "../tokenService";
+import { MockTokenVerifierError, MockTokenVerifierSuccess } from "./mocks";
 
 describe("Token Service", () => {
-  let mockFetch: jest.SpyInstance;
   let tokenService: ITokenService;
-  let dependencies: ITokenServiceDependencies;
 
-  beforeEach(() => {
-    dependencies = {
-      publicKeyGetter: () => new MockPubicKeyGetterGetPublicKeySuccess(),
-      tokenVerifier: () => new MockTokenVerifierVerifySuccess(),
-    };
-    tokenService = new TokenService(dependencies);
-    mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
-      Promise.resolve({
-        status: 200,
-        ok: true,
-        headers: new Headers({
-          header: "mockHeader",
-        }),
-        text: () =>
-          Promise.resolve(
-            JSON.stringify({
-              keys: [
-                {
-                  kty: "mockKty",
-                  x: "mockX",
-                  y: "mockY",
-                  crv: "mockCrv",
-                  d: "mockD",
-                  kid: "mockKid",
-                },
-              ],
-            }),
-          ),
-      } as Response),
-    );
+  beforeAll(() => {
+    jest.useFakeTimers().setSystemTime(new Date("2024-03-10"));
   });
 
-  afterEach(() => {
-    mockFetch.mockRestore();
+  beforeEach(async () => {
+    tokenService = new TokenService({
+      tokenVerifier: new MockTokenVerifierSuccess(),
+    });
   });
 
-  describe("Get Sub From Token", () => {
-    describe("Retrieving STS public key", () => {
-      describe("Given there is an error retrieving the public key", () => {
-        describe("Given there is a network error", () => {
-          it("Returns error result", async () => {
-            mockFetch = jest
-              .spyOn(global, "fetch")
-              .mockImplementation(() => Promise.reject(new Error("mockError")));
+  describe("Header", () => {
+    describe("Given the JWT header cannot be decoded", () => {
+      it("Returns a client error result", async () => {
+        const result = await tokenService.validateServiceToken(
+          "test.invalid.jwt",
+          "mockAudience",
+          "mockIssuer",
+        );
 
-            const result = await tokenService.getSubFromToken(
-              "https://mockJwksEndpoint.com",
-              { maxAttempts: 3, delayInMillis: 1 },
-              "dummy.signed.token",
-            );
-
-            expect(mockFetch).toHaveBeenCalledWith(
-              "https://mockJwksEndpoint.com",
-              {
-                method: "GET",
-              },
-            );
-            expect(result.isError).toBe(true);
-            expect(result.value).toStrictEqual({
-              errorMessage: "Unexpected network error: Error: mockError",
-              errorCategory: "SERVER_ERROR",
-            });
-          });
-        });
-
-        describe("Given the request fails with a 500 error", () => {
-          it("Returns error result", async () => {
-            mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
-              Promise.resolve({
-                status: 500,
-                ok: false,
-                text: () => Promise.resolve("mockErrorInformaton"),
-              } as Response),
-            );
-
-            const result = await tokenService.getSubFromToken(
-              "https://mockJwksEndpoint.com",
-              { maxAttempts: 3, delayInMillis: 1 },
-              "dummy.signed.token",
-            );
-
-            expect(mockFetch).toHaveBeenCalledWith(
-              "https://mockJwksEndpoint.com",
-              {
-                method: "GET",
-              },
-            );
-            expect(result.isError).toBe(true);
-            expect(result.value).toStrictEqual({
-              errorMessage: "Error making http request: mockErrorInformaton",
-              errorCategory: "SERVER_ERROR",
-            });
-          });
-        });
-
-        describe("Given the response is empty", () => {
-          it("Returns an error response", async () => {
-            mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
-              Promise.resolve({
-                status: 200,
-                ok: true,
-                headers: new Headers({
-                  header: "mockHeader",
-                }),
-                text: () => Promise.resolve(""),
-              } as Response),
-            );
-
-            const result = await tokenService.getSubFromToken(
-              "https://mockJwksEndpoint.com",
-              { maxAttempts: 3, delayInMillis: 1 },
-              "dummy.signed.token",
-            );
-
-            expect(mockFetch).toHaveBeenCalledWith(
-              "https://mockJwksEndpoint.com",
-              {
-                method: "GET",
-              },
-            );
-            expect(result.isError).toBe(true);
-            expect(result.value).toStrictEqual({
-              errorMessage: "Response body empty",
-              errorCategory: "SERVER_ERROR",
-            });
-          });
-        });
-
-        describe("Given the response is not valid JSON", () => {
-          it("Returns an error response", async () => {
-            mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
-              Promise.resolve({
-                status: 200,
-                ok: true,
-                headers: new Headers({
-                  header: "mockHeader",
-                }),
-                text: () => Promise.resolve("undefined"),
-              } as Response),
-            );
-
-            const result = await tokenService.getSubFromToken(
-              "https://mockJwksEndpoint.com",
-              { maxAttempts: 3, delayInMillis: 1 },
-              "dummy.signed.token",
-            );
-
-            expect(mockFetch).toHaveBeenCalledWith(
-              "https://mockJwksEndpoint.com",
-              {
-                method: "GET",
-              },
-            );
-            expect(result.isError).toBe(true);
-            expect(result.value).toStrictEqual({
-              errorMessage: "Invalid JSON in response",
-              errorCategory: "SERVER_ERROR",
-            });
-          });
-        });
-
-        describe("Given the response is not in the shape of a public key", () => {
-          it("Returns an error response", async () => {
-            mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
-              Promise.resolve({
-                status: 200,
-                ok: true,
-                headers: new Headers({
-                  header: "mockHeader",
-                }),
-                text: () =>
-                  Promise.resolve(
-                    JSON.stringify({
-                      keys: ["mockNotAnObject"],
-                    }),
-                  ),
-              } as Response),
-            );
-
-            const result = await tokenService.getSubFromToken(
-              "https://mockJwksEndpoint.com",
-              { maxAttempts: 3, delayInMillis: 1 },
-              "dummy.signed.token",
-            );
-
-            expect(mockFetch).toHaveBeenCalledWith(
-              "https://mockJwksEndpoint.com",
-              {
-                method: "GET",
-              },
-            );
-            expect(result.isError).toBe(true);
-            expect(result.value).toStrictEqual({
-              errorMessage:
-                "Response does not match the expected JWKS structure",
-              errorCategory: "SERVER_ERROR",
-            });
-          });
-        });
-
-        describe("Retry policy", () => {
-          describe("Given there is an error retrieving the public key on the first attempt", () => {
-            it("Makes second attempt to get STS key", async () => {
-              mockFetch = jest
-                .spyOn(global, "fetch")
-                .mockImplementationOnce(() =>
-                  Promise.reject(new Error("mockError")),
-                )
-                .mockImplementationOnce(() =>
-                  Promise.resolve({
-                    status: 200,
-                    ok: true,
-                    headers: new Headers({
-                      header: "mockHeader",
-                    }),
-                    text: () =>
-                      Promise.resolve(
-                        JSON.stringify({
-                          keys: [
-                            {
-                              kty: "mockKty",
-                              x: "mockX",
-                              y: "mockY",
-                              crv: "mockCrv",
-                              d: "mockD",
-                              kid: "mockKid",
-                            },
-                          ],
-                        }),
-                      ),
-                  } as Response),
-                );
-
-              await tokenService.getSubFromToken(
-                "https://mockJwksEndpoint.com",
-                { maxAttempts: 3, delayInMillis: 1 },
-                "dummy.signed.token",
-              );
-
-              expect(mockFetch).toHaveBeenCalledWith(
-                "https://mockJwksEndpoint.com",
-                {
-                  method: "GET",
-                },
-              );
-              expect(mockFetch).toHaveBeenCalledTimes(2);
-            });
-          });
-
-          describe("Given there is an error retrieving the public key on the second attempt", () => {
-            it("Makes third attempt to get STS key", async () => {
-              mockFetch = jest
-                .spyOn(global, "fetch")
-                .mockImplementationOnce(() =>
-                  Promise.reject(new Error("mockError")),
-                )
-                .mockImplementationOnce(() =>
-                  Promise.reject(new Error("mockError")),
-                )
-                .mockImplementationOnce(() =>
-                  Promise.resolve({
-                    status: 200,
-                    ok: true,
-                    headers: new Headers({
-                      header: "mockHeader",
-                    }),
-                    text: () =>
-                      Promise.resolve(
-                        JSON.stringify({
-                          keys: [
-                            {
-                              kty: "mockKty",
-                              x: "mockX",
-                              y: "mockY",
-                              crv: "mockCrv",
-                              d: "mockD",
-                              kid: "mockKid",
-                            },
-                          ],
-                        }),
-                      ),
-                  } as Response),
-                );
-
-              await tokenService.getSubFromToken(
-                "https://mockJwksEndpoint.com",
-                { maxAttempts: 3, delayInMillis: 1 },
-                "dummy.signed.token",
-              );
-
-              expect(mockFetch).toHaveBeenCalledWith(
-                "https://mockJwksEndpoint.com",
-                {
-                  method: "GET",
-                },
-              );
-              expect(mockFetch).toHaveBeenCalledTimes(3);
-            });
-          });
-
-          describe("Given there is an error retrieving the public key on the third attempt", () => {
-            it("Returns error result", async () => {
-              mockFetch = jest
-                .spyOn(global, "fetch")
-                .mockImplementationOnce(() =>
-                  Promise.reject(new Error("mockError")),
-                )
-                .mockImplementationOnce(() =>
-                  Promise.reject(new Error("mockError")),
-                )
-                .mockImplementationOnce(() =>
-                  Promise.reject(new Error("mockError")),
-                );
-
-              const result = await tokenService.getSubFromToken(
-                "https://mockJwksEndpoint.com",
-                { maxAttempts: 3, delayInMillis: 1 },
-                "dummy.signed.token",
-              );
-
-              expect(mockFetch).toHaveBeenCalledWith(
-                "https://mockJwksEndpoint.com",
-                {
-                  method: "GET",
-                },
-              );
-              expect(mockFetch).toHaveBeenCalledTimes(3);
-
-              expect(result.isError).toBe(true);
-              expect(result.value).toStrictEqual({
-                errorMessage: "Unexpected network error: Error: mockError",
-                errorCategory: "SERVER_ERROR",
-              });
-            });
-          });
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Failed to decode token header",
+          errorCategory: "CLIENT_ERROR",
         });
       });
     });
 
-    describe("Token signature verification", () => {
-      describe("Given there is an error getting public key from JWKS (e.g. when kid from JWT header is not found in JWKS)", () => {
-        it("Returns error result", async () => {
-          dependencies.publicKeyGetter = () =>
-            new MockPubicKeyGetterGetPublicKeyError();
-          tokenService = new TokenService(dependencies);
-          jest.spyOn(global, "fetch").mockImplementation(() =>
-            Promise.resolve({
-              status: 200,
-              ok: true,
-              headers: new Headers({
-                header: "mockHeader",
-              }),
-              text: () =>
-                Promise.resolve(
-                  JSON.stringify({
-                    keys: [
-                      {
-                        crv: "mockCrv",
-                        d: "mockD",
-                        kty: "mockKty",
-                        x: "mockX",
-                        y: "mockY",
-                      },
-                    ],
-                  }),
-                ),
-            } as Response),
-          );
-          const result = await tokenService.getSubFromToken(
-            "https://mockJwksEndpoint.com",
-            { maxAttempts: 3, delayInMillis: 1 },
-            "dummy.signed.token",
-          );
+    describe("Given the kid claim is not present in JWT header", () => {
+      it("Returns a client error result", async () => {
+        const mockEncodedJwt = new MockJWTBuilder().deleteKid().getEncodedJwt();
+        const result = await tokenService.validateServiceToken(
+          mockEncodedJwt,
+          "mockAudience",
+          "mockIssuer",
+        );
 
-          expect(result.isError).toBe(true);
-          expect(result.value).toStrictEqual({
-            errorMessage: "Failed to get public key",
-            errorCategory: "CLIENT_ERROR",
-          });
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Invalid kid claim",
+          errorCategory: "CLIENT_ERROR",
         });
       });
+    });
+  });
 
-      describe("Given there is an error verifying token signature", () => {
-        it("Returns error result", async () => {
-          dependencies.tokenVerifier = () => new MockTokenVerifierVerifyError();
-          tokenService = new TokenService(dependencies);
-          jest.spyOn(global, "fetch").mockImplementation(() =>
-            Promise.resolve({
-              status: 200,
-              ok: true,
-              headers: new Headers({
-                header: "mockHeader",
-              }),
-              text: () =>
-                Promise.resolve(
-                  JSON.stringify({
-                    keys: [
-                      {
-                        crv: "mockCrv",
-                        d: "mockD",
-                        kid: "mockKid",
-                        kty: "mockKty",
-                        x: "mockX",
-                        y: "mockY",
-                      },
-                    ],
-                  }),
-                ),
-            } as Response),
-          );
-          const result = await tokenService.getSubFromToken(
-            "https://mockJwksEndpoint.com",
-            { maxAttempts: 3, delayInMillis: 1 },
-            "dummy.signed.token",
-          );
+  describe("Payload", () => {
+    describe("Given the JWT payload cannot be decoded", () => {
+      it("Returns a client error result", async () => {
+        const result = await tokenService.validateServiceToken(
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1vY2tLaWQifQ.invalidPayload.LUQDp6G6w_6mREfiiUOVukZ-DtZFeZzhhw0vwpoKnDM",
+          "mockAudience",
+          "mockIssuer",
+        );
 
-          expect(result.isError).toBe(true);
-          expect(result.value).toStrictEqual({
-            errorMessage: "Error verifying token signature",
-            errorCategory: "CLIENT_ERROR",
-          });
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Failed to decode token payload",
+          errorCategory: "CLIENT_ERROR",
         });
+      });
+    });
+
+    describe("Given the not-before claim value is in the future", () => {
+      it("Returns a client error result", async () => {
+        const mockEncodedJwt = new MockJWTBuilder()
+          .setNbf(1729074171)
+          .getEncodedJwt();
+        const result = await tokenService.validateServiceToken(
+          mockEncodedJwt,
+          "mockAudience",
+          "mockIssuer",
+        );
+
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Invalid not-before claim",
+          errorCategory: "CLIENT_ERROR",
+        });
+      });
+    });
+
+    describe("Given the issuer claim is not present in the JWT payload", () => {
+      it("Returns a client error result", async () => {
+        const mockEncodedJwt = new MockJWTBuilder().deleteIss().getEncodedJwt();
+        const result = await tokenService.validateServiceToken(
+          mockEncodedJwt,
+          "mockAudience",
+          "mockIssuer",
+        );
+
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Invalid issuer claim",
+          errorCategory: "CLIENT_ERROR",
+        });
+      });
+    });
+
+    describe("Given the issuer claim value is not the expected value", () => {
+      it("Returns a client error result", async () => {
+        const mockEncodedJwt = new MockJWTBuilder()
+          .setIss("invalidIssuer")
+          .getEncodedJwt();
+        const result = await tokenService.validateServiceToken(
+          mockEncodedJwt,
+          "mockAudience",
+          "mockIssuer",
+        );
+
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Invalid issuer claim",
+          errorCategory: "CLIENT_ERROR",
+        });
+      });
+    });
+
+    describe("Given the audience claim is not present in the JWT payload", () => {
+      it("Returns a client error result", async () => {
+        const mockEncodedJwt = new MockJWTBuilder().deleteAud().getEncodedJwt();
+        const result = await tokenService.validateServiceToken(
+          mockEncodedJwt,
+          "mockAudience",
+          "mockIssuer",
+        );
+
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Invalid audience claim",
+          errorCategory: "CLIENT_ERROR",
+        });
+      });
+    });
+
+    describe("Given the audience claim value is not the expected value", () => {
+      it("Returns a client error result", async () => {
+        const mockEncodedJwt = new MockJWTBuilder()
+          .setAud("invalidAudience")
+          .getEncodedJwt();
+        const result = await tokenService.validateServiceToken(
+          mockEncodedJwt,
+          "mockAudience",
+          "mockIssuer",
+        );
+
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Invalid audience claim",
+          errorCategory: "CLIENT_ERROR",
+        });
+      });
+    });
+
+    describe("Given the scope claim is not present in the JWT payload", () => {
+      it("Returns a client error result", async () => {
+        const mockEncodedJwt = new MockJWTBuilder()
+          .deleteScope()
+          .getEncodedJwt();
+        const result = await tokenService.validateServiceToken(
+          mockEncodedJwt,
+          "mockAudience",
+          "mockIssuer",
+        );
+
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Invalid scope claim",
+          errorCategory: "CLIENT_ERROR",
+        });
+      });
+    });
+
+    describe("Given the scope claim value is not the expected value", () => {
+      it("Returns a client error result", async () => {
+        const mockEncodedJwt = new MockJWTBuilder()
+          .setScope("invalidScope")
+          .getEncodedJwt();
+        const result = await tokenService.validateServiceToken(
+          mockEncodedJwt,
+          "mockAudience",
+          "mockIssuer",
+        );
+
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Invalid scope claim",
+          errorCategory: "CLIENT_ERROR",
+        });
+      });
+    });
+
+    describe("Given the sub claim is not present in the JWT payload", () => {
+      it("Returns a client error result", async () => {
+        const mockEncodedJwt = new MockJWTBuilder()
+          .setScope("idCheck.activeSession.read")
+          .getEncodedJwt();
+        const result = await tokenService.validateServiceToken(
+          mockEncodedJwt,
+          "mockAudience",
+          "mockIssuer",
+        );
+
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Invalid sub claim",
+          errorCategory: "CLIENT_ERROR",
+        });
+      });
+    });
+
+    describe("Given the expiry claim is not present in the JWT payload", () => {
+      it("Returns a client error result", async () => {
+        const mockEncodedJwt = new MockJWTBuilder()
+          .setScope("idCheck.activeSession.read")
+          .setSub("mockSub")
+          .deleteExp()
+          .getEncodedJwt();
+        const result = await tokenService.validateServiceToken(
+          mockEncodedJwt,
+          "mockAudience",
+          "mockIssuer",
+        );
+
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Token expiry time is missing or is in the past",
+          errorCategory: "CLIENT_ERROR",
+        });
+      });
+    });
+
+    describe("Given the expiry claim value is in the past", () => {
+      it("Returns a client error result", async () => {
+        const mockEncodedJwt = new MockJWTBuilder()
+          .setScope("idCheck.activeSession.read")
+          .setSub("mockSub")
+          .setExp(1706783129)
+          .getEncodedJwt();
+        const result = await tokenService.validateServiceToken(
+          mockEncodedJwt,
+          "mockAudience",
+          "mockIssuer",
+        );
+
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Token expiry time is missing or is in the past",
+          errorCategory: "CLIENT_ERROR",
+        });
+      });
+    });
+
+    describe("Given the issued at time claim is not present in the JWT payload", () => {
+      it("Returns a client error result", async () => {
+        const mockEncodedJwt = new MockJWTBuilder()
+          .setScope("idCheck.activeSession.read")
+          .setSub("mockSub")
+          .getEncodedJwt();
+        const result = await tokenService.validateServiceToken(
+          mockEncodedJwt,
+          "mockAudience",
+          "mockIssuer",
+        );
+
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Token issued at time is missing or is in the future",
+          errorCategory: "CLIENT_ERROR",
+        });
+      });
+    });
+
+    describe("Given the issued at time claim value is in the future", () => {
+      it("Returns a client error result", async () => {
+        const mockEncodedJwt = new MockJWTBuilder()
+          .setScope("idCheck.activeSession.read")
+          .setSub("mockSub")
+          .setIat(1728555929)
+          .getEncodedJwt();
+        const result = await tokenService.validateServiceToken(
+          mockEncodedJwt,
+          "mockAudience",
+          "mockIssuer",
+        );
+
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Token issued at time is missing or is in the future",
+          errorCategory: "CLIENT_ERROR",
+        });
+      });
+    });
+  });
+
+  describe("Signature", () => {
+    describe("Given the token signature could not be verified", () => {
+      it("Returns a client error result", async () => {
+        const mockEncodedJwt = new MockJWTBuilder()
+          .setScope("idCheck.activeSession.read")
+          .setSub("mockSub")
+          .setIat(1710028700)
+          .getEncodedJwt();
+        tokenService = new TokenService({
+          tokenVerifier: new MockTokenVerifierError(),
+        });
+        const result = await tokenService.validateServiceToken(
+          mockEncodedJwt,
+          "mockAudience",
+          "mockIssuer",
+        );
+
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Mock signature verification error",
+          errorCategory: "CLIENT_ERROR",
+        });
+      });
+    });
+
+    describe("Given the token signature is verified", () => {
+      it("Returns the sub claim", async () => {
+        const mockEncodedJwt = new MockJWTBuilder()
+          .setScope("idCheck.activeSession.read")
+          .setSub("mockSub")
+          .setIat(1710028700)
+          .getEncodedJwt();
+        const result = await tokenService.validateServiceToken(
+          mockEncodedJwt,
+          "mockAudience",
+          "mockIssuer",
+        );
+
+        expect(result.isError).toBe(false);
+        expect(result.value).toStrictEqual("mockSub");
       });
     });
   });
