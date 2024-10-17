@@ -46,7 +46,7 @@ export class PublicKeyGetter implements IPublicKeyGetter {
       jwk = await this.getJwk(jwksEndpoint, kid);
     } catch (error) {
       return errorResult({
-        errorMessage: `Error getting public key: ${error}`,
+        errorMessage: `Error getting JWK - ${error}`,
         errorCategory: "SERVER_ERROR",
       });
     }
@@ -56,7 +56,7 @@ export class PublicKeyGetter implements IPublicKeyGetter {
       publicKey = await importJWK(jwk, jwk.alg);
     } catch (error) {
       return errorResult({
-        errorMessage: `Error getting public key: ${error}`,
+        errorMessage: `Invalid JWK - ${error}`,
         errorCategory: "SERVER_ERROR",
       });
     }

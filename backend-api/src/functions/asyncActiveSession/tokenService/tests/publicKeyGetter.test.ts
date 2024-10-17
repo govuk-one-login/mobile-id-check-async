@@ -54,7 +54,7 @@ describe("Public Key Getter", () => {
 
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
-        errorMessage: "Error getting public key: Some HTTP error",
+        errorMessage: "Error getting JWK - Some HTTP error",
         errorCategory: "SERVER_ERROR",
       });
     });
@@ -78,7 +78,7 @@ describe("Public Key Getter", () => {
 
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
-        errorMessage: "Error getting public key: Error: Empty response body",
+        errorMessage: "Error getting JWK - Error: Empty response body",
         errorCategory: "SERVER_ERROR",
       });
     });
@@ -104,7 +104,7 @@ describe("Public Key Getter", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage:
-          "Error getting public key: Error: Response does not match the expected JWKS structure",
+          "Error getting JWK - Error: Response does not match the expected JWKS structure",
         errorCategory: "SERVER_ERROR",
       });
     });
@@ -120,7 +120,7 @@ describe("Public Key Getter", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage:
-          "Error getting public key: Error: JWKS does not contain key matching provided key ID",
+          "Error getting JWK - Error: JWKS does not contain key matching provided key ID",
         errorCategory: "SERVER_ERROR",
       });
     });
@@ -147,7 +147,7 @@ describe("Public Key Getter", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage:
-          'Error getting public key: TypeError [ERR_INVALID_ARG_TYPE]: The "key.crv" property must be of type string. Received undefined',
+          'Invalid JWK - TypeError [ERR_INVALID_ARG_TYPE]: The "key.crv" property must be of type string. Received undefined',
         errorCategory: "SERVER_ERROR",
       });
     });
