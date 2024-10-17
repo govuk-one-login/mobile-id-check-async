@@ -35,7 +35,7 @@ export class JweDecrypter implements IDecryptJwe {
 
     if (jweComponents.length !== 5) {
       return errorResult({
-        errorMessage: "Error decrypting JWE: Missing component",
+        errorMessage: "JWE is missing component",
         errorCategory: "CLIENT_ERROR",
       });
     }
@@ -56,14 +56,14 @@ export class JweDecrypter implements IDecryptJwe {
       );
     } catch (error) {
       return errorResult({
-        errorMessage: `Error decrypting JWE: Unable to decrypt encryption key: ${error}`,
-        errorCategory: "CLIENT_ERROR",
+        errorMessage: `Unable to decrypt encryption key - ${error}`,
+        errorCategory: "SERVER_ERROR",
       });
     }
 
     let payload: string;
     try {
-      payload = await this.symmetricDecrypter.decrypt(
+      payload = this.symmetricDecrypter.decrypt(
         cek,
         Buffer.from(initializationVector, "base64url"),
         Buffer.from(encryptedData, "base64url"),
@@ -72,7 +72,7 @@ export class JweDecrypter implements IDecryptJwe {
       );
     } catch (error) {
       return errorResult({
-        errorMessage: `Error decrypting JWE: Unable to decrypt payload: ${error}`,
+        errorMessage: `Unable to decrypt payload - ${error}`,
         errorCategory: "CLIENT_ERROR",
       });
     }

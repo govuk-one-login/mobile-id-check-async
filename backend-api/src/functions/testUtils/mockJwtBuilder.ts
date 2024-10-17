@@ -3,11 +3,11 @@ import jose from "node-jose";
 
 export class MockJWTBuilder {
   private jwt: IMockJwt = {
-    header: { alg: "ES256", typ: "JWT" },
+    header: { alg: "ES256", typ: "JWT", kid: "mockKid" },
     payload: {
       exp: Date.now() + 1000,
       iss: "mockIssuer",
-      aud: "mockIssuer",
+      aud: "mockAudience",
       scope: "dcmaw.session.async_create",
       client_id: "mockClientId",
     },
@@ -84,11 +84,14 @@ export class MockJWTBuilder {
     return this;
   };
 
-  static getPublicKey = async (publicKey: IMockPublicKey) => {
-    return await importJWK(publicKey);
+  setSub = (sub: string): this => {
+    this.jwt.payload.sub = sub;
+    return this;
   };
 
-  getSignedEncodedJwt = async (privateKey: IMockPrivateKey) => {
+  getSignedEncodedJwt = async (
+    privateKey: IMockPrivateKey = MOCK_SIGNING_KEY,
+  ) => {
     this.jwt.header.typ = "JWT";
     const signingKey = await importJWK(privateKey);
     const signedEncodedJwt = await new SignJWT(this.jwt.payload)
@@ -111,6 +114,16 @@ export class MockJWTBuilder {
   };
 }
 
+// Signing key used in unit tests only
+const MOCK_SIGNING_KEY = {
+  crv: "P-256",
+  d: "IMeUPld6UA1WUKJF34HDwZGT2tArxZslpl_dVYzOLKU",
+  kid: "sThKMT3oxcTXG-sgMw2EVPTE9Y8W43wLXfqu7zT46-w",
+  kty: "EC",
+  x: "YMoiJArVzO9RIVR7J9mUlGixqWyXCAYrZLtdc8EhuO8",
+  y: "47JYyUr0qlg3VksGlHCAdpwR_w1dixXfcTi7hBEfrRo",
+};
+
 interface IMockJwt {
   header: {
     alg: string;
@@ -125,18 +138,9 @@ interface IMockJwt {
     scope?: string;
     client_id?: string;
     aud?: string;
+    sub?: string;
   };
   signature: string;
-}
-
-interface IMockPublicKey {
-  alg: string;
-  crv: string;
-  kid: string;
-  kty: string;
-  use: string;
-  x: string;
-  y: string;
 }
 
 interface IMockPrivateKey {

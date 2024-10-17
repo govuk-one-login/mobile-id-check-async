@@ -127,15 +127,15 @@ Mappings:
 
   EnvironmentVariables:
     dev:
-      STSJWKSENDPOINT: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk/.well-known/jwks.json'
+      STSBASEURL: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk'
     build:
-      STSJWKSENDPOINT: 'https://mob-sts-mock.review-b-async.build.account.gov.uk/.well-known/jwks.json'
+      STSBASEURL: 'https://mob-sts-mock.review-b-async.build.account.gov.uk'
     staging:
-      STSJWKSENDPOINT: '' #TODO: Update this value with 'real' STS URLs
+      STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
     integration:
-      STSJWKSENDPOINT: '' #TODO: Update this value with 'real' STS URLs
+      STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
     production:
-      STSJWKSENDPOINT: '' #TODO: Update this value with 'real' STS URLs
+      STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
 
 Conditions:
   UseCodeSigning: !Not
@@ -188,7 +188,6 @@ Globals:
       Variables:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
         TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
-
         # ISSUER should be updated with DNS once available
         ISSUER: mockIssuer
         SESSION_TABLE_NAME: !Ref SessionsTable
@@ -820,8 +819,9 @@ Resources:
       Environment:
         Variables:
           ENCRYPTION_KEY_ARN: !GetAtt KMSEncryptionKey.Arn
-          STS_JWKS_ENDPOINT:
-            !FindInMap [EnvironmentVariables, !Ref Environment, STSJWKSENDPOINT]
+          STS_BASE_URL:
+            !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
+          AUDIENCE: !Sub https://${SessionsApiDomainName}
       VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-ProtectedSubnetIdA

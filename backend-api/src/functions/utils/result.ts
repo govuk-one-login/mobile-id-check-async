@@ -7,7 +7,7 @@ type SuccessResult<S> = {
 
 type ErrorResult = {
   isError: true;
-  value: { errorMessage: string; errorCategory: ErrorCategory };
+  value: { errorMessage: string; errorCategory?: ErrorCategory };
 };
 
 export const successResult = <S>(value: S): SuccessResult<S> => {
@@ -19,7 +19,7 @@ export const successResult = <S>(value: S): SuccessResult<S> => {
 
 export const errorResult = (value: {
   errorMessage: string;
-  errorCategory: ErrorCategory;
+  errorCategory?: ErrorCategory;
 }): ErrorResult => {
   return {
     isError: true,

@@ -19,10 +19,10 @@ describe("Symmetric Decrypter", () => {
   };
 
   describe("Given an error happens trying to decrypt the data (i.e. the encryption key is invalid)", () => {
-    it("Throws the error", async () => {
+    it("Throws the error", () => {
       const invalidSymmetricKey = new Buffer(10);
 
-      await expect(() =>
+      expect(() =>
         symmetricDecrypter.decrypt(
           invalidSymmetricKey,
           initializationVector,
@@ -30,13 +30,13 @@ describe("Symmetric Decrypter", () => {
           authenticationTag,
           additionalAuthenticatedData,
         ),
-      ).rejects.toThrowError(RangeError("Invalid key length"));
+      ).toThrowError(RangeError("Invalid key length"));
     });
   });
 
   describe("Given the encrypted data is successfully decrypted", () => {
-    it("Returns the decrypted data", async () => {
-      const result = await symmetricDecrypter.decrypt(
+    it("Returns the decrypted data", () => {
+      const result = symmetricDecrypter.decrypt(
         symmetricEncryptionKey,
         initializationVector,
         encryptedData,
