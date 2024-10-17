@@ -44,7 +44,7 @@ jobs:
         run: npm run test:unit
 
       - name: SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@eb211723266fe8e83102bac7361f0a05c3ac1d1b #master
+        uses: sonarsource/sonarcloud-github-action@383f7e52eae3ab0510c3cb0e7d9d150bbaeab838 #master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -78,7 +78,7 @@ jobs:
         cache-dependency-path: backend-api/package-lock.json
 
     - name: Install Cosign
-      uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382 #main
+      uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da #main
       with:
         cosign-release: 'v1.9.0'
 
@@ -92,13 +92,13 @@ jobs:
       run: npm install
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@909c963c254b4e2e2f5aa6ef17217c4d7a7c4a31 #main
+      uses: aws-actions/configure-aws-credentials@2cefa29f8797029f898b1baeff3e21a144128687 #main
       with:
         aws-region: eu-west-2
         role-to-assume: ${{ secrets.BACKEND_API_DEV_GH_ACTIONS_ROLE_ARN }}
 
     - name: Login to Amazon ECR
-      uses: aws-actions/amazon-ecr-login@78e0829b196d0af37b19b1fed53cf6d6b15f565a #main
+      uses: aws-actions/amazon-ecr-login@6f9c6fad87720db87041e25e3ecf5b609c0368a0 #main
 
     - name: Build test image
       run: |
@@ -126,7 +126,7 @@ jobs:
         sam build
 
     - name: Upload SAM artifact into the S3 artifact bucket
-      uses: govuk-one-login/devplatform-upload-action@6985ccbaa306e2320a8826252c922af65242b283 #main
+      uses: govuk-one-login/devplatform-upload-action@b7994fb959f70cc1440295de9e823f317ffa197e #main
       with:
         artifact-bucket-name: ${{ secrets.BACKEND_API_DEV_ARTIFACT_BUCKET }}
         signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
@@ -159,7 +159,7 @@ jobs:
           cache-dependency-path: backend-api/package-lock.json
 
       - name: Install Cosign
-        uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382 #main
+        uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da #main
         with:
           cosign-release: 'v1.9.0'
 
@@ -173,13 +173,13 @@ jobs:
         run: npm install
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@909c963c254b4e2e2f5aa6ef17217c4d7a7c4a31 #main
+        uses: aws-actions/configure-aws-credentials@2cefa29f8797029f898b1baeff3e21a144128687 #main
         with:
           aws-region: eu-west-2
           role-to-assume: ${{ secrets.BACKEND_API_BUILD_GH_ACTIONS_ROLE_ARN }}
 
       - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@78e0829b196d0af37b19b1fed53cf6d6b15f565a #main
+        uses: aws-actions/amazon-ecr-login@6f9c6fad87720db87041e25e3ecf5b609c0368a0 #main
 
       - name: Build test image
         run: |
@@ -207,7 +207,7 @@ jobs:
           sam build --cached
 
       - name: Upload SAM artifact into the S3 artifact bucket
-        uses: govuk-one-login/devplatform-upload-action@6985ccbaa306e2320a8826252c922af65242b283 #main
+        uses: govuk-one-login/devplatform-upload-action@b7994fb959f70cc1440295de9e823f317ffa197e #main
         with:
           artifact-bucket-name: ${{ secrets.BACKEND_API_BUILD_ARTIFACT_BUCKET }}
           signing-profile-name: ${{ secrets.BUILD_SIGNING_PROFILE_NAME}}
