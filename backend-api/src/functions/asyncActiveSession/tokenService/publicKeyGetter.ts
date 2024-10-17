@@ -7,7 +7,7 @@ import {
 
 export interface IPublicKeyGetter {
   getPublicKey: (
-    jwksEndpoint: string,
+    stsBaseUrl: string,
     kid: string,
   ) => Promise<Result<KeyLike | Uint8Array>>;
 }
@@ -38,12 +38,14 @@ export class PublicKeyGetter implements IPublicKeyGetter {
   }
 
   async getPublicKey(
-    jwksEndpoint: string,
+    stsBaseUrl: string,
     kid: string,
   ): Promise<Result<Uint8Array | KeyLike>> {
+    const jwksUri = stsBaseUrl + "/.well-known/jwks.json";
+
     let jwk;
     try {
-      jwk = await this.getJwk(jwksEndpoint, kid);
+      jwk = await this.getJwk(jwksUri, kid);
     } catch (error) {
       return errorResult({
         errorMessage: `Error getting JWK - ${error}`,

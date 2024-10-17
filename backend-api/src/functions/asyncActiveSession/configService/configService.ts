@@ -6,7 +6,6 @@ export interface Config {
   SESSION_TABLE_NAME: string;
   AUDIENCE: string;
   STS_BASE_URL: string;
-  STS_JWKS_ENDPOINT: string;
 }
 
 export class ConfigService implements IGetConfig<Config> {
@@ -56,7 +55,6 @@ export class ConfigService implements IGetConfig<Config> {
       ENCRYPTION_KEY_ARN: env.ENCRYPTION_KEY_ARN,
       SESSION_TABLE_NAME: env.SESSION_TABLE_NAME,
       STS_BASE_URL: env.STS_BASE_URL,
-      STS_JWKS_ENDPOINT: env.STS_BASE_URL + "/.well-known/jwks.json",
       AUDIENCE: env.AUDIENCE,
     });
   };

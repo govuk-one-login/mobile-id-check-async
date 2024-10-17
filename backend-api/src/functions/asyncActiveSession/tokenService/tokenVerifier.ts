@@ -6,7 +6,7 @@ export interface ITokenVerifier {
   verify: (
     token: string,
     kid: string,
-    jwksUri: string,
+    stsBaseUrl: string,
   ) => Promise<Result<null>>;
 }
 
@@ -28,10 +28,10 @@ export class TokenVerifier implements ITokenVerifier {
   async verify(
     token: string,
     kid: string,
-    jwksUri: string,
+    stsBaseUrl: string,
   ): Promise<Result<null>> {
     const getPublicKeyResult = await this.publicKeyGetter.getPublicKey(
-      jwksUri,
+      stsBaseUrl,
       kid,
     );
     if (getPublicKeyResult.isError) {

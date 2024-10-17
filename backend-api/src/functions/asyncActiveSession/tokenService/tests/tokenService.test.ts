@@ -1,24 +1,18 @@
 import { MockJWTBuilder } from "../../../testUtils/mockJwtBuilder";
-import { ExpectedClaims, ITokenService, TokenService } from "../tokenService";
+import { ITokenService, TokenService } from "../tokenService";
 import { MockTokenVerifierError, MockTokenVerifierSuccess } from "./mocks";
 
 describe("Token Service", () => {
   let tokenService: ITokenService;
-  let mockExpectedClaims: ExpectedClaims;
 
   beforeAll(() => {
     jest.useFakeTimers().setSystemTime(new Date("2024-03-10"));
   });
 
   beforeEach(async () => {
-    tokenService = new TokenService("testJwksUri", {
+    tokenService = new TokenService({
       tokenVerifier: new MockTokenVerifierSuccess(),
     });
-    mockExpectedClaims = {
-      aud: "mockAudience",
-      iss: "mockIssuer",
-      scope: "idCheck.activeSession.read",
-    };
   });
 
   describe("Header", () => {
@@ -26,7 +20,8 @@ describe("Token Service", () => {
       it("Returns a client error result", async () => {
         const result = await tokenService.validateServiceToken(
           "test.invalid.jwt",
-          mockExpectedClaims,
+          "mockAudience",
+          "mockIssuer",
         );
 
         expect(result.isError).toBe(true);
@@ -42,7 +37,8 @@ describe("Token Service", () => {
         const mockEncodedJwt = new MockJWTBuilder().deleteKid().getEncodedJwt();
         const result = await tokenService.validateServiceToken(
           mockEncodedJwt,
-          mockExpectedClaims,
+          "mockAudience",
+          "mockIssuer",
         );
 
         expect(result.isError).toBe(true);
@@ -59,7 +55,8 @@ describe("Token Service", () => {
       it("Returns a client error result", async () => {
         const result = await tokenService.validateServiceToken(
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1vY2tLaWQifQ.invalidPayload.LUQDp6G6w_6mREfiiUOVukZ-DtZFeZzhhw0vwpoKnDM",
-          mockExpectedClaims,
+          "mockAudience",
+          "mockIssuer",
         );
 
         expect(result.isError).toBe(true);
@@ -77,7 +74,8 @@ describe("Token Service", () => {
           .getEncodedJwt();
         const result = await tokenService.validateServiceToken(
           mockEncodedJwt,
-          mockExpectedClaims,
+          "mockAudience",
+          "mockIssuer",
         );
 
         expect(result.isError).toBe(true);
@@ -93,7 +91,8 @@ describe("Token Service", () => {
         const mockEncodedJwt = new MockJWTBuilder().deleteIss().getEncodedJwt();
         const result = await tokenService.validateServiceToken(
           mockEncodedJwt,
-          mockExpectedClaims,
+          "mockAudience",
+          "mockIssuer",
         );
 
         expect(result.isError).toBe(true);
@@ -111,7 +110,8 @@ describe("Token Service", () => {
           .getEncodedJwt();
         const result = await tokenService.validateServiceToken(
           mockEncodedJwt,
-          mockExpectedClaims,
+          "mockAudience",
+          "mockIssuer",
         );
 
         expect(result.isError).toBe(true);
@@ -127,7 +127,8 @@ describe("Token Service", () => {
         const mockEncodedJwt = new MockJWTBuilder().deleteAud().getEncodedJwt();
         const result = await tokenService.validateServiceToken(
           mockEncodedJwt,
-          mockExpectedClaims,
+          "mockAudience",
+          "mockIssuer",
         );
 
         expect(result.isError).toBe(true);
@@ -145,7 +146,8 @@ describe("Token Service", () => {
           .getEncodedJwt();
         const result = await tokenService.validateServiceToken(
           mockEncodedJwt,
-          mockExpectedClaims,
+          "mockAudience",
+          "mockIssuer",
         );
 
         expect(result.isError).toBe(true);
@@ -163,7 +165,8 @@ describe("Token Service", () => {
           .getEncodedJwt();
         const result = await tokenService.validateServiceToken(
           mockEncodedJwt,
-          mockExpectedClaims,
+          "mockAudience",
+          "mockIssuer",
         );
 
         expect(result.isError).toBe(true);
@@ -181,7 +184,8 @@ describe("Token Service", () => {
           .getEncodedJwt();
         const result = await tokenService.validateServiceToken(
           mockEncodedJwt,
-          mockExpectedClaims,
+          "mockAudience",
+          "mockIssuer",
         );
 
         expect(result.isError).toBe(true);
@@ -199,7 +203,8 @@ describe("Token Service", () => {
           .getEncodedJwt();
         const result = await tokenService.validateServiceToken(
           mockEncodedJwt,
-          mockExpectedClaims,
+          "mockAudience",
+          "mockIssuer",
         );
 
         expect(result.isError).toBe(true);
@@ -219,7 +224,8 @@ describe("Token Service", () => {
           .getEncodedJwt();
         const result = await tokenService.validateServiceToken(
           mockEncodedJwt,
-          mockExpectedClaims,
+          "mockAudience",
+          "mockIssuer",
         );
 
         expect(result.isError).toBe(true);
@@ -239,7 +245,8 @@ describe("Token Service", () => {
           .getEncodedJwt();
         const result = await tokenService.validateServiceToken(
           mockEncodedJwt,
-          mockExpectedClaims,
+          "mockAudience",
+          "mockIssuer",
         );
 
         expect(result.isError).toBe(true);
@@ -258,7 +265,8 @@ describe("Token Service", () => {
           .getEncodedJwt();
         const result = await tokenService.validateServiceToken(
           mockEncodedJwt,
-          mockExpectedClaims,
+          "mockAudience",
+          "mockIssuer",
         );
 
         expect(result.isError).toBe(true);
@@ -278,7 +286,8 @@ describe("Token Service", () => {
           .getEncodedJwt();
         const result = await tokenService.validateServiceToken(
           mockEncodedJwt,
-          mockExpectedClaims,
+          "mockAudience",
+          "mockIssuer",
         );
 
         expect(result.isError).toBe(true);
@@ -298,12 +307,13 @@ describe("Token Service", () => {
           .setSub("mockSub")
           .setIat(1710028700)
           .getEncodedJwt();
-        tokenService = new TokenService("testJwksUri", {
+        tokenService = new TokenService({
           tokenVerifier: new MockTokenVerifierError(),
         });
         const result = await tokenService.validateServiceToken(
           mockEncodedJwt,
-          mockExpectedClaims,
+          "mockAudience",
+          "mockIssuer",
         );
 
         expect(result.isError).toBe(true);
@@ -323,7 +333,8 @@ describe("Token Service", () => {
           .getEncodedJwt();
         const result = await tokenService.validateServiceToken(
           mockEncodedJwt,
-          mockExpectedClaims,
+          "mockAudience",
+          "mockIssuer",
         );
 
         expect(result.isError).toBe(false);

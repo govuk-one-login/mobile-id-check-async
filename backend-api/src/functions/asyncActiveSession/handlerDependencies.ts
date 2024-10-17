@@ -12,7 +12,7 @@ export interface IAsyncActiveSessionDependencies {
   env: NodeJS.ProcessEnv;
   logger: () => Logger<MessageName>;
   jweDecrypter: (encryptionKeyId: string) => IDecryptJwe;
-  tokenService: (jwksUri: string) => ITokenService;
+  tokenService: () => ITokenService;
   sessionService: (tableName: string) => ISessionService;
 }
 
@@ -20,6 +20,6 @@ export const dependencies: IAsyncActiveSessionDependencies = {
   env: process.env,
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
   jweDecrypter: (encryptionKeyId: string) => new JweDecrypter(encryptionKeyId),
-  tokenService: (jwksUri: string) => new TokenService(jwksUri),
+  tokenService: () => new TokenService(),
   sessionService: (tableName: string) => new SessionService(tableName),
 };

@@ -50,14 +50,11 @@ export async function lambdaHandlerConstructor(
   }
   const serviceTokenJwt = decryptResult.value;
 
-  const tokenService = dependencies.tokenService(config.STS_JWKS_ENDPOINT);
+  const tokenService = dependencies.tokenService();
   const validateServiceTokenResult = await tokenService.validateServiceToken(
     serviceTokenJwt,
-    {
-      aud: config.AUDIENCE,
-      iss: config.STS_BASE_URL,
-      scope: "idCheck.activeSession.read",
-    },
+    config.AUDIENCE,
+    config.STS_BASE_URL,
   );
   if (validateServiceTokenResult.isError) {
     if (validateServiceTokenResult.value.errorCategory === "CLIENT_ERROR") {

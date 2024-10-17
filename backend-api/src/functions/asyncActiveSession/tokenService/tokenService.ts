@@ -5,7 +5,8 @@ import { ITokenVerifier, TokenVerifier } from "./tokenVerifier";
 export interface ITokenService {
   validateServiceToken: (
     token: string,
-    expectedClaims: ExpectedClaims,
+    audience: string,
+    stsBaseUrl: string,
   ) => Promise<Result<string>>;
 }
 
@@ -25,16 +26,15 @@ const tokenServiceDependencies: TokenServicesDependencies = {
 
 export class TokenService implements ITokenService {
   private readonly tokenVerifier: ITokenVerifier;
-  private readonly jwksEndpoint: string;
 
-  constructor(jwksEndpoint: string, dependencies = tokenServiceDependencies) {
-    this.jwksEndpoint = jwksEndpoint;
+  constructor(dependencies = tokenServiceDependencies) {
     this.tokenVerifier = dependencies.tokenVerifier;
   }
 
   async validateServiceToken(
     token: string,
-    expectedClaims: ExpectedClaims,
+    audience: string,
+    stsBaseUrl: string,
   ): Promise<Result<string>> {
     const validateServiceTokenHeaderResult =
       this.validateServiceTokenHeader(token);
@@ -43,6 +43,11 @@ export class TokenService implements ITokenService {
     }
     const { kid } = validateServiceTokenHeaderResult.value;
 
+    const expectedClaims: ExpectedClaims = {
+      aud: audience,
+      iss: stsBaseUrl,
+      scope: "idCheck.activeSession.read",
+    };
     const validateServiceTokenPayloadResult = this.validateServiceTokenPayload(
       token,
       expectedClaims,
@@ -55,7 +60,7 @@ export class TokenService implements ITokenService {
     const verifyResult = await this.tokenVerifier.verify(
       token,
       kid,
-      this.jwksEndpoint,
+      stsBaseUrl,
     );
     if (verifyResult.isError) {
       return verifyResult;
