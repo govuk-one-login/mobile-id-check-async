@@ -9,7 +9,7 @@ import { getFirstRegisteredClient } from "./utils/getRegisteredClient";
 jest.setTimeout(4 * 5000);
 
 describe("GET /async/activeSession", () => {
-  describe("Given service token is missing in the request header", () => {
+  describe("Given there is no Authorization header", () => {
     it("Returns an error and 401 status code", async () => {
       const response = await SESSIONS_API_INSTANCE.get("/async/activeSession");
 
@@ -21,10 +21,70 @@ describe("GET /async/activeSession", () => {
     });
   });
 
-  describe("Given service token is invalid", () => {
+  describe("Given the Bearer token from the Authorization header does not consist of two parts", () => {
+    it("Returns an error and 401 status code", async () => {
+      const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
+        headers: { Authorization: "Bearer" },
+      });
+
+      expect(response.status).toBe(401);
+      expect(response.data).toStrictEqual({
+        error: "unauthorized",
+        error_description: "Invalid authorization header",
+      });
+    });
+  });
+
+  describe("Given the Bearer token from the Authorization header is missing a token", () => {
+    it("Returns an error and 401 status code", async () => {
+      const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
+        headers: { Authorization: "Bearer " },
+      });
+
+      expect(response.status).toBe(401);
+      expect(response.data).toStrictEqual({
+        error: "unauthorized",
+        error_description: "Invalid authorization header",
+      });
+    });
+  });
+
+  describe("Given there is an error decrypting the service token", () => {
     it("Returns an error and 400 status code", async () => {
       const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
         headers: { Authorization: "Bearer one.two.three.four.five" },
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.data).toStrictEqual({
+        error: "invalid_request",
+        error_description: "Failed to decrypt service token",
+      });
+    });
+  });
+
+  describe("Given service token tag is invalid", () => {
+    it("Returns an error and 400 status code", async () => {
+      const sub = randomUUID()
+      const accessTokenWithInvalidTag = await getAccessToken(sub) + "invalidTag"
+      const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
+        headers: { Authorization: `Bearer ${accessTokenWithInvalidTag}` },
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.data).toStrictEqual({
+        error: "invalid_request",
+        error_description: "Failed to decrypt service token",
+      });
+    });
+  });
+
+  describe("Given service token validation fails", () => {
+    it("Returns an error and 400 status code", async () => {
+      const sub = randomUUID()
+      const accessToken = await getAccessToken(sub, "invalid.scope")
+      const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
 
       expect(response.status).toBe(400);
@@ -72,10 +132,10 @@ describe("GET /async/activeSession", () => {
   });
 });
 
-async function getAccessToken(sub: string) {
+async function getAccessToken(sub: string, scope?: string) {
   const requestBody = new URLSearchParams({
     subject_token: sub,
-    scope: "idCheck.activeSession.read",
+    scope: scope ?? "idCheck.activeSession.read",
     grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
     subject_token_type: "urn:ietf:params:oauth:token-type:access_token",
   });
