@@ -66,7 +66,7 @@ describe("GET /async/activeSession", () => {
   });
 
   describe("Given a successful call is made to /async/activeSession", () => {
-    it("Returns 200 status code, sessionId, redirect_uri and state", async () => {
+    it("Returns 200 status code, sessionId, redirectUri and state", async () => {
       const sub = randomUUID();
 
       // console.log("<<<<< sub >>>>>", sub)
@@ -87,7 +87,7 @@ describe("GET /async/activeSession", () => {
 
       expect(response.status).toBe(200);
       expect(response.data["sessionId"]).toBeDefined();
-      expect(response.data["redirect_uri"]).toBeDefined();
+      expect(response.data["redirectUri"]).toBeDefined();
       expect(response.data["state"]).toBeDefined();
     });
   });
