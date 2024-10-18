@@ -14,11 +14,6 @@ export class MockJWTBuilder {
     signature: "Ik_kbkTVKzlXadti994bAtiHaFO1KsD4_yJGt4wpjr8",
   };
 
-  setKid = (kid: string): this => {
-    this.jwt.header.kid = kid;
-    return this;
-  };
-
   deleteKid = (): this => {
     delete this.jwt.header.kid;
     return this;
@@ -31,11 +26,6 @@ export class MockJWTBuilder {
 
   deleteAud = (): this => {
     delete this.jwt.payload.aud;
-    return this;
-  };
-
-  setClientId = (clientId: string): this => {
-    this.jwt.payload.client_id = clientId;
     return this;
   };
 
@@ -92,13 +82,10 @@ export class MockJWTBuilder {
   getSignedEncodedJwt = async (
     privateKey: IMockPrivateKey = MOCK_SIGNING_KEY,
   ) => {
-    this.jwt.header.typ = "JWT";
     const signingKey = await importJWK(privateKey);
-    const signedEncodedJwt = await new SignJWT(this.jwt.payload)
+    return await new SignJWT(this.jwt.payload)
       .setProtectedHeader(this.jwt.header)
       .sign(signingKey);
-
-    return signedEncodedJwt;
   };
 
   getEncodedJwt = () => {
