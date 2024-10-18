@@ -52,10 +52,10 @@ describe("GET /async/activeSession", () => {
     });
   });
 
-  describe("Given a successful call is made to /async/activeSession", () => {
+  describe("Given the request is valid and a session is found", () => {
     it("Returns 200 status code, sessionId, redirectUri and state", async () => {
       const sub = randomUUID();
-      const asyncCredentialResponse = await createSessionForSub(sub);
+      await createSessionForSub(sub);
       const accessToken = await getAccessToken(sub);
 
       const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
@@ -98,7 +98,7 @@ async function createSessionForSub(sub: string) {
       },
     },
   );
-  const credentialTokenResponse = await PROXY_API_INSTANCE.post(
+  const asyncCredentialResponse = await PROXY_API_INSTANCE.post(
     "/async/credential",
     {
       sub:
@@ -115,5 +115,5 @@ async function createSessionForSub(sub: string) {
       },
     },
   );
-  return credentialTokenResponse.data;
+  return asyncCredentialResponse.data;
 }
