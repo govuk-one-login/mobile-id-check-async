@@ -1,12 +1,11 @@
-import "dotenv/config";
-import {
-  GetSecretValueCommand,
-  SecretsManagerClient,
-} from "@aws-sdk/client-secrets-manager";
-import { randomUUID, UUID } from "crypto";
-import { PRIVATE_API_INSTANCE, PROXY_API_INSTANCE } from "./utils/apiInstance";
 import { AxiosInstance } from "axios";
-import { ClientDetails, getFirstRegisteredClient } from "./utils/getRegisteredClient";
+import { randomUUID, UUID } from "crypto";
+import "dotenv/config";
+import { PRIVATE_API_INSTANCE, PROXY_API_INSTANCE } from "./utils/apiInstance";
+import {
+  ClientDetails,
+  getFirstRegisteredClient,
+} from "./utils/getRegisteredClient";
 
 const getApisToTest = (): {
   apiName: string;
