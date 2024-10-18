@@ -133,7 +133,7 @@ Mappings:
 
   EnvironmentVariables:
     dev:
-      STSBASEURL: 'https://jm-10416-sts-mock.review-b-async.dev.account.gov.uk'
+      STSBASEURL: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk'
     build:
       STSBASEURL: 'https://mob-sts-mock.review-b-async.build.account.gov.uk'
     staging:
