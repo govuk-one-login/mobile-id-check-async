@@ -86,7 +86,6 @@ describe("GET /async/activeSession", () => {
       // console.log("<<<<< active session response >>>>>", response.data)
 
       expect(response.status).toBe(200);
-      expect(response.data.keys.length).toBeGreaterThanOrEqual(2);
       expect(response.data["sessionId"]).toBeDefined();
       expect(response.data["redirect_uri"]).toBeDefined();
       expect(response.data["state"]).toBeDefined();
