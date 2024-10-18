@@ -2,9 +2,42 @@ import format from "ecdsa-sig-formatter";
 import { KMSClient, VerifyCommand } from "@aws-sdk/client-kms";
 import { IJwtPayload } from "../../types/jwt";
 import { errorResult, Result, successResult } from "../../utils/result";
+import {IGetPublicKey, KMSAdapter} from "../../adapters/kmsAdapter";
+
+export interface IDecodeToken {
+  getDecodedToken: (
+      config: IDecodeTokenConfig,
+  ) => Result<{ encodedJwt: string; jwtPayload: IJwtPayload }>;
+}
+
+export interface IVerifyTokenSignature {
+  verifyTokenSignature: (keyId: string, jwt: string) => Promise<Result<null>>;
+}
+
+export interface IDecodedToken {
+  encodedJwt: string;
+  jwtPayload: IJwtPayload;
+}
+
+export interface IDecodeTokenConfig {
+  authorizationHeader: string;
+  issuer: string;
+}
+
+export type TokenServiceDependencies = {
+  keyGetter: IGetPublicKey;
+};
+
+const tokenServiceDependencies: TokenServiceDependencies = {
+  keyGetter: new KMSAdapter(),
+};
 
 export class TokenService implements IDecodeToken, IVerifyTokenSignature {
-  constructor() {}
+  private readonly keyGetter: IGetPublicKey;
+
+  constructor(dependencies = tokenServiceDependencies) {
+   this.keyGetter = dependencies.keyGetter
+  }
 
   getDecodedToken(config: IDecodeTokenConfig): Result<IDecodedToken> {
     const encodedJwt = config.authorizationHeader;
@@ -150,24 +183,4 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
 
     return successResult(null);
   }
-}
-
-export interface IDecodeToken {
-  getDecodedToken: (
-    config: IDecodeTokenConfig,
-  ) => Result<{ encodedJwt: string; jwtPayload: IJwtPayload }>;
-}
-
-export interface IVerifyTokenSignature {
-  verifyTokenSignature: (keyId: string, jwt: string) => Promise<Result<null>>;
-}
-
-export interface IDecodedToken {
-  encodedJwt: string;
-  jwtPayload: IJwtPayload;
-}
-
-export interface IDecodeTokenConfig {
-  authorizationHeader: string;
-  issuer: string;
 }
