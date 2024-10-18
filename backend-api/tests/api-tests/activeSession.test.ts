@@ -79,9 +79,7 @@ describe("GET /async/activeSession", () => {
 
   describe("Given there is an error decrypting the service token because the authentication tag is invalid", () => {
     it("Returns an error and 400 status code", async () => {
-      const sub = randomUUID();
-      const accessTokenWithInvalidTag =
-        (await getAccessToken(sub)) + "invalidTag";
+      const accessTokenWithInvalidTag = (await getAccessToken()) + "invalidTag";
       const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
         headers: { Authorization: `Bearer ${accessTokenWithInvalidTag}` },
       });
@@ -112,9 +110,7 @@ describe("GET /async/activeSession", () => {
 
   describe("Given active session is not found", () => {
     it("Returns an error and 404 status code", async () => {
-      const accessToken = await getAccessToken(
-        "478E3BF8-C3D5-4EA2-A6EE-38B07F2EE0FD",
-      );
+      const accessToken = await getAccessToken();
 
       const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -147,9 +143,9 @@ describe("GET /async/activeSession", () => {
   });
 });
 
-async function getAccessToken(sub: string, scope?: string) {
+async function getAccessToken(sub?: string, scope?: string) {
   const requestBody = new URLSearchParams({
-    subject_token: sub,
+    subject_token: sub ?? randomUUID(),
     scope: scope ?? "idCheck.activeSession.read",
     grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
     subject_token_type: "urn:ietf:params:oauth:token-type:access_token",
