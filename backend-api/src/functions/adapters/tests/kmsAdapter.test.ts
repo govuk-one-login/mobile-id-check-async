@@ -23,23 +23,8 @@ describe("KMS Adapter", () => {
     kmsAdapter = new KMSAdapter();
   });
 
-  describe("Given an error happens trying to decrypt the data", () => {
-    it("Throws the error thrown by the KMS client", async () => {
-      mockKmsClient.on(DecryptCommand).rejects(
-        new KeyUnavailableException({
-          $metadata: {},
-          message: "Some error message",
-        }),
-      );
-
-      await expect(() =>
-        kmsAdapter.decrypt(new Uint8Array(), "mockKeyId"),
-      ).rejects.toThrowError(KeyUnavailableException);
-    });
-  });
-
   describe("Given a InvalidCiphertextException error happens trying to decrypt the data", () => {
-    it("Throws the error thrown by the KMS client", async () => {
+    it("Throws a ClientError", async () => {
       mockKmsClient.on(DecryptCommand).rejects(
         new InvalidCiphertextException({
           $metadata: {},
@@ -54,7 +39,7 @@ describe("KMS Adapter", () => {
   });
 
   describe("Given a IncorrectKeyException error happens trying to decrypt the data", () => {
-    it("Throws the error thrown by the KMS client", async () => {
+    it("Throws a ClientError", async () => {
       mockKmsClient.on(DecryptCommand).rejects(
         new IncorrectKeyException({
           $metadata: {},
@@ -65,6 +50,21 @@ describe("KMS Adapter", () => {
       await expect(() =>
         kmsAdapter.decrypt(new Uint8Array(), "mockKeyId"),
       ).rejects.toThrowError(ClientError);
+    });
+  });
+
+  describe("Given any other error happens trying to decrypt the data", () => {
+    it("Throws the error thrown by the KMS client", async () => {
+      mockKmsClient.on(DecryptCommand).rejects(
+        new KeyUnavailableException({
+          $metadata: {},
+          message: "Some error message",
+        }),
+      );
+
+      await expect(() =>
+        kmsAdapter.decrypt(new Uint8Array(), "mockKeyId"),
+      ).rejects.toThrowError(KeyUnavailableException);
     });
   });
 
