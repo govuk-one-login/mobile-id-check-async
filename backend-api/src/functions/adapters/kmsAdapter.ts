@@ -1,9 +1,18 @@
 import {
   DecryptCommand,
   DecryptCommandOutput,
+  IncorrectKeyException,
+  InvalidCiphertextException,
   KMSClient,
 } from "@aws-sdk/client-kms";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
+
+export interface IKmsAdapter {
+  decrypt: (
+    ciphertext: Uint8Array,
+    encryptionKeyId: string,
+  ) => Promise<Uint8Array>;
+}
 
 const kmsClient = new KMSClient({
   region: "eu-west-2",
@@ -19,13 +28,24 @@ export class KMSAdapter implements IKmsAdapter {
     encryptedData: Uint8Array,
     encryptionKeyId: string,
   ): Promise<Uint8Array> {
-    const decryptCommandOutput: DecryptCommandOutput = await kmsClient.send(
-      new DecryptCommand({
-        KeyId: encryptionKeyId,
-        CiphertextBlob: encryptedData,
-        EncryptionAlgorithm: "RSAES_OAEP_SHA_256",
-      }),
-    );
+    let decryptCommandOutput: DecryptCommandOutput;
+    try {
+      decryptCommandOutput = await kmsClient.send(
+        new DecryptCommand({
+          KeyId: encryptionKeyId,
+          CiphertextBlob: encryptedData,
+          EncryptionAlgorithm: "RSAES_OAEP_SHA_256",
+        }),
+      );
+    } catch (error) {
+      if (
+        error instanceof InvalidCiphertextException ||
+        error instanceof IncorrectKeyException
+      ) {
+        throw new ClientError(error.message);
+      }
+      throw error;
+    }
 
     if (!decryptCommandOutput.Plaintext) {
       throw new Error("Decrypted plaintext data is missing");
@@ -35,9 +55,9 @@ export class KMSAdapter implements IKmsAdapter {
   }
 }
 
-export interface IKmsAdapter {
-  decrypt: (
-    ciphertext: Uint8Array,
-    encryptionKeyId: string,
-  ) => Promise<Uint8Array>;
+export class ClientError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ClientError";
+  }
 }

@@ -1,6 +1,10 @@
 import { SymmetricDecrypter, IDecryptSymmetric } from "./symmetricDecrypter";
 import { errorResult, Result, successResult } from "../../utils/result";
-import { IKmsAdapter, KMSAdapter } from "../../adapters/kmsAdapter";
+import {
+  ClientError,
+  IKmsAdapter,
+  KMSAdapter,
+} from "../../adapters/kmsAdapter";
 
 export interface IDecryptJwe {
   decrypt: (jwe: string) => Promise<Result<string>>;
@@ -55,6 +59,12 @@ export class JweDecrypter implements IDecryptJwe {
         this.encryptionKeyId,
       );
     } catch (error) {
+      if (error instanceof ClientError) {
+        return errorResult({
+          errorMessage: `Unable to decrypt encryption key - ${error}`,
+          errorCategory: "CLIENT_ERROR",
+        });
+      }
       return errorResult({
         errorMessage: `Unable to decrypt encryption key - ${error}`,
         errorCategory: "SERVER_ERROR",
