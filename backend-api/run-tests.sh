@@ -9,6 +9,7 @@ remove_quotes() {
 export PROXY_API_URL=$(remove_quotes "$CFN_ProxyApiUrl")
 export PRIVATE_API_URL=$(remove_quotes "$CFN_PrivateApiUrl")
 export SESSIONS_API_URL=$(remove_quotes "$CFN_SessionsApiUrl")
+export STS_MOCK_API_URL=$(remove_quotes "$CFN_StsMockApiUrl")
 
 mkdir -pv results
 
