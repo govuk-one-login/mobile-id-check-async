@@ -4,7 +4,8 @@ import {
   MockSymmetricDecrypterSuccess,
 } from "./mocks";
 import {
-  MockAsymmetricDecrypterFailure,
+  MockAsymmetricDecrypterClientError,
+  MockAsymmetricDecrypterError,
   MockAsymmetricDecrypterSuccess,
 } from "../../../adapters/tests/mocks";
 
@@ -32,9 +33,10 @@ describe("Decrypt JWE", () => {
     });
   });
 
-  describe("Given an error happens trying to decrypt the CEK", () => {
-    it("Returns a SERVER_ERROR error result", async () => {
-      dependencies.asymmetricDecrypter = new MockAsymmetricDecrypterFailure();
+  describe("Given a ClientError exception is thrown when trying to decrypt the CEK", () => {
+    it("Returns a CLIENT_ERROR error result", async () => {
+      dependencies.asymmetricDecrypter =
+        new MockAsymmetricDecrypterClientError();
       const result = await new JweDecrypter("keyId", dependencies).decrypt(
         "protectedHeader.encryptedKey.iv.ciphertext.tag",
       );
@@ -42,7 +44,23 @@ describe("Decrypt JWE", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage:
-          "Unable to decrypt encryption key - Some mock asymmetric decryption error",
+          "Unable to decrypt encryption key - ClientError: Some mock asymmetric decryption client error",
+        errorCategory: "CLIENT_ERROR",
+      });
+    });
+  });
+
+  describe("Given any other exception is thrown when trying to decrypt the CEK", () => {
+    it("Returns a SERVER_ERROR error result", async () => {
+      dependencies.asymmetricDecrypter = new MockAsymmetricDecrypterError();
+      const result = await new JweDecrypter("keyId", dependencies).decrypt(
+        "protectedHeader.encryptedKey.iv.ciphertext.tag",
+      );
+
+      expect(result.isError).toBe(true);
+      expect(result.value).toStrictEqual({
+        errorMessage:
+          "Unable to decrypt encryption key - Error: Some mock asymmetric decryption error",
         errorCategory: "SERVER_ERROR",
       });
     });

@@ -1,13 +1,15 @@
 import { AwsStub, mockClient } from "aws-sdk-client-mock";
 import {
   DecryptCommand,
+  IncorrectKeyException,
+  InvalidCiphertextException,
   KeyUnavailableException,
   KMSClient,
   KMSClientResolvedConfig,
   ServiceInputTypes,
   ServiceOutputTypes,
 } from "@aws-sdk/client-kms";
-import { IKmsAdapter, KMSAdapter } from "../kmsAdapter";
+import { ClientError, IKmsAdapter, KMSAdapter } from "../kmsAdapter";
 
 describe("KMS Adapter", () => {
   let mockKmsClient: AwsStub<
@@ -21,7 +23,37 @@ describe("KMS Adapter", () => {
     kmsAdapter = new KMSAdapter();
   });
 
-  describe("Given an error happens trying to decrypt the data", () => {
+  describe("Given a InvalidCiphertextException error happens trying to decrypt the data", () => {
+    it("Throws a ClientError", async () => {
+      mockKmsClient.on(DecryptCommand).rejects(
+        new InvalidCiphertextException({
+          $metadata: {},
+          message: "Some error message",
+        }),
+      );
+
+      await expect(() =>
+        kmsAdapter.decrypt(new Uint8Array(), "mockKeyId"),
+      ).rejects.toThrowError(ClientError);
+    });
+  });
+
+  describe("Given a IncorrectKeyException error happens trying to decrypt the data", () => {
+    it("Throws a ClientError", async () => {
+      mockKmsClient.on(DecryptCommand).rejects(
+        new IncorrectKeyException({
+          $metadata: {},
+          message: "Some error message",
+        }),
+      );
+
+      await expect(() =>
+        kmsAdapter.decrypt(new Uint8Array(), "mockKeyId"),
+      ).rejects.toThrowError(ClientError);
+    });
+  });
+
+  describe("Given any other error happens trying to decrypt the data", () => {
     it("Throws the error thrown by the KMS client", async () => {
       mockKmsClient.on(DecryptCommand).rejects(
         new KeyUnavailableException({
