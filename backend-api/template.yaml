@@ -25,6 +25,12 @@ Parameters:
     Type: String
     Default: none
 
+  DevOverrideStsBaseUrl:
+    Description: |
+      Update this
+    Type: String
+    Default: none
+
 Mappings:
   PrivateApigw:
     dev:
@@ -127,7 +133,7 @@ Mappings:
 
   EnvironmentVariables:
     dev:
-      STSBASEURL: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk'
+      STSBASEURL: 'https://jm-10416-sts-mock.review-b-async.dev.account.gov.uk'
     build:
       STSBASEURL: 'https://mob-sts-mock.review-b-async.build.account.gov.uk'
     staging:
@@ -166,6 +172,11 @@ Conditions:
     - !Equals
       - !Ref Environment
       - build
+
+  UseDevOverrideStsBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideStsBaseUrl
+      - none
 
 Globals:
   Function:
@@ -819,8 +830,10 @@ Resources:
       Environment:
         Variables:
           ENCRYPTION_KEY_ARN: !GetAtt KMSEncryptionKey.Arn
-          STS_BASE_URL:
-            !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
+          STS_BASE_URL: !If
+            - UseDevOverrideStsBaseUrl
+            - !Ref DevOverrideStsBaseUrl
+            - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
           AUDIENCE: !Sub https://${SessionsApiDomainName}
       VpcConfig:
         SubnetIds:
