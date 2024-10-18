@@ -38,8 +38,24 @@ sam deploy \
     --capabilities CAPABILITY_NAMED_IAM
 
 # After deploying STS Mock, generate keys
-echo "Running post-deployment script..."
-cd ../sts-mock/jwks-helper-script || exit 1
-./publish_keys_to_s3.sh "${STS_MOCK_STACK_NAME}" "dev"
+while true; do
+    read -r -p "Do you want to generate keys for your STS mock stack? [y/n]: " yn
+
+    case "$yn" in
+        [yY] )
+            echo "Generating keys"
+            cd ../sts-mock/jwks-helper-script || exit 1
+            ./publish_keys_to_s3.sh "${STS_MOCK_STACK_NAME}" "dev"
+            break
+            ;;
+        [nN] )
+            echo "Skipping key generation"
+            break
+            ;;
+        * )
+            echo "\nInvalid input. Please enter 'y' or 'n'.\n"
+            ;;
+    esac
+done
 
 echo "Deployment complete!"
