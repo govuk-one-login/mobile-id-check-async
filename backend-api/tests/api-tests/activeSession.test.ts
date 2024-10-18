@@ -65,8 +65,9 @@ describe("GET /async/activeSession", () => {
 
   describe("Given service token tag is invalid", () => {
     it("Returns an error and 400 status code", async () => {
-      const sub = randomUUID()
-      const accessTokenWithInvalidTag = await getAccessToken(sub) + "invalidTag"
+      const sub = randomUUID();
+      const accessTokenWithInvalidTag =
+        (await getAccessToken(sub)) + "invalidTag";
       const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
         headers: { Authorization: `Bearer ${accessTokenWithInvalidTag}` },
       });
@@ -81,8 +82,8 @@ describe("GET /async/activeSession", () => {
 
   describe("Given service token validation fails", () => {
     it("Returns an error and 400 status code", async () => {
-      const sub = randomUUID()
-      const accessToken = await getAccessToken(sub, "invalid.scope")
+      const sub = randomUUID();
+      const accessToken = await getAccessToken(sub, "invalid.scope");
       const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
