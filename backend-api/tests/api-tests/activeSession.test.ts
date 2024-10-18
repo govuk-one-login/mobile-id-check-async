@@ -101,9 +101,7 @@ async function createSessionForSub(sub: string) {
   const asyncCredentialResponse = await PROXY_API_INSTANCE.post(
     "/async/credential",
     {
-      sub:
-        sub ??
-        "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
+      sub: sub ?? randomUUID(),
       govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
       client_id: clientDetails.client_id,
       state: "testState",
