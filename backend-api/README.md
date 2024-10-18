@@ -46,6 +46,38 @@ sh generate_env_file.sh <stack_name>
 npm run test:api
 ```
 
+## Deploying a custom stack into Dev
+
+### Export a backend-api stack name
+
+```bash
+export backend-stack-name=<stack-name>
+```
+
+### Deploy a custom STS Mock stack
+
+Follow the instructions in STS Mock [README](../sts-mock/README.md) to deploy the custom STS Mock stack.
+
+### Update Environment Variables for Backend API
+
+In the backend-api [template](template.yaml), update the environment variable `STSJWKSENDPOINT` for the dev environment with the following value:
+
+```bash
+<sts-mock-stack-name>.review-b-async.dev.account.gov.uk/.well-known/jwks.json
+```
+
+### Build and deploy backend-api
+
+Assume the relevant AWS credentials and use the following command:
+
+```bash
+sam build --cached --beta-features && sam deploy --stack-name ${backend-stack-name} --capabilities CAPABILITY_NAMED_IAM --resolve-s3
+```
+
+### Remember to delete your stack
+
+For instructions, please see the Helper Scrips [README](../helper-scripts/README.md).
+
 ## Formatting
 
 This repository uses Prettier as an opinionated formatter to ensure code style is consistent.
