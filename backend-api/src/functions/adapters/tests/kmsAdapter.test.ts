@@ -10,7 +10,12 @@ import {
   ServiceInputTypes,
   ServiceOutputTypes,
 } from "@aws-sdk/client-kms";
-import { ClientError, IKmsAdapter, KMSAdapter } from "../kmsAdapter";
+import {
+  ClientError,
+  IDecrypt,
+  IGetPublicKey,
+  KMSAdapter,
+} from "../kmsAdapter";
 
 describe("KMS Adapter", () => {
   let mockKmsClient: AwsStub<
@@ -18,7 +23,7 @@ describe("KMS Adapter", () => {
     ServiceOutputTypes,
     KMSClientResolvedConfig
   >;
-  let kmsAdapter: IKmsAdapter;
+  let kmsAdapter: IDecrypt & IGetPublicKey;
   beforeEach(() => {
     mockKmsClient = mockClient(KMSClient);
     kmsAdapter = new KMSAdapter();

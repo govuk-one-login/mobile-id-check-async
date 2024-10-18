@@ -11,8 +11,8 @@ import { NodeHttpHandler } from "@smithy/node-http-handler";
 
 export interface IDecrypt {
   decrypt: (
-      ciphertext: Uint8Array,
-      encryptionKeyId: string,
+    ciphertext: Uint8Array,
+    encryptionKeyId: string,
   ) => Promise<Uint8Array>;
 }
 
