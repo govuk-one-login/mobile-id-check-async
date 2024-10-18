@@ -1400,3 +1400,7 @@ Outputs:
   PrivateApiUrl:
     Description: Private API Gateway base URL
     Value: !Sub https://${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
+
+  StsMockApiUrl:
+    Description: STS Mock API Gateway base URL
+    Value: !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
