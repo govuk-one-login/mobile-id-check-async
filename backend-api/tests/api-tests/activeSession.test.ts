@@ -6,7 +6,7 @@ import {
 } from "./utils/apiInstance";
 import { getFirstRegisteredClient } from "./utils/getRegisteredClient";
 
-jest.setTimeout(20000);
+jest.setTimeout(4 * 5000);
 
 describe("GET /async/activeSession", () => {
   describe("Given service token is missing in the request header", () => {
