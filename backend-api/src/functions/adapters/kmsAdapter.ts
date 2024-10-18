@@ -42,7 +42,7 @@ export class KMSAdapter implements IKmsAdapter {
         error instanceof InvalidCiphertextException ||
         error instanceof IncorrectKeyException
       ) {
-        throw new ClientError(error.message);
+        throw new ClientError(error.name);
       }
       throw error;
     }
