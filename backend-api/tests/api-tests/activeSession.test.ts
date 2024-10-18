@@ -9,17 +9,6 @@ import { getFirstRegisteredClient } from "./utils/getRegisteredClient";
 jest.setTimeout(15000);
 
 describe("GET /async/activeSession", () => {
-  beforeAll(async () => {
-    // requestBody = new URLSearchParams({
-    //   subject_token: randomUUID(),
-    //   scope: "idCheck.activeSession.read",
-    //   grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
-    //   subject_token_type: "urn:ietf:params:oauth:token-type:access_token",
-    // });
-    // stsMockResponse = await STS_MOCK_API_INSTANCE.post("/token", requestBody);
-    // accessToken = stsMockResponse.data.access_token;
-  });
-
   describe("Given service token is missing in the request header", () => {
     it("Returns an error and 401 status code", async () => {
       const response = await SESSIONS_API_INSTANCE.get("/async/activeSession");
@@ -41,7 +30,7 @@ describe("GET /async/activeSession", () => {
       expect(response.status).toBe(400);
       expect(response.data).toStrictEqual({
         error: "invalid_request",
-        error_description: "Failed decrypting service token JWE",
+        error_description: "Failed to decrypt service token",
       });
     });
   });
@@ -68,22 +57,12 @@ describe("GET /async/activeSession", () => {
   describe("Given a successful call is made to /async/activeSession", () => {
     it("Returns 200 status code, sessionId, redirectUri and state", async () => {
       const sub = randomUUID();
-
-      // console.log("<<<<< sub >>>>>", sub)
-
       const asyncCredentialResponse = await createSessionForSub(sub);
-
-      // console.log("<<<<< async credential response >>>>>", asyncCredentialResponse)
-
       const accessToken = await getAccessToken(sub);
-
-      // console.log("<<<<< sts mock access token >>>>>", accessToken)
 
       const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
-
-      // console.log("<<<<< active session response >>>>>", response.data)
 
       expect(response.status).toBe(200);
       expect(response.data["sessionId"]).toBeDefined();
@@ -112,9 +91,6 @@ async function createSessionForSub(sub: string) {
   const clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
   const clientIdAndSecretB64 =
     Buffer.from(clientIdAndSecret).toString("base64");
-
-  // console.log("<<<<< async token basic token >>>>>", clientIdAndSecretB64)
-
   const asyncTokenResponse = await PROXY_API_INSTANCE.post(
     "/async/token",
     "grant_type=client_credentials",
@@ -124,9 +100,6 @@ async function createSessionForSub(sub: string) {
       },
     },
   );
-
-  // console.log("<<<<< async token response >>>>>", asyncTokenResponse.data)
-
   const credentialTokenResponse = await PROXY_API_INSTANCE.post(
     "/async/credential",
     {
