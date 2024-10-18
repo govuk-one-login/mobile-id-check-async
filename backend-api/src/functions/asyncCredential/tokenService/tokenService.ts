@@ -4,9 +4,7 @@ import { IJwtPayload } from "../../types/jwt";
 import { errorResult, Result, successResult } from "../../utils/result";
 
 export class TokenService implements IDecodeToken, IVerifyTokenSignature {
-
-  constructor() {
-  }
+  constructor() {}
 
   getDecodedToken(config: IDecodeTokenConfig): Result<IDecodedToken> {
     const encodedJwt = config.authorizationHeader;
