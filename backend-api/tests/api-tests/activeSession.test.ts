@@ -21,10 +21,10 @@ describe("GET /async/activeSession", () => {
     });
   });
 
-  describe("Given the Bearer token from the Authorization header does not consist of two parts", () => {
+  describe("Given the Authorization header does not start with Bearer", () => {
     it("Returns an error and 401 status code", async () => {
       const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
-        headers: { Authorization: "Bearer" },
+        headers: { Authorization: "Basic " },
       });
 
       expect(response.status).toBe(401);
@@ -35,7 +35,7 @@ describe("GET /async/activeSession", () => {
     });
   });
 
-  describe("Given the Bearer token from the Authorization header is missing a token", () => {
+  describe("Given the Bearer token from the Authorization header is missing the token", () => {
     it("Returns an error and 401 status code", async () => {
       const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
         headers: { Authorization: "Bearer " },
@@ -49,7 +49,21 @@ describe("GET /async/activeSession", () => {
     });
   });
 
-  describe("Given there is an error decrypting the service token", () => {
+  describe("Given the service token JWE does not consist of 5 parts", () => {
+    it("Returns an error and 400 status code", async () => {
+      const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
+        headers: { Authorization: "Bearer one.two.three.four" },
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.data).toStrictEqual({
+        error: "invalid_request",
+        error_description: "Failed to decrypt service token",
+      });
+    });
+  });
+
+  describe("Given there is an error decrypting the content encryption key (CEK)", () => {
     it("Returns an error and 400 status code", async () => {
       const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
         headers: { Authorization: "Bearer one.two.three.four.five" },
@@ -63,7 +77,7 @@ describe("GET /async/activeSession", () => {
     });
   });
 
-  describe("Given service token tag is invalid", () => {
+  describe("Given there is an error decrypting the service token because the authentication tag is invalid", () => {
     it("Returns an error and 400 status code", async () => {
       const sub = randomUUID();
       const accessTokenWithInvalidTag =
@@ -80,7 +94,7 @@ describe("GET /async/activeSession", () => {
     });
   });
 
-  describe("Given service token validation fails", () => {
+  describe("Given service token validation fails because the scope is invalid", () => {
     it("Returns an error and 400 status code", async () => {
       const sub = randomUUID();
       const accessToken = await getAccessToken(sub, "invalid.scope");
