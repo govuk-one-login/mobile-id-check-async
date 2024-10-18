@@ -1,6 +1,6 @@
 import { AwsStub, mockClient } from "aws-sdk-client-mock";
 import {
-  DecryptCommand,
+  DecryptCommand, GetPublicKeyCommand,
   KeyUnavailableException,
   KMSClient,
   KMSClientResolvedConfig,
@@ -21,7 +21,8 @@ describe("KMS Adapter", () => {
     kmsAdapter = new KMSAdapter();
   });
 
-  describe("Given an error happens trying to decrypt the data", () => {
+  describe("Decrypt", () => {
+    describe("Given an error happens trying to decrypt the data", () => {
     it("Throws the error thrown by the KMS client", async () => {
       mockKmsClient.on(DecryptCommand).rejects(
         new KeyUnavailableException({
@@ -42,7 +43,7 @@ describe("KMS Adapter", () => {
 
       await expect(() =>
         kmsAdapter.decrypt(new Uint8Array(), "mockKeyId"),
-      ).rejects.toThrowError(new Error("Decrypted plaintext data is missing"));
+      ).rejects.toThrowError(new Error("Decrypted plaintext data is missing from response"));
     });
   });
 
@@ -54,6 +55,45 @@ describe("KMS Adapter", () => {
 
       const response = await kmsAdapter.decrypt(new Uint8Array(), "mockKeyId");
       expect(response).toEqual(new Uint8Array(10));
+    });
+  });
+  });
+
+  describe("GetPublicKey", () => {
+    describe("Given an error happens trying to get the public key", () => {
+      it("Throws the error thrown by the KMS client", async () => {
+        mockKmsClient.on(GetPublicKeyCommand).rejects(
+            new KeyUnavailableException({
+              $metadata: {},
+              message: "Some error message",
+            }),
+        );
+
+        await expect(() =>
+            kmsAdapter.getPublicKey("mockKeyId"),
+        ).rejects.toThrowError(KeyUnavailableException);
+      });
+    });
+
+    describe("Given the response does not contain the public key", () => {
+      it("Throws a new Error", async () => {
+        mockKmsClient.on(GetPublicKeyCommand).resolves({});
+
+        await expect(() =>
+            kmsAdapter.getPublicKey("mockKeyId"),
+        ).rejects.toThrowError(new Error("Public key is missing from response"));
+      });
+    });
+
+    describe("Given the public key is successfully retrieve", () => {
+      it("Returns the decrypted data", async () => {
+        mockKmsClient
+            .on(GetPublicKeyCommand)
+            .resolves({ PublicKey: new Uint8Array(10) });
+
+        const response = await kmsAdapter.getPublicKey("mockKeyId");
+        expect(response).toEqual(new Uint8Array(10));
+      });
     });
   });
 });

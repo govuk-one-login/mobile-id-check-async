@@ -1,6 +1,6 @@
 import {
   DecryptCommand,
-  DecryptCommandOutput,
+  DecryptCommandOutput, GetPublicKeyCommand, GetPublicKeyCommandOutput,
   KMSClient,
 } from "@aws-sdk/client-kms";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
@@ -14,30 +14,49 @@ const kmsClient = new KMSClient({
   }),
 });
 
+export interface IKmsAdapter {
+  decrypt: (
+      ciphertext: Uint8Array,
+      encryptionKeyId: string,
+  ) => Promise<Uint8Array>;
+  getPublicKey: (
+      keyId: string,
+  ) => Promise<Uint8Array>;
+}
+
 export class KMSAdapter implements IKmsAdapter {
   async decrypt(
-    encryptedData: Uint8Array,
-    encryptionKeyId: string,
+      encryptedData: Uint8Array,
+      encryptionKeyId: string,
   ): Promise<Uint8Array> {
     const decryptCommandOutput: DecryptCommandOutput = await kmsClient.send(
-      new DecryptCommand({
-        KeyId: encryptionKeyId,
-        CiphertextBlob: encryptedData,
-        EncryptionAlgorithm: "RSAES_OAEP_SHA_256",
-      }),
+        new DecryptCommand({
+          KeyId: encryptionKeyId,
+          CiphertextBlob: encryptedData,
+          EncryptionAlgorithm: "RSAES_OAEP_SHA_256",
+        }),
     );
 
     if (!decryptCommandOutput.Plaintext) {
-      throw new Error("Decrypted plaintext data is missing");
+      throw new Error("Decrypted plaintext data is missing from response");
     }
 
     return decryptCommandOutput.Plaintext;
   }
-}
 
-export interface IKmsAdapter {
-  decrypt: (
-    ciphertext: Uint8Array,
-    encryptionKeyId: string,
-  ) => Promise<Uint8Array>;
+  async getPublicKey(
+      keyId: string,
+  ): Promise<Uint8Array> {
+    const getPublicKeyCommandOutput: GetPublicKeyCommandOutput = await kmsClient.send(
+        new GetPublicKeyCommand({
+          KeyId: keyId,
+        }),
+    )
+
+    if (!getPublicKeyCommandOutput.PublicKey) {
+      throw new Error("Public key is missing from response");
+    }
+
+    return getPublicKeyCommandOutput.PublicKey;
+  }
 }
