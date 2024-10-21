@@ -24,7 +24,7 @@ This script provides the ability to deploy a custom `backend-api` stack in the A
 
 ```bash
 # From /backend-api
-npm run deployBeToDev <your-stack-name>
+npm run deploy-be-to-dev <your-stack-name>
 ```
 
 #### Follow the prompts
