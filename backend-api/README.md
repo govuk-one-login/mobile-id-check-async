@@ -34,7 +34,7 @@ npm run test
 ### API tests
 
 1. Activate AWS credentials
-2. Deploy your stack
+2. Deploy your stack (follow instructions in `helper-scripts` [README](../helper-scripts/README.md#deploy_backend.sh))
 3. Generate a `.env` file for your deployed stack
 ```bash
 # From /backend-api
