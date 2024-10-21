@@ -94,32 +94,11 @@ while true; do
                 --parameter-overrides "$DEV_OVERRIDE_STS_BASE_URL=https://${STS_MOCK_STACK_NAME}.review-b-async.dev.account.gov.uk" \
                 --capabilities CAPABILITY_NAMED_IAM \
                 --resolve-s3
-            break
-            ;;
-        [nN] )
-            echo "Skipping backend-api deployment"
-            break
-            ;;
-        * )
-            echo "Invalid input. Please enter 'y' or 'n'."
-            ;;
-    esac
-done
-
-# Ask the user if they want to generate a .env file for the custom Backend API stack
-while true; do
-    echo
-    read -r -p "Do you want to generate an .env file for ${BACKEND_STACK_NAME}? [y/n]: " yn
-
-    case "$yn" in
-        [yY] )
-            # Generate .env
-            cd ../backend-api || exit 1
             ./generate_env_file.sh "${BACKEND_STACK_NAME}"
             break
             ;;
         [nN] )
-            echo "Skipping .env generation"
+            echo "Skipping backend-api deployment"
             break
             ;;
         * )

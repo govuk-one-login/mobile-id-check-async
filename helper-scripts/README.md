@@ -29,12 +29,6 @@ npm run deploy-be-to-dev <your-stack-name>
 
 #### Follow the prompts
 
-- Deploying an custom `sts-mock` stack:
-  - This is required the first time you deploy a custom `backend-api` stack. It's optional for subsequent deployments.
-- Generating Keys for `sts-mock`:
-  - If you choose to deploy an `sts-mock`, you will be asked if you want to generate keys.
-  - Key generation is required the first time you deploy an `sts-mock`. It's optional afterward.
-- Deploying a custom `backend-api` stack:
-  - Confirm whether you want to deploy a `backend-api` stack.
-- Generating a local `.env` file for your `backend-api`:
-  - Enables you to run API tests against your `backend-api` stack. It's optional and can be done anytime after deployment, see `backend-api` [README API tests](../backend-api/README.md#api-tests) for more information.
+1. Deploying an custom `sts-mock` stack. This is required the first time you deploy a `backend-api` stack. It's optional for subsequent deployments.
+2. Generating Keys for `sts-mock`. If you choose to deploy an `sts-mock`, you will be asked if you want to generate keys. Key generation is required the first time you deploy an `sts-mock`. It's optional afterward.
+3. Deploying a custom `backend-api` stack. Confirm whether you want to deploy a `backend-api` stack. Generates `.env` file for api testing.
