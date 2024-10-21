@@ -20,10 +20,11 @@ This script provides the ability to deploy a custom `backend-api` stack in the A
 
 ### How to use it
 
-#### Run the script with your desired stack name
+#### Execute `deployBeToDev` npm script
 
 ```bash
-sh deploy_backend.sh <your-stack-name>
+# From /backend-api
+npm run deployBeToDev <your-stack-name>
 ```
 
 #### Follow the prompts
