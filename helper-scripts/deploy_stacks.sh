@@ -23,7 +23,7 @@ LOG_DIR="deployLogs"
 mkdir -p "$LOG_DIR"
 
 # Start deploying backend-api in the background
-echo "\nBuilding and deploying custom Backend API stack"
+echo "\nBuilding and deploying custom Backend API stack..."
 (
     cd ../backend-api || exit 1
     sam build --cached
@@ -118,4 +118,4 @@ if [ "$deploy_sts_mock" = true ]; then
     done
 fi
 
-echo "Stack deployment complete!"
+echo "\nStack deployment complete!"
