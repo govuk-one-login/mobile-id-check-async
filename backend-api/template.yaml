@@ -27,7 +27,7 @@ Parameters:
 
   DevOverrideStsBaseUrl:
     Description: |
-      Update this
+      Override the STS_BASE_URL value for development deployments
     Type: String
     Default: none
 

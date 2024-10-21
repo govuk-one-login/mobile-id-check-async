@@ -53,7 +53,7 @@ Parameters:
 
   DevOverrideAsyncBackendBaseUrl:
     Description: |
-      Update this
+      Override the ASYNC_BACKEND_BASE_URL value for development deployments
     Type: String
     Default: none
 
