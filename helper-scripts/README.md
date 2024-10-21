@@ -17,7 +17,7 @@ export STACK_NAME=backend-stack-name    (REQUIRED)
 
 - Deploys a custom Backend API
 - Optionally deploys a custom STS Mock
-- Optionally generates keys for the custom STS mock if the STS Mock is deployed
+- Optionally generates keys for the custom STS mock if an STS Mock is deployed
 
 ### How to use it
 
