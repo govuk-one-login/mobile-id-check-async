@@ -1416,4 +1416,7 @@ Outputs:
 
   StsMockApiUrl:
     Description: STS Mock API Gateway base URL
-    Value: !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
+    Value: !If
+        - UseDevOverrideStsBaseUrl
+        - !Ref DevOverrideStsBaseUrl
+        - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
