@@ -10,7 +10,7 @@ fi
 
 # Ask the user if they want to build and deploy the custom backend API
 echo
-read -r -p "Would you like to build and deploy a custom Backend API? [y]: " yn
+read -r -p "You are about to build and deploy a custom Backend API, do you wish to continue? [y]: " yn
 
 if [ "$yn" != "y" ] && [ "$yn" != "Y" ]; then
     echo "Aborting."
@@ -32,7 +32,7 @@ LOG_DIR="deployLogs"
 mkdir -p "$LOG_DIR"
 
 # Start deploying backend-api in the background
-echo "\nBuilding and deploying custom Backend API stack..."
+echo "Building and deploying custom Backend API stack..."
 (
     cd ../backend-api || exit 1
     sam build --cached
@@ -112,8 +112,19 @@ if [ "$deploy_sts_mock" = true ]; then
 
         case "$yn" in
             [yY] )
-                cd ../sts-mock/jwks-helper-script || exit 1
-                ./publish_keys_to_s3.sh "${STS_MOCK_STACK_NAME}" "dev"
+                echo "Generating keys..."
+                (
+                    set -e
+                    cd ../sts-mock/jwks-helper-script
+                    ./publish_keys_to_s3.sh "${STS_MOCK_STACK_NAME}" "dev"
+                ) > "$LOG_DIR/${STS_MOCK_STACK_NAME}_publish_keys.log" 2>&1
+                keygen_status=$?
+                if [ $keygen_status -ne 0 ]; then
+                    echo "Key generation failed. Check $LOG_DIR/publish_keys.log for details."
+                    exit 1
+                else
+                    echo "Key generation completed successfully."
+                fi
                 break
                 ;;
             [nN] )
