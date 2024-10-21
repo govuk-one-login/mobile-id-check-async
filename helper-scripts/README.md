@@ -32,8 +32,3 @@ sh deploy_backend.sh <your-stack-name>
 - Deploy Backend API: Confirm whether to build and deploy a custom Backend API (REQUIRED).
 - Deploy STS Mock: Must be deployed the first time you deploy a custom Backend API (OPTIONAL AFTER FIRST DEPLOYMENT).
 - Generate Keys: Must be done the first time you deploy a custom STS mock (OPTIONAL AFTER FIRST DEPLOYMENT).
-
-#### Check logs (optional)
-
-Logs are saved in the `/deployLogs` directory.
-Log filenames correspond to the stack names, e.g., <stack-name>-backend.log
