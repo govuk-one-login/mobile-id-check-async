@@ -54,11 +54,11 @@ describe("STS mock infrastructure", () => {
       test("rate and burst limit mappings are set", () => {
         const expectedBurstLimits = {
           dev: 10,
-          build: 0,
+          build: 10,
         };
         const expectedRateLimits = {
           dev: 10,
-          build: 0,
+          build: 10,
         };
         const mappingHelper = new Mappings(template);
         mappingHelper.validatePrivateAPIMapping({
