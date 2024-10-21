@@ -14,9 +14,9 @@ if [ "$(aws sts get-caller-identity --output text --query 'Account')" != "211125
   exit 1
 fi
 
-# Ask the user if they want to build and deploy the custom backend API
+# Ask the user if they want to build and deploy the custom backend-api
 echo
-read -r -p "You are about to build and deploy a custom Backend API, do you wish to continue? [y]: " yn
+read -r -p "You are about to deploy a custom Backend API, do you wish to continue? [y]: " yn
 
 if [ "$yn" != "y" ] && [ "$yn" != "Y" ]; then
     echo "Aborting."
@@ -51,17 +51,17 @@ echo "Building and deploying custom Backend API stack: $BACKEND_STACK_NAME"
 # Capture the PID of the background process
 backend_api_pid=$!
 
-# Ask the user about deploying STS Mock
+# Ask the user about deploying sts-mock
 deploy_sts_mock=false
 
 while true; do
     echo
-    read -r -p "Do you want to deploy a custom STS mock stack? [y/n]: " yn
+    read -r -p "Do you want to deploy a custom STS Mock stack? [y/n]: " yn
 
     case "$yn" in
         [yY] )
             deploy_sts_mock=true
-            # Start deploying STS Mock in the background
+            # Start deploying sts-mock in the background
             echo "Building and deploying STS Mock stack: $STS_MOCK_STACK_NAME"
             (
                 cd ../sts-mock || exit 1
@@ -76,7 +76,7 @@ while true; do
             break
             ;;
         [nN] )
-            echo "Skipping STS mock stack deployment"
+            echo "Skipping STS Mock stack deployment"
             break
             ;;
         * )
@@ -86,7 +86,8 @@ while true; do
 done
 
 # Wait for deployment to finish
-echo "\nWaiting for deployment(s) to finish..."
+echo
+echo "Waiting for deployment(s) to finish..."
 wait $backend_api_pid
 backend_api_status=$?
 
@@ -97,24 +98,24 @@ else
     echo "Backend API deployment completed successfully."
 fi
 
-# If STS Mock is being deployed, wait for it to finish
+# If sts-mock is being deployed, wait for it to finish
 if [ "$deploy_sts_mock" = true ]; then
     wait $sts_mock_pid
     sts_mock_status=$?
 
     if [ $sts_mock_status -ne 0 ]; then
-        echo "STS mock deployment failed. Check ${LOG_DIR}/${STS_MOCK_STACK_NAME}.log for details."
+        echo "STS Mock deployment failed. Check ${LOG_DIR}/${STS_MOCK_STACK_NAME}.log for details."
         exit 1
     else
     echo "STS Mock deployment completed successfully."
     fi
 fi
 
-# After deploying STS Mock, generate keys
+# After deploying sts-mock, generate keys
 if [ "$deploy_sts_mock" = true ]; then
     while true; do
         echo
-        read -r -p "Do you want to generate keys for your STS mock stack? [y/n]: " yn
+        read -r -p "Do you want to generate keys for your STS Mock stack? [y/n]: " yn
 
         case "$yn" in
             [yY] )
@@ -144,4 +145,5 @@ if [ "$deploy_sts_mock" = true ]; then
     done
 fi
 
-echo "\nStack deployment complete!"
+echo
+echo "Stack deployment complete!"
