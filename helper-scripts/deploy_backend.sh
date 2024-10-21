@@ -108,4 +108,4 @@ while true; do
 done
 
 echo
-echo "Stack deployment complete!"
+echo "Deployment complete!"
