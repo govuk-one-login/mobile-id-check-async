@@ -18,6 +18,10 @@ STS_MOCK_STACK_NAME="${STACK_NAME}-sts-mock"
 DEV_OVERRIDE_STS_BASE_URL="DevOverrideStsBaseUrl"
 DEV_OVERRIDE_ASYNC_BACKEND_BASE_URL="DevOverrideAsyncBackendBaseUrl"
 
+# Create the deploymentLogs directory if it doesn't exist
+LOG_DIR="deployLogs"
+mkdir -p "$LOG_DIR"
+
 # Start deploying backend-api in the background
 echo "Building and deploying backend-api stack..."
 (
@@ -28,7 +32,7 @@ echo "Building and deploying backend-api stack..."
         --parameter-overrides "$DEV_OVERRIDE_STS_BASE_URL=https://${STS_MOCK_STACK_NAME}.review-b-async.dev.account.gov.uk" \
         --capabilities CAPABILITY_NAMED_IAM \
         --resolve-s3
-) > backend_api.log 2>&1 < /dev/null &
+) > "$LOG_DIR/$BACKEND_STACK_NAME.log" 2>&1 < /dev/null &
 # Capture the PID of the background process
 backend_api_pid=$!
 
@@ -50,7 +54,7 @@ while true; do
                     --stack-name "$STS_MOCK_STACK_NAME" \
                     --parameter-overrides "$DEV_OVERRIDE_ASYNC_BACKEND_BASE_URL=https://sessions-${BACKEND_STACK_NAME}-async-backend.review-b-async.dev.account.gov.uk" \
                     --capabilities CAPABILITY_NAMED_IAM
-            ) > sts_mock.log 2>&1 < /dev/null &
+            ) > "$LOG_DIR/$STS_MOCK_STACK_NAME.log" 2>&1 < /dev/null &
             # Capture the PID
             sts_mock_pid=$!
             break
