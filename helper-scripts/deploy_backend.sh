@@ -57,7 +57,7 @@ done
 if [ "$deploy_sts_mock" = true ]; then
     while true; do
         echo
-        read -r -p "Do you want to generate keys for your sts-mock stack? [y/n]: " yn
+        read -r -p "Do you want to generate and publish a signing key pair to S3 for your sts-mock? [y/n]: " yn
 
         case "$yn" in
             [yY] )
@@ -67,7 +67,7 @@ if [ "$deploy_sts_mock" = true ]; then
                 break
                 ;;
             [nN] )
-                echo "Skipping key generation."
+                echo "Skipping key generation and publishing"
                 break
                 ;;
             * )
