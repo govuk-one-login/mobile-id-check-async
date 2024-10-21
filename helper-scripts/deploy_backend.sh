@@ -96,5 +96,27 @@ if [ "$deploy_sts_mock" = true ]; then
     done
 fi
 
+# Ask the user if they want to generate a .env file for the custom Backend API stack
+while true; do
+    echo
+    read -r -p "Do you want to generate an .env file for this stack? [y/n]: " yn
+
+    case "$yn" in
+        [yY] )
+            # Generate .env
+            cd ../backend-api || exit 1
+            ./generate_env_file.sh "${BACKEND_STACK_NAME}"
+            break
+            ;;
+        [nN] )
+            echo "Skipping env generation"
+            break
+            ;;
+        * )
+            echo "Invalid input. Please enter 'y' or 'n'."
+            ;;
+    esac
+done
+
 echo
 echo "Stack deployment complete!"
