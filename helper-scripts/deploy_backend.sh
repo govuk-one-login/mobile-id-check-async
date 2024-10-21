@@ -33,27 +33,17 @@ DEV_OVERRIDE_ASYNC_BACKEND_BASE_URL="DevOverrideAsyncBackendBaseUrl"
 
 # Start deploying backend-api
 echo "Building and deploying custom Backend API stack: $BACKEND_STACK_NAME"
-(
-    cd ../backend-api || exit 1
-    sam build --cached
-    sam deploy \
-        --stack-name "$BACKEND_STACK_NAME" \
-        --parameter-overrides "$DEV_OVERRIDE_STS_BASE_URL=https://${STS_MOCK_STACK_NAME}.review-b-async.dev.account.gov.uk" \
-        --capabilities CAPABILITY_NAMED_IAM \
-        --resolve-s3
-)
-backend_api_status=$?
-
-if [ $backend_api_status -ne 0 ]; then
-    echo "Backend API deployment failed."
-    exit 1
-else
-    echo "Backend API deployment completed successfully."
-fi
+echo
+cd ../backend-api || exit 1
+sam build --cached
+sam deploy \
+    --stack-name "$BACKEND_STACK_NAME" \
+    --parameter-overrides "$DEV_OVERRIDE_STS_BASE_URL=https://${STS_MOCK_STACK_NAME}.review-b-async.dev.account.gov.uk" \
+    --capabilities CAPABILITY_NAMED_IAM \
+    --resolve-s3
 
 # Ask the user about deploying sts-mock
 deploy_sts_mock=false
-
 while true; do
     echo
     read -r -p "Do you want to deploy a custom STS Mock stack? [y/n]: " yn
@@ -63,22 +53,14 @@ while true; do
             deploy_sts_mock=true
             # Start deploying sts-mock
             echo "Building and deploying STS Mock stack: $STS_MOCK_STACK_NAME"
-            (
-                cd ../sts-mock || exit 1
-                sam build
-                sam deploy \
-                    --stack-name "$STS_MOCK_STACK_NAME" \
-                    --parameter-overrides "$DEV_OVERRIDE_ASYNC_BACKEND_BASE_URL=https://sessions-${BACKEND_STACK_NAME}-async-backend.review-b-async.dev.account.gov.uk" \
-                    --capabilities CAPABILITY_NAMED_IAM \
-                    --resolve-s3
-            )
-            sts_mock_status=$?
-            if [ $sts_mock_status -ne 0 ]; then
-                echo "STS Mock deployment failed."
-                exit 1
-            else
-                echo "STS Mock deployment completed successfully."
-            fi
+            echo
+            cd ../sts-mock || exit 1
+            sam build
+            sam deploy \
+                --stack-name "$STS_MOCK_STACK_NAME" \
+                --parameter-overrides "$DEV_OVERRIDE_ASYNC_BACKEND_BASE_URL=https://sessions-${BACKEND_STACK_NAME}-async-backend.review-b-async.dev.account.gov.uk" \
+                --capabilities CAPABILITY_NAMED_IAM \
+                --resolve-s3
             break
             ;;
         [nN] )
@@ -99,19 +81,8 @@ if [ "$deploy_sts_mock" = true ]; then
 
         case "$yn" in
             [yY] )
-                echo "Generating keys..."
-                (
-                    set -e
-                    cd ../sts-mock/jwks-helper-script
-                    ./publish_keys_to_s3.sh "${STS_MOCK_STACK_NAME}" "dev"
-                )
-                keygen_status=$?
-                if [ $keygen_status -ne 0 ]; then
-                    echo "Key generation failed."
-                    exit 1
-                else
-                    echo "Key generation completed successfully."
-                fi
+                cd ../sts-mock/jwks-helper-script
+                ./publish_keys_to_s3.sh "${STS_MOCK_STACK_NAME}" "dev"
                 break
                 ;;
             [nN] )
