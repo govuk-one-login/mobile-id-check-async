@@ -1,6 +1,7 @@
 import { errorResult, Result, successResult } from "../../utils/result";
 import { decodeJwt, decodeProtectedHeader } from "jose";
 import { ITokenVerifier, TokenVerifier } from "./tokenVerifier";
+import {IPublicKeyGetter, PublicKeyGetter} from "./publicKeyGetter";
 
 export interface ITokenService {
   validateServiceToken: (
@@ -17,18 +18,22 @@ export type ExpectedClaims = {
 };
 
 export type TokenServicesDependencies = {
+  publicKeyGetter: IPublicKeyGetter;
   tokenVerifier: ITokenVerifier;
 };
 
 const tokenServiceDependencies: TokenServicesDependencies = {
+  publicKeyGetter: new PublicKeyGetter(),
   tokenVerifier: new TokenVerifier(),
 };
 
 export class TokenService implements ITokenService {
   private readonly tokenVerifier: ITokenVerifier;
+  private readonly publicKeyGetter: IPublicKeyGetter;
 
   constructor(dependencies = tokenServiceDependencies) {
     this.tokenVerifier = dependencies.tokenVerifier;
+    this.publicKeyGetter = dependencies.publicKeyGetter;
   }
 
   async validateServiceToken(
@@ -57,10 +62,16 @@ export class TokenService implements ITokenService {
     }
     const { sub } = validateServiceTokenPayloadResult.value;
 
+    const getPublicKeyResult = await this.publicKeyGetter.getPublicKey(stsBaseUrl, kid)
+    if (getPublicKeyResult.isError) {
+      return getPublicKeyResult;
+    }
+
+    const publicKey = getPublicKeyResult.value;
+
     const verifyResult = await this.tokenVerifier.verify(
       token,
-      kid,
-      stsBaseUrl,
+        publicKey
     );
     if (verifyResult.isError) {
       return verifyResult;

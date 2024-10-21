@@ -3,6 +3,8 @@ import { KMSClient, VerifyCommand } from "@aws-sdk/client-kms";
 import { IJwtPayload } from "../../types/jwt";
 import { errorResult, Result, successResult } from "../../utils/result";
 import {IGetPublicKey, KMSAdapter} from "../../adapters/kmsAdapter";
+import {ITokenVerifier, TokenVerifier} from "../../asyncActiveSession/tokenService/tokenVerifier";
+import {KeyLike} from "jose";
 
 export interface IDecodeToken {
   getDecodedToken: (
@@ -25,18 +27,24 @@ export interface IDecodeTokenConfig {
 }
 
 export type TokenServiceDependencies = {
-  keyGetter: IGetPublicKey;
+  publicKeyGetter: IGetPublicKey;
+  signatureVerifier: ITokenVerifier
 };
 
 const tokenServiceDependencies: TokenServiceDependencies = {
-  keyGetter: new KMSAdapter(),
+  publicKeyGetter: new KMSAdapter(),
+  signatureVerifier: new TokenVerifier()
 };
 
+let cachedPublicKey: KeyLike;
+
 export class TokenService implements IDecodeToken, IVerifyTokenSignature {
-  private readonly keyGetter: IGetPublicKey;
+  private readonly publicKeyGetter: IGetPublicKey;
+  private readonly signatureVerifier: ITokenVerifier;
 
   constructor(dependencies = tokenServiceDependencies) {
-   this.keyGetter = dependencies.keyGetter
+   this.publicKeyGetter = dependencies.publicKeyGetter;
+    this.signatureVerifier = dependencies.signatureVerifier;
   }
 
   getDecodedToken(config: IDecodeTokenConfig): Result<IDecodedToken> {
@@ -66,6 +74,20 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
     keyId: string,
     jwt: string,
   ): Promise<Result<null>> {
+
+
+
+    const x = await this.signatureVerifier.verify(jwt, keyId)
+
+    if (!cachedPublicKey) {
+      try {
+        cachedPublicKey = await this.publicKeyGetter.getPublicKey(keyId)
+      } catch (error) {
+        return errorResult({errorMessage: `Error getting public key: ${error}`});
+      }
+    }
+
+
     const [header, payload, signature] = jwt.split(".");
     const kmsClient = new KMSClient();
     const verifyCommand = new VerifyCommand({
