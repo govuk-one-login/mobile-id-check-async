@@ -66,7 +66,7 @@ while true; do
 done
 
 # Wait for the backend-api deployment to finish
-echo "Waiting for backend-api deployment to finish..."
+echo "Waiting for deployment(s) to finish..."
 wait $backend_api_pid
 backend_api_status=$?
 
@@ -74,7 +74,7 @@ if [ $backend_api_status -ne 0 ]; then
     echo "Backend API deployment failed. Check backend_api.log for details."
     exit 1
 else
-    echo "Backend-api deployment completed successfully."
+    echo "Backend API deployment completed successfully."
 fi
 
 # If STS Mock is being deployed, wait for it to finish
@@ -98,7 +98,6 @@ if [ "$deploy_sts_mock" = true ]; then
 
         case "$yn" in
             [yY] )
-                echo "Generating keys..."
                 cd ../sts-mock/jwks-helper-script || exit 1
                 ./publish_keys_to_s3.sh "${STS_MOCK_STACK_NAME}" "dev"
                 break
@@ -114,4 +113,4 @@ if [ "$deploy_sts_mock" = true ]; then
     done
 fi
 
-echo "Deployment complete!"
+echo "Stack deployment complete!"
