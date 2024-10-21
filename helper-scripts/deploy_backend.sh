@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Usage: ./deploy_stacks.sh <stack-name>
-
 # Check if stack name is provided
 if [ $# -ne 1 ]; then
     echo "Usage: $0 <stack-name>"
