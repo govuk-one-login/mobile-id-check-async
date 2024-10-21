@@ -23,7 +23,7 @@ LOG_DIR="deployLogs"
 mkdir -p "$LOG_DIR"
 
 # Start deploying backend-api in the background
-echo "Building and deploying backend-api stack..."
+echo "\nBuilding and deploying custom Backend API stack"
 (
     cd ../backend-api || exit 1
     sam build --cached
@@ -40,6 +40,7 @@ backend_api_pid=$!
 deploy_sts_mock=false
 
 while true; do
+    echo
     read -r -p "Do you want to deploy a custom STS mock? [y/n]: " yn
 
     case "$yn" in
@@ -70,7 +71,7 @@ while true; do
 done
 
 # Wait for the backend-api deployment to finish
-echo "Waiting for deployment(s) to finish..."
+echo "\nWaiting for deployment(s) to finish..."
 wait $backend_api_pid
 backend_api_status=$?
 
@@ -83,7 +84,6 @@ fi
 
 # If STS Mock is being deployed, wait for it to finish
 if [ "$deploy_sts_mock" = true ]; then
-    echo "Waiting for STS mock deployment to finish..."
     wait $sts_mock_pid
     sts_mock_status=$?
 
@@ -98,6 +98,7 @@ fi
 # After deploying STS Mock, generate keys
 if [ "$deploy_sts_mock" = true ]; then
     while true; do
+        echo
         read -r -p "Do you want to generate keys for your STS mock stack? [y/n]: " yn
 
         case "$yn" in
