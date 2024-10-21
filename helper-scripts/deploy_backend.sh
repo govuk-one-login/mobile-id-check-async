@@ -24,7 +24,7 @@ fi
 STACK_NAME=$1
 
 # Define stack names
-BACKEND_STACK_NAME="${STACK_NAME}-backend"
+BACKEND_STACK_NAME="${STACK_NAME}-async-backend"
 STS_MOCK_STACK_NAME="${STACK_NAME}-sts-mock"
 
 # Define parameter names
@@ -58,7 +58,7 @@ while true; do
             sam build
             sam deploy \
                 --stack-name "$STS_MOCK_STACK_NAME" \
-                --parameter-overrides "$DEV_OVERRIDE_ASYNC_BACKEND_BASE_URL=https://sessions-${BACKEND_STACK_NAME}-async-backend.review-b-async.dev.account.gov.uk" \
+                --parameter-overrides "$DEV_OVERRIDE_ASYNC_BACKEND_BASE_URL=https://sessions-${BACKEND_STACK_NAME}.review-b-async.dev.account.gov.uk" \
                 --capabilities CAPABILITY_NAMED_IAM \
                 --resolve-s3
             break
