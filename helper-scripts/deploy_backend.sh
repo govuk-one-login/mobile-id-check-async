@@ -35,7 +35,7 @@ while true; do
             echo "Building and deploying sts-mock stack: $STS_MOCK_STACK_NAME"
             echo
             cd ../sts-mock || exit 1
-            sam build
+            sam build --cached
             sam deploy \
                 --stack-name "$STS_MOCK_STACK_NAME" \
                 --parameter-overrides "$DEV_OVERRIDE_ASYNC_BACKEND_BASE_URL=https://sessions-${BACKEND_STACK_NAME}.review-b-async.dev.account.gov.uk" \
