@@ -31,11 +31,7 @@ STS_MOCK_STACK_NAME="${STACK_NAME}-sts-mock"
 DEV_OVERRIDE_STS_BASE_URL="DevOverrideStsBaseUrl"
 DEV_OVERRIDE_ASYNC_BACKEND_BASE_URL="DevOverrideAsyncBackendBaseUrl"
 
-# Create the deploymentLogs directory if it doesn't exist
-LOG_DIR="deployLogs"
-mkdir -p "$LOG_DIR"
-
-# Start deploying backend-api in the background
+# Start deploying backend-api
 echo "Building and deploying custom Backend API stack: $BACKEND_STACK_NAME"
 (
     cd ../backend-api || exit 1
@@ -45,9 +41,15 @@ echo "Building and deploying custom Backend API stack: $BACKEND_STACK_NAME"
         --parameter-overrides "$DEV_OVERRIDE_STS_BASE_URL=https://${STS_MOCK_STACK_NAME}.review-b-async.dev.account.gov.uk" \
         --capabilities CAPABILITY_NAMED_IAM \
         --resolve-s3
-) > "$LOG_DIR/$BACKEND_STACK_NAME.log" 2>&1 < /dev/null &
-# Capture the PID of the background process
-backend_api_pid=$!
+)
+backend_api_status=$?
+
+if [ $backend_api_status -ne 0 ]; then
+    echo "Backend API deployment failed."
+    exit 1
+else
+    echo "Backend API deployment completed successfully."
+fi
 
 # Ask the user about deploying sts-mock
 deploy_sts_mock=false
@@ -59,7 +61,7 @@ while true; do
     case "$yn" in
         [yY] )
             deploy_sts_mock=true
-            # Start deploying sts-mock in the background
+            # Start deploying sts-mock
             echo "Building and deploying STS Mock stack: $STS_MOCK_STACK_NAME"
             (
                 cd ../sts-mock || exit 1
@@ -67,10 +69,16 @@ while true; do
                 sam deploy \
                     --stack-name "$STS_MOCK_STACK_NAME" \
                     --parameter-overrides "$DEV_OVERRIDE_ASYNC_BACKEND_BASE_URL=https://sessions-${BACKEND_STACK_NAME}-async-backend.review-b-async.dev.account.gov.uk" \
-                    --capabilities CAPABILITY_NAMED_IAM
-            ) > "$LOG_DIR/$STS_MOCK_STACK_NAME.log" 2>&1 < /dev/null &
-            # Capture the PID
-            sts_mock_pid=$!
+                    --capabilities CAPABILITY_NAMED_IAM \
+                    --resolve-s3
+            )
+            sts_mock_status=$?
+            if [ $sts_mock_status -ne 0 ]; then
+                echo "STS Mock deployment failed."
+                exit 1
+            else
+                echo "STS Mock deployment completed successfully."
+            fi
             break
             ;;
         [nN] )
@@ -82,32 +90,6 @@ while true; do
             ;;
     esac
 done
-
-# Wait for deployment to finish
-echo
-echo "Waiting for deployment(s) to finish..."
-wait $backend_api_pid
-backend_api_status=$?
-
-if [ $backend_api_status -ne 0 ]; then
-    echo "Backend API deployment failed. Check ${LOG_DIR}/${BACKEND_STACK_NAME}.log for details."
-    exit 1
-else
-    echo "Backend API deployment completed successfully."
-fi
-
-# If sts-mock is being deployed, wait for it to finish
-if [ "$deploy_sts_mock" = true ]; then
-    wait $sts_mock_pid
-    sts_mock_status=$?
-
-    if [ $sts_mock_status -ne 0 ]; then
-        echo "STS Mock deployment failed. Check ${LOG_DIR}/${STS_MOCK_STACK_NAME}.log for details."
-        exit 1
-    else
-    echo "STS Mock deployment completed successfully."
-    fi
-fi
 
 # After deploying sts-mock, generate keys
 if [ "$deploy_sts_mock" = true ]; then
@@ -122,10 +104,10 @@ if [ "$deploy_sts_mock" = true ]; then
                     set -e
                     cd ../sts-mock/jwks-helper-script
                     ./publish_keys_to_s3.sh "${STS_MOCK_STACK_NAME}" "dev"
-                ) > "$LOG_DIR/${STS_MOCK_STACK_NAME}_publish_keys.log" 2>&1
+                )
                 keygen_status=$?
                 if [ $keygen_status -ne 0 ]; then
-                    echo "Key generation failed. Check $LOG_DIR/publish_keys.log for details."
+                    echo "Key generation failed."
                     exit 1
                 else
                     echo "Key generation completed successfully."
