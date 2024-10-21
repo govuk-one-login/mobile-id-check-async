@@ -12,15 +12,6 @@ if [ "$(aws sts get-caller-identity --output text --query 'Account')" != "211125
     exit 1
 fi
 
-# Ask the user if they want to build and deploy the custom backend-api
-echo
-read -r -p "You are about to deploy a custom Backend API, do you wish to continue? [y]: " yn
-
-if [ "$yn" != "y" ] && [ "$yn" != "Y" ]; then
-    echo "Aborting."
-    exit 1
-fi
-
 STACK_NAME=$1
 
 # Define stack names
@@ -31,28 +22,17 @@ STS_MOCK_STACK_NAME="${STACK_NAME}-sts-mock"
 DEV_OVERRIDE_STS_BASE_URL="DevOverrideStsBaseUrl"
 DEV_OVERRIDE_ASYNC_BACKEND_BASE_URL="DevOverrideAsyncBackendBaseUrl"
 
-# Start deploying backend-api
-echo "Building and deploying custom Backend API stack: $BACKEND_STACK_NAME"
-echo
-cd ../backend-api || exit 1
-sam build --cached
-sam deploy \
-    --stack-name "$BACKEND_STACK_NAME" \
-    --parameter-overrides "$DEV_OVERRIDE_STS_BASE_URL=https://${STS_MOCK_STACK_NAME}.review-b-async.dev.account.gov.uk" \
-    --capabilities CAPABILITY_NAMED_IAM \
-    --resolve-s3
-
 # Ask the user about deploying sts-mock
 deploy_sts_mock=false
 while true; do
     echo
-    read -r -p "Do you want to deploy a custom STS Mock stack? [y/n]: " yn
+    read -r -p "Do you want to deploy a custom sts-mock stack? [y/n]: " yn
 
     case "$yn" in
         [yY] )
             deploy_sts_mock=true
-            # Start deploying sts-mock
-            echo "Building and deploying STS Mock stack: $STS_MOCK_STACK_NAME"
+            # Build and deploy sts-mock
+            echo "Building and deploying sts-mock stack: $STS_MOCK_STACK_NAME"
             echo
             cd ../sts-mock || exit 1
             sam build
@@ -64,7 +44,7 @@ while true; do
             break
             ;;
         [nN] )
-            echo "Skipping STS Mock stack deployment"
+            echo "Skipping sts-mock stack deployment"
             break
             ;;
         * )
@@ -73,11 +53,11 @@ while true; do
     esac
 done
 
-# After deploying sts-mock, generate keys
+# After deploying sts-mock, ask user if they want to generate keys
 if [ "$deploy_sts_mock" = true ]; then
     while true; do
         echo
-        read -r -p "Do you want to generate keys for your STS Mock stack? [y/n]: " yn
+        read -r -p "Do you want to generate keys for your sts-mock stack? [y/n]: " yn
 
         case "$yn" in
             [yY] )
@@ -96,10 +76,39 @@ if [ "$deploy_sts_mock" = true ]; then
     done
 fi
 
+# Ask the user if they want to deploy backend-api
+while true; do
+    echo
+    read -r -p "Do you want to deploy a custom backend-api stack? [y/n]: " yn
+
+    case "$yn" in
+        [yY] )
+            # Build and deploy backend-api
+            echo "Building and deploying custom backend-api stack: $BACKEND_STACK_NAME"
+            echo
+            cd ../backend-api || exit 1
+            sam build --cached
+            sam deploy \
+                --stack-name "$BACKEND_STACK_NAME" \
+                --parameter-overrides "$DEV_OVERRIDE_STS_BASE_URL=https://${STS_MOCK_STACK_NAME}.review-b-async.dev.account.gov.uk" \
+                --capabilities CAPABILITY_NAMED_IAM \
+                --resolve-s3
+            break
+            ;;
+        [nN] )
+            echo "Skipping backend-api deployment"
+            break
+            ;;
+        * )
+            echo "Invalid input. Please enter 'y' or 'n'."
+            ;;
+    esac
+done
+
 # Ask the user if they want to generate a .env file for the custom Backend API stack
 while true; do
     echo
-    read -r -p "Do you want to generate an .env file for this stack? [y/n]: " yn
+    read -r -p "Do you want to generate an .env file for ${BACKEND_STACK_NAME}? [y/n]: " yn
 
     case "$yn" in
         [yY] )
@@ -109,7 +118,7 @@ while true; do
             break
             ;;
         [nN] )
-            echo "Skipping env generation"
+            echo "Skipping .env generation"
             break
             ;;
         * )
