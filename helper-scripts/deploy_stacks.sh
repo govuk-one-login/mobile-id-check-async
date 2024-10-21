@@ -8,6 +8,15 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
+# Ask the user if they want to build and deploy the custom backend API
+echo
+read -r -p "Would you like to build and deploy a custom Backend API? [y]: " yn
+
+if [ "$yn" != "y" ] && [ "$yn" != "Y" ]; then
+    echo "Aborting."
+    exit 1
+fi
+
 STACK_NAME=$1
 
 # Define stack names
