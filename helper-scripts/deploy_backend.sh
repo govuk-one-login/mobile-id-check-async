@@ -38,7 +38,7 @@ LOG_DIR="deployLogs"
 mkdir -p "$LOG_DIR"
 
 # Start deploying backend-api in the background
-echo "Building and deploying custom Backend API stack..."
+echo "Building and deploying custom Backend API stack: $BACKEND_STACK_NAME"
 (
     cd ../backend-api || exit 1
     sam build --cached
@@ -56,13 +56,13 @@ deploy_sts_mock=false
 
 while true; do
     echo
-    read -r -p "Do you want to deploy a custom STS mock? [y/n]: " yn
+    read -r -p "Do you want to deploy a custom STS mock stack? [y/n]: " yn
 
     case "$yn" in
         [yY] )
             deploy_sts_mock=true
             # Start deploying STS Mock in the background
-            echo "Building and deploying STS Mock stack..."
+            echo "Building and deploying STS Mock stack: $STS_MOCK_STACK_NAME"
             (
                 cd ../sts-mock || exit 1
                 sam build
