@@ -63,6 +63,7 @@ if [ "$deploy_sts_mock" = true ]; then
             [yY] )
                 cd ../sts-mock/jwks-helper-script
                 ./publish_keys_to_s3.sh "${STS_MOCK_STACK_NAME}" "dev"
+                cd ..
                 break
                 ;;
             [nN] )
