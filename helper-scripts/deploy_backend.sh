@@ -85,7 +85,7 @@ while true; do
     esac
 done
 
-# Wait for the backend-api deployment to finish
+# Wait for deployment to finish
 echo "\nWaiting for deployment(s) to finish..."
 wait $backend_api_pid
 backend_api_status=$?
