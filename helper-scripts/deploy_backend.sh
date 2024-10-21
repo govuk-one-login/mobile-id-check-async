@@ -8,8 +8,8 @@ fi
 
 # Check correct AWS account is active
 if [ "$(aws sts get-caller-identity --output text --query 'Account')" != "211125300205" ]; then
-  echo "This script is attempting to be run in a NON DEV account. Please verify your AWS environment configuration"
-  exit 1
+    echo "This script is attempting to be run in a NON DEV account. Please verify your AWS environment configuration"
+    exit 1
 fi
 
 # Ask the user if they want to build and deploy the custom backend-api
