@@ -73,6 +73,8 @@ backend_api_status=$?
 if [ $backend_api_status -ne 0 ]; then
     echo "Backend API deployment failed. Check backend_api.log for details."
     exit 1
+else
+    echo "Backend-api deployment completed successfully."
 fi
 
 # If STS Mock is being deployed, wait for it to finish
@@ -84,6 +86,8 @@ if [ "$deploy_sts_mock" = true ]; then
     if [ $sts_mock_status -ne 0 ]; then
         echo "STS mock deployment failed. Check sts_mock.log for details."
         exit 1
+    else
+    echo "STS Mock deployment completed successfully."
     fi
 fi
 
