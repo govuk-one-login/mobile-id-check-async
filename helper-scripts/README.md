@@ -20,11 +20,11 @@ This script provides the ability to deploy a `backend-api` stack in the AWS dev 
 
 ### How to use it
 
-#### Execute `deploy-be-to-dev` script
+#### Execute `deploy-backend-to-dev` script
 
 ```bash
 # From /backend-api
-npm run deploy-be-to-dev <your-stack-name>
+npm run deploy-backend-to-dev <your-stack-name>
 ```
 
 #### Follow the prompts

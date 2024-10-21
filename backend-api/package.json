@@ -5,7 +5,7 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "deploy-be-to-dev": "cd ../helper-scripts && ./deploy_backend.sh",
+    "deploy-backend-to-dev": "cd ../helper-scripts && ./deploy_backend.sh",
     "generate-proxy-open-api": "node ./generate-proxy-private-openapi.js",
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
