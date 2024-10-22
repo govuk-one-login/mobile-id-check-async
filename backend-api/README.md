@@ -35,7 +35,12 @@ npm run test
 
 1. Activate AWS credentials
 2. Deploy your stack
-3. Generate a `.env` file for your deployed stack
+```bash
+# From /backend-api
+npm run deploy-backend-to-dev <your-stack-name>
+```
+Note: For more information, see `helper-scripts` [README](../helper-scripts/README.md#deploy_backend.sh))
+3. The deployment script will generate you a `.env` file for your stack. To generate a `.env` for another deployed stack
 ```bash
 # From /backend-api
 sh generate_env_file.sh <stack_name>

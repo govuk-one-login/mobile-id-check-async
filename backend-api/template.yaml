@@ -25,6 +25,12 @@ Parameters:
     Type: String
     Default: none
 
+  DevOverrideStsBaseUrl:
+    Description: |
+      Override the STS_BASE_URL value for development deployments
+    Type: String
+    Default: none
+
 Mappings:
   PrivateApigw:
     dev:
@@ -166,6 +172,11 @@ Conditions:
     - !Equals
       - !Ref Environment
       - build
+
+  UseDevOverrideStsBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideStsBaseUrl
+      - none
 
 Globals:
   Function:
@@ -819,8 +830,10 @@ Resources:
       Environment:
         Variables:
           ENCRYPTION_KEY_ARN: !GetAtt KMSEncryptionKey.Arn
-          STS_BASE_URL:
-            !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
+          STS_BASE_URL: !If
+            - UseDevOverrideStsBaseUrl
+            - !Ref DevOverrideStsBaseUrl
+            - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
           AUDIENCE: !Sub https://${SessionsApiDomainName}
       VpcConfig:
         SubnetIds:
@@ -1403,4 +1416,7 @@ Outputs:
 
   StsMockApiUrl:
     Description: STS Mock API Gateway base URL
-    Value: !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
+    Value: !If
+        - UseDevOverrideStsBaseUrl
+        - !Ref DevOverrideStsBaseUrl
+        - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
