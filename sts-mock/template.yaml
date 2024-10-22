@@ -51,6 +51,12 @@ Parameters:
       Type: String
       Default: none
 
+  DevOverrideAsyncBackendBaseUrl:
+    Description: |
+      Override the ASYNC_BACKEND_BASE_URL value for development deployments
+    Type: String
+    Default: none
+
 Conditions:
   UseCodeSigning:
     Fn::Not:
@@ -61,6 +67,11 @@ Conditions:
   UsePermissionsBoundary: !Not
     - !Equals
       - !Ref PermissionsBoundary
+      - none
+
+  UseDevOverrideAsyncBackendBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideAsyncBackendBaseUrl
       - none
 
 Resources:
@@ -185,7 +196,10 @@ Resources:
       Environment:
         Variables:
           STS_MOCK_BASE_URL: !Sub https://${StsMockApiDomainName}
-          ASYNC_BACKEND_BASE_URL: !Sub https://sessions-mob-async-backend.review-b-async.${Environment}.account.gov.uk
+          ASYNC_BACKEND_BASE_URL: !If
+            - UseDevOverrideAsyncBackendBaseUrl
+            - !Ref DevOverrideAsyncBackendBaseUrl
+            - !Sub https://sessions-mob-async-backend.review-b-async.${Environment}.account.gov.uk
           KEY_STORAGE_BUCKET_NAME: !Ref JwksBucket
       VpcConfig:
         SubnetIds:
