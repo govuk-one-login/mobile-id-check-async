@@ -26,7 +26,8 @@ DEV_OVERRIDE_ASYNC_BACKEND_BASE_URL="DevOverrideAsyncBackendBaseUrl"
 deploy_sts_mock=false
 while true; do
     echo
-    read -r -p "Do you want to deploy a custom sts-mock stack? [y/n]: " yn
+    echo "Deploying an sts-mock stack is required the first time you deploy a backend-api stack. It's optional for subsequent deployments."
+    read -r -p "Do you want to deploy an sts-mock stack? [y/n]: " yn
 
     case "$yn" in
         [yY] )
@@ -58,6 +59,7 @@ done
 if [ "$deploy_sts_mock" = true ]; then
     while true; do
         echo
+        echo "Generating and publishing a signing key pair to S3 is required the first time you deploy an sts-mock, optional for subsequent deployments."
         read -r -p "Do you want to generate and publish a signing key pair to S3 for your sts-mock? [y/n]: " yn
 
         case "$yn" in
@@ -81,12 +83,12 @@ fi
 # Ask the user if they want to deploy backend-api
 while true; do
     echo
-    read -r -p "Do you want to deploy a custom backend-api stack? [y/n]: " yn
+    read -r -p "Do you want to deploy a backend-api stack? [y/n]: " yn
 
     case "$yn" in
         [yY] )
             # Build and deploy backend-api
-            echo "Building and deploying custom backend-api stack: $BACKEND_STACK_NAME"
+            echo "Building and deploying backend-api stack: $BACKEND_STACK_NAME"
             echo
             cd ../backend-api || exit 1
             npm i
