@@ -27,8 +27,9 @@ This script provides the ability to deploy a `backend-api` stack in the AWS dev 
 npm run deploy-backend-to-dev <your-stack-name>
 ```
 
-#### Follow the prompts
+The deployed stacks will be named as follows:
 
-1. Deploying an `sts-mock` stack. This is required the first time you deploy a `backend-api` stack. It's optional for subsequent deployments.
-2. Publishing signing key. If you choose to deploy an `sts-mock`, you will be asked if you want to generate and publish a signing key pair to S3. Key generation is required the first time you deploy an `sts-mock`, optional for subsequent deployments.
-3. Deploying a `backend-api` stack. Confirm whether you want to deploy a `backend-api` stack. Generates `.env` file for api testing.
+- `<your-stack-name>-async-backend`
+- `<your-stack-name>-sts-mock`
+
+Note: This script will generate an `.env` file your `backend-api` stack to allow api testing
