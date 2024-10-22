@@ -199,7 +199,7 @@ Resources:
           ASYNC_BACKEND_BASE_URL: !If
             - UseDevOverrideAsyncBackendBaseUrl
             - !Ref DevOverrideAsyncBackendBaseUrl
-            - !Sub https://mob-async-backend.review-b-async.${Environment}.account.gov.uk
+            - !Sub https://sessions-mob-async-backend.review-b-async.${Environment}.account.gov.uk
           KEY_STORAGE_BUCKET_NAME: !Ref JwksBucket
       VpcConfig:
         SubnetIds:
