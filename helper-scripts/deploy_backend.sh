@@ -35,6 +35,7 @@ while true; do
             echo "Building and deploying sts-mock stack: $STS_MOCK_STACK_NAME"
             echo
             cd ../sts-mock || exit 1
+            npm i
             sam build --cached
             sam deploy \
                 --stack-name "$STS_MOCK_STACK_NAME" \
@@ -88,6 +89,7 @@ while true; do
             echo "Building and deploying custom backend-api stack: $BACKEND_STACK_NAME"
             echo
             cd ../backend-api || exit 1
+            npm i
             sam build --cached
             sam deploy \
                 --stack-name "$BACKEND_STACK_NAME" \
