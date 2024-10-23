@@ -1,5 +1,4 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Transform: AWS::Serverless-2016-10-31
 
 Description: async-backend SAM template for the ID Check v2 app
 
@@ -133,15 +132,15 @@ Mappings:
 
   EnvironmentVariables:
     dev:
-      STSBASEURL: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk'
+      STSBASEURL: https://mob-sts-mock.review-b-async.dev.account.gov.uk
     build:
-      STSBASEURL: 'https://mob-sts-mock.review-b-async.build.account.gov.uk'
+      STSBASEURL: https://mob-sts-mock.review-b-async.build.account.gov.uk
     staging:
-      STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
+      STSBASEURL: "" #TODO: Update this value with 'real' STS URLs
     integration:
-      STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
+      STSBASEURL: "" #TODO: Update this value with 'real' STS URLs
     production:
-      STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
+      STSBASEURL: "" #TODO: Update this value with 'real' STS URLs
 
 Conditions:
   UseCodeSigning: !Not
@@ -178,6 +177,8 @@ Conditions:
       - !Ref DevOverrideStsBaseUrl
       - none
 
+Transform: AWS::Serverless-2016-10-31
+
 Globals:
   Function:
     Timeout: 5
@@ -199,8 +200,7 @@ Globals:
       Variables:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
         TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
-        # ISSUER should be updated with DNS once available
-        ISSUER: mockIssuer
+        ISSUER: mockIssuer # ISSUER should be updated with DNS once available
         SESSION_TABLE_NAME: !Ref SessionsTable
 
 Resources:
@@ -242,6 +242,95 @@ Resources:
           Name: AWS::Include
           Parameters:
             Location: ./openApiSpecs/async-private-spec.yaml
+
+  PrivateApiDomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Sub
+        - private-${AWS::StackName}.${DNS_RECORD}
+        - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN}}' # Uses a wildcard (in dev only?)
+      SecurityPolicy: TLS_1_2
+
+  PrivateApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    DependsOn: PrivateApiDomainName
+    Properties:
+      DomainName: !Sub
+        - private-${AWS::StackName}.${DNS_RECORD}
+        - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      RestApiId: !Ref PrivateApi
+      Stage: !Ref PrivateApi.Stage
+
+  PrivateApiRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Sub
+        - private-${AWS::StackName}.${DNS_RECORD}
+        - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      Type: CNAME
+      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
+      TTL: 60
+      ResourceRecords:
+        - !GetAtt PrivateApiLoadBalancer.DNSName # this will be the load balancer domain
+
+  PrivateApiLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Scheme: internal
+      Subnets:
+        - !ImportValue devplatform-vpc-PrivateSubnetIdA
+        - !ImportValue devplatform-vpc-PrivateSubnetIdB
+        - !ImportValue devplatform-vpc-PrivateSubnetIdC
+      Type: network
+
+  PrivateApiListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Order: 1
+          TargetGroupArn: !Ref PrivateApiTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref PrivateApiLoadBalancer
+      Port: 443
+      Certificates:
+        - CertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN}}'
+      Protocol: TLS
+
+  PrivateApiTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPort: 443
+      HealthCheckProtocol: TCP
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 3
+      UnhealthyThresholdCount: 3
+      Port: 443
+      Protocol: TLS
+      Targets:
+        - Id: 10.0.10.23 # subnet-0d43f751301129abd (devplatform-vpc-PrivateSubnetA) eu-west-2c (euw2-az1)
+          Port: 443
+        - Id: 10.0.13.96 # subnet-094e66815780c4556 (devplatform-vpc-PrivateSubnetB) eu-west-2a (euw2-az2)
+          Port: 443
+        - Id: 10.0.14.16 # subnet-0d90ca1c3b3a83028 (devplatform-vpc-PrivateSubnetC) eu-west-2b (euw2-az3)
+          Port: 443
+      TargetType: ip
+      VpcId: !ImportValue devplatform-vpc-VpcId
 
   AsyncCredentialPrivateApiAccessLogs:
     Type: AWS::Logs::LogGroup
@@ -426,7 +515,7 @@ Resources:
                 Action:
                   - dynamodb:Query
                 Resource:
-                  - Fn::GetAtt: [ "SessionsTable", "Arn" ]
+                  - !GetAtt SessionsTable.Arn
                   - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-timeToLive-index
                 Condition:
                   ForAllValues:StringEquals:
@@ -625,7 +714,13 @@ Resources:
     Properties:
       Environment:
         Variables:
-          PRIVATE_API_URL: !Sub https://${PrivateApi.RestApiId}.execute-api.eu-west-2.amazonaws.com/${Environment}
+          # PRIVATE_API_URL: !Sub https://${PrivateApi.RestApiId}.execute-api.eu-west-2.amazonaws.com/${Environment}
+          PRIVATE_API_URL: !Sub
+            - https://private-${AWS::StackName}.${DNS_RECORD}
+            - DNS_RECORD: !FindInMap
+                - DNS
+                - !Ref Environment
+                - BaseDns
       FunctionName: !Sub ${AWS::StackName}-proxy-lambda
       Runtime: nodejs20.x
       Handler: proxyHandler.lambdaHandler
@@ -833,7 +928,10 @@ Resources:
           STS_BASE_URL: !If
             - UseDevOverrideStsBaseUrl
             - !Ref DevOverrideStsBaseUrl
-            - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
+            - !FindInMap
+              - EnvironmentVariables
+              - !Ref Environment
+              - STSBASEURL
           AUDIENCE: !Sub https://${SessionsApiDomainName}
       VpcConfig:
         SubnetIds:
@@ -878,7 +976,7 @@ Resources:
                 Action:
                   - dynamodb:Query
                 Resource:
-                  - Fn::GetAtt: [ "SessionsTable", "Arn" ]
+                  - !GetAtt SessionsTable.Arn
                   - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-timeToLive-index
                 Condition:
                   ForAllValues:StringEquals:
@@ -1280,16 +1378,16 @@ Resources:
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
 
-  WellKnown5XXLowThresholdAlarm:    
+  WellKnown5XXLowThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
-      AlarmDescription: "1% or more of requests are failing on the /.well-known/jwks.json endpoint"
-      AlarmName: !Sub "${AWS::StackName}-LowThresholdWellKnown5XXApiGwAlarm"
+      AlarmDescription: 1% or more of requests are failing on the /.well-known/jwks.json endpoint
+      AlarmName: !Sub ${AWS::StackName}-LowThresholdWellKnown5XXApiGwAlarm
       AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
       EvaluationPeriods: 5
@@ -1318,7 +1416,7 @@ Resources:
             Period: 60
             Stat: Sum
         - Id: errorSum5XX
-          Label: "Number of 5XX errors"
+          Label: Number of 5XX errors
           ReturnData: false
           MetricStat:
             Metric:
@@ -1336,20 +1434,20 @@ Resources:
             Period: 60
             Stat: Sum
         - Id: errorPercentage5XX
-          Label: "Number of 5XX errors returned as a percentage"
+          Label: Number of 5XX errors returned as a percentage
           ReturnData: false
           Expression: (errorSum5XX/invocations) * 100
 
-  WellKnown5XXHighThresholdAlarm:    
+  WellKnown5XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
-      AlarmDescription: "80% or more of requests are failing on the /.well-known/jwks.json endpoint"
-      AlarmName: !Sub "${AWS::StackName}-HighThresholdWellKnown5XXApiGwAlarm"
+      AlarmDescription: 80% or more of requests are failing on the /.well-known/jwks.json endpoint
+      AlarmName: !Sub ${AWS::StackName}-HighThresholdWellKnown5XXApiGwAlarm
       AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
       EvaluationPeriods: 5
@@ -1378,7 +1476,7 @@ Resources:
             Period: 60
             Stat: Sum
         - Id: errorSum5XX
-          Label: "Number of 5XX errors"
+          Label: Number of 5XX errors
           ReturnData: false
           MetricStat:
             Metric:
@@ -1396,7 +1494,7 @@ Resources:
             Period: 60
             Stat: Sum
         - Id: errorPercentage5XX
-          Label: "Number of 5XX errors returned as a percentage"
+          Label: Number of 5XX errors returned as a percentage
           ReturnData: false
           Expression: (errorSum5XX/invocations) * 100
 
@@ -1406,9 +1504,9 @@ Outputs:
     Value: !Sub https://${SessionsApiDomainName}
 
   ProxyApiUrl:
-    Condition: ProxyApiDeployment
     Description: Proxy API Gateway Pretty DNS
     Value: !Sub https://${ProxyApiDomainName}
+    Condition: ProxyApiDeployment
 
   PrivateApiUrl:
     Description: Private API Gateway base URL
@@ -1417,6 +1515,9 @@ Outputs:
   StsMockApiUrl:
     Description: STS Mock API Gateway base URL
     Value: !If
-        - UseDevOverrideStsBaseUrl
-        - !Ref DevOverrideStsBaseUrl
-        - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
+      - UseDevOverrideStsBaseUrl
+      - !Ref DevOverrideStsBaseUrl
+      - !FindInMap
+        - EnvironmentVariables
+        - !Ref Environment
+        - STSBASEURL
