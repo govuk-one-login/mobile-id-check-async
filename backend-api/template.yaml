@@ -35,18 +35,33 @@ Mappings:
     dev:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      VpceIPAddressA: 10.0.10.23
+      VpceIPAddressB: 10.0.13.96
+      VpceIPAddressC: 10.0.14.16
     build:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      VpceIPAddressA: 10.0.10.132
+      VpceIPAddressB: 10.0.13.150
+      VpceIPAddressC: 10.0.15.219
     staging:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+      VpceIPAddressA: 10.0.10.12
+      VpceIPAddressB: 10.0.13.85
+      VpceIPAddressC: 10.0.15.161
     integration:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+      VpceIPAddressA: 10.0.10.42
+      VpceIPAddressB: 10.0.13.207
+      VpceIPAddressC: 10.0.14.190
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+      VpceIPAddressA: 10.0.11.211
+      VpceIPAddressB: 10.0.13.200
+      VpceIPAddressC: 10.0.15.16
 
   SessionsApigw:
     dev:
@@ -289,6 +304,7 @@ Resources:
   PrivateApiLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
+      Name: !Sub private-api-${AWS::StackName}
       IpAddressType: ipv4
       Scheme: internal
       Subnets:
@@ -313,6 +329,7 @@ Resources:
   PrivateApiTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
+      Name: !Sub private-api-${AWS::StackName}
       HealthCheckEnabled: true
       HealthCheckIntervalSeconds: 10
       HealthCheckPort: 443
@@ -323,11 +340,20 @@ Resources:
       Port: 443
       Protocol: TLS
       Targets:
-        - Id: 10.0.10.23 # subnet-0d43f751301129abd (devplatform-vpc-PrivateSubnetA) eu-west-2c (euw2-az1)
+        - Id: !FindInMap
+            - PrivateApigw
+            - !Ref Environment
+            - VpceIPAddressA
           Port: 443
-        - Id: 10.0.13.96 # subnet-094e66815780c4556 (devplatform-vpc-PrivateSubnetB) eu-west-2a (euw2-az2)
+        - Id: !FindInMap
+            - PrivateApigw
+            - !Ref Environment
+            - VpceIPAddressB
           Port: 443
-        - Id: 10.0.14.16 # subnet-0d90ca1c3b3a83028 (devplatform-vpc-PrivateSubnetC) eu-west-2b (euw2-az3)
+        - Id: !FindInMap
+            - PrivateApigw
+            - !Ref Environment
+            - VpceIPAddressC
           Port: 443
       TargetType: ip
       VpcId: !ImportValue devplatform-vpc-VpcId
@@ -714,7 +740,6 @@ Resources:
     Properties:
       Environment:
         Variables:
-          # PRIVATE_API_URL: !Sub https://${PrivateApi.RestApiId}.execute-api.eu-west-2.amazonaws.com/${Environment}
           PRIVATE_API_URL: !Sub
             - https://private-${AWS::StackName}.${DNS_RECORD}
             - DNS_RECORD: !FindInMap
