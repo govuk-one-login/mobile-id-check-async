@@ -92,13 +92,13 @@ jobs:
       run: npm install
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@2cefa29f8797029f898b1baeff3e21a144128687 #main
+      uses: aws-actions/configure-aws-credentials@d90c1f89e165507b62af677520e840bc63a7b509 #main
       with:
         aws-region: eu-west-2
         role-to-assume: ${{ secrets.BACKEND_API_DEV_GH_ACTIONS_ROLE_ARN }}
 
     - name: Login to Amazon ECR
-      uses: aws-actions/amazon-ecr-login@6f9c6fad87720db87041e25e3ecf5b609c0368a0 #main
+      uses: aws-actions/amazon-ecr-login@02faf1a6fcd44930b46d309cc3399a8fee3a240a #main
 
     - name: Build test image
       run: |
@@ -173,13 +173,13 @@ jobs:
         run: npm install
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@2cefa29f8797029f898b1baeff3e21a144128687 #main
+        uses: aws-actions/configure-aws-credentials@d90c1f89e165507b62af677520e840bc63a7b509 #main
         with:
           aws-region: eu-west-2
           role-to-assume: ${{ secrets.BACKEND_API_BUILD_GH_ACTIONS_ROLE_ARN }}
 
       - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@6f9c6fad87720db87041e25e3ecf5b609c0368a0 #main
+        uses: aws-actions/amazon-ecr-login@02faf1a6fcd44930b46d309cc3399a8fee3a240a #main
 
       - name: Build test image
         run: |
