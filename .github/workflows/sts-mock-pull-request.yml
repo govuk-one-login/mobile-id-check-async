@@ -63,7 +63,7 @@ jobs:
           projectBaseDir: sts-mock
 
       - name: SonarQube Quality Gate check
-        uses: Sonarsource/sonarqube-quality-gate-action@dc2f7b0dd95544cd550de3028f89193576e958b9 # master
+        uses: Sonarsource/sonarqube-quality-gate-action@8406f4f1edaffef38e9fb9c53eb292fc1d7684fa # master
         # Force to fail step after specific time
         timeout-minutes: 5
         env:
