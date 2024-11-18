@@ -1,0 +1,10 @@
+[
+  {
+    "ParameterKey": "PipelineStackName",
+    "ParameterValue": "mob-async-backend-pl"
+  },
+  {
+    "ParameterKey": "RetainedImageCount",
+    "ParameterValue": "25"
+  }
+]
