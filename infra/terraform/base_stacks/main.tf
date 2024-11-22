@@ -28,8 +28,8 @@ provider "aws" {
 
 terraform {
   backend "s3" {
-   # "bucket" name provided at run time. Check the ./terraform/README.md for details.
-    key = "tf/base-stacks.tfstate"
+    # "bucket" name provided at run time. Check the ./terraform/README.md for details.
+    key    = "tf/base-stacks.tfstate"
     region = "eu-west-2"
   }
 }

@@ -1,4 +1,8 @@
 locals {
+
+  template_bucket        = data.aws_ssm_parameter.template_storage_bucket.insecure_value
+  preformat_template_url = "https://${data.aws_ssm_parameter.template_storage_bucket.insecure_value}.s3.amazonaws.com/%s/template.yaml?versionId=%s"
+
   account_vars = {
     dev         = { account_id = "211125300205" }
     build       = { account_id = "058264551042" }
