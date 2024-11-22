@@ -14,6 +14,13 @@ provider "aws" {
   allowed_account_ids = [local.account_vars[var.environment].account_id]
 }
 
+provider "aws" {
+  alias = "us-east-1"
+
+  region              = "us-east-1"
+  allowed_account_ids = [local.account_vars[var.environment].account_id]
+}
+
 terraform {
   backend "s3" {
     # "bucket" name provided at run time. Check the ./terraform/README.md for details.
