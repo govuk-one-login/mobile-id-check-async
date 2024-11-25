@@ -98,7 +98,7 @@ jobs:
         role-to-assume: ${{ secrets.BACKEND_API_DEV_GH_ACTIONS_ROLE_ARN }}
 
     - name: Login to Amazon ECR
-      uses: aws-actions/amazon-ecr-login@1101c60d69679706db631d7e999b798f4542bbc7 #main
+      uses: aws-actions/amazon-ecr-login@b430a9ae4b069c6327bd09bbcf041b67644ea84f #main
 
     - name: Build test image
       run: |
@@ -179,7 +179,7 @@ jobs:
           role-to-assume: ${{ secrets.BACKEND_API_BUILD_GH_ACTIONS_ROLE_ARN }}
 
       - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@1101c60d69679706db631d7e999b798f4542bbc7 #main
+        uses: aws-actions/amazon-ecr-login@b430a9ae4b069c6327bd09bbcf041b67644ea84f #main
 
       - name: Build test image
         run: |
