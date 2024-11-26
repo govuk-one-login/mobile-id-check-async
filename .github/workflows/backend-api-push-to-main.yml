@@ -17,7 +17,7 @@ permissions:
 jobs:
   sonar-scan:
     name: Sonar main branch scan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     defaults:
       run:
         shell: bash
@@ -54,7 +54,7 @@ jobs:
   build-and-push-to-dev:
     name: 'Push test image and SAM artifact to dev'
     needs: sonar-scan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       BACKEND_API_DEV_TEST_IMAGE_REPOSITORY: ${{ secrets.BACKEND_API_DEV_TEST_IMAGE_REPOSITORY }}
       DEV_CONTAINER_SIGN_KMS_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
@@ -136,7 +136,7 @@ jobs:
   build-and-push-to-build:
     name: Push test image and SAM artifact to build
     needs: sonar-scan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY: ${{ secrets.BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY }}
       BUILD_CONTAINER_SIGN_KMS_KEY: ${{ secrets.BUILD_CONTAINER_SIGN_KMS_KEY }}
