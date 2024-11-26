@@ -17,7 +17,7 @@ permissions:
 jobs:
   sonar-scan:
     name: Run tests and Sonar scan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     defaults:
       run:
         shell: bash
@@ -54,7 +54,7 @@ jobs:
   # build-and-push-test-image-to-dev:
   #   name: Build and push test image to Dev
   #   needs: sts-mock-tests-and-sonar-scan
-  #   runs-on: ubuntu-latest
+  #   runs-on: ubuntu-22.04
   #   env:
   #     STS_MOCK_DEV_TEST_IMAGE_REPOSITORY_URI: ${{ secrets.STS_MOCK_DEV_TEST_IMAGE_REPOSITORY_URI }}      
   #     DEV_CONTAINER_SIGN_KMS_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
@@ -99,7 +99,7 @@ jobs:
 
   build-and-upload-sam-artifact-to-dev:
     name: Validate & upload S3 artifact to dev
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: sonar-scan
     defaults:
       run:
@@ -150,7 +150,7 @@ jobs:
   # build-and-push-test-image-to-build:
   #   name: Build and push test image to Build
   #   needs: sts-mock-tests-and-sonar-scan  
-  #   runs-on: ubuntu-latest
+  #   runs-on: ubuntu-22.04
   #   env:
   #     STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI: ${{ secrets.STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI }}      
   #     BUILD_CONTAINER_SIGN_KMS_KEY: ${{ secrets.BUILD_CONTAINER_SIGN_KMS_KEY }}
@@ -195,7 +195,7 @@ jobs:
 
   build-and-upload-sam-artifact-to-build:
     name: Validate & upload S3 artifact to Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: sonar-scan 
     defaults:
       run:
