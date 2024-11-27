@@ -1112,15 +1112,6 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        # - PolicyName: DequeueTxmaEventsFunctionSecretsManagerPolicy
-        #   PolicyDocument:
-        #     Version: "2012-10-17"
-        #     Statement:
-        #       - Effect: Allow
-        #         Action:
-        #           - secretsmanager:GetSecretValue
-        #         Resource:
-        #           - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistry-?????? # wildcard as AWS automatically appends 6 characters to the end of a secret arn
         - PolicyName: DequeueTxmaEventsFunctionLoggingPolicy
           PolicyDocument:
             Version: "2012-10-17"
@@ -1131,14 +1122,6 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
-        # - PolicyName: DequeueTxmaEventsFunctionKmsPolicy
-        #   PolicyDocument:
-        #     Version: "2012-10-17"
-        #     Statement:
-        #       - Effect: Allow
-        #         Action:
-        #           - kms:Sign
-        #         Resource: !GetAtt KMSSigningKey.Arn
         - PolicyName: DequeueTxmaEventsFunctionSQSPolicy
           PolicyDocument:
             Version: "2012-10-17"
