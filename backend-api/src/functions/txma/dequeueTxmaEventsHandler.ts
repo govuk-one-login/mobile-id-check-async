@@ -1,24 +1,24 @@
-import { Context, SQSEvent } from "aws-lambda";
+import { SQSEvent } from "aws-lambda";
 
-export const lambdaHandler = async (event: SQSEvent, context: Context): Promise<void> => {
-  console.log("STARTED")
+export const lambdaHandler = async (event: SQSEvent): Promise<void> => {
+  console.log("STARTED");
 
-  const records = event.Records
+  const records = event.Records;
 
-  let events: Event[] | null = []
+  const events: Event[] | null = [];
   records.forEach((record) => {
-    const { messageId } = record
-    const { event_name } = JSON.parse(record.body)
+    const { messageId } = record;
+    const { event_name } = JSON.parse(record.body);
 
-    events.push({ messageId, event_name })
-  })
+    events.push({ messageId, event_name });
+  });
 
-  console.log(events)
+  console.log(events);
 
-  console.log("COMPLETED")
-}
+  console.log("COMPLETED");
+};
 
 interface Event {
-  messageId: string
-  event_name: string
+  messageId: string;
+  event_name: string;
 }
