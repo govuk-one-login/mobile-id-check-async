@@ -1170,6 +1170,16 @@ Resources:
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
 
+  DequeueTxmaEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 10
+      Enabled: true
+      EventSourceArn: !GetAtt TxMASQSQueue.Arn
+      FunctionName: !GetAtt DequeueTxmaEventFunction.Arn
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
+
   ### JWKS endpoint resources
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket
