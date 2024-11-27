@@ -8,12 +8,9 @@ export const lambdaHandler = async (event: SQSEvent, context: Context): Promise<
   let events: Event[] | null = []
   records.forEach((record) => {
     const { messageId } = record
-    const event_name = JSON.parse(record.body).event_name
+    const { event_name } = JSON.parse(record.body)
 
-    events.push({
-      messageId,
-      event_name
-    })
+    events.push({ messageId, event_name })
   })
 
   console.log(events)
