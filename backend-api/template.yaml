@@ -1067,6 +1067,109 @@ Resources:
       AliasName: !Sub alias/${AWS::StackName}-encryption-key
       TargetKeyId: !Ref KMSEncryptionKey
 
+  ### Dequeue TxMA event resources
+  DequeueTxmaEventFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - DequeueTxmaEventLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2022
+        Sourcemap: false
+        EntryPoints:
+          - src/functions/txma/dequeueTxmaEventHandler.ts
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-dequeue-txma-event
+      Runtime: nodejs20.x
+      Handler: dequeueTxmaEventHandler.lambdaHandler
+      Role: !GetAtt DequeueTxmaEventRole.Arn
+      Timeout: 10
+      VpcConfig:
+        SubnetIds:
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+
+  DequeueTxmaEventLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue-txma-event
+
+  DequeueTxmaEventRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-dequeue-txma-event-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        # - PolicyName: DequeueTxmaEventFunctionSecretsManagerPolicy
+        #   PolicyDocument:
+        #     Version: "2012-10-17"
+        #     Statement:
+        #       - Effect: Allow
+        #         Action:
+        #           - secretsmanager:GetSecretValue
+        #         Resource:
+        #           - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistry-?????? # wildcard as AWS automatically appends 6 characters to the end of a secret arn
+        - PolicyName: DequeueTxmaEventFunctionLoggingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+        # - PolicyName: DequeueTxmaEventFunctionKmsPolicy
+        #   PolicyDocument:
+        #     Version: "2012-10-17"
+        #     Statement:
+        #       - Effect: Allow
+        #         Action:
+        #           - kms:Sign
+        #         Resource: !GetAtt KMSSigningKey.Arn
+        - PolicyName: DequeueTxmaEventFunctionSQSPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource: !GetAtt TxMASQSQueue.Arn
+              - Effect: Allow
+                Action:
+                  - kms:Encrypt
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Resource: !GetAtt TxMAKMSEncryptionKey.Arn
+        - PolicyName: VpcPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+
   ### JWKS endpoint resources
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket
