@@ -1067,11 +1067,11 @@ Resources:
       AliasName: !Sub alias/${AWS::StackName}-encryption-key
       TargetKeyId: !Ref KMSEncryptionKey
 
-  ### Dequeue TxMA event resources
-  DequeueTxmaEventFunction:
+  ### Dequeue TxMA events resources
+  DequeueTxmaEventsFunction:
     Type: AWS::Serverless::Function
     DependsOn:
-      - DequeueTxmaEventLogGroup
+      - DequeueTxmaEventsLogGroup
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -1079,12 +1079,12 @@ Resources:
         Target: es2022
         Sourcemap: false
         EntryPoints:
-          - src/functions/txma/dequeueTxmaEventHandler.ts
+          - src/functions/txma/dequeueTxmaEventsHandler.ts
     Properties:
       FunctionName: !Sub ${AWS::StackName}-dequeue-txma-event
       Runtime: nodejs20.x
-      Handler: dequeueTxmaEventHandler.lambdaHandler
-      Role: !GetAtt DequeueTxmaEventRole.Arn
+      Handler: dequeueTxmaEventsHandler.lambdaHandler
+      Role: !GetAtt DequeueTxmaEventsRole.Arn
       Timeout: 10
       VpcConfig:
         SubnetIds:
@@ -1094,13 +1094,13 @@ Resources:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
 
-  DequeueTxmaEventLogGroup:
+  DequeueTxmaEventsLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue-txma-event
 
-  DequeueTxmaEventRole:
+  DequeueTxmaEventsRole:
     Type: AWS::IAM::Role
     Properties:
       RoleName: !Sub ${AWS::StackName}-dequeue-txma-event-role
@@ -1112,7 +1112,7 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        # - PolicyName: DequeueTxmaEventFunctionSecretsManagerPolicy
+        # - PolicyName: DequeueTxmaEventsFunctionSecretsManagerPolicy
         #   PolicyDocument:
         #     Version: "2012-10-17"
         #     Statement:
@@ -1121,7 +1121,7 @@ Resources:
         #           - secretsmanager:GetSecretValue
         #         Resource:
         #           - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistry-?????? # wildcard as AWS automatically appends 6 characters to the end of a secret arn
-        - PolicyName: DequeueTxmaEventFunctionLoggingPolicy
+        - PolicyName: DequeueTxmaEventsFunctionLoggingPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -1131,7 +1131,7 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
-        # - PolicyName: DequeueTxmaEventFunctionKmsPolicy
+        # - PolicyName: DequeueTxmaEventsFunctionKmsPolicy
         #   PolicyDocument:
         #     Version: "2012-10-17"
         #     Statement:
@@ -1139,7 +1139,7 @@ Resources:
         #         Action:
         #           - kms:Sign
         #         Resource: !GetAtt KMSSigningKey.Arn
-        - PolicyName: DequeueTxmaEventFunctionSQSPolicy
+        - PolicyName: DequeueTxmaEventsFunctionSQSPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -1170,13 +1170,13 @@ Resources:
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
 
-  DequeueTxmaEventSourceMapping:
+  DequeueTxmaEventsEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
       BatchSize: 10
       Enabled: true
       EventSourceArn: !GetAtt TxMASQSQueue.Arn
-      FunctionName: !GetAtt DequeueTxmaEventFunction.Arn
+      FunctionName: !GetAtt DequeueTxmaEventsFunction.Arn
       FunctionResponseTypes:
         - ReportBatchItemFailures
 
