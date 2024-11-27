@@ -17,6 +17,7 @@ export async function lambdaHandlerConstructor(
   const logger = dependencies.logger();
   logger.addContext(context);
   logger.log("STARTED");
+  console.log("temp log for pr decoration testing")
 
   const configResult = new ConfigService().getConfig(dependencies.env);
   if (configResult.isError) {
