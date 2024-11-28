@@ -1118,7 +1118,7 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: DequeueTxmaEventsFunctionLoggingPolicy
+        - PolicyName: LoggingPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -1128,7 +1128,7 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
-        - PolicyName: DequeueTxmaEventsFunctionSQSPolicy
+        - PolicyName: SQSPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -1138,7 +1138,7 @@ Resources:
                   - sqs:DeleteMessage
                   - sqs:GetQueueAttributes
                 Resource: !GetAtt TxMASQSQueue.Arn
-        - PolicyName: DequeueTxmaEventsFunctionKMSPolicy
+        - PolicyName: KMSPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
