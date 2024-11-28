@@ -1070,12 +1070,12 @@ Resources:
       AliasName: !Sub alias/${AWS::StackName}-encryption-key
       TargetKeyId: !Ref KMSEncryptionKey
 
-  ### Dequeue TxMA events resources
-  DequeueTxmaEventsFunction:
+  ### Test dequeue resources
+  TestDequeueFunction:
     Type: AWS::Serverless::Function
     Condition: IsDevOrBuild
     DependsOn:
-      - DequeueTxmaEventsLogGroup
+      - TestDequeueLogGroup
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -1083,12 +1083,12 @@ Resources:
         Target: es2022
         Sourcemap: false
         EntryPoints:
-          - src/functions/txma/dequeueTxmaEventsHandler.ts
+          - src/functions/txma/testDequeueHandler.ts
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-dequeue-txma-events
+      FunctionName: !Sub ${AWS::StackName}-dequeue-test
       Runtime: nodejs20.x
-      Handler: dequeueTxmaEventsHandler.lambdaHandler
-      Role: !GetAtt DequeueTxmaEventsRole.Arn
+      Handler: testDequeueHandler.lambdaHandler
+      Role: !GetAtt TestDequeueRole.Arn
       Timeout: 10
       VpcConfig:
         SubnetIds:
@@ -1098,18 +1098,18 @@ Resources:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
 
-  DequeueTxmaEventsLogGroup:
+  TestDequeueLogGroup:
     Type: AWS::Logs::LogGroup
     Condition: IsDevOrBuild
     Properties:
       RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue-txma-events
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue-test
 
-  DequeueTxmaEventsRole:
+  TestDequeueRole:
     Type: AWS::IAM::Role
     Condition: IsDevOrBuild
     Properties:
-      RoleName: !Sub ${AWS::StackName}-dequeue-txma-events-role
+      RoleName: !Sub ${AWS::StackName}-dequeue-test-role
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -1161,14 +1161,14 @@ Resources:
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
 
-  DequeueTxmaEventsEventSourceMapping:
+  TestDequeueEventSourceMapping:
     Condition: IsDevOrBuild
     Type: AWS::Lambda::EventSourceMapping
     Properties:
       BatchSize: 10
       Enabled: true
       EventSourceArn: !GetAtt TxMASQSQueue.Arn
-      FunctionName: !GetAtt DequeueTxmaEventsFunction.Arn
+      FunctionName: !GetAtt TestDequeueFunction.Arn
       FunctionResponseTypes:
         - ReportBatchItemFailures
 
