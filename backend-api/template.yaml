@@ -1085,7 +1085,7 @@ Resources:
         EntryPoints:
           - src/functions/txma/dequeueTxmaEventsHandler.ts
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-dequeue-txma-event
+      FunctionName: !Sub ${AWS::StackName}-dequeue-txma-events
       Runtime: nodejs20.x
       Handler: dequeueTxmaEventsHandler.lambdaHandler
       Role: !GetAtt DequeueTxmaEventsRole.Arn
@@ -1103,13 +1103,13 @@ Resources:
     Condition: IsDevOrBuild
     Properties:
       RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue-txma-event
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue-txma-events
 
   DequeueTxmaEventsRole:
     Type: AWS::IAM::Role
     Condition: IsDevOrBuild
     Properties:
-      RoleName: !Sub ${AWS::StackName}-dequeue-txma-event-role
+      RoleName: !Sub ${AWS::StackName}-dequeue-txma-events-role
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
