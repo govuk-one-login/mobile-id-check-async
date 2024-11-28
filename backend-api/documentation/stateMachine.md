@@ -2,6 +2,7 @@
 
 The auth session for the async backend follows a forward-only state machine, as illustrated below.
 
+```mermaid
 flowchart LR
     ASYNC_AUTH_SESSION_CREATED == start biometric session ==> ASYNC_BIOMETRIC_TOKEN_ISSUED
     ASYNC_AUTH_SESSION_CREATED == abort ==> ASYNC_AUTH_SESSION_ABORTED
@@ -11,4 +12,6 @@ flowchart LR
 
     ASYNC_BIOMETRIC_SESSION_FINISHED == result sent to IPV ==> ASYNC_RESULT_SENT
     ASYNC_BIOMETRIC_SESSION_FINISHED == abort ==> ASYNC_AUTH_SESSION_ABORTED
+```
+
 
