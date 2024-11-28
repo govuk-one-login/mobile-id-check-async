@@ -1083,9 +1083,9 @@ Resources:
         Target: es2022
         Sourcemap: false
         EntryPoints:
-          - src/functions/txma/testDequeueHandler.ts
+          - src/functions/testDequeue/testDequeueHandler.ts
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-dequeue-test
+      FunctionName: !Sub ${AWS::StackName}-test-dequeue
       Runtime: nodejs20.x
       Handler: testDequeueHandler.lambdaHandler
       Role: !GetAtt TestDequeueRole.Arn
@@ -1103,13 +1103,13 @@ Resources:
     Condition: IsDevOrBuild
     Properties:
       RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue-test
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-test-dequeue
 
   TestDequeueRole:
     Type: AWS::IAM::Role
     Condition: IsDevOrBuild
     Properties:
-      RoleName: !Sub ${AWS::StackName}-dequeue-test-role
+      RoleName: !Sub ${AWS::StackName}-test-dequeue-role
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:

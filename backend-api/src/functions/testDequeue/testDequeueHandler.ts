@@ -5,20 +5,20 @@ export const lambdaHandler = async (event: SQSEvent): Promise<void> => {
 
   const records = event.Records;
 
-  const events: Event[] | null = [];
+  const processedEvents: ProcessedEvent[] = [];
   records.forEach((record) => {
     const { messageId } = record;
     const { event_name } = JSON.parse(record.body);
 
-    events.push({ messageId, eventName: event_name });
+    processedEvents.push({ messageId, eventName: event_name });
   });
 
-  console.log(events);
+  console.log(processedEvents);
 
   console.log("COMPLETED");
 };
 
-interface Event {
+interface ProcessedEvent {
   messageId: string;
   eventName: string;
 }
