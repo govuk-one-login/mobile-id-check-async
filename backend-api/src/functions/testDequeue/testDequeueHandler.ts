@@ -10,7 +10,7 @@ export const lambdaHandler = async (event: SQSEvent): Promise<void> => {
     const { messageId } = record;
     const { event_name } = JSON.parse(record.body);
 
-    events.push({ messageId, event_name });
+    events.push({ messageId, eventName: event_name });
   });
 
   console.log(events);
@@ -20,5 +20,5 @@ export const lambdaHandler = async (event: SQSEvent): Promise<void> => {
 
 interface Event {
   messageId: string;
-  event_name: string;
+  eventName: string;
 }

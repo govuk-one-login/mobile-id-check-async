@@ -1,5 +1,5 @@
 import { SQSEvent } from "aws-lambda";
-import { lambdaHandler } from "./dequeueTxmaEventsHandler";
+import { lambdaHandler } from "./testDequeueHandler";
 
 describe("Dequeue TxMA events", () => {
   afterEach(() => {
@@ -37,13 +37,13 @@ describe("Dequeue TxMA events", () => {
       expect(consoleLogSpy).toHaveBeenNthCalledWith(2, [
         {
           messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
-          event_name: "MOCK_EVENT_NAME",
+          eventName: "MOCK_EVENT_NAME",
         },
       ]);
     });
   });
 
-  describe("Given more than one message in the request", () => {
+  describe("Given more than one message is sent in the request", () => {
     it("Returns the messageId and event_name for each message", async () => {
       const consoleLogSpy = jest.spyOn(global.console, "log");
       const event: SQSEvent = {
@@ -92,11 +92,11 @@ describe("Dequeue TxMA events", () => {
       expect(consoleLogSpy).toHaveBeenNthCalledWith(2, [
         {
           messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
-          event_name: "MOCK_EVENT_NAME",
+          eventName: "MOCK_EVENT_NAME",
         },
         {
           messageId: "4008E4FD-10A1-461F-9B34-910BCE726C55",
-          event_name: "MOCK_EVENT_NAME_2",
+          eventName: "MOCK_EVENT_NAME_2",
         },
       ]);
     });
