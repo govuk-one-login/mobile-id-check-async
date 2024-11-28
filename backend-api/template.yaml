@@ -165,6 +165,9 @@ Conditions:
       - !Ref Environment
       - production
 
+  IsDevOrBuild: !Not
+    - !Condition isNotDevOrBuild
+
   ProxyApiDeployment: !Or
     - !Equals
       - !Ref Environment
@@ -1070,6 +1073,7 @@ Resources:
   ### Dequeue TxMA events resources
   DequeueTxmaEventsFunction:
     Type: AWS::Serverless::Function
+    Condition: IsDevOrBuild
     DependsOn:
       - DequeueTxmaEventsLogGroup
     Metadata:
@@ -1096,12 +1100,14 @@ Resources:
 
   DequeueTxmaEventsLogGroup:
     Type: AWS::Logs::LogGroup
+    Condition: IsDevOrBuild
     Properties:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue-txma-event
 
   DequeueTxmaEventsRole:
     Type: AWS::IAM::Role
+    Condition: IsDevOrBuild
     Properties:
       RoleName: !Sub ${AWS::StackName}-dequeue-txma-event-role
       AssumeRolePolicyDocument:
@@ -1154,6 +1160,7 @@ Resources:
         - !Ref AWS::NoValue
 
   DequeueTxmaEventsEventSourceMapping:
+    Condition: IsDevOrBuild
     Type: AWS::Lambda::EventSourceMapping
     Properties:
       BatchSize: 10
