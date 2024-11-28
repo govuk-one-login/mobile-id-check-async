@@ -3,8 +3,8 @@ import { lambdaHandler } from "./dequeueTxmaEventsHandler";
 
 describe("Dequeue TxMA events", () => {
   afterEach(() => {
-    jest.restoreAllMocks()
-  })
+    jest.restoreAllMocks();
+  });
 
   describe("Given one message is sent in the request", () => {
     it("Returns the messageId and event_name for each message", async () => {
