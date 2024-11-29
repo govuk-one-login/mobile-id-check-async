@@ -21,3 +21,15 @@ This test resource checks that messages sent from the Async Backend API are succ
 ```sh
 > npm run test:dequeue
 ```
+
+#### Deployment
+
+##### How to deploy a custom stack:
+
+```sh
+> npm run deploy-test-resources-to-dev <stack-name>
+```
+
+> Note: the stack you enter will be appended with `-test-resources`.
+
+---
