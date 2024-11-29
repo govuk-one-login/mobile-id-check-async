@@ -3,7 +3,6 @@ export enum SessionState {
   BIOMETRIC_TOKEN_ISSUED = 'ASYNC_BIOMETRIC_TOKEN_ISSUED',
   BIOMETRIC_SESSION_FINISHED = 'ASYNC_BIOMETRIC_SESSION_FINISHED',
   RESULT_SENT = "ASYNC_RESULT_SENT",
-  AUTH_SESSION_ABORTED = 'ASYNC_AUTH_SESSION_ABORTED',
 }
 
 type CommonSessionKeys = {
@@ -45,16 +44,7 @@ export type ResultSentSession = CommonSessionKeys & {
   biometricSessionId: string
 }
 
-export type AuthSessionAbortedSession = CommonSessionKeys & {
-  sessionState: SessionState.AUTH_SESSION_ABORTED,
-  documentType?: string,
-  accessToken?: string,
-  opaqueId?: string,
-  biometricSessionId?: string
-}
-
 export type Session = AuthSessionCreatedSession
   | BiometricTokenIssuedSession
   | BiometricSessionFinishedSession
   | ResultSentSession
-  | AuthSessionAbortedSession

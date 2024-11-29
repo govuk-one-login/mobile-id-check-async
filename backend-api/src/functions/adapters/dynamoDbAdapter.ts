@@ -1,19 +1,26 @@
 import {
   ConditionalCheckFailedException,
   DynamoDBClient,
+  GetItemCommand,
+  GetItemCommandOutput,
   PutItemCommand,
   PutItemCommandInput,
   QueryCommand,
   QueryCommandInput,
   QueryCommandOutput,
 } from "@aws-sdk/client-dynamodb";
-import { CreateSessionAttributes } from "../services/session/sessionService";
-import { NodeHttpHandler } from "@smithy/node-http-handler";
+import {CreateSessionAttributes} from "../services/session/sessionService";
+import {NodeHttpHandler} from "@smithy/node-http-handler";
+import {marshall, NativeAttributeValue, unmarshall,} from "@aws-sdk/util-dynamodb";
+import {errorResult, Failure, Result, successResult} from "../utils/result";
 import {
-  marshall,
-  NativeAttributeValue,
-  unmarshall,
-} from "@aws-sdk/util-dynamodb";
+  AuthSessionCreatedSession,
+  BiometricSessionFinishedSession,
+  BiometricTokenIssuedSession,
+  Session,
+  SessionState
+} from "../common/session/Session";
+import {getDynamoDBItemToSessionConvertor, InvalidFieldsError} from "./dynamoDBItemToSessionConvertors";
 
 const sessionStates = {
   ASYNC_AUTH_SESSION_CREATED: "ASYNC_AUTH_SESSION_CREATED",
@@ -32,10 +39,84 @@ export class DynamoDbAdapter {
     }),
   });
 
-  constructor(tableName: string) {
+  constructor(
+    tableName: string,
+    private readonly getItemToSessionConvertor = getDynamoDBItemToSessionConvertor,
+  ) {
     this.tableName = tableName;
   }
 
+  async getSessionWithState(
+    sessionId: string,
+    sessionState: SessionState.AUTH_SESSION_CREATED,
+  ): Promise<Result<AuthSessionCreatedSession, ReadSessionError>>
+  async getSessionWithState(
+    sessionId: string,
+    sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,
+  ): Promise<Result<BiometricTokenIssuedSession, ReadSessionError>>
+  async getSessionWithState(
+    sessionId: string,
+    sessionState: SessionState.BIOMETRIC_SESSION_FINISHED,
+  ): Promise<Result<BiometricSessionFinishedSession, ReadSessionError>>
+  async getSessionWithState(
+    sessionId: string,
+    sessionState: SessionState.RESULT_SENT,
+  ): Promise<Result<BiometricSessionFinishedSession, ReadSessionError>>
+  async getSessionWithState(
+    sessionId: string,
+    sessionState: SessionState,
+  ): Promise<Result<Session, ReadSessionError>> {
+    let output: GetItemCommandOutput
+    try {
+      console.log('Get session attempt') // replace with proper logging
+      output = await this.getItemWithStronglyConsistentFallback(
+        sessionId,
+        sessionState,
+      )
+    } catch (error) {
+      console.log(error) // replace with proper logging
+      return errorResult({
+        reason: ReadSessionErrorReason.INTERNAL_SERVER_ERROR,
+      })
+    }
+
+    const item = output.Item
+    if (!item) {
+      console.log('session not found') // replace with proper logging
+      return errorResult({
+        reason: ReadSessionErrorReason.NOT_FOUND,
+      })
+    }
+
+    const convertItemToSession = this.getItemToSessionConvertor(sessionState)
+    const conversionResult = convertItemToSession(item)
+    if (conversionResult.isError) {
+      return this.handleSessionConversionFailure(conversionResult.value)
+    }
+
+    const session = conversionResult.value
+    if (session.sessionState !== sessionState) {
+      console.log('session in invalid state') // replace with proper logging
+      return errorResult({
+        reason: ReadSessionErrorReason.NOT_FOUND,
+      })
+    }
+
+    console.log('Get session success') // replace with proper logging
+
+
+    if (session.sessionState === SessionState.BIOMETRIC_TOKEN_ISSUED) {
+      return successResult(session)
+    }
+    if (session.sessionState === SessionState.BIOMETRIC_SESSION_FINISHED) {
+      return successResult(session)
+    }
+    if (session.sessionState === SessionState.RESULT_SENT) {
+      return successResult(session)
+    }
+    return successResult(session)
+  }
+  
   async getActiveSession(
     subjectIdentifier: string,
     attributesToGet: string[],
@@ -117,4 +198,63 @@ export class DynamoDbAdapter {
   private getTimeNowInSeconds() {
     return Math.floor(Date.now() / 1000);
   }
+
+  private async getItemWithStronglyConsistentFallback(
+    sessionId: string,
+    sessionState: SessionState,
+  ): Promise<GetItemCommandOutput> {
+    let output: GetItemCommandOutput
+    // First attempt a cheaper, eventually consistent read
+    output = await this.dynamoDbClient.send(
+      new GetItemCommand({
+        TableName: this.tableName,
+        ConsistentRead: false,
+        Key: {
+          sessionId: { S: sessionId },
+        },
+      }),
+    )
+
+    if (!output.Item || output.Item?.sessionState?.S !== sessionState) {
+      // Follow up with strongly consistent read in case session state update not yet visible
+      output = await this.dynamoDbClient.send(
+        new GetItemCommand({
+          TableName: this.tableName,
+          ConsistentRead: true,
+          Key: {
+            sessionId: { S: sessionId },
+          },
+        }),
+      )
+    }
+    return output
+  }
+
+  private handleSessionConversionFailure(
+    error: InvalidFieldsError,
+  ): Failure<ReadSessionError> {
+    const invalidFields = error.invalidFields
+    console.log(invalidFields) // replace with proper logging
+    return this.readSessionFailure(
+      ReadSessionErrorReason.INTERNAL_SERVER_ERROR,
+    )
+  }
+
+  private readSessionFailure(
+    reason: ReadSessionErrorReason,
+  ): Failure<ReadSessionError> {
+    return errorResult({
+      reason: reason,
+    })
+  }
+}
+
+
+export interface ReadSessionError {
+  reason: ReadSessionErrorReason
+}
+
+export enum ReadSessionErrorReason {
+  NOT_FOUND = 'not_found',
+  INTERNAL_SERVER_ERROR = 'internal_server_error',
 }
