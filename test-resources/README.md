@@ -30,6 +30,6 @@ This test resource checks that messages sent from the Async Backend API are succ
 > npm run deploy-test-resources-to-dev <stack-name>
 ```
 
-> Note: the stack you enter will be appended with `-test-resources`.
+> Note: the stack name you enter will be appended with `-test-resources`.
 
 ---

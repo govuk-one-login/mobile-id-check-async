@@ -9,7 +9,6 @@ Parameters:
     AllowedValues:
       - dev
       - build
-      - staging
 
   PermissionsBoundary:
     Description: |
