@@ -9,7 +9,7 @@
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
     "lint": "./node_modules/.bin/eslint ./testDequeue",
-    "test:dequeue": "./node_modules/.bin/jest --testPathPattern=test-dequeue/ --silent"
+    "test:dequeue": "./node_modules/.bin/jest --testPathPattern=testDequeue/ --silent"
   },
   "engines": {
     "node": "20"
