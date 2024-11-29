@@ -8,7 +8,7 @@
     "deploy-test-resources-to-dev": "cd ../helper-scripts && ./deploy_test_resources.sh",
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
-    "lint": "./node_modules/.bin/eslint ./src/functions",
+    "lint": "./node_modules/.bin/eslint ./testDequeue",
     "test:dequeue": "./node_modules/.bin/jest --testPathPattern=test-dequeue/ --silent"
   },
   "engines": {
