@@ -31,6 +31,11 @@ Parameters:
     Type: String
     Default: none
 
+  AsyncBackendStack:
+    Description: The name of this Stack
+    Type: String
+    Default: async-backend-api
+
 Mappings:
   PrivateApigw:
     dev:
@@ -1075,107 +1080,107 @@ Resources:
       AliasName: !Sub alias/${AWS::StackName}-encryption-key
       TargetKeyId: !Ref KMSEncryptionKey
 
-  ### Test dequeue resources
-  TestDequeueFunction:
-    Type: AWS::Serverless::Function
-    Condition: IsDevOrBuild
-    DependsOn:
-      - TestDequeueLogGroup
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: es2022
-        Sourcemap: false
-        EntryPoints:
-          - tests/dequeue-tests/testDequeueHandler.ts
-    Properties:
-      FunctionName: !Sub ${AWS::StackName}-test-dequeue
-      Runtime: nodejs20.x
-      Handler: testDequeueHandler.lambdaHandler
-      Role: !GetAtt TestDequeueRole.Arn
-      Timeout: 10
-      VpcConfig:
-        SubnetIds:
-          - !ImportValue devplatform-vpc-PrivateSubnetIdA
-          - !ImportValue devplatform-vpc-PrivateSubnetIdB
-          - !ImportValue devplatform-vpc-PrivateSubnetIdC
-        SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+  # ### Test dequeue resources
+  # TestDequeueFunction:
+  #   Type: AWS::Serverless::Function
+  #   Condition: IsDevOrBuild
+  #   DependsOn:
+  #     - TestDequeueLogGroup
+  #   Metadata:
+  #     BuildMethod: esbuild
+  #     BuildProperties:
+  #       Minify: true
+  #       Target: es2022
+  #       Sourcemap: false
+  #       EntryPoints:
+  #         - tests/dequeue-tests/testDequeueHandler.ts
+  #   Properties:
+  #     FunctionName: !Sub ${AWS::StackName}-test-dequeue
+  #     Runtime: nodejs20.x
+  #     Handler: testDequeueHandler.lambdaHandler
+  #     Role: !GetAtt TestDequeueRole.Arn
+  #     Timeout: 10
+  #     VpcConfig:
+  #       SubnetIds:
+  #         - !ImportValue devplatform-vpc-PrivateSubnetIdA
+  #         - !ImportValue devplatform-vpc-PrivateSubnetIdB
+  #         - !ImportValue devplatform-vpc-PrivateSubnetIdC
+  #       SecurityGroupIds:
+  #         - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
 
-  TestDequeueLogGroup:
-    Type: AWS::Logs::LogGroup
-    Condition: IsDevOrBuild
-    Properties:
-      RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-test-dequeue
+  # TestDequeueLogGroup:
+  #   Type: AWS::Logs::LogGroup
+  #   Condition: IsDevOrBuild
+  #   Properties:
+  #     RetentionInDays: 30
+  #     LogGroupName: !Sub /aws/lambda/${AWS::StackName}-test-dequeue
 
-  TestDequeueRole:
-    Type: AWS::IAM::Role
-    Condition: IsDevOrBuild
-    Properties:
-      RoleName: !Sub ${AWS::StackName}-test-dequeue-role
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: LoggingPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: arn:aws:logs:*:*:*
-        - PolicyName: SQSPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - sqs:ReceiveMessage
-                  - sqs:DeleteMessage
-                  - sqs:GetQueueAttributes
-                Resource: !GetAtt TxMASQSQueue.Arn
-        - PolicyName: KMSPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - kms:Decrypt
-                Resource: !GetAtt TxMAKMSEncryptionKey.Arn
-        - PolicyName: VpcPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ec2:DescribeNetworkInterfaces
-                  - ec2:CreateNetworkInterface
-                  - ec2:DeleteNetworkInterface
-                Resource: '*'
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
+  # TestDequeueRole:
+  #   Type: AWS::IAM::Role
+  #   Condition: IsDevOrBuild
+  #   Properties:
+  #     RoleName: !Sub ${AWS::StackName}-test-dequeue-role
+  #     AssumeRolePolicyDocument:
+  #       Version: "2012-10-17"
+  #       Statement:
+  #         - Effect: Allow
+  #           Principal:
+  #             Service: lambda.amazonaws.com
+  #           Action: sts:AssumeRole
+  #     Policies:
+  #       - PolicyName: LoggingPolicy
+  #         PolicyDocument:
+  #           Version: "2012-10-17"
+  #           Statement:
+  #             - Effect: Allow
+  #               Action:
+  #                 - logs:CreateLogGroup
+  #                 - logs:CreateLogStream
+  #                 - logs:PutLogEvents
+  #               Resource: arn:aws:logs:*:*:*
+  #       - PolicyName: SQSPolicy
+  #         PolicyDocument:
+  #           Version: "2012-10-17"
+  #           Statement:
+  #             - Effect: Allow
+  #               Action:
+  #                 - sqs:ReceiveMessage
+  #                 - sqs:DeleteMessage
+  #                 - sqs:GetQueueAttributes
+  #               Resource: !GetAtt TxMASQSQueue.Arn
+  #       - PolicyName: KMSPolicy
+  #         PolicyDocument:
+  #           Version: "2012-10-17"
+  #           Statement:
+  #             - Effect: Allow
+  #               Action:
+  #                 - kms:Decrypt
+  #               Resource: !GetAtt TxMAKMSEncryptionKey.Arn
+  #       - PolicyName: VpcPolicy
+  #         PolicyDocument:
+  #           Version: "2012-10-17"
+  #           Statement:
+  #             - Effect: Allow
+  #               Action:
+  #                 - ec2:DescribeNetworkInterfaces
+  #                 - ec2:CreateNetworkInterface
+  #                 - ec2:DeleteNetworkInterface
+  #               Resource: '*'
+  #     PermissionsBoundary: !If
+  #       - UsePermissionsBoundary
+  #       - !Ref PermissionsBoundary
+  #       - !Ref AWS::NoValue
 
-  TestDequeueEventSourceMapping:
-    Condition: IsDevOrBuild
-    Type: AWS::Lambda::EventSourceMapping
-    Properties:
-      BatchSize: 10
-      Enabled: true
-      EventSourceArn: !GetAtt TxMASQSQueue.Arn
-      FunctionName: !GetAtt TestDequeueFunction.Arn
-      FunctionResponseTypes:
-        - ReportBatchItemFailures
+  # TestDequeueEventSourceMapping:
+  #   Condition: IsDevOrBuild
+  #   Type: AWS::Lambda::EventSourceMapping
+  #   Properties:
+  #     BatchSize: 10
+  #     Enabled: true
+  #     EventSourceArn: !GetAtt TxMASQSQueue.Arn
+  #     FunctionName: !GetAtt TestDequeueFunction.Arn
+  #     FunctionResponseTypes:
+  #       - ReportBatchItemFailures
 
   ### JWKS endpoint resources
   JsonWebKeysBucket:
@@ -1530,3 +1535,17 @@ Outputs:
         - UseDevOverrideStsBaseUrl
         - !Ref DevOverrideStsBaseUrl
         - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
+
+  TxmaSqsQueueArn:
+    Condition: IsDevOrBuild
+    Description: TxMA SQS Queue ARN
+    Export:
+      Name: !Sub ${AsyncBackendStack}-txma-sqs-queue-arn
+    Value: !GetAtt TxMASQSQueue.Arn
+
+  TxmaKmsEncryptionKeyArn:
+    Condition: IsDevOrBuild
+    Description: TxMA KMS Encryption Key ARN
+    Export:
+      Name: !Sub ${AsyncBackendStack}-txma-kms-encryption-key-arn
+    Value: !GetAtt TxMAKMSEncryptionKey.Arn
