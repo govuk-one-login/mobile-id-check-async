@@ -165,8 +165,13 @@ Conditions:
       - !Ref Environment
       - production
 
-  IsDevOrBuild: !Not
-    - !Condition isNotDevOrBuild
+  IsDevOrBuild: !Or
+    - !Equals
+      - !Ref Environment
+      - dev
+    - !Equals
+      - !Ref Environment
+      - build
 
   ProxyApiDeployment: !Or
     - !Equals
