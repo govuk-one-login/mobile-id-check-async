@@ -1,18 +1,17 @@
-import {IUpdateSessionOperation, SessionState} from "../Session";
+import { IUpdateSessionOperation, SessionState } from "../Session";
 
 export class ResultSent implements IUpdateSessionOperation {
-
   getDynamoDbUpdateExpression() {
-    return 'set sessionState = :resultSent'
+    return "set sessionState = :resultSent";
   }
 
   getDynamoDbConditionExpression(): undefined {
-    return undefined
+    return undefined;
   }
 
   getDynamoDbExpressionAttributeValues() {
     return {
-      ':resultSent': {S: SessionState.RESULT_SENT},
-    } as const
+      ":resultSent": { S: SessionState.RESULT_SENT },
+    } as const;
   }
 }
