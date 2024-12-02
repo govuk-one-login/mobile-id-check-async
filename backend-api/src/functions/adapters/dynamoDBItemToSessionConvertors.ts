@@ -36,6 +36,7 @@ const commonFields: (keyof Session)[] = [
   'sessionId',
   'createdAt',
   'timeToLive',
+  'sessionState',
   'clientId',
   'govukSigninJourneyId',
   'issuer',
