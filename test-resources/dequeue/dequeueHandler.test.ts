@@ -13,7 +13,7 @@ describe("Dequeue TxMA events", () => {
         Records: [
           {
             messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
-            receiptHandle: "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
+            receiptHandle: "mockReceiptHandle",
             body: JSON.stringify({
               event_name: "MOCK_EVENT_NAME",
             }),
@@ -50,7 +50,7 @@ describe("Dequeue TxMA events", () => {
         Records: [
           {
             messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
-            receiptHandle: "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
+            receiptHandle: "mockReceiptHandle",
             body: JSON.stringify({
               event_name: "MOCK_EVENT_NAME",
             }),
@@ -68,7 +68,7 @@ describe("Dequeue TxMA events", () => {
           },
           {
             messageId: "4008E4FD-10A1-461F-9B34-910BCE726C55",
-            receiptHandle: "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
+            receiptHandle: "mockReceiptHandle",
             body: JSON.stringify({
               event_name: "MOCK_EVENT_NAME_2",
             }),
