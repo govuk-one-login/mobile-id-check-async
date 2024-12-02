@@ -8,7 +8,7 @@
 
 ## Resources
 
-### Test Dequeue
+### Dequeue
 
 #### Description
 
@@ -19,7 +19,7 @@ This test resource checks that messages sent from the Async Backend API are succ
 ##### How to run unit tests:
 
 ```sh
-> npm run test:dequeue
+> npm run test:unit
 ```
 
 #### Deployment
@@ -27,7 +27,7 @@ This test resource checks that messages sent from the Async Backend API are succ
 ##### How to deploy a custom stack:
 
 ```sh
-> npm run deploy-test-resources-to-dev <stack-name>
+> npm run deploy <stack-name>
 ```
 
 > Note: the stack name you enter will be appended with `-test-resources`.
