@@ -16,7 +16,7 @@ Parameters:
     Type: String
     Default: none
 
-  AsyncBackendStack:
+  BackendApi:
     Description: The Stack name of the Async Backend stack
     Type: String
     Default: async-backend-api
@@ -36,12 +36,12 @@ Conditions:
       - build
 
 Resources:
-  # Test dequeue resources
-  TestDequeueFunction:
+  # Dequeue resources
+  DequeueFunction:
     Type: AWS::Serverless::Function
     Condition: IsDevOrBuild
     DependsOn:
-      - TestDequeueLogGroup
+      - DequeueLogGroup
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -51,10 +51,10 @@ Resources:
         EntryPoints:
           - testDequeue/testDequeueHandler.ts
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-test-dequeue
+      FunctionName: !Sub ${AWS::StackName}-dequeue
       Runtime: nodejs20.x
       Handler: testDequeueHandler.lambdaHandler
-      Role: !GetAtt TestDequeueRole.Arn
+      Role: !GetAtt DequeueRole.Arn
       Timeout: 10
       VpcConfig:
         SubnetIds:
@@ -64,18 +64,18 @@ Resources:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
 
-  TestDequeueLogGroup:
+  DequeueLogGroup:
     Type: AWS::Logs::LogGroup
     Condition: IsDevOrBuild
     Properties:
       RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-test-dequeue
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue
 
-  TestDequeueRole:
+  DequeueRole:
     Type: AWS::IAM::Role
     Condition: IsDevOrBuild
     Properties:
-      RoleName: !Sub ${AWS::StackName}-test-dequeue-role
+      RoleName: !Sub ${AWS::StackName}-dequeue-role
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -104,7 +104,7 @@ Resources:
                   - sqs:DeleteMessage
                   - sqs:GetQueueAttributes
                 Resource:
-                  Fn::ImportValue: !Sub ${AsyncBackendStack}-txma-sqs-queue-arn
+                  Fn::ImportValue: !Sub ${BackendApi}-txma-sqs-queue-arn
         - PolicyName: KMSPolicy
           PolicyDocument:
             Version: "2012-10-17"
@@ -113,7 +113,7 @@ Resources:
                 Action:
                   - kms:Decrypt
                 Resource:
-                  Fn::ImportValue: !Sub ${AsyncBackendStack}-txma-kms-encryption-key-arn
+                  Fn::ImportValue: !Sub ${BackendApi}-txma-kms-encryption-key-arn
         - PolicyName: VpcPolicy
           PolicyDocument:
             Version: "2012-10-17"
@@ -129,14 +129,14 @@ Resources:
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
 
-  TestDequeueEventSourceMapping:
+  DequeueEventSourceMapping:
     Condition: IsDevOrBuild
     Type: AWS::Lambda::EventSourceMapping
     Properties:
       BatchSize: 10
       Enabled: true
       EventSourceArn:
-        Fn::ImportValue: !Sub ${AsyncBackendStack}-txma-sqs-queue-arn
-      FunctionName: !GetAtt TestDequeueFunction.Arn
+        Fn::ImportValue: !Sub ${BackendApi}-txma-sqs-queue-arn
+      FunctionName: !GetAtt DequeueFunction.Arn
       FunctionResponseTypes:
         - ReportBatchItemFailures
