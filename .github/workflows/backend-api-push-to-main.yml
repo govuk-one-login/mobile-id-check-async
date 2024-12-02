@@ -83,7 +83,7 @@ jobs:
         cosign-release: 'v1.9.0'
 
     - name: Setup SAM CLI
-      uses: aws-actions/setup-sam@2360ef6d90015369947b45b496193ab9976a9b04 #main
+      uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
       with:
         use-installer: true
         version: 1.123.0
@@ -98,7 +98,7 @@ jobs:
         role-to-assume: ${{ secrets.BACKEND_API_DEV_GH_ACTIONS_ROLE_ARN }}
 
     - name: Login to Amazon ECR
-      uses: aws-actions/amazon-ecr-login@b430a9ae4b069c6327bd09bbcf041b67644ea84f #main
+      uses: aws-actions/amazon-ecr-login@37b726ebcaba9d1c1838caf54540902bad814823 #main
 
     - name: Build test image
       run: |
@@ -164,7 +164,7 @@ jobs:
           cosign-release: 'v1.9.0'
 
       - name: Setup SAM CLI
-        uses: aws-actions/setup-sam@2360ef6d90015369947b45b496193ab9976a9b04 #main
+        uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
         with:
           use-installer: true
           version: 1.123.0
@@ -179,7 +179,7 @@ jobs:
           role-to-assume: ${{ secrets.BACKEND_API_BUILD_GH_ACTIONS_ROLE_ARN }}
 
       - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@b430a9ae4b069c6327bd09bbcf041b67644ea84f #main
+        uses: aws-actions/amazon-ecr-login@37b726ebcaba9d1c1838caf54540902bad814823 #main
 
       - name: Build test image
         run: |

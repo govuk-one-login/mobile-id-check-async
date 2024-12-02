@@ -119,7 +119,7 @@ jobs:
           cache-dependency-path: sts-mock/package-lock.json
 
       - name: Setup SAM CLI
-        uses: aws-actions/setup-sam@2360ef6d90015369947b45b496193ab9976a9b04 #main
+        uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
         with:
           use-installer: true
           version: 1.123.0
@@ -215,7 +215,7 @@ jobs:
           cache-dependency-path: sts-mock/package-lock.json
 
       - name: Setup SAM CLI
-        uses: aws-actions/setup-sam@2360ef6d90015369947b45b496193ab9976a9b04 #main
+        uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
         with:
           use-installer: true
           version: 1.123.0
