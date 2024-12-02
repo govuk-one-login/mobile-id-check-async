@@ -53,7 +53,7 @@ Resources:
     Properties:
       FunctionName: !Sub ${AWS::StackName}-dequeue
       Runtime: nodejs20.x
-      Handler: testDequeueHandler.lambdaHandler
+      Handler: dequeueHandler.lambdaHandler
       Role: !GetAtt DequeueRole.Arn
       Timeout: 10
       VpcConfig:
