@@ -1,5 +1,5 @@
 import { SQSEvent } from "aws-lambda";
-import { lambdaHandler } from "./testDequeueHandler";
+import { lambdaHandler } from "./dequeueHandler";
 
 describe("Dequeue TxMA events", () => {
   afterEach(() => {

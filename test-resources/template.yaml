@@ -49,7 +49,7 @@ Resources:
         Target: es2022
         Sourcemap: false
         EntryPoints:
-          - testDequeue/testDequeueHandler.ts
+          - dequeue/dequeueHandler.ts
     Properties:
       FunctionName: !Sub ${AWS::StackName}-dequeue
       Runtime: nodejs20.x
