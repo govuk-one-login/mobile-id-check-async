@@ -30,6 +30,6 @@ This test resource checks that messages sent from the Async Backend API are succ
 > npm run deploy <stack-name> <optional-custom-backend-stack-name>
 ```
 
-> Note: the `<stack-name>` you enter will be appended with `-test-resources`. If you do not provide a custom backend stack name, it will default to `mob-async-backend`.
+> Note: the `<stack-name>` you enter will be appended with `-test-resources`. If you do not provide a custom backend stack name, it will default to the main backend stack name in dev (`mob-async-backend`).
 
 ---
