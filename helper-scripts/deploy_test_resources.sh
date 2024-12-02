@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [ $# -ne 1 ]; then
-  echo "Usage: $0 <stack-name>"
+if [ $# -lt 1 ]; then
+  echo "Usage: $0 <stack-name> <optional-custom-backend-stack-name>"
   exit 1
 fi
 
@@ -13,6 +13,7 @@ fi
 STACK_NAME=$1
 
 TEST_RESOURCES_STACK_NAME="${STACK_NAME}-test-resources"
+BACKEND_STACK_NAME=${2:-"mob-async-backend"}
 
 while true; do
   echo
@@ -27,6 +28,7 @@ while true; do
       sam build --cached
       sam deploy \
         --stack-name "$TEST_RESOURCES_STACK_NAME" \
+        --parameter-overrides "BackendApi=${BACKEND_STACK_NAME}" \
         --capabilities CAPABILITY_NAMED_IAM \
         --resolve-s3
       break

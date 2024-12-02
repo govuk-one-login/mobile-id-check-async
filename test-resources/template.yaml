@@ -19,7 +19,7 @@ Parameters:
   BackendApi:
     Description: The Stack name of the Async Backend stack
     Type: String
-    Default: async-backend-api
+    Default: mob-async-backend
 
 Conditions:
   UsePermissionsBoundary: !Not
