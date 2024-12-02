@@ -1,3 +1,5 @@
+import {AttributeValue} from "@aws-sdk/client-dynamodb";
+
 export enum SessionState {
   AUTH_SESSION_CREATED = 'ASYNC_AUTH_SESSION_CREATED',
   BIOMETRIC_TOKEN_ISSUED = 'ASYNC_BIOMETRIC_TOKEN_ISSUED',
@@ -48,3 +50,11 @@ export type Session = AuthSessionCreatedSession
   | BiometricTokenIssuedSession
   | BiometricSessionFinishedSession
   | ResultSentSession
+
+export interface IUpdateSessionOperation {
+  getDynamoDbUpdateExpression(): string;
+
+  getDynamoDbConditionExpression(): string | undefined;
+
+  getDynamoDbExpressionAttributeValues(): Record<string, AttributeValue>;
+}

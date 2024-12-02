@@ -7,16 +7,16 @@ import {
   PutItemCommandInput,
   QueryCommand,
   QueryCommandInput,
-  QueryCommandOutput,
+  QueryCommandOutput, UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import {CreateSessionAttributes} from "../services/session/sessionService";
 import {NodeHttpHandler} from "@smithy/node-http-handler";
 import {marshall, NativeAttributeValue, unmarshall,} from "@aws-sdk/util-dynamodb";
-import {errorResult, Failure, Result, successResult} from "../utils/result";
+import {emptySuccess, errorResult, Failure, Result, successResult} from "../utils/result";
 import {
   AuthSessionCreatedSession,
   BiometricSessionFinishedSession,
-  BiometricTokenIssuedSession,
+  BiometricTokenIssuedSession, IUpdateSessionOperation,
   Session,
   SessionState
 } from "../common/session/Session";
@@ -193,6 +193,44 @@ export class DynamoDbAdapter {
         throw error;
       }
     }
+  }
+
+  async updateSession(
+    sessionId: string,
+    updateOperation: IUpdateSessionOperation,
+  ): Promise<Result<void>> {
+    console.log('Update session attempt') // replace with proper logging
+    try {
+      await this.dynamoDbClient.send(
+        new UpdateItemCommand({
+          TableName: this.tableName,
+          Key: {
+            sessionId: { S: sessionId },
+          },
+          UpdateExpression: updateOperation.getDynamoDbUpdateExpression(),
+          ConditionExpression: updateOperation.getDynamoDbConditionExpression(),
+          ExpressionAttributeValues:
+            updateOperation.getDynamoDbExpressionAttributeValues()
+
+        }),
+      )
+    } catch (error) {
+      if (error instanceof ConditionalCheckFailedException) {
+        console.log('Conditional check failed', updateOperation.getDynamoDbConditionExpression()) // replace with proper logging
+        return errorResult({
+          errorMessage: 'Conditional check failed',
+          errorCategory: 'CLIENT_ERROR'
+        })
+      } else {
+        console.log('Unexpected error', error) // replace with proper logging
+        return errorResult({
+          errorMessage: 'Unexpected error',
+          errorCategory: 'SERVER_ERROR'
+        })
+      }
+    }
+    console.log('Update session success', updateOperation.getDynamoDbUpdateExpression()) // replace with proper logging
+    return emptySuccess()
   }
 
   private getTimeNowInSeconds() {
