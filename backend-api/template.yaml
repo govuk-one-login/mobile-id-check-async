@@ -31,11 +31,6 @@ Parameters:
     Type: String
     Default: none
 
-  AsyncBackendStack:
-    Description: The name of this Stack
-    Type: String
-    Default: async-backend-api
-
 Mappings:
   PrivateApigw:
     dev:
@@ -1438,12 +1433,12 @@ Outputs:
     Condition: IsDevOrBuild
     Description: TxMA SQS Queue ARN
     Export:
-      Name: !Sub ${AsyncBackendStack}-txma-sqs-queue-arn
+      Name: !Sub ${AWS::StackName}-txma-sqs-queue-arn
     Value: !GetAtt TxMASQSQueue.Arn
 
   TxmaKmsEncryptionKeyArn:
     Condition: IsDevOrBuild
     Description: TxMA KMS Encryption Key ARN
     Export:
-      Name: !Sub ${AsyncBackendStack}-txma-kms-encryption-key-arn
+      Name: !Sub ${AWS::StackName}-txma-kms-encryption-key-arn
     Value: !GetAtt TxMAKMSEncryptionKey.Arn
