@@ -46,7 +46,6 @@ jobs:
       - name: Check formatting using Prettier
         run: npm run format:check
 
-      # Runs unit tests
       - name: Run tests
         run: npm run test:unit
 
