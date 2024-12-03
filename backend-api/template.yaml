@@ -153,8 +153,7 @@ Mappings:
     integration:
       STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
     production:
-      STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
-    XRAY_ENABLED: !FindInMap [EnvironmentVariables, !Ref Environment, XRAYENABLED]    
+      STSBASEURL: '' #TODO: Update this value with 'real' STS URLs   
 
 Conditions:
   UseCodeSigning: !Not
