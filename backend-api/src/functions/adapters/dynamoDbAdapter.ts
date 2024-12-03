@@ -36,6 +36,7 @@ import {
   getDynamoDBItemToSessionConvertor,
   InvalidFieldsError,
 } from "./dynamoDBItemToSessionConvertors";
+import { SessionRegistry } from "../common/session/sessionRegistry";
 
 const sessionStates = {
   ASYNC_AUTH_SESSION_CREATED: "ASYNC_AUTH_SESSION_CREATED",
@@ -43,7 +44,7 @@ const sessionStates = {
 
 export type DatabaseRecord = Record<string, NativeAttributeValue>;
 
-export class DynamoDbAdapter {
+export class DynamoDbAdapter implements SessionRegistry {
   private readonly tableName: string;
   private readonly dynamoDbClient = new DynamoDBClient({
     region: process.env.REGION,
