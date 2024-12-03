@@ -407,6 +407,13 @@ describe("Backend application infrastructure", () => {
           "ISSUER",
           "TXMA_SQS",
           "SESSION_TABLE_NAME",
+          "AWS_LAMBDA_EXEC_WRAPPER",
+          "DT_CONNECTION_AUTH_TOKEN",
+          "DT_CONNECTION_BASE_URL",
+          "DT_CLUSTER_ID",
+          "DT_LOG_COLLECTION_AUTH_TOKEN",
+          "DT_TENANT",
+          "DT_OPEN_TELEMETRY_ENABLE_INTEGRATION"
         ];
         const envVars =
           template.toJSON().Globals.Function.Environment.Variables;
