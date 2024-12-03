@@ -245,20 +245,6 @@ Globals:
         - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]
 
 Resources:
-  LambdaOutboundOpen: # Security group allowing all egress for https. Egress control (DNS allow listing, internet access etc.) handled via associated subnets.
-    Type: "AWS::EC2::SecurityGroup"
-    Properties:
-      GroupDescription: >-
-        Permits outbound on port 443 from within the VPC to the internet.
-      SecurityGroupEgress:
-        - CidrIp: 0.0.0.0/0
-          Description: Allow to the wider internet on port 443
-          FromPort: 443
-          IpProtocol: tcp
-          ToPort: 443
-      VpcId:
-        Fn::ImportValue: !Sub "${DevPlatformVpcStackName}-VpcId" 
-
   ### Private API Gateway for Client Credentials grant flow
   PrivateApi:
     Type: AWS::Serverless::Api
@@ -324,9 +310,7 @@ Resources:
       Environment:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
-      VpcConfig:
-        SecurityGroupIds:
-          - !GetAtt LambdaOutboundOpen.GroupId
+      VpcConfig:        
         SubnetIds:
           - !ImportValue devplatform-vpc-PrivateSubnetIdA
           - !ImportValue devplatform-vpc-PrivateSubnetIdB
@@ -439,9 +423,7 @@ Resources:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
           SESSION_DURATION_IN_SECONDS: 3600 #Used to set time to live when creating sessions. Set to 1 hour.
-      VpcConfig:
-        SecurityGroupIds:
-          - !GetAtt LambdaOutboundOpen.GroupId
+      VpcConfig:        
         SubnetIds:
           - !ImportValue devplatform-vpc-PrivateSubnetIdA
           - !ImportValue devplatform-vpc-PrivateSubnetIdB
@@ -688,9 +670,7 @@ Resources:
       Runtime: nodejs20.x
       Handler: proxyHandler.lambdaHandler
       Role: !GetAtt ProxyLambdaRole.Arn
-      VpcConfig:
-        SecurityGroupIds:
-          - !GetAtt LambdaOutboundOpen.GroupId
+      VpcConfig:        
         SubnetIds:
           - !ImportValue devplatform-vpc-PrivateSubnetIdA
           - !ImportValue devplatform-vpc-PrivateSubnetIdB
@@ -895,9 +875,7 @@ Resources:
             - !Ref DevOverrideStsBaseUrl
             - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
           AUDIENCE: !Sub https://${SessionsApiDomainName}
-      VpcConfig:
-        SecurityGroupIds:
-          - !GetAtt LambdaOutboundOpen.GroupId
+      VpcConfig:        
         SubnetIds:
           - !ImportValue devplatform-vpc-ProtectedSubnetIdA
           - !ImportValue devplatform-vpc-ProtectedSubnetIdB
@@ -1240,9 +1218,7 @@ Resources:
           ENCRYPTION_KEY_ID: !Ref KMSEncryptionKey
           JWKS_BUCKET_NAME: !Ref JsonWebKeysBucket
           JWKS_FILE_NAME: .well-known/jwks.json
-      VpcConfig:
-        SecurityGroupIds:
-          - !GetAtt LambdaOutboundOpen.GroupId
+      VpcConfig:        
         SubnetIds:
           - !ImportValue devplatform-vpc-PrivateSubnetIdA
           - !ImportValue devplatform-vpc-PrivateSubnetIdB
