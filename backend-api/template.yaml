@@ -165,6 +165,14 @@ Conditions:
       - !Ref Environment
       - production
 
+  IsDevOrBuild: !Or
+    - !Equals
+      - !Ref Environment
+      - dev
+    - !Equals
+      - !Ref Environment
+      - build
+
   ProxyApiDeployment: !Or
     - !Equals
       - !Ref Environment
@@ -1420,3 +1428,17 @@ Outputs:
         - UseDevOverrideStsBaseUrl
         - !Ref DevOverrideStsBaseUrl
         - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
+
+  TxmaSqsQueueArn:
+    Condition: IsDevOrBuild
+    Description: TxMA SQS Queue ARN
+    Export:
+      Name: !Sub ${AWS::StackName}-txma-sqs-queue-arn
+    Value: !GetAtt TxMASQSQueue.Arn
+
+  TxmaKmsEncryptionKeyArn:
+    Condition: IsDevOrBuild
+    Description: TxMA KMS Encryption Key ARN
+    Export:
+      Name: !Sub ${AWS::StackName}-txma-kms-encryption-key-arn
+    Value: !GetAtt TxMAKMSEncryptionKey.Arn
