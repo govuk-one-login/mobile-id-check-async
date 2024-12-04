@@ -245,6 +245,7 @@ Globals:
         - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]
 
 Resources:
+
   ### Private API Gateway for Client Credentials grant flow
   PrivateApi:
     Type: AWS::Serverless::Api
