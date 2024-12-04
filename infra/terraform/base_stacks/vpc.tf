@@ -3,7 +3,7 @@ resource "aws_cloudformation_stack" "vpc" {
 
   template_url = format(local.preformat_template_url,
     "vpc",                             # https://github.com/govuk-one-login/devplatform-deploy/tree/main/vpc
-    "DbePTnGzHq7c8HcbPN_Yb6SZs86Xth3r" # v2.5.3
+    "8ZS6GB2nOcOdOGWjGUpRjs19kqdcfIGg" # v2.7.0
   )
 
   capabilities = ["CAPABILITY_AUTO_EXPAND", "CAPABILITY_IAM"]
@@ -12,6 +12,7 @@ resource "aws_cloudformation_stack" "vpc" {
     AllowRules                      = "pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:\".account.gov.uk\"; endswith; msg:\"Pass TLS to *.account.gov.uk\"; flow:established; sid:2001; rev:1;)"
     CloudFormationEndpointEnabled   = "Yes"
     DynamoDBApiEnabled              = "Yes"
+    DynatraceApiEnabled             = "Yes"
     ExecuteApiGatewayEnabled        = "Yes"
     KMSApiEnabled                   = "Yes"
     LogsApiEnabled                  = "Yes"
