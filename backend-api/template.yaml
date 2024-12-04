@@ -153,7 +153,7 @@ Mappings:
     integration:
       STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
     production:
-      STSBASEURL: '' #TODO: Update this value with 'real' STS URLs   
+      STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
 
 Conditions:
   UseCodeSigning: !Not
@@ -241,7 +241,7 @@ Globals:
         DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
     Layers: 
       - !Sub
-        - '{{resolve:secretsmanager:${SecretArn}:SecretString:JAVA_LAYER}}' # or NODEJS_LAYER or PYTHON_LAYER
+        - '{{resolve:secretsmanager:${SecretArn}:SecretString:NODEJS_LAYER}}' # or NODEJS_LAYER or PYTHON_LAYER
         - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]
 
 Resources:
@@ -310,7 +310,7 @@ Resources:
       Environment:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
-      VpcConfig:        
+      VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-PrivateSubnetIdA
           - !ImportValue devplatform-vpc-PrivateSubnetIdB
@@ -423,7 +423,7 @@ Resources:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
           SESSION_DURATION_IN_SECONDS: 3600 #Used to set time to live when creating sessions. Set to 1 hour.
-      VpcConfig:        
+      VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-PrivateSubnetIdA
           - !ImportValue devplatform-vpc-PrivateSubnetIdB
@@ -670,7 +670,7 @@ Resources:
       Runtime: nodejs20.x
       Handler: proxyHandler.lambdaHandler
       Role: !GetAtt ProxyLambdaRole.Arn
-      VpcConfig:        
+      VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-PrivateSubnetIdA
           - !ImportValue devplatform-vpc-PrivateSubnetIdB
@@ -875,7 +875,7 @@ Resources:
             - !Ref DevOverrideStsBaseUrl
             - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
           AUDIENCE: !Sub https://${SessionsApiDomainName}
-      VpcConfig:        
+      VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-ProtectedSubnetIdA
           - !ImportValue devplatform-vpc-ProtectedSubnetIdB
@@ -1218,7 +1218,7 @@ Resources:
           ENCRYPTION_KEY_ID: !Ref KMSEncryptionKey
           JWKS_BUCKET_NAME: !Ref JsonWebKeysBucket
           JWKS_FILE_NAME: .well-known/jwks.json
-      VpcConfig:        
+      VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-PrivateSubnetIdA
           - !ImportValue devplatform-vpc-PrivateSubnetIdB
