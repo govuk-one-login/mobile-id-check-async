@@ -1,0 +1,10 @@
+[
+  {
+    "ParameterKey": "PipelineStackName",
+    "ParameterValue": "mob-sts-mock-pl"
+  },
+  {
+    "ParameterKey": "RetainedImageCount",
+    "ParameterValue": "25"
+  }
+]

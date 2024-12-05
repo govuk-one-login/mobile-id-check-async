@@ -1,0 +1,46 @@
+[
+  {
+    "ParameterKey": "AllowRules",
+    "ParameterValue": "pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:\".account.gov.uk\"; endswith; msg:\"Pass TLS to *.account.gov.uk\"; flow:established; sid:2001; rev:1;)"
+  },
+  {
+    "ParameterKey": "CloudFormationEndpointEnabled",
+    "ParameterValue": "Yes"
+  },
+  {
+    "ParameterKey": "DynamoDBApiEnabled",
+    "ParameterValue": "Yes"
+  },
+  {
+    "ParameterKey": "ExecuteApiGatewayEnabled",
+    "ParameterValue": "Yes"
+  },
+  {
+    "ParameterKey": "KMSApiEnabled",
+    "ParameterValue": "Yes"
+  },
+  {
+    "ParameterKey": "LogsApiEnabled",
+    "ParameterValue": "Yes"
+  },
+  {
+    "ParameterKey": "S3ApiEnabled",
+    "ParameterValue": "Yes"
+  },
+  {
+    "ParameterKey": "SQSApiEnabled",
+    "ParameterValue": "Yes"
+  },
+  {
+    "ParameterKey": "SSMApiEnabled",
+    "ParameterValue": "Yes"
+  },
+  {
+    "ParameterKey": "SSMParametersStoreEnabled",
+    "ParameterValue": "Yes"
+  },
+  {
+    "ParameterKey": "SecretsManagerApiEnabled",
+    "ParameterValue": "Yes"
+  }
+]
