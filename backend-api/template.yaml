@@ -290,6 +290,52 @@ Resources:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
       RetentionInDays: 30
 
+  PrivateApiDomainName:
+    Type: AWS::ApiGateway::DomainNameV2
+    Properties:
+      DomainName: !Sub
+        - private-${AWS::StackName}.${DNS_RECORD}
+        - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      EndpointConfiguration:
+        Types:
+          - PRIVATE
+      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN}}'
+      SecurityPolicy: TLS_1_2
+    # Condition: ProxyApiDeployment
+
+  PrivateApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMappingV2
+    DependsOn: PrivateApiDomainName
+    Properties:
+      DomainName: !Sub
+        - private-${AWS::StackName}.${DNS_RECORD}
+        - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      RestApiId: !Ref PrivateApi
+      Stage: !Ref PrivateApi.Stage
+    # Condition: PrivateApiDeployment
+
+  PrivateApiRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Sub
+        - private-${AWS::StackName}.${DNS_RECORD}
+        - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      Type: A
+      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
+      AliasTarget:
+        DNSName: !GetAtt PrivateApiDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt PrivateApiDomainName.RegionalHostedZoneId
+    # Condition: PrivateApiDeployment
+
       ### Token lambda
   AsyncTokenFunction:
     Type: AWS::Serverless::Function
