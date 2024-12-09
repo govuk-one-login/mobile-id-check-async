@@ -1,0 +1,13 @@
+[
+  {
+    "ParameterKey": "EnrichedNotifications",
+    "ParameterValue": "True"
+  },
+  {
+    "ParameterKey": "SlackChannelId",
+    "ParameterValue": {
+      "Type": "AWS::SSM::Parameter",
+      "Name": "/devplatform/input-parameters/SlackChannelId/build"
+    }
+  }
+]

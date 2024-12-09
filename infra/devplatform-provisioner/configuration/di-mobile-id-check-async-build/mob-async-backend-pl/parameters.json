@@ -1,0 +1,78 @@
+[
+  {
+    "ParameterKey": "AdditionalCodeSigningVersionArns",
+    "ParameterValue": "arn:aws:signer:eu-west-2:216552277552:/signing-profiles/DynatraceSigner/5uwzCCGTPq"
+  },
+  {
+    "ParameterKey": "AllowedAccounts",
+    "ParameterValue": "730335288219"
+  },
+  {
+    "ParameterKey": "AllowedServiceOne",
+    "ParameterValue": "EC2"
+  },
+  {
+    "ParameterKey": "AllowedServiceThree",
+    "ParameterValue": "DynamoDB"
+  },
+  {
+    "ParameterKey": "AllowedServiceTwo",
+    "ParameterValue": "SQS"
+  },
+  {
+    "ParameterKey": "BuildNotificationStackName",
+    "ParameterValue": "devplatform-build-notifications"
+  },
+  {
+    "ParameterKey": "ContainerSignerKmsKeyArn",
+    "ParameterValue": "arn:aws:kms:eu-west-2:058264551042:key/7c03aea5-64e3-4680-b2b3-cb2c5773154a"
+  },
+  {
+    "ParameterKey": "CustomKmsKeyArns",
+    "ParameterValue": "arn:aws:kms:eu-west-2:216552277552:key/4bc58ab5-c9bb-4702-a2c3-5d339604a8fe"
+  },
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "build"
+  },
+  {
+    "ParameterKey": "OneLoginRepositoryName",
+    "ParameterValue": "mobile-id-check-async"
+  },
+  {
+    "ParameterKey": "ProgrammaticPermissionsBoundary",
+    "ParameterValue": "True"
+  },
+  {
+    "ParameterKey": "RequireTestContainerSignatureValidation",
+    "ParameterValue": "Yes"
+  },
+  {
+    "ParameterKey": "RunTestContainerInVPC",
+    "ParameterValue": "True"
+  },
+  {
+    "ParameterKey": "SAMStackName",
+    "ParameterValue": "mob-async-backend"
+  },
+  {
+    "ParameterKey": "SigningProfileArn",
+    "ParameterValue": "arn:aws:signer:eu-west-2:058264551042:/signing-profiles/SigningProfile_ng3xEubkSrx1"
+  },
+  {
+    "ParameterKey": "SigningProfileVersionArn",
+    "ParameterValue": "arn:aws:signer:eu-west-2:058264551042:/signing-profiles/SigningProfile_ng3xEubkSrx1/UFHUGX7nwV"
+  },
+  {
+    "ParameterKey": "SlackNotificationType",
+    "ParameterValue": "All"
+  },
+  {
+    "ParameterKey": "TestImageRepositoryUri",
+    "ParameterValue": "058264551042.dkr.ecr.eu-west-2.amazonaws.com/mob-async-backend-tir-testrunnerimagerepository-g0spjb4hrzus"
+  },
+  {
+    "ParameterKey": "VpcStackName",
+    "ParameterValue": "devplatform-vpc"
+  }
+]
