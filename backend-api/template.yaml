@@ -302,7 +302,7 @@ Resources:
       EndpointConfiguration:
         Types:
           - PRIVATE
-      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN}}'
+      CertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN}}'
       SecurityPolicy: TLS_1_2
     # Condition: ProxyApiDeployment
 
@@ -310,12 +310,7 @@ Resources:
     Type: AWS::ApiGateway::BasePathMappingV2
     DependsOn: PrivateApiDomainName
     Properties:
-      DomainName: !Sub
-        - private-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+      DomainNameArn: !GetAtt PrivateApiDomainName.DomainNameArn
       RestApiId: !Ref PrivateApi
       Stage: !Ref PrivateApi.Stage
     # Condition: PrivateApiDeployment
@@ -332,8 +327,8 @@ Resources:
       Type: A
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
       AliasTarget:
-        DNSName: !GetAtt PrivateApiDomainName.RegionalDomainName
-        HostedZoneId: !GetAtt PrivateApiDomainName.RegionalHostedZoneId
+        DNSName: !GetAtt SessionsApiDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt SessionsApiDomainName.RegionalHostedZoneId
     # Condition: PrivateApiDeployment
 
       ### Token lambda
