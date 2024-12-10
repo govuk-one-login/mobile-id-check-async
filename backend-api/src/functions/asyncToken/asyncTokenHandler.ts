@@ -20,9 +20,9 @@ export async function lambdaHandlerConstructor(
   logger.addContext(context);
   logger.log("STARTED");
 
-  const testlogger = new TestLogger(context)
-  testlogger.setSessionId({ sessionId: "tesSessionId123" })
-  testlogger.log("Testing test 123...")
+  const testlogger = new TestLogger(context);
+  testlogger.setSessionId({ sessionId: "tesSessionId123" });
+  testlogger.log("Testing test 123...");
 
   const configResult = new ConfigService().getConfig(dependencies.env);
   if (configResult.isError) {
