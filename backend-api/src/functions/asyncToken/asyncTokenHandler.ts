@@ -9,8 +9,6 @@ import {
   IAsyncTokenRequestDependencies,
 } from "./handlerDependencies";
 
-import { Logger as TestLogger } from "@govuk-one-login/mobile-id-check-logger";
-
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
   event: APIGatewayProxyEvent,
@@ -19,10 +17,6 @@ export async function lambdaHandlerConstructor(
   const logger = dependencies.logger();
   logger.addContext(context);
   logger.log("STARTED");
-
-  const testlogger = new TestLogger(context)
-  testlogger.setSessionId({ sessionId: "tesSessionId123" })
-  testlogger.log("Testing test 123...")
 
   const configResult = new ConfigService().getConfig(dependencies.env);
   if (configResult.isError) {

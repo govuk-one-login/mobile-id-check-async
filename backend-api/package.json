@@ -56,7 +56,6 @@
     "@aws-sdk/client-sqs": "^3.699.0",
     "@aws-sdk/node-http-handler": "3.374.0",
     "@aws-sdk/util-dynamodb": "^3.704.0",
-    "@govuk-one-login/mobile-id-check-logger": "^1.0.1",
     "@types/node": "^20.17.9",
     "aws-cdk-lib": "^2.171.1",
     "axios": "1.7.8",
