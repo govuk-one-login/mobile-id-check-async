@@ -304,8 +304,7 @@ Resources:
           - PRIVATE
       CertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN}}'
       SecurityPolicy: TLS_1_2
-    # Condition: ProxyApiDeployment
-
+    
   PrivateApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMappingV2
     DependsOn: PrivateApiDomainName
@@ -313,10 +312,18 @@ Resources:
       DomainNameArn: !GetAtt PrivateApiDomainName.DomainNameArn
       RestApiId: !Ref PrivateApi
       Stage: !Ref PrivateApi.Stage
-    # Condition: PrivateApiDeployment
 
+  PrivateApiDomainNameAccessAssociation: 
+    Type: AWS::ApiGateway::DomainNameAccessAssociation
+    DependsOn: PrivateApiDomainName
+    Properties:
+      DomainNameArn: !GetAtt PrivateApiDomainName.DomainNameArn
+      AccessAssociationSource: vpce-0825f978898f57283
+      AccessAssociationSourceType: VPCE
+    
   PrivateApiRecordSet:
     Type: AWS::Route53::RecordSet
+    DependsOn: PrivateApiDomainName
     Properties:
       Name: !Sub
         - private-${AWS::StackName}.${DNS_RECORD}
@@ -325,12 +332,11 @@ Resources:
             - !Ref Environment
             - BaseDns
       Type: A
-      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
+      HostedZoneId: !ImportValue PublicHostedZoneId #Private hosted zone needed here
       AliasTarget:
-        DNSName: !GetAtt SessionsApiDomainName.RegionalDomainName
-        HostedZoneId: !GetAtt SessionsApiDomainName.RegionalHostedZoneId
-    # Condition: PrivateApiDeployment
-
+        DNSName: !Sub ${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
+        HostedZoneId: !ImportValue PublicHostedZoneId #Private hosted zone needed here
+  
       ### Token lambda
   AsyncTokenFunction:
     Type: AWS::Serverless::Function
@@ -1516,3 +1522,9 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-txma-kms-encryption-key-arn
     Value: !GetAtt TxMAKMSEncryptionKey.Arn
+
+  RegionalProxyHostedZoneId:
+    Description: Remove after testing
+    Export: 
+      Name: !Sub ${AWS::StackName}-mb-proxy-regional
+    Value: !GetAtt ProxyApiDomainName.RegionalHostedZoneId
