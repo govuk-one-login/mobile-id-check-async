@@ -9,7 +9,7 @@ import {
   IAsyncTokenRequestDependencies,
 } from "./handlerDependencies";
 
-import { TestLogger } from "@govuk-one-login/mobile-id-check-packages";
+import { Logger as TestLogger } from "@govuk-one-login/mobile-id-check-logger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
@@ -20,8 +20,9 @@ export async function lambdaHandlerConstructor(
   logger.addContext(context);
   logger.log("STARTED");
 
-  const testlogger = new TestLogger()
-  testlogger.info("testing 123")
+  const testlogger = new TestLogger(context)
+  testlogger.setSessionId({ sessionId: "tesSessionId123" })
+  testlogger.log("Testing test 123...")
 
   const configResult = new ConfigService().getConfig(dependencies.env);
   if (configResult.isError) {
