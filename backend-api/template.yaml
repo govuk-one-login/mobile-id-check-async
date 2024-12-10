@@ -1522,9 +1522,3 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-txma-kms-encryption-key-arn
     Value: !GetAtt TxMAKMSEncryptionKey.Arn
-
-  RegionalProxyHostedZoneId:
-    Description: Remove after testing
-    Export: 
-      Name: !Sub ${AWS::StackName}-mb-proxy-regional
-    Value: !GetAtt ProxyApiDomainName.RegionalHostedZoneId
