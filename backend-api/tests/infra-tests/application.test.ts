@@ -145,7 +145,6 @@ describe("Backend application infrastructure", () => {
         LowThresholdWellKnown5XXApiGwAlarm: false
       }
 
-
       const alarms = template.findResources('AWS::CloudWatch::Alarm')
       const activeCriticalAlerts = Object.entries(alarms)
         .filter(([, resource]) => {
@@ -157,6 +156,42 @@ describe("Backend application infrastructure", () => {
         .map(([, resource]) => resource.Properties.AlarmName['Fn::Sub'].replace('${AWS::StackName}-', ''))
       const activeCriticalAlertsWithNoRunbook = activeCriticalAlerts.filter(alarmName => runbooksByAlarm[alarmName] === false)
       expect(activeCriticalAlertsWithNoRunbook).toHaveLength(0)
+    })
+
+    test('All alarms are configured with the DeployAlarm Condition', () => {
+      const alarms = Object.values(
+        template.findResources('AWS::CloudWatch::Alarm'),
+      )
+      alarms.forEach(alarm => {
+        expect(alarm).toEqual(
+          expect.objectContaining({ Condition: 'DeployAlarms' }),
+        )
+      })
+    })
+
+    describe('Warning alarms', () => {
+      it.each([
+        ['HighThresholdWellKnown5XXApiGwAlarm'],
+        ['LowThresholdWellKnown5XXApiGwAlarm'],
+        ['HighThresholdAsyncToken5XXApiGwAlarm'],
+        ['LowThresholdAsyncToken5XXApiGwAlarm'],
+        ['HighThresholdAsyncToken4XXApiGwAlarm'],
+        ['LowThresholdAsyncToken4XXApiGwAlarm'],
+      ])(
+        'The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions',
+        (alarmName: string) => {
+          template.hasResourceProperties('AWS::CloudWatch::Alarm', {
+            AlarmName: { 'Fn::Sub': `\${AWS::StackName}-${alarmName}` },
+            AlarmActions: [
+              { 'Fn::Sub': 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning' },
+            ],
+            OKActions: [
+              { 'Fn::Sub': 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning' },
+            ],
+            ActionsEnabled: true,
+          })
+        },
+      )
     })
   })
 
