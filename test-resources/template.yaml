@@ -35,6 +35,13 @@ Conditions:
       - !Ref Environment
       - build
 
+Mappings:
+  EnvironmentVariables:
+    dev:
+      TXMAEVENTTTLINSECONDS: 3600
+    build:
+      TXMAEVENTTTLINSECONDS: 3600
+
 Resources:
   # Dequeue resources
   DequeueFunction:
@@ -55,6 +62,12 @@ Resources:
       Runtime: nodejs20.x
       Handler: dequeueHandler.lambdaHandler
       Role: !GetAtt DequeueRole.Arn
+      Environment:
+        Variables:
+          TXMA_EVENT_TTL_IN_SECONDS: !FindInMap
+            - EnvironmentVariables
+            - !Ref Environment
+            - TXMAEVENTTTLINSECONDS
       Timeout: 10
       VpcConfig:
         SubnetIds:
