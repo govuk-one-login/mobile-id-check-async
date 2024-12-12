@@ -150,7 +150,7 @@ describe("Backend application infrastructure", () => {
         .filter(([, resource]) => {
           const alarmIsEnabled = resource.Properties.ActionsEnabled
           const isCriticalAlert = resource.Properties.AlarmActions[0]["Fn::Sub"] ===
-            "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+            "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
           return alarmIsEnabled && isCriticalAlert
         })
         .map(([, resource]) => resource.Properties.AlarmName['Fn::Sub'].replace('${AWS::StackName}-', ''))
