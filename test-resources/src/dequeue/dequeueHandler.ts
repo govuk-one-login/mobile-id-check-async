@@ -8,9 +8,15 @@ export const lambdaHandler = async (event: SQSEvent): Promise<void> => {
   const processedEvents: ProcessedEvent[] = [];
   records.forEach((record) => {
     const { messageId } = record;
-    const { event_name } = JSON.parse(record.body);
+    let eventName
+    try {
+      eventName = JSON.parse(record.body).event_name;
+    } catch {
+      console.log("Failed to parse record body")
+      return Promise.resolve()
+    }
 
-    processedEvents.push({ messageId, eventName: event_name });
+    processedEvents.push({ messageId, eventName });
   });
 
   console.log(processedEvents);

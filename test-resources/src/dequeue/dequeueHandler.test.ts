@@ -2,13 +2,47 @@ import { SQSEvent } from "aws-lambda";
 import { lambdaHandler } from "./dequeueHandler";
 
 describe("Dequeue TxMA events", () => {
+  let consoleLogSpy: jest.SpyInstance
+
+  beforeEach(() => {
+    consoleLogSpy = jest.spyOn(global.console, "log")
+  })
+
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
+  describe("Given there is an error parsing the record body", () => {
+    it("Returns an error message", async () => {
+      const event: SQSEvent = {
+        Records: [
+          {
+            messageId: "D8B937B7-7E1D-4D37-BD82-C6AED9F7D975",
+            receiptHandle: "mockReceiptHandle",
+            body: "{",
+            attributes: {
+              ApproximateReceiveCount: "1",
+              SentTimestamp: "1545082649183",
+              SenderId: "AIDAIENQZJOLO23YVJ4VO",
+              ApproximateFirstReceiveTimestamp: "1545082649185",
+            },
+            messageAttributes: {},
+            md5OfBody: "098f6bcd4621d373cade4e832627b4f6",
+            eventSource: "aws:sqs",
+            eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
+            awsRegion: "eu-west-2",
+          },
+        ],
+      };
+
+      await lambdaHandler(event);
+
+      expect(consoleLogSpy).toHaveBeenNthCalledWith(2, "Failed to parse record body");
+    })
+  })
+
   describe("Given one message is sent in the request", () => {
     it("Returns the messageId and event_name for each message", async () => {
-      const consoleLogSpy = jest.spyOn(global.console, "log");
       const event: SQSEvent = {
         Records: [
           {
@@ -45,7 +79,6 @@ describe("Dequeue TxMA events", () => {
 
   describe("Given more than one message is sent in the request", () => {
     it("Returns the messageId and event_name for each message", async () => {
-      const consoleLogSpy = jest.spyOn(global.console, "log");
       const event: SQSEvent = {
         Records: [
           {
