@@ -1484,13 +1484,13 @@ Resources:
               MetricName: Count
               Dimensions:
                 - Name: Method
-                  Value: GET
+                  Value: POST
                 - Name: ApiName
                   Value: !Sub ${AWS::StackName}-private-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
-                  Value: /.well-known/jwks.json
+                  Value: /async/token
             Period: 60
             Stat: Sum
         - Id: errorSum4XX
@@ -1502,13 +1502,13 @@ Resources:
               MetricName: 4XXError
               Dimensions:
                 - Name: Method
-                  Value: GET
+                  Value: POST
                 - Name: ApiName
                   Value: !Sub ${AWS::StackName}-sessions-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
-                  Value: /.well-known/jwks.json
+                  Value: /async/token
             Period: 60
             Stat: Sum
         - Id: errorPercentage4XX
@@ -1545,13 +1545,13 @@ Resources:
               MetricName: Count
               Dimensions:
                 - Name: Method
-                  Value: GET
+                  Value: POST
                 - Name: ApiName
                   Value: !Sub ${AWS::StackName}-private-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
-                  Value: /.well-known/jwks.json
+                  Value: /async/token
             Period: 60
             Stat: Sum
         - Id: errorSum4XX
@@ -1563,13 +1563,13 @@ Resources:
               MetricName: 4XXError
               Dimensions:
                 - Name: Method
-                  Value: GET
+                  Value: POST
                 - Name: ApiName
                   Value: !Sub ${AWS::StackName}-sessions-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
-                  Value: /.well-known/jwks.json
+                  Value: /async/token
             Period: 60
             Stat: Sum
         - Id: errorPercentage4XX
@@ -1606,13 +1606,13 @@ Resources:
               MetricName: Count
               Dimensions:
                 - Name: Method
-                  Value: GET
+                  Value: POST
                 - Name: ApiName
                   Value: !Sub ${AWS::StackName}-private-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
-                  Value: /.well-known/jwks.json
+                  Value: /async/token
             Period: 60
             Stat: Sum
         - Id: errorSum5XX
@@ -1624,13 +1624,13 @@ Resources:
               MetricName: 5XXError
               Dimensions:
                 - Name: Method
-                  Value: GET
+                  Value: POST
                 - Name: ApiName
                   Value: !Sub ${AWS::StackName}-sessions-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
-                  Value: /.well-known/jwks.json
+                  Value: /async/token
             Period: 60
             Stat: Sum
         - Id: errorPercentage5XX
@@ -1667,13 +1667,13 @@ Resources:
               MetricName: Count
               Dimensions:
                 - Name: Method
-                  Value: GET
+                  Value: POST
                 - Name: ApiName
                   Value: !Sub ${AWS::StackName}-private-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
-                  Value: /.well-known/jwks.json
+                  Value: /async/token
             Period: 60
             Stat: Sum
         - Id: errorSum5XX
@@ -1685,13 +1685,13 @@ Resources:
               MetricName: 5XXError
               Dimensions:
                 - Name: Method
-                  Value: GET
+                  Value: POST
                 - Name: ApiName
                   Value: !Sub ${AWS::StackName}-sessions-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
-                  Value: /.well-known/jwks.json
+                  Value: /async/token
             Period: 60
             Stat: Sum
         - Id: errorPercentage5XX
