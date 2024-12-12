@@ -1,27 +1,34 @@
-import { SQSEvent } from "aws-lambda";
+import { SQSBatchItemFailure, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
 
-export const lambdaHandler = async (event: SQSEvent): Promise<void> => {
+export const lambdaHandler = async (event: SQSEvent): Promise<SQSBatchResponse> => {
   console.log("STARTED");
 
   const records = event.Records;
 
   const processedEvents: ProcessedEvent[] = [];
-  records.forEach((record) => {
+  const batchItemFailures: SQSBatchItemFailure[] = [];
+  records.forEach((record: SQSRecord) => {
     const { messageId } = record;
-    let eventName
+    let recordBody
+    let eventName: string
     try {
-      eventName = JSON.parse(record.body).event_name;
+      recordBody = JSON.parse(record.body)
+      if (recordBody && recordBody.includes("error")) {
+        batchItemFailures.push({ itemIdentifier: messageId })
+      } else {
+        eventName = recordBody.event_name;
+        processedEvents.push({ messageId, eventName });
+      }
     } catch {
-      console.log("Failed to parse record body")
-      return Promise.resolve()
+      console.log(`Failed to process message - messageId: ${messageId}`)
     }
-
-    processedEvents.push({ messageId, eventName });
   });
 
   console.log(processedEvents);
 
   console.log("COMPLETED");
+
+  return Promise.resolve({ batchItemFailures })
 };
 
 interface ProcessedEvent {
