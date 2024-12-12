@@ -1,9 +1,9 @@
-import {Capture, Match, Template} from "aws-cdk-lib/assertions";
-import {readFileSync} from "fs";
-import {load} from "js-yaml";
-import {Mappings} from "./helpers/mappings";
+import { Capture, Match, Template } from "aws-cdk-lib/assertions";
+import { readFileSync } from "fs";
+import { load } from "js-yaml";
+import { Mappings } from "./helpers/mappings";
 
-const {schema} = require("yaml-cfn");
+const { schema } = require("yaml-cfn");
 
 // https://docs.aws.amazon.com/cdk/v2/guide/testing.html <--- how to use this file
 
@@ -37,18 +37,18 @@ describe("Backend application infrastructure", () => {
   describe("Private APIgw", () => {
     test("The endpoints are Private", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: {"Fn::Sub": "${AWS::StackName}-private-api"},
+        Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
         EndpointConfiguration: "PRIVATE",
       });
     });
 
     test("It uses the private async OpenAPI Spec", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: {"Fn::Sub": "${AWS::StackName}-private-api"},
+        Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
         DefinitionBody: {
           "Fn::Transform": {
             Name: "AWS::Include",
-            Parameters: {Location: "./openApiSpecs/async-private-spec.yaml"},
+            Parameters: { Location: "./openApiSpecs/async-private-spec.yaml" },
           },
         },
       });
@@ -58,7 +58,7 @@ describe("Backend application infrastructure", () => {
       test("Metrics are enabled", () => {
         const methodSettings = new Capture();
         template.hasResourceProperties("AWS::Serverless::Api", {
-          Name: {"Fn::Sub": "${AWS::StackName}-private-api"},
+          Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
           MethodSettings: methodSettings,
         });
         expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
@@ -93,20 +93,20 @@ describe("Backend application infrastructure", () => {
       test("Rate limit and burst mappings are applied to the APIgw", () => {
         const methodSettings = new Capture();
         template.hasResourceProperties("AWS::Serverless::Api", {
-          Name: {"Fn::Sub": "${AWS::StackName}-private-api"},
+          Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
           MethodSettings: methodSettings,
         });
         expect(methodSettings.asArray()[0].ThrottlingBurstLimit).toStrictEqual({
           "Fn::FindInMap": [
             "PrivateApigw",
-            {Ref: "Environment"},
+            { Ref: "Environment" },
             "ApiBurstLimit",
           ],
         });
         expect(methodSettings.asArray()[0].ThrottlingRateLimit).toStrictEqual({
           "Fn::FindInMap": [
             "PrivateApigw",
-            {Ref: "Environment"},
+            { Ref: "Environment" },
             "ApiRateLimit",
           ],
         });
@@ -115,7 +115,7 @@ describe("Backend application infrastructure", () => {
 
     test("Access log group is attached to APIgw", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: {"Fn::Sub": "${AWS::StackName}-private-api"},
+        Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
         AccessLogSetting: {
           DestinationArn: {
             "Fn::Sub":
@@ -138,79 +138,91 @@ describe("Backend application infrastructure", () => {
 
   describe("CloudWatch alarms", () => {
     test("All critical alerts should have runbooks defined", () => {
-
       // to be updated only when a runbook exists for an alarm
       const runbooksByAlarm: Record<string, boolean> = {
         HighThresholdWellKnown5XXApiGwAlarm: false,
-        LowThresholdWellKnown5XXApiGwAlarm: false
-      }
+        LowThresholdWellKnown5XXApiGwAlarm: false,
+      };
 
-      const alarms = template.findResources('AWS::CloudWatch::Alarm')
+      const alarms = template.findResources("AWS::CloudWatch::Alarm");
       const activeCriticalAlerts = Object.entries(alarms)
         .filter(([, resource]) => {
-          const alarmIsEnabled = resource.Properties.ActionsEnabled
-          const isCriticalAlert = resource.Properties.AlarmActions[0]["Fn::Sub"] ===
-            "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
-          return alarmIsEnabled && isCriticalAlert
+          const alarmIsEnabled = resource.Properties.ActionsEnabled;
+          const isCriticalAlert =
+            resource.Properties.AlarmActions[0]["Fn::Sub"] ===
+            "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical";
+          return alarmIsEnabled && isCriticalAlert;
         })
-        .map(([, resource]) => resource.Properties.AlarmName['Fn::Sub'].replace('${AWS::StackName}-', ''))
-      const activeCriticalAlertsWithNoRunbook = activeCriticalAlerts.filter(alarmName => runbooksByAlarm[alarmName] === false)
-      expect(activeCriticalAlertsWithNoRunbook).toHaveLength(0)
-    })
+        .map(([, resource]) =>
+          resource.Properties.AlarmName["Fn::Sub"].replace(
+            "${AWS::StackName}-",
+            "",
+          ),
+        );
+      const activeCriticalAlertsWithNoRunbook = activeCriticalAlerts.filter(
+        (alarmName) => runbooksByAlarm[alarmName] === false,
+      );
+      expect(activeCriticalAlertsWithNoRunbook).toHaveLength(0);
+    });
 
-    test('All alarms are configured with the DeployAlarm Condition', () => {
+    test("All alarms are configured with the DeployAlarm Condition", () => {
       const alarms = Object.values(
-        template.findResources('AWS::CloudWatch::Alarm'),
-      )
-      alarms.forEach(alarm => {
+        template.findResources("AWS::CloudWatch::Alarm"),
+      );
+      alarms.forEach((alarm) => {
         expect(alarm).toEqual(
-          expect.objectContaining({ Condition: 'DeployAlarms' }),
-        )
-      })
-    })
+          expect.objectContaining({ Condition: "DeployAlarms" }),
+        );
+      });
+    });
 
-    describe('Warning alarms', () => {
+    describe("Warning alarms", () => {
       it.each([
-        ['HighThresholdWellKnown5XXApiGwAlarm'],
-        ['LowThresholdWellKnown5XXApiGwAlarm'],
-        ['HighThresholdAsyncToken5XXApiGwAlarm'],
-        ['LowThresholdAsyncToken5XXApiGwAlarm'],
-        ['HighThresholdAsyncToken4XXApiGwAlarm'],
-        ['LowThresholdAsyncToken4XXApiGwAlarm'],
+        ["HighThresholdWellKnown5XXApiGwAlarm"],
+        ["LowThresholdWellKnown5XXApiGwAlarm"],
+        ["HighThresholdAsyncToken5XXApiGwAlarm"],
+        ["LowThresholdAsyncToken5XXApiGwAlarm"],
+        ["HighThresholdAsyncToken4XXApiGwAlarm"],
+        ["LowThresholdAsyncToken4XXApiGwAlarm"],
       ])(
-        'The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions',
+        "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
-          template.hasResourceProperties('AWS::CloudWatch::Alarm', {
-            AlarmName: { 'Fn::Sub': `\${AWS::StackName}-${alarmName}` },
+          template.hasResourceProperties("AWS::CloudWatch::Alarm", {
+            AlarmName: { "Fn::Sub": `\${AWS::StackName}-${alarmName}` },
             AlarmActions: [
-              { 'Fn::Sub': 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning' },
+              {
+                "Fn::Sub":
+                  "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning",
+              },
             ],
             OKActions: [
-              { 'Fn::Sub': 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning' },
+              {
+                "Fn::Sub":
+                  "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning",
+              },
             ],
             ActionsEnabled: true,
-          })
+          });
         },
-      )
-    })
-  })
-
+      );
+    });
+  });
 
   describe("Sessions APIgw", () => {
     test("The endpoints are REGIONAL", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: {"Fn::Sub": "${AWS::StackName}-sessions-api"},
+        Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
         EndpointConfiguration: "REGIONAL",
       });
     });
 
     test("It uses the public async OpenAPI Spec", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: {"Fn::Sub": "${AWS::StackName}-sessions-api"},
+        Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
         DefinitionBody: {
           "Fn::Transform": {
             Name: "AWS::Include",
-            Parameters: {Location: "./openApiSpecs/async-public-spec.yaml"},
+            Parameters: { Location: "./openApiSpecs/async-public-spec.yaml" },
           },
         },
       });
@@ -223,7 +235,7 @@ describe("Backend application infrastructure", () => {
           "AWS::Serverless::Api",
 
           {
-            Name: {"Fn::Sub": "${AWS::StackName}-sessions-api"},
+            Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
             MethodSettings: methodSettings,
           },
         );
@@ -263,14 +275,14 @@ describe("Backend application infrastructure", () => {
           "AWS::Serverless::Api",
 
           {
-            Name: {"Fn::Sub": "${AWS::StackName}-sessions-api"},
+            Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
             MethodSettings: methodSettings,
           },
         );
         expect(methodSettings.asArray()[0].ThrottlingBurstLimit).toStrictEqual({
           "Fn::FindInMap": [
             "SessionsApigw",
-            {Ref: "Environment"},
+            { Ref: "Environment" },
             "ApiBurstLimit",
           ],
         });
@@ -278,7 +290,7 @@ describe("Backend application infrastructure", () => {
         expect(methodSettings.asArray()[0].ThrottlingRateLimit).toStrictEqual({
           "Fn::FindInMap": [
             "SessionsApigw",
-            {Ref: "Environment"},
+            { Ref: "Environment" },
             "ApiRateLimit",
           ],
         });
@@ -287,7 +299,7 @@ describe("Backend application infrastructure", () => {
 
     test("Access log group is attached to APIgw", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: {"Fn::Sub": "${AWS::StackName}-sessions-api"},
+        Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
         AccessLogSetting: {
           DestinationArn: {
             "Fn::Sub":
@@ -311,14 +323,14 @@ describe("Backend application infrastructure", () => {
   describe("Proxy APIgw", () => {
     test("The endpoints are Regional", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: {"Fn::Sub": "${AWS::StackName}-proxy-api"},
+        Name: { "Fn::Sub": "${AWS::StackName}-proxy-api" },
         EndpointConfiguration: "REGIONAL",
       });
     });
 
     test("It uses the proxy async OpenAPI Spec", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: {"Fn::Sub": "${AWS::StackName}-proxy-api"},
+        Name: { "Fn::Sub": "${AWS::StackName}-proxy-api" },
         DefinitionBody: {
           "Fn::Transform": {
             Name: "AWS::Include",
@@ -334,7 +346,7 @@ describe("Backend application infrastructure", () => {
       test("Metrics are enabled", () => {
         const methodSettings = new Capture();
         template.hasResourceProperties("AWS::Serverless::Api", {
-          Name: {"Fn::Sub": "${AWS::StackName}-proxy-api"},
+          Name: { "Fn::Sub": "${AWS::StackName}-proxy-api" },
           MethodSettings: methodSettings,
         });
         expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
@@ -369,20 +381,20 @@ describe("Backend application infrastructure", () => {
       test("Rate limit and burst mappings are applied to the APIgw", () => {
         const methodSettings = new Capture();
         template.hasResourceProperties("AWS::Serverless::Api", {
-          Name: {"Fn::Sub": "${AWS::StackName}-proxy-api"},
+          Name: { "Fn::Sub": "${AWS::StackName}-proxy-api" },
           MethodSettings: methodSettings,
         });
         expect(methodSettings.asArray()[0].ThrottlingBurstLimit).toStrictEqual({
           "Fn::FindInMap": [
             "ProxyApigw",
-            {Ref: "Environment"},
+            { Ref: "Environment" },
             "ApiBurstLimit",
           ],
         });
         expect(methodSettings.asArray()[0].ThrottlingRateLimit).toStrictEqual({
           "Fn::FindInMap": [
             "ProxyApigw",
-            {Ref: "Environment"},
+            { Ref: "Environment" },
             "ApiRateLimit",
           ],
         });
@@ -391,7 +403,7 @@ describe("Backend application infrastructure", () => {
 
     test("Access log group is attached to APIgw", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: {"Fn::Sub": "${AWS::StackName}-proxy-api"},
+        Name: { "Fn::Sub": "${AWS::StackName}-proxy-api" },
         AccessLogSetting: {
           DestinationArn: {
             "Fn::GetAtt": ["ProxyApiAccessLogs", "Arn"],
@@ -464,7 +476,7 @@ describe("Backend application infrastructure", () => {
         expect(reservedConcurrentExecutions).toStrictEqual({
           "Fn::FindInMap": [
             "Lambda",
-            {Ref: "Environment"},
+            { Ref: "Environment" },
             "ReservedConcurrentExecutions",
           ],
         });
@@ -539,9 +551,9 @@ describe("Backend application infrastructure", () => {
           Handler: lambdaHandler,
           VpcConfig: {
             SubnetIds: [
-              {"Fn::ImportValue": "devplatform-vpc-PrivateSubnetIdA"},
-              {"Fn::ImportValue": "devplatform-vpc-PrivateSubnetIdB"},
-              {"Fn::ImportValue": "devplatform-vpc-PrivateSubnetIdC"},
+              { "Fn::ImportValue": "devplatform-vpc-PrivateSubnetIdA" },
+              { "Fn::ImportValue": "devplatform-vpc-PrivateSubnetIdB" },
+              { "Fn::ImportValue": "devplatform-vpc-PrivateSubnetIdC" },
             ],
             SecurityGroupIds: [
               {
@@ -563,9 +575,9 @@ describe("Backend application infrastructure", () => {
           Handler: lambdaHandler,
           VpcConfig: {
             SubnetIds: [
-              {"Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdA"},
-              {"Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdB"},
-              {"Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdC"},
+              { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdA" },
+              { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdB" },
+              { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdC" },
             ],
             SecurityGroupIds: [
               {
@@ -587,7 +599,7 @@ describe("Backend application infrastructure", () => {
         expect(kmsKeys[kmsKey].Properties.PendingWindowInDays).toStrictEqual({
           "Fn::FindInMap": [
             "KMS",
-            {Ref: "Environment"},
+            { Ref: "Environment" },
             "PendingDeletionInDays",
           ],
         });
@@ -619,8 +631,8 @@ describe("Backend application infrastructure", () => {
         expect(iamRoles[iamRole].Properties.PermissionsBoundary).toStrictEqual({
           "Fn::If": [
             "UsePermissionsBoundary",
-            {Ref: "PermissionsBoundary"},
-            {Ref: "AWS::NoValue"},
+            { Ref: "PermissionsBoundary" },
+            { Ref: "AWS::NoValue" },
           ],
         });
       });
@@ -633,7 +645,7 @@ describe("Backend application infrastructure", () => {
       iamRolesList.forEach((iamRole) => {
         const roleName = iamRoles[iamRole].Properties.RoleName[
           "Fn::Sub"
-          ] as string;
+        ] as string;
         const roleNameConformsToStandards =
           roleName.startsWith("${AWS::StackName}-");
         expect(roleNameConformsToStandards).toBe(true);
@@ -657,7 +669,7 @@ describe("Backend application infrastructure", () => {
         template.hasResourceProperties(
           "AWS::S3::BucketPolicy",
           Match.objectLike({
-            Bucket: {Ref: bucket},
+            Bucket: { Ref: bucket },
           }),
         );
       });
@@ -699,5 +711,4 @@ describe("Backend application infrastructure", () => {
       });
     });
   });
-})
-
+});
