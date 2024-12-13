@@ -43,7 +43,7 @@ describe("Dequeue TxMA events", () => {
 
   describe("Given multiple messages are sent in the request", () => {
     describe("Given one out of three messages fails to be processed", () => {
-      it("Returns the messageId and event_name for each message", async () => {
+      it("Logs successfully processed messages and returns failed messages", async () => {
         const event: SQSEvent = {
           Records: [
             {
@@ -67,7 +67,7 @@ describe("Dequeue TxMA events", () => {
             {
               messageId: "D8B937B7-7E1D-4D37-BD82-C6AED9F7D975",
               receiptHandle: "mockReceiptHandle",
-              body: "{",
+              body: "error",
               attributes: {
                 ApproximateReceiveCount: "1",
                 SentTimestamp: "1545082649183",

@@ -7,23 +7,22 @@ export const lambdaHandler = async (event: SQSEvent): Promise<SQSBatchResponse> 
 
   const processedEvents: ProcessedEvent[] = [];
   const batchItemFailures: SQSBatchItemFailure[] = [];
-  records.forEach((record: SQSRecord) => {
+  for (const record of records) {
     const { messageId } = record;
     let recordBody
     let eventName: string
     try {
       recordBody = JSON.parse(record.body)
-      if (recordBody && recordBody.includes("error")) {
+      if (typeof recordBody === 'string' && recordBody.includes("error")) {
         batchItemFailures.push({ itemIdentifier: messageId })
       } else {
         eventName = recordBody.event_name;
         processedEvents.push({ messageId, eventName });
       }
-    } catch {
+    } catch (error) {
       console.log(`Failed to process message - messageId: ${messageId}`)
     }
-  });
-
+  };
   console.log(processedEvents);
 
   console.log("COMPLETED");
