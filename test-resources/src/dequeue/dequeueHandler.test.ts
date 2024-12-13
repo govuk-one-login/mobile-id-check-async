@@ -13,7 +13,7 @@ describe("Dequeue TxMA events", () => {
   });
 
   describe("Given there are no messages in the request", () => {
-    it("Returns an empty batchItemFailures object", async () => {
+    it("Logs an empty processed messages array", async () => {
       const event: SQSEvent = {
         Records: [],
       };
@@ -60,7 +60,7 @@ describe("Dequeue TxMA events", () => {
 
   describe("Given multiple messages are sent in the request", () => {
     describe("Given one out of three messages fails to be processed", () => {
-      it("Logs successfully processed messages and returns failed messages", async () => {
+      it("Logs successfully processed messages", async () => {
         const event: SQSEvent = {
           Records: [
             {
@@ -141,7 +141,7 @@ describe("Dequeue TxMA events", () => {
     })
 
     describe("Given all messages are processed successfully", () => {
-      it("Logs the messageId and event_name for each message returns an empty batchItemFailures object", async () => {
+      it("Logs the messageId and event_name for each message", async () => {
         const event: SQSEvent = {
           Records: [
             {
