@@ -12,15 +12,17 @@ describe("Dequeue TxMA events", () => {
     jest.restoreAllMocks();
   });
 
-  describe("Given there are 0 messages sent in the request", () => {
+  describe("Given there are no messages in the request", () => {
     it("Returns an empty batchItemFailures object", async () => {
       const event: SQSEvent = {
         Records: [],
       };
 
-      const result = await lambdaHandler(event);
+      await lambdaHandler(event)
 
-      expect(result).toEqual({ batchItemFailures: [] })
+      expect(consoleLogSpy).toHaveBeenNthCalledWith(1, "STARTED")
+      expect(consoleLogSpy).toHaveBeenNthCalledWith(2, [])
+      expect(consoleLogSpy).toHaveBeenNthCalledWith(3, "COMPLETED")
     })
   })
 
@@ -119,11 +121,11 @@ describe("Dequeue TxMA events", () => {
         const result = await lambdaHandler(event);
 
         expect(consoleLogSpy).toHaveBeenNthCalledWith(
-          2,
+          3,
           "Failed to process message - messageId: D8B937B7-7E1D-4D37-BD82-C6AED9F7D975"
         )
         expect(consoleLogSpy).toHaveBeenNthCalledWith(
-          3,
+          5,
           [
             {
               messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
@@ -135,9 +137,6 @@ describe("Dequeue TxMA events", () => {
             },
           ]
         );
-        expect(result).toStrictEqual({
-          batchItemFailures: []
-        })
       });
     })
 
@@ -186,7 +185,7 @@ describe("Dequeue TxMA events", () => {
 
         const result = await lambdaHandler(event);
 
-        expect(consoleLogSpy).toHaveBeenNthCalledWith(2, [
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(4, [
           {
             messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
             eventName: "MOCK_EVENT_NAME",
@@ -196,7 +195,6 @@ describe("Dequeue TxMA events", () => {
             eventName: "MOCK_EVENT_NAME_2",
           },
         ]);
-        expect(result).toEqual({ batchItemFailures: [] })
       });
     })
   });
