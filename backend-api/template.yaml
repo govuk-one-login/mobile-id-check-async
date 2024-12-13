@@ -31,7 +31,16 @@ Parameters:
     Type: String
     Default: none
 
+  DeployAlarmsInDev:
+    Description: Set to `true` to deploy alarms in a dev environment
+    Type: String
+    Default: false
+
 Mappings:
+  StaticVariables:
+    urls:
+      WarningAlarmsRunbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4800446694/Alarms+Runbook+Warnings
+      CriticalAlarmsRunbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4799594677/Alarms+Runbook+Alerts
   EnvironmentConfiguration:
     dev:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
@@ -197,6 +206,13 @@ Conditions:
     - !Equals
       - !Ref DevOverrideStsBaseUrl
       - none
+
+  DeployAlarms: !Or
+    - !Not
+      - !Equals
+        - !Ref Environment
+        - dev
+    - !Equals [ !Ref DeployAlarmsInDev, true ]
 
 Globals:
   Function:
@@ -1321,12 +1337,16 @@ Resources:
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
 
-  WellKnown5XXLowThresholdAlarm:    
+  WellKnown5XXLowThresholdAlarm:
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
-      AlarmDescription: "1% or more of requests are failing on the /.well-known/jwks.json endpoint"
-      AlarmName: !Sub "${AWS::StackName}-LowThresholdWellKnown5XXApiGwAlarm"
+      AlarmDescription: !Sub
+        - "1% or more of requests are failing on the /.well-known/jwks.json endpoint. See runbook: ${RunbookUrl}"
+        - RunbookUrl:
+            !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+      AlarmName: !Sub "${AWS::StackName}-low-threshold-well-known-5xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       OKActions:
@@ -1381,12 +1401,16 @@ Resources:
           ReturnData: false
           Expression: (errorSum5XX/invocations) * 100
 
-  WellKnown5XXHighThresholdAlarm:    
+  WellKnown5XXHighThresholdAlarm:
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
-      AlarmDescription: "80% or more of requests are failing on the /.well-known/jwks.json endpoint"
-      AlarmName: !Sub "${AWS::StackName}-HighThresholdWellKnown5XXApiGwAlarm"
+      AlarmDescription: !Sub
+        - "80% or more of requests are failing on the /.well-known/jwks.json endpoint. See runbook: ${RunbookUrl}"
+        - RunbookUrl:
+            !FindInMap [StaticVariables, urls, CriticalAlarmsRunbook]
+      AlarmName: !Sub "${AWS::StackName}-high-threshold-well-known-5xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       OKActions:
@@ -1434,6 +1458,262 @@ Resources:
                   Value: !Ref Environment
                 - Name: Resource
                   Value: /.well-known/jwks.json
+            Period: 60
+            Stat: Sum
+        - Id: errorPercentage5XX
+          Label: "Number of 5XX errors returned as a percentage"
+          ReturnData: false
+          Expression: (errorSum5XX/invocations) * 100
+
+  AsyncToken4XXLowThresholdAlarm:
+    Condition: DeployAlarms
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmDescription: !Sub
+        - "1% or more of requests are failing on the /async/token endpoint with a 4XX error. See runbook: ${RunbookUrl}"
+        - RunbookUrl:
+            !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+      AlarmName: !Sub "${AWS::StackName}-low-threshold-async-token-4xx-api-gw"
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      TreatMissingData: notBreaching
+      Threshold: 1
+      Metrics:
+        - Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+          Expression: IF((invocations>=4) && (errorSum4XX>=2),errorPercentage4XX,0)
+        - Id: invocations
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: Count
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-private-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/token
+            Period: 60
+            Stat: Sum
+        - Id: errorSum4XX
+          Label: "Number of 4XX errors"
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: 4XXError
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-private-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/token
+            Period: 60
+            Stat: Sum
+        - Id: errorPercentage4XX
+          Label: "Number of 4XX errors returned as a percentage"
+          ReturnData: false
+          Expression: (errorSum4XX/invocations) * 100
+
+  AsyncToken4XXHighThresholdAlarm:
+    Condition: DeployAlarms
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmDescription: !Sub
+        - "80% or more of requests are failing on the /async/token endpoint with a 4XX error. See runbook: ${RunbookUrl}"
+        - RunbookUrl:
+            !FindInMap [StaticVariables, urls, CriticalAlarmsRunbook]
+      AlarmName: !Sub "${AWS::StackName}-high-threshold-async-token-4xx-api-gw"
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      TreatMissingData: notBreaching
+      Threshold: 80
+      Metrics:
+        - Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+          Expression: IF(invocations>=10,errorPercentage4XX,0)
+        - Id: invocations
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: Count
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-private-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/token
+            Period: 60
+            Stat: Sum
+        - Id: errorSum4XX
+          Label: "Number of 4XX errors"
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: 4XXError
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-private-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/token
+            Period: 60
+            Stat: Sum
+        - Id: errorPercentage4XX
+          Label: "Number of 4XX errors returned as a percentage"
+          ReturnData: false
+          Expression: (errorSum4XX/invocations) * 100
+
+  AsyncToken5XXLowThresholdAlarm:
+    Condition: DeployAlarms
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmDescription: !Sub
+        - "1% or more of requests are failing on the /async/token endpoint with a 5XX error. See runbook: ${RunbookUrl}"
+        - RunbookUrl:
+            !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+      AlarmName: !Sub "${AWS::StackName}-low-threshold-async-token-5xx-api-gw"
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      TreatMissingData: notBreaching
+      Threshold: 1
+      Metrics:
+        - Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+          Expression: IF((invocations>=4) && (errorSum5XX>=2),errorPercentage5XX,0)
+        - Id: invocations
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: Count
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-private-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/token
+            Period: 60
+            Stat: Sum
+        - Id: errorSum5XX
+          Label: "Number of 5XX errors"
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: 5XXError
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-private-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/token
+            Period: 60
+            Stat: Sum
+        - Id: errorPercentage5XX
+          Label: "Number of 5XX errors returned as a percentage"
+          ReturnData: false
+          Expression: (errorSum5XX/invocations) * 100
+
+  AsyncToken5XXHighThresholdAlarm:
+    Condition: DeployAlarms
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmDescription: !Sub
+        - "80% or more of requests are failing on the /async/token endpoint with a 5XX error. See runbook: ${RunbookUrl}"
+        - RunbookUrl:
+            !FindInMap [StaticVariables, urls, CriticalAlarmsRunbook]
+      AlarmName: !Sub "${AWS::StackName}-high-threshold-async-token-5xx-api-gw"
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      TreatMissingData: notBreaching
+      Threshold: 80
+      Metrics:
+        - Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+          Expression: IF(invocations>=10,errorPercentage5XX,0)
+        - Id: invocations
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: Count
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-private-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/token
+            Period: 60
+            Stat: Sum
+        - Id: errorSum5XX
+          Label: "Number of 5XX errors"
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: 5XXError
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-private-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/token
             Period: 60
             Stat: Sum
         - Id: errorPercentage5XX
