@@ -1339,7 +1339,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmDescription: "1% or more of requests are failing on the /.well-known/jwks.json endpoint. See runbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4800446694/Alarms+Runbook+Warnings"
-      AlarmName: !Sub "${AWS::StackName}-LowThresholdWellKnown5XXApiGwAlarm"
+      AlarmName: !Sub "${AWS::StackName}-low-threshold-well-known-5xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       OKActions:
@@ -1400,7 +1400,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmDescription: "80% or more of requests are failing on the /.well-known/jwks.json endpoint. See runbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4799594677/Alarms+Runbook+Alerts"
-      AlarmName: !Sub "${AWS::StackName}-HighThresholdWellKnown5XXApiGwAlarm"
+      AlarmName: !Sub "${AWS::StackName}-high-threshold-well-known-5xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       OKActions:
@@ -1461,7 +1461,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmDescription: "1% or more of requests are failing on the /async/token endpoint with a 4XX error. See runbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4800446694/Alarms+Runbook+Warnings"
-      AlarmName: !Sub "${AWS::StackName}-LowThresholdAsyncToken4XXApiGwAlarm"
+      AlarmName: !Sub "${AWS::StackName}-low-threshold-async-token-4xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       OKActions:
@@ -1522,7 +1522,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmDescription: "80% or more of requests are failing on the /async/token endpoint with a 4XX error. See runbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4799594677/Alarms+Runbook+Alerts"
-      AlarmName: !Sub "${AWS::StackName}-HighThresholdAsyncToken4XXApiGwAlarm"
+      AlarmName: !Sub "${AWS::StackName}-high-threshold-async-token-4xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       OKActions:
@@ -1583,7 +1583,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmDescription: "1% or more of requests are failing on the /async/token endpoint with a 5XX error. See runbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4800446694/Alarms+Runbook+Warnings"
-      AlarmName: !Sub "${AWS::StackName}-LowThresholdAsyncToken5XXApiGwAlarm"
+      AlarmName: !Sub "${AWS::StackName}-low-threshold-async-token-5xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       OKActions:
@@ -1644,7 +1644,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmDescription: "80% or more of requests are failing on the /async/token endpoint with a 5XX error. See runbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4799594677/Alarms+Runbook+Alerts"
-      AlarmName: !Sub "${AWS::StackName}-HighThresholdAsyncToken5XXApiGwAlarm"
+      AlarmName: !Sub "${AWS::StackName}-high-threshold-async-token-5xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       OKActions:

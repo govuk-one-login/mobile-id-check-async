@@ -140,8 +140,8 @@ describe("Backend application infrastructure", () => {
     test("All critical alerts should have runbooks defined", () => {
       // to be updated only when a runbook exists for an alarm
       const runbooksByAlarm: Record<string, boolean> = {
-        HighThresholdWellKnown5XXApiGwAlarm: false,
-        LowThresholdWellKnown5XXApiGwAlarm: false,
+        "high-threshold-well-known-5xx-api-gw": false,
+        "low-threshold-well-known-5xx-api-gw": false,
       };
 
       const alarms = template.findResources("AWS::CloudWatch::Alarm");
@@ -178,12 +178,12 @@ describe("Backend application infrastructure", () => {
 
     describe("Warning alarms", () => {
       it.each([
-        ["HighThresholdWellKnown5XXApiGwAlarm"],
-        ["LowThresholdWellKnown5XXApiGwAlarm"],
-        ["HighThresholdAsyncToken5XXApiGwAlarm"],
-        ["LowThresholdAsyncToken5XXApiGwAlarm"],
-        ["HighThresholdAsyncToken4XXApiGwAlarm"],
-        ["LowThresholdAsyncToken4XXApiGwAlarm"],
+        ["high-threshold-well-known-5xx-api-gw"],
+        ["low-threshold-well-known-5xx-api-gw"],
+        ["high-threshold-async-token-5xx-api-gw"],
+        ["low-threshold-async-token-5xx-api-gw"],
+        ["high-threshold-async-token-4xx-api-gw"],
+        ["low-threshold-async-token-4xx-api-gw"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
