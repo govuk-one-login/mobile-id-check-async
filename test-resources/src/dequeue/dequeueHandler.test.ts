@@ -20,6 +20,7 @@ describe("Dequeue TxMA events", () => {
 
       await lambdaHandler(event)
 
+      expect(consoleLogSpy).toHaveBeenCalledTimes(3)
       expect(consoleLogSpy).toHaveBeenNthCalledWith(1, "STARTED")
       expect(consoleLogSpy).toHaveBeenNthCalledWith(2, [])
       expect(consoleLogSpy).toHaveBeenNthCalledWith(3, "COMPLETED")
@@ -51,10 +52,12 @@ describe("Dequeue TxMA events", () => {
 
       await lambdaHandler(event);
 
+      expect(consoleLogSpy).toHaveBeenCalledTimes(4)
       expect(consoleLogSpy).toHaveBeenNthCalledWith(
         2,
         "Failed to process message - messageId: D8B937B7-7E1D-4D37-BD82-C6AED9F7D975"
       );
+      expect(consoleLogSpy).toHaveBeenNthCalledWith(3, []);
     })
   })
 
@@ -120,6 +123,7 @@ describe("Dequeue TxMA events", () => {
 
         const result = await lambdaHandler(event);
 
+        expect(consoleLogSpy).toHaveBeenCalledTimes(6)
         expect(consoleLogSpy).toHaveBeenNthCalledWith(
           3,
           "Failed to process message - messageId: D8B937B7-7E1D-4D37-BD82-C6AED9F7D975"
@@ -185,6 +189,7 @@ describe("Dequeue TxMA events", () => {
 
         const result = await lambdaHandler(event);
 
+        expect(consoleLogSpy).toHaveBeenCalledTimes(5)
         expect(consoleLogSpy).toHaveBeenNthCalledWith(4, [
           {
             messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
