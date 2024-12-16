@@ -304,6 +304,20 @@ Resources:
           - PRIVATE
       CertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN}}'
       SecurityPolicy: TLS_1_2
+      Policy:
+        Statement:
+            - Action: 'execute-api:Invoke'
+              Effect: Allow
+              Principal: '*'
+              Resource: 'execute-api:/*'
+            - Action: 'execute-api:Invoke'
+              Condition:
+                StringNotEquals:
+                  'aws:SourceVpce': vpce-0825f978898f57283 # hardcoded
+              Effect: Deny
+              Principal: '*'
+              Resource: 'execute-api:/*'
+        Version: 2012-10-17
     
   PrivateApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMappingV2
@@ -318,7 +332,7 @@ Resources:
     DependsOn: PrivateApiDomainName
     Properties:
       DomainNameArn: !GetAtt PrivateApiDomainName.DomainNameArn
-      AccessAssociationSource: vpce-0825f978898f57283
+      AccessAssociationSource: vpce-0825f978898f57283 # hardcoded
       AccessAssociationSourceType: VPCE
     
   PrivateApiRecordSet:
@@ -332,10 +346,10 @@ Resources:
             - !Ref Environment
             - BaseDns
       Type: A
-      HostedZoneId: !ImportValue PublicHostedZoneId #Private hosted zone needed here
+      HostedZoneId: Z093122231WWEIPRH1ARO # hardcoded
       AliasTarget:
-        DNSName: !Sub ${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
-        HostedZoneId: !ImportValue PublicHostedZoneId #Private hosted zone needed here
+        DNSName: vpce-0825f978898f57283-zlowa17c.execute-api.eu-west-2.vpce.amazonaws.com # hardcoded
+        HostedZoneId: Z7K1066E3PUKB # hardcoded
   
       ### Token lambda
   AsyncTokenFunction:
@@ -1499,8 +1513,8 @@ Outputs:
     Value: !Sub https://${ProxyApiDomainName}
 
   PrivateApiUrl:
-    Description: Private API Gateway base URL
-    Value: !Sub https://${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
+    Description: Private API Gateway Pretty URL
+    Value: !Sub https://${PrivateApiDomainName}/${Environment}
 
   StsMockApiUrl:
     Description: STS Mock API Gateway base URL
