@@ -292,14 +292,15 @@ paths:
                     }
               schema:
                 $ref: "#/components/schemas/ServerError"
-# Created with mock integration, This needs to be replaced with lambda proxy integration when available
       x-amazon-apigateway-integration:
         requestTemplates:
           application/json:
             statusCode: 200
         httpMethod: "POST"
         passthroughBehavior: "when_no_match"
-        type: "mock"
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AsyncBiometricTokenFunction}:live/invocations"
+        type: "aws_proxy"
 
   /async/finishBiometricSession:
     post:
