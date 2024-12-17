@@ -481,6 +481,11 @@ describe("Backend application infrastructure", () => {
           ],
         });
       });
+
+      test("Global memory size is set to 512MB", () => {
+        const globalMemorySize = template.toJSON().Globals.Function.MemorySize;
+        expect(globalMemorySize).toStrictEqual(512);
+      });
     });
 
     test("All lambdas have a FunctionName defined", () => {
