@@ -217,6 +217,7 @@ Conditions:
 Globals:
   Function:
     Timeout: 5
+    MemorySize: 512
     ReservedConcurrentExecutions: !FindInMap
       - Lambda
       - !Ref Environment
