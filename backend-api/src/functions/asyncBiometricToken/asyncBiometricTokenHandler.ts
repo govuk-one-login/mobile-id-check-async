@@ -7,7 +7,7 @@ import {
   dependencies,
   IAsyncBiometricTokenDependencies,
 } from "./handlerDependencies";
-import { notImplementedResponse } from "../commonResponses/commonResponses";
+import { notImplementedResponse } from "../common/lambdaResponses";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
