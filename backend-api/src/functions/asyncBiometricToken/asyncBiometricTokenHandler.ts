@@ -21,6 +21,8 @@ export async function lambdaHandlerConstructor(
   return notImplementedResponse;
 }
 
+export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
+
 const notImplementedResponse: APIGatewayProxyResult = {
   headers: {
     "Cache-Control": "no-store",
@@ -33,4 +35,4 @@ const notImplementedResponse: APIGatewayProxyResult = {
   body: JSON.stringify({ error: "Not Implemented" }),
 };
 
-export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
+
