@@ -6,7 +6,6 @@ import { lambdaHandlerConstructor } from "./asyncBiometricTokenHandler";
 import { registeredLogs } from "./registeredLogs";
 
 describe("Async Biometric Token", () => {
-  beforeEach(() => {});
   describe("Given a request is made", () => {
     it("Returns 501 Not Implemented response", async () => {
       const mockLoggingAdapter = new MockLoggingAdapter();
