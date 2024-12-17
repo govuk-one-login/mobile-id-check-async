@@ -1,5 +1,4 @@
-import { importJWK, SignJWT } from "jose";
-import jose from "node-jose";
+import { base64url, importJWK, SignJWT } from "jose";
 
 export class MockJWTBuilder {
   private jwt: IMockJwt = {
@@ -89,14 +88,10 @@ export class MockJWTBuilder {
   };
 
   getEncodedJwt = () => {
-    const header = jose.util.base64url.encode(
-      Buffer.from(JSON.stringify(this.jwt.header)),
-      "utf8",
-    );
-    const payload = jose.util.base64url.encode(
-      Buffer.from(JSON.stringify(this.jwt.payload)),
-      "utf8",
-    );
+    const header = base64url.encode(JSON.stringify(this.jwt.header));
+
+    const payload = base64url.encode(JSON.stringify(this.jwt.payload));
+
     return `${header}.${payload}.${this.jwt.signature}`;
   };
 }
