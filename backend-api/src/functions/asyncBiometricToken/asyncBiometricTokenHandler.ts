@@ -7,6 +7,7 @@ import {
   dependencies,
   IAsyncBiometricTokenDependencies,
 } from "./handlerDependencies";
+import { notImplementedResponse } from "./responses";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
@@ -22,17 +23,3 @@ export async function lambdaHandlerConstructor(
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
-
-const notImplementedResponse: APIGatewayProxyResult = {
-  headers: {
-    "Cache-Control": "no-store",
-    "Content-Type": "application/json",
-    "Strict-Transport-Security": "max-age=31536000",
-    "X-Content-Type-Options": " nosniff",
-    "X-Frame-Options": "DENY",
-  },
-  statusCode: 501,
-  body: JSON.stringify({ error: "Not Implemented" }),
-};
-
-
