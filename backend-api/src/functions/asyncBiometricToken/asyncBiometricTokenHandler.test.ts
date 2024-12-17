@@ -7,7 +7,7 @@ import { registeredLogs } from "./registeredLogs";
 
 describe("Async Biometric Token", () => {
   describe("Given a request is made", () => {
-    it("Returns 501 Not Implemented response", async () => {
+    it("Logs and returns 501 Not Implemented response", async () => {
       const mockLoggingAdapter = new MockLoggingAdapter();
       const dependencies = {
         logger: () => new Logger(mockLoggingAdapter, registeredLogs),
