@@ -306,6 +306,67 @@ Resources:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
       RetentionInDays: 30
 
+  PrivateApiDomainName:
+    Type: AWS::ApiGateway::DomainNameV2
+    Properties:
+      DomainName: !Sub
+        - private-${AWS::StackName}.${DNS_RECORD}
+        - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      EndpointConfiguration:
+        Types:
+          - PRIVATE
+      CertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN}}'
+      SecurityPolicy: TLS_1_2
+      Policy:
+        Statement:
+            - Action: 'execute-api:Invoke'
+              Effect: Allow
+              Principal: '*'
+              Resource: 'execute-api:/*'
+            - Action: 'execute-api:Invoke'
+              Condition:
+                StringNotEquals:
+                  'aws:SourceVpce': vpce-0825f978898f57283 # hardcoded
+              Effect: Deny
+              Principal: '*'
+              Resource: 'execute-api:/*'
+        Version: 2012-10-17
+    
+  PrivateApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMappingV2
+    DependsOn: PrivateApiDomainName
+    Properties:
+      DomainNameArn: !GetAtt PrivateApiDomainName.DomainNameArn
+      RestApiId: !Ref PrivateApi
+      Stage: !Ref PrivateApi.Stage
+
+  PrivateApiDomainNameAccessAssociation: 
+    Type: AWS::ApiGateway::DomainNameAccessAssociation
+    DependsOn: PrivateApiDomainName
+    Properties:
+      DomainNameArn: !GetAtt PrivateApiDomainName.DomainNameArn
+      AccessAssociationSource: vpce-0825f978898f57283 # hardcoded
+      AccessAssociationSourceType: VPCE
+    
+  PrivateApiRecordSet:
+    Type: AWS::Route53::RecordSet
+    DependsOn: PrivateApiDomainName
+    Properties:
+      Name: !Sub
+        - private-${AWS::StackName}.${DNS_RECORD}
+        - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      Type: A
+      HostedZoneId: Z093122231WWEIPRH1ARO # hardcoded
+      AliasTarget:
+        DNSName: vpce-0825f978898f57283-zlowa17c.execute-api.eu-west-2.vpce.amazonaws.com # hardcoded
+        HostedZoneId: Z7K1066E3PUKB # hardcoded
+  
       ### Token lambda
   AsyncTokenFunction:
     Type: AWS::Serverless::Function
@@ -1732,8 +1793,8 @@ Outputs:
     Value: !Sub https://${ProxyApiDomainName}
 
   PrivateApiUrl:
-    Description: Private API Gateway base URL
-    Value: !Sub https://${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
+    Description: Private API Gateway Pretty URL
+    Value: !Sub https://${PrivateApiDomainName}/${Environment}
 
   StsMockApiUrl:
     Description: STS Mock API Gateway base URL
