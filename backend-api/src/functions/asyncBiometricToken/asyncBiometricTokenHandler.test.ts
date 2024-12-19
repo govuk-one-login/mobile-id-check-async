@@ -36,7 +36,7 @@ describe("Async Biometric Token", () => {
         );
 
         expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "REQUEST_BODY_INVALID",
+          "BIOMETRIC_TOKEN_REQUEST_BODY_INVALID",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage:

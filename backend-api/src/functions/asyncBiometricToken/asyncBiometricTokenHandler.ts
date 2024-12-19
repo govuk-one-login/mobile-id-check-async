@@ -24,7 +24,7 @@ export async function lambdaHandlerConstructor(
 
   const validateRequestBodyResult = validateRequestBody(event.body);
   if (validateRequestBodyResult.isError) {
-    logger.log("REQUEST_BODY_INVALID", {
+    logger.log("BIOMETRIC_TOKEN_REQUEST_BODY_INVALID", {
       errorMessage: validateRequestBodyResult.value.errorMessage,
     });
     return badRequestResponse("invalid_request", "Request body invalid");
