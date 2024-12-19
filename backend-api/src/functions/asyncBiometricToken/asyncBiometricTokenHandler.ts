@@ -78,7 +78,26 @@ function validateRequestBody (body: string | null): Result<null> {
     })
   }
 
+  if (parsedBody.documentType == null) {
+    return errorResult({
+      errorMessage: "documentType in request body is either null or undefined",
+      errorCategory: "CLIENT_ERROR"
+    })
+  }
 
+  if (typeof parsedBody.documentType !== 'string') {
+    return errorResult({
+      errorMessage: "documentType in request body is not of type string",
+      errorCategory: "CLIENT_ERROR"
+    })
+  }
+
+  if (parsedBody.documentType === "") {
+    return errorResult({
+      errorMessage: "documentType in request body is an empty string",
+      errorCategory: "CLIENT_ERROR"
+    })
+  }
 
   return successResult(null)
 }
