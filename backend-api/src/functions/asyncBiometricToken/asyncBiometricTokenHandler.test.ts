@@ -1,4 +1,5 @@
 
+import { Context } from "aws-lambda";
 import { Logger } from "../services/logging/logger";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import { buildLambdaContext } from "../testUtils/mockContext";
@@ -10,17 +11,18 @@ import { MessageName, registeredLogs } from "./registeredLogs";
 describe("Async Biometric Token", () => {
   let dependencies: IAsyncBiometricTokenDependencies
   let mockLoggingAdapter: MockLoggingAdapter<MessageName>;
+  let context: Context
 
   beforeEach(() => {
     mockLoggingAdapter = new MockLoggingAdapter();
     dependencies = {
       logger: () => new Logger(mockLoggingAdapter, registeredLogs),
     };
+    context = buildLambdaContext();
   })
   describe("Request body validation", () => {
     describe("Given request body is not present", () => {
       it("Logs and returns 400 Bad Request response", async () => {
-        const context = buildLambdaContext();
         const request = buildRequest({ body: undefined });
 
         const result = await lambdaHandlerConstructor(
@@ -48,7 +50,6 @@ describe("Async Biometric Token", () => {
 
     describe("Given request body cannot be parsed as JSON", () => {
       it("Logs and returns 400 Bad Request response", async () => {
-        const context = buildLambdaContext();
         const request = buildRequest({ body: 'foo' });
 
         const result = await lambdaHandlerConstructor(
@@ -79,7 +80,6 @@ describe("Async Biometric Token", () => {
         const request = buildRequest({
           body: JSON.stringify({})
         })
-        const context = buildLambdaContext();
 
         const result = await lambdaHandlerConstructor(
           dependencies,
@@ -109,7 +109,6 @@ describe("Async Biometric Token", () => {
         const request = buildRequest({
           body: JSON.stringify({ "sessionId": 123 })
         })
-        const context = buildLambdaContext();
 
         const result = await lambdaHandlerConstructor(
           dependencies,
@@ -139,7 +138,6 @@ describe("Async Biometric Token", () => {
         const request = buildRequest({
           body: JSON.stringify({ "sessionId": "" })
         })
-        const context = buildLambdaContext();
 
         const result = await lambdaHandlerConstructor(
           dependencies,
@@ -169,7 +167,6 @@ describe("Async Biometric Token", () => {
         const request = buildRequest({
           body: JSON.stringify({ "sessionId": "58f4281d-d988-49ce-9586-6ef70a2be0b4" })
         })
-        const context = buildLambdaContext();
 
         const result = await lambdaHandlerConstructor(
           dependencies,
@@ -202,7 +199,6 @@ describe("Async Biometric Token", () => {
             "documentType": 123,
           })
         })
-        const context = buildLambdaContext();
 
         const result = await lambdaHandlerConstructor(
           dependencies,
@@ -235,7 +231,6 @@ describe("Async Biometric Token", () => {
             "documentType": "",
           })
         })
-        const context = buildLambdaContext();
 
         const result = await lambdaHandlerConstructor(
           dependencies,
@@ -268,7 +263,6 @@ describe("Async Biometric Token", () => {
             "documentType": "BUS_PASS",
           })
         })
-        const context = buildLambdaContext();
 
         const result = await lambdaHandlerConstructor(
           dependencies,
