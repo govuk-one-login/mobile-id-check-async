@@ -19,10 +19,9 @@ export async function lambdaHandlerConstructor(
   logger.addContext(context);
   logger.log("STARTED");
 
-  const validRequestBodyOrError = validateRequestBody(event.body)
-
-  if (validRequestBodyOrError.isError) {
-    const errorMessage = validRequestBodyOrError.value.errorMessage
+  const parsedRequestBodyOrError = getValidParsedRequestBody(event.body)
+  if (parsedRequestBodyOrError.isError) {
+    const errorMessage = parsedRequestBodyOrError.value.errorMessage
 
     logger.log("REQUEST_BODY_INVALID", {
       errorMessage
@@ -32,6 +31,7 @@ export async function lambdaHandlerConstructor(
       errorMessage
     )
   }
+  // const { sessionId, documentType } = parsedRequestBodyOrError.value
 
   logger.log("COMPLETED");
   return notImplementedResponse;
@@ -39,7 +39,7 @@ export async function lambdaHandlerConstructor(
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
 
-function validateRequestBody (body: string | null): Result<IAsyncBiometricTokenValidParsedRequestBody> {
+function getValidParsedRequestBody (body: string | null): Result<IAsyncBiometricTokenValidParsedRequestBody> {
   if (body == null) {
     return errorResult({
       errorMessage: "Request body is either null or undefined",
