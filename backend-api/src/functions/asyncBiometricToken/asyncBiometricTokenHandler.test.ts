@@ -33,14 +33,14 @@ describe("Async Biometric Token", () => {
           "REQUEST_BODY_INVALID",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Request body is either null or undefined",
+          errorMessage: "Request body is either null or undefined. Request body: undefined",
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "Request body is either null or undefined",
+            error_description: "Request body invalid",
           }),
         });
       })
@@ -61,14 +61,14 @@ describe("Async Biometric Token", () => {
           "REQUEST_BODY_INVALID",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Request body could not be parsed as JSON",
+          errorMessage: `Request body could not be parsed as JSON. SyntaxError: Unexpected token 'o', "foo" is not valid JSON`
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "Request body could not be parsed as JSON",
+            error_description: "Request body invalid",
           }),
         });
       })
@@ -91,14 +91,14 @@ describe("Async Biometric Token", () => {
           "REQUEST_BODY_INVALID",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "sessionId in request body is either null or undefined",
+          errorMessage: "sessionId in request body is either null or undefined. sessionId: undefined",
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "sessionId in request body is either null or undefined",
+            error_description: "Request body invalid",
           }),
         });
       })
@@ -121,14 +121,14 @@ describe("Async Biometric Token", () => {
           "REQUEST_BODY_INVALID",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "sessionId in request body is not of type string",
+          errorMessage: "sessionId in request body is not of type string. sessionId: 123",
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "sessionId in request body is not of type string",
+            error_description: "Request body invalid",
           }),
         });
       })
@@ -151,14 +151,14 @@ describe("Async Biometric Token", () => {
           "REQUEST_BODY_INVALID",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "sessionId in request body is an empty string",
+          errorMessage: "sessionId in request body is an empty string. sessionId: ",
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "sessionId in request body is an empty string",
+            error_description: "Request body invalid",
           }),
         });
       })
@@ -181,14 +181,14 @@ describe("Async Biometric Token", () => {
           "REQUEST_BODY_INVALID",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "documentType in request body is either null or undefined",
+          errorMessage: "documentType in request body is either null or undefined. documentType: undefined",
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "documentType in request body is either null or undefined",
+            error_description: "Request body invalid",
           }),
         });
       })
@@ -214,14 +214,14 @@ describe("Async Biometric Token", () => {
           "REQUEST_BODY_INVALID",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "documentType in request body is not of type string",
+          errorMessage: "documentType in request body is not of type string. documentType: 123",
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "documentType in request body is not of type string",
+            error_description: "Request body invalid",
           }),
         });
       })
@@ -247,14 +247,14 @@ describe("Async Biometric Token", () => {
           "REQUEST_BODY_INVALID",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "documentType in request body is an empty string",
+          errorMessage: "documentType in request body is an empty string. documentType: ",
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "documentType in request body is an empty string",
+            error_description: "Request body invalid",
           }),
         });
       })
@@ -280,14 +280,14 @@ describe("Async Biometric Token", () => {
           "REQUEST_BODY_INVALID",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "documentType in request body is invalid",
+          errorMessage: "documentType in request body is invalid. documentType: BUS_PASS",
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "documentType in request body is invalid",
+            error_description: "Request body invalid",
           }),
         });
       })
