@@ -1,17 +1,53 @@
+
 import { Logger } from "../services/logging/logger";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { buildRequest } from "../testUtils/mockRequest";
 import { lambdaHandlerConstructor } from "./asyncBiometricTokenHandler";
-import { registeredLogs } from "./registeredLogs";
+import { IAsyncBiometricTokenDependencies } from "./handlerDependencies";
+import { MessageName, registeredLogs } from "./registeredLogs";
 
 describe("Async Biometric Token", () => {
+  let dependencies: IAsyncBiometricTokenDependencies
+  let mockLoggingAdapter: MockLoggingAdapter<MessageName>;
+
+  beforeEach(() => {
+    mockLoggingAdapter = new MockLoggingAdapter();
+    dependencies = {
+      logger: () => new Logger(mockLoggingAdapter, registeredLogs),
+    };
+  })
+  describe("Request body validation", () => {
+    describe("Given sessionId in request body is undefined", () => {
+      it("Logs and returns 400 Bad Request response", async () => {
+        const event = buildRequest()
+        const context = buildLambdaContext();
+
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+          context,
+        );
+
+        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+          "REQUEST_BODY_SESSION_ID_INVALID",
+        );
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: "sessionId in request body is either null or undefined",
+        });
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description: "sessionId in request body is either null or undefined",
+          }),
+        });
+      })
+    })
+  })
   describe("Given a request is made", () => {
     it("Logs and returns 501 Not Implemented response", async () => {
-      const mockLoggingAdapter = new MockLoggingAdapter();
-      const dependencies = {
-        logger: () => new Logger(mockLoggingAdapter, registeredLogs),
-      };
       const event = buildRequest();
       const context = buildLambdaContext();
 
