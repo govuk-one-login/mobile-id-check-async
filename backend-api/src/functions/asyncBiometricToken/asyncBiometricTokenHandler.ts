@@ -11,7 +11,7 @@ import {
   badRequestResponse,
   notImplementedResponse,
 } from "../common/lambdaResponses";
-import { getParsedRequestBody } from "./getParsedRequestBody/getParsedRequestBody";
+import { validateRequestBody } from "./validateRequestBody/validateRequestBody";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
@@ -22,10 +22,10 @@ export async function lambdaHandlerConstructor(
   logger.addContext(context);
   logger.log("STARTED");
 
-  const parsedRequestBodyOrError = getParsedRequestBody(event.body);
-  if (parsedRequestBodyOrError.isError) {
+  const validateRequestBodyResult = validateRequestBody(event.body);
+  if (validateRequestBodyResult.isError) {
     logger.log("REQUEST_BODY_INVALID", {
-      errorMessage: parsedRequestBodyOrError.value.errorMessage,
+      errorMessage: validateRequestBodyResult.value.errorMessage,
     });
     return badRequestResponse("invalid_request", "Request body invalid");
   }

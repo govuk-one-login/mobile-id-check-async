@@ -1,6 +1,6 @@
 import { errorResult, Result, successResult } from "../../utils/result";
 
-export function getParsedRequestBody(
+export function validateRequestBody(
   body: string | null,
 ): Result<IAsyncBiometricTokenValidParsedRequestBody> {
   if (body == null) {
