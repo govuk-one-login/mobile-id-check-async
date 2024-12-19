@@ -11,6 +11,7 @@ describe("Async Biometric Token", () => {
   let dependencies: IAsyncBiometricTokenDependencies;
   let mockLoggingAdapter: MockLoggingAdapter<MessageName>;
   let context: Context;
+  const sessionId = "58f4281d-d988-49ce-9586-6ef70a2be0b4";
 
   beforeEach(() => {
     mockLoggingAdapter = new MockLoggingAdapter();
@@ -24,7 +25,7 @@ describe("Async Biometric Token", () => {
       it("Logs and returns 400 Bad Request response", async () => {
         const request = buildRequest({
           body: JSON.stringify({
-            sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+            sessionId,
           }),
         });
 
@@ -57,7 +58,7 @@ describe("Async Biometric Token", () => {
     it("Logs and returns 501 Not Implemented response", async () => {
       const request = buildRequest({
         body: JSON.stringify({
-          sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+          sessionId,
           documentType: "NFC_PASSPORT",
         }),
       });
