@@ -100,13 +100,7 @@ function validateRequestBody (body: string | null): Result<IAsyncBiometricTokenV
     })
   }
 
-  const allowedDocumentTypes = [
-    "NFC_PASSPORT",
-    "UK_DRIVING_LICENCE",
-    "UK_NFC_BRP"
-  ]
-
-  if (!allowedDocumentTypes.includes(documentType)) {
+  if (!isAllowableDocument(documentType)) {
     return errorResult({
       errorMessage: "documentType in request body is invalid",
       errorCategory: "CLIENT_ERROR"
@@ -121,5 +115,13 @@ function validateRequestBody (body: string | null): Result<IAsyncBiometricTokenV
 
 interface IAsyncBiometricTokenValidParsedRequestBody {
   sessionId: string
-  documentType: string
+  documentType: AllowableDocuments
+}
+
+type AllowableDocuments = "NFC_PASSPORT" | "UK_DRIVING_LICENCE" | "UK_NFC_BRP"
+
+function isAllowableDocument(documentType: string): documentType is AllowableDocuments {
+  return documentType === "NFC_PASSPORT"
+  || documentType === "UK_DRIVING_LICENCE"
+  || documentType === "UK_NFC_BRP"
 }
