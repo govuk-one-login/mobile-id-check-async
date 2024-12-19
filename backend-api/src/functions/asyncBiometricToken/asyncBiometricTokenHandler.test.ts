@@ -26,6 +26,7 @@ describe("Async Biometric Token", () => {
         const request = buildRequest({
           body: JSON.stringify({
             sessionId,
+            documentType: "BUS_PASS",
           }),
         });
 
@@ -40,7 +41,7 @@ describe("Async Biometric Token", () => {
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage:
-            "documentType in request body is either null or undefined. documentType: undefined",
+            "documentType in request body is invalid. documentType: BUS_PASS",
         });
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
