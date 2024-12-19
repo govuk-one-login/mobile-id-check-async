@@ -259,6 +259,39 @@ describe("Async Biometric Token", () => {
         });
       })
     })
+
+    describe("Given documentType is an invalid document type", () => {
+      it("Logs and returns 400 Bad Request response", async () => {
+        const event = buildRequest({
+          body: JSON.stringify({
+            "sessionId": "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+            "documentType": "BUS_PASS",
+          })
+        })
+        const context = buildLambdaContext();
+
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+          context,
+        );
+
+        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+          "REQUEST_BODY_INVALID",
+        );
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: "documentType in request body is invalid",
+        });
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description: "documentType in request body is invalid",
+          }),
+        });
+      })
+    })
   })
   describe("Given a request is made", () => {
     it("Logs and returns 501 Not Implemented response", async () => {

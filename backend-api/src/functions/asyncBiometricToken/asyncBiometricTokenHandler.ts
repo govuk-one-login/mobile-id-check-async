@@ -99,5 +99,18 @@ function validateRequestBody (body: string | null): Result<null> {
     })
   }
 
+  const allowedDocumentTypes = [
+    "NFC_PASSPORT",
+    "UK_DRIVING_LICENCE",
+    "UK_NFC_BRP"
+  ]
+
+  if (!allowedDocumentTypes.includes(parsedBody.documentType)) {
+    return errorResult({
+      errorMessage: "documentType in request body is invalid",
+      errorCategory: "CLIENT_ERROR"
+    })
+  }
+
   return successResult(null)
 }
