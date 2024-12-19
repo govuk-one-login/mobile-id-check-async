@@ -47,5 +47,14 @@ function validateRequestBody (body: string | null): Result<null> {
     })
   }
 
+  try {
+    JSON.parse(body)
+  } catch {
+    return errorResult({
+      errorMessage: "Request body could not be parsed as JSON",
+      errorCategory: "CLIENT_ERROR"
+    })
+  }
+
   return successResult(null)
 }

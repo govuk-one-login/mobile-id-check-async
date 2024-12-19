@@ -46,9 +46,39 @@ describe("Async Biometric Token", () => {
       })
     })
 
+    describe("Given request body cannot be parsed as JSON", () => {
+      it("Logs and returns 400 Bad Request response", async () => {
+        const context = buildLambdaContext();
+        const event = buildRequest({ body: 'foo' });
+
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+          context,
+        );
+
+        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+          "REQUEST_BODY_INVALID",
+        );
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: "Request body could not be parsed as JSON",
+        });
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description: "Request body could not be parsed as JSON",
+          }),
+        });
+      })
+    })
+
     describe("Given sessionId is not present in request body", () => {
       it("Logs and returns 400 Bad Request response", async () => {
-        const event = buildRequest()
+        const event = buildRequest({
+          body: JSON.stringify({})
+        })
         const context = buildLambdaContext();
 
         const result = await lambdaHandlerConstructor(
