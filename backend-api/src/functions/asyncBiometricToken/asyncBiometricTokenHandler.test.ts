@@ -295,7 +295,12 @@ describe("Async Biometric Token", () => {
   })
   describe("Given a request is made", () => {
     it("Logs and returns 501 Not Implemented response", async () => {
-      const event = buildRequest();
+      const event = buildRequest({
+        body: JSON.stringify({
+          "sessionId": "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+          "documentType": "NFC_PASSPORT",
+        })
+      })
       const context = buildLambdaContext();
 
       const result = await lambdaHandlerConstructor(
