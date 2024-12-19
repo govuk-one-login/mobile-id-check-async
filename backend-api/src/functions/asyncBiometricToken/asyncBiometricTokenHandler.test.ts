@@ -34,6 +34,7 @@ describe("Async Biometric Token", () => {
 
         result = await lambdaHandlerConstructor(dependencies, request, context);
       });
+
       it("Logs BIOMETRIC_TOKEN_REQUEST_BODY_INVALID", async () => {
         expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
           "BIOMETRIC_TOKEN_REQUEST_BODY_INVALID",
@@ -69,6 +70,7 @@ describe("Async Biometric Token", () => {
 
       result = await lambdaHandlerConstructor(dependencies, request, context);
     });
+
     it("Logs STARTED and COMPLETED", async () => {
       expect(
         mockLoggingAdapter.getLogMessages()[0].logMessage.message,
