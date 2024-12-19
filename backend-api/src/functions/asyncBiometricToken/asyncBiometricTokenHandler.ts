@@ -7,7 +7,10 @@ import {
   dependencies,
   IAsyncBiometricTokenDependencies,
 } from "./handlerDependencies";
-import { badRequestResponse, notImplementedResponse } from "../common/lambdaResponses";
+import {
+  badRequestResponse,
+  notImplementedResponse,
+} from "../common/lambdaResponses";
 import { getParsedRequestBody } from "./getParsedRequestBody/getParsedRequestBody";
 
 export async function lambdaHandlerConstructor(
@@ -19,17 +22,14 @@ export async function lambdaHandlerConstructor(
   logger.addContext(context);
   logger.log("STARTED");
 
-  const parsedRequestBodyOrError = getParsedRequestBody(event.body)
+  const parsedRequestBodyOrError = getParsedRequestBody(event.body);
   if (parsedRequestBodyOrError.isError) {
-    const errorMessage = parsedRequestBodyOrError.value.errorMessage
+    const errorMessage = parsedRequestBodyOrError.value.errorMessage;
 
     logger.log("REQUEST_BODY_INVALID", {
-      errorMessage
-    })
-    return badRequestResponse(
-      "invalid_request",
-      "Request body invalid"
-    )
+      errorMessage,
+    });
+    return badRequestResponse("invalid_request", "Request body invalid");
   }
   // const { sessionId, documentType } = parsedRequestBodyOrError.value
 
