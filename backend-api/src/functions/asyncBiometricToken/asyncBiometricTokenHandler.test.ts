@@ -21,11 +21,11 @@ describe("Async Biometric Token", () => {
     describe("Given request body is not present", () => {
       it("Logs and returns 400 Bad Request response", async () => {
         const context = buildLambdaContext();
-        const event = buildRequest({ body: undefined });
+        const request = buildRequest({ body: undefined });
 
         const result = await lambdaHandlerConstructor(
           dependencies,
-          event,
+          request,
           context,
         );
 
@@ -49,11 +49,11 @@ describe("Async Biometric Token", () => {
     describe("Given request body cannot be parsed as JSON", () => {
       it("Logs and returns 400 Bad Request response", async () => {
         const context = buildLambdaContext();
-        const event = buildRequest({ body: 'foo' });
+        const request = buildRequest({ body: 'foo' });
 
         const result = await lambdaHandlerConstructor(
           dependencies,
-          event,
+          request,
           context,
         );
 
@@ -74,16 +74,16 @@ describe("Async Biometric Token", () => {
       })
     })
 
-    describe("Given sessionId is not present in request body", () => {
+    describe("Given sessionId is not present", () => {
       it("Logs and returns 400 Bad Request response", async () => {
-        const event = buildRequest({
+        const request = buildRequest({
           body: JSON.stringify({})
         })
         const context = buildLambdaContext();
 
         const result = await lambdaHandlerConstructor(
           dependencies,
-          event,
+          request,
           context,
         );
 
@@ -104,16 +104,16 @@ describe("Async Biometric Token", () => {
       })
     })
 
-    describe("Given sessionId is not a valid string in request body", () => {
+    describe("Given sessionId is not a string", () => {
       it("Logs and returns 400 Bad Request response", async () => {
-        const event = buildRequest({
+        const request = buildRequest({
           body: JSON.stringify({ "sessionId": 123 })
         })
         const context = buildLambdaContext();
 
         const result = await lambdaHandlerConstructor(
           dependencies,
-          event,
+          request,
           context,
         );
 
@@ -136,14 +136,14 @@ describe("Async Biometric Token", () => {
 
     describe("Given sessionId is an empty string", () => {
       it("Logs and returns 400 Bad Request response", async () => {
-        const event = buildRequest({
+        const request = buildRequest({
           body: JSON.stringify({ "sessionId": "" })
         })
         const context = buildLambdaContext();
 
         const result = await lambdaHandlerConstructor(
           dependencies,
-          event,
+          request,
           context,
         );
 
@@ -164,16 +164,16 @@ describe("Async Biometric Token", () => {
       })
     })
 
-    describe("Given documentType is not present in request body", () => {
+    describe("Given documentType is not present", () => {
       it("Logs and returns 400 Bad Request response", async () => {
-        const event = buildRequest({
+        const request = buildRequest({
           body: JSON.stringify({ "sessionId": "58f4281d-d988-49ce-9586-6ef70a2be0b4" })
         })
         const context = buildLambdaContext();
 
         const result = await lambdaHandlerConstructor(
           dependencies,
-          event,
+          request,
           context,
         );
 
@@ -194,9 +194,9 @@ describe("Async Biometric Token", () => {
       })
     })
 
-    describe("Given documentType is not a valid string in request body", () => {
+    describe("Given documentType is not a string", () => {
       it("Logs and returns 400 Bad Request response", async () => {
-        const event = buildRequest({
+        const request = buildRequest({
           body: JSON.stringify({
             "sessionId": "58f4281d-d988-49ce-9586-6ef70a2be0b4",
             "documentType": 123,
@@ -206,7 +206,7 @@ describe("Async Biometric Token", () => {
 
         const result = await lambdaHandlerConstructor(
           dependencies,
-          event,
+          request,
           context,
         );
 
@@ -229,7 +229,7 @@ describe("Async Biometric Token", () => {
 
     describe("Given documentType is an empty string", () => {
       it("Logs and returns 400 Bad Request response", async () => {
-        const event = buildRequest({
+        const request = buildRequest({
           body: JSON.stringify({
             "sessionId": "58f4281d-d988-49ce-9586-6ef70a2be0b4",
             "documentType": "",
@@ -239,7 +239,7 @@ describe("Async Biometric Token", () => {
 
         const result = await lambdaHandlerConstructor(
           dependencies,
-          event,
+          request,
           context,
         );
 
@@ -262,7 +262,7 @@ describe("Async Biometric Token", () => {
 
     describe("Given documentType is an invalid document type", () => {
       it("Logs and returns 400 Bad Request response", async () => {
-        const event = buildRequest({
+        const request = buildRequest({
           body: JSON.stringify({
             "sessionId": "58f4281d-d988-49ce-9586-6ef70a2be0b4",
             "documentType": "BUS_PASS",
@@ -272,7 +272,7 @@ describe("Async Biometric Token", () => {
 
         const result = await lambdaHandlerConstructor(
           dependencies,
-          event,
+          request,
           context,
         );
 
@@ -295,7 +295,7 @@ describe("Async Biometric Token", () => {
   })
   describe("Given a valid request is made", () => {
     it("Logs and returns 501 Not Implemented response", async () => {
-      const event = buildRequest({
+      const request = buildRequest({
         body: JSON.stringify({
           "sessionId": "58f4281d-d988-49ce-9586-6ef70a2be0b4",
           "documentType": "NFC_PASSPORT",
@@ -305,7 +305,7 @@ describe("Async Biometric Token", () => {
 
       const result = await lambdaHandlerConstructor(
         dependencies,
-        event,
+        request,
         context,
       );
 
