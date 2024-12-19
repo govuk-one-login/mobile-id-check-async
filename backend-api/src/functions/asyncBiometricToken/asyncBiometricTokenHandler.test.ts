@@ -293,7 +293,7 @@ describe("Async Biometric Token", () => {
       })
     })
   })
-  describe("Given a request is made", () => {
+  describe("Given a valid request is made", () => {
     it("Logs and returns 501 Not Implemented response", async () => {
       const event = buildRequest({
         body: JSON.stringify({
