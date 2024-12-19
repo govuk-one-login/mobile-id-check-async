@@ -21,20 +21,46 @@ export function getParsedRequestBody(
   }
   const { sessionId, documentType } = parsedBody;
 
-  const sessionIdValidStringOrError = validateStringField(
-    sessionId,
-    "sessionId",
-  );
-  if (sessionIdValidStringOrError.isError) {
-    return sessionIdValidStringOrError;
+  if (sessionId == null) {
+    return errorResult({
+      errorMessage: `sessionId in request body is either null or undefined. sessionId: ${sessionId}`,
+      errorCategory: "CLIENT_ERROR",
+    });
   }
 
-  const documentTypeValidStringOrError = validateStringField(
-    documentType,
-    "documentType",
-  );
-  if (documentTypeValidStringOrError.isError) {
-    return documentTypeValidStringOrError;
+  if (!isString(sessionId)) {
+    return errorResult({
+      errorMessage: `sessionId in request body is not of type string. sessionId: ${sessionId}`,
+      errorCategory: "CLIENT_ERROR"
+    })
+  }
+
+  if (sessionId === "") {
+    return errorResult({
+      errorMessage: `sessionId in request body is an empty string. sessionId: ${sessionId}`,
+      errorCategory: "CLIENT_ERROR",
+    });
+  }
+
+  if (documentType == null) {
+    return errorResult({
+      errorMessage: `documentType in request body is either null or undefined. documentType: ${documentType}`,
+      errorCategory: "CLIENT_ERROR",
+    });
+  }
+
+  if (!isString(documentType)) {
+    return errorResult({
+      errorMessage: `documentType in request body is not of type string. documentType: ${documentType}`,
+      errorCategory: "CLIENT_ERROR"
+    })
+  }
+
+  if (documentType === "") {
+    return errorResult({
+      errorMessage: `documentType in request body is an empty string. documentType: ${documentType}`,
+      errorCategory: "CLIENT_ERROR",
+    });
   }
 
   if (!isAllowableDocument(documentType)) {
@@ -50,31 +76,6 @@ export function getParsedRequestBody(
   });
 }
 
-function validateStringField(value: unknown, fieldName: string): Result<null> {
-  if (value == null) {
-    return errorResult({
-      errorMessage: `${fieldName} in request body is either null or undefined. ${fieldName}: ${value}`,
-      errorCategory: "CLIENT_ERROR",
-    });
-  }
-
-  if (typeof value !== "string") {
-    return errorResult({
-      errorMessage: `${fieldName} in request body is not of type string. ${fieldName}: ${value}`,
-      errorCategory: "CLIENT_ERROR",
-    });
-  }
-
-  if (value === "") {
-    return errorResult({
-      errorMessage: `${fieldName} in request body is an empty string. ${fieldName}: ${value}`,
-      errorCategory: "CLIENT_ERROR",
-    });
-  }
-
-  return successResult(null);
-}
-
 function isAllowableDocument(
   documentType: string,
 ): documentType is AllowableDocuments {
@@ -83,6 +84,12 @@ function isAllowableDocument(
     documentType === "UK_DRIVING_LICENCE" ||
     documentType === "UK_NFC_BRP"
   );
+}
+
+function isString(
+  field: unknown
+): field is string {
+  return typeof field === 'string';
 }
 
 interface IAsyncBiometricTokenValidParsedRequestBody {
