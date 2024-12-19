@@ -28,7 +28,7 @@ export function validateRequestBody(
   if (!isString(sessionId)) {
     return errorResult({
       errorMessage: `sessionId in request body is not of type string. sessionId: ${sessionId}`,
-    })
+    });
   }
 
   if (sessionId === "") {
@@ -46,7 +46,7 @@ export function validateRequestBody(
   if (!isString(documentType)) {
     return errorResult({
       errorMessage: `documentType in request body is not of type string. documentType: ${documentType}`,
-    })
+    });
   }
 
   if (documentType === "") {
@@ -77,10 +77,8 @@ function isAllowableDocument(
   );
 }
 
-function isString(
-  field: unknown
-): field is string {
-  return typeof field === 'string';
+function isString(field: unknown): field is string {
+  return typeof field === "string";
 }
 
 interface IAsyncBiometricTokenValidParsedRequestBody {
