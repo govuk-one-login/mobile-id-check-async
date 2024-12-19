@@ -39,7 +39,7 @@ export async function lambdaHandlerConstructor(
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
 
-function validateRequestBody (body: string | null): Result<null> {
+function validateRequestBody (body: string | null): Result<IAsyncBiometricTokenValidParsedRequestBody> {
   if (body == null) {
     return errorResult({
       errorMessage: "Request body is either null or undefined",
@@ -56,43 +56,44 @@ function validateRequestBody (body: string | null): Result<null> {
       errorCategory: "CLIENT_ERROR"
     })
   }
+  const { sessionId, documentType } = parsedBody
 
-  if (parsedBody.sessionId == null) {
+  if (sessionId == null) {
     return errorResult({
       errorMessage: "sessionId in request body is either null or undefined",
       errorCategory: "CLIENT_ERROR"
     })
   }
 
-  if (typeof parsedBody.sessionId !== 'string') {
+  if (typeof sessionId !== 'string') {
     return errorResult({
       errorMessage: "sessionId in request body is not of type string",
       errorCategory: "CLIENT_ERROR"
     })
   }
 
-  if (parsedBody.sessionId === "") {
+  if (sessionId === "") {
     return errorResult({
       errorMessage: "sessionId in request body is an empty string",
       errorCategory: "CLIENT_ERROR"
     })
   }
 
-  if (parsedBody.documentType == null) {
+  if (documentType == null) {
     return errorResult({
       errorMessage: "documentType in request body is either null or undefined",
       errorCategory: "CLIENT_ERROR"
     })
   }
 
-  if (typeof parsedBody.documentType !== 'string') {
+  if (typeof documentType !== 'string') {
     return errorResult({
       errorMessage: "documentType in request body is not of type string",
       errorCategory: "CLIENT_ERROR"
     })
   }
 
-  if (parsedBody.documentType === "") {
+  if (documentType === "") {
     return errorResult({
       errorMessage: "documentType in request body is an empty string",
       errorCategory: "CLIENT_ERROR"
@@ -105,12 +106,20 @@ function validateRequestBody (body: string | null): Result<null> {
     "UK_NFC_BRP"
   ]
 
-  if (!allowedDocumentTypes.includes(parsedBody.documentType)) {
+  if (!allowedDocumentTypes.includes(documentType)) {
     return errorResult({
       errorMessage: "documentType in request body is invalid",
       errorCategory: "CLIENT_ERROR"
     })
   }
 
-  return successResult(null)
+  return successResult({
+    sessionId,
+    documentType
+  })
+}
+
+interface IAsyncBiometricTokenValidParsedRequestBody {
+  sessionId: string
+  documentType: string
 }
