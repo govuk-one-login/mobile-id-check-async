@@ -18,7 +18,35 @@ describe("Async Biometric Token", () => {
     };
   })
   describe("Request body validation", () => {
-    describe("Given sessionId in request body is undefined", () => {
+    describe("Given request body is not present", () => {
+      it("Logs and returns 400 Bad Request response", async () => {
+        const context = buildLambdaContext();
+        const event = buildRequest({ body: undefined });
+
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+          context,
+        );
+
+        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
+          "REQUEST_BODY_INVALID",
+        );
+        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: "Request body is either null or undefined",
+        });
+        expect(result).toStrictEqual({
+          headers: { "Content-Type": "application/json" },
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description: "Request body is either null or undefined",
+          }),
+        });
+      })
+    })
+
+    describe("Given sessionId is not present in request body", () => {
       it("Logs and returns 400 Bad Request response", async () => {
         const event = buildRequest()
         const context = buildLambdaContext();
