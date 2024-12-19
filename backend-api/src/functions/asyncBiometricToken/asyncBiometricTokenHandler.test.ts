@@ -48,7 +48,8 @@ describe("Async Biometric Token", () => {
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "Request body invalid",
+            error_description:
+              "documentType in request body is invalid. documentType: BUS_PASS",
           }),
         });
       });
