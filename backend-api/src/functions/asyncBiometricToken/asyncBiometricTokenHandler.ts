@@ -29,7 +29,6 @@ export async function lambdaHandlerConstructor(
     });
     return badRequestResponse("invalid_request", "Request body invalid");
   }
-  // const { sessionId, documentType } = parsedRequestBodyOrError.value
 
   logger.log("COMPLETED");
   return notImplementedResponse;
