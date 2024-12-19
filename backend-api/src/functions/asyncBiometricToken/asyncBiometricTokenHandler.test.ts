@@ -1,4 +1,4 @@
-import { APIGatewayProxyResult, Context } from "aws-lambda";
+import { Context } from "aws-lambda";
 import { Logger } from "../services/logging/logger";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import { buildLambdaContext } from "../testUtils/mockContext";
@@ -9,7 +9,6 @@ import { MessageName, registeredLogs } from "./registeredLogs";
 
 describe("Async Biometric Token", () => {
   let dependencies: IAsyncBiometricTokenDependencies;
-  let result: APIGatewayProxyResult;
   let context: Context;
   let mockLoggingAdapter: MockLoggingAdapter<MessageName>;
   const sessionId = "58f4281d-d988-49ce-9586-6ef70a2be0b4";
@@ -31,18 +30,16 @@ describe("Async Biometric Token", () => {
 
   describe("Request body validation", () => {
     describe("Given request body is invalid", () => {
-      beforeEach(async () => {
-        const request = buildRequest({
-          body: JSON.stringify({
-            sessionId,
-            documentType: "BUS_PASS",
-          }),
-        });
-
-        result = await lambdaHandlerConstructor(dependencies, request, context);
+      const request = buildRequest({
+        body: JSON.stringify({
+          sessionId,
+          documentType: "BUS_PASS",
+        }),
       });
 
       it("Logs BIOMETRIC_TOKEN_REQUEST_BODY_INVALID", async () => {
+        await lambdaHandlerConstructor(dependencies, request, context);
+
         expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
           "BIOMETRIC_TOKEN_REQUEST_BODY_INVALID",
         );
@@ -53,6 +50,12 @@ describe("Async Biometric Token", () => {
       });
 
       it("Returns 400 Bad Request response", async () => {
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          request,
+          context,
+        );
+
         expect(result).toStrictEqual({
           headers: expectedSecurityHeaders,
           statusCode: 400,
@@ -67,18 +70,16 @@ describe("Async Biometric Token", () => {
   });
 
   describe("Given a valid request is made", () => {
-    beforeEach(async () => {
-      const request = buildRequest({
-        body: JSON.stringify({
-          sessionId,
-          documentType: "NFC_PASSPORT",
-        }),
-      });
-
-      result = await lambdaHandlerConstructor(dependencies, request, context);
+    const request = buildRequest({
+      body: JSON.stringify({
+        sessionId,
+        documentType: "NFC_PASSPORT",
+      }),
     });
 
     it("Logs STARTED and COMPLETED", async () => {
+      await lambdaHandlerConstructor(dependencies, request, context);
+
       expect(
         mockLoggingAdapter.getLogMessages()[0].logMessage.message,
       ).toStrictEqual("STARTED");
@@ -88,6 +89,12 @@ describe("Async Biometric Token", () => {
     });
 
     it("Returns 501 Not Implemented response", async () => {
+      const result = await lambdaHandlerConstructor(
+        dependencies,
+        request,
+        context,
+      );
+
       expect(result).toStrictEqual({
         headers: expectedSecurityHeaders,
         statusCode: 501,
