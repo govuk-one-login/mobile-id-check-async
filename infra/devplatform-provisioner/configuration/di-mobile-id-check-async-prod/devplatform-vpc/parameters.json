@@ -1,0 +1,26 @@
+[
+  {
+    "ParameterKey": "DynamoDBApiEnabled",
+    "ParameterValue": "Yes"
+  },
+  {
+    "ParameterKey": "ExecuteApiGatewayEnabled",
+    "ParameterValue": "Yes"
+  },
+  {
+    "ParameterKey": "KMSApiEnabled",
+    "ParameterValue": "Yes"
+  },
+  {
+    "ParameterKey": "SQSApiEnabled",
+    "ParameterValue": "Yes"
+  },
+  {
+    "ParameterKey": "SSMApiEnabled",
+    "ParameterValue": "Yes"
+  },
+  {
+    "ParameterKey": "SSMParametersStoreEnabled",
+    "ParameterValue": "Yes"
+  }
+]

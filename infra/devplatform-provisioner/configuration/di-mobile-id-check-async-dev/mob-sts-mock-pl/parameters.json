@@ -1,0 +1,50 @@
+[
+  {
+    "ParameterKey": "AdditionalCodeSigningVersionArns",
+    "ParameterValue": "arn:aws:signer:eu-west-2:216552277552:/signing-profiles/DynatraceSigner/5uwzCCGTPq"
+  },
+  {
+    "ParameterKey": "BuildNotificationStackName",
+    "ParameterValue": "devplatform-build-notifications"
+  },
+  {
+    "ParameterKey": "ContainerSignerKmsKeyArn",
+    "ParameterValue": "arn:aws:kms:eu-west-2:211125300205:key/8d520a78-04ea-4136-a106-c3a04842754a"
+  },
+  {
+    "ParameterKey": "CustomKmsKeyArns",
+    "ParameterValue": "arn:aws:kms:eu-west-2:216552277552:key/4bc58ab5-c9bb-4702-a2c3-5d339604a8fe"
+  },
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "dev"
+  },
+  {
+    "ParameterKey": "IncludePromotion",
+    "ParameterValue": "No"
+  },
+  {
+    "ParameterKey": "OneLoginRepositoryName",
+    "ParameterValue": "mobile-id-check-async"
+  },
+  {
+    "ParameterKey": "SAMStackName",
+    "ParameterValue": "mob-sts-mock"
+  },
+  {
+    "ParameterKey": "SigningProfileArn",
+    "ParameterValue": "arn:aws:signer:eu-west-2:211125300205:/signing-profiles/SigningProfile_EZ7wpdV9d2jZ"
+  },
+  {
+    "ParameterKey": "SigningProfileVersionArn",
+    "ParameterValue": "arn:aws:signer:eu-west-2:211125300205:/signing-profiles/SigningProfile_EZ7wpdV9d2jZ/Yi9EpTyxQG"
+  },
+  {
+    "ParameterKey": "SlackNotificationType",
+    "ParameterValue": "All"
+  },
+  {
+    "ParameterKey": "VpcStackName",
+    "ParameterValue": "devplatform-vpc"
+  }
+]
