@@ -67,15 +67,15 @@ function validateStringField(value: unknown, fieldName: string): Result<null> {
   return successResult(null)
 }
 
+function isAllowableDocument(documentType: string): documentType is AllowableDocuments {
+  return documentType === "NFC_PASSPORT"
+  || documentType === "UK_DRIVING_LICENCE"
+  || documentType === "UK_NFC_BRP"
+}
+
 interface IAsyncBiometricTokenValidParsedRequestBody {
   sessionId: string
   documentType: AllowableDocuments
 }
 
 type AllowableDocuments = "NFC_PASSPORT" | "UK_DRIVING_LICENCE" | "UK_NFC_BRP"
-
-function isAllowableDocument(documentType: string): documentType is AllowableDocuments {
-  return documentType === "NFC_PASSPORT"
-  || documentType === "UK_DRIVING_LICENCE"
-  || documentType === "UK_NFC_BRP"
-}
