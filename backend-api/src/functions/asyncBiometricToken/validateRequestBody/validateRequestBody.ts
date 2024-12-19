@@ -70,11 +70,9 @@ export function validateRequestBody(
 function isAllowableDocumentType(
   documentType: string,
 ): documentType is DocumentType {
-  return [
-    "NFC_PASSPORT",
-    "UK_DRIVING_LICENCE",
-    "UK_NFC_BRP",
-  ].includes(documentType)
+  return ["NFC_PASSPORT", "UK_DRIVING_LICENCE", "UK_NFC_BRP"].includes(
+    documentType,
+  );
 }
 
 function isString(field: unknown): field is string {
