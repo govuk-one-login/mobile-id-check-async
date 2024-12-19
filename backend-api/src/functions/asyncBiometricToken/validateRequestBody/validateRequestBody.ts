@@ -5,7 +5,7 @@ export function validateRequestBody(
 ): Result<IAsyncBiometricTokenValidParsedRequestBody> {
   if (body == null) {
     return errorResult({
-      errorMessage: `Request body is either null or undefined. Request body: ${body}`,
+      errorMessage: `Request body is either null or undefined.`,
     });
   }
 
@@ -21,7 +21,7 @@ export function validateRequestBody(
 
   if (sessionId == null) {
     return errorResult({
-      errorMessage: `sessionId in request body is either null or undefined. sessionId: ${sessionId}`,
+      errorMessage: `sessionId in request body is either null or undefined.`,
     });
   }
 
@@ -33,13 +33,13 @@ export function validateRequestBody(
 
   if (sessionId === "") {
     return errorResult({
-      errorMessage: `sessionId in request body is an empty string. sessionId: ${sessionId}`,
+      errorMessage: `sessionId in request body is an empty string.`,
     });
   }
 
   if (documentType == null) {
     return errorResult({
-      errorMessage: `documentType in request body is either null or undefined. documentType: ${documentType}`,
+      errorMessage: `documentType in request body is either null or undefined.`,
     });
   }
 
@@ -51,7 +51,7 @@ export function validateRequestBody(
 
   if (documentType === "") {
     return errorResult({
-      errorMessage: `documentType in request body is an empty string. documentType: ${documentType}`,
+      errorMessage: `documentType in request body is an empty string.`,
     });
   }
 

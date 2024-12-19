@@ -5,7 +5,7 @@ describe("Validate request body", () => {
     [
       "Given body is null or undefined",
       null,
-      "Request body is either null or undefined. Request body: null",
+      "Request body is either null or undefined.",
     ],
     [
       "Given body cannot be parsed as JSON",
@@ -29,7 +29,7 @@ describe("Validate request body", () => {
     [
       "Given sessionId is not present",
       {},
-      "sessionId in request body is either null or undefined. sessionId: undefined",
+      "sessionId in request body is either null or undefined.",
     ],
     [
       "Given sessionId is not a string",
@@ -39,12 +39,12 @@ describe("Validate request body", () => {
     [
       "Given sessionId is an empty string",
       { sessionId: "" },
-      "sessionId in request body is an empty string. sessionId: ",
+      "sessionId in request body is an empty string.",
     ],
     [
       "Given documentType is not present",
       { sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4" },
-      "documentType in request body is either null or undefined. documentType: undefined",
+      "documentType in request body is either null or undefined.",
     ],
     [
       "Given documentType is not a string",
@@ -54,7 +54,7 @@ describe("Validate request body", () => {
     [
       "Given documentType is an empty string",
       { sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4", documentType: "" },
-      "documentType in request body is an empty string. documentType: ",
+      "documentType in request body is an empty string.",
     ],
     [
       "Given documentType is an invalid document type",
