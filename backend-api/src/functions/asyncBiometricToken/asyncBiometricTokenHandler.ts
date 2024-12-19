@@ -24,10 +24,8 @@ export async function lambdaHandlerConstructor(
 
   const parsedRequestBodyOrError = getParsedRequestBody(event.body);
   if (parsedRequestBodyOrError.isError) {
-    const errorMessage = parsedRequestBodyOrError.value.errorMessage;
-
     logger.log("REQUEST_BODY_INVALID", {
-      errorMessage,
+      errorMessage: parsedRequestBodyOrError.value.errorMessage,
     });
     return badRequestResponse("invalid_request", "Request body invalid");
   }
