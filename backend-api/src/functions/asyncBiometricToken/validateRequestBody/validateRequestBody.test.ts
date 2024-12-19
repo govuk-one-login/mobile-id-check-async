@@ -9,8 +9,8 @@ describe("Validate request body", () => {
     ],
     [
       "Given body cannot be parsed as JSON",
-      "foo",
-      `Request body could not be parsed as JSON. SyntaxError: Unexpected token 'o', "foo" is not valid JSON`,
+      "invalidJSON",
+      `Request body could not be parsed as JSON. SyntaxError: Unexpected token 'i', "invalidJSON" is not valid JSON`,
     ],
   ])("%s", (_description, body, errorMessage) => {
     it("Returns an error result", () => {
