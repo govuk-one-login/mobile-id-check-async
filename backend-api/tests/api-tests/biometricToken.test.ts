@@ -3,7 +3,7 @@ import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 describe("POST /async/biometricToken", () => {
   describe("Given request body is invalid", () => {
     it("Returns an error and 400 status code", async () => {
-      const requestBody = { "documentType": "NFC_PASSPORT" }
+      const requestBody = { "documentType": 123 }
 
       const response = await SESSIONS_API_INSTANCE.post(
         "/async/biometricToken",
@@ -17,7 +17,7 @@ describe("POST /async/biometricToken", () => {
       });
     });
   });
-  describe("Given there is a request", () => {
+  describe("Given there is a valid request", () => {
     it("Returns an error and 501 status code", async () => {
       const requestBody = {
         "sessionId": "58f4281d-d988-49ce-9586-6ef70a2be0b4",
