@@ -55,7 +55,7 @@ export function validateRequestBody(
     });
   }
 
-  if (!isAllowableDocument(documentType)) {
+  if (!isAllowableDocumentType(documentType)) {
     return errorResult({
       errorMessage: `documentType in request body is invalid. documentType: ${documentType}`,
     });
@@ -67,7 +67,7 @@ export function validateRequestBody(
   });
 }
 
-function isAllowableDocument(
+function isAllowableDocumentType(
   documentType: string,
 ): documentType is DocumentType {
   return (
