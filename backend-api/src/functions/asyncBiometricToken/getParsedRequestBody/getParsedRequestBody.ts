@@ -78,7 +78,7 @@ export function getParsedRequestBody(
 
 function isAllowableDocument(
   documentType: string,
-): documentType is AllowableDocuments {
+): documentType is DocumentType {
   return (
     documentType === "NFC_PASSPORT" ||
     documentType === "UK_DRIVING_LICENCE" ||
@@ -94,7 +94,7 @@ function isString(
 
 interface IAsyncBiometricTokenValidParsedRequestBody {
   sessionId: string;
-  documentType: AllowableDocuments;
+  documentType: DocumentType;
 }
 
-type AllowableDocuments = "NFC_PASSPORT" | "UK_DRIVING_LICENCE" | "UK_NFC_BRP";
+type DocumentType = "NFC_PASSPORT" | "UK_DRIVING_LICENCE" | "UK_NFC_BRP";
