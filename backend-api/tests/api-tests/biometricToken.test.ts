@@ -17,6 +17,7 @@ describe("POST /async/biometricToken", () => {
       });
     });
   });
+
   describe("Given there is a valid request", () => {
     it("Returns an error and 501 status code", async () => {
       const requestBody = {
