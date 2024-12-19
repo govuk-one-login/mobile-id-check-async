@@ -64,5 +64,21 @@ function validateRequestBody (body: string | null): Result<null> {
     })
   }
 
+  if (typeof parsedBody.sessionId !== 'string') {
+    return errorResult({
+      errorMessage: "sessionId in request body is not of type string",
+      errorCategory: "CLIENT_ERROR"
+    })
+  }
+
+  if (parsedBody.sessionId === "") {
+    return errorResult({
+      errorMessage: "sessionId in request body is an empty string",
+      errorCategory: "CLIENT_ERROR"
+    })
+  }
+
+
+
   return successResult(null)
 }
