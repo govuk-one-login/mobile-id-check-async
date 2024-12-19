@@ -47,11 +47,19 @@ function validateRequestBody (body: string | null): Result<null> {
     })
   }
 
+  let parsedBody
   try {
-    JSON.parse(body)
+    parsedBody = JSON.parse(body)
   } catch {
     return errorResult({
       errorMessage: "Request body could not be parsed as JSON",
+      errorCategory: "CLIENT_ERROR"
+    })
+  }
+
+  if (parsedBody.sessionId == null) {
+    return errorResult({
+      errorMessage: "sessionId in request body is either null or undefined",
       errorCategory: "CLIENT_ERROR"
     })
   }

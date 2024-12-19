@@ -88,7 +88,7 @@ describe("Async Biometric Token", () => {
         );
 
         expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "REQUEST_BODY_SESSION_ID_INVALID",
+          "REQUEST_BODY_INVALID",
         );
         expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "sessionId in request body is either null or undefined",
