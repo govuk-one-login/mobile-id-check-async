@@ -13,6 +13,13 @@ describe("Async Biometric Token", () => {
   let context: Context;
   let mockLoggingAdapter: MockLoggingAdapter<MessageName>;
   const sessionId = "58f4281d-d988-49ce-9586-6ef70a2be0b4";
+  const expectedSecurityHeaders = {
+    "Cache-Control": "no-store",
+    "Content-Type": "application/json",
+    "Strict-Transport-Security": "max-age=31536000",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+  };
 
   beforeEach(() => {
     mockLoggingAdapter = new MockLoggingAdapter();
@@ -47,7 +54,7 @@ describe("Async Biometric Token", () => {
 
       it("Returns 400 Bad Request response", async () => {
         expect(result).toStrictEqual({
-          headers: { "Content-Type": "application/json" },
+          headers: expectedSecurityHeaders,
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
@@ -82,13 +89,7 @@ describe("Async Biometric Token", () => {
 
     it("Returns 501 Not Implemented response", async () => {
       expect(result).toStrictEqual({
-        headers: {
-          "Cache-Control": "no-store",
-          "Content-Type": "application/json",
-          "Strict-Transport-Security": "max-age=31536000",
-          "X-Content-Type-Options": "nosniff",
-          "X-Frame-Options": "DENY",
-        },
+        headers: expectedSecurityHeaders,
         statusCode: 501,
         body: JSON.stringify({ error: "Not Implemented" }),
       });
