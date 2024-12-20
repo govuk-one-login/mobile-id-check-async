@@ -43,10 +43,10 @@ Resources:
             Resource:
                 - !Sub 
                   - "${PROXYAPIEXECUTEARN}/POST/async/token"
-                  - PROXYAPIEXECUTEARN: !ImportValue kd-async-backend-proxy-api-execute-arn # update to be mob
+                  - PROXYAPIEXECUTEARN: !ImportValue mob-async-backend-proxy-api-execute-arn
                 - !Sub 
                   - "${PROXYAPIEXECUTEARN}/POST/async/credentials"
-                  - PROXYAPIEXECUTEARN: !ImportValue kd-async-backend-proxy-api-execute-arn
+                  - PROXYAPIEXECUTEARN: !ImportValue mob-async-backend-proxy-api-execute-arn
           - Sid: "GetSecrets"
             Effect: "Allow"
             Action:
