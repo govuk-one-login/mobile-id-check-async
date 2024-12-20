@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
 Description: |
-  Creates the IAM roles and policies needed for App Devs to test in AWS
+  Creates the IAM roles and policies needed for mobile app developers to test in AWS
 
 Parameters:
   Environment:
@@ -12,8 +12,15 @@ Parameters:
       - build
     Default: dev
 
+Mappings:
+  EnvironmentConfiguration:
+    dev:
+      executeApiArn: arn:aws:execute-api:eu-west-2::${!ImportValue ProxyApiId}/${Environment}
+    build:
+      executeApiArn: arn:aws:execute-api:eu-west-2::${!ImportValue ProxyApiId}/${Environment}
+
 Conditions:
-  IsDev: # change to IsBuild
+  IsDev:
     Fn::Equals:
       - !Ref Environment
       - dev
@@ -27,11 +34,11 @@ Conditions:
       - build
 
 Resources:
-  AppDevPolicy:
+  MobAppPolicy:
     Condition: IsDevOrBuild
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      ManagedPolicyName: mob-app-dev
+      ManagedPolicyName: mob-app
       Description: "Policy to allow invoking Proxy API Gateway and to retrieve secrets."
       PolicyDocument:
         Version: "2012-10-17"
@@ -41,21 +48,24 @@ Resources:
             Action:
               - "execute-api:Invoke"
             Resource:
-                - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:wutedlwo43/dev/POST/async/token" # hardcoded
-                - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:wutedlwo43/dev/POST/async/credentials" # hardcoded
+                - !Sub 
+                  - "${PROXYAPIEXECUTEARN}/POST/async/token"
+                  - PROXYAPIEXECUTEARN: !ImportValue kd-async-backend-proxy-api-execute-arn # update to be mob
+                - !Sub 
+                  - "${PROXYAPIEXECUTEARN}/POST/async/credentials"
+                  - PROXYAPIEXECUTEARN: !ImportValue kd-async-backend-proxy-api-execute-arn
           - Sid: "GetSecrets"
             Effect: "Allow"
             Action:
               - "secretsmanager:GetSecretValue"
             Resource:
-              - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistryApiTest-*" # to be updated
-              - !Sub '{{resolve:ssm:/${Environment}/clientRegistryApiTest}}'
+              - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistryMobileAppCredentials-??????"
 
-  AppDevSSORole: # temp role to test
+  MobAppSSORole: # temp role to test
     Condition: IsDevOrBuild
     Type: AWS::IAM::Role
     Properties:
-      RoleName: "mob-app-dev-sso"
+      RoleName: "mob-app-sso"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -64,13 +74,18 @@ Resources:
             Principal:
               AWS: arn:aws:iam::211125300205:role/aws-reserved/sso.amazonaws.com/eu-west-2/AWSReservedSSO_AWSAdministratorAccess_8249ae1e0c6c7b35
       ManagedPolicyArns:
-        - !Ref AppDevPolicy
+        - !Ref MobAppPolicy
+      Tags:
+        - Key: "Name"
+          Value: "mob-app-sso"
+        - Key: "Source"
+          Value: "govuk-one-login/mobile-id-check-async/infra/templates/iam/template.yaml"
 
-  AppDevsGitHubActionsRole:
-    Condition: IsDev # change to IsBuild
+  MobAppGitHubActionsRole:
+    Condition: IsDev
     Type: AWS::IAM::Role
     Properties:
-      RoleName: "mob-app-dev-github-actions"
+      RoleName: "mob-app-github-actions"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -81,14 +96,12 @@ Resources:
             Condition:
               StringLike:
                 "token.actions.githubusercontent.com:sub":
-                  - "repo:govuk-one-login/mobile-android-cri-orchestrator:ref:refs/heads/DCMAW-10857" #update branch name
-                  - "repo:govuk-one-login/mobile-id-check-ios-sdk:ref:refs/heads/DCMAW-10857" #update branch name
+                  - "repo:govuk-one-login/mobile-android-cri-orchestrator:ref:refs/heads/*"
+                  - "repo:govuk-one-login/mobile-id-check-ios-sdk:ref:refs/heads/*"
       ManagedPolicyArns:
-        - !Ref AppDevPolicy
+        - !Ref MobAppPolicy
       Tags:
         - Key: "Name"
-          Value: "mob-app-dev-github-actions"
-        - Key: "Service"
-          Value: "ci/cd"
+          Value: "mob-app-github-actions"
         - Key: "Source"
-          Value: "govuk-one-login/devplatform-deploy/sam-deploy-pipeline/template.yaml"
+          Value: "govuk-one-login/mobile-id-check-async/infra/templates/iam/template.yaml"

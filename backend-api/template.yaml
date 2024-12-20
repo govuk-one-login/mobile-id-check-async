@@ -2073,6 +2073,13 @@ Outputs:
     Description: Proxy API Gateway Pretty DNS
     Value: !Sub https://${ProxyApiDomainName}
 
+  ProxyApiExecuteArn:
+    Condition: ProxyApiDeployment
+    Description: Proxy API Gateway Execute ARN
+    Value: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ProxyApi}/${Environment}
+    Export:
+      Name: !Sub ${AWS::StackName}-proxy-api-execute-arn
+
   PrivateApiUrl:
     Description: Private API Gateway base URL
     Value: !Sub https://${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
