@@ -1,18 +1,11 @@
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
+import { expectedSecurityHeaders, mockSessionId } from "./utils/apiTestData";
 
 describe("POST /async/biometricToken", () => {
-  const sessionId = "58f4281d-d988-49ce-9586-6ef70a2be0b4";
-  const expectedSecurityHeaders = {
-    "cache-control": "no-store",
-    "content-type": "application/json",
-    "strict-transport-security": "max-age=31536000",
-    "x-content-type-options": "nosniff",
-    "x-frame-options": "DENY",
-  };
   describe("Given request body is invalid", () => {
     it("Returns an error and 400 status code", async () => {
       const requestBody = {
-        sessionId,
+        sessionId: mockSessionId,
         documentType: "BUS_PASS",
       };
 
@@ -36,7 +29,7 @@ describe("POST /async/biometricToken", () => {
   describe("Given there is a valid request", () => {
     it("Returns an error and 501 status code", async () => {
       const requestBody = {
-        sessionId,
+        sessionId: mockSessionId,
         documentType: "NFC_PASSPORT",
       };
 
@@ -44,8 +37,6 @@ describe("POST /async/biometricToken", () => {
         "/async/biometricToken",
         requestBody,
       );
-
-      console.log("HERE", response.headers);
 
       expect(response.status).toBe(501);
       expect(response.data).toStrictEqual({ error: "Not Implemented" });
