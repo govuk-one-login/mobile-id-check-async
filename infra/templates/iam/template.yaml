@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: |
+  Creates the IAM roles and policies needed for App Devs to test in AWS
+
+Parameters:
+  Environment:
+    Description: The environment type
+    Type: String
+    AllowedValues:
+      - dev
+      - build
+    Default: dev
+
+Conditions:
+  IsDev: # change to IsBuild
+    Fn::Equals:
+      - !Ref Environment
+      - dev
+
+  IsDevOrBuild: !Or
+    - !Equals
+      - !Ref Environment
+      - dev
+    - !Equals
+      - !Ref Environment
+      - build
+
+Resources:
+  AppDevPolicy:
+    Condition: IsDevOrBuild
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: mob-app-dev
+      Description: "Policy to allow invoking Proxy API Gateway and to retrieve secrets."
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "InvokeProxyApiGateway"
+            Effect: "Allow"
+            Action:
+              - "execute-api:Invoke"
+            Resource:
+                - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:wutedlwo43/dev/POST/async/token" # hardcoded
+                - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:wutedlwo43/dev/POST/async/credentials" # hardcoded
+          - Sid: "GetSecrets"
+            Effect: "Allow"
+            Action:
+              - "secretsmanager:GetSecretValue"
+            Resource:
+              - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistryApiTest-*" # to be updated
+              - !Sub '{{resolve:ssm:/${Environment}/clientRegistryApiTest}}'
+
+  AppDevSSORole: # temp role to test
+    Condition: IsDevOrBuild
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: "mob-app-dev-sso"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action: "sts:AssumeRole"
+            Principal:
+              AWS: arn:aws:iam::211125300205:role/aws-reserved/sso.amazonaws.com/eu-west-2/AWSReservedSSO_AWSAdministratorAccess_8249ae1e0c6c7b35
+      ManagedPolicyArns:
+        - !Ref AppDevPolicy
+
+  AppDevsGitHubActionsRole:
+    Condition: IsDev # change to IsBuild
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: "mob-app-dev-github-actions"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action: "sts:AssumeRoleWithWebIdentity"
+            Principal:
+              Federated: !ImportValue GitHubIdentityProviderArn
+            Condition:
+              StringLike:
+                "token.actions.githubusercontent.com:sub":
+                  - "repo:govuk-one-login/mobile-android-cri-orchestrator:ref:refs/heads/DCMAW-10857" #update branch name
+                  - "repo:govuk-one-login/mobile-id-check-ios-sdk:ref:refs/heads/DCMAW-10857" #update branch name
+      ManagedPolicyArns:
+        - !Ref AppDevPolicy
+      Tags:
+        - Key: "Name"
+          Value: "mob-app-dev-github-actions"
+        - Key: "Service"
+          Value: "ci/cd"
+        - Key: "Source"
+          Value: "govuk-one-login/devplatform-deploy/sam-deploy-pipeline/template.yaml"
