@@ -1,4 +1,5 @@
 import { validateRequestBody } from "./validateRequestBody";
+import { mockSessionId } from "../../testUtils/unitTestData";
 
 describe("Validate request body", () => {
   describe("Given body is invalid", () => {
@@ -46,14 +47,14 @@ describe("Validate request body", () => {
       },
       {
         scenario: "Given documentType is not present",
-        requestBody: { sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4" },
+        requestBody: { sessionId: mockSessionId },
         expectedErrorMessage:
           "documentType in request body is either null or undefined.",
       },
       {
         scenario: "Given documentType is not a string",
         requestBody: {
-          sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+          sessionId: mockSessionId,
           documentType: 123,
         },
         expectedErrorMessage:
@@ -62,7 +63,7 @@ describe("Validate request body", () => {
       {
         scenario: "Given documentType is an empty string",
         requestBody: {
-          sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+          sessionId: mockSessionId,
           documentType: "",
         },
         expectedErrorMessage:
@@ -71,7 +72,7 @@ describe("Validate request body", () => {
       {
         scenario: "Given documentType is an invalid document type",
         requestBody: {
-          sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+          sessionId: mockSessionId,
           documentType: "BUS_PASS",
         },
         expectedErrorMessage:
@@ -95,7 +96,7 @@ describe("Validate request body", () => {
     it("Returns a successResult with a valid parsed body as value", () => {
       const result = validateRequestBody(
         JSON.stringify({
-          sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+          sessionId: mockSessionId,
           documentType: "NFC_PASSPORT",
         }),
       );
@@ -103,7 +104,7 @@ describe("Validate request body", () => {
       expect(result).toStrictEqual({
         isError: false,
         value: {
-          sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+          sessionId: mockSessionId,
           documentType: "NFC_PASSPORT",
         },
       });

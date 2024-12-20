@@ -6,19 +6,15 @@ import { buildRequest } from "../testUtils/mockRequest";
 import { lambdaHandlerConstructor } from "./asyncBiometricTokenHandler";
 import { IAsyncBiometricTokenDependencies } from "./handlerDependencies";
 import { MessageName, registeredLogs } from "./registeredLogs";
+import {
+  expectedSecurityHeaders,
+  mockSessionId,
+} from "../testUtils/unitTestData";
 
 describe("Async Biometric Token", () => {
   let dependencies: IAsyncBiometricTokenDependencies;
   let context: Context;
   let mockLoggingAdapter: MockLoggingAdapter<MessageName>;
-  const sessionId = "58f4281d-d988-49ce-9586-6ef70a2be0b4";
-  const expectedSecurityHeaders = {
-    "Cache-Control": "no-store",
-    "Content-Type": "application/json",
-    "Strict-Transport-Security": "max-age=31536000",
-    "X-Content-Type-Options": "nosniff",
-    "X-Frame-Options": "DENY",
-  };
 
   beforeEach(() => {
     mockLoggingAdapter = new MockLoggingAdapter();
@@ -32,7 +28,7 @@ describe("Async Biometric Token", () => {
     describe("Given request body is invalid", () => {
       const request = buildRequest({
         body: JSON.stringify({
-          sessionId,
+          sessionId: mockSessionId,
           documentType: "BUS_PASS",
         }),
       });
@@ -72,7 +68,7 @@ describe("Async Biometric Token", () => {
   describe("Given a valid request is made", () => {
     const request = buildRequest({
       body: JSON.stringify({
-        sessionId,
+        sessionId: mockSessionId,
         documentType: "NFC_PASSPORT",
       }),
     });
