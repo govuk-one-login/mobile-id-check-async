@@ -32,7 +32,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.17.10",
     "@types/node-jose": "^1.1.13",
-    "aws-cdk-lib": "^2.173.2",
+    "aws-cdk-lib": "^2.173.4",
     "aws-sdk-client-mock": "4.1.0",
     "aws-sdk-client-mock-jest": "^4.1.0",
     "aws4-axios": "^3.3.13",
@@ -47,7 +47,7 @@
     "ts-jest": "29.2.5",
     "ts-node": "10.9.2",
     "typescript": "^5.7.2",
-    "typescript-eslint": "^8.18.2",
+    "typescript-eslint": "^8.19.0",
     "yaml": "2.6.1",
     "yaml-cfn": "^0.3.2"
   },
