@@ -1,7 +1,7 @@
 import { GetSecrets } from "../common/config/secrets";
 import { getParametersByName } from "@aws-lambda-powertools/parameters/ssm";
 import { SSMGetParametersByNameOptions } from "@aws-lambda-powertools/parameters/ssm/types";
-import { errorResult } from "../utils/result";
+import { errorResult, successResult } from "../utils/result";
 
 export const getSecretsFromParameterStore: GetSecrets = async (
   secretNames,
@@ -22,7 +22,7 @@ export const getSecretsFromParameterStore: GetSecrets = async (
     });
   }
   console.log(secrets);
-  throw new Error("Not Implemented");
+  return successResult([]);
 };
 
 function addNewKeyWithEmptyObjectAsValue(
