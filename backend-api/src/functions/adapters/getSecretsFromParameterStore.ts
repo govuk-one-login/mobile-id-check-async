@@ -21,8 +21,7 @@ export const getSecretsFromParameterStore: GetSecrets = async (
       errorMessage: "server_error",
     });
   }
-  console.log(secrets);
-  return successResult([]);
+  return successResult(secretNames.map((secretName) => secrets[secretName]));
 };
 
 function addNewKeyWithEmptyObjectAsValue(
