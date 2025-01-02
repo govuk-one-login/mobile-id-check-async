@@ -1,4 +1,8 @@
 locals {
+
+  template_bucket        = data.aws_ssm_parameter.template_storage_bucket.insecure_value
+  preformat_template_url = "https://${data.aws_ssm_parameter.template_storage_bucket.insecure_value}.s3.amazonaws.com/%s/template.yaml?versionId=%s"
+
   account_vars = {
     dev         = { account_id = "211125300205" }
     build       = { account_id = "058264551042" }
@@ -11,6 +15,13 @@ locals {
 provider "aws" {
   region = "eu-west-2"
 
+  allowed_account_ids = [local.account_vars[var.environment].account_id]
+}
+
+provider "aws" {
+  alias = "us-east-1"
+
+  region              = "us-east-1"
   allowed_account_ids = [local.account_vars[var.environment].account_id]
 }
 
