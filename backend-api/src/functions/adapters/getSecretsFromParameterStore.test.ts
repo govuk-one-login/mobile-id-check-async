@@ -36,7 +36,9 @@ describe("getSecretsFromParameterStore", () => {
         .rejects(
           new InternalServerError({ $metadata: {}, message: "server error" }),
         );
-      result = await getSecretsFromParameterStore([mockSecretName1]);
+      result = await getSecretsFromParameterStore({
+        secretNames: [mockSecretName1],
+      });
     });
 
     it("Returns failure", () => {
@@ -55,7 +57,9 @@ describe("getSecretsFromParameterStore", () => {
         ],
         InvalidParameters: [mockSecretName2],
       });
-      result = await getSecretsFromParameterStore([mockSecretName1]);
+      result = await getSecretsFromParameterStore({
+        secretNames: [mockSecretName1],
+      });
     });
 
     it("Returns failure", () => {
@@ -65,7 +69,7 @@ describe("getSecretsFromParameterStore", () => {
 
   describe("When passed empty array of secret names", () => {
     beforeEach(async () => {
-      result = await getSecretsFromParameterStore([]);
+      result = await getSecretsFromParameterStore({ secretNames: [] });
     });
     it("Returns success with empty array", () => {
       expect(result).toEqual(successResult([]));
@@ -92,7 +96,9 @@ describe("getSecretsFromParameterStore", () => {
               },
             ],
           });
-        result = await getSecretsFromParameterStore([mockSecretName1]);
+        result = await getSecretsFromParameterStore({
+          secretNames: [mockSecretName1],
+        });
       });
       it("Returns success with value of secret", () => {
         expect(result).toEqual(successResult([mockSecretValue1]));
@@ -118,10 +124,9 @@ describe("getSecretsFromParameterStore", () => {
               },
             ],
           });
-        result = await getSecretsFromParameterStore([
-          mockSecretName1,
-          mockSecretName2,
-        ]);
+        result = await getSecretsFromParameterStore({
+          secretNames: [mockSecretName1, mockSecretName2],
+        });
       });
       it("Returns success with values of secrets in same order", () => {
         expect(result).toEqual(
@@ -151,17 +156,17 @@ describe("getSecretsFromParameterStore", () => {
           ],
         });
 
-      await getSecretsFromParameterStore(
-        [mockSecretName1, mockSecretName2],
-        10,
-      );
+      await getSecretsFromParameterStore({
+        secretNames: [mockSecretName1, mockSecretName2],
+        cacheDurationInSeconds: 10,
+      });
 
       jest.setSystemTime(NOW_IN_MILLISECONDS + 10000);
 
-      result = await getSecretsFromParameterStore(
-        [mockSecretName1, mockSecretName2],
-        10,
-      );
+      result = await getSecretsFromParameterStore({
+        secretNames: [mockSecretName1, mockSecretName2],
+        cacheDurationInSeconds: 10,
+      });
     });
 
     it("Returns success with values of secrets", () => {
@@ -194,17 +199,17 @@ describe("getSecretsFromParameterStore", () => {
           ],
         });
 
-      await getSecretsFromParameterStore(
-        [mockSecretName1, mockSecretName2],
-        10,
-      );
+      await getSecretsFromParameterStore({
+        secretNames: [mockSecretName1, mockSecretName2],
+        cacheDurationInSeconds: 10,
+      });
 
       jest.setSystemTime(NOW_IN_MILLISECONDS + 10001);
 
-      result = await getSecretsFromParameterStore(
-        [mockSecretName1, mockSecretName2],
-        10,
-      );
+      result = await getSecretsFromParameterStore({
+        secretNames: [mockSecretName1, mockSecretName2],
+        cacheDurationInSeconds: 10,
+      });
     });
 
     it("Returns success with values of secrets", () => {

@@ -3,10 +3,10 @@ import { getParametersByName } from "@aws-lambda-powertools/parameters/ssm";
 import { SSMGetParametersByNameOptions } from "@aws-lambda-powertools/parameters/ssm/types";
 import { errorResult, successResult } from "../utils/result";
 
-export const getSecretsFromParameterStore: GetSecrets = async (
+export const getSecretsFromParameterStore: GetSecrets = async ({
   secretNames,
   cacheDurationInSeconds = 0,
-) => {
+}) => {
   const parametersConfig: Record<string, SSMGetParametersByNameOptions> =
     secretNames.reduce(addNewKeyWithEmptyObjectAsValue, {});
   let secrets: Record<string, string>;
