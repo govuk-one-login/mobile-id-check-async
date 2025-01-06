@@ -1,6 +1,10 @@
 import { Result } from "../../utils/result";
 
+export type GetSecretsConfiguration = {
+  secretNames: string[];
+  cacheDurationInSeconds?: number;
+};
+
 export type GetSecrets = (
-  secretNames: string[],
-  cacheDurationInSeconds?: number,
+  config: GetSecretsConfiguration,
 ) => Promise<Result<string[]>>;
