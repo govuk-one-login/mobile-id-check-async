@@ -1,27 +1,63 @@
-import { Context } from "aws-lambda";
-import { Logger } from "../services/logging/logger";
-import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
+import { expect } from "@jest/globals";
+import "../testUtils/matchers";
+import "dotenv/config";
+import { APIGatewayProxyResult, Context } from "aws-lambda";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { buildRequest } from "../testUtils/mockRequest";
 import { lambdaHandlerConstructor } from "./asyncBiometricTokenHandler";
 import { IAsyncBiometricTokenDependencies } from "./handlerDependencies";
-import { MessageName, registeredLogs } from "./registeredLogs";
 import {
   expectedSecurityHeaders,
   mockSessionId,
 } from "../testUtils/unitTestData";
+import { logger } from "../common/logging/logger";
 
 describe("Async Biometric Token", () => {
   let dependencies: IAsyncBiometricTokenDependencies;
   let context: Context;
-  let mockLoggingAdapter: MockLoggingAdapter<MessageName>;
+  let consoleInfoSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpyInstance;
+  let result: APIGatewayProxyResult;
+
+  const validRequest = buildRequest({
+    body: JSON.stringify({
+      sessionId: mockSessionId,
+      documentType: "NFC_PASSPORT",
+    }),
+  });
 
   beforeEach(() => {
-    mockLoggingAdapter = new MockLoggingAdapter();
-    dependencies = {
-      logger: () => new Logger(mockLoggingAdapter, registeredLogs),
-    };
+    dependencies = {};
     context = buildLambdaContext();
+    consoleInfoSpy = jest.spyOn(console, "info");
+    consoleErrorSpy = jest.spyOn(console, "error");
+  });
+
+  describe("On every invocation", () => {
+    beforeEach(async () => {
+      result = await lambdaHandlerConstructor(
+        dependencies,
+        validRequest,
+        context,
+      );
+    });
+    it("Adds context to log attributes and logs STARTED message", () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "MOBILE_ASYNC_BIOMETRIC_TOKEN_STARTED",
+        function_arn: "arn:12345", // example field to verify that context has been added
+      });
+    });
+    it("Clears pre-existing log attributes", async () => {
+      logger.appendKeys({ testKey: "testValue" });
+      result = await lambdaHandlerConstructor(
+        dependencies,
+        validRequest,
+        context,
+      );
+      expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+        testKey: "testValue",
+      });
+    });
   });
 
   describe("Request body validation", () => {
@@ -33,25 +69,19 @@ describe("Async Biometric Token", () => {
         }),
       });
 
-      it("Logs BIOMETRIC_TOKEN_REQUEST_BODY_INVALID", async () => {
-        await lambdaHandlerConstructor(dependencies, request, context);
+      beforeEach(async () => {
+        result = await lambdaHandlerConstructor(dependencies, request, context);
+      });
 
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "BIOMETRIC_TOKEN_REQUEST_BODY_INVALID",
-        );
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+      it("Logs the error", async () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_BIOMETRIC_TOKEN_REQUEST_BODY_INVALID",
           errorMessage:
             "documentType in request body is invalid. documentType: BUS_PASS",
         });
       });
 
       it("Returns 400 Bad Request response", async () => {
-        const result = await lambdaHandlerConstructor(
-          dependencies,
-          request,
-          context,
-        );
-
         expect(result).toStrictEqual({
           headers: expectedSecurityHeaders,
           statusCode: 400,
@@ -66,31 +96,20 @@ describe("Async Biometric Token", () => {
   });
 
   describe("Given a valid request is made", () => {
-    const request = buildRequest({
-      body: JSON.stringify({
-        sessionId: mockSessionId,
-        documentType: "NFC_PASSPORT",
-      }),
+    beforeEach(async () => {
+      result = await lambdaHandlerConstructor(
+        dependencies,
+        validRequest,
+        context,
+      );
     });
-
-    it("Logs STARTED and COMPLETED", async () => {
-      await lambdaHandlerConstructor(dependencies, request, context);
-
-      expect(
-        mockLoggingAdapter.getLogMessages()[0].logMessage.message,
-      ).toStrictEqual("STARTED");
-      expect(
-        mockLoggingAdapter.getLogMessages()[1].logMessage.message,
-      ).toStrictEqual("COMPLETED");
+    it("Logs COMPLETED", async () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "MOBILE_ASYNC_BIOMETRIC_TOKEN_COMPLETED",
+      });
     });
 
     it("Returns 501 Not Implemented response", async () => {
-      const result = await lambdaHandlerConstructor(
-        dependencies,
-        request,
-        context,
-      );
-
       expect(result).toStrictEqual({
         headers: expectedSecurityHeaders,
         statusCode: 501,
