@@ -26,11 +26,17 @@ while true; do
       cd ../test-resources
       npm i
       sam build --cached
-      sam deploy \
-        --stack-name "$TEST_RESOURCES_STACK_NAME" \
-        --parameter-overrides "BackendApi=${BACKEND_STACK_NAME}" \
-        --capabilities CAPABILITY_NAMED_IAM \
-        --resolve-s3
+      if [ $? -ge 1 ]; then
+        echo "Build failed"
+        exit 1
+      else
+        sam deploy \
+          --stack-name "$TEST_RESOURCES_STACK_NAME" \
+          --parameter-overrides "BackendApi=${BACKEND_STACK_NAME}" \
+          --capabilities CAPABILITY_NAMED_IAM \
+          --resolve-s3
+      fi
+
       break
       ;;
     [nN])
