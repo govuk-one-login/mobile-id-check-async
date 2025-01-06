@@ -1,11 +1,7 @@
-import {
-  BatchWriteItemCommand,
-  DynamoDBClient,
-  PutRequest,
-} from "@aws-sdk/client-dynamodb";
+import { BatchWriteItemCommand, PutRequest } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
-import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { SQSEvent } from "aws-lambda";
+import { DynamoDbAdapter } from "../../adapters/dynamoDbAdapter";
 import { TxmaEvent } from "./txma/TxmaEventTypes";
 
 export const lambdaHandler = async (event: SQSEvent): Promise<void> => {
@@ -35,25 +31,18 @@ export const lambdaHandler = async (event: SQSEvent): Promise<void> => {
     input.RequestItems[tableName].push(putRequest);
   }
 
+  console.log(input.RequestItems[tableName]);
+
   const command = new BatchWriteItemCommand(input);
 
   try {
-    await ddbClient.send(command);
+    await new DynamoDbAdapter().send(command);
   } catch (error) {
     console.log(`Error writing to DynamoDB: ${error}`);
   }
 
   console.log("COMPLETED");
 };
-
-const ddbClient = new DynamoDBClient({
-  region: "eu-west-2",
-  maxAttempts: 2,
-  requestHandler: new NodeHttpHandler({
-    connectionTimeout: 5000,
-    requestTimeout: 5000,
-  }),
-});
 
 interface IDynamoDBBatchWriteItemInput {
   RequestItems: IRequestItems;
