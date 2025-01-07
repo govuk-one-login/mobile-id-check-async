@@ -89,7 +89,9 @@ export interface PassEvidence {
   validityScore: number;
   activityHistoryScore?: number;
   ci?: string[];
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   checkDetails: any[];
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   txmaContraIndicators?: any[];
 }
 export interface FailEvidence {
@@ -98,7 +100,9 @@ export interface FailEvidence {
   strengthScore: number;
   validityScore: number;
   ci: string[];
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   failedCheckDetails: any[];
+  // eslint-disable-next-line  @typescript-eslint/no-explicit-any
   txmaContraIndicators?: any[];
 }
 
