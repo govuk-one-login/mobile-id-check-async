@@ -16,7 +16,14 @@ export const lambdaHandler = async (event: SQSEvent): Promise<void> => {
   };
 
   for (const record of records) {
-    const txmaEvent: TxmaEvent = JSON.parse(record.body);
+    let txmaEvent: TxmaEvent
+
+    try {
+      txmaEvent = JSON.parse(record.body);
+    } catch (error) {
+      console.log(`Failed to process message - messageId: ${record.messageId}`)
+      continue
+    }
 
     const putRequest: IPutRequest = {
       PutRequest: {
