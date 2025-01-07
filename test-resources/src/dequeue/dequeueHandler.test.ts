@@ -10,7 +10,7 @@ describe("Dequeue TxMA events", () => {
     consoleLogSpy = jest.spyOn(global.console, "log");
     ddbAdapterSpy = jest
       .spyOn(ddbAdapter, "send")
-      .mockImplementation(() => Promise.resolve([]));
+      .mockImplementation(() => Promise.resolve());
   });
 
   afterEach(() => {
@@ -204,9 +204,9 @@ describe("Dequeue TxMA events", () => {
           {
             PutRequest: {
               Item: {
-                pk: { S: "TXMA#SESSION_ID#mockSessionId" },
+                pk: { S: "TXMA#mockSessionId" },
                 sk: {
-                  S: "EVENT_NAME#MOCK_EVENT_NAME#EVENT_TIMESTAMP#mockTimestamp",
+                  S: "MOCK_EVENT_NAME#mockTimestamp",
                 },
                 eventBody: {
                   S: JSON.stringify({
@@ -223,9 +223,9 @@ describe("Dequeue TxMA events", () => {
           {
             PutRequest: {
               Item: {
-                pk: { S: "TXMA#SESSION_ID#mockSessionId" },
+                pk: { S: "TXMA#mockSessionId" },
                 sk: {
-                  S: "EVENT_NAME#MOCK_EVENT_NAME_2#EVENT_TIMESTAMP#mockTimestamp",
+                  S: "MOCK_EVENT_NAME_2#mockTimestamp",
                 },
                 eventBody: {
                   S: JSON.stringify({

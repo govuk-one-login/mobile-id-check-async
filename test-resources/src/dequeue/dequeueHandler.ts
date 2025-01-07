@@ -21,8 +21,8 @@ export const lambdaHandler = async (event: SQSEvent): Promise<void> => {
     const putRequest: IPutRequest = {
       PutRequest: {
         Item: marshall({
-          pk: `TXMA#SESSION_ID#${txmaEvent.user.session_id}`,
-          sk: `EVENT_NAME#${txmaEvent.event_name}#EVENT_TIMESTAMP#${txmaEvent.timestamp}`,
+          pk: `TXMA#${txmaEvent.user.session_id}`,
+          sk: `${txmaEvent.event_name}#${txmaEvent.timestamp}`,
           eventBody: JSON.stringify(txmaEvent),
         }),
       },
