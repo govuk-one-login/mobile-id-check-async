@@ -1,5 +1,12 @@
+import {
+  BatchWriteItemCommand,
+  DynamoDBClient,
+  DynamoDBClientResolvedConfig,
+  ServiceInputTypes,
+  ServiceOutputTypes,
+} from "@aws-sdk/client-dynamodb";
 import { SQSEvent } from "aws-lambda";
-import { IDynamoDBAdapter } from "../adapters/dynamoDbAdapter";
+import { AwsStub, mockClient } from "aws-sdk-client-mock";
 import { Logger } from "../services/logging/logger";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import {
@@ -11,12 +18,18 @@ import { MessageName, registeredLogs } from "./registeredLogs";
 describe("Dequeue TxMA events", () => {
   let dependencies: IDequeueDependencies;
   let mockLogger: MockLoggingAdapter<MessageName>;
+  let mockDdbClient: AwsStub<
+    ServiceInputTypes,
+    ServiceOutputTypes,
+    DynamoDBClientResolvedConfig
+  >;
 
   beforeEach(() => {
     mockLogger = new MockLoggingAdapter();
+    mockDdbClient = mockClient(DynamoDBClient);
+    mockDdbClient.on(BatchWriteItemCommand).resolves({});
     dependencies = {
       logger: () => new Logger(mockLogger, registeredLogs),
-      dbAdapter: () => new MockDBAdapterSuccessResponse(),
     };
   });
 
@@ -26,7 +39,9 @@ describe("Dequeue TxMA events", () => {
 
   describe("Given there are no messages to be processed", () => {
     it("Logs an empty array", async () => {
-      dependencies.dbAdapter = () => new MockDBAdapterErrorResponse();
+      mockDdbClient
+        .on(BatchWriteItemCommand)
+        .rejects("Error writing to database");
       const event: SQSEvent = {
         Records: [],
       };
@@ -38,10 +53,10 @@ describe("Dequeue TxMA events", () => {
         "STARTED",
       );
       expect(mockLogger.getLogMessages()[1].data.messages).toEqual([]);
-      expect(mockLogger.getLogMessages()[2].data.errorMessage).toEqual(
-        "Error writing to database",
+      expect(mockLogger.getLogMessages()[2].logMessage.message).toEqual(
+        "ERROR_WRITING_EVENT_TO_DEQUEUE_TABLE",
       );
-      expect(mockLogger.getLogMessages()[3].logMessage.message).toBe(
+      expect(mockLogger.getLogMessages()[3].logMessage.message).toEqual(
         "COMPLETED",
       );
     });
@@ -278,7 +293,9 @@ describe("Dequeue TxMA events", () => {
 
     describe("Given there is an unexpected error writing events to the database", () => {
       it("Logs an error message", async () => {
-        dependencies.dbAdapter = () => new MockDBAdapterErrorResponse();
+        mockDdbClient
+          .on(BatchWriteItemCommand)
+          .rejects("Error writing to database");
         const event: SQSEvent = {
           Records: [
             {
@@ -309,8 +326,8 @@ describe("Dequeue TxMA events", () => {
         await lambdaHandlerConstructor(dependencies, event);
 
         expect(mockLogger.getLogMessages().length).toEqual(4);
-        expect(mockLogger.getLogMessages()[2].data.errorMessage).toEqual(
-          "Error writing to database",
+        expect(mockLogger.getLogMessages()[2].logMessage.message).toEqual(
+          "ERROR_WRITING_EVENT_TO_DEQUEUE_TABLE",
         );
       });
     });
@@ -413,15 +430,3 @@ describe("Dequeue TxMA events", () => {
     });
   });
 });
-
-class MockDBAdapterSuccessResponse implements IDynamoDBAdapter {
-  async send() {
-    return Promise.resolve();
-  }
-}
-
-class MockDBAdapterErrorResponse implements IDynamoDBAdapter {
-  async send() {
-    return Promise.resolve("Error writing to database");
-  }
-}

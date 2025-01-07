@@ -1,8 +1,12 @@
 import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
-import { BatchWriteItemCommand, PutRequest } from "@aws-sdk/client-dynamodb";
+import {
+  BatchWriteItemCommand,
+  DynamoDBClient,
+  PutRequest,
+} from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
+import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { SQSBatchItemFailure, SQSBatchResponse, SQSEvent } from "aws-lambda";
-import { DynamoDBAdapter, IDynamoDBAdapter } from "../adapters/dynamoDbAdapter";
 import { Logger } from "../services/logging/logger";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { TxmaEvent } from "./txma/TxmaEventTypes";
@@ -11,7 +15,6 @@ export const lambdaHandlerConstructor = async (
   dependencies: IDequeueDependencies,
   event: SQSEvent,
 ): Promise<SQSBatchResponse> => {
-  const dbAdapter = dependencies.dbAdapter();
   const logger = dependencies.logger();
   logger.log("STARTED");
 
@@ -54,10 +57,11 @@ export const lambdaHandlerConstructor = async (
   logger.log("PROCESSED_MESSAGES", { messages: input.RequestItems[tableName] });
 
   const command = new BatchWriteItemCommand(input);
-  const dbResponse = await dbAdapter.send(command);
-  if (dbResponse) {
+  try {
+    await ddbClient.send(command);
+  } catch (error) {
     logger.log("ERROR_WRITING_EVENT_TO_DEQUEUE_TABLE", {
-      errorMessage: dbResponse,
+      errorMessage: error,
     });
   }
 
@@ -65,6 +69,15 @@ export const lambdaHandlerConstructor = async (
 
   return { batchItemFailures };
 };
+
+const ddbClient = new DynamoDBClient({
+  region: "eu-west-2",
+  maxAttempts: 2,
+  requestHandler: new NodeHttpHandler({
+    connectionTimeout: 5000,
+    requestTimeout: 5000,
+  }),
+});
 
 interface IDynamoDBBatchWriteItemInput {
   RequestItems: IRequestItems;
@@ -80,12 +93,10 @@ interface IPutRequest {
 
 export interface IDequeueDependencies {
   logger: () => Logger<MessageName>;
-  dbAdapter: () => IDynamoDBAdapter;
 }
 
 const dependencies: IDequeueDependencies = {
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
-  dbAdapter: () => new DynamoDBAdapter(),
 };
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
