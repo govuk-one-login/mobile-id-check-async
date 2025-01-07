@@ -2,7 +2,7 @@ import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
 import { BatchWriteItemCommand, PutRequest } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { SQSBatchItemFailure, SQSBatchResponse, SQSEvent } from "aws-lambda";
-import { DynamoDBAdapter, IDynamoDBAdapter } from "../adapters/dynamoDBAdapter";
+import { DynamoDBAdapter, IDynamoDBAdapter } from "../adapters/dynamoDbAdapter";
 import { Logger } from "../services/logging/logger";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { TxmaEvent } from "./txma/TxmaEventTypes";

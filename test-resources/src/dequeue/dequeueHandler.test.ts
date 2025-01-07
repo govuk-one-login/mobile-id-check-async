@@ -1,5 +1,5 @@
 import { SQSEvent } from "aws-lambda";
-import { IDynamoDBAdapter } from "../adapters/dynamoDBAdapter";
+import { IDynamoDBAdapter } from "../adapters/dynamoDbAdapter";
 import { Logger } from "../services/logging/logger";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import {
