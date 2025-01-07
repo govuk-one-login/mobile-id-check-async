@@ -4,7 +4,7 @@ import {
 } from "@aws-sdk/client-dynamodb";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 
-export class DynamoDbAdapter {
+export class DynamoDBAdapter implements IDynamoDBAdapter {
   private readonly ddbClient: DynamoDBClient;
 
   constructor() {
@@ -18,15 +18,20 @@ export class DynamoDbAdapter {
     });
   }
 
-  async send(command: DynamoDbCommand): Promise<any> {
+  async send(command: DynamoDBCommand): Promise<any> {
     try {
       await this.ddbClient.send(command);
+      return Promise.resolve(null);
     } catch (error) {
       return Promise.resolve(`Error writing to DynamoDB: ${error}`);
     }
   }
 }
 
-type DynamoDbCommand = BatchWriteItemCommand;
+export type DynamoDBCommand = BatchWriteItemCommand;
 
-export const ddbAdapter = new DynamoDbAdapter();
+export interface IDynamoDBAdapter {
+  send: (command: DynamoDBCommand) => Promise<any>;
+}
+
+// export const ddbAdapter = new DynamoDBAdapter();

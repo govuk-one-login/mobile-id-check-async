@@ -1,11 +1,19 @@
+import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
 import { BatchWriteItemCommand, PutRequest } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { SQSEvent } from "aws-lambda";
-import { DynamoDbAdapter } from "../adapters/dynamoDbAdapter";
+import { DynamoDBAdapter, IDynamoDBAdapter } from "../adapters/dynamoDBAdapter";
+import { Logger } from "../services/logging/logger";
+import { MessageName, registeredLogs } from "./registeredLogs";
 import { TxmaEvent } from "./txma/TxmaEventTypes";
 
-export const lambdaHandler = async (event: SQSEvent): Promise<void> => {
-  console.log("STARTED");
+export const lambdaHandlerConstructor = async (
+  dependencies: IDequeueDependencies,
+  event: SQSEvent,
+): Promise<void> => {
+  const dbAdapter = dependencies.dbAdapter();
+  const logger = dependencies.logger();
+  logger.log("STARTED");
 
   const records = event.Records;
   const tableName = "jh-test-resources-dequeue-table";
@@ -16,13 +24,15 @@ export const lambdaHandler = async (event: SQSEvent): Promise<void> => {
   };
 
   for (const record of records) {
-    let txmaEvent: TxmaEvent
+    let txmaEvent: TxmaEvent;
 
     try {
       txmaEvent = JSON.parse(record.body);
-    } catch (error) {
-      console.log(`Failed to process message - messageId: ${record.messageId}`)
-      continue
+    } catch {
+      logger.log("FAILED_TO_PROCESS_MESSAGES", {
+        errorMessage: `Failed to process message - messageId: ${record.messageId}`,
+      });
+      continue;
     }
 
     const putRequest: IPutRequest = {
@@ -38,17 +48,18 @@ export const lambdaHandler = async (event: SQSEvent): Promise<void> => {
     input.RequestItems[tableName].push(putRequest);
   }
 
-  console.log(input.RequestItems[tableName]);
+  logger.log("PROCESSED_MESSAGES", { messages: input.RequestItems[tableName] });
 
   const command = new BatchWriteItemCommand(input);
 
-  try {
-    await new DynamoDbAdapter().send(command);
-  } catch (error) {
-    console.log(`Error writing to DynamoDB: ${error}`);
+  const result = await dbAdapter.send(command);
+  if (result) {
+    logger.log("ERROR_WRITING_EVENT_TO_DEQUEUE_TABLE", {
+      errorMessage: result,
+    });
   }
 
-  console.log("COMPLETED");
+  logger.log("COMPLETED");
 };
 
 interface IDynamoDBBatchWriteItemInput {
@@ -62,3 +73,15 @@ interface IRequestItems {
 interface IPutRequest {
   PutRequest: PutRequest;
 }
+
+export interface IDequeueDependencies {
+  logger: () => Logger<MessageName>;
+  dbAdapter: () => IDynamoDBAdapter;
+}
+
+const dependencies: IDequeueDependencies = {
+  logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
+  dbAdapter: () => new DynamoDBAdapter(),
+};
+
+export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
