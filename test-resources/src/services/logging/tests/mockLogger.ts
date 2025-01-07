@@ -4,8 +4,10 @@ import { ILoggerAdapter } from "../logger";
 import { LogMessage } from "../types";
 
 export class MockLoggingAdapter<T extends string> implements ILoggerAdapter<T> {
-  private readonly logMessages: { logMessage: LogMessage<T>; data: LogAttributes }[] =
-    [];
+  private readonly logMessages: {
+    logMessage: LogMessage<T>;
+    data: LogAttributes;
+  }[] = [];
   private contextBody: Context | undefined;
   private temporaryKeys: { [key in string]: string } | undefined;
   info = (logMessage: LogMessage<T>, data: LogAttributes): void => {
