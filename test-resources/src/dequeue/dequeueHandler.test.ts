@@ -1,10 +1,5 @@
 import { SQSEvent } from "aws-lambda";
-import {
-  // ddbAdapter,
-  // DynamoDBAdapter,
-  // DynamoDBCommand,
-  IDynamoDBAdapter,
-} from "../adapters/dynamoDBAdapter";
+import { IDynamoDBAdapter } from "../adapters/dynamoDBAdapter";
 import { Logger } from "../services/logging/logger";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import {
@@ -16,22 +11,13 @@ import { MessageName, registeredLogs } from "./registeredLogs";
 describe("Dequeue TxMA events", () => {
   let dependencies: IDequeueDependencies;
   let mockLogger: MockLoggingAdapter<MessageName>;
-  // let consoleLogSpy: jest.SpyInstance;
-  // let mockDbAdapter: jest.SpyInstance;
-  // let ddbAdapterSpy: jest.SpyInstance;
 
   beforeEach(() => {
     mockLogger = new MockLoggingAdapter();
-    // jest.spyOn(new DynamoDBAdapter(), "send")
-    // mockDbAdapter = jest.spyOn(new DynamoDBAdapter(), "send").mockImplementation(() => Promise.resolve())
     dependencies = {
       logger: () => new Logger(mockLogger, registeredLogs),
       dbAdapter: () => new MockDBAdapterSuccessResponse(),
     };
-    // consoleLogSpy = jest.spyOn(global.console, "log");
-    // ddbAdapterSpy = jest
-    //   .spyOn(ddbAdapter, "send")
-    //   .mockImplementation(() => Promise.resolve());
   });
 
   afterEach(() => {
@@ -40,9 +26,6 @@ describe("Dequeue TxMA events", () => {
 
   describe("Given there are no messages to be processed", () => {
     it("Logs an empty array", async () => {
-      // ddbAdapterSpy = jest
-      // .spyOn(ddbAdapter, "send")
-      // .mockImplementation(() => Promise.resolve("Error"));
       dependencies.dbAdapter = () => new MockDBAdapterErrorResponse();
       const event: SQSEvent = {
         Records: [],
@@ -280,9 +263,6 @@ describe("Dequeue TxMA events", () => {
 
     describe("Given there is an unexpected error writing events to the database", () => {
       it("Logs an error message", async () => {
-        // ddbAdapterSpy = jest
-        //   .spyOn(ddbAdapter, "send")
-        //   .mockImplementation(() => Promise.resolve("Error writing to database"));
         dependencies.dbAdapter = () => new MockDBAdapterErrorResponse();
         const event: SQSEvent = {
           Records: [

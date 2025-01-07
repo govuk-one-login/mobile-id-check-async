@@ -33,5 +33,3 @@ export type DynamoDBCommand = BatchWriteItemCommand;
 export interface IDynamoDBAdapter {
   send: (command: DynamoDBCommand) => Promise<any>;
 }
-
-// export const ddbAdapter = new DynamoDBAdapter();
