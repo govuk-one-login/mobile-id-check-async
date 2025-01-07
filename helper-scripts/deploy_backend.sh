@@ -21,6 +21,7 @@ STS_MOCK_STACK_NAME="${STACK_NAME}-sts-mock"
 # Define parameter names
 DEV_OVERRIDE_STS_BASE_URL="DevOverrideStsBaseUrl"
 DEV_OVERRIDE_ASYNC_BACKEND_BASE_URL="DevOverrideAsyncBackendBaseUrl"
+DEPLOY_ALARMS_IN_DEV="DeployAlarmsInDev"
 
 # Ask the user about deploying sts-mock
 deploy_sts_mock=false
@@ -87,6 +88,27 @@ while true; do
 
     case "$yn" in
         [yY] )
+
+            parameter_overrides="$DEV_OVERRIDE_STS_BASE_URL=https://${STS_MOCK_STACK_NAME}.review-b-async.dev.account.gov.uk"
+
+            while true; do
+                echo
+                read -r -p "Do you want to enable alarms for your backend-api stack? [y/n]: " yn
+
+                case "$yn" in
+                    [yY] )
+                        parameter_overrides+=" $DEPLOY_ALARMS_IN_DEV=true"
+                        break
+                        ;;
+                    [nN] )
+                        break
+                        ;;
+                    * )
+                        echo "Invalid input. Please enter 'y' or 'n'."
+                        ;;
+                esac
+            done
+
             # Build and deploy backend-api
             echo "Building and deploying backend-api stack: $BACKEND_STACK_NAME"
             echo
@@ -95,7 +117,7 @@ while true; do
             sam build --cached
             sam deploy \
                 --stack-name "$BACKEND_STACK_NAME" \
-                --parameter-overrides "$DEV_OVERRIDE_STS_BASE_URL=https://${STS_MOCK_STACK_NAME}.review-b-async.dev.account.gov.uk" \
+                --parameter-overrides "$parameter_overrides" \
                 --capabilities CAPABILITY_NAMED_IAM \
                 --resolve-s3
             ./generate_env_file.sh "${BACKEND_STACK_NAME}"

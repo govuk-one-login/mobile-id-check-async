@@ -1,8 +1,9 @@
-import { Template, Capture, Match } from "aws-cdk-lib/assertions";
-const { schema } = require("yaml-cfn");
+import { Capture, Match, Template } from "aws-cdk-lib/assertions";
 import { readFileSync } from "fs";
 import { load } from "js-yaml";
 import { Mappings } from "./helpers/mappings";
+
+const { schema } = require("yaml-cfn");
 
 // https://docs.aws.amazon.com/cdk/v2/guide/testing.html <--- how to use this file
 
@@ -136,52 +137,82 @@ describe("Backend application infrastructure", () => {
   });
 
   describe("CloudWatch alarms", () => {
-    test("apiGateway WellKnown5XXHighThresholdAlarm should have a runbook if alarm is enabled", () => {
-      const actionsEnabledCapture = new Capture();
-      const snsTopicCapture = new Capture();
-      template.hasResourceProperties("AWS::CloudWatch::Alarm", {
-        AlarmName: {
-          "Fn::Sub": "${AWS::StackName}-HighThresholdWellKnown5XXApiGwAlarm",
-        },
-        ActionsEnabled: actionsEnabledCapture,
-        AlarmActions: snsTopicCapture,
-      });
+    test("All critical alerts should have runbooks defined", () => {
+      // to be updated only when a runbook exists for an alarm
+      const runbooksByAlarm: Record<string, boolean> = {
+        "high-threshold-well-known-5xx-api-gw": false,
+        "high-threshold-well-known-4xx-api-gw": false,
+        "high-threshold-async-token-5xx-api-gw": false,
+        "high-threshold-async-token-4xx-api-gw": false,
+        "high-threshold-async-credential-5xx-api-gw": false,
+        "high-threshold-async-credential-4xx-api-gw": false,
+      };
 
-      const alarmActions = snsTopicCapture.asArray();
-
-      const isCriticalAlert =
-        alarmActions[0]["Fn::Sub"] ===
-        "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical";
-
-      const isRunbookCreated = false; // to be updated only when a runbook exists for this alarm
-      const isActionsEnabled = actionsEnabledCapture.asBoolean();
-      if (isActionsEnabled && isCriticalAlert) {
-        expect(isActionsEnabled).toEqual(isRunbookCreated);
-      }
+      const alarms = template.findResources("AWS::CloudWatch::Alarm");
+      const activeCriticalAlerts = Object.entries(alarms)
+        .filter(([, resource]) => {
+          const alarmIsEnabled = resource.Properties.ActionsEnabled;
+          const isCriticalAlert =
+            resource.Properties.AlarmActions[0]["Fn::Sub"] ===
+            "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical";
+          return alarmIsEnabled && isCriticalAlert;
+        })
+        .map(([, resource]) =>
+          resource.Properties.AlarmName["Fn::Sub"].replace(
+            "${AWS::StackName}-",
+            "",
+          ),
+        );
+      const activeCriticalAlertsWithNoRunbook = activeCriticalAlerts.filter(
+        (alarmName) => runbooksByAlarm[alarmName] === false,
+      );
+      expect(activeCriticalAlertsWithNoRunbook).toHaveLength(0);
     });
 
-    test("apiGateway WellKnown5XXLowThresholdAlarm should have a runbook if alarm is enabled", () => {
-      const actionsEnabledCapture = new Capture();
-      const snsTopicCapture = new Capture();
-      template.hasResourceProperties("AWS::CloudWatch::Alarm", {
-        AlarmName: {
-          "Fn::Sub": "${AWS::StackName}-LowThresholdWellKnown5XXApiGwAlarm",
-        },
-        ActionsEnabled: actionsEnabledCapture,
-        AlarmActions: snsTopicCapture,
+    test("All alarms are configured with the DeployAlarm Condition", () => {
+      const alarms = Object.values(
+        template.findResources("AWS::CloudWatch::Alarm"),
+      );
+      alarms.forEach((alarm) => {
+        expect(alarm).toEqual(
+          expect.objectContaining({ Condition: "DeployAlarms" }),
+        );
       });
+    });
 
-      const alarmActions = snsTopicCapture.asArray();
-
-      const isCriticalAlert =
-        alarmActions[0]["Fn::Sub"] ===
-        "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning";
-
-      const isRunbookCreated = true; // to be updated only when a runbook exists for this alarm
-      const isActionsEnabled = actionsEnabledCapture.asBoolean();
-      if (isActionsEnabled && isCriticalAlert) {
-        expect(isActionsEnabled).toEqual(isRunbookCreated);
-      }
+    describe("Warning alarms", () => {
+      it.each([
+        ["high-threshold-well-known-5xx-api-gw"],
+        ["low-threshold-well-known-5xx-api-gw"],
+        ["high-threshold-async-token-5xx-api-gw"],
+        ["low-threshold-async-token-5xx-api-gw"],
+        ["high-threshold-async-token-4xx-api-gw"],
+        ["low-threshold-async-token-4xx-api-gw"],
+        ["high-threshold-async-credential-5xx-api-gw"],
+        ["low-threshold-async-credential-5xx-api-gw"],
+        ["high-threshold-async-credential-4xx-api-gw"],
+        ["low-threshold-async-credential-4xx-api-gw"],
+      ])(
+        "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
+        (alarmName: string) => {
+          template.hasResourceProperties("AWS::CloudWatch::Alarm", {
+            AlarmName: { "Fn::Sub": `\${AWS::StackName}-${alarmName}` },
+            AlarmActions: [
+              {
+                "Fn::Sub":
+                  "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning",
+              },
+            ],
+            OKActions: [
+              {
+                "Fn::Sub":
+                  "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning",
+              },
+            ],
+            ActionsEnabled: true,
+          });
+        },
+      );
     });
   });
 
@@ -458,6 +489,11 @@ describe("Backend application infrastructure", () => {
           ],
         });
       });
+
+      test("Global memory size is set to 512MB", () => {
+        const globalMemorySize = template.toJSON().Globals.Function.MemorySize;
+        expect(globalMemorySize).toStrictEqual(512);
+      });
     });
 
     test("All lambdas have a FunctionName defined", () => {
@@ -543,11 +579,12 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("ActiveSession lambda is attached to a VPC and subnets are protected", () => {
-      const activeSessionLambdaHandlers = [
+    test("ActiveSession and BiometricToken lambdas are attached to a VPC and subnets are protected", () => {
+      const lambdaHandlers = [
         "asyncActiveSessionHandler.lambdaHandler",
+        "asyncBiometricTokenHandler.lambdaHandler",
       ];
-      activeSessionLambdaHandlers.forEach((lambdaHandler) => {
+      lambdaHandlers.forEach((lambdaHandler) => {
         template.hasResourceProperties("AWS::Serverless::Function", {
           Handler: lambdaHandler,
           VpcConfig: {

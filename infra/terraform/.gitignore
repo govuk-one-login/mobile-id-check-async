@@ -1,5 +1,0 @@
-templates/
-*.tfstate*
-state/*
-.terraform
-.terraform.lock.hcl
