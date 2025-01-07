@@ -107,14 +107,19 @@ Mappings:
   Lambda:
     dev:
       ReservedConcurrentExecutions: 15
+      LogLevel: DEBUG
     build:
       ReservedConcurrentExecutions: 15
+      LogLevel: INFO
     staging:
       ReservedConcurrentExecutions: 0
+      LogLevel: INFO
     integration:
       ReservedConcurrentExecutions: 0
+      LogLevel: INFO
     production:
       ReservedConcurrentExecutions: 0
+      LogLevel: INFO
 
   TxMA:
     dev:
@@ -230,6 +235,11 @@ Globals:
       - UsePermissionsBoundary
       - !Ref PermissionsBoundary
       - !Ref AWS::NoValue
+    LoggingConfig:
+      ApplicationLogLevel:
+        !FindInMap [ Lambda, !Ref Environment, LambdaLogLevel ]
+      SystemLogLevel: INFO
+      LogFormat: JSON
     Architectures:
       - arm64
     Environment:
