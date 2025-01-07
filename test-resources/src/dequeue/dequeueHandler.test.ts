@@ -17,8 +17,8 @@ describe("Dequeue TxMA events", () => {
     jest.restoreAllMocks();
   });
 
-  describe("Given there are no messages in the request", () => {
-    it("Logs an empty processed messages array", async () => {
+  describe("Given there are no messages to be processed", () => {
+    it("Logs an empty array", async () => {
       const event: SQSEvent = {
         Records: [],
       };
@@ -129,7 +129,7 @@ describe("Dequeue TxMA events", () => {
   });
 
   describe("Given multiple messages are sent in the request", () => {
-    describe.skip("Given one out of three messages fails to be processed", () => {
+    describe("Given one out of three messages fails to be processed", () => {
       it("Logs successfully processed messages", async () => {
         const event: SQSEvent = {
           Records: [
@@ -138,6 +138,10 @@ describe("Dequeue TxMA events", () => {
               receiptHandle: "mockReceiptHandle",
               body: JSON.stringify({
                 event_name: "MOCK_EVENT_NAME",
+                user: {
+                  session_id: "mockSessionId",
+                },
+                timestamp: "mockTimestamp",
               }),
               attributes: {
                 ApproximateReceiveCount: "1",
@@ -172,6 +176,10 @@ describe("Dequeue TxMA events", () => {
               receiptHandle: "mockReceiptHandle",
               body: JSON.stringify({
                 event_name: "MOCK_EVENT_NAME_2",
+                user: {
+                  session_id: "mockSessionId",
+                },
+                timestamp: "mockTimestamp",
               }),
               attributes: {
                 ApproximateReceiveCount: "1",
@@ -190,19 +198,49 @@ describe("Dequeue TxMA events", () => {
 
         const result = await lambdaHandler(event);
 
-        expect(consoleLogSpy).toHaveBeenCalledTimes(6);
+        expect(consoleLogSpy).toHaveBeenCalledTimes(4);
         expect(consoleLogSpy).toHaveBeenNthCalledWith(
-          3,
+          2,
           "Failed to process message - messageId: D8B937B7-7E1D-4D37-BD82-C6AED9F7D975",
         );
-        expect(consoleLogSpy).toHaveBeenNthCalledWith(5, [
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(3, [
           {
-            messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
-            eventName: "MOCK_EVENT_NAME",
+            PutRequest: {
+              Item: {
+                pk: { S: "TXMA#mockSessionId" },
+                sk: {
+                  S: "MOCK_EVENT_NAME#mockTimestamp",
+                },
+                eventBody: {
+                  S: JSON.stringify({
+                    event_name: "MOCK_EVENT_NAME",
+                    user: {
+                      session_id: "mockSessionId",
+                    },
+                    timestamp: "mockTimestamp",
+                  }),
+                },
+              },
+            },
           },
           {
-            messageId: "4008E4FD-10A1-461F-9B34-910BCE726C55",
-            eventName: "MOCK_EVENT_NAME_2",
+            PutRequest: {
+              Item: {
+                pk: { S: "TXMA#mockSessionId" },
+                sk: {
+                  S: "MOCK_EVENT_NAME_2#mockTimestamp",
+                },
+                eventBody: {
+                  S: JSON.stringify({
+                    event_name: "MOCK_EVENT_NAME_2",
+                    user: {
+                      session_id: "mockSessionId",
+                    },
+                    timestamp: "mockTimestamp",
+                  }),
+                },
+              },
+            },
           },
         ]);
       });
