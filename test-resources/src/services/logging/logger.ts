@@ -16,8 +16,8 @@ export interface ILoggerAdapter<T extends string> {
 
 export class Logger<T extends string> implements ILogger<T> {
   constructor(
-    private logger: ILoggerAdapter<T>,
-    private registeredLogs: RegisteredLogMessages<T>,
+    private readonly logger: ILoggerAdapter<T>,
+    private readonly registeredLogs: RegisteredLogMessages<T>,
   ) {}
   log = (message: T, data: LogAttributes = {}): void => {
     this.logger.info(

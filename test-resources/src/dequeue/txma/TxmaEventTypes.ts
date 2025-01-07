@@ -1,7 +1,5 @@
 import { Flags, VerifiedCredential } from "./IVerifiedCredential";
 
-export const TXMA_HEADER = "txma-audit-encoded";
-
 export type EncodedHeader = string | string[] | undefined;
 export type IpAddress = string | string[];
 
