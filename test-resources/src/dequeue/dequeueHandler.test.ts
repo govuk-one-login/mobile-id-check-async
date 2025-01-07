@@ -145,79 +145,84 @@ describe("Dequeue TxMA events", () => {
   });
 
   describe("Given multiple messages are sent in the request", () => {
-    describe("Given one out of three messages fails to be processed", () => {
-      it("Logs successfully processed messages", async () => {
-        const event: SQSEvent = {
-          Records: [
-            {
-              messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
-              receiptHandle: "mockReceiptHandle",
-              body: JSON.stringify({
-                event_name: "MOCK_EVENT_NAME",
-                user: {
-                  session_id: "mockSessionId",
-                },
-                timestamp: "mockTimestamp",
-              }),
-              attributes: {
-                ApproximateReceiveCount: "1",
-                SentTimestamp: "1545082649183",
-                SenderId: "AIDAIENQZJOLO23YVJ4VO",
-                ApproximateFirstReceiveTimestamp: "1545082649185",
-              },
-              messageAttributes: {},
-              md5OfBody: "098f6bcd4621d373cade4e832627b4f6",
-              eventSource: "aws:sqs",
-              eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
-              awsRegion: "eu-west-2",
+    const event: SQSEvent = {
+      Records: [
+        {
+          messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
+          receiptHandle: "mockReceiptHandle",
+          body: JSON.stringify({
+            event_name: "MOCK_EVENT_NAME",
+            user: {
+              session_id: "mockSessionId",
             },
-            {
-              messageId: "D8B937B7-7E1D-4D37-BD82-C6AED9F7D975",
-              receiptHandle: "mockReceiptHandle",
-              body: "error",
-              attributes: {
-                ApproximateReceiveCount: "1",
-                SentTimestamp: "1545082649183",
-                SenderId: "AIDAIENQZJOLO23YVJ4VO",
-                ApproximateFirstReceiveTimestamp: "1545082649185",
-              },
-              messageAttributes: {},
-              md5OfBody: "098f6bcd4621d373cade4e832627b4f6",
-              eventSource: "aws:sqs",
-              eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
-              awsRegion: "eu-west-2",
+            timestamp: "mockTimestamp",
+          }),
+          attributes: {
+            ApproximateReceiveCount: "1",
+            SentTimestamp: "1545082649183",
+            SenderId: "AIDAIENQZJOLO23YVJ4VO",
+            ApproximateFirstReceiveTimestamp: "1545082649185",
+          },
+          messageAttributes: {},
+          md5OfBody: "098f6bcd4621d373cade4e832627b4f6",
+          eventSource: "aws:sqs",
+          eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
+          awsRegion: "eu-west-2",
+        },
+        {
+          messageId: "D8B937B7-7E1D-4D37-BD82-C6AED9F7D975",
+          receiptHandle: "mockReceiptHandle",
+          body: "error",
+          attributes: {
+            ApproximateReceiveCount: "1",
+            SentTimestamp: "1545082649183",
+            SenderId: "AIDAIENQZJOLO23YVJ4VO",
+            ApproximateFirstReceiveTimestamp: "1545082649185",
+          },
+          messageAttributes: {},
+          md5OfBody: "098f6bcd4621d373cade4e832627b4f6",
+          eventSource: "aws:sqs",
+          eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
+          awsRegion: "eu-west-2",
+        },
+        {
+          messageId: "4008E4FD-10A1-461F-9B34-910BCE726C55",
+          receiptHandle: "mockReceiptHandle",
+          body: JSON.stringify({
+            event_name: "MOCK_EVENT_NAME_2",
+            user: {
+              session_id: "mockSessionId",
             },
-            {
-              messageId: "4008E4FD-10A1-461F-9B34-910BCE726C55",
-              receiptHandle: "mockReceiptHandle",
-              body: JSON.stringify({
-                event_name: "MOCK_EVENT_NAME_2",
-                user: {
-                  session_id: "mockSessionId",
-                },
-                timestamp: "mockTimestamp",
-              }),
-              attributes: {
-                ApproximateReceiveCount: "1",
-                SentTimestamp: "1545082649183",
-                SenderId: "AIDAIENQZJOLO23YVJ4VO",
-                ApproximateFirstReceiveTimestamp: "1545082649185",
-              },
-              messageAttributes: {},
-              md5OfBody: "098f6bcd4621d373cade4e832627b4f6",
-              eventSource: "aws:sqs",
-              eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
-              awsRegion: "eu-west-2",
-            },
-          ],
-        };
+            timestamp: "mockTimestamp",
+          }),
+          attributes: {
+            ApproximateReceiveCount: "1",
+            SentTimestamp: "1545082649183",
+            SenderId: "AIDAIENQZJOLO23YVJ4VO",
+            ApproximateFirstReceiveTimestamp: "1545082649185",
+          },
+          messageAttributes: {},
+          md5OfBody: "098f6bcd4621d373cade4e832627b4f6",
+          eventSource: "aws:sqs",
+          eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
+          awsRegion: "eu-west-2",
+        },
+      ],
+    };
 
+    describe("Given one out of three messages fails to be processed", () => {
+      it("Logs the messageId of messages that failed to be processed", async () => {
         await lambdaHandlerConstructor(dependencies, event);
 
         expect(mockLogger.getLogMessages().length).toEqual(4);
         expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
           "Failed to process message - messageId: D8B937B7-7E1D-4D37-BD82-C6AED9F7D975",
         );
+      });
+
+      it("Logs successfully processed messages", async () => {
+        await lambdaHandlerConstructor(dependencies, event);
+
         expect(mockLogger.getLogMessages()[2].data.messages).toEqual([
           {
             PutRequest: {
@@ -258,6 +263,16 @@ describe("Dequeue TxMA events", () => {
             },
           },
         ]);
+      });
+
+      it("Returns batch item failures", async () => {
+        const result = await lambdaHandlerConstructor(dependencies, event);
+
+        expect(result).toStrictEqual({
+          batchItemFailures: [
+            { itemIdentifier: "D8B937B7-7E1D-4D37-BD82-C6AED9F7D975" },
+          ],
+        });
       });
     });
 

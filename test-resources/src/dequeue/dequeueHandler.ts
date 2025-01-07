@@ -1,7 +1,7 @@
 import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
 import { BatchWriteItemCommand, PutRequest } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
-import { SQSEvent } from "aws-lambda";
+import { SQSBatchItemFailure, SQSBatchResponse, SQSEvent } from "aws-lambda";
 import { DynamoDBAdapter, IDynamoDBAdapter } from "../adapters/dynamoDBAdapter";
 import { Logger } from "../services/logging/logger";
 import { MessageName, registeredLogs } from "./registeredLogs";
@@ -10,13 +10,14 @@ import { TxmaEvent } from "./txma/TxmaEventTypes";
 export const lambdaHandlerConstructor = async (
   dependencies: IDequeueDependencies,
   event: SQSEvent,
-): Promise<void> => {
+): Promise<SQSBatchResponse> => {
   const dbAdapter = dependencies.dbAdapter();
   const logger = dependencies.logger();
   logger.log("STARTED");
 
   const records = event.Records;
   const tableName = "jh-test-resources-dequeue-table";
+  const batchItemFailures: SQSBatchItemFailure[] = [];
   const input: IDynamoDBBatchWriteItemInput = {
     RequestItems: {
       [tableName]: [],
@@ -32,6 +33,9 @@ export const lambdaHandlerConstructor = async (
       logger.log("FAILED_TO_PROCESS_MESSAGES", {
         errorMessage: `Failed to process message - messageId: ${record.messageId}`,
       });
+
+      batchItemFailures.push({ itemIdentifier: record.messageId });
+
       continue;
     }
 
@@ -60,6 +64,8 @@ export const lambdaHandlerConstructor = async (
   }
 
   logger.log("COMPLETED");
+
+  return { batchItemFailures };
 };
 
 interface IDynamoDBBatchWriteItemInput {
