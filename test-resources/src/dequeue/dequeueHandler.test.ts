@@ -1,5 +1,5 @@
 import { SQSEvent } from "aws-lambda";
-import { ddbAdapter } from "../../adapters/dynamoDbAdapter";
+import { ddbAdapter } from "../adapters/dynamoDbAdapter";
 import { lambdaHandler } from "./dequeueHandler";
 
 describe("Dequeue TxMA events", () => {

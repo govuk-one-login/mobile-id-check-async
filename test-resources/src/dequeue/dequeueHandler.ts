@@ -1,7 +1,7 @@
 import { BatchWriteItemCommand, PutRequest } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { SQSEvent } from "aws-lambda";
-import { DynamoDbAdapter } from "../../adapters/dynamoDbAdapter";
+import { DynamoDbAdapter } from "../adapters/dynamoDbAdapter";
 import { TxmaEvent } from "./txma/TxmaEventTypes";
 
 export const lambdaHandler = async (event: SQSEvent): Promise<void> => {
