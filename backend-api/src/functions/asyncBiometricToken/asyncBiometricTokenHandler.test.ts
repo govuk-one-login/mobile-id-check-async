@@ -26,8 +26,18 @@ describe("Async Biometric Token", () => {
     }),
   });
 
+  const mockSuccessfulGetSecrets = jest
+    .fn()
+    .mockResolvedValue([
+      "mock_submitter_key_passport",
+      "mock_submitter_key_dl",
+      "mock_submitter_key_brp",
+    ]);
+
   beforeEach(() => {
-    dependencies = {};
+    dependencies = {
+      getSecrets: mockSuccessfulGetSecrets,
+    };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
     consoleErrorSpy = jest.spyOn(console, "error");
@@ -103,6 +113,7 @@ describe("Async Biometric Token", () => {
         context,
       );
     });
+
     it("Logs COMPLETED", async () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_BIOMETRIC_TOKEN_COMPLETED",

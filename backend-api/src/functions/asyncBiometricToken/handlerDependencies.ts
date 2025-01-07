@@ -1,3 +1,10 @@
-export type IAsyncBiometricTokenDependencies = object;
+import { GetSecrets } from "../common/config/secrets";
+import { getSecretsFromParameterStore } from "../adapters/getSecretsFromParameterStore";
 
-export const dependencies: IAsyncBiometricTokenDependencies = {};
+export type IAsyncBiometricTokenDependencies = {
+  getSecrets: GetSecrets;
+};
+
+export const dependencies: IAsyncBiometricTokenDependencies = {
+  getSecrets: getSecretsFromParameterStore,
+};
