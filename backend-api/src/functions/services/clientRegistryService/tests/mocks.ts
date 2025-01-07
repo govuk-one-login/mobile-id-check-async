@@ -11,7 +11,7 @@ export class MockClientRegistryServiceeGetPartialClientInternalServerResult
   getPartialRegisteredClientByClientId = async () => {
     return errorResult({
       errorMessage: "Unexpected error retrieving registered client",
-      errorCategory: "SERVER_ERROR",
+      errorCategory: "SERVER_ERROR" as const,
     });
   };
 }
@@ -22,7 +22,7 @@ export class MockClientRegistryServiceGetPartialClientBadRequestResponse
   getPartialRegisteredClientByClientId = async () => {
     return errorResult({
       errorMessage: "Client Id is not registered",
-      errorCategory: "CLIENT_ERROR",
+      errorCategory: "CLIENT_ERROR" as const,
     });
   };
 }
@@ -78,7 +78,7 @@ export class MockClientRegistryServiceBadRequestResult
     return Promise.resolve(
       errorResult({
         errorMessage: "Client secrets invalid",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: "CLIENT_ERROR" as const,
       }),
     );
   };
