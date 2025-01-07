@@ -35,7 +35,6 @@ export const lambdaHandlerConstructor = async (
       });
 
       batchItemFailures.push({ itemIdentifier: record.messageId });
-
       continue;
     }
 
@@ -55,11 +54,10 @@ export const lambdaHandlerConstructor = async (
   logger.log("PROCESSED_MESSAGES", { messages: input.RequestItems[tableName] });
 
   const command = new BatchWriteItemCommand(input);
-
-  const result = await dbAdapter.send(command);
-  if (result) {
+  const dbResponse = await dbAdapter.send(command);
+  if (dbResponse) {
     logger.log("ERROR_WRITING_EVENT_TO_DEQUEUE_TABLE", {
-      errorMessage: result,
+      errorMessage: dbResponse,
     });
   }
 
