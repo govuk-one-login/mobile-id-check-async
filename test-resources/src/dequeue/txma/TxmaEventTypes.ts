@@ -177,17 +177,3 @@ export type TxmaEvent =
   | SessionRecoveredTxmaEvent
   | AppStartTxmaEvent
   | VcIssuedTxmaEvent;
-
-const genericTxmaEvent = {
-  event_name: "MOCK_EVENT_NAME",
-  user: {
-    user_id: "mockUserId",
-    transaction_id: "mockTransactionId",
-    session_id: "mockSessionId",
-    govuk_signin_journey_id: "mockJourneyId",
-  },
-  client_id: "mockClientId",
-  timestamp: "mockTimestamp",
-  event_timestamp_ms: "mockTimestampMs",
-  component_id: "mockComponentId",
-};
