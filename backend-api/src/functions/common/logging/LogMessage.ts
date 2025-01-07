@@ -1,6 +1,23 @@
 import { LogAttributes } from "@aws-lambda-powertools/logger/types";
 
 export class LogMessage implements LogAttributes {
+  // Shared
+  static readonly GET_SECRETS_FROM_PARAMETER_STORE_ATTEMPT = new LogMessage(
+    "MOBILE_ASYNC_GET_SECRETS_FROM_PARAMETER_STORE_ATTEMPT",
+    "Attempting to retrieve one or more secrets from SSM Parameter Store.",
+  );
+
+  static readonly GET_SECRETS_FROM_PARAMETER_STORE_SUCCESS = new LogMessage(
+    "MOBILE_ASYNC_GET_SECRETS_FROM_PARAMETER_STORE_SUCCESS",
+    "Successfully retrieved one or more secrets from SSM Parameter Store.",
+  );
+
+  static readonly GET_SECRETS_FROM_PARAMETER_STORE_FAILURE = new LogMessage(
+    "MOBILE_ASYNC_GET_SECRETS_FROM_PARAMETER_STORE_FAILURE",
+    "Failed to retrieve one or more secrets from SSM Parameter Store.",
+  );
+
+  // Biometric Token
   static readonly BIOMETRIC_TOKEN_STARTED = new LogMessage(
     "MOBILE_ASYNC_BIOMETRIC_TOKEN_STARTED",
     "Lambda handler processing has started.",

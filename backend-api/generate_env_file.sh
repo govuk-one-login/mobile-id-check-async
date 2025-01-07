@@ -20,3 +20,5 @@ echo "PRIVATE_API_URL=$PRIVATE_API_URL" >> .env
 echo "STS_MOCK_API_URL=$STS_MOCK_API_URL" >> .env
 echo "TEST_ENVIRONMENT=dev" >> .env
 echo "IS_LOCAL_TEST=true" >> .env
+echo "POWERTOOLS_DEV=true" >> .env
+echo "AWS_LAMBDA_LOG_LEVEL=DEBUG" >> .env

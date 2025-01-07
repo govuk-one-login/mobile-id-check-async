@@ -1,3 +1,6 @@
+import { expect } from "@jest/globals";
+import "../testUtils/matchers";
+import "dotenv/config";
 import { mockClient } from "aws-sdk-client-mock";
 import "aws-sdk-client-mock-jest";
 import {
@@ -17,9 +20,13 @@ const mockSecretValue1 = "mockSecretValue1";
 const mockSecretValue2 = "mockSecretValue2";
 
 let result: Result<string[]>;
+let consoleDebugSpy: jest.SpyInstance;
+let consoleErrorSpy: jest.SpyInstance;
 
 describe("getSecretsFromParameterStore", () => {
   beforeEach(() => {
+    consoleDebugSpy = jest.spyOn(console, "debug");
+    consoleErrorSpy = jest.spyOn(console, "error");
     jest.useFakeTimers();
     jest.setSystemTime(NOW_IN_MILLISECONDS);
   });
@@ -27,6 +34,23 @@ describe("getSecretsFromParameterStore", () => {
     mockSsmClient.reset();
     clearCaches();
     jest.useRealTimers();
+  });
+
+  describe("On every call", () => {
+    beforeEach(async () => {
+      mockSsmClient.onAnyCommand().rejects();
+      result = await getSecretsFromParameterStore({
+        secretNames: [mockSecretName1, mockSecretName2],
+      });
+    });
+    it("Logs attempt at debug level", () => {
+      expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "MOBILE_ASYNC_GET_SECRETS_FROM_PARAMETER_STORE_ATTEMPT",
+        data: {
+          secretNames: [mockSecretName1, mockSecretName2],
+        },
+      });
+    });
   });
 
   describe("When a server error occurs retrieving secrets", () => {
@@ -38,6 +62,12 @@ describe("getSecretsFromParameterStore", () => {
         );
       result = await getSecretsFromParameterStore({
         secretNames: [mockSecretName1],
+      });
+    });
+
+    it("Logs error", () => {
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "MOBILE_ASYNC_GET_SECRETS_FROM_PARAMETER_STORE_FAILURE",
       });
     });
 
@@ -62,6 +92,12 @@ describe("getSecretsFromParameterStore", () => {
       });
     });
 
+    it("Logs error", () => {
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "MOBILE_ASYNC_GET_SECRETS_FROM_PARAMETER_STORE_FAILURE",
+      });
+    });
+
     it("Returns failure", () => {
       expect(result).toEqual(errorResult({ errorMessage: "server_error" }));
     });
@@ -71,6 +107,13 @@ describe("getSecretsFromParameterStore", () => {
     beforeEach(async () => {
       result = await getSecretsFromParameterStore({ secretNames: [] });
     });
+
+    it("Logs success at debug level", () => {
+      expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "MOBILE_ASYNC_GET_SECRETS_FROM_PARAMETER_STORE_SUCCESS",
+      });
+    });
+
     it("Returns success with empty array", () => {
       expect(result).toEqual(successResult([]));
     });
@@ -100,6 +143,13 @@ describe("getSecretsFromParameterStore", () => {
           secretNames: [mockSecretName1],
         });
       });
+
+      it("Logs success at debug level", () => {
+        expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_GET_SECRETS_FROM_PARAMETER_STORE_SUCCESS",
+        });
+      });
+
       it("Returns success with value of secret", () => {
         expect(result).toEqual(successResult([mockSecretValue1]));
       });
@@ -128,6 +178,13 @@ describe("getSecretsFromParameterStore", () => {
           secretNames: [mockSecretName1, mockSecretName2],
         });
       });
+
+      it("Logs success at debug level", () => {
+        expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_GET_SECRETS_FROM_PARAMETER_STORE_SUCCESS",
+        });
+      });
+
       it("Returns success with values of secrets in same order", () => {
         expect(result).toEqual(
           successResult([mockSecretValue1, mockSecretValue2]),
@@ -166,6 +223,12 @@ describe("getSecretsFromParameterStore", () => {
       result = await getSecretsFromParameterStore({
         secretNames: [mockSecretName1, mockSecretName2],
         cacheDurationInSeconds: 10,
+      });
+    });
+
+    it("Logs success at debug level", () => {
+      expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "MOBILE_ASYNC_GET_SECRETS_FROM_PARAMETER_STORE_SUCCESS",
       });
     });
 
@@ -209,6 +272,12 @@ describe("getSecretsFromParameterStore", () => {
       result = await getSecretsFromParameterStore({
         secretNames: [mockSecretName1, mockSecretName2],
         cacheDurationInSeconds: 10,
+      });
+    });
+
+    it("Logs success at debug level", () => {
+      expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "MOBILE_ASYNC_GET_SECRETS_FROM_PARAMETER_STORE_SUCCESS",
       });
     });
 
