@@ -9,11 +9,9 @@ export class MockLoggingAdapter<T extends string> implements ILoggerAdapter<T> {
     data: LogAttributes;
   }[] = [];
   private contextBody: Context | undefined;
-  private temporaryKeys: { [key in string]: string } | undefined;
   info = (logMessage: LogMessage<T>, data: LogAttributes): void => {
     const enrichedLogMessage = {
       ...this.contextBody,
-      ...this.temporaryKeys,
       ...logMessage,
     };
     this.logMessages.push({ logMessage: enrichedLogMessage, data });
