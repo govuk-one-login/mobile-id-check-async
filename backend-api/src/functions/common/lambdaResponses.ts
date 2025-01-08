@@ -33,6 +33,6 @@ export const serverErrorResponse: APIGatewayProxyResult = {
   statusCode: 500,
   body: JSON.stringify({
     error: "server_error",
-    error_description: "Server Error",
+    error_description: "Internal Server Error",
   }),
 };

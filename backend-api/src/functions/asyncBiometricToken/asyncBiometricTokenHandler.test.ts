@@ -11,6 +11,7 @@ import {
   mockSessionId,
 } from "../testUtils/unitTestData";
 import { logger } from "../common/logging/logger";
+import { errorResult, successResult } from "../utils/result";
 
 describe("Async Biometric Token", () => {
   let dependencies: IAsyncBiometricTokenDependencies;
@@ -28,11 +29,13 @@ describe("Async Biometric Token", () => {
 
   const mockSuccessfulGetSecrets = jest
     .fn()
-    .mockResolvedValue([
-      "mock_submitter_key_passport",
-      "mock_submitter_key_dl",
-      "mock_submitter_key_brp",
-    ]);
+    .mockResolvedValue(
+      successResult([
+        "mock_submitter_key_passport",
+        "mock_submitter_key_brp",
+        "mock_submitter_key_dl",
+      ]),
+    );
 
   beforeEach(() => {
     dependencies = {
@@ -41,6 +44,7 @@ describe("Async Biometric Token", () => {
           "mock_secret_path_passport",
         BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_BRP: "mock_secret_path_brp",
         BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL: "mock_secret_path_dl",
+        BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS: "900",
       },
       getSecrets: mockSuccessfulGetSecrets,
     };
@@ -81,6 +85,7 @@ describe("Async Biometric Token", () => {
       ["BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_PASSPORT"],
       ["BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_BRP"],
       ["BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL"],
+      ["BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS"],
     ])("Given %s environment variable is missing", (envVar: string) => {
       beforeEach(async () => {
         delete dependencies.env[envVar];
@@ -95,7 +100,7 @@ describe("Async Biometric Token", () => {
           statusCode: 500,
           body: JSON.stringify({
             error: "server_error",
-            error_description: "Server Error",
+            error_description: "Internal Server Error",
           }),
           headers: expectedSecurityHeaders,
         });
@@ -146,6 +151,28 @@ describe("Async Biometric Token", () => {
     });
   });
 
+  describe("When there is an error getting secrets", () => {
+    beforeEach(async () => {
+      dependencies.getSecrets = jest.fn().mockResolvedValue(errorResult(null));
+      result = await lambdaHandlerConstructor(
+        dependencies,
+        validRequest,
+        context,
+      );
+    });
+
+    it("returns 500 Internal server error", async () => {
+      expect(result).toStrictEqual({
+        statusCode: 500,
+        body: JSON.stringify({
+          error: "server_error",
+          error_description: "Internal Server Error",
+        }),
+        headers: expectedSecurityHeaders,
+      });
+    });
+  });
+
   describe("Given a valid request is made", () => {
     beforeEach(async () => {
       result = await lambdaHandlerConstructor(
@@ -153,6 +180,17 @@ describe("Async Biometric Token", () => {
         validRequest,
         context,
       );
+    });
+
+    it("Passes correct arguments to get secrets", () => {
+      expect(mockSuccessfulGetSecrets).toHaveBeenCalledWith({
+        secretNames: [
+          "mock_secret_path_passport",
+          "mock_secret_path_brp",
+          "mock_secret_path_dl",
+        ],
+        cacheDurationInSeconds: 900,
+      });
     });
 
     it("Logs COMPLETED", async () => {

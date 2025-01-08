@@ -163,26 +163,31 @@ Mappings:
       BiometricSubmitterKeySecretPathPassport: 'dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: 'dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: 'dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
+      BiometricSubmitterKeySecretCacheDurationInSeconds: 900
     build:
       STSBASEURL: 'https://mob-sts-mock.review-b-async.build.account.gov.uk'
       BiometricSubmitterKeySecretPathPassport: 'build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: 'build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: 'build/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
+      BiometricSubmitterKeySecretCacheDurationInSeconds: 900
     staging:
       STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
       BiometricSubmitterKeySecretPathPassport: 'staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: 'staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: 'staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
+      BiometricSubmitterKeySecretCacheDurationInSeconds: 900
     integration:
       STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
       BiometricSubmitterKeySecretPathPassport: 'staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: 'staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: 'staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
+      BiometricSubmitterKeySecretCacheDurationInSeconds: 900
     production:
       STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
       BiometricSubmitterKeySecretPathPassport: 'production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: 'production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: 'production/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
+      BiometricSubmitterKeySecretCacheDurationInSeconds: 900
 
 Conditions:
   UseCodeSigning: !Not
@@ -1036,6 +1041,7 @@ Resources:
           BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_PASSPORT: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathPassport]
           BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_BRP: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathBrp]
           BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathDl]
+          BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS: !FindInMap [ EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretCacheDurationInSeconds ]
       Role: !GetAtt AsyncBiometricTokenLambdaRole.Arn
       VpcConfig:
         SubnetIds:
