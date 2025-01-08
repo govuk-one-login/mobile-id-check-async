@@ -91,7 +91,7 @@ export const lambdaHandlerConstructor = async (
 
 const dbClient = new DynamoDBClient({
   region: "eu-west-2",
-  maxAttempts: 2,
+  maxAttempts: 3,
   requestHandler: new NodeHttpHandler({
     connectionTimeout: 5000,
     requestTimeout: 5000,
