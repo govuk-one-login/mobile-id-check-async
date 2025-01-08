@@ -38,9 +38,9 @@ Conditions:
 Mappings:
   EnvironmentVariables:
     dev:
-      TXMAEVENTTTLINSECONDS: 3600
+      TXMAEVENTTTLDURATIONINSECONDS: 3600
     build:
-      TXMAEVENTTTLINSECONDS: 3600
+      TXMAEVENTTTLDURATIONINSECONDS: 3600
 
 Resources:
   # Dequeue resources
@@ -64,10 +64,10 @@ Resources:
       Role: !GetAtt DequeueRole.Arn
       Environment:
         Variables:
-          TXMA_EVENT_TTL_IN_SECONDS: !FindInMap
+          TXMA_EVENT_TTL_DURATION_IN_SECONDS: !FindInMap
             - EnvironmentVariables
             - !Ref Environment
-            - TXMAEVENTTTLINSECONDS
+            - TXMAEVENTTTLDURATIONINSECONDS
           DEQUEUE_TABLE_NAME: !Ref DequeueTable
       Timeout: 10
       VpcConfig:
@@ -179,7 +179,7 @@ Resources:
         - AttributeName: sk
           AttributeType: S
       TimeToLiveSpecification:
-        AttributeName: timeToLive
+        AttributeName: timeToLiveInSeconds
         Enabled: true
       BillingMode: PAY_PER_REQUEST
       SSESpecification:

@@ -27,6 +27,13 @@ export const lambdaHandlerConstructor = async (
     });
     return { batchItemFailures };
   }
+  if (!env.TXMA_EVENT_TTL_DURATION_IN_SECONDS) {
+    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
+      errorMessage:
+        "Missing environment variable: TXMA_EVENT_TTL_DURATION_IN_SECONDS",
+    });
+    return { batchItemFailures };
+  }
 
   const tableName = env.DEQUEUE_TABLE_NAME;
   const input: IDynamoDBBatchWriteItemInput = {
@@ -49,12 +56,16 @@ export const lambdaHandlerConstructor = async (
       continue;
     }
 
+    const timeToLiveInSeconds = getTimeToLiveInSeconds(
+      env.TXMA_EVENT_TTL_DURATION_IN_SECONDS,
+    );
     const putRequest: IPutRequest = {
       PutRequest: {
         Item: marshall({
           pk: `TXMA#${txmaEvent.user.session_id}`,
           sk: `${txmaEvent.event_name}#${txmaEvent.timestamp}`,
           eventBody: JSON.stringify(txmaEvent),
+          timeToLiveInSeconds,
         }),
       },
     };
@@ -86,6 +97,10 @@ const ddbClient = new DynamoDBClient({
     requestTimeout: 5000,
   }),
 });
+
+function getTimeToLiveInSeconds(ttlDuration: string) {
+  return Math.floor(Date.now() / 1000) + Number(ttlDuration);
+}
 
 interface IDynamoDBBatchWriteItemInput {
   RequestItems: IRequestItems;
