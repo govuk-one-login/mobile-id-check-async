@@ -35,13 +35,6 @@ Conditions:
       - !Ref Environment
       - build
 
-Mappings:
-  EnvironmentVariables:
-    dev:
-      TXMAEVENTTTLDURATIONINSECONDS: 3600
-    build:
-      TXMAEVENTTTLDURATIONINSECONDS: 3600
-
 Resources:
   # Dequeue resources
   DequeueFunction:
@@ -64,10 +57,7 @@ Resources:
       Role: !GetAtt DequeueRole.Arn
       Environment:
         Variables:
-          TXMA_EVENT_TTL_DURATION_IN_SECONDS: !FindInMap
-            - EnvironmentVariables
-            - !Ref Environment
-            - TXMAEVENTTTLDURATIONINSECONDS
+          TXMA_EVENT_TTL_DURATION_IN_SECONDS: 3600
           DEQUEUE_TABLE_NAME: !Ref DequeueTable
       Timeout: 10
       VpcConfig:
@@ -167,7 +157,7 @@ Resources:
     Type: AWS::DynamoDB::Table
     Condition: IsDevOrBuild
     Properties:
-      TableName: !Sub ${AWS::StackName}-${Environment}-dequeue-table
+      TableName: !Sub ${AWS::StackName}-dequeue-table-${Environment}
       KeySchema:
         - AttributeName: pk
           KeyType: HASH
@@ -190,5 +180,5 @@ Outputs:
     Condition: IsDevOrBuild
     Description: Dequeue Table Name
     Export:
-      Name: !Sub ${AWS::StackName}-${Environment}-dequeue-table
+      Name: !Sub ${AWS::StackName}-dequeue-table-${Environment}
     Value: !Ref DequeueTable
