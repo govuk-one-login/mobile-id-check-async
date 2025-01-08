@@ -1,7 +1,7 @@
 import { GetSecrets } from "../common/config/secrets";
 import { getParametersByName } from "@aws-lambda-powertools/parameters/ssm";
 import { SSMGetParametersByNameOptions } from "@aws-lambda-powertools/parameters/ssm/types";
-import { errorResult, successResult } from "../utils/result";
+import { emptyFailure, successResult } from "../utils/result";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 
@@ -27,9 +27,7 @@ export const getSecretsFromParameterStore: GetSecrets = async ({
       LogMessage.GET_SECRETS_FROM_PARAMETER_STORE_FAILURE,
       error as Error,
     );
-    return errorResult({
-      errorMessage: "server_error",
-    });
+    return emptyFailure();
   }
   logger.debug(LogMessage.GET_SECRETS_FROM_PARAMETER_STORE_SUCCESS);
   return successResult(secretNames.map((secretName) => secrets[secretName]));

@@ -7,4 +7,4 @@ export type GetSecretsConfiguration = {
 
 export type GetSecrets = (
   config: GetSecretsConfiguration,
-) => Promise<Result<string[]>>;
+) => Promise<Result<string[], void>>;

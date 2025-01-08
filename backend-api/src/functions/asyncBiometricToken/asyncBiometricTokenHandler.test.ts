@@ -11,7 +11,7 @@ import {
   mockSessionId,
 } from "../testUtils/unitTestData";
 import { logger } from "../common/logging/logger";
-import { errorResult, successResult } from "../utils/result";
+import { emptyFailure, successResult } from "../utils/result";
 
 describe("Async Biometric Token", () => {
   let dependencies: IAsyncBiometricTokenDependencies;
@@ -153,7 +153,7 @@ describe("Async Biometric Token", () => {
 
   describe("When there is an error getting secrets", () => {
     beforeEach(async () => {
-      dependencies.getSecrets = jest.fn().mockResolvedValue(errorResult(null));
+      dependencies.getSecrets = jest.fn().mockResolvedValue(emptyFailure());
       result = await lambdaHandlerConstructor(
         dependencies,
         validRequest,

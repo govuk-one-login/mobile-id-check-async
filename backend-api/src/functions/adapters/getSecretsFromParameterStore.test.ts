@@ -8,7 +8,7 @@ import {
   InternalServerError,
   SSMClient,
 } from "@aws-sdk/client-ssm";
-import { errorResult, Result, successResult } from "../utils/result";
+import { emptyFailure, Result, successResult } from "../utils/result";
 import { getSecretsFromParameterStore } from "./getSecretsFromParameterStore";
 import { clearCaches } from "@aws-lambda-powertools/parameters";
 import { NOW_IN_MILLISECONDS } from "../testUtils/unitTestData";
@@ -19,7 +19,7 @@ const mockSecretName2 = "mockSecretName2";
 const mockSecretValue1 = "mockSecretValue1";
 const mockSecretValue2 = "mockSecretValue2";
 
-let result: Result<string[]>;
+let result: Result<string[], void>;
 let consoleDebugSpy: jest.SpyInstance;
 let consoleErrorSpy: jest.SpyInstance;
 
@@ -72,7 +72,7 @@ describe("getSecretsFromParameterStore", () => {
     });
 
     it("Returns failure", () => {
-      expect(result).toEqual(errorResult({ errorMessage: "server_error" }));
+      expect(result).toEqual(emptyFailure());
     });
   });
 
@@ -99,7 +99,7 @@ describe("getSecretsFromParameterStore", () => {
     });
 
     it("Returns failure", () => {
-      expect(result).toEqual(errorResult({ errorMessage: "server_error" }));
+      expect(result).toEqual(emptyFailure());
     });
   });
 

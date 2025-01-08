@@ -1,7 +1,11 @@
 export type Result<T, E = BaseError> = Success<T> | Failure<E>;
 
-export type Success<T> = [T] extends void ? EmptySuccess : SuccessWithValue<T>;
-export type Failure<E> = [E] extends void ? EmptyFailure : FailureWithValue<E>;
+export type Success<T> = [T] extends [void]
+  ? EmptySuccess
+  : SuccessWithValue<T>;
+export type Failure<E> = [E] extends [void]
+  ? EmptyFailure
+  : FailureWithValue<E>;
 
 export type SuccessWithValue<T> = {
   isError: false;
@@ -28,7 +32,7 @@ export const successResult = <T>(value: T): SuccessWithValue<T> => {
   };
 };
 
-export const emptySuccess = () => {
+export const emptySuccess = (): EmptySuccess => {
   return {
     isError: false,
   };
@@ -41,7 +45,7 @@ export const errorResult = <E>(value: E): FailureWithValue<E> => {
   };
 };
 
-export const emptyFailure = () => {
+export const emptyFailure = (): EmptyFailure => {
   return {
     isError: true,
   };
