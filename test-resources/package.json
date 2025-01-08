@@ -5,6 +5,7 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
+    "build:env": "./generate_env_file.sh",
     "deploy": "cd ../helper-scripts && ./deploy_test_resources.sh",
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",

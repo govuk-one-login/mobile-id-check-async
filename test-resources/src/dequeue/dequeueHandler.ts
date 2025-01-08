@@ -15,12 +15,20 @@ export const lambdaHandlerConstructor = async (
   dependencies: IDequeueDependencies,
   event: SQSEvent,
 ): Promise<SQSBatchResponse> => {
+  const { env } = dependencies
   const logger = dependencies.logger();
   logger.log("STARTED");
 
   const records = event.Records;
-  const tableName = "jh-test-resources-dequeue-table";
   const batchItemFailures: SQSBatchItemFailure[] = [];
+  if (!env.DEQUEUE_TABLE_NAME) {
+    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
+      errorMessage: "Missing environment variable: DEQUEUE_TABLE_NAME"
+    })
+    return { batchItemFailures }
+  }
+
+  const tableName = env.DEQUEUE_TABLE_NAME;
   const input: IDynamoDBBatchWriteItemInput = {
     RequestItems: {
       [tableName]: [],
@@ -92,10 +100,12 @@ interface IPutRequest {
 }
 
 export interface IDequeueDependencies {
+  env: NodeJS.ProcessEnv
   logger: () => Logger<MessageName>;
 }
 
 const dependencies: IDequeueDependencies = {
+  env: process.env,
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
 };
 

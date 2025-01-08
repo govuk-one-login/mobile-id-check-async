@@ -15,6 +15,10 @@ import {
 } from "./dequeueHandler";
 import { MessageName, registeredLogs } from "./registeredLogs";
 
+const env = {
+  DEQUEUE_TABLE_NAME: "mock-table-name"
+}
+
 describe("Dequeue TxMA events", () => {
   let dependencies: IDequeueDependencies;
   let mockLogger: MockLoggingAdapter<MessageName>;
@@ -29,6 +33,7 @@ describe("Dequeue TxMA events", () => {
     mockDdbClient = mockClient(DynamoDBClient);
     mockDdbClient.on(BatchWriteItemCommand).resolves({});
     dependencies = {
+      env,
       logger: () => new Logger(mockLogger, registeredLogs),
     };
   });
@@ -36,6 +41,27 @@ describe("Dequeue TxMA events", () => {
   afterEach(() => {
     jest.restoreAllMocks();
   });
+
+  describe("Environment variable validation", () => {
+    describe.each(Object.keys(env))("Given %s is missing", (envVar: string) => {
+      it("Returns a 500 Server Error response", async () => {
+        const event: SQSEvent = {
+          Records: [],
+        };
+        dependencies.env = JSON.parse(JSON.stringify(env));
+        delete dependencies.env[envVar];
+
+        await lambdaHandlerConstructor(dependencies, event);
+
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
+          "ENVIRONMENT_VARIABLE_MISSING",
+        );
+        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: `Missing environment variable: ${envVar}`,
+        });
+      });
+    });
+  })
 
   describe("Given there are no messages to be processed", () => {
     it("Logs an empty array", async () => {
