@@ -1,4 +1,9 @@
-import { errorResult, Result, successResult } from "../../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../../utils/result";
 import {
   IGetPartialRegisteredClientByClientId,
   IGetRegisteredIssuerUsingClientSecrets,
@@ -11,7 +16,7 @@ export class MockClientRegistryServiceeGetPartialClientInternalServerResult
   getPartialRegisteredClientByClientId = async () => {
     return errorResult({
       errorMessage: "Unexpected error retrieving registered client",
-      errorCategory: "SERVER_ERROR" as const,
+      errorCategory: ErrorCategory.SERVER_ERROR,
     });
   };
 }
@@ -22,7 +27,7 @@ export class MockClientRegistryServiceGetPartialClientBadRequestResponse
   getPartialRegisteredClientByClientId = async () => {
     return errorResult({
       errorMessage: "Client Id is not registered",
-      errorCategory: "CLIENT_ERROR" as const,
+      errorCategory: ErrorCategory.CLIENT_ERROR,
     });
   };
 }
@@ -65,7 +70,7 @@ export class MockClientRegistryServiceInternalServerErrorResult
     return Promise.resolve(
       errorResult({
         errorMessage: "Unexpected error retrieving issuer",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       }),
     );
   };
@@ -78,7 +83,7 @@ export class MockClientRegistryServiceBadRequestResult
     return Promise.resolve(
       errorResult({
         errorMessage: "Client secrets invalid",
-        errorCategory: "CLIENT_ERROR" as const,
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       }),
     );
   };

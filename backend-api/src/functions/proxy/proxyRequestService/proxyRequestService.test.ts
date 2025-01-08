@@ -1,5 +1,6 @@
 import { ProxyRequestService, validateStatus } from "./proxyRequestService";
 import axios, { AxiosResponse } from "axios";
+import { ErrorCategory } from "../../utils/result";
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
@@ -24,7 +25,7 @@ describe("Proxy Request Service", () => {
       expect(proxyRequestServiceResult.isError).toBe(true);
       expect(proxyRequestServiceResult.value).toStrictEqual({
         errorMessage: "Error sending network request",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });

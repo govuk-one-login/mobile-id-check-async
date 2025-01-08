@@ -1,18 +1,23 @@
-import { errorResult, Result, successResult } from "../../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../../utils/result";
 import { ISessionService, Session } from "../sessionService";
 
 export class MockSessionServiceGetErrorResult implements ISessionService {
   getActiveSessionId = async (): Promise<Result<string | null>> => {
     return errorResult({
       errorMessage: "Mock error when getting session ID",
-      errorCategory: "SERVER_ERROR",
+      errorCategory: ErrorCategory.SERVER_ERROR,
     });
   };
 
   getActiveSession = async (): Promise<Result<Session | null>> => {
     return errorResult({
       errorMessage: "Mock error when getting session details",
-      errorCategory: "SERVER_ERROR",
+      errorCategory: ErrorCategory.SERVER_ERROR,
     });
   };
 
@@ -79,7 +84,7 @@ export class MockSessionServiceCreateErrorResult implements ISessionService {
   createSession = async (): Promise<Result<string>> => {
     return errorResult({
       errorMessage: "Mock error when creating session",
-      errorCategory: "SERVER_ERROR",
+      errorCategory: ErrorCategory.SERVER_ERROR,
     });
   };
 }

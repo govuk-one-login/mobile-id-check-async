@@ -1,11 +1,11 @@
 export type Result<S, E = BaseError> = SuccessResult<S> | ErrorResult<E>;
 
-type SuccessResult<S> = {
+export type SuccessResult<S> = {
   isError: false;
   value: S;
 };
 
-type ErrorResult<E> = {
+export type ErrorResult<E> = {
   isError: true;
   value: E;
 };
@@ -24,5 +24,9 @@ export const errorResult = <E>(value: E): ErrorResult<E> => {
   };
 };
 
-type ErrorCategory = "SERVER_ERROR" | "CLIENT_ERROR";
+export enum ErrorCategory {
+  SERVER_ERROR = "SERVER_ERROR",
+  CLIENT_ERROR = "CLIENT_ERROR",
+}
+
 type BaseError = { errorMessage: string; errorCategory?: ErrorCategory };

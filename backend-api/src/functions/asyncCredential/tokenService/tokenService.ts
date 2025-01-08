@@ -1,7 +1,12 @@
 import format from "ecdsa-sig-formatter";
 import { KMSClient, VerifyCommand } from "@aws-sdk/client-kms";
 import { IJwtPayload } from "../../types/jwt";
-import { errorResult, Result, successResult } from "../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../utils/result";
 
 export class TokenService implements IDecodeToken, IVerifyTokenSignature {
   getDecodedToken(config: IDecodeTokenConfig): Result<IDecodedToken> {
@@ -46,7 +51,7 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
     } catch {
       return errorResult({
         errorMessage: "Signature could not be verified",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
 
@@ -61,7 +66,7 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
     } catch {
       return errorResult({
         errorMessage: "JWT payload not valid JSON",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
 
@@ -75,14 +80,14 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
     if (!jwtPayload.exp) {
       return errorResult({
         errorMessage: "Missing exp claim",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
 
     if (jwtPayload.exp <= Math.floor(Date.now() / 1000)) {
       return errorResult({
         errorMessage: "exp claim is in the past",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
 
@@ -90,7 +95,7 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
       if (jwtPayload.iat >= Math.floor(Date.now() / 1000)) {
         return errorResult({
           errorMessage: "iat claim is in the future",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       }
     }
@@ -99,7 +104,7 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
       if (jwtPayload.nbf >= Math.floor(Date.now() / 1000)) {
         return errorResult({
           errorMessage: "nbf claim is in the future",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       }
     }
@@ -107,42 +112,42 @@ export class TokenService implements IDecodeToken, IVerifyTokenSignature {
     if (!jwtPayload.iss) {
       return errorResult({
         errorMessage: "Missing iss claim",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
 
     if (jwtPayload.iss !== issuer) {
       return errorResult({
         errorMessage: "iss claim does not match ISSUER environment variable",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
 
     if (!jwtPayload.scope) {
       return errorResult({
         errorMessage: "Missing scope claim",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
 
     if (jwtPayload.scope !== "dcmaw.session.async_create") {
       return errorResult({
         errorMessage: "Invalid scope claim",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
 
     if (!jwtPayload.client_id) {
       return errorResult({
         errorMessage: "Missing client_id claim",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
 
     if (!jwtPayload.aud) {
       return errorResult({
         errorMessage: "Missing aud claim",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
 

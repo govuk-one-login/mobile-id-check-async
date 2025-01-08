@@ -1,5 +1,10 @@
 import { ICustomResourceEventSender } from "../customResourceEventSender";
-import { errorResult, Result, successResult } from "../../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../../utils/result";
 
 export class MockCustomResourceEventSenderSuccessResult
   implements ICustomResourceEventSender
@@ -21,7 +26,7 @@ export class MockCustomResourceEventSenderErrorResult
     return Promise.resolve(
       errorResult({
         errorMessage: "Error sending Custom Resource event",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       }),
     );
   }

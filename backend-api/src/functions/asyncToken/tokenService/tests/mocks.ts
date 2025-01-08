@@ -1,4 +1,9 @@
-import { successResult, errorResult, Result } from "../../../utils/result";
+import {
+  successResult,
+  errorResult,
+  Result,
+  ErrorCategory,
+} from "../../../utils/result";
 import { IMintToken } from "../tokenService";
 
 export class MockTokenServiceSuccessResult implements IMintToken {
@@ -11,7 +16,7 @@ export class MockTokenServiceErrorResult implements IMintToken {
   async mintToken(): Promise<Result<string>> {
     return errorResult({
       errorMessage: "Failed to sign Jwt",
-      errorCategory: "SERVER_ERROR",
+      errorCategory: ErrorCategory.SERVER_ERROR,
     });
   }
 }
