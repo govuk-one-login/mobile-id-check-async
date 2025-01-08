@@ -257,7 +257,7 @@ Globals:
       - !Ref AWS::NoValue
     LoggingConfig:
       ApplicationLogLevel:
-        !FindInMap [ Lambda, !Ref Environment, LambdaLogLevel ]
+        !FindInMap [ Lambda, !Ref Environment, LogLevel ]
       SystemLogLevel: INFO
       LogFormat: JSON
     Architectures:
@@ -1038,6 +1038,7 @@ Resources:
             RestApiId: !Ref SessionsApi
       Environment:
         Variables:
+          POWERTOOLS_SERVICE_NAME: asyncBiometricToken
           BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_PASSPORT: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathPassport]
           BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_BRP: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathBrp]
           BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathDl]
