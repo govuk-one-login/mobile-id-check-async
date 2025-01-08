@@ -1098,6 +1098,17 @@ Resources:
                   - ec2:CreateNetworkInterface
                   - ec2:DeleteNetworkInterface
                 Resource: '*'
+        - PolicyName: AsyncBiometricTokenParameterStorePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameters
+                Resource:
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${Environment}/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${Environment}/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${Environment}/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
