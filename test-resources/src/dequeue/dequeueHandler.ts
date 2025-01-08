@@ -77,7 +77,7 @@ export const lambdaHandlerConstructor = async (
 
   const command = new BatchWriteItemCommand(input);
   try {
-    await ddbClient.send(command);
+    await dbClient.send(command);
   } catch (error) {
     logger.log("ERROR_WRITING_EVENT_TO_DEQUEUE_TABLE", {
       errorMessage: error,
@@ -89,7 +89,7 @@ export const lambdaHandlerConstructor = async (
   return { batchItemFailures };
 };
 
-const ddbClient = new DynamoDBClient({
+const dbClient = new DynamoDBClient({
   region: "eu-west-2",
   maxAttempts: 2,
   requestHandler: new NodeHttpHandler({
