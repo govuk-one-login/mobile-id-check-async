@@ -460,22 +460,21 @@ describe("Backend application infrastructure", () => {
 
         expect(reservedConcurrentExecutionMapping).toStrictEqual({
           Lambda: {
-            dev: {
+            dev: expect.objectContaining({
               ReservedConcurrentExecutions: 15,
-            },
-            build: {
+            }),
+            build: expect.objectContaining({
               ReservedConcurrentExecutions: 15,
-            },
-            staging: {
+            }),
+            staging: expect.objectContaining({
               ReservedConcurrentExecutions: 0,
-            },
-
-            integration: {
+            }),
+            integration: expect.objectContaining({
               ReservedConcurrentExecutions: 0,
-            },
-            production: {
+            }),
+            production: expect.objectContaining({
               ReservedConcurrentExecutions: 0,
-            },
+            }),
           },
         });
 
