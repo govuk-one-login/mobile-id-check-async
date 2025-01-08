@@ -9,5 +9,5 @@ export type LogMessage<T extends string> = {
 } & RegisteredMessageData<T>;
 
 type RegisteredMessageData<T extends string> = {
-  messageCode: `MOBILE_ASYNC_${T}`;
+  messageCode: `TEST_RESOURCES_${T}`;
 };

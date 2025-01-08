@@ -7,12 +7,12 @@ export type CommonMessageNames =
 
 export const commonMessages: RegisteredLogMessages<CommonMessageNames> = {
   STARTED: {
-    messageCode: "MOBILE_ASYNC_STARTED",
+    messageCode: "TEST_RESOURCES_STARTED",
   },
   COMPLETED: {
-    messageCode: "MOBILE_ASYNC_COMPLETED",
+    messageCode: "TEST_RESOURCES_COMPLETED",
   },
   ENVIRONMENT_VARIABLE_MISSING: {
-    messageCode: "MOBILE_ASYNC_ENVIRONMENT_VARIABLE_MISSING",
+    messageCode: "TEST_RESOURCES_ENVIRONMENT_VARIABLE_MISSING",
   },
 };

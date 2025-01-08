@@ -12,13 +12,13 @@ export type MessageName =
 
 export const registeredLogs: RegisteredLogMessages<MessageName> = {
   FAILED_TO_PROCESS_MESSAGES: {
-    messageCode: "MOBILE_ASYNC_FAILED_TO_PROCESS_MESSAGES",
+    messageCode: "TEST_RESOURCES_FAILED_TO_PROCESS_MESSAGES",
   },
   PROCESSED_MESSAGES: {
-    messageCode: "MOBILE_ASYNC_PROCESSED_MESSAGES",
+    messageCode: "TEST_RESOURCES_PROCESSED_MESSAGES",
   },
   ERROR_WRITING_EVENT_TO_DEQUEUE_TABLE: {
-    messageCode: "MOBILE_ASYNC_ERROR_WRITING_EVENT_TO_DEQUEUE_TABLE",
+    messageCode: "TEST_RESOURCES_ERROR_WRITING_EVENT_TO_DEQUEUE_TABLE",
   },
   ...commonMessages,
 };
