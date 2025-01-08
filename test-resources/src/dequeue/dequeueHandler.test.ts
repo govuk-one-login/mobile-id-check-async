@@ -181,7 +181,7 @@ describe("Dequeue TxMA events", () => {
                   timestamp: "mockTimestamp",
                 }),
               },
-              timeToLiveInSeconds: { N: "1736298000" }
+              timeToLiveInSeconds: { N: "1736298000" },
             },
           },
         },
@@ -285,7 +285,7 @@ describe("Dequeue TxMA events", () => {
                     timestamp: "mockTimestamp",
                   }),
                 },
-                timeToLiveInSeconds: { N: "1736298000" }
+                timeToLiveInSeconds: { N: "1736298000" },
               },
             },
           },
@@ -305,7 +305,7 @@ describe("Dequeue TxMA events", () => {
                     timestamp: "mockTimestamp",
                   }),
                 },
-                timeToLiveInSeconds: { N: "1736298000" }
+                timeToLiveInSeconds: { N: "1736298000" },
               },
             },
           },
@@ -435,7 +435,7 @@ describe("Dequeue TxMA events", () => {
                     timestamp: "mockTimestamp",
                   }),
                 },
-                timeToLiveInSeconds: { N: "1736298000" }
+                timeToLiveInSeconds: { N: "1736298000" },
               },
             },
           },
@@ -455,7 +455,7 @@ describe("Dequeue TxMA events", () => {
                     timestamp: "mockTimestamp",
                   }),
                 },
-                timeToLiveInSeconds: { N: "1736298000" }
+                timeToLiveInSeconds: { N: "1736298000" },
               },
             },
           },

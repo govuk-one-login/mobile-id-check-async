@@ -121,7 +121,11 @@ export interface IDequeueDependencies {
 
 const dependencies: IDequeueDependencies = {
   env: process.env,
-  logger: () => new Logger<MessageName>(new PowertoolsLogger({ serviceName: 'Dequeue Function' }), registeredLogs),
+  logger: () =>
+    new Logger<MessageName>(
+      new PowertoolsLogger({ serviceName: "Dequeue Function" }),
+      registeredLogs,
+    ),
 };
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
