@@ -20,7 +20,7 @@ import {
   getBiometricTokenConfig,
 } from "./biometricTokenConfig";
 import { GetSecrets } from "../common/config/secrets";
-import { errorResult, Result, successResult } from "../utils/result";
+import { emptyFailure, Result, successResult } from "../utils/result";
 import { DocumentType } from "../types/document";
 
 export async function lambdaHandlerConstructor(
@@ -69,7 +69,7 @@ async function getSubmitterKeyForDocumentType(
   documentType: DocumentType,
   config: BiometricTokenConfig,
   getSecrets: GetSecrets,
-): Promise<Result<string, null>> {
+): Promise<Result<string, void>> {
   const getSubmitterKeysResult = await getSecrets({
     secretNames: [
       config.BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_PASSPORT,
@@ -81,7 +81,7 @@ async function getSubmitterKeyForDocumentType(
     ),
   });
   if (getSubmitterKeysResult.isError) {
-    return errorResult(null);
+    return emptyFailure();
   }
   const [submitterKeyPassport, submitterKeyBrp, submitterKeyDl] =
     getSubmitterKeysResult.value;
