@@ -36,6 +36,12 @@ describe("Async Biometric Token", () => {
 
   beforeEach(() => {
     dependencies = {
+      env: {
+        BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_PASSPORT:
+          "mock_secret_path_passport",
+        BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_BRP: "mock_secret_path_brp",
+        BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL: "mock_secret_path_dl",
+      },
       getSecrets: mockSuccessfulGetSecrets,
     };
     context = buildLambdaContext();
@@ -66,6 +72,41 @@ describe("Async Biometric Token", () => {
       );
       expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
         testKey: "testValue",
+      });
+    });
+  });
+
+  describe("Config validation", () => {
+    describe.each([
+      ["BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_PASSPORT"],
+      ["BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_BRP"],
+      ["BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL"],
+    ])("Given %s environment variable is missing", (envVar: string) => {
+      beforeEach(async () => {
+        delete dependencies.env[envVar];
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+      it("returns 500 Internal server error", async () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Server Error",
+          }),
+          headers: expectedSecurityHeaders,
+        });
+      });
+      it("logs INVALID_CONFIG", async () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_BIOMETRIC_TOKEN_INVALID_CONFIG",
+          data: {
+            missingEnvironmentVariables: [envVar],
+          },
+        });
       });
     });
   });

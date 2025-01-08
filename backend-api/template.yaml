@@ -160,14 +160,29 @@ Mappings:
   EnvironmentVariables:
     dev:
       STSBASEURL: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk'
+      BiometricSubmitterKeySecretPathPassport: 'dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
+      BiometricSubmitterKeySecretPathBrp: 'dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
+      BiometricSubmitterKeySecretPathDl: 'dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
     build:
       STSBASEURL: 'https://mob-sts-mock.review-b-async.build.account.gov.uk'
+      BiometricSubmitterKeySecretPathPassport: 'build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
+      BiometricSubmitterKeySecretPathBrp: 'build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
+      BiometricSubmitterKeySecretPathDl: 'build/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
     staging:
       STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
+      BiometricSubmitterKeySecretPathPassport: 'staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
+      BiometricSubmitterKeySecretPathBrp: 'staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
+      BiometricSubmitterKeySecretPathDl: 'staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
     integration:
       STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
+      BiometricSubmitterKeySecretPathPassport: 'staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
+      BiometricSubmitterKeySecretPathBrp: 'staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
+      BiometricSubmitterKeySecretPathDl: 'staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
     production:
       STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
+      BiometricSubmitterKeySecretPathPassport: 'production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
+      BiometricSubmitterKeySecretPathBrp: 'production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
+      BiometricSubmitterKeySecretPathDl: 'production/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
 
 Conditions:
   UseCodeSigning: !Not
@@ -1016,6 +1031,11 @@ Resources:
             Path: /async/biometricToken
             Method: post
             RestApiId: !Ref SessionsApi
+      Environment:
+        Variables:
+          BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_PASSPORT: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathPassport]
+          BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_BRP: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathBrp]
+          BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathDl]
       Role: !GetAtt AsyncBiometricTokenLambdaRole.Arn
       VpcConfig:
         SubnetIds:

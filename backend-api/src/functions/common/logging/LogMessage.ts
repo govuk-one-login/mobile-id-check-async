@@ -26,6 +26,10 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_BIOMETRIC_TOKEN_COMPLETED",
     "Lambda handler processing has completed successfully.",
   );
+  static readonly BIOMETRIC_TOKEN_INVALID_CONFIG = new LogMessage(
+    "MOBILE_ASYNC_BIOMETRIC_TOKEN_INVALID_CONFIG",
+    "One or more required environment variables were missing or invalid.",
+  );
   static readonly BIOMETRIC_TOKEN_REQUEST_BODY_INVALID = new LogMessage(
     "MOBILE_ASYNC_BIOMETRIC_TOKEN_REQUEST_BODY_INVALID",
     "The incoming request body was missing or invalid.",

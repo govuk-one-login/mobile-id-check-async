@@ -4,24 +4,32 @@ import {
   Context,
 } from "aws-lambda";
 import {
-  dependencies,
+  runtimeDependencies,
   IAsyncBiometricTokenDependencies,
 } from "./handlerDependencies";
 import {
   badRequestResponse,
   notImplementedResponse,
+  serverErrorResponse,
 } from "../common/lambdaResponses";
 import { validateRequestBody } from "./validateRequestBody/validateRequestBody";
 import { logger, setupLoggerForNewInvocation } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
+import { getBiometricTokenConfig } from "./biometricTokenConfig";
 
 export async function lambdaHandlerConstructor(
-  _dependencies: IAsyncBiometricTokenDependencies,
+  dependencies: IAsyncBiometricTokenDependencies = runtimeDependencies,
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
   setupLoggerForNewInvocation(logger, context);
   logger.info(LogMessage.BIOMETRIC_TOKEN_STARTED);
+
+  const configResult = getBiometricTokenConfig(dependencies.env);
+  if (configResult.isError) {
+    return serverErrorResponse;
+  }
+  // const config = configResult.value;
 
   const validateRequestBodyResult = validateRequestBody(event.body);
   if (validateRequestBodyResult.isError) {
@@ -36,4 +44,7 @@ export async function lambdaHandlerConstructor(
   return notImplementedResponse;
 }
 
-export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
+export const lambdaHandler = lambdaHandlerConstructor.bind(
+  null,
+  runtimeDependencies,
+);
