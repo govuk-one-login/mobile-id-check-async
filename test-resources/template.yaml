@@ -183,3 +183,11 @@ Resources:
       BillingMode: PAY_PER_REQUEST
       SSESpecification:
         SSEEnabled: true
+
+Outputs:
+  DequeueTableName:
+    Condition: IsDevOrBuild
+    Description: Dequeue Table Name
+    Export:
+      Name: !Sub ${AWS::StackName}-dequeue-table
+    Value: !Ref DequeueTable
