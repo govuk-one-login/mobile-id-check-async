@@ -1,7 +1,7 @@
 import {
   errorResult,
   Result,
-  SuccessResult,
+  Success,
   successResult,
 } from "../../utils/result";
 
@@ -34,5 +34,5 @@ export const getRequiredEnvironmentVariables = <T extends string>(
       missingEnvVars: missingEnvironmentVariables,
     });
   }
-  return successResult(config) as SuccessResult<Config<T>>;
+  return successResult(config) as Success<Config<T>>;
 };

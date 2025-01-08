@@ -1,23 +1,23 @@
-export type Result<S, E = BaseError> = SuccessResult<S> | ErrorResult<E>;
+export type Result<S, E = BaseError> = Success<S> | Failure<E>;
 
-export type SuccessResult<S> = {
+export type Success<S> = {
   isError: false;
   value: S;
 };
 
-export type ErrorResult<E> = {
+export type Failure<E> = {
   isError: true;
   value: E;
 };
 
-export const successResult = <S>(value: S): SuccessResult<S> => {
+export const successResult = <S>(value: S): Success<S> => {
   return {
     isError: false,
     value,
   };
 };
 
-export const errorResult = <E>(value: E): ErrorResult<E> => {
+export const errorResult = <E>(value: E): Failure<E> => {
   return {
     isError: true,
     value,
