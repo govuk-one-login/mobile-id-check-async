@@ -25,8 +25,4 @@ export class MockLoggingAdapter<T extends string> implements ILoggerAdapter<T> {
   addContext = (lambdaContext: Context) => {
     this.contextBody = lambdaContext;
   };
-
-  appendKeys = (keys: { sessionId: string }) => {
-    this.temporaryKeys = { ...keys };
-  };
 }
