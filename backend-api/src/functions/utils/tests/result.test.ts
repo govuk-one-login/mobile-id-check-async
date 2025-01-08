@@ -1,4 +1,11 @@
-import { ErrorCategory, errorResult, Result, successResult } from "../result";
+import {
+  emptyFailure,
+  emptySuccess,
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../result";
 
 describe("Result", () => {
   describe("Given there is an error", () => {
@@ -31,6 +38,22 @@ describe("Result", () => {
       }
 
       expect.assertions(2);
+    });
+  });
+
+  describe("emptySuccess", () => {
+    it("Returns empty success object", () => {
+      expect(emptySuccess()).toEqual({
+        isError: false,
+      });
+    });
+  });
+
+  describe("emptyFailure", () => {
+    it("Returns empty failure object", () => {
+      expect(emptyFailure()).toEqual({
+        isError: true,
+      });
     });
   });
 });
