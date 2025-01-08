@@ -16,8 +16,8 @@ import {
 import { MessageName, registeredLogs } from "./registeredLogs";
 
 const env = {
-  DEQUEUE_TABLE_NAME: "mock-table-name"
-}
+  DEQUEUE_TABLE_NAME: "mock-table-name",
+};
 
 describe("Dequeue TxMA events", () => {
   let dependencies: IDequeueDependencies;
@@ -61,7 +61,7 @@ describe("Dequeue TxMA events", () => {
         });
       });
     });
-  })
+  });
 
   describe("Given there are no messages to be processed", () => {
     it("Logs an empty array", async () => {

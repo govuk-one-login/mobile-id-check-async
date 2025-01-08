@@ -15,7 +15,7 @@ export const lambdaHandlerConstructor = async (
   dependencies: IDequeueDependencies,
   event: SQSEvent,
 ): Promise<SQSBatchResponse> => {
-  const { env } = dependencies
+  const { env } = dependencies;
   const logger = dependencies.logger();
   logger.log("STARTED");
 
@@ -23,9 +23,9 @@ export const lambdaHandlerConstructor = async (
   const batchItemFailures: SQSBatchItemFailure[] = [];
   if (!env.DEQUEUE_TABLE_NAME) {
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
-      errorMessage: "Missing environment variable: DEQUEUE_TABLE_NAME"
-    })
-    return { batchItemFailures }
+      errorMessage: "Missing environment variable: DEQUEUE_TABLE_NAME",
+    });
+    return { batchItemFailures };
   }
 
   const tableName = env.DEQUEUE_TABLE_NAME;
@@ -100,7 +100,7 @@ interface IPutRequest {
 }
 
 export interface IDequeueDependencies {
-  env: NodeJS.ProcessEnv
+  env: NodeJS.ProcessEnv;
   logger: () => Logger<MessageName>;
 }
 
