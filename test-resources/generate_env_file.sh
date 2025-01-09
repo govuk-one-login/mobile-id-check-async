@@ -11,8 +11,8 @@ fi
 
 echo "Generating .env file for the $STACK_NAME stack"
 
-DEQUEUE_TABLE_NAME=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='DequeueTableName'].OutputValue" --output text)
+EVENTS_TABLE_NAME=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='EvnetsTableName'].OutputValue" --output text)
 
-echo "DEQUEUE_TABLE_NAME=$DEQUEUE_TABLE_NAME" > .env
+echo "EVENTS_TABLE_NAME=$EVENTS_TABLE_NAME" > .env
 echo "TXMA_EVENT_TTL_DURATION_IN_SECONDS=3600" >> .env
 

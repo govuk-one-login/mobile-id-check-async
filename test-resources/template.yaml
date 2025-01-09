@@ -49,7 +49,7 @@ Resources:
       Environment:
         Variables:
           TXMA_EVENT_TTL_DURATION_IN_SECONDS: 3600
-          DEQUEUE_TABLE_NAME: !Ref DequeueTable
+          EVENTS_TABLE_NAME: !Ref EventsTable
       Timeout: 10
       VpcConfig:
         SubnetIds:
@@ -105,7 +105,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - dynamodb:BatchWriteItem
-                Resource: !GetAtt DequeueTable.Arn
+                Resource: !GetAtt EventsTable.Arn
         - PolicyName: KMSPolicy
           PolicyDocument:
             Version: "2012-10-17"
@@ -141,10 +141,10 @@ Resources:
       FunctionResponseTypes:
         - ReportBatchItemFailures
 
-  DequeueTable:
+  EventsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub ${AWS::StackName}-dequeue-table-${Environment}
+      TableName: !Sub ${AWS::StackName}-events-table-${Environment}
       KeySchema:
         - AttributeName: pk
           KeyType: HASH
@@ -163,8 +163,8 @@ Resources:
         SSEEnabled: true
 
 Outputs:
-  DequeueTableName:
-    Description: Dequeue Table Name
+  EventsTableName:
+    Description: Events Table Name
     Export:
-      Name: !Sub ${AWS::StackName}-dequeue-table-${Environment}
-    Value: !Ref DequeueTable
+      Name: !Sub ${AWS::StackName}-events-table-${Environment}
+    Value: !Ref EventsTable

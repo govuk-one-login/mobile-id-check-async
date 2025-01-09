@@ -6,7 +6,7 @@ export type MessageName =
   | "ENVIRONMENT_VARIABLE_MISSING"
   | "FAILED_TO_PROCESS_MESSAGES"
   | "PROCESSED_MESSAGES"
-  | "ERROR_WRITING_EVENT_TO_DEQUEUE_TABLE";
+  | "ERROR_WRITING_EVENT_TO_EVENTS_TABLE";
 
 export const registeredLogs: RegisteredLogMessages<MessageName> = {
   STARTED: {
@@ -24,7 +24,7 @@ export const registeredLogs: RegisteredLogMessages<MessageName> = {
   PROCESSED_MESSAGES: {
     messageCode: "TEST_RESOURCES_PROCESSED_MESSAGES",
   },
-  ERROR_WRITING_EVENT_TO_DEQUEUE_TABLE: {
-    messageCode: "TEST_RESOURCES_ERROR_WRITING_EVENT_TO_DEQUEUE_TABLE",
+  ERROR_WRITING_EVENT_TO_EVENTS_TABLE: {
+    messageCode: "TEST_RESOURCES_ERROR_WRITING_EVENT_TO_EVENTS_TABLE",
   },
 };

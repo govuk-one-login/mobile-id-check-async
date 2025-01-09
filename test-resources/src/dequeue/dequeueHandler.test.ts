@@ -19,7 +19,7 @@ import { buildLambdaContext } from "../services/logging/tests/mockContext";
 jest.useFakeTimers().setSystemTime(new Date("2025-01-08"));
 
 const env = {
-  DEQUEUE_TABLE_NAME: "mock-table-name",
+  EVENTS_TABLE_NAME: "mock-table-name",
   TXMA_EVENT_TTL_DURATION_IN_SECONDS: "3600",
 };
 
@@ -88,7 +88,7 @@ describe("Dequeue TxMA events", () => {
       );
       expect(mockLogger.getLogMessages()[1].data.messages).toEqual([]);
       expect(mockLogger.getLogMessages()[2].logMessage.message).toEqual(
-        "ERROR_WRITING_EVENT_TO_DEQUEUE_TABLE",
+        "ERROR_WRITING_EVENT_TO_EVENTS_TABLE",
       );
       expect(mockLogger.getLogMessages()[3].logMessage.message).toEqual(
         "COMPLETED",
@@ -380,7 +380,7 @@ describe("Dequeue TxMA events", () => {
 
         expect(mockLogger.getLogMessages().length).toEqual(4);
         expect(mockLogger.getLogMessages()[2].logMessage.message).toEqual(
-          "ERROR_WRITING_EVENT_TO_DEQUEUE_TABLE",
+          "ERROR_WRITING_EVENT_TO_EVENTS_TABLE",
         );
       });
     });

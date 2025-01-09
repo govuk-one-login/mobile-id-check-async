@@ -27,9 +27,9 @@ export const lambdaHandlerConstructor = async (
 
   const records = event.Records;
   const batchItemFailures: SQSBatchItemFailure[] = [];
-  if (!env.DEQUEUE_TABLE_NAME) {
+  if (!env.EVENTS_TABLE_NAME) {
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
-      errorMessage: "Missing environment variable: DEQUEUE_TABLE_NAME",
+      errorMessage: "Missing environment variable: EVENTS_TABLE_NAME",
     });
     return { batchItemFailures };
   }
@@ -41,7 +41,7 @@ export const lambdaHandlerConstructor = async (
     return { batchItemFailures };
   }
 
-  const tableName = env.DEQUEUE_TABLE_NAME;
+  const tableName = env.EVENTS_TABLE_NAME;
   const input: IDynamoDBBatchWriteItemInput = {
     RequestItems: {
       [tableName]: [],
@@ -85,7 +85,7 @@ export const lambdaHandlerConstructor = async (
   try {
     await dbClient.send(command);
   } catch (error) {
-    logger.log("ERROR_WRITING_EVENT_TO_DEQUEUE_TABLE", {
+    logger.log("ERROR_WRITING_EVENT_TO_EVENTS_TABLE", {
       errorMessage: error,
     });
   }
