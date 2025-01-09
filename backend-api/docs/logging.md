@@ -31,7 +31,7 @@ logger.error(LogMessage.GET_SECRETS_FROM_PARAMETER_STORE_FAILURE, {
 })
 ```
 
-## Persistent Attributes
+### Persistent Attributes
 
 Logging fields that should persist across multiple uses of the logger within a single Lambda invocation can be added as follows:
 
@@ -44,14 +44,16 @@ logger.appendKeys({
 As a single logger instance is shared across the modules of our Lambda, these keys will persist until cleared or
 overwritten. Request-specific keys should be cleared at the start of each Lambda invocation by calling `logger.resetKeys()`.
 
-## Log Levels
+## Rules and conventions for logging
+
+### Log Levels
 
 The log level for all of our Lambda functions is configured using the `Globals.Function.LoggingConfig` in our
 `template.yaml`. Currently, the log level is set to DEBUG in our dev environment, and INFO in every other environment.
 This means that only logs with a level of DEBUG or above will be visible in dev, and only INFO or above in all other
 environments.
 
-Most of our informational logs - such as logs for the attempt and success of each network call - are logged at debug 
+Most of our non-error logs - such as logs for the attempt and success of each network call - are logged at DEBUG 
 level. This will make it easier to debug issues where they can be reproduced in dev (which is most of the time), without
 emitting too many redundant logs to CloudWatch in higher environments. If more information is needed to debug a 
 recurring issue that surfaces only in higher environments, a specific log message can be escalated to INFO level for a
@@ -62,11 +64,27 @@ which allow us to easily track successful vs unsuccessful function completions.
 
 For more information on configuring Lambda logs, see the [official documentation](https://docs.aws.amazon.com/lambda/latest/dg/nodejs-logging.html).
 
-## Personally Identifiable Information
+### Personally Identifiable Information
 
 Personally identifiable information (PII) is any information that can be used to identify an individual, either alone 
-or when combined with other information. We should be careful to **never log PII**, even at debug level, and to never
-allow code that could log PII into version control.
+or when combined with other information. We should be careful to **never log PII**, even at DEBUG level, and to never
+allow code that could log PII into version control. We should avoid logging entire objects where possible, and take care
+should we need to do so, as the object's keys could change to include PII over time without it being obvious that this
+would surface in the logs.
+
+### Standard log messages
+
+* All Lambda functions must emit a `STARTED` log message at the start of processing, and a `COMPLETED` 
+  log 
+  message 
+  after successful completion of processing, to allow us to monitor the function's success or failure. Both should 
+  be at `INFO` level.
+
+* Network calls - e.g. to AWS services via the SDKs, or directly to an HTTP API - should have `DEBUG` level logs for 
+  the attempt (made immediately before the network call) and success (made after the call returns successfully) of 
+  the operation, to allow us to debug issues with network calls. They should also have one or more `ERROR` level 
+  logs for each relevant failure mode (e.g. for an UpdateItem call to DynamoDB, we might have one error log for 
+  failed conditional checks, and another for all other errors).
 
 ## Viewing Logs
 
@@ -87,7 +105,7 @@ fields @timestamp, message, messageCode
 
 ## Testing Logs
 
-Unit tests for log messages can be achieved using our custom matcher (defined in `backend-api/src/functions/testUtils/matchers.ts`).
+There is a custom matcher (defined in `backend-api/src/functions/testUtils/matchers.ts`) that can be used to facilitate unit testing log messages.
 
 First, we must set the environment variable `POWERTOOLS_DEV` to `true`, which will ensure that Lambda Powertools uses the global console to emit logs. This is done in `jest.config.ts`.
 Next, we must spy on the relevant method (`info`, `error`, etc) of the global console object, so we can track calls made to it.
