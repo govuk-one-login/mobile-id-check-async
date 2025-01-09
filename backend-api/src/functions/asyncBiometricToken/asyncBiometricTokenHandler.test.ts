@@ -116,14 +116,13 @@ describe("Async Biometric Token", () => {
 
   describe("Request body validation", () => {
     describe("Given request body is invalid", () => {
-      const request = buildRequest({
-        body: JSON.stringify({
-          sessionId: mockSessionId,
-          documentType: "BUS_PASS",
-        }),
-      });
-
       beforeEach(async () => {
+        const request = buildRequest({
+          body: JSON.stringify({
+            sessionId: mockSessionId,
+            documentType: "BUS_PASS",
+          }),
+        });
         result = await lambdaHandlerConstructor(dependencies, request, context);
       });
 
