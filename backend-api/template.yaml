@@ -212,7 +212,7 @@ Conditions:
       - !Equals
         - !Ref Environment
         - dev
-    - !Equals [ !Ref DeployAlarmsInDev, true ]
+    - !Equals [!Ref DeployAlarmsInDev, true]
 
 Globals:
   Function:
@@ -242,24 +242,24 @@ Globals:
         AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
         DT_CONNECTION_AUTH_TOKEN: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}'
-          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]
+          - SecretArn: !FindInMap [EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]
         DT_CONNECTION_BASE_URL: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_BASE_URL}}'
-          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]
+          - SecretArn: !FindInMap [EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]
         DT_CLUSTER_ID: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CLUSTER_ID}}'
-          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]
+          - SecretArn: !FindInMap [EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]
         DT_LOG_COLLECTION_AUTH_TOKEN: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_LOG_COLLECTION_AUTH_TOKEN}}'
-          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]
+          - SecretArn: !FindInMap [EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]
         DT_TENANT: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_TENANT}}'
-          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]
+          - SecretArn: !FindInMap [EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]
         DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
-    Layers: 
+    Layers:
       - !Sub
         - '{{resolve:secretsmanager:${SecretArn}:SecretString:NODEJS_LAYER}}'
-        - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]
+        - SecretArn: !FindInMap [EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]
 
 Resources:
 
@@ -484,7 +484,7 @@ Resources:
                 Action:
                   - dynamodb:Query
                 Resource:
-                  - Fn::GetAtt: [ "SessionsTable", "Arn" ]
+                  - Fn::GetAtt: ["SessionsTable", "Arn"]
                   - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-timeToLive-index
                 Condition:
                   ForAllValues:StringEquals:
@@ -845,6 +845,21 @@ Resources:
       RestApiId: !Ref SessionsApi
       Stage: !Ref SessionsApi.Stage
 
+  SessionsApiOriginRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Sub
+        - "origin.sessions-${AWS::StackName}.${DNS_RECORD}"
+        - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      Type: A
+      HostedZoneId: !Sub "{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}"
+      AliasTarget:
+        DNSName: !GetAtt SessionsApiDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt SessionsApiDomainName.RegionalHostedZoneId
+
   SessionsApiRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
@@ -857,8 +872,21 @@ Resources:
       Type: A
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
       AliasTarget:
-        DNSName: !GetAtt SessionsApiDomainName.RegionalDomainName
-        HostedZoneId: !GetAtt SessionsApiDomainName.RegionalHostedZoneId
+        DNSName:
+          Fn::ImportValue: !Sub "${AWS::StackName}-cf-dist-DistributionDomain"
+        HostedZoneId: Z2FDTNDATAQYW2
+        # AliasTarget:
+        #   DNSName: !GetAtt SessionsApiDomainName.RegionalDomainName
+        #   HostedZoneId: !GetAtt SessionsApiDomainName.RegionalHostedZoneId
+
+  SessionsApiWebAclAssociation:
+    Type: AWS::WAFv2::WebACLAssociation
+    Properties:
+      ResourceArn: !Sub
+        - "arn:aws:apigateway:${AWS::Region}::/restapis/${SessionsApi}/stages/${ApiStage}"
+        - ApiStage: !Ref SessionsApi.Stage
+      WebACLArn:
+        Fn::ImportValue: !Sub "${AWS::StackName}-cf-dist-CloakingOriginWebACLArn"
 
   AsyncActiveSessionFunction:
     Type: AWS::Serverless::Function
@@ -936,7 +964,7 @@ Resources:
                 Action:
                   - dynamodb:Query
                 Resource:
-                  - Fn::GetAtt: [ "SessionsTable", "Arn" ]
+                  - Fn::GetAtt: ["SessionsTable", "Arn"]
                   - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-timeToLive-index
                 Condition:
                   ForAllValues:StringEquals:
@@ -1430,8 +1458,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "1% or more of requests are failing on the /.well-known/jwks.json endpoint. See runbook: ${RunbookUrl}"
-        - RunbookUrl:
-            !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-well-known-5xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -1494,8 +1521,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "80% or more of requests are failing on the /.well-known/jwks.json endpoint. See runbook: ${RunbookUrl}"
-        - RunbookUrl:
-            !FindInMap [StaticVariables, urls, CriticalAlarmsRunbook]
+        - RunbookUrl: !FindInMap [StaticVariables, urls, CriticalAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-well-known-5xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -1558,8 +1584,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "1% or more of requests are failing on the /async/token endpoint with a 4XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl:
-            !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-async-token-4xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -1622,8 +1647,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "80% or more of requests are failing on the /async/token endpoint with a 4XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl:
-            !FindInMap [StaticVariables, urls, CriticalAlarmsRunbook]
+        - RunbookUrl: !FindInMap [StaticVariables, urls, CriticalAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-token-4xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -1686,8 +1710,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "1% or more of requests are failing on the /async/token endpoint with a 5XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl:
-            !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-async-token-5xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -1750,8 +1773,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "80% or more of requests are failing on the /async/token endpoint with a 5XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl:
-            !FindInMap [StaticVariables, urls, CriticalAlarmsRunbook]
+        - RunbookUrl: !FindInMap [StaticVariables, urls, CriticalAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-token-5xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -1814,8 +1836,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "1% or more of requests are failing on the /async/credential endpoint with a 4XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl:
-            !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-async-credential-4xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -1878,8 +1899,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "80% or more of requests are failing on the /async/credential endpoint with a 4XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl:
-            !FindInMap [StaticVariables, urls, CriticalAlarmsRunbook]
+        - RunbookUrl: !FindInMap [StaticVariables, urls, CriticalAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-credential-4xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -1942,8 +1962,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "1% or more of requests are failing on the /async/credential endpoint with a 5XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl:
-            !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-async-credential-5xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -2006,8 +2025,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "80% or more of requests are failing on the /async/credential endpoint with a 5XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl:
-            !FindInMap [StaticVariables, urls, CriticalAlarmsRunbook]
+        - RunbookUrl: !FindInMap [StaticVariables, urls, CriticalAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-credential-5xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -2080,9 +2098,9 @@ Outputs:
   StsMockApiUrl:
     Description: STS Mock API Gateway base URL
     Value: !If
-        - UseDevOverrideStsBaseUrl
-        - !Ref DevOverrideStsBaseUrl
-        - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
+      - UseDevOverrideStsBaseUrl
+      - !Ref DevOverrideStsBaseUrl
+      - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
 
   TxmaSqsQueueArn:
     Condition: IsDevOrBuild
