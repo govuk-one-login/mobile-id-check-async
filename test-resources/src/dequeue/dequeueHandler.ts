@@ -14,6 +14,7 @@ import {
   SQSEvent,
 } from "aws-lambda";
 import { Logger } from "../services/logging/logger";
+import { getEvent } from "./getEvent";
 import { MessageName, registeredLogs } from "./registeredLogs";
 
 export const lambdaHandlerConstructor = async (
@@ -45,73 +46,18 @@ export const lambdaHandlerConstructor = async (
   }
 
   for (const record of records) {
-    let txmaEvent: TxmaEvent;
+    const getEventResult = getEvent(record);
+    if (getEventResult.isError) {
+      const { errorMessage } = getEventResult.value;
 
-    try {
-      txmaEvent = JSON.parse(record.body);
-    } catch {
       logger.log("FAILED_TO_PROCESS_MESSAGES", {
-        errorMessage: `Failed to process message - messageId: ${record.messageId}`,
+        errorMessage,
       });
 
       batchItemFailures.push({ itemIdentifier: record.messageId });
       continue;
     }
-
-    if (!txmaEvent.event_name) {
-      logger.log("FAILED_TO_PROCESS_MESSAGES", {
-        errorMessage: `Missing event_name - messageId: ${record.messageId}`,
-      });
-
-      batchItemFailures.push({ itemIdentifier: record.messageId });
-      continue;
-    }
-
-    if (!allowedTxmaEventNames.includes(txmaEvent.event_name)) {
-      logger.log("FAILED_TO_PROCESS_MESSAGES", {
-        errorMessage: `event_name not valid - messageId: ${record.messageId}`,
-      });
-
-      batchItemFailures.push({ itemIdentifier: record.messageId });
-      continue;
-    }
-
-    if (!txmaEvent.user) {
-      logger.log("FAILED_TO_PROCESS_MESSAGES", {
-        errorMessage: `Missing user - messageId: ${record.messageId}`,
-      });
-
-      batchItemFailures.push({ itemIdentifier: record.messageId });
-      continue;
-    }
-
-    const { session_id } = txmaEvent.user;
-    if (!session_id) {
-      logger.log("FAILED_TO_PROCESS_MESSAGES", {
-        errorMessage: `Missing session_id - messageId: ${record.messageId}`,
-      });
-
-      batchItemFailures.push({ itemIdentifier: record.messageId });
-      continue;
-    }
-
-    if (!isValidUUID(session_id)) {
-      logger.log("FAILED_TO_PROCESS_MESSAGES", {
-        errorMessage: `session_id not valid - messageId: ${record.messageId}`,
-      });
-
-      batchItemFailures.push({ itemIdentifier: record.messageId });
-      continue;
-    }
-
-    if (!txmaEvent.timestamp) {
-      logger.log("FAILED_TO_PROCESS_MESSAGES", {
-        errorMessage: `Missing timestamp - messageId: ${record.messageId}`,
-      });
-
-      batchItemFailures.push({ itemIdentifier: record.messageId });
-      continue;
-    }
+    const txmaEvent = getEventResult.value;
 
     const timeToLiveInSeconds = getTimeToLiveInSeconds(
       env.TXMA_EVENT_TTL_DURATION_IN_SECONDS,
@@ -163,21 +109,6 @@ function getTimeToLiveInSeconds(ttlDuration: string) {
   return Math.floor(Date.now() / 1000) + Number(ttlDuration);
 }
 
-const isValidUUID = (input: string): boolean => {
-  const regexUUID =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  const isValidUUID = regexUUID.test(input);
-  return isValidUUID;
-};
-
-interface TxmaEvent {
-  event_name: string;
-  user: {
-    session_id: string;
-  };
-  timestamp: number;
-}
-
 export interface IDequeueDependencies {
   env: NodeJS.ProcessEnv;
   logger: () => Logger<MessageName>;
@@ -193,28 +124,3 @@ const dependencies: IDequeueDependencies = {
 };
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
-
-export const allowedTxmaEventNames = [
-  "DCMAW_ABORT_APP",
-  "DCMAW_ABORT_WEB",
-  "DCMAW_CRI_4XXERROR",
-  "DCMAW_CRI_5XXERROR",
-  "DCMAW_REDIRECT_SUCCESS",
-  "DCMAW_REDIRECT_ABORT",
-  "DCMAW_MISSING_CONTEXT_AFTER_ABORT",
-  "DCMAW_MISSING_CONTEXT_AFTER_COMPLETION",
-  "DCMAW_PASSPORT_SELECTED",
-  "DCMAW_BRP_SELECTED",
-  "DCMAW_DRIVING_LICENCE_SELECTED",
-  "DCMAW_CRI_END",
-  "DCMAW_CRI_ABORT",
-  "DCMAW_APP_HANDOFF_START",
-  "DCMAW_HYBRID_BILLING_STARTED",
-  "DCMAW_IPROOV_BILLING_STARTED",
-  "DCMAW_READID_NFC_BILLING_STARTED",
-  "DCMAW_CRI_START",
-  "DCMAW_APP_END",
-  "AUTH_SESSION_TOO_OLD",
-  "BIOMETRIC_SESSION_OLDER_THAN_AUTH_SESSION",
-  "BIOMETRIC_SESSION_OPAQUEID_MISMATCH",
-];
