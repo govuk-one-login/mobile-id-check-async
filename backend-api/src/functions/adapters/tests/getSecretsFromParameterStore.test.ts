@@ -193,7 +193,7 @@ describe("getSecretsFromParameterStore", () => {
     });
   });
 
-  describe("When called twice for same path within cache duration", () => {
+  describe("When called twice for same secret names within cache duration", () => {
     beforeEach(async () => {
       mockSsmClient
         .on(GetParametersCommand, {
@@ -242,7 +242,7 @@ describe("getSecretsFromParameterStore", () => {
       expect(mockSsmClient).toHaveReceivedCommandTimes(GetParametersCommand, 1);
     });
   });
-  describe("When called twice for same path beyond cache duration", () => {
+  describe("When called twice for same secret names beyond cache duration", () => {
     beforeEach(async () => {
       mockSsmClient
         .on(GetParametersCommand, {
