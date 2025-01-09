@@ -17,3 +17,6 @@ export default {
   verbose: true,
   clearMocks: true,
 };
+
+process.env.POWERTOOLS_DEV = "true";
+process.env.AWS_LAMBDA_LOG_LEVEL = "DEBUG";

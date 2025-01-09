@@ -90,7 +90,7 @@ fields @timestamp, message, messageCode
 
 Unit tests for log messages can be achieved using our custom matcher (defined in `backend-api/src/functions/testUtils/matchers.ts`).
 
-First, we must set the environment variable `POWERTOOLS_DEV` to `true`, which will ensure that Lambda Powertools uses the global console to emit logs. This is done in our `.env` file.
+First, we must set the environment variable `POWERTOOLS_DEV` to `true`, which will ensure that Lambda Powertools uses the global console to emit logs. This is done in `jest.config.ts`.
 Next, we must spy on the relevant method (`info`, `error`, etc) of the global console object, so we can track calls made to it.
 
 ```typescript

@@ -41,9 +41,6 @@ jobs:
 
       # Generate test coverage report for Sonar main branch analysis
       - name: Run Tests
-        env:
-          POWERTOOLS_DEV: true
-          AWS_LAMBDA_LOG_LEVEL: DEBUG
         run: npm run test:unit
 
       - name: Run SonarCloud Scan
