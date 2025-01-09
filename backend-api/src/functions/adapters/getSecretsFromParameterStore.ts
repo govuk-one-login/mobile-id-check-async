@@ -29,8 +29,17 @@ export const getSecretsFromParameterStore: GetSecrets = async ({
     );
     return emptyFailure();
   }
+
+  if (secretNames.some((secretName) => !secrets[secretName])) {
+    logger.error(LogMessage.GET_SECRETS_FROM_PARAMETER_STORE_FAILURE, {
+      error:
+        "Response from parameter store was missing one or more requested secrets",
+    });
+    return emptyFailure();
+  }
+
   logger.debug(LogMessage.GET_SECRETS_FROM_PARAMETER_STORE_SUCCESS);
-  return successResult(secretNames.map((secretName) => secrets[secretName]));
+  return successResult(secrets);
 };
 
 function addNewKeyWithEmptyObjectAsValue(

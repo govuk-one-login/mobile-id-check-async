@@ -27,15 +27,13 @@ describe("Async Biometric Token", () => {
     }),
   });
 
-  const mockSuccessfulGetSecrets = jest
-    .fn()
-    .mockResolvedValue(
-      successResult([
-        "mock_submitter_key_passport",
-        "mock_submitter_key_brp",
-        "mock_submitter_key_dl",
-      ]),
-    );
+  const mockSuccessfulGetSecrets = jest.fn().mockResolvedValue(
+    successResult({
+      mock_secret_path_passport: "mock_submitter_key_passport",
+      mock_secret_path_brp: "mock_submitter_key_brp",
+      mock_secret_path_dl: "mock_submitter_key_dl",
+    }),
+  );
 
   beforeEach(() => {
     dependencies = {

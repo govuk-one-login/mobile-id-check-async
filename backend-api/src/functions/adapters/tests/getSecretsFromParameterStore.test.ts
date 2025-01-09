@@ -19,7 +19,7 @@ const mockSecretName2 = "mockSecretName2";
 const mockSecretValue1 = "mockSecretValue1";
 const mockSecretValue2 = "mockSecretValue2";
 
-let result: Result<string[], void>;
+let result: Result<Record<string, string>, void>;
 let consoleDebugSpy: jest.SpyInstance;
 let consoleErrorSpy: jest.SpyInstance;
 
@@ -103,6 +103,32 @@ describe("getSecretsFromParameterStore", () => {
     });
   });
 
+  describe("When any passed secret name is missing from parameter store response", () => {
+    beforeEach(async () => {
+      mockSsmClient.onAnyCommand().resolves({
+        Parameters: [
+          {
+            Name: mockSecretName1,
+            Value: mockSecretValue1,
+          },
+        ],
+      });
+      result = await getSecretsFromParameterStore({
+        secretNames: [mockSecretName1, mockSecretName2],
+      });
+    });
+
+    it("Logs error", () => {
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "MOBILE_ASYNC_GET_SECRETS_FROM_PARAMETER_STORE_FAILURE",
+      });
+    });
+
+    it("Returns failure", () => {
+      expect(result).toEqual(emptyFailure());
+    });
+  });
+
   describe("When passed empty array of secret names", () => {
     beforeEach(async () => {
       result = await getSecretsFromParameterStore({ secretNames: [] });
@@ -115,7 +141,7 @@ describe("getSecretsFromParameterStore", () => {
     });
 
     it("Returns success with empty array", () => {
-      expect(result).toEqual(successResult([]));
+      expect(result).toEqual(successResult({}));
     });
   });
 
@@ -151,7 +177,11 @@ describe("getSecretsFromParameterStore", () => {
       });
 
       it("Returns success with value of secret", () => {
-        expect(result).toEqual(successResult([mockSecretValue1]));
+        expect(result).toEqual(
+          successResult({
+            [mockSecretName1]: mockSecretValue1,
+          }),
+        );
       });
     });
 
@@ -187,7 +217,10 @@ describe("getSecretsFromParameterStore", () => {
 
       it("Returns success with values of secrets in same order", () => {
         expect(result).toEqual(
-          successResult([mockSecretValue1, mockSecretValue2]),
+          successResult({
+            [mockSecretName1]: mockSecretValue1,
+            [mockSecretName2]: mockSecretValue2,
+          }),
         );
       });
     });
@@ -234,7 +267,10 @@ describe("getSecretsFromParameterStore", () => {
 
     it("Returns success with values of secrets", () => {
       expect(result).toEqual(
-        successResult([mockSecretValue1, mockSecretValue2]),
+        successResult({
+          [mockSecretName1]: mockSecretValue1,
+          [mockSecretName2]: mockSecretValue2,
+        }),
       );
     });
 
@@ -283,7 +319,10 @@ describe("getSecretsFromParameterStore", () => {
 
     it("Returns success with values of secrets", () => {
       expect(result).toEqual(
-        successResult([mockSecretValue1, mockSecretValue2]),
+        successResult({
+          [mockSecretName1]: mockSecretValue1,
+          [mockSecretName2]: mockSecretValue2,
+        }),
       );
     });
 
