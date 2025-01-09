@@ -1,20 +1,21 @@
 import {
-  BatchWriteItemCommand,
   DynamoDBClient,
   DynamoDBClientResolvedConfig,
+  PutItemCommand,
   ServiceInputTypes,
   ServiceOutputTypes,
 } from "@aws-sdk/client-dynamodb";
 import { SQSEvent } from "aws-lambda";
 import { AwsStub, mockClient } from "aws-sdk-client-mock";
+import "aws-sdk-client-mock-jest";
 import { Logger } from "../services/logging/logger";
+import { buildLambdaContext } from "../services/logging/tests/mockContext";
 import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import {
   IDequeueDependencies,
   lambdaHandlerConstructor,
 } from "./dequeueHandler";
 import { MessageName, registeredLogs } from "./registeredLogs";
-import { buildLambdaContext } from "../services/logging/tests/mockContext";
 
 jest.useFakeTimers().setSystemTime(new Date("2025-01-08"));
 
@@ -26,7 +27,7 @@ const env = {
 describe("Dequeue TxMA events", () => {
   let dependencies: IDequeueDependencies;
   let mockLogger: MockLoggingAdapter<MessageName>;
-  let mockDdbClient: AwsStub<
+  let mockDbClient: AwsStub<
     ServiceInputTypes,
     ServiceOutputTypes,
     DynamoDBClientResolvedConfig
@@ -34,8 +35,8 @@ describe("Dequeue TxMA events", () => {
 
   beforeEach(() => {
     mockLogger = new MockLoggingAdapter();
-    mockDdbClient = mockClient(DynamoDBClient);
-    mockDdbClient.on(BatchWriteItemCommand).resolves({});
+    mockDbClient = mockClient(DynamoDBClient);
+    mockDbClient.on(PutItemCommand).resolves({});
     dependencies = {
       env,
       logger: () => new Logger(mockLogger, registeredLogs),
@@ -72,25 +73,19 @@ describe("Dequeue TxMA events", () => {
   });
 
   describe("Given there are no messages to be processed", () => {
-    it("Logs an empty array", async () => {
-      mockDdbClient
-        .on(BatchWriteItemCommand)
-        .rejects("Error writing to database");
+    it("Logs an error message", async () => {
+      mockDbClient.on(PutItemCommand).rejects("Error writing to database");
       const event: SQSEvent = {
         Records: [],
       };
 
       await lambdaHandlerConstructor(dependencies, event, buildLambdaContext());
 
-      expect(mockLogger.getLogMessages().length).toEqual(4);
+      expect(mockLogger.getLogMessages().length).toEqual(2);
       expect(mockLogger.getLogMessages()[0].logMessage.message).toEqual(
         "STARTED",
       );
-      expect(mockLogger.getLogMessages()[1].data.messages).toEqual([]);
-      expect(mockLogger.getLogMessages()[2].logMessage.message).toEqual(
-        "ERROR_WRITING_EVENT_TO_EVENTS_TABLE",
-      );
-      expect(mockLogger.getLogMessages()[3].logMessage.message).toEqual(
+      expect(mockLogger.getLogMessages()[1].logMessage.message).toEqual(
         "COMPLETED",
       );
     });
@@ -160,34 +155,29 @@ describe("Dequeue TxMA events", () => {
       await lambdaHandlerConstructor(dependencies, event, buildLambdaContext());
 
       expect(mockLogger.getLogMessages().length).toEqual(5);
-      expect(mockLogger.getLogMessages()[0].logMessage.message).toEqual(
-        "STARTED",
-      );
       expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
         "Failed to process message - messageId: 54D7CA2F-BE1D-4D55-8F1C-9B3B501C9685",
       );
       expect(mockLogger.getLogMessages()[2].data.errorMessage).toEqual(
         "Failed to process message - messageId: D8B937B7-7E1D-4D37-BD82-C6AED9F7D975",
       );
-      expect(mockLogger.getLogMessages()[3].data.messages).toEqual([
+      expect(mockLogger.getLogMessages()[3].data.processedMessages).toEqual([
         {
-          PutRequest: {
-            Item: {
-              pk: { S: "TXMA#mockSessionId" },
-              sk: {
-                S: "DCMAW_APP_HANDOFF_START#mockTimestamp",
-              },
-              eventBody: {
-                S: JSON.stringify({
-                  event_name: "DCMAW_APP_HANDOFF_START",
-                  user: {
-                    session_id: "mockSessionId",
-                  },
-                  timestamp: "mockTimestamp",
-                }),
-              },
-              timeToLiveInSeconds: { N: "1736298000" },
+          Item: {
+            pk: { S: "TXMA#mockSessionId" },
+            sk: {
+              S: "DCMAW_APP_HANDOFF_START#mockTimestamp",
             },
+            eventBody: {
+              S: JSON.stringify({
+                event_name: "DCMAW_APP_HANDOFF_START",
+                user: {
+                  session_id: "mockSessionId",
+                },
+                timestamp: "mockTimestamp",
+              }),
+            },
+            timeToLiveInSeconds: { N: "1736298000" },
           },
         },
       ]);
@@ -270,51 +260,44 @@ describe("Dequeue TxMA events", () => {
       await lambdaHandlerConstructor(dependencies, event, buildLambdaContext());
 
       expect(mockLogger.getLogMessages().length).toEqual(4);
-      expect(mockLogger.getLogMessages()[0].logMessage.message).toEqual(
-        "STARTED",
-      );
       expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
         "Event name not valid - messageId: E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
       );
-      expect(mockLogger.getLogMessages()[2].data.messages).toEqual([
+      expect(mockLogger.getLogMessages()[2].data.processedMessages).toEqual([
         {
-          PutRequest: {
-            Item: {
-              pk: { S: "TXMA#mockSessionId" },
-              sk: {
-                S: "DCMAW_APP_HANDOFF_START#mockTimestamp",
-              },
-              eventBody: {
-                S: JSON.stringify({
-                  event_name: "DCMAW_APP_HANDOFF_START",
-                  user: {
-                    session_id: "mockSessionId",
-                  },
-                  timestamp: "mockTimestamp",
-                }),
-              },
-              timeToLiveInSeconds: { N: "1736298000" },
+          Item: {
+            pk: { S: "TXMA#mockSessionId" },
+            sk: {
+              S: "DCMAW_APP_HANDOFF_START#mockTimestamp",
             },
+            eventBody: {
+              S: JSON.stringify({
+                event_name: "DCMAW_APP_HANDOFF_START",
+                user: {
+                  session_id: "mockSessionId",
+                },
+                timestamp: "mockTimestamp",
+              }),
+            },
+            timeToLiveInSeconds: { N: "1736298000" },
           },
         },
         {
-          PutRequest: {
-            Item: {
-              pk: { S: "TXMA#mockSessionId" },
-              sk: {
-                S: "DCMAW_APP_END#mockTimestamp",
-              },
-              eventBody: {
-                S: JSON.stringify({
-                  event_name: "DCMAW_APP_END",
-                  user: {
-                    session_id: "mockSessionId",
-                  },
-                  timestamp: "mockTimestamp",
-                }),
-              },
-              timeToLiveInSeconds: { N: "1736298000" },
+          Item: {
+            pk: { S: "TXMA#mockSessionId" },
+            sk: {
+              S: "DCMAW_APP_END#mockTimestamp",
             },
+            eventBody: {
+              S: JSON.stringify({
+                event_name: "DCMAW_APP_END",
+                user: {
+                  session_id: "mockSessionId",
+                },
+                timestamp: "mockTimestamp",
+              }),
+            },
+            timeToLiveInSeconds: { N: "1736298000" },
           },
         },
       ]);
@@ -401,6 +384,51 @@ describe("Dequeue TxMA events", () => {
         );
       });
 
+      it("Makes a call to the database client", async () => {
+        await lambdaHandlerConstructor(
+          dependencies,
+          event,
+          buildLambdaContext(),
+        );
+        expect(mockDbClient).toHaveReceivedCommandTimes(PutItemCommand, 2);
+        expect(mockDbClient).toHaveReceivedNthCommandWith(1, PutItemCommand, {
+          Item: {
+            pk: { S: "TXMA#mockSessionId" },
+            sk: {
+              S: "DCMAW_APP_HANDOFF_START#mockTimestamp",
+            },
+            eventBody: {
+              S: JSON.stringify({
+                event_name: "DCMAW_APP_HANDOFF_START",
+                user: {
+                  session_id: "mockSessionId",
+                },
+                timestamp: "mockTimestamp",
+              }),
+            },
+            timeToLiveInSeconds: { N: "1736298000" },
+          },
+        });
+        expect(mockDbClient).toHaveReceivedNthCommandWith(2, PutItemCommand, {
+          Item: {
+            pk: { S: "TXMA#mockSessionId" },
+            sk: {
+              S: "DCMAW_APP_END#mockTimestamp",
+            },
+            eventBody: {
+              S: JSON.stringify({
+                event_name: "DCMAW_APP_END",
+                user: {
+                  session_id: "mockSessionId",
+                },
+                timestamp: "mockTimestamp",
+              }),
+            },
+            timeToLiveInSeconds: { N: "1736298000" },
+          },
+        });
+      });
+
       it("Logs successfully processed messages", async () => {
         await lambdaHandlerConstructor(
           dependencies,
@@ -408,45 +436,41 @@ describe("Dequeue TxMA events", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages()[2].data.messages).toEqual([
+        expect(mockLogger.getLogMessages()[2].data.processedMessages).toEqual([
           {
-            PutRequest: {
-              Item: {
-                pk: { S: "TXMA#mockSessionId" },
-                sk: {
-                  S: "DCMAW_APP_HANDOFF_START#mockTimestamp",
-                },
-                eventBody: {
-                  S: JSON.stringify({
-                    event_name: "DCMAW_APP_HANDOFF_START",
-                    user: {
-                      session_id: "mockSessionId",
-                    },
-                    timestamp: "mockTimestamp",
-                  }),
-                },
-                timeToLiveInSeconds: { N: "1736298000" },
+            Item: {
+              pk: { S: "TXMA#mockSessionId" },
+              sk: {
+                S: "DCMAW_APP_HANDOFF_START#mockTimestamp",
               },
+              eventBody: {
+                S: JSON.stringify({
+                  event_name: "DCMAW_APP_HANDOFF_START",
+                  user: {
+                    session_id: "mockSessionId",
+                  },
+                  timestamp: "mockTimestamp",
+                }),
+              },
+              timeToLiveInSeconds: { N: "1736298000" },
             },
           },
           {
-            PutRequest: {
-              Item: {
-                pk: { S: "TXMA#mockSessionId" },
-                sk: {
-                  S: "DCMAW_APP_END#mockTimestamp",
-                },
-                eventBody: {
-                  S: JSON.stringify({
-                    event_name: "DCMAW_APP_END",
-                    user: {
-                      session_id: "mockSessionId",
-                    },
-                    timestamp: "mockTimestamp",
-                  }),
-                },
-                timeToLiveInSeconds: { N: "1736298000" },
+            Item: {
+              pk: { S: "TXMA#mockSessionId" },
+              sk: {
+                S: "DCMAW_APP_END#mockTimestamp",
               },
+              eventBody: {
+                S: JSON.stringify({
+                  event_name: "DCMAW_APP_END",
+                  user: {
+                    session_id: "mockSessionId",
+                  },
+                  timestamp: "mockTimestamp",
+                }),
+              },
+              timeToLiveInSeconds: { N: "1736298000" },
             },
           },
         ]);
@@ -469,9 +493,7 @@ describe("Dequeue TxMA events", () => {
 
     describe("Given there is an unexpected error writing events to the database", () => {
       it("Logs an error message", async () => {
-        mockDdbClient
-          .on(BatchWriteItemCommand)
-          .rejects("Error writing to database");
+        mockDbClient.on(PutItemCommand).rejects("Error writing to database");
         const event: SQSEvent = {
           Records: [
             {
@@ -505,8 +527,8 @@ describe("Dequeue TxMA events", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages().length).toEqual(4);
-        expect(mockLogger.getLogMessages()[2].logMessage.message).toEqual(
+        expect(mockLogger.getLogMessages().length).toEqual(3);
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toEqual(
           "ERROR_WRITING_EVENT_TO_EVENTS_TABLE",
         );
       });
@@ -570,45 +592,41 @@ describe("Dequeue TxMA events", () => {
         );
 
         expect(mockLogger.getLogMessages().length).toEqual(3);
-        expect(mockLogger.getLogMessages()[1].data.messages).toEqual([
+        expect(mockLogger.getLogMessages()[1].data.processedMessages).toEqual([
           {
-            PutRequest: {
-              Item: {
-                pk: { S: "TXMA#mockSessionId" },
-                sk: {
-                  S: "DCMAW_APP_HANDOFF_START#mockTimestamp",
-                },
-                eventBody: {
-                  S: JSON.stringify({
-                    event_name: "DCMAW_APP_HANDOFF_START",
-                    user: {
-                      session_id: "mockSessionId",
-                    },
-                    timestamp: "mockTimestamp",
-                  }),
-                },
-                timeToLiveInSeconds: { N: "1736298000" },
+            Item: {
+              pk: { S: "TXMA#mockSessionId" },
+              sk: {
+                S: "DCMAW_APP_HANDOFF_START#mockTimestamp",
               },
+              eventBody: {
+                S: JSON.stringify({
+                  event_name: "DCMAW_APP_HANDOFF_START",
+                  user: {
+                    session_id: "mockSessionId",
+                  },
+                  timestamp: "mockTimestamp",
+                }),
+              },
+              timeToLiveInSeconds: { N: "1736298000" },
             },
           },
           {
-            PutRequest: {
-              Item: {
-                pk: { S: "TXMA#mockSessionId" },
-                sk: {
-                  S: "DCMAW_APP_END#mockTimestamp",
-                },
-                eventBody: {
-                  S: JSON.stringify({
-                    event_name: "DCMAW_APP_END",
-                    user: {
-                      session_id: "mockSessionId",
-                    },
-                    timestamp: "mockTimestamp",
-                  }),
-                },
-                timeToLiveInSeconds: { N: "1736298000" },
+            Item: {
+              pk: { S: "TXMA#mockSessionId" },
+              sk: {
+                S: "DCMAW_APP_END#mockTimestamp",
               },
+              eventBody: {
+                S: JSON.stringify({
+                  event_name: "DCMAW_APP_END",
+                  user: {
+                    session_id: "mockSessionId",
+                  },
+                  timestamp: "mockTimestamp",
+                }),
+              },
+              timeToLiveInSeconds: { N: "1736298000" },
             },
           },
         ]);

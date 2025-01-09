@@ -1,7 +1,8 @@
 import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
 import {
-  BatchWriteItemCommand,
   DynamoDBClient,
+  PutItemCommand,
+  PutItemCommandInput,
   PutRequest,
 } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
@@ -27,6 +28,8 @@ export const lambdaHandlerConstructor = async (
 
   const records = event.Records;
   const batchItemFailures: SQSBatchItemFailure[] = [];
+  const processedMessages: PutRequest[] = [];
+
   if (!env.EVENTS_TABLE_NAME) {
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
       errorMessage: "Missing environment variable: EVENTS_TABLE_NAME",
@@ -40,13 +43,6 @@ export const lambdaHandlerConstructor = async (
     });
     return { batchItemFailures };
   }
-
-  const tableName = env.EVENTS_TABLE_NAME;
-  const input: IDynamoDBBatchWriteItemInput = {
-    RequestItems: {
-      [tableName]: [],
-    },
-  };
 
   for (const record of records) {
     let txmaEvent: TxmaEvent;
@@ -74,29 +70,33 @@ export const lambdaHandlerConstructor = async (
     const timeToLiveInSeconds = getTimeToLiveInSeconds(
       env.TXMA_EVENT_TTL_DURATION_IN_SECONDS,
     );
-    const putRequest: IPutRequest = {
-      PutRequest: {
-        Item: marshall({
-          pk: `TXMA#${txmaEvent.user.session_id}`,
-          sk: `${txmaEvent.event_name}#${txmaEvent.timestamp}`,
-          eventBody: record.body,
-          timeToLiveInSeconds,
-        }),
-      },
+    const putItemCommandInput: PutItemCommandInput = {
+      TableName: env.EVENTS_TABLE_NAME,
+      Item: marshall({
+        pk: `TXMA#${txmaEvent.user.session_id}`,
+        sk: `${txmaEvent.event_name}#${txmaEvent.timestamp}`,
+        eventBody: record.body,
+        timeToLiveInSeconds,
+      }),
     };
 
-    input.RequestItems[tableName].push(putRequest);
+    const command = new PutItemCommand(putItemCommandInput);
+    try {
+      await dbClient.send(command);
+    } catch (error) {
+      logger.log("ERROR_WRITING_EVENT_TO_EVENTS_TABLE", {
+        errorMessage: error,
+      });
+
+      batchItemFailures.push({ itemIdentifier: record.messageId });
+      continue;
+    }
+
+    processedMessages.push({ Item: putItemCommandInput.Item });
   }
 
-  logger.log("PROCESSED_MESSAGES", { messages: input.RequestItems[tableName] });
-
-  const command = new BatchWriteItemCommand(input);
-  try {
-    await dbClient.send(command);
-  } catch (error) {
-    logger.log("ERROR_WRITING_EVENT_TO_EVENTS_TABLE", {
-      errorMessage: error,
-    });
+  if (processedMessages.length > 0) {
+    logger.log("PROCESSED_MESSAGES", { processedMessages });
   }
 
   logger.log("COMPLETED");
@@ -115,18 +115,6 @@ const dbClient = new DynamoDBClient({
 
 function getTimeToLiveInSeconds(ttlDuration: string) {
   return Math.floor(Date.now() / 1000) + Number(ttlDuration);
-}
-
-interface IDynamoDBBatchWriteItemInput {
-  RequestItems: IRequestItems;
-}
-
-interface IRequestItems {
-  [tableName: string]: IPutRequest[];
-}
-
-interface IPutRequest {
-  PutRequest: PutRequest;
 }
 
 interface TxmaEvent {
