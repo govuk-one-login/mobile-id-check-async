@@ -8,5 +8,5 @@ export type LogMessage<T extends string> = {
 } & RegisteredMessageData<T>;
 
 type RegisteredMessageData<T extends string> = {
-  messageCode: `TEST_RESOURCES_${T}`;
+  messageCode: `DEQUEUE_${T}`;
 };

@@ -10,21 +10,21 @@ export type MessageName =
 
 export const registeredLogs: RegisteredLogMessages<MessageName> = {
   STARTED: {
-    messageCode: "TEST_RESOURCES_STARTED",
+    messageCode: "DEQUEUE_STARTED",
   },
   COMPLETED: {
-    messageCode: "TEST_RESOURCES_COMPLETED",
+    messageCode: "DEQUEUE_COMPLETED",
   },
   ENVIRONMENT_VARIABLE_MISSING: {
-    messageCode: "TEST_RESOURCES_ENVIRONMENT_VARIABLE_MISSING",
+    messageCode: "DEQUEUE_ENVIRONMENT_VARIABLE_MISSING",
   },
   FAILED_TO_PROCESS_MESSAGES: {
-    messageCode: "TEST_RESOURCES_FAILED_TO_PROCESS_MESSAGES",
+    messageCode: "DEQUEUE_FAILED_TO_PROCESS_MESSAGES",
   },
   PROCESSED_MESSAGES: {
-    messageCode: "TEST_RESOURCES_PROCESSED_MESSAGES",
+    messageCode: "DEQUEUE_PROCESSED_MESSAGES",
   },
   ERROR_WRITING_EVENT_TO_EVENTS_TABLE: {
-    messageCode: "TEST_RESOURCES_ERROR_WRITING_EVENT_TO_EVENTS_TABLE",
+    messageCode: "DEQUEUE_ERROR_WRITING_EVENT_TO_EVENTS_TABLE",
   },
 };
