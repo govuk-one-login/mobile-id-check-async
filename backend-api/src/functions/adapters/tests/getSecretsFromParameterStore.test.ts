@@ -1,5 +1,5 @@
 import { expect } from "@jest/globals";
-import "../testUtils/matchers";
+import "../../testUtils/matchers";
 import "dotenv/config";
 import { mockClient } from "aws-sdk-client-mock";
 import "aws-sdk-client-mock-jest";
@@ -8,10 +8,10 @@ import {
   InternalServerError,
   SSMClient,
 } from "@aws-sdk/client-ssm";
-import { emptyFailure, Result, successResult } from "../utils/result";
-import { getSecretsFromParameterStore } from "./getSecretsFromParameterStore";
+import { emptyFailure, Result, successResult } from "../../utils/result";
+import { getSecretsFromParameterStore } from "../getSecretsFromParameterStore";
 import { clearCaches } from "@aws-lambda-powertools/parameters";
-import { NOW_IN_MILLISECONDS } from "../testUtils/unitTestData";
+import { NOW_IN_MILLISECONDS } from "../../testUtils/unitTestData";
 
 const mockSsmClient = mockClient(SSMClient);
 const mockSecretName1 = "mockSecretName1";
