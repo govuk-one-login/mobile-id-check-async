@@ -4,8 +4,8 @@ import {
   Context,
 } from "aws-lambda";
 import {
-  runtimeDependencies,
   IAsyncBiometricTokenDependencies,
+  runtimeDependencies,
 } from "./handlerDependencies";
 import {
   badRequestResponse,
@@ -13,7 +13,7 @@ import {
   serverErrorResponse,
 } from "../common/lambdaResponses";
 import { validateRequestBody } from "./validateRequestBody/validateRequestBody";
-import { logger, setupLoggerForNewInvocation } from "../common/logging/logger";
+import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import {
   BiometricTokenConfig,
@@ -28,7 +28,8 @@ export async function lambdaHandlerConstructor(
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
-  setupLoggerForNewInvocation(logger, context);
+  logger.resetKeys();
+  logger.addContext(context);
   logger.info(LogMessage.BIOMETRIC_TOKEN_STARTED);
 
   const configResult = getBiometricTokenConfig(dependencies.env);

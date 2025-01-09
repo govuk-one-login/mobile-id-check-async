@@ -42,8 +42,7 @@ logger.appendKeys({
 ```
 
 As a single logger instance is shared across the modules of our Lambda, these keys will persist until cleared or
-overwritten. Request-specific keys should be cleared at the start of each Lambda invocation by calling `logger.resetKeys()` 
-or calling the `setupLoggerForNewInvocation()` utility, which will invoke the former.
+overwritten. Request-specific keys should be cleared at the start of each Lambda invocation by calling `logger.resetKeys()`.
 
 ## Log Levels
 
