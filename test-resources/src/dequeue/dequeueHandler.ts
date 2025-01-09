@@ -58,9 +58,55 @@ export const lambdaHandlerConstructor = async (
       continue;
     }
 
+    if (!txmaEvent.event_name) {
+      logger.log("FAILED_TO_PROCESS_MESSAGES", {
+        errorMessage: `Missing event_name - messageId: ${record.messageId}`,
+      });
+
+      batchItemFailures.push({ itemIdentifier: record.messageId });
+      continue;
+    }
+
     if (!allowedTxmaEventNames.includes(txmaEvent.event_name)) {
       logger.log("FAILED_TO_PROCESS_MESSAGES", {
-        errorMessage: `Event name not valid - messageId: ${record.messageId}`,
+        errorMessage: `event_name not valid - messageId: ${record.messageId}`,
+      });
+
+      batchItemFailures.push({ itemIdentifier: record.messageId });
+      continue;
+    }
+
+    if (!txmaEvent.user) {
+      logger.log("FAILED_TO_PROCESS_MESSAGES", {
+        errorMessage: `Missing user - messageId: ${record.messageId}`,
+      });
+
+      batchItemFailures.push({ itemIdentifier: record.messageId });
+      continue;
+    }
+
+    const { session_id } = txmaEvent.user;
+    if (!session_id) {
+      logger.log("FAILED_TO_PROCESS_MESSAGES", {
+        errorMessage: `Missing session_id - messageId: ${record.messageId}`,
+      });
+
+      batchItemFailures.push({ itemIdentifier: record.messageId });
+      continue;
+    }
+
+    if (!isValidUUID(session_id)) {
+      logger.log("FAILED_TO_PROCESS_MESSAGES", {
+        errorMessage: `session_id not valid - messageId: ${record.messageId}`,
+      });
+
+      batchItemFailures.push({ itemIdentifier: record.messageId });
+      continue;
+    }
+
+    if (!txmaEvent.timestamp) {
+      logger.log("FAILED_TO_PROCESS_MESSAGES", {
+        errorMessage: `Missing timestamp - messageId: ${record.messageId}`,
       });
 
       batchItemFailures.push({ itemIdentifier: record.messageId });
@@ -116,6 +162,13 @@ const dbClient = new DynamoDBClient({
 function getTimeToLiveInSeconds(ttlDuration: string) {
   return Math.floor(Date.now() / 1000) + Number(ttlDuration);
 }
+
+const isValidUUID = (input: string): boolean => {
+  const regexUUID =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const isValidUUID = regexUUID.test(input);
+  return isValidUUID;
+};
 
 interface TxmaEvent {
   event_name: string;
