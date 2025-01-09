@@ -6,7 +6,12 @@ import {
 } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
-import { SQSBatchItemFailure, SQSBatchResponse, SQSEvent } from "aws-lambda";
+import {
+  Context,
+  SQSBatchItemFailure,
+  SQSBatchResponse,
+  SQSEvent,
+} from "aws-lambda";
 import { Logger } from "../services/logging/logger";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { TxmaEvent } from "./txma/TxmaEventTypes";
@@ -14,9 +19,11 @@ import { TxmaEvent } from "./txma/TxmaEventTypes";
 export const lambdaHandlerConstructor = async (
   dependencies: IDequeueDependencies,
   event: SQSEvent,
+  context: Context,
 ): Promise<SQSBatchResponse> => {
   const { env } = dependencies;
   const logger = dependencies.logger();
+  logger.addContext(context);
   logger.log("STARTED");
 
   const records = event.Records;

@@ -14,6 +14,7 @@ import {
   lambdaHandlerConstructor,
 } from "./dequeueHandler";
 import { MessageName, registeredLogs } from "./registeredLogs";
+import { buildLambdaContext } from "../services/logging/tests/mockContext";
 
 jest.useFakeTimers().setSystemTime(new Date("2025-01-08"));
 
@@ -54,7 +55,11 @@ describe("Dequeue TxMA events", () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
         delete dependencies.env[envVar];
 
-        await lambdaHandlerConstructor(dependencies, event);
+        await lambdaHandlerConstructor(
+          dependencies,
+          event,
+          buildLambdaContext(),
+        );
 
         expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
           "ENVIRONMENT_VARIABLE_MISSING",
@@ -75,7 +80,7 @@ describe("Dequeue TxMA events", () => {
         Records: [],
       };
 
-      await lambdaHandlerConstructor(dependencies, event);
+      await lambdaHandlerConstructor(dependencies, event, buildLambdaContext());
 
       expect(mockLogger.getLogMessages().length).toEqual(4);
       expect(mockLogger.getLogMessages()[0].logMessage.message).toEqual(
@@ -152,7 +157,7 @@ describe("Dequeue TxMA events", () => {
         ],
       };
 
-      await lambdaHandlerConstructor(dependencies, event);
+      await lambdaHandlerConstructor(dependencies, event, buildLambdaContext());
 
       expect(mockLogger.getLogMessages().length).toEqual(5);
       expect(mockLogger.getLogMessages()[0].logMessage.message).toEqual(
@@ -257,7 +262,11 @@ describe("Dequeue TxMA events", () => {
 
     describe("Given one out of three messages fails to be processed", () => {
       it("Logs the messageId of messages that failed to be processed", async () => {
-        await lambdaHandlerConstructor(dependencies, event);
+        await lambdaHandlerConstructor(
+          dependencies,
+          event,
+          buildLambdaContext(),
+        );
 
         expect(mockLogger.getLogMessages().length).toEqual(4);
         expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
@@ -266,7 +275,11 @@ describe("Dequeue TxMA events", () => {
       });
 
       it("Logs successfully processed messages", async () => {
-        await lambdaHandlerConstructor(dependencies, event);
+        await lambdaHandlerConstructor(
+          dependencies,
+          event,
+          buildLambdaContext(),
+        );
 
         expect(mockLogger.getLogMessages()[2].data.messages).toEqual([
           {
@@ -313,7 +326,11 @@ describe("Dequeue TxMA events", () => {
       });
 
       it("Returns batch item failures", async () => {
-        const result = await lambdaHandlerConstructor(dependencies, event);
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+          buildLambdaContext(),
+        );
 
         expect(result).toStrictEqual({
           batchItemFailures: [
@@ -355,7 +372,11 @@ describe("Dequeue TxMA events", () => {
           ],
         };
 
-        await lambdaHandlerConstructor(dependencies, event);
+        await lambdaHandlerConstructor(
+          dependencies,
+          event,
+          buildLambdaContext(),
+        );
 
         expect(mockLogger.getLogMessages().length).toEqual(4);
         expect(mockLogger.getLogMessages()[2].logMessage.message).toEqual(
@@ -415,7 +436,11 @@ describe("Dequeue TxMA events", () => {
           ],
         };
 
-        await lambdaHandlerConstructor(dependencies, event);
+        await lambdaHandlerConstructor(
+          dependencies,
+          event,
+          buildLambdaContext(),
+        );
 
         expect(mockLogger.getLogMessages().length).toEqual(3);
         expect(mockLogger.getLogMessages()[1].data.messages).toEqual([
