@@ -810,6 +810,8 @@ Resources:
           Name: AWS::Include
           Parameters:
             Location: ./openApiSpecs/async-public-spec.yaml
+      Tags:
+        FMSRegionalPolicy: false
 
   SessionsApiAccessLogs:
     Type: AWS::Logs::LogGroup
