@@ -14,7 +14,6 @@ import {
 } from "aws-lambda";
 import { Logger } from "../services/logging/logger";
 import { MessageName, registeredLogs } from "./registeredLogs";
-import { TxmaEvent } from "./txma/TxmaEventTypes";
 
 export const lambdaHandlerConstructor = async (
   dependencies: IDequeueDependencies,
@@ -119,6 +118,14 @@ interface IRequestItems {
 
 interface IPutRequest {
   PutRequest: PutRequest;
+}
+
+interface TxmaEvent {
+  event_name: string;
+  user: {
+    session_id: string;
+  };
+  timestamp: number;
 }
 
 export interface IDequeueDependencies {
