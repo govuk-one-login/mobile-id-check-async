@@ -26,7 +26,7 @@ additional fields and values to be logged. e.g.
 ```typescript
 logger.error(LogMessage.GET_SECRETS_FROM_PARAMETER_STORE_FAILURE, {
     data: {
-        "key": "value"
+        key: "value"
     }
 })
 ```
@@ -37,12 +37,12 @@ Logging fields that should persist across multiple uses of the logger within a s
 
 ```typescript
 logger.appendKeys({
-    key: value
+    key: "value"
 })
 ```
 
 As a single logger instance is shared across the modules of our Lambda, these keys will persist until cleared or
-overwritten. Request-specific keys should be cleared at the start of each request by calling `logger.resetKeys()` 
+overwritten. Request-specific keys should be cleared at the start of each Lambda invocation by calling `logger.resetKeys()` 
 or calling the `setupLoggerForNewInvocation()` utility, which will invoke the former.
 
 ## Log Levels
