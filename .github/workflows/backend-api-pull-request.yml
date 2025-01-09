@@ -47,7 +47,10 @@ jobs:
         run: npm run format:check
 
       # Runs unit, infra and pact tests
-      - name: Run tests 
+      - name: Run tests
+        env:
+          POWERTOOLS_DEV: true
+          AWS_LAMBDA_LOG_LEVEL: DEBUG
         run: npm run test
 
       - name: Generate proxy open api spec
