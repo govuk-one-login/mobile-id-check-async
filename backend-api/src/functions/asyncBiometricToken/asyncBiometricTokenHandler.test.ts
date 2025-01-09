@@ -27,7 +27,7 @@ describe("Async Biometric Token", () => {
     }),
   });
 
-  const mockSuccessfulGetSecrets = jest.fn().mockResolvedValue(
+  const mockGetSecretsSuccess = jest.fn().mockResolvedValue(
     successResult({
       mock_secret_path_passport: "mock_submitter_key_passport",
       mock_secret_path_brp: "mock_submitter_key_brp",
@@ -44,7 +44,7 @@ describe("Async Biometric Token", () => {
         BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL: "mock_secret_path_dl",
         BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS: "900",
       },
-      getSecrets: mockSuccessfulGetSecrets,
+      getSecrets: mockGetSecretsSuccess,
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
@@ -181,7 +181,7 @@ describe("Async Biometric Token", () => {
     });
 
     it("Passes correct arguments to get secrets", () => {
-      expect(mockSuccessfulGetSecrets).toHaveBeenCalledWith({
+      expect(mockGetSecretsSuccess).toHaveBeenCalledWith({
         secretNames: [
           "mock_secret_path_passport",
           "mock_secret_path_brp",
