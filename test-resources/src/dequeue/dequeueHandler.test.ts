@@ -67,6 +67,7 @@ describe("Dequeue TxMA events", () => {
         );
         expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
           errorMessage: `Missing environment variable: ${envVar}`,
+          errorCategory: "SERVER_ERROR",
         });
       });
     });

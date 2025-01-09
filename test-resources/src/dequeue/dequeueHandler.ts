@@ -14,6 +14,7 @@ import {
   SQSEvent,
 } from "aws-lambda";
 import { Logger } from "../services/logging/logger";
+import { getConfig } from "./getConfig";
 import { getEvent } from "./getEvent";
 import { MessageName, registeredLogs } from "./registeredLogs";
 
@@ -22,7 +23,6 @@ export const lambdaHandlerConstructor = async (
   event: SQSEvent,
   context: Context,
 ): Promise<SQSBatchResponse> => {
-  const { env } = dependencies;
   const logger = dependencies.logger();
   logger.addContext(context);
   logger.log("STARTED");
@@ -31,19 +31,18 @@ export const lambdaHandlerConstructor = async (
   const batchItemFailures: SQSBatchItemFailure[] = [];
   const processedMessages: PutRequest[] = [];
 
-  if (!env.EVENTS_TABLE_NAME) {
+  const getConfigResult = getConfig(dependencies.env);
+  if (getConfigResult.isError) {
+    const { errorMessage, errorCategory } = getConfigResult.value;
+
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
-      errorMessage: "Missing environment variable: EVENTS_TABLE_NAME",
+      errorMessage,
+      errorCategory,
     });
+
     return { batchItemFailures };
   }
-  if (!env.TXMA_EVENT_TTL_DURATION_IN_SECONDS) {
-    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
-      errorMessage:
-        "Missing environment variable: TXMA_EVENT_TTL_DURATION_IN_SECONDS",
-    });
-    return { batchItemFailures };
-  }
+  const env = getConfigResult.value;
 
   for (const record of records) {
     const getEventResult = getEvent(record);
