@@ -24,7 +24,7 @@ import { emptyFailure, Result, successResult } from "../utils/result";
 import { DocumentType } from "../types/document";
 
 export async function lambdaHandlerConstructor(
-  dependencies: IAsyncBiometricTokenDependencies = runtimeDependencies,
+  dependencies: IAsyncBiometricTokenDependencies,
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
