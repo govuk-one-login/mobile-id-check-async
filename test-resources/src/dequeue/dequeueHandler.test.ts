@@ -120,7 +120,7 @@ describe("Dequeue TxMA events", () => {
             messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
             receiptHandle: "mockReceiptHandle",
             body: JSON.stringify({
-              event_name: "MOCK_EVENT_NAME",
+              event_name: "DCMAW_APP_HANDOFF_START",
               user: {
                 session_id: "mockSessionId",
               },
@@ -175,11 +175,138 @@ describe("Dequeue TxMA events", () => {
             Item: {
               pk: { S: "TXMA#mockSessionId" },
               sk: {
-                S: "MOCK_EVENT_NAME#mockTimestamp",
+                S: "DCMAW_APP_HANDOFF_START#mockTimestamp",
               },
               eventBody: {
                 S: JSON.stringify({
-                  event_name: "MOCK_EVENT_NAME",
+                  event_name: "DCMAW_APP_HANDOFF_START",
+                  user: {
+                    session_id: "mockSessionId",
+                  },
+                  timestamp: "mockTimestamp",
+                }),
+              },
+              timeToLiveInSeconds: { N: "1736298000" },
+            },
+          },
+        },
+      ]);
+    });
+  });
+
+  describe("Given the event_name in the record body is not valid", () => {
+    it("Logs an error message", async () => {
+      const event: SQSEvent = {
+        Records: [
+          {
+            messageId: "54D7CA2F-BE1D-4D55-8F1C-9B3B501C9685",
+            receiptHandle: "mockReceiptHandle",
+            body: JSON.stringify({
+              event_name: "DCMAW_APP_HANDOFF_START",
+              user: {
+                session_id: "mockSessionId",
+              },
+              timestamp: "mockTimestamp",
+            }),
+            attributes: {
+              ApproximateReceiveCount: "1",
+              SentTimestamp: "1545082649183",
+              SenderId: "AIDAIENQZJOLO23YVJ4VO",
+              ApproximateFirstReceiveTimestamp: "1545082649185",
+            },
+            messageAttributes: {},
+            md5OfBody: "098f6bcd4621d373cade4e832627b4f6",
+            eventSource: "aws:sqs",
+            eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
+            awsRegion: "eu-west-2",
+          },
+          {
+            messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
+            receiptHandle: "mockReceiptHandle",
+            body: JSON.stringify({
+              event_name: "INVALID_EVENT_NAME",
+              user: {
+                session_id: "mockSessionId",
+              },
+              timestamp: "mockTimestamp",
+            }),
+            attributes: {
+              ApproximateReceiveCount: "1",
+              SentTimestamp: "1545082649183",
+              SenderId: "AIDAIENQZJOLO23YVJ4VO",
+              ApproximateFirstReceiveTimestamp: "1545082649185",
+            },
+            messageAttributes: {},
+            md5OfBody: "098f6bcd4621d373cade4e832627b4f6",
+            eventSource: "aws:sqs",
+            eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
+            awsRegion: "eu-west-2",
+          },
+          {
+            messageId: "D8B937B7-7E1D-4D37-BD82-C6AED9F7D975",
+            receiptHandle: "mockReceiptHandle",
+            body: JSON.stringify({
+              event_name: "DCMAW_APP_END",
+              user: {
+                session_id: "mockSessionId",
+              },
+              timestamp: "mockTimestamp",
+            }),
+            attributes: {
+              ApproximateReceiveCount: "1",
+              SentTimestamp: "1545082649183",
+              SenderId: "AIDAIENQZJOLO23YVJ4VO",
+              ApproximateFirstReceiveTimestamp: "1545082649185",
+            },
+            messageAttributes: {},
+            md5OfBody: "098f6bcd4621d373cade4e832627b4f6",
+            eventSource: "aws:sqs",
+            eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
+            awsRegion: "eu-west-2",
+          },
+        ],
+      };
+
+      await lambdaHandlerConstructor(dependencies, event, buildLambdaContext());
+
+      expect(mockLogger.getLogMessages().length).toEqual(4);
+      expect(mockLogger.getLogMessages()[0].logMessage.message).toEqual(
+        "STARTED",
+      );
+      expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
+        "Event name not valid - messageId: E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
+      );
+      expect(mockLogger.getLogMessages()[2].data.messages).toEqual([
+        {
+          PutRequest: {
+            Item: {
+              pk: { S: "TXMA#mockSessionId" },
+              sk: {
+                S: "DCMAW_APP_HANDOFF_START#mockTimestamp",
+              },
+              eventBody: {
+                S: JSON.stringify({
+                  event_name: "DCMAW_APP_HANDOFF_START",
+                  user: {
+                    session_id: "mockSessionId",
+                  },
+                  timestamp: "mockTimestamp",
+                }),
+              },
+              timeToLiveInSeconds: { N: "1736298000" },
+            },
+          },
+        },
+        {
+          PutRequest: {
+            Item: {
+              pk: { S: "TXMA#mockSessionId" },
+              sk: {
+                S: "DCMAW_APP_END#mockTimestamp",
+              },
+              eventBody: {
+                S: JSON.stringify({
+                  event_name: "DCMAW_APP_END",
                   user: {
                     session_id: "mockSessionId",
                   },
@@ -201,7 +328,7 @@ describe("Dequeue TxMA events", () => {
           messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
           receiptHandle: "mockReceiptHandle",
           body: JSON.stringify({
-            event_name: "MOCK_EVENT_NAME",
+            event_name: "DCMAW_APP_HANDOFF_START",
             user: {
               session_id: "mockSessionId",
             },
@@ -239,7 +366,7 @@ describe("Dequeue TxMA events", () => {
           messageId: "4008E4FD-10A1-461F-9B34-910BCE726C55",
           receiptHandle: "mockReceiptHandle",
           body: JSON.stringify({
-            event_name: "MOCK_EVENT_NAME_2",
+            event_name: "DCMAW_APP_END",
             user: {
               session_id: "mockSessionId",
             },
@@ -287,11 +414,11 @@ describe("Dequeue TxMA events", () => {
               Item: {
                 pk: { S: "TXMA#mockSessionId" },
                 sk: {
-                  S: "MOCK_EVENT_NAME#mockTimestamp",
+                  S: "DCMAW_APP_HANDOFF_START#mockTimestamp",
                 },
                 eventBody: {
                   S: JSON.stringify({
-                    event_name: "MOCK_EVENT_NAME",
+                    event_name: "DCMAW_APP_HANDOFF_START",
                     user: {
                       session_id: "mockSessionId",
                     },
@@ -307,11 +434,11 @@ describe("Dequeue TxMA events", () => {
               Item: {
                 pk: { S: "TXMA#mockSessionId" },
                 sk: {
-                  S: "MOCK_EVENT_NAME_2#mockTimestamp",
+                  S: "DCMAW_APP_END#mockTimestamp",
                 },
                 eventBody: {
                   S: JSON.stringify({
-                    event_name: "MOCK_EVENT_NAME_2",
+                    event_name: "DCMAW_APP_END",
                     user: {
                       session_id: "mockSessionId",
                     },
@@ -351,7 +478,7 @@ describe("Dequeue TxMA events", () => {
               messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
               receiptHandle: "mockReceiptHandle",
               body: JSON.stringify({
-                event_name: "MOCK_EVENT_NAME",
+                event_name: "DCMAW_APP_HANDOFF_START",
                 user: {
                   session_id: "mockSessionId",
                 },
@@ -393,7 +520,7 @@ describe("Dequeue TxMA events", () => {
               messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
               receiptHandle: "mockReceiptHandle",
               body: JSON.stringify({
-                event_name: "MOCK_EVENT_NAME",
+                event_name: "DCMAW_APP_HANDOFF_START",
                 user: {
                   session_id: "mockSessionId",
                 },
@@ -415,7 +542,7 @@ describe("Dequeue TxMA events", () => {
               messageId: "4008E4FD-10A1-461F-9B34-910BCE726C55",
               receiptHandle: "mockReceiptHandle",
               body: JSON.stringify({
-                event_name: "MOCK_EVENT_NAME_2",
+                event_name: "DCMAW_APP_END",
                 user: {
                   session_id: "mockSessionId",
                 },
@@ -449,11 +576,11 @@ describe("Dequeue TxMA events", () => {
               Item: {
                 pk: { S: "TXMA#mockSessionId" },
                 sk: {
-                  S: "MOCK_EVENT_NAME#mockTimestamp",
+                  S: "DCMAW_APP_HANDOFF_START#mockTimestamp",
                 },
                 eventBody: {
                   S: JSON.stringify({
-                    event_name: "MOCK_EVENT_NAME",
+                    event_name: "DCMAW_APP_HANDOFF_START",
                     user: {
                       session_id: "mockSessionId",
                     },
@@ -469,11 +596,11 @@ describe("Dequeue TxMA events", () => {
               Item: {
                 pk: { S: "TXMA#mockSessionId" },
                 sk: {
-                  S: "MOCK_EVENT_NAME_2#mockTimestamp",
+                  S: "DCMAW_APP_END#mockTimestamp",
                 },
                 eventBody: {
                   S: JSON.stringify({
-                    event_name: "MOCK_EVENT_NAME_2",
+                    event_name: "DCMAW_APP_END",
                     user: {
                       session_id: "mockSessionId",
                     },

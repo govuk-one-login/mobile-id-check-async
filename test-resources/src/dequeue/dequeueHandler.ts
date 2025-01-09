@@ -62,6 +62,15 @@ export const lambdaHandlerConstructor = async (
       continue;
     }
 
+    if (!allowedTxmaEventNames.includes(txmaEvent.event_name)) {
+      logger.log("FAILED_TO_PROCESS_MESSAGES", {
+        errorMessage: `Event name not valid - messageId: ${record.messageId}`
+      })
+
+      batchItemFailures.push({ itemIdentifier: record.messageId });
+      continue;
+    }
+
     const timeToLiveInSeconds = getTimeToLiveInSeconds(
       env.TXMA_EVENT_TTL_DURATION_IN_SECONDS,
     );
@@ -143,3 +152,28 @@ const dependencies: IDequeueDependencies = {
 };
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
+
+export const allowedTxmaEventNames = [
+  'DCMAW_ABORT_APP',
+  'DCMAW_ABORT_WEB',
+  'DCMAW_CRI_4XXERROR',
+  'DCMAW_CRI_5XXERROR',
+  'DCMAW_REDIRECT_SUCCESS',
+  'DCMAW_REDIRECT_ABORT',
+  'DCMAW_MISSING_CONTEXT_AFTER_ABORT',
+  'DCMAW_MISSING_CONTEXT_AFTER_COMPLETION',
+  'DCMAW_PASSPORT_SELECTED',
+  'DCMAW_BRP_SELECTED',
+  'DCMAW_DRIVING_LICENCE_SELECTED',
+  'DCMAW_CRI_END',
+  'DCMAW_CRI_ABORT',
+  'DCMAW_APP_HANDOFF_START',
+  'DCMAW_HYBRID_BILLING_STARTED',
+  'DCMAW_IPROOV_BILLING_STARTED',
+  'DCMAW_READID_NFC_BILLING_STARTED',
+  'DCMAW_CRI_START',
+  'DCMAW_APP_END',
+  'AUTH_SESSION_TOO_OLD',
+  'BIOMETRIC_SESSION_OLDER_THAN_AUTH_SESSION',
+  'BIOMETRIC_SESSION_OPAQUEID_MISMATCH',
+]
