@@ -88,7 +88,7 @@ describe("getSecretsFromParameterStore", () => {
         InvalidParameters: [mockSecretName2],
       });
       result = await getSecretsFromParameterStore({
-        secretNames: [mockSecretName1],
+        secretNames: [mockSecretName1, mockSecretName2],
       });
     });
 
