@@ -875,9 +875,6 @@ Resources:
         DNSName:
           Fn::ImportValue: !Sub "${AWS::StackName}-cf-dist-DistributionDomain"
         HostedZoneId: Z2FDTNDATAQYW2
-        # AliasTarget:
-        #   DNSName: !GetAtt SessionsApiDomainName.RegionalDomainName
-        #   HostedZoneId: !GetAtt SessionsApiDomainName.RegionalHostedZoneId
 
   SessionsApiWebAclAssociation:
     Type: AWS::WAFv2::WebACLAssociation
