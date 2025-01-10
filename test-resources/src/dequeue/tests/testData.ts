@@ -1,5 +1,6 @@
 export const passingEventName = "DCMAW_APP_HANDOFF_START";
 export const passingSessionId = "49E7D76E-D5FE-4355-B8B4-E90ACA0887C2";
+export const failingSQSRecordMessageId = "54D7CA2F-BE1D-4D55-8F1C-9B3B501C9685"
 
 export const passingSQSRecord = {
   messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
@@ -24,8 +25,27 @@ export const passingSQSRecord = {
   awsRegion: "eu-west-2",
 };
 
+export const putItemInputForPassingSQSRecord = {
+  Item: {
+    pk: { S: "SESSION#49E7D76E-D5FE-4355-B8B4-E90ACA0887C2" },
+    sk: {
+      S: "TXMA#EVENT_NAME#DCMAW_APP_HANDOFF_START#TIMESTAMP#mockTimestamp",
+    },
+    eventBody: {
+      S: JSON.stringify({
+        event_name: passingEventName,
+        user: {
+          session_id: passingSessionId,
+        },
+        timestamp: "mockTimestamp",
+      }),
+    },
+    timeToLiveInSeconds: { N: "1736298000" },
+  },
+};
+
 export const invalidBodySQSRecord = {
-  messageId: "54D7CA2F-BE1D-4D55-8F1C-9B3B501C9685",
+  messageId: failingSQSRecordMessageId,
   receiptHandle: "mockReceiptHandle",
   body: "{",
   attributes: {
@@ -42,7 +62,7 @@ export const invalidBodySQSRecord = {
 };
 
 export const eventNameMissingSQSRecord = {
-  messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
+  messageId: failingSQSRecordMessageId,
   receiptHandle: "mockReceiptHandle",
   body: JSON.stringify({
     user: {
@@ -65,7 +85,7 @@ export const eventNameMissingSQSRecord = {
 
 export const notAllowedEventName = "INVALID_EVENT_NAME";
 export const eventNameNotAllowedSQSRecord = {
-  messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
+  messageId: failingSQSRecordMessageId,
   receiptHandle: "mockReceiptHandle",
   body: JSON.stringify({
     event_name: notAllowedEventName,
@@ -88,7 +108,7 @@ export const eventNameNotAllowedSQSRecord = {
 };
 
 export const missingUserSQSRecord = {
-  messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
+  messageId: failingSQSRecordMessageId,
   receiptHandle: "mockReceiptHandle",
   body: JSON.stringify({
     event_name: passingEventName,
@@ -108,7 +128,7 @@ export const missingUserSQSRecord = {
 };
 
 export const missingSessionIdSQSRecord = {
-  messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
+  messageId: failingSQSRecordMessageId,
   receiptHandle: "mockReceiptHandle",
   body: JSON.stringify({
     event_name: passingEventName,
@@ -130,7 +150,7 @@ export const missingSessionIdSQSRecord = {
 
 export const invalidSessionId = "invalid-session-id";
 export const invalidSessionIdSQSRecord = {
-  messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
+  messageId: failingSQSRecordMessageId,
   receiptHandle: "mockReceiptHandle",
   body: JSON.stringify({
     event_name: passingEventName,
@@ -153,7 +173,7 @@ export const invalidSessionIdSQSRecord = {
 };
 
 export const missingTimestampSQSRecord = {
-  messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
+  messageId: failingSQSRecordMessageId,
   receiptHandle: "mockReceiptHandle",
   body: JSON.stringify({
     event_name: passingEventName,

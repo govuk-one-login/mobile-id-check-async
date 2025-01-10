@@ -51,7 +51,7 @@ export function getEvent(record: SQSRecord): Result<TxmaEvent> {
   if (!txmaEvent.timestamp) {
     return errorResult({
       errorMessage: "Missing timestamp",
-      eventName: txmaEvent.event_name
+      eventName: txmaEvent.event_name,
     });
   }
 

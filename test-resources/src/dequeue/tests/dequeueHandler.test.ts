@@ -19,6 +19,7 @@ import { MessageName, registeredLogs } from "../registeredLogs";
 import {
   eventNameMissingSQSRecord,
   eventNameNotAllowedSQSRecord,
+  failingSQSRecordMessageId,
   invalidBodySQSRecord,
   invalidSessionId,
   invalidSessionIdSQSRecord,
@@ -29,6 +30,7 @@ import {
   passingEventName,
   passingSessionId,
   passingSQSRecord,
+  putItemInputForPassingSQSRecord,
 } from "./testData";
 
 jest.useFakeTimers().setSystemTime(new Date("2025-01-08"));
@@ -120,7 +122,7 @@ describe("Dequeue TxMA events", () => {
     describe("Given there is an error parsing the record body", () => {
       it("Logs an error message", async () => {
         const event: SQSEvent = {
-          Records: [invalidBodySQSRecord, passingSQSRecord],
+          Records: [invalidBodySQSRecord],
         };
 
         const result = await lambdaHandlerConstructor(
@@ -134,14 +136,15 @@ describe("Dequeue TxMA events", () => {
           "DEQUEUE_FAILED_TO_PROCESS_MESSAGES",
         );
         expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
-          "Failed to process message - messageId: 54D7CA2F-BE1D-4D55-8F1C-9B3B501C9685",
+          `Failed to process message - messageId: ${failingSQSRecordMessageId}`,
         );
-        expect(mockLogger.getLogMessages()[1].data.error).toEqual("{");
+        expect(mockLogger.getLogMessages()[1].data.body).toEqual("{");
         expect(result).toStrictEqual({
           batchItemFailures: [
-            { itemIdentifier: "54D7CA2F-BE1D-4D55-8F1C-9B3B501C9685" },
+            { itemIdentifier: failingSQSRecordMessageId },
           ],
         });
+        expect(mockLogger.getLogMessages()[2].data.processedMessages).toEqual([]);
       });
     });
 
@@ -343,68 +346,7 @@ describe("Dequeue TxMA events", () => {
 
   describe("Given multiple messages are sent in the request", () => {
     const event: SQSEvent = {
-      Records: [
-        {
-          messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
-          receiptHandle: "mockReceiptHandle",
-          body: JSON.stringify({
-            event_name: passingEventName,
-            user: {
-              session_id: passingSessionId,
-            },
-            timestamp: "mockTimestamp",
-          }),
-          attributes: {
-            ApproximateReceiveCount: "1",
-            SentTimestamp: "1545082649183",
-            SenderId: "AIDAIENQZJOLO23YVJ4VO",
-            ApproximateFirstReceiveTimestamp: "1545082649185",
-          },
-          messageAttributes: {},
-          md5OfBody: "098f6bcd4621d373cade4e832627b4f6",
-          eventSource: "aws:sqs",
-          eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
-          awsRegion: "eu-west-2",
-        },
-        {
-          messageId: "D8B937B7-7E1D-4D37-BD82-C6AED9F7D975",
-          receiptHandle: "mockReceiptHandle",
-          body: "error",
-          attributes: {
-            ApproximateReceiveCount: "1",
-            SentTimestamp: "1545082649183",
-            SenderId: "AIDAIENQZJOLO23YVJ4VO",
-            ApproximateFirstReceiveTimestamp: "1545082649185",
-          },
-          messageAttributes: {},
-          md5OfBody: "098f6bcd4621d373cade4e832627b4f6",
-          eventSource: "aws:sqs",
-          eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
-          awsRegion: "eu-west-2",
-        },
-        {
-          messageId: "4008E4FD-10A1-461F-9B34-910BCE726C55",
-          receiptHandle: "mockReceiptHandle",
-          body: JSON.stringify({
-            event_name: "DCMAW_APP_END",
-            user: {
-              session_id: "41AA5FE7-CD9D-4B5B-960C-1E33C165B592",
-            },
-            timestamp: "mockTimestamp",
-          }),
-          attributes: {
-            ApproximateReceiveCount: "1",
-            SentTimestamp: "1545082649183",
-            SenderId: "AIDAIENQZJOLO23YVJ4VO",
-            ApproximateFirstReceiveTimestamp: "1545082649185",
-          },
-          messageAttributes: {},
-          md5OfBody: "098f6bcd4621d373cade4e832627b4f6",
-          eventSource: "aws:sqs",
-          eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
-          awsRegion: "eu-west-2",
-        },
-      ],
+      Records: [passingSQSRecord, passingSQSRecord, invalidBodySQSRecord],
     };
 
     describe("Given one out of three messages fails to be processed", () => {
@@ -417,7 +359,7 @@ describe("Dequeue TxMA events", () => {
 
         expect(mockLogger.getLogMessages().length).toEqual(4);
         expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
-          "Failed to process message - messageId: D8B937B7-7E1D-4D37-BD82-C6AED9F7D975",
+          `Failed to process message - messageId: ${failingSQSRecordMessageId}`,
         );
         expect(result).toStrictEqual({
           batchItemFailures: [
@@ -433,42 +375,16 @@ describe("Dequeue TxMA events", () => {
           buildLambdaContext(),
         );
         expect(mockDbClient).toHaveReceivedCommandTimes(PutItemCommand, 2);
-        expect(mockDbClient).toHaveReceivedNthCommandWith(1, PutItemCommand, {
-          Item: {
-            pk: { S: "SESSION#49E7D76E-D5FE-4355-B8B4-E90ACA0887C2" },
-            sk: {
-              S: "TXMA#EVENT_NAME#DCMAW_APP_HANDOFF_START#TIMESTAMP#mockTimestamp",
-            },
-            eventBody: {
-              S: JSON.stringify({
-                event_name: passingEventName,
-                user: {
-                  session_id: passingSessionId,
-                },
-                timestamp: "mockTimestamp",
-              }),
-            },
-            timeToLiveInSeconds: { N: "1736298000" },
-          },
-        });
-        expect(mockDbClient).toHaveReceivedNthCommandWith(2, PutItemCommand, {
-          Item: {
-            pk: { S: "SESSION#41AA5FE7-CD9D-4B5B-960C-1E33C165B592" },
-            sk: {
-              S: "TXMA#EVENT_NAME#DCMAW_APP_END#TIMESTAMP#mockTimestamp",
-            },
-            eventBody: {
-              S: JSON.stringify({
-                event_name: "DCMAW_APP_END",
-                user: {
-                  session_id: "41AA5FE7-CD9D-4B5B-960C-1E33C165B592",
-                },
-                timestamp: "mockTimestamp",
-              }),
-            },
-            timeToLiveInSeconds: { N: "1736298000" },
-          },
-        });
+        expect(mockDbClient).toHaveReceivedNthCommandWith(
+          1,
+          PutItemCommand,
+          putItemInputForPassingSQSRecord,
+        );
+        expect(mockDbClient).toHaveReceivedNthCommandWith(
+          2,
+          PutItemCommand,
+          putItemInputForPassingSQSRecord,
+        );
       });
 
       it("Logs successfully processed messages", async () => {
@@ -480,40 +396,12 @@ describe("Dequeue TxMA events", () => {
 
         expect(mockLogger.getLogMessages()[2].data.processedMessages).toEqual([
           {
-            Item: {
-              pk: { S: "SESSION#49E7D76E-D5FE-4355-B8B4-E90ACA0887C2" },
-              sk: {
-                S: "TXMA#EVENT_NAME#DCMAW_APP_HANDOFF_START#TIMESTAMP#mockTimestamp",
-              },
-              eventBody: {
-                S: JSON.stringify({
-                  event_name: passingEventName,
-                  user: {
-                    session_id: passingSessionId,
-                  },
-                  timestamp: "mockTimestamp",
-                }),
-              },
-              timeToLiveInSeconds: { N: "1736298000" },
-            },
+            eventName: passingEventName,
+            sessionId: passingSessionId,
           },
           {
-            Item: {
-              pk: { S: "SESSION#41AA5FE7-CD9D-4B5B-960C-1E33C165B592" },
-              sk: {
-                S: "TXMA#EVENT_NAME#DCMAW_APP_END#TIMESTAMP#mockTimestamp",
-              },
-              eventBody: {
-                S: JSON.stringify({
-                  event_name: "DCMAW_APP_END",
-                  user: {
-                    session_id: "41AA5FE7-CD9D-4B5B-960C-1E33C165B592",
-                  },
-                  timestamp: "mockTimestamp",
-                }),
-              },
-              timeToLiveInSeconds: { N: "1736298000" },
-            },
+            eventName: passingEventName,
+            sessionId: passingSessionId,
           },
         ]);
       });
@@ -527,7 +415,7 @@ describe("Dequeue TxMA events", () => {
 
         expect(result).toStrictEqual({
           batchItemFailures: [
-            { itemIdentifier: "D8B937B7-7E1D-4D37-BD82-C6AED9F7D975" },
+            { itemIdentifier: failingSQSRecordMessageId },
           ],
         });
       });
@@ -537,30 +425,7 @@ describe("Dequeue TxMA events", () => {
       it("Logs an error message", async () => {
         mockDbClient.on(PutItemCommand).rejects("Error writing to database");
         const event: SQSEvent = {
-          Records: [
-            {
-              messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
-              receiptHandle: "mockReceiptHandle",
-              body: JSON.stringify({
-                event_name: passingEventName,
-                user: {
-                  session_id: passingSessionId,
-                },
-                timestamp: "mockTimestamp",
-              }),
-              attributes: {
-                ApproximateReceiveCount: "1",
-                SentTimestamp: "1545082649183",
-                SenderId: "AIDAIENQZJOLO23YVJ4VO",
-                ApproximateFirstReceiveTimestamp: "1545082649185",
-              },
-              messageAttributes: {},
-              md5OfBody: "098f6bcd4621d373cade4e832627b4f6",
-              eventSource: "aws:sqs",
-              eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
-              awsRegion: "eu-west-2",
-            },
-          ],
+          Records: [passingSQSRecord],
         };
 
         const result = await lambdaHandlerConstructor(
@@ -596,52 +461,7 @@ describe("Dequeue TxMA events", () => {
     describe("Given all messages are processed successfully", () => {
       it("Logs the messageId and event_name for each message", async () => {
         const event: SQSEvent = {
-          Records: [
-            {
-              messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
-              receiptHandle: "mockReceiptHandle",
-              body: JSON.stringify({
-                event_name: passingEventName,
-                user: {
-                  session_id: passingSessionId,
-                },
-                timestamp: "mockTimestamp",
-              }),
-              attributes: {
-                ApproximateReceiveCount: "1",
-                SentTimestamp: "1545082649183",
-                SenderId: "AIDAIENQZJOLO23YVJ4VO",
-                ApproximateFirstReceiveTimestamp: "1545082649185",
-              },
-              messageAttributes: {},
-              md5OfBody: "098f6bcd4621d373cade4e832627b4f6",
-              eventSource: "aws:sqs",
-              eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
-              awsRegion: "eu-west-2",
-            },
-            {
-              messageId: "4008E4FD-10A1-461F-9B34-910BCE726C55",
-              receiptHandle: "mockReceiptHandle",
-              body: JSON.stringify({
-                event_name: "DCMAW_APP_END",
-                user: {
-                  session_id: "41AA5FE7-CD9D-4B5B-960C-1E33C165B592",
-                },
-                timestamp: "mockTimestamp",
-              }),
-              attributes: {
-                ApproximateReceiveCount: "1",
-                SentTimestamp: "1545082649183",
-                SenderId: "AIDAIENQZJOLO23YVJ4VO",
-                ApproximateFirstReceiveTimestamp: "1545082649185",
-              },
-              messageAttributes: {},
-              md5OfBody: "098f6bcd4621d373cade4e832627b4f6",
-              eventSource: "aws:sqs",
-              eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
-              awsRegion: "eu-west-2",
-            },
-          ],
+          Records: [passingSQSRecord, passingSQSRecord],
         };
 
         await lambdaHandlerConstructor(
@@ -688,6 +508,8 @@ describe("Dequeue TxMA events", () => {
               timeToLiveInSeconds: { N: "1736298000" },
             },
           },
+          putItemInputForPassingSQSRecord,
+          putItemInputForPassingSQSRecord,
         ]);
       });
     });
