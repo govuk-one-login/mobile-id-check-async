@@ -93,7 +93,11 @@ describe("Dequeue TxMA events", () => {
         Records: [],
       };
 
-      await lambdaHandlerConstructor(dependencies, event, buildLambdaContext());
+      const result = await lambdaHandlerConstructor(
+        dependencies,
+        event,
+        buildLambdaContext(),
+      );
 
       expect(mockLogger.getLogMessages().length).toEqual(3);
       expect(mockLogger.getLogMessages()[0].logMessage.message).toEqual(
@@ -108,6 +112,7 @@ describe("Dequeue TxMA events", () => {
       expect(mockLogger.getLogMessages()[2].logMessage.message).toEqual(
         "COMPLETED",
       );
+      expect(result).toStrictEqual({ batchItemFailures: [] });
     });
   });
 
@@ -118,7 +123,7 @@ describe("Dequeue TxMA events", () => {
           Records: [invalidBodySQSRecord, passingSQSRecord],
         };
 
-        await lambdaHandlerConstructor(
+        const result = await lambdaHandlerConstructor(
           dependencies,
           event,
           buildLambdaContext(),
@@ -131,12 +136,12 @@ describe("Dequeue TxMA events", () => {
         expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
           "Failed to process message - messageId: 54D7CA2F-BE1D-4D55-8F1C-9B3B501C9685",
         );
-        expect(mockLogger.getLogMessages()[2].data.processedMessages).toEqual([
-          {
-            eventName: passingEventName,
-            sessionId: passingSessionId,
-          },
-        ]);
+        expect(mockLogger.getLogMessages()[1].data.error).toEqual("{");
+        expect(result).toStrictEqual({
+          batchItemFailures: [
+            { itemIdentifier: "54D7CA2F-BE1D-4D55-8F1C-9B3B501C9685" },
+          ],
+        });
       });
     });
 
@@ -146,7 +151,7 @@ describe("Dequeue TxMA events", () => {
           Records: [eventNameMissingSQSRecord],
         };
 
-        await lambdaHandlerConstructor(
+        const result = await lambdaHandlerConstructor(
           dependencies,
           event,
           buildLambdaContext(),
@@ -165,6 +170,11 @@ describe("Dequeue TxMA events", () => {
         expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
           processedMessages: [],
         });
+        expect(result).toStrictEqual({
+          batchItemFailures: [
+            { itemIdentifier: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5" },
+          ],
+        });
       });
     });
 
@@ -174,7 +184,7 @@ describe("Dequeue TxMA events", () => {
           Records: [eventNameNotAllowedSQSRecord],
         };
 
-        await lambdaHandlerConstructor(
+        const result = await lambdaHandlerConstructor(
           dependencies,
           event,
           buildLambdaContext(),
@@ -191,6 +201,11 @@ describe("Dequeue TxMA events", () => {
         expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
           processedMessages: [],
         });
+        expect(result).toStrictEqual({
+          batchItemFailures: [
+            { itemIdentifier: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5" },
+          ],
+        });
       });
     });
 
@@ -200,7 +215,7 @@ describe("Dequeue TxMA events", () => {
           Records: [missingUserSQSRecord],
         };
 
-        await lambdaHandlerConstructor(
+        const result = await lambdaHandlerConstructor(
           dependencies,
           event,
           buildLambdaContext(),
@@ -217,6 +232,11 @@ describe("Dequeue TxMA events", () => {
         expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
           processedMessages: [],
         });
+        expect(result).toStrictEqual({
+          batchItemFailures: [
+            { itemIdentifier: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5" },
+          ],
+        });
       });
     });
 
@@ -226,7 +246,7 @@ describe("Dequeue TxMA events", () => {
           Records: [missingSessionIdSQSRecord],
         };
 
-        await lambdaHandlerConstructor(
+        const result = await lambdaHandlerConstructor(
           dependencies,
           event,
           buildLambdaContext(),
@@ -243,6 +263,11 @@ describe("Dequeue TxMA events", () => {
         expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
           processedMessages: [],
         });
+        expect(result).toStrictEqual({
+          batchItemFailures: [
+            { itemIdentifier: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5" },
+          ],
+        });
       });
     });
 
@@ -252,7 +277,7 @@ describe("Dequeue TxMA events", () => {
           Records: [invalidSessionIdSQSRecord],
         };
 
-        await lambdaHandlerConstructor(
+        const result = await lambdaHandlerConstructor(
           dependencies,
           event,
           buildLambdaContext(),
@@ -267,8 +292,16 @@ describe("Dequeue TxMA events", () => {
         expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual(
           "PROCESSED_MESSAGES",
         );
+        expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual(
+          "PROCESSED_MESSAGES",
+        );
         expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
           processedMessages: [],
+        });
+        expect(result).toStrictEqual({
+          batchItemFailures: [
+            { itemIdentifier: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5" },
+          ],
         });
       });
     });
@@ -279,7 +312,7 @@ describe("Dequeue TxMA events", () => {
           Records: [missingTimestampSQSRecord],
         };
 
-        await lambdaHandlerConstructor(
+        const result = await lambdaHandlerConstructor(
           dependencies,
           event,
           buildLambdaContext(),
@@ -293,8 +326,16 @@ describe("Dequeue TxMA events", () => {
         expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual(
           "PROCESSED_MESSAGES",
         );
+        expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual(
+          "PROCESSED_MESSAGES",
+        );
         expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
           processedMessages: [],
+        });
+        expect(result).toStrictEqual({
+          batchItemFailures: [
+            { itemIdentifier: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5" },
+          ],
         });
       });
     });
@@ -307,9 +348,9 @@ describe("Dequeue TxMA events", () => {
           messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
           receiptHandle: "mockReceiptHandle",
           body: JSON.stringify({
-            event_name: "DCMAW_APP_HANDOFF_START",
+            event_name: passingEventName,
             user: {
-              session_id: "49E7D76E-D5FE-4355-B8B4-E90ACA0887C2",
+              session_id: passingSessionId,
             },
             timestamp: "mockTimestamp",
           }),
@@ -368,7 +409,7 @@ describe("Dequeue TxMA events", () => {
 
     describe("Given one out of three messages fails to be processed", () => {
       it("Logs the messageId of messages that failed to be processed", async () => {
-        await lambdaHandlerConstructor(
+        const result = await lambdaHandlerConstructor(
           dependencies,
           event,
           buildLambdaContext(),
@@ -378,6 +419,11 @@ describe("Dequeue TxMA events", () => {
         expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
           "Failed to process message - messageId: D8B937B7-7E1D-4D37-BD82-C6AED9F7D975",
         );
+        expect(result).toStrictEqual({
+          batchItemFailures: [
+            { itemIdentifier: "D8B937B7-7E1D-4D37-BD82-C6AED9F7D975" },
+          ],
+        });
       });
 
       it("Makes a call to the database client", async () => {
@@ -395,9 +441,9 @@ describe("Dequeue TxMA events", () => {
             },
             eventBody: {
               S: JSON.stringify({
-                event_name: "DCMAW_APP_HANDOFF_START",
+                event_name: passingEventName,
                 user: {
-                  session_id: "49E7D76E-D5FE-4355-B8B4-E90ACA0887C2",
+                  session_id: passingSessionId,
                 },
                 timestamp: "mockTimestamp",
               }),
@@ -441,9 +487,9 @@ describe("Dequeue TxMA events", () => {
               },
               eventBody: {
                 S: JSON.stringify({
-                  event_name: "DCMAW_APP_HANDOFF_START",
+                  event_name: passingEventName,
                   user: {
-                    session_id: "49E7D76E-D5FE-4355-B8B4-E90ACA0887C2",
+                    session_id: passingSessionId,
                   },
                   timestamp: "mockTimestamp",
                 }),
@@ -496,9 +542,9 @@ describe("Dequeue TxMA events", () => {
               messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
               receiptHandle: "mockReceiptHandle",
               body: JSON.stringify({
-                event_name: "DCMAW_APP_HANDOFF_START",
+                event_name: passingEventName,
                 user: {
-                  session_id: "49E7D76E-D5FE-4355-B8B4-E90ACA0887C2",
+                  session_id: passingSessionId,
                 },
                 timestamp: "mockTimestamp",
               }),
@@ -517,7 +563,7 @@ describe("Dequeue TxMA events", () => {
           ],
         };
 
-        await lambdaHandlerConstructor(
+        const result = await lambdaHandlerConstructor(
           dependencies,
           event,
           buildLambdaContext(),
@@ -528,16 +574,21 @@ describe("Dequeue TxMA events", () => {
           "ERROR_WRITING_EVENT_TO_EVENTS_TABLE",
         );
         expect(mockLogger.getLogMessages()[1].data.eventName).toStrictEqual(
-          "DCMAW_APP_HANDOFF_START",
+          passingEventName,
         );
         expect(mockLogger.getLogMessages()[1].data.sessionId).toStrictEqual(
-          "49E7D76E-D5FE-4355-B8B4-E90ACA0887C2",
+          passingSessionId,
         );
         expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual(
           "PROCESSED_MESSAGES",
         );
         expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
           processedMessages: [],
+        });
+        expect(result).toStrictEqual({
+          batchItemFailures: [
+            { itemIdentifier: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5" },
+          ],
         });
       });
     });
@@ -550,9 +601,9 @@ describe("Dequeue TxMA events", () => {
               messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
               receiptHandle: "mockReceiptHandle",
               body: JSON.stringify({
-                event_name: "DCMAW_APP_HANDOFF_START",
+                event_name: passingEventName,
                 user: {
-                  session_id: "49E7D76E-D5FE-4355-B8B4-E90ACA0887C2",
+                  session_id: passingSessionId,
                 },
                 timestamp: "mockTimestamp",
               }),
@@ -609,9 +660,9 @@ describe("Dequeue TxMA events", () => {
               },
               eventBody: {
                 S: JSON.stringify({
-                  event_name: "DCMAW_APP_HANDOFF_START",
+                  event_name: passingEventName,
                   user: {
-                    session_id: "49E7D76E-D5FE-4355-B8B4-E90ACA0887C2",
+                    session_id: passingSessionId,
                   },
                   timestamp: "mockTimestamp",
                 }),
