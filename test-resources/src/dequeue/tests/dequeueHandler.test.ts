@@ -347,146 +347,127 @@ describe("Dequeue TxMA events", () => {
   });
 
   describe("Given there is an error writing to Dynamo", () => {
-    //Dynamo rejects
+    it("Logs an error message", async () => {
+      mockDbClient.on(PutItemCommand).rejects("Error writing to database");
+      const event: SQSEvent = {
+        Records: [passingSQSRecord],
+      };
+
+      const result = await lambdaHandlerConstructor(
+        dependencies,
+        event,
+        buildLambdaContext(),
+      );
+
+      expect(mockLogger.getLogMessages().length).toEqual(4);
+      expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
+        "ERROR_WRITING_EVENT_TO_EVENTS_TABLE",
+      );
+      expect(mockLogger.getLogMessages()[1].data.eventName).toStrictEqual(
+        JSON.parse(passingSQSRecord.body).event_name,
+      );
+      expect(mockLogger.getLogMessages()[1].data.sessionId).toStrictEqual(
+        JSON.parse(passingSQSRecord.body).user.session_id,
+      );
+      expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual(
+        "PROCESSED_MESSAGES",
+      );
+      expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
+        processedMessages: [],
+      });
+      expect(result).toStrictEqual({
+        batchItemFailures: [{ itemIdentifier: passingSQSRecord.messageId }],
+      });
+    });
   });
 
   describe("Given not all messages are processed successfully", () => {
-    // One passing SQS record
-    // One failing SQS record
+    let event: SQSEvent;
+
+    beforeEach(() => {
+      event = {
+        Records: [passingSQSRecord, invalidBodySQSRecord],
+      };
+    });
+
+    it("Logs the messageId of messages that failed to be processed", async () => {
+      const result = await lambdaHandlerConstructor(
+        dependencies,
+        event,
+        buildLambdaContext(),
+      );
+
+      expect(mockLogger.getLogMessages().length).toEqual(4);
+      expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
+        "FAILED_TO_PROCESS_MESSAGES",
+      );
+      expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
+        `Failed to process message - messageId: ${invalidBodySQSRecord.messageId}`,
+      );
+      expect(result).toStrictEqual({
+        batchItemFailures: [{ itemIdentifier: invalidBodySQSRecord.messageId }],
+      });
+    });
+
+    it("Makes a call to the database client", async () => {
+      await lambdaHandlerConstructor(dependencies, event, buildLambdaContext());
+      expect(mockDbClient).toHaveReceivedCommandTimes(PutItemCommand, 1);
+      expect(mockDbClient).toHaveReceivedNthCommandWith(
+        1,
+        PutItemCommand,
+        putItemInputForPassingSQSRecord,
+      );
+    });
+
+    it("Logs successfully processed messages", async () => {
+      await lambdaHandlerConstructor(dependencies, event, buildLambdaContext());
+
+      expect(mockLogger.getLogMessages()[2].data.processedMessages).toEqual([
+        {
+          eventName: JSON.parse(passingSQSRecord.body).event_name,
+          sessionId: JSON.parse(passingSQSRecord.body).user.session_id,
+        },
+      ]);
+    });
+
+    it("Returns batch item failures", async () => {
+      const result = await lambdaHandlerConstructor(
+        dependencies,
+        event,
+        buildLambdaContext(),
+      );
+
+      expect(result).toStrictEqual({
+        batchItemFailures: [{ itemIdentifier: invalidBodySQSRecord.messageId }],
+      });
+    });
   });
 
   describe("Happy path", () => {
     describe("Given there is one record in the event", () => {
-      // happy path validation
-    });
-    describe("Given there are multiple records in the event", () => {
-      // happy path validation
-    });
-  });
-
-  describe("Given multiple messages are sent in the request", () => {
-    describe("Given one out of three messages fails to be processed", () => {
-      let event: SQSEvent;
-
-      beforeEach(() => {
-        event = {
-          Records: [passingSQSRecord, passingSQSRecord, invalidBodySQSRecord],
-        };
-      });
-
-      it("Logs the messageId of messages that failed to be processed", async () => {
-        const result = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-          buildLambdaContext(),
-        );
-
-        expect(mockLogger.getLogMessages().length).toEqual(4);
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
-          "FAILED_TO_PROCESS_MESSAGES",
-        );
-        expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
-          `Failed to process message - messageId: ${invalidBodySQSRecord.messageId}`,
-        );
-        expect(result).toStrictEqual({
-          batchItemFailures: [
-            { itemIdentifier: invalidBodySQSRecord.messageId },
-          ],
-        });
-      });
-
-      it("Makes a call to the database client", async () => {
-        await lambdaHandlerConstructor(
-          dependencies,
-          event,
-          buildLambdaContext(),
-        );
-        expect(mockDbClient).toHaveReceivedCommandTimes(PutItemCommand, 2);
-        expect(mockDbClient).toHaveReceivedNthCommandWith(
-          1,
-          PutItemCommand,
-          putItemInputForPassingSQSRecord,
-        );
-        expect(mockDbClient).toHaveReceivedNthCommandWith(
-          2,
-          PutItemCommand,
-          putItemInputForPassingSQSRecord,
-        );
-      });
-
-      it("Logs successfully processed messages", async () => {
-        await lambdaHandlerConstructor(
-          dependencies,
-          event,
-          buildLambdaContext(),
-        );
-
-        const eventName = JSON.parse(passingSQSRecord.body).event_name;
-        const sessionId = JSON.parse(passingSQSRecord.body).user.session_id;
-        expect(mockLogger.getLogMessages()[2].data.processedMessages).toEqual([
-          {
-            eventName,
-            sessionId,
-          },
-          {
-            eventName,
-            sessionId,
-          },
-        ]);
-      });
-
-      it("Returns batch item failures", async () => {
-        const result = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-          buildLambdaContext(),
-        );
-
-        expect(result).toStrictEqual({
-          batchItemFailures: [
-            { itemIdentifier: invalidBodySQSRecord.messageId },
-          ],
-        });
-      });
-    });
-
-    describe("Given there is an unexpected error writing an event to the database", () => {
-      it("Logs an error message", async () => {
-        mockDbClient.on(PutItemCommand).rejects("Error writing to database");
+      it("Logs the event_name and session_id", async () => {
         const event: SQSEvent = {
           Records: [passingSQSRecord],
         };
 
-        const result = await lambdaHandlerConstructor(
+        await lambdaHandlerConstructor(
           dependencies,
           event,
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages().length).toEqual(4);
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
-          "ERROR_WRITING_EVENT_TO_EVENTS_TABLE",
-        );
-        expect(mockLogger.getLogMessages()[1].data.eventName).toStrictEqual(
-          JSON.parse(passingSQSRecord.body).event_name,
-        );
-        expect(mockLogger.getLogMessages()[1].data.sessionId).toStrictEqual(
-          JSON.parse(passingSQSRecord.body).user.session_id,
-        );
-        expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual(
-          "PROCESSED_MESSAGES",
-        );
-        expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
-          processedMessages: [],
-        });
-        expect(result).toStrictEqual({
-          batchItemFailures: [{ itemIdentifier: passingSQSRecord.messageId }],
-        });
+        expect(mockLogger.getLogMessages().length).toEqual(3);
+        expect(mockLogger.getLogMessages()[1].data.processedMessages).toEqual([
+          {
+            eventName: JSON.parse(passingSQSRecord.body).event_name,
+            sessionId: JSON.parse(passingSQSRecord.body).user.session_id,
+          },
+        ]);
       });
     });
 
-    describe("Given all messages are processed successfully", () => {
-      it("Logs the messageId and event_name for each message", async () => {
+    describe("Given there are multiple records in the event", () => {
+      it("Logs the event_name and session_id for each message", async () => {
         const event: SQSEvent = {
           Records: [passingSQSRecord, passingSQSRecord],
         };
