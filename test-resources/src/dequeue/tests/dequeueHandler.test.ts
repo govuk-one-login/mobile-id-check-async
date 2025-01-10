@@ -8,14 +8,14 @@ import {
 import { SQSEvent } from "aws-lambda";
 import { AwsStub, mockClient } from "aws-sdk-client-mock";
 import "aws-sdk-client-mock-jest";
-import { Logger } from "../services/logging/logger";
-import { buildLambdaContext } from "../services/logging/tests/mockContext";
-import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
+import { Logger } from "../../services/logging/logger";
+import { buildLambdaContext } from "../../services/logging/tests/mockContext";
+import { MockLoggingAdapter } from "../../services/logging/tests/mockLogger";
 import {
   IDequeueDependencies,
   lambdaHandlerConstructor,
-} from "./dequeueHandler";
-import { MessageName, registeredLogs } from "./registeredLogs";
+} from "../dequeueHandler";
+import { MessageName, registeredLogs } from "../registeredLogs";
 
 jest.useFakeTimers().setSystemTime(new Date("2025-01-08"));
 
