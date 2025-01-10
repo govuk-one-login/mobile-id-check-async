@@ -27,14 +27,16 @@ export function getEvent(record: SQSRecord): Result<TxmaEvent> {
 
   if (!txmaEvent.user) {
     return errorResult({
-      errorMessage: `Missing user - messageId: ${record.messageId}`,
+      errorMessage: "Missing user",
+      eventName: txmaEvent.event_name
     });
   }
 
   const { session_id } = txmaEvent.user;
   if (!session_id) {
     return errorResult({
-      errorMessage: `Missing session_id - messageId: ${record.messageId}`,
+      errorMessage: "Missing session_id",
+      eventName: txmaEvent.event_name
     });
   }
 
