@@ -8,6 +8,7 @@ import {
   MockAsymmetricDecrypterError,
   MockAsymmetricDecrypterSuccess,
 } from "../../../adapters/tests/mocks";
+import { ErrorCategory } from "../../../utils/result";
 
 describe("Decrypt JWE", () => {
   let dependencies: JweDecrypterDependencies;
@@ -28,7 +29,7 @@ describe("Decrypt JWE", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage: "JWE is missing component",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     });
   });
@@ -45,7 +46,7 @@ describe("Decrypt JWE", () => {
       expect(result.value).toStrictEqual({
         errorMessage:
           "Unable to decrypt encryption key - ClientError: Some mock asymmetric decryption client error",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     });
   });
@@ -61,7 +62,7 @@ describe("Decrypt JWE", () => {
       expect(result.value).toStrictEqual({
         errorMessage:
           "Unable to decrypt encryption key - Error: Some mock asymmetric decryption error",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });
@@ -77,7 +78,7 @@ describe("Decrypt JWE", () => {
       expect(result.value).toStrictEqual({
         errorMessage:
           "Unable to decrypt payload - Error: Some mock symmetric decryption error",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     });
   });

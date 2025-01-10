@@ -4,7 +4,12 @@ import {
   KMSClient,
 } from "@aws-sdk/client-kms";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
-import { errorResult, Result, successResult } from "../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../utils/result";
 import { createPublicKey } from "node:crypto";
 import {
   EncryptionJwk,
@@ -49,7 +54,7 @@ export class JwksBuilder implements IJwksBuilder {
     } catch {
       return errorResult({
         errorMessage: "Error from KMS",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
@@ -66,7 +71,7 @@ export class JwksBuilder implements IJwksBuilder {
     ) {
       return errorResult({
         errorMessage: "KMS response is missing required fields",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
@@ -74,7 +79,7 @@ export class JwksBuilder implements IJwksBuilder {
     if (keyUsage !== "ENCRYPT_DECRYPT") {
       return errorResult({
         errorMessage: "KMS key usage is not supported",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
@@ -84,7 +89,7 @@ export class JwksBuilder implements IJwksBuilder {
     if (keySpec !== encryptionKeyToJoseMap.KEY_SPEC) {
       return errorResult({
         errorMessage: "KMS key algorithm is not supported",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
@@ -98,7 +103,7 @@ export class JwksBuilder implements IJwksBuilder {
     } catch {
       return errorResult({
         errorMessage: "Error formatting public key as JWK",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
     return successResult({

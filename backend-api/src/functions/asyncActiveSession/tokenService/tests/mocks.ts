@@ -1,4 +1,9 @@
-import { errorResult, Result, successResult } from "../../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../../utils/result";
 import { ITokenService } from "../tokenService";
 import { ITokenVerifier } from "../tokenVerifier";
 import { IPublicKeyGetter } from "../publicKeyGetter";
@@ -9,7 +14,7 @@ export class MockPubicKeyGetterError implements IPublicKeyGetter {
     return Promise.resolve(
       errorResult({
         errorMessage: "Failed to get public key",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       }),
     );
   }
@@ -49,7 +54,7 @@ export class MockTokenServiceServerError implements ITokenService {
   async validateServiceToken(): Promise<Result<string>> {
     return errorResult({
       errorMessage: "Mock server error",
-      errorCategory: "SERVER_ERROR",
+      errorCategory: ErrorCategory.SERVER_ERROR,
     });
   }
 }
@@ -58,7 +63,7 @@ export class MockTokenServiceClientError implements ITokenService {
   async validateServiceToken(): Promise<Result<string>> {
     return errorResult({
       errorMessage: "Mock client error",
-      errorCategory: "CLIENT_ERROR",
+      errorCategory: ErrorCategory.CLIENT_ERROR,
     });
   }
 }
@@ -73,7 +78,7 @@ export class MockTokenVerifierError implements ITokenVerifier {
   async verify(): Promise<Result<null>> {
     return errorResult({
       errorMessage: "Mock signature verification error",
-      errorCategory: "CLIENT_ERROR",
+      errorCategory: ErrorCategory.CLIENT_ERROR,
     });
   }
 }

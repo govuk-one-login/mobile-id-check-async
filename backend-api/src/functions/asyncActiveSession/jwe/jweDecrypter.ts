@@ -1,5 +1,10 @@
 import { SymmetricDecrypter, IDecryptSymmetric } from "./symmetricDecrypter";
-import { errorResult, Result, successResult } from "../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../utils/result";
 import {
   ClientError,
   IKmsAdapter,
@@ -40,7 +45,7 @@ export class JweDecrypter implements IDecryptJwe {
     if (jweComponents.length !== 5) {
       return errorResult({
         errorMessage: "JWE is missing component",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
 
@@ -62,12 +67,12 @@ export class JweDecrypter implements IDecryptJwe {
       if (error instanceof ClientError) {
         return errorResult({
           errorMessage: `Unable to decrypt encryption key - ${error}`,
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       }
       return errorResult({
         errorMessage: `Unable to decrypt encryption key - ${error}`,
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
@@ -83,7 +88,7 @@ export class JweDecrypter implements IDecryptJwe {
     } catch (error) {
       return errorResult({
         errorMessage: `Unable to decrypt payload - ${error}`,
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
 

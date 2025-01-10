@@ -1,6 +1,11 @@
 import { IDecryptSymmetric } from "../symmetricDecrypter";
 import { IDecryptJwe } from "../jweDecrypter";
-import { errorResult, Result, successResult } from "../../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../../utils/result";
 
 export class MockJweDecrypterSuccess implements IDecryptJwe {
   async decrypt(): Promise<Result<string>> {
@@ -12,7 +17,7 @@ export class MockJweDecrypterServerError implements IDecryptJwe {
   async decrypt(): Promise<Result<string>> {
     return errorResult({
       errorMessage: "Some mock decryption server error",
-      errorCategory: "SERVER_ERROR",
+      errorCategory: ErrorCategory.SERVER_ERROR,
     });
   }
 }
@@ -21,7 +26,7 @@ export class MockJweDecrypterClientError implements IDecryptJwe {
   async decrypt(): Promise<Result<string>> {
     return errorResult({
       errorMessage: "Some mock decryption client error",
-      errorCategory: "CLIENT_ERROR",
+      errorCategory: ErrorCategory.CLIENT_ERROR,
     });
   }
 }

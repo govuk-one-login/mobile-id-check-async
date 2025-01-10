@@ -1,4 +1,9 @@
-import { errorResult, Result, successResult } from "../../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../../utils/result";
 import {
   GenericEventConfig,
   IEventService,
@@ -33,7 +38,7 @@ export class MockEventServiceFailToWrite implements IEventService {
     if (eventConfig.eventName === this.eventNameToFail)
       return errorResult({
         errorMessage: "Error writing to SQS",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     return successResult(null);
   };
@@ -41,7 +46,7 @@ export class MockEventServiceFailToWrite implements IEventService {
   writeCredentialTokenIssuedEvent = async (): Promise<Result<null>> => {
     return errorResult({
       errorMessage: "Error writing to SQS",
-      errorCategory: "SERVER_ERROR",
+      errorCategory: ErrorCategory.SERVER_ERROR,
     });
   };
 }

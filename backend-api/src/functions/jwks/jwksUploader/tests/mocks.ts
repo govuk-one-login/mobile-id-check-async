@@ -1,4 +1,9 @@
-import { successResult, Result, errorResult } from "../../../utils/result";
+import {
+  successResult,
+  Result,
+  errorResult,
+  ErrorCategory,
+} from "../../../utils/result";
 import { IJwksUploader } from "../jwksUploader";
 
 export class MockJwksUploaderSuccessResult implements IJwksUploader {
@@ -12,7 +17,7 @@ export class MockJwksUploaderErrorResult implements IJwksUploader {
     return Promise.resolve(
       errorResult({
         errorMessage: "Error uploading file to S3",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       }),
     );
   }

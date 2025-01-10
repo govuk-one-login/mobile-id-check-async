@@ -27,3 +27,12 @@ export const notImplementedResponse: APIGatewayProxyResult = {
   statusCode: 501,
   body: JSON.stringify({ error: "Not Implemented" }),
 };
+
+export const serverErrorResponse: APIGatewayProxyResult = {
+  headers: securityHeaders,
+  statusCode: 500,
+  body: JSON.stringify({
+    error: "server_error",
+    error_description: "Internal Server Error",
+  }),
+};

@@ -1,5 +1,10 @@
 import { jwtVerify } from "jose";
-import { errorResult, Result, successResult } from "../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../utils/result";
 import { IPublicKeyGetter, PublicKeyGetter } from "./publicKeyGetter";
 
 export interface ITokenVerifier {
@@ -45,7 +50,7 @@ export class TokenVerifier implements ITokenVerifier {
     } catch {
       return errorResult({
         errorMessage: "Error verifying token signature",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
 

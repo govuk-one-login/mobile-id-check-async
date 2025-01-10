@@ -1,5 +1,10 @@
 import { NodeHttpHandler } from "@smithy/node-http-handler";
-import { errorResult, Result, successResult } from "../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../utils/result";
 import {
   PutObjectCommand,
   PutObjectCommandInput,
@@ -38,7 +43,7 @@ export class JwksUploader implements IJwksUploader {
     } catch {
       return errorResult({
         errorMessage: "Error uploading file to S3",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 

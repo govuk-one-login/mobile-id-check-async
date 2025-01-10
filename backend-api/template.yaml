@@ -107,14 +107,19 @@ Mappings:
   Lambda:
     dev:
       ReservedConcurrentExecutions: 15
+      LogLevel: DEBUG
     build:
       ReservedConcurrentExecutions: 15
+      LogLevel: INFO
     staging:
       ReservedConcurrentExecutions: 0
+      LogLevel: INFO
     integration:
       ReservedConcurrentExecutions: 0
+      LogLevel: INFO
     production:
       ReservedConcurrentExecutions: 0
+      LogLevel: INFO
 
   TxMA:
     dev:
@@ -155,14 +160,34 @@ Mappings:
   EnvironmentVariables:
     dev:
       STSBASEURL: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk'
+      BiometricSubmitterKeySecretPathPassport: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
+      BiometricSubmitterKeySecretPathBrp: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
+      BiometricSubmitterKeySecretPathDl: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
+      BiometricSubmitterKeySecretCacheDurationInSeconds: 900
     build:
       STSBASEURL: 'https://mob-sts-mock.review-b-async.build.account.gov.uk'
+      BiometricSubmitterKeySecretPathPassport: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
+      BiometricSubmitterKeySecretPathBrp: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
+      BiometricSubmitterKeySecretPathDl: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
+      BiometricSubmitterKeySecretCacheDurationInSeconds: 900
     staging:
       STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
+      BiometricSubmitterKeySecretPathPassport: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
+      BiometricSubmitterKeySecretPathBrp: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
+      BiometricSubmitterKeySecretPathDl: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
+      BiometricSubmitterKeySecretCacheDurationInSeconds: 900
     integration:
       STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
+      BiometricSubmitterKeySecretPathPassport: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
+      BiometricSubmitterKeySecretPathBrp: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
+      BiometricSubmitterKeySecretPathDl: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
+      BiometricSubmitterKeySecretCacheDurationInSeconds: 900
     production:
       STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
+      BiometricSubmitterKeySecretPathPassport: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
+      BiometricSubmitterKeySecretPathBrp: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
+      BiometricSubmitterKeySecretPathDl: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
+      BiometricSubmitterKeySecretCacheDurationInSeconds: 900
 
 Conditions:
   UseCodeSigning: !Not
@@ -230,6 +255,11 @@ Globals:
       - UsePermissionsBoundary
       - !Ref PermissionsBoundary
       - !Ref AWS::NoValue
+    LoggingConfig:
+      ApplicationLogLevel:
+        !FindInMap [ Lambda, !Ref Environment, LogLevel ]
+      SystemLogLevel: INFO
+      LogFormat: JSON
     Architectures:
       - arm64
     Environment:
@@ -239,6 +269,7 @@ Globals:
         # ISSUER should be updated with DNS once available
         ISSUER: mockIssuer
         SESSION_TABLE_NAME: !Ref SessionsTable
+        POWERTOOLS_SERVICE_NAME: mobile-id-check-async-backend
         AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
         DT_CONNECTION_AUTH_TOKEN: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}'
@@ -1033,6 +1064,12 @@ Resources:
             Path: /async/biometricToken
             Method: post
             RestApiId: !Ref SessionsApi
+      Environment:
+        Variables:
+          BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_PASSPORT: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathPassport]
+          BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_BRP: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathBrp]
+          BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathDl]
+          BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS: !FindInMap [ EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretCacheDurationInSeconds ]
       Role: !GetAtt AsyncBiometricTokenLambdaRole.Arn
       VpcConfig:
         SubnetIds:
@@ -1089,6 +1126,24 @@ Resources:
                   - ec2:CreateNetworkInterface
                   - ec2:DeleteNetworkInterface
                 Resource: '*'
+        - PolicyName: AsyncBiometricTokenParameterStorePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameters
+                Resource:
+                  - !Sub
+                    - arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${submitterKeyPathPassport}
+                    - submitterKeyPathPassport: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathPassport]
+                  - !Sub
+                    - arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${submitterKeyPathBrp}
+                    - submitterKeyPathBrp: !FindInMap [ EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathBrp ]
+                  - !Sub
+                    - arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${submitterKeyPathDl}
+                    - submitterKeyPathDl: !FindInMap [ EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathDl ]
+
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary

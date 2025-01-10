@@ -2,6 +2,7 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { mockClient } from "aws-sdk-client-mock";
 import { JwksUploader } from "../jwksUploader";
 import { Jwks } from "../../../types/jwks";
+import { ErrorCategory } from "../../../utils/result";
 
 const mockS3Client = mockClient(S3Client);
 
@@ -45,7 +46,7 @@ describe("JWKS Uploader", () => {
       expect(uploadJwksResponse.isError).toBe(true);
       expect(uploadJwksResponse.value).toStrictEqual({
         errorMessage: "Error uploading file to S3",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });

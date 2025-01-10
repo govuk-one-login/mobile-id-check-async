@@ -5,6 +5,7 @@ import {
   MockPubicKeyGetterSuccess,
   MockPubicKeyGetterWrongPublicKey,
 } from "./mocks";
+import { ErrorCategory } from "../../../utils/result";
 
 describe("Token Verifier", () => {
   let tokenVerifier: ITokenVerifier;
@@ -34,7 +35,7 @@ describe("Token Verifier", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Failed to get public key",
-          errorCategory: "SERVER_ERROR",
+          errorCategory: ErrorCategory.SERVER_ERROR,
         });
       });
     });
@@ -55,7 +56,7 @@ describe("Token Verifier", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Error verifying token signature",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       });
     });

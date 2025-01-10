@@ -1,5 +1,10 @@
 import { createHash } from "crypto";
-import { Result, errorResult, successResult } from "../../utils/result";
+import {
+  Result,
+  errorResult,
+  successResult,
+  ErrorCategory,
+} from "../../utils/result";
 import {
   GetSecretValueCommand,
   SecretsManagerClient,
@@ -38,7 +43,7 @@ export class ClientRegistryService
     if (!registeredClient)
       return errorResult({
         errorMessage: "Client is not registered",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
 
     const isClientSecretsValid = this.validateClientSecrets(
@@ -51,7 +56,7 @@ export class ClientRegistryService
     if (!isClientSecretsValid)
       return errorResult({
         errorMessage: "Client credentials are invalid",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
 
     return successResult(registeredClient.issuer);
@@ -72,7 +77,7 @@ export class ClientRegistryService
     if (!registeredClient)
       return errorResult({
         errorMessage: "Client is not registered",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
 
     return successResult({
@@ -97,7 +102,7 @@ export class ClientRegistryService
     } catch {
       return errorResult({
         errorMessage: "Error retrieving client secrets",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
@@ -106,7 +111,7 @@ export class ClientRegistryService
     if (!clientRegistryResponse) {
       return errorResult({
         errorMessage: "Client registry not found",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
     let clientRegistry;
@@ -115,20 +120,20 @@ export class ClientRegistryService
     } catch {
       return errorResult({
         errorMessage: "Client registry is not a valid JSON",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
     if (!Array.isArray(clientRegistry)) {
       return errorResult({
         errorMessage: "Client registry is not an array",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
     if (clientRegistry.length === 0) {
       return errorResult({
         errorMessage: "Client registry is empty",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
@@ -144,7 +149,7 @@ export class ClientRegistryService
     if (!allPropertiesPresent)
       return errorResult({
         errorMessage: "Client registry failed schema validation",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     cache = {
       expiry: Date.now() + this.cacheTTL,

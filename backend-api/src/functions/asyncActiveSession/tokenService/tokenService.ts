@@ -1,4 +1,9 @@
-import { errorResult, Result, successResult } from "../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../utils/result";
 import { decodeJwt, decodeProtectedHeader } from "jose";
 import { ITokenVerifier, TokenVerifier } from "./tokenVerifier";
 
@@ -78,7 +83,7 @@ export class TokenService implements ITokenService {
       payload = decodeJwt(token);
     } catch {
       return errorResult({
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
         errorMessage: "Failed to decode token payload",
       });
     }
@@ -88,7 +93,7 @@ export class TokenService implements ITokenService {
     if (payload.nbf) {
       if (!this.hasValidNotBefore(payload, currentTime)) {
         return errorResult({
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
           errorMessage: "Invalid not-before claim",
         });
       }
@@ -96,42 +101,42 @@ export class TokenService implements ITokenService {
 
     if (!this.hasValidIssuer(payload, expectedClaims.iss)) {
       return errorResult({
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
         errorMessage: "Invalid issuer claim",
       });
     }
 
     if (!this.hasValidAudience(payload, expectedClaims.aud)) {
       return errorResult({
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
         errorMessage: "Invalid audience claim",
       });
     }
 
     if (!this.hasValidScope(payload, expectedClaims.scope)) {
       return errorResult({
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
         errorMessage: "Invalid scope claim",
       });
     }
 
     if (!this.hasValidSubject(payload)) {
       return errorResult({
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
         errorMessage: "Invalid sub claim",
       });
     }
 
     if (!this.hasValidExpiry(payload, currentTime)) {
       return errorResult({
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
         errorMessage: "Token expiry time is missing or is in the past",
       });
     }
 
     if (!this.hasValidIssuedAtTime(payload, currentTime)) {
       return errorResult({
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
         errorMessage: "Token issued at time is missing or is in the future",
       });
     }
@@ -209,14 +214,14 @@ export class TokenService implements ITokenService {
       header = decodeProtectedHeader(token);
     } catch {
       return errorResult({
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
         errorMessage: "Failed to decode token header",
       });
     }
 
     if (!this.hasValidKid(header)) {
       return errorResult({
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
         errorMessage: "Invalid kid claim",
       });
     }

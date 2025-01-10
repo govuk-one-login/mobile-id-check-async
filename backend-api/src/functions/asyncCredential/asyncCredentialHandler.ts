@@ -6,6 +6,7 @@ import {
   dependencies,
 } from "./handlerDependencies";
 import { RequestService } from "./requestService/requestService";
+import { ErrorCategory } from "../utils/result";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncCredentialDependencies,
@@ -97,7 +98,8 @@ export async function lambdaHandlerConstructor(
     );
   if (getPartialRegisteredClientResponse.isError) {
     if (
-      getPartialRegisteredClientResponse.value.errorCategory === "SERVER_ERROR"
+      getPartialRegisteredClientResponse.value.errorCategory ===
+      ErrorCategory.SERVER_ERROR
     ) {
       logger.log("ERROR_RETRIEVING_REGISTERED_CLIENT", {
         errorMessage: getPartialRegisteredClientResponse.value.errorMessage,

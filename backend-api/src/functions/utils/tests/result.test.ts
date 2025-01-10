@@ -1,4 +1,11 @@
-import { errorResult, Result, successResult } from "../result";
+import {
+  emptyFailure,
+  emptySuccess,
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../result";
 
 describe("Result", () => {
   describe("Given there is an error", () => {
@@ -6,14 +13,14 @@ describe("Result", () => {
       const returnErrorWithoutTypeOverride = (): Result<null> => {
         return errorResult({
           errorMessage: "mockErrorResponse",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       };
       const result = returnErrorWithoutTypeOverride();
       if (result.isError) {
         expect(result.isError).toBe(true);
         expect(result.value.errorMessage).toBe("mockErrorResponse");
-        expect(result.value.errorCategory).toBe("CLIENT_ERROR");
+        expect(result.value.errorCategory).toBe(ErrorCategory.CLIENT_ERROR);
       }
       expect.assertions(3);
     });
@@ -31,6 +38,22 @@ describe("Result", () => {
       }
 
       expect.assertions(2);
+    });
+  });
+
+  describe("emptySuccess", () => {
+    it("Returns empty success object", () => {
+      expect(emptySuccess()).toEqual({
+        isError: false,
+      });
+    });
+  });
+
+  describe("emptyFailure", () => {
+    it("Returns empty failure object", () => {
+      expect(emptyFailure()).toEqual({
+        isError: true,
+      });
     });
   });
 });

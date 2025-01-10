@@ -8,6 +8,7 @@ import {
   dependencies,
   IAsyncTokenRequestDependencies,
 } from "./handlerDependencies";
+import { ErrorCategory } from "../utils/result";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
@@ -60,7 +61,7 @@ export async function lambdaHandlerConstructor(
   if (getRegisteredIssuerByClientSecretsResult.isError) {
     if (
       getRegisteredIssuerByClientSecretsResult.value.errorCategory ===
-      "SERVER_ERROR"
+      ErrorCategory.SERVER_ERROR
     ) {
       logger.log("INTERNAL_SERVER_ERROR", {
         errorMessage:

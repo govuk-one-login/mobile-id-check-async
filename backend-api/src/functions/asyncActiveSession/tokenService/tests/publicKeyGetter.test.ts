@@ -1,5 +1,6 @@
 import { IJwks, IPublicKeyGetter, PublicKeyGetter } from "../publicKeyGetter";
 import { importJWK } from "jose";
+import { ErrorCategory } from "../../../utils/result";
 
 describe("Public Key Getter", () => {
   let mockJwks: IJwks;
@@ -55,7 +56,7 @@ describe("Public Key Getter", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage: "Error getting JWK - Some HTTP error",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });
@@ -79,7 +80,7 @@ describe("Public Key Getter", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage: "Error getting JWK - Error: Empty response body",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });
@@ -105,7 +106,7 @@ describe("Public Key Getter", () => {
       expect(result.value).toStrictEqual({
         errorMessage:
           "Error getting JWK - Error: Response does not match the expected JWKS structure",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });
@@ -121,7 +122,7 @@ describe("Public Key Getter", () => {
       expect(result.value).toStrictEqual({
         errorMessage:
           "Error getting JWK - Error: JWKS does not contain key matching provided key ID",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });
@@ -148,7 +149,7 @@ describe("Public Key Getter", () => {
       expect(result.value).toStrictEqual({
         errorMessage:
           'Invalid JWK - TypeError [ERR_INVALID_ARG_TYPE]: The "key.crv" property must be of type string. Received undefined',
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });

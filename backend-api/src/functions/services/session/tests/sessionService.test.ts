@@ -12,6 +12,7 @@ import {
 import { AwsStub, mockClient } from "aws-sdk-client-mock";
 import { ISessionService, SessionService } from "../sessionService";
 import "aws-sdk-client-mock-jest";
+import { ErrorCategory } from "../../../utils/result";
 
 describe("Session Service", () => {
   let sessionService: ISessionService;
@@ -38,7 +39,7 @@ describe("Session Service", () => {
 
         expect(result.value).toStrictEqual({
           errorMessage: "Error getting session ID - Error: Mock DB Error",
-          errorCategory: "SERVER_ERROR",
+          errorCategory: ErrorCategory.SERVER_ERROR,
         });
         expect(result.isError).toBe(true);
       });
@@ -73,7 +74,7 @@ describe("Session Service", () => {
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual({
-          errorCategory: "SERVER_ERROR",
+          errorCategory: ErrorCategory.SERVER_ERROR,
           errorMessage: "Session is malformed",
         });
       });
@@ -123,7 +124,7 @@ describe("Session Service", () => {
 
         expect(result.value).toStrictEqual({
           errorMessage: "Error getting session - Error: Mock DB Error",
-          errorCategory: "SERVER_ERROR",
+          errorCategory: ErrorCategory.SERVER_ERROR,
         });
         expect(result.isError).toBe(true);
       });
@@ -158,7 +159,7 @@ describe("Session Service", () => {
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual({
-          errorCategory: "SERVER_ERROR",
+          errorCategory: ErrorCategory.SERVER_ERROR,
           errorMessage: "Session is malformed",
         });
       });
@@ -173,7 +174,7 @@ describe("Session Service", () => {
 
         expect(result.isError).toBe(true);
         expect(result.value).toEqual({
-          errorCategory: "SERVER_ERROR",
+          errorCategory: ErrorCategory.SERVER_ERROR,
           errorMessage: "Session is malformed",
         });
       });
@@ -258,7 +259,7 @@ describe("Session Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Error creating session - Error: Mock DB Error",
-          errorCategory: "SERVER_ERROR",
+          errorCategory: ErrorCategory.SERVER_ERROR,
         });
       });
     });
@@ -284,7 +285,7 @@ describe("Session Service", () => {
         expect(result.value).toStrictEqual({
           errorMessage:
             "Error creating session - Error: Session already exists with this ID",
-          errorCategory: "SERVER_ERROR",
+          errorCategory: ErrorCategory.SERVER_ERROR,
         });
       });
     });

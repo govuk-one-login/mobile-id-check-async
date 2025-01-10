@@ -3,7 +3,12 @@ import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
 import { Buffer } from "buffer";
 import format from "ecdsa-sig-formatter";
 import { IJwtPayload, JwtHeader } from "../../types/jwt";
-import { errorResult, Result, successResult } from "../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../utils/result";
 import { base64url } from "jose";
 
 export class TokenService implements IMintToken {
@@ -51,14 +56,14 @@ export class TokenService implements IMintToken {
     } catch {
       return errorResult({
         errorMessage: "Error from KMS",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
     if (!result.Signature) {
       return errorResult({
         errorMessage: "No signature in response from KMS",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 

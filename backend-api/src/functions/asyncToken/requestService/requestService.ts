@@ -1,4 +1,9 @@
-import { Result, errorResult, successResult } from "../../utils/result";
+import {
+  Result,
+  errorResult,
+  successResult,
+  ErrorCategory,
+} from "../../utils/result";
 import { APIGatewayProxyEventHeaders } from "aws-lambda";
 import { IDecodedClientSecrets } from "../../services/clientRegistryService/clientRegistryService";
 
@@ -22,14 +27,14 @@ export class RequestService implements IRequestService {
     if (!authorizationHeader) {
       return errorResult({
         errorMessage: "Missing authorization header",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
 
     if (!authorizationHeader.startsWith("Basic ")) {
       return errorResult({
         errorMessage: "Invalid authorization header",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
 
@@ -43,7 +48,7 @@ export class RequestService implements IRequestService {
     if (!clientId || !clientSecret) {
       return errorResult({
         errorMessage: "Client secret incorrectly formatted",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
 
@@ -53,7 +58,7 @@ export class RequestService implements IRequestService {
     if (body == null) {
       return errorResult({
         errorMessage: "Missing request body",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
     const searchParams = new URLSearchParams(body);
@@ -62,13 +67,13 @@ export class RequestService implements IRequestService {
     if (!grantType) {
       return errorResult({
         errorMessage: "Missing grant_type",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
     if (grantType !== "client_credentials") {
       return errorResult({
         errorMessage: "Invalid grant_type",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
 

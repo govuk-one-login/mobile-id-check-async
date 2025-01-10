@@ -445,6 +445,7 @@ describe("Backend application infrastructure", () => {
           "ISSUER",
           "TXMA_SQS",
           "SESSION_TABLE_NAME",
+          "POWERTOOLS_SERVICE_NAME",
           "AWS_LAMBDA_EXEC_WRAPPER",
           "DT_CONNECTION_AUTH_TOKEN",
           "DT_CONNECTION_BASE_URL",
@@ -467,22 +468,21 @@ describe("Backend application infrastructure", () => {
 
         expect(reservedConcurrentExecutionMapping).toStrictEqual({
           Lambda: {
-            dev: {
+            dev: expect.objectContaining({
               ReservedConcurrentExecutions: 15,
-            },
-            build: {
+            }),
+            build: expect.objectContaining({
               ReservedConcurrentExecutions: 15,
-            },
-            staging: {
+            }),
+            staging: expect.objectContaining({
               ReservedConcurrentExecutions: 0,
-            },
-
-            integration: {
+            }),
+            integration: expect.objectContaining({
               ReservedConcurrentExecutions: 0,
-            },
-            production: {
+            }),
+            production: expect.objectContaining({
               ReservedConcurrentExecutions: 0,
-            },
+            }),
           },
         });
 

@@ -78,6 +78,10 @@ To lint your code:
 npm run lint
 ```
 
+## Logging
+
+See [here](docs/logging.md)
+
 ## Reference Guide
 
 This section acts as a techhnical reference. There are three logical components in this SAM application (mob-async-backend). All the infrastructure is defined in the template.yaml:

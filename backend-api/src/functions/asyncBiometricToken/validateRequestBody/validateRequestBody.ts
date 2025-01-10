@@ -1,4 +1,5 @@
 import { errorResult, Result, successResult } from "../../utils/result";
+import { DocumentType } from "../../types/document";
 
 export function validateRequestBody(
   body: string | null,
@@ -83,5 +84,3 @@ interface IAsyncBiometricTokenValidParsedRequestBody {
   sessionId: string;
   documentType: DocumentType;
 }
-
-type DocumentType = "NFC_PASSPORT" | "UK_DRIVING_LICENCE" | "UK_NFC_BRP";
