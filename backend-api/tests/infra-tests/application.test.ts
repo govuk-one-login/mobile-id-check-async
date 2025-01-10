@@ -239,7 +239,7 @@ describe("Backend application infrastructure", () => {
     test("It disables the FMS WAF", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
         Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
-        Tags: { "FMSRegionalPolicy": false }
+        Tags: { FMSRegionalPolicy: false },
       });
     });
 
