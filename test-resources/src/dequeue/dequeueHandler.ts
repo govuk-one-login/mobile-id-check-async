@@ -43,14 +43,18 @@ export const lambdaHandlerConstructor = async (
   const env = getConfigResult.value;
 
   for (const record of records) {
+    const messageId = record.messageId
+
     const getEventResult = getEvent(record);
     if (getEventResult.isError) {
       logger.log("FAILED_TO_PROCESS_MESSAGES", getEventResult.value);
 
-      batchItemFailures.push({ itemIdentifier: record.messageId });
+      batchItemFailures.push({ itemIdentifier: messageId });
       continue;
     }
-    const txmaEvent = getEventResult.value;
+    const eventName = getEventResult.value.event_name
+    const sessionId = getEventResult.value.user.session_id
+    const { timestamp } = getEventResult.value;
 
     const timeToLiveInSeconds = getTimeToLiveInSeconds(
       env.TXMA_EVENT_TTL_DURATION_IN_SECONDS,
@@ -58,8 +62,8 @@ export const lambdaHandlerConstructor = async (
     const putItemCommandInput: PutItemCommandInput = {
       TableName: env.EVENTS_TABLE_NAME,
       Item: marshall({
-        pk: `SESSION#${txmaEvent.user.session_id}`,
-        sk: `TXMA#EVENT_NAME#${txmaEvent.event_name}#TIMESTAMP#${txmaEvent.timestamp}`,
+        pk: `SESSION#${sessionId}`,
+        sk: `TXMA#EVENT_NAME#${eventName}#TIMESTAMP#${timestamp}`,
         eventBody: record.body,
         timeToLiveInSeconds,
       }),
@@ -70,18 +74,18 @@ export const lambdaHandlerConstructor = async (
       await dbClient.send(command);
     } catch (error) {
       logger.log("ERROR_WRITING_EVENT_TO_EVENTS_TABLE", {
-        eventName: txmaEvent.event_name,
-        sessionId: txmaEvent.user.session_id,
+        eventName,
+        sessionId,
         error,
       });
 
-      batchItemFailures.push({ itemIdentifier: record.messageId });
+      batchItemFailures.push({ itemIdentifier: messageId });
       continue;
     }
 
     processedMessages.push({
-      eventName: txmaEvent.event_name,
-      sessionId: txmaEvent.user.session_id,
+      eventName,
+      sessionId,
     });
   }
 
