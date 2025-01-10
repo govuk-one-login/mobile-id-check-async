@@ -1,0 +1,135 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Description: The environment type
+  PermissionsBoundary:
+    Type: String
+    Description: The ARN of the permissions boundary
+  StackName:
+    Type: String
+    Description: Name of the parent stack
+  SessionsTableArn:
+    Type: String
+    Description: ARN of the Sessions DynamoDB table
+  KmsEncryptionKeyArn:
+    Type: String
+    Description: ARN of the KMS encryption key
+  StsBaseUrl:
+    Type: String
+    Description: Base URL for STS
+  SessionsApiDomainName:
+    Type: String
+    Description: Domain name for the Sessions API
+
+Resources:
+  AsyncActiveSessionFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - AsyncActiveSessionLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2022
+        Sourcemap: false
+        EntryPoints:
+          - src/functions/asyncActiveSession/asyncActiveSessionHandler.ts
+    Properties:
+      AutoPublishAlias: live
+      FunctionName: !Sub ${StackName}-active-session
+      Runtime: nodejs20.x
+      Handler: asyncActiveSessionHandler.lambdaHandler
+      Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
+      Environment:
+        Variables:
+          ENCRYPTION_KEY_ARN: !Ref KmsEncryptionKeyArn
+          STS_BASE_URL: !Ref StsBaseUrl
+          AUDIENCE: !Sub https://${SessionsApiDomainName}
+      VpcConfig:
+        SubnetIds:
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+
+  AsyncActiveSessionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub /aws/lambda/${StackName}-active-session
+
+  AsyncActiveSessionLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${StackName}-active-session-lambda
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: DynamoReadSessionsTable
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:Query
+                Resource:
+                  - !Ref SessionsTableArn
+                  - !Sub ${SessionsTableArn}/index/subjectIdentifier-timeToLive-index
+                Condition:
+                  ForAllValues:StringEquals:
+                    dynamodb:Attributes:
+                      - sessionId
+                      - sessionState
+                      - subjectIdentifier
+                      - timeToLive
+                      - redirectUri
+                      - clientState
+                  StringEquals:
+                    dynamodb:Select: SPECIFIC_ATTRIBUTES
+        - PolicyName: AsyncActiveSessionFunctionLoggingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+        - PolicyName: KMSDecryptPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                Resource: !Ref KmsEncryptionKeyArn
+        - PolicyName: VpcPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
+      PermissionsBoundary: !Ref PermissionsBoundary
+
+Outputs:
+  FunctionArn:
+    Description: Active Session Lambda Function ARN
+    Value: !GetAtt AsyncActiveSessionFunction.Arn
+  
+  FunctionName:
+    Description: Active Session Lambda Function Name
+    Value: !Ref AsyncActiveSessionFunction

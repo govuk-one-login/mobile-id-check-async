@@ -1,0 +1,116 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Description: The environment type
+  StackName:
+    Type: String
+    Description: Name of the parent stack
+  PendingDeletionInDays:
+    Type: Number
+    Description: Days to wait before deleting KMS keys
+    Default: 7
+
+Resources:
+  KMSSigningKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A KMS Key for signing.
+      Enabled: true
+      EnableKeyRotation: false
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action:
+              - kms:*
+            Resource:
+              - '*'
+      KeySpec: ECC_NIST_P256
+      KeyUsage: SIGN_VERIFY
+      MultiRegion: false
+      PendingWindowInDays: !Ref PendingDeletionInDays
+
+  KMSSigningKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${StackName}-signing-key
+      TargetKeyId: !Ref KMSSigningKey
+
+  KMSEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A KMS Key for encrypting.
+      Enabled: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action:
+              - kms:*
+            Resource:
+              - '*'
+      KeySpec: RSA_2048
+      KeyUsage: ENCRYPT_DECRYPT
+      MultiRegion: false
+      PendingWindowInDays: !Ref PendingDeletionInDays
+
+  KMSEncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${StackName}-encryption-key
+      TargetKeyId: !Ref KMSEncryptionKey
+
+  TxMAKMSEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A KMS Key for encrypting the SQS Queue for TxMA
+      Enabled: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action:
+              - kms:*
+            Resource:
+              - '*'
+          - Effect: Allow
+            Principal:
+              AWS: !Ref TxmaAccount
+            Action:
+              - kms:Encrypt
+              - kms:Decrypt
+              - kms:GenerateDataKey
+            Resource:
+              - '*'
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyUsage: ENCRYPT_DECRYPT
+      MultiRegion: false
+      PendingWindowInDays: !Ref PendingDeletionInDays
+
+  TxMAKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${StackName}-TxMAKMSEncryptionKey
+      TargetKeyId: !Ref TxMAKMSEncryptionKey
+
+Outputs:
+  SigningKeyArn:
+    Description: KMS Signing Key ARN
+    Value: !GetAtt KMSSigningKey.Arn
+
+  EncryptionKeyArn:
+    Description: KMS Encryption Key ARN
+    Value: !GetAtt KMSEncryptionKey.Arn
+
+  TxMAKmsKeyArn:
+    Description: TxMA KMS Key ARN
+    Value: !GetAtt TxMAKMSEncryptionKey.Arn

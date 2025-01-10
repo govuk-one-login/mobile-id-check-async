@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Description: The environment type
+  PermissionsBoundary:
+    Type: String
+    Description: The ARN of the permissions boundary
+  StackName:
+    Type: String
+    Description: Name of the parent stack
+  ApiBurstLimit:
+    Type: Number
+    Description: API Gateway burst limit
+  ApiRateLimit:
+    Type: Number
+    Description: API Gateway rate limit
+
+Resources:
+  PrivateApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${StackName}-private-api
+      Description: Private API gateway for Client Credentials flow
+      EndpointConfiguration: PRIVATE
+      Auth:
+        ResourcePolicy:
+          IntrinsicVpceWhitelist:
+            - !ImportValue devplatform-vpc-ExecuteApiGatewayEndpointId
+      StageName: !Ref Environment
+      OpenApiVersion: 3.0.1
+      AccessLogSetting:
+        DestinationArn: !GetAtt AsyncCredentialPrivateApiAccessLogs.Arn
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      MethodSettings:
+        - LoggingLevel: INFO
+          ResourcePath: /*
+          HttpMethod: '*'
+          DataTraceEnabled: false
+          MetricsEnabled: true
+          ThrottlingBurstLimit: !Ref ApiBurstLimit
+          ThrottlingRateLimit: !Ref ApiRateLimit
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./openApiSpecs/async-private-spec.yaml
+
+  AsyncCredentialPrivateApiAccessLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${StackName}-private-api-access-logs
+      RetentionInDays: 30
+
+Outputs:
+  ApiId:
+    Description: Private API Gateway ID
+    Value: !Ref PrivateApi
+  
+  ApiUrl:
+    Description: Private API Gateway base URL
+    Value: !Sub https://${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}

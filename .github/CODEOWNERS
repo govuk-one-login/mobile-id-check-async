@@ -2,3 +2,10 @@
 # The following below will be requested for review when someone opens a pull request.
 
 * @govuk-one-login/mobile-id-check @govuk-one-login/mobile-leads
+
+
+# Platform team owns CloudFormation templates
+/cloudFormation/ @platform-team
+/template.yaml @platform-team
+/scripts/merge-templates.sh @platform-team
+/tests/infrastructure/test_templates.py @platform-team

@@ -35,7 +35,7 @@ Parameters:
     Description: Set to `true` to deploy alarms in a dev environment
     Type: String
     Default: false
-
+    
 Mappings:
   StaticVariables:
     urls:
@@ -214,6 +214,166 @@ Conditions:
         - dev
     - !Equals [ !Ref DeployAlarmsInDev, true ]
 
+Resources:
+  # API Stacks
+  PrivateApiStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: cloudFormation/api/private-api.cloudFormation.yaml
+      Parameters:
+        Environment: !Ref Environment
+        PermissionsBoundary: !Ref PermissionsBoundary
+        StackName: !Ref AWS::StackName
+        ApiBurstLimit: !FindInMap [PrivateApigw, !Ref Environment, ApiBurstLimit]
+        ApiRateLimit: !FindInMap [PrivateApigw, !Ref Environment, ApiRateLimit]
+
+  SessionsApiStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: cloudFormation/api/sessions-api.cloudFormation.yaml
+      Parameters:
+        Environment: !Ref Environment
+        PermissionsBoundary: !Ref PermissionsBoundary
+        StackName: !Ref AWS::StackName
+        ApiBurstLimit: !FindInMap [SessionsApigw, !Ref Environment, ApiBurstLimit]
+        ApiRateLimit: !FindInMap [SessionsApigw, !Ref Environment, ApiRateLimit]
+        BaseDns: !FindInMap [DNS, !Ref Environment, BaseDns]
+
+  ProxyApiStack:
+    Type: AWS::CloudFormation::Stack
+    Condition: ProxyApiDeployment
+    Properties:
+      TemplateURL: cloudFormation/api/proxy-api.cloudFormation.yaml
+      Parameters:
+        Environment: !Ref Environment
+        PermissionsBoundary: !Ref PermissionsBoundary
+        StackName: !Ref AWS::StackName
+        ApiBurstLimit: !FindInMap [ProxyApigw, !Ref Environment, ApiBurstLimit]
+        ApiRateLimit: !FindInMap [ProxyApigw, !Ref Environment, ApiRateLimit]
+        BaseDns: !FindInMap [DNS, !Ref Environment, BaseDns]
+
+  # Security Stacks
+  SecurityStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: cloudFormation/security/kms.cloudFormation.yaml
+      Parameters:
+        Environment: !Ref Environment
+        StackName: !Ref AWS::StackName
+        PendingDeletionInDays: !FindInMap [KMS, !Ref Environment, PendingDeletionInDays]
+        TxmaAccount: !FindInMap [TxMA, !Ref Environment, TxmaAccount]
+
+  # Storage Stacks
+  StorageStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: cloudFormation/storage/dynamodb.cloudFormation.yaml
+      Parameters:
+        Environment: !Ref Environment
+        StackName: !Ref AWS::StackName
+
+  S3Stack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: cloudFormation/storage/s3.cloudFormation.yaml
+      Parameters:
+        Environment: !Ref Environment
+        StackName: !Ref AWS::StackName
+
+  SqsStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: cloudFormation/storage/sqs.cloudFormation.yaml
+      Parameters:
+        Environment: !Ref Environment
+        StackName: !Ref AWS::StackName
+        TxmaAccount: !FindInMap [TxMA, !Ref Environment, TxmaAccount]
+        TxMAKmsKeyId: !GetAtt SecurityStack.Outputs.TxMAKmsKeyArn
+
+  # Function Stacks
+  TokenFunctionStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: cloudFormation/functions/token.cloudFormation.yaml
+      Parameters:
+        Environment: !Ref Environment
+        PermissionsBoundary: !Ref PermissionsBoundary
+        StackName: !Ref AWS::StackName
+        PrivateApiId: !GetAtt PrivateApiStack.Outputs.ApiId
+        KmsSigningKeyArn: !GetAtt SecurityStack.Outputs.SigningKeyArn
+        TxMAQueueArn: !GetAtt SqsStack.Outputs.QueueArn
+        TxMAKmsKeyArn: !GetAtt SecurityStack.Outputs.TxMAKmsKeyArn
+
+  CredentialFunctionStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: cloudFormation/functions/credential.cloudFormation.yaml
+      Parameters:
+        Environment: !Ref Environment
+        PermissionsBoundary: !Ref PermissionsBoundary
+        StackName: !Ref AWS::StackName
+        PrivateApiId: !GetAtt PrivateApiStack.Outputs.ApiId
+        KmsSigningKeyArn: !GetAtt SecurityStack.Outputs.SigningKeyArn
+        TxMAQueueArn: !GetAtt SqsStack.Outputs.QueueArn
+        TxMAKmsKeyArn: !GetAtt SecurityStack.Outputs.TxMAKmsKeyArn
+        SessionsTableArn: !GetAtt StorageStack.Outputs.TableArn
+        SessionsTableName: !GetAtt StorageStack.Outputs.TableName
+
+  ActiveSessionFunctionStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: cloudFormation/functions/active-session.cloudFormation.yaml
+      Parameters:
+        Environment: !Ref Environment
+        PermissionsBoundary: !Ref PermissionsBoundary
+        StackName: !Ref AWS::StackName
+        SessionsTableArn: !GetAtt StorageStack.Outputs.TableArn
+        KmsEncryptionKeyArn: !GetAtt SecurityStack.Outputs.EncryptionKeyArn
+        StsBaseUrl: !If [UseDevOverrideStsBaseUrl, !Ref DevOverrideStsBaseUrl, !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]]
+        SessionsApiDomainName: !GetAtt SessionsApiStack.Outputs.ApiUrl
+
+  BiometricTokenFunctionStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: cloudFormation/functions/biometric-token.cloudFormation.yaml
+      Parameters:
+        Environment: !Ref Environment
+        PermissionsBoundary: !Ref PermissionsBoundary
+        StackName: !Ref AWS::StackName
+
+  JwksFunctionStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: cloudFormation/functions/jwks.cloudFormation.yaml
+      Parameters:
+        Environment: !Ref Environment
+        PermissionsBoundary: !Ref PermissionsBoundary
+        StackName: !Ref AWS::StackName
+        KmsEncryptionKeyArn: !GetAtt SecurityStack.Outputs.EncryptionKeyArn
+        JwksBucketName: !GetAtt S3Stack.Outputs.BucketName
+
+  ProxyFunctionStack:
+    Type: AWS::CloudFormation::Stack
+    Condition: ProxyApiDeployment
+    Properties:
+      TemplateURL: cloudFormation/functions/proxy.cloudFormation.yaml
+      Parameters:
+        Environment: !Ref Environment
+        PermissionsBoundary: !Ref PermissionsBoundary
+        StackName: !Ref AWS::StackName
+        PrivateApiUrl: !GetAtt PrivateApiStack.Outputs.ApiUrl
+        ProxySecurityGroupId: !GetAtt ProxyApiStack.Outputs.SecurityGroupId
+
+  # Monitoring Stack
+  MonitoringStack:
+    Type: AWS::CloudFormation::Stack
+    Condition: DeployAlarms
+    Properties:
+      TemplateURL: cloudFormation/monitoring/alarms.cloudFormation.yaml
+      Parameters:
+        Environment: !Ref Environment
+        StackName: !Ref AWS::StackName
+
 Globals:
   Function:
     Timeout: 5
@@ -261,1839 +421,37 @@ Globals:
         - '{{resolve:secretsmanager:${SecretArn}:SecretString:NODEJS_LAYER}}'
         - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]
 
-Resources:
-
-  ### Private API Gateway for Client Credentials grant flow
-  PrivateApi:
-    Type: AWS::Serverless::Api
-    Properties:
-      Name: !Sub ${AWS::StackName}-private-api
-      Description: Private API gateway for Client Credentials flow
-      EndpointConfiguration: PRIVATE
-      Auth:
-        ResourcePolicy:
-          IntrinsicVpceWhitelist:
-            - !ImportValue devplatform-vpc-ExecuteApiGatewayEndpointId
-      StageName: !Ref Environment
-      OpenApiVersion: 3.0.1
-      AccessLogSetting:
-        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialPrivateApiAccessLogs}
-        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
-      MethodSettings:
-        - LoggingLevel: INFO
-          ResourcePath: /*
-          HttpMethod: '*'
-
-          # Disable data trace in production and integration to avoid logging customer sensitive information
-          DataTraceEnabled: false # Client credentials used in headers
-          MetricsEnabled: true
-          ThrottlingBurstLimit: !FindInMap
-            - PrivateApigw
-            - !Ref Environment
-            - ApiBurstLimit
-          ThrottlingRateLimit: !FindInMap
-            - PrivateApigw
-            - !Ref Environment
-            - ApiRateLimit
-      DefinitionBody:
-        Fn::Transform:
-          Name: AWS::Include
-          Parameters:
-            Location: ./openApiSpecs/async-private-spec.yaml
-
-  AsyncCredentialPrivateApiAccessLogs:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
-      RetentionInDays: 30
-
-      ### Token lambda
-  AsyncTokenFunction:
-    Type: AWS::Serverless::Function
-    DependsOn:
-      - AsyncTokenLogGroup
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: es2022
-        Sourcemap: false
-        EntryPoints:
-          - src/functions/asyncToken/asyncTokenHandler.ts
-    Properties:
-      FunctionName: !Sub ${AWS::StackName}-token
-      Runtime: nodejs20.x
-      Handler: asyncTokenHandler.lambdaHandler
-      Role: !GetAtt AsyncTokenLambdaRole.Arn
-      Environment:
-        Variables:
-          CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
-      VpcConfig:
-        SubnetIds:
-          - !ImportValue devplatform-vpc-PrivateSubnetIdA
-          - !ImportValue devplatform-vpc-PrivateSubnetIdB
-          - !ImportValue devplatform-vpc-PrivateSubnetIdC
-        SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
-
-  AsyncTokenFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt AsyncTokenFunction.Arn
-      Principal: apigateway.amazonaws.com
-      SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApi}/*/*/*
-
-  AsyncTokenLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-token
-
-  AsyncTokenLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub ${AWS::StackName}-token-lambda
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: AsyncTokenFunctionSecretsManagerPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - secretsmanager:GetSecretValue
-                Resource:
-                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistry-?????? # wildcard as AWS automatically appends 6 characters to the end of a secret arn
-        - PolicyName: AsyncTokenFunctionLoggingPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: arn:aws:logs:*:*:*
-        - PolicyName: AsyncTokenFunctionKmsPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - kms:Sign
-                Resource: !GetAtt KMSSigningKey.Arn
-        - PolicyName: AsyncTokenFunctionSQSPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - sqs:SendMessage
-                Resource: !GetAtt TxMASQSQueue.Arn
-              - Effect: Allow
-                Action:
-                  - kms:Encrypt
-                  - kms:Decrypt
-                  - kms:GenerateDataKey
-                Resource: !GetAtt TxMAKMSEncryptionKey.Arn
-        - PolicyName: VpcPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ec2:DescribeNetworkInterfaces
-                  - ec2:CreateNetworkInterface
-                  - ec2:DeleteNetworkInterface
-                Resource: '*'
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-
-  AsyncCredentialFunction:
-    Type: AWS::Serverless::Function
-    DependsOn:
-      - AsyncCredentialLogGroup
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: es2022
-        Sourcemap: false
-        EntryPoints:
-          - src/functions/asyncCredential/asyncCredentialHandler.ts
-    Properties:
-      AutoPublishAlias: live
-      FunctionName: !Sub ${AWS::StackName}-credential
-      Runtime: nodejs20.x
-      Handler: asyncCredentialHandler.lambdaHandler
-      Role: !GetAtt AsyncCredentialLambdaRole.Arn
-      Environment:
-        Variables:
-          CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
-          SESSION_DURATION_IN_SECONDS: 3600 #Used to set time to live when creating sessions. Set to 1 hour.
-      VpcConfig:
-        SubnetIds:
-          - !ImportValue devplatform-vpc-PrivateSubnetIdA
-          - !ImportValue devplatform-vpc-PrivateSubnetIdB
-          - !ImportValue devplatform-vpc-PrivateSubnetIdC
-        SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
-
-  AsyncCredentialLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-credential
-
-  AsyncCredentialFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt AsyncCredentialFunction.Arn
-      Principal: apigateway.amazonaws.com
-      SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApi}/*/*/*
-
-  AsyncCredentialLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub ${AWS::StackName}-credential-lambda
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: DynamoReadSessionsTable
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - dynamodb:Query
-                Resource:
-                  - Fn::GetAtt: [ "SessionsTable", "Arn" ]
-                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-timeToLive-index
-                Condition:
-                  ForAllValues:StringEquals:
-                    dynamodb:Attributes:
-                      - sessionId
-                      - sessionState
-                      - subjectIdentifier
-                      - timeToLive
-                  StringEquals:
-                    dynamodb:Select: SPECIFIC_ATTRIBUTES
-              - Effect: Allow
-                Action:
-                  - dynamodb:PutItem
-                Resource: !GetAtt SessionsTable.Arn
-        - PolicyName: AsyncCredentialFunctionSecretsManagerPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - secretsmanager:GetSecretValue
-                Resource:
-                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistry-?????? # wildcard as AWS automatically appends 6 characters to the end of a secret arn
-        - PolicyName: AsyncCredentialFunctionLoggingPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: arn:aws:logs:*:*:*
-        - PolicyName: AsyncCredentialFunctionKmsPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - kms:Verify
-                Resource: !GetAtt KMSSigningKey.Arn
-        - PolicyName: AsyncCredentialFunctionSQSPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - sqs:SendMessage
-                Resource: !GetAtt TxMASQSQueue.Arn
-              - Effect: Allow
-                Action:
-                  - kms:Encrypt
-                  - kms:Decrypt
-                  - kms:GenerateDataKey
-                Resource: !GetAtt TxMAKMSEncryptionKey.Arn
-        - PolicyName: VpcPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ec2:DescribeNetworkInterfaces
-                  - ec2:CreateNetworkInterface
-                  - ec2:DeleteNetworkInterface
-                Resource: '*'
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-
-  ### Regional APIgw to enable testing of the Private APIgw in lower environments. This acts as a proxy to the private APIgw under test.
-  ProxyApi:
-    Type: AWS::Serverless::Api
-    Properties:
-      Name: !Sub ${AWS::StackName}-proxy-api
-      Description: Regional equivalent of the private Api to enable testing from outside AWS
-      EndpointConfiguration: REGIONAL
-      StageName: !Ref Environment
-      DefinitionBody:
-        Fn::Transform:
-          Name: AWS::Include
-          Parameters:
-            Location: ./openApiSpecs/async-proxy-private-spec.yaml # This is generated automatically in Github Actions
-      MethodSettings:
-        - LoggingLevel: INFO
-          HttpMethod: '*'
-          ResourcePath: /*
-          MetricsEnabled: true
-          ThrottlingBurstLimit: !FindInMap
-            - ProxyApigw
-            - !Ref Environment
-            - ApiBurstLimit
-          ThrottlingRateLimit: !FindInMap
-            - ProxyApigw
-            - !Ref Environment
-            - ApiRateLimit
-      AccessLogSetting:
-        DestinationArn: !GetAtt ProxyApiAccessLogs.Arn
-        Format: '{"requestId" : "$context.requestId","ip" : "$context.identity.sourceIp","requestTime" : "$context.requestTime","httpMethod" : "$context.httpMethod","path" : "$context.path","routeKey" : "$context.routeKey","status" : "$context.status","protocol" : "$context.protocol","responseLength" : "$context.responseLength","integrationError" : "$context.integrationErrorMessage"}'
-      Auth:
-        DefaultAuthorizer: AWS_IAM
-        ApiKeyRequired: false
-        ResourcePolicy:
-          AwsAccountWhitelist: !Sub ${AWS::AccountId}
-    Condition: ProxyApiDeployment
-
-  ProxyApiAccessLogs:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-proxy-api-access-logs
-      RetentionInDays: 30
-    Condition: ProxyApiDeployment
-
-  ProxyApiDomainName:
-    Type: AWS::ApiGateway::DomainName
-    Properties:
-      DomainName: !Sub
-        - proxy-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
-      EndpointConfiguration:
-        Types:
-          - REGIONAL
-      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN}}'
-      SecurityPolicy: TLS_1_2
-    Condition: ProxyApiDeployment
-
-  ProxyApiBasePathMapping:
-    Type: AWS::ApiGateway::BasePathMapping
-    DependsOn: ProxyApiDomainName
-    Properties:
-      DomainName: !Sub
-        - proxy-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
-      RestApiId: !Ref ProxyApi
-      Stage: !Ref ProxyApi.Stage
-    Condition: ProxyApiDeployment
-
-  ProxyApiRecordSet:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      Name: !Sub
-        - proxy-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
-      Type: A
-      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
-      AliasTarget:
-        DNSName: !GetAtt ProxyApiDomainName.RegionalDomainName
-        HostedZoneId: !GetAtt ProxyApiDomainName.RegionalHostedZoneId
-    Condition: ProxyApiDeployment
-
-  ProxyLambdaSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: !Sub ${AWS::StackName}-proxy-sg
-      GroupDescription: Lambda Security group ruleset.
-      SecurityGroupEgress:
-        - CidrIp: !ImportValue devplatform-vpc-VpcCidr
-          Description: TCP HTTPS outbound to vpc.
-          FromPort: 443
-          IpProtocol: tcp
-          ToPort: 443
-      VpcId: !ImportValue devplatform-vpc-VpcId
-    Condition: ProxyApiDeployment
-
-  ProxyLambdaPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt ProxyLambda.Arn
-      Principal: apigateway.amazonaws.com
-      SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ProxyApi}/*/*/*
-    Condition: ProxyApiDeployment
-
-  ProxyLambda:
-    Type: AWS::Serverless::Function
-    DependsOn:
-      - ProxyLambdaLogGroup
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: es2022
-        Sourcemap: false
-        EntryPoints:
-          - src/functions/proxy/proxyHandler.ts
-    Properties:
-      Environment:
-        Variables:
-          PRIVATE_API_URL: !Sub https://${PrivateApi.RestApiId}.execute-api.eu-west-2.amazonaws.com/${Environment}
-      FunctionName: !Sub ${AWS::StackName}-proxy-lambda
-      Runtime: nodejs20.x
-      Handler: proxyHandler.lambdaHandler
-      Role: !GetAtt ProxyLambdaRole.Arn
-      VpcConfig:
-        SubnetIds:
-          - !ImportValue devplatform-vpc-PrivateSubnetIdA
-          - !ImportValue devplatform-vpc-PrivateSubnetIdB
-          - !ImportValue devplatform-vpc-PrivateSubnetIdC
-        SecurityGroupIds:
-          - !Ref ProxyLambdaSecurityGroup
-    Condition: ProxyApiDeployment
-
-  ProxyLambdaLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-proxy-lambda
-    Condition: ProxyApiDeployment
-
-  ProxyLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub ${AWS::StackName}-proxy-lambda-role
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: ProxyFunctionLoggingPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: !GetAtt ProxyLambdaLogGroup.Arn
-        - PolicyName: VpcPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ec2:DescribeNetworkInterfaces
-                  - ec2:CreateNetworkInterface
-                  - ec2:DeleteNetworkInterface
-                Resource: '*'
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-    Condition: ProxyApiDeployment
-
-  SessionsTable:
-    Type: AWS::DynamoDB::Table
-    # Disabling check for point in time backup
-    # checkov:skip=CKV_AWS_28:Ensure Dynamodb point in time recovery (backup) is enabled
-    # checkov:skip=CKV_AWS_119:No PII in table
-    Properties:
-      TableName: !Sub ${AWS::StackName}-sessions-table-${Environment}
-      AttributeDefinitions:
-        - AttributeName: sessionId
-          AttributeType: S
-        - AttributeName: subjectIdentifier
-          AttributeType: S
-        - AttributeName: timeToLive
-          AttributeType: N
-      KeySchema:
-        - AttributeName: sessionId
-          KeyType: HASH
-      GlobalSecondaryIndexes:
-        - IndexName: subjectIdentifier-timeToLive-index
-          KeySchema:
-            - AttributeName: subjectIdentifier
-              KeyType: HASH
-            - AttributeName: timeToLive
-              KeyType: RANGE
-          Projection:
-            NonKeyAttributes:
-              - sessionState
-              - redirectUri
-              - clientState
-            ProjectionType: INCLUDE
-      BillingMode: PAY_PER_REQUEST
-      SSESpecification:
-        SSEEnabled: true
-      TimeToLiveSpecification:
-        AttributeName: timeToLive
-        Enabled: true
-
-  ### Regional APIgw
-  SessionsApi:
-    Type: AWS::Serverless::Api
-    Properties:
-      Name: !Sub ${AWS::StackName}-sessions-api
-      Description: Regional API gateway for Client Credentials flow
-      EndpointConfiguration: REGIONAL
-      StageName: !Ref Environment
-      OpenApiVersion: 3.0.1
-      AccessLogSetting:
-        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${SessionsApiAccessLogs}
-        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
-      MethodSettings:
-        - LoggingLevel: INFO
-          ResourcePath: /*
-          HttpMethod: '*'
-          DataTraceEnabled: false
-          MetricsEnabled: true
-          ThrottlingBurstLimit: !FindInMap
-            - SessionsApigw
-            - !Ref Environment
-            - ApiBurstLimit
-          ThrottlingRateLimit: !FindInMap
-            - SessionsApigw
-            - !Ref Environment
-            - ApiRateLimit
-      DefinitionBody:
-        Fn::Transform:
-          Name: AWS::Include
-          Parameters:
-            Location: ./openApiSpecs/async-public-spec.yaml
-
-  SessionsApiAccessLogs:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sessions-api-access-logs
-      RetentionInDays: 30
-
-  SessionsApiDomainName:
-    Type: AWS::ApiGateway::DomainName
-    Properties:
-      DomainName: !Sub
-        - sessions-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
-      EndpointConfiguration:
-        Types:
-          - REGIONAL
-      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN}}'
-      SecurityPolicy: TLS_1_2
-
-  SessionsApiBasePathMapping:
-    Type: AWS::ApiGateway::BasePathMapping
-    DependsOn: SessionsApiDomainName
-    Properties:
-      DomainName: !Sub
-        - sessions-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
-      RestApiId: !Ref SessionsApi
-      Stage: !Ref SessionsApi.Stage
-
-  SessionsApiRecordSet:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      Name: !Sub
-        - sessions-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
-      Type: A
-      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
-      AliasTarget:
-        DNSName: !GetAtt SessionsApiDomainName.RegionalDomainName
-        HostedZoneId: !GetAtt SessionsApiDomainName.RegionalHostedZoneId
-
-  AsyncActiveSessionFunction:
-    Type: AWS::Serverless::Function
-    DependsOn:
-      - AsyncActiveSessionLogGroup
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: es2022
-        Sourcemap: false
-        EntryPoints:
-          - src/functions/asyncActiveSession/asyncActiveSessionHandler.ts
-    Properties:
-      AutoPublishAlias: live
-      FunctionName: !Sub ${AWS::StackName}-active-session
-      Runtime: nodejs20.x
-      Handler: asyncActiveSessionHandler.lambdaHandler
-      Events:
-        AsyncActiveSession:
-          Type: Api
-          Properties:
-            Path: /async/activeSession
-            Method: get
-            RestApiId: !Ref SessionsApi
-      Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
-      Environment:
-        Variables:
-          ENCRYPTION_KEY_ARN: !GetAtt KMSEncryptionKey.Arn
-          STS_BASE_URL: !If
-            - UseDevOverrideStsBaseUrl
-            - !Ref DevOverrideStsBaseUrl
-            - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
-          AUDIENCE: !Sub https://${SessionsApiDomainName}
-      VpcConfig:
-        SubnetIds:
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
-        SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
-
-  AsyncActiveSessionFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt AsyncActiveSessionFunction.Arn
-      Principal: events.amazonaws.com
-      SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SessionsApi}/*/*/*
-
-  AsyncActiveSessionLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-active-session
-
-  AsyncActiveSessionLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub ${AWS::StackName}-active-session-lambda
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: DynamoReadSessionsTable
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - dynamodb:Query
-                Resource:
-                  - Fn::GetAtt: [ "SessionsTable", "Arn" ]
-                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-timeToLive-index
-                Condition:
-                  ForAllValues:StringEquals:
-                    dynamodb:Attributes:
-                      - sessionId
-                      - sessionState
-                      - subjectIdentifier
-                      - timeToLive
-                      - redirectUri
-                      - clientState
-                  StringEquals:
-                    dynamodb:Select: SPECIFIC_ATTRIBUTES
-        - PolicyName: AsyncActiveSessionFunctionLoggingPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: arn:aws:logs:*:*:*
-        - PolicyName: KMSDecryptPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - kms:Decrypt
-                Resource: !GetAtt KMSEncryptionKey.Arn
-        - PolicyName: VpcPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ec2:DescribeNetworkInterfaces
-                  - ec2:CreateNetworkInterface
-                  - ec2:DeleteNetworkInterface
-                Resource: '*'
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-
-  AsyncBiometricTokenFunction:
-    Type: AWS::Serverless::Function
-    DependsOn:
-      - AsyncBiometricTokenLogGroup
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: es2022
-        Sourcemap: false
-        EntryPoints:
-          - src/functions/asyncBiometricToken/asyncBiometricTokenHandler.ts
-    Properties:
-      AutoPublishAlias: live
-      FunctionName: !Sub ${AWS::StackName}-biometric-token
-      Runtime: nodejs20.x
-      Handler: asyncBiometricTokenHandler.lambdaHandler
-      Events:
-        AsyncBiometricToken:
-          Type: Api
-          Properties:
-            Path: /async/biometricToken
-            Method: post
-            RestApiId: !Ref SessionsApi
-      Role: !GetAtt AsyncBiometricTokenLambdaRole.Arn
-      VpcConfig:
-        SubnetIds:
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
-        SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
-
-  AsyncBiometricTokenFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt AsyncBiometricTokenFunction.Arn
-      Principal: events.amazonaws.com
-      SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SessionsApi}/*/*/*
-
-  AsyncBiometricTokenLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-biometric-token
-
-  AsyncBiometricTokenLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub ${AWS::StackName}-biometric-token-lambda
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: AsyncBiometricTokenFunctionLoggingPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: arn:aws:logs:*:*:*
-        - PolicyName: VpcPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ec2:DescribeNetworkInterfaces
-                  - ec2:CreateNetworkInterface
-                  - ec2:DeleteNetworkInterface
-                Resource: '*'
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-
-  # ------------------------------ #
-  TxMASQSQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      MessageRetentionPeriod: 604800
-      VisibilityTimeout: 60
-      KmsMasterKeyId: !Ref TxMAKeyAlias
-      RedrivePolicy:
-        deadLetterTargetArn: !GetAtt TxMASQSQueueDeadLetterQueue.Arn
-        maxReceiveCount: 5
-
-        # TxMA account consumes this queue
-  TxMASQSQueuePolicy:
-    Type: AWS::SQS::QueuePolicy
-    Properties:
-      Queues:
-        - !Ref TxMASQSQueue
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action:
-              - sqs:DeleteMessage
-              - sqs:GetQueueAttributes
-              - sqs:ChangeMessageVisibility
-              - sqs:ReceiveMessage
-            Resource:
-              - !GetAtt TxMASQSQueue.Arn
-            Principal:
-              AWS:
-                - !FindInMap
-                  - TxMA
-                  - !Ref Environment
-                  - TxmaAccount
-    Condition: isNotDevOrBuild #Ensures TxMA can only integrate with SQS in Staging and higher
-
-  TxMASQSQueueDeadLetterQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      MessageRetentionPeriod: 259200 # three days
-      KmsMasterKeyId: !Sub TxMAKMSEncryptionKey
-
-  TxMAKMSEncryptionKey:
-    Type: AWS::KMS::Key
-    Properties:
-      Description: A KMS Key for encrypting the SQS Queue for TxMA
-      Enabled: true
-      KeyPolicy:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
-            Action:
-              - kms:*
-            Resource:
-              - '*'
-          - Effect: Allow
-            Principal:
-              AWS: !FindInMap
-                - TxMA
-                - !Ref Environment
-                - TxmaAccount
-            Action:
-              - kms:Encrypt
-              - kms:Decrypt
-              - kms:GenerateDataKey
-            Resource:
-              - '*'
-      KeySpec: SYMMETRIC_DEFAULT
-      KeyUsage: ENCRYPT_DECRYPT
-      MultiRegion: false
-      PendingWindowInDays: !FindInMap
-        - KMS
-        - !Ref Environment
-        - PendingDeletionInDays
-
-  TxMAKeyAlias:
-    Type: AWS::KMS::Alias
-    Properties:
-      AliasName: !Sub alias/${AWS::StackName}-TxMAKMSEncryptionKey
-      TargetKeyId: !Ref TxMAKMSEncryptionKey
-
-      # Encryption and signing keys
-  KMSSigningKey:
-    Type: AWS::KMS::Key
-    Properties:
-      Description: A KMS Key for signing.
-      Enabled: true
-      EnableKeyRotation: false
-      KeyPolicy:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
-            Action:
-              - kms:*
-            Resource:
-              - '*'
-      KeySpec: ECC_NIST_P256
-      KeyUsage: SIGN_VERIFY
-      MultiRegion: false
-      PendingWindowInDays: !FindInMap
-        - KMS
-        - !Ref Environment
-        - PendingDeletionInDays
-
-  KMSSigningKeyAlias:
-    Type: AWS::KMS::Alias
-    Properties:
-      AliasName: !Sub alias/${AWS::StackName}-signing-key
-      TargetKeyId: !Ref KMSSigningKey
-
-  KMSEncryptionKey:
-    Type: AWS::KMS::Key
-    Properties:
-      Description: A KMS Key for encrypting.
-      Enabled: true
-      KeyPolicy:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
-            Action:
-              - kms:*
-            Resource:
-              - '*'
-      KeySpec: RSA_2048
-      KeyUsage: ENCRYPT_DECRYPT
-      MultiRegion: false
-      PendingWindowInDays: !FindInMap
-        - KMS
-        - !Ref Environment
-        - PendingDeletionInDays
-
-  KMSEncryptionKeyAlias:
-    Type: AWS::KMS::Alias
-    Properties:
-      AliasName: !Sub alias/${AWS::StackName}-encryption-key
-      TargetKeyId: !Ref KMSEncryptionKey
-
-  ### JWKS endpoint resources
-  JsonWebKeysBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub ${AWS::StackName}-jwks-keys-${Environment}
-      VersioningConfiguration:
-        Status: Enabled
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      LoggingConfiguration:
-        DestinationBucketName: !Ref JsonWebKeysBucketAccessLogs
-        LogFilePrefix: !Sub ${AWS::StackName}-jwks-keys
-
-  JsonWebKeysBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref JsonWebKeysBucket
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Deny
-            Principal:
-              AWS: '*'
-            Action: '*'
-            Resource: !Sub
-              - arn:aws:s3:::${bucketName}/*
-              - bucketName: !Ref JsonWebKeysBucket
-            Condition:
-              Bool:
-                aws:SecureTransport: false
-
-  JsonWebKeysBucketAccessLogs:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub ${AWS::StackName}-jwks-keys-access-logs-${Environment}
-      VersioningConfiguration:
-        Status: Enabled
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      OwnershipControls:
-        Rules:
-          - ObjectOwnership: ObjectWriter
-
-  JsonWebKeysBucketAccessLogsPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref JsonWebKeysBucketAccessLogs
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Action: '*'
-            Condition:
-              Bool:
-                aws:SecureTransport: false
-            Effect: Deny
-            Principal:
-              AWS: '*'
-            Resource: !Sub
-              - arn:aws:s3:::${bucketName}/*
-              - bucketName: !Ref JsonWebKeysBucketAccessLogs
-          - Action:
-              - s3:PutObject
-            Condition:
-              ArnLike:
-                aws:SourceArn: !GetAtt JsonWebKeysBucket.Arn
-              StringEquals:
-                aws:SourceAccount: !Ref AWS::AccountId
-            Effect: Allow
-            Principal:
-              Service: logging.s3.amazonaws.com
-            Resource: !Sub
-              - arn:aws:s3:::${bucketName}/*
-              - bucketName: !Ref JsonWebKeysBucketAccessLogs
-
-  JsonWebKeysFunction:
-    Type: AWS::Serverless::Function
-    DependsOn:
-      - JsonWebKeysFunctionLogGroup
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: es2020
-        Sourcemap: false
-        EntryPoints:
-          - src/functions/jwks/jwksHandler.ts
-    Properties:
-      FunctionName: !Sub ${AWS::StackName}-jwks
-      Description: Convert ID Check public encryption keys to JWKS format and upload to S3
-      Runtime: nodejs20.x
-      Handler: jwksHandler.lambdaHandler
-      Role: !GetAtt JsonWebKeysFunctionLambdaRole.Arn
-      Environment:
-        Variables:
-          ENCRYPTION_KEY_ID: !Ref KMSEncryptionKey
-          JWKS_BUCKET_NAME: !Ref JsonWebKeysBucket
-          JWKS_FILE_NAME: .well-known/jwks.json
-      VpcConfig:
-        SubnetIds:
-          - !ImportValue devplatform-vpc-PrivateSubnetIdA
-          - !ImportValue devplatform-vpc-PrivateSubnetIdB
-          - !ImportValue devplatform-vpc-PrivateSubnetIdC
-        SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
-
-  JsonWebKeysFunctionLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub ${AWS::StackName}-jwks-lambda
-      Description: Role of JWKS function
-      AssumeRolePolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Policies:
-        - PolicyName: UploadPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:PutObject
-                Resource:
-                  - !Sub
-                    - arn:aws:s3:::${TargetBucket}/*
-                    - TargetBucket: !Ref JsonWebKeysBucket
-        - PolicyName: GetPublicKeyPolicy
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  - kms:GetPublicKey
-                Resource: !GetAtt KMSEncryptionKey.Arn
-        - PolicyName: LoggingPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Resource: arn:aws:logs:*:*:*
-        - PolicyName: VpcPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ec2:DescribeNetworkInterfaces
-                  - ec2:CreateNetworkInterface
-                  - ec2:DeleteNetworkInterface
-                Resource: '*'
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-
-  JsonWebKeysFunctionLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-jwks
-
-  JsonWebKeysCustomResource:
-    Type: AWS::CloudFormation::CustomResource
-    Properties:
-      ServiceToken: !GetAtt JsonWebKeysFunction.Arn
-      ServiceTimeout: 30
-
-  JsonWebKeysBucketApiRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub ${AWS::StackName}-jwks-bucket
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action: sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service: apigateway.amazonaws.com
-        Version: "2012-10-17"
-      Policies:
-        - PolicyName: JsonWebKeysBucketPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
-                Resource:
-                  - !Sub ${JsonWebKeysBucket.Arn}/.well-known/jwks.json
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-
-  WellKnown5XXLowThresholdAlarm:
-    Condition: DeployAlarms
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      ActionsEnabled: true
-      AlarmDescription: !Sub
-        - "1% or more of requests are failing on the /.well-known/jwks.json endpoint. See runbook: ${RunbookUrl}"
-        - RunbookUrl:
-            !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
-      AlarmName: !Sub "${AWS::StackName}-low-threshold-well-known-5xx-api-gw"
-      AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
-      OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 2
-      EvaluationPeriods: 5
-      TreatMissingData: notBreaching
-      Threshold: 1
-      Metrics:
-        - Id: errorThreshold
-          Label: errorThreshold
-          ReturnData: true
-          Expression: IF((invocations>=4) && (errorSum5XX>=2),errorPercentage5XX,0)
-        - Id: invocations
-          ReturnData: false
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: Count
-              Dimensions:
-                - Name: Method
-                  Value: GET
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-sessions-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /.well-known/jwks.json
-            Period: 60
-            Stat: Sum
-        - Id: errorSum5XX
-          Label: "Number of 5XX errors"
-          ReturnData: false
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: 5XXError
-              Dimensions:
-                - Name: Method
-                  Value: GET
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-sessions-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /.well-known/jwks.json
-            Period: 60
-            Stat: Sum
-        - Id: errorPercentage5XX
-          Label: "Number of 5XX errors returned as a percentage"
-          ReturnData: false
-          Expression: (errorSum5XX/invocations) * 100
-
-  WellKnown5XXHighThresholdAlarm:
-    Condition: DeployAlarms
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      ActionsEnabled: true
-      AlarmDescription: !Sub
-        - "80% or more of requests are failing on the /.well-known/jwks.json endpoint. See runbook: ${RunbookUrl}"
-        - RunbookUrl:
-            !FindInMap [StaticVariables, urls, CriticalAlarmsRunbook]
-      AlarmName: !Sub "${AWS::StackName}-high-threshold-well-known-5xx-api-gw"
-      AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
-      OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 2
-      EvaluationPeriods: 5
-      TreatMissingData: notBreaching
-      Threshold: 80
-      Metrics:
-        - Id: errorThreshold
-          Label: errorThreshold
-          ReturnData: true
-          Expression: IF(invocations>=10,errorPercentage5XX,0)
-        - Id: invocations
-          ReturnData: false
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: Count
-              Dimensions:
-                - Name: Method
-                  Value: GET
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-sessions-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /.well-known/jwks.json
-            Period: 60
-            Stat: Sum
-        - Id: errorSum5XX
-          Label: "Number of 5XX errors"
-          ReturnData: false
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: 5XXError
-              Dimensions:
-                - Name: Method
-                  Value: GET
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-sessions-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /.well-known/jwks.json
-            Period: 60
-            Stat: Sum
-        - Id: errorPercentage5XX
-          Label: "Number of 5XX errors returned as a percentage"
-          ReturnData: false
-          Expression: (errorSum5XX/invocations) * 100
-
-  AsyncToken4XXLowThresholdAlarm:
-    Condition: DeployAlarms
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      ActionsEnabled: true
-      AlarmDescription: !Sub
-        - "1% or more of requests are failing on the /async/token endpoint with a 4XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl:
-            !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
-      AlarmName: !Sub "${AWS::StackName}-low-threshold-async-token-4xx-api-gw"
-      AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
-      OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 2
-      EvaluationPeriods: 5
-      TreatMissingData: notBreaching
-      Threshold: 1
-      Metrics:
-        - Id: errorThreshold
-          Label: errorThreshold
-          ReturnData: true
-          Expression: IF((invocations>=4) && (errorSum4XX>=2),errorPercentage4XX,0)
-        - Id: invocations
-          ReturnData: false
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: Count
-              Dimensions:
-                - Name: Method
-                  Value: POST
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /async/token
-            Period: 60
-            Stat: Sum
-        - Id: errorSum4XX
-          Label: "Number of 4XX errors"
-          ReturnData: false
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: 4XXError
-              Dimensions:
-                - Name: Method
-                  Value: POST
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /async/token
-            Period: 60
-            Stat: Sum
-        - Id: errorPercentage4XX
-          Label: "Number of 4XX errors returned as a percentage"
-          ReturnData: false
-          Expression: (errorSum4XX/invocations) * 100
-
-  AsyncToken4XXHighThresholdAlarm:
-    Condition: DeployAlarms
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      ActionsEnabled: true
-      AlarmDescription: !Sub
-        - "80% or more of requests are failing on the /async/token endpoint with a 4XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl:
-            !FindInMap [StaticVariables, urls, CriticalAlarmsRunbook]
-      AlarmName: !Sub "${AWS::StackName}-high-threshold-async-token-4xx-api-gw"
-      AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
-      OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 2
-      EvaluationPeriods: 5
-      TreatMissingData: notBreaching
-      Threshold: 80
-      Metrics:
-        - Id: errorThreshold
-          Label: errorThreshold
-          ReturnData: true
-          Expression: IF(invocations>=10,errorPercentage4XX,0)
-        - Id: invocations
-          ReturnData: false
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: Count
-              Dimensions:
-                - Name: Method
-                  Value: POST
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /async/token
-            Period: 60
-            Stat: Sum
-        - Id: errorSum4XX
-          Label: "Number of 4XX errors"
-          ReturnData: false
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: 4XXError
-              Dimensions:
-                - Name: Method
-                  Value: POST
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /async/token
-            Period: 60
-            Stat: Sum
-        - Id: errorPercentage4XX
-          Label: "Number of 4XX errors returned as a percentage"
-          ReturnData: false
-          Expression: (errorSum4XX/invocations) * 100
-
-  AsyncToken5XXLowThresholdAlarm:
-    Condition: DeployAlarms
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      ActionsEnabled: true
-      AlarmDescription: !Sub
-        - "1% or more of requests are failing on the /async/token endpoint with a 5XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl:
-            !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
-      AlarmName: !Sub "${AWS::StackName}-low-threshold-async-token-5xx-api-gw"
-      AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
-      OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 2
-      EvaluationPeriods: 5
-      TreatMissingData: notBreaching
-      Threshold: 1
-      Metrics:
-        - Id: errorThreshold
-          Label: errorThreshold
-          ReturnData: true
-          Expression: IF((invocations>=4) && (errorSum5XX>=2),errorPercentage5XX,0)
-        - Id: invocations
-          ReturnData: false
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: Count
-              Dimensions:
-                - Name: Method
-                  Value: POST
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /async/token
-            Period: 60
-            Stat: Sum
-        - Id: errorSum5XX
-          Label: "Number of 5XX errors"
-          ReturnData: false
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: 5XXError
-              Dimensions:
-                - Name: Method
-                  Value: POST
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /async/token
-            Period: 60
-            Stat: Sum
-        - Id: errorPercentage5XX
-          Label: "Number of 5XX errors returned as a percentage"
-          ReturnData: false
-          Expression: (errorSum5XX/invocations) * 100
-
-  AsyncToken5XXHighThresholdAlarm:
-    Condition: DeployAlarms
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      ActionsEnabled: true
-      AlarmDescription: !Sub
-        - "80% or more of requests are failing on the /async/token endpoint with a 5XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl:
-            !FindInMap [StaticVariables, urls, CriticalAlarmsRunbook]
-      AlarmName: !Sub "${AWS::StackName}-high-threshold-async-token-5xx-api-gw"
-      AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
-      OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 2
-      EvaluationPeriods: 5
-      TreatMissingData: notBreaching
-      Threshold: 80
-      Metrics:
-        - Id: errorThreshold
-          Label: errorThreshold
-          ReturnData: true
-          Expression: IF(invocations>=10,errorPercentage5XX,0)
-        - Id: invocations
-          ReturnData: false
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: Count
-              Dimensions:
-                - Name: Method
-                  Value: POST
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /async/token
-            Period: 60
-            Stat: Sum
-        - Id: errorSum5XX
-          Label: "Number of 5XX errors"
-          ReturnData: false
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: 5XXError
-              Dimensions:
-                - Name: Method
-                  Value: POST
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /async/token
-            Period: 60
-            Stat: Sum
-        - Id: errorPercentage5XX
-          Label: "Number of 5XX errors returned as a percentage"
-          ReturnData: false
-          Expression: (errorSum5XX/invocations) * 100
-
-  AsyncCredential4XXLowThresholdAlarm:
-    Condition: DeployAlarms
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      ActionsEnabled: true
-      AlarmDescription: !Sub
-        - "1% or more of requests are failing on the /async/credential endpoint with a 4XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl:
-            !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
-      AlarmName: !Sub "${AWS::StackName}-low-threshold-async-credential-4xx-api-gw"
-      AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
-      OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 2
-      EvaluationPeriods: 5
-      TreatMissingData: notBreaching
-      Threshold: 1
-      Metrics:
-        - Id: errorThreshold
-          Label: errorThreshold
-          ReturnData: true
-          Expression: IF((invocations>=4) && (errorSum4XX>=2),errorPercentage4XX,0)
-        - Id: invocations
-          ReturnData: false
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: Count
-              Dimensions:
-                - Name: Method
-                  Value: POST
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /async/credential
-            Period: 60
-            Stat: Sum
-        - Id: errorSum4XX
-          Label: "Number of 4XX errors"
-          ReturnData: false
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: 4XXError
-              Dimensions:
-                - Name: Method
-                  Value: POST
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /async/credential
-            Period: 60
-            Stat: Sum
-        - Id: errorPercentage4XX
-          Label: "Number of 4XX errors returned as a percentage"
-          ReturnData: false
-          Expression: (errorSum4XX/invocations) * 100
-
-  AsyncCredential4XXHighThresholdAlarm:
-    Condition: DeployAlarms
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      ActionsEnabled: true
-      AlarmDescription: !Sub
-        - "80% or more of requests are failing on the /async/credential endpoint with a 4XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl:
-            !FindInMap [StaticVariables, urls, CriticalAlarmsRunbook]
-      AlarmName: !Sub "${AWS::StackName}-high-threshold-async-credential-4xx-api-gw"
-      AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
-      OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 2
-      EvaluationPeriods: 5
-      TreatMissingData: notBreaching
-      Threshold: 80
-      Metrics:
-        - Id: errorThreshold
-          Label: errorThreshold
-          ReturnData: true
-          Expression: IF(invocations>=10,errorPercentage4XX,0)
-        - Id: invocations
-          ReturnData: false
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: Count
-              Dimensions:
-                - Name: Method
-                  Value: POST
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /async/credential
-            Period: 60
-            Stat: Sum
-        - Id: errorSum4XX
-          Label: "Number of 4XX errors"
-          ReturnData: false
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: 4XXError
-              Dimensions:
-                - Name: Method
-                  Value: POST
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /async/credential
-            Period: 60
-            Stat: Sum
-        - Id: errorPercentage4XX
-          Label: "Number of 4XX errors returned as a percentage"
-          ReturnData: false
-          Expression: (errorSum4XX/invocations) * 100
-
-  AsyncCredential5XXLowThresholdAlarm:
-    Condition: DeployAlarms
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      ActionsEnabled: true
-      AlarmDescription: !Sub
-        - "1% or more of requests are failing on the /async/credential endpoint with a 5XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl:
-            !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
-      AlarmName: !Sub "${AWS::StackName}-low-threshold-async-credential-5xx-api-gw"
-      AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
-      OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 2
-      EvaluationPeriods: 5
-      TreatMissingData: notBreaching
-      Threshold: 1
-      Metrics:
-        - Id: errorThreshold
-          Label: errorThreshold
-          ReturnData: true
-          Expression: IF((invocations>=4) && (errorSum5XX>=2),errorPercentage5XX,0)
-        - Id: invocations
-          ReturnData: false
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: Count
-              Dimensions:
-                - Name: Method
-                  Value: POST
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /async/credential
-            Period: 60
-            Stat: Sum
-        - Id: errorSum5XX
-          Label: "Number of 5XX errors"
-          ReturnData: false
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: 5XXError
-              Dimensions:
-                - Name: Method
-                  Value: POST
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /async/credential
-            Period: 60
-            Stat: Sum
-        - Id: errorPercentage5XX
-          Label: "Number of 5XX errors returned as a percentage"
-          ReturnData: false
-          Expression: (errorSum5XX/invocations) * 100
-
-  AsyncCredential5XXHighThresholdAlarm:
-    Condition: DeployAlarms
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      ActionsEnabled: true
-      AlarmDescription: !Sub
-        - "80% or more of requests are failing on the /async/credential endpoint with a 5XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl:
-            !FindInMap [StaticVariables, urls, CriticalAlarmsRunbook]
-      AlarmName: !Sub "${AWS::StackName}-high-threshold-async-credential-5xx-api-gw"
-      AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
-      OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 2
-      EvaluationPeriods: 5
-      TreatMissingData: notBreaching
-      Threshold: 80
-      Metrics:
-        - Id: errorThreshold
-          Label: errorThreshold
-          ReturnData: true
-          Expression: IF(invocations>=10,errorPercentage5XX,0)
-        - Id: invocations
-          ReturnData: false
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: Count
-              Dimensions:
-                - Name: Method
-                  Value: POST
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /async/credential
-            Period: 60
-            Stat: Sum
-        - Id: errorSum5XX
-          Label: "Number of 5XX errors"
-          ReturnData: false
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: 5XXError
-              Dimensions:
-                - Name: Method
-                  Value: POST
-                - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
-                - Name: Stage
-                  Value: !Ref Environment
-                - Name: Resource
-                  Value: /async/credential
-            Period: 60
-            Stat: Sum
-        - Id: errorPercentage5XX
-          Label: "Number of 5XX errors returned as a percentage"
-          ReturnData: false
-          Expression: (errorSum5XX/invocations) * 100
-
 Outputs:
   SessionsApiUrl:
     Description: Sessions API Gateway base URL
-    Value: !Sub https://${SessionsApiDomainName}
+    Value: !GetAtt SessionsApiStack.Outputs.ApiUrl
 
   ProxyApiUrl:
     Condition: ProxyApiDeployment
     Description: Proxy API Gateway Pretty DNS
-    Value: !Sub https://${ProxyApiDomainName}
+    Value: !GetAtt ProxyApiStack.Outputs.ApiUrl
 
   PrivateApiUrl:
     Description: Private API Gateway base URL
-    Value: !Sub https://${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
+    Value: !GetAtt PrivateApiStack.Outputs.ApiUrl
 
   StsMockApiUrl:
     Description: STS Mock API Gateway base URL
     Value: !If
-        - UseDevOverrideStsBaseUrl
-        - !Ref DevOverrideStsBaseUrl
-        - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
+      - UseDevOverrideStsBaseUrl
+      - !Ref DevOverrideStsBaseUrl
+      - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
 
   TxmaSqsQueueArn:
     Condition: IsDevOrBuild
     Description: TxMA SQS Queue ARN
     Export:
       Name: !Sub ${AWS::StackName}-txma-sqs-queue-arn
-    Value: !GetAtt TxMASQSQueue.Arn
+    Value: !GetAtt SqsStack.Outputs.QueueArn
 
   TxmaKmsEncryptionKeyArn:
     Condition: IsDevOrBuild
     Description: TxMA KMS Encryption Key ARN
     Export:
       Name: !Sub ${AWS::StackName}-txma-kms-encryption-key-arn
-    Value: !GetAtt TxMAKMSEncryptionKey.Arn
+    Value: !GetAtt SecurityStack.Outputs.TxMAKmsKeyArn

@@ -1,0 +1,89 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Description: The environment type
+  PermissionsBoundary:
+    Type: String
+    Description: The ARN of the permissions boundary
+  StackName:
+    Type: String
+    Description: Name of the parent stack
+
+Resources:
+  AsyncBiometricTokenFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - AsyncBiometricTokenLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2022
+        Sourcemap: false
+        EntryPoints:
+          - src/functions/asyncBiometricToken/asyncBiometricTokenHandler.ts
+    Properties:
+      AutoPublishAlias: live
+      FunctionName: !Sub ${StackName}-biometric-token
+      Runtime: nodejs20.x
+      Handler: asyncBiometricTokenHandler.lambdaHandler
+      Role: !GetAtt AsyncBiometricTokenLambdaRole.Arn
+      VpcConfig:
+        SubnetIds:
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+
+  AsyncBiometricTokenLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub /aws/lambda/${StackName}-biometric-token
+
+  AsyncBiometricTokenLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${StackName}-biometric-token-lambda
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AsyncBiometricTokenFunctionLoggingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+        - PolicyName: VpcPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
+      PermissionsBoundary: !Ref PermissionsBoundary
+
+Outputs:
+  FunctionArn:
+    Description: Biometric Token Lambda Function ARN
+    Value: !GetAtt AsyncBiometricTokenFunction.Arn
+  
+  FunctionName:
+    Description: Biometric Token Lambda Function Name
+    Value: !Ref AsyncBiometricTokenFunction

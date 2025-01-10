@@ -1,0 +1,117 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Description: The environment type
+  PermissionsBoundary:
+    Type: String
+    Description: The ARN of the permissions boundary
+  StackName:
+    Type: String
+    Description: Name of the parent stack
+  KmsEncryptionKeyArn:
+    Type: String
+    Description: ARN of the KMS encryption key
+  JwksBucketName:
+    Type: String
+    Description: Name of the JWKS S3 bucket
+
+Resources:
+  JsonWebKeysFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - JsonWebKeysFunctionLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: false
+        EntryPoints:
+          - src/functions/jwks/jwksHandler.ts
+    Properties:
+      FunctionName: !Sub ${StackName}-jwks
+      Description: Convert ID Check public encryption keys to JWKS format and upload to S3
+      Runtime: nodejs20.x
+      Handler: jwksHandler.lambdaHandler
+      Role: !GetAtt JsonWebKeysFunctionLambdaRole.Arn
+      Environment:
+        Variables:
+          ENCRYPTION_KEY_ID: !Ref KmsEncryptionKeyArn
+          JWKS_BUCKET_NAME: !Ref JwksBucketName
+          JWKS_FILE_NAME: .well-known/jwks.json
+      VpcConfig:
+        SubnetIds:
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+
+  JsonWebKeysFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub /aws/lambda/${StackName}-jwks
+
+  JsonWebKeysFunctionLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${StackName}-jwks-lambda
+      Description: Role of JWKS function
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: UploadPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                Resource:
+                  - !Sub arn:aws:s3:::${JwksBucketName}/*
+        - PolicyName: GetPublicKeyPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:GetPublicKey
+                Resource: !Ref KmsEncryptionKeyArn
+        - PolicyName: LoggingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+        - PolicyName: VpcPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
+      PermissionsBoundary: !Ref PermissionsBoundary
+
+Outputs:
+  FunctionArn:
+    Description: JWKS Lambda Function ARN
+    Value: !GetAtt JsonWebKeysFunction.Arn
+  
+  FunctionName:
+    Description: JWKS Lambda Function Name
+    Value: !Ref JsonWebKeysFunction

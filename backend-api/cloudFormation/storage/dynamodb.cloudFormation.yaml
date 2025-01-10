@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Description: The environment type
+  StackName:
+    Type: String
+    Description: Name of the parent stack
+
+Resources:
+  SessionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${StackName}-sessions-table-${Environment}
+      AttributeDefinitions:
+        - AttributeName: sessionId
+          AttributeType: S
+        - AttributeName: subjectIdentifier
+          AttributeType: S
+        - AttributeName: timeToLive
+          AttributeType: N
+      KeySchema:
+        - AttributeName: sessionId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: subjectIdentifier-timeToLive-index
+          KeySchema:
+            - AttributeName: subjectIdentifier
+              KeyType: HASH
+            - AttributeName: timeToLive
+              KeyType: RANGE
+          Projection:
+            NonKeyAttributes:
+              - sessionState
+              - redirectUri
+              - clientState
+            ProjectionType: INCLUDE
+      BillingMode: PAY_PER_REQUEST
+      SSESpecification:
+        SSEEnabled: true
+      TimeToLiveSpecification:
+        AttributeName: timeToLive
+        Enabled: true
+
+Outputs:
+  TableName:
+    Description: Sessions DynamoDB Table Name
+    Value: !Ref SessionsTable
+  
+  TableArn:
+    Description: Sessions DynamoDB Table ARN
+    Value: !GetAtt SessionsTable.Arn

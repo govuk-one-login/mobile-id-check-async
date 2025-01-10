@@ -1,0 +1,116 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Description: The environment type
+  PermissionsBoundary:
+    Type: String
+    Description: The ARN of the permissions boundary
+  StackName:
+    Type: String
+    Description: Name of the parent stack
+  ApiBurstLimit:
+    Type: Number
+    Description: API Gateway burst limit
+  ApiRateLimit:
+    Type: Number
+    Description: API Gateway rate limit
+  BaseDns:
+    Type: String
+    Description: Base DNS name for the environment
+
+Conditions:
+  ProxyApiDeployment: !Or 
+    - !Equals [!Ref Environment, dev]
+    - !Equals [!Ref Environment, build]
+
+Resources:
+  ProxyApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${StackName}-proxy-api
+      Description: Regional equivalent of the private Api to enable testing from outside AWS
+      EndpointConfiguration: REGIONAL
+      StageName: !Ref Environment
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./openApiSpecs/async-proxy-private-spec.yaml
+      MethodSettings:
+        - LoggingLevel: INFO
+          HttpMethod: '*'
+          ResourcePath: /*
+          MetricsEnabled: true
+          ThrottlingBurstLimit: !Ref ApiBurstLimit
+          ThrottlingRateLimit: !Ref ApiRateLimit
+      AccessLogSetting:
+        DestinationArn: !GetAtt ProxyApiAccessLogs.Arn
+        Format: '{"requestId":"$context.requestId","ip":"$context.identity.sourceIp","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","path":"$context.path","routeKey":"$context.routeKey","status":"$context.status","protocol":"$context.protocol","responseLength":"$context.responseLength","integrationError":"$context.integrationErrorMessage"}'
+      Auth:
+        DefaultAuthorizer: AWS_IAM
+        ApiKeyRequired: false
+        ResourcePolicy:
+          AwsAccountWhitelist: !Sub ${AWS::AccountId}
+
+  ProxyApiAccessLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${StackName}-proxy-api-access-logs
+      RetentionInDays: 30
+
+  ProxyApiDomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Sub proxy-${StackName}.${BaseDns}
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN}}'
+      SecurityPolicy: TLS_1_2
+
+  ProxyApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    DependsOn: ProxyApiDomainName
+    Properties:
+      DomainName: !Sub proxy-${StackName}.${BaseDns}
+      RestApiId: !Ref ProxyApi
+      Stage: !Ref ProxyApi.Stage
+
+  ProxyApiRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Sub proxy-${StackName}.${BaseDns}
+      Type: A
+      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
+      AliasTarget:
+        DNSName: !GetAtt ProxyApiDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt ProxyApiDomainName.RegionalHostedZoneId
+
+  ProxyLambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub ${StackName}-proxy-sg
+      GroupDescription: Lambda Security group ruleset.
+      SecurityGroupEgress:
+        - CidrIp: !ImportValue devplatform-vpc-VpcCidr
+          Description: TCP HTTPS outbound to vpc.
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      VpcId: !ImportValue devplatform-vpc-VpcId
+
+Outputs:
+  ApiId:
+    Description: Proxy API Gateway ID
+    Value: !Ref ProxyApi
+  
+  ApiUrl:
+    Description: Proxy API Gateway base URL
+    Value: !Sub https://${ProxyApiDomainName}
+
+  SecurityGroupId:
+    Description: Security Group ID for Proxy Lambda
+    Value: !Ref ProxyLambdaSecurityGroup

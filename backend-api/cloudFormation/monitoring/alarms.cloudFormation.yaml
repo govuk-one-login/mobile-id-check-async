@@ -1,0 +1,76 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Description: The environment type
+  StackName:
+    Type: String
+    Description: Name of the parent stack
+  WarningAlarmsTopic:
+    Type: String
+    Description: SNS Topic ARN for warning alarms
+    Default: arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+
+Resources:
+  WellKnown5XXLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmDescription: "1% or more of requests are failing on the /.well-known/jwks.json endpoint"
+      AlarmName: !Sub "${StackName}-low-threshold-well-known-5xx-api-gw"
+      AlarmActions: [!Ref WarningAlarmsTopic]
+      OKActions: [!Ref WarningAlarmsTopic]
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      TreatMissingData: notBreaching
+      Threshold: 1
+      Metrics:
+        - Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+          Expression: IF((invocations>=4) && (errorSum5XX>=2),errorPercentage5XX,0)
+        - Id: invocations
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: Count
+              Dimensions:
+                - Name: Method
+                  Value: GET
+                - Name: ApiName
+                  Value: !Sub ${StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /.well-known/jwks.json
+            Period: 60
+            Stat: Sum
+        - Id: errorSum5XX
+          Label: "Number of 5XX errors"
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: 5XXError
+              Dimensions:
+                - Name: Method
+                  Value: GET
+                - Name: ApiName
+                  Value: !Sub ${StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /.well-known/jwks.json
+            Period: 60
+            Stat: Sum
+        - Id: errorPercentage5XX
+          Label: "Number of 5XX errors returned as a percentage"
+          ReturnData: false
+          Expression: (errorSum5XX/invocations) * 100
+
+  # Additional alarms would be defined here following the same pattern
+  # Note: Original template has multiple similar alarms for different endpoints and thresholds

@@ -1,0 +1,102 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Description: The environment type
+  PermissionsBoundary:
+    Type: String
+    Description: The ARN of the permissions boundary
+  StackName:
+    Type: String
+    Description: Name of the parent stack
+  PrivateApiUrl:
+    Type: String
+    Description: URL of the private API
+  ProxySecurityGroupId:
+    Type: String
+    Description: Security Group ID for the proxy function
+
+Conditions:
+  ProxyApiDeployment: !Or 
+    - !Equals [!Ref Environment, dev]
+    - !Equals [!Ref Environment, build]
+
+Resources:
+  ProxyLambda:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - ProxyLambdaLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2022
+        Sourcemap: false
+        EntryPoints:
+          - src/functions/proxy/proxyHandler.ts
+    Properties:
+      Environment:
+        Variables:
+          PRIVATE_API_URL: !Ref PrivateApiUrl
+      FunctionName: !Sub ${StackName}-proxy-lambda
+      Runtime: nodejs20.x
+      Handler: proxyHandler.lambdaHandler
+      Role: !GetAtt ProxyLambdaRole.Arn
+      VpcConfig:
+        SubnetIds:
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+        SecurityGroupIds:
+          - !Ref ProxySecurityGroupId
+
+  ProxyLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub /aws/lambda/${StackName}-proxy-lambda
+
+  ProxyLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${StackName}-proxy-lambda-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ProxyFunctionLoggingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !GetAtt ProxyLambdaLogGroup.Arn
+        - PolicyName: VpcPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
+      PermissionsBoundary: !Ref PermissionsBoundary
+
+Outputs:
+  FunctionArn:
+    Description: Proxy Lambda Function ARN
+    Value: !GetAtt ProxyLambda.Arn
+
+  FunctionName:
+    Description: Proxy Lambda Function Name
+    Value: !Ref ProxyLambda

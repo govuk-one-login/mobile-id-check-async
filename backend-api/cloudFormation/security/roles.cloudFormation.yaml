@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Description: The environment type
+  StackName:
+    Type: String
+    Description: Name of the parent stack
+  PermissionsBoundary:
+    Type: String
+    Description: The ARN of the permissions boundary
+
+Resources:
+  JsonWebKeysBucketApiRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${StackName}-jwks-bucket
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+        Version: "2012-10-17"
+      Policies:
+        - PolicyName: JsonWebKeysBucketPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource:
+                  - !Sub ${JsonWebKeysBucket}/.well-known/jwks.json
+      PermissionsBoundary: !Ref PermissionsBoundary
+
+Outputs:
+  JwksBucketRoleArn:
+    Description: IAM Role ARN for JWKS bucket access
+    Value: !GetAtt JsonWebKeysBucketApiRole.Arn

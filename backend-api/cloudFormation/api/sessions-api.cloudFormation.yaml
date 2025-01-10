@@ -1,0 +1,91 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Description: The environment type
+  PermissionsBoundary:
+    Type: String
+    Description: The ARN of the permissions boundary
+  StackName:
+    Type: String
+    Description: Name of the parent stack
+  ApiBurstLimit:
+    Type: Number
+    Description: API Gateway burst limit
+  ApiRateLimit:
+    Type: Number
+    Description: API Gateway rate limit
+  BaseDns:
+    Type: String
+    Description: Base DNS name for the environment
+
+Resources:
+  SessionsApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${StackName}-sessions-api
+      Description: Regional API gateway for Client Credentials flow
+      EndpointConfiguration: REGIONAL
+      StageName: !Ref Environment
+      OpenApiVersion: 3.0.1
+      AccessLogSetting:
+        DestinationArn: !GetAtt SessionsApiAccessLogs.Arn
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      MethodSettings:
+        - LoggingLevel: INFO
+          ResourcePath: /*
+          HttpMethod: '*'
+          DataTraceEnabled: false
+          MetricsEnabled: true
+          ThrottlingBurstLimit: !Ref ApiBurstLimit
+          ThrottlingRateLimit: !Ref ApiRateLimit
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./openApiSpecs/async-public-spec.yaml
+
+  SessionsApiAccessLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${StackName}-sessions-api-access-logs
+      RetentionInDays: 30
+
+  SessionsApiDomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Sub sessions-${StackName}.${BaseDns}
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN}}'
+      SecurityPolicy: TLS_1_2
+
+  SessionsApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    DependsOn: SessionsApiDomainName
+    Properties:
+      DomainName: !Sub sessions-${StackName}.${BaseDns}
+      RestApiId: !Ref SessionsApi
+      Stage: !Ref SessionsApi.Stage
+
+  SessionsApiRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Sub sessions-${StackName}.${BaseDns}
+      Type: A
+      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
+      AliasTarget:
+        DNSName: !GetAtt SessionsApiDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt SessionsApiDomainName.RegionalHostedZoneId
+
+Outputs:
+  ApiId:
+    Description: Sessions API Gateway ID
+    Value: !Ref SessionsApi
+
+  ApiUrl:
+    Description: Sessions API Gateway base URL
+    Value: !Sub https://${SessionsApiDomainName}
