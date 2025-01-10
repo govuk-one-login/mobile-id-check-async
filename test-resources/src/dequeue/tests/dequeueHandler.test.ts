@@ -87,11 +87,15 @@ describe("Dequeue TxMA events", () => {
 
       await lambdaHandlerConstructor(dependencies, event, buildLambdaContext());
 
-      expect(mockLogger.getLogMessages().length).toEqual(2);
+      expect(mockLogger.getLogMessages().length).toEqual(3);
       expect(mockLogger.getLogMessages()[0].logMessage.message).toEqual(
         "STARTED",
       );
       expect(mockLogger.getLogMessages()[1].logMessage.message).toEqual(
+        "PROCESSED_MESSAGES",
+      );
+      expect(mockLogger.getLogMessages()[1].data).toEqual({ processedMessages: [] })
+      expect(mockLogger.getLogMessages()[2].logMessage.message).toEqual(
         "COMPLETED",
       );
     });
@@ -158,10 +162,12 @@ describe("Dequeue TxMA events", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages().length).toEqual(3);
+        expect(mockLogger.getLogMessages().length).toEqual(4);
         expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
           "Missing event_name - messageId: E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
         );
+        expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual("PROCESSED_MESSAGES");
+        expect(mockLogger.getLogMessages()[2].data).toStrictEqual({ processedMessages: [] });
       });
     });
 
@@ -200,10 +206,12 @@ describe("Dequeue TxMA events", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages().length).toEqual(3);
+        expect(mockLogger.getLogMessages().length).toEqual(4);
         expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
           "event_name not valid - messageId: E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
         );
+        expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual("PROCESSED_MESSAGES");
+        expect(mockLogger.getLogMessages()[2].data).toStrictEqual({ processedMessages: [] });
       });
     });
 
@@ -239,10 +247,12 @@ describe("Dequeue TxMA events", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages().length).toEqual(3);
+        expect(mockLogger.getLogMessages().length).toEqual(4);
         expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
           "Missing user - messageId: E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
         );
+        expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual("PROCESSED_MESSAGES");
+        expect(mockLogger.getLogMessages()[2].data).toStrictEqual({ processedMessages: [] });
       });
     });
 
@@ -279,10 +289,12 @@ describe("Dequeue TxMA events", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages().length).toEqual(3);
+        expect(mockLogger.getLogMessages().length).toEqual(4);
         expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
           "Missing session_id - messageId: E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
         );
+        expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual("PROCESSED_MESSAGES");
+        expect(mockLogger.getLogMessages()[2].data).toStrictEqual({ processedMessages: [] });
       });
     });
 
@@ -321,10 +333,12 @@ describe("Dequeue TxMA events", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages().length).toEqual(3);
+        expect(mockLogger.getLogMessages().length).toEqual(4);
         expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
           "session_id not valid - messageId: E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
         );
+        expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual("PROCESSED_MESSAGES");
+        expect(mockLogger.getLogMessages()[2].data).toStrictEqual({ processedMessages: [] });
       });
     });
 
@@ -362,10 +376,12 @@ describe("Dequeue TxMA events", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages().length).toEqual(3);
+        expect(mockLogger.getLogMessages().length).toEqual(4);
         expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
           "Missing timestamp - messageId: E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
         );
+        expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual("PROCESSED_MESSAGES");
+        expect(mockLogger.getLogMessages()[2].data).toStrictEqual({ processedMessages: [] });
       });
     });
   });
@@ -593,7 +609,7 @@ describe("Dequeue TxMA events", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages().length).toEqual(3);
+        expect(mockLogger.getLogMessages().length).toEqual(4);
         expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
           "ERROR_WRITING_EVENT_TO_EVENTS_TABLE",
         );
@@ -603,6 +619,8 @@ describe("Dequeue TxMA events", () => {
         expect(mockLogger.getLogMessages()[1].data.sessionId).toStrictEqual(
           "49E7D76E-D5FE-4355-B8B4-E90ACA0887C2",
         );
+        expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual("PROCESSED_MESSAGES");
+        expect(mockLogger.getLogMessages()[2].data).toStrictEqual({ processedMessages: [] });
       });
     });
 

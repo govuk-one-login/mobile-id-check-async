@@ -87,10 +87,7 @@ export const lambdaHandlerConstructor = async (
     processedMessages.push({ Item: putItemCommandInput.Item });
   }
 
-  if (processedMessages.length > 0) {
-    logger.log("PROCESSED_MESSAGES", { processedMessages });
-  }
-
+  logger.log("PROCESSED_MESSAGES", { processedMessages });
   logger.log("COMPLETED");
 
   return { batchItemFailures };
