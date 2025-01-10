@@ -63,8 +63,8 @@ export const lambdaHandlerConstructor = async (
     const putItemCommandInput: PutItemCommandInput = {
       TableName: env.EVENTS_TABLE_NAME,
       Item: marshall({
-        pk: `TXMA#${txmaEvent.user.session_id}`,
-        sk: `${txmaEvent.event_name}#${txmaEvent.timestamp}`,
+        pk: `SESSION#${txmaEvent.user.session_id}`,
+        sk: `TXMA#EVENT_NAME#${txmaEvent.event_name}#TIMESTAMP#${txmaEvent.timestamp}`,
         eventBody: record.body,
         timeToLiveInSeconds,
       }),

@@ -169,9 +169,9 @@ describe("Dequeue TxMA events", () => {
         expect(mockLogger.getLogMessages()[3].data.processedMessages).toEqual([
           {
             Item: {
-              pk: { S: "TXMA#49E7D76E-D5FE-4355-B8B4-E90ACA0887C2" },
+              pk: { S: "SESSION#49E7D76E-D5FE-4355-B8B4-E90ACA0887C2" },
               sk: {
-                S: "DCMAW_APP_HANDOFF_START#mockTimestamp",
+                S: "TXMA#EVENT_NAME#DCMAW_APP_HANDOFF_START#TIMESTAMP#mockTimestamp",
               },
               eventBody: {
                 S: JSON.stringify({
@@ -524,9 +524,9 @@ describe("Dequeue TxMA events", () => {
         expect(mockDbClient).toHaveReceivedCommandTimes(PutItemCommand, 2);
         expect(mockDbClient).toHaveReceivedNthCommandWith(1, PutItemCommand, {
           Item: {
-            pk: { S: "TXMA#49E7D76E-D5FE-4355-B8B4-E90ACA0887C2" },
+            pk: { S: "SESSION#49E7D76E-D5FE-4355-B8B4-E90ACA0887C2" },
             sk: {
-              S: "DCMAW_APP_HANDOFF_START#mockTimestamp",
+              S: "TXMA#EVENT_NAME#DCMAW_APP_HANDOFF_START#TIMESTAMP#mockTimestamp",
             },
             eventBody: {
               S: JSON.stringify({
@@ -542,9 +542,9 @@ describe("Dequeue TxMA events", () => {
         });
         expect(mockDbClient).toHaveReceivedNthCommandWith(2, PutItemCommand, {
           Item: {
-            pk: { S: "TXMA#41AA5FE7-CD9D-4B5B-960C-1E33C165B592" },
+            pk: { S: "SESSION#41AA5FE7-CD9D-4B5B-960C-1E33C165B592" },
             sk: {
-              S: "DCMAW_APP_END#mockTimestamp",
+              S: "TXMA#EVENT_NAME#DCMAW_APP_END#TIMESTAMP#mockTimestamp",
             },
             eventBody: {
               S: JSON.stringify({
@@ -570,9 +570,9 @@ describe("Dequeue TxMA events", () => {
         expect(mockLogger.getLogMessages()[2].data.processedMessages).toEqual([
           {
             Item: {
-              pk: { S: "TXMA#49E7D76E-D5FE-4355-B8B4-E90ACA0887C2" },
+              pk: { S: "SESSION#49E7D76E-D5FE-4355-B8B4-E90ACA0887C2" },
               sk: {
-                S: "DCMAW_APP_HANDOFF_START#mockTimestamp",
+                S: "TXMA#EVENT_NAME#DCMAW_APP_HANDOFF_START#TIMESTAMP#mockTimestamp",
               },
               eventBody: {
                 S: JSON.stringify({
@@ -588,9 +588,9 @@ describe("Dequeue TxMA events", () => {
           },
           {
             Item: {
-              pk: { S: "TXMA#41AA5FE7-CD9D-4B5B-960C-1E33C165B592" },
+              pk: { S: "SESSION#41AA5FE7-CD9D-4B5B-960C-1E33C165B592" },
               sk: {
-                S: "DCMAW_APP_END#mockTimestamp",
+                S: "TXMA#EVENT_NAME#DCMAW_APP_END#TIMESTAMP#mockTimestamp",
               },
               eventBody: {
                 S: JSON.stringify({
@@ -726,9 +726,9 @@ describe("Dequeue TxMA events", () => {
         expect(mockLogger.getLogMessages()[1].data.processedMessages).toEqual([
           {
             Item: {
-              pk: { S: "TXMA#49E7D76E-D5FE-4355-B8B4-E90ACA0887C2" },
+              pk: { S: "SESSION#49E7D76E-D5FE-4355-B8B4-E90ACA0887C2" },
               sk: {
-                S: "DCMAW_APP_HANDOFF_START#mockTimestamp",
+                S: "TXMA#EVENT_NAME#DCMAW_APP_HANDOFF_START#TIMESTAMP#mockTimestamp",
               },
               eventBody: {
                 S: JSON.stringify({
@@ -744,9 +744,9 @@ describe("Dequeue TxMA events", () => {
           },
           {
             Item: {
-              pk: { S: "TXMA#41AA5FE7-CD9D-4B5B-960C-1E33C165B592" },
+              pk: { S: "SESSION#41AA5FE7-CD9D-4B5B-960C-1E33C165B592" },
               sk: {
-                S: "DCMAW_APP_END#mockTimestamp",
+                S: "TXMA#EVENT_NAME#DCMAW_APP_END#TIMESTAMP#mockTimestamp",
               },
               eventBody: {
                 S: JSON.stringify({
