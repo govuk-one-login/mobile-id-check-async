@@ -75,7 +75,9 @@ export const lambdaHandlerConstructor = async (
       await dbClient.send(command);
     } catch (error) {
       logger.log("ERROR_WRITING_EVENT_TO_EVENTS_TABLE", {
-        errorMessage: error,
+        eventName: txmaEvent.event_name,
+        sessionId: txmaEvent.user.session_id,
+        error,
       });
 
       batchItemFailures.push({ itemIdentifier: record.messageId });

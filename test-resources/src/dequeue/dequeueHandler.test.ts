@@ -659,8 +659,14 @@ describe("Dequeue TxMA events", () => {
         );
 
         expect(mockLogger.getLogMessages().length).toEqual(3);
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toEqual(
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
           "ERROR_WRITING_EVENT_TO_EVENTS_TABLE",
+        );
+        expect(mockLogger.getLogMessages()[1].data.eventName).toStrictEqual(
+          "DCMAW_APP_HANDOFF_START",
+        );
+        expect(mockLogger.getLogMessages()[1].data.sessionId).toStrictEqual(
+          "49E7D76E-D5FE-4355-B8B4-E90ACA0887C2",
         );
       });
     });
