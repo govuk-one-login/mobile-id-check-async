@@ -19,7 +19,9 @@ import { MessageName, registeredLogs } from "../registeredLogs";
 import {
   eventNameMissingSQSRecord,
   eventNameNotAllowed,
+  eventNameNotAllowedSQSRecord,
   invalidBodySQSRecord,
+  missingUserSQSRecord,
   notAllowedEventName,
   passingEventName,
   passingSessionId,
@@ -166,7 +168,7 @@ describe("Dequeue TxMA events", () => {
     describe("Given the event_name is not allowed", () => {
       it("Logs an error message", async () => {
         const event: SQSEvent = {
-          Records: [eventNameNotAllowed],
+          Records: [eventNameNotAllowedSQSRecord],
         };
 
         await lambdaHandlerConstructor(
@@ -192,27 +194,7 @@ describe("Dequeue TxMA events", () => {
     describe("Given user is missing", () => {
       it("Logs an error message", async () => {
         const event: SQSEvent = {
-          Records: [
-            {
-              messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
-              receiptHandle: "mockReceiptHandle",
-              body: JSON.stringify({
-                event_name: "DCMAW_APP_HANDOFF_START",
-                timestamp: "mockTimestamp",
-              }),
-              attributes: {
-                ApproximateReceiveCount: "1",
-                SentTimestamp: "1545082649183",
-                SenderId: "AIDAIENQZJOLO23YVJ4VO",
-                ApproximateFirstReceiveTimestamp: "1545082649185",
-              },
-              messageAttributes: {},
-              md5OfBody: "098f6bcd4621d373cade4e832627b4f6",
-              eventSource: "aws:sqs",
-              eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
-              awsRegion: "eu-west-2",
-            },
-          ],
+          Records: [missingUserSQSRecord],
         };
 
         await lambdaHandlerConstructor(
@@ -222,9 +204,10 @@ describe("Dequeue TxMA events", () => {
         );
 
         expect(mockLogger.getLogMessages().length).toEqual(4);
-        expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
-          "Missing user - messageId: E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
-        );
+        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+          errorMessage: "Missing user",
+          eventName: passingEventName,
+        });
         expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual(
           "PROCESSED_MESSAGES",
         );
