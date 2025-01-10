@@ -14,16 +14,13 @@ import {
   eventNameMissingSQSRecord,
   eventNameNotAllowedSQSRecord,
   invalidBodySQSRecord,
-  invalidSessionId,
-  invalidSessionIdSQSRecord,
   missingSessionIdInvalidSQSRecord,
   missingSessionIdValidSQSRecord,
   missingTimestampSQSRecord,
-  missingUserSQSRecord,
   notAllowedEventName,
   passingSQSRecord,
   putItemInputForPassingSQSRecord,
-  putItemInputForPassingSQSRecordWithoutSessionId,
+  putItemInputForPassingSQSRecordWithoutSessionId
 } from "./testData";
 
 jest.useFakeTimers().setSystemTime(new Date("2025-01-08"));
@@ -273,44 +270,6 @@ describe("Dequeue TxMA events", () => {
               { itemIdentifier: missingSessionIdInvalidSQSRecord.messageId },
             ],
           });
-        });
-      });
-    });
-
-    describe("Given session_id is not valid", () => {
-      it("Logs an error message", async () => {
-        const event: SQSEvent = {
-          Records: [invalidSessionIdSQSRecord],
-        };
-
-        const result = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-          buildLambdaContext(),
-        );
-
-        expect(mockLogger.getLogMessages().length).toEqual(4);
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
-          "FAILED_TO_PROCESS_MESSAGES",
-        );
-        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "session_id not valid",
-          eventName: JSON.parse(invalidSessionIdSQSRecord.body).event_name,
-          sessionId: invalidSessionId,
-        });
-        expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual(
-          "PROCESSED_MESSAGES",
-        );
-        expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual(
-          "PROCESSED_MESSAGES",
-        );
-        expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
-          processedMessages: [],
-        });
-        expect(result).toStrictEqual({
-          batchItemFailures: [
-            { itemIdentifier: invalidSessionIdSQSRecord.messageId },
-          ],
         });
       });
     });

@@ -55,13 +55,6 @@ interface TxmaEvent {
   timestamp: number;
 }
 
-const isValidUUID = (input: string): boolean => {
-  const regexUUID =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-  const isValidUUID = regexUUID.test(input);
-  return isValidUUID;
-};
-
 export const allowedTxmaEventNames = [
   "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
   "DCMAW_ASYNC_CRI_START",

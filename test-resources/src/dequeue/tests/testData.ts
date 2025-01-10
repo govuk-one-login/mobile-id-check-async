@@ -29,9 +29,9 @@ export const passingSQSRecord = {
 
 export const putItemInputForPassingSQSRecord = {
   Item: {
-    pk: { S: "SESSION#49E7D76E-D5FE-4355-B8B4-E90ACA0887C2" },
+    pk: { S: `SESSION#${passingSessionId}` },
     sk: {
-      S: "TXMA#EVENT_NAME#DCMAW_APP_HANDOFF_START#TIMESTAMP#mockTimestamp",
+      S: `TXMA#EVENT_NAME#${passingEventNameWithSessionId}#TIMESTAMP#mockTimestamp`,
     },
     eventBody: {
       S: JSON.stringify({
