@@ -14,13 +14,14 @@ export function getEvent(record: SQSRecord): Result<TxmaEvent> {
 
   if (!txmaEvent.event_name) {
     return errorResult({
-      errorMessage: `Missing event_name - messageId: ${record.messageId}`,
+      errorMessage: "Missing event_name",
     });
   }
 
   if (!allowedTxmaEventNames.includes(txmaEvent.event_name)) {
     return errorResult({
-      errorMessage: `event_name not valid - messageId: ${record.messageId}`,
+      errorMessage: "event_name not allowed",
+      eventName: txmaEvent.event_name,
     });
   }
 
