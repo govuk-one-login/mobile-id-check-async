@@ -78,8 +78,7 @@ describe("Dequeue TxMA events", () => {
   });
 
   describe("Given there are no messages to be processed", () => {
-    it("Logs an error message", async () => {
-      mockDbClient.on(PutItemCommand).rejects("Error writing to database");
+    it("Logs an empty array", async () => {
       const event: SQSEvent = {
         Records: [],
       };
