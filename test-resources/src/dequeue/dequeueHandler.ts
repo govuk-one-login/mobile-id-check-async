@@ -33,11 +33,10 @@ export const lambdaHandlerConstructor = async (
 
   const getConfigResult = getConfig(dependencies.env);
   if (getConfigResult.isError) {
-    const { errorMessage, errorCategory } = getConfigResult.value;
+    const { errorMessage } = getConfigResult.value;
 
     logger.log("ENVIRONMENT_VARIABLE_MISSING", {
       errorMessage,
-      errorCategory,
     });
 
     return { batchItemFailures };
