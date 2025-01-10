@@ -17,6 +17,7 @@ import {
 } from "../dequeueHandler";
 import { MessageName, registeredLogs } from "../registeredLogs";
 import {
+  eventNameMissingSQSRecord,
   invalidBodySQSRecord,
   passingEventName,
   passingSessionId,
@@ -132,27 +133,7 @@ describe("Dequeue TxMA events", () => {
       it("Logs an error message", async () => {
         const event: SQSEvent = {
           Records: [
-            {
-              messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
-              receiptHandle: "mockReceiptHandle",
-              body: JSON.stringify({
-                user: {
-                  session_id: "mockSessionId",
-                },
-                timestamp: "mockTimestamp",
-              }),
-              attributes: {
-                ApproximateReceiveCount: "1",
-                SentTimestamp: "1545082649183",
-                SenderId: "AIDAIENQZJOLO23YVJ4VO",
-                ApproximateFirstReceiveTimestamp: "1545082649185",
-              },
-              messageAttributes: {},
-              md5OfBody: "098f6bcd4621d373cade4e832627b4f6",
-              eventSource: "aws:sqs",
-              eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
-              awsRegion: "eu-west-2",
-            },
+            eventNameMissingSQSRecord,
           ],
         };
 
@@ -163,6 +144,7 @@ describe("Dequeue TxMA events", () => {
         );
 
         expect(mockLogger.getLogMessages().length).toEqual(4);
+        expect(mockLogger.getLogMessages()[1].logMessage.messageCode).toEqual("DEQUEUE_FAILED_TO_PROCESS_MESSAGES");
         expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
           "Missing event_name - messageId: E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
         );
