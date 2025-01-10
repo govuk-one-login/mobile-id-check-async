@@ -811,7 +811,7 @@ Resources:
           Parameters:
             Location: ./openApiSpecs/async-public-spec.yaml
       Tags:
-        FMSRegionalPolicy: false
+        FMSRegionalPolicy: false # Disables FMS for this API Gateway in favor of the cf-dist WAF. FMS Docs: https://govukverify.atlassian.net/wiki/x/eoBNEQE
 
   SessionsApiAccessLogs:
     Type: AWS::Logs::LogGroup
