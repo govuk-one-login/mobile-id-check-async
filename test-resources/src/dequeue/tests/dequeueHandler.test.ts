@@ -1,5 +1,5 @@
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
-import { SQSEvent } from "aws-lambda";
+import { SQSBatchResponse, SQSEvent } from "aws-lambda";
 import { mockClient } from "aws-sdk-client-mock";
 import "aws-sdk-client-mock-jest";
 import { Logger } from "../../services/logging/logger";
@@ -20,7 +20,7 @@ import {
   notAllowedEventName,
   passingSQSRecord,
   putItemInputForPassingSQSRecord,
-  putItemInputForPassingSQSRecordWithoutSessionId
+  putItemInputForPassingSQSRecordWithoutSessionId,
 } from "./testData";
 
 jest.useFakeTimers().setSystemTime(new Date("2025-01-08"));
@@ -349,20 +349,20 @@ describe("Dequeue TxMA events", () => {
 
   describe("Given not all messages are processed successfully", () => {
     let event: SQSEvent;
+    let result: SQSBatchResponse;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       event = {
         Records: [passingSQSRecord, invalidBodySQSRecord],
       };
-    });
-
-    it("Logs the messageId of messages that failed to be processed", async () => {
-      const result = await lambdaHandlerConstructor(
+      result = await lambdaHandlerConstructor(
         dependencies,
         event,
         buildLambdaContext(),
       );
+    });
 
+    it("Logs the messageId of messages that failed to be processed", async () => {
       expect(mockLogger.getLogMessages().length).toEqual(4);
       expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
         "FAILED_TO_PROCESS_MESSAGES",
@@ -376,7 +376,6 @@ describe("Dequeue TxMA events", () => {
     });
 
     it("Makes a call to the database client", async () => {
-      await lambdaHandlerConstructor(dependencies, event, buildLambdaContext());
       expect(mockDbClient).toHaveReceivedCommandTimes(PutItemCommand, 1);
       expect(mockDbClient).toHaveReceivedNthCommandWith(
         1,
@@ -386,8 +385,6 @@ describe("Dequeue TxMA events", () => {
     });
 
     it("Logs successfully processed messages", async () => {
-      await lambdaHandlerConstructor(dependencies, event, buildLambdaContext());
-
       expect(mockLogger.getLogMessages()[2].data.processedMessages).toEqual([
         {
           eventName: JSON.parse(passingSQSRecord.body).event_name,
@@ -397,12 +394,6 @@ describe("Dequeue TxMA events", () => {
     });
 
     it("Returns batch item failures", async () => {
-      const result = await lambdaHandlerConstructor(
-        dependencies,
-        event,
-        buildLambdaContext(),
-      );
-
       expect(result).toStrictEqual({
         batchItemFailures: [{ itemIdentifier: invalidBodySQSRecord.messageId }],
       });
