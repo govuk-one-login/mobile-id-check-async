@@ -137,7 +137,9 @@ describe("Dequeue TxMA events", () => {
         );
         expect(mockLogger.getLogMessages()[1].data.body).toEqual("{");
         expect(result).toStrictEqual({
-          batchItemFailures: [{ itemIdentifier: invalidBodySQSRecord.messageId }],
+          batchItemFailures: [
+            { itemIdentifier: invalidBodySQSRecord.messageId },
+          ],
         });
         expect(mockLogger.getLogMessages()[2].data.processedMessages).toEqual(
           [],
@@ -171,7 +173,9 @@ describe("Dequeue TxMA events", () => {
           processedMessages: [],
         });
         expect(result).toStrictEqual({
-          batchItemFailures: [{ itemIdentifier: eventNameMissingSQSRecord.messageId }],
+          batchItemFailures: [
+            { itemIdentifier: eventNameMissingSQSRecord.messageId },
+          ],
         });
       });
     });
@@ -200,7 +204,9 @@ describe("Dequeue TxMA events", () => {
           processedMessages: [],
         });
         expect(result).toStrictEqual({
-          batchItemFailures: [{ itemIdentifier: eventNameNotAllowedSQSRecord.messageId }],
+          batchItemFailures: [
+            { itemIdentifier: eventNameNotAllowedSQSRecord.messageId },
+          ],
         });
       });
     });
@@ -229,7 +235,9 @@ describe("Dequeue TxMA events", () => {
           processedMessages: [],
         });
         expect(result).toStrictEqual({
-          batchItemFailures: [{ itemIdentifier: missingUserSQSRecord.messageId }],
+          batchItemFailures: [
+            { itemIdentifier: missingUserSQSRecord.messageId },
+          ],
         });
       });
     });
@@ -258,7 +266,9 @@ describe("Dequeue TxMA events", () => {
           processedMessages: [],
         });
         expect(result).toStrictEqual({
-          batchItemFailures: [{ itemIdentifier: missingSessionIdSQSRecord.messageId }],
+          batchItemFailures: [
+            { itemIdentifier: missingSessionIdSQSRecord.messageId },
+          ],
         });
       });
     });
@@ -291,7 +301,9 @@ describe("Dequeue TxMA events", () => {
           processedMessages: [],
         });
         expect(result).toStrictEqual({
-          batchItemFailures: [{ itemIdentifier: invalidSessionIdSQSRecord.messageId }],
+          batchItemFailures: [
+            { itemIdentifier: invalidSessionIdSQSRecord.messageId },
+          ],
         });
       });
     });
@@ -323,7 +335,9 @@ describe("Dequeue TxMA events", () => {
           processedMessages: [],
         });
         expect(result).toStrictEqual({
-          batchItemFailures: [{ itemIdentifier: missingTimestampSQSRecord.messageId }],
+          batchItemFailures: [
+            { itemIdentifier: missingTimestampSQSRecord.messageId },
+          ],
         });
       });
     });
@@ -347,7 +361,9 @@ describe("Dequeue TxMA events", () => {
           `Failed to process message - messageId: ${invalidBodySQSRecord.messageId}`,
         );
         expect(result).toStrictEqual({
-          batchItemFailures: [{ itemIdentifier: invalidBodySQSRecord.messageId }],
+          batchItemFailures: [
+            { itemIdentifier: invalidBodySQSRecord.messageId },
+          ],
         });
       });
 
@@ -370,7 +386,7 @@ describe("Dequeue TxMA events", () => {
         );
       });
 
-      it.skip("Logs successfully processed messages", async () => {
+      it("Logs successfully processed messages", async () => {
         await lambdaHandlerConstructor(
           dependencies,
           event,
@@ -397,7 +413,9 @@ describe("Dequeue TxMA events", () => {
         );
 
         expect(result).toStrictEqual({
-          batchItemFailures: [{ itemIdentifier: invalidBodySQSRecord.messageId }],
+          batchItemFailures: [
+            { itemIdentifier: invalidBodySQSRecord.messageId },
+          ],
         });
       });
     });
@@ -451,8 +469,14 @@ describe("Dequeue TxMA events", () => {
 
         expect(mockLogger.getLogMessages().length).toEqual(3);
         expect(mockLogger.getLogMessages()[1].data.processedMessages).toEqual([
-          putItemInputForPassingSQSRecord,
-          putItemInputForPassingSQSRecord,
+          {
+            eventName: JSON.parse(passingSQSRecord.body).event_name,
+            sessionId: JSON.parse(passingSQSRecord.body).user.session_id,
+          },
+          {
+            eventName: JSON.parse(passingSQSRecord.body).event_name,
+            sessionId: JSON.parse(passingSQSRecord.body).user.session_id,
+          },
         ]);
       });
     });

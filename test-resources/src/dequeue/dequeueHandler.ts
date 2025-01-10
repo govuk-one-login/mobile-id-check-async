@@ -3,7 +3,6 @@ import {
   DynamoDBClient,
   PutItemCommand,
   PutItemCommandInput,
-  PutRequest,
 } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
@@ -15,7 +14,7 @@ import {
 } from "aws-lambda";
 import { Logger } from "../services/logging/logger";
 import { getConfig } from "./getConfig";
-import { getEvent } from "./getEvent";
+import { allowedTxmaEventNames, getEvent } from "./getEvent";
 import { MessageName, registeredLogs } from "./registeredLogs";
 
 export const lambdaHandlerConstructor = async (
@@ -29,7 +28,7 @@ export const lambdaHandlerConstructor = async (
 
   const records = event.Records;
   const batchItemFailures: SQSBatchItemFailure[] = [];
-  const processedMessages: PutRequest[] = [];
+  const processedMessages: IProcessedMessage[] = [];
 
   const getConfigResult = getConfig(dependencies.env);
   if (getConfigResult.isError) {
@@ -80,7 +79,10 @@ export const lambdaHandlerConstructor = async (
       continue;
     }
 
-    processedMessages.push({ Item: putItemCommandInput.Item });
+    processedMessages.push({
+      eventName: txmaEvent.event_name,
+      sessionId: txmaEvent.user.session_id,
+    });
   }
 
   logger.log("PROCESSED_MESSAGES", { processedMessages });
@@ -100,6 +102,11 @@ const dbClient = new DynamoDBClient({
 
 function getTimeToLiveInSeconds(ttlDuration: string) {
   return Math.floor(Date.now() / 1000) + Number(ttlDuration);
+}
+
+interface IProcessedMessage {
+  eventName: (typeof allowedTxmaEventNames)[number];
+  sessionId: string;
 }
 
 export interface IDequeueDependencies {
