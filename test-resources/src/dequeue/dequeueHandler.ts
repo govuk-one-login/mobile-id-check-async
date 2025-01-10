@@ -43,7 +43,7 @@ export const lambdaHandlerConstructor = async (
   const env = getConfigResult.value;
 
   for (const record of records) {
-    const messageId = record.messageId
+    const messageId = record.messageId;
 
     const getEventResult = getEvent(record);
     if (getEventResult.isError) {
@@ -52,8 +52,8 @@ export const lambdaHandlerConstructor = async (
       batchItemFailures.push({ itemIdentifier: messageId });
       continue;
     }
-    const eventName = getEventResult.value.event_name
-    const sessionId = getEventResult.value.user.session_id
+    const eventName = getEventResult.value.event_name;
+    const sessionId = getEventResult.value.user.session_id;
     const { timestamp } = getEventResult.value;
 
     const timeToLiveInSeconds = getTimeToLiveInSeconds(

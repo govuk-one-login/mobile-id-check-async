@@ -1,12 +1,6 @@
-import {
-  DynamoDBClient,
-  DynamoDBClientResolvedConfig,
-  PutItemCommand,
-  ServiceInputTypes,
-  ServiceOutputTypes,
-} from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { SQSEvent } from "aws-lambda";
-import { AwsStub, mockClient } from "aws-sdk-client-mock";
+import { mockClient } from "aws-sdk-client-mock";
 import "aws-sdk-client-mock-jest";
 import { Logger } from "../../services/logging/logger";
 import { buildLambdaContext } from "../../services/logging/tests/mockContext";
@@ -40,7 +34,7 @@ const env = {
 describe("Dequeue TxMA events", () => {
   let dependencies: IDequeueDependencies;
   let mockLogger: MockLoggingAdapter<MessageName>;
-  let mockDbClient = mockClient(DynamoDBClient);
+  const mockDbClient = mockClient(DynamoDBClient);
 
   beforeEach(() => {
     jest.useFakeTimers().setSystemTime(new Date("2025-01-08"));
@@ -53,9 +47,9 @@ describe("Dequeue TxMA events", () => {
   });
 
   afterEach(() => {
-    jest.useFakeTimers().clearAllTimers()
+    jest.useFakeTimers().clearAllTimers();
     jest.restoreAllMocks();
-    mockDbClient.reset()
+    mockDbClient.reset();
   });
 
   describe("Environment variable validation", () => {
@@ -222,6 +216,9 @@ describe("Dequeue TxMA events", () => {
         );
 
         expect(mockLogger.getLogMessages().length).toEqual(4);
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
+          "FAILED_TO_PROCESS_MESSAGES",
+        );
         expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "Missing user",
           eventName: JSON.parse(missingUserSQSRecord.body).event_name,
@@ -253,6 +250,9 @@ describe("Dequeue TxMA events", () => {
         );
 
         expect(mockLogger.getLogMessages().length).toEqual(4);
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
+          "FAILED_TO_PROCESS_MESSAGES",
+        );
         expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "Missing session_id",
           eventName: JSON.parse(missingSessionIdSQSRecord.body).event_name,
@@ -284,6 +284,9 @@ describe("Dequeue TxMA events", () => {
         );
 
         expect(mockLogger.getLogMessages().length).toEqual(4);
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
+          "FAILED_TO_PROCESS_MESSAGES",
+        );
         expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "session_id not valid",
           eventName: JSON.parse(invalidSessionIdSQSRecord.body).event_name,
@@ -319,6 +322,9 @@ describe("Dequeue TxMA events", () => {
         );
 
         expect(mockLogger.getLogMessages().length).toEqual(4);
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
+          "FAILED_TO_PROCESS_MESSAGES",
+        );
         expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "Missing timestamp",
           eventName: JSON.parse(missingTimestampSQSRecord.body).event_name,
@@ -355,6 +361,9 @@ describe("Dequeue TxMA events", () => {
         );
 
         expect(mockLogger.getLogMessages().length).toEqual(4);
+        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
+          "FAILED_TO_PROCESS_MESSAGES",
+        );
         expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
           `Failed to process message - messageId: ${invalidBodySQSRecord.messageId}`,
         );
@@ -391,16 +400,16 @@ describe("Dequeue TxMA events", () => {
           buildLambdaContext(),
         );
 
-        const eventName = JSON.parse(passingSQSRecord.body).event_name
-        const sessionId = JSON.parse(passingSQSRecord.body).user.session_id
+        const eventName = JSON.parse(passingSQSRecord.body).event_name;
+        const sessionId = JSON.parse(passingSQSRecord.body).user.session_id;
         expect(mockLogger.getLogMessages()[2].data.processedMessages).toEqual([
           {
             eventName,
             sessionId,
           },
           {
-            eventName: JSON.parse(passingSQSRecord.body).event_name,
-            sessionId: JSON.parse(passingSQSRecord.body).user.session_id,
+            eventName,
+            sessionId,
           },
         ]);
       });
@@ -467,8 +476,8 @@ describe("Dequeue TxMA events", () => {
           buildLambdaContext(),
         );
 
-        const eventName = JSON.parse(passingSQSRecord.body).event_name
-        const sessionId = JSON.parse(passingSQSRecord.body).user.session_id
+        const eventName = JSON.parse(passingSQSRecord.body).event_name;
+        const sessionId = JSON.parse(passingSQSRecord.body).user.session_id;
         expect(mockLogger.getLogMessages().length).toEqual(3);
         expect(mockLogger.getLogMessages()[1].data.processedMessages).toEqual([
           {
