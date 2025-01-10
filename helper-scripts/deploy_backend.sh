@@ -15,6 +15,7 @@ fi
 STACK_NAME=$1
 
 # Define stack names
+BACKEND_CF_DIST_STACK_NAME="${STACK_NAME}-async-backend-cf-dist"
 BACKEND_STACK_NAME="${STACK_NAME}-async-backend"
 STS_MOCK_STACK_NAME="${STACK_NAME}-sts-mock"
 
@@ -31,28 +32,29 @@ while true; do
     read -r -p "Do you want to deploy an sts-mock stack? [y/n]: " yn
 
     case "$yn" in
-        [yY] )
-            deploy_sts_mock=true
-            # Build and deploy sts-mock
-            echo "Building and deploying sts-mock stack: $STS_MOCK_STACK_NAME"
-            echo
-            cd ../sts-mock || exit 1
-            npm i
-            sam build --cached
-            sam deploy \
-                --stack-name "$STS_MOCK_STACK_NAME" \
-                --parameter-overrides "$DEV_OVERRIDE_ASYNC_BACKEND_BASE_URL=https://sessions-${BACKEND_STACK_NAME}.review-b-async.dev.account.gov.uk" \
-                --capabilities CAPABILITY_NAMED_IAM \
-                --resolve-s3
-            break
-            ;;
-        [nN] )
-            echo "Skipping sts-mock stack deployment"
-            break
-            ;;
-        * )
-            echo "Invalid input. Please enter 'y' or 'n'."
-            ;;
+    [yY])
+        deploy_sts_mock=true
+        # Build and deploy sts-mock
+        echo "Building and deploying sts-mock stack: $STS_MOCK_STACK_NAME"
+        echo
+        cd ../sts-mock || exit 1
+        npm ci
+        sam build --cached
+        sam deploy \
+            --stack-name "$STS_MOCK_STACK_NAME" \
+            --parameter-overrides "$DEV_OVERRIDE_ASYNC_BACKEND_BASE_URL=https://sessions-${BACKEND_STACK_NAME}.review-b-async.dev.account.gov.uk" \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --resolve-s3
+        cd ../helper-scripts
+        break
+        ;;
+    [nN])
+        echo "Skipping sts-mock stack deployment"
+        break
+        ;;
+    *)
+        echo "Invalid input. Please enter 'y' or 'n'."
+        ;;
     esac
 done
 
@@ -64,22 +66,59 @@ if [ "$deploy_sts_mock" = true ]; then
         read -r -p "Do you want to generate and publish a signing key pair to S3 for your sts-mock? [y/n]: " yn
 
         case "$yn" in
-            [yY] )
-                cd ../sts-mock/jwks-helper-script
-                ./publish_keys_to_s3.sh "${STS_MOCK_STACK_NAME}" "dev"
-                cd ..
-                break
-                ;;
-            [nN] )
-                echo "Skipping key generation and publishing"
-                break
-                ;;
-            * )
-                echo "Invalid input. Please enter 'y' or 'n'."
-                ;;
+        [yY])
+            cd ../sts-mock/jwks-helper-script
+            ./publish_keys_to_s3.sh "${STS_MOCK_STACK_NAME}" "dev"
+            cd ../../helper-scripts
+            break
+            ;;
+        [nN])
+            echo "Skipping key generation and publishing"
+            break
+            ;;
+        *)
+            echo "Invalid input. Please enter 'y' or 'n'."
+            ;;
         esac
     done
 fi
+
+# Ask the user if they want to deploy the backend-cf-dist stack
+while true; do
+    echo
+    echo "Each backend stack requires a cloudfront distribution in front of it. The stack name is of the form ${BACKEND_STACK_NAME}-cf-dist. If it already exists this can be skipped."
+    read -r -p "Do you want to deploy a cloudfront distribution stack? [y/n]: " yn
+
+    case "$yn" in
+    [yY])
+
+        # Build and deploy sts-mock
+        echo "Deploying cloudfront stack: $BACKEND_CF_DIST_STACK_NAME"
+        echo
+
+        sh ./generate_cf_dist_parameters.sh "${BACKEND_STACK_NAME}"
+
+        CF_DIST_ARGS="--region eu-west-2"
+        CF_DIST_ARGS="${CF_DIST_ARGS} --stack-name ${BACKEND_CF_DIST_STACK_NAME}"
+        CF_DIST_ARGS="${CF_DIST_ARGS} --template-url https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/cloudfront-distribution/template.yaml?versionId=jZcckkadQOPteu3t24UktqjOehImqD1K" # v1.8.0
+        CF_DIST_ARGS="${CF_DIST_ARGS} --capabilities CAPABILITY_AUTO_EXPAND CAPABILITY_IAM CAPABILITY_NAMED_IAM"
+
+        aws cloudformation create-stack $CF_DIST_ARGS --parameters="$(jq -r '. | tojson' "parameters-${BACKEND_CF_DIST_STACK_NAME}.json")" || aws cloudformation update-stack $CF_DIST_ARGS --parameters="$(jq -r '. | tojson' "parameters-${BACKEND_CF_DIST_STACK_NAME}.json")"
+
+        echo "Waiting for stack create/updates to complete"
+        aws cloudformation wait stack-create-complete --stack-name "${BACKEND_CF_DIST_STACK_NAME}" || aws cloudformation wait stack-update-complete --stack-name "${BACKEND_CF_DIST_STACK_NAME}"
+
+        break
+        ;;
+    [nN])
+        echo "Skipping cf-dist stack deployment"
+        break
+        ;;
+    *)
+        echo "Invalid input. Please enter 'y' or 'n'."
+        ;;
+    esac
+done
 
 # Ask the user if they want to deploy backend-api
 while true; do
@@ -87,49 +126,50 @@ while true; do
     read -r -p "Do you want to deploy a backend-api stack? [y/n]: " yn
 
     case "$yn" in
-        [yY] )
+    [yY])
 
-            parameter_overrides="$DEV_OVERRIDE_STS_BASE_URL=https://${STS_MOCK_STACK_NAME}.review-b-async.dev.account.gov.uk"
+        parameter_overrides="$DEV_OVERRIDE_STS_BASE_URL=https://${STS_MOCK_STACK_NAME}.review-b-async.dev.account.gov.uk"
 
-            while true; do
-                echo
-                read -r -p "Do you want to enable alarms for your backend-api stack? [y/n]: " yn
-
-                case "$yn" in
-                    [yY] )
-                        parameter_overrides+=" $DEPLOY_ALARMS_IN_DEV=true"
-                        break
-                        ;;
-                    [nN] )
-                        break
-                        ;;
-                    * )
-                        echo "Invalid input. Please enter 'y' or 'n'."
-                        ;;
-                esac
-            done
-
-            # Build and deploy backend-api
-            echo "Building and deploying backend-api stack: $BACKEND_STACK_NAME"
+        while true; do
             echo
-            cd ../backend-api || exit 1
-            npm i
-            sam build --cached
-            sam deploy \
-                --stack-name "$BACKEND_STACK_NAME" \
-                --parameter-overrides "$parameter_overrides" \
-                --capabilities CAPABILITY_NAMED_IAM \
-                --resolve-s3
-            ./generate_env_file.sh "${BACKEND_STACK_NAME}"
-            break
-            ;;
-        [nN] )
-            echo "Skipping backend-api deployment"
-            break
-            ;;
-        * )
-            echo "Invalid input. Please enter 'y' or 'n'."
-            ;;
+            read -r -p "Do you want to enable alarms for your backend-api stack? [y/n]: " yn
+
+            case "$yn" in
+            [yY])
+                parameter_overrides+=" $DEPLOY_ALARMS_IN_DEV=true"
+                break
+                ;;
+            [nN])
+                break
+                ;;
+            *)
+                echo "Invalid input. Please enter 'y' or 'n'."
+                ;;
+            esac
+        done
+
+        # Build and deploy backend-api
+        echo "Building and deploying backend-api stack: $BACKEND_STACK_NAME"
+        echo
+        cd ../backend-api || exit 1
+        npm ci
+        sam build --cached
+        sam deploy \
+            --stack-name "$BACKEND_STACK_NAME" \
+            --parameter-overrides "$parameter_overrides" \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --resolve-s3
+        ./generate_env_file.sh "${BACKEND_STACK_NAME}"
+        cd ../helper-scripts
+        break
+        ;;
+    [nN])
+        echo "Skipping backend-api deployment"
+        break
+        ;;
+    *)
+        echo "Invalid input. Please enter 'y' or 'n'."
+        ;;
     esac
 done
 
