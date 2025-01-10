@@ -44,13 +44,14 @@ export function getEvent(record: SQSRecord): Result<TxmaEvent> {
     return errorResult({
       errorMessage: "session_id not valid",
       eventName: txmaEvent.event_name,
-      sessionId: session_id
+      sessionId: session_id,
     });
   }
 
   if (!txmaEvent.timestamp) {
     return errorResult({
-      errorMessage: `Missing timestamp - messageId: ${record.messageId}`,
+      errorMessage: "Missing timestamp",
+      eventName: txmaEvent.event_name
     });
   }
 

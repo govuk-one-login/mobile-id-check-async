@@ -128,7 +128,7 @@ export const missingSessionIdSQSRecord = {
   awsRegion: "eu-west-2",
 };
 
-export const invalidSessionId = "invalid-session-id"
+export const invalidSessionId = "invalid-session-id";
 export const invalidSessionIdSQSRecord = {
   messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
   receiptHandle: "mockReceiptHandle",
@@ -138,6 +138,28 @@ export const invalidSessionIdSQSRecord = {
       session_id: invalidSessionId,
     },
     timestamp: "mockTimestamp",
+  }),
+  attributes: {
+    ApproximateReceiveCount: "1",
+    SentTimestamp: "1545082649183",
+    SenderId: "AIDAIENQZJOLO23YVJ4VO",
+    ApproximateFirstReceiveTimestamp: "1545082649185",
+  },
+  messageAttributes: {},
+  md5OfBody: "098f6bcd4621d373cade4e832627b4f6",
+  eventSource: "aws:sqs",
+  eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
+  awsRegion: "eu-west-2",
+};
+
+export const missingTimestampSQSRecord = {
+  messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
+  receiptHandle: "mockReceiptHandle",
+  body: JSON.stringify({
+    event_name: passingEventName,
+    user: {
+      session_id: passingSessionId,
+    },
   }),
   attributes: {
     ApproximateReceiveCount: "1",
