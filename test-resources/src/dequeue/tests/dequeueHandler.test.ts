@@ -346,6 +346,24 @@ describe("Dequeue TxMA events", () => {
     });
   });
 
+  describe("Given there is an error writing to Dynamo", () => {
+    //Dynamo rejects
+  });
+
+  describe("Given not all messages are processed successfully", () => {
+    // One passing SQS record
+    // One failing SQS record
+  });
+
+  describe("Happy path", () => {
+    describe("Given there is one record in the event", () => {
+      // happy path validation
+    });
+    describe("Given there are multiple records in the event", () => {
+      // happy path validation
+    });
+  });
+
   describe("Given multiple messages are sent in the request", () => {
     describe("Given one out of three messages fails to be processed", () => {
       let event: SQSEvent;
