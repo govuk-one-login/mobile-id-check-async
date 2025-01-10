@@ -28,7 +28,7 @@ export function getEvent(record: SQSRecord): Result<TxmaEvent> {
   if (!txmaEvent.user) {
     return errorResult({
       errorMessage: "Missing user",
-      eventName: txmaEvent.event_name
+      eventName: txmaEvent.event_name,
     });
   }
 
@@ -36,13 +36,15 @@ export function getEvent(record: SQSRecord): Result<TxmaEvent> {
   if (!session_id) {
     return errorResult({
       errorMessage: "Missing session_id",
-      eventName: txmaEvent.event_name
+      eventName: txmaEvent.event_name,
     });
   }
 
   if (!isValidUUID(session_id)) {
     return errorResult({
-      errorMessage: `session_id not valid - messageId: ${record.messageId}`,
+      errorMessage: "session_id not valid",
+      eventName: txmaEvent.event_name,
+      sessionId: session_id
     });
   }
 
