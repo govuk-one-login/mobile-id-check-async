@@ -19,7 +19,6 @@ import { MessageName, registeredLogs } from "../registeredLogs";
 import {
   eventNameMissingSQSRecord,
   eventNameNotAllowedSQSRecord,
-  failingSQSRecordMessageId,
   invalidBodySQSRecord,
   invalidSessionId,
   invalidSessionIdSQSRecord,
@@ -27,8 +26,6 @@ import {
   missingTimestampSQSRecord,
   missingUserSQSRecord,
   notAllowedEventName,
-  passingEventName,
-  passingSessionId,
   passingSQSRecord,
   putItemInputForPassingSQSRecord,
 } from "./testData";
@@ -136,15 +133,15 @@ describe("Dequeue TxMA events", () => {
           "DEQUEUE_FAILED_TO_PROCESS_MESSAGES",
         );
         expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
-          `Failed to process message - messageId: ${failingSQSRecordMessageId}`,
+          `Failed to process message - messageId: ${invalidBodySQSRecord.messageId}`,
         );
         expect(mockLogger.getLogMessages()[1].data.body).toEqual("{");
         expect(result).toStrictEqual({
-          batchItemFailures: [
-            { itemIdentifier: failingSQSRecordMessageId },
-          ],
+          batchItemFailures: [{ itemIdentifier: invalidBodySQSRecord.messageId }],
         });
-        expect(mockLogger.getLogMessages()[2].data.processedMessages).toEqual([]);
+        expect(mockLogger.getLogMessages()[2].data.processedMessages).toEqual(
+          [],
+        );
       });
     });
 
@@ -174,9 +171,7 @@ describe("Dequeue TxMA events", () => {
           processedMessages: [],
         });
         expect(result).toStrictEqual({
-          batchItemFailures: [
-            { itemIdentifier: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5" },
-          ],
+          batchItemFailures: [{ itemIdentifier: failingSQSRecordMessageId }],
         });
       });
     });
@@ -205,9 +200,7 @@ describe("Dequeue TxMA events", () => {
           processedMessages: [],
         });
         expect(result).toStrictEqual({
-          batchItemFailures: [
-            { itemIdentifier: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5" },
-          ],
+          batchItemFailures: [{ itemIdentifier: failingSQSRecordMessageId }],
         });
       });
     });
@@ -236,9 +229,7 @@ describe("Dequeue TxMA events", () => {
           processedMessages: [],
         });
         expect(result).toStrictEqual({
-          batchItemFailures: [
-            { itemIdentifier: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5" },
-          ],
+          batchItemFailures: [{ itemIdentifier: failingSQSRecordMessageId }],
         });
       });
     });
@@ -267,9 +258,7 @@ describe("Dequeue TxMA events", () => {
           processedMessages: [],
         });
         expect(result).toStrictEqual({
-          batchItemFailures: [
-            { itemIdentifier: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5" },
-          ],
+          batchItemFailures: [{ itemIdentifier: failingSQSRecordMessageId }],
         });
       });
     });
@@ -302,9 +291,7 @@ describe("Dequeue TxMA events", () => {
           processedMessages: [],
         });
         expect(result).toStrictEqual({
-          batchItemFailures: [
-            { itemIdentifier: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5" },
-          ],
+          batchItemFailures: [{ itemIdentifier: failingSQSRecordMessageId }],
         });
       });
     });
@@ -336,9 +323,7 @@ describe("Dequeue TxMA events", () => {
           processedMessages: [],
         });
         expect(result).toStrictEqual({
-          batchItemFailures: [
-            { itemIdentifier: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5" },
-          ],
+          batchItemFailures: [{ itemIdentifier: failingSQSRecordMessageId }],
         });
       });
     });
@@ -362,9 +347,7 @@ describe("Dequeue TxMA events", () => {
           `Failed to process message - messageId: ${failingSQSRecordMessageId}`,
         );
         expect(result).toStrictEqual({
-          batchItemFailures: [
-            { itemIdentifier: "D8B937B7-7E1D-4D37-BD82-C6AED9F7D975" },
-          ],
+          batchItemFailures: [{ itemIdentifier: failingSQSRecordMessageId }],
         });
       });
 
@@ -414,9 +397,7 @@ describe("Dequeue TxMA events", () => {
         );
 
         expect(result).toStrictEqual({
-          batchItemFailures: [
-            { itemIdentifier: failingSQSRecordMessageId },
-          ],
+          batchItemFailures: [{ itemIdentifier: failingSQSRecordMessageId }],
         });
       });
     });
@@ -451,9 +432,7 @@ describe("Dequeue TxMA events", () => {
           processedMessages: [],
         });
         expect(result).toStrictEqual({
-          batchItemFailures: [
-            { itemIdentifier: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5" },
-          ],
+          batchItemFailures: [{ itemIdentifier: passingSQSRecord.messageId }],
         });
       });
     });
@@ -472,42 +451,6 @@ describe("Dequeue TxMA events", () => {
 
         expect(mockLogger.getLogMessages().length).toEqual(3);
         expect(mockLogger.getLogMessages()[1].data.processedMessages).toEqual([
-          {
-            Item: {
-              pk: { S: "SESSION#49E7D76E-D5FE-4355-B8B4-E90ACA0887C2" },
-              sk: {
-                S: "TXMA#EVENT_NAME#DCMAW_APP_HANDOFF_START#TIMESTAMP#mockTimestamp",
-              },
-              eventBody: {
-                S: JSON.stringify({
-                  event_name: passingEventName,
-                  user: {
-                    session_id: passingSessionId,
-                  },
-                  timestamp: "mockTimestamp",
-                }),
-              },
-              timeToLiveInSeconds: { N: "1736298000" },
-            },
-          },
-          {
-            Item: {
-              pk: { S: "SESSION#41AA5FE7-CD9D-4B5B-960C-1E33C165B592" },
-              sk: {
-                S: "TXMA#EVENT_NAME#DCMAW_APP_END#TIMESTAMP#mockTimestamp",
-              },
-              eventBody: {
-                S: JSON.stringify({
-                  event_name: "DCMAW_APP_END",
-                  user: {
-                    session_id: "41AA5FE7-CD9D-4B5B-960C-1E33C165B592",
-                  },
-                  timestamp: "mockTimestamp",
-                }),
-              },
-              timeToLiveInSeconds: { N: "1736298000" },
-            },
-          },
           putItemInputForPassingSQSRecord,
           putItemInputForPassingSQSRecord,
         ]);

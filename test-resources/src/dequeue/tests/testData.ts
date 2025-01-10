@@ -1,6 +1,6 @@
-export const passingEventName = "DCMAW_APP_HANDOFF_START";
-export const passingSessionId = "49E7D76E-D5FE-4355-B8B4-E90ACA0887C2";
-export const failingSQSRecordMessageId = "54D7CA2F-BE1D-4D55-8F1C-9B3B501C9685"
+const passingEventName = "DCMAW_APP_HANDOFF_START";
+const passingSessionId = "49E7D76E-D5FE-4355-B8B4-E90ACA0887C2";
+const failingSQSRecordMessageId = "54D7CA2F-BE1D-4D55-8F1C-9B3B501C9685"
 
 export const passingSQSRecord = {
   messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",

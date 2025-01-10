@@ -9,6 +9,7 @@ export function getEvent(record: SQSRecord): Result<TxmaEvent> {
   } catch {
     return errorResult({
       errorMessage: `Failed to process message - messageId: ${record.messageId}`,
+      body: record.body,
     });
   }
 
