@@ -348,11 +348,15 @@ describe("Dequeue TxMA events", () => {
   });
 
   describe("Given multiple messages are sent in the request", () => {
-    const event: SQSEvent = {
-      Records: [passingSQSRecord, passingSQSRecord, invalidBodySQSRecord],
-    };
-
     describe("Given one out of three messages fails to be processed", () => {
+      let event: SQSEvent;
+
+      beforeEach(() => {
+        event = {
+          Records: [passingSQSRecord, passingSQSRecord, invalidBodySQSRecord],
+        };
+      });
+
       it("Logs the messageId of messages that failed to be processed", async () => {
         const result = await lambdaHandlerConstructor(
           dependencies,
