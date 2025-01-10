@@ -40,15 +40,11 @@ const env = {
 describe("Dequeue TxMA events", () => {
   let dependencies: IDequeueDependencies;
   let mockLogger: MockLoggingAdapter<MessageName>;
-  let mockDbClient: AwsStub<
-    ServiceInputTypes,
-    ServiceOutputTypes,
-    DynamoDBClientResolvedConfig
-  >;
+  let mockDbClient = mockClient(DynamoDBClient);
 
   beforeEach(() => {
+    jest.useFakeTimers().setSystemTime(new Date("2025-01-08"));
     mockLogger = new MockLoggingAdapter();
-    mockDbClient = mockClient(DynamoDBClient);
     mockDbClient.on(PutItemCommand).resolves({});
     dependencies = {
       env,
@@ -57,7 +53,9 @@ describe("Dequeue TxMA events", () => {
   });
 
   afterEach(() => {
+    jest.useFakeTimers().clearAllTimers()
     jest.restoreAllMocks();
+    mockDbClient.reset()
   });
 
   describe("Environment variable validation", () => {
@@ -393,10 +391,12 @@ describe("Dequeue TxMA events", () => {
           buildLambdaContext(),
         );
 
+        const eventName = JSON.parse(passingSQSRecord.body).event_name
+        const sessionId = JSON.parse(passingSQSRecord.body).user.session_id
         expect(mockLogger.getLogMessages()[2].data.processedMessages).toEqual([
           {
-            eventName: JSON.parse(passingSQSRecord.body).event_name,
-            sessionId: JSON.parse(passingSQSRecord.body).user.session_id,
+            eventName,
+            sessionId,
           },
           {
             eventName: JSON.parse(passingSQSRecord.body).event_name,
@@ -467,15 +467,17 @@ describe("Dequeue TxMA events", () => {
           buildLambdaContext(),
         );
 
+        const eventName = JSON.parse(passingSQSRecord.body).event_name
+        const sessionId = JSON.parse(passingSQSRecord.body).user.session_id
         expect(mockLogger.getLogMessages().length).toEqual(3);
         expect(mockLogger.getLogMessages()[1].data.processedMessages).toEqual([
           {
-            eventName: JSON.parse(passingSQSRecord.body).event_name,
-            sessionId: JSON.parse(passingSQSRecord.body).user.session_id,
+            eventName,
+            sessionId,
           },
           {
-            eventName: JSON.parse(passingSQSRecord.body).event_name,
-            sessionId: JSON.parse(passingSQSRecord.body).user.session_id,
+            eventName,
+            sessionId,
           },
         ]);
       });
