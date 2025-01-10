@@ -16,12 +16,14 @@ import {
   invalidBodySQSRecord,
   invalidSessionId,
   invalidSessionIdSQSRecord,
-  missingSessionIdSQSRecord,
+  missingSessionIdInvalidSQSRecord,
+  missingSessionIdValidSQSRecord,
   missingTimestampSQSRecord,
   missingUserSQSRecord,
   notAllowedEventName,
   passingSQSRecord,
   putItemInputForPassingSQSRecord,
+  putItemInputForPassingSQSRecordWithoutSessionId,
 } from "./testData";
 
 jest.useFakeTimers().setSystemTime(new Date("2025-01-08"));
@@ -202,70 +204,75 @@ describe("Dequeue TxMA events", () => {
       });
     });
 
-    describe("Given user is missing", () => {
-      it("Logs an error message", async () => {
-        const event: SQSEvent = {
-          Records: [missingUserSQSRecord],
-        };
+    describe("Given session_id is missing", () => {
+      describe("Given the registered event schema does not include a session_id", () => {
+        it("Writes to Dynamo using UNKNOWN as the sessionId", async () => {
+          const event: SQSEvent = {
+            Records: [missingSessionIdValidSQSRecord],
+          };
 
-        const result = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-          buildLambdaContext(),
-        );
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            event,
+            buildLambdaContext(),
+          );
 
-        expect(mockLogger.getLogMessages().length).toEqual(4);
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
-          "FAILED_TO_PROCESS_MESSAGES",
-        );
-        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Missing user",
-          eventName: JSON.parse(missingUserSQSRecord.body).event_name,
-        });
-        expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual(
-          "PROCESSED_MESSAGES",
-        );
-        expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
-          processedMessages: [],
-        });
-        expect(result).toStrictEqual({
-          batchItemFailures: [
-            { itemIdentifier: missingUserSQSRecord.messageId },
-          ],
+          expect(mockLogger.getLogMessages().length).toEqual(3);
+          expect(
+            mockLogger.getLogMessages()[1].logMessage.message,
+          ).toStrictEqual("PROCESSED_MESSAGES");
+          expect(mockLogger.getLogMessages()[1].data.processedMessages).toEqual(
+            [
+              {
+                eventName: JSON.parse(missingSessionIdValidSQSRecord.body)
+                  .event_name,
+                sessionId: "UNKNOWN",
+              },
+            ],
+          );
+
+          expect(mockDbClient).toHaveReceivedCommandWith(
+            PutItemCommand,
+            putItemInputForPassingSQSRecordWithoutSessionId,
+          );
+          expect(result).toStrictEqual({
+            batchItemFailures: [],
+          });
         });
       });
-    });
 
-    describe("Given session_id is missing", () => {
-      it("Logs an error message", async () => {
-        const event: SQSEvent = {
-          Records: [missingSessionIdSQSRecord],
-        };
+      describe("Given the registered event schema includes a session_id", () => {
+        it("Logs an error message", async () => {
+          const event: SQSEvent = {
+            Records: [missingSessionIdInvalidSQSRecord],
+          };
 
-        const result = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-          buildLambdaContext(),
-        );
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            event,
+            buildLambdaContext(),
+          );
 
-        expect(mockLogger.getLogMessages().length).toEqual(4);
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
-          "FAILED_TO_PROCESS_MESSAGES",
-        );
-        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Missing session_id",
-          eventName: JSON.parse(missingSessionIdSQSRecord.body).event_name,
-        });
-        expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual(
-          "PROCESSED_MESSAGES",
-        );
-        expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
-          processedMessages: [],
-        });
-        expect(result).toStrictEqual({
-          batchItemFailures: [
-            { itemIdentifier: missingSessionIdSQSRecord.messageId },
-          ],
+          expect(mockLogger.getLogMessages().length).toEqual(4);
+          expect(
+            mockLogger.getLogMessages()[1].logMessage.message,
+          ).toStrictEqual("FAILED_TO_PROCESS_MESSAGES");
+          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+            errorMessage: "Missing session_id",
+            eventName: JSON.parse(missingSessionIdInvalidSQSRecord.body)
+              .event_name,
+          });
+          expect(
+            mockLogger.getLogMessages()[2].logMessage.message,
+          ).toStrictEqual("PROCESSED_MESSAGES");
+          expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
+            processedMessages: [],
+          });
+          expect(result).toStrictEqual({
+            batchItemFailures: [
+              { itemIdentifier: missingSessionIdInvalidSQSRecord.messageId },
+            ],
+          });
         });
       });
     });

@@ -25,28 +25,16 @@ export function getEvent(record: SQSRecord): Result<TxmaEvent> {
       eventName: txmaEvent.event_name,
     });
   }
-
-  if (!txmaEvent.user) {
-    return errorResult({
-      errorMessage: "Missing user",
-      eventName: txmaEvent.event_name,
-    });
-  }
-
-  const { session_id } = txmaEvent.user;
+  let session_id = txmaEvent.user?.session_id;
   if (!session_id) {
-    return errorResult({
-      errorMessage: "Missing session_id",
-      eventName: txmaEvent.event_name,
-    });
-  }
-
-  if (!isValidUUID(session_id)) {
-    return errorResult({
-      errorMessage: "session_id not valid",
-      eventName: txmaEvent.event_name,
-      sessionId: session_id,
-    });
+    if (!allowedTxmaEventNamesWithoutSessionId.includes(txmaEvent.event_name)) {
+      return errorResult({
+        errorMessage: "Missing session_id",
+        eventName: txmaEvent.event_name,
+      });
+    } else {
+      session_id = "UNKNOWN";
+    }
   }
 
   if (!txmaEvent.timestamp) {
@@ -75,26 +63,10 @@ const isValidUUID = (input: string): boolean => {
 };
 
 export const allowedTxmaEventNames = [
-  "DCMAW_ABORT_APP",
-  "DCMAW_ABORT_WEB",
-  "DCMAW_CRI_4XXERROR",
-  "DCMAW_CRI_5XXERROR",
-  "DCMAW_REDIRECT_SUCCESS",
-  "DCMAW_REDIRECT_ABORT",
-  "DCMAW_MISSING_CONTEXT_AFTER_ABORT",
-  "DCMAW_MISSING_CONTEXT_AFTER_COMPLETION",
-  "DCMAW_PASSPORT_SELECTED",
-  "DCMAW_BRP_SELECTED",
-  "DCMAW_DRIVING_LICENCE_SELECTED",
-  "DCMAW_CRI_END",
-  "DCMAW_CRI_ABORT",
-  "DCMAW_APP_HANDOFF_START",
-  "DCMAW_HYBRID_BILLING_STARTED",
-  "DCMAW_IPROOV_BILLING_STARTED",
-  "DCMAW_READID_NFC_BILLING_STARTED",
-  "DCMAW_CRI_START",
-  "DCMAW_APP_END",
-  "AUTH_SESSION_TOO_OLD",
-  "BIOMETRIC_SESSION_OLDER_THAN_AUTH_SESSION",
-  "BIOMETRIC_SESSION_OPAQUEID_MISMATCH",
+  "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+  "DCMAW_ASYNC_CRI_START",
+];
+
+const allowedTxmaEventNamesWithoutSessionId = [
+  "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
 ];
