@@ -48,7 +48,7 @@ Resources:
       Role: !GetAtt DequeueRole.Arn
       Environment:
         Variables:
-          TXMA_EVENT_TTL_DURATION_IN_SECONDS: 3600
+          TXMA_EVENT_TTL_DURATION_IN_SECONDS: 900
           EVENTS_TABLE_NAME: !Ref EventsTable
       Timeout: 10
       VpcConfig:
@@ -104,7 +104,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - dynamodb:BatchWriteItem
+                  - dynamodb:PutItem
                 Resource: !GetAtt EventsTable.Arn
         - PolicyName: KMSPolicy
           PolicyDocument:
