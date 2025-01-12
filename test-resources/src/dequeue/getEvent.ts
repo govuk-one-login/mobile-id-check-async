@@ -13,34 +13,35 @@ export function getEvent(record: SQSRecord): Result<TxmaEvent> {
     });
   }
 
-  if (!txmaEvent.event_name) {
+  const eventName = txmaEvent.event_name;
+  if (!eventName) {
     return errorResult({
       errorMessage: "Missing event_name",
     });
   }
 
-  if (!allowedTxmaEventNames.includes(txmaEvent.event_name)) {
+  if (!allowedTxmaEventNames.includes(eventName)) {
     return errorResult({
       errorMessage: "event_name not allowed",
-      eventName: txmaEvent.event_name,
+      eventName,
     });
   }
-  let session_id = txmaEvent.user?.session_id;
-  if (!session_id) {
-    if (!allowedTxmaEventNamesWithoutSessionId.includes(txmaEvent.event_name)) {
+  let sessionId = txmaEvent.user?.session_id;
+  if (!sessionId) {
+    if (!allowedTxmaEventNamesWithoutSessionId.includes(eventName)) {
       return errorResult({
         errorMessage: "Missing session_id",
-        eventName: txmaEvent.event_name,
+        eventName,
       });
     } else {
-      session_id = "UNKNOWN";
+      sessionId = "UNKNOWN";
     }
   }
 
   if (!txmaEvent.timestamp) {
     return errorResult({
       errorMessage: "Missing timestamp",
-      eventName: txmaEvent.event_name,
+      eventName,
     });
   }
 
