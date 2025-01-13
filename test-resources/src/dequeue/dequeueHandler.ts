@@ -48,8 +48,6 @@ export const lambdaHandlerConstructor = async (
     const getEventResult = getEvent(record);
     if (getEventResult.isError) {
       logger.log("FAILED_TO_PROCESS_MESSAGES", getEventResult.value);
-
-      batchItemFailures.push({ itemIdentifier: messageId });
       continue;
     }
     const eventName = getEventResult.value.event_name;

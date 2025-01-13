@@ -112,7 +112,7 @@ describe("Dequeue TxMA events", () => {
           Records: [invalidBodySQSRecord],
         };
 
-        const result = await lambdaHandlerConstructor(
+        await lambdaHandlerConstructor(
           dependencies,
           event,
           buildLambdaContext(),
@@ -126,11 +126,6 @@ describe("Dequeue TxMA events", () => {
           `Failed to process message - messageId: ${invalidBodySQSRecord.messageId}`,
         );
         expect(mockLogger.getLogMessages()[1].data.body).toEqual("{");
-        expect(result).toStrictEqual({
-          batchItemFailures: [
-            { itemIdentifier: invalidBodySQSRecord.messageId },
-          ],
-        });
         expect(mockLogger.getLogMessages()[2].data.processedMessages).toEqual(
           [],
         );
@@ -143,7 +138,7 @@ describe("Dequeue TxMA events", () => {
           Records: [eventNameMissingSQSRecord],
         };
 
-        const result = await lambdaHandlerConstructor(
+        await lambdaHandlerConstructor(
           dependencies,
           event,
           buildLambdaContext(),
@@ -162,11 +157,6 @@ describe("Dequeue TxMA events", () => {
         expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
           processedMessages: [],
         });
-        expect(result).toStrictEqual({
-          batchItemFailures: [
-            { itemIdentifier: eventNameMissingSQSRecord.messageId },
-          ],
-        });
       });
     });
 
@@ -176,7 +166,7 @@ describe("Dequeue TxMA events", () => {
           Records: [eventNameNotAllowedSQSRecord],
         };
 
-        const result = await lambdaHandlerConstructor(
+        await lambdaHandlerConstructor(
           dependencies,
           event,
           buildLambdaContext(),
@@ -192,11 +182,6 @@ describe("Dequeue TxMA events", () => {
         );
         expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
           processedMessages: [],
-        });
-        expect(result).toStrictEqual({
-          batchItemFailures: [
-            { itemIdentifier: eventNameNotAllowedSQSRecord.messageId },
-          ],
         });
       });
     });
@@ -244,7 +229,7 @@ describe("Dequeue TxMA events", () => {
             Records: [missingSessionIdInvalidSQSRecord],
           };
 
-          const result = await lambdaHandlerConstructor(
+          await lambdaHandlerConstructor(
             dependencies,
             event,
             buildLambdaContext(),
@@ -265,11 +250,6 @@ describe("Dequeue TxMA events", () => {
           expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
             processedMessages: [],
           });
-          expect(result).toStrictEqual({
-            batchItemFailures: [
-              { itemIdentifier: missingSessionIdInvalidSQSRecord.messageId },
-            ],
-          });
         });
       });
     });
@@ -280,7 +260,7 @@ describe("Dequeue TxMA events", () => {
           Records: [missingTimestampSQSRecord],
         };
 
-        const result = await lambdaHandlerConstructor(
+        await lambdaHandlerConstructor(
           dependencies,
           event,
           buildLambdaContext(),
@@ -302,11 +282,6 @@ describe("Dequeue TxMA events", () => {
         );
         expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
           processedMessages: [],
-        });
-        expect(result).toStrictEqual({
-          batchItemFailures: [
-            { itemIdentifier: missingTimestampSQSRecord.messageId },
-          ],
         });
       });
     });
@@ -349,17 +324,12 @@ describe("Dequeue TxMA events", () => {
 
   describe("Given not all messages are processed successfully", () => {
     let event: SQSEvent;
-    let result: SQSBatchResponse;
 
     beforeEach(async () => {
       event = {
         Records: [passingSQSRecord, invalidBodySQSRecord],
       };
-      result = await lambdaHandlerConstructor(
-        dependencies,
-        event,
-        buildLambdaContext(),
-      );
+      await lambdaHandlerConstructor(dependencies, event, buildLambdaContext());
     });
 
     it("Logs the messageId of messages that failed to be processed", async () => {
@@ -370,9 +340,6 @@ describe("Dequeue TxMA events", () => {
       expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
         `Failed to process message - messageId: ${invalidBodySQSRecord.messageId}`,
       );
-      expect(result).toStrictEqual({
-        batchItemFailures: [{ itemIdentifier: invalidBodySQSRecord.messageId }],
-      });
     });
 
     it("Makes a call to the database client", async () => {
@@ -391,12 +358,6 @@ describe("Dequeue TxMA events", () => {
           sessionId: JSON.parse(passingSQSRecord.body).user.session_id,
         },
       ]);
-    });
-
-    it("Returns batch item failures", async () => {
-      expect(result).toStrictEqual({
-        batchItemFailures: [{ itemIdentifier: invalidBodySQSRecord.messageId }],
-      });
     });
   });
 
