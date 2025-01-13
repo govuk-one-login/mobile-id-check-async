@@ -275,9 +275,6 @@ describe("Dequeue TxMA events", () => {
         expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual(
           "PROCESSED_MESSAGES",
         );
-        expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual(
-          "PROCESSED_MESSAGES",
-        );
         expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
           processedMessages: [],
         });
