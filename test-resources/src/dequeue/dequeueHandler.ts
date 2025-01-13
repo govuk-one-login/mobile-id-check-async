@@ -51,8 +51,6 @@ export const lambdaHandlerConstructor = async (
       continue;
     }
     const eventName = getEventResult.value.event_name;
-
-    //Refactor line below - shouldn't need to check if this is unknown in the handler.
     const sessionId = getEventResult.value.user.session_id;
     const { timestamp } = getEventResult.value;
 
