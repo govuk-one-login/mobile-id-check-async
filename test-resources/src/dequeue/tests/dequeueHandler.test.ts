@@ -23,8 +23,6 @@ import {
   putItemInputForPassingSQSRecordWithoutSessionId,
 } from "./testData";
 
-jest.useFakeTimers().setSystemTime(new Date("2025-01-08"));
-
 const env = {
   EVENTS_TABLE_NAME: "mock-table-name",
   TXMA_EVENT_TTL_DURATION_IN_SECONDS: "3600",
