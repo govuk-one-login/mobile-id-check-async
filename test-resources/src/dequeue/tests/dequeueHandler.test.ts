@@ -17,10 +17,9 @@ import {
   missingSessionIdInvalidSQSRecord,
   missingSessionIdValidSQSRecord,
   missingTimestampSQSRecord,
-  notAllowedEventName,
   passingSQSRecord,
   putItemInputForPassingSQSRecord,
-  putItemInputForPassingSQSRecordWithoutSessionId,
+  putItemInputForPassingSQSRecordWithoutSessionId
 } from "./testData";
 
 const env = {
@@ -173,7 +172,7 @@ describe("Dequeue TxMA events", () => {
         expect(mockLogger.getLogMessages().length).toEqual(4);
         expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
           errorMessage: "event_name not allowed",
-          eventName: notAllowedEventName,
+          eventName: JSON.parse(eventNameNotAllowedSQSRecord.body).event_name,
         });
         expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual(
           "PROCESSED_MESSAGES",

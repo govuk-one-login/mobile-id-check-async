@@ -101,7 +101,7 @@ export const eventNameMissingSQSRecord = {
   awsRegion: "eu-west-2",
 };
 
-export const notAllowedEventName = "INVALID_EVENT_NAME";
+const notAllowedEventName = "INVALID_EVENT_NAME";
 export const eventNameNotAllowedSQSRecord = {
   messageId: failingSQSRecordMessageId,
   receiptHandle: "mockReceiptHandle",
@@ -186,7 +186,7 @@ export const missingSessionIdValidSQSRecord = {
   awsRegion: "eu-west-2",
 };
 
-export const invalidSessionId = "invalid-session-id";
+const invalidSessionId = "invalid-session-id";
 export const invalidSessionIdSQSRecord = {
   messageId: failingSQSRecordMessageId,
   receiptHandle: "mockReceiptHandle",
