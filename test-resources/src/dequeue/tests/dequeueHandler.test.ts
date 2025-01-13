@@ -1,25 +1,22 @@
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
-import { SQSBatchResponse, SQSEvent } from "aws-lambda";
+import { SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
 import { mockClient } from "aws-sdk-client-mock";
 import "aws-sdk-client-mock-jest";
 import { Logger } from "../../services/logging/logger";
 import { buildLambdaContext } from "../../services/logging/tests/mockContext";
 import { MockLoggingAdapter } from "../../services/logging/tests/mockLogger";
+import { errorResult, Result, successResult } from "../../utils/result";
 import {
   IDequeueDependencies,
   lambdaHandlerConstructor,
 } from "../dequeueHandler";
+import { TxmaEvent } from "../getEvent";
 import { MessageName, registeredLogs } from "../registeredLogs";
 import {
   eventNameMissingSQSRecord,
-  eventNameNotAllowedSQSRecord,
   invalidBodySQSRecord,
-  missingSessionIdInvalidSQSRecord,
-  missingSessionIdValidSQSRecord,
-  missingTimestampSQSRecord,
   passingSQSRecord,
   putItemInputForPassingSQSRecord,
-  putItemInputForPassingSQSRecordWithoutSessionId,
 } from "./testData";
 
 const env = {
@@ -39,6 +36,7 @@ describe("Dequeue TxMA events", () => {
     dependencies = {
       env,
       logger: () => new Logger(mockLogger, registeredLogs),
+      getEvent: mockGetEvent,
     };
   });
 
@@ -102,183 +100,36 @@ describe("Dequeue TxMA events", () => {
     });
   });
 
-  describe("Message validation", () => {
-    describe("Given there is an error parsing the record body", () => {
-      it("Logs an error message", async () => {
-        const event: SQSEvent = {
-          Records: [invalidBodySQSRecord],
-        };
+  describe("Given validation fails when retrieving an event", () => {
+    let event: SQSEvent;
+    let result: SQSBatchResponse;
 
-        await lambdaHandlerConstructor(
-          dependencies,
-          event,
-          buildLambdaContext(),
-        );
+    beforeEach(async () => {
+      event = {
+        Records: [eventNameMissingSQSRecord],
+      };
+      result = await lambdaHandlerConstructor(
+        dependencies,
+        event,
+        buildLambdaContext(),
+      );
+    });
 
-        expect(mockLogger.getLogMessages().length).toEqual(4);
-        expect(mockLogger.getLogMessages()[1].logMessage.messageCode).toEqual(
-          "DEQUEUE_FAILED_TO_PROCESS_MESSAGES",
-        );
-        expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
-          `Failed to process message - messageId: ${invalidBodySQSRecord.messageId}`,
-        );
-        expect(mockLogger.getLogMessages()[1].data.body).toEqual("{");
-        expect(mockLogger.getLogMessages()[2].data.processedMessages).toEqual(
-          [],
-        );
+    it("Returns an error message", () => {
+      expect(mockLogger.getLogMessages()[1]).toEqual({
+        logMessage: expect.objectContaining({
+          messageCode: "DEQUEUE_FAILED_TO_PROCESS_MESSAGES",
+          message: "FAILED_TO_PROCESS_MESSAGES",
+        }),
+        data: {
+          errorMessage: "Mock validation error",
+          body: "Invalid body",
+        },
       });
     });
 
-    describe("Given event_name is missing", () => {
-      it("Logs an error message", async () => {
-        const event: SQSEvent = {
-          Records: [eventNameMissingSQSRecord],
-        };
-
-        await lambdaHandlerConstructor(
-          dependencies,
-          event,
-          buildLambdaContext(),
-        );
-
-        expect(mockLogger.getLogMessages().length).toEqual(4);
-        expect(mockLogger.getLogMessages()[1].logMessage.messageCode).toEqual(
-          "DEQUEUE_FAILED_TO_PROCESS_MESSAGES",
-        );
-        expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
-          "Missing event_name",
-        );
-        expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual(
-          "PROCESSED_MESSAGES",
-        );
-        expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
-          processedMessages: [],
-        });
-      });
-    });
-
-    describe("Given the event_name is not allowed", () => {
-      it("Logs an error message", async () => {
-        const event: SQSEvent = {
-          Records: [eventNameNotAllowedSQSRecord],
-        };
-
-        await lambdaHandlerConstructor(
-          dependencies,
-          event,
-          buildLambdaContext(),
-        );
-
-        expect(mockLogger.getLogMessages().length).toEqual(4);
-        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "event_name not allowed",
-          eventName: JSON.parse(eventNameNotAllowedSQSRecord.body).event_name,
-        });
-        expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual(
-          "PROCESSED_MESSAGES",
-        );
-        expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
-          processedMessages: [],
-        });
-      });
-    });
-
-    describe("Given session_id is missing", () => {
-      describe("Given the registered event schema does not include a session_id", () => {
-        it("Writes to Dynamo using UNKNOWN as the sessionId", async () => {
-          mockDbClient.on(PutItemCommand).resolves({});
-          const event: SQSEvent = {
-            Records: [missingSessionIdValidSQSRecord],
-          };
-
-          const result = await lambdaHandlerConstructor(
-            dependencies,
-            event,
-            buildLambdaContext(),
-          );
-
-          expect(mockLogger.getLogMessages().length).toEqual(3);
-          expect(
-            mockLogger.getLogMessages()[1].logMessage.message,
-          ).toStrictEqual("PROCESSED_MESSAGES");
-          expect(mockLogger.getLogMessages()[1].data.processedMessages).toEqual(
-            [
-              {
-                eventName: JSON.parse(missingSessionIdValidSQSRecord.body)
-                  .event_name,
-                sessionId: "UNKNOWN",
-              },
-            ],
-          );
-
-          expect(mockDbClient).toHaveReceivedCommandWith(
-            PutItemCommand,
-            putItemInputForPassingSQSRecordWithoutSessionId,
-          );
-          expect(result).toStrictEqual({
-            batchItemFailures: [],
-          });
-        });
-      });
-
-      describe("Given the registered event schema includes a session_id", () => {
-        it("Logs an error message", async () => {
-          const event: SQSEvent = {
-            Records: [missingSessionIdInvalidSQSRecord],
-          };
-
-          await lambdaHandlerConstructor(
-            dependencies,
-            event,
-            buildLambdaContext(),
-          );
-
-          expect(mockLogger.getLogMessages().length).toEqual(4);
-          expect(
-            mockLogger.getLogMessages()[1].logMessage.message,
-          ).toStrictEqual("FAILED_TO_PROCESS_MESSAGES");
-          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
-            errorMessage: "Missing session_id",
-            eventName: JSON.parse(missingSessionIdInvalidSQSRecord.body)
-              .event_name,
-          });
-          expect(
-            mockLogger.getLogMessages()[2].logMessage.message,
-          ).toStrictEqual("PROCESSED_MESSAGES");
-          expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
-            processedMessages: [],
-          });
-        });
-      });
-    });
-
-    describe("Given timestamp is missing", () => {
-      it("Logs an error message", async () => {
-        const event: SQSEvent = {
-          Records: [missingTimestampSQSRecord],
-        };
-
-        await lambdaHandlerConstructor(
-          dependencies,
-          event,
-          buildLambdaContext(),
-        );
-
-        expect(mockLogger.getLogMessages().length).toEqual(4);
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
-          "FAILED_TO_PROCESS_MESSAGES",
-        );
-        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Missing timestamp",
-          eventName: JSON.parse(missingTimestampSQSRecord.body).event_name,
-        });
-        expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual(
-          "PROCESSED_MESSAGES",
-        );
-        expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
-          processedMessages: [],
-        });
-      });
+    it("Returns no no batchItemFailures to be reprocessed", () => {
+      expect(result).toStrictEqual({ batchItemFailures: [] });
     });
   });
 
@@ -339,7 +190,7 @@ describe("Dequeue TxMA events", () => {
         "FAILED_TO_PROCESS_MESSAGES",
       );
       expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
-        `Failed to process message - messageId: ${invalidBodySQSRecord.messageId}`,
+        `Mock validation error`,
       );
     });
 
@@ -421,3 +272,20 @@ describe("Dequeue TxMA events", () => {
     });
   });
 });
+
+function mockGetEvent(record: SQSRecord): Result<TxmaEvent> {
+  if (record.messageId === passingSQSRecord.messageId) {
+    return successResult({
+      event_name: "DCMAW_ASYNC_CRI_START",
+      user: {
+        session_id: "49E7D76E-D5FE-4355-B8B4-E90ACA0887C2",
+      },
+      timestamp: "mockTimestamp",
+    });
+  }
+
+  return errorResult({
+    errorMessage: "Mock validation error",
+    body: "Invalid body",
+  });
+}

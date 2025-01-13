@@ -11,11 +11,13 @@ import {
   SQSBatchItemFailure,
   SQSBatchResponse,
   SQSEvent,
+  SQSRecord,
 } from "aws-lambda";
 import { Logger } from "../services/logging/logger";
 import { getConfig } from "./getConfig";
-import { allowedTxmaEventNames, getEvent } from "./getEvent";
+import { allowedTxmaEventNames, getEvent, TxmaEvent } from "./getEvent";
 import { MessageName, registeredLogs } from "./registeredLogs";
+import { Result } from "../utils/result";
 
 export const lambdaHandlerConstructor = async (
   dependencies: IDequeueDependencies,
@@ -25,6 +27,7 @@ export const lambdaHandlerConstructor = async (
   const logger = dependencies.logger();
   logger.addContext(context);
   logger.log("STARTED");
+  const { getEvent } = dependencies;
 
   const records = event.Records;
   const batchItemFailures: SQSBatchItemFailure[] = [];
@@ -114,6 +117,7 @@ interface IProcessedMessage {
 export interface IDequeueDependencies {
   env: NodeJS.ProcessEnv;
   logger: () => Logger<MessageName>;
+  getEvent: (record: SQSRecord) => Result<TxmaEvent>;
 }
 
 const dependencies: IDequeueDependencies = {
@@ -123,6 +127,7 @@ const dependencies: IDequeueDependencies = {
       new PowertoolsLogger({ serviceName: "Dequeue Function" }),
       registeredLogs,
     ),
+  getEvent,
 };
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);

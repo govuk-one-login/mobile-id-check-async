@@ -49,12 +49,12 @@ export function getEvent(record: SQSRecord): Result<TxmaEvent> {
   return successResult(txmaEvent);
 }
 
-interface TxmaEvent {
+export interface TxmaEvent {
   event_name: string;
   user: {
     session_id: string;
   };
-  timestamp: number;
+  timestamp: string;
 }
 
 export const allowedTxmaEventNames = [
