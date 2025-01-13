@@ -160,30 +160,35 @@ Mappings:
   EnvironmentVariables:
     dev:
       STSBASEURL: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk'
+      ClientRegistrySecretPath: 'dev/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
     build:
       STSBASEURL: 'https://mob-sts-mock.review-b-async.build.account.gov.uk'
+      ClientRegistrySecretPath: 'build/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
     staging:
       STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
+      ClientRegistrySecretPath: 'staging/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
     integration:
       STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
+      ClientRegistrySecretPath: 'integration/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
     production:
       STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
+      ClientRegistrySecretPath: 'production/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
@@ -358,7 +363,7 @@ Resources:
       Role: !GetAtt AsyncTokenLambdaRole.Arn
       Environment:
         Variables:
-          CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
+          CLIENT_REGISTRY_SECRET_NAME: !FindInMap [EnvironmentVariables, !Ref Environment, ClientRegistrySecretPath]
       VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-PrivateSubnetIdA
@@ -402,7 +407,9 @@ Resources:
                 Action:
                   - secretsmanager:GetSecretValue
                 Resource:
-                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistry-?????? # wildcard as AWS automatically appends 6 characters to the end of a secret arn
+                  - !Sub
+                    - arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${clientRegistrySecretPath}-?????? # wildcard as AWS automatically appends 6 characters to the end of a secret arn
+                    - clientRegistrySecretPath: !FindInMap [ EnvironmentVariables, !Ref Environment, ClientRegistrySecretPath ]
         - PolicyName: AsyncTokenFunctionLoggingPolicy
           PolicyDocument:
             Version: "2012-10-17"
@@ -470,7 +477,7 @@ Resources:
       Role: !GetAtt AsyncCredentialLambdaRole.Arn
       Environment:
         Variables:
-          CLIENT_REGISTRY_SECRET_NAME: !Sub ${Environment}/clientRegistry
+          CLIENT_REGISTRY_SECRET_NAME: !FindInMap [EnvironmentVariables, !Ref Environment, ClientRegistrySecretPath]
           SESSION_DURATION_IN_SECONDS: 3600 #Used to set time to live when creating sessions. Set to 1 hour.
       VpcConfig:
         SubnetIds:
@@ -538,7 +545,9 @@ Resources:
                 Action:
                   - secretsmanager:GetSecretValue
                 Resource:
-                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${Environment}/clientRegistry-?????? # wildcard as AWS automatically appends 6 characters to the end of a secret arn
+                  - !Sub
+                    - arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${clientRegistrySecretPath}-?????? # wildcard as AWS automatically appends 6 characters to the end of a secret arn
+                    - clientRegistrySecretPath: !FindInMap [ EnvironmentVariables, !Ref Environment, ClientRegistrySecretPath ]
         - PolicyName: AsyncCredentialFunctionLoggingPolicy
           PolicyDocument:
             Version: "2012-10-17"
