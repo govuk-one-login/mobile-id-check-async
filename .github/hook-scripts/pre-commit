@@ -7,8 +7,20 @@
 
 set -e
 
-cd backend-api || exit 1
+# Get git root directory
+GIT_ROOT=$(git rev-parse --show-toplevel)
 
-# Run prettier formatting checks
+# Change to backend-api directory and run existing checks
+cd "$GIT_ROOT/backend-api" || exit 1
+
+echo "Running lint and format checks..."
 npm run lint
 npm run format:check
+
+echo "Verifying CloudFormation templates..."
+# Change back to root directory to run template verification
+cd "$GIT_ROOT" || exit 1
+"$GIT_ROOT/helper-scripts/merge-templates.script.sh" verify
+
+# Exit with the verification result
+exit $?
