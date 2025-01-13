@@ -78,9 +78,6 @@ merge_templates() {
         exit 1
     fi
     
-    # Create backend-api directory if it doesn't exist
-    mkdir -p "$(dirname "$OUTPUT_TEMPLATE")"
-    
     # Merge using rain
     rain fmt "$PARENT_TEMPLATE" > "$TEMP_FILE"
     
