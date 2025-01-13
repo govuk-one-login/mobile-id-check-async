@@ -6,6 +6,7 @@ import {
 import { mockClient } from "aws-sdk-client-mock";
 import { JwksBuilder } from "../jwksBuilder";
 import { createPublicKey } from "node:crypto";
+import { ErrorCategory } from "../../../utils/result";
 
 const mockKmsClient = mockClient(KMSClient);
 
@@ -32,7 +33,7 @@ describe("JWKS Builder", () => {
       expect(buildJwksResponse.isError).toBe(true);
       expect(buildJwksResponse.value).toStrictEqual({
         errorMessage: "Error from KMS",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });
@@ -69,7 +70,7 @@ describe("JWKS Builder", () => {
         expect(buildJwksResponse.isError).toBe(true);
         expect(buildJwksResponse.value).toStrictEqual({
           errorMessage: "KMS response is missing required fields",
-          errorCategory: "SERVER_ERROR",
+          errorCategory: ErrorCategory.SERVER_ERROR,
         });
       });
     });
@@ -87,7 +88,7 @@ describe("JWKS Builder", () => {
         expect(buildJwksResponse.isError).toBe(true);
         expect(buildJwksResponse.value).toStrictEqual({
           errorMessage: "KMS key usage is not supported",
-          errorCategory: "SERVER_ERROR",
+          errorCategory: ErrorCategory.SERVER_ERROR,
         });
       });
     });
@@ -105,7 +106,7 @@ describe("JWKS Builder", () => {
         expect(await buildJwksResponse.isError).toBe(true);
         expect(await buildJwksResponse.value).toStrictEqual({
           errorMessage: "KMS key algorithm is not supported",
-          errorCategory: "SERVER_ERROR",
+          errorCategory: ErrorCategory.SERVER_ERROR,
         });
       });
     });
@@ -123,7 +124,7 @@ describe("JWKS Builder", () => {
         expect(buildJwksResponse.isError).toBe(true);
         expect(buildJwksResponse.value).toStrictEqual({
           errorMessage: "Error formatting public key as JWK",
-          errorCategory: "SERVER_ERROR",
+          errorCategory: ErrorCategory.SERVER_ERROR,
         });
       });
     });

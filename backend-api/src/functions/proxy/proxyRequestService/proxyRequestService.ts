@@ -1,5 +1,10 @@
 import axios, { AxiosResponseHeaders, RawAxiosResponseHeaders } from "axios";
-import { errorResult, Result, successResult } from "../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../utils/result";
 import { StandardisedHeaders } from "../proxyHandler";
 
 export interface RequestOptions {
@@ -42,7 +47,7 @@ export class ProxyRequestService implements IMakeProxyRequest {
       });
     } catch {
       return errorResult({
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
         errorMessage: "Error sending network request",
       });
     }

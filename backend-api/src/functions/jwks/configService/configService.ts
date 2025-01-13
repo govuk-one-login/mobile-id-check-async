@@ -1,5 +1,10 @@
 import { IGetConfig } from "../../types/config";
-import { errorResult, Result, successResult } from "../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../utils/result";
 
 export interface Config {
   ENCRYPTION_KEY_ID: string;
@@ -12,17 +17,17 @@ export class ConfigService implements IGetConfig<Config> {
     if (!env.ENCRYPTION_KEY_ID)
       return errorResult({
         errorMessage: "No ENCRYPTION_KEY_ID",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     if (!env.JWKS_BUCKET_NAME)
       return errorResult({
         errorMessage: "No JWKS_BUCKET_NAME",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     if (!env.JWKS_FILE_NAME)
       return errorResult({
         errorMessage: "No JWKS_FILE_NAME",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
 
     return successResult({

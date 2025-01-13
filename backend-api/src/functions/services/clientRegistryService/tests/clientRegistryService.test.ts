@@ -4,6 +4,7 @@ import {
 } from "@aws-sdk/client-secrets-manager";
 import { mockClient } from "aws-sdk-client-mock";
 import { ClientRegistryService } from "../clientRegistryService";
+import { ErrorCategory } from "../../../utils/result";
 
 describe("Client Credentials Service", () => {
   let clientCredentialsService: ClientRegistryService;
@@ -28,7 +29,7 @@ describe("Client Credentials Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Error retrieving client secrets",
-          errorCategory: "SERVER_ERROR",
+          errorCategory: ErrorCategory.SERVER_ERROR,
         });
       });
     });
@@ -51,7 +52,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry not found",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -74,7 +75,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry is not a valid JSON",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -97,7 +98,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry is not an array",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -119,7 +120,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry is empty",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -149,7 +150,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -181,7 +182,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -212,7 +213,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -243,7 +244,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -274,7 +275,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -306,7 +307,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -336,7 +337,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -367,7 +368,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -397,7 +398,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -428,7 +429,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -464,7 +465,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -501,7 +502,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -534,7 +535,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client is not registered",
-              errorCategory: "CLIENT_ERROR",
+              errorCategory: ErrorCategory.CLIENT_ERROR,
             });
           });
         });
@@ -565,7 +566,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client credentials are invalid",
-              errorCategory: "CLIENT_ERROR",
+              errorCategory: ErrorCategory.CLIENT_ERROR,
             });
           });
         });
@@ -690,7 +691,7 @@ describe("Client Credentials Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Error retrieving client secrets",
-          errorCategory: "SERVER_ERROR",
+          errorCategory: ErrorCategory.SERVER_ERROR,
         });
       });
     });
@@ -710,7 +711,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry not found",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -730,7 +731,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry is not a valid JSON",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -750,7 +751,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry is not an array",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -769,7 +770,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry is empty",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -796,7 +797,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -825,7 +826,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -853,7 +854,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -881,7 +882,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -909,7 +910,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -938,7 +939,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -965,7 +966,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -993,7 +994,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -1019,7 +1020,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -1047,7 +1048,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -1080,7 +1081,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -1114,7 +1115,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client registry failed schema validation",
-              errorCategory: "SERVER_ERROR",
+              errorCategory: ErrorCategory.SERVER_ERROR,
             });
           });
         });
@@ -1144,7 +1145,7 @@ describe("Client Credentials Service", () => {
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
               errorMessage: "Client is not registered",
-              errorCategory: "CLIENT_ERROR",
+              errorCategory: ErrorCategory.CLIENT_ERROR,
             });
           });
         });

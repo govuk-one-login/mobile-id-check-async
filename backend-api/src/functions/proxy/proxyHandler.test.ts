@@ -6,7 +6,12 @@ import { lambdaHandlerConstructor } from "./proxyHandler";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { IMockProxyDependencies } from "./handlerDependencies";
 import { Logger } from "../services/logging/logger";
-import { errorResult, Result, successResult } from "../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../utils/result";
 import {
   IMakeProxyRequest,
   RequestOptions,
@@ -268,7 +273,7 @@ class ProxyRequestServiceErrorResult {
   > => {
     return Promise.resolve(
       errorResult({
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
         errorMessage: "mockProxyRequestFailedErrorMessage",
       }),
     );

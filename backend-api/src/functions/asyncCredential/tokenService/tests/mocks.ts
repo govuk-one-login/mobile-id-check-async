@@ -1,4 +1,9 @@
-import { errorResult, Result, successResult } from "../../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../../utils/result";
 import {
   IDecodedToken,
   IDecodeToken,
@@ -23,7 +28,7 @@ export class MockTokenServiceGetDecodedTokenErrorResult
   getDecodedToken(): Result<IDecodedToken> {
     return errorResult({
       errorMessage: "Mock decoding token error",
-      errorCategory: "SERVER_ERROR",
+      errorCategory: ErrorCategory.SERVER_ERROR,
     });
   }
   verifyTokenSignature(): Promise<Result<null>> {
@@ -41,7 +46,7 @@ export class MockTokenServiceErrorResult
     return Promise.resolve(
       errorResult({
         errorMessage: "Some error",
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       }),
     );
   }

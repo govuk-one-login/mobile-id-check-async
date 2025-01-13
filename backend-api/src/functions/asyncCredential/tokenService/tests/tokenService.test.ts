@@ -2,6 +2,7 @@ import { KMSClient, VerifyCommand } from "@aws-sdk/client-kms";
 import { mockClient } from "aws-sdk-client-mock";
 import { TokenService } from "../tokenService";
 import { MockJWTBuilder } from "../../../testUtils/mockJwtBuilder";
+import { ErrorCategory } from "../../../utils/result";
 
 describe("Token Service", () => {
   describe("Verify token claims", () => {
@@ -20,7 +21,7 @@ describe("Token Service", () => {
         expect(result.isError).toEqual(true);
         expect(result.value).toStrictEqual({
           errorMessage: "JWT payload not valid JSON",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       });
     });
@@ -40,7 +41,7 @@ describe("Token Service", () => {
           expect(result.isError).toEqual(true);
           expect(result.value).toStrictEqual({
             errorMessage: "Missing exp claim",
-            errorCategory: "CLIENT_ERROR",
+            errorCategory: ErrorCategory.CLIENT_ERROR,
           });
         });
       });
@@ -60,7 +61,7 @@ describe("Token Service", () => {
           expect(result.isError).toEqual(true);
           expect(result.value).toStrictEqual({
             errorMessage: "exp claim is in the past",
-            errorCategory: "CLIENT_ERROR",
+            errorCategory: ErrorCategory.CLIENT_ERROR,
           });
         });
       });
@@ -82,7 +83,7 @@ describe("Token Service", () => {
           expect(result.isError).toEqual(true);
           expect(result.value).toStrictEqual({
             errorMessage: "iat claim is in the future",
-            errorCategory: "CLIENT_ERROR",
+            errorCategory: ErrorCategory.CLIENT_ERROR,
           });
         });
       });
@@ -104,7 +105,7 @@ describe("Token Service", () => {
           expect(result.isError).toEqual(true);
           expect(result.value).toStrictEqual({
             errorMessage: "nbf claim is in the future",
-            errorCategory: "CLIENT_ERROR",
+            errorCategory: ErrorCategory.CLIENT_ERROR,
           });
         });
       });
@@ -126,7 +127,7 @@ describe("Token Service", () => {
           expect(result.isError).toEqual(true);
           expect(result.value).toStrictEqual({
             errorMessage: "Missing iss claim",
-            errorCategory: "CLIENT_ERROR",
+            errorCategory: ErrorCategory.CLIENT_ERROR,
           });
         });
       });
@@ -147,7 +148,7 @@ describe("Token Service", () => {
           expect(result.value).toStrictEqual({
             errorMessage:
               "iss claim does not match ISSUER environment variable",
-            errorCategory: "CLIENT_ERROR",
+            errorCategory: ErrorCategory.CLIENT_ERROR,
           });
         });
       });
@@ -169,7 +170,7 @@ describe("Token Service", () => {
           expect(result.isError).toEqual(true);
           expect(result.value).toStrictEqual({
             errorMessage: "Missing scope claim",
-            errorCategory: "CLIENT_ERROR",
+            errorCategory: ErrorCategory.CLIENT_ERROR,
           });
         });
       });
@@ -188,7 +189,7 @@ describe("Token Service", () => {
           expect(result.isError).toEqual(true);
           expect(result.value).toStrictEqual({
             errorMessage: "Invalid scope claim",
-            errorCategory: "CLIENT_ERROR",
+            errorCategory: ErrorCategory.CLIENT_ERROR,
           });
         });
       });
@@ -210,7 +211,7 @@ describe("Token Service", () => {
           expect(result.isError).toEqual(true);
           expect(result.value).toStrictEqual({
             errorMessage: "Missing client_id claim",
-            errorCategory: "CLIENT_ERROR",
+            errorCategory: ErrorCategory.CLIENT_ERROR,
           });
         });
       });
@@ -232,7 +233,7 @@ describe("Token Service", () => {
           expect(result.isError).toEqual(true);
           expect(result.value).toStrictEqual({
             errorMessage: "Missing aud claim",
-            errorCategory: "CLIENT_ERROR",
+            errorCategory: ErrorCategory.CLIENT_ERROR,
           });
         });
       });
@@ -283,7 +284,7 @@ describe("Token Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Signature could not be verified",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       });
     });

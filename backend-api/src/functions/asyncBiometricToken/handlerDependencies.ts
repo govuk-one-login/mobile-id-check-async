@@ -1,11 +1,12 @@
-import { Logger } from "../services/logging/logger";
-import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
-import { MessageName, registeredLogs } from "./registeredLogs";
+import { GetSecrets } from "../common/config/secrets";
+import { getSecretsFromParameterStore } from "../adapters/getSecretsFromParameterStore";
 
-export interface IAsyncBiometricTokenDependencies {
-  logger: () => Logger<MessageName>;
-}
+export type IAsyncBiometricTokenDependencies = {
+  env: NodeJS.ProcessEnv;
+  getSecrets: GetSecrets;
+};
 
-export const dependencies: IAsyncBiometricTokenDependencies = {
-  logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
+export const runtimeDependencies: IAsyncBiometricTokenDependencies = {
+  env: process.env,
+  getSecrets: getSecretsFromParameterStore,
 };

@@ -1,5 +1,10 @@
 import { IGetConfig } from "../../types/config";
-import { errorResult, Result, successResult } from "../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../utils/result";
 
 export interface Config {
   ENCRYPTION_KEY_ARN: string;
@@ -13,19 +18,19 @@ export class ConfigService implements IGetConfig<Config> {
     if (!env.ENCRYPTION_KEY_ARN) {
       return errorResult({
         errorMessage: "No ENCRYPTION_KEY_ARN",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
     if (!env.SESSION_TABLE_NAME) {
       return errorResult({
         errorMessage: "No SESSION_TABLE_NAME",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
     if (!env.AUDIENCE) {
       return errorResult({
         errorMessage: "No AUDIENCE",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
     try {
@@ -33,13 +38,13 @@ export class ConfigService implements IGetConfig<Config> {
     } catch {
       return errorResult({
         errorMessage: "AUDIENCE is not a URL",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
     if (!env.STS_BASE_URL) {
       return errorResult({
         errorMessage: "No STS_BASE_URL",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
     try {
@@ -47,7 +52,7 @@ export class ConfigService implements IGetConfig<Config> {
     } catch {
       return errorResult({
         errorMessage: "STS_BASE_URL is not a URL",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 

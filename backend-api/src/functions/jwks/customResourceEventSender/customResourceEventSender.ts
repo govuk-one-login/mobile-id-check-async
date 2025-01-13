@@ -1,5 +1,10 @@
 import { CloudFormationCustomResourceEvent, Context } from "aws-lambda";
-import { errorResult, Result, successResult } from "../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../utils/result";
 
 export class CustomResourceEventSender implements ICustomResourceEventSender {
   private readonly event: CloudFormationCustomResourceEvent;
@@ -33,7 +38,7 @@ export class CustomResourceEventSender implements ICustomResourceEventSender {
       if (!response.ok) {
         return errorResult({
           errorMessage: "Error sending Custom Resource event",
-          errorCategory: "SERVER_ERROR",
+          errorCategory: ErrorCategory.SERVER_ERROR,
         });
       } else {
         return successResult(null);
@@ -41,7 +46,7 @@ export class CustomResourceEventSender implements ICustomResourceEventSender {
     } catch {
       return errorResult({
         errorMessage: "Unexpected network error sending Custom Resource event",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
   }
