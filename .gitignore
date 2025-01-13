@@ -25,3 +25,9 @@ docker-vars.env
 
 async-proxy-private-spec.yaml
 
+# parameters files generated from the helper-script deployments of the cloudfront distribution
+parameters-*-cf-dist.json
+
+# files generated when running the sts-mock jwks helper script
+jwks.json
+private-key.json
