@@ -1,6 +1,7 @@
 import { KMSClient, SignCommand } from "@aws-sdk/client-kms";
 import { mockClient } from "aws-sdk-client-mock";
 import { TokenService } from "../tokenService";
+import { ErrorCategory } from "../../../utils/result";
 
 const kmsMock = mockClient(KMSClient);
 
@@ -32,7 +33,7 @@ describe("Token Service", () => {
       expect((await mintTokenResponse).isError).toBe(true);
       expect((await mintTokenResponse).value).toStrictEqual({
         errorMessage: "Error from KMS",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });
@@ -46,7 +47,7 @@ describe("Token Service", () => {
         expect((await mintTokenResponse).isError).toBe(true);
         expect((await mintTokenResponse).value).toStrictEqual({
           errorMessage: "No signature in response from KMS",
-          errorCategory: "SERVER_ERROR",
+          errorCategory: ErrorCategory.SERVER_ERROR,
         });
       });
     });

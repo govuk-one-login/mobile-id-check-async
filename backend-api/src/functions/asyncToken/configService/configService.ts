@@ -1,5 +1,10 @@
 import { IGetConfig } from "../../types/config";
-import { errorResult, Result, successResult } from "../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../utils/result";
 
 export interface Config {
   SIGNING_KEY_ID: string;
@@ -13,22 +18,22 @@ export class ConfigService implements IGetConfig<Config> {
     if (!env.SIGNING_KEY_ID)
       return errorResult({
         errorMessage: "No SIGNING_KEY_ID",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     if (!env.TXMA_SQS)
       return errorResult({
         errorMessage: "No TXMA_SQS",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     if (!env.ISSUER)
       return errorResult({
         errorMessage: "No ISSUER",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     if (!env.CLIENT_REGISTRY_SECRET_NAME)
       return errorResult({
         errorMessage: "No CLIENT_REGISTRY_SECRET_NAME",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
 
     return successResult({

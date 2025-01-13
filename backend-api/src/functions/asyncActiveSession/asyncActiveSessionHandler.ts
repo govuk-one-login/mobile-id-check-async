@@ -5,6 +5,7 @@ import {
   IAsyncActiveSessionDependencies,
 } from "./handlerDependencies";
 import { ConfigService } from "./configService/configService";
+import { ErrorCategory } from "../utils/result";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncActiveSessionDependencies,
@@ -37,7 +38,7 @@ export async function lambdaHandlerConstructor(
     .jweDecrypter(config.ENCRYPTION_KEY_ARN)
     .decrypt(serviceTokenJwe);
   if (decryptResult.isError) {
-    if (decryptResult.value.errorCategory === "CLIENT_ERROR") {
+    if (decryptResult.value.errorCategory === ErrorCategory.CLIENT_ERROR) {
       logger.log("JWE_DECRYPTION_ERROR", {
         errorMessage: decryptResult.value.errorMessage,
       });
@@ -57,7 +58,10 @@ export async function lambdaHandlerConstructor(
     config.STS_BASE_URL,
   );
   if (validateServiceTokenResult.isError) {
-    if (validateServiceTokenResult.value.errorCategory === "CLIENT_ERROR") {
+    if (
+      validateServiceTokenResult.value.errorCategory ===
+      ErrorCategory.CLIENT_ERROR
+    ) {
       logger.log("SERVICE_TOKEN_VALIDATION_ERROR", {
         errorMessage: validateServiceTokenResult.value.errorMessage,
       });

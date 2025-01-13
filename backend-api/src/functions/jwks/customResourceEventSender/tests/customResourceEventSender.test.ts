@@ -1,6 +1,7 @@
 import { CustomResourceEventSender } from "../customResourceEventSender";
 import { buildLambdaContext } from "../../../testUtils/mockContext";
 import { buildCloudFormationCustomResourceEvent } from "../../../testUtils/mockCloudFormationCustomResourceEvent";
+import { ErrorCategory } from "../../../utils/result";
 
 let mockFetch: jest.SpyInstance;
 
@@ -39,7 +40,7 @@ describe("Custom Resource Event Sender", () => {
       expect(sendEventResponse.isError).toBe(true);
       expect(sendEventResponse.value).toStrictEqual({
         errorMessage: "Error sending Custom Resource event",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });
@@ -56,7 +57,7 @@ describe("Custom Resource Event Sender", () => {
       expect(sendEventResponse.isError).toBe(true);
       expect(sendEventResponse.value).toStrictEqual({
         errorMessage: "Unexpected network error sending Custom Resource event",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });

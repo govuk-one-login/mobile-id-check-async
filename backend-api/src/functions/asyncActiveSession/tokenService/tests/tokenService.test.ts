@@ -1,6 +1,7 @@
 import { MockJWTBuilder } from "../../../testUtils/mockJwtBuilder";
 import { ITokenService, TokenService } from "../tokenService";
 import { MockTokenVerifierError, MockTokenVerifierSuccess } from "./mocks";
+import { ErrorCategory } from "../../../utils/result";
 
 describe("Token Service", () => {
   let tokenService: ITokenService;
@@ -27,7 +28,7 @@ describe("Token Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Failed to decode token header",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       });
     });
@@ -44,7 +45,7 @@ describe("Token Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Invalid kid claim",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       });
     });
@@ -62,7 +63,7 @@ describe("Token Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Failed to decode token payload",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       });
     });
@@ -81,7 +82,7 @@ describe("Token Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Invalid not-before claim",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       });
     });
@@ -98,7 +99,7 @@ describe("Token Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Invalid issuer claim",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       });
     });
@@ -117,7 +118,7 @@ describe("Token Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Invalid issuer claim",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       });
     });
@@ -134,7 +135,7 @@ describe("Token Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Invalid audience claim",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       });
     });
@@ -153,7 +154,7 @@ describe("Token Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Invalid audience claim",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       });
     });
@@ -172,7 +173,7 @@ describe("Token Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Invalid scope claim",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       });
     });
@@ -191,7 +192,7 @@ describe("Token Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Invalid scope claim",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       });
     });
@@ -210,7 +211,7 @@ describe("Token Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Invalid sub claim",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       });
     });
@@ -231,7 +232,7 @@ describe("Token Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Token expiry time is missing or is in the past",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       });
     });
@@ -252,7 +253,7 @@ describe("Token Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Token expiry time is missing or is in the past",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       });
     });
@@ -272,7 +273,7 @@ describe("Token Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Token issued at time is missing or is in the future",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       });
     });
@@ -293,7 +294,7 @@ describe("Token Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Token issued at time is missing or is in the future",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       });
     });
@@ -319,7 +320,7 @@ describe("Token Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Mock signature verification error",
-          errorCategory: "CLIENT_ERROR",
+          errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       });
     });
