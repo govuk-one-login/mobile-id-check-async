@@ -1,5 +1,5 @@
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
-import { SQSEvent } from "aws-lambda";
+import { SQSBatchResponse, SQSEvent } from "aws-lambda";
 import { mockClient } from "aws-sdk-client-mock";
 import "aws-sdk-client-mock-jest";
 import { Logger } from "../../services/logging/logger";
@@ -19,7 +19,7 @@ import {
   missingTimestampSQSRecord,
   passingSQSRecord,
   putItemInputForPassingSQSRecord,
-  putItemInputForPassingSQSRecordWithoutSessionId
+  putItemInputForPassingSQSRecordWithoutSessionId,
 } from "./testData";
 
 const env = {
@@ -283,7 +283,7 @@ describe("Dequeue TxMA events", () => {
   });
 
   describe("Given there is an error writing to Dynamo", () => {
-    it("Logs an error message", async () => {
+    it("Logs an error message and returns batchItemFailures to be reprocessed", async () => {
       mockDbClient.on(PutItemCommand).rejects("Error writing to database");
       const event: SQSEvent = {
         Records: [passingSQSRecord],
@@ -317,15 +317,20 @@ describe("Dequeue TxMA events", () => {
     });
   });
 
-  describe("Given not all messages are processed successfully", () => {
+  describe("Given not all messages are processed successfully due to a validation failure", () => {
     let event: SQSEvent;
+    let result: SQSBatchResponse;
 
     beforeEach(async () => {
       mockDbClient.on(PutItemCommand).resolves({});
       event = {
         Records: [passingSQSRecord, invalidBodySQSRecord],
       };
-      await lambdaHandlerConstructor(dependencies, event, buildLambdaContext());
+      result = await lambdaHandlerConstructor(
+        dependencies,
+        event,
+        buildLambdaContext(),
+      );
     });
 
     it("Logs the messageId of messages that failed to be processed", async () => {
@@ -354,6 +359,9 @@ describe("Dequeue TxMA events", () => {
           sessionId: JSON.parse(passingSQSRecord.body).user.session_id,
         },
       ]);
+    });
+    it("Returns no batchItemFailures to be reprocessed", () => {
+      expect(result).toEqual({ batchItemFailures: [] });
     });
   });
 
