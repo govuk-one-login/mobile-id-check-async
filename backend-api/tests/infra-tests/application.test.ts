@@ -13,7 +13,7 @@ describe("Backend application infrastructure", () => {
   beforeEach(() => {
     // Update path to use the parent template directly
     let yamltemplate: any = load(
-      readFileSync("backend-api/infra/parent.yaml", "utf-8"),
+      readFileSync("../../infra/parent.yaml", "utf-8"),
       {
         schema: schema,
       },
