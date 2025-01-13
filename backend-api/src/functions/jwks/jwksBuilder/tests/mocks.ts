@@ -1,4 +1,9 @@
-import { successResult, Result, errorResult } from "../../../utils/result";
+import {
+  successResult,
+  Result,
+  errorResult,
+  ErrorCategory,
+} from "../../../utils/result";
 import { IJwksBuilder } from "../jwksBuilder";
 import { EncryptionJwk, Jwks } from "../../../types/jwks";
 
@@ -32,7 +37,7 @@ export class MockJwksBuilderErrorResult implements IJwksBuilder {
     return Promise.resolve(
       errorResult({
         errorMessage: "Error formatting public key as JWK",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       }),
     );
   }

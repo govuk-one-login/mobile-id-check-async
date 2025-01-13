@@ -1,5 +1,10 @@
 import { randomUUID } from "crypto";
-import { errorResult, Result, successResult } from "../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../utils/result";
 import {
   DatabaseRecord,
   DynamoDbAdapter,
@@ -50,7 +55,7 @@ export class SessionService implements ISessionService {
     } catch (error) {
       return errorResult({
         errorMessage: `Error creating session - ${error}`,
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
@@ -71,7 +76,7 @@ export class SessionService implements ISessionService {
     } catch (error) {
       return errorResult({
         errorMessage: `Error getting session ID - ${error}`,
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
@@ -83,7 +88,7 @@ export class SessionService implements ISessionService {
     if (!sessionId) {
       return errorResult({
         errorMessage: "Session is malformed",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
@@ -104,7 +109,7 @@ export class SessionService implements ISessionService {
     } catch (error) {
       return errorResult({
         errorMessage: `Error getting session - ${error}`,
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
@@ -117,7 +122,7 @@ export class SessionService implements ISessionService {
     if (!sessionId || !state) {
       return errorResult({
         errorMessage: "Session is malformed",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 

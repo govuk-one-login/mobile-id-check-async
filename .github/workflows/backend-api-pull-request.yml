@@ -47,7 +47,7 @@ jobs:
         run: npm run format:check
 
       # Runs unit, infra and pact tests
-      - name: Run tests 
+      - name: Run tests
         run: npm run test
 
       - name: Generate proxy open api spec

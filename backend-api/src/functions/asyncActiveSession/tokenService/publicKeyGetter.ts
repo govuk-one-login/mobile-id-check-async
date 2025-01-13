@@ -1,5 +1,10 @@
 import { importJWK, KeyLike } from "jose";
-import { errorResult, Result, successResult } from "../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../utils/result";
 import {
   ISendHttpRequest,
   sendHttpRequest,
@@ -49,7 +54,7 @@ export class PublicKeyGetter implements IPublicKeyGetter {
     } catch (error) {
       return errorResult({
         errorMessage: `Error getting JWK - ${error}`,
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
@@ -59,7 +64,7 @@ export class PublicKeyGetter implements IPublicKeyGetter {
     } catch (error) {
       return errorResult({
         errorMessage: `Invalid JWK - ${error}`,
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
