@@ -9,7 +9,7 @@ const { schema } = require("yaml-cfn");
 
 describe("Backend application infrastructure", () => {
   let template: Template;
-  
+
   beforeEach(() => {
     // Update path to use the parent template directly
     let yamltemplate: any = load(
