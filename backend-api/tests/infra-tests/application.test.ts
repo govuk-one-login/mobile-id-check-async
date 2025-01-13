@@ -9,11 +9,15 @@ const { schema } = require("yaml-cfn");
 
 describe("Backend application infrastructure", () => {
   let template: Template;
+  
   beforeEach(() => {
     // Update path to use the parent template directly
-    let yamltemplate: any = load(readFileSync("../../backend-api/infra/parent.yaml", "utf-8"), {
-      schema: schema,
-    });
+    let yamltemplate: any = load(
+      readFileSync("backend-api/infra/parent.yaml", "utf-8"),
+      {
+        schema: schema,
+      },
+    );
     template = Template.fromJSON(yamltemplate);
   });
 
