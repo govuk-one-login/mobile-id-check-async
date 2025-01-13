@@ -50,7 +50,7 @@ export const putItemInputForPassingSQSRecordWithoutSessionId = {
   Item: {
     pk: { S: "SESSION#UNKNOWN" },
     sk: {
-      S: "TXMA#EVENT_NAME#DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED#TIMESTAMP#mockTimestamp",
+      S: `TXMA#EVENT_NAME#${passingEventNameWithoutSessionId}#TIMESTAMP#mockTimestamp`,
     },
     eventBody: {
       S: JSON.stringify({
