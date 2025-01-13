@@ -5,12 +5,13 @@ import { Mappings } from "./helpers/mappings";
 
 const { schema } = require("yaml-cfn");
 
+// https://docs.aws.amazon.com/cdk/v2/guide/testing.html <--- how to use this file
+
 describe("Backend application infrastructure", () => {
   let template: Template;
-  
   beforeEach(() => {
-    // Use the merged template
-    let yamltemplate: any = load(readFileSync("backend-api/template.yaml", "utf-8"), {
+    // Update path to use the parent template directly
+    let yamltemplate: any = load(readFileSync("../../backend-api/infra/parent.yaml", "utf-8"), {
       schema: schema,
     });
     template = Template.fromJSON(yamltemplate);
@@ -129,7 +130,8 @@ describe("Backend application infrastructure", () => {
       template.hasResourceProperties("AWS::Logs::LogGroup", {
         RetentionInDays: 30,
         LogGroupName: {
-          "Fn::Sub": "/aws/apigateway/${AWS::StackName}-private-api-access-logs",
+          "Fn::Sub":
+            "/aws/apigateway/${AWS::StackName}-private-api-access-logs",
         },
       });
     });
@@ -137,6 +139,7 @@ describe("Backend application infrastructure", () => {
 
   describe("CloudWatch alarms", () => {
     test("All critical alerts should have runbooks defined", () => {
+      // to be updated only when a runbook exists for an alarm
       const runbooksByAlarm: Record<string, boolean> = {
         "high-threshold-well-known-5xx-api-gw": false,
         "high-threshold-well-known-4xx-api-gw": false,
@@ -168,9 +171,13 @@ describe("Backend application infrastructure", () => {
     });
 
     test("All alarms are configured with the DeployAlarm Condition", () => {
-      const alarms = Object.values(template.findResources("AWS::CloudWatch::Alarm"));
+      const alarms = Object.values(
+        template.findResources("AWS::CloudWatch::Alarm"),
+      );
       alarms.forEach((alarm) => {
-        expect(alarm).toEqual(expect.objectContaining({ Condition: "DeployAlarms" }));
+        expect(alarm).toEqual(
+          expect.objectContaining({ Condition: "DeployAlarms" }),
+        );
       });
     });
 
@@ -240,10 +247,14 @@ describe("Backend application infrastructure", () => {
     describe("APIgw method settings", () => {
       test("Metrics are enabled", () => {
         const methodSettings = new Capture();
-        template.hasResourceProperties("AWS::Serverless::Api", {
-          Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
-          MethodSettings: methodSettings,
-        });
+        template.hasResourceProperties(
+          "AWS::Serverless::Api",
+
+          {
+            Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
+            MethodSettings: methodSettings,
+          },
+        );
         expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
       });
 
@@ -255,6 +266,7 @@ describe("Backend application infrastructure", () => {
           integration: 0,
           production: 0,
         };
+
         const expectedRateLimits = {
           dev: 10,
           build: 10,
@@ -275,10 +287,14 @@ describe("Backend application infrastructure", () => {
 
       test("Rate limit and burst mappings are applied to the APIgw", () => {
         const methodSettings = new Capture();
-        template.hasResourceProperties("AWS::Serverless::Api", {
-          Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
-          MethodSettings: methodSettings,
-        });
+        template.hasResourceProperties(
+          "AWS::Serverless::Api",
+
+          {
+            Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
+            MethodSettings: methodSettings,
+          },
+        );
         expect(methodSettings.asArray()[0].ThrottlingBurstLimit).toStrictEqual({
           "Fn::FindInMap": [
             "SessionsApigw",
@@ -286,6 +302,7 @@ describe("Backend application infrastructure", () => {
             "ApiBurstLimit",
           ],
         });
+
         expect(methodSettings.asArray()[0].ThrottlingRateLimit).toStrictEqual({
           "Fn::FindInMap": [
             "SessionsApigw",
@@ -312,7 +329,8 @@ describe("Backend application infrastructure", () => {
       template.hasResourceProperties("AWS::Logs::LogGroup", {
         RetentionInDays: 30,
         LogGroupName: {
-          "Fn::Sub": "/aws/apigateway/${AWS::StackName}-sessions-api-access-logs",
+          "Fn::Sub":
+            "/aws/apigateway/${AWS::StackName}-sessions-api-access-logs",
         },
       });
     });
@@ -332,7 +350,9 @@ describe("Backend application infrastructure", () => {
         DefinitionBody: {
           "Fn::Transform": {
             Name: "AWS::Include",
-            Parameters: { Location: "./openApiSpecs/async-proxy-private-spec.yaml" },
+            Parameters: {
+              Location: "./openApiSpecs/async-proxy-private-spec.yaml",
+            },
           },
         },
       });
@@ -435,7 +455,8 @@ describe("Backend application infrastructure", () => {
           "DT_TENANT",
           "DT_OPEN_TELEMETRY_ENABLE_INTEGRATION",
         ];
-        const envVars = template.toJSON().Globals.Function.Environment.Variables;
+        const envVars =
+          template.toJSON().Globals.Function.Environment.Variables;
         Object.keys(envVars).every((envVar) => {
           expectedGlobals.includes(envVar);
         });
@@ -443,7 +464,8 @@ describe("Backend application infrastructure", () => {
       });
 
       test("Global reserved concurrency is set", () => {
-        const reservedConcurrentExecutionMapping = template.findMappings("Lambda");
+        const reservedConcurrentExecutionMapping =
+          template.findMappings("Lambda");
 
         expect(reservedConcurrentExecutionMapping).toStrictEqual({
           Lambda: {
@@ -531,7 +553,7 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("All lambdas are attached to a VPC", () => {
+    test("All lambdas are attached to a VPC ", () => {
       const lambdas = template.findResources("AWS::Serverless::Function");
       const lambda_list = Object.keys(lambdas);
       lambda_list.forEach((lambda) => {
@@ -623,6 +645,7 @@ describe("Backend application infrastructure", () => {
   });
 
   describe("IAM", () => {
+    // See: https://github.com/govuk-one-login/devplatform-deploy/blob/c298f297141f414798899a622509262fbb309260/sam-deploy-pipeline/template.yaml#L3759
     test("Every IAM role has a permissions boundary", () => {
       const iamRoles = template.findResources("AWS::IAM::Role");
       const iamRolesList = Object.keys(iamRoles);
@@ -637,12 +660,16 @@ describe("Backend application infrastructure", () => {
       });
     });
 
+    // See: https://github.com/govuk-one-login/devplatform-deploy/blob/c298f297141f414798899a622509262fbb309260/sam-deploy-pipeline/template.yaml#L3759
     test("Every IAM role name conforms to dev platform naming standard", () => {
       const iamRoles = template.findResources("AWS::IAM::Role");
       const iamRolesList = Object.keys(iamRoles);
       iamRolesList.forEach((iamRole) => {
-        const roleName = iamRoles[iamRole].Properties.RoleName["Fn::Sub"] as string;
-        const roleNameConformsToStandards = roleName.startsWith("${AWS::StackName}-");
+        const roleName = iamRoles[iamRole].Properties.RoleName[
+          "Fn::Sub"
+        ] as string;
+        const roleNameConformsToStandards =
+          roleName.startsWith("${AWS::StackName}-");
         expect(roleNameConformsToStandards).toBe(true);
       });
     });
@@ -674,7 +701,9 @@ describe("Backend application infrastructure", () => {
       const buckets = template.findResources("AWS::S3::Bucket");
       const bucketList = Object.keys(buckets);
       bucketList.forEach((bucket) => {
-        expect(buckets[bucket].Properties.PublicAccessBlockConfiguration).toEqual(
+        expect(
+          buckets[bucket].Properties.PublicAccessBlockConfiguration,
+        ).toEqual(
           expect.objectContaining({
             BlockPublicAcls: true,
             BlockPublicPolicy: true,
@@ -690,7 +719,8 @@ describe("Backend application infrastructure", () => {
       const bucketList = Object.keys(buckets);
       bucketList.forEach((bucket) => {
         expect(
-          buckets[bucket].Properties.BucketEncryption.ServerSideEncryptionConfiguration,
+          buckets[bucket].Properties.BucketEncryption
+            .ServerSideEncryptionConfiguration,
         ).toEqual(
           expect.arrayContaining([
             expect.objectContaining({
