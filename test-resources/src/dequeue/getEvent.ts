@@ -26,7 +26,8 @@ export function getEvent(record: SQSRecord): Result<TxmaEvent> {
       eventName,
     });
   }
-  let sessionId = txmaEvent.user?.session_id;
+
+  const sessionId = txmaEvent.user?.session_id;
   if (!sessionId) {
     if (!allowedTxmaEventNamesWithoutSessionId.includes(eventName)) {
       return errorResult({
@@ -34,7 +35,7 @@ export function getEvent(record: SQSRecord): Result<TxmaEvent> {
         eventName,
       });
     } else {
-      sessionId = "UNKNOWN";
+      txmaEvent.user = { session_id: "UNKNOWN" };
     }
   }
 
