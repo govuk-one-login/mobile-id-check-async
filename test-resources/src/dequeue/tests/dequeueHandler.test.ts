@@ -373,7 +373,7 @@ describe("Dequeue TxMA events", () => {
           Records: [passingSQSRecord],
         };
 
-        await lambdaHandlerConstructor(
+        const result = await lambdaHandlerConstructor(
           dependencies,
           event,
           buildLambdaContext(),
@@ -386,6 +386,7 @@ describe("Dequeue TxMA events", () => {
             sessionId: JSON.parse(passingSQSRecord.body).user.session_id,
           },
         ]);
+        expect(result).toEqual({ batchItemFailures: [] });
       });
     });
 
@@ -396,7 +397,7 @@ describe("Dequeue TxMA events", () => {
           Records: [passingSQSRecord, passingSQSRecord],
         };
 
-        await lambdaHandlerConstructor(
+        const result = await lambdaHandlerConstructor(
           dependencies,
           event,
           buildLambdaContext(),
@@ -415,6 +416,7 @@ describe("Dequeue TxMA events", () => {
             sessionId,
           },
         ]);
+        expect(result).toEqual({ batchItemFailures: [] });
       });
     });
   });
