@@ -161,10 +161,3 @@ Resources:
       BillingMode: PAY_PER_REQUEST
       SSESpecification:
         SSEEnabled: true
-
-Outputs:
-  EventsTableName:
-    Description: Events Table Name
-    Export:
-      Name: !Sub ${AWS::StackName}-events-table-${Environment}
-    Value: !Ref EventsTable
