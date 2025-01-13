@@ -35,7 +35,7 @@ describe("Dequeue TxMA events", () => {
   beforeEach(() => {
     jest.useFakeTimers().setSystemTime(new Date("2025-01-08"));
     mockLogger = new MockLoggingAdapter();
-    mockDbClient.on(PutItemCommand).resolves({});
+    mockDbClient.on(PutItemCommand).rejects({});
     dependencies = {
       env,
       logger: () => new Logger(mockLogger, registeredLogs),
@@ -186,6 +186,7 @@ describe("Dequeue TxMA events", () => {
     describe("Given session_id is missing", () => {
       describe("Given the registered event schema does not include a session_id", () => {
         it("Writes to Dynamo using UNKNOWN as the sessionId", async () => {
+          mockDbClient.on(PutItemCommand).resolves({});
           const event: SQSEvent = {
             Records: [missingSessionIdValidSQSRecord],
           };
@@ -323,6 +324,7 @@ describe("Dequeue TxMA events", () => {
     let event: SQSEvent;
 
     beforeEach(async () => {
+      mockDbClient.on(PutItemCommand).resolves({});
       event = {
         Records: [passingSQSRecord, invalidBodySQSRecord],
       };
@@ -361,6 +363,7 @@ describe("Dequeue TxMA events", () => {
   describe("Happy path", () => {
     describe("Given there is one record in the event", () => {
       it("Logs the event_name and session_id", async () => {
+        mockDbClient.on(PutItemCommand).resolves({});
         const event: SQSEvent = {
           Records: [passingSQSRecord],
         };
@@ -383,6 +386,7 @@ describe("Dequeue TxMA events", () => {
 
     describe("Given there are multiple records in the event", () => {
       it("Logs the event_name and session_id for each message", async () => {
+        mockDbClient.on(PutItemCommand).resolves({});
         const event: SQSEvent = {
           Records: [passingSQSRecord, passingSQSRecord],
         };
