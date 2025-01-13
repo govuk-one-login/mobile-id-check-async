@@ -544,7 +544,11 @@ describe("Backend application infrastructure", () => {
           Environment: {
             Variables: {
               CLIENT_REGISTRY_SECRET_NAME: {
-                "Fn::Sub": "${Environment}/clientRegistry",
+                "Fn::FindInMap": [
+                  "EnvironmentVariables",
+                  { Ref: "Environment" },
+                  "ClientRegistrySecretPath",
+                ],
               },
             },
           },
