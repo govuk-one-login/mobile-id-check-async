@@ -46,7 +46,7 @@ Resources:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: ./openApiSpecs/async-private-spec.yaml
+            Location: ../../openApiSpecs/async-private-spec.yaml
 
   AsyncCredentialPrivateApiAccessLogs:
     Type: AWS::Logs::LogGroup

@@ -38,7 +38,7 @@ Resources:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: ./openApiSpecs/async-proxy-private-spec.yaml
+            Location: ../../openApiSpecs/async-proxy-private-spec.yaml
       MethodSettings:
         - LoggingLevel: INFO
           HttpMethod: '*'

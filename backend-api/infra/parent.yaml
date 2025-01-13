@@ -1,4 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
 
 Description: async-backend SAM template for the ID Check v2 app
 
@@ -34,13 +35,12 @@ Parameters:
     Description: Set to `true` to deploy alarms in a dev environment
     Type: String
     Default: false
-
+    
 Mappings:
   StaticVariables:
     urls:
       WarningAlarmsRunbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4800446694/Alarms+Runbook+Warnings
       CriticalAlarmsRunbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4799594677/Alarms+Runbook+Alerts
-
   EnvironmentConfiguration:
     dev:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
@@ -154,15 +154,15 @@ Mappings:
 
   EnvironmentVariables:
     dev:
-      STSBASEURL: https://mob-sts-mock.review-b-async.dev.account.gov.uk
+      STSBASEURL: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk'
     build:
-      STSBASEURL: https://mob-sts-mock.review-b-async.build.account.gov.uk
+      STSBASEURL: 'https://mob-sts-mock.review-b-async.build.account.gov.uk'
     staging:
-      STSBASEURL: "" #TODO: Update this value with 'real' STS URLs
+      STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
     integration:
-      STSBASEURL: "" #TODO: Update this value with 'real' STS URLs
+      STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
     production:
-      STSBASEURL: "" #TODO: Update this value with 'real' STS URLs
+      STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
 
 Conditions:
   UseCodeSigning: !Not
@@ -212,80 +212,9 @@ Conditions:
       - !Equals
         - !Ref Environment
         - dev
-    - !Equals
-      - !Ref DeployAlarmsInDev
-      - true
-
-Transform: AWS::Serverless-2016-10-31
-
-Globals:
-  Function:
-    Timeout: 5
-    MemorySize: 512
-    ReservedConcurrentExecutions: !FindInMap
-      - Lambda
-      - !Ref Environment
-      - ReservedConcurrentExecutions
-    CodeSigningConfigArn: !If
-      - UseCodeSigning
-      - !Ref CodeSigningConfigArn
-      - !Ref AWS::NoValue
-    PermissionsBoundary: !If
-      - UsePermissionsBoundary
-      - !Ref PermissionsBoundary
-      - !Ref AWS::NoValue
-    Architectures:
-      - arm64
-    Environment:
-      Variables:
-        SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
-        TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
-
-        # ISSUER should be updated with DNS once available
-        ISSUER: mockIssuer
-        SESSION_TABLE_NAME: !Ref SessionsTable
-        AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
-        DT_CONNECTION_AUTH_TOKEN: !Sub
-          - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}'
-          - SecretArn: !FindInMap
-              - EnvironmentConfiguration
-              - !Ref Environment
-              - dynatraceSecretArn
-        DT_CONNECTION_BASE_URL: !Sub
-          - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_BASE_URL}}'
-          - SecretArn: !FindInMap
-              - EnvironmentConfiguration
-              - !Ref Environment
-              - dynatraceSecretArn
-        DT_CLUSTER_ID: !Sub
-          - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CLUSTER_ID}}'
-          - SecretArn: !FindInMap
-              - EnvironmentConfiguration
-              - !Ref Environment
-              - dynatraceSecretArn
-        DT_LOG_COLLECTION_AUTH_TOKEN: !Sub
-          - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_LOG_COLLECTION_AUTH_TOKEN}}'
-          - SecretArn: !FindInMap
-              - EnvironmentConfiguration
-              - !Ref Environment
-              - dynatraceSecretArn
-        DT_TENANT: !Sub
-          - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_TENANT}}'
-          - SecretArn: !FindInMap
-              - EnvironmentConfiguration
-              - !Ref Environment
-              - dynatraceSecretArn
-        DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
-    Layers:
-      - !Sub
-        - '{{resolve:secretsmanager:${SecretArn}:SecretString:NODEJS_LAYER}}'
-        - SecretArn: !FindInMap
-            - EnvironmentConfiguration
-            - !Ref Environment
-            - dynatraceSecretArn
+    - !Equals [ !Ref DeployAlarmsInDev, true ]
 
 Resources:
-
   # API Stacks
   PrivateApiStack:
     Type: AWS::CloudFormation::Stack
@@ -295,14 +224,8 @@ Resources:
         Environment: !Ref Environment
         PermissionsBoundary: !Ref PermissionsBoundary
         StackName: !Ref AWS::StackName
-        ApiBurstLimit: !FindInMap
-          - PrivateApigw
-          - !Ref Environment
-          - ApiBurstLimit
-        ApiRateLimit: !FindInMap
-          - PrivateApigw
-          - !Ref Environment
-          - ApiRateLimit
+        ApiBurstLimit: !FindInMap [PrivateApigw, !Ref Environment, ApiBurstLimit]
+        ApiRateLimit: !FindInMap [PrivateApigw, !Ref Environment, ApiRateLimit]
 
   SessionsApiStack:
     Type: AWS::CloudFormation::Stack
@@ -312,40 +235,22 @@ Resources:
         Environment: !Ref Environment
         PermissionsBoundary: !Ref PermissionsBoundary
         StackName: !Ref AWS::StackName
-        ApiBurstLimit: !FindInMap
-          - SessionsApigw
-          - !Ref Environment
-          - ApiBurstLimit
-        ApiRateLimit: !FindInMap
-          - SessionsApigw
-          - !Ref Environment
-          - ApiRateLimit
-        BaseDns: !FindInMap
-          - DNS
-          - !Ref Environment
-          - BaseDns
+        ApiBurstLimit: !FindInMap [SessionsApigw, !Ref Environment, ApiBurstLimit]
+        ApiRateLimit: !FindInMap [SessionsApigw, !Ref Environment, ApiRateLimit]
+        BaseDns: !FindInMap [DNS, !Ref Environment, BaseDns]
 
   ProxyApiStack:
     Type: AWS::CloudFormation::Stack
+    Condition: ProxyApiDeployment
     Properties:
       TemplateURL: infra/api/proxy-api.cloudFormation.yaml
       Parameters:
         Environment: !Ref Environment
         PermissionsBoundary: !Ref PermissionsBoundary
         StackName: !Ref AWS::StackName
-        ApiBurstLimit: !FindInMap
-          - ProxyApigw
-          - !Ref Environment
-          - ApiBurstLimit
-        ApiRateLimit: !FindInMap
-          - ProxyApigw
-          - !Ref Environment
-          - ApiRateLimit
-        BaseDns: !FindInMap
-          - DNS
-          - !Ref Environment
-          - BaseDns
-    Condition: ProxyApiDeployment
+        ApiBurstLimit: !FindInMap [ProxyApigw, !Ref Environment, ApiBurstLimit]
+        ApiRateLimit: !FindInMap [ProxyApigw, !Ref Environment, ApiRateLimit]
+        BaseDns: !FindInMap [DNS, !Ref Environment, BaseDns]
 
   # Security Stacks
   SecurityStack:
@@ -355,14 +260,8 @@ Resources:
       Parameters:
         Environment: !Ref Environment
         StackName: !Ref AWS::StackName
-        PendingDeletionInDays: !FindInMap
-          - KMS
-          - !Ref Environment
-          - PendingDeletionInDays
-        TxmaAccount: !FindInMap
-          - TxMA
-          - !Ref Environment
-          - TxmaAccount
+        PendingDeletionInDays: !FindInMap [KMS, !Ref Environment, PendingDeletionInDays]
+        TxmaAccount: !FindInMap [TxMA, !Ref Environment, TxmaAccount]
 
   # Storage Stacks
   StorageStack:
@@ -388,10 +287,7 @@ Resources:
       Parameters:
         Environment: !Ref Environment
         StackName: !Ref AWS::StackName
-        TxmaAccount: !FindInMap
-          - TxMA
-          - !Ref Environment
-          - TxmaAccount
+        TxmaAccount: !FindInMap [TxMA, !Ref Environment, TxmaAccount]
         TxMAKmsKeyId: !GetAtt SecurityStack.Outputs.TxMAKmsKeyArn
 
   # Function Stacks
@@ -433,13 +329,7 @@ Resources:
         StackName: !Ref AWS::StackName
         SessionsTableArn: !GetAtt StorageStack.Outputs.TableArn
         KmsEncryptionKeyArn: !GetAtt SecurityStack.Outputs.EncryptionKeyArn
-        StsBaseUrl: !If
-          - UseDevOverrideStsBaseUrl
-          - !Ref DevOverrideStsBaseUrl
-          - !FindInMap
-            - EnvironmentVariables
-            - !Ref Environment
-            - STSBASEURL
+        StsBaseUrl: !If [UseDevOverrideStsBaseUrl, !Ref DevOverrideStsBaseUrl, !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]]
         SessionsApiDomainName: !GetAtt SessionsApiStack.Outputs.ApiUrl
 
   BiometricTokenFunctionStack:
@@ -464,6 +354,7 @@ Resources:
 
   ProxyFunctionStack:
     Type: AWS::CloudFormation::Stack
+    Condition: ProxyApiDeployment
     Properties:
       TemplateURL: infra/functions/proxy.cloudFormation.yaml
       Parameters:
@@ -472,17 +363,63 @@ Resources:
         StackName: !Ref AWS::StackName
         PrivateApiUrl: !GetAtt PrivateApiStack.Outputs.ApiUrl
         ProxySecurityGroupId: !GetAtt ProxyApiStack.Outputs.SecurityGroupId
-    Condition: ProxyApiDeployment
 
   # Monitoring Stack
   MonitoringStack:
     Type: AWS::CloudFormation::Stack
+    Condition: DeployAlarms
     Properties:
       TemplateURL: infra/monitoring/alarms.cloudFormation.yaml
       Parameters:
         Environment: !Ref Environment
         StackName: !Ref AWS::StackName
-    Condition: DeployAlarms
+
+Globals:
+  Function:
+    Timeout: 5
+    MemorySize: 512
+    ReservedConcurrentExecutions: !FindInMap
+      - Lambda
+      - !Ref Environment
+      - ReservedConcurrentExecutions
+    CodeSigningConfigArn: !If
+      - UseCodeSigning
+      - !Ref CodeSigningConfigArn
+      - !Ref AWS::NoValue
+    PermissionsBoundary: !If
+      - UsePermissionsBoundary
+      - !Ref PermissionsBoundary
+      - !Ref AWS::NoValue
+    Architectures:
+      - arm64
+    Environment:
+      Variables:
+        SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
+        TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
+        # ISSUER should be updated with DNS once available
+        ISSUER: mockIssuer
+        SESSION_TABLE_NAME: !Ref SessionsTable
+        AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
+        DT_CONNECTION_AUTH_TOKEN: !Sub
+          - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}'
+          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]
+        DT_CONNECTION_BASE_URL: !Sub
+          - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_BASE_URL}}'
+          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]
+        DT_CLUSTER_ID: !Sub
+          - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CLUSTER_ID}}'
+          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]
+        DT_LOG_COLLECTION_AUTH_TOKEN: !Sub
+          - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_LOG_COLLECTION_AUTH_TOKEN}}'
+          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]
+        DT_TENANT: !Sub
+          - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_TENANT}}'
+          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]
+        DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
+    Layers: 
+      - !Sub
+        - '{{resolve:secretsmanager:${SecretArn}:SecretString:NODEJS_LAYER}}'
+        - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]
 
 Outputs:
   SessionsApiUrl:
@@ -490,9 +427,9 @@ Outputs:
     Value: !GetAtt SessionsApiStack.Outputs.ApiUrl
 
   ProxyApiUrl:
+    Condition: ProxyApiDeployment
     Description: Proxy API Gateway Pretty DNS
     Value: !GetAtt ProxyApiStack.Outputs.ApiUrl
-    Condition: ProxyApiDeployment
 
   PrivateApiUrl:
     Description: Private API Gateway base URL
@@ -503,21 +440,18 @@ Outputs:
     Value: !If
       - UseDevOverrideStsBaseUrl
       - !Ref DevOverrideStsBaseUrl
-      - !FindInMap
-        - EnvironmentVariables
-        - !Ref Environment
-        - STSBASEURL
+      - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
 
   TxmaSqsQueueArn:
+    Condition: IsDevOrBuild
     Description: TxMA SQS Queue ARN
-    Value: !GetAtt SqsStack.Outputs.QueueArn
     Export:
       Name: !Sub ${AWS::StackName}-txma-sqs-queue-arn
-    Condition: IsDevOrBuild
+    Value: !GetAtt SqsStack.Outputs.QueueArn
 
   TxmaKmsEncryptionKeyArn:
+    Condition: IsDevOrBuild
     Description: TxMA KMS Encryption Key ARN
-    Value: !GetAtt SecurityStack.Outputs.TxMAKmsKeyArn
     Export:
       Name: !Sub ${AWS::StackName}-txma-kms-encryption-key-arn
-    Condition: IsDevOrBuild
+    Value: !GetAtt SecurityStack.Outputs.TxMAKmsKeyArn
