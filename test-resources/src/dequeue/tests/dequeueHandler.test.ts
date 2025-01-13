@@ -1,5 +1,5 @@
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
-import { SQSBatchResponse, SQSEvent } from "aws-lambda";
+import { SQSEvent } from "aws-lambda";
 import { mockClient } from "aws-sdk-client-mock";
 import "aws-sdk-client-mock-jest";
 import { Logger } from "../../services/logging/logger";
