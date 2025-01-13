@@ -25,5 +25,3 @@ export const errorResult = (value: {
     value,
   };
 };
-
-type ErrorCategory = "SERVER_ERROR" | "CLIENT_ERROR";
