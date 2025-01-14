@@ -17,6 +17,11 @@ echo "Running lint and format checks..."
 npm run lint
 npm run format:check
 
+echo "Merging CloudFormation templates..."
+# Change back to root directory to run template verification
+cd "$GIT_ROOT" || exit 1
+"$GIT_ROOT/helper-scripts/merge-templates.script.sh" merge
+
 echo "Verifying CloudFormation templates..."
 # Change back to root directory to run template verification
 cd "$GIT_ROOT" || exit 1
