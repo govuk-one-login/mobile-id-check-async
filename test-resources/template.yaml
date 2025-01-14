@@ -27,19 +27,10 @@ Conditions:
       - !Ref PermissionsBoundary
       - none
 
-  IsDevOrBuild: !Or
-    - !Equals
-      - !Ref Environment
-      - dev
-    - !Equals
-      - !Ref Environment
-      - build
-
 Resources:
   # Dequeue resources
   DequeueFunction:
     Type: AWS::Serverless::Function
-    Condition: IsDevOrBuild
     DependsOn:
       - DequeueLogGroup
     Metadata:
@@ -55,6 +46,10 @@ Resources:
       Runtime: nodejs20.x
       Handler: dequeueHandler.lambdaHandler
       Role: !GetAtt DequeueRole.Arn
+      Environment:
+        Variables:
+          TXMA_EVENT_TTL_DURATION_IN_SECONDS: 900
+          EVENTS_TABLE_NAME: !Ref EventsTable
       Timeout: 10
       VpcConfig:
         SubnetIds:
@@ -66,14 +61,12 @@ Resources:
 
   DequeueLogGroup:
     Type: AWS::Logs::LogGroup
-    Condition: IsDevOrBuild
     Properties:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue
 
   DequeueRole:
     Type: AWS::IAM::Role
-    Condition: IsDevOrBuild
     Properties:
       RoleName: !Sub ${AWS::StackName}-dequeue-role
       AssumeRolePolicyDocument:
@@ -105,6 +98,14 @@ Resources:
                   - sqs:GetQueueAttributes
                 Resource:
                   Fn::ImportValue: !Sub ${BackendApi}-txma-sqs-queue-arn
+        - PolicyName: DynamoDBPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                Resource: !GetAtt EventsTable.Arn
         - PolicyName: KMSPolicy
           PolicyDocument:
             Version: "2012-10-17"
@@ -130,7 +131,6 @@ Resources:
         - !Ref AWS::NoValue
 
   DequeueEventSourceMapping:
-    Condition: IsDevOrBuild
     Type: AWS::Lambda::EventSourceMapping
     Properties:
       BatchSize: 10
@@ -140,3 +140,24 @@ Resources:
       FunctionName: !GetAtt DequeueFunction.Arn
       FunctionResponseTypes:
         - ReportBatchItemFailures
+
+  EventsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${AWS::StackName}-events-table-${Environment}
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+      TimeToLiveSpecification:
+        AttributeName: timeToLiveInSeconds
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+      SSESpecification:
+        SSEEnabled: true
