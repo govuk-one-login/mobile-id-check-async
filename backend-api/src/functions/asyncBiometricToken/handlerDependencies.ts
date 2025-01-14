@@ -14,5 +14,5 @@ export type IAsyncBiometricTokenDependencies = {
 export const runtimeDependencies: IAsyncBiometricTokenDependencies = {
   env: process.env,
   getSecrets: getSecretsFromParameterStore,
-  getBiometricToken: getBiometricToken,
+  getBiometricToken,
 };
