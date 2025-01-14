@@ -11,4 +11,4 @@
 **/Dockerfile @govuk-one-login/mobile-id-check-sre @govuk-one-login/mobile-leads
 
 # Platform team owns CloudFormation templates
-/infra/ @govuk-one-login/mobile-leads
+infra/ @govuk-one-login/mobile-id-check-sre @govuk-one-login/mobile-leads
