@@ -35,6 +35,10 @@ describe("Async Biometric Token", () => {
     }),
   );
 
+  const mockGetBiometricTokenSuccess = jest
+    .fn()
+    .mockResolvedValue(successResult("mockBiometricToken"));
+
   beforeEach(() => {
     dependencies = {
       env: {
@@ -43,8 +47,10 @@ describe("Async Biometric Token", () => {
         BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_BRP: "mock_secret_path_brp",
         BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL: "mock_secret_path_dl",
         BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS: "900",
+        READID_BASE_URL: "mockReadIdBaseUrl",
       },
       getSecrets: mockGetSecretsSuccess,
+      getBiometricToken: mockGetBiometricTokenSuccess,
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
@@ -84,6 +90,7 @@ describe("Async Biometric Token", () => {
       ["BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_BRP"],
       ["BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL"],
       ["BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS"],
+      ["READID_BASE_URL"],
     ])("Given %s environment variable is missing", (envVar: string) => {
       beforeEach(async () => {
         delete dependencies.env[envVar];
@@ -170,6 +177,30 @@ describe("Async Biometric Token", () => {
     });
   });
 
+  describe("Given there is an error getting biometric token", () => {
+    beforeEach(async () => {
+      dependencies.getBiometricToken = jest
+        .fn()
+        .mockResolvedValue(emptyFailure());
+      result = await lambdaHandlerConstructor(
+        dependencies,
+        validRequest,
+        context,
+      );
+    });
+
+    it("returns 500 Internal server error", async () => {
+      expect(result).toStrictEqual({
+        statusCode: 500,
+        body: JSON.stringify({
+          error: "server_error",
+          error_description: "Internal Server Error",
+        }),
+        headers: expectedSecurityHeaders,
+      });
+    });
+  });
+
   describe("Given a valid request is made", () => {
     beforeEach(async () => {
       result = await lambdaHandlerConstructor(
@@ -188,6 +219,13 @@ describe("Async Biometric Token", () => {
         ],
         cacheDurationInSeconds: 900,
       });
+    });
+
+    it("Passes correct arguments to get biometric token", () => {
+      expect(mockGetBiometricTokenSuccess).toHaveBeenCalledWith(
+        "mockReadIdBaseUrl",
+        "mock_submitter_key_passport",
+      );
     });
 
     it("Logs COMPLETED", async () => {

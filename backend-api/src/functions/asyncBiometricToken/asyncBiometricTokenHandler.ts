@@ -56,6 +56,15 @@ export async function lambdaHandlerConstructor(
   if (submitterKeyResult.isError) {
     return serverErrorResponse;
   }
+  const submitterKey = submitterKeyResult.value;
+
+  const biometricTokenResult = await dependencies.getBiometricToken(
+    config.READID_BASE_URL,
+    submitterKey,
+  );
+  if (biometricTokenResult.isError) {
+    return serverErrorResponse;
+  }
 
   logger.info(LogMessage.BIOMETRIC_TOKEN_COMPLETED);
   return notImplementedResponse;
