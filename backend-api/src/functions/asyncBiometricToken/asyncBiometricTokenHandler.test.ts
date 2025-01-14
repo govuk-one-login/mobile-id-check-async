@@ -35,9 +35,9 @@ describe("Async Biometric Token", () => {
     }),
   );
 
-  const mockGetBiometricTokenSuccess = jest
-    .fn()
-    .mockResolvedValue(successResult("mockBiometricToken"));
+  const mockGetBiometricTokenSuccess = jest.fn().mockResolvedValue(
+    successResult('mockBiometricToken')
+  )
 
   beforeEach(() => {
     dependencies = {
@@ -49,7 +49,7 @@ describe("Async Biometric Token", () => {
         BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS: "900",
       },
       getSecrets: mockGetSecretsSuccess,
-      getBiometricToken: mockGetBiometricTokenSuccess,
+      getBiometricToken: mockGetBiometricTokenSuccess
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
@@ -177,15 +177,13 @@ describe("Async Biometric Token", () => {
 
   describe("Given there is an error getting biometric token", () => {
     beforeEach(async () => {
-      dependencies.getBiometricToken = jest
-        .fn()
-        .mockResolvedValue(emptyFailure());
+      dependencies.getBiometricToken = jest.fn().mockResolvedValue(emptyFailure())
       result = await lambdaHandlerConstructor(
         dependencies,
         validRequest,
         context,
       );
-    });
+    })
 
     it("returns 500 Internal server error", async () => {
       expect(result).toStrictEqual({
@@ -197,7 +195,7 @@ describe("Async Biometric Token", () => {
         headers: expectedSecurityHeaders,
       });
     });
-  });
+  })
 
   describe("Given a valid request is made", () => {
     beforeEach(async () => {
