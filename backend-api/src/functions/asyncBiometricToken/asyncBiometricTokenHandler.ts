@@ -22,7 +22,6 @@ import {
 import { GetSecrets } from "../common/config/secrets";
 import { emptyFailure, Result, successResult } from "../utils/result";
 import { DocumentType } from "../types/document";
-import { getBiometricToken } from "./getBiometricToken/getBiometricToken";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
@@ -59,7 +58,7 @@ export async function lambdaHandlerConstructor(
   }
   const submitterKey = submitterKeyResult.value;
 
-  const biometricTokenResult = await getBiometricToken("mockUrl", submitterKey);
+  const biometricTokenResult = await dependencies.getBiometricToken("mockUrl", submitterKey);
   if (biometricTokenResult.isError) {
     return serverErrorResponse;
   }
