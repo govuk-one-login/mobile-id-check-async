@@ -59,7 +59,7 @@ export async function lambdaHandlerConstructor(
   const submitterKey = submitterKeyResult.value;
 
   const biometricTokenResult = await dependencies.getBiometricToken(
-    "mockUrl",
+    config.READID_BASE_URL,
     submitterKey,
   );
   if (biometricTokenResult.isError) {

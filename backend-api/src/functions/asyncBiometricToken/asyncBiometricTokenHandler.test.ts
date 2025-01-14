@@ -47,6 +47,7 @@ describe("Async Biometric Token", () => {
         BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_BRP: "mock_secret_path_brp",
         BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL: "mock_secret_path_dl",
         BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS: "900",
+        READID_BASE_URL: "mockReadIdBaseUrl",
       },
       getSecrets: mockGetSecretsSuccess,
       getBiometricToken: mockGetBiometricTokenSuccess,
@@ -89,6 +90,7 @@ describe("Async Biometric Token", () => {
       ["BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_BRP"],
       ["BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL"],
       ["BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS"],
+      ["READID_BASE_URL"],
     ])("Given %s environment variable is missing", (envVar: string) => {
       beforeEach(async () => {
         delete dependencies.env[envVar];
@@ -217,6 +219,13 @@ describe("Async Biometric Token", () => {
         ],
         cacheDurationInSeconds: 900,
       });
+    });
+
+    it("Passes correct arguments to get biometric token", () => {
+      expect(mockGetBiometricTokenSuccess).toHaveBeenCalledWith(
+        "mockReadIdBaseUrl",
+        "mock_submitter_key_passport",
+      );
     });
 
     it("Logs COMPLETED", async () => {

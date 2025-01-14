@@ -160,27 +160,34 @@ Mappings:
   EnvironmentVariables:
     dev:
       STSBASEURL: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk'
+      ReadIdBaseUrl: 'placeholder'
       ClientRegistrySecretPath: 'dev/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
+
     build:
       STSBASEURL: 'https://mob-sts-mock.review-b-async.build.account.gov.uk'
+      ReadIdBaseUrl: 'placeholder'
       ClientRegistrySecretPath: 'build/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
+
     staging:
       STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
+      ReadIdBaseUrl: 'placeholder'
       ClientRegistrySecretPath: 'staging/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
+
     integration:
       STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
+      ReadIdBaseUrl: 'placeholder'
       ClientRegistrySecretPath: 'integration/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
@@ -188,6 +195,7 @@ Mappings:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
     production:
       STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
+      ReadIdBaseUrl: 'placeholder'
       ClientRegistrySecretPath: 'production/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
@@ -1079,6 +1087,7 @@ Resources:
           BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_BRP: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathBrp]
           BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathDl]
           BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS: !FindInMap [ EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretCacheDurationInSeconds ]
+          READID_BASE_URL: !FindInMap [EnvironmentVariables, !Ref Environment, ReadIdBaseUrl]
       Role: !GetAtt AsyncBiometricTokenLambdaRole.Arn
       VpcConfig:
         SubnetIds:
