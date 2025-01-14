@@ -72,5 +72,4 @@ Resources:
           ReturnData: false
           Expression: (errorSum5XX/invocations) * 100
 
-  # Additional alarms would be defined here following the same pattern
-  # Note: Original template has multiple similar alarms for different endpoints and thresholds
+  # will add other endpoints and thresholds

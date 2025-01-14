@@ -244,7 +244,7 @@ Resources:
   PrivateApiStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: infra/api/privateApi.cloudFormation.yaml
+      TemplateURL: infra/api/private.cloudformation.yaml
       Parameters:
         Environment: !Ref Environment
         PermissionsBoundary: !Ref PermissionsBoundary
@@ -255,7 +255,7 @@ Resources:
   SessionsApiStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: infra/api/sessionsApi.cloudFormation.yaml
+      TemplateURL: infra/api/sessions.cloudformation.yaml
       Parameters:
         Environment: !Ref Environment
         PermissionsBoundary: !Ref PermissionsBoundary
@@ -268,7 +268,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Condition: ProxyApiDeployment
     Properties:
-      TemplateURL: infra/api/proxyApi.cloudFormation.yaml
+      TemplateURL: infra/api/proxy.cloudformation.yaml
       Parameters:
         Environment: !Ref Environment
         PermissionsBoundary: !Ref PermissionsBoundary
@@ -281,7 +281,7 @@ Resources:
   SecurityStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: infra/security/kms.cloudFormation.yaml
+      TemplateURL: infra/security/kms.cloudformation.yaml
       Parameters:
         Environment: !Ref Environment
         StackName: !Ref AWS::StackName
@@ -292,7 +292,7 @@ Resources:
   StorageStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: infra/storage/dynamodb.cloudFormation.yaml
+      TemplateURL: infra/storage/dynamodb.cloudformation.yaml
       Parameters:
         Environment: !Ref Environment
         StackName: !Ref AWS::StackName
@@ -300,7 +300,7 @@ Resources:
   S3Stack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: infra/storage/s3.cloudFormation.yaml
+      TemplateURL: infra/storage/s3.cloudformation.yaml
       Parameters:
         Environment: !Ref Environment
         StackName: !Ref AWS::StackName
@@ -308,7 +308,7 @@ Resources:
   SqsStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: infra/storage/sqs.cloudFormation.yaml
+      TemplateURL: infra/storage/sqs.cloudformation.yaml
       Parameters:
         Environment: !Ref Environment
         StackName: !Ref AWS::StackName
@@ -319,7 +319,7 @@ Resources:
   TokenFunctionStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: infra/functions/token.cloudFormation.yaml
+      TemplateURL: infra/functions/token.cloudformation.yaml
       Parameters:
         Environment: !Ref Environment
         PermissionsBoundary: !Ref PermissionsBoundary
@@ -332,7 +332,7 @@ Resources:
   CredentialFunctionStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: infra/functions/credential.cloudFormation.yaml
+      TemplateURL: infra/functions/credential.cloudformation.yaml
       Parameters:
         Environment: !Ref Environment
         PermissionsBoundary: !Ref PermissionsBoundary
@@ -347,7 +347,7 @@ Resources:
   ActiveSessionFunctionStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: infra/functions/activeSession.cloudFormation.yaml
+      TemplateURL: infra/functions/activeSession.cloudformation.yaml
       Parameters:
         Environment: !Ref Environment
         PermissionsBoundary: !Ref PermissionsBoundary
@@ -360,7 +360,7 @@ Resources:
   BiometricTokenFunctionStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: infra/functions/biometricToken.cloudFormation.yaml
+      TemplateURL: infra/functions/biometricToken.cloudformation.yaml
       Parameters:
         Environment: !Ref Environment
         PermissionsBoundary: !Ref PermissionsBoundary
@@ -369,7 +369,7 @@ Resources:
   JwksFunctionStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: infra/functions/jwks.cloudFormation.yaml
+      TemplateURL: infra/functions/jwks.cloudformation.yaml
       Parameters:
         Environment: !Ref Environment
         PermissionsBoundary: !Ref PermissionsBoundary
@@ -381,7 +381,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Condition: ProxyApiDeployment
     Properties:
-      TemplateURL: infra/functions/proxy.cloudFormation.yaml
+      TemplateURL: infra/functions/proxy.cloudformation.yaml
       Parameters:
         Environment: !Ref Environment
         PermissionsBoundary: !Ref PermissionsBoundary
@@ -394,7 +394,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Condition: DeployAlarms
     Properties:
-      TemplateURL: infra/monitoring/alarms.cloudFormation.yaml
+      TemplateURL: infra/monitoring/alarms.cloudformation.yaml
       Parameters:
         Environment: !Ref Environment
         StackName: !Ref AWS::StackName
