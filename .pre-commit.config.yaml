@@ -1,8 +1,0 @@
-repos:
-  - repo: local
-    hooks:
-      - id: merge-templates
-        name: Merge CloudFormation Templates
-        entry: scripts/merge-templates.sh
-        language: script
-        files: ^cloudFormation/.*\.yaml$

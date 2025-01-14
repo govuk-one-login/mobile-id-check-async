@@ -244,7 +244,7 @@ Resources:
   PrivateApiStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: infra/api/private-api.cloudFormation.yaml
+      TemplateURL: infra/api/privateApi.cloudFormation.yaml
       Parameters:
         Environment: !Ref Environment
         PermissionsBoundary: !Ref PermissionsBoundary
@@ -255,7 +255,7 @@ Resources:
   SessionsApiStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: infra/api/sessions-api.cloudFormation.yaml
+      TemplateURL: infra/api/sessionsApi.cloudFormation.yaml
       Parameters:
         Environment: !Ref Environment
         PermissionsBoundary: !Ref PermissionsBoundary
@@ -268,7 +268,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Condition: ProxyApiDeployment
     Properties:
-      TemplateURL: infra/api/proxy-api.cloudFormation.yaml
+      TemplateURL: infra/api/proxyApi.cloudFormation.yaml
       Parameters:
         Environment: !Ref Environment
         PermissionsBoundary: !Ref PermissionsBoundary
@@ -347,7 +347,7 @@ Resources:
   ActiveSessionFunctionStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: infra/functions/active-session.cloudFormation.yaml
+      TemplateURL: infra/functions/activeSession.cloudFormation.yaml
       Parameters:
         Environment: !Ref Environment
         PermissionsBoundary: !Ref PermissionsBoundary
@@ -360,7 +360,7 @@ Resources:
   BiometricTokenFunctionStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: infra/functions/biometric-token.cloudFormation.yaml
+      TemplateURL: infra/functions/biometricToken.cloudFormation.yaml
       Parameters:
         Environment: !Ref Environment
         PermissionsBoundary: !Ref PermissionsBoundary

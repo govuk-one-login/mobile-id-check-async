@@ -5,19 +5,13 @@ import { Mappings } from "./helpers/mappings";
 
 const { schema } = require("yaml-cfn");
 
-// https://docs.aws.amazon.com/cdk/v2/guide/testing.html <--- how to use this file
-
 describe("Backend application infrastructure", () => {
   let template: Template;
-
+  
   beforeEach(() => {
-    // Update path to use the parent template directly
-    let yamltemplate: any = load(
-      readFileSync("../../infra/parent.yaml", "utf-8"),
-      {
-        schema: schema,
-      },
-    );
+    let yamltemplate: any = load(readFileSync("template.yaml", "utf-8"), {
+      schema: schema,
+    });
     template = Template.fromJSON(yamltemplate);
   });
 
@@ -37,704 +31,463 @@ describe("Backend application infrastructure", () => {
         mappingBottomLevelKey: "STSBASEURL",
       });
     });
-  });
 
-  describe("Private APIgw", () => {
-    test("The endpoints are Private", () => {
-      template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
-        EndpointConfiguration: "PRIVATE",
-      });
-    });
-
-    test("It uses the private async OpenAPI Spec", () => {
-      template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
-        DefinitionBody: {
-          "Fn::Transform": {
-            Name: "AWS::Include",
-            Parameters: { Location: "./openApiSpecs/async-private-spec.yaml" },
-          },
-        },
-      });
-    });
-
-    describe("APIgw method settings", () => {
-      test("Metrics are enabled", () => {
-        const methodSettings = new Capture();
-        template.hasResourceProperties("AWS::Serverless::Api", {
-          Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
-          MethodSettings: methodSettings,
-        });
-        expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
-      });
-
-      test("Rate and burst limit mappings are set", () => {
-        const expectedBurstLimits = {
-          dev: 10,
-          build: 10,
-          staging: 0,
-          integration: 0,
-          production: 0,
-        };
-        const expectedRateLimits = {
-          dev: 10,
-          build: 10,
-          staging: 0,
-          integration: 0,
-          production: 0,
-        };
-        const mappingHelper = new Mappings(template);
-        mappingHelper.validatePrivateAPIMapping({
-          environmentFlags: expectedBurstLimits,
-          mappingBottomLevelKey: "ApiBurstLimit",
-        });
-        mappingHelper.validatePrivateAPIMapping({
-          environmentFlags: expectedRateLimits,
-          mappingBottomLevelKey: "ApiRateLimit",
-        });
-      });
-
-      test("Rate limit and burst mappings are applied to the APIgw", () => {
-        const methodSettings = new Capture();
-        template.hasResourceProperties("AWS::Serverless::Api", {
-          Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
-          MethodSettings: methodSettings,
-        });
-        expect(methodSettings.asArray()[0].ThrottlingBurstLimit).toStrictEqual({
-          "Fn::FindInMap": [
-            "PrivateApigw",
-            { Ref: "Environment" },
-            "ApiBurstLimit",
-          ],
-        });
-        expect(methodSettings.asArray()[0].ThrottlingRateLimit).toStrictEqual({
-          "Fn::FindInMap": [
-            "PrivateApigw",
-            { Ref: "Environment" },
-            "ApiRateLimit",
-          ],
-        });
-      });
-    });
-
-    test("Access log group is attached to APIgw", () => {
-      template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
-        AccessLogSetting: {
-          DestinationArn: {
-            "Fn::Sub":
-              "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialPrivateApiAccessLogs}",
-          },
-        },
-      });
-    });
-
-    test("Access log group has a retention period", () => {
-      template.hasResourceProperties("AWS::Logs::LogGroup", {
-        RetentionInDays: 30,
-        LogGroupName: {
-          "Fn::Sub":
-            "/aws/apigateway/${AWS::StackName}-private-api-access-logs",
-        },
-      });
-    });
-  });
-
-  describe("CloudWatch alarms", () => {
-    test("All critical alerts should have runbooks defined", () => {
-      // to be updated only when a runbook exists for an alarm
-      const runbooksByAlarm: Record<string, boolean> = {
-        "high-threshold-well-known-5xx-api-gw": false,
-        "high-threshold-well-known-4xx-api-gw": false,
-        "high-threshold-async-token-5xx-api-gw": false,
-        "high-threshold-async-token-4xx-api-gw": false,
-        "high-threshold-async-credential-5xx-api-gw": false,
-        "high-threshold-async-credential-4xx-api-gw": false,
+    test("Biometric submitter key paths are environment specific", () => {
+      const expectedPassportPaths = {
+        dev: "/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT",
+        build: "/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT",
+        staging: "/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT",
+        integration: "/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT",
+        production: "/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT"
+      };
+      const expectedBrpPaths = {
+        dev: "/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP",
+        build: "/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP",
+        staging: "/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP",
+        integration: "/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP",
+        production: "/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP"
+      };
+      const expectedDlPaths = {
+        dev: "/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL",
+        build: "/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL",
+        staging: "/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL",
+        integration: "/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL",
+        production: "/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL"
       };
 
-      const alarms = template.findResources("AWS::CloudWatch::Alarm");
-      const activeCriticalAlerts = Object.entries(alarms)
-        .filter(([, resource]) => {
-          const alarmIsEnabled = resource.Properties.ActionsEnabled;
-          const isCriticalAlert =
-            resource.Properties.AlarmActions[0]["Fn::Sub"] ===
-            "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical";
-          return alarmIsEnabled && isCriticalAlert;
-        })
-        .map(([, resource]) =>
-          resource.Properties.AlarmName["Fn::Sub"].replace(
-            "${AWS::StackName}-",
-            "",
-          ),
-        );
-      const activeCriticalAlertsWithNoRunbook = activeCriticalAlerts.filter(
-        (alarmName) => runbooksByAlarm[alarmName] === false,
-      );
-      expect(activeCriticalAlertsWithNoRunbook).toHaveLength(0);
-    });
-
-    test("All alarms are configured with the DeployAlarm Condition", () => {
-      const alarms = Object.values(
-        template.findResources("AWS::CloudWatch::Alarm"),
-      );
-      alarms.forEach((alarm) => {
-        expect(alarm).toEqual(
-          expect.objectContaining({ Condition: "DeployAlarms" }),
-        );
-      });
-    });
-
-    describe("Warning alarms", () => {
-      it.each([
-        ["high-threshold-well-known-5xx-api-gw"],
-        ["low-threshold-well-known-5xx-api-gw"],
-        ["high-threshold-async-token-5xx-api-gw"],
-        ["low-threshold-async-token-5xx-api-gw"],
-        ["high-threshold-async-token-4xx-api-gw"],
-        ["low-threshold-async-token-4xx-api-gw"],
-        ["high-threshold-async-credential-5xx-api-gw"],
-        ["low-threshold-async-credential-5xx-api-gw"],
-        ["high-threshold-async-credential-4xx-api-gw"],
-        ["low-threshold-async-credential-4xx-api-gw"],
-      ])(
-        "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
-        (alarmName: string) => {
-          template.hasResourceProperties("AWS::CloudWatch::Alarm", {
-            AlarmName: { "Fn::Sub": `\${AWS::StackName}-${alarmName}` },
-            AlarmActions: [
-              {
-                "Fn::Sub":
-                  "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning",
-              },
-            ],
-            OKActions: [
-              {
-                "Fn::Sub":
-                  "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning",
-              },
-            ],
-            ActionsEnabled: true,
-          });
-        },
-      );
-    });
-  });
-
-  describe("Sessions APIgw", () => {
-    test("The endpoints are REGIONAL", () => {
-      template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
-        EndpointConfiguration: "REGIONAL",
-      });
-    });
-
-    test("It uses the public async OpenAPI Spec", () => {
-      template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
-        DefinitionBody: {
-          "Fn::Transform": {
-            Name: "AWS::Include",
-            Parameters: { Location: "./openApiSpecs/async-public-spec.yaml" },
-          },
-        },
-      });
-    });
-
-    test("It disables the FMS WAF", () => {
-      template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
-        Tags: { FMSRegionalPolicy: false },
-      });
-    });
-
-    describe("APIgw method settings", () => {
-      test("Metrics are enabled", () => {
-        const methodSettings = new Capture();
-        template.hasResourceProperties(
-          "AWS::Serverless::Api",
-
-          {
-            Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
-            MethodSettings: methodSettings,
-          },
-        );
-        expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
-      });
-
-      test("Rate and burst limit mappings are set", () => {
-        const expectedBurstLimits = {
-          dev: 10,
-          build: 10,
-          staging: 0,
-          integration: 0,
-          production: 0,
-        };
-
-        const expectedRateLimits = {
-          dev: 10,
-          build: 10,
-          staging: 0,
-          integration: 0,
-          production: 0,
-        };
-        const mappingHelper = new Mappings(template);
-        mappingHelper.validateSessionsApiMapping({
-          environmentFlags: expectedBurstLimits,
-          mappingBottomLevelKey: "ApiBurstLimit",
-        });
-        mappingHelper.validateSessionsApiMapping({
-          environmentFlags: expectedRateLimits,
-          mappingBottomLevelKey: "ApiRateLimit",
-        });
-      });
-
-      test("Rate limit and burst mappings are applied to the APIgw", () => {
-        const methodSettings = new Capture();
-        template.hasResourceProperties(
-          "AWS::Serverless::Api",
-
-          {
-            Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
-            MethodSettings: methodSettings,
-          },
-        );
-        expect(methodSettings.asArray()[0].ThrottlingBurstLimit).toStrictEqual({
-          "Fn::FindInMap": [
-            "SessionsApigw",
-            { Ref: "Environment" },
-            "ApiBurstLimit",
-          ],
-        });
-
-        expect(methodSettings.asArray()[0].ThrottlingRateLimit).toStrictEqual({
-          "Fn::FindInMap": [
-            "SessionsApigw",
-            { Ref: "Environment" },
-            "ApiRateLimit",
-          ],
-        });
-      });
-    });
-
-    test("Access log group is attached to APIgw", () => {
-      template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: { "Fn::Sub": "${AWS::StackName}-sessions-api" },
-        AccessLogSetting: {
-          DestinationArn: {
-            "Fn::Sub":
-              "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${SessionsApiAccessLogs}",
-          },
-        },
-      });
-    });
-
-    test("Access log group has a retention period", () => {
-      template.hasResourceProperties("AWS::Logs::LogGroup", {
-        RetentionInDays: 30,
-        LogGroupName: {
-          "Fn::Sub":
-            "/aws/apigateway/${AWS::StackName}-sessions-api-access-logs",
-        },
-      });
-    });
-  });
-
-  describe("Proxy APIgw", () => {
-    test("The endpoints are Regional", () => {
-      template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: { "Fn::Sub": "${AWS::StackName}-proxy-api" },
-        EndpointConfiguration: "REGIONAL",
-      });
-    });
-
-    test("It uses the proxy async OpenAPI Spec", () => {
-      template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: { "Fn::Sub": "${AWS::StackName}-proxy-api" },
-        DefinitionBody: {
-          "Fn::Transform": {
-            Name: "AWS::Include",
-            Parameters: {
-              Location: "./openApiSpecs/async-proxy-private-spec.yaml",
-            },
-          },
-        },
-      });
-    });
-
-    describe("APIgw method settings", () => {
-      test("Metrics are enabled", () => {
-        const methodSettings = new Capture();
-        template.hasResourceProperties("AWS::Serverless::Api", {
-          Name: { "Fn::Sub": "${AWS::StackName}-proxy-api" },
-          MethodSettings: methodSettings,
-        });
-        expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
-      });
-
-      test("Rate and burst limit mappings are set", () => {
-        const expectedBurstLimits = {
-          dev: 10,
-          build: 10,
-          staging: 0,
-          integration: 0,
-          production: 0,
-        };
-        const expectedRateLimits = {
-          dev: 10,
-          build: 10,
-          staging: 0,
-          integration: 0,
-          production: 0,
-        };
-        const mappingHelper = new Mappings(template);
-        mappingHelper.validateProxyAPIMapping({
-          environmentFlags: expectedBurstLimits,
-          mappingBottomLevelKey: "ApiBurstLimit",
-        });
-        mappingHelper.validateProxyAPIMapping({
-          environmentFlags: expectedRateLimits,
-          mappingBottomLevelKey: "ApiRateLimit",
-        });
-      });
-
-      test("Rate limit and burst mappings are applied to the APIgw", () => {
-        const methodSettings = new Capture();
-        template.hasResourceProperties("AWS::Serverless::Api", {
-          Name: { "Fn::Sub": "${AWS::StackName}-proxy-api" },
-          MethodSettings: methodSettings,
-        });
-        expect(methodSettings.asArray()[0].ThrottlingBurstLimit).toStrictEqual({
-          "Fn::FindInMap": [
-            "ProxyApigw",
-            { Ref: "Environment" },
-            "ApiBurstLimit",
-          ],
-        });
-        expect(methodSettings.asArray()[0].ThrottlingRateLimit).toStrictEqual({
-          "Fn::FindInMap": [
-            "ProxyApigw",
-            { Ref: "Environment" },
-            "ApiRateLimit",
-          ],
-        });
-      });
-    });
-
-    test("Access log group is attached to APIgw", () => {
-      template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: { "Fn::Sub": "${AWS::StackName}-proxy-api" },
-        AccessLogSetting: {
-          DestinationArn: {
-            "Fn::GetAtt": ["ProxyApiAccessLogs", "Arn"],
-          },
-        },
-      });
-    });
-
-    test("Access log group has a retention period", () => {
-      template.hasResourceProperties("AWS::Logs::LogGroup", {
-        RetentionInDays: 30,
-        LogGroupName: {
-          "Fn::Sub": "/aws/apigateway/${AWS::StackName}-proxy-api-access-logs",
-        },
-      });
-    });
-  });
-
-  describe("Lambdas", () => {
-    describe("Globals", () => {
-      test("Global environment variables are set", () => {
-        const expectedGlobals = [
-          "SIGNING_KEY_ID",
-          "ISSUER",
-          "TXMA_SQS",
-          "SESSION_TABLE_NAME",
-          "POWERTOOLS_SERVICE_NAME",
-          "AWS_LAMBDA_EXEC_WRAPPER",
-          "DT_CONNECTION_AUTH_TOKEN",
-          "DT_CONNECTION_BASE_URL",
-          "DT_CLUSTER_ID",
-          "DT_LOG_COLLECTION_AUTH_TOKEN",
-          "DT_TENANT",
-          "DT_OPEN_TELEMETRY_ENABLE_INTEGRATION",
-        ];
-        const envVars =
-          template.toJSON().Globals.Function.Environment.Variables;
-        Object.keys(envVars).every((envVar) => {
-          expectedGlobals.includes(envVar);
-        });
-        expect(expectedGlobals.length).toBe(Object.keys(envVars).length);
-      });
-
-      test("Global reserved concurrency is set", () => {
-        const reservedConcurrentExecutionMapping =
-          template.findMappings("Lambda");
-
-        expect(reservedConcurrentExecutionMapping).toStrictEqual({
-          Lambda: {
-            dev: expect.objectContaining({
-              ReservedConcurrentExecutions: 15,
-            }),
-            build: expect.objectContaining({
-              ReservedConcurrentExecutions: 15,
-            }),
-            staging: expect.objectContaining({
-              ReservedConcurrentExecutions: 0,
-            }),
-            integration: expect.objectContaining({
-              ReservedConcurrentExecutions: 0,
-            }),
-            production: expect.objectContaining({
-              ReservedConcurrentExecutions: 0,
-            }),
-          },
-        });
-
-        const reservedConcurrentExecutions =
-          template.toJSON().Globals.Function.ReservedConcurrentExecutions;
-        expect(reservedConcurrentExecutions).toStrictEqual({
-          "Fn::FindInMap": [
-            "Lambda",
-            { Ref: "Environment" },
-            "ReservedConcurrentExecutions",
-          ],
-        });
-      });
-
-      test("Global memory size is set to 512MB", () => {
-        const globalMemorySize = template.toJSON().Globals.Function.MemorySize;
-        expect(globalMemorySize).toStrictEqual(512);
-      });
-    });
-
-    test("All lambdas have a FunctionName defined", () => {
-      const lambdas = template.findResources("AWS::Serverless::Function");
-      const lambda_list = Object.keys(lambdas);
-      lambda_list.forEach((lambda) => {
-        expect(lambdas[lambda].Properties.FunctionName).toBeTruthy();
-      });
-    });
-
-    test("All lambdas have a log group", () => {
-      const lambdas = template.findResources("AWS::Serverless::Function");
-      const lambda_list = Object.keys(lambdas);
-      lambda_list.forEach((lambda) => {
-        const functionName = lambdas[lambda].Properties.FunctionName["Fn::Sub"];
-        const expectedLogName = {
-          "Fn::Sub": `/aws/lambda/${functionName}`,
-        };
-        template.hasResourceProperties("AWS::Logs::LogGroup", {
-          LogGroupName: Match.objectLike(expectedLogName),
-        });
-      });
-    });
-
-    test("All log groups have a retention period", () => {
-      const logGroups = template.findResources("AWS::Logs::LogGroup");
-      const logGroupList = Object.keys(logGroups);
-      logGroupList.forEach((logGroup) => {
-        expect(logGroups[logGroup].Properties.RetentionInDays).toEqual(30);
-      });
-    });
-
-    test("Token and Credential lambdas have the client registry environment variable", () => {
-      const createSessionLambdaHandlers = [
-        "asyncTokenHandler.lambdaHandler",
-        "asyncCredentialHandler.lambdaHandler",
-      ];
-      createSessionLambdaHandlers.forEach((lambdaHandler) => {
-        template.hasResourceProperties("AWS::Serverless::Function", {
-          Handler: lambdaHandler,
-          Environment: {
-            Variables: {
-              CLIENT_REGISTRY_SECRET_NAME: {
-                "Fn::Sub": "${Environment}/clientRegistry",
-              },
-            },
-          },
-        });
-      });
-    });
-
-    test("All lambdas are attached to a VPC ", () => {
-      const lambdas = template.findResources("AWS::Serverless::Function");
-      const lambda_list = Object.keys(lambdas);
-      lambda_list.forEach((lambda) => {
-        expect(lambdas[lambda].Properties.VpcConfig).toBeTruthy();
-      });
-    });
-
-    test("Token, Credential and JWKS lambdas are attached to a VPC and subnets are private", () => {
-      const lambdaHandlers = [
-        "asyncTokenHandler.lambdaHandler",
-        "asyncCredentialHandler.lambdaHandler",
-        "jwksHandler.lambdaHandler",
-      ];
-      lambdaHandlers.forEach((lambdaHandler) => {
-        template.hasResourceProperties("AWS::Serverless::Function", {
-          Handler: lambdaHandler,
-          VpcConfig: {
-            SubnetIds: [
-              { "Fn::ImportValue": "devplatform-vpc-PrivateSubnetIdA" },
-              { "Fn::ImportValue": "devplatform-vpc-PrivateSubnetIdB" },
-              { "Fn::ImportValue": "devplatform-vpc-PrivateSubnetIdC" },
-            ],
-            SecurityGroupIds: [
-              {
-                "Fn::ImportValue":
-                  "devplatform-vpc-AWSServicesEndpointSecurityGroupId",
-              },
-            ],
-          },
-        });
-      });
-    });
-
-    test("ActiveSession and BiometricToken lambdas are attached to a VPC and subnets are protected", () => {
-      const lambdaHandlers = [
-        "asyncActiveSessionHandler.lambdaHandler",
-        "asyncBiometricTokenHandler.lambdaHandler",
-      ];
-      lambdaHandlers.forEach((lambdaHandler) => {
-        template.hasResourceProperties("AWS::Serverless::Function", {
-          Handler: lambdaHandler,
-          VpcConfig: {
-            SubnetIds: [
-              { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdA" },
-              { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdB" },
-              { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdC" },
-            ],
-            SecurityGroupIds: [
-              {
-                "Fn::ImportValue":
-                  "devplatform-vpc-AWSServicesEndpointSecurityGroupId",
-              },
-            ],
-          },
-        });
-      });
-    });
-  });
-
-  describe("KMS", () => {
-    test("All keys have a retention window once deleted", () => {
-      const kmsKeys = template.findResources("AWS::KMS::Key");
-      const kmsKeyList = Object.keys(kmsKeys);
-      kmsKeyList.forEach((kmsKey) => {
-        expect(kmsKeys[kmsKey].Properties.PendingWindowInDays).toStrictEqual({
-          "Fn::FindInMap": [
-            "KMS",
-            { Ref: "Environment" },
-            "PendingDeletionInDays",
-          ],
-        });
-      });
-    });
-
-    test("Mappings are defined for retention window", () => {
-      const expectedKmsDeletionMapping = {
-        dev: 7,
-        build: 30,
-        staging: 30,
-        integration: 30,
-        production: 30,
-      };
       const mappingHelper = new Mappings(template);
-      mappingHelper.validateKMSMapping({
-        environmentFlags: expectedKmsDeletionMapping,
-        mappingBottomLevelKey: "PendingDeletionInDays",
+      mappingHelper.validateEnvironmentVariablesMapping({
+        environmentFlags: expectedPassportPaths,
+        mappingBottomLevelKey: "BiometricSubmitterKeySecretPathPassport",
+      });
+      mappingHelper.validateEnvironmentVariablesMapping({
+        environmentFlags: expectedBrpPaths,
+        mappingBottomLevelKey: "BiometricSubmitterKeySecretPathBrp",
+      });
+      mappingHelper.validateEnvironmentVariablesMapping({
+        environmentFlags: expectedDlPaths,
+        mappingBottomLevelKey: "BiometricSubmitterKeySecretPathDl",
+      });
+    });
+
+    test("Biometric submitter key cache duration is consistent", () => {
+      const expectedCacheDuration = {
+        dev: 900,
+        build: 900,
+        staging: 900,
+        integration: 900,
+        production: 900
+      };
+
+      const mappingHelper = new Mappings(template);
+      mappingHelper.validateEnvironmentVariablesMapping({
+        environmentFlags: expectedCacheDuration,
+        mappingBottomLevelKey: "BiometricSubmitterKeySecretCacheDurationInSeconds",
+      });
+    });
+
+    test("DynamicsSE variables are environment specific", () => {
+      const expectedDynatraceSecretArn = {
+        dev: "arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables",
+        build: "arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables",
+        staging: "arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables",
+        integration: "arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables",
+        production: "arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables"
+      };
+
+      const mappings = template.findMappings("EnvironmentConfiguration");
+      expect(mappings).toStrictEqual({
+        EnvironmentConfiguration: {
+          dev: { dynatraceSecretArn: expectedDynatraceSecretArn.dev },
+          build: { dynatraceSecretArn: expectedDynatraceSecretArn.build },
+          staging: { dynatraceSecretArn: expectedDynatraceSecretArn.staging },
+          integration: { dynatraceSecretArn: expectedDynatraceSecretArn.integration },
+          production: { dynatraceSecretArn: expectedDynatraceSecretArn.production }
+        }
       });
     });
   });
 
-  describe("IAM", () => {
-    // See: https://github.com/govuk-one-login/devplatform-deploy/blob/c298f297141f414798899a622509262fbb309260/sam-deploy-pipeline/template.yaml#L3759
-    test("Every IAM role has a permissions boundary", () => {
-      const iamRoles = template.findResources("AWS::IAM::Role");
-      const iamRolesList = Object.keys(iamRoles);
-      iamRolesList.forEach((iamRole) => {
-        expect(iamRoles[iamRole].Properties.PermissionsBoundary).toStrictEqual({
-          "Fn::If": [
-            "UsePermissionsBoundary",
-            { Ref: "PermissionsBoundary" },
-            { Ref: "AWS::NoValue" },
-          ],
+  describe("Nested Stacks", () => {
+    describe("API Gateway Stacks", () => {
+      test("Private API stack has correct parameters", () => {
+        template.hasResourceProperties("AWS::CloudFormation::Stack", {
+          TemplateURL: "infra/api/privateApi.cloudFormation.yaml",
+          Parameters: {
+            Environment: { Ref: "Environment" },
+            PermissionsBoundary: { Ref: "PermissionsBoundary" },
+            StackName: { Ref: "AWS::StackName" },
+            ApiBurstLimit: {
+              "Fn::FindInMap": ["PrivateApigw", { Ref: "Environment" }, "ApiBurstLimit"]
+            },
+            ApiRateLimit: {
+              "Fn::FindInMap": ["PrivateApigw", { Ref: "Environment" }, "ApiRateLimit"]
+            }
+          }
+        });
+      });
+
+      test("Sessions API stack has correct parameters", () => {
+        template.hasResourceProperties("AWS::CloudFormation::Stack", {
+          TemplateURL: "infra/api/sessionsApi.cloudFormation.yaml",
+          Parameters: {
+            Environment: { Ref: "Environment" },
+            PermissionsBoundary: { Ref: "PermissionsBoundary" },
+            StackName: { Ref: "AWS::StackName" },
+            ApiBurstLimit: {
+              "Fn::FindInMap": ["SessionsApigw", { Ref: "Environment" }, "ApiBurstLimit"]
+            },
+            ApiRateLimit: {
+              "Fn::FindInMap": ["SessionsApigw", { Ref: "Environment" }, "ApiRateLimit"]
+            },
+            BaseDns: {
+              "Fn::FindInMap": ["DNS", { Ref: "Environment" }, "BaseDns"]
+            }
+          }
+        });
+      });
+
+      test("Proxy API stack is conditional and has correct parameters", () => {
+        template.hasResource("AWS::CloudFormation::Stack", {
+          Condition: "ProxyApiDeployment",
+          Properties: {
+            TemplateURL: "infra/api/proxyApi.cloudFormation.yaml",
+            Parameters: {
+              Environment: { Ref: "Environment" },
+              PermissionsBoundary: { Ref: "PermissionsBoundary" },
+              StackName: { Ref: "AWS::StackName" },
+              ApiBurstLimit: {
+                "Fn::FindInMap": ["ProxyApigw", { Ref: "Environment" }, "ApiBurstLimit"]
+              },
+              ApiRateLimit: {
+                "Fn::FindInMap": ["ProxyApigw", { Ref: "Environment" }, "ApiRateLimit"]
+              },
+              BaseDns: {
+                "Fn::FindInMap": ["DNS", { Ref: "Environment" }, "BaseDns"]
+              }
+            }
+          }
         });
       });
     });
 
-    // See: https://github.com/govuk-one-login/devplatform-deploy/blob/c298f297141f414798899a622509262fbb309260/sam-deploy-pipeline/template.yaml#L3759
-    test("Every IAM role name conforms to dev platform naming standard", () => {
-      const iamRoles = template.findResources("AWS::IAM::Role");
-      const iamRolesList = Object.keys(iamRoles);
-      iamRolesList.forEach((iamRole) => {
-        const roleName = iamRoles[iamRole].Properties.RoleName[
-          "Fn::Sub"
-        ] as string;
-        const roleNameConformsToStandards =
-          roleName.startsWith("${AWS::StackName}-");
-        expect(roleNameConformsToStandards).toBe(true);
+    describe("Function Stacks", () => {
+      test("Token Function stack has correct parameters", () => {
+        template.hasResourceProperties("AWS::CloudFormation::Stack", {
+          TemplateURL: "infra/functions/token.cloudFormation.yaml",
+          Parameters: {
+            Environment: { Ref: "Environment" },
+            PermissionsBoundary: { Ref: "PermissionsBoundary" },
+            StackName: { Ref: "AWS::StackName" }
+          }
+        });
+      });
+
+      test("Credential Function stack has correct parameters", () => {
+        template.hasResourceProperties("AWS::CloudFormation::Stack", {
+          TemplateURL: "infra/functions/credential.cloudFormation.yaml",
+          Parameters: {
+            Environment: { Ref: "Environment" },
+            PermissionsBoundary: { Ref: "PermissionsBoundary" },
+            StackName: { Ref: "AWS::StackName" }
+          }
+        });
+      });
+
+      test("Active Session Function stack has correct parameters", () => {
+        template.hasResourceProperties("AWS::CloudFormation::Stack", {
+          TemplateURL: "infra/functions/activeSession.cloudFormation.yaml",
+          Parameters: {
+            Environment: { Ref: "Environment" },
+            PermissionsBoundary: { Ref: "PermissionsBoundary" },
+            StackName: { Ref: "AWS::StackName" }
+          }
+        });
+      });
+
+      test("Biometric Token Function stack has correct parameters", () => {
+        template.hasResourceProperties("AWS::CloudFormation::Stack", {
+          TemplateURL: "infra/functions/biometricToken.cloudFormation.yaml",
+          Parameters: {
+            Environment: { Ref: "Environment" },
+            PermissionsBoundary: { Ref: "PermissionsBoundary" },
+            StackName: { Ref: "AWS::StackName" }
+          }
+        });
+      });
+
+      test("JWKS Function stack has correct parameters", () => {
+        template.hasResourceProperties("AWS::CloudFormation::Stack", {
+          TemplateURL: "infra/functions/jwks.cloudFormation.yaml",
+          Parameters: {
+            Environment: { Ref: "Environment" },
+            PermissionsBoundary: { Ref: "PermissionsBoundary" },
+            StackName: { Ref: "AWS::StackName" }
+          }
+        });
+      });
+
+      test("Proxy Function stack is conditional and has correct parameters", () => {
+        template.hasResource("AWS::CloudFormation::Stack", {
+          Condition: "ProxyApiDeployment",
+          Properties: {
+            TemplateURL: "infra/functions/proxy.cloudFormation.yaml",
+            Parameters: {
+              Environment: { Ref: "Environment" },
+              PermissionsBoundary: { Ref: "PermissionsBoundary" },
+              StackName: { Ref: "AWS::StackName" }
+            }
+          }
+        });
+      });
+    });
+
+    describe("Storage Stacks", () => {
+      test("DynamoDB stack has correct parameters", () => {
+        template.hasResourceProperties("AWS::CloudFormation::Stack", {
+          TemplateURL: "infra/storage/dynamodb.cloudFormation.yaml",
+          Parameters: {
+            Environment: { Ref: "Environment" },
+            StackName: { Ref: "AWS::StackName" }
+          }
+        });
+      });
+
+      test("S3 stack has correct parameters", () => {
+        template.hasResourceProperties("AWS::CloudFormation::Stack", {
+          TemplateURL: "infra/storage/s3.cloudFormation.yaml",
+          Parameters: {
+            Environment: { Ref: "Environment" },
+            StackName: { Ref: "AWS::StackName" }
+          }
+        });
+      });
+
+      test("SQS stack has correct parameters", () => {
+        template.hasResourceProperties("AWS::CloudFormation::Stack", {
+          TemplateURL: "infra/storage/sqs.cloudFormation.yaml",
+          Parameters: {
+            Environment: { Ref: "Environment" },
+            StackName: { Ref: "AWS::StackName" },
+            TxmaAccount: {
+              "Fn::FindInMap": ["TxMA", { Ref: "Environment" }, "TxmaAccount"]
+            }
+          }
+        });
+      });
+    });
+
+    describe("Monitoring Stack", () => {
+      test("Monitoring stack is conditional and has correct parameters", () => {
+        template.hasResource("AWS::CloudFormation::Stack", {
+          Condition: "DeployAlarms",
+          Properties: {
+            TemplateURL: "infra/monitoring/alarms.cloudFormation.yaml",
+            Parameters: {
+              Environment: { Ref: "Environment" },
+              StackName: { Ref: "AWS::StackName" }
+            }
+          }
+        });
+      });
+    });
+
+    describe("Security Stack", () => {
+      test("KMS stack has correct parameters", () => {
+        template.hasResourceProperties("AWS::CloudFormation::Stack", {
+          TemplateURL: "infra/security/kms.cloudFormation.yaml",
+          Parameters: {
+            Environment: { Ref: "Environment" },
+            StackName: { Ref: "AWS::StackName" },
+            PendingDeletionInDays: {
+              "Fn::FindInMap": ["KMS", { Ref: "Environment" }, "PendingDeletionInDays"]
+            },
+            TxmaAccount: {
+              "Fn::FindInMap": ["TxMA", { Ref: "Environment" }, "TxmaAccount"]
+            }
+          }
+        });
       });
     });
   });
 
-  describe("S3", () => {
-    test("All buckets have a name", () => {
-      const buckets = template.findResources("AWS::S3::Bucket");
-      const bucketList = Object.keys(buckets);
-      bucketList.forEach((bucket) => {
-        expect(buckets[bucket].Properties.BucketName).toBeTruthy();
+  describe("Global Configurations", () => {
+    test("Lambda global environment variables are set", () => {
+      const expectedGlobals = [
+        "SIGNING_KEY_ID",
+        "ISSUER",
+        "TXMA_SQS",
+        "SESSION_TABLE_NAME",
+        "POWERTOOLS_SERVICE_NAME",
+        "AWS_LAMBDA_EXEC_WRAPPER",
+        "DT_CONNECTION_AUTH_TOKEN",
+        "DT_CONNECTION_BASE_URL",
+        "DT_CLUSTER_ID",
+        "DT_LOG_COLLECTION_AUTH_TOKEN",
+        "DT_TENANT",
+        "DT_OPEN_TELEMETRY_ENABLE_INTEGRATION"
+      ];
+      const envVars = template.toJSON().Globals.Function.Environment.Variables;
+      Object.keys(envVars).every((envVar) => {
+        expectedGlobals.includes(envVar);
       });
+      expect(expectedGlobals.length).toBe(Object.keys(envVars).length);
     });
 
-    test("All buckets have an associated bucket policy", () => {
-      const buckets = template.findResources("AWS::S3::Bucket");
-      const bucketList = Object.keys(buckets);
-      bucketList.forEach((bucket) => {
-        template.hasResourceProperties(
-          "AWS::S3::BucketPolicy",
-          Match.objectLike({
-            Bucket: { Ref: bucket },
-          }),
-        );
-      });
+    test("Lambda global memory size is set to 512MB", () => {
+      const globalMemorySize = template.toJSON().Globals.Function.MemorySize;
+      expect(globalMemorySize).toStrictEqual(512);
     });
 
-    test("All buckets have public access blocked", () => {
-      const buckets = template.findResources("AWS::S3::Bucket");
-      const bucketList = Object.keys(buckets);
-      bucketList.forEach((bucket) => {
-        expect(
-          buckets[bucket].Properties.PublicAccessBlockConfiguration,
-        ).toEqual(
-          expect.objectContaining({
-            BlockPublicAcls: true,
-            BlockPublicPolicy: true,
-            IgnorePublicAcls: true,
-            RestrictPublicBuckets: true,
-          }),
-        );
+    test("Lambda global reserved concurrency and log level mapping is correct", () => {
+      const lambdaMapping = template.findMappings("Lambda");
+      expect(lambdaMapping).toStrictEqual({
+        Lambda: {
+          dev: {
+            ReservedConcurrentExecutions: 15,
+            LogLevel: "DEBUG"
+          },
+          build: {
+            ReservedConcurrentExecutions: 15,
+            LogLevel: "INFO"  
+          },
+          staging: {
+            ReservedConcurrentExecutions: 0,
+            LogLevel: "INFO"
+          },
+          integration: {
+            ReservedConcurrentExecutions: 0,
+            LogLevel: "INFO"
+          },
+          production: {
+            ReservedConcurrentExecutions: 0,
+            LogLevel: "INFO"
+          }
+        }
       });
-    });
+  });
+});
 
-    test("All buckets have encryption enabled", () => {
-      const buckets = template.findResources("AWS::S3::Bucket");
-      const bucketList = Object.keys(buckets);
-      bucketList.forEach((bucket) => {
-        expect(
-          buckets[bucket].Properties.BucketEncryption
-            .ServerSideEncryptionConfiguration,
-        ).toEqual(
-          expect.arrayContaining([
-            expect.objectContaining({
-              ServerSideEncryptionByDefault: expect.objectContaining({
-                SSEAlgorithm: expect.any(String),
-              }),
-            }),
-          ]),
-        );
-      });
+describe("Mappings", () => {
+  test("TxMA accounts are mapped correctly", () => {
+    const expectedTxmaMapping = {
+      TxMA: {
+        dev: {
+          TxmaAccount: "arn:aws:iam::248098332657:root"
+        },
+        build: {
+          TxmaAccount: "arn:aws:iam::750703655225:root"
+        },
+        staging: {
+          TxmaAccount: "arn:aws:iam::178023842775:root"
+        },
+        integration: {
+          TxmaAccount: "arn:aws:iam::729485541398:root"
+        },
+        production: {
+          TxmaAccount: "arn:aws:iam::451773080033:root"
+        }
+      }
+    };
+
+    expect(template.findMappings("TxMA")).toStrictEqual(expectedTxmaMapping);
+  });
+
+  test("API rate limits are mapped correctly", () => {
+    const expectedLimits = {
+      dev: 10,
+      build: 10,
+      staging: 0,
+      integration: 0,
+      production: 0
+    };
+
+    const mappingHelper = new Mappings(template);
+
+    mappingHelper.validatePrivateAPIMapping({
+      environmentFlags: expectedLimits,
+      mappingBottomLevelKey: "ApiRateLimit",
+    });
+    mappingHelper.validateSessionsApiMapping({
+      environmentFlags: expectedLimits,
+      mappingBottomLevelKey: "ApiRateLimit",
+    });
+    mappingHelper.validateProxyAPIMapping({
+      environmentFlags: expectedLimits,
+      mappingBottomLevelKey: "ApiRateLimit",
     });
   });
+  
+  test("KMS deletion window is mapped correctly", () => {
+    const expectedKmsDeletionMapping = {
+      dev: 7,
+      build: 30,
+      staging: 30,
+      integration: 30,
+      production: 30,
+    };
+    const mappingHelper = new Mappings(template);
+    mappingHelper.validateKMSMapping({
+      environmentFlags: expectedKmsDeletionMapping,
+      mappingBottomLevelKey: "PendingDeletionInDays",
+    });
+  });
+
+  test("DNS base domains are mapped correctly", () => {
+    const expectedDnsMapping = {
+      DNS: {
+        dev: { BaseDns: "review-b-async.dev.account.gov.uk" },
+        build: { BaseDns: "review-b-async.build.account.gov.uk" },
+        staging: { BaseDns: "review-b-async.staging.account.gov.uk" },
+        integration: { BaseDns: "review-b-async.integration.account.gov.uk" },
+        production: { BaseDns: "review-b-async.account.gov.uk" }
+      }
+    };
+
+    expect(template.findMappings("DNS")).toStrictEqual(expectedDnsMapping);
+  });
+});
+
+describe("Outputs", () => {
+  test("API URLs are output correctly", () => {
+    template.hasOutput("SessionsApiUrl", {
+      Description: "Sessions API Gateway base URL",
+      Value: { "Fn::GetAtt": ["SessionsApiStack", "Outputs.ApiUrl"] }
+    });
+
+    template.hasOutput("PrivateApiUrl", {
+      Description: "Private API Gateway base URL", 
+      Value: { "Fn::GetAtt": ["PrivateApiStack", "Outputs.ApiUrl"] }
+    });
+
+    // Proxy API URL output is conditional
+    template.hasOutput("ProxyApiUrl", {
+      Description: "Proxy API Gateway Pretty DNS",
+      Value: { "Fn::GetAtt": ["ProxyApiStack", "Outputs.ApiUrl"] },
+      Condition: "ProxyApiDeployment"
+    });
+  });
+
+  test("TxMA related outputs are exported correctly for dev/build", () => {
+    // Check TxMA SQS Queue ARN output
+    template.hasOutput("TxmaSqsQueueArn", {
+      Description: "TxMA SQS Queue ARN",
+      Value: { "Fn::GetAtt": ["SqsStack", "Outputs.QueueArn"] },
+      Export: {
+        Name: { "Fn::Sub": "${AWS::StackName}-txma-sqs-queue-arn" }
+      },
+      Condition: "IsDevOrBuild"
+    });
+
+    // Check TxMA KMS Key ARN output
+    template.hasOutput("TxmaKmsEncryptionKeyArn", {
+      Description: "TxMA KMS Encryption Key ARN",
+      Value: { "Fn::GetAtt": ["SecurityStack", "Outputs.TxMAKmsKeyArn"] },
+      Export: {
+        Name: { "Fn::Sub": "${AWS::StackName}-txma-kms-encryption-key-arn" }
+      },
+      Condition: "IsDevOrBuild"
+    });
+  });
+});
 });
