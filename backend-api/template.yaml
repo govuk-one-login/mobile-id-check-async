@@ -160,7 +160,7 @@ Mappings:
   EnvironmentVariables:
     dev:
       STSBASEURL: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk'
-      ReadIdBaseUrl: 'placeholder'
+      ReadIdBaseUrl: 'https://api-mob-readid-mock.review-b-async.dev.account.gov.uk'
       ClientRegistrySecretPath: 'dev/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
@@ -169,7 +169,7 @@ Mappings:
 
     build:
       STSBASEURL: 'https://mob-sts-mock.review-b-async.build.account.gov.uk'
-      ReadIdBaseUrl: 'placeholder'
+      ReadIdBaseUrl: 'https://api-mob-readid-mock.review-b-async.build.account.gov.uk'
       ClientRegistrySecretPath: 'build/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
@@ -178,7 +178,7 @@ Mappings:
 
     staging:
       STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
-      ReadIdBaseUrl: 'placeholder'
+      ReadIdBaseUrl: 'https://gds-acc.readid.com'
       ClientRegistrySecretPath: 'staging/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
@@ -187,7 +187,7 @@ Mappings:
 
     integration:
       STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
-      ReadIdBaseUrl: 'placeholder'
+      ReadIdBaseUrl: 'https://gds-acc.readid.com'
       ClientRegistrySecretPath: 'integration/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
@@ -195,7 +195,7 @@ Mappings:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
     production:
       STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
-      ReadIdBaseUrl: 'placeholder'
+      ReadIdBaseUrl: 'https://gds.readid.com'
       ClientRegistrySecretPath: 'production/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
