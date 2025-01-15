@@ -40,20 +40,39 @@ export const getBiometricToken: GetBiometricToken = async (
       },
     );
     response = await sendHttpRequest(httpRequest);
-  } catch {
+  } catch (error) {
+    logger.error(
+      LogMessage.BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_FAILURE,
+      error as Error,
+    );
     return emptyFailure();
   }
 
   if (response == null || response.body == null) {
+    logger.error(
+      LogMessage.BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_FAILURE,
+      {
+        data: {
+          response,
+        },
+      },
+    );
     return emptyFailure();
   }
 
   let parsedBody;
   try {
     parsedBody = JSON.parse(response.body);
-  } catch {
+  } catch (error) {
+    logger.error(
+      LogMessage.BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_FAILURE,
+      error as Error,
+    );
     return emptyFailure();
   }
 
+  logger.debug(
+    LogMessage.BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_SUCCESS,
+  );
   return successResult(parsedBody.access_token);
 };
