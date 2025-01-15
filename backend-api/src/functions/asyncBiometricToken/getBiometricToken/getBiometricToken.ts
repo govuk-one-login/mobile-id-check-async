@@ -22,7 +22,7 @@ export const getBiometricToken: GetBiometricToken = async (
   const httpRequest = {
     url: readIdUrl,
     method: "POST" as HttpMethod,
-    headers: headers,
+    headers,
   };
 
   let response;
