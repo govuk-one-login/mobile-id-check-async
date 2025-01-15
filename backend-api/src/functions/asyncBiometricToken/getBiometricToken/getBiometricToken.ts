@@ -17,15 +17,13 @@ export const getBiometricToken: GetBiometricToken = async (
   submitterKey: string,
   sendHttpRequestAdapter: ISendHttpRequest = sendHttpRequest,
 ) => {
-  const readIdUrl = `${url}/oauth/token?grant_type=client_credentials`;
-  const headers = {
-    "X-Innovalor-Authorization": submitterKey,
-    "Content-Type": "application/x-www-form-urlencoded",
-  };
   const httpRequest = {
-    url: readIdUrl,
+    url: `${url}/oauth/token?grant_type=client_credentials`,
     method: "POST" as const,
-    headers,
+    headers: {
+      "X-Innovalor-Authorization": submitterKey,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
   };
   const httpRequestLogData = {
     ...httpRequest,
