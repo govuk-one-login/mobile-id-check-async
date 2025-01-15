@@ -46,12 +46,12 @@ Conditions:
       - none
 
 Resources:
-  # Private API Gateway for Test Resources
-  PrivateApi:
+  # Private API Gateway for retrievin events
+  EventsApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub ${AWS::StackName}-private-api
-      Description: Private API gateway for Test Resources
+      Name: !Sub ${AWS::StackName}-events-private-api
+      Description: Private API gateway for retrieving events
       EndpointConfiguration: PRIVATE
       Auth:
         ResourcePolicy:
@@ -60,7 +60,7 @@ Resources:
       StageName: !Ref Environment
       OpenApiVersion: 3.0.1
       AccessLogSetting:
-        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${TestResourcesPrivateApiAccessLogs}
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${EventsPrivateApiAccessLogs}
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
       MethodSettings:
         - LoggingLevel: INFO
@@ -82,9 +82,32 @@ Resources:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: ./openApiSpecs/test-resources-private-spec.yaml
+            Location: ./openApiSpecs/events-private-spec.yaml
 
-  TestResourcesPrivateApiAccessLogs:
+  EventsApiRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: EventsPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                - "dynamodb:Query"
+                - "dynamodb:GetItem"
+                Resource: !GetAtt EventsTable.Arn
+
+  EventsPrivateApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
