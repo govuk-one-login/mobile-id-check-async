@@ -2,20 +2,20 @@ import { logger } from "../../common/logging/logger";
 import { LogMessage } from "../../common/logging/LogMessage";
 import {
   ISendHttpRequest,
-  sendHttpRequest,
+  sendHttpRequest as sendHttpRequestDefault,
 } from "../../services/http/sendHttpRequest";
 import { emptyFailure, Result, successResult } from "../../utils/result";
 
 export type GetBiometricToken = (
   url: string,
   submitterKey: string,
-  sendHttpRequestAdapter?: ISendHttpRequest,
+  sendHttpRequest?: ISendHttpRequest,
 ) => Promise<Result<string, void>>;
 
 export const getBiometricToken: GetBiometricToken = async (
   url: string,
   submitterKey: string,
-  sendHttpRequestAdapter: ISendHttpRequest = sendHttpRequest,
+  sendHttpRequest: ISendHttpRequest = sendHttpRequestDefault,
 ) => {
   const httpRequest = {
     url: `${url}/oauth/token?grant_type=client_credentials`,
@@ -43,7 +43,7 @@ export const getBiometricToken: GetBiometricToken = async (
         },
       },
     );
-    response = await sendHttpRequestAdapter(httpRequest);
+    response = await sendHttpRequest(httpRequest);
   } catch (error) {
     logger.error(
       LogMessage.BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_FAILURE,
