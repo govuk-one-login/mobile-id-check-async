@@ -1,21 +1,21 @@
 import { logger } from "../../common/logging/logger";
 import { LogMessage } from "../../common/logging/LogMessage";
 import {
+  ISendHttpRequest,
   sendHttpRequest,
-  SuccessfulHttpResponse,
 } from "../../services/http/sendHttpRequest";
 import { emptyFailure, Result, successResult } from "../../utils/result";
 
 export type GetBiometricToken = (
   url: string,
   submitterKey: string,
-  sendHttpRequestOverride?: () => Promise<SuccessfulHttpResponse>,
+  sendHttpRequestOverride?: ISendHttpRequest,
 ) => Promise<Result<string, void>>;
 
 export const getBiometricToken: GetBiometricToken = async (
   url: string,
   submitterKey: string,
-  sendHttpRequestOverride?: () => Promise<SuccessfulHttpResponse>,
+  sendHttpRequestOverride?: ISendHttpRequest,
 ) => {
   const readIdUrl = `${url}/oauth/token?grant_type=client_credentials`;
   const headers = {
