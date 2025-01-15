@@ -15,7 +15,7 @@ describe("getBiometricToken", () => {
 
   describe("On every call", () => {
     beforeEach(async () => {
-      async function mockSendHttpRequestResponse() {
+      async function mockSendHttpRequest() {
         return {
           statusCode: 200,
           body: "mockBody",
@@ -28,7 +28,7 @@ describe("getBiometricToken", () => {
       result = await getBiometricToken(
         "https://mockUrl.com",
         "mockSubmitterKey",
-        mockSendHttpRequestResponse,
+        mockSendHttpRequest,
       );
     });
 
@@ -42,14 +42,14 @@ describe("getBiometricToken", () => {
 
   describe("Given an error is caught when requesting a biometric access token", () => {
     beforeEach(async () => {
-      async function mockSendHttpRequestErrorResponse() {
+      async function mockSendHttpRequestError() {
         throw new Error("mockError");
       }
 
       result = await getBiometricToken(
         "https://mockUrl.com",
         "mockSubmitterKey",
-        mockSendHttpRequestErrorResponse as unknown as ISendHttpRequest,
+        mockSendHttpRequestError as unknown as ISendHttpRequest,
       );
     });
 
@@ -68,7 +68,7 @@ describe("getBiometricToken", () => {
   describe("Given the response is invalid", () => {
     describe("Given response body is undefined", () => {
       beforeEach(async () => {
-        async function mockSendHttpRequestResponseBodyUndefined() {
+        async function mockSendHttpRequestBodyUndefined() {
           return {
             statusCode: 200,
             body: undefined,
@@ -81,7 +81,7 @@ describe("getBiometricToken", () => {
         result = await getBiometricToken(
           "https://mockUrl.com",
           "mockSubmitterKey",
-          mockSendHttpRequestResponseBodyUndefined,
+          mockSendHttpRequestBodyUndefined,
         );
       });
 
@@ -99,7 +99,7 @@ describe("getBiometricToken", () => {
 
     describe("Given response body cannot be parsed", () => {
       beforeEach(async () => {
-        async function mockSendHttpRequestResponseBodyInvalidJson() {
+        async function mockSendHttpRequestBodyInvalidJson() {
           return {
             statusCode: 200,
             body: "Invalid JSON",
@@ -112,7 +112,7 @@ describe("getBiometricToken", () => {
         result = await getBiometricToken(
           "https://mockUrl.com",
           "mockSubmitterKey",
-          mockSendHttpRequestResponseBodyInvalidJson,
+          mockSendHttpRequestBodyInvalidJson,
         );
       });
 
