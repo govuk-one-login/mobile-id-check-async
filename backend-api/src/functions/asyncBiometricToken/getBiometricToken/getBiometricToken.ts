@@ -9,13 +9,13 @@ import { emptyFailure, Result, successResult } from "../../utils/result";
 export type GetBiometricToken = (
   url: string,
   submitterKey: string,
-  sendHttpRequestOverride?: ISendHttpRequest,
+  sendHttpRequestAdapter?: ISendHttpRequest,
 ) => Promise<Result<string, void>>;
 
 export const getBiometricToken: GetBiometricToken = async (
   url: string,
   submitterKey: string,
-  sendHttpRequestOverride?: ISendHttpRequest,
+  sendHttpRequestAdapter: ISendHttpRequest = sendHttpRequest,
 ) => {
   const readIdUrl = `${url}/oauth/token?grant_type=client_credentials`;
   const headers = {
@@ -27,8 +27,7 @@ export const getBiometricToken: GetBiometricToken = async (
     method: "POST" as const,
     headers,
   };
-  const requestBiometricToken = sendHttpRequestOverride ?? sendHttpRequest;
-
+  const requestBiometricToken = sendHttpRequestAdapter;
   let response;
   try {
     logger.debug(
