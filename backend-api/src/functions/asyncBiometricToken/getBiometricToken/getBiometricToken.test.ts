@@ -18,7 +18,7 @@ describe("getBiometricToken", () => {
         Promise.resolve(),
       ) as jest.Mock;
 
-      result = await getBiometricToken("mockUrl", "mockSubmitterKey");
+      result = await getBiometricToken("https://mockUrl.com", "mockSubmitterKey");
     });
 
     it("Logs network call attempt at debug level", () => {
@@ -35,7 +35,7 @@ describe("getBiometricToken", () => {
         Promise.reject(new Error("Unexpected network error")),
       ) as jest.Mock;
 
-      result = await getBiometricToken("mockUrl", "mockSubmitterKey");
+      result = await getBiometricToken("https://mockUrl.com", "mockSubmitterKey");
     });
 
     it("Logs error", () => {
@@ -68,7 +68,7 @@ describe("getBiometricToken", () => {
           } as unknown as Response),
         ) as jest.Mock;
 
-        result = await getBiometricToken("mockUrl", "mockSubmitterKey");
+        result = await getBiometricToken("https://mockUrl.com", "mockSubmitterKey");
       });
 
       it("Logs error", () => {
@@ -94,7 +94,7 @@ describe("getBiometricToken", () => {
           } as Response),
         ) as jest.Mock;
 
-        result = await getBiometricToken("mockUrl", "mockSubmitterKey");
+        result = await getBiometricToken("https://mockUrl.com", "mockSubmitterKey");
       });
 
       it("Logs error", () => {
@@ -126,7 +126,7 @@ describe("getBiometricToken", () => {
         } as Response),
       ) as jest.Mock;
 
-      result = await getBiometricToken("mockUrl", "mockSubmitterKey");
+      result = await getBiometricToken("https://mockUrl.com", "mockSubmitterKey");
     });
 
     it("Logs success at debug level", () => {
