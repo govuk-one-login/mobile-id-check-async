@@ -51,56 +51,20 @@ jobs:
         with:
           projectBaseDir: sts-mock
 
-  # build-and-push-test-image-to-dev:
-  #   name: Build and push test image to Dev
-  #   needs: sts-mock-tests-and-sonar-scan
-  #   runs-on: ubuntu-22.04
-  #   env:
-  #     STS_MOCK_DEV_TEST_IMAGE_REPOSITORY_URI: ${{ secrets.STS_MOCK_DEV_TEST_IMAGE_REPOSITORY_URI }}      
-  #     DEV_CONTAINER_SIGN_KMS_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
-  #     IMAGE_TAG: latest
-  #   defaults:
-  #     run:
-  #       shell: bash
-  #       working-directory: sts-mock
-  #   steps:
-  #   - name: Check out repository code
-  #     uses: actions/checkout@9a9194f87191a7e9055e3e9b95b8cfb13023bb08 #main
-  #     with:
-  #       submodules: true
-  #       fetch-depth: 0
-
-  #   - name: Build test image
-  #     run: |
-  #       docker build -t $STS_MOCK_DEV_TEST_IMAGE_REPOSITORY_URI:$IMAGE_TAG . 
-
-  #   - name: Configure AWS credentials for DEV
-  #     uses: aws-actions/configure-aws-credentials@97834a484a5ab3c40fa9e2eb40fcf8041105a573 #main
-  #     with:
-  #       aws-region: eu-west-2
-  #       role-to-assume: ${{ secrets.STS_MOCK_DEV_GH_ACTIONS_ROLE_ARN }}
-
-  #   - name: Login to Amazon ECR DEV
-  #     uses: aws-actions/amazon-ecr-login@a81a5945e74802f35ca53aa274a9e00436e6210e #main
-
-  #   - name: Push image to DEV
-  #     run: |
-  #       docker push $STS_MOCK_DEV_TEST_IMAGE_REPOSITORY_URI:$IMAGE_TAG
-
-  #   - name: Install Cosign
-  #     uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382 #main
-  #     with:
-  #       cosign-release: 'v1.9.0'
-
-  #   - name: Code sign the Docker image
-  #     id: cosign-image             
-  #     run: |
-  #       cosign sign --key awskms:///$DEV_CONTAINER_SIGN_KMS_KEY $STS_MOCK_DEV_TEST_IMAGE_REPOSITORY_URI:$IMAGE_TAG
+  test-image-dev:
+    name: build and push test image to dev
+    uses:
+      ./.github/workflows/shared-build-and-push-test-image.yml
+    with:
+      WORKING_DIRECTORY: sts-mock
+      GH_ACTIONS_ROLE_ARN: ${{ secrets.STS_MOCK_DEV_GH_ACTIONS_ROLE_ARN }}
+      TEST_IMAGE_REPOSITORY: ${{ secrets.STS_MOCK_DEV_TEST_IMAGE_REPOSITORY_URI }}
+      CONTAINER_SIGN_KMS_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
 
   build-and-upload-sam-artifact-to-dev:
     name: Validate & upload S3 artifact to dev
     runs-on: ubuntu-22.04
-    needs: sonar-scan
+    needs: test-image-dev
     defaults:
       run:
         shell: bash
@@ -147,56 +111,20 @@ jobs:
           template-file: .aws-sam/build/template.yaml
           working-directory: sts-mock
 
-  # build-and-push-test-image-to-build:
-  #   name: Build and push test image to Build
-  #   needs: sts-mock-tests-and-sonar-scan  
-  #   runs-on: ubuntu-22.04
-  #   env:
-  #     STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI: ${{ secrets.STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI }}      
-  #     BUILD_CONTAINER_SIGN_KMS_KEY: ${{ secrets.BUILD_CONTAINER_SIGN_KMS_KEY }}
-  #     IMAGE_TAG: latest
-  #   defaults:
-  #     run:
-  #       shell: bash
-  #       working-directory: sts-mock
-  #   steps:
-  #   - name: Check out repository code
-  #     uses: actions/checkout@9a9194f87191a7e9055e3e9b95b8cfb13023bb08 #main
-  #     with:
-  #       submodules: true
-  #       fetch-depth: 0
-
-  #   - name: Build test image
-  #     run: |
-  #       docker build -t $STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI:$IMAGE_TAG . 
-
-  #   - name: Configure AWS credentials for BUILD
-  #     uses: aws-actions/configure-aws-credentials@97834a484a5ab3c40fa9e2eb40fcf8041105a573 #main
-  #     with:
-  #       aws-region: eu-west-2
-  #       role-to-assume: ${{ secrets.STS_MOCK_BUILD_GH_ACTIONS_ROLE_ARN }}
-
-  #   - name: Login to Amazon ECR BUILD
-  #     uses: aws-actions/amazon-ecr-login@a81a5945e74802f35ca53aa274a9e00436e6210e #main
-
-  #   - name: Push image to BUILD
-  #     run: |
-  #       docker push $STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI:$IMAGE_TAG
-
-  #   - name: Install Cosign
-  #     uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382 #main
-  #     with:
-  #       cosign-release: 'v1.9.0'
-
-  #   - name: Code sign the Docker image
-  #     id: cosign-image             
-  #     run: |
-  #       cosign sign --key awskms:///$BUILD_CONTAINER_SIGN_KMS_KEY $STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI:$IMAGE_TAG
+   test-image-build:
+    name: build and push test image to build
+    uses:
+      ./.github/workflows/shared-build-and-push-test-image.yml
+    with:
+      WORKING_DIRECTORY: sts-mock
+      GH_ACTIONS_ROLE_ARN: ${{ secrets.STS_MOCK_BUILD_GH_ACTIONS_ROLE_ARN }}
+      TEST_IMAGE_REPOSITORY: ${{ secrets.STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI }}
+      CONTAINER_SIGN_KMS_KEY: ${{ secrets.BUILD_CONTAINER_SIGN_KMS_KEY }}
 
   build-and-upload-sam-artifact-to-build:
     name: Validate & upload S3 artifact to Build
     runs-on: ubuntu-22.04
-    needs: sonar-scan 
+    needs: test-image-build
     defaults:
       run:
         shell: bash
