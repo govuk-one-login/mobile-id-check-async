@@ -5,8 +5,10 @@ import "../../testUtils/matchers";
 
 describe("getBiometricToken", () => {
   let result: Result<string, void>;
+  let consoleDebugSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
   beforeEach(() => {
+    consoleDebugSpy = jest.spyOn(console, "debug");
     consoleErrorSpy = jest.spyOn(console, "error");
   });
 
@@ -92,7 +94,7 @@ describe("getBiometricToken", () => {
   });
 
   describe("Given valid request is made", () => {
-    it("Returns successResult containing biometric token", async () => {
+    beforeEach(async () => {
       const mockData = JSON.stringify({
         access_token: "mockBiometricToken",
         expires_in: 3600,
@@ -108,7 +110,16 @@ describe("getBiometricToken", () => {
       ) as jest.Mock;
 
       result = await getBiometricToken("mockUrl", "mockSubmitterKey");
+    });
 
+    it("Logs success at debug level", () => {
+      expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
+        messageCode:
+          "MOBILE_ASYNC_BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_SUCCESS",
+      });
+    });
+
+    it("Returns successResult containing biometric token", () => {
       expect(result).toEqual(successResult("mockBiometricToken"));
     });
   });
