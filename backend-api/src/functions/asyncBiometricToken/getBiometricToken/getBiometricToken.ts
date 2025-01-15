@@ -33,8 +33,6 @@ export const getBiometricToken: GetBiometricToken = async (
       LogMessage.BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_ATTEMPT,
       {
         data: {
-          readIdUrl,
-          headers,
           httpRequest,
         },
       },
