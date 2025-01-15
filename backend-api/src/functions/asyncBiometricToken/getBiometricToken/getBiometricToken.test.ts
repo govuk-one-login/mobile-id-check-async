@@ -12,6 +12,23 @@ describe("getBiometricToken", () => {
     consoleErrorSpy = jest.spyOn(console, "error");
   });
 
+  describe("On every call", () => {
+    beforeEach(async () => {
+      global.fetch = jest.fn(() =>
+        Promise.resolve(),
+      ) as jest.Mock;
+
+      result = await getBiometricToken("mockUrl", "mockSubmitterKey");
+    });
+
+    it("Logs network call attempt at debug level", () => {
+      expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
+        messageCode:
+          "MOBILE_ASYNC_BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_ATTEMPT",
+      });
+    })
+  })
+
   describe("Given there is an error making network request", () => {
     beforeEach(async () => {
       global.fetch = jest.fn(() =>
