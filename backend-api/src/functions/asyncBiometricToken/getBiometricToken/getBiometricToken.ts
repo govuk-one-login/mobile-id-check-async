@@ -1,3 +1,5 @@
+import { logger } from "../../common/logging/logger";
+import { LogMessage } from "../../common/logging/LogMessage";
 import {
   HttpMethod,
   sendHttpRequest,
@@ -27,6 +29,16 @@ export const getBiometricToken: GetBiometricToken = async (
 
   let response;
   try {
+    logger.debug(
+      LogMessage.BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_ATTEMPT,
+      {
+        data: {
+          readIdUrl,
+          headers,
+          httpRequest,
+        },
+      },
+    );
     response = await sendHttpRequest(httpRequest);
   } catch {
     return emptyFailure();
