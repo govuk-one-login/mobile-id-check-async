@@ -1,9 +1,6 @@
 import { logger } from "../../common/logging/logger";
 import { LogMessage } from "../../common/logging/LogMessage";
-import {
-  HttpMethod,
-  sendHttpRequest,
-} from "../../services/http/sendHttpRequest";
+import { sendHttpRequest } from "../../services/http/sendHttpRequest";
 import { emptyFailure, Result, successResult } from "../../utils/result";
 
 export type GetBiometricToken = (
@@ -23,7 +20,7 @@ export const getBiometricToken: GetBiometricToken = async (
 
   const httpRequest = {
     url: readIdUrl,
-    method: "POST" as HttpMethod,
+    method: "POST" as const,
     headers,
   };
 
