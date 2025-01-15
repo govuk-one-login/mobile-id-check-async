@@ -28,15 +28,18 @@ export const getBiometricToken: GetBiometricToken = async (
     headers,
   };
 
+  const httpRequestLogData = {
+    url: httpRequest.url,
+    method: httpRequest.method,
+  };
+
   let response;
   try {
     logger.debug(
       LogMessage.BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_ATTEMPT,
       {
         data: {
-          // Omitting submitterKey here as it is a secret and should not be logged
-          url: readIdUrl,
-          headers,
+          httpRequestLogData,
         },
       },
     );
@@ -44,7 +47,12 @@ export const getBiometricToken: GetBiometricToken = async (
   } catch (error) {
     logger.error(
       LogMessage.BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_FAILURE,
-      error as Error,
+      {
+        data: {
+          error,
+          httpRequestLogData,
+        },
+      },
     );
     return emptyFailure();
   }
@@ -55,6 +63,7 @@ export const getBiometricToken: GetBiometricToken = async (
       {
         data: {
           response,
+          httpRequestLogData,
         },
       },
     );
@@ -67,7 +76,12 @@ export const getBiometricToken: GetBiometricToken = async (
   } catch (error) {
     logger.error(
       LogMessage.BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_FAILURE,
-      error as Error,
+      {
+        data: {
+          error,
+          httpRequestLogData,
+        },
+      },
     );
     return emptyFailure();
   }
