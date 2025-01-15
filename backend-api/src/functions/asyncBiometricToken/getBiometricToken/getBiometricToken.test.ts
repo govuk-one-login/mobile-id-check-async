@@ -28,9 +28,11 @@ describe("getBiometricToken", () => {
     })
   })
 
-  it("Returns successResult containing a string", async () => {
-    const result = await getBiometricToken("mockUrl", "mockSubmitterKey");
+  describe("Given valid request is made", () => {
+    it("Returns successResult containing biometric token", async () => {
+      const result = await getBiometricToken("mockUrl", "mockSubmitterKey");
 
-    expect(result).toEqual(successResult("mockBiometricToken"));
-  });
+      expect(result).toEqual(successResult("mockBiometricToken"));
+    });
+  })
 });
