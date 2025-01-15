@@ -1,15 +1,32 @@
-import { emptyFailure, successResult } from "../../utils/result";
+import { emptyFailure, Result, successResult } from "../../utils/result";
 import { getBiometricToken } from "./getBiometricToken";
+import { expect } from "@jest/globals";
+import "../../testUtils/matchers";
 
 describe("getBiometricToken", () => {
+  let result: Result<string, void>;
+  let consoleErrorSpy: jest.SpyInstance;
+  beforeEach(() => {
+    consoleErrorSpy = jest.spyOn(console, "error");
+  });
+
   describe("Given there is an error making network request", () => {
-    it("Returns an empty failure", async () => {
+    beforeEach(async () => {
       global.fetch = jest.fn(() =>
         Promise.reject(new Error("Unexpected network error")),
       ) as jest.Mock;
 
-      const result = await getBiometricToken("mockUrl", "mockSubmitterKey");
+      result = await getBiometricToken("mockUrl", "mockSubmitterKey");
+    });
 
+    it("Logs error", () => {
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        messageCode:
+          "MOBILE_ASYNC_BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_FAILURE",
+      });
+    });
+
+    it("Returns an empty failure", () => {
       expect(result).toEqual(emptyFailure());
     });
   });
@@ -22,7 +39,7 @@ describe("getBiometricToken", () => {
     });
 
     describe("Given response body is undefined", () => {
-      it("Returns an empty failure", async () => {
+      beforeEach(async () => {
         global.fetch = jest.fn(() =>
           Promise.resolve({
             status: 200,
@@ -32,14 +49,23 @@ describe("getBiometricToken", () => {
           } as unknown as Response),
         ) as jest.Mock;
 
-        const result = await getBiometricToken("mockUrl", "mockSubmitterKey");
+        result = await getBiometricToken("mockUrl", "mockSubmitterKey");
+      });
 
+      it("Logs error", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "MOBILE_ASYNC_BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_FAILURE",
+        });
+      });
+
+      it("Returns an empty failure", () => {
         expect(result).toEqual(emptyFailure());
       });
     });
 
     describe("Given response body cannot be parsed", () => {
-      it("Returns an empty failure", async () => {
+      beforeEach(async () => {
         global.fetch = jest.fn(() =>
           Promise.resolve({
             status: 200,
@@ -49,8 +75,17 @@ describe("getBiometricToken", () => {
           } as Response),
         ) as jest.Mock;
 
-        const result = await getBiometricToken("mockUrl", "mockSubmitterKey");
+        result = await getBiometricToken("mockUrl", "mockSubmitterKey");
+      });
 
+      it("Logs error", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "MOBILE_ASYNC_BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_FAILURE",
+        });
+      });
+
+      it("Returns an empty failure", () => {
         expect(result).toEqual(emptyFailure());
       });
     });
@@ -72,7 +107,7 @@ describe("getBiometricToken", () => {
         } as Response),
       ) as jest.Mock;
 
-      const result = await getBiometricToken("mockUrl", "mockSubmitterKey");
+      result = await getBiometricToken("mockUrl", "mockSubmitterKey");
 
       expect(result).toEqual(successResult("mockBiometricToken"));
     });
