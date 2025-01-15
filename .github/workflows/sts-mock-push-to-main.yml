@@ -10,21 +10,19 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-env:
-  APPLICATION_DIRECTORY: sts-mock
-
 permissions:
   contents: read
   id-token: write
+
+defaults:
+  run:
+    shell: bash
+    working-directory: sts-mock
 
 jobs:
   sonar-scan:
     name: Run tests and Sonar scan
     runs-on: ubuntu-22.04
-    defaults:
-      run:
-        shell: bash
-        working-directory: ${{ env.APPLICATION_DIRECTORY }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@9a9194f87191a7e9055e3e9b95b8cfb13023bb08 #main
@@ -37,7 +35,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: ${{ env.APPLICATION_DIRECTORY }}/package-lock.json
+          cache-dependency-path: sts-mock/package-lock.json
 
       - name: Install dependencies
         run: npm install
@@ -52,14 +50,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          projectBaseDir: ${{ env.APPLICATION_DIRECTORY }}
+          projectBaseDir: sts-mock
 
   test-image-dev:
     name: build and push test image to dev
     uses:
       ./.github/workflows/shared-build-and-push-test-image.yml
     with:
-      WORKING_DIRECTORY: ${{ env.APPLICATION_DIRECTORY }}
+      WORKING_DIRECTORY: sts-mock
       GH_ACTIONS_ROLE_ARN: ${{ secrets.STS_MOCK_DEV_GH_ACTIONS_ROLE_ARN }}
       TEST_IMAGE_REPOSITORY: ${{ secrets.STS_MOCK_DEV_TEST_IMAGE_REPOSITORY_URI }}
       CONTAINER_SIGN_KMS_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
@@ -68,10 +66,6 @@ jobs:
     name: Validate & upload S3 artifact to dev
     runs-on: ubuntu-22.04
     needs: test-image-dev
-    defaults:
-      run:
-        shell: bash
-        working-directory: ${{ env.APPLICATION_DIRECTORY }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -83,7 +77,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: npm
-          cache-dependency-path: ${{ env.APPLICATION_DIRECTORY }}/package-lock.json
+          cache-dependency-path: sts-mock/package-lock.json
 
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
@@ -112,14 +106,14 @@ jobs:
           artifact-bucket-name: ${{ secrets.STS_MOCK_DEV_ARTIFACT_BUCKET }}
           signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
           template-file: .aws-sam/build/template.yaml
-          working-directory: ${{ env.APPLICATION_DIRECTORY }}
+          working-directory: sts-mock
 
   test-image-build:
     name: build and push test image to build
     uses:
       ./.github/workflows/shared-build-and-push-test-image.yml
     with:
-      WORKING_DIRECTORY: ${{ env.APPLICATION_DIRECTORY }}
+      WORKING_DIRECTORY: sts-mock
       GH_ACTIONS_ROLE_ARN: ${{ secrets.STS_MOCK_BUILD_GH_ACTIONS_ROLE_ARN }}
       TEST_IMAGE_REPOSITORY: ${{ secrets.STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI }}
       CONTAINER_SIGN_KMS_KEY: ${{ secrets.BUILD_CONTAINER_SIGN_KMS_KEY }}
@@ -128,10 +122,6 @@ jobs:
     name: Validate & upload S3 artifact to Build
     runs-on: ubuntu-22.04
     needs: test-image-build
-    defaults:
-      run:
-        shell: bash
-        working-directory: ${{ env.APPLICATION_DIRECTORY }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -143,7 +133,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: npm
-          cache-dependency-path: ${{ env.APPLICATION_DIRECTORY }}/package-lock.json
+          cache-dependency-path: sts-mock/package-lock.json
 
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
@@ -172,4 +162,4 @@ jobs:
           artifact-bucket-name: ${{ secrets.STS_MOCK_BUILD_ARTIFACT_BUCKET }}
           signing-profile-name: ${{ secrets.BUILD_SIGNING_PROFILE_NAME }}
           template-file: .aws-sam/build/template.yaml
-          working-directory: ${{ env.APPLICATION_DIRECTORY }}
+          working-directory: sts-mock
