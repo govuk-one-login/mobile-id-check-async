@@ -36,8 +36,6 @@ export const getBiometricToken: GetBiometricToken = async (
     },
   };
 
-  console.log(httpRequestLogData);
-
   let response;
   try {
     logger.debug(
