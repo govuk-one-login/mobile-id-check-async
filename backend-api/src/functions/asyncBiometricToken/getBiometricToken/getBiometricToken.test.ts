@@ -58,7 +58,11 @@ describe("getBiometricToken", () => {
 
   describe("Given valid request is made", () => {
     it("Returns successResult containing biometric token", async () => {
-      const mockData = JSON.stringify({ access_token: "mockBiometricToken" });
+      const mockData = JSON.stringify({
+        access_token: "mockBiometricToken",
+        expires_in: 3600,
+        token_type: "Bearer",
+      });
       global.fetch = jest.fn(() =>
         Promise.resolve({
           status: 200,
