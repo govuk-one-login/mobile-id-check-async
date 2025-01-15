@@ -39,7 +39,7 @@ export const getBiometricToken: GetBiometricToken = async (
       LogMessage.BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_ATTEMPT,
       {
         data: {
-          httpRequestLogData,
+          httpRequest: httpRequestLogData,
         },
       },
     );
@@ -50,7 +50,7 @@ export const getBiometricToken: GetBiometricToken = async (
       {
         data: {
           error,
-          httpRequestLogData,
+          httpRequest: httpRequestLogData,
         },
       },
     );
@@ -63,7 +63,7 @@ export const getBiometricToken: GetBiometricToken = async (
       {
         data: {
           response,
-          httpRequestLogData,
+          httpRequest: httpRequestLogData,
         },
       },
     );
@@ -79,7 +79,7 @@ export const getBiometricToken: GetBiometricToken = async (
       {
         data: {
           error,
-          httpRequestLogData,
+          httpRequest: httpRequestLogData,
         },
       },
     );
