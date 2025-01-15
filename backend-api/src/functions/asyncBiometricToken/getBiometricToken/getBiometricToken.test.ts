@@ -40,7 +40,7 @@ describe("getBiometricToken", () => {
     });
   });
 
-  describe("Given an error is caught when requesting a biometric access token", () => {
+  describe("Given an error is caught when requesting token", () => {
     beforeEach(async () => {
       async function mockSendHttpRequestError() {
         throw new Error("mockError");
