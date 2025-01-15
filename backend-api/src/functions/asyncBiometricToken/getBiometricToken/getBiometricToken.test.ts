@@ -40,11 +40,11 @@ describe("getBiometricToken", () => {
     });
   });
 
-  describe("Given there is an error making network request", () => {
+  describe("Given there is an error when making network request", () => {
     beforeEach(async () => {
       mockSendHttpRequest = jest
         .fn()
-        .mockRejectedValue(new Error("Unexpected network error"));
+        .mockRejectedValue(new Error("mockError"));
 
       result = await getBiometricToken(
         "https://mockUrl.com",
