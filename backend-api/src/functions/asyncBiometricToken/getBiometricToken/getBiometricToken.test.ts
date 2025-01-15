@@ -15,18 +15,20 @@ describe("getBiometricToken", () => {
 
   describe("On every call", () => {
     beforeEach(async () => {
-      mockSendHttpRequest = jest.fn().mockResolvedValue({
-        statusCode: 200,
-        body: JSON.stringify("mockBody"),
-        headers: {
-          mockHeaderKey: "mockHeaderValue",
-        },
-      });
+      async function httpRequestOverrideMockResponse() {
+        return {
+          statusCode: 200,
+          body: "mockBody",
+          headers: {
+            mockHeaderKey: "mockHeaderValue",
+          },
+        };
+      }
 
       result = await getBiometricToken(
         "https://mockUrl.com",
         "mockSubmitterKey",
-        mockSendHttpRequest,
+        httpRequestOverrideMockResponse,
       );
     });
 
@@ -66,18 +68,20 @@ describe("getBiometricToken", () => {
   describe("Given the response is invalid", () => {
     describe("Given response body is undefined", () => {
       beforeEach(async () => {
-        mockSendHttpRequest = jest.fn().mockResolvedValue({
-          statusCode: 200,
-          body: undefined,
-          headers: {
-            mockHeaderKey: "mockHeaderValue",
-          },
-        });
+        async function httpRequestOverrideMockBodyUndefined() {
+          return {
+            statusCode: 200,
+            body: undefined,
+            headers: {
+              mockHeaderKey: "mockHeaderValue",
+            },
+          };
+        }
 
         result = await getBiometricToken(
           "https://mockUrl.com",
           "mockSubmitterKey",
-          mockSendHttpRequest,
+          httpRequestOverrideMockBodyUndefined,
         );
       });
 
@@ -95,18 +99,20 @@ describe("getBiometricToken", () => {
 
     describe("Given response body cannot be parsed", () => {
       beforeEach(async () => {
-        mockSendHttpRequest = jest.fn().mockResolvedValue({
-          statusCode: 200,
-          body: "Invalid JSON",
-          headers: {
-            mockHeaderKey: "mockHeaderValue",
-          },
-        });
+        async function httpRequestOverrideMockBodyInvalidJSON() {
+          return {
+            statusCode: 200,
+            body: "Invalid JSON",
+            headers: {
+              mockHeaderKey: "mockHeaderValue",
+            },
+          };
+        }
 
         result = await getBiometricToken(
           "https://mockUrl.com",
           "mockSubmitterKey",
-          mockSendHttpRequest,
+          httpRequestOverrideMockBodyInvalidJSON,
         );
       });
 
@@ -130,19 +136,20 @@ describe("getBiometricToken", () => {
         expires_in: 3600,
         token_type: "Bearer",
       });
-
-      mockSendHttpRequest = jest.fn().mockResolvedValue({
-        statusCode: 200,
-        body: mockData,
-        headers: {
-          mockHeaderKey: "mockHeaderValue",
-        },
-      });
+      async function sendHttpRequestOverrideMockValidResponse() {
+        return {
+          statusCode: 200,
+          body: mockData,
+          headers: {
+            mockHeaderKey: "mockHeaderValue",
+          },
+        };
+      }
 
       result = await getBiometricToken(
         "https://mockUrl.com",
         "mockSubmitterKey",
-        mockSendHttpRequest,
+        sendHttpRequestOverrideMockValidResponse,
       );
     });
 
