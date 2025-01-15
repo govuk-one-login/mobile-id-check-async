@@ -28,11 +28,10 @@ export const getBiometricToken: GetBiometricToken = async (
     headers,
   };
   const httpRequestLogData = {
-    url: httpRequest.url,
-    method: httpRequest.method,
-    //Omitting submitterKey in headers as it is a secret and should not be logged
+    ...httpRequest,
     headers: {
-      "Content-Type": httpRequest.headers["Content-Type"],
+      ...httpRequest.headers,
+      "X-Innovalor-Authorization": "Secret value and cannot be logged",
     },
   };
 
