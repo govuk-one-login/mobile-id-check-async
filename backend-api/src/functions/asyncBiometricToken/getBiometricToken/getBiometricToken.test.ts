@@ -14,11 +14,12 @@ describe("getBiometricToken", () => {
 
   describe("On every call", () => {
     beforeEach(async () => {
-      global.fetch = jest.fn(() =>
-        Promise.resolve(),
-      ) as jest.Mock;
+      global.fetch = jest.fn(() => Promise.resolve()) as jest.Mock;
 
-      result = await getBiometricToken("https://mockUrl.com", "mockSubmitterKey");
+      result = await getBiometricToken(
+        "https://mockUrl.com",
+        "mockSubmitterKey",
+      );
     });
 
     it("Logs network call attempt at debug level", () => {
@@ -26,8 +27,8 @@ describe("getBiometricToken", () => {
         messageCode:
           "MOBILE_ASYNC_BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_ATTEMPT",
       });
-    })
-  })
+    });
+  });
 
   describe("Given there is an error making network request", () => {
     beforeEach(async () => {
@@ -35,7 +36,10 @@ describe("getBiometricToken", () => {
         Promise.reject(new Error("Unexpected network error")),
       ) as jest.Mock;
 
-      result = await getBiometricToken("https://mockUrl.com", "mockSubmitterKey");
+      result = await getBiometricToken(
+        "https://mockUrl.com",
+        "mockSubmitterKey",
+      );
     });
 
     it("Logs error", () => {
@@ -68,7 +72,10 @@ describe("getBiometricToken", () => {
           } as unknown as Response),
         ) as jest.Mock;
 
-        result = await getBiometricToken("https://mockUrl.com", "mockSubmitterKey");
+        result = await getBiometricToken(
+          "https://mockUrl.com",
+          "mockSubmitterKey",
+        );
       });
 
       it("Logs error", () => {
@@ -94,7 +101,10 @@ describe("getBiometricToken", () => {
           } as Response),
         ) as jest.Mock;
 
-        result = await getBiometricToken("https://mockUrl.com", "mockSubmitterKey");
+        result = await getBiometricToken(
+          "https://mockUrl.com",
+          "mockSubmitterKey",
+        );
       });
 
       it("Logs error", () => {
@@ -126,7 +136,10 @@ describe("getBiometricToken", () => {
         } as Response),
       ) as jest.Mock;
 
-      result = await getBiometricToken("https://mockUrl.com", "mockSubmitterKey");
+      result = await getBiometricToken(
+        "https://mockUrl.com",
+        "mockSubmitterKey",
+      );
     });
 
     it("Logs success at debug level", () => {
