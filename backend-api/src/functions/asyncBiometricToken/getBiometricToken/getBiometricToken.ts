@@ -30,10 +30,8 @@ export const getBiometricToken: GetBiometricToken = async (
   const httpRequestLogData = {
     url: httpRequest.url,
     method: httpRequest.method,
-    headers: {
-      // Omitting submitterKey as it is a secret and should not be logged
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
+    //Omitting submitterKey in headers as it is a secret and should not be logged
+    headers: httpRequest.headers["Content-Type"],
   };
 
   let response;
