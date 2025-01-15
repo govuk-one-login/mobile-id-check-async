@@ -1,10 +1,16 @@
-import { successResult } from "../../utils/result";
+import { emptyFailure, successResult } from "../../utils/result";
 import { getBiometricToken } from "./getBiometricToken";
 
 describe("getBiometricToken", () => {
   describe("Given there is an error making network request", () => {
     it("Returns an empty failure", async () => {
-      /// Write test
+      global.fetch = jest.fn(() =>
+        Promise.reject(new Error("Unexpected network error")),
+      ) as jest.Mock;
+
+      const result = await getBiometricToken("mockUrl", "mockSubmitterKey");
+
+      expect(result).toEqual(emptyFailure());
     });
   });
 
@@ -30,6 +36,16 @@ describe("getBiometricToken", () => {
 
   describe("Given valid request is made", () => {
     it("Returns successResult containing biometric token", async () => {
+      const mockData = JSON.stringify({ access_token: "mockBiometricToken" });
+      global.fetch = jest.fn(() =>
+        Promise.resolve({
+          status: 200,
+          ok: true,
+          headers: new Headers({ "Content-Type": "text/plain" }),
+          text: () => Promise.resolve(mockData),
+        } as Response),
+      ) as jest.Mock;
+
       const result = await getBiometricToken("mockUrl", "mockSubmitterKey");
 
       expect(result).toEqual(successResult("mockBiometricToken"));
