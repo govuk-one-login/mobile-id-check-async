@@ -56,19 +56,19 @@ jobs:
         uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 #v4.0.2
         with:
           aws-region: eu-west-2
-          role-to-assume: ${{ secrets.GH_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ inputs.GH_ACTIONS_ROLE_ARN }}
 
       - name: Login to AWS ECR
         uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 #v2.0.1
 
       - name: Build image
         run: |
-          docker build -t ${{ secrets.TEST_IMAGE_REPOSITORY }}:$IMAGE_TAG . 
+          docker build -t ${{ inputs.TEST_IMAGE_REPOSITORY }}:$IMAGE_TAG . 
 
       - name: Push image
         run: |
-          docker push ${{ secrets.TEST_IMAGE_REPOSITORY }}:$IMAGE_TAG
+          docker push ${{ inputs.TEST_IMAGE_REPOSITORY }}:$IMAGE_TAG
 
       - name: Sign image
         run: |
-          cosign sign --key awskms:///${{ secrets.CONTAINER_SIGN_KMS_KEY }} ${{ secrets.TEST_IMAGE_REPOSITORY }}:$IMAGE_TAG
+          cosign sign --key awskms:///${{ inputs.CONTAINER_SIGN_KMS_KEY }} ${{ inputs.TEST_IMAGE_REPOSITORY }}:$IMAGE_TAG
