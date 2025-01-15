@@ -55,12 +55,6 @@ describe("getBiometricToken", () => {
   });
 
   describe("Given the response is invalid", () => {
-    describe("Given response is undefined", () => {
-      it("Returns an empty failure", async () => {
-        /// Write test
-      });
-    });
-
     describe("Given response body is undefined", () => {
       beforeEach(async () => {
         global.fetch = jest.fn(() =>

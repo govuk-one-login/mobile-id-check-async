@@ -46,7 +46,7 @@ export const getBiometricToken: GetBiometricToken = async (
     return emptyFailure();
   }
 
-  if (response == null || response.body == null) {
+  if (response?.body == null) {
     logger.error(
       LogMessage.BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_FAILURE,
       {
