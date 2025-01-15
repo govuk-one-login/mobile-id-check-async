@@ -2,12 +2,12 @@ import { emptyFailure, Result, successResult } from "../../utils/result";
 import { getBiometricToken } from "./getBiometricToken";
 import { expect } from "@jest/globals";
 import "../../testUtils/matchers";
+import { ISendHttpRequest } from "../../services/http/sendHttpRequest";
 
 describe("getBiometricToken", () => {
   let result: Result<string, void>;
   let consoleDebugSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
-  let mockSendHttpRequest;
   beforeEach(() => {
     consoleDebugSpy = jest.spyOn(console, "debug");
     consoleErrorSpy = jest.spyOn(console, "error");
@@ -40,14 +40,16 @@ describe("getBiometricToken", () => {
     });
   });
 
-  describe("Given there is an error when requesting biometric access token", () => {
+  describe("Given an error is caught when requesting a biometric access token", () => {
     beforeEach(async () => {
-      mockSendHttpRequest = jest.fn().mockRejectedValue(new Error("mockError"));
+      async function httpRequestOverrideMockError() {
+        throw new Error("mockError");
+      }
 
       result = await getBiometricToken(
         "https://mockUrl.com",
         "mockSubmitterKey",
-        mockSendHttpRequest,
+        httpRequestOverrideMockError as unknown as ISendHttpRequest,
       );
     });
 
@@ -129,7 +131,7 @@ describe("getBiometricToken", () => {
 
   describe("Given valid request is made", () => {
     beforeEach(async () => {
-      const mockData = JSON.stringify({
+      const mockBody = JSON.stringify({
         access_token: "mockBiometricToken",
         expires_in: 3600,
         token_type: "Bearer",
@@ -137,7 +139,7 @@ describe("getBiometricToken", () => {
       async function sendHttpRequestOverrideMockValidResponse() {
         return {
           statusCode: 200,
-          body: mockData,
+          body: mockBody,
           headers: {
             mockHeaderKey: "mockHeaderValue",
           },
