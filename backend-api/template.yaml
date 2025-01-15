@@ -399,7 +399,7 @@ Resources:
   StorageStack:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: infra/storage/dynamodb.cloudformation.yaml
+      TemplateURL: infra/storage/session.cloudformation.yaml
       Parameters:
         Environment: !Ref Environment
         StackName: !Ref AWS::StackName
