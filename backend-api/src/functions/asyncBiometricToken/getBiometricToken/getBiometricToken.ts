@@ -27,7 +27,7 @@ export const getBiometricToken: GetBiometricToken = async (
     method: "POST" as const,
     headers,
   };
-  const makeHttpRequest = sendHttpRequestOverride ?? sendHttpRequest;
+  const requestBiometricToken = sendHttpRequestOverride ?? sendHttpRequest;
 
   let response;
   try {
@@ -41,7 +41,7 @@ export const getBiometricToken: GetBiometricToken = async (
         },
       },
     );
-    response = await makeHttpRequest(httpRequest);
+    response = await requestBiometricToken(httpRequest);
   } catch (error) {
     logger.error(
       LogMessage.BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_FAILURE,
