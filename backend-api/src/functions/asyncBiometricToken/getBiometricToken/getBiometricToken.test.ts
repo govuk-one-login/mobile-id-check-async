@@ -23,7 +23,18 @@ describe("getBiometricToken", () => {
 
     describe("Given response body is undefined", () => {
       it("Returns an empty failure", async () => {
-        /// Write test
+        global.fetch = jest.fn(() =>
+          Promise.resolve({
+            status: 200,
+            ok: true,
+            headers: new Headers({ "Content-Type": "text/plain" }),
+            text: () => Promise.resolve(null),
+          } as unknown as Response),
+        ) as jest.Mock;
+
+        const result = await getBiometricToken("mockUrl", "mockSubmitterKey");
+
+        expect(result).toEqual(emptyFailure());
       });
     });
 
