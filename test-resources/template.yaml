@@ -21,6 +21,24 @@ Parameters:
     Type: String
     Default: mob-async-backend
 
+Mappings:
+  PrivateApigw:
+    dev:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+    build:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+    staging:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    integration:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+    production:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+
 Conditions:
   UsePermissionsBoundary: !Not
     - !Equals
@@ -28,6 +46,50 @@ Conditions:
       - none
 
 Resources:
+  # Private API Gateway for Test Resources
+  PrivateApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${AWS::StackName}-private-api
+      Description: Private API gateway for Test Resources
+      EndpointConfiguration: PRIVATE
+      Auth:
+        ResourcePolicy:
+          IntrinsicVpceWhitelist:
+            - !ImportValue devplatform-vpc-ExecuteApiGatewayEndpointId
+      StageName: !Ref Environment
+      OpenApiVersion: 3.0.1
+      AccessLogSetting:
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${TestResourcesPrivateApiAccessLogs}
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      MethodSettings:
+        - LoggingLevel: INFO
+          ResourcePath: /*
+          HttpMethod: '*'
+
+          # Disable data trace in production and integration to avoid logging customer sensitive information
+          DataTraceEnabled: false # Client credentials used in headers
+          MetricsEnabled: true
+          ThrottlingBurstLimit: !FindInMap
+            - PrivateApigw
+            - !Ref Environment
+            - ApiBurstLimit
+          ThrottlingRateLimit: !FindInMap
+            - PrivateApigw
+            - !Ref Environment
+            - ApiRateLimit
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./openApiSpecs/test-resources-private-spec.yaml
+
+  TestResourcesPrivateApiAccessLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
+      RetentionInDays: 30
+
   # Dequeue resources
   DequeueFunction:
     Type: AWS::Serverless::Function
