@@ -7,6 +7,7 @@ describe("getBiometricToken", () => {
   let result: Result<string, void>;
   let consoleDebugSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
+  let mockSendHttpRequest;
   beforeEach(() => {
     consoleDebugSpy = jest.spyOn(console, "debug");
     consoleErrorSpy = jest.spyOn(console, "error");
@@ -14,11 +15,18 @@ describe("getBiometricToken", () => {
 
   describe("On every call", () => {
     beforeEach(async () => {
-      global.fetch = jest.fn(() => Promise.resolve()) as jest.Mock;
+      mockSendHttpRequest = jest.fn().mockResolvedValue({
+        statusCode: 200,
+        body: JSON.stringify("mockBody"),
+        headers: {
+          mockHeaderKey: "mockHeaderValue",
+        },
+      });
 
       result = await getBiometricToken(
         "https://mockUrl.com",
         "mockSubmitterKey",
+        mockSendHttpRequest,
       );
     });
 
@@ -32,13 +40,14 @@ describe("getBiometricToken", () => {
 
   describe("Given there is an error making network request", () => {
     beforeEach(async () => {
-      global.fetch = jest.fn(() =>
-        Promise.reject(new Error("Unexpected network error")),
-      ) as jest.Mock;
+      mockSendHttpRequest = jest
+        .fn()
+        .mockRejectedValue(new Error("Unexpected network error"));
 
       result = await getBiometricToken(
         "https://mockUrl.com",
         "mockSubmitterKey",
+        mockSendHttpRequest,
       );
     });
 
@@ -57,18 +66,18 @@ describe("getBiometricToken", () => {
   describe("Given the response is invalid", () => {
     describe("Given response body is undefined", () => {
       beforeEach(async () => {
-        global.fetch = jest.fn(() =>
-          Promise.resolve({
-            status: 200,
-            ok: true,
-            headers: new Headers({ "Content-Type": "text/plain" }),
-            text: () => Promise.resolve(null),
-          } as unknown as Response),
-        ) as jest.Mock;
+        mockSendHttpRequest = jest.fn().mockResolvedValue({
+          statusCode: 200,
+          body: undefined,
+          headers: {
+            mockHeaderKey: "mockHeaderValue",
+          },
+        });
 
         result = await getBiometricToken(
           "https://mockUrl.com",
           "mockSubmitterKey",
+          mockSendHttpRequest,
         );
       });
 
@@ -86,18 +95,18 @@ describe("getBiometricToken", () => {
 
     describe("Given response body cannot be parsed", () => {
       beforeEach(async () => {
-        global.fetch = jest.fn(() =>
-          Promise.resolve({
-            status: 200,
-            ok: true,
-            headers: new Headers({ "Content-Type": "text/plain" }),
-            text: () => Promise.resolve("Invalid JSON"),
-          } as Response),
-        ) as jest.Mock;
+        mockSendHttpRequest = jest.fn().mockResolvedValue({
+          statusCode: 200,
+          body: "Invalid JSON",
+          headers: {
+            mockHeaderKey: "mockHeaderValue",
+          },
+        });
 
         result = await getBiometricToken(
           "https://mockUrl.com",
           "mockSubmitterKey",
+          mockSendHttpRequest,
         );
       });
 
@@ -121,18 +130,19 @@ describe("getBiometricToken", () => {
         expires_in: 3600,
         token_type: "Bearer",
       });
-      global.fetch = jest.fn(() =>
-        Promise.resolve({
-          status: 200,
-          ok: true,
-          headers: new Headers({ "Content-Type": "text/plain" }),
-          text: () => Promise.resolve(mockData),
-        } as Response),
-      ) as jest.Mock;
+
+      mockSendHttpRequest = jest.fn().mockResolvedValue({
+        statusCode: 200,
+        body: mockData,
+        headers: {
+          mockHeaderKey: "mockHeaderValue",
+        },
+      });
 
       result = await getBiometricToken(
         "https://mockUrl.com",
         "mockSubmitterKey",
+        mockSendHttpRequest,
       );
     });
 
