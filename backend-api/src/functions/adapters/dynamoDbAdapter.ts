@@ -17,13 +17,11 @@ import {
   unmarshall,
 } from "@aws-sdk/util-dynamodb";
 import { UpdateSessionOperation } from "../common/session/updateOperations/UpdateSessionOperation";
+import { emptySuccess, errorResult, Result } from "../utils/result";
 import {
-  emptySuccess,
-  ErrorCategory,
-  errorResult,
-  Result,
-} from "../utils/result";
-import { SessionRegistry } from "../common/session/SessionRegistry";
+  SessionRegistry,
+  UpdateSessionError,
+} from "../common/session/SessionRegistry";
 
 const sessionStates = {
   ASYNC_AUTH_SESSION_CREATED: "ASYNC_AUTH_SESSION_CREATED",
@@ -127,7 +125,7 @@ export class DynamoDbAdapter implements SessionRegistry {
   async updateSession(
     sessionId: string,
     updateOperation: UpdateSessionOperation,
-  ): Promise<Result<void>> {
+  ): Promise<Result<void, UpdateSessionError>> {
     const updateItemCommand = new UpdateItemCommand({
       TableName: "mockTableName",
       Key: {
@@ -152,16 +150,10 @@ export class DynamoDbAdapter implements SessionRegistry {
           "Conditional check failed",
           updateItemCommand.input.ConditionExpression,
         ); // replace with proper logging
-        return errorResult({
-          errorMessage: "Conditional check failed",
-          errorCategory: ErrorCategory.CLIENT_ERROR,
-        });
+        return errorResult(UpdateSessionError.CONDITIONAL_CHECK_FAILURE);
       } else {
         console.log("Unexpected error", error); // replace with proper logging
-        return errorResult({
-          errorMessage: "Unexpected error",
-          errorCategory: ErrorCategory.SERVER_ERROR,
-        });
+        return errorResult(UpdateSessionError.INTERNAL_SERVER_ERROR);
       }
     }
     console.log("Update session success"); // replace with proper logging

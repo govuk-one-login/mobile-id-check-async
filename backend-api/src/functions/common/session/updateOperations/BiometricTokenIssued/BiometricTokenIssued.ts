@@ -1,8 +1,6 @@
-import {
-  SessionState,
-  UpdateSessionOperation,
-} from "../UpdateSessionOperation";
+import { UpdateSessionOperation } from "../UpdateSessionOperation";
 import { DocumentType } from "../../../../types/document";
+import { SessionState } from "../../session";
 
 export class BiometricTokenIssued implements UpdateSessionOperation {
   constructor(
