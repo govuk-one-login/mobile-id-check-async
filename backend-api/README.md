@@ -152,8 +152,8 @@ There are 4 API endpoints exposed:
 
 GET async/.well-known/jwks.json -> Used to retrieve ID Check encryption public keys in JWKS format
 
-GET async/activeSession -> Query the session database to find an active session for a given user. If an active session is found it returns the sessionId, and redirectUri if present, in response. This endpoint will be consumed by the mobile app to retrieve the newest session.
+GET async/activeSession -> Queries the session database to find an active session for a given user. If an active session is found it returns the sessionId, and redirectUri if present, in response. This endpoint will be consumed by the mobile app to retrieve the newest session.
 
-POST async/biometricToken -> Retrieves a biometric access token for the document selected by the user. This endpoint is currently underdevelopment and not yet fully implemented.
+POST async/biometricToken -> Retrieves a biometric access token for the document selected by the user. This endpoint is currently under development and not yet fully implemented.
 
 POST async/finishBiometricSession -> App signifies to backend that user interaction for biometric session is complete. Development has not yet begun for this endpoint.
