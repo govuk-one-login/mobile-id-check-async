@@ -143,3 +143,19 @@ This schema is generated in the backend-api-push-to-main.yaml workflow. To gener
 ```bash
 npm run generate-proxy-open-api
 ```
+
+### Regional API
+
+#### Overview
+
+TODO Add description of API
+
+There are 4 API endpoints exposed:
+
+GET async/.well-known/jwks.json -> TODO Add description
+
+GET async/activeSession -> TODO Add description
+
+POST async/biometricToken -> TODO Add description
+
+POST async/finishBiometricSession -> Not yet configured
