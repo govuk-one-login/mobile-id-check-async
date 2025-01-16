@@ -9,6 +9,7 @@ import { IAsyncBiometricTokenDependencies } from "./handlerDependencies";
 import {
   expectedSecurityHeaders,
   mockSessionId,
+  mockSessionRegistry,
 } from "../testUtils/unitTestData";
 import { logger } from "../common/logging/logger";
 import { emptyFailure, successResult } from "../utils/result";
@@ -51,6 +52,7 @@ describe("Async Biometric Token", () => {
       },
       getSecrets: mockGetSecretsSuccess,
       getBiometricToken: mockGetBiometricTokenSuccess,
+      getSessionRegistry: () => mockSessionRegistry,
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
