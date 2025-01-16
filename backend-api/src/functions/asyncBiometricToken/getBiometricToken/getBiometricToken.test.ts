@@ -8,6 +8,7 @@ describe("getBiometricToken", () => {
   let result: Result<string, void>;
   let consoleDebugSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
+  let mockSendHttpRequest: ISendHttpRequest;
   beforeEach(() => {
     consoleDebugSpy = jest.spyOn(console, "debug");
     consoleErrorSpy = jest.spyOn(console, "error");
@@ -15,15 +16,13 @@ describe("getBiometricToken", () => {
 
   describe("On every call", () => {
     beforeEach(async () => {
-      async function mockSendHttpRequest() {
-        return {
-          statusCode: 200,
-          body: "mockBody",
-          headers: {
-            mockHeaderKey: "mockHeaderValue",
-          },
-        };
-      }
+      mockSendHttpRequest = jest.fn().mockResolvedValue({
+        statusCode: 200,
+        body: "mockBody",
+        headers: {
+          mockHeaderKey: "mockHeaderValue",
+        },
+      });
 
       result = await getBiometricToken(
         "https://mockUrl.com",
@@ -42,14 +41,12 @@ describe("getBiometricToken", () => {
 
   describe("Given an error is caught when requesting token", () => {
     beforeEach(async () => {
-      async function mockSendHttpRequestError() {
-        throw new Error("mockError");
-      }
+      mockSendHttpRequest = jest.fn().mockRejectedValue(new Error("mockError"));
 
       result = await getBiometricToken(
         "https://mockUrl.com",
         "mockSubmitterKey",
-        mockSendHttpRequestError as unknown as ISendHttpRequest,
+        mockSendHttpRequest,
       );
     });
 
@@ -62,26 +59,32 @@ describe("getBiometricToken", () => {
 
     it("Returns an empty failure", () => {
       expect(result).toEqual(emptyFailure());
+      expect(mockSendHttpRequest).toBeCalledWith({
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-Innovalor-Authorization": "mockSubmitterKey",
+        },
+        method: "POST",
+        url: "https://mockUrl.com/oauth/token?grant_type=client_credentials",
+      });
     });
   });
 
   describe("Given the response is invalid", () => {
     describe("Given response body is undefined", () => {
       beforeEach(async () => {
-        async function mockSendHttpRequestBodyUndefined() {
-          return {
-            statusCode: 200,
-            body: undefined,
-            headers: {
-              mockHeaderKey: "mockHeaderValue",
-            },
-          };
-        }
+        mockSendHttpRequest = jest.fn().mockResolvedValue({
+          statusCode: 200,
+          body: undefined,
+          headers: {
+            mockHeaderKey: "mockHeaderValue",
+          },
+        });
 
         result = await getBiometricToken(
           "https://mockUrl.com",
           "mockSubmitterKey",
-          mockSendHttpRequestBodyUndefined,
+          mockSendHttpRequest,
         );
       });
 
@@ -94,25 +97,31 @@ describe("getBiometricToken", () => {
 
       it("Returns an empty failure", () => {
         expect(result).toEqual(emptyFailure());
+        expect(mockSendHttpRequest).toBeCalledWith({
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-Innovalor-Authorization": "mockSubmitterKey",
+          },
+          method: "POST",
+          url: "https://mockUrl.com/oauth/token?grant_type=client_credentials",
+        });
       });
     });
 
     describe("Given response body cannot be parsed", () => {
       beforeEach(async () => {
-        async function mockSendHttpRequestBodyInvalidJson() {
-          return {
-            statusCode: 200,
-            body: "Invalid JSON",
-            headers: {
-              mockHeaderKey: "mockHeaderValue",
-            },
-          };
-        }
+        mockSendHttpRequest = jest.fn().mockResolvedValue({
+          statusCode: 200,
+          body: "Invalid JSON",
+          headers: {
+            mockHeaderKey: "mockHeaderValue",
+          },
+        });
 
         result = await getBiometricToken(
           "https://mockUrl.com",
           "mockSubmitterKey",
-          mockSendHttpRequestBodyInvalidJson,
+          mockSendHttpRequest,
         );
       });
 
@@ -125,31 +134,36 @@ describe("getBiometricToken", () => {
 
       it("Returns an empty failure", () => {
         expect(result).toEqual(emptyFailure());
+        expect(mockSendHttpRequest).toBeCalledWith({
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-Innovalor-Authorization": "mockSubmitterKey",
+          },
+          method: "POST",
+          url: "https://mockUrl.com/oauth/token?grant_type=client_credentials",
+        });
       });
     });
   });
 
   describe("Given valid request is made", () => {
     beforeEach(async () => {
-      const mockBody = JSON.stringify({
-        access_token: "mockBiometricToken",
-        expires_in: 3600,
-        token_type: "Bearer",
+      mockSendHttpRequest = jest.fn().mockResolvedValue({
+        statusCode: 200,
+        body: JSON.stringify({
+          access_token: "mockBiometricToken",
+          expires_in: 3600,
+          token_type: "Bearer",
+        }),
+        headers: {
+          mockHeaderKey: "mockHeaderValue",
+        },
       });
-      async function mockSendHttpRequestValidResponse() {
-        return {
-          statusCode: 200,
-          body: mockBody,
-          headers: {
-            mockHeaderKey: "mockHeaderValue",
-          },
-        };
-      }
 
       result = await getBiometricToken(
         "https://mockUrl.com",
         "mockSubmitterKey",
-        mockSendHttpRequestValidResponse,
+        mockSendHttpRequest,
       );
     });
 
@@ -162,6 +176,14 @@ describe("getBiometricToken", () => {
 
     it("Returns successResult containing biometric token", () => {
       expect(result).toEqual(successResult("mockBiometricToken"));
+      expect(mockSendHttpRequest).toBeCalledWith({
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-Innovalor-Authorization": "mockSubmitterKey",
+        },
+        method: "POST",
+        url: "https://mockUrl.com/oauth/token?grant_type=client_credentials",
+      });
     });
   });
 });
