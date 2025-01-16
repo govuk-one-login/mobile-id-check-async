@@ -92,7 +92,7 @@ This section acts as a technical reference. There are three logical components i
 
 1) Private API
 2) Proxy API
-3) Regional API
+3) Sessions API
 
 This infrastructure is deployed via a Github action post-merge workflow and uploaded to S3 in the AWS Dev and Build accounts. This is then deployed via CodePipeline following the [Dev Platform methodology](https://govukverify.atlassian.net/wiki/spaces/PLAT/pages/3052077059/Secure+Delivery+Pipelines).
 
@@ -144,7 +144,7 @@ This schema is generated in the backend-api-push-to-main.yaml workflow. To gener
 npm run generate-proxy-open-api
 ```
 
-### Regional API
+### Sessions API
 
 #### Overview
 
@@ -157,3 +157,5 @@ GET async/activeSession -> Queries the session database to find an active sessio
 POST async/biometricToken -> Retrieves a biometric access token for the document selected by the user. This endpoint is currently under development and not yet fully implemented.
 
 POST async/finishBiometricSession -> App signifies to backend that user interaction for biometric session is complete. Development has not yet begun for this endpoint.
+
+This is an AWS API with a Regional endpoint configuration, therefore it is accessible from any device.
