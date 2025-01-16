@@ -9,6 +9,15 @@ describe("getBiometricToken", () => {
   let consoleDebugSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
   let mockSendHttpRequest: ISendHttpRequest;
+  const expectedArguments = {
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "X-Innovalor-Authorization": "mockSubmitterKey",
+    },
+    method: "POST",
+    url: "https://mockUrl.com/oauth/token?grant_type=client_credentials",
+  };
+
   beforeEach(() => {
     consoleDebugSpy = jest.spyOn(console, "debug");
     consoleErrorSpy = jest.spyOn(console, "error");
@@ -59,14 +68,7 @@ describe("getBiometricToken", () => {
 
     it("Returns an empty failure", () => {
       expect(result).toEqual(emptyFailure());
-      expect(mockSendHttpRequest).toBeCalledWith({
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "X-Innovalor-Authorization": "mockSubmitterKey",
-        },
-        method: "POST",
-        url: "https://mockUrl.com/oauth/token?grant_type=client_credentials",
-      });
+      expect(mockSendHttpRequest).toBeCalledWith(expectedArguments);
     });
   });
 
@@ -97,14 +99,7 @@ describe("getBiometricToken", () => {
 
       it("Returns an empty failure", () => {
         expect(result).toEqual(emptyFailure());
-        expect(mockSendHttpRequest).toBeCalledWith({
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "X-Innovalor-Authorization": "mockSubmitterKey",
-          },
-          method: "POST",
-          url: "https://mockUrl.com/oauth/token?grant_type=client_credentials",
-        });
+        expect(mockSendHttpRequest).toBeCalledWith(expectedArguments);
       });
     });
 
@@ -134,14 +129,7 @@ describe("getBiometricToken", () => {
 
       it("Returns an empty failure", () => {
         expect(result).toEqual(emptyFailure());
-        expect(mockSendHttpRequest).toBeCalledWith({
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "X-Innovalor-Authorization": "mockSubmitterKey",
-          },
-          method: "POST",
-          url: "https://mockUrl.com/oauth/token?grant_type=client_credentials",
-        });
+        expect(mockSendHttpRequest).toBeCalledWith(expectedArguments);
       });
     });
   });
@@ -176,14 +164,7 @@ describe("getBiometricToken", () => {
 
     it("Returns successResult containing biometric token", () => {
       expect(result).toEqual(successResult("mockBiometricToken"));
-      expect(mockSendHttpRequest).toBeCalledWith({
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "X-Innovalor-Authorization": "mockSubmitterKey",
-        },
-        method: "POST",
-        url: "https://mockUrl.com/oauth/token?grant_type=client_credentials",
-      });
+      expect(mockSendHttpRequest).toBeCalledWith(expectedArguments);
     });
   });
 });
