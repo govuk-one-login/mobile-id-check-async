@@ -152,7 +152,7 @@ TODO Add description of API
 
 There are 4 API endpoints exposed:
 
-GET async/.well-known/jwks.json -> Retrieve the encryption public keys in JWKS format
+GET async/.well-known/jwks.json -> Used to retrieve ID Check encryption public keys in JWKS format
 
 GET async/activeSession -> Query the session database to find an active session for a given user. If an active session is found it returns the sessionId, and redirectUri if present, in response. This endpoint will be consumed by the mobile app to retrieve the newest session.
 
