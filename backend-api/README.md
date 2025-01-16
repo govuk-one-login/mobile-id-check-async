@@ -148,8 +148,6 @@ npm run generate-proxy-open-api
 
 #### Overview
 
-TODO Add description of API
-
 There are 4 API endpoints exposed:
 
 GET async/.well-known/jwks.json -> Used to retrieve ID Check encryption public keys in JWKS format
