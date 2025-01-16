@@ -34,6 +34,21 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_BIOMETRIC_TOKEN_REQUEST_BODY_INVALID",
     "The incoming request body was missing or invalid.",
   );
+  static readonly BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_ATTEMPT =
+    new LogMessage(
+      "MOBILE_ASYNC_BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_ATTEMPT",
+      "Attempting to retrieve biometric access token from ReadID",
+    );
+  static readonly BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_FAILURE =
+    new LogMessage(
+      "MOBILE_ASYNC_BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_FAILURE",
+      "Failed to retrieve biometric access token from ReadID",
+    );
+  static readonly BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_SUCCESS =
+    new LogMessage(
+      "MOBILE_ASYNC_BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_SUCCESS",
+      "Successfully retrieved biometric access token from ReadID",
+    );
 
   private constructor(
     public readonly messageCode: string,
