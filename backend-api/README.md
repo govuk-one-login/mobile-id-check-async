@@ -6,7 +6,6 @@
 
 [![Async-credential Push to Main](https://github.com/govuk-one-login/mobile-id-check-async/actions/workflows/backend-api-push-to-main.yml/badge.svg)](https://github.com/govuk-one-login/mobile-id-check-async/actions/workflows/backend-api-push-to-main.yml)
 
-
 ## Dependencies
 
 - AWS CLI
@@ -35,17 +34,22 @@ npm run test
 
 1. Activate AWS credentials
 2. Deploy your stack
+
 ```bash
 # From /backend-api
 npm run deploy-backend-to-dev <your-stack-name>
 ```
+
 Note: For more information, see `helper-scripts` [README](../helper-scripts/README.md#deploy_backend.sh))
 3. The deployment script will generate you a `.env` file for your stack. To generate a `.env` for another deployed stack
+
 ```bash
 # From /backend-api
 sh generate_env_file.sh <stack_name>
 ```
+
 4. Run tests
+
 ```bash
 # From /backend-api
 npm run test:api
@@ -85,6 +89,7 @@ See [here](docs/logging.md)
 ## Reference Guide
 
 This section acts as a techhnical reference. There are three logical components in this SAM application (mob-async-backend). All the infrastructure is defined in the template.yaml:
+
 1) Private API
 2) Proxy API
 3) Regional API
@@ -101,7 +106,7 @@ There are two API endpoints that provide this functionality:
 
 POST async/token -> This endpoint is protected through the use of base encoded client credentials. This generates an access token scoped for this service. The access token is signed using a KMS signing key. The access token can be used for one or many sessions
 
-POST async/credential -> This endpoint is protected through the use of an access token (generated through the POST /token request). It provisions an ID Check session in the backend database for a given subject identifier. 
+POST async/credential -> This endpoint is protected through the use of an access token (generated through the POST /token request). It provisions an ID Check session in the backend database for a given subject identifier.
 
 This is an AWS API with Private endpoint configuration, therefore it is only accessibile from within an AWS VPC.
 
@@ -117,7 +122,7 @@ The client credentials are used to access the POST /token endpoint
 
 This is a mock service to enable testing of the Private API in lower environments for developers running tests outside of an AWS VPC.
 
-This is an AWS API with a Regional endpoint configuration, therefore it is accessible from any device. 
+This is an AWS API with a Regional endpoint configuration, therefore it is accessible from any device.
 
 It is protected with [AWS Signature V4](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_aws-signing.html).
 
