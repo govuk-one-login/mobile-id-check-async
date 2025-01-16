@@ -88,13 +88,13 @@ See [here](docs/logging.md)
 
 ## Reference Guide
 
-This section acts as a techhnical reference. There are three logical components in this SAM application (mob-async-backend). All the infrastructure is defined in the template.yaml:
+This section acts as a technical reference. There are three logical components in this SAM application (mob-async-backend). All the infrastructure is defined in the template.yaml:
 
 1) Private API
 2) Proxy API
 3) Regional API
 
-This infrastructure is deployed via a Github action post-merge worfklow and uploaded to S3 in the AWS Dev and Build accounts. This is then deployed via CodePipeline following the [Dev Platform methodology](https://govukverify.atlassian.net/wiki/spaces/PLAT/pages/3052077059/Secure+Delivery+Pipelines).
+This infrastructure is deployed via a Github action post-merge workflow and uploaded to S3 in the AWS Dev and Build accounts. This is then deployed via CodePipeline following the [Dev Platform methodology](https://govukverify.atlassian.net/wiki/spaces/PLAT/pages/3052077059/Secure+Delivery+Pipelines).
 
 ### Private API
 
@@ -108,7 +108,7 @@ POST async/token -> This endpoint is protected through the use of base encoded c
 
 POST async/credential -> This endpoint is protected through the use of an access token (generated through the POST /token request). It provisions an ID Check session in the backend database for a given subject identifier.
 
-This is an AWS API with Private endpoint configuration, therefore it is only accessibile from within an AWS VPC.
+This is an AWS API with Private endpoint configuration, therefore it is only accessible from within an AWS VPC.
 
 #### Client Registry
 
@@ -128,9 +128,9 @@ It is protected with [AWS Signature V4](https://docs.aws.amazon.com/IAM/latest/U
 
 There are two API endpoints exposed:
 
-POST async/token -> This proxies requests via a lambda to the POST aync/token endpoint on the Private API
+POST async/token -> This proxies requests via a lambda to the POST async/token endpoint on the Private API
 
-POST async/credential -> This proxies requests via a lambda to the POST aync/credential endpoint on the Private API
+POST async/credential -> This proxies requests via a lambda to the POST async/credential endpoint on the Private API
 
 Given both endpoints in the Private API require an Authorization header and AWS Signature v4 overwrites the Authorization header, the lambda maps a `x-custom-auth` header onto the `Authorization` header for the requests to the Private API before making Axios requests to the Private API.
 
@@ -138,7 +138,7 @@ Given both endpoints in the Private API require an Authorization header and AWS 
 
 This schema is generated dynamically from the async-private-spec.yaml. This is to ensure that the endpoints on the proxy are as similar as possible to the Private API and is kept up-to-date.
 
-This schema is generated in the backend-api-push-to-main.yaml worfklow. To generate it locally:
+This schema is generated in the backend-api-push-to-main.yaml workflow. To generate it locally:
 
 ```bash
 npm run generate-proxy-open-api
