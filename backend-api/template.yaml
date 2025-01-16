@@ -160,7 +160,7 @@ Mappings:
   EnvironmentVariables:
     dev:
       STSBASEURL: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk'
-      ReadIdBaseUrl: 'https://api-mob-readid-mock.review-b-async.dev.account.gov.uk'
+      ReadIdBaseUrl: 'https://api-mob-readid-mock.review-b-async.dev.account.gov.uk/v2'
       ClientRegistrySecretPath: 'dev/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
@@ -169,7 +169,7 @@ Mappings:
 
     build:
       STSBASEURL: 'https://mob-sts-mock.review-b-async.build.account.gov.uk'
-      ReadIdBaseUrl: 'https://api-mob-readid-mock.review-b-async.build.account.gov.uk'
+      ReadIdBaseUrl: 'https://api-mob-readid-mock.review-b-async.build.account.gov.uk/v2'
       ClientRegistrySecretPath: 'build/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
