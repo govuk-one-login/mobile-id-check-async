@@ -22,6 +22,13 @@ Parameters:
     Default: mob-async-backend
 
 Mappings:
+  EnvironmentVariables:
+    # Any variable defined here should be defined for all environments.
+    dev:
+      CORSALLOWEDORIGINHEADER: "'*'"
+    build:
+      CORSALLOWEDORIGINHEADER: "'*'"
+
   PrivateApigw:
     dev:
       ApiBurstLimit: 10
@@ -29,15 +36,6 @@ Mappings:
     build:
       ApiBurstLimit: 10
       ApiRateLimit: 10
-    staging:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
-    integration:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
-    production:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
 
 Conditions:
   UsePermissionsBoundary: !Not
@@ -104,8 +102,17 @@ Resources:
               - Effect: Allow
                 Action:
                 - "dynamodb:Query"
-                - "dynamodb:GetItem"
+                # - "dynamodb:GetItem"
                 Resource: !GetAtt EventsTable.Arn
+                Condition:
+                  ForAllValues:StringEquals:
+                    dynamodb:Attributes:
+                      - pk
+                      - sk
+                      - eventBody
+                      - timestamp
+                  StringEquals:
+                    dynamodb:Select: SPECIFIC_ATTRIBUTES
 
   EventsPrivateApiAccessLogs:
     Type: AWS::Logs::LogGroup

@@ -9,162 +9,185 @@ paths:
     get:
       security:
         - sigv4Reference: [ ]
-      # operationId: getSessionInfo
-      # summary: Endpoint to retrieve events for the given session
-      # description: >-
-      #   Retrieve events for the given session. This endpoint is implemented as an APIGW service proxy - consumers
-      #   should be aware that the underlying service may generate 5XX errors due to the distributed nature of AWS therefore
-      #   occasional 5XX responses are safe to retry - see
-      #   [AWS documentation on retries](https://docs.aws.amazon.com/general/latest/gr/api-retries.html)
-      # x-amazon-apigateway-request-validator: all
-      # parameters:
-      #   - in: path
-      #     name: sessionId
-      #     example: 44444444-4444-4444-4444-444444444444
-      #     required: true
-      #     description: a sessionId for the auth session
-      #     schema:
-      #       type: string
-      #       format: uuid
-      # tags:
-      #   - Auth Session
-      # responses:
-      #   "200":
-      #     description: OK
-      #     headers:
-      #       Access-Control-Allow-Origin:
-      #         schema:
-      #           type: "string"
-      #       Cache-Control:
-      #         schema:
-      #           type: "string"
-      #       Content-Type:
-      #         schema:
-      #           type: "string"
-      #       Strict-Transport-Security:
-      #         schema:
-      #           type: "string"
-      #       X-Content-Type-Options:
-      #         schema:
-      #           type: "string"
-      #       X-Frame-Options:
-      #         schema:
-      #           type: "string"
-      #   "401":
-      #     description: Unauthorized - sessionId does not exist
-      #     headers:
-      #       Access-Control-Allow-Origin:
-      #         schema:
-      #           type: "string"
-      #       Cache-Control:
-      #         schema:
-      #           type: "string"
-      #       Content-Type:
-      #         schema:
-      #           type: "string"
-      #       Strict-Transport-Security:
-      #         schema:
-      #           type: "string"
-      #       X-Content-Type-Options:
-      #         schema:
-      #           type: "string"
-      #       X-Frame-Options:
-      #         schema:
-      #           type: "string"
-      #   "500":
-      #     description: >-
-      #       Internal server error - NB: This endpoint is implemented as an APIGW service proxy - consumers should be aware
-      #       that the underlying service may generate 5XX errors due to the distributed nature of AWS therefore
-      #       occasional 5XX responses are safe to retry - see
-      #       [AWS documentation on retries](https://docs.aws.amazon.com/general/latest/gr/api-retries.html)
-      #     headers:
-      #       Access-Control-Allow-Origin:
-      #         schema:
-      #           type: "string"
-      #       Cache-Control:
-      #         schema:
-      #           type: "string"
-      #       Content-Type:
-      #         schema:
-      #           type: "string"
-      #       Strict-Transport-Security:
-      #         schema:
-      #           type: "string"
-      #       X-Content-Type-Options:
-      #         schema:
-      #           type: "string"
-      #       X-Frame-Options:
-      #         schema:
-      #           type: "string"
-      # x-amazon-apigateway-integration:
-      #   type: "aws"
-      #   passthroughBehavior: "never"
-      #   httpMethod: "POST"
-      #   uri: "arn:aws:apigateway:eu-west-2:dynamodb:action/Query"
-      #   credentials:
-      #     Fn::GetAtt: ["DynamoProxyReadSessionItemRoleForSessionInfo", "Arn"]
-      #   requestTemplates:
-      #     application/json:
-      #       Fn::Sub:
-      #         - >
-      #           #set($sessionId = $input.params('sessionId'))
-      #           {
-      #             "TableName": "${table}",
-      #             "PrimaryKey": "sessionId",
-      #             "KeyConditionExpression": "sessionId = :sessionId",
-      #             "ExpressionAttributeValues": {
-      #               ":sessionId": {
-      #                 "S": "$sessionId"
-      #               }
-      #             },
-      #             "ProjectionExpression": "issuedOn",
-      #             "Limit": 1
-      #           }
-      #         - table:
-      #             Ref: SessionsTable
-      #   responses:
-      #     "200":
-      #       statusCode: "200"
-      #       responseParameters:
-      #         method.response.header.Access-Control-Allow-Origin:
-      #           Fn::FindInMap: [
-      #             EnvironmentVariables,
-      #             Ref: Environment,
-      #             CORSALLOWEDORIGINHEADER
-      #           ]
-      #         method.response.header.Cache-Control: "'no-store'"
-      #         method.response.header.Content-Type: "'application/json'"
-      #         method.response.header.Strict-Transport-Security: "'max-age=31536000'"
-      #         method.response.header.X-Content-Type-Options: "'nosniff'"
-      #         method.response.header.X-Frame-Options: "'DENY'"
-      #       responseTemplates:
-      #         application/json: |
-      #           #set($inputRoot = $input.path('$'))
-      #           #if($inputRoot.Count == 0)
-      #             #set($context.responseOverride.status = 401)
-      #           #else
-      #             {
-      #               "issuedOn":$inputRoot.Items[0].issuedOn.S
-      #             }
-      #           #end
+      operationId: getSessionInfo
+      summary: Endpoint to retrieve events for the given session
+      description: >-
+        Retrieve events for the given session. This endpoint is implemented as an APIGW service
+        proxy - consumers should be aware that the underlying service may generate 5XX errors due to
+        the distributed nature of AWS therefore occasional 5XX responses are safe to retry - see
+        [AWS documentation on retries](https://docs.aws.amazon.com/general/latest/gr/api-retries.html)
+      x-amazon-apigateway-request-validator: all
+      parameters:
+        - in: query
+          name: session
+          required: false
+          description: The identifier used for a session
+          schema:
+            type: string
+        - in: query
+          name: eventName
+          required: true
+          description: Event name
+          schema:
+            type: string
+        - in: query
+          name: timestamp
+          required: false
+          description: Epoch timestamp
+          schema:
+            type: string
+      tags:
+        - Auth Session
+      responses:
+        "200":
+          description: OK
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Cache-Control:
+              schema:
+                type: "string"
+            Content-Type:
+              schema:
+                type: "string"
+            Strict-Transport-Security:
+              schema:
+                type: "string"
+            X-Content-Type-Options:
+              schema:
+                type: "string"
+            X-Frame-Options:
+              schema:
+                type: "string"
+        # "401":
+        #   description: Unauthorized - sessionId does not exist
+        #   headers:
+        #     Access-Control-Allow-Origin:
+        #       schema:
+        #         type: "string"
+        #     Cache-Control:
+        #       schema:
+        #         type: "string"
+        #     Content-Type:
+        #       schema:
+        #         type: "string"
+        #     Strict-Transport-Security:
+        #       schema:
+        #         type: "string"
+        #     X-Content-Type-Options:
+        #       schema:
+        #         type: "string"
+        #     X-Frame-Options:
+        #       schema:
+        #         type: "string"
+        "500":
+          description: >-
+            Internal server error - NB: This endpoint is implemented as an APIGW service proxy - consumers should be aware
+            that the underlying service may generate 5XX errors due to the distributed nature of AWS therefore
+            occasional 5XX responses are safe to retry - see
+            [AWS documentation on retries](https://docs.aws.amazon.com/general/latest/gr/api-retries.html)
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Cache-Control:
+              schema:
+                type: "string"
+            Content-Type:
+              schema:
+                type: "string"
+            Strict-Transport-Security:
+              schema:
+                type: "string"
+            X-Content-Type-Options:
+              schema:
+                type: "string"
+            X-Frame-Options:
+              schema:
+                type: "string"
+      x-amazon-apigateway-integration:
+        type: "aws"
+        passthroughBehavior: "never"
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:eu-west-2:dynamodb:action/Query"
+        credentials:
+          Fn::GetAtt: ["EventsApiRole", "Arn"]
+        requestTemplates:
+          application/json:
+            Fn::Sub:
+              - >
+                #set($inputRoot = $input.params('$'))
+                {
+                  "TableName": "${tableName}"
+                  "ExpressionAttributeNames": {
+                    "#pk": {
+                      "S": "pk"
+                    },
+                    "#sk": {
+                      "S": "sk"
+                    },
+                    "#eb": {
+                      "S": "eventBody"
+                    }
+                  },
+                  "ExpressionAttributeValues": {
+                    ":pk": {
+                      "S": "SESSION#$inputRoot.session"
+                    },
+                    ":sk": {
+                      "S": "TXMA#EVENT_NAME#$inputRoot.eventName"
+                    },
+                  },
+                  "KeyConditionExpression": "begins_with(#pk, :pk) AND begins_with(#sk, :sk",
+                  "ProjectionExpression": "#eb",
+                }
+              - tableName:
+                  Ref: EventsTable
+        # responses:
+        #   "200":
+        #     statusCode: "200"
+        #     responseParameters:
+        #       method.response.header.Access-Control-Allow-Origin:
+        #         Fn::FindInMap: [
+        #           EnvironmentVariables,
+        #           Ref: Environment,
+        #           CORSALLOWEDORIGINHEADER
+        #         ]
+        #       method.response.header.Cache-Control: "'no-store'"
+        #       method.response.header.Content-Type: "'application/json'"
+        #       method.response.header.Strict-Transport-Security: "'max-age=31536000'"
+        #       method.response.header.X-Content-Type-Options: "'nosniff'"
+        #       method.response.header.X-Frame-Options: "'DENY'"
+        #     responseTemplates:
+        #       application/json: |
+        #         #set($inputRoot = $input.path('$'))
+        #         #if($inputRoot.Count == 0)
+        #           #set($context.responseOverride.status = 401)
+        #         #else
+        #           {
+        #             "issuedOn":$inputRoot.Items[0].issuedOn.S
+        #           }
+        #         #end
 
-      #     default:
-      #       statusCode: "500"
-      #       responseParameters:
-      #         method.response.header.Access-Control-Allow-Origin:
-      #           Fn::FindInMap: [
-      #             EnvironmentVariables,
-      #             Ref: Environment,
-      #             CORSALLOWEDORIGINHEADER
-      #           ]
-      #         method.response.header.Cache-Control: "'no-store'"
-      #         method.response.header.Content-Type: "'application/json'"
-      #         method.response.header.Strict-Transport-Security: "'max-age=31536000'"
-      #         method.response.header.X-Content-Type-Options: "'nosniff'"
-      #         method.response.header.X-Frame-Options: "'DENY'"
-      #       responseTemplates:
-      #         text/plain:
-      #           Internal server error
+          default:
+            statusCode: "500"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin:
+                Fn::FindInMap: [
+                  EnvironmentVariables,
+                  Ref: Environment,
+                  CORSALLOWEDORIGINHEADER
+                ]
+              method.response.header.Cache-Control: "'no-store'"
+              method.response.header.Content-Type: "'application/json'"
+              method.response.header.Strict-Transport-Security: "'max-age=31536000'"
+              method.response.header.X-Content-Type-Options: "'nosniff'"
+              method.response.header.X-Frame-Options: "'DENY'"
+            responseTemplates:
+              text/plain:
+                Internal server error
+
 components:
   securitySchemes:
     sigv4Reference:
@@ -172,3 +195,11 @@ components:
       name: Authorization
       in: header
       x-amazon-apigateway-authtype: awsSigv4
+  # parameters:
+  #   sessionParam:
+  #     in: query
+  #     name: session
+  #     required: false
+  #     schema:
+  #       type: string
+  #     description: The identifier used for a session.
