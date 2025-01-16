@@ -152,10 +152,10 @@ TODO Add description of API
 
 There are 4 API endpoints exposed:
 
-GET async/.well-known/jwks.json -> TODO Add description
+GET async/.well-known/jwks.json -> Retrieve the encryption public keys in JWKS format
 
-GET async/activeSession -> TODO Add description
+GET async/activeSession -> Query the session database to find an active session for a given user. If an active session is found it returns the sessionId, and redirectUri if present, in response. This endpoint will be consumed by the mobile app to retrieve the newest session.
 
-POST async/biometricToken -> TODO Add description
+POST async/biometricToken -> Retrieves a biometric access token for the document selected by the user. This endpoint is currently underdevelopment and not yet fully implemented.
 
-POST async/finishBiometricSession -> Not yet configured
+POST async/finishBiometricSession -> App signifies to backend that user interaction for biometric session is complete. Development has not yet begun for this endpoint.
