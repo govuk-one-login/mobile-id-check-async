@@ -1497,6 +1497,7 @@ Resources:
     Properties:
       ServiceToken: !GetAtt JsonWebKeysFunction.Arn
       ServiceTimeout: 30
+      ForceInvocationTicket: DCMAW-11093 #Change this parameter to force an invocation of the JwksWebKeys handler. Updating the lambda code does not trigger an execution of this custom resource.
 
   JsonWebKeysBucketApiRole:
     Type: AWS::IAM::Role
