@@ -63,7 +63,7 @@ describe("Public Key Getter", () => {
 
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
-        errorMessage: "Error getting JWK - Error: Error: Some HTTP error",
+        errorMessage: "Error getting JWK - Error: Some HTTP error",
         errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
@@ -89,7 +89,7 @@ describe("Public Key Getter", () => {
 
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
-        errorMessage: "Error getting JWK - Error: Empty response body",
+        errorMessage: "Error getting JWK - Empty response body",
         errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
@@ -117,7 +117,7 @@ describe("Public Key Getter", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage:
-          "Error getting JWK - Error: Response does not match the expected JWKS structure",
+          "Error getting JWK - Response does not match the expected JWKS structure",
         errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
@@ -133,7 +133,7 @@ describe("Public Key Getter", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage:
-          "Error getting JWK - Error: JWKS does not contain key matching provided key ID",
+          "Error getting JWK - JWKS does not contain key matching provided key ID",
         errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
