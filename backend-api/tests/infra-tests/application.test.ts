@@ -68,14 +68,14 @@ describe("Backend application infrastructure", () => {
         const expectedBurstLimits = {
           dev: 10,
           build: 10,
-          staging: 0,
+          staging: 10,
           integration: 0,
           production: 0,
         };
         const expectedRateLimits = {
           dev: 10,
           build: 10,
-          staging: 0,
+          staging: 10,
           integration: 0,
           production: 0,
         };
@@ -261,7 +261,7 @@ describe("Backend application infrastructure", () => {
         const expectedBurstLimits = {
           dev: 10,
           build: 10,
-          staging: 0,
+          staging: 10,
           integration: 0,
           production: 0,
         };
@@ -269,7 +269,7 @@ describe("Backend application infrastructure", () => {
         const expectedRateLimits = {
           dev: 10,
           build: 10,
-          staging: 0,
+          staging: 10,
           integration: 0,
           production: 0,
         };
@@ -371,14 +371,14 @@ describe("Backend application infrastructure", () => {
         const expectedBurstLimits = {
           dev: 10,
           build: 10,
-          staging: 0,
+          staging: 10,
           integration: 0,
           production: 0,
         };
         const expectedRateLimits = {
           dev: 10,
           build: 10,
-          staging: 0,
+          staging: 10,
           integration: 0,
           production: 0,
         };
@@ -475,7 +475,7 @@ describe("Backend application infrastructure", () => {
               ReservedConcurrentExecutions: 15,
             }),
             staging: expect.objectContaining({
-              ReservedConcurrentExecutions: 0,
+              ReservedConcurrentExecutions: 15,
             }),
             integration: expect.objectContaining({
               ReservedConcurrentExecutions: 0,
