@@ -72,7 +72,7 @@ export class PublicKeyGetter implements IPublicKeyGetter {
   }
 
   private async getJwk(jwksEndpoint: string, kid: string): Promise<IJwk> {
-    const response = await this.sendHttpRequest(
+    const getJwtResult = await this.sendHttpRequest(
       {
         url: jwksEndpoint,
         method: "GET",
@@ -80,7 +80,13 @@ export class PublicKeyGetter implements IPublicKeyGetter {
       { maxAttempts: 3, delayInMillis: 100 },
     );
 
-    const { body } = response;
+    if (getJwtResult.isError) {
+      throw new Error(`${getJwtResult.value}`);
+    }
+
+    const getJwtResponse = getJwtResult.value;
+
+    const { body } = getJwtResponse;
     if (!body) {
       throw new Error("Empty response body");
     }

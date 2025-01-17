@@ -1,6 +1,10 @@
 import { IJwks, IPublicKeyGetter, PublicKeyGetter } from "../publicKeyGetter";
 import { importJWK } from "jose";
-import { ErrorCategory } from "../../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  successResult,
+} from "../../../utils/result";
 
 describe("Public Key Getter", () => {
   let mockJwks: IJwks;
@@ -30,13 +34,15 @@ describe("Public Key Getter", () => {
         },
       ],
     };
-    mockSendHttpRequest = jest.fn().mockResolvedValue({
-      statusCode: 200,
-      body: JSON.stringify(mockJwks),
-      headers: {
-        "Cache-Control": "max-age=60",
-      },
-    });
+    mockSendHttpRequest = jest.fn().mockResolvedValue(
+      successResult({
+        statusCode: 200,
+        body: JSON.stringify(mockJwks),
+        headers: {
+          "Cache-Control": "max-age=60",
+        },
+      }),
+    );
     publicKeyGetter = new PublicKeyGetter({
       sendHttpRequest: mockSendHttpRequest,
     });
@@ -44,7 +50,9 @@ describe("Public Key Getter", () => {
 
   describe("Given a request error happens when tyring to get the JWKS", () => {
     it("Returns error result", async () => {
-      mockSendHttpRequest = jest.fn().mockRejectedValueOnce("Some HTTP error");
+      mockSendHttpRequest = jest
+        .fn()
+        .mockResolvedValueOnce(errorResult(new Error("Some HTTP error")));
       publicKeyGetter = new PublicKeyGetter({
         sendHttpRequest: mockSendHttpRequest,
       });
@@ -55,7 +63,7 @@ describe("Public Key Getter", () => {
 
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
-        errorMessage: "Error getting JWK - Some HTTP error",
+        errorMessage: "Error getting JWK - Error: Error: Some HTTP error",
         errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
@@ -63,12 +71,14 @@ describe("Public Key Getter", () => {
 
   describe("Given there is no response body", () => {
     it("Returns error result", async () => {
-      mockSendHttpRequest = jest.fn().mockResolvedValue({
-        statusCode: 200,
-        headers: {
-          "Cache-Control": "max-age=60",
-        },
-      });
+      mockSendHttpRequest = jest.fn().mockResolvedValue(
+        successResult({
+          statusCode: 200,
+          headers: {
+            "Cache-Control": "max-age=60",
+          },
+        }),
+      );
       publicKeyGetter = new PublicKeyGetter({
         sendHttpRequest: mockSendHttpRequest,
       });
@@ -87,13 +97,15 @@ describe("Public Key Getter", () => {
 
   describe("Given the response does not contain valid JWKS", () => {
     it("Returns error result", async () => {
-      mockSendHttpRequest = jest.fn().mockResolvedValue({
-        statusCode: 200,
-        body: JSON.stringify("notJson"),
-        headers: {
-          "Cache-Control": "max-age=60",
-        },
-      });
+      mockSendHttpRequest = jest.fn().mockResolvedValue(
+        successResult({
+          statusCode: 200,
+          body: JSON.stringify("notJson"),
+          headers: {
+            "Cache-Control": "max-age=60",
+          },
+        }),
+      );
       publicKeyGetter = new PublicKeyGetter({
         sendHttpRequest: mockSendHttpRequest,
       });
@@ -130,13 +142,15 @@ describe("Public Key Getter", () => {
   describe("Given converting JWK to a key object fails", () => {
     it("Returns error result", async () => {
       delete mockJwks.keys[0].crv;
-      mockSendHttpRequest = jest.fn().mockResolvedValue({
-        statusCode: 200,
-        body: JSON.stringify(mockJwks),
-        headers: {
-          "Cache-Control": "max-age=60",
-        },
-      });
+      mockSendHttpRequest = jest.fn().mockResolvedValue(
+        successResult({
+          statusCode: 200,
+          body: JSON.stringify(mockJwks),
+          headers: {
+            "Cache-Control": "max-age=60",
+          },
+        }),
+      );
       publicKeyGetter = new PublicKeyGetter({
         sendHttpRequest: mockSendHttpRequest,
       });
