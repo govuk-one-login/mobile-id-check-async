@@ -138,3 +138,15 @@ This schema is generated in the backend-api-push-to-main.yaml worfklow. To gener
 ```bash
 npm run generate-proxy-open-api
 ```
+
+#### ./well-known/jwks.json 
+
+An asymmetric encryption keypair is created in KMS. The infrastructure code lives in the `./template.yaml`.
+
+The public key object is hosted in the `/.well-known/jwks.json` endpoint on the sessions-api. The encryption algorithm is `RSA-OAEP-256` This is used by STS for encrypting the service token sent to the `GET /async/activeSession` endpoint in the Authorization header.
+
+The JSON Web Keys object is stored in AWS S3. The `/.well-known/jwks.json` endpoint retrieves the object from S3 via an AWS service integration.
+
+The JSON Web Keys object is created when the stack is deployed for the first time. A Cloudformation custom resource sends a notification to the jwksWebKeys lambda and triggers the lambda. The lambda builds the JSON Web Keys object and uploads it to S3.
+
+Note: for redeployments of the application, the jwksWebKeys lambda is only invoked when the resource in the template.yaml is updated. It is not invoked when the lambda handler code changes. Updating a parameter in the Cloudformation custom resource infrastructure triggers an invocation of the jwksWebKeys lambda. 
