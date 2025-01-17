@@ -13,17 +13,6 @@ describe("Send HTTP request", () => {
   let response: SuccessfulHttpResponse;
 
   beforeEach(() => {
-    mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
-      Promise.resolve({
-        status: 200,
-        ok: true,
-        headers: new Headers({
-          header: "mockHeader",
-        }),
-        text: () => Promise.resolve(JSON.stringify({ mock: "responseBody" })),
-      } as Response),
-    );
-
     jest.spyOn(Math, "random").mockImplementation(() => MOCK_JITTER_MULTIPLIER);
 
     mockSetTimeout = jest
