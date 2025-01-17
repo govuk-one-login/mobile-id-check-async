@@ -157,7 +157,7 @@ describe("Send HTTP request", () => {
         );
       });
 
-      it("Does not attempt to make request for a 4th time", () => {
+      it("Attempts to send the request a third time", () => {
         expect(mockFetch).toHaveBeenCalledTimes(3);
       });
 
@@ -171,6 +171,43 @@ describe("Send HTTP request", () => {
           2,
           expect.any(Function),
           20 * MOCK_JITTER_MULTIPLIER,
+        );
+      });
+    });
+
+    describe("Given a custom maxAttempts value is used", () => {
+      beforeEach(async () => {
+        mockFetch = jest
+          .spyOn(global, "fetch")
+          .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
+          .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
+          .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
+          .mockImplementationOnce(() => Promise.reject(new Error("mockError")));
+
+        await expect(
+          sendHttpRequest(httpRequest, { maxAttempts: 4, delayInMillis: 10 }),
+        ).rejects.toThrow("Unexpected network error - Error: mockError");
+      });
+
+      it("Attempts to send the request a fourth time", () => {
+        expect(mockFetch).toHaveBeenCalledTimes(4);
+      });
+
+      it("Delays successive attempts with exponential backoff", () => {
+        expect(mockSetTimeout).toHaveBeenNthCalledWith(
+          1,
+          expect.any(Function),
+          10 * MOCK_JITTER_MULTIPLIER,
+        );
+        expect(mockSetTimeout).toHaveBeenNthCalledWith(
+          2,
+          expect.any(Function),
+          20 * MOCK_JITTER_MULTIPLIER,
+        );
+        expect(mockSetTimeout).toHaveBeenNthCalledWith(
+          3,
+          expect.any(Function),
+          40 * MOCK_JITTER_MULTIPLIER,
         );
       });
     });
