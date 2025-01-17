@@ -1,7 +1,10 @@
 import { sendHttpRequest } from "../sendHttpRequest";
 
 describe("Send HTTP request", () => {
+  const MOCK_JITTER_MULTIPLIER = 0.5;
+
   let mockFetch: jest.SpyInstance;
+  let mockSetTimeout: jest.SpyInstance;
 
   beforeEach(() => {
     mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
@@ -14,10 +17,19 @@ describe("Send HTTP request", () => {
         text: () => Promise.resolve(JSON.stringify({ mock: "responseBody" })),
       } as Response),
     );
+
+    jest.spyOn(Math, "random").mockImplementation(() => MOCK_JITTER_MULTIPLIER);
+
+    mockSetTimeout = jest
+      .spyOn(global, "setTimeout")
+      .mockImplementation((callback, _) => {
+        callback();
+        return {} as NodeJS.Timeout;
+      });
   });
 
   afterEach(() => {
-    mockFetch.mockRestore();
+    jest.restoreAllMocks();
   });
 
   describe("Given there is a network error", () => {
@@ -82,7 +94,7 @@ describe("Send HTTP request", () => {
             url: "https://mockEndpoint.com",
             method: "GET",
           },
-          { maxAttempts: 3, delayInMillis: 1 },
+          { maxAttempts: 3, delayInMillis: 10 },
         );
 
         expect(response).toEqual({
@@ -91,6 +103,11 @@ describe("Send HTTP request", () => {
           statusCode: 200,
         });
         expect(mockFetch).toHaveBeenCalledTimes(2);
+        expect(mockSetTimeout).toHaveBeenNthCalledWith(
+          1,
+          expect.any(Function),
+          10 * MOCK_JITTER_MULTIPLIER,
+        );
       });
     });
 
@@ -116,7 +133,7 @@ describe("Send HTTP request", () => {
             url: "https://mockEndpoint.com",
             method: "GET",
           },
-          { maxAttempts: 3, delayInMillis: 1 },
+          { maxAttempts: 3, delayInMillis: 10 },
         );
 
         expect(response).toEqual({
@@ -125,6 +142,16 @@ describe("Send HTTP request", () => {
           statusCode: 200,
         });
         expect(mockFetch).toHaveBeenCalledTimes(3);
+        expect(mockSetTimeout).toHaveBeenNthCalledWith(
+          1,
+          expect.any(Function),
+          10 * MOCK_JITTER_MULTIPLIER,
+        );
+        expect(mockSetTimeout).toHaveBeenNthCalledWith(
+          2,
+          expect.any(Function),
+          20 * MOCK_JITTER_MULTIPLIER,
+        );
       });
     });
 
@@ -142,10 +169,20 @@ describe("Send HTTP request", () => {
               url: "https://mockEndpoint.com",
               method: "GET",
             },
-            { maxAttempts: 3, delayInMillis: 1 },
+            { maxAttempts: 3, delayInMillis: 10 },
           ),
         ).rejects.toThrow("Unexpected network error - Error: mockError");
         expect(mockFetch).toHaveBeenCalledTimes(3);
+        expect(mockSetTimeout).toHaveBeenNthCalledWith(
+          1,
+          expect.any(Function),
+          10 * MOCK_JITTER_MULTIPLIER,
+        );
+        expect(mockSetTimeout).toHaveBeenNthCalledWith(
+          2,
+          expect.any(Function),
+          20 * MOCK_JITTER_MULTIPLIER,
+        );
       });
     });
   });

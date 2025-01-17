@@ -23,13 +23,21 @@ export const sendHttpRequest: ISendHttpRequest = async (
       });
     } catch (error) {
       if (attempt < maxAttempts) {
-        return retry(request, delayInMillis);
+        return retryWithExponentialBackoffAndFullJitter(
+          request,
+          attempt,
+          delayInMillis,
+        );
       }
       throw new Error(`Unexpected network error - ${error}`);
     }
 
     if (!response.ok && attempt < maxAttempts) {
-      return retry(request, delayInMillis);
+      return retryWithExponentialBackoffAndFullJitter(
+        request,
+        attempt,
+        delayInMillis,
+      );
     }
 
     if (!response.ok) {
@@ -46,11 +54,17 @@ export const sendHttpRequest: ISendHttpRequest = async (
   return await request();
 };
 
-async function retry(
+async function retryWithExponentialBackoffAndFullJitter(
   request: () => Promise<SuccessfulHttpResponse>,
-  delayInMillis: number,
+  attempt: number,
+  baseDelayMillis: number,
 ) {
-  await wait(delayInMillis);
+  const exponentialDelayWithoutJitter =
+    Math.pow(2, attempt - 1) * baseDelayMillis;
+  const exponentialDelayWithFullJitter = Math.floor(
+    Math.random() * exponentialDelayWithoutJitter,
+  );
+  await wait(exponentialDelayWithFullJitter);
   return await request();
 }
 
