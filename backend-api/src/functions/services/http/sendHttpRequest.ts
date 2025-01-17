@@ -1,3 +1,5 @@
+import { errorResult, Result, successResult } from "../../utils/result";
+
 const DEFAULT_MAX_ATTEMPTS = 3;
 const DEFAULT_DELAY_IN_MILLIS = 100;
 
@@ -8,7 +10,7 @@ export const sendHttpRequest: ISendHttpRequest = async (
   const { url, method, headers, body } = httpRequest;
 
   let attempt = 0;
-  async function request(): Promise<SuccessfulHttpResponse> {
+  async function request(): Promise<Result<SuccessfulHttpResponse, HttpError>> {
     attempt++;
 
     const maxAttempts = retryConfig?.maxAttempts ?? DEFAULT_MAX_ATTEMPTS;
@@ -21,6 +23,21 @@ export const sendHttpRequest: ISendHttpRequest = async (
         headers,
         body,
       });
+
+      if (!response.ok && attempt < maxAttempts) {
+        return retryWithExponentialBackoffAndFullJitter(
+          request,
+          attempt,
+          delayInMillis,
+        );
+      }
+
+      if (!response.ok) {
+        return errorResult({
+          statusCode: response.status,
+          description: await response.text(),
+        });
+      }
     } catch (error) {
       if (attempt < maxAttempts) {
         return retryWithExponentialBackoffAndFullJitter(
@@ -29,33 +46,23 @@ export const sendHttpRequest: ISendHttpRequest = async (
           delayInMillis,
         );
       }
-      throw new Error(`Unexpected network error - ${error}`);
+      return errorResult({
+        description: `Unexpected network error - ${error}`,
+      });
     }
 
-    if (!response.ok && attempt < maxAttempts) {
-      return retryWithExponentialBackoffAndFullJitter(
-        request,
-        attempt,
-        delayInMillis,
-      );
-    }
-
-    if (!response.ok) {
-      throw new Error(`Error making http request - ${await response.text()}`);
-    }
-
-    return {
+    return successResult({
       statusCode: response.status,
       body: await response.text(),
       headers: Object.fromEntries(response.headers.entries()),
-    };
+    });
   }
 
   return await request();
 };
 
 async function retryWithExponentialBackoffAndFullJitter(
-  request: () => Promise<SuccessfulHttpResponse>,
+  request: () => Promise<Result<SuccessfulHttpResponse, HttpError>>,
   attempt: number,
   baseDelayMillis: number,
 ) {
@@ -93,10 +100,15 @@ export type HttpRequest = {
 export type ISendHttpRequest = (
   httpRequest: HttpRequest,
   retryConfig?: RetryConfig,
-) => Promise<SuccessfulHttpResponse>;
+) => Promise<Result<SuccessfulHttpResponse, HttpError>>;
 
 export type SuccessfulHttpResponse = {
   statusCode: number;
   body?: string;
   headers: HttpHeaders;
+};
+
+export type HttpError = {
+  statusCode?: number;
+  description: string;
 };

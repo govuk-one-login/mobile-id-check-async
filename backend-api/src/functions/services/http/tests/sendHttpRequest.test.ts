@@ -1,4 +1,9 @@
-import { sendHttpRequest, SuccessfulHttpResponse } from "../sendHttpRequest";
+import { Result } from "../../../utils/result";
+import {
+  HttpError,
+  sendHttpRequest,
+  SuccessfulHttpResponse,
+} from "../sendHttpRequest";
 
 describe("Send HTTP request", () => {
   const MOCK_JITTER_MULTIPLIER = 0.5;
@@ -10,7 +15,7 @@ describe("Send HTTP request", () => {
 
   let mockFetch: jest.SpyInstance;
   let mockSetTimeout: jest.SpyInstance;
-  let response: SuccessfulHttpResponse;
+  let response: Result<SuccessfulHttpResponse, HttpError>;
 
   beforeEach(() => {
     jest.spyOn(Math, "random").mockImplementation(() => MOCK_JITTER_MULTIPLIER);
@@ -28,20 +33,26 @@ describe("Send HTTP request", () => {
   });
 
   describe("Given there is a network error", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       mockFetch = jest
         .spyOn(global, "fetch")
         .mockImplementation(() => Promise.reject(new Error("mockError")));
+
+      response = await sendHttpRequest(httpRequest, retryConfig);
     });
-    it("Throws the error", async () => {
-      await expect(sendHttpRequest(httpRequest, retryConfig)).rejects.toThrow(
-        "Unexpected network error - Error: mockError",
-      );
+
+    it("Returns error result with details from final response", async () => {
+      expect(response).toEqual({
+        isError: true,
+        value: {
+          description: "Unexpected network error - Error: mockError",
+        },
+      });
     });
   });
 
   describe("Given the request fails with a 500 error", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
         Promise.resolve({
           status: 500,
@@ -49,11 +60,18 @@ describe("Send HTTP request", () => {
           text: () => Promise.resolve("mockErrorInformation"),
         } as Response),
       );
+
+      response = await sendHttpRequest(httpRequest, retryConfig);
     });
-    it("Throws an error", async () => {
-      await expect(sendHttpRequest(httpRequest, retryConfig)).rejects.toThrow(
-        "Error making http request - mockErrorInformation",
-      );
+
+    it("Returns error result with details from final response", async () => {
+      expect(response).toEqual({
+        isError: true,
+        value: {
+          statusCode: 500,
+          description: "mockErrorInformation",
+        },
+      });
     });
   });
 
@@ -77,6 +95,7 @@ describe("Send HTTP request", () => {
 
         response = await sendHttpRequest(httpRequest, retryConfig);
       });
+
       it("Attempts to send the request a second time", () => {
         expect(mockFetch).toHaveBeenCalledTimes(2);
       });
@@ -89,11 +108,14 @@ describe("Send HTTP request", () => {
         );
       });
 
-      it("Returns success http response details from final response", () => {
+      it("Returns success result with details from final response", () => {
         expect(response).toEqual({
-          body: '{"mock":"responseBody"}',
-          headers: { header: "mockHeader" },
-          statusCode: 200,
+          isError: false,
+          value: {
+            body: '{"mock":"responseBody"}',
+            headers: { header: "mockHeader" },
+            statusCode: 200,
+          },
         });
       });
     });
@@ -118,6 +140,7 @@ describe("Send HTTP request", () => {
 
         response = await sendHttpRequest(httpRequest, retryConfig);
       });
+
       it("Attempts to send the request a third time", () => {
         expect(mockFetch).toHaveBeenCalledTimes(3);
       });
@@ -135,11 +158,14 @@ describe("Send HTTP request", () => {
         );
       });
 
-      it("Returns success http response details from final response", () => {
+      it("Returns a success result with details from final response", () => {
         expect(response).toEqual({
-          body: '{"mock":"responseBody"}',
-          headers: { header: "mockHeader" },
-          statusCode: 200,
+          isError: false,
+          value: {
+            body: '{"mock":"responseBody"}',
+            headers: { header: "mockHeader" },
+            statusCode: 200,
+          },
         });
       });
     });
@@ -152,9 +178,7 @@ describe("Send HTTP request", () => {
           .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
           .mockImplementationOnce(() => Promise.reject(new Error("mockError")));
 
-        await expect(sendHttpRequest(httpRequest, retryConfig)).rejects.toThrow(
-          "Unexpected network error - Error: mockError",
-        );
+        response = await sendHttpRequest(httpRequest, retryConfig);
       });
 
       it("Attempts to send the request a third time", () => {
@@ -173,9 +197,18 @@ describe("Send HTTP request", () => {
           20 * MOCK_JITTER_MULTIPLIER,
         );
       });
+
+      it("Returns an error result with details from the final response", () => {
+        expect(response).toEqual({
+          isError: true,
+          value: {
+            description: "Unexpected network error - Error: mockError",
+          },
+        });
+      });
     });
 
-    describe("Given a custom maxAttempts value is used", () => {
+    describe("Given a custom maxAttempts value is used - 4 maxAttempts", () => {
       beforeEach(async () => {
         mockFetch = jest
           .spyOn(global, "fetch")
@@ -184,9 +217,10 @@ describe("Send HTTP request", () => {
           .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
           .mockImplementationOnce(() => Promise.reject(new Error("mockError")));
 
-        await expect(
-          sendHttpRequest(httpRequest, { maxAttempts: 4, delayInMillis: 10 }),
-        ).rejects.toThrow("Unexpected network error - Error: mockError");
+        response = await sendHttpRequest(httpRequest, {
+          maxAttempts: 4,
+          delayInMillis: 10,
+        });
       });
 
       it("Attempts to send the request a fourth time", () => {
@@ -209,6 +243,15 @@ describe("Send HTTP request", () => {
           expect.any(Function),
           40 * MOCK_JITTER_MULTIPLIER,
         );
+      });
+
+      it("Returns an error result with details from the final response", () => {
+        expect(response).toEqual({
+          isError: true,
+          value: {
+            description: "Unexpected network error - Error: mockError",
+          },
+        });
       });
     });
   });
