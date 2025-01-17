@@ -1,4 +1,4 @@
-import { sendHttpRequest } from "../sendHttpRequest";
+import { sendHttpRequest, SuccessfulHttpResponse } from "../sendHttpRequest";
 
 describe("Send HTTP request", () => {
   const MOCK_JITTER_MULTIPLIER = 0.5;
@@ -10,6 +10,7 @@ describe("Send HTTP request", () => {
 
   let mockFetch: jest.SpyInstance;
   let mockSetTimeout: jest.SpyInstance;
+  let response: SuccessfulHttpResponse;
 
   beforeEach(() => {
     mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
@@ -38,11 +39,12 @@ describe("Send HTTP request", () => {
   });
 
   describe("Given there is a network error", () => {
-    it("Throws the error", async () => {
+    beforeEach(() => {
       mockFetch = jest
         .spyOn(global, "fetch")
         .mockImplementation(() => Promise.reject(new Error("mockError")));
-
+    });
+    it("Throws the error", async () => {
       await expect(sendHttpRequest(httpRequest, retryConfig)).rejects.toThrow(
         "Unexpected network error - Error: mockError",
       );
@@ -50,7 +52,7 @@ describe("Send HTTP request", () => {
   });
 
   describe("Given the request fails with a 500 error", () => {
-    it("Throws an error", async () => {
+    beforeEach(() => {
       mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
         Promise.resolve({
           status: 500,
@@ -58,7 +60,8 @@ describe("Send HTTP request", () => {
           text: () => Promise.resolve("mockErrorInformation"),
         } as Response),
       );
-
+    });
+    it("Throws an error", async () => {
       await expect(sendHttpRequest(httpRequest, retryConfig)).rejects.toThrow(
         "Error making http request - mockErrorInformation",
       );
@@ -67,7 +70,7 @@ describe("Send HTTP request", () => {
 
   describe("Retry policy", () => {
     describe("Given there is an error on the first request attempt", () => {
-      it("Attempts to send the request a second time", async () => {
+      beforeEach(async () => {
         mockFetch = jest
           .spyOn(global, "fetch")
           .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
@@ -83,24 +86,31 @@ describe("Send HTTP request", () => {
             } as Response),
           );
 
-        const response = await sendHttpRequest(httpRequest, retryConfig);
-
-        expect(response).toEqual({
-          body: '{"mock":"responseBody"}',
-          headers: { header: "mockHeader" },
-          statusCode: 200,
-        });
+        response = await sendHttpRequest(httpRequest, retryConfig);
+      });
+      it("Attempts to send the request a second time", () => {
         expect(mockFetch).toHaveBeenCalledTimes(2);
+      });
+
+      it("Delays successive attempts with exponential backoff", () => {
         expect(mockSetTimeout).toHaveBeenNthCalledWith(
           1,
           expect.any(Function),
           10 * MOCK_JITTER_MULTIPLIER,
         );
       });
+
+      it("Returns success http response details from final response", () => {
+        expect(response).toEqual({
+          body: '{"mock":"responseBody"}',
+          headers: { header: "mockHeader" },
+          statusCode: 200,
+        });
+      });
     });
 
     describe("Given there is an error on the second request attempt", () => {
-      it("Attempts to send the request a third time", async () => {
+      beforeEach(async () => {
         mockFetch = jest
           .spyOn(global, "fetch")
           .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
@@ -117,14 +127,13 @@ describe("Send HTTP request", () => {
             } as Response),
           );
 
-        const response = await sendHttpRequest(httpRequest, retryConfig);
-
-        expect(response).toEqual({
-          body: '{"mock":"responseBody"}',
-          headers: { header: "mockHeader" },
-          statusCode: 200,
-        });
+        response = await sendHttpRequest(httpRequest, retryConfig);
+      });
+      it("Attempts to send the request a third time", () => {
         expect(mockFetch).toHaveBeenCalledTimes(3);
+      });
+
+      it("Delays successive attempts with exponential backoff", () => {
         expect(mockSetTimeout).toHaveBeenNthCalledWith(
           1,
           expect.any(Function),
@@ -136,10 +145,18 @@ describe("Send HTTP request", () => {
           20 * MOCK_JITTER_MULTIPLIER,
         );
       });
+
+      it("Returns success http response details from final response", () => {
+        expect(response).toEqual({
+          body: '{"mock":"responseBody"}',
+          headers: { header: "mockHeader" },
+          statusCode: 200,
+        });
+      });
     });
 
     describe("Given there is an error on the third request attempt", () => {
-      it("Throws an error", async () => {
+      beforeEach(async () => {
         mockFetch = jest
           .spyOn(global, "fetch")
           .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
@@ -149,7 +166,13 @@ describe("Send HTTP request", () => {
         await expect(sendHttpRequest(httpRequest, retryConfig)).rejects.toThrow(
           "Unexpected network error - Error: mockError",
         );
+      });
+
+      it("Does not attempt to make request for a 4th time", () => {
         expect(mockFetch).toHaveBeenCalledTimes(3);
+      });
+
+      it("Delays successive attempts with exponential backoff", () => {
         expect(mockSetTimeout).toHaveBeenNthCalledWith(
           1,
           expect.any(Function),
