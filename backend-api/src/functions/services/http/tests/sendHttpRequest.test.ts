@@ -2,6 +2,11 @@ import { sendHttpRequest } from "../sendHttpRequest";
 
 describe("Send HTTP request", () => {
   const MOCK_JITTER_MULTIPLIER = 0.5;
+  const httpRequest = {
+    url: "https://mockEndpoint.com",
+    method: "GET",
+  } as const;
+  const retryConfig = { maxAttempts: 3, delayInMillis: 10 };
 
   let mockFetch: jest.SpyInstance;
   let mockSetTimeout: jest.SpyInstance;
@@ -38,15 +43,9 @@ describe("Send HTTP request", () => {
         .spyOn(global, "fetch")
         .mockImplementation(() => Promise.reject(new Error("mockError")));
 
-      await expect(
-        sendHttpRequest(
-          {
-            url: "https://mockEndpoint.com",
-            method: "GET",
-          },
-          { maxAttempts: 3, delayInMillis: 1 },
-        ),
-      ).rejects.toThrow("Unexpected network error - Error: mockError");
+      await expect(sendHttpRequest(httpRequest, retryConfig)).rejects.toThrow(
+        "Unexpected network error - Error: mockError",
+      );
     });
   });
 
@@ -60,15 +59,9 @@ describe("Send HTTP request", () => {
         } as Response),
       );
 
-      await expect(
-        sendHttpRequest(
-          {
-            url: "https://mockEndpoint.com",
-            method: "GET",
-          },
-          { maxAttempts: 3, delayInMillis: 1 },
-        ),
-      ).rejects.toThrow("Error making http request - mockErrorInformation");
+      await expect(sendHttpRequest(httpRequest, retryConfig)).rejects.toThrow(
+        "Error making http request - mockErrorInformation",
+      );
     });
   });
 
@@ -89,13 +82,8 @@ describe("Send HTTP request", () => {
                 Promise.resolve(JSON.stringify({ mock: "responseBody" })),
             } as Response),
           );
-        const response = await sendHttpRequest(
-          {
-            url: "https://mockEndpoint.com",
-            method: "GET",
-          },
-          { maxAttempts: 3, delayInMillis: 10 },
-        );
+
+        const response = await sendHttpRequest(httpRequest, retryConfig);
 
         expect(response).toEqual({
           body: '{"mock":"responseBody"}',
@@ -128,13 +116,8 @@ describe("Send HTTP request", () => {
                 Promise.resolve(JSON.stringify({ mock: "responseBody" })),
             } as Response),
           );
-        const response = await sendHttpRequest(
-          {
-            url: "https://mockEndpoint.com",
-            method: "GET",
-          },
-          { maxAttempts: 3, delayInMillis: 10 },
-        );
+
+        const response = await sendHttpRequest(httpRequest, retryConfig);
 
         expect(response).toEqual({
           body: '{"mock":"responseBody"}',
@@ -163,15 +146,9 @@ describe("Send HTTP request", () => {
           .mockImplementationOnce(() => Promise.reject(new Error("mockError")))
           .mockImplementationOnce(() => Promise.reject(new Error("mockError")));
 
-        await expect(
-          sendHttpRequest(
-            {
-              url: "https://mockEndpoint.com",
-              method: "GET",
-            },
-            { maxAttempts: 3, delayInMillis: 10 },
-          ),
-        ).rejects.toThrow("Unexpected network error - Error: mockError");
+        await expect(sendHttpRequest(httpRequest, retryConfig)).rejects.toThrow(
+          "Unexpected network error - Error: mockError",
+        );
         expect(mockFetch).toHaveBeenCalledTimes(3);
         expect(mockSetTimeout).toHaveBeenNthCalledWith(
           1,
