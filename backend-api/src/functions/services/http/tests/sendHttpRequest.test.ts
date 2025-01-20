@@ -11,7 +11,11 @@ describe("Send HTTP request", () => {
     url: "https://mockEndpoint.com",
     method: "GET",
   } as const;
-  const retryConfig = { maxAttempts: 3, delayInMillis: 10 };
+  const retryConfig = {
+    maxAttempts: 3,
+    delayInMillis: 10,
+    retryableStatusCodes: [503],
+  };
 
   let mockFetch: jest.SpyInstance;
   let mockSetTimeout: jest.SpyInstance;
@@ -76,6 +80,37 @@ describe("Send HTTP request", () => {
   });
 
   describe("Retry policy", () => {
+    describe("Given the status code is non-retryable and not 2xx", () => {
+      describe.each([[100], [199], [300], [400], [501]])(
+        "Given the status code is (%d)",
+        (statusCode: number) => {
+          beforeEach(async () => {
+            mockFetch = jest.spyOn(global, "fetch").mockImplementation(() =>
+              Promise.resolve({
+                status: statusCode,
+                text: () => Promise.resolve("mockError"),
+              } as Response),
+            );
+            response = await sendHttpRequest(httpRequest, retryConfig);
+          });
+
+          it("Does not retry the request", () => {
+            expect(mockFetch).toHaveBeenCalledTimes(1);
+          });
+
+          it("Returns a failure with status code and body", async () => {
+            expect(response).toEqual({
+              isError: true,
+              value: {
+                statusCode: statusCode,
+                description: "mockError",
+              },
+            });
+          });
+        },
+      );
+    });
+
     describe("Given there is an error on the first request attempt", () => {
       beforeEach(async () => {
         mockFetch = jest

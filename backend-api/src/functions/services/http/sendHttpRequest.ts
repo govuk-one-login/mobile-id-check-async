@@ -2,6 +2,7 @@ import { errorResult, Result, successResult } from "../../utils/result";
 
 const DEFAULT_MAX_ATTEMPTS = 3;
 const DEFAULT_DELAY_IN_MILLIS = 100;
+const DEFAULT_RETRYABLE_STATUS_CODES = [408, 500, 502, 503, 504];
 
 export const sendHttpRequest: ISendHttpRequest = async (
   httpRequest,
@@ -15,6 +16,8 @@ export const sendHttpRequest: ISendHttpRequest = async (
 
     const maxAttempts = retryConfig?.maxAttempts ?? DEFAULT_MAX_ATTEMPTS;
     const delayInMillis = retryConfig?.delayInMillis ?? DEFAULT_DELAY_IN_MILLIS;
+    const retryableStatusCodes =
+      retryConfig?.retryableStatusCodes ?? DEFAULT_RETRYABLE_STATUS_CODES;
 
     let response: Response;
     try {
@@ -24,7 +27,10 @@ export const sendHttpRequest: ISendHttpRequest = async (
         body,
       });
 
-      if (!response.ok && attempt < maxAttempts) {
+      if (
+        retryableStatusCodes.includes(response.status) &&
+        attempt < maxAttempts
+      ) {
         return retryWithExponentialBackoffAndFullJitter(
           request,
           attempt,
@@ -82,6 +88,7 @@ async function wait(delayMillis: number): Promise<void> {
 export type RetryConfig = {
   maxAttempts?: number;
   delayInMillis?: number;
+  retryableStatusCodes?: number[];
 };
 
 export type HttpMethod = "GET" | "POST";
