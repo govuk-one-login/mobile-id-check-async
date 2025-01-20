@@ -17,6 +17,26 @@ export class LogMessage implements LogAttributes {
     "Failed to retrieve one or more secrets from SSM Parameter Store.",
   );
 
+  static readonly UPDATE_SESSION_ATTEMPT = new LogMessage(
+    "MOBILE_ASYNC_UPDATE_SESSION_ATTEMPT",
+    "Attempting to update user session in DynamoDB.",
+  );
+
+  static readonly UPDATE_SESSION_SUCCESS = new LogMessage(
+    "MOBILE_ASYNC_UPDATE_SESSION_SUCCESS",
+    "Successfully updated user session in DynamoDB.",
+  );
+
+  static readonly UPDATE_SESSION_UNEXPECTED_FAILURE = new LogMessage(
+    "MOBILE_ASYNC_UPDATE_SESSION_UNEXPECTED_FAILURE",
+    "An unexpected failure occurred while trying to update the user session in DynamoDB.",
+  );
+
+  static readonly UPDATE_SESSION_CONDITIONAL_CHECK_FAILURE = new LogMessage(
+    "MOBILE_ASYNC_UPDATE_SESSION_CONDITIONAL_CHECK_FAILURE",
+    "One or more required conditions were not met when trying to update the user session in DynamoDB.",
+  );
+
   // Biometric Token
   static readonly BIOMETRIC_TOKEN_STARTED = new LogMessage(
     "MOBILE_ASYNC_BIOMETRIC_TOKEN_STARTED",

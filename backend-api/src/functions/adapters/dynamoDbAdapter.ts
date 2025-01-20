@@ -1,5 +1,4 @@
 import {
-  AttributeValue,
   ConditionalCheckFailedException,
   DynamoDBClient,
   PutItemCommand,
@@ -22,6 +21,8 @@ import {
   SessionRegistry,
   UpdateSessionError,
 } from "../common/session/SessionRegistry";
+import { logger } from "../common/logging/logger";
+import { LogMessage } from "../common/logging/LogMessage";
 
 const sessionStates = {
   ASYNC_AUTH_SESSION_CREATED: "ASYNC_AUTH_SESSION_CREATED",
@@ -126,77 +127,46 @@ export class DynamoDbAdapter implements SessionRegistry {
     sessionId: string,
     updateOperation: UpdateSessionOperation,
   ): Promise<Result<void, UpdateSessionError>> {
-    const updateItemCommand = new UpdateItemCommand({
-      TableName: "mockTableName",
-      Key: {
-        sessionId: {
-          S: "mockSessionId",
-        },
-      },
-      ExpressionAttributeValues: getExpressionAttributeValues(updateOperation),
-      ConditionExpression: getConditionExpression(updateOperation),
-      UpdateExpression: getUpdateExpression(updateOperation),
+    const updateExpressionDataToLog = {
+      updateExpression: updateOperation.getDynamoDbUpdateExpression(),
+      conditionExpression: updateOperation.getDynamoDbConditionExpression(),
+    };
+    logger.debug(LogMessage.UPDATE_SESSION_ATTEMPT, {
+      data: updateExpressionDataToLog,
     });
-
     try {
-      console.log(
-        "Update session attempt",
-        updateItemCommand.input.UpdateExpression,
-      ); // replace with proper logging
-      await this.dynamoDbClient.send(updateItemCommand);
+      await this.dynamoDbClient.send(
+        new UpdateItemCommand({
+          TableName: this.tableName,
+          Key: {
+            sessionId: { S: sessionId },
+          },
+          UpdateExpression: updateOperation.getDynamoDbUpdateExpression(),
+          ConditionExpression: updateOperation.getDynamoDbConditionExpression(),
+          ExpressionAttributeValues:
+            updateOperation.getDynamoDbExpressionAttributeValues(),
+        }),
+      );
     } catch (error) {
       if (error instanceof ConditionalCheckFailedException) {
-        console.log(
-          "Conditional check failed",
-          updateItemCommand.input.ConditionExpression,
-        ); // replace with proper logging
+        logger.error(LogMessage.UPDATE_SESSION_CONDITIONAL_CHECK_FAILURE, {
+          error: error.message,
+          data: updateExpressionDataToLog,
+        });
         return errorResult(UpdateSessionError.CONDITIONAL_CHECK_FAILURE);
       } else {
-        console.log("Unexpected error", error); // replace with proper logging
+        logger.error(LogMessage.UPDATE_SESSION_UNEXPECTED_FAILURE, {
+          error: error,
+          data: updateExpressionDataToLog,
+        });
         return errorResult(UpdateSessionError.INTERNAL_SERVER_ERROR);
       }
     }
-    console.log("Update session success"); // replace with proper logging
+    logger.debug(LogMessage.UPDATE_SESSION_SUCCESS);
     return emptySuccess();
   }
 
   private getTimeNowInSeconds() {
     return Math.floor(Date.now() / 1000);
   }
-}
-
-function getExpressionAttributeValues(
-  updateOperation: UpdateSessionOperation,
-): Record<string, AttributeValue> {
-  const attributeValues: Record<string, AttributeValue> = {
-    ":sessionState": marshall(updateOperation.targetState),
-  };
-  updateOperation.eligibleStartingStates.forEach((state) => {
-    attributeValues[`:${state}`] = marshall(state);
-  });
-  Object.entries(updateOperation.getFieldUpdates()).forEach(([key, value]) => {
-    attributeValues[`:${key}`] = marshall(value);
-  });
-  return attributeValues;
-}
-
-function getConditionExpression(
-  updateOperation: UpdateSessionOperation,
-): string {
-  const permissibleStatesAsAttributes: string =
-    updateOperation.eligibleStartingStates
-      .map((state) => `:${state}`)
-      .join(", ");
-  return `sessionState in (${permissibleStatesAsAttributes})`; // sessionState in (:EXAMPLE_SESSION_STATE_1, :EXAMPLE_SESSION_STATE_2)
-}
-
-function getUpdateExpression(updateOperation: UpdateSessionOperation): string {
-  const fieldsToUpdate = [
-    "sessionState",
-    ...Object.keys(updateOperation.getFieldUpdates()),
-  ];
-  const updateExpressions = fieldsToUpdate.map(
-    (fieldName) => `${fieldName} = :${fieldName}`,
-  );
-  return `set ${updateExpressions.join(", ")}`; // set sessionState = :EXAMPLE_SESSION_STATE, field1 = :field1, field2 = :field2
 }
