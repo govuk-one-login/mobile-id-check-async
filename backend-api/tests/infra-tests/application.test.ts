@@ -501,6 +501,12 @@ describe("Backend application infrastructure", () => {
         const globalMemorySize = template.toJSON().Globals.Function.MemorySize;
         expect(globalMemorySize).toStrictEqual(512);
       });
+
+      test("Global autoPublishAlias is set to live", () => {
+        const autoPublishAlias =
+          template.toJSON().Globals.Function.AutoPublishAlias;
+        expect(autoPublishAlias).toStrictEqual("live");
+      });
     });
 
     test("All lambdas have a FunctionName defined", () => {

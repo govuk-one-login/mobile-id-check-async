@@ -7,5 +7,5 @@ export interface EncryptionJwk extends JsonWebKey {
   use: EncryptionJwkUse;
 }
 
-export type EncryptionJwkAlgorithm = "RS256";
+export type EncryptionJwkAlgorithm = "RSA-OAEP-256";
 export type EncryptionJwkUse = "enc";
