@@ -35,7 +35,9 @@ export const getBiometricToken: GetBiometricToken = async (
     },
   };
   const retryConfig = {
-    retryableStatusCodes: [429, 500, 502, 503, 504],
+    retryableStatusCodes: [
+      429, 500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511,
+    ],
   };
 
   logger.debug(
