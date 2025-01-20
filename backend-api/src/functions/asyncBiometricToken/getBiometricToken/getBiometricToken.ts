@@ -34,6 +34,9 @@ export const getBiometricToken: GetBiometricToken = async (
       "X-Innovalor-Authorization": "Secret value and cannot be logged",
     },
   };
+  const retryConfig = {
+    retryableStatusCodes: [429, 500, 502, 503, 504],
+  };
 
   logger.debug(
     LogMessage.BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_ATTEMPT,
@@ -44,7 +47,7 @@ export const getBiometricToken: GetBiometricToken = async (
     },
   );
   const getBiometricTokenResult: Result<SuccessfulHttpResponse, HttpError> =
-    await sendHttpRequest(httpRequest);
+    await sendHttpRequest(httpRequest, retryConfig);
   if (getBiometricTokenResult.isError) {
     logger.error(
       LogMessage.BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_FAILURE,

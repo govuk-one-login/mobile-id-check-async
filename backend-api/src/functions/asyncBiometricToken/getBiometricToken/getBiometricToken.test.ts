@@ -14,13 +14,16 @@ describe("getBiometricToken", () => {
   let consoleDebugSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
   let mockSendHttpRequest: ISendHttpRequest;
-  const expectedArguments = {
+  const expectedHttpRequest = {
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       "X-Innovalor-Authorization": "mockSubmitterKey",
     },
     method: "POST",
     url: "https://mockUrl.com/oauth/token?grant_type=client_credentials",
+  };
+  const expectedRetryConfig = {
+    retryableStatusCodes: [429, 500, 502, 503, 504],
   };
 
   beforeEach(() => {
@@ -78,7 +81,10 @@ describe("getBiometricToken", () => {
 
     it("Returns an empty failure", () => {
       expect(result).toEqual(emptyFailure());
-      expect(mockSendHttpRequest).toBeCalledWith(expectedArguments);
+      expect(mockSendHttpRequest).toBeCalledWith(
+        expectedHttpRequest,
+        expectedRetryConfig,
+      );
     });
   });
 
@@ -111,7 +117,10 @@ describe("getBiometricToken", () => {
 
       it("Returns an empty failure", () => {
         expect(result).toEqual(emptyFailure());
-        expect(mockSendHttpRequest).toBeCalledWith(expectedArguments);
+        expect(mockSendHttpRequest).toBeCalledWith(
+          expectedHttpRequest,
+          expectedRetryConfig,
+        );
       });
     });
 
@@ -143,7 +152,10 @@ describe("getBiometricToken", () => {
 
       it("Returns an empty failure", () => {
         expect(result).toEqual(emptyFailure());
-        expect(mockSendHttpRequest).toBeCalledWith(expectedArguments);
+        expect(mockSendHttpRequest).toBeCalledWith(
+          expectedHttpRequest,
+          expectedRetryConfig,
+        );
       });
     });
   });
@@ -180,7 +192,10 @@ describe("getBiometricToken", () => {
 
     it("Returns successResult containing biometric token", () => {
       expect(result).toEqual(successResult("mockBiometricToken"));
-      expect(mockSendHttpRequest).toBeCalledWith(expectedArguments);
+      expect(mockSendHttpRequest).toBeCalledWith(
+        expectedHttpRequest,
+        expectedRetryConfig,
+      );
     });
   });
 });
