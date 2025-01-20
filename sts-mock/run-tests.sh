@@ -1,8 +1,6 @@
 #!/bin/bash
 set -eu
 
-cd /sts-mock
-
 remove_quotes() {
   echo "$1" | tr -d '"'
 }
