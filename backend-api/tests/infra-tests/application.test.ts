@@ -503,9 +503,9 @@ describe("Backend application infrastructure", () => {
       });
 
       test("Global autoPublishAlias is set to live", () => {
-        const globalMemorySize =
+        const autoPublishAlias =
           template.toJSON().Globals.Function.AutoPublishAlias;
-        expect(globalMemorySize).toStrictEqual("live");
+        expect(autoPublishAlias).toStrictEqual("live");
       });
     });
 
