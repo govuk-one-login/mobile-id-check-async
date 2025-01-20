@@ -22,7 +22,7 @@ describe("Token Encrypter", () => {
                 n: "0wLh4PMAjSt17zLNFw9nnBdV901AWp0uuHQzGaz1-Wz1lAs-jN7nI90sQAyiv8MDlYWLrfUZKcQAAA0yjISp9UyTr8qgqsyAKiFBIcnoH7l4qV-U-VXe3rcMjr5BzrKdVK664YiF9coGaal-QDDd1VY0fvvom3DhGnh8MoezBQPKl6pynIaSiDHZUdSe8B9LdsjsKHt4SujGRR_QlERYISC0s4pCQu2gA9qsP-pFDfcklbLtskFtWa_utiPe48Y5xgrhj5r-hMz9Zi4R55mX6nymC9gypk7q6iiXGEQcMzxPMy0kgF4437PqA-0GmjJE24pGmVhnr33UL2i0tsfviw",
                 e: "AQAB",
                 use: "enc",
-                alg: "RS256",
+                alg: "RSA-OAEP-256",
                 kid: "456d2da6-9ca8-4e1d-b8c8-081109d73015",
               },
             ],
