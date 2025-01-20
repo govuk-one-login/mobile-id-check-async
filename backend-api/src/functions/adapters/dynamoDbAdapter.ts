@@ -23,10 +23,7 @@ import {
 } from "../common/session/SessionRegistry";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
-
-const sessionStates = {
-  ASYNC_AUTH_SESSION_CREATED: "ASYNC_AUTH_SESSION_CREATED",
-};
+import { SessionState } from "../common/session/session";
 
 export type DatabaseRecord = Record<string, NativeAttributeValue>;
 
@@ -57,7 +54,7 @@ export class DynamoDbAdapter implements SessionRegistry {
       FilterExpression: "sessionState = :sessionState",
       ExpressionAttributeValues: {
         ":subjectIdentifier": marshall(subjectIdentifier),
-        ":sessionState": marshall(sessionStates.ASYNC_AUTH_SESSION_CREATED),
+        ":sessionState": marshall(SessionState.AUTH_SESSION_CREATED),
         ":currentTimeInSeconds": marshall(this.getTimeNowInSeconds()),
       },
       ProjectionExpression: this.formatAsProjectionExpression(attributesToGet),
@@ -103,7 +100,7 @@ export class DynamoDbAdapter implements SessionRegistry {
         createdAt: Date.now(),
         issuer: issuer,
         sessionId: sessionId,
-        sessionState: sessionStates.ASYNC_AUTH_SESSION_CREATED,
+        sessionState: SessionState.AUTH_SESSION_CREATED,
         clientState: state,
         subjectIdentifier: sub,
         timeToLive: timeToLive,
