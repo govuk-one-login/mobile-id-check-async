@@ -95,12 +95,40 @@ describe("Public Key Getter", () => {
     });
   });
 
+  describe("Given the response body cannot be parsed as JSON", () => {
+    it("Returns error result", async () => {
+      mockSendHttpRequest = jest.fn().mockResolvedValue(
+        successResult({
+          statusCode: 200,
+          body: "notJson",
+          headers: {
+            "Cache-Control": "max-age=60",
+          },
+        }),
+      );
+      publicKeyGetter = new PublicKeyGetter({
+        sendHttpRequest: mockSendHttpRequest,
+      });
+      const result = await publicKeyGetter.getPublicKey(
+        "https://mockJwksEndpoint.com",
+        "mockKid",
+      );
+
+      expect(result.isError).toBe(true);
+      expect(result.value).toStrictEqual({
+        errorMessage:
+          "Error getting JWK - Response body could not be parsed as JSON. Response body: notJson",
+        errorCategory: ErrorCategory.SERVER_ERROR,
+      });
+    });
+  });
+
   describe("Given the response does not contain valid JWKS", () => {
     it("Returns error result", async () => {
       mockSendHttpRequest = jest.fn().mockResolvedValue(
         successResult({
           statusCode: 200,
-          body: JSON.stringify("notJson"),
+          body: JSON.stringify({}),
           headers: {
             "Cache-Control": "max-age=60",
           },

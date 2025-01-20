@@ -110,7 +110,14 @@ export class PublicKeyGetter implements IPublicKeyGetter {
   }
 
   private getJwksFromResponseBody(responseBody: string): Result<IJwks, string> {
-    const jwks = JSON.parse(responseBody);
+    let jwks;
+    try {
+      jwks = JSON.parse(responseBody);
+    } catch {
+      return errorResult(
+        `Response body could not be parsed as JSON. Response body: ${responseBody}`,
+      );
+    }
 
     if (!this.isJwks(jwks)) {
       return errorResult("Response does not match the expected JWKS structure");
