@@ -138,3 +138,15 @@ This schema is generated in the backend-api-push-to-main.yaml worfklow. To gener
 ```bash
 npm run generate-proxy-open-api
 ```
+
+#### JSON Web Keys
+
+The `/.well-known/jwks.json` endpoint serves the JSON Web Keys Set object. This object contains information about the ID Check encryption key. This is used by STS for encrypting the service token sent to the `GET /async/activeSession` endpoint in the Authorization header. The encryption algorithm is `RSA-OAEP-256`, see [STS technical design](https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/3844964353/Strategic+App+App+calls+a+protected+service) for the public key requirements.
+
+The encryption key is created in AWS KMS. The infrastructure code lives in the `./template.yaml`.
+
+The JSON Web Keys Set object is stored in AWS S3. The `/.well-known/jwks.json` endpoint retrieves the object from S3 via an AWS service integration. Note, this integration can occasionally return a 5XX error due to the distributed nature of AWS and consumers should be advised to retry in this scenario.
+
+The JSON Web Keys Set object is created when the stack is deployed for the first time. A Cloudformation custom resource sends a notification to the jwksHandler and this invokes the lambda. The lambda builds the JSON Web Keys Set object and uploads it to S3.
+
+Note: for redeployments of the application, the jwksWebKeys lambda is only invoked when the resource in the template.yaml is updated. By default the lambda is not updated when the lambda handler code is updated. To facilitate automatic updates of the lambda in this scenario, a parameter has been added to the Cloudformation template containing the lambda version arn. This version arn updates when the lambda handler code is changed, causing an invocation of the lambda.

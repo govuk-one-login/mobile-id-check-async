@@ -10,7 +10,7 @@ describe("JWKS Uploader", () => {
   const jwks: Jwks = {
     keys: [
       {
-        alg: "RS256",
+        alg: "RSA-OAEP-256",
         e: "AQAB",
         kid: "0df22121-40cc-41d7-b25c-b4da1a06ac24",
         kty: "RSA",
