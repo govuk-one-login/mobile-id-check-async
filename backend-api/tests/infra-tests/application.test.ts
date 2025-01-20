@@ -32,6 +32,22 @@ describe("Backend application infrastructure", () => {
         mappingBottomLevelKey: "STSBASEURL",
       });
     });
+
+    test("ReadIdBaseUrl assigned ID Check mock values in dev and build and vendor values in staging, integration and production", () => {
+      const expectedEnvironmentVariablesValues = {
+        dev: "https://mob-readid-mock.review-b-async.dev.account.gov.uk/v2",
+        build: "https://mob-readid-mock.review-b-async.build.account.gov.uk/v2",
+        staging: "", // To be updated with new ReadID URL once available
+        integration: "", // To be updated with new ReadID URL once available
+        production: "", // To be updated with new ReadID URL once available
+      };
+
+      const mappingHelper = new Mappings(template);
+      mappingHelper.validateEnvironmentVariablesMapping({
+        environmentFlags: expectedEnvironmentVariablesValues,
+        mappingBottomLevelKey: "ReadIdBaseUrl",
+      });
+    });
   });
 
   describe("Private APIgw", () => {
