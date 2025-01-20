@@ -3,7 +3,7 @@ set -eu
 
 stack_name=${1:-mob-sts-mock}
 
-echo "Running test against ${stack_name}"
+echo "Running tests against ${stack_name}"
 
 rm -rf docker-vars.env
 
