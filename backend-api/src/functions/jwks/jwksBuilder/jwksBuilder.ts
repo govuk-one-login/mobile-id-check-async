@@ -137,6 +137,6 @@ const ENCRYPTION_KEY_TO_JOSE_MAP: EncryptionKeyToJose = {
   ENCRYPT_DECRYPT: {
     USE: "enc",
     KEY_SPEC: "RSA_2048",
-    ALGORITHM: "RS256",
+    ALGORITHM: "RSA-OAEP-256",
   },
 };
