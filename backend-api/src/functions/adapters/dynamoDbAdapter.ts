@@ -128,10 +128,11 @@ export class DynamoDbAdapter implements SessionRegistry {
       updateExpression: updateOperation.getDynamoDbUpdateExpression(),
       conditionExpression: updateOperation.getDynamoDbConditionExpression(),
     };
-    logger.debug(LogMessage.UPDATE_SESSION_ATTEMPT, {
-      data: updateExpressionDataToLog,
-    });
+
     try {
+      logger.debug(LogMessage.UPDATE_SESSION_ATTEMPT, {
+        data: updateExpressionDataToLog,
+      });
       await this.dynamoDbClient.send(
         new UpdateItemCommand({
           TableName: this.tableName,
