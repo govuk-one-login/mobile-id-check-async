@@ -159,7 +159,7 @@ Mappings:
 
   EnvironmentVariables:
     dev:
-      STSBASEURL: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk'
+      STSBASEURL: 'https://backend-api-jl.token.dev.account.gov.uk'
       ReadIdBaseUrl: 'https://api-mob-readid-mock.review-b-async.dev.account.gov.uk/v2'
       ClientRegistrySecretPath: 'dev/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
@@ -1497,7 +1497,8 @@ Resources:
     Properties:
       ServiceToken: !GetAtt JsonWebKeysFunction.Arn
       ServiceTimeout: 30
-      ForceInvocationTicket: DCMAW-11093 #Change this parameter to force an invocation of the JwksWebKeys handler. Updating the lambda code does not trigger an execution of this custom resource.
+      # The below value is not used by the lambda - it is a workaround to make the custom resource trigger the lambda each time the lambda code is updated
+      LambdaVersion: !Ref JsonWebKeysFunction.Version
 
   JsonWebKeysBucketApiRole:
     Type: AWS::IAM::Role
