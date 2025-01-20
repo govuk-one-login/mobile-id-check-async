@@ -66,6 +66,7 @@ describe("Async Biometric Token", () => {
         BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL: "mock_secret_path_dl",
         BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS: "900",
         READID_BASE_URL: "mockReadIdBaseUrl",
+        SESSION_TABLE_NAME: "mockTableName",
       },
       getSecrets: mockGetSecretsSuccess,
       getBiometricToken: mockGetBiometricTokenSuccess,
@@ -110,6 +111,7 @@ describe("Async Biometric Token", () => {
       ["BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL"],
       ["BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS"],
       ["READID_BASE_URL"],
+      ["SESSION_TABLE_NAME"],
     ])("Given %s environment variable is missing", (envVar: string) => {
       beforeEach(async () => {
         delete dependencies.env[envVar];

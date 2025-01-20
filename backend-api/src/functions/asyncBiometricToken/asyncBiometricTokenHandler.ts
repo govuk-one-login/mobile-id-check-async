@@ -78,7 +78,7 @@ export async function lambdaHandlerConstructor(
   const opaqueId = generateOpaqueId();
 
   const sessionRegistry = dependencies.getSessionRegistry(
-    "mock_sessions_table_name",
+    config.SESSION_TABLE_NAME,
   );
   const updateSessionResult = await sessionRegistry.updateSession(
     sessionId,
