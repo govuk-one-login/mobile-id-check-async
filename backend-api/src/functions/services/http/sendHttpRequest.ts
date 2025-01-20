@@ -2,9 +2,7 @@ import { errorResult, Result, successResult } from "../../utils/result";
 
 const DEFAULT_MAX_ATTEMPTS = 3;
 const DEFAULT_DELAY_IN_MILLIS = 100;
-const DEFAULT_RETRYABLE_STATUS_CODES = [
-  408, 429, 500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511,
-];
+const DEFAULT_RETRYABLE_STATUS_CODES = [408, 429, 500, 502, 503, 504];
 
 export const sendHttpRequest: ISendHttpRequest = async (
   httpRequest,
