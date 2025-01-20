@@ -61,8 +61,8 @@ Mappings:
       ApiBurstLimit: 10
       ApiRateLimit: 10
     staging:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
     integration:
       ApiBurstLimit: 0
       ApiRateLimit: 0
@@ -78,8 +78,8 @@ Mappings:
       ApiBurstLimit: 10
       ApiRateLimit: 10
     staging:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
     integration:
       ApiBurstLimit: 0
       ApiRateLimit: 0
@@ -95,8 +95,8 @@ Mappings:
       ApiBurstLimit: 10
       ApiRateLimit: 10
     staging:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
     integration:
       ApiBurstLimit: 0
       ApiRateLimit: 0
@@ -112,7 +112,7 @@ Mappings:
       ReservedConcurrentExecutions: 15
       LogLevel: INFO
     staging:
-      ReservedConcurrentExecutions: 0
+      ReservedConcurrentExecutions: 15
       LogLevel: INFO
     integration:
       ReservedConcurrentExecutions: 0
@@ -160,7 +160,7 @@ Mappings:
   EnvironmentVariables:
     dev:
       STSBASEURL: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk'
-      ReadIdBaseUrl: 'https://api-mob-readid-mock.review-b-async.dev.account.gov.uk'
+      ReadIdBaseUrl: 'https://api-mob-readid-mock.review-b-async.dev.account.gov.uk/v2'
       ClientRegistrySecretPath: 'dev/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
@@ -169,7 +169,7 @@ Mappings:
 
     build:
       STSBASEURL: 'https://mob-sts-mock.review-b-async.build.account.gov.uk'
-      ReadIdBaseUrl: 'https://api-mob-readid-mock.review-b-async.build.account.gov.uk'
+      ReadIdBaseUrl: 'https://api-mob-readid-mock.review-b-async.build.account.gov.uk/v2'
       ClientRegistrySecretPath: 'build/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
