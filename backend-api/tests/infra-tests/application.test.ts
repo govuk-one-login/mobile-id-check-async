@@ -453,7 +453,6 @@ describe("Backend application infrastructure", () => {
           "DT_LOG_COLLECTION_AUTH_TOKEN",
           "DT_TENANT",
           "DT_OPEN_TELEMETRY_ENABLE_INTEGRATION",
-          "AutoPublishAlias",
         ];
         const envVars =
           template.toJSON().Globals.Function.Environment.Variables;
@@ -501,6 +500,12 @@ describe("Backend application infrastructure", () => {
       test("Global memory size is set to 512MB", () => {
         const globalMemorySize = template.toJSON().Globals.Function.MemorySize;
         expect(globalMemorySize).toStrictEqual(512);
+      });
+
+      test("Global autoPublishAlias is set to live", () => {
+        const globalMemorySize =
+          template.toJSON().Globals.Function.AutoPublishAlias;
+        expect(globalMemorySize).toStrictEqual("live");
       });
     });
 
