@@ -1,4 +1,9 @@
-import { emptyFailure, Result, successResult } from "../../utils/result";
+import {
+  emptyFailure,
+  errorResult,
+  Result,
+  successResult,
+} from "../../utils/result";
 import { getBiometricToken } from "./getBiometricToken";
 import { expect } from "@jest/globals";
 import "../../testUtils/matchers";
@@ -9,13 +14,18 @@ describe("getBiometricToken", () => {
   let consoleDebugSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
   let mockSendHttpRequest: ISendHttpRequest;
-  const expectedArguments = {
+  const expectedHttpRequest = {
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       "X-Innovalor-Authorization": "mockSubmitterKey",
     },
     method: "POST",
     url: "https://mockUrl.com/oauth/token?grant_type=client_credentials",
+  };
+  const expectedRetryConfig = {
+    retryableStatusCodes: [
+      429, 500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511,
+    ],
   };
 
   beforeEach(() => {
@@ -25,13 +35,15 @@ describe("getBiometricToken", () => {
 
   describe("On every call", () => {
     beforeEach(async () => {
-      mockSendHttpRequest = jest.fn().mockResolvedValue({
-        statusCode: 200,
-        body: "mockBody",
-        headers: {
-          mockHeaderKey: "mockHeaderValue",
-        },
-      });
+      mockSendHttpRequest = jest.fn().mockResolvedValue(
+        successResult({
+          statusCode: 200,
+          body: "mockBody",
+          headers: {
+            mockHeaderKey: "mockHeaderValue",
+          },
+        }),
+      );
 
       result = await getBiometricToken(
         "https://mockUrl.com",
@@ -48,10 +60,13 @@ describe("getBiometricToken", () => {
     });
   });
 
-  describe("Given an error is caught when requesting token", () => {
+  describe("Given an errorResult is returned when requesting token", () => {
     beforeEach(async () => {
-      mockSendHttpRequest = jest.fn().mockRejectedValue(new Error("mockError"));
-
+      mockSendHttpRequest = jest.fn().mockResolvedValue(
+        errorResult({
+          description: `Unexpected network error - ${new Error("mockError")}`,
+        }),
+      );
       result = await getBiometricToken(
         "https://mockUrl.com",
         "mockSubmitterKey",
@@ -68,20 +83,25 @@ describe("getBiometricToken", () => {
 
     it("Returns an empty failure", () => {
       expect(result).toEqual(emptyFailure());
-      expect(mockSendHttpRequest).toBeCalledWith(expectedArguments);
+      expect(mockSendHttpRequest).toBeCalledWith(
+        expectedHttpRequest,
+        expectedRetryConfig,
+      );
     });
   });
 
   describe("Given the response is invalid", () => {
     describe("Given response body is undefined", () => {
       beforeEach(async () => {
-        mockSendHttpRequest = jest.fn().mockResolvedValue({
-          statusCode: 200,
-          body: undefined,
-          headers: {
-            mockHeaderKey: "mockHeaderValue",
-          },
-        });
+        mockSendHttpRequest = jest.fn().mockResolvedValue(
+          successResult({
+            statusCode: 200,
+            body: undefined,
+            headers: {
+              mockHeaderKey: "mockHeaderValue",
+            },
+          }),
+        );
 
         result = await getBiometricToken(
           "https://mockUrl.com",
@@ -99,19 +119,24 @@ describe("getBiometricToken", () => {
 
       it("Returns an empty failure", () => {
         expect(result).toEqual(emptyFailure());
-        expect(mockSendHttpRequest).toBeCalledWith(expectedArguments);
+        expect(mockSendHttpRequest).toBeCalledWith(
+          expectedHttpRequest,
+          expectedRetryConfig,
+        );
       });
     });
 
     describe("Given response body cannot be parsed", () => {
       beforeEach(async () => {
-        mockSendHttpRequest = jest.fn().mockResolvedValue({
-          statusCode: 200,
-          body: "Invalid JSON",
-          headers: {
-            mockHeaderKey: "mockHeaderValue",
-          },
-        });
+        mockSendHttpRequest = jest.fn().mockResolvedValue(
+          successResult({
+            statusCode: 200,
+            body: "Invalid JSON",
+            headers: {
+              mockHeaderKey: "mockHeaderValue",
+            },
+          }),
+        );
 
         result = await getBiometricToken(
           "https://mockUrl.com",
@@ -129,24 +154,29 @@ describe("getBiometricToken", () => {
 
       it("Returns an empty failure", () => {
         expect(result).toEqual(emptyFailure());
-        expect(mockSendHttpRequest).toBeCalledWith(expectedArguments);
+        expect(mockSendHttpRequest).toBeCalledWith(
+          expectedHttpRequest,
+          expectedRetryConfig,
+        );
       });
     });
   });
 
   describe("Given valid request is made", () => {
     beforeEach(async () => {
-      mockSendHttpRequest = jest.fn().mockResolvedValue({
-        statusCode: 200,
-        body: JSON.stringify({
-          access_token: "mockBiometricToken",
-          expires_in: 3600,
-          token_type: "Bearer",
+      mockSendHttpRequest = jest.fn().mockResolvedValue(
+        successResult({
+          statusCode: 200,
+          body: JSON.stringify({
+            access_token: "mockBiometricToken",
+            expires_in: 3600,
+            token_type: "Bearer",
+          }),
+          headers: {
+            mockHeaderKey: "mockHeaderValue",
+          },
         }),
-        headers: {
-          mockHeaderKey: "mockHeaderValue",
-        },
-      });
+      );
 
       result = await getBiometricToken(
         "https://mockUrl.com",
@@ -164,7 +194,10 @@ describe("getBiometricToken", () => {
 
     it("Returns successResult containing biometric token", () => {
       expect(result).toEqual(successResult("mockBiometricToken"));
-      expect(mockSendHttpRequest).toBeCalledWith(expectedArguments);
+      expect(mockSendHttpRequest).toBeCalledWith(
+        expectedHttpRequest,
+        expectedRetryConfig,
+      );
     });
   });
 });

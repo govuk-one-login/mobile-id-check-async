@@ -6,6 +6,7 @@ import {
   successResult,
 } from "../../utils/result";
 import {
+  HttpError,
   ISendHttpRequest,
   sendHttpRequest,
 } from "../../services/http/sendHttpRequest";
@@ -48,15 +49,14 @@ export class PublicKeyGetter implements IPublicKeyGetter {
   ): Promise<Result<Uint8Array | KeyLike>> {
     const jwksUri = stsBaseUrl + "/.well-known/jwks.json";
 
-    let jwk;
-    try {
-      jwk = await this.getJwk(jwksUri, kid);
-    } catch (error) {
+    const getJwkResult = await this.getJwk(jwksUri, kid);
+    if (getJwkResult.isError) {
       return errorResult({
-        errorMessage: `Error getting JWK - ${error}`,
+        errorMessage: `Error getting JWK - ${getJwkResult.value}`,
         errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
+    const jwk = getJwkResult.value;
 
     let publicKey;
     try {
@@ -71,8 +71,11 @@ export class PublicKeyGetter implements IPublicKeyGetter {
     return successResult(publicKey);
   }
 
-  private async getJwk(jwksEndpoint: string, kid: string): Promise<IJwk> {
-    const response = await this.sendHttpRequest(
+  private async getJwk(
+    jwksEndpoint: string,
+    kid: string,
+  ): Promise<Result<IJwk, GetJwkError>> {
+    const getJwtResult = await this.sendHttpRequest(
       {
         url: jwksEndpoint,
         method: "GET",
@@ -80,30 +83,49 @@ export class PublicKeyGetter implements IPublicKeyGetter {
       { maxAttempts: 3, delayInMillis: 100 },
     );
 
-    const { body } = response;
-    if (!body) {
-      throw new Error("Empty response body");
+    if (getJwtResult.isError) {
+      return errorResult(getJwtResult.value);
     }
 
-    const jwks = await this.getJwksFromResponseBody(body);
+    const getJwtResponse = getJwtResult.value;
+
+    const { body } = getJwtResponse;
+    if (!body) {
+      return errorResult("Empty response body");
+    }
+
+    const getJwksResult = this.getJwksFromResponseBody(body);
+    if (getJwksResult.isError) {
+      return getJwksResult;
+    }
+    const jwks = getJwksResult.value;
 
     const jwk = jwks.keys.find((key: IJwk) => key.kid && key.kid === kid);
 
     if (!jwk) {
-      throw new Error("JWKS does not contain key matching provided key ID");
+      return errorResult("JWKS does not contain key matching provided key ID");
     }
 
-    return jwk;
+    return successResult(jwk);
   }
 
-  private async getJwksFromResponseBody(responseBody: string): Promise<IJwks> {
-    const jwks = JSON.parse(responseBody);
-
-    if (!this.isJwks(jwks)) {
-      throw new Error("Response does not match the expected JWKS structure");
+  private getJwksFromResponseBody(responseBody: string): Result<IJwks, string> {
+    let jwks;
+    try {
+      jwks = JSON.parse(responseBody);
+    } catch {
+      return errorResult(
+        `Response body could not be parsed as JSON. Response body: ${responseBody}`,
+      );
     }
 
-    return jwks;
+    if (!this.isJwks(jwks)) {
+      return errorResult(
+        `Response body does not match the expected JWKS structure. Response body: ${responseBody}`,
+      );
+    }
+
+    return successResult(jwks);
   }
 
   private readonly isJwks = (data: unknown): data is IJwks => {
@@ -116,3 +138,5 @@ export class PublicKeyGetter implements IPublicKeyGetter {
     );
   };
 }
+
+export type GetJwkError = string | HttpError;

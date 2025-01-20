@@ -1,8 +1,10 @@
 import { logger } from "../../common/logging/logger";
 import { LogMessage } from "../../common/logging/LogMessage";
 import {
+  HttpError,
   ISendHttpRequest,
   sendHttpRequest as sendHttpRequestDefault,
+  SuccessfulHttpResponse,
 } from "../../services/http/sendHttpRequest";
 import { emptyFailure, Result, successResult } from "../../utils/result";
 
@@ -32,37 +34,44 @@ export const getBiometricToken: GetBiometricToken = async (
       "X-Innovalor-Authorization": "Secret value and cannot be logged",
     },
   };
+  const retryConfig = {
+    retryableStatusCodes: [
+      429, 500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511,
+    ],
+  };
 
-  let response;
-  try {
-    logger.debug(
-      LogMessage.BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_ATTEMPT,
-      {
-        data: {
-          httpRequest: httpRequestLogData,
-        },
+  logger.debug(
+    LogMessage.BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_ATTEMPT,
+    {
+      data: {
+        httpRequest: httpRequestLogData,
       },
-    );
-    response = await sendHttpRequest(httpRequest);
-  } catch (error) {
+    },
+  );
+  const getBiometricTokenResult: Result<SuccessfulHttpResponse, HttpError> =
+    await sendHttpRequest(httpRequest, retryConfig);
+  if (getBiometricTokenResult.isError) {
     logger.error(
       LogMessage.BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_FAILURE,
       {
         data: {
-          error,
+          error: getBiometricTokenResult.value,
           httpRequest: httpRequestLogData,
         },
       },
     );
+
     return emptyFailure();
   }
 
-  if (response?.body == null) {
+  const getBiometricTokenResponse = getBiometricTokenResult.value;
+
+  if (getBiometricTokenResponse?.body == null) {
     logger.error(
       LogMessage.BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_FAILURE,
       {
         data: {
-          response,
+          getBiometricTokenResponse,
           httpRequest: httpRequestLogData,
         },
       },
@@ -72,7 +81,7 @@ export const getBiometricToken: GetBiometricToken = async (
 
   let parsedBody;
   try {
-    parsedBody = JSON.parse(response.body);
+    parsedBody = JSON.parse(getBiometricTokenResponse.body);
   } catch (error) {
     logger.error(
       LogMessage.BIOMETRIC_TOKEN_GET_BIOMETRIC_TOKEN_FROM_READID_FAILURE,
