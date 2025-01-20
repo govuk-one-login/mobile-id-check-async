@@ -453,6 +453,7 @@ describe("Backend application infrastructure", () => {
           "DT_LOG_COLLECTION_AUTH_TOKEN",
           "DT_TENANT",
           "DT_OPEN_TELEMETRY_ENABLE_INTEGRATION",
+          "AutoPublishAlias",
         ];
         const envVars =
           template.toJSON().Globals.Function.Environment.Variables;
