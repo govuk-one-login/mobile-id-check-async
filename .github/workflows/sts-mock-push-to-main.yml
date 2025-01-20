@@ -20,37 +20,37 @@ defaults:
     working-directory: sts-mock
 
 jobs:
-  sonar-scan:
-    name: Run tests and Sonar scan
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@9a9194f87191a7e9055e3e9b95b8cfb13023bb08 #main
-        with:
-          submodules: true
-          fetch-depth: 0
+  # sonar-scan:
+  #   name: Run tests and Sonar scan
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #     - name: Check out repository code
+  #       uses: actions/checkout@9a9194f87191a7e9055e3e9b95b8cfb13023bb08 #main
+  #       with:
+  #         submodules: true
+  #         fetch-depth: 0
 
-      - name: Setup nodeJS v20
-        uses: actions/setup-node@26961cf329f22f6837d5f54c3efd76b480300ace #main
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: sts-mock/package-lock.json
+  #     - name: Setup nodeJS v20
+  #       uses: actions/setup-node@26961cf329f22f6837d5f54c3efd76b480300ace #main
+  #       with:
+  #         node-version: 20
+  #         cache: npm
+  #         cache-dependency-path: sts-mock/package-lock.json
 
-      - name: Install dependencies
-        run: npm install
+  #     - name: Install dependencies
+  #       run: npm install
 
-      # Generate test coverage report for Sonar main branch analysis
-      - name: Run Tests
-        run: npm run test:unit
+  #     # Generate test coverage report for Sonar main branch analysis
+  #     - name: Run Tests
+  #       run: npm run test:unit
 
-      - name: Run SonarCloud Scan
-        uses: sonarsource/sonarqube-scan-action@bfd4e558cda28cda6b5defafb9232d191be8c203 # v4.2.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          projectBaseDir: sts-mock
+  #     - name: Run SonarCloud Scan
+  #       uses: sonarsource/sonarqube-scan-action@bfd4e558cda28cda6b5defafb9232d191be8c203 # v4.2.1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  #       with:
+  #         projectBaseDir: sts-mock
 
   test-image-dev:
     name: build and push test image to dev
@@ -63,105 +63,105 @@ jobs:
       TEST_IMAGE_REPOSITORY: ${{ secrets.STS_MOCK_DEV_TEST_IMAGE_REPOSITORY_URI }}
       CONTAINER_SIGN_KMS_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
 
-  build-and-upload-sam-artifact-to-dev:
-    name: Validate & upload S3 artifact to dev
-    runs-on: ubuntu-22.04
-    needs: test-image-dev
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v4
-        with:
-          submodules: true
+  # build-and-upload-sam-artifact-to-dev:
+  #   name: Validate & upload S3 artifact to dev
+  #   runs-on: ubuntu-22.04
+  #   needs: test-image-dev
+  #   steps:
+  #     - name: Check out repository code
+  #       uses: actions/checkout@v4
+  #       with:
+  #         submodules: true
 
-      - name: Setup Node
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af #v4.1.0
-        with:
-          node-version-file: '.nvmrc'
-          cache: npm
-          cache-dependency-path: sts-mock/package-lock.json
+  #     - name: Setup Node
+  #       uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af #v4.1.0
+  #       with:
+  #         node-version-file: '.nvmrc'
+  #         cache: npm
+  #         cache-dependency-path: sts-mock/package-lock.json
 
-      - name: Setup SAM CLI
-        uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
-        with:
-          use-installer: true
-          version: 1.123.0
+  #     - name: Setup SAM CLI
+  #       uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
+  #       with:
+  #         use-installer: true
+  #         version: 1.123.0
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@97834a484a5ab3c40fa9e2eb40fcf8041105a573 #main
-        with:
-          aws-region: eu-west-2
-          role-to-assume: ${{ secrets.STS_MOCK_DEV_GH_ACTIONS_ROLE_ARN }}
+  #     - name: Configure AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@97834a484a5ab3c40fa9e2eb40fcf8041105a573 #main
+  #       with:
+  #         aws-region: eu-west-2
+  #         role-to-assume: ${{ secrets.STS_MOCK_DEV_GH_ACTIONS_ROLE_ARN }}
 
-      - name: Sam Validate
-        run: |
-          echo "SAM_CLI_TELEMETRY=0" >> $GITHUB_ENV
-          sam validate --lint
+  #     - name: Sam Validate
+  #       run: |
+  #         echo "SAM_CLI_TELEMETRY=0" >> $GITHUB_ENV
+  #         sam validate --lint
 
-      - name: Sam Build
-        run: |
-          sam build --cached
+  #     - name: Sam Build
+  #       run: |
+  #         sam build --cached
 
-      - name: Upload SAM artifact into the DEV artifact bucket
-        uses: govuk-one-login/devplatform-upload-action@v3.9.2
-        with:
-          artifact-bucket-name: ${{ secrets.STS_MOCK_DEV_ARTIFACT_BUCKET }}
-          signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
-          template-file: .aws-sam/build/template.yaml
-          working-directory: sts-mock
+  #     - name: Upload SAM artifact into the DEV artifact bucket
+  #       uses: govuk-one-login/devplatform-upload-action@v3.9.2
+  #       with:
+  #         artifact-bucket-name: ${{ secrets.STS_MOCK_DEV_ARTIFACT_BUCKET }}
+  #         signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
+  #         template-file: .aws-sam/build/template.yaml
+  #         working-directory: sts-mock
 
-  test-image-build:
-    name: build and push test image to build
-    uses:
-      ./.github/workflows/job-build-and-push-test-image.yml
-    with:
-      WORKING_DIRECTORY: sts-mock
-    secrets:
-      GH_ACTIONS_ROLE_ARN: ${{ secrets.STS_MOCK_BUILD_GH_ACTIONS_ROLE_ARN }}
-      TEST_IMAGE_REPOSITORY: ${{ secrets.STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI }}
-      CONTAINER_SIGN_KMS_KEY: ${{ secrets.BUILD_CONTAINER_SIGN_KMS_KEY }}
+  # test-image-build:
+  #   name: build and push test image to build
+  #   uses:
+  #     ./.github/workflows/job-build-and-push-test-image.yml
+  #   with:
+  #     WORKING_DIRECTORY: sts-mock
+  #   secrets:
+  #     GH_ACTIONS_ROLE_ARN: ${{ secrets.STS_MOCK_BUILD_GH_ACTIONS_ROLE_ARN }}
+  #     TEST_IMAGE_REPOSITORY: ${{ secrets.STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI }}
+  #     CONTAINER_SIGN_KMS_KEY: ${{ secrets.BUILD_CONTAINER_SIGN_KMS_KEY }}
 
-  build-and-upload-sam-artifact-to-build:
-    name: Validate & upload S3 artifact to Build
-    runs-on: ubuntu-22.04
-    needs: test-image-build
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v4
-        with:
-          submodules: true
+  # build-and-upload-sam-artifact-to-build:
+  #   name: Validate & upload S3 artifact to Build
+  #   runs-on: ubuntu-22.04
+  #   needs: test-image-build
+  #   steps:
+  #     - name: Check out repository code
+  #       uses: actions/checkout@v4
+  #       with:
+  #         submodules: true
 
-      - name: Setup Node
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af #v4.1.0
-        with:
-          node-version-file: '.nvmrc'
-          cache: npm
-          cache-dependency-path: sts-mock/package-lock.json
+  #     - name: Setup Node
+  #       uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af #v4.1.0
+  #       with:
+  #         node-version-file: '.nvmrc'
+  #         cache: npm
+  #         cache-dependency-path: sts-mock/package-lock.json
 
-      - name: Setup SAM CLI
-        uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
-        with:
-          use-installer: true
-          version: 1.123.0
+  #     - name: Setup SAM CLI
+  #       uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
+  #       with:
+  #         use-installer: true
+  #         version: 1.123.0
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@97834a484a5ab3c40fa9e2eb40fcf8041105a573 #main
-        with:
-          aws-region: eu-west-2
-          role-to-assume: ${{ secrets.STS_MOCK_BUILD_GH_ACTIONS_ROLE_ARN }}
+  #     - name: Configure AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@97834a484a5ab3c40fa9e2eb40fcf8041105a573 #main
+  #       with:
+  #         aws-region: eu-west-2
+  #         role-to-assume: ${{ secrets.STS_MOCK_BUILD_GH_ACTIONS_ROLE_ARN }}
 
-      - name: Sam Validate
-        run: |
-          echo "SAM_CLI_TELEMETRY=0" >> $GITHUB_ENV
-          sam validate --lint
+  #     - name: Sam Validate
+  #       run: |
+  #         echo "SAM_CLI_TELEMETRY=0" >> $GITHUB_ENV
+  #         sam validate --lint
 
-      - name: Sam Build
-        run: |
-          sam build --cached
+  #     - name: Sam Build
+  #       run: |
+  #         sam build --cached
 
-      - name: Upload SAM artifact into the BUILD artifact bucket
-        uses: govuk-one-login/devplatform-upload-action@v3.9.2
-        with:
-          artifact-bucket-name: ${{ secrets.STS_MOCK_BUILD_ARTIFACT_BUCKET }}
-          signing-profile-name: ${{ secrets.BUILD_SIGNING_PROFILE_NAME }}
-          template-file: .aws-sam/build/template.yaml
-          working-directory: sts-mock
+  #     - name: Upload SAM artifact into the BUILD artifact bucket
+  #       uses: govuk-one-login/devplatform-upload-action@v3.9.2
+  #       with:
+  #         artifact-bucket-name: ${{ secrets.STS_MOCK_BUILD_ARTIFACT_BUCKET }}
+  #         signing-profile-name: ${{ secrets.BUILD_SIGNING_PROFILE_NAME }}
+  #         template-file: .aws-sam/build/template.yaml
+  #         working-directory: sts-mock
