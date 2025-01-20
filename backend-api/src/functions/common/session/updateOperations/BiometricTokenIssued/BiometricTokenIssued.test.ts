@@ -23,7 +23,9 @@ describe("BiometricTokenIssued", () => {
   describe("When I request the DynamoDB ConditionExpression", () => {
     it("Returns the appropriate ConditionExpression string", () => {
       const result = biometricTokenIssued.getDynamoDbConditionExpression();
-      expect(result).toEqual("sessionState in (:authSessionCreated)");
+      expect(result).toEqual(
+        "attribute_exists(sessionId) AND sessionState in (:authSessionCreated)",
+      );
     });
   });
 

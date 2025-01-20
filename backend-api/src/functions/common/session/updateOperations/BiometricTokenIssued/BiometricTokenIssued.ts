@@ -13,7 +13,7 @@ export class BiometricTokenIssued implements UpdateSessionOperation {
   }
 
   getDynamoDbConditionExpression(): string {
-    return `sessionState in (:authSessionCreated)`;
+    return `attribute_exists(sessionId) AND sessionState in (:authSessionCreated)`;
   }
 
   getDynamoDbExpressionAttributeValues() {
