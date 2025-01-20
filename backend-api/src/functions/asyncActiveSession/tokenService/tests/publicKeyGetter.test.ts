@@ -145,7 +145,7 @@ describe("Public Key Getter", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage:
-          "Error getting JWK - Response does not match the expected JWKS structure",
+          "Error getting JWK - Response body does not match the expected JWKS structure. Response body: {}",
         errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });

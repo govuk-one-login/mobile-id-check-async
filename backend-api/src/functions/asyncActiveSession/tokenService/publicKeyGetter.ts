@@ -120,7 +120,9 @@ export class PublicKeyGetter implements IPublicKeyGetter {
     }
 
     if (!this.isJwks(jwks)) {
-      return errorResult("Response does not match the expected JWKS structure");
+      return errorResult(
+        `Response body does not match the expected JWKS structure. Response body: ${responseBody}`,
+      );
     }
 
     return successResult(jwks);
