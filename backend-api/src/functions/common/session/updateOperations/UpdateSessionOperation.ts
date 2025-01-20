@@ -1,9 +1,7 @@
-import { SessionState } from "../session";
-
-type SessionFieldValue = string | number;
+import { AttributeValue } from "@aws-sdk/client-dynamodb";
 
 export interface UpdateSessionOperation {
-  readonly targetState: SessionState;
-  readonly eligibleStartingStates: SessionState[];
-  getFieldUpdates(): Record<string, SessionFieldValue>;
+  getDynamoDbUpdateExpression(): string;
+  getDynamoDbConditionExpression(): string | undefined;
+  getDynamoDbExpressionAttributeValues(): Record<string, AttributeValue>;
 }

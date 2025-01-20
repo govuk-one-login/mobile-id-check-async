@@ -8,14 +8,20 @@ export class BiometricTokenIssued implements UpdateSessionOperation {
     private readonly opaqueId: string,
   ) {}
 
-  readonly targetState = SessionState.BIOMETRIC_TOKEN_ISSUED;
+  getDynamoDbUpdateExpression() {
+    return "set documentType = :documentType, opaqueId = :opaqueId, sessionState = :biometricTokenIssued";
+  }
 
-  readonly eligibleStartingStates = [SessionState.AUTH_SESSION_CREATED];
+  getDynamoDbConditionExpression(): string {
+    return `sessionState in (:authSessionCreated)`;
+  }
 
-  getFieldUpdates() {
+  getDynamoDbExpressionAttributeValues() {
     return {
-      documentType: this.documentType,
-      opaqueId: this.opaqueId,
+      ":documentType": { S: this.documentType },
+      ":opaqueId": { S: this.opaqueId },
+      ":biometricTokenIssued": { S: SessionState.BIOMETRIC_TOKEN_ISSUED },
+      ":authSessionCreated": { S: SessionState.AUTH_SESSION_CREATED },
     };
   }
 }
