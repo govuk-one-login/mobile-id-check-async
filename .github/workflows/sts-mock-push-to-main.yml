@@ -55,7 +55,7 @@ jobs:
   test-image-dev:
     name: build and push test image to dev
     uses:
-      ./.github/workflows/shared-build-and-push-test-image.yml
+      ./.github/workflows/job-build-and-push-test-image.yml
     with:
       WORKING_DIRECTORY: sts-mock
     secrets:
@@ -112,7 +112,7 @@ jobs:
   test-image-build:
     name: build and push test image to build
     uses:
-      ./.github/workflows/shared-build-and-push-test-image.yml
+      ./.github/workflows/job-build-and-push-test-image.yml
     with:
       WORKING_DIRECTORY: sts-mock
     secrets:
