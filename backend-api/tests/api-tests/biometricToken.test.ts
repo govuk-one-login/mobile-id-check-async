@@ -28,7 +28,7 @@ describe("POST /async/biometricToken", () => {
   });
 
   describe("Given there is a valid request", () => {
-    it("Returns an error and 501 status code", async () => {
+    it("Returns a 200 response with biometric access token and opaque ID", async () => {
       const sessionId = await getValidSessionId();
       if (!sessionId)
         throw new Error(
@@ -45,8 +45,11 @@ describe("POST /async/biometricToken", () => {
         requestBody,
       );
 
-      expect(response.status).toBe(501);
-      expect(response.data).toStrictEqual({ error: "Not Implemented" });
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual({
+        access_token: expect.any(String),
+        opaque_id: expect.any(String),
+      });
       expect(response.headers).toEqual(
         expect.objectContaining(expectedSecurityHeaders),
       );
