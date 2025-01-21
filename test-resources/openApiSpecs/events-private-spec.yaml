@@ -163,9 +163,16 @@ paths:
                 #else
                   {
                     "events": [
-                      #foreach($event in $inputRoot.Items) {
-                        "eventBody": "$event.eventBody.S"
-                      }#if($foreach.hasNext), #end
+                      #foreach($event in $inputRoot.Items)
+                        #set($eventBody = $util.parseJson($event.eventBody.S))
+                        #set($eventName = $eventBody.event_name)
+                        #set($sessionId = $eventBody.user.session_id)
+                        #set($timestamp = $eventBody.timestamp)
+                        {
+                          "eventName": "$eventName"
+                          "sessionId": "$sessionId"
+                          "timestamp": "$timestamp"
+                        }#if($foreach.hasNext), #end
                       #end
                     ]
                   }
