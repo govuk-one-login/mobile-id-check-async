@@ -162,8 +162,8 @@ describe("Backend application infrastructure", () => {
         "high-threshold-async-token-4xx-api-gw": false,
         "high-threshold-async-credential-5xx-api-gw": false,
         "high-threshold-async-credential-4xx-api-gw": false,
-        "high-threshold-async-biometric-token-4xx-api-gw": false,
         "high-threshold-async-biometric-token-5xx-api-gw": false,
+        "high-threshold-async-biometric-token-4xx-api-gw": false,
       };
 
       const alarms = template.findResources("AWS::CloudWatch::Alarm");
