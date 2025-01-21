@@ -1,5 +1,6 @@
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 import { expectedSecurityHeaders, mockSessionId } from "./utils/apiTestData";
+import { getValidSessionId } from "./utils/apiTestHelpers";
 
 describe("POST /async/biometricToken", () => {
   describe("Given request body is invalid", () => {
@@ -28,8 +29,14 @@ describe("POST /async/biometricToken", () => {
 
   describe("Given there is a valid request", () => {
     it("Returns an error and 501 status code", async () => {
+      const sessionId = await getValidSessionId();
+      if (!sessionId)
+        throw new Error(
+          "Failed to get valid session ID to call biometricToken endpoint",
+        );
+
       const requestBody = {
-        sessionId: mockSessionId,
+        sessionId,
         documentType: "NFC_PASSPORT",
       };
 
@@ -43,6 +50,6 @@ describe("POST /async/biometricToken", () => {
       expect(response.headers).toEqual(
         expect.objectContaining(expectedSecurityHeaders),
       );
-    });
+    }, 15000);
   });
 });
