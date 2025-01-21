@@ -5,7 +5,7 @@ import { PRIVATE_API_INSTANCE, PROXY_API_INSTANCE } from "./utils/apiInstance";
 import {
   ClientDetails,
   getFirstRegisteredClient,
-} from "./utils/getRegisteredClient";
+} from "./utils/apiTestHelpers";
 
 const getApisToTest = (): {
   apiName: string;
