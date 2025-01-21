@@ -1,5 +1,5 @@
 import { expect } from "@jest/globals";
-import "../testUtils/matchers";
+import "../../../tests/testUtils/matchers";
 import "dotenv/config";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
 import { buildLambdaContext } from "../testUtils/mockContext";
@@ -323,11 +323,14 @@ describe("Async Biometric Token", () => {
       });
     });
 
-    it("Returns 501 Not Implemented response", async () => {
+    it("Returns 200 response with biometric access token and opaque ID", async () => {
       expect(result).toStrictEqual({
         headers: expectedSecurityHeaders,
-        statusCode: 501,
-        body: JSON.stringify({ error: "Not Implemented" }),
+        statusCode: 200,
+        body: JSON.stringify({
+          accessToken: "mockBiometricToken",
+          opaqueId: "mock_opaque_id",
+        }),
       });
     });
   });
