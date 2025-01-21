@@ -122,17 +122,6 @@ paths:
                 #set($eventName = $input.params('eventName'))
                 {
                   "TableName": "${tableName}",
-                  "ExpressionAttributeNames": {
-                    "#pk": {
-                      "S": "pk"
-                    },
-                    "#sk": {
-                      "S": "sk"
-                    },
-                    "#eb": {
-                      "S": "eventBody"
-                    }
-                  },
                   "ExpressionAttributeValues": {
                     ":pk": {
                       "S": "SESSION#$session"
@@ -141,8 +130,13 @@ paths:
                       "S": "TXMA#EVENT_NAME#$eventName"
                     }
                   },
-                  "KeyConditionExpression": "pk = :pk AND begins_with(sk, :sk)",
-                  "ProjectionExpression": "eventBody"
+                  "ExpressionAttributeNames": {
+                    "#pk": "pk",
+                    "#sk": "sk",
+                    "#eb": "eventBody"
+                  },
+                  "KeyConditionExpression": "#pk = :pk AND begins_with(#sk, :sk)",
+                  "ProjectionExpression": "#eb"
                 }
               - tableName:
                   Ref: EventsTable
@@ -170,9 +164,7 @@ paths:
                   {
                     "events": [
                       #foreach($event in $inputRoot.Items) {
-                        {
-                          "eventBody": "$event.eventBody.S"
-                        }
+                        "eventBody": "$event.eventBody.S"
                       }#if($foreach.hasNext), #end
                       #end
                     ]
