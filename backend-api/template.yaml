@@ -2296,6 +2296,69 @@ Resources:
           ReturnData: false
           Expression: (errorSum4XX/invocations) * 100
 
+  AsyncBiometricToken5XXLowThresholdAlarm:
+    Condition: DeployAlarms
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmDescription: !Sub
+        - "1% or more of requests are failing on the /async/biometricToken endpoint with a 5XX error. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+      AlarmName: !Sub "${AWS::StackName}-low-threshold-async-biometric-token-5xx-api-gw"
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      TreatMissingData: notBreaching
+      Threshold: 1
+      Metrics:
+        - Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+          Expression: IF((invocations>=4) && (errorSum5XX>=2),errorPercentage5XX,0)
+        - Id: invocations
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: Count
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-private-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/biometricToken
+            Period: 60
+            Stat: Sum
+        - Id: errorSum5XX
+          Label: "Number of 5XX errors"
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: 5XXError
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-private-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/biometricToken
+            Period: 60
+            Stat: Sum
+        - Id: errorPercentage5XX
+          Label: "Number of 5XX errors returned as a percentage"
+          ReturnData: false
+          Expression: (errorSum5XX/invocations) * 100
+
 Outputs:
   SessionsApiUrl:
     Description: Sessions API Gateway base URL
