@@ -1,6 +1,6 @@
 import { expect } from "@jest/globals";
 import "dotenv/config";
-import "../../testUtils/matchers";
+import "../../../../tests/testUtils/matchers";
 import { DynamoDbAdapter } from "../dynamoDbAdapter";
 import { BiometricTokenIssued } from "../../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 import {

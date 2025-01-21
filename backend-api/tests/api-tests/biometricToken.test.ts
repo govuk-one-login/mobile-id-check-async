@@ -1,3 +1,5 @@
+import { expect } from "@jest/globals";
+import "../../tests/testUtils/matchers";
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 import { expectedSecurityHeaders, mockSessionId } from "./utils/apiTestData";
 import { getValidSessionId } from "./utils/apiTestHelpers";
@@ -28,7 +30,7 @@ describe("POST /async/biometricToken", () => {
   });
 
   describe("Given there is a valid request", () => {
-    it("Returns an error and 501 status code", async () => {
+    it("Returns a 200 response with biometric access token and opaque ID", async () => {
       const sessionId = await getValidSessionId();
       if (!sessionId)
         throw new Error(
@@ -45,8 +47,11 @@ describe("POST /async/biometricToken", () => {
         requestBody,
       );
 
-      expect(response.status).toBe(501);
-      expect(response.data).toStrictEqual({ error: "Not Implemented" });
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual({
+        accessToken: expect.any(String),
+        opaqueId: expect.toBeValidUuid(),
+      });
       expect(response.headers).toEqual(
         expect.objectContaining(expectedSecurityHeaders),
       );
