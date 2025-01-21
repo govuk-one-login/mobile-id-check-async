@@ -90,8 +90,8 @@ export async function lambdaHandlerConstructor(
 
   logger.info(LogMessage.BIOMETRIC_TOKEN_COMPLETED);
   return okResponse({
-    access_token: biometricTokenResult.value,
-    opaque_id: opaqueId,
+    accessToken: biometricTokenResult.value,
+    opaqueId,
   });
 }
 

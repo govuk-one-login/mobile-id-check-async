@@ -328,8 +328,8 @@ describe("Async Biometric Token", () => {
         headers: expectedSecurityHeaders,
         statusCode: 200,
         body: JSON.stringify({
-          access_token: "mockBiometricToken",
-          opaque_id: "mock_opaque_id",
+          accessToken: "mockBiometricToken",
+          opaqueId: "mock_opaque_id",
         }),
       });
     });

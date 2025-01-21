@@ -47,8 +47,8 @@ describe("POST /async/biometricToken", () => {
 
       expect(response.status).toBe(200);
       expect(response.data).toStrictEqual({
-        access_token: expect.any(String),
-        opaque_id: expect.any(String),
+        accessToken: expect.any(String),
+        opaqueId: expect.any(String),
       });
       expect(response.headers).toEqual(
         expect.objectContaining(expectedSecurityHeaders),
