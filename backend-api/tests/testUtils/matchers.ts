@@ -1,9 +1,9 @@
 import { expect } from "@jest/globals";
 
-const toHaveBeenCalledWithLogFields = function toHaveBeenCalledWithLogFields(
+const toHaveBeenCalledWithLogFields = (
   consoleSpy: jest.SpyInstance,
   logFields: Record<string, unknown>,
-) {
+) => {
   const messages = consoleSpy.mock.calls.map((args) => args[0]);
   const pass = messages.some((message) => {
     const messageAsObject = JSON.parse(message);
@@ -36,7 +36,7 @@ function deepEquals(subject: unknown, target: unknown): boolean {
   return JSON.stringify(subject) === JSON.stringify(target);
 }
 
-const toBeValidUuid = function toBeValidUuid(candidate: unknown) {
+const toBeValidUuid = (candidate: unknown) => {
   const pass = isValidUuid(candidate);
   return {
     pass,
