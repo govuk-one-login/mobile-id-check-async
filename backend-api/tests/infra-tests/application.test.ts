@@ -163,6 +163,7 @@ describe("Backend application infrastructure", () => {
         "high-threshold-async-credential-5xx-api-gw": false,
         "high-threshold-async-credential-4xx-api-gw": false,
         "high-threshold-async-biometric-token-4xx-api-gw": false,
+        "high-threshold-async-biometric-token-5xx-api-gw": false,
       };
 
       const alarms = template.findResources("AWS::CloudWatch::Alarm");
@@ -211,6 +212,7 @@ describe("Backend application infrastructure", () => {
         ["low-threshold-async-credential-4xx-api-gw"],
         ["high-threshold-async-biometric-token-4xx-api-gw"],
         ["low-threshold-async-biometric-token-4xx-api-gw"],
+        ["high-threshold-async-biometric-token-5xx-api-gw"],
         ["low-threshold-async-biometric-token-5xx-api-gw"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
