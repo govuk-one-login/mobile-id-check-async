@@ -126,7 +126,7 @@ paths:
                     ":pk": {
                       "S": "SESSION#$session"
                     },
-                    ":sk": {
+                    ":skPrefix": {
                       "S": "TXMA#EVENT_NAME#$eventName"
                     }
                   },
@@ -135,7 +135,7 @@ paths:
                     "#sk": "sk",
                     "#eb": "eventBody"
                   },
-                  "KeyConditionExpression": "#pk = :pk AND begins_with(#sk, :sk)",
+                  "KeyConditionExpression": "#pk = :pk AND begins_with(#sk, :skPrefix)",
                   "ProjectionExpression": "#eb"
                 }
               - tableName:
