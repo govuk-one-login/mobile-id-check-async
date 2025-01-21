@@ -6,7 +6,7 @@ import {
 } from "../../utils/result";
 import { getBiometricToken } from "./getBiometricToken";
 import { expect } from "@jest/globals";
-import "../../testUtils/matchers";
+import "../../../../tests/testUtils/matchers";
 import { ISendHttpRequest } from "../../services/http/sendHttpRequest";
 
 describe("getBiometricToken", () => {

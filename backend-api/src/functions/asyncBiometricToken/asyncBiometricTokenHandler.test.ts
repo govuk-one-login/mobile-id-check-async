@@ -1,5 +1,5 @@
 import { expect } from "@jest/globals";
-import "../testUtils/matchers";
+import "../../../tests/testUtils/matchers";
 import "dotenv/config";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
 import { buildLambdaContext } from "../testUtils/mockContext";

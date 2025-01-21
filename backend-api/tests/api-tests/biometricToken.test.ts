@@ -1,3 +1,5 @@
+import { expect } from "@jest/globals";
+import "../../tests/testUtils/matchers";
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 import { expectedSecurityHeaders, mockSessionId } from "./utils/apiTestData";
 import { getValidSessionId } from "./utils/apiTestHelpers";
@@ -48,7 +50,7 @@ describe("POST /async/biometricToken", () => {
       expect(response.status).toBe(200);
       expect(response.data).toStrictEqual({
         accessToken: expect.any(String),
-        opaqueId: expect.any(String),
+        opaqueId: expect.toBeValidUuid(),
       });
       expect(response.headers).toEqual(
         expect.objectContaining(expectedSecurityHeaders),
