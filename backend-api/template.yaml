@@ -2203,7 +2203,7 @@ Resources:
                 - Name: Method
                   Value: POST
                 - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
+                  Value: !Sub ${AWS::StackName}-sessions-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
@@ -2221,7 +2221,7 @@ Resources:
                 - Name: Method
                   Value: POST
                 - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
+                  Value: !Sub ${AWS::StackName}-sessions-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
@@ -2266,7 +2266,7 @@ Resources:
                 - Name: Method
                   Value: POST
                 - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
+                  Value: !Sub ${AWS::StackName}-sessions-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
@@ -2284,7 +2284,7 @@ Resources:
                 - Name: Method
                   Value: POST
                 - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
+                  Value: !Sub ${AWS::StackName}-sessions-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
@@ -2329,7 +2329,7 @@ Resources:
                 - Name: Method
                   Value: POST
                 - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
+                  Value: !Sub ${AWS::StackName}-sessions-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
@@ -2347,7 +2347,7 @@ Resources:
                 - Name: Method
                   Value: POST
                 - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
+                  Value: !Sub ${AWS::StackName}-sessions-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
@@ -2392,7 +2392,7 @@ Resources:
                 - Name: Method
                   Value: POST
                 - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
+                  Value: !Sub ${AWS::StackName}-sessions-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
@@ -2410,7 +2410,7 @@ Resources:
                 - Name: Method
                   Value: POST
                 - Name: ApiName
-                  Value: !Sub ${AWS::StackName}-private-api
+                  Value: !Sub ${AWS::StackName}-sessions-api
                 - Name: Stage
                   Value: !Ref Environment
                 - Name: Resource
