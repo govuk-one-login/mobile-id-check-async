@@ -323,11 +323,14 @@ describe("Async Biometric Token", () => {
       });
     });
 
-    it("Returns 501 Not Implemented response", async () => {
+    it("Returns 200 response with biometric access token and opaque ID", async () => {
       expect(result).toStrictEqual({
         headers: expectedSecurityHeaders,
-        statusCode: 501,
-        body: JSON.stringify({ error: "Not Implemented" }),
+        statusCode: 200,
+        body: JSON.stringify({
+          access_token: "mockBiometricToken",
+          opaque_id: "mock_opaque_id",
+        }),
       });
     });
   });

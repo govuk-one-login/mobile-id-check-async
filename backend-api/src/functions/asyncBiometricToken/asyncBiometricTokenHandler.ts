@@ -9,7 +9,7 @@ import {
 } from "./handlerDependencies";
 import {
   badRequestResponse,
-  notImplementedResponse,
+  okResponse,
   serverErrorResponse,
   unauthorizedResponse,
 } from "../common/lambdaResponses";
@@ -89,7 +89,10 @@ export async function lambdaHandlerConstructor(
   }
 
   logger.info(LogMessage.BIOMETRIC_TOKEN_COMPLETED);
-  return notImplementedResponse;
+  return okResponse({
+    access_token: biometricTokenResult.value,
+    opaque_id: opaqueId,
+  });
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(
