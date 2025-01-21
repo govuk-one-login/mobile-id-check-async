@@ -22,6 +22,20 @@ export const badRequestResponse = (
   };
 };
 
+export const unauthorizedResponse = (
+  error: string,
+  errorDescription: string,
+): APIGatewayProxyResult => {
+  return {
+    headers: securityHeaders,
+    statusCode: 401,
+    body: JSON.stringify({
+      error,
+      error_description: errorDescription,
+    }),
+  };
+};
+
 export const notImplementedResponse: APIGatewayProxyResult = {
   headers: securityHeaders,
   statusCode: 501,

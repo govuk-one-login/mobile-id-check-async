@@ -9,9 +9,22 @@ import { IAsyncBiometricTokenDependencies } from "./handlerDependencies";
 import {
   expectedSecurityHeaders,
   mockSessionId,
+  mockInertSessionRegistry,
 } from "../testUtils/unitTestData";
 import { logger } from "../common/logging/logger";
-import { emptyFailure, successResult } from "../utils/result";
+import {
+  emptyFailure,
+  emptySuccess,
+  errorResult,
+  successResult,
+} from "../utils/result";
+import { UpdateSessionError } from "../common/session/SessionRegistry";
+import { BiometricTokenIssued } from "../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
+
+jest.mock("crypto", () => ({
+  ...jest.requireActual("crypto"),
+  randomUUID: () => "mock_opaque_id",
+}));
 
 describe("Async Biometric Token", () => {
   let dependencies: IAsyncBiometricTokenDependencies;
@@ -39,6 +52,11 @@ describe("Async Biometric Token", () => {
     .fn()
     .mockResolvedValue(successResult("mockBiometricToken"));
 
+  const mockSuccessfulSessionRegistry = {
+    ...mockInertSessionRegistry,
+    updateSession: jest.fn().mockResolvedValue(emptySuccess()),
+  };
+
   beforeEach(() => {
     dependencies = {
       env: {
@@ -48,9 +66,11 @@ describe("Async Biometric Token", () => {
         BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL: "mock_secret_path_dl",
         BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS: "900",
         READID_BASE_URL: "mockReadIdBaseUrl",
+        SESSION_TABLE_NAME: "mockTableName",
       },
       getSecrets: mockGetSecretsSuccess,
       getBiometricToken: mockGetBiometricTokenSuccess,
+      getSessionRegistry: () => mockSuccessfulSessionRegistry,
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
@@ -91,6 +111,7 @@ describe("Async Biometric Token", () => {
       ["BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL"],
       ["BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS"],
       ["READID_BASE_URL"],
+      ["SESSION_TABLE_NAME"],
     ])("Given %s environment variable is missing", (envVar: string) => {
       beforeEach(async () => {
         delete dependencies.env[envVar];
@@ -201,6 +222,67 @@ describe("Async Biometric Token", () => {
     });
   });
 
+  describe("When session update fails", () => {
+    describe("When failure is due to client error", () => {
+      beforeEach(async () => {
+        dependencies.getSessionRegistry = () => ({
+          ...mockInertSessionRegistry,
+          updateSession: jest
+            .fn()
+            .mockResolvedValue(
+              errorResult(UpdateSessionError.CONDITIONAL_CHECK_FAILURE),
+            ),
+        });
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+
+      it("Returns 401 Unauthorized", () => {
+        expect(result).toStrictEqual({
+          statusCode: 401,
+          body: JSON.stringify({
+            error: "invalid_session",
+            error_description:
+              "User session is not in a valid state for this operation.",
+          }),
+          headers: expectedSecurityHeaders,
+        });
+      });
+    });
+
+    describe("When failure is due to server error", () => {
+      beforeEach(async () => {
+        dependencies.getSessionRegistry = () => ({
+          ...mockInertSessionRegistry,
+          updateSession: jest
+            .fn()
+            .mockResolvedValue(
+              errorResult(UpdateSessionError.INTERNAL_SERVER_ERROR),
+            ),
+        });
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+
+      it("Returns 500 Internal Server Error", () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
+        });
+      });
+    });
+  });
+
   describe("Given a valid request is made", () => {
     beforeEach(async () => {
       result = await lambdaHandlerConstructor(
@@ -225,6 +307,13 @@ describe("Async Biometric Token", () => {
       expect(mockGetBiometricTokenSuccess).toHaveBeenCalledWith(
         "mockReadIdBaseUrl",
         "mock_submitter_key_passport",
+      );
+    });
+
+    it("Passes correct arguments to update session", () => {
+      expect(mockSuccessfulSessionRegistry.updateSession).toHaveBeenCalledWith(
+        mockSessionId,
+        new BiometricTokenIssued("NFC_PASSPORT", "mock_opaque_id"),
       );
     });
 

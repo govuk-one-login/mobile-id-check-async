@@ -6,6 +6,7 @@ import {
   QueryCommand,
   QueryCommandInput,
   QueryCommandOutput,
+  UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import { CreateSessionAttributes } from "../services/session/sessionService";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
@@ -14,14 +15,19 @@ import {
   NativeAttributeValue,
   unmarshall,
 } from "@aws-sdk/util-dynamodb";
-
-const sessionStates = {
-  ASYNC_AUTH_SESSION_CREATED: "ASYNC_AUTH_SESSION_CREATED",
-};
+import { UpdateSessionOperation } from "../common/session/updateOperations/UpdateSessionOperation";
+import { emptySuccess, errorResult, Result } from "../utils/result";
+import {
+  SessionRegistry,
+  UpdateSessionError,
+} from "../common/session/SessionRegistry";
+import { logger } from "../common/logging/logger";
+import { LogMessage } from "../common/logging/LogMessage";
+import { SessionState } from "../common/session/session";
 
 export type DatabaseRecord = Record<string, NativeAttributeValue>;
 
-export class DynamoDbAdapter {
+export class DynamoDbAdapter implements SessionRegistry {
   private readonly tableName: string;
   private readonly dynamoDbClient = new DynamoDBClient({
     region: process.env.REGION,
@@ -48,7 +54,7 @@ export class DynamoDbAdapter {
       FilterExpression: "sessionState = :sessionState",
       ExpressionAttributeValues: {
         ":subjectIdentifier": marshall(subjectIdentifier),
-        ":sessionState": marshall(sessionStates.ASYNC_AUTH_SESSION_CREATED),
+        ":sessionState": marshall(SessionState.AUTH_SESSION_CREATED),
         ":currentTimeInSeconds": marshall(this.getTimeNowInSeconds()),
       },
       ProjectionExpression: this.formatAsProjectionExpression(attributesToGet),
@@ -94,7 +100,7 @@ export class DynamoDbAdapter {
         createdAt: Date.now(),
         issuer: issuer,
         sessionId: sessionId,
-        sessionState: sessionStates.ASYNC_AUTH_SESSION_CREATED,
+        sessionState: SessionState.AUTH_SESSION_CREATED,
         clientState: state,
         subjectIdentifier: sub,
         timeToLive: timeToLive,
@@ -112,6 +118,50 @@ export class DynamoDbAdapter {
         throw error;
       }
     }
+  }
+
+  async updateSession(
+    sessionId: string,
+    updateOperation: UpdateSessionOperation,
+  ): Promise<Result<void, UpdateSessionError>> {
+    const updateExpressionDataToLog = {
+      updateExpression: updateOperation.getDynamoDbUpdateExpression(),
+      conditionExpression: updateOperation.getDynamoDbConditionExpression(),
+    };
+
+    try {
+      logger.debug(LogMessage.UPDATE_SESSION_ATTEMPT, {
+        data: updateExpressionDataToLog,
+      });
+      await this.dynamoDbClient.send(
+        new UpdateItemCommand({
+          TableName: this.tableName,
+          Key: {
+            sessionId: { S: sessionId },
+          },
+          UpdateExpression: updateOperation.getDynamoDbUpdateExpression(),
+          ConditionExpression: updateOperation.getDynamoDbConditionExpression(),
+          ExpressionAttributeValues:
+            updateOperation.getDynamoDbExpressionAttributeValues(),
+        }),
+      );
+    } catch (error) {
+      if (error instanceof ConditionalCheckFailedException) {
+        logger.error(LogMessage.UPDATE_SESSION_CONDITIONAL_CHECK_FAILURE, {
+          error: error.message,
+          data: updateExpressionDataToLog,
+        });
+        return errorResult(UpdateSessionError.CONDITIONAL_CHECK_FAILURE);
+      } else {
+        logger.error(LogMessage.UPDATE_SESSION_UNEXPECTED_FAILURE, {
+          error: error,
+          data: updateExpressionDataToLog,
+        });
+        return errorResult(UpdateSessionError.INTERNAL_SERVER_ERROR);
+      }
+    }
+    logger.debug(LogMessage.UPDATE_SESSION_SUCCESS);
+    return emptySuccess();
   }
 
   private getTimeNowInSeconds() {

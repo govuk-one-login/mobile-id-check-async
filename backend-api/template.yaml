@@ -1160,7 +1160,13 @@ Resources:
                   - !Sub
                     - arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${submitterKeyPathDl}
                     - submitterKeyPathDl: !FindInMap [ EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathDl ]
-
+        - PolicyName: AsyncBiometricTokenFunctionDynamodbPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "dynamodb:UpdateItem"
+                Resource: !GetAtt SessionsTable.Arn
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
