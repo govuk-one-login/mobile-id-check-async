@@ -13,7 +13,9 @@ RUN npm install --ignore-scripts
 RUN apk upgrade && apk update; apk add --no-cache bash aws-cli && aws --version
 
 # Copy the CloudFormation infrastructure template and application source code to the working directory
-COPY template.yaml src openApiSpecs tests eslint.config.mjs jest.config.ts tsconfig.json ./
+COPY src ./src
+COPY tests ./tests
+COPY template.yaml openApiSpecs eslint.config.mjs jest.config.ts tsconfig.json ./
 
 # Give user, 'test', permissions to execute test script and switch the user to 'test'
 COPY run-tests.sh /
