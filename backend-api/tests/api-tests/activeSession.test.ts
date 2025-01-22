@@ -1,10 +1,6 @@
 import { randomUUID } from "crypto";
-import {
-  PROXY_API_INSTANCE,
-  SESSIONS_API_INSTANCE,
-  STS_MOCK_API_INSTANCE,
-} from "./utils/apiInstance";
-import { getFirstRegisteredClient } from "./utils/getRegisteredClient";
+import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
+import { createSessionForSub, getAccessToken } from "./utils/apiTestHelpers";
 
 jest.setTimeout(4 * 5000);
 
@@ -142,49 +138,3 @@ describe("GET /async/activeSession", () => {
     });
   });
 });
-
-async function getAccessToken(sub?: string, scope?: string) {
-  const requestBody = new URLSearchParams({
-    subject_token: sub ?? randomUUID(),
-    scope: scope ?? "idCheck.activeSession.read",
-    grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
-    subject_token_type: "urn:ietf:params:oauth:token-type:access_token",
-  });
-  const stsMockResponse = await STS_MOCK_API_INSTANCE.post(
-    "/token",
-    requestBody,
-  );
-  return stsMockResponse.data.access_token;
-}
-
-async function createSessionForSub(sub: string) {
-  const clientDetails = await getFirstRegisteredClient();
-  const clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
-  const clientIdAndSecretB64 =
-    Buffer.from(clientIdAndSecret).toString("base64");
-  const asyncTokenResponse = await PROXY_API_INSTANCE.post(
-    "/async/token",
-    "grant_type=client_credentials",
-    {
-      headers: {
-        "x-custom-auth": `Basic ${clientIdAndSecretB64}`,
-      },
-    },
-  );
-  const asyncCredentialResponse = await PROXY_API_INSTANCE.post(
-    "/async/credential",
-    {
-      sub: sub ?? randomUUID(),
-      govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
-      client_id: clientDetails.client_id,
-      state: "testState",
-      redirect_uri: clientDetails.redirect_uri,
-    },
-    {
-      headers: {
-        "x-custom-auth": `Bearer ${asyncTokenResponse.data.access_token}`,
-      },
-    },
-  );
-  return asyncCredentialResponse.data;
-}

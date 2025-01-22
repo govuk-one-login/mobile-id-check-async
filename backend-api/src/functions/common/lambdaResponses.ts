@@ -8,6 +8,14 @@ const securityHeaders = {
   "X-Frame-Options": "DENY",
 };
 
+export const okResponse = (body: object): APIGatewayProxyResult => {
+  return {
+    headers: securityHeaders,
+    statusCode: 200,
+    body: JSON.stringify(body),
+  };
+};
+
 export const badRequestResponse = (
   error: string,
   errorDescription: string,
@@ -15,6 +23,20 @@ export const badRequestResponse = (
   return {
     headers: securityHeaders,
     statusCode: 400,
+    body: JSON.stringify({
+      error,
+      error_description: errorDescription,
+    }),
+  };
+};
+
+export const unauthorizedResponse = (
+  error: string,
+  errorDescription: string,
+): APIGatewayProxyResult => {
+  return {
+    headers: securityHeaders,
+    statusCode: 401,
     body: JSON.stringify({
       error,
       error_description: errorDescription,
