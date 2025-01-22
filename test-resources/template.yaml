@@ -63,8 +63,7 @@ Resources:
         - LoggingLevel: INFO
           ResourcePath: /*
           HttpMethod: '*'
-          # Disable data trace in production and integration to avoid logging customer sensitive information
-          DataTraceEnabled: false # Client credentials used in headers
+          DataTraceEnabled: true
           MetricsEnabled: true
           ThrottlingBurstLimit: !FindInMap
             - Apigw
