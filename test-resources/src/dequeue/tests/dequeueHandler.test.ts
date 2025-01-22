@@ -15,8 +15,10 @@ import { MessageName, registeredLogs } from "../registeredLogs";
 import {
   eventNameMissingSQSRecord,
   invalidBodySQSRecord,
-  passingSQSRecord,
+  passingSQSRecordKnownSessionId,
+  passingSQSRecordUnknownSessionId,
   putItemInputForPassingSQSRecord,
+  putItemInputForPassingSQSRecordWithoutSessionId,
 } from "./testData";
 
 const env = {
@@ -137,7 +139,7 @@ describe("Dequeue TxMA events", () => {
     it("Logs an error message and returns batchItemFailures to be reprocessed", async () => {
       mockDbClient.on(PutItemCommand).rejects("Error writing to database");
       const event: SQSEvent = {
-        Records: [passingSQSRecord],
+        Records: [passingSQSRecordKnownSessionId],
       };
 
       const result = await lambdaHandlerConstructor(
@@ -151,10 +153,10 @@ describe("Dequeue TxMA events", () => {
         "ERROR_WRITING_EVENT_TO_EVENTS_TABLE",
       );
       expect(mockLogger.getLogMessages()[1].data.eventName).toStrictEqual(
-        JSON.parse(passingSQSRecord.body).event_name,
+        JSON.parse(passingSQSRecordKnownSessionId.body).event_name,
       );
       expect(mockLogger.getLogMessages()[1].data.sessionId).toStrictEqual(
-        JSON.parse(passingSQSRecord.body).user.session_id,
+        JSON.parse(passingSQSRecordKnownSessionId.body).user.session_id,
       );
       expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual(
         "PROCESSED_MESSAGES",
@@ -163,7 +165,9 @@ describe("Dequeue TxMA events", () => {
         processedMessages: [],
       });
       expect(result).toStrictEqual({
-        batchItemFailures: [{ itemIdentifier: passingSQSRecord.messageId }],
+        batchItemFailures: [
+          { itemIdentifier: passingSQSRecordKnownSessionId.messageId },
+        ],
       });
     });
   });
@@ -175,7 +179,11 @@ describe("Dequeue TxMA events", () => {
     beforeEach(async () => {
       mockDbClient.on(PutItemCommand).resolves({});
       event = {
-        Records: [passingSQSRecord, invalidBodySQSRecord],
+        Records: [
+          passingSQSRecordKnownSessionId,
+          invalidBodySQSRecord,
+          passingSQSRecordUnknownSessionId,
+        ],
       };
       result = await lambdaHandlerConstructor(
         dependencies,
@@ -195,22 +203,35 @@ describe("Dequeue TxMA events", () => {
     });
 
     it("Makes a call to the database client", async () => {
-      expect(mockDbClient).toHaveReceivedCommandTimes(PutItemCommand, 1);
+      expect(mockDbClient).toHaveReceivedCommandTimes(PutItemCommand, 2);
       expect(mockDbClient).toHaveReceivedNthCommandWith(
         1,
         PutItemCommand,
         putItemInputForPassingSQSRecord,
+      );
+      expect(mockDbClient).toHaveReceivedNthCommandWith(
+        2,
+        PutItemCommand,
+        putItemInputForPassingSQSRecordWithoutSessionId,
       );
     });
 
     it("Logs successfully processed messages", async () => {
       expect(mockLogger.getLogMessages()[2].data.processedMessages).toEqual([
         {
-          eventName: JSON.parse(passingSQSRecord.body).event_name,
-          sessionId: JSON.parse(passingSQSRecord.body).user.session_id,
+          eventName: JSON.parse(passingSQSRecordKnownSessionId.body).event_name,
+          sessionId: JSON.parse(passingSQSRecordKnownSessionId.body).user
+            .session_id,
+        },
+        {
+          eventName: JSON.parse(passingSQSRecordUnknownSessionId.body)
+            .event_name,
+          sessionId: JSON.parse(passingSQSRecordUnknownSessionId.body).user
+            .session_id,
         },
       ]);
     });
+
     it("Returns no batchItemFailures to be reprocessed", () => {
       expect(result).toEqual({ batchItemFailures: [] });
     });
@@ -221,7 +242,7 @@ describe("Dequeue TxMA events", () => {
       it("Logs the event_name and session_id", async () => {
         mockDbClient.on(PutItemCommand).resolves({});
         const event: SQSEvent = {
-          Records: [passingSQSRecord],
+          Records: [passingSQSRecordKnownSessionId],
         };
 
         const result = await lambdaHandlerConstructor(
@@ -233,8 +254,10 @@ describe("Dequeue TxMA events", () => {
         expect(mockLogger.getLogMessages().length).toEqual(3);
         expect(mockLogger.getLogMessages()[1].data.processedMessages).toEqual([
           {
-            eventName: JSON.parse(passingSQSRecord.body).event_name,
-            sessionId: JSON.parse(passingSQSRecord.body).user.session_id,
+            eventName: JSON.parse(passingSQSRecordKnownSessionId.body)
+              .event_name,
+            sessionId: JSON.parse(passingSQSRecordKnownSessionId.body).user
+              .session_id,
           },
         ]);
         expect(result).toEqual({ batchItemFailures: [] });
@@ -245,7 +268,10 @@ describe("Dequeue TxMA events", () => {
       it("Logs the event_name and session_id for each message", async () => {
         mockDbClient.on(PutItemCommand).resolves({});
         const event: SQSEvent = {
-          Records: [passingSQSRecord, passingSQSRecord],
+          Records: [
+            passingSQSRecordKnownSessionId,
+            passingSQSRecordUnknownSessionId,
+          ],
         };
 
         const result = await lambdaHandlerConstructor(
@@ -254,8 +280,17 @@ describe("Dequeue TxMA events", () => {
           buildLambdaContext(),
         );
 
-        const eventName = JSON.parse(passingSQSRecord.body).event_name;
-        const sessionId = JSON.parse(passingSQSRecord.body).user.session_id;
+        const eventName = JSON.parse(
+          passingSQSRecordKnownSessionId.body,
+        ).event_name;
+        const sessionId = JSON.parse(passingSQSRecordKnownSessionId.body).user
+          .session_id;
+        const eventNameSessionIdUnknown = JSON.parse(
+          passingSQSRecordUnknownSessionId.body,
+        ).event_name;
+        const sessionIdUnknown = JSON.parse(
+          passingSQSRecordUnknownSessionId.body,
+        ).user.session_id;
         expect(mockLogger.getLogMessages().length).toEqual(3);
         expect(mockLogger.getLogMessages()[1].data.processedMessages).toEqual([
           {
@@ -263,8 +298,8 @@ describe("Dequeue TxMA events", () => {
             sessionId,
           },
           {
-            eventName,
-            sessionId,
+            eventName: eventNameSessionIdUnknown,
+            sessionId: sessionIdUnknown,
           },
         ]);
         expect(result).toEqual({ batchItemFailures: [] });
@@ -274,11 +309,19 @@ describe("Dequeue TxMA events", () => {
 });
 
 function mockGetEvent(record: SQSRecord): Result<TxmaEvent> {
-  if (record.messageId === passingSQSRecord.messageId) {
+  if (record.messageId === passingSQSRecordKnownSessionId.messageId) {
     return successResult({
       event_name: "DCMAW_ASYNC_CRI_START",
       user: {
         session_id: "49E7D76E-D5FE-4355-B8B4-E90ACA0887C2",
+      },
+      timestamp: "mockTimestamp",
+    });
+  } else if (record.messageId === passingSQSRecordUnknownSessionId.messageId) {
+    return successResult({
+      event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+      user: {
+        session_id: "UNKNOWN",
       },
       timestamp: "mockTimestamp",
     });

@@ -6,7 +6,7 @@ import {
   missingSessionIdInvalidSQSRecord,
   missingSessionIdValidSQSRecord,
   missingTimestampSQSRecord,
-  passingSQSRecord,
+  passingSQSRecordKnownSessionId,
 } from "./testData";
 
 describe("Get Events", () => {
@@ -99,7 +99,7 @@ describe("Get Events", () => {
   describe("Happy path", () => {
     describe("Given the event passes validation", () => {
       it("Returns the event", () => {
-        const record = passingSQSRecord;
+        const record = passingSQSRecordKnownSessionId;
 
         const result = getEvent(record);
         expect(result.isError).toBe(false);
