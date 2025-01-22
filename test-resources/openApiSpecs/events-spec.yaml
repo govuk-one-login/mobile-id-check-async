@@ -99,7 +99,7 @@ paths:
                     "#eb": "eventBody"
                   },
                   "KeyConditionExpression": "#pk = :pk AND begins_with(#sk, :skPrefix)",
-                  "ProjectionExpression": "#eb"
+                  "ProjectionExpression": "#pk, #sk, #eb"
                 }
               - tableName:
                   Ref: EventsTable
@@ -127,14 +127,13 @@ paths:
                   {
                     "events": [
                       #foreach($event in $inputRoot.Items)
+                        #set($pk = $event.pk.S)
+                        #set($sk = $event.sk.S)
                         #set($eventBody = $util.parseJson($event.eventBody.S))
-                        #set($eventName = $eventBody.event_name)
-                        #set($sessionId = $eventBody.user.session_id)
-                        #set($timestamp = $eventBody.timestamp)
                         {
-                          "eventName": "$eventName"
-                          "sessionId": "$sessionId"
-                          "timestamp": "$timestamp"
+                          "pk": "$pk"
+                          "sk": "$sk"
+                          "eventBody": "$eventBody"
                         }#if($foreach.hasNext), #end
                       #end
                     ]
