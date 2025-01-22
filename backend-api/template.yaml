@@ -177,7 +177,7 @@ Mappings:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
 
     staging:
-      STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
+      STSBASEURL: 'https://token.staging.account.gov.uk'
       ReadIdBaseUrl: '' #TODO: Update this value with new ReadID URL once available
       ClientRegistrySecretPath: 'staging/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
@@ -186,7 +186,7 @@ Mappings:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
 
     integration:
-      STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
+      STSBASEURL: 'https://token.integration.account.gov.uk'
       ReadIdBaseUrl: '' #TODO: Update this value with new ReadID URL once available
       ClientRegistrySecretPath: 'integration/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
@@ -195,7 +195,7 @@ Mappings:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
 
     production:
-      STSBASEURL: '' #TODO: Update this value with 'real' STS URLs
+      STSBASEURL: 'https://token.account.gov.uk'
       ReadIdBaseUrl: '' #TODO: Update this value with new ReadID URL once available
       ClientRegistrySecretPath: 'production/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
