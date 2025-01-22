@@ -44,17 +44,16 @@ Conditions:
       - none
 
 Resources:
-  # Private API Gateway for retrieving events
+  # API Gateway for retrieving events
   EventsApi:
     Type: AWS::Serverless::Api
     Properties:
       Name: !Sub ${AWS::StackName}-events-private-api
-      Description: Private API gateway for retrieving events
-      EndpointConfiguration: PRIVATE
+      Description: API gateway for retrieving events
+      EndpointConfiguration: REGIONAL
       Auth:
         ResourcePolicy:
-          IntrinsicVpceWhitelist:
-            - !ImportValue devplatform-vpc-ExecuteApiGatewayEndpointId
+          AwsAccountWhitelist: !Sub ${AWS::AccountId}
       StageName: !Ref Environment
       OpenApiVersion: 3.0.1
       AccessLogSetting:
