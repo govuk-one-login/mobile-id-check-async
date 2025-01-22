@@ -124,10 +124,10 @@ paths:
                   "TableName": "${tableName}",
                   "ExpressionAttributeValues": {
                     ":pk": {
-                      "S": "SESSION#$session"
+                      "S": "$session"
                     },
                     ":skPrefix": {
-                      "S": "TXMA#EVENT_NAME#$eventName"
+                      "S": "$eventName"
                     }
                   },
                   "ExpressionAttributeNames": {
