@@ -20,7 +20,6 @@ paths:
       parameters:
         - $ref: "#/components/parameters/sessionParam"
         - $ref: "#/components/parameters/eventNameParam"
-        - $ref: "#/components/parameters/timestampParam"
       tags:
         - Auth Session
       responses:
@@ -180,12 +179,5 @@ components:
       name: eventName
       description: Event name
       required: true
-      schema:
-        type: string
-    timestampParam:
-      in: query
-      name: timestamp
-      description: Epoch timestamp
-      required: false
       schema:
         type: string
