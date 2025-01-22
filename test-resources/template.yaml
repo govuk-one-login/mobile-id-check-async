@@ -29,7 +29,7 @@ Mappings:
     build:
       CORSALLOWEDORIGINHEADER: "'*'"
 
-  PrivateApigw:
+  Apigw:
     dev:
       ApiBurstLimit: 10
       ApiRateLimit: 10
@@ -67,11 +67,11 @@ Resources:
           DataTraceEnabled: false # Client credentials used in headers
           MetricsEnabled: true
           ThrottlingBurstLimit: !FindInMap
-            - PrivateApigw
+            - Apigw
             - !Ref Environment
             - ApiBurstLimit
           ThrottlingRateLimit: !FindInMap
-            - PrivateApigw
+            - Apigw
             - !Ref Environment
             - ApiRateLimit
       DefinitionBody:
