@@ -9,8 +9,9 @@ import {
 } from "./handlerDependencies";
 import {
   badRequestResponse,
-  notImplementedResponse,
+  okResponse,
   serverErrorResponse,
+  unauthorizedResponse,
 } from "../common/lambdaResponses";
 import { validateRequestBody } from "./validateRequestBody/validateRequestBody";
 import { logger } from "../common/logging/logger";
@@ -20,8 +21,16 @@ import {
   getBiometricTokenConfig,
 } from "./biometricTokenConfig";
 import { GetSecrets } from "../common/config/secrets";
-import { emptyFailure, Result, successResult } from "../utils/result";
+import {
+  emptyFailure,
+  FailureWithValue,
+  Result,
+  successResult,
+} from "../utils/result";
 import { DocumentType } from "../types/document";
+import { BiometricTokenIssued } from "../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
+import { UpdateSessionError } from "../common/session/SessionRegistry";
+import { randomUUID } from "crypto";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
@@ -46,7 +55,7 @@ export async function lambdaHandlerConstructor(
     });
     return badRequestResponse("invalid_request", errorMessage);
   }
-  const documentType = validateRequestBodyResult.value.documentType;
+  const { documentType, sessionId } = validateRequestBodyResult.value;
 
   const submitterKeyResult = await getSubmitterKeyForDocumentType(
     documentType,
@@ -66,8 +75,24 @@ export async function lambdaHandlerConstructor(
     return serverErrorResponse;
   }
 
+  const opaqueId = generateOpaqueId();
+
+  const sessionRegistry = dependencies.getSessionRegistry(
+    config.SESSION_TABLE_NAME,
+  );
+  const updateSessionResult = await sessionRegistry.updateSession(
+    sessionId,
+    new BiometricTokenIssued(documentType, opaqueId),
+  );
+  if (updateSessionResult.isError) {
+    return handleUpdateSessionFailure(updateSessionResult);
+  }
+
   logger.info(LogMessage.BIOMETRIC_TOKEN_COMPLETED);
-  return notImplementedResponse;
+  return okResponse({
+    accessToken: biometricTokenResult.value,
+    opaqueId,
+  });
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(
@@ -114,4 +139,22 @@ async function getSubmitterKeyForDocumentType(
         ],
       );
   }
+}
+
+function handleUpdateSessionFailure(
+  failure: FailureWithValue<UpdateSessionError>,
+): APIGatewayProxyResult {
+  switch (failure.value) {
+    case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
+      return unauthorizedResponse(
+        "invalid_session",
+        "User session is not in a valid state for this operation.",
+      );
+    case UpdateSessionError.INTERNAL_SERVER_ERROR:
+      return serverErrorResponse;
+  }
+}
+
+function generateOpaqueId(): string {
+  return randomUUID();
 }
