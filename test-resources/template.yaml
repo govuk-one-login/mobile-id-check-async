@@ -22,12 +22,12 @@ Parameters:
     Default: mob-async-backend
 
 Mappings:
-#   EnvironmentVariables:
-#     # Any variable defined here should be defined for all environments.
-#     dev:
-#       CORSALLOWEDORIGINHEADER: "'*'"
-#     build:
-#       CORSALLOWEDORIGINHEADER: "'*'"
+  EnvironmentVariables:
+    # Any variable defined here should be defined for all environments.
+    dev:
+      CORSALLOWEDORIGINHEADER: "'*'"
+    build:
+      CORSALLOWEDORIGINHEADER: "'*'"
 
   PrivateApigw:
     dev:
@@ -44,7 +44,7 @@ Conditions:
       - none
 
 Resources:
-  # Private API Gateway for retrievin events
+  # Private API Gateway for retrieving events
   EventsApi:
     Type: AWS::Serverless::Api
     Properties:
@@ -64,7 +64,6 @@ Resources:
         - LoggingLevel: INFO
           ResourcePath: /*
           HttpMethod: '*'
-
           # Disable data trace in production and integration to avoid logging customer sensitive information
           DataTraceEnabled: false # Client credentials used in headers
           MetricsEnabled: true
@@ -102,7 +101,6 @@ Resources:
               - Effect: Allow
                 Action:
                 - "dynamodb:Query"
-                # - "dynamodb:GetItem"
                 Resource: !GetAtt EventsTable.Arn
                 Condition:
                   ForAllValues:StringEquals:
@@ -111,8 +109,8 @@ Resources:
                       - sk
                       - eventBody
                       - timestamp
-                  # StringEquals:
-                  #   dynamodb:Select: SPECIFIC_ATTRIBUTES
+                  StringEquals:
+                    dynamodb:Select: SPECIFIC_ATTRIBUTES
 
   EventsPrivateApiAccessLogs:
     Type: AWS::Logs::LogGroup
