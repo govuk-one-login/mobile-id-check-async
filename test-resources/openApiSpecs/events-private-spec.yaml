@@ -174,6 +174,7 @@ components:
       required: false
       schema:
         type: string
+      example: "SESSION#mockSessionId"
     eventNameParam:
       in: query
       name: eventName
@@ -181,3 +182,4 @@ components:
       required: true
       schema:
         type: string
+      example: "TXAM#EVENT_NAME#DCMAW_ASYNC_CRI_START"
