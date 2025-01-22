@@ -74,6 +74,10 @@ Conditions:
       - !Ref DevOverrideAsyncBackendBaseUrl
       - none
 
+  UseWildcardCertificate: !And
+    - !Equals [!Ref Environment, dev]
+    - !Not [!Equals [!Ref AWS::StackName, mob-sts-mock]]
+
 Resources:
   StsMockApi:
     Type: AWS::Serverless::Api
@@ -119,7 +123,10 @@ Resources:
       EndpointConfiguration:
         Types:
           - REGIONAL
-      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN}}'
+      RegionalCertificateArn: !If
+        - UseWildcardCertificate
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneStsMockCertificateV1ARN}}'
       SecurityPolicy: TLS_1_2
 
   StsMockApiBasePathMapping:

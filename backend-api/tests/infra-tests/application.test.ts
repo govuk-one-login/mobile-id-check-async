@@ -17,19 +17,35 @@ describe("Backend application infrastructure", () => {
   });
 
   describe("EnvironmentVariable mapping values", () => {
-    test("STS base url only assigned to Dev and Build", () => {
+    test("STS base url is set", () => {
       const expectedEnvironmentVariablesValues = {
         dev: "https://mob-sts-mock.review-b-async.dev.account.gov.uk",
         build: "https://mob-sts-mock.review-b-async.build.account.gov.uk",
-        staging: "",
-        integration: "",
-        production: "",
+        staging: "https://token.staging.account.gov.uk",
+        integration: "https://token.integration.account.gov.uk",
+        production: "https://token.account.gov.uk",
       };
 
       const mappingHelper = new Mappings(template);
       mappingHelper.validateEnvironmentVariablesMapping({
         environmentFlags: expectedEnvironmentVariablesValues,
         mappingBottomLevelKey: "STSBASEURL",
+      });
+    });
+
+    test("ReadIdBaseUrl assigned ID Check mock values in dev and build and vendor values in staging, integration and production", () => {
+      const expectedEnvironmentVariablesValues = {
+        dev: "https://mob-readid-mock.review-b-async.dev.account.gov.uk/v2",
+        build: "https://mob-readid-mock.review-b-async.build.account.gov.uk/v2",
+        staging: "", // To be updated with new ReadID URL once available
+        integration: "", // To be updated with new ReadID URL once available
+        production: "", // To be updated with new ReadID URL once available
+      };
+
+      const mappingHelper = new Mappings(template);
+      mappingHelper.validateEnvironmentVariablesMapping({
+        environmentFlags: expectedEnvironmentVariablesValues,
+        mappingBottomLevelKey: "ReadIdBaseUrl",
       });
     });
   });
@@ -68,14 +84,14 @@ describe("Backend application infrastructure", () => {
         const expectedBurstLimits = {
           dev: 10,
           build: 10,
-          staging: 0,
+          staging: 10,
           integration: 0,
           production: 0,
         };
         const expectedRateLimits = {
           dev: 10,
           build: 10,
-          staging: 0,
+          staging: 10,
           integration: 0,
           production: 0,
         };
@@ -146,6 +162,8 @@ describe("Backend application infrastructure", () => {
         "high-threshold-async-token-4xx-api-gw": false,
         "high-threshold-async-credential-5xx-api-gw": false,
         "high-threshold-async-credential-4xx-api-gw": false,
+        "high-threshold-async-biometric-token-5xx-api-gw": false,
+        "high-threshold-async-biometric-token-4xx-api-gw": false,
       };
 
       const alarms = template.findResources("AWS::CloudWatch::Alarm");
@@ -192,6 +210,10 @@ describe("Backend application infrastructure", () => {
         ["low-threshold-async-credential-5xx-api-gw"],
         ["high-threshold-async-credential-4xx-api-gw"],
         ["low-threshold-async-credential-4xx-api-gw"],
+        ["high-threshold-async-biometric-token-4xx-api-gw"],
+        ["low-threshold-async-biometric-token-4xx-api-gw"],
+        ["high-threshold-async-biometric-token-5xx-api-gw"],
+        ["low-threshold-async-biometric-token-5xx-api-gw"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
@@ -261,7 +283,7 @@ describe("Backend application infrastructure", () => {
         const expectedBurstLimits = {
           dev: 10,
           build: 10,
-          staging: 0,
+          staging: 10,
           integration: 0,
           production: 0,
         };
@@ -269,7 +291,7 @@ describe("Backend application infrastructure", () => {
         const expectedRateLimits = {
           dev: 10,
           build: 10,
-          staging: 0,
+          staging: 10,
           integration: 0,
           production: 0,
         };
@@ -371,14 +393,14 @@ describe("Backend application infrastructure", () => {
         const expectedBurstLimits = {
           dev: 10,
           build: 10,
-          staging: 0,
+          staging: 10,
           integration: 0,
           production: 0,
         };
         const expectedRateLimits = {
           dev: 10,
           build: 10,
-          staging: 0,
+          staging: 10,
           integration: 0,
           production: 0,
         };
@@ -475,7 +497,7 @@ describe("Backend application infrastructure", () => {
               ReservedConcurrentExecutions: 15,
             }),
             staging: expect.objectContaining({
-              ReservedConcurrentExecutions: 0,
+              ReservedConcurrentExecutions: 15,
             }),
             integration: expect.objectContaining({
               ReservedConcurrentExecutions: 0,
@@ -500,6 +522,12 @@ describe("Backend application infrastructure", () => {
       test("Global memory size is set to 512MB", () => {
         const globalMemorySize = template.toJSON().Globals.Function.MemorySize;
         expect(globalMemorySize).toStrictEqual(512);
+      });
+
+      test("Global autoPublishAlias is set to live", () => {
+        const autoPublishAlias =
+          template.toJSON().Globals.Function.AutoPublishAlias;
+        expect(autoPublishAlias).toStrictEqual("live");
       });
     });
 

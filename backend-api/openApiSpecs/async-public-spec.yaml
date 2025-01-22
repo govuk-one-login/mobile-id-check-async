@@ -236,16 +236,22 @@ paths:
                 success:
                   value:
                     {
-                      "accessToken": "string"
+                      "accessToken": "string",
+                      "opaqueId": "6ec96ea7-941c-4967-9fcf-94fc9b717a22"
                     }
               schema:
                 type: object
-                description: access token depending on passport, DL or BRP selection to access the third-party biometric check endpoints
                 required:
                   - accessToken
+                  - opaqueId
                 properties:
                   accessToken:
                     type: string
+                    description: access token depending on passport, DL or BRP selection to access the third-party biometric check endpoints
+                  opaqueId:
+                    type: string
+                    format: uuid
+                    description: generated token to be sent to the vendor when starting a new biometric session to facilitate fraud detection
         '400':
           description: Bad request
           content:
@@ -301,7 +307,6 @@ paths:
         uri:
           Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AsyncBiometricTokenFunction}:live/invocations"
         type: "aws_proxy"
-
   /async/finishBiometricSession:
     post:
       summary: App signifies to backend that user interaction for biometric session is complete
@@ -458,7 +463,7 @@ paths:
                           "n": "kOBby1nEUcKc-94zIa2qCyqDSE1-2bLWkVjeF3DWY_0v2j9wlLSaR6asONen_HP40wftLOSPYRcKYv6Cjz3LOY7aQYznX14EXSgJxrDwQ7AleX2VS_HB34LMZEa3xmSSH7pLtw_vmJgCNss0zDQLCz1sQwZxlqphF18FdTTUrXbJ9Qk3xIrEzvL2naO2r6WoLBQ9tSr2Sz9TTcJQptfh6hOAHm66oPA6F9uCmbTDEQeI-wLiMMArtcKrGiPAFluo8f0qNkzLRMFIqyadnZ9OZ5u0-H_urOkmLJ2nbAnyTcO-9QeDlomdEMz3yEaJeUoq-jnPpVEfIbd8-07fl7M27w",
                           "e": "AQAB",
                           "use": "enc",
-                          "alg": "RS256",
+                          "alg": "RSA-OAEP-256",
                           "kid": "da48d440-8e51-4383-9a3a-b91ce5adcf2a"
                         }
                       ]

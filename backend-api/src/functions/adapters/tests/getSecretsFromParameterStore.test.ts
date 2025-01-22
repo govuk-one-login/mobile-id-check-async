@@ -1,5 +1,5 @@
 import { expect } from "@jest/globals";
-import "../../testUtils/matchers";
+import "../../../../tests/testUtils/matchers";
 import "dotenv/config";
 import { mockClient } from "aws-sdk-client-mock";
 import "aws-sdk-client-mock-jest";
