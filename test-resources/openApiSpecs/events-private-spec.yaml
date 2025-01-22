@@ -171,7 +171,7 @@ components:
       in: query
       name: session
       description: The identifier used for a session.
-      required: false
+      required: true
       schema:
         type: string
       example: "SESSION#mockSessionId"
