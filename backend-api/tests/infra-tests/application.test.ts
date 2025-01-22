@@ -17,13 +17,13 @@ describe("Backend application infrastructure", () => {
   });
 
   describe("EnvironmentVariable mapping values", () => {
-    test("STS base url only assigned to Dev and Build", () => {
+    test("STS base url is set", () => {
       const expectedEnvironmentVariablesValues = {
         dev: "https://mob-sts-mock.review-b-async.dev.account.gov.uk",
         build: "https://mob-sts-mock.review-b-async.build.account.gov.uk",
-        staging: "",
-        integration: "",
-        production: "",
+        staging: "https://token.staging.account.gov.uk",
+        integration: "https://token.integration.account.gov.uk",
+        production: "https://token.account.gov.uk",
       };
 
       const mappingHelper = new Mappings(template);
