@@ -140,7 +140,6 @@ paths:
                     ]
                   }
                 #end
-
           default:
             statusCode: "500"
             responseParameters:
@@ -158,7 +157,6 @@ paths:
             responseTemplates:
               text/plain:
                 Internal server error
-
 components:
   securitySchemes:
     sigv4Reference:

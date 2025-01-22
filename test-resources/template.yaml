@@ -48,7 +48,7 @@ Resources:
   EventsApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub ${AWS::StackName}-events-private-api
+      Name: !Sub ${AWS::StackName}-events-api
       Description: API gateway for retrieving events
       EndpointConfiguration: REGIONAL
       Auth:
@@ -57,7 +57,7 @@ Resources:
       StageName: !Ref Environment
       OpenApiVersion: 3.0.1
       AccessLogSetting:
-        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${EventsPrivateApiAccessLogs}
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${EventsApiAccessLogs}
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
       MethodSettings:
         - LoggingLevel: INFO
@@ -77,7 +77,7 @@ Resources:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: ./openApiSpecs/events-private-spec.yaml
+            Location: ./openApiSpecs/events-spec.yaml
 
   EventsApiRole:
     Type: AWS::IAM::Role
@@ -110,10 +110,10 @@ Resources:
                   StringEquals:
                     dynamodb:Select: SPECIFIC_ATTRIBUTES
 
-  EventsPrivateApiAccessLogs:
+  EventsApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-events-private-api-access-logs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-events-api-access-logs
       RetentionInDays: 30
 
   # Dequeue resources
