@@ -105,7 +105,7 @@ Resources:
                     dynamodb:Attributes:
                       - pk
                       - sk
-                      - eventBody
+                      - event
                       - timestamp
                   StringEquals:
                     dynamodb:Select: SPECIFIC_ATTRIBUTES

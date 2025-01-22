@@ -138,10 +138,10 @@ paths:
                   "ExpressionAttributeNames": {
                     "#pk": "pk",
                     "#sk": "sk",
-                    "#eb": "eventBody"
+                    "#event": "event"
                   },
                   "KeyConditionExpression": "#pk = :pk AND begins_with(#sk, :skPrefix)",
-                  "ProjectionExpression": "#pk, #sk, #eb"
+                  "ProjectionExpression": "#pk, #sk, #event"
                 }
               - tableName:
                   Ref: EventsTable
@@ -168,14 +168,14 @@ paths:
                 #else
                   {
                     "events": [
-                      #foreach($event in $inputRoot.Items)
-                        #set($pk = $event.pk.S)
-                        #set($sk = $event.sk.S)
-                        #set($eventBody = $util.parseJson($event.eventBody.S))
+                      #foreach($item in $inputRoot.Items)
+                        #set($pk = $item.pk.S)
+                        #set($sk = $item.sk.S)
+                        #set($event = $util.parseJson($item.event.S))
                         {
                           "pk": "$pk"
                           "sk": "$sk"
-                          "eventBody": "$eventBody"
+                          "event": "$event"
                         }#if($foreach.hasNext), #end
                       #end
                     ]
