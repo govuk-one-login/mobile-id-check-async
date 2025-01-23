@@ -61,6 +61,32 @@ paths:
                 type: "string"
         "403":
           description: Access Denied
+          content:
+            text/plain:
+              schema:
+                type: string
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+            Strict-Transport-Security:
+              schema:
+                type: string
+            X-Content-Type-Options:
+              schema:
+                type: string
+            X-Frame-Options:
+              schema:
+                type: string
+        "404":
+          description: Not Found
+          content:
+            text/plain:
+              schema:
+                type: string
           headers:
             Cache-Control:
               schema:
@@ -146,7 +172,8 @@ paths:
               application/json: |
                 #set($inputRoot = $input.path('$'))
                 #if($inputRoot.Count == 0)
-                  #set($context.responseOverride.status = 500)
+                  #set($context.responseOverride.status = 404)
+                  Not Found
                 #else
                   {
                     "events": [
@@ -183,6 +210,16 @@ paths:
               method.response.header.X-Frame-Options: "'DENY'"
             responseTemplates:
               text/plain: Access Denied
+          "404":
+            statusCode: "404"
+            responseParameters:
+              method.response.header.Cache-Control: "'no-store'"
+              method.response.header.Content-Type: "'application/json'"
+              method.response.header.Strict-Transport-Security: "'max-age=31536000'"
+              method.response.header.X-Content-Type-Options: "'nosniff'"
+              method.response.header.X-Frame-Options: "'DENY'"
+            responseTemplates:
+              text/plain: Not Found
           default:
             statusCode: "500"
             responseParameters:
