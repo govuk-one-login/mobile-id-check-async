@@ -1,0 +1,14 @@
+{
+  "name": "helper-scripts",
+  "version": "1.0.0",
+  "description": "Scripts for deploying, updating and deleting AWS SAM stacks",
+  "main": "deploy_stack.sh",
+  "scripts": {
+    "run-script": "./node_modules/.bin/zx ./test.mjs"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "zx": "^8.3.0"
+  }
+}
