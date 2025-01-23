@@ -9,7 +9,7 @@ paths:
     get:
       security:
         - sigv4Reference: [ ]
-      operationId: getSessionInfo
+      operationId: getEvents
       summary: Endpoint to retrieve events for the given session
       description: >-
         Retrieve events for the given session. This endpoint is implemented as an APIGW service
