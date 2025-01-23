@@ -5,7 +5,8 @@
   "main": "deploy_stack.sh",
   "scripts": {
     "run-script": "./node_modules/.bin/zx ./test.mjs",
-    "run-secondScript": "./node_modules/.bin/tsx ./secondTest.mts"
+    "run-secondScript": "./node_modules/.bin/tsx ./secondTest.mts",
+    "run-thirdScript": "./node_modules/.bin/tsx ./thirdTest.mts"
   },
   "author": "",
   "license": "ISC",
