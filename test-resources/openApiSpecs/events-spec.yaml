@@ -10,16 +10,16 @@ paths:
       security:
         - sigv4Reference: [ ]
       operationId: getEvents
-      summary: Endpoint to retrieve events for the given session
+      summary: Retrieves events that have been dequeued from SQS
       description: >-
-        Retrieve events for the given session. This endpoint is implemented as an APIGW service
+        This endpoint is implemented as an APIGW service
         proxy - consumers should be aware that the underlying service may generate 5XX errors due to
         the distributed nature of AWS therefore occasional 5XX responses are safe to retry - see
         [AWS documentation on retries](https://docs.aws.amazon.com/general/latest/gr/api-retries.html)
       x-amazon-apigateway-request-validator: all
       parameters:
-        - $ref: "#/components/parameters/pkParam"
-        - $ref: "#/components/parameters/skPrefixParam"
+        - $ref: "#/components/parameters/pkPrefix"
+        - $ref: "#/components/parameters/skPrefix"
       responses:
         "200":
           description: OK
@@ -157,13 +157,13 @@ paths:
             Fn::Sub:
               - >
                 #set($inputRoot = $input.params('$'))
-                #set($pk = $input.params('pk'))
+                #set($pkPrefix = $input.params('pkPrefix'))
                 #set($skPrefix = $input.params('skPrefix'))
                 {
                   "TableName": "${tableName}",
                   "ExpressionAttributeValues": {
-                    ":pk": {
-                      "S": "$pk"
+                    ":pkPrefix": {
+                      "S": "$pkPrefix"
                     },
                     ":skPrefix": {
                       "S": "$skPrefix"
@@ -174,7 +174,7 @@ paths:
                     "#sk": "sk",
                     "#event": "event"
                   },
-                  "KeyConditionExpression": "#pk = :pk AND begins_with(#sk, :skPrefix)",
+                  "KeyConditionExpression": "#pk = :pkPrefix AND begins_with(#sk, :skPrefix)",
                   "ProjectionExpression": "#pk, #sk, #event"
                 }
               - tableName:
@@ -256,15 +256,15 @@ components:
       in: header
       x-amazon-apigateway-authtype: awsSigv4
   parameters:
-    pkParam:
+    pkPrefix:
       in: query
-      name: pk
+      name: pkPrefix
       description: The identifier used for a session.
       required: true
       schema:
         type: string
       example: "SESSION#mockSessionId"
-    skPrefixParam:
+    skPrefix:
       in: query
       name: skPrefix
       description: Event name

@@ -52,6 +52,8 @@ Resources:
       Description: API gateway for retrieving events
       EndpointConfiguration: REGIONAL
       Auth:
+        DefaultAuthorizer: AWS_IAM
+        ApiKeyRequired: false
         ResourcePolicy:
           AwsAccountWhitelist: !Sub ${AWS::AccountId}
       StageName: !Ref Environment
