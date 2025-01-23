@@ -113,7 +113,7 @@ Resources:
   EventsApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-events-api-access-logs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-events-api-access-logs-${Environment}
       RetentionInDays: 30
 
   # Dequeue resources
