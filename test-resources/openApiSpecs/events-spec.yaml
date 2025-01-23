@@ -18,8 +18,8 @@ paths:
         [AWS documentation on retries](https://docs.aws.amazon.com/general/latest/gr/api-retries.html)
       x-amazon-apigateway-request-validator: all
       parameters:
-        - $ref: "#/components/parameters/sessionParam"
-        - $ref: "#/components/parameters/eventNameParam"
+        - $ref: "#/components/parameters/pkParam"
+        - $ref: "#/components/parameters/skPrefixParam"
       responses:
         "200":
           description: OK
@@ -157,16 +157,16 @@ paths:
             Fn::Sub:
               - >
                 #set($inputRoot = $input.params('$'))
-                #set($session = $input.params('session'))
-                #set($eventName = $input.params('eventName'))
+                #set($pk = $input.params('pk'))
+                #set($skPrefix = $input.params('skPrefix'))
                 {
                   "TableName": "${tableName}",
                   "ExpressionAttributeValues": {
                     ":pk": {
-                      "S": "$session"
+                      "S": "$pk"
                     },
                     ":skPrefix": {
-                      "S": "$eventName"
+                      "S": "$skPrefix"
                     }
                   },
                   "ExpressionAttributeNames": {
@@ -258,17 +258,17 @@ components:
       in: header
       x-amazon-apigateway-authtype: awsSigv4
   parameters:
-    sessionParam:
+    pkParam:
       in: query
-      name: session
+      name: pk
       description: The identifier used for a session.
       required: true
       schema:
         type: string
       example: "SESSION#mockSessionId"
-    eventNameParam:
+    skPrefixParam:
       in: query
-      name: eventName
+      name: skPrefix
       description: Event name
       required: true
       schema:
