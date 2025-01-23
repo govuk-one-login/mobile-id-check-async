@@ -37,7 +37,6 @@ Conditions:
       - none
 
 Resources:
-  # API Gateway for retrieving events
   EventsApi:
     Type: AWS::Serverless::Api
     Properties:
@@ -101,7 +100,6 @@ Resources:
                       - pk
                       - sk
                       - event
-                      - timestamp
                   StringEquals:
                     dynamodb:Select: SPECIFIC_ATTRIBUTES
 

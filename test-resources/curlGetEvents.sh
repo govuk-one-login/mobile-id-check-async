@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Facilitates testing the API until Axios test suite is available
-# Paste the API execute url (including state) from the AWS Console -> Stages 
+# Paste the API execute url (including state) from the AWS Console -> Stages
 
 set -e
 
-api_execute_url=<PASTE_HERE>
+api_execute_url=https://vdnwbi5wec.execute-api.eu-west-2.amazonaws.com/dev
 
 aws_credentials=$( aws configure export-credentials )
 access_key_id=$( echo "$aws_credentials" | jq -r .AccessKeyId )
