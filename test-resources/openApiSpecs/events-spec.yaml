@@ -273,4 +273,4 @@ components:
       required: true
       schema:
         type: string
-      example: "TXAM#EVENT_NAME#DCMAW_ASYNC_CRI_START"
+      example: "TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START"
