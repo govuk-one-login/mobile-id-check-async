@@ -4,11 +4,13 @@
   "description": "Scripts for deploying, updating and deleting AWS SAM stacks",
   "main": "deploy_stack.sh",
   "scripts": {
-    "run-script": "./node_modules/.bin/zx ./test.mjs"
+    "run-script": "./node_modules/.bin/zx ./test.mjs",
+    "run-secondScript": "./node_modules/.bin/tsx ./secondTest.mts"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "tsx": "^4.19.2",
     "zx": "^8.3.0"
   }
 }
