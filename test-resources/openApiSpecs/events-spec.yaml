@@ -20,45 +20,61 @@ paths:
       parameters:
         - $ref: "#/components/parameters/sessionParam"
         - $ref: "#/components/parameters/eventNameParam"
-      tags:
-        - Auth Session
       responses:
         "200":
           description: OK
+          content:
+            application/json:
+              schema:
+                events:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      pk:
+                        type: string
+                      sk:
+                        type: string
+                      event:
+                        type: object
           headers:
             Cache-Control:
               schema:
-                type: "string"
+                type: string
             Content-Type:
               schema:
-                type: "string"
+                type: string
             Strict-Transport-Security:
               schema:
-                type: "string"
+                type: string
             X-Content-Type-Options:
               schema:
-                type: "string"
+                type: string
             X-Frame-Options:
               schema:
-                type: "string"
+                type: string
         "400":
           description: Bad Request
+          content:
+            text/plain:
+              schema:
+                type: string
           headers:
             Cache-Control:
               schema:
-                type: "string"
+                type: string
             Content-Type:
               schema:
-                type: "string"
+                type: string
             Strict-Transport-Security:
               schema:
-                type: "string"
+                type: string
             X-Content-Type-Options:
               schema:
-                type: "string"
+                type: string
             X-Frame-Options:
               schema:
-                type: "string"
+                type: string
         "403":
           description: Access Denied
           content:
@@ -90,41 +106,45 @@ paths:
           headers:
             Cache-Control:
               schema:
-                type: "string"
+                type: string
             Content-Type:
               schema:
-                type: "string"
+                type: string
             Strict-Transport-Security:
               schema:
-                type: "string"
+                type: string
             X-Content-Type-Options:
               schema:
-                type: "string"
+                type: string
             X-Frame-Options:
               schema:
-                type: "string"
+                type: string
         "500":
           description: >-
             Internal server error - NB: This endpoint is implemented as an APIGW service proxy - consumers should be aware
             that the underlying service may generate 5XX errors due to the distributed nature of AWS therefore
             occasional 5XX responses are safe to retry - see
             [AWS documentation on retries](https://docs.aws.amazon.com/general/latest/gr/api-retries.html)
+          content:
+            text/plain:
+              schema:
+                type: string
           headers:
             Cache-Control:
               schema:
-                type: "string"
+                type: string
             Content-Type:
               schema:
-                type: "string"
+                type: string
             Strict-Transport-Security:
               schema:
-                type: "string"
+                type: string
             X-Content-Type-Options:
               schema:
-                type: "string"
+                type: string
             X-Frame-Options:
               schema:
-                type: "string"
+                type: string
       x-amazon-apigateway-integration:
         type: "aws"
         passthroughBehavior: "never"
