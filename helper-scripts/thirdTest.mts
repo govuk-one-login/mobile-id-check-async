@@ -55,8 +55,4 @@ const backendCfStacksToDelete = ["james-x-cf-backend", "james-z-cf-backend"]
 
 await deleteStacks([stsMockStacksToDelete, backendStacksToDelete, backendCfStacksToDelete])
 
-
-
-
-
 echo(`finish!, the stack name was great`)
