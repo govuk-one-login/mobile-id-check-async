@@ -5,10 +5,13 @@ if [ "$(aws sts get-caller-identity --output text --query 'Account')" != "211125
   exit 1
 fi
 
-if [ -z "${STACK_NAME}" ]; then
-  echo "STACK_NAME not set"
-  exit 1
+# Check if stack name is provided
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <stack-name>"
+    exit 1
 fi
+
+STACK_NAME=$1
 
 echo "Stack Name: $STACK_NAME"
 
@@ -77,4 +80,4 @@ for bucket in $buckets; do
   echo
 done
 
-sam delete --stack-name "$STACK_NAME"
+sam delete --stack-name "$STACK_NAME" --no-prompts
