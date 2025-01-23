@@ -22,13 +22,6 @@ Parameters:
     Default: mob-async-backend
 
 Mappings:
-  EnvironmentVariables:
-    # Any variable defined here should be defined for all environments.
-    dev:
-      CORSALLOWEDORIGINHEADER: "'*'"
-    build:
-      CORSALLOWEDORIGINHEADER: "'*'"
-
   Apigw:
     dev:
       ApiBurstLimit: 10
