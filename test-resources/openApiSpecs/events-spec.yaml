@@ -26,9 +26,6 @@ paths:
         "200":
           description: OK
           headers:
-            Access-Control-Allow-Origin:
-              schema:
-                type: "string"
             Cache-Control:
               schema:
                 type: "string"
@@ -47,9 +44,6 @@ paths:
         "400":
           description: Bad Request
           headers:
-            Access-Control-Allow-Origin:
-              schema:
-                type: "string"
             Cache-Control:
               schema:
                 type: "string"
@@ -68,9 +62,6 @@ paths:
         "403":
           description: Access Denied
           headers:
-            Access-Control-Allow-Origin:
-              schema:
-                type: "string"
             Cache-Control:
               schema:
                 type: "string"
@@ -93,9 +84,6 @@ paths:
             occasional 5XX responses are safe to retry - see
             [AWS documentation on retries](https://docs.aws.amazon.com/general/latest/gr/api-retries.html)
           headers:
-            Access-Control-Allow-Origin:
-              schema:
-                type: "string"
             Cache-Control:
               schema:
                 type: "string"
@@ -149,12 +137,6 @@ paths:
           "200":
             statusCode: "200"
             responseParameters:
-              method.response.header.Access-Control-Allow-Origin:
-                Fn::FindInMap: [
-                  EnvironmentVariables,
-                  Ref: Environment,
-                  CORSALLOWEDORIGINHEADER
-                ]
               method.response.header.Cache-Control: "'no-store'"
               method.response.header.Content-Type: "'application/json'"
               method.response.header.Strict-Transport-Security: "'max-age=31536000'"
@@ -184,12 +166,6 @@ paths:
           "400":
             statusCode: "400"
             responseParameters:
-              method.response.header.Access-Control-Allow-Origin:
-                Fn::FindInMap: [
-                  EnvironmentVariables,
-                  Ref: Environment,
-                  CORSALLOWEDORIGINHEADER
-                ]
               method.response.header.Cache-Control: "'no-store'"
               method.response.header.Content-Type: "'application/json'"
               method.response.header.Strict-Transport-Security: "'max-age=31536000'"
@@ -200,12 +176,6 @@ paths:
           "403":
             statusCode: "403"
             responseParameters:
-              method.response.header.Access-Control-Allow-Origin:
-                Fn::FindInMap: [
-                  EnvironmentVariables,
-                  Ref: Environment,
-                  CORSALLOWEDORIGINHEADER
-                ]
               method.response.header.Cache-Control: "'no-store'"
               method.response.header.Content-Type: "'application/json'"
               method.response.header.Strict-Transport-Security: "'max-age=31536000'"
@@ -216,12 +186,6 @@ paths:
           default:
             statusCode: "500"
             responseParameters:
-              method.response.header.Access-Control-Allow-Origin:
-                Fn::FindInMap: [
-                  EnvironmentVariables,
-                  Ref: Environment,
-                  CORSALLOWEDORIGINHEADER
-                ]
               method.response.header.Cache-Control: "'no-store'"
               method.response.header.Content-Type: "'application/json'"
               method.response.header.Strict-Transport-Security: "'max-age=31536000'"
