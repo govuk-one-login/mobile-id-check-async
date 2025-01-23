@@ -70,7 +70,7 @@ export const putItemInputForPassingSQSRecord = {
   },
 };
 
-export const putItemInputForPassingSQSRecordWithoutSessionId = {
+export const putItemInputForPassingSQSRecordUnknownSessionId = {
   Item: {
     pk: { S: `SESSION#${passingSessionIdUnknown}` },
     sk: {

@@ -18,7 +18,7 @@ import {
   passingSQSRecordKnownSessionId,
   passingSQSRecordUnknownSessionId,
   putItemInputForPassingSQSRecord,
-  putItemInputForPassingSQSRecordWithoutSessionId,
+  putItemInputForPassingSQSRecordUnknownSessionId,
 } from "./testData";
 
 const env = {
@@ -212,7 +212,7 @@ describe("Dequeue TxMA events", () => {
       expect(mockDbClient).toHaveReceivedNthCommandWith(
         2,
         PutItemCommand,
-        putItemInputForPassingSQSRecordWithoutSessionId,
+        putItemInputForPassingSQSRecordUnknownSessionId,
       );
     });
 
