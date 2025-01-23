@@ -1,12 +1,10 @@
 #!/usr/bin/env zx
 
-import { $, echo } from 'zx'
+import { $, echo, sleep } from 'zx'
 
 $.quiet = true
 
 echo("hello")
-
-const stacksToDelete = ["james-x-sts-mock", "james-z-sts-mock"]
 
 const checkStackExists = async (stackName: string): Promise<void> => {
   try {
@@ -27,12 +25,35 @@ const deleteStack = async (stackName: string): Promise<void> => {
   }
 }
 
-for (const value of stacksToDelete) {
-  echo(`Checking if ${value} exists`)
-  await checkStackExists(value)
-  echo(`Attempting to delete stack: ${value}`)
-  await deleteStack(value)
+const mockCheckStackExists = async (stackName: string): Promise<void> => {
+  echo(`Pretending to look up this stack to ensure it exists: ${stackName}`)
+  await sleep(1000)
+  return
 }
+
+const mockDeleteStack = async (stackName: string): Promise<void> => {
+  echo(`Pretending to successfully delete ${stackName} stack`)
+  await sleep(2000)
+  return
+}
+
+const deleteStacks = async (stacks: string[][]): Promise<void> => {
+  for (const arr of stacks) {
+    for (const value of arr) {
+      echo(`Checking if ${value} exists`)
+      await mockCheckStackExists(value)
+      echo(`Attempting to delete stack: ${value}`)
+      await mockDeleteStack(value)
+    }
+  }
+
+}
+
+const stsMockStacksToDelete = ["james-x-sts-mock", "james-z-sts-mock"]
+const backendStacksToDelete = ["james-x-backend", "james-z-backend"]
+const backendCfStacksToDelete = ["james-x-cf-backend", "james-z-cf-backend"]
+
+await deleteStacks([stsMockStacksToDelete, backendStacksToDelete, backendCfStacksToDelete])
 
 
 
