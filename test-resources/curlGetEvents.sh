@@ -5,7 +5,7 @@
 
 set -e
 
-api_execute_url=https://vdnwbi5wec.execute-api.eu-west-2.amazonaws.com/dev
+api_execute_url=<PASTE_HERE>
 
 aws_credentials=$( aws configure export-credentials )
 access_key_id=$( echo "$aws_credentials" | jq -r .AccessKeyId )
