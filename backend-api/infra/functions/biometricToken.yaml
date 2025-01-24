@@ -1,0 +1,116 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  AsyncBiometricTokenFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - AsyncBiometricTokenLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2022
+        Sourcemap: false
+        EntryPoints:
+          - src/functions/asyncBiometricToken/asyncBiometricTokenHandler.ts
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-biometric-token
+      Runtime: nodejs20.x
+      Handler: asyncBiometricTokenHandler.lambdaHandler
+      Events:
+        AsyncBiometricToken:
+          Type: Api
+          Properties:
+            Path: /async/biometricToken
+            Method: post
+            RestApiId: !Ref SessionsApi
+      Environment:
+        Variables:
+          BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_PASSPORT: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathPassport]
+          BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_BRP: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathBrp]
+          BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathDl]
+          BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS: !FindInMap [ EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretCacheDurationInSeconds ]
+          READID_BASE_URL: !FindInMap [EnvironmentVariables, !Ref Environment, ReadIdBaseUrl]
+      Role: !GetAtt AsyncBiometricTokenLambdaRole.Arn
+      VpcConfig:
+        SubnetIds:
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+
+  AsyncBiometricTokenFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt AsyncBiometricTokenFunction.Arn
+      Principal: events.amazonaws.com
+      SourceAccount: !Sub ${AWS::AccountId}
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SessionsApi}/*/*/*
+
+  AsyncBiometricTokenLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-biometric-token
+
+  AsyncBiometricTokenLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-biometric-token-lambda
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AsyncBiometricTokenFunctionLoggingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+        - PolicyName: VpcPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
+        - PolicyName: AsyncBiometricTokenParameterStorePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameters
+                Resource:
+                  - !Sub
+                    - arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${submitterKeyPathPassport}
+                    - submitterKeyPathPassport: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathPassport]
+                  - !Sub
+                    - arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${submitterKeyPathBrp}
+                    - submitterKeyPathBrp: !FindInMap [ EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathBrp ]
+                  - !Sub
+                    - arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${submitterKeyPathDl}
+                    - submitterKeyPathDl: !FindInMap [ EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathDl ]
+        - PolicyName: AsyncBiometricTokenFunctionDynamodbPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "dynamodb:UpdateItem"
+                Resource: !GetAtt SessionsTable.Arn
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue

@@ -9,6 +9,9 @@ set -e
 
 cd backend-api || exit 1
 
+# run combine_template
+npm run build:infra
+
 # Run prettier formatting checks
 npm run lint
 npm run format:check

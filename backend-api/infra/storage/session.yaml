@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  SessionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${AWS::StackName}-sessions-table-${Environment}
+      AttributeDefinitions:
+        - AttributeName: sessionId
+          AttributeType: S
+        - AttributeName: subjectIdentifier
+          AttributeType: S
+        - AttributeName: timeToLive
+          AttributeType: N
+      KeySchema:
+        - AttributeName: sessionId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: subjectIdentifier-timeToLive-index
+          KeySchema:
+            - AttributeName: subjectIdentifier
+              KeyType: HASH
+            - AttributeName: timeToLive
+              KeyType: RANGE
+          Projection:
+            NonKeyAttributes:
+              - sessionState
+              - redirectUri
+              - clientState
+            ProjectionType: INCLUDE
+      BillingMode: PAY_PER_REQUEST
+      SSESpecification:
+        SSEEnabled: true
+      TimeToLiveSpecification:
+        AttributeName: timeToLive
+        Enabled: true
