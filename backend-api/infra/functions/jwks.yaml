@@ -1,0 +1,101 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  JsonWebKeysFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - JsonWebKeysFunctionLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2020
+        Sourcemap: false
+        EntryPoints:
+          - src/functions/jwks/jwksHandler.ts
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-jwks
+      Description: Convert ID Check public encryption keys to JWKS format and upload to S3
+      Runtime: nodejs20.x
+      Handler: jwksHandler.lambdaHandler
+      Role: !GetAtt JsonWebKeysFunctionLambdaRole.Arn
+      Environment:
+        Variables:
+          ENCRYPTION_KEY_ID: !Ref KMSEncryptionKey
+          JWKS_BUCKET_NAME: !Ref JsonWebKeysBucket
+          JWKS_FILE_NAME: .well-known/jwks.json
+      VpcConfig:
+        SubnetIds:
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+
+  JsonWebKeysFunctionLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-jwks-lambda
+      Description: Role of JWKS function
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: UploadPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                Resource:
+                  - !Sub
+                    - arn:aws:s3:::${TargetBucket}/*
+                    - TargetBucket: !Ref JsonWebKeysBucket
+        - PolicyName: GetPublicKeyPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:GetPublicKey
+                Resource: !GetAtt KMSEncryptionKey.Arn
+        - PolicyName: LoggingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+        - PolicyName: VpcPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+
+  JsonWebKeysFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-jwks
+
+  JsonWebKeysCustomResource:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt JsonWebKeysFunction.Arn
+      ServiceTimeout: 30
+      LambdaVersion: !Ref JsonWebKeysFunction.Version # The below value is not used by the lambda - it is a workaround to make the custom resource trigger the lambda each time the lambda code is updated

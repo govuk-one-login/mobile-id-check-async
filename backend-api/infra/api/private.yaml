@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  PrivateApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${AWS::StackName}-private-api
+      Description: Private API gateway for Client Credentials flow
+      EndpointConfiguration: PRIVATE
+      Auth:
+        ResourcePolicy:
+          IntrinsicVpceWhitelist:
+            - !ImportValue devplatform-vpc-ExecuteApiGatewayEndpointId
+      StageName: !Ref Environment
+      OpenApiVersion: 3.0.1
+      AccessLogSetting:
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialPrivateApiAccessLogs}
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      MethodSettings:
+        - LoggingLevel: INFO
+          ResourcePath: /*
+          HttpMethod: '*'
+          DataTraceEnabled: false
+          MetricsEnabled: true
+          ThrottlingBurstLimit: !FindInMap
+            - PrivateApigw
+            - !Ref Environment
+            - ApiBurstLimit
+          ThrottlingRateLimit: !FindInMap
+            - PrivateApigw
+            - !Ref Environment
+            - ApiRateLimit
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./openApiSpecs/async-private-spec.yaml
+
+  AsyncCredentialPrivateApiAccessLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
+      RetentionInDays: 30

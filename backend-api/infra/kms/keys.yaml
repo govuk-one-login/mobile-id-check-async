@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  KMSSigningKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A KMS Key for signing.
+      Enabled: true
+      EnableKeyRotation: false
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action:
+              - kms:*
+            Resource:
+              - '*'
+      KeySpec: ECC_NIST_P256
+      KeyUsage: SIGN_VERIFY
+      MultiRegion: false
+      PendingWindowInDays: !FindInMap
+        - KMS
+        - !Ref Environment
+        - PendingDeletionInDays
+
+  KMSSigningKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}-signing-key
+      TargetKeyId: !Ref KMSSigningKey
+
+  KMSEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A KMS Key for encrypting.
+      Enabled: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action:
+              - kms:*
+            Resource:
+              - '*'
+      KeySpec: RSA_2048
+      KeyUsage: ENCRYPT_DECRYPT
+      MultiRegion: false
+      PendingWindowInDays: !FindInMap
+        - KMS
+        - !Ref Environment
+        - PendingDeletionInDays
+
+  KMSEncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}-encryption-key
+      TargetKeyId: !Ref KMSEncryptionKey

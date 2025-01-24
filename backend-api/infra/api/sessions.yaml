@@ -1,0 +1,111 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  SessionsApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${AWS::StackName}-sessions-api
+      Description: Regional API gateway for Client Credentials flow
+      EndpointConfiguration: REGIONAL
+      StageName: !Ref Environment
+      OpenApiVersion: 3.0.1
+      AccessLogSetting:
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${SessionsApiAccessLogs}
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      MethodSettings:
+        - LoggingLevel: INFO
+          ResourcePath: /*
+          HttpMethod: '*'
+          DataTraceEnabled: false
+          MetricsEnabled: true
+          ThrottlingBurstLimit: !FindInMap
+            - SessionsApigw
+            - !Ref Environment
+            - ApiBurstLimit
+          ThrottlingRateLimit: !FindInMap
+            - SessionsApigw
+            - !Ref Environment
+            - ApiRateLimit
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./openApiSpecs/async-public-spec.yaml
+      Tags:
+        FMSRegionalPolicy: false
+
+  SessionsApiAccessLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sessions-api-access-logs
+      RetentionInDays: 30
+
+  SessionsApiDomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !Sub
+        - sessions-${AWS::StackName}.${DNS_RECORD}
+        - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      RegionalCertificateArn: !If
+        - UseWildcardCertificate
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneSessionsCertificateV1ARN}}'
+      SecurityPolicy: TLS_1_2
+
+  SessionsApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    DependsOn: SessionsApiDomainName
+    Properties:
+      DomainName: !Sub
+        - sessions-${AWS::StackName}.${DNS_RECORD}
+        - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      RestApiId: !Ref SessionsApi
+      Stage: !Ref SessionsApi.Stage
+
+  SessionsApiOriginRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Sub
+        - "origin.sessions-${AWS::StackName}.${DNS_RECORD}"
+        - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      Type: A
+      HostedZoneId: !Sub "{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}"
+      AliasTarget:
+        DNSName: !GetAtt SessionsApiDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt SessionsApiDomainName.RegionalHostedZoneId
+
+  SessionsApiRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Sub
+        - sessions-${AWS::StackName}.${DNS_RECORD}
+        - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      Type: A
+      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
+      AliasTarget:
+        DNSName:
+          Fn::ImportValue: !Sub "${AWS::StackName}-cf-dist-DistributionDomain"
+        HostedZoneId: Z2FDTNDATAQYW2
+
+  SessionsApiWebAclAssociation:
+    Type: AWS::WAFv2::WebACLAssociation
+    Properties:
+      ResourceArn: !Sub
+        - "arn:aws:apigateway:${AWS::Region}::/restapis/${SessionsApi}/stages/${ApiStage}"
+        - ApiStage: !Ref SessionsApi.Stage
+      WebACLArn:
+        Fn::ImportValue: !Sub "${AWS::StackName}-cf-dist-CloakingOriginWebACLArn"
