@@ -1,4 +1,4 @@
-import { echo } from "zx";
+import { chalk, echo } from "zx";
 import { emptyLine } from "../helpers/formatting";
 
 export const getStacksToDelete = (stacks: string[][]): string[][] => {
@@ -10,7 +10,7 @@ export const getStacksToDelete = (stacks: string[][]): string[][] => {
   }
 
   if (result.length === 0) {
-    echo("No stacks to delete!");
+    echo(chalk.yellow("No stacks to delete!"));
     emptyLine();
     process.exit(1);
   }

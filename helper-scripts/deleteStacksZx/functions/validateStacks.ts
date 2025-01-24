@@ -1,4 +1,4 @@
-import { $, echo, question } from "zx";
+import { $, chalk, echo, question } from "zx";
 import { emptyLine, twoEmptyLines } from "../helpers/formatting";
 
 const checkIfProtectedStack = (
@@ -8,8 +8,8 @@ const checkIfProtectedStack = (
   for (const arr of stacks) {
     arr.forEach(async (stackName) => {
       if (protectedStacks.includes(stackName)) {
-        echo(`It is not permitted to delete stack: ${stackName}`);
-        echo("Please remove this stack before continuing");
+        echo(chalk.red(`It is not permitted to delete stack: ${stackName}`));
+        echo(chalk.red("Please remove this stack before continuing"));
         emptyLine();
         process.exit(1);
       }
@@ -26,17 +26,28 @@ const confirmStackNames = async (stacks: string[][]): Promise<void> => {
       echo(stackName);
     });
     emptyLine();
-    const areStacksCorrect = (
-      await question("Are you sure you want to delete these stacks? [Y/n]")
-    )
-      .trim()
-      .toLowerCase();
-    emptyLine();
 
-    if (areStacksCorrect === "n") {
+    while (true) {
+      const areStacksCorrect = (
+        await question("Are you sure you want to delete these stacks? [y/n] ")
+      )
+        .trim()
+        .toLowerCase();
       emptyLine();
-      echo("Please update stack names and try again");
-      process.exit(1);
+
+      if (areStacksCorrect === "n") {
+        echo(
+          chalk.yellow(
+            "Please correct the stack names you want to delete and try again",
+          ),
+        );
+        process.exit(1);
+      } else if (areStacksCorrect === "y") {
+        return;
+      } else {
+        echo(chalk.yellow("Please answer either 'y' or 'n'"));
+        emptyLine();
+      }
     }
   }
 };
@@ -48,9 +59,8 @@ const checkStackExists = async (stacks: string[][]): Promise<void> => {
         await $`aws cloudformation describe-stacks --stack-name ${stackName}`;
       } catch (error: unknown) {
         twoEmptyLines();
-        echo(`Cannot find stack: ${stackName}`);
-        emptyLine();
-        echo(`Error: ${error}`);
+        echo(chalk.red(`Cannot find stack: ${stackName}`));
+        echo(chalk.red(`Error: ${error}`));
         process.exit(1);
       }
       return;

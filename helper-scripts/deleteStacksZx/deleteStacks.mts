@@ -16,4 +16,4 @@ await validateStacks(stacksToDelete, protectedStacks)
 await deleteStacks(stacksToDelete)
 
 emptyLine()
-echo(chalk.green(`Stack deletion script has completed!`))
+echo(chalk.green(`Stack deletion complete!`))
