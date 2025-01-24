@@ -1,15 +1,45 @@
-import { $, echo, sleep } from "zx";
+import { $, echo, question, sleep } from "zx";
 
 const checkStackExists = async (stackName: string): Promise<void> => {
   try {
     await $`aws cloudformation describe-stacks --stack-name ${stackName}`;
   } catch (error: unknown) {
-    echo(
-      `there was a problem partner when checking stack: ${stackName}. The error was: ${error}`,
-    );
+    echo(`Cannot find stack: ${stackName}. Error: ${error}`);
     process.exit(1);
   }
   return;
+};
+
+export const confirmStackNames = async (stacks: string[][]): Promise<void> => {
+  echo("Please confirm you are happy to delete the following stacks...");
+  for (const arr of stacks) {
+    echo("");
+    arr.forEach((stackName) => {
+      echo(stackName);
+    });
+    echo("");
+    const areStacksCorrect = (
+      await question("Are you sure you want to delete these stacks? [Y/n]")
+    )
+      .trim()
+      .toLowerCase();
+    echo("");
+    if (areStacksCorrect === "n") {
+      echo("");
+      echo("Please update stack names and try again");
+      process.exit(1);
+    }
+  }
+};
+
+export const validateStacks = async (stacks: string[][]): Promise<void> => {
+  for (const arr of stacks) {
+    arr.forEach(async (stackName) => {
+      await mockCheckStackExists(stackName);
+    });
+  }
+
+  await confirmStackNames(stacks);
 };
 
 const deleteStack = async (stackName: string): Promise<void> => {
@@ -22,13 +52,11 @@ const deleteStack = async (stackName: string): Promise<void> => {
 };
 
 const mockCheckStackExists = async (stackName: string): Promise<void> => {
-  echo(`Pretending to look up this stack to ensure it exists: ${stackName}`);
   await sleep(1000);
   return;
 };
 
 const mockDeleteStack = async (stackName: string): Promise<void> => {
-  echo(`Pretending to successfully delete ${stackName} stack`);
   await sleep(2000);
   return;
 };
@@ -36,8 +64,6 @@ const mockDeleteStack = async (stackName: string): Promise<void> => {
 export const deleteStacks = async (stacks: string[][]): Promise<void> => {
   for (const arr of stacks) {
     for (const value of arr) {
-      echo(`Checking if ${value} exists`);
-      await mockCheckStackExists(value);
       echo(`Attempting to delete stack: ${value}`);
       await mockDeleteStack(value);
     }
