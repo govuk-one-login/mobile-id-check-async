@@ -2,7 +2,7 @@ import { $, echo } from "zx";
 
 const deleteStack = async (stackName: string): Promise<void> => {
   try {
-    await $`./delete_stack.sh ${stackName}`;
+    await $`./deleteStacksZx/deleteStackUtils/delete_stack.sh ${stackName}`;
   } catch (error: unknown) {
     echo(`error deleting stack ${stackName}. Error: ${error}`);
     process.exit(1);
