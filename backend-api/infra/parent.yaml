@@ -159,8 +159,8 @@ Mappings:
 
   EnvironmentVariables:
     dev:
-      STSBASEURL: 'https://mob-sts-mock.review-b-async.dev.account.gov.uk'
-      ReadIdBaseUrl: 'https://mob-readid-mock.review-b-async.dev.account.gov.uk/v2'
+      STSBASEURL: 'https://sts-mock.review-b-async.dev.account.gov.uk'
+      ReadIdBaseUrl: 'https://readid-mock.review-b-async.dev.account.gov.uk/v2'
       ClientRegistrySecretPath: 'dev/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
@@ -168,8 +168,8 @@ Mappings:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
 
     build:
-      STSBASEURL: 'https://mob-sts-mock.review-b-async.build.account.gov.uk'
-      ReadIdBaseUrl: 'https://mob-readid-mock.review-b-async.build.account.gov.uk/v2'
+      STSBASEURL: 'https://sts-mock.review-b-async.build.account.gov.uk'
+      ReadIdBaseUrl: 'https://readid-mock.review-b-async.build.account.gov.uk/v2'
       ClientRegistrySecretPath: 'build/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
@@ -246,7 +246,7 @@ Conditions:
       - !Ref DevOverrideStsBaseUrl
       - none
 
-  UseWildcardCertificate: !And
+  DevelopmentStack: !And
     - !Equals [!Ref Environment, dev]
     - !Not [!Equals [!Ref AWS::StackName, mob-async-backend]]
 

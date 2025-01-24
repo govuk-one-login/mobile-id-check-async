@@ -45,9 +45,17 @@ Resources:
   ProxyApiDomainName:
     Type: AWS::ApiGateway::DomainName
     Properties:
-      DomainName: !Sub
-        - proxy-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - proxy-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - proxy.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
             - BaseDns
@@ -55,9 +63,9 @@ Resources:
         Types:
           - REGIONAL
       RegionalCertificateArn: !If
-        - UseWildcardCertificate
+        - DevelopmentStack
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
-        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneProxyCertificateV1ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneProxyCertificateV2ARN}}'
         
       SecurityPolicy: TLS_1_2
     Condition: ProxyApiDeployment
@@ -67,9 +75,20 @@ Resources:
     DependsOn: ProxyApiDomainName
     Condition: ProxyApiDeployment
     Properties:
-      DomainName: !Sub
-        - proxy-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap [DNS, !Ref Environment, BaseDns]
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - proxy-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - proxy.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
       RestApiId: !Ref ProxyApi
       Stage: !Ref ProxyApi.Stage
 
@@ -77,9 +96,20 @@ Resources:
     Type: AWS::Route53::RecordSet
     Condition: ProxyApiDeployment
     Properties:
-      Name: !Sub
-        - proxy-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap [DNS, !Ref Environment, BaseDns]
+      Name: !If
+        - DevelopmentStack
+        - !Sub
+          - proxy-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - proxy.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
       Type: A
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
       AliasTarget:
