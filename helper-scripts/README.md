@@ -22,6 +22,12 @@ This script provides the ability to:
 
 Add the name of any stack you want to delete, in a string format, to the appropriate array within `./deleteStackZx/stacksToDelete.ts`
 
+```typescript
+  export const stsMockStacksToDelete: string[] = ["mock-sts-stack-1", "mock-sts-stack-2"];
+  export const backendStacksToDelete: string[] = ["mock-backend-stack-1", "mock-backend-stack-2"];
+  export const backendCfStacksToDelete: string[] = ["mock-backend-cf-stack-1", "mock-backend-cf-stack-2"];
+```
+
 Ensure you have the `zx` package installed:
 
 ```bash
