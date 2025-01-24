@@ -5,7 +5,7 @@ const deleteStack = async (stackName: string): Promise<void> => {
   try {
     await $`./deleteStacksZx/functions/delete_stack.sh ${stackName}`;
   } catch (error: unknown) {
-    echo(chalk.red(`Unabled to delete: ${stackName}`));
+    echo(chalk.red(`Unable to delete stack: ${stackName}`));
     echo(chalk.red(`Error: ${error}`));
     process.exit(1);
   }
