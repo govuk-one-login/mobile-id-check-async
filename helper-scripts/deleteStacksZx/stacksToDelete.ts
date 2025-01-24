@@ -1,3 +1,3 @@
-export const stsMockStacksToDelete: string[] = ["rubbish"];
+export const stsMockStacksToDelete: string[] = [];
 export const backendStacksToDelete: string[] = [];
 export const backendCfStacksToDelete: string[] = [];

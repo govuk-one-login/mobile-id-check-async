@@ -6,6 +6,7 @@ import { validateStacks } from './deleteStackUtils/validateStacks'
 import { stsMockStacksToDelete, backendStacksToDelete, backendCfStacksToDelete } from './stacksToDelete'
 import { protectedStacks } from './deleteStackUtils/protectedStacks'
 import { getStacksToDelete } from './deleteStackUtils/getStacksToDelete'
+import { emptyLine } from './deleteStackUtils/formatting'
 
 $.quiet = true
 
@@ -14,5 +15,5 @@ const stacksToDelete = getStacksToDelete([stsMockStacksToDelete, backendStacksTo
 await validateStacks(stacksToDelete, protectedStacks)
 await deleteStacks(stacksToDelete)
 
-echo("")
+emptyLine()
 echo(chalk.green(`Stack deletion script has completed!`))

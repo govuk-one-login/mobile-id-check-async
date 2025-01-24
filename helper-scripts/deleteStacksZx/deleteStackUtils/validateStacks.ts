@@ -31,7 +31,8 @@ const confirmStackNames = async (stacks: string[][]): Promise<void> => {
     )
       .trim()
       .toLowerCase();
-    echo("");
+    emptyLine();
+
     if (areStacksCorrect === "n") {
       emptyLine();
       echo("Please update stack names and try again");
