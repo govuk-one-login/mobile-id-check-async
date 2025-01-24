@@ -1,0 +1,117 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  ProxyApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${AWS::StackName}-proxy-api
+      Description: Regional equivalent of the private Api to enable testing from outside AWS
+      EndpointConfiguration: REGIONAL
+      StageName: !Ref Environment
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./openApiSpecs/async-proxy-private-spec.yaml # This is generated automatically in Github Actions
+      MethodSettings:
+        - LoggingLevel: INFO
+          HttpMethod: '*'
+          ResourcePath: /*
+          MetricsEnabled: true
+          ThrottlingBurstLimit: !FindInMap
+            - ProxyApigw
+            - !Ref Environment
+            - ApiBurstLimit
+          ThrottlingRateLimit: !FindInMap
+            - ProxyApigw
+            - !Ref Environment
+            - ApiRateLimit
+      AccessLogSetting:
+        DestinationArn: !GetAtt ProxyApiAccessLogs.Arn
+        Format: '{"requestId" : "$context.requestId","ip" : "$context.identity.sourceIp","requestTime" : "$context.requestTime","httpMethod" : "$context.httpMethod","path" : "$context.path","routeKey" : "$context.routeKey","status" : "$context.status","protocol" : "$context.protocol","responseLength" : "$context.responseLength","integrationError" : "$context.integrationErrorMessage"}'
+      Auth:
+        DefaultAuthorizer: AWS_IAM
+        ApiKeyRequired: false
+        ResourcePolicy:
+          AwsAccountWhitelist: !Sub ${AWS::AccountId}
+    Condition: ProxyApiDeployment
+
+  ProxyApiAccessLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-proxy-api-access-logs
+      RetentionInDays: 30
+    Condition: ProxyApiDeployment
+
+  ProxyApiDomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - proxy-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - proxy.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      RegionalCertificateArn: !If
+        - DevelopmentStack
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneProxyCertificateV2ARN}}'
+        
+      SecurityPolicy: TLS_1_2
+    Condition: ProxyApiDeployment
+
+  ProxyApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    DependsOn: ProxyApiDomainName
+    Condition: ProxyApiDeployment
+    Properties:
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - proxy-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - proxy.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      RestApiId: !Ref ProxyApi
+      Stage: !Ref ProxyApi.Stage
+
+  ProxyApiRecordSet:
+    Type: AWS::Route53::RecordSet
+    Condition: ProxyApiDeployment
+    Properties:
+      Name: !If
+        - DevelopmentStack
+        - !Sub
+          - proxy-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - proxy.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      Type: A
+      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
+      AliasTarget:
+        DNSName: !GetAtt ProxyApiDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt ProxyApiDomainName.RegionalHostedZoneId

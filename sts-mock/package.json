@@ -22,8 +22,10 @@
     "@types/jest": "29.5.14",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.17.14",
+    "@types/node": "^20.17.14",
     "axios": "^1.7.9",
     "axios-retry": "^4.5.0",
+    "aws-cdk-lib": "^2.176.0",
     "aws-cdk-lib": "^2.176.0",
     "aws-sdk-client-mock": "^4.1.0",
     "dotenv": "^16.4.7",
@@ -36,11 +38,12 @@
     "ts-node": "10.9.2",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.21.0",
+    "typescript-eslint": "^8.21.0",
     "yaml-cfn": "^0.3.2"
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.13.0",
-    "@aws-sdk/client-s3": "^3.731.1",
+    "@aws-sdk/client-s3": "^3.732.0",
     "esbuild": "^0.24.2",
     "jose": "^5.9.6"
   },
