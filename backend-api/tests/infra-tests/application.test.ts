@@ -19,8 +19,8 @@ describe("Backend application infrastructure", () => {
   describe("EnvironmentVariable mapping values", () => {
     test("STS base url is set", () => {
       const expectedEnvironmentVariablesValues = {
-        dev: "https://mob-sts-mock.review-b-async.dev.account.gov.uk",
-        build: "https://mob-sts-mock.review-b-async.build.account.gov.uk",
+        dev: "https://sts-mock.review-b-async.dev.account.gov.uk",
+        build: "https://sts-mock.review-b-async.build.account.gov.uk",
         staging: "https://token.staging.account.gov.uk",
         integration: "https://token.integration.account.gov.uk",
         production: "https://token.account.gov.uk",
@@ -35,8 +35,8 @@ describe("Backend application infrastructure", () => {
 
     test("ReadIdBaseUrl assigned ID Check mock values in dev and build and vendor values in staging, integration and production", () => {
       const expectedEnvironmentVariablesValues = {
-        dev: "https://mob-readid-mock.review-b-async.dev.account.gov.uk/v2",
-        build: "https://mob-readid-mock.review-b-async.build.account.gov.uk/v2",
+        dev: "https://readid-mock.review-b-async.dev.account.gov.uk/v2",
+        build: "https://readid-mock.review-b-async.build.account.gov.uk/v2",
         staging: "", // To be updated with new ReadID URL once available
         integration: "", // To be updated with new ReadID URL once available
         production: "", // To be updated with new ReadID URL once available
