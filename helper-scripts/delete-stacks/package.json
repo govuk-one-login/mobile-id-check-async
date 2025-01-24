@@ -1,0 +1,17 @@
+{
+  "name": "delete-stacks",
+  "dependencies": {
+    "@inquirer/prompts": "7.2.3",
+    "typescript": "5.7.3"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "./node_modules/.bin/jest",
+    "config": "./node_modules/.bin/ts-jest config:init",
+    "delete": "node ./dist/delete-stacks.js"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.5.14",
+    "ts-jest": "^29.2.5"
+  }
+}
