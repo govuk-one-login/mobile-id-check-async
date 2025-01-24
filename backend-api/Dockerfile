@@ -13,6 +13,7 @@ RUN npm install --ignore-scripts
 RUN apk upgrade && apk update; apk add --no-cache bash aws-cli && aws --version
 
 # Copy the CloudFormation infrastructure template and application source code to the working directory
+COPY src ./src
 COPY tests ./tests
 COPY template.yaml openApiSpecs eslint.config.mjs jest.config.ts tsconfig.json ./
 
