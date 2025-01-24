@@ -26,17 +26,16 @@ paths:
           content:
             application/json:
               schema:
-                events:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      pk:
-                        type: string
-                      sk:
-                        type: string
-                      event:
-                        type: object
+                type: array
+                items:
+                  type: object
+                  properties:
+                    pk:
+                      type: string
+                    sk:
+                      type: string
+                    event:
+                      type: object
           headers:
             Cache-Control:
               schema:
