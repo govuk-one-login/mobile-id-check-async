@@ -1,17 +1,22 @@
-import { AxiosInstance } from "axios";
-import { UUID } from "crypto";
+import { AxiosInstance, AxiosResponse } from "axios";
+import { randomUUID, UUID } from "crypto";
 import "dotenv/config";
 import {
   EVENTS_API_INSTANCE,
   PRIVATE_API_INSTANCE,
   PROXY_API_INSTANCE,
+  SESSIONS_API_INSTANCE,
+  STS_MOCK_API_INSTANCE,
 } from "./utils/apiInstance";
 import {
   ClientDetails,
+  createSessionForSub,
   getFirstRegisteredClient,
 } from "./utils/apiTestHelpers";
 
-jest.setTimeout(4 * 5000);
+jest.useFakeTimers();
+const ONE_SECOND = 1000;
+jest.setTimeout(7 * 5 * ONE_SECOND);
 
 interface IApiConfig {
   apiName: string;
@@ -61,11 +66,13 @@ describe.each(APIS)(
       let clientDetails: ClientDetails;
       let accessToken: string;
       let credentialRequestBody: CredentialRequestBody;
+      let sub: string;
+      let sessionId: string;
 
       beforeAll(async () => {
         clientDetails = await getFirstRegisteredClient();
         clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
-        accessToken = await getAccessToken(
+        accessToken = await getCredentialAccessToken(
           axiosInstance,
           clientIdAndSecret,
           authorizationHeader,
@@ -77,6 +84,8 @@ describe.each(APIS)(
           accessToken,
           requestBody: credentialRequestBody,
         });
+        sub = randomUUID();
+        sessionId = await getActiveSessionId(sub);
       });
 
       describe("Given a request is made with a query that is not valid", () => {
@@ -88,6 +97,24 @@ describe.each(APIS)(
 
           expect(response.status).toBe(400);
           expect(response.statusText).toStrictEqual("Bad Request");
+        });
+      });
+
+      describe("Given a request is made with a query that is valid", () => {
+        it("Returns a 200 OK response", async () => {
+          const params = {
+            pkPrefix: `SESSION%23${sessionId}`,
+            skPrefix: `TXMA%23EVENT_NAME%23DCMAW_ASYNC_CRI_START`,
+          };
+
+          setTimeout(async () => {
+            const response = await EVENTS_API_INSTANCE.get("/events", {
+              params,
+            });
+
+            expect(response.status).toBe(200);
+            expect(response.statusText).toStrictEqual("OK");
+          });
         });
       });
     });
@@ -120,7 +147,7 @@ function getRequestBody(
   };
 }
 
-async function getAccessToken(
+async function getCredentialAccessToken(
   apiInstance: AxiosInstance,
   clientIdAndSecret: string,
   authorizationHeader: string,
@@ -151,4 +178,33 @@ async function createSession(requestConfig: {
       [authorizationHeader]: "Bearer " + accessToken,
     },
   });
+}
+
+async function getActiveSessionAccessToken(
+  sub?: string,
+  scope?: string,
+): Promise<string> {
+  const requestBody = new URLSearchParams({
+    subject_token: sub ?? randomUUID(),
+    scope: scope ?? "idCheck.activeSession.read",
+    grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
+    subject_token_type: "urn:ietf:params:oauth:token-type:access_token",
+  });
+  const stsMockResponse = await STS_MOCK_API_INSTANCE.post(
+    "/token",
+    requestBody,
+  );
+  return stsMockResponse.data.access_token;
+}
+
+async function getActiveSessionId(sub: string): Promise<string> {
+  await createSessionForSub(sub);
+  const accessToken = await getActiveSessionAccessToken(sub);
+  const { sessionId } = (
+    await SESSIONS_API_INSTANCE.get("/async/activeSession", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+  ).data;
+
+  return sessionId;
 }
