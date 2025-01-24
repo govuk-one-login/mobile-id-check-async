@@ -1,3 +1,3 @@
-export const stsMockStacksToDelete = [""];
-export const backendStacksToDelete = [""];
-export const backendCfStacksToDelete = [""];
+export const stsMockStacksToDelete = [];
+export const backendStacksToDelete = [];
+export const backendCfStacksToDelete = [];
