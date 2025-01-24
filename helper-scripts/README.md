@@ -20,7 +20,7 @@ This script provides the ability to:
 - deletes multiple SAM applications
 - delete SAM applications in a valid order to avoid dependency related deletion failures
 
-Add the name of any stack you want to delete, in a string format, to the appropriate array within `./deleteStackUtils/stacksToDelete.ts`
+Add the name of any stack you want to delete, in a string format, to the appropriate array within `./deleteStackZx/stacksToDelete.ts`
 
 Ensure you have the `zx` package installed:
 
