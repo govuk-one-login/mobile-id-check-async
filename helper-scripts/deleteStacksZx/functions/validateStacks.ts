@@ -43,7 +43,7 @@ const confirmStackNames = async (stacks: string[][]): Promise<void> => {
         );
         process.exit(1);
       } else if (areStacksCorrect === "y") {
-        return;
+        break;
       } else {
         echo(chalk.yellow("Please answer either 'y' or 'n'"));
         emptyLine();
