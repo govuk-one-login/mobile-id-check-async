@@ -3,14 +3,11 @@
 import { $, echo } from 'zx'
 import { deleteStacks } from './deleteStackUtils/deleteStacks'
 import { validateStacks } from './deleteStackUtils/validateStacks'
+import { stsMockStacksToDelete, backendStacksToDelete, backendCfStacksToDelete } from './deleteStackUtils/stacksToDelete'
+import { protectedStacks } from './deleteStackUtils/protectedStacks'
 
 $.quiet = true
 
-const protectedStacks = ["mob-sts-mock", "mob-async-backend", "mob-async-backend-cf-dist"]
-
-const stsMockStacksToDelete = [""]
-const backendStacksToDelete = [""]
-const backendCfStacksToDelete = [""]
 const stacksToDelete = [stsMockStacksToDelete, backendStacksToDelete, backendCfStacksToDelete]
 
 await validateStacks(stacksToDelete, protectedStacks)
