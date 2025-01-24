@@ -17,24 +17,6 @@ const checkIfProtectedStack = (
   }
 };
 
-const checkStackExists = async (stacks: string[][]): Promise<void> => {
-  for (const arr of stacks) {
-    arr.forEach(async (stackName) => {
-      try {
-        await $`aws cloudformation describe-stacks --stack-name ${stackName}`;
-      } catch (error: unknown) {
-        echo("");
-        echo("");
-        echo(`Cannot find stack: ${stackName}`);
-        echo("");
-        echo(`Error: ${error}`);
-        process.exit(1);
-      }
-      return;
-    });
-  }
-};
-
 const confirmStackNames = async (stacks: string[][]): Promise<void> => {
   echo("Please confirm you are happy to delete the following stacks...");
   for (const arr of stacks) {
@@ -57,11 +39,29 @@ const confirmStackNames = async (stacks: string[][]): Promise<void> => {
   }
 };
 
+const checkStackExists = async (stacks: string[][]): Promise<void> => {
+  for (const arr of stacks) {
+    arr.forEach(async (stackName) => {
+      try {
+        await $`aws cloudformation describe-stacks --stack-name ${stackName}`;
+      } catch (error: unknown) {
+        echo("");
+        echo("");
+        echo(`Cannot find stack: ${stackName}`);
+        echo("");
+        echo(`Error: ${error}`);
+        process.exit(1);
+      }
+      return;
+    });
+  }
+};
+
 export const validateStacks = async (
   stacks: string[][],
   protectedStacks: string[],
 ): Promise<void> => {
   checkIfProtectedStack(stacks, protectedStacks);
-  await checkStackExists(stacks);
   await confirmStackNames(stacks);
+  await checkStackExists(stacks);
 };
