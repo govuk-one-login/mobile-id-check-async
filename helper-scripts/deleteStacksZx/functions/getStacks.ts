@@ -1,7 +1,7 @@
 import { chalk, echo } from "zx";
 import { emptyLine } from "../helpers/formatting";
 
-export const getStacksToDelete = (stacks: string[][]): string[][] => {
+export const getStacks = (stacks: string[][]): string[][] => {
   const result: string[][] = [];
   for (const arr of stacks) {
     if (arr.length > 0) {
