@@ -1,4 +1,4 @@
-import { echo, chalk } from "zx";
+import { chalk, echo } from "zx";
 import { emptyLine } from "../helpers/formatting";
 
 export const completeMessage = (): void => {

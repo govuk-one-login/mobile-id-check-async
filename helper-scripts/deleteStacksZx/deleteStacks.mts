@@ -1,12 +1,12 @@
 #!/usr/bin/env zx
 
 import { $ } from 'zx'
-import { deleteStacks } from './functions/deleteStacks'
-import { validateStacks } from './functions/validateStacks'
-import { stsMockStacksToDelete, backendStacksToDelete, backendCfStacksToDelete } from './stacksToDelete'
-import { protectedStacks } from './protectedStacks'
-import { getStacksToDelete } from './functions/getStacksToDelete'
 import { completeMessage } from './functions/completeMessage'
+import { deleteStacks } from './functions/deleteStacks'
+import { getStacksToDelete } from './functions/getStacksToDelete'
+import { validateStacks } from './functions/validateStacks'
+import { protectedStacks } from './protectedStacks'
+import { backendCfStacksToDelete, backendStacksToDelete, stsMockStacksToDelete } from './stacksToDelete'
 
 $.quiet = true
 
