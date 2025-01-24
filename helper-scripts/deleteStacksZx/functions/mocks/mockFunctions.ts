@@ -1,6 +1,9 @@
 import { sleep } from "zx";
 
-export const mockValidateStacks = async (stacks: string[][]): Promise<void> => {
+export const mockValidateStacks = async (
+  stacks: string[][],
+  protectedStacks: string[],
+): Promise<void> => {
   await sleep(1000);
   return;
 };
