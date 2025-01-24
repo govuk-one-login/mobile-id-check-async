@@ -2,9 +2,10 @@ const passingEventNameWithSessionId = "DCMAW_ASYNC_CRI_START";
 const passingEventNameWithoutSessionId =
   "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
 const passingSessionId = "49E7D76E-D5FE-4355-B8B4-E90ACA0887C2";
+const passingSessionIdUnknown = "UNKNOWN";
 const failingSQSRecordMessageId = "54D7CA2F-BE1D-4D55-8F1C-9B3B501C9685";
 
-export const passingSQSRecord = {
+export const passingSQSRecordKnownSessionId = {
   messageId: "E8CA2168-36C2-4CAF-8CAC-9915B849E1E5",
   receiptHandle: "mockReceiptHandle",
   body: JSON.stringify({
@@ -27,13 +28,36 @@ export const passingSQSRecord = {
   awsRegion: "eu-west-2",
 };
 
+export const passingSQSRecordUnknownSessionId = {
+  messageId: "235260A1-D07C-4FAA-9D85-D76E03A266BD",
+  receiptHandle: "mockReceiptHandle",
+  body: JSON.stringify({
+    event_name: passingEventNameWithoutSessionId,
+    user: {
+      session_id: passingSessionIdUnknown,
+    },
+    timestamp: "mockTimestamp",
+  }),
+  attributes: {
+    ApproximateReceiveCount: "1",
+    SentTimestamp: "1545082649183",
+    SenderId: "AIDAIENQZJOLO23YVJ4VO",
+    ApproximateFirstReceiveTimestamp: "1545082649185",
+  },
+  messageAttributes: {},
+  md5OfBody: "098f6bcd4621d373cade4e832627b4f6",
+  eventSource: "aws:sqs",
+  eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
+  awsRegion: "eu-west-2",
+};
+
 export const putItemInputForPassingSQSRecord = {
   Item: {
     pk: { S: `SESSION#${passingSessionId}` },
     sk: {
       S: `TXMA#EVENT_NAME#${passingEventNameWithSessionId}#TIMESTAMP#mockTimestamp`,
     },
-    eventBody: {
+    event: {
       S: JSON.stringify({
         event_name: passingEventNameWithSessionId,
         user: {
@@ -46,15 +70,18 @@ export const putItemInputForPassingSQSRecord = {
   },
 };
 
-export const putItemInputForPassingSQSRecordWithoutSessionId = {
+export const putItemInputForPassingSQSRecordUnknownSessionId = {
   Item: {
-    pk: { S: "SESSION#UNKNOWN" },
+    pk: { S: `SESSION#${passingSessionIdUnknown}` },
     sk: {
       S: `TXMA#EVENT_NAME#${passingEventNameWithoutSessionId}#TIMESTAMP#mockTimestamp`,
     },
-    eventBody: {
+    event: {
       S: JSON.stringify({
         event_name: passingEventNameWithoutSessionId,
+        user: {
+          session_id: passingSessionIdUnknown,
+        },
         timestamp: "mockTimestamp",
       }),
     },

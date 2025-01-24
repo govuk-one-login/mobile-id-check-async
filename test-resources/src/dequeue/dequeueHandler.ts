@@ -65,7 +65,7 @@ export const lambdaHandlerConstructor = async (
       Item: marshall({
         pk: `SESSION#${sessionId}`,
         sk: `TXMA#EVENT_NAME#${eventName}#TIMESTAMP#${timestamp}`,
-        eventBody: record.body,
+        event: record.body,
         timeToLiveInSeconds,
       }),
     };

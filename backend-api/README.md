@@ -13,6 +13,7 @@
 - AWS SAM
 - Node.js v20
 - npm
+- rain v1.15
 
 ## Setup
 
@@ -21,6 +22,12 @@ This repository uses Githooks to run pre-commit checks. To install these:
 ```bash
 git config --local core.hooksPath .github/hook-scripts
 ```
+## Cloudformation Template
+All infrastructure is written as code using Cloudformation. The `template.yaml` contains the infrastructure that is deployed to AWS. 
+
+For readability, infrastructure is written in smaller `*.yaml` files, which are joined together to form the `template.yaml`. Do not update the `template.yaml` directly as this is automatically generated.
+
+For guidance on adding, updating or removing infrastructure, see the[ infra/README.md](./infra/README.md)
 
 ## Running tests
 
