@@ -1,4 +1,5 @@
 import { echo } from "zx";
+import { emptyLine } from "./formatting";
 
 export const getStacksToDelete = (stacks: string[][]): string[][] => {
   const result: string[][] = [];
@@ -10,7 +11,7 @@ export const getStacksToDelete = (stacks: string[][]): string[][] => {
 
   if (result.length === 0) {
     echo("No stacks to delete!");
-    echo("");
+    emptyLine();
     process.exit(1);
   }
   return result;

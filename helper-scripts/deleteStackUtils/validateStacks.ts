@@ -1,4 +1,5 @@
 import { $, echo, question } from "zx";
+import { emptyLine, twoEmptyLines } from "./formatting";
 
 const checkIfProtectedStack = (
   stacks: string[][],
@@ -9,7 +10,7 @@ const checkIfProtectedStack = (
       if (protectedStacks.includes(stackName)) {
         echo(`It is not permitted to delete stack: ${stackName}`);
         echo("Please remove this stack before continuing");
-        echo("");
+        emptyLine();
         process.exit(1);
       }
       return;
@@ -20,11 +21,11 @@ const checkIfProtectedStack = (
 const confirmStackNames = async (stacks: string[][]): Promise<void> => {
   echo("Please confirm you are happy to delete the following stacks...");
   for (const arr of stacks) {
-    echo("");
+    emptyLine();
     arr.forEach((stackName) => {
       echo(stackName);
     });
-    echo("");
+    emptyLine();
     const areStacksCorrect = (
       await question("Are you sure you want to delete these stacks? [Y/n]")
     )
@@ -32,7 +33,7 @@ const confirmStackNames = async (stacks: string[][]): Promise<void> => {
       .toLowerCase();
     echo("");
     if (areStacksCorrect === "n") {
-      echo("");
+      emptyLine();
       echo("Please update stack names and try again");
       process.exit(1);
     }
@@ -45,10 +46,9 @@ const checkStackExists = async (stacks: string[][]): Promise<void> => {
       try {
         await $`aws cloudformation describe-stacks --stack-name ${stackName}`;
       } catch (error: unknown) {
-        echo("");
-        echo("");
+        twoEmptyLines();
         echo(`Cannot find stack: ${stackName}`);
-        echo("");
+        emptyLine();
         echo(`Error: ${error}`);
         process.exit(1);
       }
