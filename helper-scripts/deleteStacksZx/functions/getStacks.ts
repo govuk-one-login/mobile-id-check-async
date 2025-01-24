@@ -10,7 +10,7 @@ export const getStacks = (stacks: string[][]): string[][] => {
   }
 
   if (result.length === 0) {
-    echo(chalk.yellow("No stacks to delete!"));
+    echo(chalk.yellow("No stacks provided!"));
     emptyLine();
     process.exit(1);
   }
