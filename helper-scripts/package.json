@@ -4,10 +4,8 @@
   "description": "Scripts for deploying, updating and deleting AWS SAM stacks",
   "main": "deploy_stack.sh",
   "scripts": {
-    "format": "./node_modules/.bin/prettier --write '**/*.ts'",
-    "run-script": "./node_modules/.bin/zx ./test.mjs",
-    "run-secondScript": "./node_modules/.bin/tsx ./secondTest.mts",
-    "run-thirdScript": "./node_modules/.bin/tsx ./thirdTest.mts"
+    "deleteStacks": "./node_modules/.bin/tsx ./deleteStacks.mts",
+    "format": "./node_modules/.bin/prettier --write '**/*.ts'"
   },
   "author": "",
   "license": "ISC",
