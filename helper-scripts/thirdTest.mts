@@ -1,16 +1,19 @@
 #!/usr/bin/env zx
 
 import { $, echo } from 'zx'
-import { deleteStacks, validateStacks } from './scriptUtils'
+import { deleteStacks } from './deleteStackUtils/deleteStacks'
+import { validateStacks } from './deleteStackUtils/validateStacks'
 
 $.quiet = true
 
-const stsMockStacksToDelete = ["james-x-sts-mock", "james-z-sts-mock"]
-const backendStacksToDelete = ["james-x-backend", "james-z-backend"]
-const backendCfStacksToDelete = ["james-x-cf-backend", "james-z-cf-backend"]
+const protectedStacks = ["mob-sts-mock", "mob-async-backend", "mob-async-backend-cf-dist"]
+
+const stsMockStacksToDelete = ["james-1-sts-mock"]
+const backendStacksToDelete = ["james-1-async-backend"]
+const backendCfStacksToDelete = ["james-1-async-backend-cf-dist"]
 const stacksToDelete = [stsMockStacksToDelete, backendStacksToDelete, backendCfStacksToDelete]
 
-await validateStacks(stacksToDelete)
+await validateStacks(stacksToDelete, protectedStacks)
 await deleteStacks(stacksToDelete)
 
 echo("")
