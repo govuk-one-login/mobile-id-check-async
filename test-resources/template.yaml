@@ -21,6 +21,15 @@ Parameters:
     Type: String
     Default: mob-async-backend
 
+Mappings:
+  Apigw:
+    dev:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+    build:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+
 Conditions:
   UsePermissionsBoundary: !Not
     - !Equals
@@ -28,6 +37,78 @@ Conditions:
       - none
 
 Resources:
+  EventsApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${AWS::StackName}-events-api
+      Description: API gateway for retrieving events
+      EndpointConfiguration: REGIONAL
+      Auth:
+        DefaultAuthorizer: AWS_IAM
+        ApiKeyRequired: false
+        ResourcePolicy:
+          AwsAccountWhitelist: !Sub ${AWS::AccountId}
+      StageName: !Ref Environment
+      OpenApiVersion: 3.0.1
+      AccessLogSetting:
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${EventsApiAccessLogs}
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      MethodSettings:
+        - LoggingLevel: INFO
+          ResourcePath: /*
+          HttpMethod: '*'
+          DataTraceEnabled: true
+          MetricsEnabled: true
+          ThrottlingBurstLimit: !FindInMap
+            - Apigw
+            - !Ref Environment
+            - ApiBurstLimit
+          ThrottlingRateLimit: !FindInMap
+            - Apigw
+            - !Ref Environment
+            - ApiRateLimit
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./openApiSpecs/events-spec.yaml
+
+  EventsApiRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: EventsPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                - "dynamodb:Query"
+                Resource: !GetAtt EventsTable.Arn
+                Condition:
+                  ForAllValues:StringEquals:
+                    dynamodb:Attributes:
+                      - pk
+                      - sk
+                      - event
+                  StringEquals:
+                    dynamodb:Select: SPECIFIC_ATTRIBUTES
+
+  EventsApiAccessLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-events-api-access-logs-${Environment}
+      RetentionInDays: 30
+
   # Dequeue resources
   DequeueFunction:
     Type: AWS::Serverless::Function
