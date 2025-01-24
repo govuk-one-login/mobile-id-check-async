@@ -4,9 +4,9 @@ import { $, chalk, echo } from 'zx'
 import { deleteStacks } from './functions/deleteStacks'
 import { validateStacks } from './functions/validateStacks'
 import { stsMockStacksToDelete, backendStacksToDelete, backendCfStacksToDelete } from './stacksToDelete'
-import { protectedStacks } from './functions/protectedStacks'
+import { protectedStacks } from './protectedStacks'
 import { getStacksToDelete } from './functions/getStacksToDelete'
-import { emptyLine } from './functions/formatting'
+import { emptyLine } from './helpers/formatting'
 
 $.quiet = true
 

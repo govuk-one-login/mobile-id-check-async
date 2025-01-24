@@ -1,5 +1,5 @@
 import { echo } from "zx";
-import { emptyLine } from "./formatting";
+import { emptyLine } from "../helpers/formatting";
 
 export const getStacksToDelete = (stacks: string[][]): string[][] => {
   const result: string[][] = [];

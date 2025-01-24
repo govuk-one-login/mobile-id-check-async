@@ -1,5 +1,5 @@
 import { $, echo, question } from "zx";
-import { emptyLine, twoEmptyLines } from "./formatting";
+import { emptyLine, twoEmptyLines } from "../helpers/formatting";
 
 const checkIfProtectedStack = (
   stacks: string[][],
