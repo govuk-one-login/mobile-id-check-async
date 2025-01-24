@@ -12,6 +12,30 @@ export STACK_NAME=backend-stack-name    (REQUIRED)
 ./delete_stack.sh
 ```
 
+## `deleteStacks.mts` (in testing - not approved)
+
+This script provides the ability to:
+
+- empty and delete any versioned S3 buckets (if present in a SAM application)
+- deletes multiple SAM applications
+- delete SAM applications in a valid order to avoid dependency related deletion failures
+
+Add the name of any stack you want to delete, in a string format, to the appropriate array within `./deleteStackUtils/stacksToDelete.ts`
+
+Ensure you have the `zx` package installed:
+
+```bash
+# From /helper-scripts
+npm i
+```
+
+Delete your stacks:
+
+```bash
+# From /helper-scripts
+npm run deleteStacks
+```
+
 ## `deploy_backend.sh`
 
 ### What it does
