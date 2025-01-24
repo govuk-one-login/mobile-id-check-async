@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
 import axiosRetry from "axios-retry";
 import "dotenv/config";
 import { aws4Interceptor } from "aws4-axios";
@@ -73,3 +73,27 @@ export const PRIVATE_API_INSTANCE = getPrivateApiInstance();
 export const STS_MOCK_API_INSTANCE = getStsMockInstance();
 export const EVENTS_API_INSTANCE = getEventsApiInstance();
 
+const getApisToTest = (): {
+  apiName: string;
+  axiosInstance: AxiosInstance;
+  authorizationHeader: string;
+}[] => {
+  const proxyApiConfig = {
+    apiName: "Proxy API",
+    axiosInstance: PROXY_API_INSTANCE,
+    authorizationHeader: "x-custom-auth",
+  };
+  const privateApiConfig = {
+    apiName: "Private API",
+    axiosInstance: PRIVATE_API_INSTANCE,
+    authorizationHeader: "Authorization",
+  };
+
+  if (process.env.IS_LOCAL_TEST === "true") {
+    return [proxyApiConfig]; // test only proxy API locally
+  } else {
+    return [proxyApiConfig, privateApiConfig]; // test both proxy and private APIs in the pipeline
+  }
+};
+
+export const APIS = getApisToTest();

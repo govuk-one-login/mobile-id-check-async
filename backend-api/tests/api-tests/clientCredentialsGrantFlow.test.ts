@@ -1,38 +1,16 @@
-import { AxiosInstance } from "axios";
-import { randomUUID, UUID } from "crypto";
+import { randomUUID } from "crypto";
 import "dotenv/config";
-import { PRIVATE_API_INSTANCE, PROXY_API_INSTANCE } from "./utils/apiInstance";
+import { APIS } from "./utils/apiInstance";
 import {
   ClientDetails,
+  CredentialRequestBody,
+  getCredentialAccessToken,
+  getCredentialRequestBody,
   getFirstRegisteredClient,
+  toBase64,
 } from "./utils/apiTestHelpers";
 
-const getApisToTest = (): {
-  apiName: string;
-  axiosInstance: AxiosInstance;
-  authorizationHeader: string;
-}[] => {
-  const proxyApiConfig = {
-    apiName: "Proxy API",
-    axiosInstance: PROXY_API_INSTANCE,
-    authorizationHeader: "x-custom-auth",
-  };
-  const privateApiConfig = {
-    apiName: "Private API",
-    axiosInstance: PRIVATE_API_INSTANCE,
-    authorizationHeader: "Authorization",
-  };
-
-  if (process.env.IS_LOCAL_TEST === "true") {
-    return [proxyApiConfig]; // test only proxy API locally
-  } else {
-    return [proxyApiConfig, privateApiConfig]; // test both proxy and private APIs in the pipeline
-  }
-};
-
-const apis = getApisToTest();
-
-describe.each(apis)(
+describe.each(APIS)(
   "Test $apiName",
   ({ axiosInstance, authorizationHeader }) => {
     let clientIdAndSecret: string;
@@ -154,12 +132,12 @@ describe.each(apis)(
       beforeAll(async () => {
         clientDetails = await getFirstRegisteredClient();
         const clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
-        accessToken = await getAccessToken(
+        accessToken = await getCredentialAccessToken(
           axiosInstance,
           clientIdAndSecret,
           authorizationHeader,
         );
-        credentialRequestBody = getRequestBody(clientDetails);
+        credentialRequestBody = getCredentialRequestBody(clientDetails);
       });
 
       describe("Given there is no Authorization header in the request", () => {
@@ -310,7 +288,7 @@ describe.each(apis)(
       describe("Given the request is valid and there is no active session for the given sub", () => {
         it("Returns 201 Created", async () => {
           const randomSub = randomUUID();
-          const credentialRequestBody = getRequestBody(
+          const credentialRequestBody = getCredentialRequestBody(
             clientDetails,
             randomSub,
           );
@@ -336,52 +314,8 @@ describe.each(apis)(
   },
 );
 
-function toBase64(value: string): string {
-  return Buffer.from(value).toString("base64");
-}
-
 function fromBase64(value: string): string {
   return Buffer.from(value, "base64").toString();
-}
-
-async function getAccessToken(
-  apiInstance: AxiosInstance,
-  clientIdAndSecret: string,
-  authorizationHeader: string,
-): Promise<string> {
-  const response = await apiInstance.post(
-    `/async/token`,
-    "grant_type=client_credentials",
-    {
-      headers: {
-        [authorizationHeader]: "Basic " + toBase64(clientIdAndSecret),
-      },
-    },
-  );
-
-  return response.data.access_token as string;
-}
-
-interface CredentialRequestBody {
-  sub: string;
-  govuk_signin_journey_id: string;
-  client_id: string;
-  state: string;
-  redirect_uri: string;
-}
-
-function getRequestBody(
-  clientDetails: ClientDetails,
-  sub?: UUID | undefined,
-): CredentialRequestBody {
-  return <CredentialRequestBody>{
-    sub:
-      sub ?? "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
-    govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
-    client_id: clientDetails.client_id,
-    state: "testState",
-    redirect_uri: clientDetails.redirect_uri,
-  };
 }
 
 function makeSignatureUnverifiable(accessToken: string, newSignature: string) {
