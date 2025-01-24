@@ -8,9 +8,9 @@ $.quiet = true
 
 const protectedStacks = ["mob-sts-mock", "mob-async-backend", "mob-async-backend-cf-dist"]
 
-const stsMockStacksToDelete = ["james-1-sts-mock"]
-const backendStacksToDelete = ["james-1-async-backend"]
-const backendCfStacksToDelete = ["james-1-async-backend-cf-dist"]
+const stsMockStacksToDelete = [""]
+const backendStacksToDelete = [""]
+const backendCfStacksToDelete = [""]
 const stacksToDelete = [stsMockStacksToDelete, backendStacksToDelete, backendCfStacksToDelete]
 
 await validateStacks(stacksToDelete, protectedStacks)

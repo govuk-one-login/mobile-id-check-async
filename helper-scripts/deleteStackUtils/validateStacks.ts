@@ -7,7 +7,9 @@ const checkIfProtectedStack = (
   for (const arr of stacks) {
     arr.forEach(async (stackName) => {
       if (protectedStacks.includes(stackName)) {
-        echo(`It is not permitted to delete ${stackName}, please remove it`);
+        echo(`It is not permitted to delete stack: ${stackName}`);
+        echo("Please remove this stack before continuing");
+        echo("");
         process.exit(1);
       }
       return;
@@ -21,7 +23,11 @@ const checkStackExists = async (stacks: string[][]): Promise<void> => {
       try {
         await $`aws cloudformation describe-stacks --stack-name ${stackName}`;
       } catch (error: unknown) {
-        echo(`Cannot find stack: ${stackName}. Error: ${error}`);
+        echo("");
+        echo("");
+        echo(`Cannot find stack: ${stackName}`);
+        echo("");
+        echo(`Error: ${error}`);
         process.exit(1);
       }
       return;
