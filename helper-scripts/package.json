@@ -4,7 +4,7 @@
   "description": "Scripts for deploying, updating and deleting AWS SAM stacks",
   "main": "deleteStacks.mts",
   "scripts": {
-    "deleteStacks": "./node_modules/.bin/tsx ./deleteStacks.mts",
+    "deleteStacks": "./node_modules/.bin/tsx ./deleteStacksZx/deleteStacks.mts",
     "format": "./node_modules/.bin/prettier --write '**/*.ts'"
   },
   "author": "",

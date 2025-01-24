@@ -3,7 +3,7 @@
 import { $, chalk, echo } from 'zx'
 import { deleteStacks } from './deleteStackUtils/deleteStacks'
 import { validateStacks } from './deleteStackUtils/validateStacks'
-import { stsMockStacksToDelete, backendStacksToDelete, backendCfStacksToDelete } from './deleteStackUtils/stacksToDelete'
+import { stsMockStacksToDelete, backendStacksToDelete, backendCfStacksToDelete } from './stacksToDelete'
 import { protectedStacks } from './deleteStackUtils/protectedStacks'
 import { getStacksToDelete } from './deleteStackUtils/getStacksToDelete'
 
