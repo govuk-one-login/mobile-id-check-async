@@ -1,5 +1,9 @@
 import { sleep } from "zx";
 
+export const mockGetStacks = (stacks: string[][]): string[][] => {
+  return [["mock-stack-name"]];
+};
+
 export const mockValidateStacks = async (
   stacks: string[][],
   protectedStacks: string[],
