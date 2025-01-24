@@ -60,7 +60,7 @@ jobs:
       WORKING_DIRECTORY: sts-mock
     secrets:
       GH_ACTIONS_ROLE_ARN: ${{ secrets.STS_MOCK_DEV_GH_ACTIONS_ROLE_ARN }}
-      TEST_IMAGE_REPOSITORY: ${{ secrets.STS_MOCK_DEV_TEST_IMAGE_REPOSITORY_URI }}
+      TEST_IMAGE_REPOSITOR_URI: ${{ secrets.STS_MOCK_DEV_TEST_IMAGE_REPOSITORY_URI }}
       CONTAINER_SIGN_KMS_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
 
   build-and-upload-sam-artifact-to-dev:
@@ -117,7 +117,7 @@ jobs:
       WORKING_DIRECTORY: sts-mock
     secrets:
       GH_ACTIONS_ROLE_ARN: ${{ secrets.STS_MOCK_BUILD_GH_ACTIONS_ROLE_ARN }}
-      TEST_IMAGE_REPOSITORY: ${{ secrets.STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI }}
+      TEST_IMAGE_REPOSITOR_URI: ${{ secrets.STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI }}
       CONTAINER_SIGN_KMS_KEY: ${{ secrets.BUILD_CONTAINER_SIGN_KMS_KEY }}
 
   build-and-upload-sam-artifact-to-build:

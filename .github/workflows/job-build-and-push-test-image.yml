@@ -9,7 +9,7 @@ on:
     secrets:
       GH_ACTIONS_ROLE_ARN:
         required: true
-      TEST_IMAGE_REPOSITORY:
+      TEST_IMAGE_REPOSITOR_URI:
         required: true
       CONTAINER_SIGN_KMS_KEY:
         required: true
@@ -47,12 +47,12 @@ jobs:
 
       - name: Build image
         run: |
-          docker build -t ${{ secrets.TEST_IMAGE_REPOSITORY }}:$IMAGE_TAG . 
+          docker build -t ${{ secrets.TEST_IMAGE_REPOSITOR_URI }}:$IMAGE_TAG . 
 
       - name: Push image
         run: |
-          docker push ${{ secrets.TEST_IMAGE_REPOSITORY }}:$IMAGE_TAG
+          docker push ${{ secrets.TEST_IMAGE_REPOSITOR_URI }}:$IMAGE_TAG
 
       - name: Sign image
         run: |
-          cosign sign --key awskms:///${{ secrets.CONTAINER_SIGN_KMS_KEY }} ${{ secrets.TEST_IMAGE_REPOSITORY }}:$IMAGE_TAG
+          cosign sign --key awskms:///${{ secrets.CONTAINER_SIGN_KMS_KEY }} ${{ secrets.TEST_IMAGE_REPOSITOR_URI }}:$IMAGE_TAG
