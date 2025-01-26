@@ -1,9 +1,10 @@
 {
   "name": "delete-stacks",
   "dependencies": {
-    "@inquirer/prompts": "7.2.3",
+    "inquirer": "12.3.2",
     "typescript": "5.7.3"
   },
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "test": "./node_modules/.bin/jest",
@@ -12,6 +13,7 @@
   },
   "devDependencies": {
     "@jest/globals": "^29.5.14",
-    "ts-jest": "^29.2.5"
+    "ts-jest": "^29.2.5",
+    "@aws-sdk/client-cloudformation": "3.734.0"
   }
 }
