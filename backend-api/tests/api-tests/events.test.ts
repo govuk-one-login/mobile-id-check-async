@@ -16,7 +16,6 @@ import {
   getFirstRegisteredClient,
 } from "./utils/apiTestHelpers";
 
-// jest.useFakeTimers();
 const ONE_SECOND = 1000;
 jest.setTimeout(2 * 5 * ONE_SECOND);
 
@@ -38,32 +37,6 @@ describe("GET /events", () => {
       });
 
       describe("Given there are events to dequeue", () => {
-        let clientIdAndSecret: string;
-        let clientDetails: ClientDetails;
-        let accessToken: string;
-        let credentialRequestBody: CredentialRequestBody;
-        let sub: string;
-        let sessionId: string;
-
-        beforeEach(async () => {
-          clientDetails = await getFirstRegisteredClient();
-          clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
-          accessToken = await getCredentialAccessToken(
-            axiosInstance,
-            clientIdAndSecret,
-            authorizationHeader,
-          );
-          credentialRequestBody = getCredentialRequestBody(clientDetails);
-          await createSession({
-            axiosInstance,
-            authorizationHeader,
-            accessToken,
-            requestBody: credentialRequestBody,
-          });
-          sub = randomUUID();
-          sessionId = await getActiveSessionId(sub);
-        });
-
         describe("Given a request is made with a query that is not valid", () => {
           it("Returns a 400 Bad Request response", async () => {
             const params = {
@@ -79,56 +52,58 @@ describe("GET /events", () => {
         });
 
         describe("Given a request is made with a query that is valid", () => {
+          let clientIdAndSecret: string;
+          let clientDetails: ClientDetails;
+          let accessToken: string;
+          let credentialRequestBody: CredentialRequestBody;
+          let sub: string;
+          let sessionId: string;
+
+          beforeEach(async () => {
+            clientDetails = await getFirstRegisteredClient();
+            clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
+            accessToken = await getCredentialAccessToken(
+              axiosInstance,
+              clientIdAndSecret,
+              authorizationHeader,
+            );
+            credentialRequestBody = getCredentialRequestBody(clientDetails);
+            await createSession({
+              axiosInstance,
+              authorizationHeader,
+              accessToken,
+              requestBody: credentialRequestBody,
+            });
+            sub = randomUUID();
+            sessionId = await getActiveSessionId(sub);
+          });
+
           it("Returns a 200 OK response", async () => {
             const params = {
               pkPrefix: `SESSION#${sessionId}`,
               skPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START`,
             };
 
-            console.log("SESSION ID >>>>>\n", sessionId);
-
-            // let response: AxiosResponse
-
             await new Promise((resolve) => setTimeout(resolve, 7000));
 
-            // setTimeout(async () => {
             const response = await EVENTS_API_INSTANCE.get("/events", {
               params,
             });
 
-            console.log("RESPONSE STATUS >>>>>\n", response.status);
-            console.log("RESPONSE STATUS TEXT >>>>>\n", response.statusText);
-
-            console.log("RESPONSE DATA >>>>>\n", response.data);
-            console.log("RESPONSE DATA EVENT >>>>>\n", response.data[0].event);
-
-            expect(response!.status).toBe(200);
-            expect(response!.statusText).toEqual("OK");
-            // expect(response!.data[0].pk).toEqual(`SESSION#${sessionId}`)
-            // expect(response!.data[0].sk).toEqual(expect.stringContaining("TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START#TIMESTAMP#"))
-
+            expect(response.status).toBe(200);
+            expect(response.statusText).toEqual("OK");
+            expect(response.data[0].pk).toEqual(`SESSION#${sessionId}`);
+            expect(response.data[0].sk).toEqual(
+              expect.stringContaining(
+                "TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START#TIMESTAMP#",
+              ),
+            );
             const event = response.data[0].event;
             expect(event).toEqual(
               expect.objectContaining({
                 event_name: "DCMAW_ASYNC_CRI_START",
               }),
             );
-
-            //   user: {
-            //     user_id: expect.any(String),
-            //     transaction_id: "",
-            //     session_id: sessionId,
-            //     govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444"
-            //   },
-            //   timestamp: expect.any(Number),
-            //   event_name: "DCMAW_ASYNC_CRI_START",
-            //   component_id: "mockIssuer"
-            // })
-
-            // done()
-            // }, 7000);
-
-            // jest.runAllTimers()
           });
         });
       });
@@ -155,8 +130,6 @@ async function getActiveSessionAccessToken(
   sub?: string,
   scope?: string,
 ): Promise<string> {
-  // console.log("<<<<< 6 >>>>>")
-
   const requestBody = new URLSearchParams({
     subject_token: sub ?? randomUUID(),
     scope: scope ?? "idCheck.activeSession.read",
@@ -168,26 +141,17 @@ async function getActiveSessionAccessToken(
     requestBody,
   );
 
-  // console.log("STS MOCK RESPONSE >>>>>\n", stsMockResponse)
-
   return stsMockResponse.data.access_token;
 }
 
 async function getActiveSessionId(sub: string): Promise<string> {
-  // console.log("<<<<< 1 >>>>>")
-
   await createSessionForSub(sub);
   const accessToken = await getActiveSessionAccessToken(sub);
-
-  // console.log("<<<<< 7 >>>>>")
-
   const { sessionId } = (
     await SESSIONS_API_INSTANCE.get("/async/activeSession", {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
   ).data;
-
-  // console.log("SESSION ID >>>>>\n", sessionId)
 
   return sessionId;
 }
