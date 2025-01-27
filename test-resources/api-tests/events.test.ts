@@ -10,7 +10,7 @@ import {
 } from "@aws-sdk/client-secrets-manager";
 
 const ONE_SECOND = 1000;
-jest.setTimeout(9 * 5 * ONE_SECOND);
+jest.setTimeout(7 * 5 * ONE_SECOND);
 
 describe("GET /events", () => {
   describe("Given there are no events to dequeue", () => {
@@ -41,70 +41,67 @@ describe("GET /events", () => {
       });
     });
 
+    describe("Given a request is made with a query that is valid", () => {
+      let clientIdAndSecret: string;
+      let clientDetails: ClientDetails;
+      let accessToken: string;
+      let credentialRequestBody: CredentialRequestBody;
+      let sub: string;
+      let sessionId: string;
+      const PROXY_API_INSTANCE = getProxyApiInstance();
+      const authorizationHeader = "x-custom-auth";
 
-      describe("Given a request is made with a query that is valid", () => {
-        let clientIdAndSecret: string;
-        let clientDetails: ClientDetails;
-        let accessToken: string;
-        let credentialRequestBody: CredentialRequestBody;
-        let sub: string;
-        let sessionId: string;
-        const PROXY_API_INSTANCE = getProxyApiInstance()
-        const authorizationHeader = "x-custom-auth"
-
-        beforeEach(async () => {
-          clientDetails = await getFirstRegisteredClient();
-          clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
-          accessToken = await getCredentialAccessToken(
-            PROXY_API_INSTANCE,
-            clientIdAndSecret,
-            authorizationHeader,
-          );
-          credentialRequestBody = getCredentialRequestBody(clientDetails);
-          await createSession({
-            axiosInstance: PROXY_API_INSTANCE,
-            authorizationHeader,
-            accessToken,
-            requestBody: credentialRequestBody,
-          });
-          sub = randomUUID();
-          sessionId = await getActiveSessionId(sub);
+      beforeEach(async () => {
+        clientDetails = await getFirstRegisteredClient();
+        clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
+        accessToken = await getCredentialAccessToken(
+          PROXY_API_INSTANCE,
+          clientIdAndSecret,
+          authorizationHeader,
+        );
+        credentialRequestBody = getCredentialRequestBody(clientDetails);
+        await createSession({
+          axiosInstance: PROXY_API_INSTANCE,
+          authorizationHeader,
+          accessToken,
+          requestBody: credentialRequestBody,
         });
-
-        it("Returns a 200 OK response", async () => {
-
-          console.log("SUB >>>>>", sub)
-          console.log("SESSION ID >>>>>", sessionId)
-
-          const params = {
-            pkPrefix: `SESSION#${sessionId}`,
-            skPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START`,
-          };
-
-          await new Promise((resolve) => setTimeout(resolve, 9000));
-
-          const response = await EVENTS_API_INSTANCE.get("/events", {
-            params,
-          });
-
-          expect(response.status).toBe(200);
-          expect(response.statusText).toEqual("OK");
-          expect(response.data[0].pk).toEqual(`SESSION#${sessionId}`);
-          expect(response.data[0].sk).toEqual(
-            expect.stringContaining(
-              "TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START#TIMESTAMP#",
-            ),
-          );
-          const event = response.data[0].event;
-          expect(event).toEqual(
-            expect.objectContaining({
-              event_name: "DCMAW_ASYNC_CRI_START",
-            }),
-          );
-        });
+        sub = randomUUID();
+        sessionId = await getActiveSessionId(sub);
       });
-    },
-  );
+
+      it("Returns a 200 OK response", async () => {
+        console.log("SUB >>>>>", sub);
+        console.log("SESSION ID >>>>>", sessionId);
+
+        const params = {
+          pkPrefix: `SESSION#${sessionId}`,
+          skPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START`,
+        };
+
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+
+        const response = await EVENTS_API_INSTANCE.get("/events", {
+          params,
+        });
+
+        expect(response.status).toBe(200);
+        expect(response.statusText).toEqual("OK");
+        expect(response.data[0].pk).toEqual(`SESSION#${sessionId}`);
+        expect(response.data[0].sk).toEqual(
+          expect.stringContaining(
+            "TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START#TIMESTAMP#",
+          ),
+        );
+        const event = response.data[0].event;
+        expect(event).toEqual(
+          expect.objectContaining({
+            event_name: "DCMAW_ASYNC_CRI_START",
+          }),
+        );
+      });
+    });
+  });
 });
 
 function getInstance(baseUrl: string, useAwsSigv4Signing: boolean = false) {
@@ -150,7 +147,7 @@ function getSessionsApiInstance() {
 }
 
 function getProxyApiInstance() {
-  const apiUrl = process.env.PROXY_API_URL
+  const apiUrl = process.env.PROXY_API_URL;
   if (!apiUrl)
     throw new Error("PROXY_API_URL needs to be defined for API tests");
   return getInstance(apiUrl, true);
