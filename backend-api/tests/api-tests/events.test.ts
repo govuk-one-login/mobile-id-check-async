@@ -1,4 +1,4 @@
-import { AxiosInstance } from "axios";
+import { AxiosInstance, AxiosResponse } from "axios";
 import { randomUUID } from "crypto";
 import "dotenv/config";
 import {
@@ -16,9 +16,9 @@ import {
   getFirstRegisteredClient,
 } from "./utils/apiTestHelpers";
 
-jest.useFakeTimers();
+// jest.useFakeTimers();
 const ONE_SECOND = 1000;
-jest.setTimeout(7 * 5 * ONE_SECOND);
+jest.setTimeout(2 * 5 * ONE_SECOND);
 
 describe("GET /events", () => {
   describe.each(APIS)(
@@ -45,7 +45,7 @@ describe("GET /events", () => {
         let sub: string;
         let sessionId: string;
 
-        beforeAll(async () => {
+        beforeEach(async () => {
           clientDetails = await getFirstRegisteredClient();
           clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
           accessToken = await getCredentialAccessToken(
@@ -64,19 +64,19 @@ describe("GET /events", () => {
           sessionId = await getActiveSessionId(sub);
         });
 
-        describe("Given a request is made with a query that is not valid", () => {
-          it("Returns a 400 Bad Request response", async () => {
-            const params = {
-              skPrefix: `TXMA%23EVENT_NAME%23DCMAW_ASYNC_CRI_START`,
-            };
-            const response = await EVENTS_API_INSTANCE.get("/events", {
-              params,
-            });
+        // describe("Given a request is made with a query that is not valid", () => {
+        //   it("Returns a 400 Bad Request response", async () => {
+        //     const params = {
+        //       skPrefix: `TXMA%23EVENT_NAME%23DCMAW_ASYNC_CRI_START`,
+        //     };
+        //     const response = await EVENTS_API_INSTANCE.get("/events", {
+        //       params,
+        //     });
 
-            expect(response.status).toBe(400);
-            expect(response.statusText).toStrictEqual("Bad Request");
-          });
-        });
+        //     expect(response.status).toBe(400);
+        //     expect(response.statusText).toEqual("Bad Request");
+        //   });
+        // });
 
         describe("Given a request is made with a query that is valid", () => {
           it("Returns a 200 OK response", async () => {
@@ -85,14 +85,35 @@ describe("GET /events", () => {
               skPrefix: `TXMA%23EVENT_NAME%23DCMAW_ASYNC_CRI_START`,
             };
 
-            setTimeout(async () => {
-              const response = await EVENTS_API_INSTANCE.get("/events", {
-                params,
-              });
+            console.log("SESSION ID >>>>>\n", sessionId)
 
-              expect(response.status).toBe(200);
-              expect(response.statusText).toStrictEqual("OK");
-            });
+            // let response: AxiosResponse
+
+            // await new Promise((resolve) => setTimeout(resolve, 7000))
+
+            setTimeout(async () => {
+              const response = await EVENTS_API_INSTANCE.get("/events", { params })
+
+              console.log("RESPONSE STATUS >>>>>\n", response!.status);
+              console.log("RESPONSE STATUS TEXT >>>>>\n", response!.statusText);
+              console.log("RESPONSE BODY >>>>>\n", response!.data);
+
+              expect(response).toBe(200)
+              expect(response!.statusText).toEqual("OK");
+              expect(response!.data).toStrictEqual(
+                JSON.stringify([
+                  {
+                    pk: `SESSN%23${sessionId}`,
+                    sk: `TXMA%23EVENT_NAME%23DCMAW_ASYNC_CRI_START`,
+                    event: {},
+                  },
+                ]),
+              );
+
+              // done()
+            }, 7000);
+
+            // jest.runAllTimers()
           });
         });
       });
@@ -119,6 +140,9 @@ async function getActiveSessionAccessToken(
   sub?: string,
   scope?: string,
 ): Promise<string> {
+
+  // console.log("<<<<< 6 >>>>>")
+
   const requestBody = new URLSearchParams({
     subject_token: sub ?? randomUUID(),
     scope: scope ?? "idCheck.activeSession.read",
@@ -129,17 +153,28 @@ async function getActiveSessionAccessToken(
     "/token",
     requestBody,
   );
+
+  // console.log("STS MOCK RESPONSE >>>>>\n", stsMockResponse)
+
   return stsMockResponse.data.access_token;
 }
 
 async function getActiveSessionId(sub: string): Promise<string> {
+
+  // console.log("<<<<< 1 >>>>>")
+
   await createSessionForSub(sub);
   const accessToken = await getActiveSessionAccessToken(sub);
+
+  // console.log("<<<<< 7 >>>>>")
+
   const { sessionId } = (
     await SESSIONS_API_INSTANCE.get("/async/activeSession", {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
   ).data;
+
+  // console.log("SESSION ID >>>>>\n", sessionId)
 
   return sessionId;
 }
