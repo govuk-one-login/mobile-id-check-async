@@ -198,11 +198,11 @@ paths:
                     #foreach($item in $inputRoot.Items)
                       #set($pk = $item.pk.S)
                       #set($sk = $item.sk.S)
-                      #set($event = $util.parseJson($item.event.S))
+                      #set($event = $item.event.S)
                       {
-                        "pk": "$pk"
-                        "sk": "$sk"
-                        "event": "$event"
+                        "pk": "$pk",
+                        "sk": "$sk",
+                        "event": $event
                       }#if($foreach.hasNext), #end
                     #end
                   ]

@@ -64,54 +64,69 @@ describe("GET /events", () => {
           sessionId = await getActiveSessionId(sub);
         });
 
-        // describe("Given a request is made with a query that is not valid", () => {
-        //   it("Returns a 400 Bad Request response", async () => {
-        //     const params = {
-        //       skPrefix: `TXMA%23EVENT_NAME%23DCMAW_ASYNC_CRI_START`,
-        //     };
-        //     const response = await EVENTS_API_INSTANCE.get("/events", {
-        //       params,
-        //     });
+        describe("Given a request is made with a query that is not valid", () => {
+          it("Returns a 400 Bad Request response", async () => {
+            const params = {
+              skPrefix: `TXMA%23EVENT_NAME%23DCMAW_ASYNC_CRI_START`,
+            };
+            const response = await EVENTS_API_INSTANCE.get("/events", {
+              params,
+            });
 
-        //     expect(response.status).toBe(400);
-        //     expect(response.statusText).toEqual("Bad Request");
-        //   });
-        // });
+            expect(response.status).toBe(400);
+            expect(response.statusText).toEqual("Bad Request");
+          });
+        });
 
         describe("Given a request is made with a query that is valid", () => {
           it("Returns a 200 OK response", async () => {
             const params = {
-              pkPrefix: `SESSION%23${sessionId}`,
-              skPrefix: `TXMA%23EVENT_NAME%23DCMAW_ASYNC_CRI_START`,
+              pkPrefix: `SESSION#${sessionId}`,
+              skPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START`,
             };
 
-            console.log("SESSION ID >>>>>\n", sessionId)
+            console.log("SESSION ID >>>>>\n", sessionId);
 
             // let response: AxiosResponse
 
-            // await new Promise((resolve) => setTimeout(resolve, 7000))
+            await new Promise((resolve) => setTimeout(resolve, 7000));
 
-            setTimeout(async () => {
-              const response = await EVENTS_API_INSTANCE.get("/events", { params })
+            // setTimeout(async () => {
+            const response = await EVENTS_API_INSTANCE.get("/events", {
+              params,
+            });
 
-              console.log("RESPONSE STATUS >>>>>\n", response!.status);
-              console.log("RESPONSE STATUS TEXT >>>>>\n", response!.statusText);
-              console.log("RESPONSE BODY >>>>>\n", response!.data);
+            console.log("RESPONSE STATUS >>>>>\n", response.status);
+            console.log("RESPONSE STATUS TEXT >>>>>\n", response.statusText);
 
-              expect(response).toBe(200)
-              expect(response!.statusText).toEqual("OK");
-              expect(response!.data).toStrictEqual(
-                JSON.stringify([
-                  {
-                    pk: `SESSN%23${sessionId}`,
-                    sk: `TXMA%23EVENT_NAME%23DCMAW_ASYNC_CRI_START`,
-                    event: {},
-                  },
-                ]),
-              );
+            console.log("RESPONSE DATA >>>>>\n", response.data);
+            console.log("RESPONSE DATA EVENT >>>>>\n", response.data[0].event);
 
-              // done()
-            }, 7000);
+            expect(response!.status).toBe(200);
+            expect(response!.statusText).toEqual("OK");
+            // expect(response!.data[0].pk).toEqual(`SESSION#${sessionId}`)
+            // expect(response!.data[0].sk).toEqual(expect.stringContaining("TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START#TIMESTAMP#"))
+
+            const event = response.data[0].event;
+            expect(event).toEqual(
+              expect.objectContaining({
+                event_name: "DCMAW_ASYNC_CRI_START",
+              }),
+            );
+
+            //   user: {
+            //     user_id: expect.any(String),
+            //     transaction_id: "",
+            //     session_id: sessionId,
+            //     govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444"
+            //   },
+            //   timestamp: expect.any(Number),
+            //   event_name: "DCMAW_ASYNC_CRI_START",
+            //   component_id: "mockIssuer"
+            // })
+
+            // done()
+            // }, 7000);
 
             // jest.runAllTimers()
           });
@@ -140,7 +155,6 @@ async function getActiveSessionAccessToken(
   sub?: string,
   scope?: string,
 ): Promise<string> {
-
   // console.log("<<<<< 6 >>>>>")
 
   const requestBody = new URLSearchParams({
@@ -160,7 +174,6 @@ async function getActiveSessionAccessToken(
 }
 
 async function getActiveSessionId(sub: string): Promise<string> {
-
   // console.log("<<<<< 1 >>>>>")
 
   await createSessionForSub(sub);
