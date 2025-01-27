@@ -42,9 +42,17 @@ Resources:
   SessionsApiDomainName:
     Type: AWS::ApiGateway::DomainName
     Properties:
-      DomainName: !Sub
-        - sessions-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - sessions-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - sessions.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
             - BaseDns
@@ -52,18 +60,26 @@ Resources:
         Types:
           - REGIONAL
       RegionalCertificateArn: !If
-        - UseWildcardCertificate
+        - DevelopmentStack
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
-        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneSessionsCertificateV1ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneSessionsCertificateV2ARN}}'
       SecurityPolicy: TLS_1_2
 
   SessionsApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
     DependsOn: SessionsApiDomainName
     Properties:
-      DomainName: !Sub
-        - sessions-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - sessions-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - sessions.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
             - BaseDns
@@ -73,9 +89,17 @@ Resources:
   SessionsApiOriginRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
-      Name: !Sub
-        - "origin.sessions-${AWS::StackName}.${DNS_RECORD}"
-        - DNS_RECORD: !FindInMap
+      Name: !If
+        - DevelopmentStack
+        - !Sub
+          - origin.sessions-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - origin.sessions.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
             - BaseDns
@@ -88,9 +112,17 @@ Resources:
   SessionsApiRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
-      Name: !Sub
-        - sessions-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
+      Name: !If
+        - DevelopmentStack
+        - !Sub
+          - sessions-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - sessions.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
             - BaseDns

@@ -67,16 +67,16 @@ Mappings:
       BiometricSubmitterKeySecretPathDl: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
       ClientRegistrySecretPath: build/clientRegistry
-      ReadIdBaseUrl: https://mob-readid-mock.review-b-async.build.account.gov.uk/v2
-      STSBASEURL: https://mob-sts-mock.review-b-async.build.account.gov.uk
+      ReadIdBaseUrl: https://readid-mock.review-b-async.build.account.gov.uk/v2
+      STSBASEURL: https://sts-mock.review-b-async.build.account.gov.uk
     dev:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
       BiometricSubmitterKeySecretPathDl: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
       ClientRegistrySecretPath: dev/clientRegistry
-      ReadIdBaseUrl: https://mob-readid-mock.review-b-async.dev.account.gov.uk/v2
-      STSBASEURL: https://mob-sts-mock.review-b-async.dev.account.gov.uk
+      ReadIdBaseUrl: https://readid-mock.review-b-async.dev.account.gov.uk/v2
+      STSBASEURL: https://sts-mock.review-b-async.dev.account.gov.uk
     integration:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
@@ -209,6 +209,15 @@ Conditions:
       - !Ref DeployAlarmsInDev
       - true
 
+  DevelopmentStack: !And
+    - !Equals
+      - !Ref Environment
+      - dev
+    - !Not
+      - !Equals
+        - !Ref AWS::StackName
+        - mob-async-backend
+
   IsDevOrBuild: !Or
     - !Equals
       - !Ref Environment
@@ -243,15 +252,6 @@ Conditions:
     - !Equals
       - !Ref PermissionsBoundary
       - none
-
-  UseWildcardCertificate: !And
-    - !Equals
-      - !Ref Environment
-      - dev
-    - !Not
-      - !Equals
-        - !Ref AWS::StackName
-        - mob-async-backend
 
   isNotDevOrBuild: !Or
     - !Equals
@@ -2020,12 +2020,20 @@ Resources:
     Type: AWS::ApiGateway::BasePathMapping
     DependsOn: ProxyApiDomainName
     Properties:
-      DomainName: !Sub
-        - proxy-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - proxy-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+        - !Sub
+          - proxy.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
       RestApiId: !Ref ProxyApi
       Stage: !Ref ProxyApi.Stage
     Condition: ProxyApiDeployment
@@ -2033,19 +2041,27 @@ Resources:
   ProxyApiDomainName:
     Type: AWS::ApiGateway::DomainName
     Properties:
-      DomainName: !Sub
-        - proxy-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - proxy-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+        - !Sub
+          - proxy.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
       EndpointConfiguration:
         Types:
           - REGIONAL
       RegionalCertificateArn: !If
-        - UseWildcardCertificate
+        - DevelopmentStack
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
-        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneProxyCertificateV1ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneProxyCertificateV2ARN}}'
       SecurityPolicy: TLS_1_2
     Condition: ProxyApiDeployment
 
@@ -2056,12 +2072,20 @@ Resources:
         DNSName: !GetAtt ProxyApiDomainName.RegionalDomainName
         HostedZoneId: !GetAtt ProxyApiDomainName.RegionalHostedZoneId
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
-      Name: !Sub
-        - proxy-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+      Name: !If
+        - DevelopmentStack
+        - !Sub
+          - proxy-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+        - !Sub
+          - proxy.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
       Type: A
     Condition: ProxyApiDeployment
 
@@ -2206,31 +2230,47 @@ Resources:
     Type: AWS::ApiGateway::BasePathMapping
     DependsOn: SessionsApiDomainName
     Properties:
-      DomainName: !Sub
-        - sessions-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - sessions-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+        - !Sub
+          - sessions.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
       RestApiId: !Ref SessionsApi
       Stage: !Ref SessionsApi.Stage
 
   SessionsApiDomainName:
     Type: AWS::ApiGateway::DomainName
     Properties:
-      DomainName: !Sub
-        - sessions-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - sessions-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+        - !Sub
+          - sessions.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
       EndpointConfiguration:
         Types:
           - REGIONAL
       RegionalCertificateArn: !If
-        - UseWildcardCertificate
+        - DevelopmentStack
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
-        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneSessionsCertificateV1ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneSessionsCertificateV2ARN}}'
       SecurityPolicy: TLS_1_2
 
   SessionsApiOriginRecordSet:
@@ -2240,12 +2280,20 @@ Resources:
         DNSName: !GetAtt SessionsApiDomainName.RegionalDomainName
         HostedZoneId: !GetAtt SessionsApiDomainName.RegionalHostedZoneId
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
-      Name: !Sub
-        - origin.sessions-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+      Name: !If
+        - DevelopmentStack
+        - !Sub
+          - origin.sessions-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+        - !Sub
+          - origin.sessions.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
       Type: A
 
   SessionsApiRecordSet:
@@ -2256,12 +2304,20 @@ Resources:
           Fn::Sub: ${AWS::StackName}-cf-dist-DistributionDomain
         HostedZoneId: Z2FDTNDATAQYW2
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
-      Name: !Sub
-        - sessions-${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+      Name: !If
+        - DevelopmentStack
+        - !Sub
+          - sessions-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+        - !Sub
+          - sessions.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
       Type: A
 
   SessionsApiWebAclAssociation:

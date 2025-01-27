@@ -74,7 +74,7 @@ Conditions:
       - !Ref DevOverrideAsyncBackendBaseUrl
       - none
 
-  UseWildcardCertificate: !And
+  DevelopmentStack: !And
     - !Equals [!Ref Environment, dev]
     - !Not [!Equals [!Ref AWS::StackName, mob-sts-mock]]
 
@@ -114,9 +114,17 @@ Resources:
   StsMockApiDomainName:
     Type: AWS::ApiGateway::DomainName
     Properties:
-      DomainName: !Sub
-        - ${AWS::StackName}.${DNS_RECORD}
-        - DNS_RECORD: !FindInMap
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - ${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - sts-mock.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
             - BaseDns
@@ -124,22 +132,48 @@ Resources:
         Types:
           - REGIONAL
       RegionalCertificateArn: !If
-        - UseWildcardCertificate
+        - DevelopmentStack
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
-        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneStsMockCertificateV1ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneStsMockCertificateV2ARN}}'
       SecurityPolicy: TLS_1_2
 
   StsMockApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
-      DomainName: !Sub ${StsMockApiDomainName}
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - ${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - sts-mock.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
       RestApiId: !Ref StsMockApi
       Stage: !Ref StsMockApi.Stage
 
   StsMockApiRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
-      Name: !Sub ${StsMockApiDomainName}
+      Name: !If
+        - DevelopmentStack
+        - !Sub
+          - ${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - sts-mock.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
       Type: A
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
       AliasTarget:
@@ -206,7 +240,7 @@ Resources:
           ASYNC_BACKEND_BASE_URL: !If
             - UseDevOverrideAsyncBackendBaseUrl
             - !Ref DevOverrideAsyncBackendBaseUrl
-            - !Sub https://sessions-mob-async-backend.review-b-async.${Environment}.account.gov.uk
+            - !Sub https://sessions.review-b-async.${Environment}.account.gov.uk
           KEY_STORAGE_BUCKET_NAME: !Ref JwksBucket
       VpcConfig:
         SubnetIds:
