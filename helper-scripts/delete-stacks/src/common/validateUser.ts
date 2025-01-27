@@ -4,27 +4,41 @@ import {
 } from "@aws-sdk/client-sts";
 import { stsClient } from "./aws-clients.js";
 
-export async function assertUserIsAuthenticatedToDev() {
-  const command = new GetCallerIdentityCommand({});
-
-  let data: GetCallerIdentityCommandOutput;
-  try {
-    data = await stsClient.send(command);
-  } catch (error) {
-    console.log("Failed to call STS");
-    throw error;
-  }
-
-  const roleArn = data.Arn;
-  const accountId = data.Account;
-
-  const expectedAccountId = "211125300205";
-
-  if (accountId !== expectedAccountId) {
-    throw Error(
-      `You are authenticated in the wrong account! Expected account: ${expectedAccountId}, but found account: ${accountId}`,
-    );
-  }
-
-  console.log(`You are authenticated with the AWS role: ${roleArn}`);
+export async function assertUserIdentity() {
+  const callerIdentity = await getCallerIdentity();
+  assertUserIsAuthenticated(callerIdentity);
 }
+
+const getCallerIdentity = async (): Promise<{
+  account: string;
+  arn: string;
+}> => {
+  const command = new GetCallerIdentityCommand({});
+  const callerIdentity = await stsClient.send(command);
+  return getAccountIdAndRoleArn(callerIdentity);
+};
+
+const getAccountIdAndRoleArn = (
+  callerIdentity: GetCallerIdentityCommandOutput,
+): { account: string; arn: string } => {
+  if (typeof callerIdentity.Account !== "string")
+    throw Error(
+      "Cannot validate user. Account property not received from AWS STS.",
+    );
+  if (typeof callerIdentity.Arn !== "string")
+    throw Error(
+      "Cannot validate user. Arn property not received from AWS STS.",
+    );
+  return { account: callerIdentity.Account, arn: callerIdentity.Arn };
+};
+
+const assertUserIsAuthenticated = (callerIdentity: {
+  account: string;
+  arn: string;
+}): void => {
+  const expectedAccountId = "211125300205";
+  if (expectedAccountId !== callerIdentity.account)
+    throw Error(
+      `You are logged into the wrong AWS account. User logged into ${callerIdentity.account}. Expected user to be in ${expectedAccountId}`,
+    );
+};

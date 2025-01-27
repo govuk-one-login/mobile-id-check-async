@@ -1,10 +1,43 @@
 import {
   DeleteStackCommand,
-  StackStatus,
   DescribeStacksCommand,
 } from "@aws-sdk/client-cloudformation";
+
+import { waitUntilStackDeleteComplete } from "@aws-sdk/client-cloudformation";
 import { FailureResult, Results } from "./results.js";
 import { cloudFormationClient } from "./aws-clients.js";
+
+export const deleteStacks = async (stackNames: string[]): Promise<Results> => {
+  const results: Results = [];
+  for (const stackName of stackNames) {
+    try {
+      await deleteStack(stackName);
+      results.push({ stackName, status: "SUCCESS" });
+    } catch (error) {
+      const failureResult = buildDeleteCommandFailureResult(stackName, error);
+      results.push(failureResult);
+    }
+  }
+  return results;
+};
+
+const deleteStack = async (stackName: string): Promise<void> => {
+  logStartingMessage(stackName);
+  await sendDeleteStackCommand(stackName);
+  await waitUntilStackDeleteComplete(
+    { client: cloudFormationClient, maxWaitTime: 600 },
+    { StackName: stackName },
+  );
+  logCompletedMessage(stackName);
+};
+
+const logStartingMessage = (stackName: string): void => {
+  console.log("\n", `Deleting ${stackName}...this may take some time`);
+};
+
+const sendDeleteStackCommand = async (stackName: string): Promise<void> => {
+  await cloudFormationClient.send(buildDeleteStackCommand(stackName));
+};
 
 const buildDeleteStackCommand = (stackName: string): DeleteStackCommand => {
   return new DeleteStackCommand({
@@ -12,26 +45,8 @@ const buildDeleteStackCommand = (stackName: string): DeleteStackCommand => {
   });
 };
 
-const getStackStatus = async (
-  stackName: string,
-): Promise<StackStatus | undefined> => {
-  const describeStacksCommand = new DescribeStacksCommand({
-    StackName: stackName,
-  });
-  const response = await cloudFormationClient.send(describeStacksCommand);
-  if (!response.Stacks)
-    throw Error("No stacks deployed into the account. This is not expected.");
-  if (response.Stacks.length > 1)
-    throw Error("Multiple stacks returend. This is not expected");
-  if (!response.Stacks[0].StackName)
-    throw Error("Stack has no StackName. This is not expected");
-  return response.Stacks[0].StackStatus;
-};
-
-const continuePollingStackStatus = (
-  stackStatus: StackStatus | undefined,
-): boolean => {
-  return stackStatus === StackStatus.DELETE_IN_PROGRESS;
+const logCompletedMessage = (stackName: string): void => {
+  console.log("\n", `Deleted ${stackName}`);
 };
 
 const buildDeleteCommandFailureResult = (
@@ -48,56 +63,6 @@ const buildDeleteCommandFailureResult = (
     reason,
   };
 };
-
-const sendDeleteStackCommand = async (stackName: string): Promise<void> => {
-  await cloudFormationClient.send(buildDeleteStackCommand(stackName));
-};
-
-const isSuccessStackStatus = (
-  stackStatus: StackStatus | undefined,
-): boolean => {
-  return stackStatus === StackStatus.DELETE_COMPLETE;
-};
-
-export const deleteStacks = async (stackNames: string[]): Promise<Results> => {
-  const results: Results = [];
-  for (const stackName of stackNames) {
-    let continuePolling = true
-    while (continuePolling) {
-    let commandSentSuccessfully: boolean = true;
-    try {
-      await sendDeleteStackCommand(stackName);
-    } catch (error) {
-      const failureResult = buildDeleteCommandFailureResult(stackName, error);
-      results.push(failureResult);
-      commandSentSuccessfully = false;
-      continuePolling = false
-      break
-    }
-    console.log("pre-timer")
-  await Promise.resolve(setTimeout(async () => 10000))
-  console.log("post-timer")
-  const stackStatus = await getStackStatus(stackName);
-  console.log("STACK STATUS", stackStatus)
-  if (!continuePollingStackStatus(stackStatus)) {
-    if (isSuccessStackStatus(stackStatus)) {
-      results.push({ status: "SUCCESS", stackName });
-    } else {
-      results.push({
-        status: "FAILURE",
-        stackName,
-        reason:
-          "Stack in the following status and cannot proceed: " +
-          stackStatus,
-      });
-    }
-    continuePolling = false
-    break;
-  }
-};
-}
-return results;
-}
 
 export const getDeployedStackNames = async (): Promise<string[]> => {
   const describeStacksCommand = new DescribeStacksCommand();
