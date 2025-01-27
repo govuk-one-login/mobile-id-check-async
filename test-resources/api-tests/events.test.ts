@@ -71,9 +71,6 @@ describe("GET /events", () => {
       });
 
       it("Returns a 200 OK response", async () => {
-        console.log("SUB >>>>>", sub);
-        console.log("SESSION ID >>>>>", sessionId);
-
         const params = {
           pkPrefix: `SESSION#${sessionId}`,
           skPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START`,
@@ -104,33 +101,10 @@ describe("GET /events", () => {
   });
 });
 
-function getInstance(baseUrl: string, useAwsSigv4Signing: boolean = false) {
-  const apiInstance = axios.create({ baseURL: baseUrl });
-  axiosRetry(apiInstance, {
-    retries: 2,
-    retryDelay: (retryCount) => retryCount * 200,
-  });
-  apiInstance.defaults.validateStatus = () => true;
-
-  if (useAwsSigv4Signing) {
-    const interceptor = aws4Interceptor({
-      options: {
-        region: "eu-west-2",
-        service: "execute-api",
-      },
-      credentials: {
-        getCredentials: fromNodeProviderChain({
-          timeout: 1000,
-          maxRetries: 1,
-          profile: process.env.AWS_PROFILE,
-        }),
-      },
-    });
-    apiInstance.interceptors.request.use(interceptor);
-  }
-
-  return apiInstance;
-}
+const STS_MOCK_API_INSTANCE = getStsMockInstance();
+const SESSIONS_API_INSTANCE = getSessionsApiInstance();
+const PROXY_API_INSTANCE = getProxyApiInstance();
+const EVENTS_API_INSTANCE = getEventsApiInstance();
 
 function getStsMockInstance() {
   const apiUrl = process.env.STS_MOCK_API_URL;
@@ -160,15 +134,60 @@ function getEventsApiInstance() {
   return getInstance(apiUrl, true);
 }
 
-const STS_MOCK_API_INSTANCE = getStsMockInstance();
-const SESSIONS_API_INSTANCE = getSessionsApiInstance();
-const PROXY_API_INSTANCE = getProxyApiInstance();
-const EVENTS_API_INSTANCE = getEventsApiInstance();
+function getInstance(baseUrl: string, useAwsSigv4Signing: boolean = false) {
+  const apiInstance = axios.create({ baseURL: baseUrl });
+  axiosRetry(apiInstance, {
+    retries: 2,
+    retryDelay: (retryCount) => retryCount * 200,
+  });
+  apiInstance.defaults.validateStatus = () => true;
+
+  if (useAwsSigv4Signing) {
+    const interceptor = aws4Interceptor({
+      options: {
+        region: "eu-west-2",
+        service: "execute-api",
+      },
+      credentials: {
+        getCredentials: fromNodeProviderChain({
+          timeout: 1000,
+          maxRetries: 1,
+          profile: process.env.AWS_PROFILE,
+        }),
+      },
+    });
+    apiInstance.interceptors.request.use(interceptor);
+  }
+
+  return apiInstance;
+}
 
 interface ClientDetails {
   client_id: string;
   client_secret: string;
   redirect_uri: string;
+}
+
+async function getCredentialAccessToken(
+  apiInstance: AxiosInstance,
+  clientIdAndSecret: string,
+  authorizationHeader: string,
+): Promise<string> {
+  const response = await apiInstance.post(
+    `/async/token`,
+    "grant_type=client_credentials",
+    {
+      headers: {
+        [authorizationHeader]: "Basic " + toBase64(clientIdAndSecret),
+      },
+    },
+  );
+
+  return response.data.access_token as string;
+}
+
+function toBase64(value: string): string {
+  return Buffer.from(value).toString("base64");
 }
 
 interface CredentialRequestBody {
@@ -177,6 +196,47 @@ interface CredentialRequestBody {
   client_id: string;
   state: string;
   redirect_uri: string;
+}
+
+function getCredentialRequestBody(
+  clientDetails: ClientDetails,
+  sub?: UUID | undefined,
+): CredentialRequestBody {
+  return <CredentialRequestBody>{
+    sub:
+      sub ?? "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
+    govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
+    client_id: clientDetails.client_id,
+    state: "testState",
+    redirect_uri: clientDetails.redirect_uri,
+  };
+}
+
+async function createSession(requestConfig: {
+  axiosInstance: AxiosInstance;
+  authorizationHeader: string;
+  accessToken: string;
+  requestBody: CredentialRequestBody;
+}): Promise<void> {
+  const { axiosInstance, authorizationHeader, accessToken, requestBody } =
+    requestConfig;
+  axiosInstance.post(`/async/credential`, requestBody, {
+    headers: {
+      [authorizationHeader]: "Bearer " + accessToken,
+    },
+  });
+}
+
+async function getActiveSessionId(sub: string): Promise<string> {
+  await createSessionForSub(sub);
+  const accessToken = await getActiveSessionAccessToken(sub);
+  const { sessionId } = (
+    await SESSIONS_API_INSTANCE.get("/async/activeSession", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+  ).data;
+
+  return sessionId;
 }
 
 async function createSessionForSub(sub: string) {
@@ -211,6 +271,11 @@ async function createSessionForSub(sub: string) {
   return asyncCredentialResponse.data;
 }
 
+async function getFirstRegisteredClient(): Promise<ClientDetails> {
+  const clientsDetails = await getRegisteredClients();
+  return clientsDetails[0];
+}
+
 async function getRegisteredClients(): Promise<ClientDetails[]> {
   const secretsManagerClient = new SecretsManagerClient({
     region: "eu-west-2",
@@ -221,62 +286,6 @@ async function getRegisteredClients(): Promise<ClientDetails[]> {
   });
   const response = await secretsManagerClient.send(command);
   return JSON.parse(response.SecretString!);
-}
-
-async function getFirstRegisteredClient(): Promise<ClientDetails> {
-  const clientsDetails = await getRegisteredClients();
-  return clientsDetails[0];
-}
-
-function getCredentialRequestBody(
-  clientDetails: ClientDetails,
-  sub?: UUID | undefined,
-): CredentialRequestBody {
-  return <CredentialRequestBody>{
-    sub:
-      sub ?? "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
-    govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
-    client_id: clientDetails.client_id,
-    state: "testState",
-    redirect_uri: clientDetails.redirect_uri,
-  };
-}
-
-function toBase64(value: string): string {
-  return Buffer.from(value).toString("base64");
-}
-
-async function getCredentialAccessToken(
-  apiInstance: AxiosInstance,
-  clientIdAndSecret: string,
-  authorizationHeader: string,
-): Promise<string> {
-  const response = await apiInstance.post(
-    `/async/token`,
-    "grant_type=client_credentials",
-    {
-      headers: {
-        [authorizationHeader]: "Basic " + toBase64(clientIdAndSecret),
-      },
-    },
-  );
-
-  return response.data.access_token as string;
-}
-
-async function createSession(requestConfig: {
-  axiosInstance: AxiosInstance;
-  authorizationHeader: string;
-  accessToken: string;
-  requestBody: CredentialRequestBody;
-}): Promise<void> {
-  const { axiosInstance, authorizationHeader, accessToken, requestBody } =
-    requestConfig;
-  axiosInstance.post(`/async/credential`, requestBody, {
-    headers: {
-      [authorizationHeader]: "Bearer " + accessToken,
-    },
-  });
 }
 
 async function getActiveSessionAccessToken(
@@ -295,16 +304,4 @@ async function getActiveSessionAccessToken(
   );
 
   return stsMockResponse.data.access_token;
-}
-
-async function getActiveSessionId(sub: string): Promise<string> {
-  await createSessionForSub(sub);
-  const accessToken = await getActiveSessionAccessToken(sub);
-  const { sessionId } = (
-    await SESSIONS_API_INSTANCE.get("/async/activeSession", {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
-  ).data;
-
-  return sessionId;
 }
