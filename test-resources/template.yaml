@@ -16,10 +16,16 @@ Parameters:
     Type: String
     Default: none
 
-  BackendApi:
+  BackendStackName:
     Description: The Stack name of the Async Backend stack
     Type: String
     Default: mob-async-backend
+
+  DevOverrideAsyncProxyBaseUrl:
+    Description: |
+      Override the Proxy URL used in the API tests
+    Type: String
+    Default: none
 
 Mappings:
   Apigw:
@@ -34,6 +40,11 @@ Conditions:
   UsePermissionsBoundary: !Not
     - !Equals
       - !Ref PermissionsBoundary
+      - none
+
+  UseDevOverrideAsyncProxyBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideAsyncProxyBaseUrl
       - none
 
 Resources:
@@ -111,6 +122,75 @@ Resources:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-events-api-access-logs-${Environment}
       RetentionInDays: 30
 
+  EventsApiDomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - ${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - events.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      RegionalCertificateArn: !If
+        - DevelopmentStack
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneEventsCertificateV2ARN}}'
+      SecurityPolicy: TLS_1_2
+
+  EventsApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - ${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - events.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      RestApiId: !Ref EventsApi
+      Stage: !Ref EventsApi.Stage
+
+  EventsApiRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !If
+        - DevelopmentStack
+        - !Sub
+          - ${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - events.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      Type: A
+      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
+      AliasTarget:
+        DNSName: !GetAtt EventsApiDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt EventsApiDomainName.RegionalHostedZoneId
+
   # Dequeue resources
   DequeueFunction:
     Type: AWS::Serverless::Function
@@ -180,7 +260,7 @@ Resources:
                   - sqs:DeleteMessage
                   - sqs:GetQueueAttributes
                 Resource:
-                  Fn::ImportValue: !Sub ${BackendApi}-txma-sqs-queue-arn
+                  Fn::ImportValue: !Sub ${BackendStackName}-txma-sqs-queue-arn
         - PolicyName: DynamoDBPolicy
           PolicyDocument:
             Version: "2012-10-17"
@@ -197,7 +277,7 @@ Resources:
                 Action:
                   - kms:Decrypt
                 Resource:
-                  Fn::ImportValue: !Sub ${BackendApi}-txma-kms-encryption-key-arn
+                  Fn::ImportValue: !Sub ${BackendStackName}-txma-kms-encryption-key-arn
         - PolicyName: VpcPolicy
           PolicyDocument:
             Version: "2012-10-17"
@@ -219,7 +299,7 @@ Resources:
       BatchSize: 10
       Enabled: true
       EventSourceArn:
-        Fn::ImportValue: !Sub ${BackendApi}-txma-sqs-queue-arn
+        Fn::ImportValue: !Sub ${BackendStackName}-txma-sqs-queue-arn
       FunctionName: !GetAtt DequeueFunction.Arn
       FunctionResponseTypes:
         - ReportBatchItemFailures
@@ -244,3 +324,15 @@ Resources:
       BillingMode: PAY_PER_REQUEST
       SSESpecification:
         SSEEnabled: true
+
+Outputs:
+  EventsApiUrl:
+    Description: Events API URL
+    Value: !Sub https://${EventsApiDomainName}
+
+  ProxyApiUrl:
+    Description: Proxy API URL used in the Events API tests
+    Value: !If
+      - UseDevOverrideAsyncProxyBaseUrl
+      - !Ref DevOverrideAsyncProxyBaseUrl
+      - !Sub https://proxy.review-b-async.${Environment}.account.gov.uk
