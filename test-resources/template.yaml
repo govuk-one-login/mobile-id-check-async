@@ -21,9 +21,21 @@ Parameters:
     Type: String
     Default: mob-async-backend
 
-  DevOverrideAsyncProxyBaseUrl:
+  DevOverrideProxyBaseUrl:
     Description: |
       Override the Proxy URL used in the API tests
+    Type: String
+    Default: none
+
+  DevOverrideStsMockBaseUrl:
+    Description: |
+      Override the STS Mock URL used in the API tests
+    Type: String
+    Default: none
+
+  DevOverrideSessionsBaseUrl:
+    Description: |
+      Override the Sessions URL used in the API tests
     Type: String
     Default: none
 
@@ -47,10 +59,29 @@ Conditions:
       - !Ref PermissionsBoundary
       - none
 
-  UseDevOverrideAsyncProxyBaseUrl: !Not
+  UseDevOverrideProxyBaseUrl: !Not
     - !Equals
-      - !Ref DevOverrideAsyncProxyBaseUrl
+      - !Ref DevOverrideProxyBaseUrl
       - none
+
+  UseDevOverrideStsMockBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideStsMockBaseUrl
+      - none
+
+  UseDevOverrideSessionsBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideSessionsBaseUrl
+      - none
+
+  DevelopmentStack: !And
+    - !Equals
+      - !Ref Environment
+      - dev
+    - !Not
+      - !Equals
+        - !Ref AWS::StackName
+        - test-resources
 
 Resources:
   EventsApi:
@@ -336,6 +367,20 @@ Outputs:
   ProxyApiUrl:
     Description: Proxy API URL used in the Events API tests
     Value: !If
-      - UseDevOverrideAsyncProxyBaseUrl
-      - !Ref DevOverrideAsyncProxyBaseUrl
+      - UseDevOverrideProxyBaseUrl
+      - !Ref DevOverrideProxyBaseUrl
       - !Sub https://proxy.review-b-async.${Environment}.account.gov.uk
+
+  SessionsApiUrl:
+    Description: Sessions API URL used in the Events API tests
+    Value: !If
+      - UseDevOverrideSessionsBaseUrl
+      - !Ref DevOverrideSessionsBaseUrl
+      - !Sub https://sessions.review-b-async.${Environment}.account.gov.uk
+
+  StsMockApiUrl:
+    Description: STS mock API URL used in the Events API tests
+    Value: !If
+      - UseDevOverrideStsMockBaseUrl
+      - !Ref DevOverrideStsMockBaseUrl
+      - !Sub https://sts-mock.review-b-async.${Environment}.account.gov.uk

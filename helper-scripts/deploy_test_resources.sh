@@ -32,7 +32,7 @@ while true; do
       else
         sam deploy \
           --stack-name "$TEST_RESOURCES_STACK_NAME" \
-          --parameter-overrides "BackendApi=${BACKEND_STACK_NAME}" \
+          --parameter-overrides "BackendStackName=${BACKEND_STACK_NAME}" \
           --capabilities CAPABILITY_NAMED_IAM \
           --resolve-s3
       fi
