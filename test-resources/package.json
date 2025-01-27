@@ -34,6 +34,7 @@
     "@aws-lambda-powertools/logger": "^2.13.0",
     "@aws-sdk/client-dynamodb": "^3.731.1",
     "@aws-sdk/util-dynamodb": "^3.731.1",
-    "@smithy/node-http-handler": "^4.0.1"
+    "@smithy/node-http-handler": "^4.0.1",
+    "esbuild": "0.24.2"
   }
 }
