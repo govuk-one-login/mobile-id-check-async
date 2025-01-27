@@ -6,14 +6,17 @@
   },
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": " rm -r ./dist && tsc",
     "test": "./node_modules/.bin/jest",
     "config": "./node_modules/.bin/ts-jest config:init",
-    "delete": "node ./dist/delete-stacks.js"
+    "delete": "node ./dist/main.js",
+    "format": "./node_modules/.bin/prettier --write src"
   },
   "devDependencies": {
     "@jest/globals": "^29.5.14",
     "ts-jest": "^29.2.5",
-    "@aws-sdk/client-cloudformation": "3.734.0"
+    "@aws-sdk/client-cloudformation": "3.734.0",
+    "@aws-sdk/client-sts": "3.734.0",
+    "prettier": "3.4.2"
   }
 }
