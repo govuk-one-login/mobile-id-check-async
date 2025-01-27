@@ -62,6 +62,8 @@ const isSuccessStackStatus = (
 export const deleteStacks = async (stackNames: string[]): Promise<Results> => {
   const results: Results = [];
   for (const stackName of stackNames) {
+    let continuePolling = true
+    while (continuePolling) {
     let commandSentSuccessfully: boolean = true;
     try {
       await sendDeleteStackCommand(stackName);
@@ -69,27 +71,33 @@ export const deleteStacks = async (stackNames: string[]): Promise<Results> => {
       const failureResult = buildDeleteCommandFailureResult(stackName, error);
       results.push(failureResult);
       commandSentSuccessfully = false;
+      continuePolling = false
+      break
     }
-    if ((commandSentSuccessfully = false)) {
-      const stackStatus = await getStackStatus(stackName);
-      if (!continuePollingStackStatus(stackStatus)) {
-        if (isSuccessStackStatus(stackStatus)) {
-          results.push({ status: "SUCCESS", stackName });
-        } else {
-          results.push({
-            status: "FAILURE",
-            stackName,
-            reason:
-              "Stack in the following status and cannot proceed: " +
-              stackStatus,
-          });
-        }
-        break;
-      }
+    console.log("pre-timer")
+  await Promise.resolve(setTimeout(async () => 10000))
+  console.log("post-timer")
+  const stackStatus = await getStackStatus(stackName);
+  console.log("STACK STATUS", stackStatus)
+  if (!continuePollingStackStatus(stackStatus)) {
+    if (isSuccessStackStatus(stackStatus)) {
+      results.push({ status: "SUCCESS", stackName });
+    } else {
+      results.push({
+        status: "FAILURE",
+        stackName,
+        reason:
+          "Stack in the following status and cannot proceed: " +
+          stackStatus,
+      });
     }
+    continuePolling = false
+    break;
   }
-  return results;
 };
+}
+return results;
+}
 
 export const getDeployedStackNames = async (): Promise<string[]> => {
   const describeStacksCommand = new DescribeStacksCommand();
