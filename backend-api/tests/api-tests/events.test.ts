@@ -1,4 +1,4 @@
-import { AxiosInstance, AxiosResponse } from "axios";
+import { AxiosInstance } from "axios";
 import { randomUUID } from "crypto";
 import "dotenv/config";
 import {
@@ -20,37 +20,37 @@ const ONE_SECOND = 1000;
 jest.setTimeout(2 * 5 * ONE_SECOND);
 
 describe("GET /events", () => {
-  describe.each(APIS)(
-    "Test $apiName",
-    ({ axiosInstance, authorizationHeader }) => {
-      describe("Given there are no events to dequeue", () => {
-        it("Returns a 404 Not Found response", async () => {
-          const params = {
-            pkPrefix: `SESSION%23`,
-            skPrefix: `TXMA%23EVENT_NAME%23DCMAW_ASYNC_CRI_START`,
-          };
-          const response = await EVENTS_API_INSTANCE.get("/events", { params });
+  describe("Given there are no events to dequeue", () => {
+    it("Returns a 404 Not Found response", async () => {
+      const params = {
+        pkPrefix: `SESSION%23`,
+        skPrefix: `TXMA%23EVENT_NAME%23DCMAW_ASYNC_CRI_START`,
+      };
+      const response = await EVENTS_API_INSTANCE.get("/events", { params });
 
-          expect(response.status).toBe(404);
-          expect(response.statusText).toStrictEqual("Not Found");
+      expect(response.status).toBe(404);
+      expect(response.statusText).toStrictEqual("Not Found");
+    });
+  });
+
+  describe("Given there are events to dequeue", () => {
+    describe("Given a request is made with a query that is not valid", () => {
+      it("Returns a 400 Bad Request response", async () => {
+        const params = {
+          skPrefix: `TXMA%23EVENT_NAME%23DCMAW_ASYNC_CRI_START`,
+        };
+        const response = await EVENTS_API_INSTANCE.get("/events", {
+          params,
         });
+
+        expect(response.status).toBe(400);
+        expect(response.statusText).toEqual("Bad Request");
       });
+    });
 
-      describe("Given there are events to dequeue", () => {
-        describe("Given a request is made with a query that is not valid", () => {
-          it("Returns a 400 Bad Request response", async () => {
-            const params = {
-              skPrefix: `TXMA%23EVENT_NAME%23DCMAW_ASYNC_CRI_START`,
-            };
-            const response = await EVENTS_API_INSTANCE.get("/events", {
-              params,
-            });
-
-            expect(response.status).toBe(400);
-            expect(response.statusText).toEqual("Bad Request");
-          });
-        });
-
+    describe.each(APIS)(
+      "Test $apiName",
+      ({ axiosInstance, authorizationHeader }) => {
         describe("Given a request is made with a query that is valid", () => {
           let clientIdAndSecret: string;
           let clientDetails: ClientDetails;
@@ -106,9 +106,9 @@ describe("GET /events", () => {
             );
           });
         });
-      });
-    },
-  );
+      },
+    );
+  });
 });
 
 async function createSession(requestConfig: {
