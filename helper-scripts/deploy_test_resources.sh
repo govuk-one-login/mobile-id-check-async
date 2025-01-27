@@ -10,10 +10,13 @@ if [ "$(aws sts get-caller-identity --output text --query 'Account')" != "211125
   exit 1
 fi
 
-STACK_NAME=$1
+BASE_STACK_NAME=$1
 
-TEST_RESOURCES_STACK_NAME="${STACK_NAME}-test-resources"
-BACKEND_STACK_NAME=${2:-"mob-async-backend"}
+TEST_RESOURCES_STACK_NAME="${BASE_STACK_NAME}-test-resources"
+BACKEND_STACK_NAME="${BASE_STACK_NAME}-async-backend"
+STS_MOCK_URL="https://${BASE_STACK_NAME}-sts-mock.review-b-async.dev.account.gov.uk"
+SESSIONS_URL="https://proxy-${BACKEND_STACK_NAME}.review-b-async.dev.account.gov.uk"
+PROXY_URL="https://sessions-${BACKEND_STACK_NAME}.review-b-async.dev.account.gov.uk"
 
 while true; do
   echo
@@ -32,7 +35,7 @@ while true; do
       else
         sam deploy \
           --stack-name "$TEST_RESOURCES_STACK_NAME" \
-          --parameter-overrides "BackendStackName=${BACKEND_STACK_NAME}" \
+          --parameter-overrides "BackendStackName=${BACKEND_STACK_NAME} DevOverrideProxyBaseUrl=${PROXY_URL} DevOverrideStsMockBaseUrl=${STS_MOCK_URL} DevOverrideSessionsBaseUrl=${SESSIONS_URL}" \
           --capabilities CAPABILITY_NAMED_IAM \
           --resolve-s3
       fi
