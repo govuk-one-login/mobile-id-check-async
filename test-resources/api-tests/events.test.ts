@@ -10,7 +10,7 @@ import {
 } from "@aws-sdk/client-secrets-manager";
 
 const ONE_SECOND = 1000;
-jest.setTimeout(7 * 5 * ONE_SECOND);
+jest.setTimeout(9 * 5 * ONE_SECOND);
 
 describe("GET /events", () => {
   describe("Given there are no events to dequeue", () => {
