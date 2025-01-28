@@ -84,7 +84,7 @@ interface ClientDetails {
 }
 
 export async function createSession(): Promise<void> {
-  const clientDetails = await getFirstRegisteredClient();
+  const clientDetails = await getRegisteredClientDetails();
   const clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
   const accessToken = await getCredentialAccessToken(
     PROXY_API_INSTANCE,
@@ -111,7 +111,7 @@ export async function getActiveSessionId(sub: string): Promise<string> {
   return sessionId;
 }
 
-async function getFirstRegisteredClient(): Promise<ClientDetails> {
+async function getRegisteredClientDetails(): Promise<ClientDetails> {
   const clientsDetails = await getRegisteredClients();
   return clientsDetails[0];
 }
@@ -180,7 +180,7 @@ async function getServiceToken(sub: string): Promise<string> {
 }
 
 async function createSessionForSub(sub: string) {
-  const clientDetails = await getFirstRegisteredClient();
+  const clientDetails = await getRegisteredClientDetails();
   const clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
   const clientIdAndSecretB64 =
     Buffer.from(clientIdAndSecret).toString("base64");
