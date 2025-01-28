@@ -211,22 +211,24 @@ async function createSessionForSub(sub: string) {
   return asyncCredentialResponse.data;
 }
 
-type Event = {
+type EventResponse = {
   pk: string;
   sk: string;
   event: object;
 };
 
-function isValidEvent(candidate: unknown): candidate is Event {
+function isValidEventResponse(
+  eventResponse: unknown,
+): eventResponse is EventResponse {
   return (
-    typeof candidate === "object" &&
-    candidate !== null &&
-    "pk" in candidate &&
-    typeof candidate.pk === "string" &&
-    "sk" in candidate &&
-    typeof candidate.sk === "string" &&
-    "event" in candidate &&
-    typeof candidate.event === "object"
+    typeof eventResponse === "object" &&
+    eventResponse !== null &&
+    "pk" in eventResponse &&
+    typeof eventResponse.pk === "string" &&
+    "sk" in eventResponse &&
+    typeof eventResponse.sk === "string" &&
+    "event" in eventResponse &&
+    typeof eventResponse.event === "object"
   );
 }
 
@@ -234,7 +236,7 @@ export async function pollForEvents(
   partitionKey: string,
   sortKeyPrefix: string,
   numberOfEvents: number,
-): Promise<Event[]> {
+): Promise<EventResponse[]> {
   async function wait(delayMillis: number): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, delayMillis));
   }
@@ -269,13 +271,13 @@ export async function pollForEvents(
 
   if (events.length < numberOfEvents)
     throw new Error(
-      `Only found ${events.length} events for pk=${partitionKey} and skPrefix=${sortKeyPrefix}. Expected to find at least ${numberOfEvents} events.`,
+      `Only found ${events.length} events for pkPrefix=${partitionKey} and skPrefix=${sortKeyPrefix}. Expected to find at least ${numberOfEvents} events.`,
     );
 
-  if (events.some((event) => !isValidEvent(event)))
+  if (events.some((event) => !isValidEventResponse(event)))
     throw new Error("Response from /events is malformed");
 
-  return events as Event[];
+  return events as EventResponse[];
 }
 
 // Call /events API
