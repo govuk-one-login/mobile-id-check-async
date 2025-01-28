@@ -292,9 +292,8 @@ async function getEvents(
     },
   });
 
-  if (response.status === 403)
-    throw new Error("Not authorized to call /events");
-  if (response.status === 400) throw new Error("Invalid request to /events");
+  const { status } = response;
+  if (status !== 200) throw new Error(`Error: ${status} Status code`);
 
   const events = response.data;
   return Array.isArray(events) ? events : []; // If response is malformed, return empty array so polling can be retried
