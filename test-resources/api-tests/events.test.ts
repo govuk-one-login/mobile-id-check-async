@@ -40,12 +40,11 @@ describe("GET /events", () => {
     });
 
     describe("Given a request is made with a query that is valid", () => {
-      let sub: string;
       let sessionId: string;
 
       beforeEach(async () => {
         await createSession();
-        sub = randomUUID();
+        const sub = randomUUID();
         sessionId = await getActiveSessionId(sub);
       });
 
