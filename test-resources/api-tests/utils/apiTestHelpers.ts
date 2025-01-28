@@ -86,12 +86,11 @@ interface ClientDetails {
 export async function createSession(): Promise<void> {
   const clientDetails = await getFirstRegisteredClient();
   const clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
-  const authorizationHeader = "x-custom-auth";
   const accessToken = await getCredentialAccessToken(
     PROXY_API_INSTANCE,
     clientIdAndSecret,
-    authorizationHeader,
   );
+  const authorizationHeader = "x-custom-auth";
   const requestBody = getCredentialRequestBody(clientDetails);
   PROXY_API_INSTANCE.post(`/async/credential`, requestBody, {
     headers: {
@@ -132,8 +131,8 @@ async function getRegisteredClients(): Promise<ClientDetails[]> {
 async function getCredentialAccessToken(
   apiInstance: AxiosInstance,
   clientIdAndSecret: string,
-  authorizationHeader: string,
 ): Promise<string> {
+  const authorizationHeader = "x-custom-auth";
   const response = await apiInstance.post(
     `/async/token`,
     "grant_type=client_credentials",
