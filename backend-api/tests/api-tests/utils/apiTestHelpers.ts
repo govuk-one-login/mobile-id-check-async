@@ -7,8 +7,7 @@ import {
   SESSIONS_API_INSTANCE,
   STS_MOCK_API_INSTANCE,
 } from "./apiInstance";
-import { randomUUID, UUID } from "crypto";
-import { AxiosInstance } from "axios";
+import { randomUUID } from "crypto";
 
 export interface ClientDetails {
   client_id: string;
@@ -90,48 +89,4 @@ export async function getValidSessionId(): Promise<string | null> {
     },
   );
   return activeSessionResponse.data["sessionId"] ?? null;
-}
-
-export interface CredentialRequestBody {
-  sub: string;
-  govuk_signin_journey_id: string;
-  client_id: string;
-  state: string;
-  redirect_uri: string;
-}
-
-export function getCredentialRequestBody(
-  clientDetails: ClientDetails,
-  sub?: UUID | undefined,
-): CredentialRequestBody {
-  return <CredentialRequestBody>{
-    sub:
-      sub ?? "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
-    govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
-    client_id: clientDetails.client_id,
-    state: "testState",
-    redirect_uri: clientDetails.redirect_uri,
-  };
-}
-
-export function toBase64(value: string): string {
-  return Buffer.from(value).toString("base64");
-}
-
-export async function getCredentialAccessToken(
-  apiInstance: AxiosInstance,
-  clientIdAndSecret: string,
-  authorizationHeader: string,
-): Promise<string> {
-  const response = await apiInstance.post(
-    `/async/token`,
-    "grant_type=client_credentials",
-    {
-      headers: {
-        [authorizationHeader]: "Basic " + toBase64(clientIdAndSecret),
-      },
-    },
-  );
-
-  return response.data.access_token as string;
 }
