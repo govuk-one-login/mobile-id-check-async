@@ -6,7 +6,6 @@ import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
 import { aws4Interceptor } from "aws4-axios";
 import axios, { AxiosInstance } from "axios";
 import axiosRetry from "axios-retry";
-import { randomUUID, UUID } from "crypto";
 
 export const STS_MOCK_API_INSTANCE = getStsMockInstance();
 export const SESSIONS_API_INSTANCE = getSessionsApiInstance();
@@ -83,24 +82,22 @@ interface ClientDetails {
   redirect_uri: string;
 }
 
-export async function createSession(): Promise<void> {
+export async function createSession(sub: string): Promise<void> {
   const clientDetails = await getRegisteredClientDetails();
   const clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
   const accessToken = await getCredentialAccessToken(
     PROXY_API_INSTANCE,
     clientIdAndSecret,
   );
-  const authorizationHeader = "x-custom-auth";
-  const requestBody = getCredentialRequestBody(clientDetails);
+  const requestBody = getCredentialRequestBody(clientDetails, sub);
   PROXY_API_INSTANCE.post(`/async/credential`, requestBody, {
     headers: {
-      [authorizationHeader]: "Bearer " + accessToken,
+      "x-custom-auth": "Bearer " + accessToken,
     },
   });
 }
 
 export async function getActiveSessionId(sub: string): Promise<string> {
-  await createSessionForSub(sub);
   const accessToken = await getServiceToken(sub);
   const { sessionId } = (
     await SESSIONS_API_INSTANCE.get("/async/activeSession", {
@@ -132,13 +129,12 @@ async function getCredentialAccessToken(
   apiInstance: AxiosInstance,
   clientIdAndSecret: string,
 ): Promise<string> {
-  const authorizationHeader = "x-custom-auth";
   const response = await apiInstance.post(
     `/async/token`,
     "grant_type=client_credentials",
     {
       headers: {
-        [authorizationHeader]: "Basic " + toBase64(clientIdAndSecret),
+        "x-custom-auth": "Basic " + toBase64(clientIdAndSecret),
       },
     },
   );
@@ -152,11 +148,10 @@ function toBase64(value: string): string {
 
 function getCredentialRequestBody(
   clientDetails: ClientDetails,
-  sub?: UUID | undefined,
+  sub: string,
 ): CredentialRequestBody {
   return <CredentialRequestBody>{
-    sub:
-      sub ?? "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
+    sub,
     govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
     client_id: clientDetails.client_id,
     state: "testState",
@@ -177,38 +172,6 @@ async function getServiceToken(sub: string): Promise<string> {
   );
 
   return stsMockResponse.data.access_token;
-}
-
-async function createSessionForSub(sub: string) {
-  const clientDetails = await getRegisteredClientDetails();
-  const clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
-  const clientIdAndSecretB64 =
-    Buffer.from(clientIdAndSecret).toString("base64");
-  const asyncTokenResponse = await PROXY_API_INSTANCE.post(
-    "/async/token",
-    "grant_type=client_credentials",
-    {
-      headers: {
-        "x-custom-auth": `Basic ${clientIdAndSecretB64}`,
-      },
-    },
-  );
-  const asyncCredentialResponse = await PROXY_API_INSTANCE.post(
-    "/async/credential",
-    {
-      sub: sub ?? randomUUID(),
-      govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
-      client_id: clientDetails.client_id,
-      state: "testState",
-      redirect_uri: clientDetails.redirect_uri,
-    },
-    {
-      headers: {
-        "x-custom-auth": `Bearer ${asyncTokenResponse.data.access_token}`,
-      },
-    },
-  );
-  return asyncCredentialResponse.data;
 }
 
 type EventResponse = {

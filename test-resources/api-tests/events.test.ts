@@ -43,8 +43,8 @@ describe("GET /events", () => {
       let sessionId: string;
 
       beforeEach(async () => {
-        await createSession();
         const sub = randomUUID();
+        await createSession(sub);
         sessionId = await getActiveSessionId(sub);
       });
 
