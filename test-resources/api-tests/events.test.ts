@@ -42,30 +42,11 @@ describe("GET /events", () => {
     });
 
     describe("Given a request is made with a query that is valid", () => {
-      let clientIdAndSecret: string;
-      let clientDetails: ClientDetails;
-      let accessToken: string;
-      let credentialRequestBody: CredentialRequestBody;
       let sub: string;
       let sessionId: string;
-      const PROXY_API_INSTANCE = getProxyApiInstance();
-      const authorizationHeader = "x-custom-auth";
 
       beforeEach(async () => {
-        clientDetails = await getFirstRegisteredClient();
-        clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
-        accessToken = await getCredentialAccessToken(
-          PROXY_API_INSTANCE,
-          clientIdAndSecret,
-          authorizationHeader,
-        );
-        credentialRequestBody = getCredentialRequestBody(clientDetails);
-        await createSession({
-          axiosInstance: PROXY_API_INSTANCE,
-          authorizationHeader,
-          accessToken,
-          requestBody: credentialRequestBody,
-        });
+        await createSession();
         sub = randomUUID();
         sessionId = await getActiveSessionId(sub);
       });
@@ -77,22 +58,15 @@ describe("GET /events", () => {
         };
 
         const { pkPrefix, skPrefix } = params;
-        const { pk, sk, event } = (
-          await pollForEvents(pkPrefix, skPrefix, 1)
-        )[0];
-        const response = await EVENTS_API_INSTANCE.get("/events", {
-          params,
-        });
+        const response = (await pollForEvents(pkPrefix, skPrefix, 1))[0];
 
-        expect(response.status).toBe(200);
-        expect(response.statusText).toEqual("OK");
-        expect(pk).toEqual(`SESSION#${sessionId}`);
-        expect(sk).toEqual(
+        expect(response.pk).toEqual(`SESSION#${sessionId}`);
+        expect(response.sk).toEqual(
           expect.stringContaining(
             "TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START#TIMESTAMP#",
           ),
         );
-        expect(event).toEqual(
+        expect(response.event).toEqual(
           expect.objectContaining({
             event_name: "DCMAW_ASYNC_CRI_START",
           }),
@@ -163,10 +137,64 @@ function getInstance(baseUrl: string, useAwsSigv4Signing: boolean = false) {
   return apiInstance;
 }
 
+interface CredentialRequestBody {
+  sub: string;
+  govuk_signin_journey_id: string;
+  client_id: string;
+  state: string;
+  redirect_uri: string;
+}
+
 interface ClientDetails {
   client_id: string;
   client_secret: string;
   redirect_uri: string;
+}
+
+async function createSession(): Promise<void> {
+  const clientDetails = await getFirstRegisteredClient();
+  const clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
+  const authorizationHeader = "x-custom-auth";
+  const accessToken = await getCredentialAccessToken(
+    PROXY_API_INSTANCE,
+    clientIdAndSecret,
+    authorizationHeader,
+  );
+  const requestBody = getCredentialRequestBody(clientDetails);
+  PROXY_API_INSTANCE.post(`/async/credential`, requestBody, {
+    headers: {
+      [authorizationHeader]: "Bearer " + accessToken,
+    },
+  });
+}
+
+async function getActiveSessionId(sub: string): Promise<string> {
+  await createSessionForSub(sub);
+  const accessToken = await getActiveSessionAccessToken(sub);
+  const { sessionId } = (
+    await SESSIONS_API_INSTANCE.get("/async/activeSession", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+  ).data;
+
+  return sessionId;
+}
+
+async function getFirstRegisteredClient(): Promise<ClientDetails> {
+  const clientsDetails = await getRegisteredClients();
+  return clientsDetails[0];
+}
+
+async function getRegisteredClients(): Promise<ClientDetails[]> {
+  const secretsManagerClient = new SecretsManagerClient({
+    region: "eu-west-2",
+  });
+  const secretName = `${process.env.TEST_ENVIRONMENT}/clientRegistryApiTest`;
+  const command = new GetSecretValueCommand({
+    SecretId: secretName,
+  });
+  const response = await secretsManagerClient.send(command);
+  return JSON.parse(response.SecretString!);
 }
 
 async function getCredentialAccessToken(
@@ -191,14 +219,6 @@ function toBase64(value: string): string {
   return Buffer.from(value).toString("base64");
 }
 
-interface CredentialRequestBody {
-  sub: string;
-  govuk_signin_journey_id: string;
-  client_id: string;
-  state: string;
-  redirect_uri: string;
-}
-
 function getCredentialRequestBody(
   clientDetails: ClientDetails,
   sub?: UUID | undefined,
@@ -213,31 +233,22 @@ function getCredentialRequestBody(
   };
 }
 
-async function createSession(requestConfig: {
-  axiosInstance: AxiosInstance;
-  authorizationHeader: string;
-  accessToken: string;
-  requestBody: CredentialRequestBody;
-}): Promise<void> {
-  const { axiosInstance, authorizationHeader, accessToken, requestBody } =
-    requestConfig;
-  axiosInstance.post(`/async/credential`, requestBody, {
-    headers: {
-      [authorizationHeader]: "Bearer " + accessToken,
-    },
+async function getActiveSessionAccessToken(
+  sub?: string,
+  scope?: string,
+): Promise<string> {
+  const requestBody = new URLSearchParams({
+    subject_token: sub ?? randomUUID(),
+    scope: scope ?? "idCheck.activeSession.read",
+    grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
+    subject_token_type: "urn:ietf:params:oauth:token-type:access_token",
   });
-}
+  const stsMockResponse = await STS_MOCK_API_INSTANCE.post(
+    "/token",
+    requestBody,
+  );
 
-async function getActiveSessionId(sub: string): Promise<string> {
-  await createSessionForSub(sub);
-  const accessToken = await getActiveSessionAccessToken(sub);
-  const { sessionId } = (
-    await SESSIONS_API_INSTANCE.get("/async/activeSession", {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
-  ).data;
-
-  return sessionId;
+  return stsMockResponse.data.access_token;
 }
 
 async function createSessionForSub(sub: string) {
@@ -270,41 +281,6 @@ async function createSessionForSub(sub: string) {
     },
   );
   return asyncCredentialResponse.data;
-}
-
-async function getFirstRegisteredClient(): Promise<ClientDetails> {
-  const clientsDetails = await getRegisteredClients();
-  return clientsDetails[0];
-}
-
-async function getRegisteredClients(): Promise<ClientDetails[]> {
-  const secretsManagerClient = new SecretsManagerClient({
-    region: "eu-west-2",
-  });
-  const secretName = `${process.env.TEST_ENVIRONMENT}/clientRegistryApiTest`;
-  const command = new GetSecretValueCommand({
-    SecretId: secretName,
-  });
-  const response = await secretsManagerClient.send(command);
-  return JSON.parse(response.SecretString!);
-}
-
-async function getActiveSessionAccessToken(
-  sub?: string,
-  scope?: string,
-): Promise<string> {
-  const requestBody = new URLSearchParams({
-    subject_token: sub ?? randomUUID(),
-    scope: scope ?? "idCheck.activeSession.read",
-    grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
-    subject_token_type: "urn:ietf:params:oauth:token-type:access_token",
-  });
-  const stsMockResponse = await STS_MOCK_API_INSTANCE.post(
-    "/token",
-    requestBody,
-  );
-
-  return stsMockResponse.data.access_token;
 }
 
 type Event = {
