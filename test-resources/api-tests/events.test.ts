@@ -49,12 +49,9 @@ describe("GET /events", () => {
       });
 
       it("Returns a 200 OK response", async () => {
-        const params = {
-          pkPrefix: `SESSION#${sessionId}`,
-          skPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START`,
-        };
+        const pkPrefix = `SESSION#${sessionId}`;
+        const skPrefix = `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START`;
 
-        const { pkPrefix, skPrefix } = params;
         const response = (await pollForEvents(pkPrefix, skPrefix, 1))[0];
 
         expect(response.pk).toEqual(`SESSION#${sessionId}`);
