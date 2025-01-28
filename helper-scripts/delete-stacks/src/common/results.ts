@@ -12,3 +12,18 @@ export interface FailureResult extends StackName {
 }
 
 export type Results = (SuccessResult | FailureResult)[];
+
+export const buildStackFailureResultFromError = (
+  stackName: string,
+  error: unknown,
+): FailureResult => {
+  let reason = "Failed to delete " + stackName + ".";
+  if (error instanceof Error) {
+    reason = reason + " " + error.message;
+  }
+  return {
+    stackName,
+    status: "FAILURE",
+    reason,
+  };
+};

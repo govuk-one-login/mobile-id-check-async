@@ -26,7 +26,7 @@ export const promptToDeleteStackMethodRecord: Record<
 
 export interface Application {
   getNames: (deployedStackNames: string[]) => Promise<string[]>;
-  getResult?: () => Results;
+  deleteStacks: (stackNames: string[]) => Promise<Results>;
 }
 
 class DeleteStackFactory {

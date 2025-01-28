@@ -1,28 +1,16 @@
 import {
   DeleteStackCommand,
   DescribeStacksCommand,
+  ListStackResourcesCommand,
 } from "@aws-sdk/client-cloudformation";
 
 import { waitUntilStackDeleteComplete } from "@aws-sdk/client-cloudformation";
-import { FailureResult, Results } from "./results.js";
 import { cloudFormationClient } from "./aws-clients.js";
+import { deleteObject } from "./s3.js";
 
-export const deleteStacks = async (stackNames: string[]): Promise<Results> => {
-  const results: Results = [];
-  for (const stackName of stackNames) {
-    try {
-      await deleteStack(stackName);
-      results.push({ stackName, status: "SUCCESS" });
-    } catch (error) {
-      const failureResult = buildDeleteCommandFailureResult(stackName, error);
-      results.push(failureResult);
-    }
-  }
-  return results;
-};
-
-const deleteStack = async (stackName: string): Promise<void> => {
+export const deleteStack = async (stackName: string): Promise<void> => {
   logStartingMessage(stackName);
+  await deleteVersionedResources(stackName);
   await sendDeleteStackCommand(stackName);
   await waitUntilStackDeleteComplete(
     { client: cloudFormationClient, maxWaitTime: 600 },
@@ -49,21 +37,6 @@ const logCompletedMessage = (stackName: string): void => {
   console.log("\n", `Deleted ${stackName}`);
 };
 
-const buildDeleteCommandFailureResult = (
-  stackName: string,
-  error: unknown,
-): FailureResult => {
-  let reason = "Failed to delete " + stackName + ".";
-  if (error instanceof Error) {
-    reason = reason + " " + error.message;
-  }
-  return {
-    stackName,
-    status: "FAILURE",
-    reason,
-  };
-};
-
 export const getDeployedStackNames = async (): Promise<string[]> => {
   const describeStacksCommand = new DescribeStacksCommand();
   const response = await cloudFormationClient.send(describeStacksCommand);
@@ -77,3 +50,36 @@ export const getDeployedStackNames = async (): Promise<string[]> => {
     return stacks.StackName;
   });
 };
+
+const deleteVersionedResources = async (stackName: string): Promise<void> => {
+  const bucketIds = await getDeployedS3BucketIds(stackName);
+  if(bucketIds.length < 1) return
+  await deleteBuckets(bucketIds);
+};
+
+const getDeployedS3BucketIds = async (stackName: string): Promise<string[]> => {
+  const listStackResourcesCommand = new ListStackResourcesCommand({
+    StackName: stackName,
+  });
+  const resourcesCommandOutput = await cloudFormationClient.send(
+    listStackResourcesCommand,
+  );
+  if (!resourcesCommandOutput.StackResourceSummaries)
+    throw Error(
+      "Could not find Cloudformation resources for the stack. This is likely an error",
+    );
+
+  return resourcesCommandOutput.StackResourceSummaries.filter((resource) => {
+    return resource.ResourceType === "AWS::S3::Bucket" && resource.ResourceStatus !== "DELETE_COMPLETE";
+  }).map((resource) => {
+    return resource.PhysicalResourceId!;
+  });
+};
+
+const deleteBuckets = async (bucketIds: string[]): Promise<void> => {
+  
+  await Promise.all(
+    bucketIds.map((bucketId) => deleteObject(bucketId)),
+  )
+};
+

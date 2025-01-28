@@ -2,7 +2,7 @@ import {
   GetCallerIdentityCommand,
   GetCallerIdentityCommandOutput,
 } from "@aws-sdk/client-sts";
-import { stsClient } from "./aws-clients.js";
+import { stsClient } from "./aws/aws-clients.js";
 
 export async function assertUserIdentity() {
   const callerIdentity = await getCallerIdentity();
@@ -39,6 +39,6 @@ const assertUserIsAuthenticated = (callerIdentity: {
   const expectedAccountId = "211125300205";
   if (expectedAccountId !== callerIdentity.account)
     throw Error(
-      `You are logged into the wrong AWS account. User logged into ${callerIdentity.account}. Expected user to be in ${expectedAccountId}`,
+      `You are logged into the wrong AWS account. User logged into ${callerIdentity.account}. Expected user to be logged into ${expectedAccountId}`,
     );
 };

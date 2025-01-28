@@ -1,5 +1,10 @@
 import inquirer from "inquirer";
 import { Application } from "./stackMethod.js";
+import { deleteStack } from "../../common/aws/cloudformation.js";
+import {
+  buildStackFailureResultFromError,
+  Results,
+} from "../../common/results.js";
 
 const getStackNamesFromInput = async (
   deployedStackNames: string[],
@@ -41,5 +46,23 @@ export const deleteSpecificStacksApplication: Application = {
   getNames: async (deployedStackNames: string[]) => {
     const stackNames = await getStackNamesFromInput(deployedStackNames);
     return stackNames;
+  },
+
+  deleteStacks: async (stackNames: string[]): Promise<Results> => {
+    const results: Results = [];
+    for (const stackName of stackNames) {
+      try {
+        await deleteStack(stackName);
+        results.push({ stackName, status: "SUCCESS" });
+      } catch (error) {
+        console.log(error)
+        const failureResult = buildStackFailureResultFromError(
+          stackName,
+          error,
+        );
+        results.push(failureResult);
+      }
+    }
+    return results;
   },
 };
