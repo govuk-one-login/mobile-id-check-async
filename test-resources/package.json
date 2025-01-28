@@ -18,7 +18,7 @@
   "devDependencies": {
     "@aws-sdk/client-secrets-manager": "^3.734.0",
     "@aws-sdk/credential-providers": "^3.734.0",
-    "@eslint/js": "9.18.0",
+    "@eslint/js": "9.19.0",
     "@types/aws-lambda": "8.10.147",
     "@types/eslint__js": "8.42.3",
     "@types/jest": "29.5.14",
@@ -28,19 +28,19 @@
     "axios": "^1.7.9",
     "axios-retry": "^4.5.0",
     "dotenv": "^16.4.7",
-    "eslint": "9.18.0",
+    "eslint": "9.19.0",
     "jest": "29.7.0",
     "jest-junit": "16.0.0",
     "prettier": "3.4.2",
     "ts-jest": "29.2.5",
     "ts-node": "10.9.2",
     "typescript": "5.7.3",
-    "typescript-eslint": "8.21.0"
+    "typescript-eslint": "8.22.0"
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.13.0",
-    "@aws-sdk/client-dynamodb": "^3.731.1",
-    "@aws-sdk/util-dynamodb": "^3.731.1",
+    "@aws-sdk/client-dynamodb": "^3.734.0",
+    "@aws-sdk/util-dynamodb": "^3.734.0",
     "@smithy/node-http-handler": "^4.0.1",
     "esbuild": "0.24.2"
   }
