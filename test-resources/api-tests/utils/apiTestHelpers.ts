@@ -101,7 +101,7 @@ export async function createSession(): Promise<void> {
 
 export async function getActiveSessionId(sub: string): Promise<string> {
   await createSessionForSub(sub);
-  const accessToken = await getActiveSessionAccessToken(sub);
+  const accessToken = await getServiceToken(sub);
   const { sessionId } = (
     await SESSIONS_API_INSTANCE.get("/async/activeSession", {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -164,13 +164,10 @@ function getCredentialRequestBody(
   };
 }
 
-async function getActiveSessionAccessToken(
-  sub?: string,
-  scope?: string,
-): Promise<string> {
+async function getServiceToken(sub: string): Promise<string> {
   const requestBody = new URLSearchParams({
-    subject_token: sub ?? randomUUID(),
-    scope: scope ?? "idCheck.activeSession.read",
+    subject_token: sub,
+    scope: "idCheck.activeSession.read",
     grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
     subject_token_type: "urn:ietf:params:oauth:token-type:access_token",
   });
