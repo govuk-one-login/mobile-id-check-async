@@ -58,9 +58,12 @@ describe("Async Biometric Token", () => {
     updateSession: jest.fn().mockResolvedValue(emptySuccess()),
   };
 
+  const mockWriteGenericEventSuccessResult = jest
+    .fn()
+    .mockResolvedValue(emptySuccess());
   const mockSuccessfulEventService = {
     ...mockInertEventService,
-    writeGenericEvent: jest.fn().mockResolvedValue(emptySuccess()),
+    writeGenericEvent: mockWriteGenericEventSuccessResult,
   };
   beforeEach(() => {
     dependencies = {
@@ -282,6 +285,14 @@ describe("Async Biometric Token", () => {
             headers: expectedSecurityHeaders,
           });
         });
+      });
+
+      it("Writes DCMAW_ASYNC_CRI_4XXERROR event to TxMA", () => {
+        expect(
+          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
+            expect.objectContaining({ eventName: "DCMAW_ASYNC_CRI_4XXERROR" }),
+          ),
+        );
       });
 
       it("Returns 401 Unauthorized", () => {
