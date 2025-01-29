@@ -27,8 +27,18 @@ export class EventService implements IEventService {
     return await this.writeToSqs(txmaEvent);
   }
 
+  async writeCriErrorEvent(
+    eventConfig: CriErrorEventConfig,
+  ): Promise<Result<null>> {
+    const txmaEvent = this.buildCriErrorEvent(eventConfig);
+    return await this.writeToSqs(txmaEvent);
+  }
+
   private async writeToSqs(
-    txmaEvent: GenericTxmaEvent | CredentialTokenIssuedEvent,
+    txmaEvent:
+      | GenericTxmaEvent
+      | CredentialTokenIssuedEvent
+      | CriErrorTxmaEvent,
   ): Promise<Result<null>> {
     try {
       await sqsClient.send(
@@ -74,6 +84,24 @@ export class EventService implements IEventService {
       event_timestamp_ms: timestampInMillis,
     };
   };
+
+  private buildCriErrorEvent = (
+    eventConfig: CriErrorEventConfig,
+  ): CriErrorTxmaEvent => {
+    const timestampInMillis = eventConfig.getNowInMilliseconds();
+    return {
+      user: {
+        user_id: eventConfig.sub,
+        transaction_id: "",
+        session_id: eventConfig.sessionId,
+        govuk_signin_journey_id: eventConfig.govukSigninJourneyId,
+      },
+      timestamp: Math.floor(timestampInMillis / 1000),
+      event_timestamp_ms: timestampInMillis,
+      event_name: eventConfig.eventName,
+      component_id: eventConfig.componentId,
+    };
+  };
 }
 
 export interface IEventService {
@@ -83,12 +111,11 @@ export interface IEventService {
   writeGenericEvent: (eventConfig: GenericEventConfig) => Promise<Result<null>>;
 }
 
-export type GenericEventName =
-  | "DCMAW_ASYNC_CRI_START"
-  | "DCMAW_ASYNC_CRI_4XXERROR";
+export type GenericEventName = "DCMAW_ASYNC_CRI_START";
 export type EventNames =
   | GenericEventName
-  | "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
+  | "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED"
+  | "DCMAW_ASYNC_CRI_4XXERROR";
 
 interface GenericTxmaEvent {
   user: {
@@ -122,4 +149,26 @@ export interface CredentialTokenIssuedEventConfig {
   getNowInMilliseconds: () => number;
   componentId: string;
   eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
+}
+
+interface CriErrorTxmaEvent {
+  user: {
+    user_id: string;
+    transaction_id: string;
+    session_id: string;
+    govuk_signin_journey_id: string;
+  };
+  timestamp: number;
+  event_timestamp_ms: number;
+  event_name: "DCMAW_ASYNC_CRI_4XXERROR";
+  component_id: string;
+}
+
+export interface CriErrorEventConfig {
+  eventName: "DCMAW_ASYNC_CRI_4XXERROR";
+  sub: string;
+  sessionId: string;
+  govukSigninJourneyId: string;
+  getNowInMilliseconds: () => number;
+  componentId: string;
 }
