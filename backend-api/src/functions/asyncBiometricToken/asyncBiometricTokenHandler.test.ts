@@ -248,43 +248,39 @@ describe("Async Biometric Token", () => {
         );
       });
 
-      it("Returns 500 Server Error when DCMAW_ASYNC_CRI_4XXERROR fails to write to TxMA", async () => {
-        dependencies.getSessionRegistry = () => ({
-          ...mockInertSessionRegistry,
-          updateSession: jest
-            .fn()
-            .mockResolvedValue(
-              errorResult(UpdateSessionError.CONDITIONAL_CHECK_FAILURE),
+      describe("Given DCMAW_ASYNC_CRI_4XXERROR fails to write to TxMA", () => {
+        beforeEach(async () => {
+          dependencies.eventService = () => ({
+            ...mockInertEventService,
+            writeGenericEvent: jest.fn().mockResolvedValue(
+              errorResult({
+                errorMessage: "mockError",
+              }),
             ),
+          });
+
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+        it("Logs the error", async () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            message: "ERROR_WRITING_AUDIT_EVENT",
+            function_arn: "arn:12345", // example field to verify that context has been added
+          });
         });
 
-        dependencies.eventService = () => ({
-          ...mockInertEventService,
-          writeGenericEvent: jest.fn().mockResolvedValue(
-            errorResult({
-              errorMessage: "mockError",
+        it("Returns 500 Internal Server Error ", async () => {
+          expect(result).toStrictEqual({
+            statusCode: 500,
+            body: JSON.stringify({
+              error: "server_error",
+              error_description: "Internal Server Error",
             }),
-          ),
-        });
-
-        const result2 = await lambdaHandlerConstructor(
-          dependencies,
-          validRequest,
-          context,
-        );
-
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          message: "ERROR_WRITING_AUDIT_EVENT",
-          function_arn: "arn:12345", // example field to verify that context has been added
-        });
-
-        expect(result2).toStrictEqual({
-          statusCode: 500,
-          body: JSON.stringify({
-            error: "server_error",
-            error_description: "Internal Server Error",
-          }),
-          headers: expectedSecurityHeaders,
+            headers: expectedSecurityHeaders,
+          });
         });
       });
 
