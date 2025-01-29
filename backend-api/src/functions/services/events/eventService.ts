@@ -109,6 +109,9 @@ export interface IEventService {
     eventConfig: CredentialTokenIssuedEventConfig,
   ) => Promise<Result<null>>;
   writeGenericEvent: (eventConfig: GenericEventConfig) => Promise<Result<null>>;
+  writeCriErrorEvent: (
+    eventConfig: CriErrorEventConfig,
+  ) => Promise<Result<null>>;
 }
 
 export type GenericEventName = "DCMAW_ASYNC_CRI_START";
