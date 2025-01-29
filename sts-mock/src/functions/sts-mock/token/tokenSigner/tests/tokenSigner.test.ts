@@ -1,7 +1,7 @@
 import { TokenSigner } from "../tokenSigner";
 import { decodeJwt, decodeProtectedHeader } from "jose";
 import { generateKeyPairSync } from "node:crypto";
-import { getMockSigningKey } from "../../../testUtils/getMockSigningKey";
+import { getMockSigningKey } from "../../../../../testUtils/getMockSigningKey";
 
 describe("Token Signer", () => {
   const payload = {
