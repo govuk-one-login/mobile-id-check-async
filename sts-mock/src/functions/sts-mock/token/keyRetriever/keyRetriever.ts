@@ -1,4 +1,4 @@
-import { errorResult, Result, successResult } from "../../utils/result";
+import { errorResult, Result, successResult } from "../../../../utils/result";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { createPrivateKey, KeyObject, JsonWebKey } from "node:crypto";
 

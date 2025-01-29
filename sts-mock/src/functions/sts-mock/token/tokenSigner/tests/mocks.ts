@@ -1,4 +1,8 @@
-import { successResult, Result, errorResult } from "../../../utils/result";
+import {
+  successResult,
+  Result,
+  errorResult,
+} from "../../../../../utils/result";
 import { ITokenSigner, JWT } from "../tokenSigner";
 
 export class MockTokenSignerSuccessResult implements ITokenSigner {

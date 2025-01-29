@@ -1,4 +1,4 @@
-import { errorResult, Result, successResult } from "../../utils/result";
+import { errorResult, Result, successResult } from "../../../../utils/result";
 import { createPublicKey, JsonWebKey, KeyObject } from "node:crypto";
 import { CompactEncrypt } from "jose";
 import { JWT } from "../tokenSigner/tokenSigner";
