@@ -248,7 +248,7 @@ describe("Async Biometric Token", () => {
         );
       });
 
-      it("Returns 500 Server Error when DCMAW_ASYNC_CRI_4XXERROR fails to write to TxMA", () => {
+      it("Returns 500 Server Error when DCMAW_ASYNC_CRI_4XXERROR fails to write to TxMA", async () => {
         dependencies.getSessionRegistry = () => ({
           ...mockInertSessionRegistry,
           updateSession: jest
@@ -267,12 +267,18 @@ describe("Async Biometric Token", () => {
           ),
         });
 
+        const result2 = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "ERROR_WRITING_AUDIT_EVENT",
+          message: "ERROR_WRITING_AUDIT_EVENT",
           function_arn: "arn:12345", // example field to verify that context has been added
         });
 
-        expect(result).toStrictEqual({
+        expect(result2).toStrictEqual({
           statusCode: 500,
           body: JSON.stringify({
             error: "server_error",

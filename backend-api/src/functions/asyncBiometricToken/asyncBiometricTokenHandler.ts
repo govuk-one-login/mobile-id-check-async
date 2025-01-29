@@ -81,11 +81,9 @@ export async function lambdaHandlerConstructor(
     new BiometricTokenIssued(documentType, opaqueId),
   );
   if (updateSessionResult.isError) {
-    console.log("ONE");
     let writeEventResult;
     switch (updateSessionResult.value) {
       case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
-        console.log("TWO");
         writeEventResult = await eventService.writeGenericEvent({
           eventName: "DCMAW_ASYNC_CRI_4XXERROR",
           sub: "mockSub",
@@ -95,12 +93,7 @@ export async function lambdaHandlerConstructor(
           componentId: "mockCompontentId",
         });
 
-        console.log("writeEventResult", writeEventResult);
-
         if (writeEventResult.isError) {
-          console.log("THREE");
-          console.log("WHAT IS THIS", writeEventResult.value);
-
           logger.error("ERROR_WRITING_AUDIT_EVENT", {
             errorMessage:
               "Unexpected error writing the DCMAW_ASYNC_CRI_4XXERROR event",
@@ -112,8 +105,6 @@ export async function lambdaHandlerConstructor(
           "User session is not in a valid state for this operation.",
         );
       case UpdateSessionError.INTERNAL_SERVER_ERROR:
-        console.log("FOUR");
-
         return serverErrorResponse;
     }
   }
