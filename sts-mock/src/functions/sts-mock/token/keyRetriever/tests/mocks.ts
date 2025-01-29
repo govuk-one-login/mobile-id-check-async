@@ -4,7 +4,7 @@ import {
   errorResult,
 } from "../../../../../utils/result";
 import { IKeyRetriever, SigningKey } from "../keyRetriever";
-import { getMockSigningKey } from "../../../../../testUtils/getMockSigningKey";
+import { getMockSigningKey } from "../../../../testUtils/getMockSigningKey";
 
 export class MockKeyRetrieverSuccessResult implements IKeyRetriever {
   async getKey(): Promise<Result<SigningKey>> {
