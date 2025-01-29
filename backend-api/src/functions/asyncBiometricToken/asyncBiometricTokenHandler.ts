@@ -21,16 +21,12 @@ import {
   getBiometricTokenConfig,
 } from "./biometricTokenConfig";
 import { GetSecrets } from "../common/config/secrets";
-import {
-  emptyFailure,
-  FailureWithValue,
-  Result,
-  successResult,
-} from "../utils/result";
+import { emptyFailure, Result, successResult } from "../utils/result";
 import { DocumentType } from "../types/document";
 import { BiometricTokenIssued } from "../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 import { UpdateSessionError } from "../common/session/SessionRegistry";
 import { randomUUID } from "crypto";
+import { EventService } from "../services/events/eventService";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
@@ -76,16 +72,49 @@ export async function lambdaHandlerConstructor(
   }
 
   const opaqueId = generateOpaqueId();
-
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
   );
+
+  const eventService = new EventService(config.TXMA_SQS);
   const updateSessionResult = await sessionRegistry.updateSession(
     sessionId,
     new BiometricTokenIssued(documentType, opaqueId),
   );
   if (updateSessionResult.isError) {
-    return handleUpdateSessionFailure(updateSessionResult);
+    console.log("ONE");
+    let writeEventResult;
+    switch (updateSessionResult.value) {
+      case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
+        console.log("TWO");
+        writeEventResult = await eventService.writeGenericEvent({
+          eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+          sub: "mockSub",
+          sessionId: "mockSessionId",
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
+          getNowInMilliseconds: Date.now,
+          componentId: "mockCompontentId",
+        });
+
+        if (writeEventResult.isError) {
+          console.log("THREE");
+          console.log("WHAT IS THIS", writeEventResult.value);
+
+          logger.error("ERROR_WRITING_AUDIT_EVENT", {
+            errorMessage:
+              "Unexpected error writing the DCMAW_ASYNC_CRI_4XXERROR event",
+          });
+          return serverErrorResponse;
+        }
+        return unauthorizedResponse(
+          "invalid_session",
+          "User session is not in a valid state for this operation.",
+        );
+      case UpdateSessionError.INTERNAL_SERVER_ERROR:
+        console.log("FOUR");
+
+        return serverErrorResponse;
+    }
   }
 
   logger.info(LogMessage.BIOMETRIC_TOKEN_COMPLETED);
@@ -138,20 +167,6 @@ async function getSubmitterKeyForDocumentType(
           config.BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL
         ],
       );
-  }
-}
-
-function handleUpdateSessionFailure(
-  failure: FailureWithValue<UpdateSessionError>,
-): APIGatewayProxyResult {
-  switch (failure.value) {
-    case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
-      return unauthorizedResponse(
-        "invalid_session",
-        "User session is not in a valid state for this operation.",
-      );
-    case UpdateSessionError.INTERNAL_SERVER_ERROR:
-      return serverErrorResponse;
   }
 }
 

@@ -10,6 +10,7 @@ import {
   expectedSecurityHeaders,
   mockSessionId,
   mockInertSessionRegistry,
+  mockInertEventService,
 } from "../testUtils/unitTestData";
 import { logger } from "../common/logging/logger";
 import {
@@ -57,6 +58,10 @@ describe("Async Biometric Token", () => {
     updateSession: jest.fn().mockResolvedValue(emptySuccess()),
   };
 
+  const mockSuccessfulEventService = {
+    ...mockInertEventService,
+    updateSession: jest.fn().mockResolvedValue(emptySuccess()),
+  };
   beforeEach(() => {
     dependencies = {
       env: {
@@ -67,10 +72,12 @@ describe("Async Biometric Token", () => {
         BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS: "900",
         READID_BASE_URL: "mockReadIdBaseUrl",
         SESSION_TABLE_NAME: "mockTableName",
+        TXMA_SQS: "mockTxmaSqs",
       },
       getSecrets: mockGetSecretsSuccess,
       getBiometricToken: mockGetBiometricTokenSuccess,
       getSessionRegistry: () => mockSuccessfulSessionRegistry,
+      eventService: () => mockSuccessfulEventService,
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
@@ -112,6 +119,7 @@ describe("Async Biometric Token", () => {
       ["BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS"],
       ["READID_BASE_URL"],
       ["SESSION_TABLE_NAME"],
+      ["TXMA_SQS"],
     ])("Given %s environment variable is missing", (envVar: string) => {
       beforeEach(async () => {
         delete dependencies.env[envVar];
@@ -238,6 +246,40 @@ describe("Async Biometric Token", () => {
           validRequest,
           context,
         );
+      });
+
+      it("Returns 500 Server Error when DCMAW_ASYNC_CRI_4XXERROR fails to write to TxMA", () => {
+        dependencies.getSessionRegistry = () => ({
+          ...mockInertSessionRegistry,
+          updateSession: jest
+            .fn()
+            .mockResolvedValue(
+              errorResult(UpdateSessionError.CONDITIONAL_CHECK_FAILURE),
+            ),
+        });
+
+        dependencies.eventService = () => ({
+          ...mockInertEventService,
+          writeGenericEvent: jest.fn().mockResolvedValue(
+            errorResult({
+              errorMessage: "mockError",
+            }),
+          ),
+        });
+
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "ERROR_WRITING_AUDIT_EVENT",
+          function_arn: "arn:12345", // example field to verify that context has been added
+        });
+
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
+        });
       });
 
       it("Returns 401 Unauthorized", () => {

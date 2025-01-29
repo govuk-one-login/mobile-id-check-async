@@ -83,7 +83,9 @@ export interface IEventService {
   writeGenericEvent: (eventConfig: GenericEventConfig) => Promise<Result<null>>;
 }
 
-export type GenericEventName = "DCMAW_ASYNC_CRI_START";
+export type GenericEventName =
+  | "DCMAW_ASYNC_CRI_START"
+  | "DCMAW_ASYNC_CRI_4XXERROR";
 export type EventNames =
   | GenericEventName
   | "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
