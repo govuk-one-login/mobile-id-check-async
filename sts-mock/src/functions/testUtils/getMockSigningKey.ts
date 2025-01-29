@@ -1,4 +1,4 @@
-import { SigningKey } from "../functions/sts-mock/token/keyRetriever/keyRetriever";
+import { SigningKey } from "../sts-mock/token/keyRetriever/keyRetriever";
 import { createPrivateKey } from "node:crypto";
 
 export function getMockSigningKey(): SigningKey {

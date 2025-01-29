@@ -1,24 +1,24 @@
-import { Logger } from "../services/logging/logger";
-import { MockLoggingAdapter } from "../services/logging/tests/mockLoggingAdapter";
-import { buildLambdaContext } from "../testUtils/mockContext";
-import { MessageName, registeredLogs } from "./registeredLogs";
-import { lambdaHandlerConstructor } from "./tokenHandler";
+import { Logger } from "../../services/logging/logger";
+import { MockLoggingAdapter } from "../../services/logging/tests/mockLoggingAdapter";
+import { buildLambdaContext } from "../../../testUtils/mockContext";
+import { MessageName, registeredLogs } from "../registeredLogs";
+import { lambdaHandlerConstructor } from "../tokenHandler";
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { TokenDependencies } from "./handlerDependencies";
-import { buildTokenRequest } from "../testUtils/mockRequest";
+import { TokenDependencies } from "../handlerDependencies";
+import { buildTokenRequest } from "../../../testUtils/mockRequest";
 import {
   MockTokenSignerErrorResult,
   MockTokenSignerSuccessResult,
-} from "./tokenSigner/tests/mocks";
+} from "../tokenSigner/tests/mocks";
 import {
   MockKeyRetrieverErrorResult,
   MockKeyRetrieverSuccessResult,
-} from "./keyRetriever/tests/mocks";
-import { validateServiceTokenRequest } from "./validateServiceTokenRequest/validateServiceTokenRequest";
+} from "../keyRetriever/tests/mocks";
+import { validateServiceTokenRequest } from "../validateServiceTokenRequest/validateServiceTokenRequest";
 import {
   MockTokenEncrypterErrorResult,
   MockTokenEncrypterSuccessResult,
-} from "./tokenEncrypter/tests/mocks";
+} from "../tokenEncrypter/tests/mocks";
 
 describe("Token Handler", () => {
   let mockLoggingAdapter: MockLoggingAdapter<MessageName>;
