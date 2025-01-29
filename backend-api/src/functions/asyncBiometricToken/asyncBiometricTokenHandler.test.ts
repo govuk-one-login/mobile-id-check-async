@@ -251,7 +251,7 @@ describe("Async Biometric Token", () => {
         );
       });
 
-      describe("Given DCMAW_ASYNC_CRI_4XXERROR fails to write to TxMA", () => {
+      describe("Given DCMAW_ASYNC_CRI_4XXERROR event fails to write to TxMA", () => {
         beforeEach(async () => {
           dependencies.eventService = () => ({
             ...mockInertEventService,
