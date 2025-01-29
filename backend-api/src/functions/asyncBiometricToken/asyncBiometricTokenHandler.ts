@@ -26,7 +26,6 @@ import { DocumentType } from "../types/document";
 import { BiometricTokenIssued } from "../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 import { UpdateSessionError } from "../common/session/SessionRegistry";
 import { randomUUID } from "crypto";
-import { EventService } from "../services/events/eventService";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
@@ -76,7 +75,7 @@ export async function lambdaHandlerConstructor(
     config.SESSION_TABLE_NAME,
   );
 
-  const eventService = new EventService(config.TXMA_SQS);
+  const eventService = await dependencies.eventService(config.TXMA_SQS);
   const updateSessionResult = await sessionRegistry.updateSession(
     sessionId,
     new BiometricTokenIssued(documentType, opaqueId),
@@ -95,6 +94,8 @@ export async function lambdaHandlerConstructor(
           getNowInMilliseconds: Date.now,
           componentId: "mockCompontentId",
         });
+
+        console.log("writeEventResult", writeEventResult);
 
         if (writeEventResult.isError) {
           console.log("THREE");
