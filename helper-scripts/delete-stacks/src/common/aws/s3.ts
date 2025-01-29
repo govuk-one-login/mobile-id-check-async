@@ -1,4 +1,8 @@
-import { DeleteBucketCommand, DeleteObjectsCommand, ListObjectVersionsCommand } from "@aws-sdk/client-s3";
+import {
+  DeleteBucketCommand,
+  DeleteObjectsCommand,
+  ListObjectVersionsCommand,
+} from "@aws-sdk/client-s3";
 import { s3Client } from "./aws-clients.js";
 
 const deleteBucket = async (bucketId: string): Promise<void> => {
@@ -27,6 +31,7 @@ const getObjectKeysInBucket = async (
 
   const output = await s3Client.send(listObjectsV2Command);
   if (!output) return [];
+  if(!output.Versions) return []
 
   return output.Versions!.map((version) => {
     return { VersionId: version.VersionId!, Key: version.Key! };

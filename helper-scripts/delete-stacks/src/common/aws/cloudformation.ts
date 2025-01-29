@@ -53,7 +53,7 @@ export const getDeployedStackNames = async (): Promise<string[]> => {
 
 const deleteVersionedResources = async (stackName: string): Promise<void> => {
   const bucketIds = await getDeployedS3BucketIds(stackName);
-  if(bucketIds.length < 1) return
+  if (bucketIds.length < 1) return;
   await deleteBuckets(bucketIds);
 };
 
@@ -70,16 +70,15 @@ const getDeployedS3BucketIds = async (stackName: string): Promise<string[]> => {
     );
 
   return resourcesCommandOutput.StackResourceSummaries.filter((resource) => {
-    return resource.ResourceType === "AWS::S3::Bucket" && resource.ResourceStatus !== "DELETE_COMPLETE";
+    return (
+      resource.ResourceType === "AWS::S3::Bucket" &&
+      resource.ResourceStatus !== "DELETE_COMPLETE"
+    );
   }).map((resource) => {
     return resource.PhysicalResourceId!;
   });
 };
 
 const deleteBuckets = async (bucketIds: string[]): Promise<void> => {
-  
-  await Promise.all(
-    bucketIds.map((bucketId) => deleteObject(bucketId)),
-  )
+  await Promise.all(bucketIds.map((bucketId) => deleteObject(bucketId)));
 };
-

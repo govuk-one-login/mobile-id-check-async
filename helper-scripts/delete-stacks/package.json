@@ -6,7 +6,7 @@
   },
   "type": "module",
   "scripts": {
-    "build": " rm -r ./dist && tsc",
+    "build": " rm -rf ./dist && tsc",
     "test": "./node_modules/.bin/jest",
     "config": "./node_modules/.bin/ts-jest config:init",
     "delete": "node ./dist/main.js",

@@ -55,7 +55,7 @@ export const deleteSpecificStacksApplication: Application = {
         await deleteStack(stackName);
         results.push({ stackName, status: "SUCCESS" });
       } catch (error) {
-        console.log(error)
+        console.log(error);
         const failureResult = buildStackFailureResultFromError(
           stackName,
           error,
