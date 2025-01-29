@@ -60,7 +60,7 @@ describe("Async Biometric Token", () => {
 
   const mockSuccessfulEventService = {
     ...mockInertEventService,
-    updateSession: jest.fn().mockResolvedValue(emptySuccess()),
+    writeGenericEvent: jest.fn().mockResolvedValue(emptySuccess()),
   };
   beforeEach(() => {
     dependencies = {
