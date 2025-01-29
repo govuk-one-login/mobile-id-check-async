@@ -1,0 +1,130 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  StsMockApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${AWS::StackName}-api
+      Description: Public API gateway for STS Mock
+      EndpointConfiguration: REGIONAL
+      StageName:
+        Ref: Environment
+      OpenApiVersion: 3.0.1
+      AccessLogSetting:
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${StsMockApiAccessLogs}
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      MethodSettings:
+        - LoggingLevel: INFO
+          ResourcePath: "/*"
+          HttpMethod: "*"
+          DataTraceEnabled: true
+          MetricsEnabled: true
+          ThrottlingBurstLimit: !FindInMap [ StsMockApiGateway, !Ref Environment, ApiBurstLimit ]
+          ThrottlingRateLimit: !FindInMap [ StsMockApiGateway, !Ref Environment, ApiRateLimit ]
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: "./openapi/sts-mock-spec.yaml"
+
+  StsMockApiAccessLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-api-access-logs
+      RetentionInDays: 30
+
+  StsMockApiDomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - ${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - sts-mock.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      RegionalCertificateArn: !If
+        - DevelopmentStack
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneStsMockCertificateV2ARN}}'
+      SecurityPolicy: TLS_1_2
+
+  StsMockApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - ${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - sts-mock.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      RestApiId: !Ref StsMockApi
+      Stage: !Ref StsMockApi.Stage
+
+  StsMockApiRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !If
+        - DevelopmentStack
+        - !Sub
+          - ${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - sts-mock.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      Type: A
+      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
+      AliasTarget:
+        DNSName: !GetAtt StsMockApiDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt StsMockApiDomainName.RegionalHostedZoneId
+
+  # Role to allow API Gateway to retrieve JWKS from S3
+  JwksBucketApiRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-jwks-bucket-api
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+        Version: 2012-10-17
+      Policies:
+        - PolicyName: JwksBucketPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource:
+                  - !Sub ${JwksBucket.Arn}/.well-known/jwks.json

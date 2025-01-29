@@ -1,0 +1,93 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: SAM template for the STS mock
+
+Mappings:
+  StsMockApiGateway:
+    dev:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+    build:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+
+  DNS:
+    dev:
+      BaseDns: review-b-async.dev.account.gov.uk
+    build:
+      BaseDns: review-b-async.build.account.gov.uk
+
+Globals:
+  Function:
+    CodeSigningConfigArn: !If
+      - UseCodeSigning
+      - !Ref CodeSigningConfigArn
+      - !Ref AWS::NoValue
+    PermissionsBoundary: !If
+      - UsePermissionsBoundary
+      - !Ref PermissionsBoundary
+      - !Ref AWS::NoValue
+
+Parameters:
+  Environment:
+    Description: The name of the environment to deploy to
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - build
+
+  CodeSigningConfigArn:
+    Type: String
+    Description: >
+      The ARN of the Code Signing Config to use, provided by the deployment pipeline
+    Default: "none"
+
+  PermissionsBoundary:
+      Description: |
+        The ARN of the permissions boundary to apply to any role created by the template
+      Type: String
+      Default: none
+
+  DevOverrideAsyncBackendBaseUrl:
+    Description: |
+      Override the ASYNC_BACKEND_BASE_URL value for development deployments
+    Type: String
+    Default: none
+
+Conditions:
+  UseCodeSigning:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref CodeSigningConfigArn
+          - "none"
+
+  UsePermissionsBoundary: !Not
+    - !Equals
+      - !Ref PermissionsBoundary
+      - none
+
+  UseDevOverrideAsyncBackendBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideAsyncBackendBaseUrl
+      - none
+
+  DevelopmentStack: !And
+    - !Equals [!Ref Environment, dev]
+    - !Not [!Equals [!Ref AWS::StackName, mob-sts-mock]]
+
+  Never: !Equals
+    - true
+    - false
+
+Resources:
+  # CloudFormation requires at least one resource definition per template, so this resource is here to satisfy the
+  # linter. It has no required properties, will never be deployed, and would have no effect if it were deployed.
+  NullResource:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    Condition: Never
+
+Outputs:
+  StsMockApiUrl:
+    Description: STS Mock API Gateway DNS
+    Value: !Sub https://${StsMockApiDomainName}

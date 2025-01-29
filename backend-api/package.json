@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "deploy-backend-to-dev": "npm run build:infra && cd ../helper-scripts && ./deploy_backend.sh",
-    "build:infra": "./combine_template.sh",
+    "build:infra": "./combine_template.sh && cd ../sts-mock && ./combine_template.sh",
     "generate-proxy-open-api": "node ./generate-proxy-private-openapi.js",
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
