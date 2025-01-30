@@ -15,7 +15,7 @@ describe("Sub-templates", () => {
       .map(loadTemplateFromFile)
       .map((template) => template.toJSON());
     const mergedSubTemplateJson = deepMerge(...subTemplates);
-    expect(aggregatedTemplate.toJSON()).toEqual(mergedSubTemplateJson);
+    expect(aggregatedTemplate.toJSON()).toStrictEqual(mergedSubTemplateJson);
   });
 });
 
