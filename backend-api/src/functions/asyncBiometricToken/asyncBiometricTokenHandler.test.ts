@@ -125,7 +125,7 @@ describe("Async Biometric Token", () => {
       ["READID_BASE_URL"],
       ["SESSION_TABLE_NAME"],
       ["TXMA_SQS"],
-      ["ISSUER"]
+      ["ISSUER"],
     ])("Given %s environment variable is missing", (envVar: string) => {
       beforeEach(async () => {
         delete dependencies.env[envVar];
