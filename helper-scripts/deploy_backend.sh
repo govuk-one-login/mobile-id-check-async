@@ -38,7 +38,7 @@ while true; do
         echo "Building and deploying sts-mock stack: $STS_MOCK_STACK_NAME"
         echo
         cd ../sts-mock || exit 1
-        sh ./combine_template.sh
+        npm run build:infra
         npm ci
         sam build --cached
         sam deploy \
@@ -153,7 +153,7 @@ while true; do
         echo "Building and deploying backend-api stack: $BACKEND_STACK_NAME"
         echo
         cd ../backend-api || exit 1
-        sh ./combine_template.sh
+        npm run build:infra
         npm ci
         sam build --cached
         sam deploy \
