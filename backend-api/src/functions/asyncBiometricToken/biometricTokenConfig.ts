@@ -15,6 +15,7 @@ const REQUIRED_ENVIRONMENT_VARIABLES = [
   "READID_BASE_URL",
   "SESSION_TABLE_NAME",
   "TXMA_SQS",
+  "ISSUER"
 ] as const;
 
 export type BiometricTokenConfig = Config<

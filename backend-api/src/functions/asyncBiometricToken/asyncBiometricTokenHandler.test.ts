@@ -77,6 +77,7 @@ describe("Async Biometric Token", () => {
         READID_BASE_URL: "mockReadIdBaseUrl",
         SESSION_TABLE_NAME: "mockTableName",
         TXMA_SQS: "mockTxmaSqs",
+        ISSUER: "mockIssuer",
       },
       getSecrets: mockGetSecretsSuccess,
       getBiometricToken: mockGetBiometricTokenSuccess,
@@ -124,6 +125,7 @@ describe("Async Biometric Token", () => {
       ["READID_BASE_URL"],
       ["SESSION_TABLE_NAME"],
       ["TXMA_SQS"],
+      ["ISSUER"]
     ])("Given %s environment variable is missing", (envVar: string) => {
       beforeEach(async () => {
         delete dependencies.env[envVar];

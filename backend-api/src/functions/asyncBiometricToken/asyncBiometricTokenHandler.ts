@@ -90,7 +90,7 @@ export async function lambdaHandlerConstructor(
           sessionId: "mockSessionId",
           govukSigninJourneyId: "mockGovukSigninJourneyId",
           getNowInMilliseconds: Date.now,
-          componentId: "mockCompontentId",
+          componentId: config.ISSUER,
         });
 
         if (writeEventResult.isError) {
