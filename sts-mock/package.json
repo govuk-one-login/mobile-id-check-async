@@ -12,7 +12,7 @@
     "test:api": "./node_modules/.bin/jest --testPathPattern=api-tests/",
     "test:infra": "./node_modules/.bin/jest --testPathPattern=infrastructure-tests/",
     "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/infrastructure-tests api-tests",
-    "ci": "npm run test:unit && npm run format:check && npm run lint"
+    "ci": "npm run test:unit && npm run test:infra && npm run format:check && npm run lint"
   },
   "engines": {
     "node": "20"

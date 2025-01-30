@@ -38,6 +38,7 @@ while true; do
         echo "Building and deploying sts-mock stack: $STS_MOCK_STACK_NAME"
         echo
         cd ../sts-mock || exit 1
+        sh ./combine_template.sh
         npm ci
         sam build --cached
         sam deploy \
@@ -92,7 +93,7 @@ while true; do
     case "$yn" in
     [yY])
 
-        # Build and deploy sts-mock
+        # Build and deploy backend-cf-dist stack
         echo "Deploying cloudfront stack: $BACKEND_CF_DIST_STACK_NAME"
         echo
 
@@ -152,6 +153,7 @@ while true; do
         echo "Building and deploying backend-api stack: $BACKEND_STACK_NAME"
         echo
         cd ../backend-api || exit 1
+        sh ./combine_template.sh
         npm ci
         sam build --cached
         sam deploy \
