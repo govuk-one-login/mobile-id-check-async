@@ -1,16 +1,22 @@
-import { existsSync, readFileSync, readdirSync } from "fs";
+import { Template } from "aws-cdk-lib/assertions";
+import { readFileSync, readdirSync } from "fs";
+import { load } from "js-yaml";
 import * as path from "path";
 import { isDeepStrictEqual } from "util";
 import * as cfnParse from "yaml-cfn";
+import { schema } from "yaml-cfn";
 import {
+  deepMerge,
   findDifferences,
   readAllTemplates,
   readTemplate,
+  walkSync,
 } from "../testUtils/testFunctions";
 
 const templateFilePath = path.join(__dirname, "../../template.yaml");
 const infraFolder = path.join(__dirname, "../../infra");
 const parentFilePath = path.join(infraFolder, "parent.yaml");
+const aggregatedTemplate = loadTemplateFromFile("./template.yaml");
 
 describe("Template", () => {
   it("should have a template.yaml file", () => {
@@ -162,3 +168,21 @@ describe("Template", () => {
     }
   });
 });
+
+describe("Sub-templates", () => {
+  it("Aggregated template matches sub-templates", () => {
+    const subTemplates = walkSync("./infra")
+      .map(loadTemplateFromFile)
+      .map((template) => template.toJSON());
+    const mergedSubTemplateJson = deepMerge(...subTemplates);
+    expect(aggregatedTemplate.toJSON()).toEqual(mergedSubTemplateJson);
+  });
+});
+
+function loadTemplateFromFile(path: string): Template {
+  /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
+  const yamltemplate: any = load(readFileSync(path, "utf-8"), {
+    schema: schema,
+  });
+  return Template.fromJSON(yamltemplate);
+}
