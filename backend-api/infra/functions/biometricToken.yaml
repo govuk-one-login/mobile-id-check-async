@@ -110,6 +110,20 @@ Resources:
                 Action:
                   - "dynamodb:UpdateItem"
                 Resource: !GetAtt SessionsTable.Arn
+        - PolicyName: AsyncCredentialFunctionSQSPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                Resource: !GetAtt TxMASQSQueue.Arn
+              - Effect: Allow
+                Action:
+                  - kms:Encrypt
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Resource: !GetAtt TxMAKMSEncryptionKey.Arn
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary

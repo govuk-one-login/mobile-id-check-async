@@ -859,6 +859,20 @@ Resources:
                 Effect: Allow
                 Resource: !GetAtt SessionsTable.Arn
           PolicyName: AsyncBiometricTokenFunctionDynamodbPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - sqs:SendMessage
+                Effect: Allow
+                Resource: !GetAtt TxMASQSQueue.Arn
+              - Action:
+                  - kms:Encrypt
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Effect: Allow
+                Resource: !GetAtt TxMAKMSEncryptionKey.Arn
+            Version: "2012-10-17"
+          PolicyName: AsyncCredentialFunctionSQSPolicy
       RoleName: !Sub ${AWS::StackName}-biometric-token-lambda
 
   AsyncBiometricTokenLogGroup:
