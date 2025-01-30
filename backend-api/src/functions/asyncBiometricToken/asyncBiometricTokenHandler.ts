@@ -87,7 +87,7 @@ export async function lambdaHandlerConstructor(
         writeEventResult = await eventService.writeCriErrorEvent({
           eventName: "DCMAW_ASYNC_CRI_4XXERROR",
           sub: "mockSub",
-          sessionId: "mockSessionId",
+          sessionId,
           govukSigninJourneyId: "mockGovukSigninJourneyId",
           getNowInMilliseconds: Date.now,
           componentId: config.ISSUER,
