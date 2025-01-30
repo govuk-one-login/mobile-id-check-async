@@ -2,10 +2,7 @@ import { Template } from "aws-cdk-lib/assertions";
 import { readFileSync } from "fs";
 import { load } from "js-yaml";
 import { schema } from "yaml-cfn";
-import {
-  deepMerge,
-  walkSync
-} from "../testUtils/testFunctions";
+import { deepMerge, walkSync } from "../testUtils/testFunctions";
 
 const aggregatedTemplate = loadTemplateFromFile("./template.yaml");
 
@@ -13,7 +10,7 @@ describe("Sub-templates", () => {
   it("Aggregated template matches sub-templates", () => {
     const subTemplates = walkSync("./infra")
       .filter((item) => {
-        return item.endsWith(".yaml")
+        return item.endsWith(".yaml");
       })
       .map(loadTemplateFromFile)
       .map((template) => template.toJSON());
