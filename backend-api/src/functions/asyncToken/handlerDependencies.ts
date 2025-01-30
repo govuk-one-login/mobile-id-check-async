@@ -4,13 +4,14 @@ import {
   IGetRegisteredIssuerUsingClientSecrets,
   ClientRegistryService,
 } from "../services/clientRegistryService/clientRegistryService";
-import { EventService, IEventService } from "../services/events/eventService";
+import { EventService } from "../services/events/eventService";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import { IMintToken, TokenService } from "./tokenService/tokenService";
 import {
   IRequestService,
   RequestService,
 } from "./requestService/requestService";
+import { IEventService } from "../services/events/types";
 
 export interface IAsyncTokenRequestDependencies {
   env: NodeJS.ProcessEnv;

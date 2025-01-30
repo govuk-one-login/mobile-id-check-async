@@ -6,13 +6,20 @@ import {
 } from "../../utils/result";
 import { sqsClient } from "./sqsClient";
 import { SendMessageCommand } from "@aws-sdk/client-sqs";
+import {
+  BiometricTokenIssuedEvent,
+  CredentialTokenIssuedEvent,
+  CredentialTokenIssuedEventConfig,
+  CriErrorEventConfig,
+  CriErrorTxmaEvent,
+  GenericEventConfig,
+  GenericTxmaEvent,
+  IEventService,
+} from "./types";
 
 export class EventService implements IEventService {
-  private sqsQueue: string;
+  constructor(private sqsQueue: string) {}
 
-  constructor(sqsQueue: string) {
-    this.sqsQueue = sqsQueue;
-  }
   async writeGenericEvent(
     eventConfig: GenericEventConfig,
   ): Promise<Result<null>> {
@@ -38,7 +45,8 @@ export class EventService implements IEventService {
     txmaEvent:
       | GenericTxmaEvent
       | CredentialTokenIssuedEvent
-      | CriErrorTxmaEvent,
+      | CriErrorTxmaEvent
+      | BiometricTokenIssuedEvent,
   ): Promise<Result<null>> {
     try {
       await sqsClient.send(
@@ -47,31 +55,28 @@ export class EventService implements IEventService {
           MessageBody: JSON.stringify(txmaEvent),
         }),
       );
+      return successResult(null);
     } catch {
       return errorResult({
         errorMessage: "Failed to write to SQS",
         errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
-
-    return successResult(null);
   }
 
   private buildGenericEvent = (
     eventConfig: GenericEventConfig,
-  ): GenericTxmaEvent => {
-    return {
-      user: {
-        user_id: eventConfig.sub,
-        transaction_id: "",
-        session_id: eventConfig.sessionId,
-        govuk_signin_journey_id: eventConfig.govukSigninJourneyId,
-      },
-      timestamp: Math.floor(eventConfig.getNowInMilliseconds() / 1000),
-      event_name: eventConfig.eventName,
-      component_id: eventConfig.componentId,
-    };
-  };
+  ): GenericTxmaEvent => ({
+    user: {
+      user_id: eventConfig.sub,
+      transaction_id: "",
+      session_id: eventConfig.sessionId,
+      govuk_signin_journey_id: eventConfig.govukSigninJourneyId,
+    },
+    timestamp: Math.floor(eventConfig.getNowInMilliseconds() / 1000),
+    event_name: eventConfig.eventName,
+    component_id: eventConfig.componentId,
+  });
 
   private buildCredentialTokenIssuedEvent = (
     eventConfig: CredentialTokenIssuedEventConfig,
@@ -102,76 +107,4 @@ export class EventService implements IEventService {
       component_id: eventConfig.componentId,
     };
   };
-}
-
-export interface IEventService {
-  writeCredentialTokenIssuedEvent: (
-    eventConfig: CredentialTokenIssuedEventConfig,
-  ) => Promise<Result<null>>;
-  writeGenericEvent: (eventConfig: GenericEventConfig) => Promise<Result<null>>;
-  writeCriErrorEvent: (
-    eventConfig: CriErrorEventConfig,
-  ) => Promise<Result<null>>;
-}
-
-export type GenericEventName = "DCMAW_ASYNC_CRI_START";
-export type EventNames =
-  | GenericEventName
-  | "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED"
-  | "DCMAW_ASYNC_CRI_4XXERROR";
-
-interface GenericTxmaEvent {
-  user: {
-    user_id: string;
-    transaction_id: string;
-    session_id: string;
-    govuk_signin_journey_id: string;
-  };
-  timestamp: number;
-  event_name: GenericEventName;
-  component_id: string;
-}
-
-export interface GenericEventConfig {
-  eventName: GenericEventName;
-  sub: string;
-  sessionId: string;
-  govukSigninJourneyId: string;
-  getNowInMilliseconds: () => number;
-  componentId: string;
-}
-
-interface CredentialTokenIssuedEvent {
-  timestamp: number;
-  event_timestamp_ms: number;
-  event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
-  component_id: string;
-}
-
-export interface CredentialTokenIssuedEventConfig {
-  getNowInMilliseconds: () => number;
-  componentId: string;
-  eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
-}
-
-interface CriErrorTxmaEvent {
-  user: {
-    user_id: string;
-    transaction_id: string;
-    session_id: string;
-    govuk_signin_journey_id: string;
-  };
-  timestamp: number;
-  event_timestamp_ms: number;
-  event_name: "DCMAW_ASYNC_CRI_4XXERROR";
-  component_id: string;
-}
-
-export interface CriErrorEventConfig {
-  eventName: "DCMAW_ASYNC_CRI_4XXERROR";
-  sub: string;
-  sessionId: string;
-  govukSigninJourneyId: string;
-  getNowInMilliseconds: () => number;
-  componentId: string;
 }

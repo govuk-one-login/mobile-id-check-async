@@ -6,7 +6,8 @@ import {
 } from "./getBiometricToken/getBiometricToken";
 import { SessionRegistry } from "../common/session/SessionRegistry";
 import { DynamoDbAdapter } from "../adapters/dynamoDbAdapter";
-import { EventService, IEventService } from "../services/events/eventService";
+import { EventService } from "../services/events/eventService";
+import { IEventService } from "../services/events/types";
 
 export type IAsyncBiometricTokenDependencies = {
   env: NodeJS.ProcessEnv;

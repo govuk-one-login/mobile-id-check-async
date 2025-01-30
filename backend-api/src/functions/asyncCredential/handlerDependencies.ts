@@ -3,7 +3,7 @@ import {
   IGetPartialRegisteredClientByClientId,
   ClientRegistryService,
 } from "../services/clientRegistryService/clientRegistryService";
-import { IEventService, EventService } from "../services/events/eventService";
+import { EventService } from "../services/events/eventService";
 import { MessageName, registeredLogs } from "./registeredLogs";
 import {
   IDecodeToken,
@@ -15,6 +15,7 @@ import {
   ISessionService,
   SessionService,
 } from "../services/session/sessionService";
+import { IEventService } from "../services/events/types";
 
 export interface IAsyncCredentialDependencies {
   logger: () => Logger<MessageName>;
