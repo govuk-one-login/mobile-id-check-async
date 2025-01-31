@@ -5,16 +5,16 @@ import {
 import { RegisteredLogMessages } from "../../services/logging/types";
 
 export type MessageName =
+  | CommonMessageNames
   | "INVALID_REQUEST"
   | "INTERNAL_SERVER_ERROR"
-  | CommonMessageNames;
 
 export const registeredLogs: RegisteredLogMessages<MessageName> = {
+  ...commonMessages,
   INVALID_REQUEST: {
-    messageCode: "STS_MOCK_INVALID_REQUEST",
+    messageCode: "TEST_RESOURCES_INVALID_REQUEST",
   },
   INTERNAL_SERVER_ERROR: {
-    messageCode: "STS_MOCK_INTERNAL_SERVER_ERROR",
-  },
-  ...commonMessages,
+    messageCode: "TEST_RESOURCES_INTERNAL_SERVER_ERROR",
+  }
 };

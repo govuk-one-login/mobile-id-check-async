@@ -3,9 +3,9 @@ import { SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
 import { mockClient } from "aws-sdk-client-mock";
 import "aws-sdk-client-mock-jest";
 import { Logger } from "../../services/logging/logger";
-import { buildLambdaContext } from "../../services/logging/tests/mockContext";
-import { MockLoggingAdapter } from "../../services/logging/tests/mockLogger";
-import { errorResult, Result, successResult } from "../../utils/result";
+import { buildLambdaContext } from "../../testUtils/mockContext";
+import { MockLoggingAdapter } from "../../services/logging/tests/mockLoggingAdapter";
+import { errorResult, Result, successResult } from "../../../utils/result";
 import {
   IDequeueDependencies,
   lambdaHandlerConstructor,
@@ -120,7 +120,7 @@ describe("Dequeue TxMA events", () => {
     it("Returns an error message", () => {
       expect(mockLogger.getLogMessages()[1]).toEqual({
         logMessage: expect.objectContaining({
-          messageCode: "DEQUEUE_FAILED_TO_PROCESS_MESSAGES",
+          messageCode: "TEST_RESOURCES_FAILED_TO_PROCESS_MESSAGES",
           message: "FAILED_TO_PROCESS_MESSAGES",
         }),
         data: {

@@ -14,7 +14,7 @@ describe("Logger", () => {
       logger.log("MOCK_MESSAGE_NAME");
       expect(loggingAdapter.getLogMessages()[0].logMessage).toMatchObject({
         message: "MOCK_MESSAGE_NAME",
-        messageCode: "STS_MOCK_MOCK_MESSAGE_NAME",
+        messageCode: "TEST_RESOURCES_MOCK_MESSAGE_NAME",
       });
     });
 
@@ -29,7 +29,7 @@ describe("Logger", () => {
         logger.log("MOCK_MESSAGE_NAME");
         expect(loggingAdapter.getLogMessages()[0].logMessage).toMatchObject({
           message: "MOCK_MESSAGE_NAME",
-          messageCode: "STS_MOCK_MOCK_MESSAGE_NAME",
+          messageCode: "TEST_RESOURCES_MOCK_MESSAGE_NAME",
           functionName: "lambdaFunctionName",
           awsRequestId: "awsRequestId",
         });
@@ -47,7 +47,7 @@ describe("Logger", () => {
         logger.log("MOCK_MESSAGE_NAME");
         expect(loggingAdapter.getLogMessages()[0].logMessage).toMatchObject({
           message: "MOCK_MESSAGE_NAME",
-          messageCode: "STS_MOCK_MOCK_MESSAGE_NAME",
+          messageCode: "TEST_RESOURCES_MOCK_MESSAGE_NAME",
           sessionId: "mockSessionId",
         });
       });
@@ -63,7 +63,7 @@ describe("Logger", () => {
         logger.log("MOCK_MESSAGE_NAME", { mockKey: "mockValue" });
         expect(loggingAdapter.getLogMessages()[0].logMessage).toMatchObject({
           message: "MOCK_MESSAGE_NAME",
-          messageCode: "STS_MOCK_MOCK_MESSAGE_NAME",
+          messageCode: "TEST_RESOURCES_MOCK_MESSAGE_NAME",
         });
         expect(loggingAdapter.getLogMessages()[0].data).toMatchObject({
           mockKey: "mockValue",
@@ -77,6 +77,6 @@ type MockMessage = "MOCK_MESSAGE_NAME";
 
 const mockRegisteredLogs: RegisteredLogMessages<MockMessage> = {
   MOCK_MESSAGE_NAME: {
-    messageCode: "STS_MOCK_MOCK_MESSAGE_NAME",
+    messageCode: "TEST_RESOURCES_MOCK_MESSAGE_NAME",
   },
 };
