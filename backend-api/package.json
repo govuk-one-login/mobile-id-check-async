@@ -5,7 +5,7 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "deploy-backend-to-dev": "npm run build:infra && cd ../helper-scripts && ./deploy_backend.sh",
+    "deploy-backend-to-dev": "cd ../helper-scripts && ./deploy_backend.sh",
     "build:infra": "./combine_template.sh",
     "generate-proxy-open-api": "node ./generate-proxy-private-openapi.js",
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
@@ -16,8 +16,7 @@
     "test:api": "./node_modules/.bin/jest --testPathPattern=api-tests/",
     "test:infra": "./node_modules/.bin/jest --testPathPattern=infra-tests/",
     "test:pact": "npm run pact",
-    "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/pact api-tests",
-    "ci": "npm run test:unit && npm run format:check && npm run lint"
+    "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/pact api-tests"
   },
   "engines": {
     "node": "20"
