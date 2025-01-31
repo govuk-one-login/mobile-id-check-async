@@ -40,6 +40,7 @@ describe("DynamoDbAdapter", () => {
 
     describe("On every attempt", () => {
       beforeEach(async () => {
+        mockDynamoDbClient.on(UpdateItemCommand).resolves({});
         await sessionRegistry.updateSession("mock_session_id", updateOperation);
       });
 
