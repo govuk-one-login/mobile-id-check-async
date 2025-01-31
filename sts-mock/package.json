@@ -2,6 +2,7 @@
   "name": "one-login-sts-mock",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "license": "MIT",
   "scripts": {
     "build:infra": "./combine_template.sh",
