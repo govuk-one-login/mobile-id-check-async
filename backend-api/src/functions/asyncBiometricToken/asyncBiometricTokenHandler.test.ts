@@ -55,7 +55,9 @@ describe("Async Biometric Token", () => {
 
   const mockSuccessfulSessionRegistry = {
     ...mockInertSessionRegistry,
-    updateSession: jest.fn().mockResolvedValue(emptySuccess()),
+    updateSession: jest
+      .fn()
+      .mockResolvedValue(successResult({ sessionId: "mockSessionId" })),
   };
 
   const mockWriteCriEventSuccessResult = jest
@@ -241,11 +243,11 @@ describe("Async Biometric Token", () => {
       beforeEach(async () => {
         dependencies.getSessionRegistry = () => ({
           ...mockInertSessionRegistry,
-          updateSession: jest
-            .fn()
-            .mockResolvedValue(
-              errorResult(UpdateSessionError.CONDITIONAL_CHECK_FAILURE),
-            ),
+          updateSession: jest.fn().mockResolvedValue(
+            errorResult({
+              failureType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
+            }),
+          ),
         });
         result = await lambdaHandlerConstructor(
           dependencies,
@@ -315,11 +317,11 @@ describe("Async Biometric Token", () => {
       beforeEach(async () => {
         dependencies.getSessionRegistry = () => ({
           ...mockInertSessionRegistry,
-          updateSession: jest
-            .fn()
-            .mockResolvedValue(
-              errorResult(UpdateSessionError.INTERNAL_SERVER_ERROR),
-            ),
+          updateSession: jest.fn().mockResolvedValue(
+            errorResult({
+              failureType: UpdateSessionError.INTERNAL_SERVER_ERROR,
+            }),
+          ),
         });
         result = await lambdaHandlerConstructor(
           dependencies,
