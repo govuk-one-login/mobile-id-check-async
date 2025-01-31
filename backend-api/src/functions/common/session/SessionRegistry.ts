@@ -5,7 +5,12 @@ export interface SessionRegistry {
   updateSession(
     sessionId: string,
     updateOperation: UpdateSessionOperation,
-  ): Promise<Result<void, UpdateSessionError>>;
+  ): Promise<Result<void, UpdateSessionReturnType>>;
+}
+
+export interface UpdateSessionReturnType {
+  failureType: UpdateSessionError;
+  attributes: any
 }
 
 export enum UpdateSessionError {

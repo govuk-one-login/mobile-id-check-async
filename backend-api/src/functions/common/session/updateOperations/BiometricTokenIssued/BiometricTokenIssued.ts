@@ -1,11 +1,15 @@
 import { UpdateSessionOperation } from "../UpdateSessionOperation";
 import { DocumentType } from "../../../../types/document";
 import { SessionState } from "../../session";
+import {
+  ReturnValue,
+  ReturnValuesOnConditionCheckFailure,
+} from "@aws-sdk/client-dynamodb";
 
 export class BiometricTokenIssued implements UpdateSessionOperation {
   constructor(
     private readonly documentType: DocumentType,
-    private readonly opaqueId: string,
+    private readonly opaqueId: string
   ) {}
 
   getDynamoDbUpdateExpression() {
@@ -23,5 +27,12 @@ export class BiometricTokenIssued implements UpdateSessionOperation {
       ":biometricTokenIssued": { S: SessionState.BIOMETRIC_TOKEN_ISSUED },
       ":authSessionCreated": { S: SessionState.AUTH_SESSION_CREATED },
     };
+  }
+
+  getDynamoDbReturnValues() {
+    return ReturnValue.ALL_NEW;
+  }
+  getDynamoDbReturnValuesOnConditionCheckFailure() {
+    return ReturnValuesOnConditionCheckFailure.ALL_OLD;
   }
 }

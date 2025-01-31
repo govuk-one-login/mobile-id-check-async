@@ -80,8 +80,10 @@ export async function lambdaHandlerConstructor(
     sessionId,
     new BiometricTokenIssued(documentType, opaqueId),
   );
+  console.log("updateSessionResult", updateSessionResult)
   if (updateSessionResult.isError) {
     let writeEventResult;
+    console.log("updateSessionResult.value.failureType", updateSessionResult.value.failureType)
     switch (updateSessionResult.value) {
       case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
         writeEventResult = await eventService.writeCriErrorEvent({

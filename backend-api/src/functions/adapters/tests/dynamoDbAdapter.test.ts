@@ -6,6 +6,7 @@ import { BiometricTokenIssued } from "../../common/session/updateOperations/Biom
 import {
   SessionRegistry,
   UpdateSessionError,
+  UpdateSessionReturnType,
 } from "../../common/session/SessionRegistry";
 import {
   ConditionalCheckFailedException,
@@ -13,8 +14,9 @@ import {
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import { mockClient } from "aws-sdk-client-mock";
-import { emptySuccess, errorResult, Result } from "../../utils/result";
+import { emptySuccess, errorResult, Result, successResult } from "../../utils/result";
 import { UpdateSessionOperation } from "../../common/session/updateOperations/UpdateSessionOperation";
+import { marshall } from "@aws-sdk/util-dynamodb";
 
 const mockDynamoDbClient = mockClient(DynamoDBClient);
 
@@ -29,7 +31,7 @@ describe("DynamoDbAdapter", () => {
     consoleDebugSpy = jest.spyOn(console, "debug");
   });
   describe("updateSession", () => {
-    let result: Result<void, UpdateSessionError>;
+    let result: Result<void, UpdateSessionReturnType>;
 
     const updateOperation: UpdateSessionOperation = new BiometricTokenIssued(
       "NFC_PASSPORT",
@@ -48,6 +50,8 @@ describe("DynamoDbAdapter", () => {
             updateExpression: updateOperation.getDynamoDbUpdateExpression(),
             conditionExpression:
               updateOperation.getDynamoDbConditionExpression(),
+            returnValues: updateOperation.getDynamoDbReturnValues(),
+            returnValuesOnConditionCheckFailure: updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
           },
         });
       });
@@ -59,6 +63,7 @@ describe("DynamoDbAdapter", () => {
           new ConditionalCheckFailedException({
             $metadata: {},
             message: "Conditional check failed",
+            Item: marshall({sessionId:"mockSessionId"})
           }),
         );
         result = await sessionRegistry.updateSession(
@@ -75,13 +80,15 @@ describe("DynamoDbAdapter", () => {
             updateExpression: updateOperation.getDynamoDbUpdateExpression(),
             conditionExpression:
               updateOperation.getDynamoDbConditionExpression(),
+            returnValues: updateOperation.getDynamoDbReturnValues(),
+            returnValuesOnConditionCheckFailure: updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
           },
         });
       });
 
       it("Returns failure with conditional check failure error", () => {
         expect(result).toEqual(
-          errorResult(UpdateSessionError.CONDITIONAL_CHECK_FAILURE),
+          errorResult({failureType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE, attributes:{"sessionId": "mockSessionId"}}),
         );
       });
     });
@@ -102,13 +109,15 @@ describe("DynamoDbAdapter", () => {
             updateExpression: updateOperation.getDynamoDbUpdateExpression(),
             conditionExpression:
               updateOperation.getDynamoDbConditionExpression(),
+            returnValues: updateOperation.getDynamoDbReturnValues(),
+            returnValuesOnConditionCheckFailure: updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
           },
         });
       });
 
       it("Returns failure with server error", () => {
         expect(result).toEqual(
-          errorResult(UpdateSessionError.INTERNAL_SERVER_ERROR),
+          errorResult({failureType: UpdateSessionError.INTERNAL_SERVER_ERROR, attributes:null}),
         );
       });
     });
@@ -124,12 +133,14 @@ describe("DynamoDbAdapter", () => {
           ConditionExpression: updateOperation.getDynamoDbConditionExpression(),
           ExpressionAttributeValues:
             updateOperation.getDynamoDbExpressionAttributeValues(),
+          ReturnValues: updateOperation.getDynamoDbReturnValues(),
+          ReturnValuesOnConditionCheckFailure: updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
         };
         mockDynamoDbClient
           .onAnyCommand() // default
           .rejects("Did not receive expected input")
           .on(UpdateItemCommand, expectedUpdateItemCommandInput, true) // match to expected input
-          .resolves({});
+          .resolves({Attributes:marshall({sessionId:"mock_session_id"})});
         result = await sessionRegistry.updateSession(
           "mock_session_id",
           updateOperation,
@@ -143,7 +154,7 @@ describe("DynamoDbAdapter", () => {
       });
 
       it("Returns an empty success", () => {
-        expect(result).toEqual(emptySuccess());
+        expect(result).toEqual(successResult({sessionId:"mock_session_id"}));
       });
     });
   });
