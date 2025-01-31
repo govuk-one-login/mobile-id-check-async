@@ -9,7 +9,7 @@ import {
 export class BiometricTokenIssued implements UpdateSessionOperation {
   constructor(
     private readonly documentType: DocumentType,
-    private readonly opaqueId: string
+    private readonly opaqueId: string,
   ) {}
 
   getDynamoDbUpdateExpression() {

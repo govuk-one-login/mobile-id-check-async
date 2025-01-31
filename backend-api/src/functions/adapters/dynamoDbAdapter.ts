@@ -16,7 +16,7 @@ import {
   unmarshall,
 } from "@aws-sdk/util-dynamodb";
 import { UpdateSessionOperation } from "../common/session/updateOperations/UpdateSessionOperation";
-import { emptySuccess, errorResult, Result, successResult } from "../utils/result";
+import { errorResult, Result, successResult } from "../utils/result";
 import {
   SessionRegistry,
   UpdateSessionError,
@@ -27,7 +27,6 @@ import { LogMessage } from "../common/logging/LogMessage";
 import { SessionState } from "../common/session/session";
 
 export type DatabaseRecord = Record<string, NativeAttributeValue>;
-
 
 export class DynamoDbAdapter implements SessionRegistry {
   private readonly tableName: string;
@@ -130,7 +129,8 @@ export class DynamoDbAdapter implements SessionRegistry {
       updateExpression: updateOperation.getDynamoDbUpdateExpression(),
       conditionExpression: updateOperation.getDynamoDbConditionExpression(),
       returnValues: updateOperation.getDynamoDbReturnValues(),
-      returnValuesOnConditionCheckFailure: updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
+      returnValuesOnConditionCheckFailure:
+        updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
     };
 
     let response;
@@ -150,7 +150,8 @@ export class DynamoDbAdapter implements SessionRegistry {
           ExpressionAttributeValues:
             updateOperation.getDynamoDbExpressionAttributeValues(),
           ReturnValues: updateOperation.getDynamoDbReturnValues(),
-          ReturnValuesOnConditionCheckFailure: updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
+          ReturnValuesOnConditionCheckFailure:
+            updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
         }),
       );
     } catch (error) {
@@ -161,16 +162,22 @@ export class DynamoDbAdapter implements SessionRegistry {
           data: updateExpressionDataToLog,
         });
 
-        return errorResult({failureType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE, attributes});
+        return errorResult({
+          failureType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
+          attributes,
+        });
       } else {
         logger.error(LogMessage.UPDATE_SESSION_UNEXPECTED_FAILURE, {
           error: error,
           data: updateExpressionDataToLog,
         });
-        return errorResult({failureType: UpdateSessionError.INTERNAL_SERVER_ERROR, attributes: null});
+        return errorResult({
+          failureType: UpdateSessionError.INTERNAL_SERVER_ERROR,
+          attributes: null,
+        });
       }
     }
-    const {Attributes} = response;
+    const { Attributes } = response;
     logger.debug(LogMessage.UPDATE_SESSION_SUCCESS);
     return successResult(unmarshall(Attributes || {}));
   }

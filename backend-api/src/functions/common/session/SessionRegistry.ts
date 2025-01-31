@@ -10,7 +10,7 @@ export interface SessionRegistry {
 
 export interface UpdateSessionReturnType {
   failureType: UpdateSessionError;
-  attributes: any
+  attributes: object | null;
 }
 
 export enum UpdateSessionError {
