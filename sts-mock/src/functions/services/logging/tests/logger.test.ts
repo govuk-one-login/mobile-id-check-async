@@ -1,4 +1,4 @@
-import { buildLambdaContext } from "../../../../testUtils/mockContext";
+import { buildLambdaContext } from "../../../testUtils/mockContext";
 import { Logger } from "../logger";
 import { RegisteredLogMessages } from "../types";
 import { MockLoggingAdapter } from "./mockLoggingAdapter";
