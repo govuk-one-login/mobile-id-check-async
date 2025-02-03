@@ -70,17 +70,19 @@ export class EventService implements IEventService {
 
   private buildGenericEvent = (
     eventConfig: GenericEventConfig,
-  ): GenericTxmaEvent => ({
-    user: {
-      user_id: eventConfig.sub,
-      transaction_id: "",
-      session_id: eventConfig.sessionId,
-      govuk_signin_journey_id: eventConfig.govukSigninJourneyId,
-    },
-    timestamp: Math.floor(eventConfig.getNowInMilliseconds() / 1000),
-    event_name: eventConfig.eventName,
-    component_id: eventConfig.componentId,
-  });
+  ): GenericTxmaEvent => {
+    return {
+      user: {
+        user_id: eventConfig.sub,
+        transaction_id: "",
+        session_id: eventConfig.sessionId,
+        govuk_signin_journey_id: eventConfig.govukSigninJourneyId,
+      },
+      timestamp: Math.floor(eventConfig.getNowInMilliseconds() / 1000),
+      event_name: eventConfig.eventName,
+      component_id: eventConfig.componentId,
+    };
+  };
 
   private buildCredentialTokenIssuedEvent = (
     eventConfig: CredentialTokenIssuedEventConfig,
