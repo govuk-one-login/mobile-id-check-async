@@ -94,7 +94,7 @@ export class EventService implements IEventService {
     };
   };
 
-  private buildCriErrorEvent = (
+  private readonly buildCriErrorEvent = (
     eventConfig: CriErrorEventConfig,
   ): CriErrorTxmaEvent => {
     const timestampInMillis = eventConfig.getNowInMilliseconds();
