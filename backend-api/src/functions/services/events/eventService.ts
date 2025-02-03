@@ -18,7 +18,11 @@ import {
 } from "./types";
 
 export class EventService implements IEventService {
-  constructor(private sqsQueue: string) {}
+  private sqsQueue: string;
+
+  constructor(sqsQueue: string) {
+    this.sqsQueue = sqsQueue;
+  }
 
   async writeGenericEvent(
     eventConfig: GenericEventConfig,
