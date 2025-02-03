@@ -2,8 +2,6 @@
 
 ## Overview
 
-
-
 ### STS Mock
 This stack manages the following resources needed for the STS mock API:
 * a REST API and a Lambda function for the `/token` endpoint
@@ -114,7 +112,7 @@ Configuring SAM deploy
 
 After saving the above arguments to the SAM configuration file (`samconfig.toml`), future deployments can be made without the `--guided` flag:
 ```shell
-sam build --cached --beta-features && sam deploy --capabilities CAPABILITY_NAMED_IAM --stack-name <stack-name>   
+sam build --cached --beta-features && sam deploy --capabilities CAPABILITY_NAMED_IAM --stack-name <stack-name>
 ```
 
 ## Generate and Publish Signing Key Pair to S3
