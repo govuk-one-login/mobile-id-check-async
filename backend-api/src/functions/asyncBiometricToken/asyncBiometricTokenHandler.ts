@@ -76,7 +76,7 @@ export async function lambdaHandlerConstructor(
     config.SESSION_TABLE_NAME,
   );
 
-  const eventService = await dependencies.eventService(config.TXMA_SQS);
+  const eventService = dependencies.eventService(config.TXMA_SQS);
   const updateSessionResult = await sessionRegistry.updateSession(
     sessionId,
     new BiometricTokenIssued(documentType, opaqueId),
