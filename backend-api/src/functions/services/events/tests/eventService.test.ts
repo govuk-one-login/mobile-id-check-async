@@ -2,7 +2,6 @@ import { mockClient } from "aws-sdk-client-mock";
 import { SendMessageCommand } from "@aws-sdk/client-sqs";
 import { EventService } from "../eventService";
 import { sqsClient } from "../sqsClient";
-import { ErrorCategory } from "../../../utils/result";
 
 describe("Event Service", () => {
   describe("Writing generic event to SQS", () => {
@@ -24,7 +23,6 @@ describe("Event Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Failed to write to SQS",
-          errorCategory: ErrorCategory.SERVER_ERROR,
         });
 
         expect(sqsMock.call(0).args[0].input).toEqual({
@@ -98,7 +96,6 @@ describe("Event Service", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
           errorMessage: "Failed to write to SQS",
-          errorCategory: ErrorCategory.SERVER_ERROR,
         });
 
         expect(sqsMock.call(0).args[0].input).toStrictEqual({
