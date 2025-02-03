@@ -177,40 +177,40 @@ describe("Event Service", () => {
           QueueUrl: "mockSqsQueue",
         });
       });
+    });
 
-      describe("Given writing to SQS is successful", () => {
-        it("Returns a log", async () => {
-          const sqsMock = mockClient(sqsClient);
-          const eventWriter = new EventService("mockSqsQueue");
-          sqsMock.on(SendMessageCommand).resolves({});
+    describe("Given writing to SQS is successful", () => {
+      it("Returns a log", async () => {
+        const sqsMock = mockClient(sqsClient);
+        const eventWriter = new EventService("mockSqsQueue");
+        sqsMock.on(SendMessageCommand).resolves({});
 
-          const result = await eventWriter.writeCriErrorEvent({
-            eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-            sub: "mockSub",
-            sessionId: "mockSessionId",
-            govukSigninJourneyId: "mockGovukSigninJourneyId",
-            getNowInMilliseconds: () => 1609462861000,
-            componentId: "mockComponentId",
-          });
+        const result = await eventWriter.writeCriErrorEvent({
+          eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+          sub: "mockSub",
+          sessionId: "mockSessionId",
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
+          getNowInMilliseconds: () => 1609462861000,
+          componentId: "mockComponentId",
+        });
 
-          expect(result.isError).toBe(false);
-          expect(result.value).toEqual(null);
+        expect(result.isError).toBe(false);
+        expect(result.value).toEqual(null);
 
-          expect(sqsMock.call(0).args[0].input).toEqual({
-            MessageBody: JSON.stringify({
-              user: {
-                user_id: "mockSub",
-                transaction_id: "",
-                session_id: "mockSessionId",
-                govuk_signin_journey_id: "mockGovukSigninJourneyId",
-              },
-              timestamp: 1609462861,
-              event_timestamp_ms: 1609462861000,
-              event_name: "DCMAW_ASYNC_CRI_4XXERROR",
-              component_id: "mockComponentId",
-            }),
-            QueueUrl: "mockSqsQueue",
-          });
+        expect(sqsMock.call(0).args[0].input).toEqual({
+          MessageBody: JSON.stringify({
+            user: {
+              user_id: "mockSub",
+              transaction_id: "",
+              session_id: "mockSessionId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+            },
+            timestamp: 1609462861,
+            event_timestamp_ms: 1609462861000,
+            event_name: "DCMAW_ASYNC_CRI_4XXERROR",
+            component_id: "mockComponentId",
+          }),
+          QueueUrl: "mockSqsQueue",
         });
       });
     });
