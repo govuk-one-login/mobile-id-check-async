@@ -1,6 +1,6 @@
 # Dequeue events
 
-The Dequeue events functionality checks that messages sent from the Async Backend API are successfully received by the provisioned SQS queue.
+This provides functionality to retrieve events sent to the TxMA SQS. This can then be used to validate TxMA SQS events in the backend API test suite.
 
 ### Resources
 - Dequeue Lambda
