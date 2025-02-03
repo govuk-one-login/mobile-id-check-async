@@ -13,12 +13,7 @@ import {
   mockInertEventService,
 } from "../testUtils/unitTestData";
 import { logger } from "../common/logging/logger";
-import {
-  emptyFailure,
-  emptySuccess,
-  errorResult,
-  successResult,
-} from "../utils/result";
+import { emptyFailure, errorResult, successResult } from "../utils/result";
 import { UpdateSessionError } from "../common/session/SessionRegistry";
 import { BiometricTokenIssued } from "../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 
@@ -62,7 +57,9 @@ describe("Async Biometric Token", () => {
 
   const mockWriteCriEventSuccessResult = jest
     .fn()
-    .mockResolvedValue(emptySuccess());
+    .mockResolvedValue(
+      successResult({ attributes: { sessionId: "mockSessionId" } }),
+    );
 
   const mockSuccessfulEventService = {
     ...mockInertEventService,
