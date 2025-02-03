@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ $# -lt 1 ]; then
-  echo "Usage: $0 <stack-name> <optional-custom-backend-stack-name>"
+  echo "Usage: $0 <stack-name>"
   exit 1
 fi
 
