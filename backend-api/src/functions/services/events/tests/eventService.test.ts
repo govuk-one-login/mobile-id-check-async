@@ -165,7 +165,7 @@ describe("Event Service", () => {
         });
       });
 
-      it("Returns success result", () => {
+      it("Returns a success result", () => {
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
       });
