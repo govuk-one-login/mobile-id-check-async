@@ -8,11 +8,6 @@ type SuccessResult<S> = {
 type ErrorResult = {
   isError: true;
   value: ErrorResultValue;
-  // value: {
-  //   errorMessage: string;
-  //   errorCategory?: ErrorCategory;
-  // [key: string]: string | undefined;
-  // };
 };
 
 type ErrorResultValue = {
