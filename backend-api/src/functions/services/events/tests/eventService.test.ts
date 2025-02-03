@@ -21,7 +21,7 @@ describe("Event Service", () => {
   describe.each<GenericEventName>([
     "DCMAW_ASYNC_CRI_START",
     "DCMAW_ASYNC_CRI_4XXERROR",
-  ])("Writing generic event to SQS", (genericEvent) => {
+  ])("Writing generic TxMA event to SQS", (genericEvent) => {
     describe(`Given writing ${genericEvent} event to SQS fails`, () => {
       beforeEach(async () => {
         sqsMock = mockClient(sqsClient);
@@ -79,7 +79,7 @@ describe("Event Service", () => {
         });
       });
 
-      it("Attempts to send Generic TxMA event to SQS", () => {
+      it(`Attempts to send ${genericEvent} event to SQS`, () => {
         expect(sqsMock.call(0).args[0].input).toEqual({
           MessageBody: JSON.stringify({
             user: {
@@ -97,7 +97,7 @@ describe("Event Service", () => {
         });
       });
 
-      it("Returns a success result ", () => {
+      it("Returns a success result", () => {
         expect(result.isError).toBe(false);
         expect(result.value).toEqual(null);
       });
@@ -118,7 +118,7 @@ describe("Event Service", () => {
         });
       });
 
-      it("Attempts to send credential token issued TxMA event to SQS", () => {
+      it("Attempts to send DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event to SQS", () => {
         expect(sqsMock.call(0).args[0].input).toStrictEqual({
           MessageBody: JSON.stringify({
             event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
@@ -151,7 +151,7 @@ describe("Event Service", () => {
         });
       });
 
-      it("Attempts to send credential token issued TxMA event to SQS", () => {
+      it("Attempts to send DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event to SQS", () => {
         expect(sqsMock.call(0).args[0].input).toStrictEqual({
           MessageBody: JSON.stringify({
             event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
