@@ -135,6 +135,7 @@ export class DynamoDbAdapter implements SessionRegistry {
     };
 
     let response;
+    let attributes = null;
 
     try {
       logger.debug(LogMessage.UPDATE_SESSION_ATTEMPT, {
@@ -156,7 +157,6 @@ export class DynamoDbAdapter implements SessionRegistry {
         }),
       );
     } catch (error) {
-      let attributes = null;
       if (error instanceof ConditionalCheckFailedException) {
         if (error.Item) {
           attributes = unmarshall(error.Item);
@@ -181,9 +181,13 @@ export class DynamoDbAdapter implements SessionRegistry {
         });
       }
     }
+
     const { Attributes } = response;
+    if (Attributes) {
+      attributes = unmarshall(Attributes);
+    }
     logger.debug(LogMessage.UPDATE_SESSION_SUCCESS);
-    return successResult({ attributes: unmarshall(Attributes || {}) });
+    return successResult({ attributes });
   }
 
   private getTimeNowInSeconds() {
