@@ -81,7 +81,7 @@ export async function lambdaHandlerConstructor(
     sessionId,
     new BiometricTokenIssued(documentType, opaqueId),
   );
-  const sessionAttributes = getSessionAttributesForTxma(
+  const sessionAttributes = getSessionAttributesForTxmaEvents(
     updateSessionResult.value.attributes,
   );
 
@@ -171,7 +171,7 @@ function generateOpaqueId(): string {
   return randomUUID();
 }
 
-const getSessionAttributesForTxma = (
+const getSessionAttributesForTxmaEvents = (
   attributes: DatabaseRecord | null,
 ): BiometricTokenTxmaSessionAttributes => {
   return {
