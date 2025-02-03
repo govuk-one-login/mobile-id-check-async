@@ -872,7 +872,7 @@ Resources:
                 Effect: Allow
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
             Version: "2012-10-17"
-          PolicyName: AsyncBiometricTokenFunctionSQSPolicy
+          PolicyName: AsyncBiometricTokenFunctionTxmaSQSPolicy
       RoleName: !Sub ${AWS::StackName}-biometric-token-lambda
 
   AsyncBiometricTokenLogGroup:

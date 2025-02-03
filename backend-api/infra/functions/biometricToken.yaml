@@ -110,7 +110,7 @@ Resources:
                 Action:
                   - "dynamodb:UpdateItem"
                 Resource: !GetAtt SessionsTable.Arn
-        - PolicyName: AsyncBiometricTokenFunctionSQSPolicy
+        - PolicyName: AsyncBiometricTokenFunctionTxmaSQSPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
