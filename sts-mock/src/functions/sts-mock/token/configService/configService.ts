@@ -1,4 +1,4 @@
-import { errorResult, Result, successResult } from "../../utils/result";
+import { errorResult, Result, successResult } from "../../../../utils/result";
 
 export interface Config {
   STS_MOCK_BASE_URL: string;
