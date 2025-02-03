@@ -38,7 +38,8 @@ describe("Event Service", () => {
           componentId: "mockComponentId",
         });
       });
-      it("Attempts to send Generic TxMA event to SQS", () => {
+
+      it(`Attempts to send ${genericEventName} TxMA event to SQS`, () => {
         expect(sqsMock.call(0).args[0].input).toEqual({
           MessageBody: JSON.stringify({
             user: {
