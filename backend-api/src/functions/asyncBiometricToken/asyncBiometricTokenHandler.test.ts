@@ -52,7 +52,9 @@ describe("Async Biometric Token", () => {
     ...mockInertSessionRegistry,
     updateSession: jest
       .fn()
-      .mockResolvedValue(successResult({ sessionId: "mockSessionId" })),
+      .mockResolvedValue(
+        successResult({ attributes: { sessionId: "mockSessionId" } }),
+      ),
   };
 
   const mockWriteCriEventSuccessResult = jest
