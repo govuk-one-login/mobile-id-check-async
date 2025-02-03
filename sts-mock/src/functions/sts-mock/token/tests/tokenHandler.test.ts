@@ -1,5 +1,5 @@
-import { Logger } from "../../services/logging/logger";
-import { MockLoggingAdapter } from "../../services/logging/tests/mockLoggingAdapter";
+import { Logger } from "../../../services/logging/logger";
+import { MockLoggingAdapter } from "../../../services/logging/tests/mockLoggingAdapter";
 import { buildLambdaContext } from "../../../testUtils/mockContext";
 import { MessageName, registeredLogs } from "../registeredLogs";
 import { lambdaHandlerConstructor } from "../tokenHandler";

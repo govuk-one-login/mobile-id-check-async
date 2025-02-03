@@ -17,7 +17,7 @@ import { Logger } from "../services/logging/logger";
 import { getConfig } from "./getConfig";
 import { allowedTxmaEventNames, getEvent, TxmaEvent } from "./getEvent";
 import { MessageName, registeredLogs } from "./registeredLogs";
-import { Result } from "../utils/result";
+import { Result } from "../../utils/result";
 
 export const lambdaHandlerConstructor = async (
   dependencies: IDequeueDependencies,
