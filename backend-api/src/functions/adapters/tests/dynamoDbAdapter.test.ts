@@ -93,7 +93,7 @@ describe("DynamoDbAdapter", () => {
       it("Returns failure with conditional check failure error", () => {
         expect(result).toEqual(
           errorResult({
-            failureType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
+            errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
             attributes: { sessionId: "mockSessionId" },
           }),
         );
@@ -126,7 +126,7 @@ describe("DynamoDbAdapter", () => {
       it("Returns failure with server error", () => {
         expect(result).toEqual(
           errorResult({
-            failureType: UpdateSessionError.INTERNAL_SERVER_ERROR,
+            errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
             attributes: null,
           }),
         );

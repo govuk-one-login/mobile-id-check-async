@@ -166,7 +166,7 @@ export class DynamoDbAdapter implements SessionRegistry {
           data: updateExpressionDataToLog,
         });
         return errorResult({
-          failureType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
+          errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
           attributes,
         });
       } else {
@@ -175,7 +175,7 @@ export class DynamoDbAdapter implements SessionRegistry {
           data: updateExpressionDataToLog,
         });
         return errorResult({
-          failureType: UpdateSessionError.INTERNAL_SERVER_ERROR,
+          errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
           attributes,
         });
       }

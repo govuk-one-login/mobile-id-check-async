@@ -76,7 +76,7 @@ export async function lambdaHandlerConstructor(
     config.SESSION_TABLE_NAME,
   );
 
-  const eventService = dependencies.eventService(config.TXMA_SQS);
+  const eventService = dependencies.getEventService(config.TXMA_SQS);
   const updateSessionResult = await sessionRegistry.updateSession(
     sessionId,
     new BiometricTokenIssued(documentType, opaqueId),
@@ -87,7 +87,7 @@ export async function lambdaHandlerConstructor(
 
   if (updateSessionResult.isError) {
     let writeEventResult;
-    switch (updateSessionResult.value.failureType) {
+    switch (updateSessionResult.value.errorType) {
       case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
         writeEventResult = await eventService.writeGenericEvent({
           eventName: "DCMAW_ASYNC_CRI_4XXERROR",

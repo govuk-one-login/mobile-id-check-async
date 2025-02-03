@@ -83,7 +83,7 @@ describe("Async Biometric Token", () => {
       getSecrets: mockGetSecretsSuccess,
       getBiometricToken: mockGetBiometricTokenSuccess,
       getSessionRegistry: () => mockSuccessfulSessionRegistry,
-      eventService: () => mockSuccessfulEventService,
+      getEventService: () => mockSuccessfulEventService,
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
@@ -244,7 +244,7 @@ describe("Async Biometric Token", () => {
           ...mockInertSessionRegistry,
           updateSession: jest.fn().mockResolvedValue(
             errorResult({
-              failureType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
+              errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
             }),
           ),
         });
@@ -257,7 +257,7 @@ describe("Async Biometric Token", () => {
 
       describe("Given DCMAW_ASYNC_CRI_4XXERROR event fails to write to TxMA", () => {
         beforeEach(async () => {
-          dependencies.eventService = () => ({
+          dependencies.getEventService = () => ({
             ...mockInertEventService,
             writeGenericEvent: jest.fn().mockResolvedValue(
               errorResult({
@@ -318,7 +318,7 @@ describe("Async Biometric Token", () => {
           ...mockInertSessionRegistry,
           updateSession: jest.fn().mockResolvedValue(
             errorResult({
-              failureType: UpdateSessionError.INTERNAL_SERVER_ERROR,
+              errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
             }),
           ),
         });

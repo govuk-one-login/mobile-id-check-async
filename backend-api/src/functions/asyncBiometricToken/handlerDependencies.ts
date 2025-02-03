@@ -14,7 +14,7 @@ export type IAsyncBiometricTokenDependencies = {
   getSecrets: GetSecrets;
   getBiometricToken: GetBiometricToken;
   getSessionRegistry: (tableName: string) => SessionRegistry;
-  eventService: (sqsQueue: string) => IEventService;
+  getEventService: (sqsQueue: string) => IEventService;
 };
 
 export const runtimeDependencies: IAsyncBiometricTokenDependencies = {
@@ -22,5 +22,5 @@ export const runtimeDependencies: IAsyncBiometricTokenDependencies = {
   getSecrets: getSecretsFromParameterStore,
   getBiometricToken,
   getSessionRegistry: (tableName: string) => new DynamoDbAdapter(tableName),
-  eventService: (sqsQueue: string) => new EventService(sqsQueue),
+  getEventService: (sqsQueue: string) => new EventService(sqsQueue),
 };

@@ -14,7 +14,7 @@ export interface UpdateSessionSuccess {
 }
 
 export interface UpdateSessionFailure {
-  failureType: UpdateSessionError;
+  errorType: UpdateSessionError;
   attributes: DatabaseRecord | null;
 }
 
