@@ -1,21 +1,34 @@
-import { mockClient } from "aws-sdk-client-mock";
-import { SendMessageCommand } from "@aws-sdk/client-sqs";
+import { AwsStub, mockClient } from "aws-sdk-client-mock";
+import {
+  SendMessageCommand,
+  ServiceInputTypes,
+  ServiceOutputTypes,
+  SQSClientResolvedConfig,
+} from "@aws-sdk/client-sqs";
 import { EventService } from "../eventService";
 import { sqsClient } from "../sqsClient";
 import { GenericEventName } from "../types";
+import { Result } from "../../../utils/result";
 
 describe("Event Service", () => {
+  let result: Result<null>;
+  let sqsMock: AwsStub<
+    ServiceInputTypes,
+    ServiceOutputTypes,
+    SQSClientResolvedConfig
+  >;
+  let eventWriter: EventService;
   describe.each<GenericEventName>([
     "DCMAW_ASYNC_CRI_START",
     "DCMAW_ASYNC_CRI_4XXERROR",
   ])("Writing generic event to SQS", (genericEvent) => {
     describe(`Given writing ${genericEvent} event to SQS fails`, () => {
-      it("Returns an error response", async () => {
-        const sqsMock = mockClient(sqsClient);
-        const eventWriter = new EventService("mockSqsQueue");
+      beforeEach(async () => {
+        sqsMock = mockClient(sqsClient);
+        eventWriter = new EventService("mockSqsQueue");
         sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
 
-        const result = await eventWriter.writeGenericEvent({
+        result = await eventWriter.writeGenericEvent({
           eventName: genericEvent,
           sub: "mockSub",
           sessionId: "mockSessionId",
@@ -23,12 +36,8 @@ describe("Event Service", () => {
           getNowInMilliseconds: () => 1609462861000,
           componentId: "mockComponentId",
         });
-
-        expect(result.isError).toBe(true);
-        expect(result.value).toStrictEqual({
-          errorMessage: "Failed to write to SQS",
-        });
-
+      });
+      it("Attempts to send Generic TxMA event to SQS", () => {
         expect(sqsMock.call(0).args[0].input).toEqual({
           MessageBody: JSON.stringify({
             user: {
@@ -45,15 +54,22 @@ describe("Event Service", () => {
           QueueUrl: "mockSqsQueue",
         });
       });
+
+      it("Returns an error result", () => {
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Failed to write to SQS",
+        });
+      });
     });
 
     describe(`Given writing ${genericEvent} SQS is successful`, () => {
-      it("Returns a log", async () => {
-        const sqsMock = mockClient(sqsClient);
-        const eventWriter = new EventService("mockSqsQueue");
+      beforeEach(async () => {
+        sqsMock = mockClient(sqsClient);
+        eventWriter = new EventService("mockSqsQueue");
         sqsMock.on(SendMessageCommand).resolves({});
 
-        const result = await eventWriter.writeGenericEvent({
+        result = await eventWriter.writeGenericEvent({
           eventName: genericEvent,
           sub: "mockSub",
           sessionId: "mockSessionId",
@@ -61,10 +77,9 @@ describe("Event Service", () => {
           getNowInMilliseconds: () => 1609462861000,
           componentId: "mockComponentId",
         });
+      });
 
-        expect(result.isError).toBe(false);
-        expect(result.value).toEqual(null);
-
+      it("Attempts to send Generic TxMA event to SQS", () => {
         expect(sqsMock.call(0).args[0].input).toEqual({
           MessageBody: JSON.stringify({
             user: {
@@ -80,28 +95,30 @@ describe("Event Service", () => {
           }),
           QueueUrl: "mockSqsQueue",
         });
+      });
+
+      it("Returns a success result ", () => {
+        expect(result.isError).toBe(false);
+        expect(result.value).toEqual(null);
       });
     });
   });
 
   describe("Writing credential token issued event to SQS", () => {
     describe("Given writing event to SQS fails", () => {
-      it("Returns an error response", async () => {
-        const sqsMock = mockClient(sqsClient);
-        const eventWriter = new EventService("mockSqsQueue");
+      beforeEach(async () => {
+        sqsMock = mockClient(sqsClient);
+        eventWriter = new EventService("mockSqsQueue");
         sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
 
-        const result = await eventWriter.writeCredentialTokenIssuedEvent({
+        result = await eventWriter.writeCredentialTokenIssuedEvent({
           getNowInMilliseconds: () => 1609462861000,
           componentId: "mockComponentId",
           eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
         });
+      });
 
-        expect(result.isError).toBe(true);
-        expect(result.value).toStrictEqual({
-          errorMessage: "Failed to write to SQS",
-        });
-
+      it("Attempts to send credential token issued TxMA event to SQS", () => {
         expect(sqsMock.call(0).args[0].input).toStrictEqual({
           MessageBody: JSON.stringify({
             event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
@@ -112,23 +129,29 @@ describe("Event Service", () => {
           QueueUrl: "mockSqsQueue",
         });
       });
+
+      it("Returns an error result", () => {
+        expect(result.isError).toBe(true);
+        expect(result.value).toStrictEqual({
+          errorMessage: "Failed to write to SQS",
+        });
+      });
     });
 
     describe("Given writing to SQS is successful", () => {
-      it("Returns a log", async () => {
-        const sqsMock = mockClient(sqsClient);
-        const eventWriter = new EventService("mockSqsQueue");
+      beforeEach(async () => {
+        sqsMock = mockClient(sqsClient);
+        eventWriter = new EventService("mockSqsQueue");
         sqsMock.on(SendMessageCommand).resolves({});
 
-        const result = await eventWriter.writeCredentialTokenIssuedEvent({
+        result = await eventWriter.writeCredentialTokenIssuedEvent({
           getNowInMilliseconds: () => 1609462861000,
           componentId: "mockComponentId",
           eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
         });
+      });
 
-        expect(result.isError).toBe(false);
-        expect(result.value).toEqual(null);
-
+      it("Attempts to send credential token issued TxMA event to SQS", () => {
         expect(sqsMock.call(0).args[0].input).toStrictEqual({
           MessageBody: JSON.stringify({
             event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
@@ -138,6 +161,11 @@ describe("Event Service", () => {
           }),
           QueueUrl: "mockSqsQueue",
         });
+      });
+
+      it("Returns success result", () => {
+        expect(result.isError).toBe(false);
+        expect(result.value).toEqual(null);
       });
     });
   });
