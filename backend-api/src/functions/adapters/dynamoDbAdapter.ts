@@ -155,8 +155,11 @@ export class DynamoDbAdapter implements SessionRegistry {
         }),
       );
     } catch (error) {
+      let attributes = null;
       if (error instanceof ConditionalCheckFailedException) {
-        const attributes = unmarshall(error.Item || {});
+        if (error.Item) {
+          attributes = unmarshall(error.Item);
+        }
         logger.error(LogMessage.UPDATE_SESSION_CONDITIONAL_CHECK_FAILURE, {
           error: error.message,
           data: updateExpressionDataToLog,
@@ -173,7 +176,7 @@ export class DynamoDbAdapter implements SessionRegistry {
         });
         return errorResult({
           failureType: UpdateSessionError.INTERNAL_SERVER_ERROR,
-          attributes: null,
+          attributes,
         });
       }
     }
