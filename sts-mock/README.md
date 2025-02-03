@@ -5,6 +5,7 @@
 - npm
 - AWS CLI
 - AWS SAM
+- rain v1.15
 
 ## Resources
 
