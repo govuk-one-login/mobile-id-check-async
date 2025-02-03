@@ -160,11 +160,11 @@ export class DynamoDbAdapter implements SessionRegistry {
         if (error.Item) {
           attributes = unmarshall(error.Item);
         }
+
         logger.error(LogMessage.UPDATE_SESSION_CONDITIONAL_CHECK_FAILURE, {
           error: error.message,
           data: updateExpressionDataToLog,
         });
-
         return errorResult({
           failureType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
           attributes,
