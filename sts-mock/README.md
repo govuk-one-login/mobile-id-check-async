@@ -1,14 +1,21 @@
-# STS Mock 
+# STS Mock
 
 ## Overview
+
+### STS Mock
 This stack manages the following resources needed for the STS mock API:
 * a REST API and a Lambda function for the `/token` endpoint
 * an S3 bucket for storing the private key and also storing and serving the public key (`/.well-known/jwks.json`)
 
+### Dequeue
+This provides functionality to retrieve events sent to the TxMA SQS. This can then be used to validate TxMA SQS events in the backend API test suite.
+
 ## Pre-requisites
-- AWS CLI
 - Node.js v20
 - npm
+- AWS CLI
+- AWS SAM
+- rain v1.15
 
 ## Quickstart
 ### Installing dependencies
@@ -105,7 +112,7 @@ Configuring SAM deploy
 
 After saving the above arguments to the SAM configuration file (`samconfig.toml`), future deployments can be made without the `--guided` flag:
 ```shell
-sam build --cached --beta-features && sam deploy --capabilities CAPABILITY_NAMED_IAM --stack-name <stack-name>   
+sam build --cached --beta-features && sam deploy --capabilities CAPABILITY_NAMED_IAM --stack-name <stack-name>
 ```
 
 ## Generate and Publish Signing Key Pair to S3
