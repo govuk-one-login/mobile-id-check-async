@@ -80,14 +80,14 @@ export async function lambdaHandlerConstructor(
     sessionId,
     new BiometricTokenIssued(documentType, opaqueId),
   );
+  const sessionAttributes = updateSessionResult.value.attributes;
+  let subjectIdentifier;
+  let govukSigninJourneyId;
+  if (sessionAttributes) {
+    subjectIdentifier = sessionAttributes.subjectIdentifier;
+    govukSigninJourneyId = sessionAttributes.govukSigninJourneyId;
+  }
   if (updateSessionResult.isError) {
-    const sessionAttributes = updateSessionResult.value.attributes;
-    let subjectIdentifier;
-    let govukSigninJourneyId;
-    if (sessionAttributes) {
-      subjectIdentifier = sessionAttributes.subjectIdentifier;
-      govukSigninJourneyId = sessionAttributes.govukSigninJourneyId;
-    }
     let writeEventResult;
     switch (updateSessionResult.value.failureType) {
       case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:

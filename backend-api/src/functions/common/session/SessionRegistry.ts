@@ -6,10 +6,14 @@ export interface SessionRegistry {
   updateSession(
     sessionId: string,
     updateOperation: UpdateSessionOperation,
-  ): Promise<Result<void, UpdateSessionReturnType>>;
+  ): Promise<Result<UpdateSessionSuccess, UpdateSessionFailure>>;
 }
 
-export interface UpdateSessionReturnType {
+export interface UpdateSessionSuccess {
+  attributes: DatabaseRecord | null;
+}
+
+export interface UpdateSessionFailure {
   failureType: UpdateSessionError;
   attributes: DatabaseRecord | null;
 }

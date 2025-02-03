@@ -20,7 +20,8 @@ import { errorResult, Result, successResult } from "../utils/result";
 import {
   SessionRegistry,
   UpdateSessionError,
-  UpdateSessionReturnType,
+  UpdateSessionFailure,
+  UpdateSessionSuccess,
 } from "../common/session/SessionRegistry";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
@@ -124,7 +125,7 @@ export class DynamoDbAdapter implements SessionRegistry {
   async updateSession(
     sessionId: string,
     updateOperation: UpdateSessionOperation,
-  ): Promise<Result<void, UpdateSessionReturnType>> {
+  ): Promise<Result<UpdateSessionSuccess, UpdateSessionFailure>> {
     const updateExpressionDataToLog = {
       updateExpression: updateOperation.getDynamoDbUpdateExpression(),
       conditionExpression: updateOperation.getDynamoDbConditionExpression(),
@@ -182,7 +183,7 @@ export class DynamoDbAdapter implements SessionRegistry {
     }
     const { Attributes } = response;
     logger.debug(LogMessage.UPDATE_SESSION_SUCCESS);
-    return successResult(unmarshall(Attributes || {}));
+    return successResult({ attributes: unmarshall(Attributes || {}) });
   }
 
   private getTimeNowInSeconds() {

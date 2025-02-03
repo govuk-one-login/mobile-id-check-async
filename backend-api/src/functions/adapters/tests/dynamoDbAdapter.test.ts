@@ -6,7 +6,7 @@ import { BiometricTokenIssued } from "../../common/session/updateOperations/Biom
 import {
   SessionRegistry,
   UpdateSessionError,
-  UpdateSessionReturnType,
+  UpdateSessionFailure,
 } from "../../common/session/SessionRegistry";
 import {
   ConditionalCheckFailedException,
@@ -31,7 +31,7 @@ describe("DynamoDbAdapter", () => {
     consoleDebugSpy = jest.spyOn(console, "debug");
   });
   describe("updateSession", () => {
-    let result: Result<void, UpdateSessionReturnType>;
+    let result: Result<void, UpdateSessionFailure>;
 
     const updateOperation: UpdateSessionOperation = new BiometricTokenIssued(
       "NFC_PASSPORT",
@@ -165,7 +165,9 @@ describe("DynamoDbAdapter", () => {
       });
 
       it("Returns an empty success", () => {
-        expect(result).toEqual(successResult({ sessionId: "mock_session_id" }));
+        expect(result).toEqual(
+          successResult({ attributes: { sessionId: "mock_session_id" } }),
+        );
       });
     });
   });
