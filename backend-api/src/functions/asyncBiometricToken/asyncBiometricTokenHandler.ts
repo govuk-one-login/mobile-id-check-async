@@ -174,16 +174,9 @@ function generateOpaqueId(): string {
 const getSessionAttributesForTxma = (
   attributes: DatabaseRecord | null,
 ): BiometricTokenTxmaSessionAttributes => {
-  let subjectIdentifier = "";
-  let govukSigninJourneyId = "";
-  if (attributes) {
-    subjectIdentifier = attributes.subjectIdentifier;
-    govukSigninJourneyId = attributes.govukSigninJourneyId;
-  }
-
   return {
-    subjectIdentifier,
-    govukSigninJourneyId,
+    subjectIdentifier: attributes?.subjectIdentifier ?? "",
+    govukSigninJourneyId: attributes?.govukSigninJourneyId ?? "",
   };
 };
 
