@@ -89,7 +89,7 @@ export async function lambdaHandlerConstructor(
     let writeEventResult;
     switch (updateSessionResult.value.failureType) {
       case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
-        writeEventResult = await eventService.writeCriErrorEvent({
+        writeEventResult = await eventService.writeGenericEvent({
           eventName: "DCMAW_ASYNC_CRI_4XXERROR",
           sub: sessionAttributes.subjectIdentifier,
           sessionId,

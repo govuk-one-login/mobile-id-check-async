@@ -10,8 +10,6 @@ import {
   BiometricTokenIssuedEvent,
   CredentialTokenIssuedEvent,
   CredentialTokenIssuedEventConfig,
-  CriErrorEventConfig,
-  CriErrorTxmaEvent,
   GenericEventConfig,
   GenericTxmaEvent,
   IEventService,
@@ -38,18 +36,10 @@ export class EventService implements IEventService {
     return await this.writeToSqs(txmaEvent);
   }
 
-  async writeCriErrorEvent(
-    eventConfig: CriErrorEventConfig,
-  ): Promise<Result<null>> {
-    const txmaEvent = this.buildCriErrorEvent(eventConfig);
-    return await this.writeToSqs(txmaEvent);
-  }
-
   private async writeToSqs(
     txmaEvent:
       | GenericTxmaEvent
       | CredentialTokenIssuedEvent
-      | CriErrorTxmaEvent
       | BiometricTokenIssuedEvent,
   ): Promise<Result<null>> {
     try {
@@ -71,6 +61,7 @@ export class EventService implements IEventService {
   private buildGenericEvent = (
     eventConfig: GenericEventConfig,
   ): GenericTxmaEvent => {
+    const timestampInMillis = eventConfig.getNowInMilliseconds();
     return {
       user: {
         user_id: eventConfig.sub,
@@ -78,7 +69,8 @@ export class EventService implements IEventService {
         session_id: eventConfig.sessionId,
         govuk_signin_journey_id: eventConfig.govukSigninJourneyId,
       },
-      timestamp: Math.floor(eventConfig.getNowInMilliseconds() / 1000),
+      timestamp: Math.floor(timestampInMillis / 1000),
+      event_timestamp_ms: timestampInMillis,
       event_name: eventConfig.eventName,
       component_id: eventConfig.componentId,
     };
@@ -93,24 +85,6 @@ export class EventService implements IEventService {
       component_id: eventConfig.componentId,
       timestamp: Math.floor(timestampInMillis / 1000),
       event_timestamp_ms: timestampInMillis,
-    };
-  };
-
-  private readonly buildCriErrorEvent = (
-    eventConfig: CriErrorEventConfig,
-  ): CriErrorTxmaEvent => {
-    const timestampInMillis = eventConfig.getNowInMilliseconds();
-    return {
-      user: {
-        user_id: eventConfig.sub,
-        transaction_id: "",
-        session_id: eventConfig.sessionId,
-        govuk_signin_journey_id: eventConfig.govukSigninJourneyId,
-      },
-      timestamp: Math.floor(timestampInMillis / 1000),
-      event_timestamp_ms: timestampInMillis,
-      event_name: eventConfig.eventName,
-      component_id: eventConfig.componentId,
     };
   };
 }
