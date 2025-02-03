@@ -165,7 +165,7 @@ describe("DynamoDbAdapter", () => {
         });
       });
 
-      it("Returns an empty success", () => {
+      it("Returns a success", () => {
         expect(result).toEqual(
           successResult({ attributes: { sessionId: "mock_session_id" } }),
         );
