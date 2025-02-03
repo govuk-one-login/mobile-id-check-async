@@ -18,18 +18,19 @@ describe("Event Service", () => {
     SQSClientResolvedConfig
   >;
   let eventWriter: EventService;
+
   describe.each<GenericEventName>([
     "DCMAW_ASYNC_CRI_START",
     "DCMAW_ASYNC_CRI_4XXERROR",
-  ])("Writing generic TxMA event to SQS", (genericEvent) => {
-    describe(`Given writing ${genericEvent} event to SQS fails`, () => {
+  ])("Writing generic TxMA events to SQS", (genericEventName) => {
+    describe(`Given writing ${genericEventName} event to SQS fails`, () => {
       beforeEach(async () => {
         sqsMock = mockClient(sqsClient);
         eventWriter = new EventService("mockSqsQueue");
         sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
 
         result = await eventWriter.writeGenericEvent({
-          eventName: genericEvent,
+          eventName: genericEventName,
           sub: "mockSub",
           sessionId: "mockSessionId",
           govukSigninJourneyId: "mockGovukSigninJourneyId",
@@ -48,7 +49,7 @@ describe("Event Service", () => {
             },
             timestamp: 1609462861,
             event_timestamp_ms: 1609462861000,
-            event_name: genericEvent,
+            event_name: genericEventName,
             component_id: "mockComponentId",
           }),
           QueueUrl: "mockSqsQueue",
@@ -63,14 +64,14 @@ describe("Event Service", () => {
       });
     });
 
-    describe(`Given writing ${genericEvent} SQS is successful`, () => {
+    describe(`Given writing ${genericEventName} SQS is successful`, () => {
       beforeEach(async () => {
         sqsMock = mockClient(sqsClient);
         eventWriter = new EventService("mockSqsQueue");
         sqsMock.on(SendMessageCommand).resolves({});
 
         result = await eventWriter.writeGenericEvent({
-          eventName: genericEvent,
+          eventName: genericEventName,
           sub: "mockSub",
           sessionId: "mockSessionId",
           govukSigninJourneyId: "mockGovukSigninJourneyId",
@@ -79,7 +80,7 @@ describe("Event Service", () => {
         });
       });
 
-      it(`Attempts to send ${genericEvent} event to SQS`, () => {
+      it(`Attempts to send ${genericEventName} event to SQS`, () => {
         expect(sqsMock.call(0).args[0].input).toEqual({
           MessageBody: JSON.stringify({
             user: {
@@ -90,7 +91,7 @@ describe("Event Service", () => {
             },
             timestamp: 1609462861,
             event_timestamp_ms: 1609462861000,
-            event_name: genericEvent,
+            event_name: genericEventName,
             component_id: "mockComponentId",
           }),
           QueueUrl: "mockSqsQueue",
@@ -105,7 +106,7 @@ describe("Event Service", () => {
   });
 
   describe("Writing credential token issued event to SQS", () => {
-    describe("Given writing event to SQS fails", () => {
+    describe("Given writing DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event to SQS fails", () => {
       beforeEach(async () => {
         sqsMock = mockClient(sqsClient);
         eventWriter = new EventService("mockSqsQueue");
