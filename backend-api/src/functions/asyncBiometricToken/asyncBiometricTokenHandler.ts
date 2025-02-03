@@ -26,6 +26,7 @@ import { DocumentType } from "../types/document";
 import { BiometricTokenIssued } from "../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 import { UpdateSessionError } from "../common/session/SessionRegistry";
 import { randomUUID } from "crypto";
+import { DatabaseRecord } from "../adapters/dynamoDbAdapter";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
@@ -80,22 +81,19 @@ export async function lambdaHandlerConstructor(
     sessionId,
     new BiometricTokenIssued(documentType, opaqueId),
   );
-  const sessionAttributes = updateSessionResult.value.attributes;
-  let subjectIdentifier;
-  let govukSigninJourneyId;
-  if (sessionAttributes) {
-    subjectIdentifier = sessionAttributes.subjectIdentifier;
-    govukSigninJourneyId = sessionAttributes.govukSigninJourneyId;
-  }
+  const sessionAttributes = getSessionAttributesForTxma(
+    updateSessionResult.value.attributes,
+  );
+
   if (updateSessionResult.isError) {
     let writeEventResult;
     switch (updateSessionResult.value.failureType) {
       case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
         writeEventResult = await eventService.writeCriErrorEvent({
           eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-          sub: subjectIdentifier ?? "",
+          sub: sessionAttributes.subjectIdentifier,
           sessionId,
-          govukSigninJourneyId: govukSigninJourneyId ?? "",
+          govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
           getNowInMilliseconds: Date.now,
           componentId: config.ISSUER,
         });
@@ -171,4 +169,25 @@ async function getSubmitterKeyForDocumentType(
 
 function generateOpaqueId(): string {
   return randomUUID();
+}
+
+const getSessionAttributesForTxma = (
+  attributes: DatabaseRecord | null,
+): BiometricTokenTxmaSessionAttributes => {
+  let subjectIdentifier = "";
+  let govukSigninJourneyId = "";
+  if (attributes) {
+    subjectIdentifier = attributes.subjectIdentifier;
+    govukSigninJourneyId = attributes.govukSigninJourneyId;
+  }
+
+  return {
+    subjectIdentifier,
+    govukSigninJourneyId,
+  };
+};
+
+interface BiometricTokenTxmaSessionAttributes {
+  subjectIdentifier: string;
+  govukSigninJourneyId: string;
 }

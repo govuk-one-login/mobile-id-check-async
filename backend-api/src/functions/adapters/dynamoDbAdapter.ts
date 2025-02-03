@@ -136,7 +136,6 @@ export class DynamoDbAdapter implements SessionRegistry {
 
     let response;
     let attributes = null;
-
     try {
       logger.debug(LogMessage.UPDATE_SESSION_ATTEMPT, {
         data: updateExpressionDataToLog,
