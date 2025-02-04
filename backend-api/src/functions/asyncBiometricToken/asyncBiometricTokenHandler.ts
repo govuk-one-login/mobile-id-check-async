@@ -90,7 +90,8 @@ export async function lambdaHandlerConstructor(
           eventName: "DCMAW_ASYNC_CRI_4XXERROR",
           sub: sessionAttributes?.subjectIdentifier ?? undefined,
           sessionId: sessionAttributes?.sessionId ?? sessionId,
-          govukSigninJourneyId: sessionAttributes?.govukSigninJourneyId ?? undefined,
+          govukSigninJourneyId:
+            sessionAttributes?.govukSigninJourneyId ?? undefined,
           getNowInMilliseconds: Date.now,
           componentId: config.ISSUER,
         });
