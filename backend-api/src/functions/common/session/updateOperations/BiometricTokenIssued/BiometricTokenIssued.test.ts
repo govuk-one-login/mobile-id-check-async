@@ -85,8 +85,12 @@ describe("BiometricTokenIssued", () => {
           redirectUri: "https://www.mockRedirectUri.com",
         };
 
-        const result = biometricTokenIssued.getSessionAttributes(
+        const validBaseSessionAttributesRecord = marshall(
           validBaseSessionAttributes,
+        );
+
+        const result = biometricTokenIssued.getSessionAttributes(
+          validBaseSessionAttributesRecord,
         );
         expect(result).toEqual(validBaseSessionAttributes);
       });
