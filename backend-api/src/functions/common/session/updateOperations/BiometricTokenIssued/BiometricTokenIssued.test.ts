@@ -60,7 +60,7 @@ describe("BiometricTokenIssued", () => {
 
   describe("When I request the getSessionAttributes", () => {
     describe("Given an invalid base session attribute record", () => {
-      it("Returns BaseSessionAttributes", () => {
+      it("Returns null", () => {
         const result = biometricTokenIssued.getSessionAttributes(
           marshall({
             clientId: "mockClientId",
