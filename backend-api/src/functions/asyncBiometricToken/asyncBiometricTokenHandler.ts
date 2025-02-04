@@ -88,9 +88,9 @@ export async function lambdaHandlerConstructor(
       case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
         writeEventResult = await eventService.writeGenericEvent({
           eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-          sub: sessionAttributes?.subjectIdentifier ?? "",
-          sessionId,
-          govukSigninJourneyId: sessionAttributes?.govukSigninJourneyId ?? "",
+          sub: sessionAttributes?.subjectIdentifier ?? undefined,
+          sessionId: sessionAttributes?.sessionId ?? sessionId,
+          govukSigninJourneyId: sessionAttributes?.govukSigninJourneyId ?? undefined,
           getNowInMilliseconds: Date.now,
           componentId: config.ISSUER,
         });
