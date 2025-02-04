@@ -12,7 +12,7 @@ Resources:
         Target: es2022
         Sourcemap: false
         EntryPoints:
-          - src/dequeue/dequeueHandler.ts
+          - src/functions/dequeue/dequeueHandler.ts
     Properties:
       FunctionName: !Sub ${AWS::StackName}-dequeue
       Runtime: nodejs20.x
