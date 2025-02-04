@@ -1,5 +1,6 @@
 import { BiometricTokenIssued } from "./BiometricTokenIssued";
 import { SessionState } from "../../session";
+import { marshall } from "@aws-sdk/util-dynamodb";
 
 describe("BiometricTokenIssued", () => {
   let biometricTokenIssued: BiometricTokenIssued;
@@ -54,6 +55,41 @@ describe("BiometricTokenIssued", () => {
       const result =
         biometricTokenIssued.getDynamoDbReturnValuesOnConditionCheckFailure();
       expect(result).toEqual("ALL_OLD");
+    });
+  });
+
+  describe("When I request the getSessionAttributes", () => {
+    describe("Given an invalid base session attribute record", () => {
+      it("Returns BaseSessionAttributes", () => {
+        const result = biometricTokenIssued.getSessionAttributes(
+          marshall({
+            clientId: "mockClientId",
+          }),
+        );
+        expect(result).toEqual(null);
+      });
+    });
+
+    describe("Given a valid base session attribute record", () => {
+      it("Returns BaseSessionAttributes", () => {
+        const validBaseSessionAttributes = {
+          clientId: "mockClientId",
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
+          createdAt: 12345,
+          issuer: "mockIssuer",
+          sessionId: "mockSessionId",
+          sessionState: "mockSessionState",
+          clientState: "mockClientState",
+          subjectIdentifier: "mockSubjectIdentifier",
+          timeToLive: 12345,
+          redirectUri: "https://www.mockRedirectUri.com",
+        };
+
+        const result = biometricTokenIssued.getSessionAttributes(
+          validBaseSessionAttributes,
+        );
+        expect(result).toEqual(validBaseSessionAttributes);
+      });
     });
   });
 });
