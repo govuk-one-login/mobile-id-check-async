@@ -1,6 +1,6 @@
 import { BiometricTokenIssued } from "./BiometricTokenIssued";
 import { SessionState } from "../../session";
-import { marshall } from "@aws-sdk/util-dynamodb";
+import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
 describe("BiometricTokenIssued", () => {
   let biometricTokenIssued: BiometricTokenIssued;
@@ -231,7 +231,7 @@ describe("BiometricTokenIssued", () => {
       describe.each([
         {
           scenario: "Given redirectUri attribute is undefined",
-          attributes: {
+          attributes: marshall({
             clientId: "mockClientId",
             govukSigninJourneyId: "mockGovukSigninJourneyId",
             createdAt: 12345,
@@ -241,11 +241,11 @@ describe("BiometricTokenIssued", () => {
             clientState: "mockClientState",
             subjectIdentifier: "mockSubjectIdentifier",
             timeToLive: 12345,
-          },
+          }),
         },
         {
           scenario: "Given redirectUri attribute is defined",
-          attributes: {
+          attributes: marshall({
             clientId: "mockClientId",
             govukSigninJourneyId: "mockGovukSigninJourneyId",
             createdAt: 12345,
@@ -256,18 +256,15 @@ describe("BiometricTokenIssued", () => {
             subjectIdentifier: "mockSubjectIdentifier",
             timeToLive: 12345,
             redirectUri: "https://www.mockRedirectUri.com",
-          },
+          }),
         },
       ])("$scenario", (validBaseSession) => {
         it("Returns BaseSessionAttributes", () => {
-          const validBaseSessionAttributesRecord = marshall(
+          const result = biometricTokenIssued.getSessionAttributes(
             validBaseSession.attributes,
           );
 
-          const result = biometricTokenIssued.getSessionAttributes(
-            validBaseSessionAttributesRecord,
-          );
-          expect(result).toEqual(validBaseSession.attributes);
+          expect(result).toEqual(unmarshall(validBaseSession.attributes));
         });
       });
     });
