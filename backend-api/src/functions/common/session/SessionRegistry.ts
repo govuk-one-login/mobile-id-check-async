@@ -1,4 +1,4 @@
-import { DatabaseRecord } from "../../adapters/dynamoDbAdapter";
+import { BaseSessionAttributes } from "../../adapters/dynamoDbAdapter";
 import { Result } from "../../utils/result";
 import { UpdateSessionOperation } from "./updateOperations/UpdateSessionOperation";
 
@@ -10,12 +10,12 @@ export interface SessionRegistry {
 }
 
 export interface UpdateSessionSuccess {
-  attributes: DatabaseRecord | null;
+  attributes: BaseSessionAttributes | null;
 }
 
 export interface UpdateSessionFailure {
   errorType: UpdateSessionError;
-  attributes: DatabaseRecord | null;
+  attributes: BaseSessionAttributes | null;
 }
 
 export enum UpdateSessionError {

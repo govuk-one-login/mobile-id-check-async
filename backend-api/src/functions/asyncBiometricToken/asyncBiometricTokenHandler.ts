@@ -26,7 +26,6 @@ import { DocumentType } from "../types/document";
 import { BiometricTokenIssued } from "../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 import { UpdateSessionError } from "../common/session/SessionRegistry";
 import { randomUUID } from "crypto";
-import { DatabaseRecord } from "../adapters/dynamoDbAdapter";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
@@ -81,9 +80,7 @@ export async function lambdaHandlerConstructor(
     sessionId,
     new BiometricTokenIssued(documentType, opaqueId),
   );
-  const sessionAttributes = getSessionAttributesForTxmaEvents(
-    updateSessionResult.value.attributes,
-  );
+  const sessionAttributes = updateSessionResult.value.attributes;
 
   if (updateSessionResult.isError) {
     let writeEventResult;
@@ -91,9 +88,9 @@ export async function lambdaHandlerConstructor(
       case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
         writeEventResult = await eventService.writeGenericEvent({
           eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-          sub: sessionAttributes.subjectIdentifier,
+          sub: sessionAttributes?.subjectIdentifier ?? "",
           sessionId,
-          govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+          govukSigninJourneyId: sessionAttributes?.govukSigninJourneyId ?? "",
           getNowInMilliseconds: Date.now,
           componentId: config.ISSUER,
         });
@@ -169,18 +166,4 @@ async function getSubmitterKeyForDocumentType(
 
 function generateOpaqueId(): string {
   return randomUUID();
-}
-
-const getSessionAttributesForTxmaEvents = (
-  attributes: DatabaseRecord | null,
-): BiometricTokenTxmaSessionAttributes => {
-  return {
-    subjectIdentifier: attributes?.subjectIdentifier ?? "",
-    govukSigninJourneyId: attributes?.govukSigninJourneyId ?? "",
-  };
-};
-
-interface BiometricTokenTxmaSessionAttributes {
-  subjectIdentifier: string;
-  govukSigninJourneyId: string;
 }

@@ -39,6 +39,19 @@ describe("DynamoDbAdapter", () => {
       "mock_opaque_id",
     );
 
+    const baseSessionAttributes = {
+      clientId: "mockClientId",
+      govukSigninJourneyId: "mockGovukSigninJourneyId",
+      createdAt: 12345,
+      issuer: "mockIssuer",
+      sessionId: "mockSessionId",
+      sessionState: "mockSessionState",
+      clientState: "mockClientState",
+      subjectIdentifier: "mockSubjectIdentifier",
+      timeToLive: 12345,
+      redirectUri: "https://www.mockRedirectUri.com",
+    };
+
     describe("On every attempt", () => {
       beforeEach(async () => {
         mockDynamoDbClient.on(UpdateItemCommand).resolves({});
@@ -66,7 +79,7 @@ describe("DynamoDbAdapter", () => {
           new ConditionalCheckFailedException({
             $metadata: {},
             message: "Conditional check failed",
-            Item: marshall({ sessionId: "mockSessionId" }),
+            Item: marshall(baseSessionAttributes),
           }),
         );
         result = await sessionRegistry.updateSession(
@@ -94,7 +107,7 @@ describe("DynamoDbAdapter", () => {
         expect(result).toEqual(
           errorResult({
             errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
-            attributes: { sessionId: "mockSessionId" },
+            attributes: baseSessionAttributes,
           }),
         );
       });
@@ -152,7 +165,7 @@ describe("DynamoDbAdapter", () => {
           .onAnyCommand() // default
           .rejects("Did not receive expected input")
           .on(UpdateItemCommand, expectedUpdateItemCommandInput, true) // match to expected input
-          .resolves({ Attributes: marshall({ sessionId: "mock_session_id" }) });
+          .resolves({ Attributes: marshall(baseSessionAttributes) });
         result = await sessionRegistry.updateSession(
           "mock_session_id",
           updateOperation,
@@ -167,7 +180,7 @@ describe("DynamoDbAdapter", () => {
 
       it("Returns a success", () => {
         expect(result).toEqual(
-          successResult({ attributes: { sessionId: "mock_session_id" } }),
+          successResult({ attributes: baseSessionAttributes }),
         );
       });
     });
