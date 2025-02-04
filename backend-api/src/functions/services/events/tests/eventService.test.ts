@@ -11,13 +11,17 @@ import { GenericEventName } from "../types";
 import { Result } from "../../../utils/result";
 
 describe("Event Service", () => {
-  let result: Result<null>;
+  const eventWriter = new EventService("mockSqsQueue");
+
   let sqsMock: AwsStub<
     ServiceInputTypes,
     ServiceOutputTypes,
     SQSClientResolvedConfig
   >;
-  let eventWriter: EventService;
+  let result: Result<null>;
+  beforeEach(() => {
+    sqsMock = mockClient(sqsClient);
+  });
 
   describe.each<GenericEventName>([
     "DCMAW_ASYNC_CRI_START",
@@ -25,8 +29,6 @@ describe("Event Service", () => {
   ])("Writing generic TxMA events to SQS", (genericEventName) => {
     describe(`Given writing ${genericEventName} event to SQS fails`, () => {
       beforeEach(async () => {
-        sqsMock = mockClient(sqsClient);
-        eventWriter = new EventService("mockSqsQueue");
         sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
 
         result = await eventWriter.writeGenericEvent({
@@ -67,8 +69,6 @@ describe("Event Service", () => {
 
     describe(`Given writing ${genericEventName} SQS is successful`, () => {
       beforeEach(async () => {
-        sqsMock = mockClient(sqsClient);
-        eventWriter = new EventService("mockSqsQueue");
         sqsMock.on(SendMessageCommand).resolves({});
 
         result = await eventWriter.writeGenericEvent({
@@ -109,8 +109,6 @@ describe("Event Service", () => {
   describe("Writing credential token issued event to SQS", () => {
     describe("Given writing DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event to SQS fails", () => {
       beforeEach(async () => {
-        sqsMock = mockClient(sqsClient);
-        eventWriter = new EventService("mockSqsQueue");
         sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
 
         result = await eventWriter.writeCredentialTokenIssuedEvent({
@@ -142,8 +140,6 @@ describe("Event Service", () => {
 
     describe("Given writing to SQS is successful", () => {
       beforeEach(async () => {
-        sqsMock = mockClient(sqsClient);
-        eventWriter = new EventService("mockSqsQueue");
         sqsMock.on(SendMessageCommand).resolves({});
 
         result = await eventWriter.writeCredentialTokenIssuedEvent({
