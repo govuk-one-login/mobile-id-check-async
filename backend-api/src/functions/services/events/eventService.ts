@@ -2,7 +2,6 @@ import { Result, errorResult, successResult } from "../../utils/result";
 import { sqsClient } from "./sqsClient";
 import { SendMessageCommand } from "@aws-sdk/client-sqs";
 import {
-  BiometricTokenIssuedEvent,
   CredentialTokenIssuedEvent,
   CredentialTokenIssuedEventConfig,
   GenericEventConfig,
@@ -32,10 +31,7 @@ export class EventService implements IEventService {
   }
 
   private async writeToSqs(
-    txmaEvent:
-      | GenericTxmaEvent
-      | CredentialTokenIssuedEvent
-      | BiometricTokenIssuedEvent,
+    txmaEvent: GenericTxmaEvent | CredentialTokenIssuedEvent,
   ): Promise<Result<null>> {
     try {
       await sqsClient.send(

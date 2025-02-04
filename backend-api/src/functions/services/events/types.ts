@@ -34,8 +34,7 @@ export type GenericEventName =
 
 export type EventNames =
   | GenericEventName
-  | "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED"
-  | "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED";
+  | "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
 
 export interface GenericEventConfig extends BaseUserEventConfig {
   eventName: GenericEventName;
@@ -45,11 +44,6 @@ export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
   eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
 }
 
-export interface BiometricTokenIssuedEventConfig extends BaseUserEventConfig {
-  eventName: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED";
-  documentType: string;
-}
-
 export interface GenericTxmaEvent extends BaseUserTxmaEvent {
   event_name: GenericEventName;
 }
@@ -57,12 +51,6 @@ export interface GenericTxmaEvent extends BaseUserTxmaEvent {
 export interface CredentialTokenIssuedEvent extends BaseTxmaEvent {
   event_timestamp_ms: number;
   event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
-}
-
-export interface BiometricTokenIssuedEvent extends BaseUserTxmaEvent {
-  event_name: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED";
-  documentType: string;
-  event_timestamp_ms: number;
 }
 
 export interface IEventService {
