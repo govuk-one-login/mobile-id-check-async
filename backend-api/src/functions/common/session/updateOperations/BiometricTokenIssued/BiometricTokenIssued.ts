@@ -70,7 +70,7 @@ const isBaseSessionAttributes = (
   if (typeof item.timeToLive !== "number") return false;
   if (
     "redirectUri" in item &&
-    item.redirectUri !== undefined &&
+    item.redirectUri != null &&
     typeof item.redirectUri !== "string"
   ) {
     return false;
