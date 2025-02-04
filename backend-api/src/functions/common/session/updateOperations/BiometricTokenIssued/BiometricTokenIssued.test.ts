@@ -95,28 +95,47 @@ describe("BiometricTokenIssued", () => {
     });
 
     describe("Given a valid base session attribute record", () => {
-      it("Returns BaseSessionAttributes", () => {
-        const validBaseSessionAttributes = {
-          clientId: "mockClientId",
-          govukSigninJourneyId: "mockGovukSigninJourneyId",
-          createdAt: 12345,
-          issuer: "mockIssuer",
-          sessionId: "mockSessionId",
-          sessionState: "mockSessionState",
-          clientState: "mockClientState",
-          subjectIdentifier: "mockSubjectIdentifier",
-          timeToLive: 12345,
-          redirectUri: "https://www.mockRedirectUri.com",
-        };
+      describe.each([
+        {
+          scenario: "Given redirectUri attribute is undefined",
+          attributes: {
+            clientId: "mockClientId",
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            createdAt: 12345,
+            issuer: "mockIssuer",
+            sessionId: "mockSessionId",
+            sessionState: "mockSessionState",
+            clientState: "mockClientState",
+            subjectIdentifier: "mockSubjectIdentifier",
+            timeToLive: 12345,
+          },
+        },
+        {
+          scenario: "Given redirectUri attribute is defined",
+          attributes: {
+            clientId: "mockClientId",
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            createdAt: 12345,
+            issuer: "mockIssuer",
+            sessionId: "mockSessionId",
+            sessionState: "mockSessionState",
+            clientState: "mockClientState",
+            subjectIdentifier: "mockSubjectIdentifier",
+            timeToLive: 12345,
+            redirectUri: "https://www.mockRedirectUri.com",
+          },
+        },
+      ])("$scenario", (validBaseSession) => {
+        it("Returns BaseSessionAttributes", () => {
+          const validBaseSessionAttributesRecord = marshall(
+            validBaseSession.attributes,
+          );
 
-        const validBaseSessionAttributesRecord = marshall(
-          validBaseSessionAttributes,
-        );
-
-        const result = biometricTokenIssued.getSessionAttributes(
-          validBaseSessionAttributesRecord,
-        );
-        expect(result).toEqual(validBaseSessionAttributes);
+          const result = biometricTokenIssued.getSessionAttributes(
+            validBaseSessionAttributesRecord,
+          );
+          expect(result).toEqual(validBaseSession.attributes);
+        });
       });
     });
   });
