@@ -62,17 +62,21 @@ describe("BiometricTokenIssued", () => {
     describe("Given an invalid base session attribute record", () => {
       describe.each([
         {
+          scenario: "Given attributes is undefined",
+          attributes: undefined,
+        },
+        {
           scenario: "Given attributes is an empty object",
           attributes: {},
         },
         {
           scenario: "Given attributes do not contain all required keys",
-          attributes: { clientId: "mockClientId" },
+          attributes: marshall({ clientId: "mockClientId" }),
         },
         {
           scenario:
             "Given mandatory attribute values are not all the correct type",
-          attributes: {
+          attributes: marshall({
             clientId: "mockClientId",
             govukSigninJourneyId: "mockGovukSigninJourneyId",
             createdAt: "mockInvalidStringType",
@@ -83,11 +87,11 @@ describe("BiometricTokenIssued", () => {
             subjectIdentifier: "mockSubjectIdentifier",
             timeToLive: 12345,
             redirectUri: "https://www.mockRedirectUri.com",
-          },
+          }),
         },
         {
           scenario: "Given redirectUri is present but not of type string",
-          attributes: {
+          attributes: marshall({
             clientId: "mockClientId",
             govukSigninJourneyId: "mockGovukSigninJourneyId",
             createdAt: 12345,
@@ -98,13 +102,14 @@ describe("BiometricTokenIssued", () => {
             subjectIdentifier: "mockSubjectIdentifier",
             timeToLive: 12345,
             redirectUri: [],
-          },
+          }),
         },
       ])("$scenario", (invalidBaseSession) => {
         it("Returns null", () => {
           const result = biometricTokenIssued.getSessionAttributes(
-            marshall(invalidBaseSession.attributes),
+            invalidBaseSession.attributes,
           );
+
           expect(result).toEqual(null);
         });
       });

@@ -40,7 +40,7 @@ export class BiometricTokenIssued implements UpdateSessionOperation {
     return ReturnValuesOnConditionCheckFailure.ALL_OLD;
   }
 
-  getSessionAttributes(item: Record<string, NativeAttributeValue>) {
+  getSessionAttributes(item: Record<string, NativeAttributeValue> | undefined) {
     return getBaseSessionAttributes(item);
   }
 }
