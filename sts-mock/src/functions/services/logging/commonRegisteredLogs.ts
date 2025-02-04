@@ -7,12 +7,12 @@ export type CommonMessageNames =
 
 export const commonMessages: RegisteredLogMessages<CommonMessageNames> = {
   STARTED: {
-    messageCode: "STS_MOCK_STARTED",
+    messageCode: "TEST_RESOURCES_STARTED",
   },
   COMPLETED: {
-    messageCode: "STS_MOCK_COMPLETED",
+    messageCode: "TEST_RESOURCES_COMPLETED",
   },
   ENVIRONMENT_VARIABLE_MISSING: {
-    messageCode: "STS_MOCK_ENVIRONMENT_VARIABLE_MISSING",
+    messageCode: "TEST_RESOURCES_ENVIRONMENT_VARIABLE_MISSING",
   },
 };

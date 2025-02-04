@@ -1,7 +1,7 @@
-import { buildLambdaContext } from "./mockContext";
+import { buildLambdaContext } from "../../../testUtils/mockContext";
 import { Logger } from "../logger";
 import { RegisteredLogMessages } from "../types";
-import { MockLoggingAdapter } from "./mockLogger";
+import { MockLoggingAdapter } from "./mockLoggingAdapter";
 
 describe("Logger", () => {
   describe("Given there is a message to log", () => {
@@ -14,7 +14,7 @@ describe("Logger", () => {
       logger.log("MOCK_MESSAGE_NAME");
       expect(loggingAdapter.getLogMessages()[0].logMessage).toMatchObject({
         message: "MOCK_MESSAGE_NAME",
-        messageCode: "DEQUEUE_MOCK_MESSAGE_NAME",
+        messageCode: "TEST_RESOURCES_MOCK_MESSAGE_NAME",
       });
     });
 
@@ -29,9 +29,26 @@ describe("Logger", () => {
         logger.log("MOCK_MESSAGE_NAME");
         expect(loggingAdapter.getLogMessages()[0].logMessage).toMatchObject({
           message: "MOCK_MESSAGE_NAME",
-          messageCode: "DEQUEUE_MOCK_MESSAGE_NAME",
+          messageCode: "TEST_RESOURCES_MOCK_MESSAGE_NAME",
           functionName: "lambdaFunctionName",
           awsRequestId: "awsRequestId",
+        });
+      });
+    });
+
+    describe("Given authSessionId is passed to the logger", () => {
+      it("Writes a log including the session data", () => {
+        const loggingAdapter = new MockLoggingAdapter();
+        const logger = new Logger<MockMessage>(
+          loggingAdapter,
+          mockRegisteredLogs,
+        );
+        logger.setSessionId({ sessionId: "mockSessionId" });
+        logger.log("MOCK_MESSAGE_NAME");
+        expect(loggingAdapter.getLogMessages()[0].logMessage).toMatchObject({
+          message: "MOCK_MESSAGE_NAME",
+          messageCode: "TEST_RESOURCES_MOCK_MESSAGE_NAME",
+          sessionId: "mockSessionId",
         });
       });
     });
@@ -46,7 +63,7 @@ describe("Logger", () => {
         logger.log("MOCK_MESSAGE_NAME", { mockKey: "mockValue" });
         expect(loggingAdapter.getLogMessages()[0].logMessage).toMatchObject({
           message: "MOCK_MESSAGE_NAME",
-          messageCode: "DEQUEUE_MOCK_MESSAGE_NAME",
+          messageCode: "TEST_RESOURCES_MOCK_MESSAGE_NAME",
         });
         expect(loggingAdapter.getLogMessages()[0].data).toMatchObject({
           mockKey: "mockValue",
@@ -60,6 +77,6 @@ type MockMessage = "MOCK_MESSAGE_NAME";
 
 const mockRegisteredLogs: RegisteredLogMessages<MockMessage> = {
   MOCK_MESSAGE_NAME: {
-    messageCode: "DEQUEUE_MOCK_MESSAGE_NAME",
+    messageCode: "TEST_RESOURCES_MOCK_MESSAGE_NAME",
   },
 };

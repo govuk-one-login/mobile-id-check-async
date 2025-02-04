@@ -1,23 +1,79 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Transform: AWS::Serverless-2016-10-31
-
 Description: SAM template for the STS mock
 
+Parameters:
+  CodeSigningConfigArn:
+    Description: |
+      The ARN of the Code Signing Config to use, provided by the deployment pipeline
+    Type: String
+    Default: none
+
+  DevOverrideAsyncBackendBaseUrl:
+    Description: |
+      Override the ASYNC_BACKEND_BASE_URL value for development deployments
+    Type: String
+    Default: none
+
+  Environment:
+    Description: The name of the environment to deploy to
+    Type: String
+    AllowedValues:
+      - dev
+      - build
+    Default: dev
+
+  PermissionsBoundary:
+    Description: |
+      The ARN of the permissions boundary to apply to any role created by the template
+    Type: String
+    Default: none
+
 Mappings:
+  DNS:
+    build:
+      BaseDns: review-b-async.build.account.gov.uk
+    dev:
+      BaseDns: review-b-async.dev.account.gov.uk
+
   StsMockApiGateway:
-    dev: 
+    build:
       ApiBurstLimit: 10
       ApiRateLimit: 10
-    build: 
+    dev:
       ApiBurstLimit: 10
       ApiRateLimit: 10
 
-  DNS:
-    dev:
-      BaseDns: review-b-async.dev.account.gov.uk
-    build:
-      BaseDns: review-b-async.build.account.gov.uk
+Conditions:
+  DevelopmentStack: !And
+    - !Equals
+      - !Ref Environment
+      - dev
+    - !Not
+      - !Equals
+        - !Ref AWS::StackName
+        - mob-sts-mock
+
+  Never: !Equals
+    - true
+    - false
+
+  UseCodeSigning: !Not
+    - !Equals
+      - !Ref CodeSigningConfigArn
+      - none
+
+  UseDevOverrideAsyncBackendBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideAsyncBackendBaseUrl
+      - none
+
+  UsePermissionsBoundary: !Not
+    - !Equals
+      - !Ref PermissionsBoundary
+      - none
+
+Transform: AWS::Serverless-2016-10-31
 
 Globals:
   Function:
@@ -30,112 +86,160 @@ Globals:
       - !Ref PermissionsBoundary
       - !Ref AWS::NoValue
 
-Parameters:
-  Environment:
-    Description: The name of the environment to deploy to
-    Type: String
-    Default: dev
-    AllowedValues:
-      - dev
-      - build
-
-  CodeSigningConfigArn:
-    Type: String
-    Description: >
-      The ARN of the Code Signing Config to use, provided by the deployment pipeline
-    Default: "none"
-
-  PermissionsBoundary:
-      Description: |
-        The ARN of the permissions boundary to apply to any role created by the template
-      Type: String
-      Default: none
-
-  DevOverrideAsyncBackendBaseUrl:
-    Description: |
-      Override the ASYNC_BACKEND_BASE_URL value for development deployments
-    Type: String
-    Default: none
-
-Conditions:
-  UseCodeSigning:
-    Fn::Not:
-      - Fn::Equals:
-          - !Ref CodeSigningConfigArn
-          - "none"
-
-  UsePermissionsBoundary: !Not
-    - !Equals
-      - !Ref PermissionsBoundary
-      - none
-
-  UseDevOverrideAsyncBackendBaseUrl: !Not
-    - !Equals
-      - !Ref DevOverrideAsyncBackendBaseUrl
-      - none
-
-  DevelopmentStack: !And
-    - !Equals [!Ref Environment, dev]
-    - !Not [!Equals [!Ref AWS::StackName, mob-sts-mock]]
-
 Resources:
+  JwksBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: !Sub ${AWS::StackName}-jwks-${Environment}
+      LoggingConfiguration:
+        DestinationBucketName: !Ref JwksBucketAccessLogs
+        LogFilePrefix: !Sub ${AWS::StackName}-jwks
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+
+  JwksBucketAccessLogs:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: !Sub ${AWS::StackName}-jwks-access-logs-${Environment}
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: ObjectWriter
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+
+  JwksBucketAccessLogsPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref JwksBucketAccessLogs
+      PolicyDocument:
+        Statement:
+          - Action: '*'
+            Condition:
+              Bool:
+                aws:SecureTransport: false
+            Effect: Deny
+            Principal:
+              AWS: '*'
+            Resource: !Sub
+              - arn:aws:s3:::${bucketName}/*
+              - bucketName: !Ref JwksBucketAccessLogs
+          - Action:
+              - s3:PutObject
+            Condition:
+              ArnLike:
+                aws:SourceArn: !GetAtt JwksBucket.Arn
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+            Effect: Allow
+            Principal:
+              Service: logging.s3.amazonaws.com
+            Resource: !Sub
+              - arn:aws:s3:::${bucketName}/*
+              - bucketName: !Ref JwksBucketAccessLogs
+        Version: "2012-10-17"
+
+  JwksBucketApiRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+        Version: "2012-10-17"
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - s3:GetObject
+                Effect: Allow
+                Resource:
+                  - !Sub ${JwksBucket.Arn}/.well-known/jwks.json
+            Version: "2012-10-17"
+          PolicyName: JwksBucketPolicy
+      RoleName: !Sub ${AWS::StackName}-jwks-bucket-api
+
+  JwksBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref JwksBucket
+      PolicyDocument:
+        Statement:
+          - Action: '*'
+            Condition:
+              Bool:
+                aws:SecureTransport: false
+            Effect: Deny
+            Principal:
+              AWS: '*'
+            Resource: !Sub
+              - arn:aws:s3:::${TargetBucket}/*
+              - TargetBucket: !Ref JwksBucket
+        Version: "2012-10-17"
+
+  NullResource:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    Condition: Never
+
   StsMockApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub ${AWS::StackName}-api
-      Description: Public API gateway for STS Mock
-      EndpointConfiguration: REGIONAL
-      StageName: 
-        Ref: Environment
-      OpenApiVersion: 3.0.1
       AccessLogSetting:
         DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${StsMockApiAccessLogs}
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
-      MethodSettings:
-        - LoggingLevel: INFO
-          ResourcePath: "/*"
-          HttpMethod: "*"
-          DataTraceEnabled: true
-          MetricsEnabled: true
-          ThrottlingBurstLimit: !FindInMap [ StsMockApiGateway, !Ref Environment, ApiBurstLimit ]
-          ThrottlingRateLimit: !FindInMap [ StsMockApiGateway, !Ref Environment, ApiRateLimit ]
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: "./openapi/sts-mock-spec.yaml"
+            Location: ./openapi/sts-mock-spec.yaml
+      Description: Public API gateway for STS Mock
+      EndpointConfiguration: REGIONAL
+      MethodSettings:
+        - DataTraceEnabled: true
+          HttpMethod: '*'
+          LoggingLevel: INFO
+          MetricsEnabled: true
+          ResourcePath: /*
+          ThrottlingBurstLimit: !FindInMap
+            - StsMockApiGateway
+            - !Ref Environment
+            - ApiBurstLimit
+          ThrottlingRateLimit: !FindInMap
+            - StsMockApiGateway
+            - !Ref Environment
+            - ApiRateLimit
+      Name: !Sub ${AWS::StackName}-api
+      OpenApiVersion: 3.0.1
+      StageName: !Ref Environment
 
   StsMockApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-api-access-logs
       RetentionInDays: 30
-
-  StsMockApiDomainName:
-    Type: AWS::ApiGateway::DomainName
-    Properties:
-      DomainName: !If
-        - DevelopmentStack
-        - !Sub
-          - ${AWS::StackName}.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
-        - !Sub
-          - sts-mock.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
-      EndpointConfiguration:
-        Types:
-          - REGIONAL
-      RegionalCertificateArn: !If
-        - DevelopmentStack
-        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
-        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneStsMockCertificateV2ARN}}'
-      SecurityPolicy: TLS_1_2
 
   StsMockApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
@@ -145,110 +249,115 @@ Resources:
         - !Sub
           - ${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+              - DNS
+              - !Ref Environment
+              - BaseDns
         - !Sub
           - sts-mock.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+              - DNS
+              - !Ref Environment
+              - BaseDns
       RestApiId: !Ref StsMockApi
       Stage: !Ref StsMockApi.Stage
+
+  StsMockApiDomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - ${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+        - !Sub
+          - sts-mock.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      RegionalCertificateArn: !If
+        - DevelopmentStack
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneStsMockCertificateV2ARN}}'
+      SecurityPolicy: TLS_1_2
 
   StsMockApiRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
+      AliasTarget:
+        DNSName: !GetAtt StsMockApiDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt StsMockApiDomainName.RegionalHostedZoneId
+      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
       Name: !If
         - DevelopmentStack
         - !Sub
           - ${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+              - DNS
+              - !Ref Environment
+              - BaseDns
         - !Sub
           - sts-mock.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+              - DNS
+              - !Ref Environment
+              - BaseDns
       Type: A
-      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
-      AliasTarget:
-        DNSName: !GetAtt StsMockApiDomainName.RegionalDomainName
-        HostedZoneId: !GetAtt StsMockApiDomainName.RegionalHostedZoneId
-
-  # Role to allow API Gateway to retrieve JWKS from S3
-  JwksBucketApiRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub ${AWS::StackName}-jwks-bucket-api
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action: sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service: apigateway.amazonaws.com
-        Version: 2012-10-17
-      Policies:
-        - PolicyName: JwksBucketPolicy
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
-                Resource:
-                  - !Sub ${JwksBucket.Arn}/.well-known/jwks.json
 
   TokenFunction:
+    Type: AWS::Serverless::Function
     DependsOn:
       - TokenFunctionLogGroup
-    Type: AWS::Serverless::Function
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
-        Minify: true
-        Target: es2022
-        Sourcemap: false
         EntryPoints:
           - src/functions/sts-mock/token/tokenHandler.ts
+        Minify: true
+        Sourcemap: false
+        Target: es2022
     Properties:
-      Description: Mock STS token function for exchanging an access token for a service token
       AutoPublishAlias: live
-      FunctionName: !Sub ${AWS::StackName}-token
-      Runtime: nodejs20.x
-      Handler: tokenHandler.lambdaHandler
-      Timeout: 5
-      Events:
-        Token:
-          Type: Api
-          Properties:
-            Path: /token
-            Method: post
-            RestApiId: !Ref StsMockApi
-      Role: !GetAtt TokenFunctionRole.Arn
+      Description: Mock STS token function for exchanging an access token for a service token
       Environment:
         Variables:
-          STS_MOCK_BASE_URL: !Sub https://${StsMockApiDomainName}
           ASYNC_BACKEND_BASE_URL: !If
             - UseDevOverrideAsyncBackendBaseUrl
             - !Ref DevOverrideAsyncBackendBaseUrl
             - !Sub https://sessions.review-b-async.${Environment}.account.gov.uk
           KEY_STORAGE_BUCKET_NAME: !Ref JwksBucket
+          STS_MOCK_BASE_URL: !Sub https://${StsMockApiDomainName}
+      Events:
+        Token:
+          Properties:
+            Method: post
+            Path: /token
+            RestApiId: !Ref StsMockApi
+          Type: Api
+      FunctionName: !Sub ${AWS::StackName}-token
+      Handler: tokenHandler.lambdaHandler
+      Role: !GetAtt TokenFunctionRole.Arn
+      Runtime: nodejs20.x
+      Timeout: 5
       VpcConfig:
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
         SubnetIds:
           - !ImportValue devplatform-vpc-ProtectedSubnetIdA
           - !ImportValue devplatform-vpc-ProtectedSubnetIdB
           - !ImportValue devplatform-vpc-ProtectedSubnetIdC
-        SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+
+  TokenFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-token
+      RetentionInDays: 30
 
   TokenFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -259,129 +368,36 @@ Resources:
       SourceAccount: !Sub ${AWS::AccountId}
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${StsMockApi}/*/*/*
 
-  TokenFunctionLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-token
-
   TokenFunctionRole:
     Type: AWS::IAM::Role
     Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
       Description: Execution role for the token function
-      RoleName: !Sub ${AWS::StackName}-token
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
       Policies:
-        - PolicyName: S3ReadPolicy
-          PolicyDocument:
-            Version: 2012-10-17
+        - PolicyDocument:
             Statement:
-              - Effect: Allow
-                Action:
+              - Action:
                   - s3:GetObject
+                Effect: Allow
                 Resource:
                   - !Sub
                     - arn:aws:s3:::${TargetBucket}/*
                     - TargetBucket: !Ref JwksBucket
-
-  JwksBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub ${AWS::StackName}-jwks-${Environment}
-      VersioningConfiguration:
-        Status: Enabled
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      LoggingConfiguration:
-        DestinationBucketName: !Ref JwksBucketAccessLogs
-        LogFilePrefix: !Sub ${AWS::StackName}-jwks
-
-  JwksBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref JwksBucket
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Deny
-            Principal:
-              AWS: "*"
-            Action: "*"
-            Resource: !Sub
-              - arn:aws:s3:::${TargetBucket}/*
-              - TargetBucket: !Ref JwksBucket
-            Condition:
-              Bool:
-                "aws:SecureTransport": false
-
-  JwksBucketAccessLogs:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub ${AWS::StackName}-jwks-access-logs-${Environment}
-      VersioningConfiguration:
-        Status: Enabled
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      OwnershipControls:
-        Rules:
-          - ObjectOwnership: ObjectWriter
-
-  JwksBucketAccessLogsPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref JwksBucketAccessLogs
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Deny
-            Principal:
-              AWS: "*"
-            Action: "*"
-            Resource: !Sub
-              - arn:aws:s3:::${bucketName}/*
-              - bucketName: !Ref JwksBucketAccessLogs
-            Condition:
-              Bool:
-                "aws:SecureTransport": false
-          - Effect: Allow
-            Principal:
-              Service: logging.s3.amazonaws.com
-            Action:
-              - s3:PutObject
-            Resource: !Sub
-              - arn:aws:s3:::${bucketName}/*
-              - bucketName: !Ref JwksBucketAccessLogs
-            Condition:
-              ArnLike:
-                aws:SourceArn: !GetAtt JwksBucket.Arn
-              StringEquals:
-                aws:SourceAccount: !Ref AWS::AccountId
+            Version: "2012-10-17"
+          PolicyName: S3ReadPolicy
+      RoleName: !Sub ${AWS::StackName}-token
 
 Outputs:
   StsMockApiUrl:
