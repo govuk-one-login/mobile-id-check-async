@@ -79,7 +79,7 @@ Resources:
       DomainName: !If
         - TestResourcesDevelopmentStack
         - !Sub
-          - ${AWS::StackName}.${DNS_RECORD}
+          - ${AWS::StackName}-events.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
@@ -105,7 +105,7 @@ Resources:
       DomainName: !If
         - TestResourcesDevelopmentStack
         - !Sub
-          - ${AWS::StackName}.${DNS_RECORD}
+          - ${AWS::StackName}-events.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
@@ -125,7 +125,7 @@ Resources:
       Name: !If
         - TestResourcesDevelopmentStack
         - !Sub
-          - ${AWS::StackName}.${DNS_RECORD}
+          - ${AWS::StackName}-events.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
