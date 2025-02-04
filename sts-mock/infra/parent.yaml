@@ -34,11 +34,30 @@ Parameters:
       Type: String
       Default: none
 
-  DevOverrideAsyncBackendBaseUrl:
+  BackendStackName:
     Description: |
-      Override the ASYNC_BACKEND_BASE_URL value for development deployments
+      The Stack name of the Async Backend API stack
+    Type: String
+    Default: mob-async-backend
+
+  DevOverrideProxyBaseUrl:
+    Description: |
+      Override the Proxy URL used in the API tests
     Type: String
     Default: none
+
+  DevOverrideStsMockBaseUrl:
+    Description: |
+      Override the STS Mock URL used in the API tests
+    Type: String
+    Default: none
+
+  DevOverrideSessionsBaseUrl:
+    Description: |
+      Override the Sessions URL used in the API tests
+    Type: String
+    Default: none
+
 
 Mappings:
   StsMockApiGateway:
@@ -62,6 +81,20 @@ Mappings:
       BaseDns: review-b-async.dev.account.gov.uk
     build:
       BaseDns: review-b-async.build.account.gov.uk
+  # URL:
+  #   dev:
+  #     ProxyBaseUrl: !Sub:
+  #       - ${Url}
+  #       - Url:
+  #         Fn::If: [UseDevOverrideProxyBaseUrl, !Ref DevOverrideProxyBaseUrl, !Sub https://proxy.review-b-async.${Environment}.account.gov.uk]
+  #     StsMockBaseUrl: !Sub
+  #       - ${Url}
+  #       - Url:
+  #         Fn::If: [UseDevOverrideStsMockBaseUrl, !Ref DevOverrideStsMockBaseUrl, !Sub https://sts-mock.review-b-async.${Environment}.account.gov.uk]
+  #     SessionsBaseUrl: !Sub
+  #       - ${Url}
+  #       - Url:
+  #         Fn::If: [UseDevOverrideSessionsBaseUrl, !Ref DevOverrideSessionsBaseUrl, !Sub https://sessions.review-b-async.${Environment}.account.gov.uk]
 
 Conditions:
   UseCodeSigning:
@@ -80,10 +113,10 @@ Conditions:
       - !Ref DevOverrideStsMockBaseUrl
       - none
 
-  UseDevOverrideAsyncBackendBaseUrl: !Not
-    - !Equals
-      - !Ref DevOverrideAsyncBackendBaseUrl
-      - none
+  # UseDevOverrideAsyncBackendBaseUrl: !Not
+  #   - !Equals
+  #     - !Ref DevOverrideAsyncBackendBaseUrl
+  #     - none
 
   UseDevOverrideProxyBaseUrl: !Not
     - !Equals
@@ -128,6 +161,10 @@ Outputs:
   StsMockApiUrl:
     Description: STS Mock API Gateway DNS
     Value: !Sub https://${StsMockApiDomainName}
+    # Value: !FindInMap
+    #   - URL
+    #   - !Ref Environment
+    #   - StsMockBaseUrl
 
   EventsApiUrl:
     Description: Events API URL
@@ -139,6 +176,10 @@ Outputs:
       - UseDevOverrideProxyBaseUrl
       - !Ref DevOverrideProxyBaseUrl
       - !Sub https://proxy.review-b-async.${Environment}.account.gov.uk
+    # Value: !FindInMap
+    #   - URL
+    #   - !Ref Environment
+    #   - ProxyBaseUrl
 
   SessionsApiUrl:
     Description: Sessions API URL used in the Events API tests
@@ -146,3 +187,7 @@ Outputs:
       - UseDevOverrideSessionsBaseUrl
       - !Ref DevOverrideSessionsBaseUrl
       - !Sub https://sessions.review-b-async.${Environment}.account.gov.uk
+    # Value: !FindInMap
+    #   - URL
+    #   - !Ref Environment
+    #   - SessionsBaseUrl
