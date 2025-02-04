@@ -70,7 +70,8 @@ describe("BiometricTokenIssued", () => {
           attributes: { clientId: "mockClientId" },
         },
         {
-          scenario: "Given attribute values are not all the correct type",
+          scenario:
+            "Given mandatory attribute values are not all the correct type",
           attributes: {
             clientId: "mockClientId",
             govukSigninJourneyId: "mockGovukSigninJourneyId",
@@ -82,6 +83,21 @@ describe("BiometricTokenIssued", () => {
             subjectIdentifier: "mockSubjectIdentifier",
             timeToLive: 12345,
             redirectUri: "https://www.mockRedirectUri.com",
+          },
+        },
+        {
+          scenario: "Given redirectUri is present but not of type string",
+          attributes: {
+            clientId: "mockClientId",
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            createdAt: 12345,
+            issuer: "mockIssuer",
+            sessionId: "mockSessionId",
+            sessionState: "mockSessionState",
+            clientState: "mockClientState",
+            subjectIdentifier: "mockSubjectIdentifier",
+            timeToLive: 12345,
+            redirectUri: [],
           },
         },
       ])("$scenario", (invalidBaseSession) => {
