@@ -1,5 +1,4 @@
 import {
-  AttributeValue,
   ConditionalCheckFailedException,
   DynamoDBClient,
   PutItemCommand,
@@ -159,7 +158,7 @@ export class DynamoDbAdapter implements SessionRegistry {
     } catch (error) {
       if (error instanceof ConditionalCheckFailedException) {
         if (error.Item) {
-          attributes = getBaseSessionAttributes(error.Item);
+          attributes = updateOperation.getSessionAttributes(error.Item);
         }
 
         logger.error(LogMessage.UPDATE_SESSION_CONDITIONAL_CHECK_FAILURE, {
@@ -184,7 +183,7 @@ export class DynamoDbAdapter implements SessionRegistry {
 
     const { Attributes } = response;
     if (Attributes) {
-      attributes = getBaseSessionAttributes(Attributes);
+      attributes = updateOperation.getSessionAttributes(Attributes);
     }
     logger.debug(LogMessage.UPDATE_SESSION_SUCCESS);
     return successResult({ attributes });
@@ -207,36 +206,3 @@ export interface BaseSessionAttributes {
   timeToLive: number;
   redirectUri?: string;
 }
-
-const getBaseSessionAttributes = (
-  item: Record<string, AttributeValue> | undefined,
-): BaseSessionAttributes | null => {
-  if (item == null) return null;
-
-  const sessionAttributes = unmarshall(item);
-  if (!isBaseSessionAttributes(sessionAttributes)) return null;
-
-  return sessionAttributes;
-};
-
-const isBaseSessionAttributes = (
-  item: Record<string, NativeAttributeValue>,
-): item is BaseSessionAttributes => {
-  if (typeof item.clientId !== "string") return false;
-  if (typeof item.govukSigninJourneyId !== "string") return false;
-  if (typeof item.createdAt !== "number") return false;
-  if (typeof item.issuer !== "string") return false;
-  if (typeof item.sessionId !== "string") return false;
-  if (typeof item.sessionState !== "string") return false;
-  if (typeof item.clientState !== "string") return false;
-  if (typeof item.subjectIdentifier !== "string") return false;
-  if (typeof item.timeToLive !== "number") return false;
-  if (
-    "redirectUri" in item &&
-    item.redirectUri !== undefined &&
-    typeof item.redirectUri !== "string"
-  ) {
-    return false;
-  }
-  return true;
-};
