@@ -80,18 +80,18 @@ export async function lambdaHandlerConstructor(
     sessionId,
     new BiometricTokenIssued(documentType, opaqueId),
   );
-  const sessionAttributes = updateSessionResult.value.attributes;
 
   if (updateSessionResult.isError) {
     let writeEventResult;
+    let sessionAttributes;
     switch (updateSessionResult.value.errorType) {
       case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
+        sessionAttributes = updateSessionResult.value.attributes;
         writeEventResult = await eventService.writeGenericEvent({
           eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-          sub: sessionAttributes?.subjectIdentifier ?? undefined,
-          sessionId: sessionAttributes?.sessionId ?? sessionId,
-          govukSigninJourneyId:
-            sessionAttributes?.govukSigninJourneyId ?? undefined,
+          sub: sessionAttributes.subjectIdentifier,
+          sessionId: sessionAttributes.sessionId,
+          govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
           getNowInMilliseconds: Date.now,
           componentId: config.ISSUER,
         });

@@ -4,6 +4,7 @@ import {
   ReturnValuesOnConditionCheckFailure,
 } from "@aws-sdk/client-dynamodb";
 import { BaseSessionAttributes } from "../../../adapters/dynamoDbAdapter";
+import { Result } from "../../../utils/result";
 
 export interface UpdateSessionOperation {
   getDynamoDbUpdateExpression(): string;
@@ -13,5 +14,5 @@ export interface UpdateSessionOperation {
   getDynamoDbReturnValuesOnConditionCheckFailure(): ReturnValuesOnConditionCheckFailure;
   getSessionAttributes(
     item: Record<string, AttributeValue> | undefined,
-  ): BaseSessionAttributes | null;
+  ): Result<BaseSessionAttributes, void>;
 }

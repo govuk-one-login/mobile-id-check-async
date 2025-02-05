@@ -13,7 +13,12 @@ import {
   mockInertEventService,
 } from "../testUtils/unitTestData";
 import { logger } from "../common/logging/logger";
-import { emptyFailure, errorResult, successResult } from "../utils/result";
+import {
+  emptyFailure,
+  emptySuccess,
+  errorResult,
+  successResult,
+} from "../utils/result";
 import { UpdateSessionError } from "../common/session/SessionRegistry";
 import { BiometricTokenIssued } from "../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 
@@ -48,20 +53,29 @@ describe("Async Biometric Token", () => {
     .fn()
     .mockResolvedValue(successResult("mockBiometricToken"));
 
+  const validSessionAttributes = {
+    clientId: "mockClientId",
+    govukSigninJourneyId: "mockGovukSigninJourneyId",
+    createdAt: 12345,
+    issuer: "mockIssuer",
+    sessionId: "mockSessionId",
+    sessionState: "mockSessionState",
+    clientState: "mockClientState",
+    subjectIdentifier: "mockSubjectIdentifier",
+    timeToLive: 12345,
+    redirectUri: "https://www.mockRedirectUri.com",
+  };
+
   const mockSuccessfulSessionRegistry = {
     ...mockInertSessionRegistry,
     updateSession: jest
       .fn()
-      .mockResolvedValue(
-        successResult({ attributes: { sessionId: "mockSessionId" } }),
-      ),
+      .mockResolvedValue(successResult({ attributes: validSessionAttributes })),
   };
 
   const mockWriteGenericEventSuccessResult = jest
     .fn()
-    .mockResolvedValue(
-      successResult({ attributes: { sessionId: "mockSessionId" } }),
-    );
+    .mockResolvedValue(emptySuccess());
 
   const mockSuccessfulEventService = {
     ...mockInertEventService,
@@ -245,6 +259,7 @@ describe("Async Biometric Token", () => {
           updateSession: jest.fn().mockResolvedValue(
             errorResult({
               errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
+              attributes: validSessionAttributes,
             }),
           ),
         });

@@ -1,6 +1,7 @@
 import { BiometricTokenIssued } from "./BiometricTokenIssued";
 import { SessionState } from "../../session";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
+import { emptyFailure, successResult } from "../../../../utils/result";
 
 describe("BiometricTokenIssued", () => {
   let biometricTokenIssued: BiometricTokenIssued;
@@ -222,7 +223,7 @@ describe("BiometricTokenIssued", () => {
             invalidBaseSession.attributes,
           );
 
-          expect(result).toEqual(null);
+          expect(result).toEqual(emptyFailure());
         });
       });
     });
@@ -264,7 +265,9 @@ describe("BiometricTokenIssued", () => {
             validBaseSession.attributes,
           );
 
-          expect(result).toEqual(unmarshall(validBaseSession.attributes));
+          expect(result).toEqual(
+            successResult(unmarshall(validBaseSession.attributes)),
+          );
         });
       });
     });

@@ -21,6 +21,7 @@ import {
   SessionRegistry,
   UpdateSessionError,
   UpdateSessionFailure,
+  UpdateSessionFailureInternalServerError,
   UpdateSessionSuccess,
 } from "../common/session/SessionRegistry";
 import { logger } from "../common/logging/logger";
@@ -135,7 +136,6 @@ export class DynamoDbAdapter implements SessionRegistry {
     };
 
     let response;
-    let attributes = null;
     try {
       logger.debug(LogMessage.UPDATE_SESSION_ATTEMPT, {
         data: updateExpressionDataToLog,
@@ -157,8 +157,17 @@ export class DynamoDbAdapter implements SessionRegistry {
       );
     } catch (error) {
       if (error instanceof ConditionalCheckFailedException) {
-        if (error.Item) {
-          attributes = updateOperation.getSessionAttributes(error.Item);
+        const getAttributesResult = updateOperation.getSessionAttributes(
+          error.Item,
+        );
+        if (getAttributesResult.isError) {
+          logger.error(LogMessage.UPDATE_SESSION_UNEXPECTED_FAILURE, {
+            error: error,
+            data: updateExpressionDataToLog,
+          });
+          return errorResult({
+            errorType: UpdateSessionError.INTERNAL_SERVER_ERROR as const,
+          });
         }
 
         logger.error(LogMessage.UPDATE_SESSION_CONDITIONAL_CHECK_FAILURE, {
@@ -167,7 +176,7 @@ export class DynamoDbAdapter implements SessionRegistry {
         });
         return errorResult({
           errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
-          attributes,
+          attributes: getAttributesResult.value,
         });
       } else {
         logger.error(LogMessage.UPDATE_SESSION_UNEXPECTED_FAILURE, {
@@ -176,17 +185,27 @@ export class DynamoDbAdapter implements SessionRegistry {
         });
         return errorResult({
           errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
-          attributes,
-        });
+        } as UpdateSessionFailureInternalServerError);
       }
     }
 
-    const { Attributes } = response;
-    if (Attributes) {
-      attributes = updateOperation.getSessionAttributes(Attributes);
+    const getAttributesResult = updateOperation.getSessionAttributes(
+      response.Attributes,
+    );
+
+    if (getAttributesResult.isError) {
+      logger.error(LogMessage.UPDATE_SESSION_UNEXPECTED_FAILURE, {
+        error:
+          "Unable to retrieve updated session attributes on updateSession call",
+        data: updateExpressionDataToLog,
+      });
+      return errorResult({
+        errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
+      } as UpdateSessionFailureInternalServerError);
     }
+
     logger.debug(LogMessage.UPDATE_SESSION_SUCCESS);
-    return successResult({ attributes });
+    return successResult({ attributes: getAttributesResult.value });
   }
 
   private getTimeNowInSeconds() {

@@ -140,7 +140,6 @@ describe("DynamoDbAdapter", () => {
         expect(result).toEqual(
           errorResult({
             errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
-            attributes: null,
           }),
         );
       });

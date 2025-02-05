@@ -8,6 +8,7 @@ import {
 } from "@aws-sdk/client-dynamodb";
 import { BaseSessionAttributes } from "../../../../adapters/dynamoDbAdapter";
 import { NativeAttributeValue, unmarshall } from "@aws-sdk/util-dynamodb";
+import { emptyFailure, Result, successResult } from "../../../../utils/result";
 
 export class BiometricTokenIssued implements UpdateSessionOperation {
   constructor(
@@ -47,13 +48,13 @@ export class BiometricTokenIssued implements UpdateSessionOperation {
 
 const getBaseSessionAttributes = (
   item: Record<string, AttributeValue> | undefined,
-): BaseSessionAttributes | null => {
-  if (item == null) return null;
+): Result<BaseSessionAttributes, void> => {
+  if (item == null) return emptyFailure();
 
   const sessionAttributes = unmarshall(item);
-  if (!isBaseSessionAttributes(sessionAttributes)) return null;
+  if (!isBaseSessionAttributes(sessionAttributes)) return emptyFailure();
 
-  return sessionAttributes;
+  return successResult(sessionAttributes);
 };
 
 const isBaseSessionAttributes = (
