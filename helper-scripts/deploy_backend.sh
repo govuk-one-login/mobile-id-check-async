@@ -12,23 +12,30 @@ if [ "$(aws sts get-caller-identity --output text --query 'Account')" != "211125
   exit 1
 fi
 
-STACK_NAME=$1
+STACK_IDENTIFIER=$1
 
 # Define stack names
-BACKEND_CF_DIST_STACK_NAME="${STACK_NAME}-async-backend-cf-dist"
-BACKEND_STACK_NAME="${STACK_NAME}-async-backend"
-STS_MOCK_STACK_NAME="${STACK_NAME}-sts-mock"
+BACKEND_CF_DIST_STACK_NAME="${STACK_IDENTIFIER}-async-backend-cf-dist"
+BACKEND_STACK_NAME="${STACK_IDENTIFIER}-async-backend"
+TEST_RESOURCES_STACK_NAME="${STACK_IDENTIFIER}-test-resources"
 
 # Define parameter names
 DEV_OVERRIDE_STS_BASE_URL="DevOverrideStsBaseUrl"
 DEV_OVERRIDE_ASYNC_BACKEND_BASE_URL="DevOverrideAsyncBackendBaseUrl"
+DEV_OVERRIDE_BACKEND_STACK_NAME="BackendStackName"
+DEV_OVERRIDE_PROXY_BASE_URL="DevOverrideProxyBaseUrl"
+DEV_OVERRIDE_SESSIONS_BASE_URL="DevOverrideSessionsBaseUrl"
 DEPLOY_ALARMS_IN_DEV="DeployAlarmsInDev"
 
-deploy_sts_mock=false
-publish_keys_to_s3=false
+PROXY_URL="https://proxy-${BACKEND_STACK_NAME}.review-b-async.dev.account.gov.uk"
+SESSIONS_URL="https://sessions-${BACKEND_STACK_NAME}.review-b-async.dev.account.gov.uk"
+TEST_RESOURCES_URL="https://${TEST_RESOURCES_STACK_NAME}.review-b-async.dev.account.gov.uk"
+
 deploy_cf_dist=false
 deploy_backend_api_stack=false
 enable_alarms=false
+deploy_test_resources=false
+publish_keys_to_s3=false
 
 # Ask the user about deploying sts-mock
 while true; do
@@ -38,7 +45,7 @@ while true; do
 
   case $yn in
     [yY])
-      deploy_sts_mock=true
+      deploy_test_resources=true
       break
       ;;
     [nN] | "")
@@ -52,7 +59,7 @@ while true; do
 done
 
 # After deploying sts-mock, ask user if they want to generate keys
-if [ $deploy_sts_mock == true ]; then
+if [ $deploy_test_resources == true ]; then
   while true; do
     echo
     echo "Generating and publishing a signing key pair to S3 is required the first time you deploy an sts-mock, optional for subsequent deployments."
@@ -134,29 +141,6 @@ while true; do
   esac
 done
 
-if [[ $deploy_sts_mock == true ]]; then
-  # Build and deploy sts-mock
-  echo "Building and deploying sts-mock stack: $STS_MOCK_STACK_NAME"
-  echo
-  cd ../sts-mock || exit 1
-  npm run build:infra
-  npm ci
-  sam build --cached
-  sam deploy \
-    --stack-name "$STS_MOCK_STACK_NAME" \
-    --parameter-overrides "$DEV_OVERRIDE_ASYNC_BACKEND_BASE_URL=https://sessions-${BACKEND_STACK_NAME}.review-b-async.dev.account.gov.uk" \
-    --capabilities CAPABILITY_NAMED_IAM \
-    --resolve-s3
-  cd ../helper-scripts
-fi
-
-
-if [[ $publish_keys_to_s3 == true ]]; then
-  cd ../sts-mock/jwks-helper-script
-  ./publish_keys_to_s3.sh "${STS_MOCK_STACK_NAME}" "dev"
-  cd ../../helper-scripts
-fi
-
 if [[ $deploy_cf_dist == true ]]; then
   # Build and deploy backend-cf-dist stack
   echo "Deploying cloudfront stack: $BACKEND_CF_DIST_STACK_NAME"
@@ -176,7 +160,7 @@ if [[ $deploy_cf_dist == true ]]; then
 fi
 
 if [[ $deploy_backend_api_stack == true ]]; then
-  parameter_overrides="$DEV_OVERRIDE_STS_BASE_URL=https://${STS_MOCK_STACK_NAME}.review-b-async.dev.account.gov.uk"
+  parameter_overrides="${DEV_OVERRIDE_STS_BASE_URL}=${TEST_RESOURCES_URL}"
 
   if [[ $enable_alarms == true ]]; then
       parameter_overrides+=" $DEPLOY_ALARMS_IN_DEV=true"
@@ -190,12 +174,49 @@ if [[ $deploy_backend_api_stack == true ]]; then
   npm ci
   sam build --cached
   sam deploy \
-      --stack-name "$BACKEND_STACK_NAME" \
-      --parameter-overrides "$parameter_overrides" \
+      --stack-name $BACKEND_STACK_NAME \
+      --parameter-overrides $parameter_overrides \
       --capabilities CAPABILITY_NAMED_IAM \
       --resolve-s3
-  ./generate_env_file.sh "${BACKEND_STACK_NAME}"
+
+  echo "Waiting for stack create/updates to complete"
+  aws cloudformation wait stack-create-complete --stack-name $BACKEND_STACK_NAME || aws cloudformation wait stack-update-complete --stack-name $BACKEND_STACK_NAME
+
+  ./generate_env_file.sh $BACKEND_STACK_NAME
   cd ../helper-scripts
+
+
+fi
+
+if [[ $deploy_test_resources == true ]]; then
+  # Build and deploy test-resources
+  echo "Building and deploying test-resources stack: $TEST_RESOURCES_STACK_NAME"
+  echo
+  cd ../sts-mock || exit 1
+  npm run build:infra
+  npm ci
+  sam build --cached
+  sam deploy \
+    --stack-name $TEST_RESOURCES_STACK_NAME \
+    --parameter-overrides \
+      "${DEV_OVERRIDE_BACKEND_STACK_NAME}=${BACKEND_STACK_NAME} \
+      ${DEV_OVERRIDE_STS_MOCK_BASE_URL}=${TEST_RESOURCES_URL} \
+      ${DEV_OVERRIDE_PROXY_BASE_URL}=${PROXY_URL} \
+      ${DEV_OVERRIDE_SESSIONS_BASE_URL}=${SESSIONS_URL}" \
+    --capabilities CAPABILITY_NAMED_IAM \
+    --resolve-s3
+
+  echo "Waiting for stack create/updates to complete"
+  aws cloudformation wait stack-create-complete --stack-name $TEST_RESOURCES_STACK_NAME || aws cloudformation wait stack-update-complete --stack-name $TEST_RESOURCES_STACK_NAME
+
+  npm run build:env $STACK_IDENTIFIER
+  cd ../helper-scripts
+fi
+
+if [[ $publish_keys_to_s3 == true ]]; then
+  cd ../sts-mock/jwks-helper-script
+  ./publish_keys_to_s3.sh "${TEST_RESOURCES_STACK_NAME}" "dev"
+  cd ../../helper-scripts
 fi
 
 echo
