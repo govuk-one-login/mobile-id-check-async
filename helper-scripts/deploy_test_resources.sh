@@ -85,7 +85,6 @@ if [[ $deploy_sts_mock == true ]]; then
     --stack-name "$TEST_RESOURCES_STACK_NAME" \
     --parameter-overrides \
       "$DEV_OVERRIDE_BACKEND_STACK_NAME=${BACKEND_STACK_NAME} \
-      $DEV_OVERRIDE_STS_MOCK_BASE_URL=${STS_MOCK_URL} \
       $DEV_OVERRIDE_PROXY_BASE_URL=${PROXY_URL} \
       $DEV_OVERRIDE_SESSIONS_BASE_URL=${SESSIONS_URL}" \
     --capabilities CAPABILITY_NAMED_IAM \

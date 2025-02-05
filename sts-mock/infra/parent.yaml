@@ -94,11 +94,6 @@ Conditions:
       - !Ref PermissionsBoundary
       - none
 
-  UseDevOverrideStsMockBaseUrl: !Not
-    - !Equals
-      - !Ref DevOverrideStsMockBaseUrl
-      - none
-
   UseDevOverrideProxyBaseUrl: !Not
     - !Equals
       - !Ref DevOverrideProxyBaseUrl
