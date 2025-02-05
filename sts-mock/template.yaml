@@ -3,20 +3,38 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: SAM template for the STS mock
 
 Parameters:
+  BackendStackName:
+    Description: |
+      The Stack name of the Async Backend API stack
+    Type: String
+    Default: mob-async-backend
+
   CodeSigningConfigArn:
     Description: |
       The ARN of the Code Signing Config to use, provided by the deployment pipeline
     Type: String
     Default: none
 
-  DevOverrideAsyncBackendBaseUrl:
+  DevOverrideProxyBaseUrl:
     Description: |
-      Override the ASYNC_BACKEND_BASE_URL value for development deployments
+      Override the Proxy URL used in the API tests
+    Type: String
+    Default: none
+
+  DevOverrideSessionsBaseUrl:
+    Description: |
+      Override the Sessions URL used in the API tests
+    Type: String
+    Default: none
+
+  DevOverrideStsMockBaseUrl:
+    Description: |
+      Override the STS Mock URL used in the API tests
     Type: String
     Default: none
 
   Environment:
-    Description: The name of the environment to deploy to
+    Description: The name of the deployment environment
     Type: String
     AllowedValues:
       - dev
@@ -36,6 +54,14 @@ Mappings:
     dev:
       BaseDns: review-b-async.dev.account.gov.uk
 
+  EventsApiGateway:
+    build:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+    dev:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+
   StsMockApiGateway:
     build:
       ApiBurstLimit: 10
@@ -45,27 +71,37 @@ Mappings:
       ApiRateLimit: 10
 
 Conditions:
-  DevelopmentStack: !And
+  Never: !Equals
+    - true
+    - false
+
+  TestResourcesDevelopmentStack: !And
     - !Equals
       - !Ref Environment
       - dev
     - !Not
       - !Equals
         - !Ref AWS::StackName
-        - mob-sts-mock
-
-  Never: !Equals
-    - true
-    - false
+        - test-resources
 
   UseCodeSigning: !Not
     - !Equals
       - !Ref CodeSigningConfigArn
       - none
 
-  UseDevOverrideAsyncBackendBaseUrl: !Not
+  UseDevOverrideProxyBaseUrl: !Not
     - !Equals
-      - !Ref DevOverrideAsyncBackendBaseUrl
+      - !Ref DevOverrideProxyBaseUrl
+      - none
+
+  UseDevOverrideSessionsBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideSessionsBaseUrl
+      - none
+
+  UseDevOverrideStsMockBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideStsMockBaseUrl
       - none
 
   UsePermissionsBoundary: !Not
@@ -87,6 +123,285 @@ Globals:
       - !Ref AWS::NoValue
 
 Resources:
+  DequeueEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 10
+      Enabled: true
+      EventSourceArn: !ImportValue
+        Fn::Sub: ${BackendStackName}-txma-sqs-queue-arn
+      FunctionName: !GetAtt DequeueFunction.Arn
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
+
+  DequeueFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - DequeueLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - src/functions/dequeue/dequeueHandler.ts
+        Minify: true
+        Sourcemap: false
+        Target: es2022
+    Properties:
+      Environment:
+        Variables:
+          EVENTS_TABLE_NAME: !Ref EventsTable
+          TXMA_EVENT_TTL_DURATION_IN_SECONDS: 900
+      FunctionName: !Sub ${AWS::StackName}-dequeue
+      Handler: dequeueHandler.lambdaHandler
+      Role: !GetAtt DequeueRole.Arn
+      Runtime: nodejs20.x
+      Timeout: 10
+      VpcConfig:
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+
+  DequeueLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue
+      RetentionInDays: 30
+
+  DequeueRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: arn:aws:logs:*:*:*
+            Version: "2012-10-17"
+          PolicyName: LoggingPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Effect: Allow
+                Resource: !ImportValue
+                  Fn::Sub: ${BackendStackName}-txma-sqs-queue-arn
+            Version: "2012-10-17"
+          PolicyName: SQSPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - dynamodb:PutItem
+                Effect: Allow
+                Resource: !GetAtt EventsTable.Arn
+            Version: "2012-10-17"
+          PolicyName: DynamoDBPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - kms:Decrypt
+                Effect: Allow
+                Resource: !ImportValue
+                  Fn::Sub: ${BackendStackName}-txma-kms-encryption-key-arn
+            Version: "2012-10-17"
+          PolicyName: KMSPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Effect: Allow
+                Resource: '*'
+            Version: "2012-10-17"
+          PolicyName: VpcPolicy
+      RoleName: !Sub ${AWS::StackName}-dequeue-role
+
+  EventsApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      AccessLogSetting:
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${EventsApiAccessLogs}
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      Auth:
+        ApiKeyRequired: false
+        DefaultAuthorizer: AWS_IAM
+        ResourcePolicy:
+          AwsAccountWhitelist: !Sub ${AWS::AccountId}
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./openApiSpecs/events-spec.yaml
+      Description: API gateway for retrieving events
+      EndpointConfiguration: REGIONAL
+      MethodSettings:
+        - DataTraceEnabled: true
+          HttpMethod: '*'
+          LoggingLevel: INFO
+          MetricsEnabled: true
+          ResourcePath: /*
+          ThrottlingBurstLimit: !FindInMap
+            - EventsApiGateway
+            - !Ref Environment
+            - ApiBurstLimit
+          ThrottlingRateLimit: !FindInMap
+            - EventsApiGateway
+            - !Ref Environment
+            - ApiRateLimit
+      Name: !Sub ${AWS::StackName}-events-api
+      OpenApiVersion: 3.0.1
+      StageName: !Ref Environment
+
+  EventsApiAccessLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-events-api-access-logs-${Environment}
+      RetentionInDays: 30
+
+  EventsApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !If
+        - TestResourcesDevelopmentStack
+        - !Sub
+          - ${AWS::StackName}-events.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+        - !Sub
+          - events.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+      RestApiId: !Ref EventsApi
+      Stage: !Ref EventsApi.Stage
+
+  EventsApiDomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !If
+        - TestResourcesDevelopmentStack
+        - !Sub
+          - ${AWS::StackName}-events.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+        - !Sub
+          - events.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      RegionalCertificateArn: !If
+        - TestResourcesDevelopmentStack
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneEventsCertificateV2ARN}}'
+      SecurityPolicy: TLS_1_2
+
+  EventsApiRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      AliasTarget:
+        DNSName: !GetAtt EventsApiDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt EventsApiDomainName.RegionalHostedZoneId
+      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
+      Name: !If
+        - TestResourcesDevelopmentStack
+        - !Sub
+          - ${AWS::StackName}-events.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+        - !Sub
+          - events.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+      Type: A
+
+  EventsApiRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+        Version: "2012-10-17"
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - dynamodb:Query
+                Condition:
+                  ForAllValues:StringEquals:
+                    dynamodb:Attributes:
+                      - pk
+                      - sk
+                      - event
+                  StringEquals:
+                    dynamodb:Select: SPECIFIC_ATTRIBUTES
+                Effect: Allow
+                Resource: !GetAtt EventsTable.Arn
+            Version: "2012-10-17"
+          PolicyName: EventsPolicy
+      RoleName: !Sub ${AWS::StackName}-events-api
+
+  EventsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      SSESpecification:
+        SSEEnabled: true
+      TableName: !Sub ${AWS::StackName}-events-table-${Environment}
+      TimeToLiveSpecification:
+        AttributeName: timeToLiveInSeconds
+        Enabled: true
+
   JwksBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -214,7 +529,7 @@ Resources:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: ./openapi/sts-mock-spec.yaml
+            Location: ./openApiSpecs/sts-mock-spec.yaml
       Description: Public API gateway for STS Mock
       EndpointConfiguration: REGIONAL
       MethodSettings:
@@ -245,9 +560,9 @@ Resources:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
       DomainName: !If
-        - DevelopmentStack
+        - TestResourcesDevelopmentStack
         - !Sub
-          - ${AWS::StackName}.${DNS_RECORD}
+          - ${AWS::StackName}-sts.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
               - DNS
               - !Ref Environment
@@ -265,9 +580,9 @@ Resources:
     Type: AWS::ApiGateway::DomainName
     Properties:
       DomainName: !If
-        - DevelopmentStack
+        - TestResourcesDevelopmentStack
         - !Sub
-          - ${AWS::StackName}.${DNS_RECORD}
+          - ${AWS::StackName}-sts.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
               - DNS
               - !Ref Environment
@@ -282,7 +597,7 @@ Resources:
         Types:
           - REGIONAL
       RegionalCertificateArn: !If
-        - DevelopmentStack
+        - TestResourcesDevelopmentStack
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneStsMockCertificateV2ARN}}'
       SecurityPolicy: TLS_1_2
@@ -295,9 +610,9 @@ Resources:
         HostedZoneId: !GetAtt StsMockApiDomainName.RegionalHostedZoneId
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
       Name: !If
-        - DevelopmentStack
+        - TestResourcesDevelopmentStack
         - !Sub
-          - ${AWS::StackName}.${DNS_RECORD}
+          - ${AWS::StackName}-sts.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
               - DNS
               - !Ref Environment
@@ -328,8 +643,8 @@ Resources:
       Environment:
         Variables:
           ASYNC_BACKEND_BASE_URL: !If
-            - UseDevOverrideAsyncBackendBaseUrl
-            - !Ref DevOverrideAsyncBackendBaseUrl
+            - UseDevOverrideSessionsBaseUrl
+            - !Ref DevOverrideSessionsBaseUrl
             - !Sub https://sessions.review-b-async.${Environment}.account.gov.uk
           KEY_STORAGE_BUCKET_NAME: !Ref JwksBucket
           STS_MOCK_BASE_URL: !Sub https://${StsMockApiDomainName}
@@ -400,6 +715,24 @@ Resources:
       RoleName: !Sub ${AWS::StackName}-token
 
 Outputs:
+  EventsApiUrl:
+    Description: Events API URL
+    Value: !Sub https://${EventsApiDomainName}
+
+  ProxyApiUrl:
+    Description: Proxy API URL used in the Events API tests
+    Value: !If
+      - UseDevOverrideProxyBaseUrl
+      - !Ref DevOverrideProxyBaseUrl
+      - !Sub https://proxy.review-b-async.${Environment}.account.gov.uk
+
+  SessionsApiUrl:
+    Description: Sessions API URL used in the Events API tests
+    Value: !If
+      - UseDevOverrideSessionsBaseUrl
+      - !Ref DevOverrideSessionsBaseUrl
+      - !Sub https://sessions.review-b-async.${Environment}.account.gov.uk
+
   StsMockApiUrl:
     Description: STS Mock API Gateway DNS
     Value: !Sub https://${StsMockApiDomainName}
