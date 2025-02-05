@@ -31,8 +31,9 @@ publish_keys_to_s3=false
 # Ask the user about deploying sts-mock
 while true; do
   echo
-  echo "Deploying an sts-mock stack is required the first time you deploy a backend-api stack. It's optional for subsequent deployments."
-  read -r -p "Do you want to deploy an test-resources stack? [Y/n]: " yn
+  echo "You will need to deploy an async-backend stack that uses the same stack identifier as your test-resources stack before using this script. Deploying a test-resources is required to run backend api tests."
+  echo
+  read -r -p "Do you want to continue to deploy a test-resources stack? [Y/n]: " yn
 
   case $yn in
     [yY] | "")
@@ -40,8 +41,8 @@ while true; do
       break
       ;;
     [nN])
-      echo "Skipping sts-mock stack deployment"
-      break
+      echo "Skipping test-resources stack deployment"
+      exit 1
       ;;
     *)
       echo "Invalid input. Please enter 'y' or 'n'."
