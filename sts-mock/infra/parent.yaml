@@ -81,20 +81,6 @@ Mappings:
       BaseDns: review-b-async.dev.account.gov.uk
     build:
       BaseDns: review-b-async.build.account.gov.uk
-  # URL:
-  #   dev:
-  #     ProxyBaseUrl: !Sub:
-  #       - ${Url}
-  #       - Url:
-  #         Fn::If: [UseDevOverrideProxyBaseUrl, !Ref DevOverrideProxyBaseUrl, !Sub https://proxy.review-b-async.${Environment}.account.gov.uk]
-  #     StsMockBaseUrl: !Sub
-  #       - ${Url}
-  #       - Url:
-  #         Fn::If: [UseDevOverrideStsMockBaseUrl, !Ref DevOverrideStsMockBaseUrl, !Sub https://sts-mock.review-b-async.${Environment}.account.gov.uk]
-  #     SessionsBaseUrl: !Sub
-  #       - ${Url}
-  #       - Url:
-  #         Fn::If: [UseDevOverrideSessionsBaseUrl, !Ref DevOverrideSessionsBaseUrl, !Sub https://sessions.review-b-async.${Environment}.account.gov.uk]
 
 Conditions:
   UseCodeSigning:
@@ -113,11 +99,6 @@ Conditions:
       - !Ref DevOverrideStsMockBaseUrl
       - none
 
-  # UseDevOverrideAsyncBackendBaseUrl: !Not
-  #   - !Equals
-  #     - !Ref DevOverrideAsyncBackendBaseUrl
-  #     - none
-
   UseDevOverrideProxyBaseUrl: !Not
     - !Equals
       - !Ref DevOverrideProxyBaseUrl
@@ -127,15 +108,6 @@ Conditions:
     - !Equals
       - !Ref DevOverrideSessionsBaseUrl
       - none
-
-  StsMockDevelopmentStack: !And
-    - !Equals
-      - !Ref Environment
-      - dev
-    - !Not
-      - !Equals
-        - !Ref AWS::StackName
-        - mob-sts-mock
 
   TestResourcesDevelopmentStack: !And
     - !Equals
@@ -161,10 +133,6 @@ Outputs:
   StsMockApiUrl:
     Description: STS Mock API Gateway DNS
     Value: !Sub https://${StsMockApiDomainName}
-    # Value: !FindInMap
-    #   - URL
-    #   - !Ref Environment
-    #   - StsMockBaseUrl
 
   EventsApiUrl:
     Description: Events API URL
@@ -176,10 +144,6 @@ Outputs:
       - UseDevOverrideProxyBaseUrl
       - !Ref DevOverrideProxyBaseUrl
       - !Sub https://proxy.review-b-async.${Environment}.account.gov.uk
-    # Value: !FindInMap
-    #   - URL
-    #   - !Ref Environment
-    #   - ProxyBaseUrl
 
   SessionsApiUrl:
     Description: Sessions API URL used in the Events API tests
@@ -187,7 +151,3 @@ Outputs:
       - UseDevOverrideSessionsBaseUrl
       - !Ref DevOverrideSessionsBaseUrl
       - !Sub https://sessions.review-b-async.${Environment}.account.gov.uk
-    # Value: !FindInMap
-    #   - URL
-    #   - !Ref Environment
-    #   - SessionsBaseUrl
