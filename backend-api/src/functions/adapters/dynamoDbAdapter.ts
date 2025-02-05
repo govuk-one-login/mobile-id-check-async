@@ -6,6 +6,8 @@ import {
   QueryCommand,
   QueryCommandInput,
   QueryCommandOutput,
+  ReturnValue,
+  ReturnValuesOnConditionCheckFailure,
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import { CreateSessionAttributes } from "../services/session/sessionService";
@@ -16,7 +18,12 @@ import {
   unmarshall,
 } from "@aws-sdk/util-dynamodb";
 import { UpdateSessionOperation } from "../common/session/updateOperations/UpdateSessionOperation";
-import { errorResult, Result, successResult } from "../utils/result";
+import {
+  errorResult,
+  FailureWithValue,
+  Result,
+  successResult,
+} from "../utils/result";
 import {
   SessionRegistry,
   UpdateSessionError,
@@ -161,13 +168,10 @@ export class DynamoDbAdapter implements SessionRegistry {
           error.Item,
         );
         if (getAttributesResult.isError) {
-          logger.error(LogMessage.UPDATE_SESSION_UNEXPECTED_FAILURE, {
-            error: error,
-            data: updateExpressionDataToLog,
-          });
-          return errorResult({
-            errorType: UpdateSessionError.INTERNAL_SERVER_ERROR as const,
-          });
+          return this.handleUpdateSessionInternalServerError(
+            error,
+            updateExpressionDataToLog,
+          );
         }
 
         logger.error(LogMessage.UPDATE_SESSION_CONDITIONAL_CHECK_FAILURE, {
@@ -179,13 +183,10 @@ export class DynamoDbAdapter implements SessionRegistry {
           attributes: getAttributesResult.value,
         });
       } else {
-        logger.error(LogMessage.UPDATE_SESSION_UNEXPECTED_FAILURE, {
-          error: error,
-          data: updateExpressionDataToLog,
-        });
-        return errorResult({
-          errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
-        } as UpdateSessionFailureInternalServerError);
+        return this.handleUpdateSessionInternalServerError(
+          error,
+          updateExpressionDataToLog,
+        );
       }
     }
 
@@ -194,14 +195,10 @@ export class DynamoDbAdapter implements SessionRegistry {
     );
 
     if (getAttributesResult.isError) {
-      logger.error(LogMessage.UPDATE_SESSION_UNEXPECTED_FAILURE, {
-        error:
-          "Unable to retrieve updated session attributes on updateSession call",
-        data: updateExpressionDataToLog,
-      });
-      return errorResult({
-        errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
-      } as UpdateSessionFailureInternalServerError);
+      return this.handleUpdateSessionInternalServerError(
+        "Unable to retrieve session attributes after successful update command",
+        updateExpressionDataToLog,
+      );
     }
 
     logger.debug(LogMessage.UPDATE_SESSION_SUCCESS);
@@ -210,6 +207,24 @@ export class DynamoDbAdapter implements SessionRegistry {
 
   private getTimeNowInSeconds() {
     return Math.floor(Date.now() / 1000);
+  }
+
+  private handleUpdateSessionInternalServerError(
+    error: unknown,
+    updateExpressionDataToLog: {
+      updateExpression: string;
+      conditionExpression: string | undefined;
+      returnValues: ReturnValue;
+      returnValuesOnConditionCheckFailure: ReturnValuesOnConditionCheckFailure;
+    },
+  ): FailureWithValue<UpdateSessionFailureInternalServerError> {
+    logger.error(LogMessage.UPDATE_SESSION_UNEXPECTED_FAILURE, {
+      error: error,
+      data: updateExpressionDataToLog,
+    });
+    return errorResult({
+      errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
+    });
   }
 }
 
