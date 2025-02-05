@@ -16,13 +16,12 @@ TEST_RESOURCES_STACK_NAME="${STACK_IDENTIFIER}-test-resources"
 BACKEND_STACK_NAME="${STACK_IDENTIFIER}-async-backend"
 # STS_MOCK_STACK_NAME="${STACK_NAME}-sts-mock"
 
-# DEV_OVERRIDE_ASYNC_BACKEND_BASE_URL="DevOverrideAsyncBackendBaseUrl"
 DEV_OVERRIDE_BACKEND_STACK_NAME="BackendStackName"
 DEV_OVERRIDE_STS_MOCK_BASE_URL="DevOverrideStsMockBaseUrl"
 DEV_OVERRIDE_PROXY_BASE_URL="DevOverrideProxyBaseUrl"
 DEV_OVERRIDE_SESSIONS_BASE_URL="DevOverrideSessionsBaseUrl"
 
-STS_MOCK_URL="https://${STACK_IDENTIFIER}-sts-mock.review-b-async.dev.account.gov.uk"
+STS_MOCK_URL="https://${TEST_RESOURCES_STACK_NAME}-sts.review-b-async.dev.account.gov.uk"
 PROXY_URL="https://proxy-${BACKEND_STACK_NAME}.review-b-async.dev.account.gov.uk"
 SESSIONS_URL="https://sessions-${BACKEND_STACK_NAME}.review-b-async.dev.account.gov.uk"
 
@@ -94,6 +93,7 @@ if [[ $deploy_sts_mock == true ]]; then
   echo "Waiting for stack create/updates to complete"
   aws cloudformation wait stack-create-complete --stack-name "${TEST_RESOURCES_STACK_NAME}" || aws cloudformation wait stack-update-complete --stack-name "${TEST_RESOURCES_STACK_NAME}"
 
+  npn run build:env $STACK_IDENTIFIER
   cd ../helper-scripts
 fi
 
@@ -103,41 +103,3 @@ if [[ $publish_keys_to_s3 == true ]]; then
   ./publish_keys_to_s3.sh "${TEST_RESOURCES_STACK_NAME}" "dev"
   cd ../../helper-scripts
 fi
-
-# while true; do
-#   echo
-#   read -r -p "Do you want to deploy a test-resources stack? [Y/n]: " yn
-
-#   case "$yn" in
-#     [yY] | "")
-#       echo "Building and deploying test-resources stack: $TEST_RESOURCES_STACK_NAME"
-#       echo
-#       cd ../test-resources
-#       npm i
-#       sam build --cached
-#       if [ $? -ge 1 ]; then
-#         echo "Build failed"
-#         exit 1
-#       else
-#         sam deploy \
-#           --stack-name "$TEST_RESOURCES_STACK_NAME" \
-#           --parameter-overrides \
-#             "BackendStackName=${BACKEND_STACK_NAME} \
-#             DevOverrideProxyBaseUrl=${PROXY_URL} \
-#             DevOverrideStsMockBaseUrl=${STS_MOCK_URL} \
-#             DevOverrideSessionsBaseUrl=${SESSIONS_URL}" \
-#           --capabilities CAPABILITY_NAMED_IAM \
-#           --resolve-s3
-#       fi
-
-#       break
-#       ;;
-#     [nN])
-#       echo "Skipping test-resources deployment"
-#       break
-#       ;;
-#     *)
-#       echo "Invalid input. Please enter 'y' or 'n'."
-#       ;;
-#   esac
-# done

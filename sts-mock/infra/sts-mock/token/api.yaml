@@ -37,9 +37,9 @@ Resources:
     Type: AWS::ApiGateway::DomainName
     Properties:
       DomainName: !If
-        - StsMockDevelopmentStack
+        - TestResourcesDevelopmentStack
         - !Sub
-          - ${AWS::StackName}.${DNS_RECORD}
+          - ${AWS::StackName}-sts.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
@@ -54,7 +54,7 @@ Resources:
         Types:
           - REGIONAL
       RegionalCertificateArn: !If
-        - StsMockDevelopmentStack
+        - TestResourcesDevelopmentStack
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneStsMockCertificateV2ARN}}'
       SecurityPolicy: TLS_1_2
@@ -63,9 +63,9 @@ Resources:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
       DomainName: !If
-        - StsMockDevelopmentStack
+        - TestResourcesDevelopmentStack
         - !Sub
-          - ${AWS::StackName}.${DNS_RECORD}
+          - ${AWS::StackName}-sts.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
@@ -83,9 +83,9 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       Name: !If
-        - StsMockDevelopmentStack
+        - TestResourcesDevelopmentStack
         - !Sub
-          - ${AWS::StackName}.${DNS_RECORD}
+          - ${AWS::StackName}-sts.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
