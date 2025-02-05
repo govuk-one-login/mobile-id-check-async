@@ -3,6 +3,7 @@ export enum SessionState {
   BIOMETRIC_TOKEN_ISSUED = "ASYNC_BIOMETRIC_TOKEN_ISSUED",
 }
 export type SessionAttributes = BaseSessionAttributes;
+
 export interface BaseSessionAttributes {
   clientId: string;
   govukSigninJourneyId: string;
