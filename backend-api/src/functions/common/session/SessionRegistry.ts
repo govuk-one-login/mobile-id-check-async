@@ -1,4 +1,4 @@
-import { BaseSessionAttributes } from "../../adapters/dynamoDbAdapter";
+import { SessionAttributes } from "../../adapters/dynamoDbAdapter";
 import { Result } from "../../utils/result";
 import { UpdateSessionOperation } from "./updateOperations/UpdateSessionOperation";
 
@@ -10,7 +10,7 @@ export interface SessionRegistry {
 }
 
 export interface UpdateSessionSuccess {
-  attributes: BaseSessionAttributes;
+  attributes: SessionAttributes;
 }
 
 export type UpdateSessionFailure =
@@ -19,7 +19,7 @@ export type UpdateSessionFailure =
 
 export interface UpdateSessionFailureConditionalCheckFailure {
   errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE;
-  attributes: BaseSessionAttributes;
+  attributes: SessionAttributes;
 }
 
 export interface UpdateSessionFailureInternalServerError {

@@ -228,6 +228,8 @@ export class DynamoDbAdapter implements SessionRegistry {
   }
 }
 
+export type SessionAttributes = BaseSessionAttributes;
+
 export interface BaseSessionAttributes {
   clientId: string;
   govukSigninJourneyId: string;
