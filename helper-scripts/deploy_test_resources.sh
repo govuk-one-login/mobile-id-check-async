@@ -21,7 +21,7 @@ DEV_OVERRIDE_STS_MOCK_BASE_URL="DevOverrideStsMockBaseUrl"
 DEV_OVERRIDE_PROXY_BASE_URL="DevOverrideProxyBaseUrl"
 DEV_OVERRIDE_SESSIONS_BASE_URL="DevOverrideSessionsBaseUrl"
 
-STS_MOCK_URL="https://${TEST_RESOURCES_STACK_NAME}-sts.review-b-async.dev.account.gov.uk"
+STS_MOCK_URL="https://sts-${TEST_RESOURCES_STACK_NAME}.review-b-async.dev.account.gov.uk"
 PROXY_URL="https://proxy-${BACKEND_STACK_NAME}.review-b-async.dev.account.gov.uk"
 SESSIONS_URL="https://sessions-${BACKEND_STACK_NAME}.review-b-async.dev.account.gov.uk"
 

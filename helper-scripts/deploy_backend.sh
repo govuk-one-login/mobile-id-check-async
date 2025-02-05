@@ -29,7 +29,7 @@ DEPLOY_ALARMS_IN_DEV="DeployAlarmsInDev"
 
 PROXY_URL="https://proxy-${BACKEND_STACK_NAME}.review-b-async.dev.account.gov.uk"
 SESSIONS_URL="https://sessions-${BACKEND_STACK_NAME}.review-b-async.dev.account.gov.uk"
-STS_MOCK_URL="https://${TEST_RESOURCES_STACK_NAME}-sts.review-b-async.dev.account.gov.uk"
+STS_MOCK_URL="https://sts-${TEST_RESOURCES_STACK_NAME}.review-b-async.dev.account.gov.uk"
 
 deploy_cf_dist=false
 deploy_backend_api_stack=false
