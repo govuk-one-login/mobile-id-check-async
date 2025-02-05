@@ -1,12 +1,11 @@
 import { UpdateSessionOperation } from "../UpdateSessionOperation";
 import { DocumentType } from "../../../../types/document";
-import { SessionState } from "../../session";
+import { SessionState, BaseSessionAttributes } from "../../session";
 import {
   AttributeValue,
   ReturnValue,
   ReturnValuesOnConditionCheckFailure,
 } from "@aws-sdk/client-dynamodb";
-import { BaseSessionAttributes } from "../../session";
 import { NativeAttributeValue, unmarshall } from "@aws-sdk/util-dynamodb";
 import { emptyFailure, Result, successResult } from "../../../../utils/result";
 
