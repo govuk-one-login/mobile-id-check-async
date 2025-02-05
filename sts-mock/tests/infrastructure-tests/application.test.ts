@@ -179,9 +179,7 @@ describe("STS mock infrastructure", () => {
     });
 
     test("Token lambda is attached to a VPC and subnets are protected", () => {
-      const lambdaHandlers = [
-        "tokenHandler.lambdaHandler",
-      ];
+      const lambdaHandlers = ["tokenHandler.lambdaHandler"];
       lambdaHandlers.forEach((lambdaHandler) => {
         template.hasResourceProperties("AWS::Serverless::Function", {
           Handler: lambdaHandler,
@@ -199,13 +197,11 @@ describe("STS mock infrastructure", () => {
             ],
           },
         });
-      })
-    })
+      });
+    });
 
     test("Dequeue lambda is attached to a VPC and subnets are private", () => {
-      const lambdaHandlers = [
-        "dequeueHandler.lambdaHandler",
-      ];
+      const lambdaHandlers = ["dequeueHandler.lambdaHandler"];
       lambdaHandlers.forEach((lambdaHandler) => {
         template.hasResourceProperties("AWS::Serverless::Function", {
           Handler: lambdaHandler,
@@ -223,8 +219,8 @@ describe("STS mock infrastructure", () => {
             ],
           },
         });
-      })
-    })
+      });
+    });
   });
 
   describe("S3", () => {
