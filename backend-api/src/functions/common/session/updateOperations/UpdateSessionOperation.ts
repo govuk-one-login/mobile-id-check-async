@@ -4,7 +4,7 @@ import {
   ReturnValuesOnConditionCheckFailure,
 } from "@aws-sdk/client-dynamodb";
 import { Result } from "../../../utils/result";
-import { SessionAttributes } from "../../../adapters/dynamoDbAdapter";
+import { SessionAttributes } from "../session";
 
 export interface UpdateSessionOperation {
   getDynamoDbUpdateExpression(): string;

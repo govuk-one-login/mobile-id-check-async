@@ -6,7 +6,7 @@ import {
   ReturnValue,
   ReturnValuesOnConditionCheckFailure,
 } from "@aws-sdk/client-dynamodb";
-import { BaseSessionAttributes } from "../../../../adapters/dynamoDbAdapter";
+import { BaseSessionAttributes } from "../../session";
 import { NativeAttributeValue, unmarshall } from "@aws-sdk/util-dynamodb";
 import { emptyFailure, Result, successResult } from "../../../../utils/result";
 

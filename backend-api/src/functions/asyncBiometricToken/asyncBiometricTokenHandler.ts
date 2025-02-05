@@ -27,7 +27,7 @@ import { BiometricTokenIssued } from "../common/session/updateOperations/Biometr
 import { UpdateSessionError } from "../common/session/SessionRegistry";
 import { randomUUID } from "crypto";
 import { IEventService } from "../services/events/types";
-import { BaseSessionAttributes } from "../adapters/dynamoDbAdapter";
+import { BaseSessionAttributes } from "../common/session/session";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,

@@ -1,4 +1,4 @@
-import { SessionAttributes } from "../../adapters/dynamoDbAdapter";
+import { SessionAttributes } from "./session";
 import { Result } from "../../utils/result";
 import { UpdateSessionOperation } from "./updateOperations/UpdateSessionOperation";
 
