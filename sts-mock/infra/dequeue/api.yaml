@@ -4,7 +4,7 @@ Resources:
   EventsApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub ${AWS::StackName}-events-api
+      Name: !Sub ${AWS::StackName}-events
       Description: API gateway for retrieving events
       EndpointConfiguration: REGIONAL
       Auth:
