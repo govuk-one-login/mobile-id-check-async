@@ -53,11 +53,4 @@ export class MockEventServiceFailToWrite implements IEventService {
       errorCategory: ErrorCategory.SERVER_ERROR,
     });
   };
-
-  writeBiometricTokenIssuedEvent = async (): Promise<Result<null>> => {
-    return errorResult({
-      errorMessage: "Failed to write to SQS",
-      errorCategory: ErrorCategory.SERVER_ERROR,
-    });
-  };
 }
