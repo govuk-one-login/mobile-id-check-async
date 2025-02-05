@@ -26,6 +26,8 @@ import { DocumentType } from "../types/document";
 import { BiometricTokenIssued } from "../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 import { UpdateSessionError } from "../common/session/SessionRegistry";
 import { randomUUID } from "crypto";
+import { IEventService } from "../services/events/types";
+import { BaseSessionAttributes } from "../adapters/dynamoDbAdapter";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
@@ -82,30 +84,14 @@ export async function lambdaHandlerConstructor(
   );
 
   if (updateSessionResult.isError) {
-    let writeEventResult;
     let sessionAttributes;
     switch (updateSessionResult.value.errorType) {
       case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
         sessionAttributes = updateSessionResult.value.attributes;
-        writeEventResult = await eventService.writeGenericEvent({
-          eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-          sub: sessionAttributes.subjectIdentifier,
-          sessionId: sessionAttributes.sessionId,
-          govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
-          getNowInMilliseconds: Date.now,
-          componentId: config.ISSUER,
-        });
-
-        if (writeEventResult.isError) {
-          logger.error("ERROR_WRITING_AUDIT_EVENT", {
-            errorMessage:
-              "Unexpected error writing the DCMAW_ASYNC_CRI_4XXERROR event",
-          });
-          return serverErrorResponse;
-        }
-        return unauthorizedResponse(
-          "invalid_session",
-          "User session is not in a valid state for this operation.",
+        return handleUpdateSessionConditionalCheckFailure(
+          eventService,
+          sessionAttributes,
+          config.ISSUER,
         );
       case UpdateSessionError.INTERNAL_SERVER_ERROR:
         return serverErrorResponse;
@@ -167,4 +153,31 @@ async function getSubmitterKeyForDocumentType(
 
 function generateOpaqueId(): string {
   return randomUUID();
+}
+
+async function handleUpdateSessionConditionalCheckFailure(
+  eventService: IEventService,
+  sessionAttributes: BaseSessionAttributes,
+  issuer: string,
+): Promise<APIGatewayProxyResult> {
+  const writeEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+    sub: sessionAttributes.subjectIdentifier,
+    sessionId: sessionAttributes.sessionId,
+    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+    getNowInMilliseconds: Date.now,
+    componentId: issuer,
+  });
+
+  if (writeEventResult.isError) {
+    logger.error("ERROR_WRITING_AUDIT_EVENT", {
+      errorMessage:
+        "Unexpected error writing the DCMAW_ASYNC_CRI_4XXERROR event",
+    });
+    return serverErrorResponse;
+  }
+  return unauthorizedResponse(
+    "invalid_session",
+    "User session is not in a valid state for this operation.",
+  );
 }
