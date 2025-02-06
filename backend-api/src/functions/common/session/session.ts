@@ -10,7 +10,7 @@ export interface BaseSessionAttributes {
   createdAt: number;
   issuer: string;
   sessionId: string;
-  sessionState: string;
+  sessionState: SessionState;
   clientState: string;
   subjectIdentifier: string;
   timeToLive: number;
