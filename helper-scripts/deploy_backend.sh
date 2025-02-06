@@ -20,11 +20,10 @@ BACKEND_STACK_NAME="${STACK_IDENTIFIER}-async-backend"
 TEST_RESOURCES_STACK_NAME="${STACK_IDENTIFIER}-test-resources"
 
 # Define parameter names
-DEV_OVERRIDE_STS_BASE_URL="DevOverrideStsBaseUrl"
-DEV_OVERRIDE_ASYNC_BACKEND_BASE_URL="DevOverrideAsyncBackendBaseUrl"
 DEV_OVERRIDE_BACKEND_STACK_NAME="BackendStackName"
 DEV_OVERRIDE_PROXY_BASE_URL="DevOverrideProxyBaseUrl"
 DEV_OVERRIDE_SESSIONS_BASE_URL="DevOverrideSessionsBaseUrl"
+DEV_OVERRIDE_STS_BASE_URL="DevOverrideStsBaseUrl"
 DEPLOY_ALARMS_IN_DEV="DeployAlarmsInDev"
 
 PROXY_URL="https://proxy-${BACKEND_STACK_NAME}.review-b-async.dev.account.gov.uk"
