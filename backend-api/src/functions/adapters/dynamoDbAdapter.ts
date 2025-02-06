@@ -6,8 +6,6 @@ import {
   QueryCommand,
   QueryCommandInput,
   QueryCommandOutput,
-  ReturnValue,
-  ReturnValuesOnConditionCheckFailure,
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import { CreateSessionAttributes } from "../services/session/sessionService";
@@ -26,6 +24,7 @@ import {
 } from "../utils/result";
 import {
   SessionRegistry,
+  UpdateExpressionDataToLog,
   UpdateSessionError,
   UpdateSessionFailure,
   UpdateSessionFailureInternalServerError,
@@ -231,11 +230,4 @@ export class DynamoDbAdapter implements SessionRegistry {
       errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
     });
   }
-}
-
-interface UpdateExpressionDataToLog {
-  updateExpression: string;
-  conditionExpression: string | undefined;
-  returnValues: ReturnValue;
-  returnValuesOnConditionCheckFailure: ReturnValuesOnConditionCheckFailure;
 }
