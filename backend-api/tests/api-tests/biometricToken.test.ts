@@ -29,6 +29,29 @@ describe("POST /async/biometricToken", () => {
     });
   });
 
+  describe("Given there was an error updating the session", () => {
+    it("Returns an error and 401 status code", async () => {
+      const requestBody = {
+        sessionId: "invalidSessionId",
+        documentType: "NFC_PASSPORT",
+      };
+
+      const response = await SESSIONS_API_INSTANCE.post(
+        "/async/biometricToken",
+        requestBody,
+      );
+
+      expect(response.status).toBe(401);
+      expect(response.data).toStrictEqual({
+        error: "invalid_session",
+        error_description: "Session not found.",
+      });
+      expect(response.headers).toEqual(
+        expect.objectContaining(expectedSecurityHeaders),
+      );
+    });
+  });
+
   describe("Given there is a valid request", () => {
     it("Returns a 200 response with biometric access token and opaque ID", async () => {
       const sessionId = await getValidSessionId();
