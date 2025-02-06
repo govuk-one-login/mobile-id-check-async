@@ -40,7 +40,7 @@ publish_keys_to_s3=false
 while true; do
   echo
   echo "Deploying a test-resources stack is required the first time you deploy a backend-api stack. It's optional for subsequent deployments."
-  read -r -p "Do you want to deploy an sts-mock stack? [y/N]: " yn
+  read -r -p "Do you want to deploy an test-resources stack? [y/N]: " yn
 
   case $yn in
     [yY])
