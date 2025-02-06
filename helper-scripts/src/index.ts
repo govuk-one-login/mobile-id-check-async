@@ -16,12 +16,12 @@ const askFavouriteFruits = async (): Promise<void> => {
     .map((fruit) => fruit.trim())
     .filter((fruit) => fruit !== "");
 
-  console.log("\nYour fav fruits are:")
-  fruitsArray.forEach((fruit) => console.log(` ${fruit}, `))
+  console.log("\nYour fav fruits are:");
+  fruitsArray.forEach((fruit) => console.log(` ${fruit}, `));
 };
 
 try {
-  await askFavouriteFruits()
+  await askFavouriteFruits();
 } catch (error: unknown) {
-  console.log("There was an error. Error:", error)
+  console.log("There was an error. Error:", error);
 }
