@@ -34,7 +34,7 @@ deploy_cf_dist=false
 deploy_backend_api_stack=false
 enable_alarms=false
 deploy_test_resources=false
-publish_keys_to_s3=false
+publish_sts_mock_keys_to_s3=false
 
 # Ask the user about deploying sts-mock
 while true; do
@@ -66,7 +66,7 @@ if [ $deploy_test_resources == true ]; then
 
     case "$yn" in
       [yY])
-        publish_keys_to_s3=true
+        publish_sts_mock_keys_to_s3=true
         break
         ;;
       [nN] | "")
@@ -209,7 +209,7 @@ if [[ $deploy_test_resources == true ]]; then
   cd ../helper-scripts
 fi
 
-if [[ $publish_keys_to_s3 == true ]]; then
+if [[ $publish_sts_mock_keys_to_s3 == true ]]; then
   cd ../sts-mock/jwks-helper-script
   ./publish_keys_to_s3.sh "${TEST_RESOURCES_STACK_NAME}" "dev"
   cd ../../helper-scripts
