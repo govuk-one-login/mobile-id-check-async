@@ -221,12 +221,7 @@ export class DynamoDbAdapter implements SessionRegistry {
 
   private handleUpdateSessionInternalServerError(
     error: unknown,
-    updateExpressionDataToLog: {
-      updateExpression: string;
-      conditionExpression: string | undefined;
-      returnValues: ReturnValue;
-      returnValuesOnConditionCheckFailure: ReturnValuesOnConditionCheckFailure;
-    },
+    updateExpressionDataToLog: UpdateExpressionDataToLog,
   ): FailureWithValue<UpdateSessionFailureInternalServerError> {
     logger.error(LogMessage.UPDATE_SESSION_UNEXPECTED_FAILURE, {
       error: error,
@@ -236,4 +231,11 @@ export class DynamoDbAdapter implements SessionRegistry {
       errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
     });
   }
+}
+
+interface UpdateExpressionDataToLog {
+  updateExpression: string;
+  conditionExpression: string | undefined;
+  returnValues: ReturnValue;
+  returnValuesOnConditionCheckFailure: ReturnValuesOnConditionCheckFailure;
 }
