@@ -39,7 +39,7 @@ publish_keys_to_s3=false
 # Ask the user about deploying sts-mock
 while true; do
   echo
-  echo "Deploying an sts-mock stack is required the first time you deploy a backend-api stack. It's optional for subsequent deployments."
+  echo "Deploying a test-resources stack is required the first time you deploy a backend-api stack. It's optional for subsequent deployments."
   read -r -p "Do you want to deploy an sts-mock stack? [y/N]: " yn
 
   case $yn in
