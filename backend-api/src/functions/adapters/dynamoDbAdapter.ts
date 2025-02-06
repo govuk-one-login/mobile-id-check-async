@@ -206,7 +206,7 @@ export class DynamoDbAdapter implements SessionRegistry {
 
     if (getAttributesResult.isError) {
       return this.handleUpdateSessionInternalServerError(
-        "Unable to retrieve session attributes after successful update command",
+        "Could not parse valid session attributes after successful update command",
         updateExpressionDataToLog,
       );
     }
