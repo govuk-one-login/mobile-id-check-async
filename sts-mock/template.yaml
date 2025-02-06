@@ -71,11 +71,7 @@ Mappings:
       ApiRateLimit: 10
 
 Conditions:
-  Never: !Equals
-    - true
-    - false
-
-  TestResourcesDevelopmentStack: !And
+  DevelopmentStack: !And
     - !Equals
       - !Ref Environment
       - dev
@@ -83,6 +79,10 @@ Conditions:
       - !Equals
         - !Ref AWS::StackName
         - test-resources
+
+  Never: !Equals
+    - true
+    - false
 
   UseCodeSigning: !Not
     - !Equals
@@ -276,7 +276,7 @@ Resources:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
       DomainName: !If
-        - TestResourcesDevelopmentStack
+        - DevelopmentStack
         - !Sub
           - events-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
@@ -296,7 +296,7 @@ Resources:
     Type: AWS::ApiGateway::DomainName
     Properties:
       DomainName: !If
-        - TestResourcesDevelopmentStack
+        - DevelopmentStack
         - !Sub
           - events-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
@@ -313,7 +313,7 @@ Resources:
         Types:
           - REGIONAL
       RegionalCertificateArn: !If
-        - TestResourcesDevelopmentStack
+        - DevelopmentStack
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneEventsCertificateV2ARN}}'
       SecurityPolicy: TLS_1_2
@@ -326,7 +326,7 @@ Resources:
         HostedZoneId: !GetAtt EventsApiDomainName.RegionalHostedZoneId
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
       Name: !If
-        - TestResourcesDevelopmentStack
+        - DevelopmentStack
         - !Sub
           - events-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
@@ -555,7 +555,7 @@ Resources:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
       DomainName: !If
-        - TestResourcesDevelopmentStack
+        - DevelopmentStack
         - !Sub
           - sts-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
@@ -575,7 +575,7 @@ Resources:
     Type: AWS::ApiGateway::DomainName
     Properties:
       DomainName: !If
-        - TestResourcesDevelopmentStack
+        - DevelopmentStack
         - !Sub
           - sts-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
@@ -592,7 +592,7 @@ Resources:
         Types:
           - REGIONAL
       RegionalCertificateArn: !If
-        - TestResourcesDevelopmentStack
+        - DevelopmentStack
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneStsMockCertificateV2ARN}}'
       SecurityPolicy: TLS_1_2
@@ -605,7 +605,7 @@ Resources:
         HostedZoneId: !GetAtt StsMockApiDomainName.RegionalHostedZoneId
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
       Name: !If
-        - TestResourcesDevelopmentStack
+        - DevelopmentStack
         - !Sub
           - sts-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
