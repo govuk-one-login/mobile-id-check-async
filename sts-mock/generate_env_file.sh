@@ -6,7 +6,7 @@ if [ $# -ge 1 ] && [ -n "$1" ] ; then
   TEST_RESOURCES_STACK_NAME="${STACK_IDENTIFIER}-test-resources"
 else
   # default stack name in dev
-  TEST_RESOURCES_STACK_NAME="test-resources"
+  TEST_RESOURCES_STACK_NAME="sts-mock"
 fi
 
 echo "Generating .env file for the $TEST_RESOURCES_STACK_NAME stack"
