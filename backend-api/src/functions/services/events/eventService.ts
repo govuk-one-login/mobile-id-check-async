@@ -55,7 +55,7 @@ export class EventService implements IEventService {
     return {
       user: {
         user_id: eventConfig.sub,
-        transaction_id: "",
+        transaction_id: undefined,
         session_id: eventConfig.sessionId,
         govuk_signin_journey_id: eventConfig.govukSigninJourneyId,
       },
