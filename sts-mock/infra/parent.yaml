@@ -105,7 +105,7 @@ Conditions:
     - !Not
       - !Equals
         - !Ref AWS::StackName
-        - mob-sts-mock
+        - sts-mock
 
   Never: !Equals
     - true
