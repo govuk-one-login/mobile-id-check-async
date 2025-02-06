@@ -25,11 +25,7 @@ export const isBaseSessionAttributes = (
   if (typeof item.clientState !== "string") return false;
   if (typeof item.subjectIdentifier !== "string") return false;
   if (typeof item.timeToLive !== "number") return false;
-  if (
-    "redirectUri" in item &&
-    item.redirectUri != null &&
-    typeof item.redirectUri !== "string"
-  ) {
+  if ("redirectUri" in item && typeof item.redirectUri !== "string") {
     return false;
   }
   return true;
