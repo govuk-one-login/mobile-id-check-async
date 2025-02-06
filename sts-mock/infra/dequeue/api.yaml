@@ -101,7 +101,7 @@ Resources:
       RegionalCertificateArn: !If
         - DevelopmentStack
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
-        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneEventsCertificateV2ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneEventsCertificateV1ARN}}'
       SecurityPolicy: TLS_1_2
 
   EventsApiBasePathMapping:
