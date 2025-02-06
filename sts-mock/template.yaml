@@ -72,7 +72,7 @@ Conditions:
     - !Not
       - !Equals
         - !Ref AWS::StackName
-        - test-resources
+        - sts-mock
 
   Never: !Equals
     - true
