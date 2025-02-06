@@ -49,7 +49,6 @@ export interface GenericTxmaEvent extends BaseUserTxmaEvent {
 }
 
 export interface CredentialTokenIssuedEvent extends BaseTxmaEvent {
-  event_timestamp_ms: number;
   event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
 }
 
