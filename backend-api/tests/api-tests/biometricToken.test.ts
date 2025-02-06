@@ -44,7 +44,7 @@ describe("POST /async/biometricToken", () => {
       expect(response.status).toBe(401);
       expect(response.data).toStrictEqual({
         error: "invalid_session",
-        error_description: "Session not found.",
+        error_description: "Session not found",
       });
       expect(response.headers).toEqual(
         expect.objectContaining(expectedSecurityHeaders),

@@ -321,7 +321,7 @@ describe("Async Biometric Token", () => {
             statusCode: 401,
             body: JSON.stringify({
               error: "invalid_session",
-              error_description: "Session not found.",
+              error_description: "Session not found",
             }),
             headers: expectedSecurityHeaders,
           });

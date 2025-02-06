@@ -204,7 +204,7 @@ async function handleUpdateSessionSessionNotFound(
     });
     return serverErrorResponse;
   }
-  return unauthorizedResponse("invalid_session", "Session not found.");
+  return unauthorizedResponse("invalid_session", "Session not found");
 }
 
 async function handleUpdateSessionError(
