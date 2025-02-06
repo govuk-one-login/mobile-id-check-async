@@ -29,7 +29,7 @@ describe("POST /async/biometricToken", () => {
     });
   });
 
-  describe("Given there was an error updating the session", () => {
+  describe("Given no session was found when attempting to update the session", () => {
     it("Returns an error and 401 status code", async () => {
       const requestBody = {
         sessionId: "invalidSessionId",
