@@ -253,76 +253,155 @@ describe("Async Biometric Token", () => {
 
   describe("When session update fails", () => {
     describe("When failure is due to client error", () => {
-      beforeEach(async () => {
-        dependencies.getSessionRegistry = () => ({
-          ...mockInertSessionRegistry,
-          updateSession: jest.fn().mockResolvedValue(
-            errorResult({
-              errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
-              attributes: validSessionAttributes,
-            }),
-          ),
-        });
-        result = await lambdaHandlerConstructor(
-          dependencies,
-          validRequest,
-          context,
-        );
-      });
-
-      describe("Given DCMAW_ASYNC_CRI_4XXERROR event fails to write to TxMA", () => {
+      describe("Given session was not found", () => {
         beforeEach(async () => {
-          dependencies.getEventService = () => ({
-            ...mockInertEventService,
-            writeGenericEvent: jest.fn().mockResolvedValue(
+          dependencies.getSessionRegistry = () => ({
+            ...mockInertSessionRegistry,
+            updateSession: jest.fn().mockResolvedValue(
               errorResult({
-                errorMessage: "mockError",
+                errorType: UpdateSessionError.SESSION_NOT_FOUND,
               }),
             ),
           });
-
           result = await lambdaHandlerConstructor(
             dependencies,
             validRequest,
             context,
           );
         });
-        it("Logs the error", async () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            message: "ERROR_WRITING_AUDIT_EVENT",
-            function_arn: "arn:12345", // example field to verify that context has been added
+
+        describe("Given DCMAW_ASYNC_CRI_4XXERROR event fails to write to TxMA", () => {
+          beforeEach(async () => {
+            dependencies.getEventService = () => ({
+              ...mockInertEventService,
+              writeGenericEvent: jest.fn().mockResolvedValue(
+                errorResult({
+                  errorMessage: "mockError",
+                }),
+              ),
+            });
+
+            result = await lambdaHandlerConstructor(
+              dependencies,
+              validRequest,
+              context,
+            );
+          });
+          it("Logs the error", async () => {
+            expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+              message: "ERROR_WRITING_AUDIT_EVENT",
+              function_arn: "arn:12345", // example field to verify that context has been added
+            });
+          });
+
+          it("Returns 500 Internal Server Error ", async () => {
+            expect(result).toStrictEqual({
+              statusCode: 500,
+              body: JSON.stringify({
+                error: "server_error",
+                error_description: "Internal Server Error",
+              }),
+              headers: expectedSecurityHeaders,
+            });
           });
         });
 
-        it("Returns 500 Internal Server Error ", async () => {
+        it("Writes DCMAW_ASYNC_CRI_4XXERROR event to TxMA", () => {
+          expect(
+            expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
+              expect.objectContaining({
+                eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+              }),
+            ),
+          );
+        });
+
+        it("Returns 401 Unauthorized", () => {
           expect(result).toStrictEqual({
-            statusCode: 500,
+            statusCode: 401,
             body: JSON.stringify({
-              error: "server_error",
-              error_description: "Internal Server Error",
+              error: "invalid_session",
+              error_description: "Session not found.",
             }),
             headers: expectedSecurityHeaders,
           });
         });
       });
 
-      it("Writes DCMAW_ASYNC_CRI_4XXERROR event to TxMA", () => {
-        expect(
-          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
-            expect.objectContaining({ eventName: "DCMAW_ASYNC_CRI_4XXERROR" }),
-          ),
-        );
-      });
+      describe("Given session was found", () => {
+        beforeEach(async () => {
+          dependencies.getSessionRegistry = () => ({
+            ...mockInertSessionRegistry,
+            updateSession: jest.fn().mockResolvedValue(
+              errorResult({
+                errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
+                attributes: validSessionAttributes,
+              }),
+            ),
+          });
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
 
-      it("Returns 401 Unauthorized", () => {
-        expect(result).toStrictEqual({
-          statusCode: 401,
-          body: JSON.stringify({
-            error: "invalid_session",
-            error_description:
-              "User session is not in a valid state for this operation.",
-          }),
-          headers: expectedSecurityHeaders,
+        describe("Given DCMAW_ASYNC_CRI_4XXERROR event fails to write to TxMA", () => {
+          beforeEach(async () => {
+            dependencies.getEventService = () => ({
+              ...mockInertEventService,
+              writeGenericEvent: jest.fn().mockResolvedValue(
+                errorResult({
+                  errorMessage: "mockError",
+                }),
+              ),
+            });
+
+            result = await lambdaHandlerConstructor(
+              dependencies,
+              validRequest,
+              context,
+            );
+          });
+          it("Logs the error", async () => {
+            expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+              message: "ERROR_WRITING_AUDIT_EVENT",
+              function_arn: "arn:12345", // example field to verify that context has been added
+            });
+          });
+
+          it("Returns 500 Internal Server Error ", async () => {
+            expect(result).toStrictEqual({
+              statusCode: 500,
+              body: JSON.stringify({
+                error: "server_error",
+                error_description: "Internal Server Error",
+              }),
+              headers: expectedSecurityHeaders,
+            });
+          });
+        });
+
+        it("Writes DCMAW_ASYNC_CRI_4XXERROR event to TxMA", () => {
+          expect(
+            expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
+              expect.objectContaining({
+                eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+              }),
+            ),
+          );
+        });
+
+        it("Returns 401 Unauthorized", () => {
+          expect(result).toStrictEqual({
+            statusCode: 401,
+            body: JSON.stringify({
+              error: "invalid_session",
+              error_description:
+                "User session is not in a valid state for this operation.",
+            }),
+            headers: expectedSecurityHeaders,
+          });
         });
       });
     });

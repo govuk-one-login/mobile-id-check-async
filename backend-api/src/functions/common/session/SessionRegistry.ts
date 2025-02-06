@@ -15,7 +15,8 @@ export interface UpdateSessionSuccess {
 
 export type UpdateSessionFailure =
   | UpdateSessionFailureConditionalCheckFailure
-  | UpdateSessionFailureInternalServerError;
+  | UpdateSessionFailureInternalServerError
+  | UpdateSessionFailureSessionNotFound;
 
 export interface UpdateSessionFailureConditionalCheckFailure {
   errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE;
@@ -26,7 +27,12 @@ export interface UpdateSessionFailureInternalServerError {
   errorType: UpdateSessionError.INTERNAL_SERVER_ERROR;
 }
 
+export interface UpdateSessionFailureSessionNotFound {
+  errorType: UpdateSessionError.SESSION_NOT_FOUND;
+}
+
 export enum UpdateSessionError {
   INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR",
   CONDITIONAL_CHECK_FAILURE = "CONDITIONAL_CHECK_FAILURE",
+  SESSION_NOT_FOUND = "SESSION_NOT_FOUND",
 }

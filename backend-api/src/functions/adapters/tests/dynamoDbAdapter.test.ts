@@ -74,13 +74,12 @@ describe("DynamoDbAdapter", () => {
     });
 
     describe("When a conditional check fails", () => {
-      describe("Given invalid session attributes were returned in response", () => {
+      describe("Given session was not found", () => {
         beforeEach(async () => {
           mockDynamoDbClient.on(UpdateItemCommand).rejects(
             new ConditionalCheckFailedException({
               $metadata: {},
               message: "Conditional check failed",
-              Item: {},
             }),
           );
           result = await sessionRegistry.updateSession(
@@ -91,7 +90,7 @@ describe("DynamoDbAdapter", () => {
 
         it("Logs the failure", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_UPDATE_SESSION_UNEXPECTED_FAILURE",
+            messageCode: "MOBILE_ASYNC_UPDATE_SESSION_SESSION_NOT_FOUND",
             data: {
               updateExpression: updateOperation.getDynamoDbUpdateExpression(),
               conditionExpression:
@@ -106,50 +105,90 @@ describe("DynamoDbAdapter", () => {
         it("Returns failure with server error", () => {
           expect(result).toEqual(
             errorResult({
-              errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
+              errorType: UpdateSessionError.SESSION_NOT_FOUND,
             }),
           );
         });
       });
 
-      describe("Given valid session attributes were returned in response", () => {
-        beforeEach(async () => {
-          mockDynamoDbClient.on(UpdateItemCommand).rejects(
-            new ConditionalCheckFailedException({
-              $metadata: {},
-              message: "Conditional check failed",
-              Item: marshall(baseSessionAttributes),
-            }),
-          );
-          result = await sessionRegistry.updateSession(
-            "mock_session_id",
-            updateOperation,
-          );
-        });
+      describe("Given session was found", () => {
+        describe("Given invalid session attributes were returned in response", () => {
+          beforeEach(async () => {
+            mockDynamoDbClient.on(UpdateItemCommand).rejects(
+              new ConditionalCheckFailedException({
+                $metadata: {},
+                message: "Conditional check failed",
+                Item: {},
+              }),
+            );
+            result = await sessionRegistry.updateSession(
+              "mock_session_id",
+              updateOperation,
+            );
+          });
 
-        it("Logs the failure", () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode:
-              "MOBILE_ASYNC_UPDATE_SESSION_CONDITIONAL_CHECK_FAILURE",
-            error: "Conditional check failed",
-            data: {
-              updateExpression: updateOperation.getDynamoDbUpdateExpression(),
-              conditionExpression:
-                updateOperation.getDynamoDbConditionExpression(),
-              returnValues: updateOperation.getDynamoDbReturnValues(),
-              returnValuesOnConditionCheckFailure:
-                updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
-            },
+          it("Logs the failure", () => {
+            expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+              messageCode: "MOBILE_ASYNC_UPDATE_SESSION_UNEXPECTED_FAILURE",
+              data: {
+                updateExpression: updateOperation.getDynamoDbUpdateExpression(),
+                conditionExpression:
+                  updateOperation.getDynamoDbConditionExpression(),
+                returnValues: updateOperation.getDynamoDbReturnValues(),
+                returnValuesOnConditionCheckFailure:
+                  updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
+              },
+            });
+          });
+
+          it("Returns failure with server error", () => {
+            expect(result).toEqual(
+              errorResult({
+                errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
+              }),
+            );
           });
         });
 
-        it("Returns failure with conditional check failure error", () => {
-          expect(result).toEqual(
-            errorResult({
-              errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
-              attributes: baseSessionAttributes,
-            }),
-          );
+        describe("Given valid session attributes were returned in response", () => {
+          beforeEach(async () => {
+            mockDynamoDbClient.on(UpdateItemCommand).rejects(
+              new ConditionalCheckFailedException({
+                $metadata: {},
+                message: "Conditional check failed",
+                Item: marshall(baseSessionAttributes),
+              }),
+            );
+            result = await sessionRegistry.updateSession(
+              "mock_session_id",
+              updateOperation,
+            );
+          });
+
+          it("Logs the failure", () => {
+            expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+              messageCode:
+                "MOBILE_ASYNC_UPDATE_SESSION_CONDITIONAL_CHECK_FAILURE",
+              error: "Conditional check failed",
+              data: {
+                updateExpression: updateOperation.getDynamoDbUpdateExpression(),
+                conditionExpression:
+                  updateOperation.getDynamoDbConditionExpression(),
+                returnValues: updateOperation.getDynamoDbReturnValues(),
+                returnValuesOnConditionCheckFailure:
+                  updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
+              },
+            });
+          });
+
+          it("Returns failure with conditional check failure error", () => {
+            expect(result).toEqual(
+              errorResult({
+                errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
+                attributes: baseSessionAttributes,
+              }),
+            );
+          });
         });
       });
     });
