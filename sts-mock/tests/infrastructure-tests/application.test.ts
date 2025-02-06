@@ -35,7 +35,7 @@ describe("STS mock infrastructure", () => {
         DefinitionBody: {
           "Fn::Transform": {
             Name: "AWS::Include",
-            Parameters: { Location: "./openApiSpecs/sts-mock-spec.yaml" },
+            Parameters: { Location: "./openapi/sts-mock-spec.yaml" },
           },
         },
       });
@@ -178,47 +178,21 @@ describe("STS mock infrastructure", () => {
       });
     });
 
-    test("Token lambda is attached to a VPC and subnets are protected", () => {
-      const lambdaHandlers = ["tokenHandler.lambdaHandler"];
-      lambdaHandlers.forEach((lambdaHandler) => {
-        template.hasResourceProperties("AWS::Serverless::Function", {
-          Handler: lambdaHandler,
-          VpcConfig: {
-            SubnetIds: [
-              { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdA" },
-              { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdB" },
-              { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdC" },
-            ],
-            SecurityGroupIds: [
-              {
-                "Fn::ImportValue":
-                  "devplatform-vpc-AWSServicesEndpointSecurityGroupId",
-              },
-            ],
+    test("all lambdas are attached to a VPC and subnets are protected", () => {
+      const lambdas = template.findResources("AWS::Serverless::Function");
+      const lambdaList = Object.keys(lambdas);
+      lambdaList.forEach((lambda) => {
+        expect(lambdas[lambda].Properties.VpcConfig.SubnetIds).toEqual([
+          { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdA" },
+          { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdB" },
+          { "Fn::ImportValue": "devplatform-vpc-ProtectedSubnetIdC" },
+        ]);
+        expect(lambdas[lambda].Properties.VpcConfig.SecurityGroupIds).toEqual([
+          {
+            "Fn::ImportValue":
+              "devplatform-vpc-AWSServicesEndpointSecurityGroupId",
           },
-        });
-      });
-    });
-
-    test("Dequeue lambda is attached to a VPC and subnets are private", () => {
-      const lambdaHandlers = ["dequeueHandler.lambdaHandler"];
-      lambdaHandlers.forEach((lambdaHandler) => {
-        template.hasResourceProperties("AWS::Serverless::Function", {
-          Handler: lambdaHandler,
-          VpcConfig: {
-            SubnetIds: [
-              { "Fn::ImportValue": "devplatform-vpc-PrivateSubnetIdA" },
-              { "Fn::ImportValue": "devplatform-vpc-PrivateSubnetIdB" },
-              { "Fn::ImportValue": "devplatform-vpc-PrivateSubnetIdC" },
-            ],
-            SecurityGroupIds: [
-              {
-                "Fn::ImportValue":
-                  "devplatform-vpc-AWSServicesEndpointSecurityGroupId",
-              },
-            ],
-          },
-        });
+        ]);
       });
     });
   });

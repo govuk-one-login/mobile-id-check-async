@@ -8,9 +8,6 @@ remove_quotes() {
 cd /sts-mock
 
 export STS_MOCK_API_URL=$(remove_quotes "$CFN_StsMockApiUrl")
-export SESSIONS_API_URL=$(remove_quotes "$CFN_SessionsApiUrl")
-export PROXY_API_URL=$(remove_quotes "$CFN_ProxyApiUrl")
-export EVENTS_API_URL=$(remove_quotes "$CFN_EventsApiUrl")
 
 if npm run test:api; then
     cp -rf results "$TEST_REPORT_ABSOLUTE_DIR"
