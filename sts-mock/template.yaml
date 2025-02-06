@@ -27,12 +27,6 @@ Parameters:
     Type: String
     Default: none
 
-  DevOverrideStsMockBaseUrl:
-    Description: |
-      Override the STS Mock URL used in the API tests
-    Type: String
-    Default: none
-
   Environment:
     Description: The name of the deployment environment
     Type: String
