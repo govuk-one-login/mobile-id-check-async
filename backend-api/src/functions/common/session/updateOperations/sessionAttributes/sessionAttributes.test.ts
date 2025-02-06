@@ -162,7 +162,7 @@ describe("Session attributes", () => {
           }),
         },
       ])("$scenario", (invalidBaseSession) => {
-        it("Returns null", () => {
+        it("Returns an emptyFailure", () => {
           const result = getBaseSessionAttributes(
             invalidBaseSession.attributes,
           );
@@ -204,7 +204,7 @@ describe("Session attributes", () => {
           }),
         },
       ])("$scenario", (validBaseSession) => {
-        it("Returns BaseSessionAttributes", () => {
+        it("Returns successResult with BaseSessionAttributes", () => {
           const result = getBaseSessionAttributes(validBaseSession.attributes);
 
           expect(result).toEqual(
