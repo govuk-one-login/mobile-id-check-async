@@ -12,7 +12,7 @@ export interface UpdateSessionOperation {
   getDynamoDbExpressionAttributeValues(): Record<string, AttributeValue>;
   getDynamoDbReturnValues(): ReturnValue;
   getDynamoDbReturnValuesOnConditionCheckFailure(): ReturnValuesOnConditionCheckFailure;
-  getSessionAttributes(
+  getSessionAttributesFromDynamoDbItem(
     item: Record<string, AttributeValue> | undefined,
   ): Result<SessionAttributes, void>;
 }

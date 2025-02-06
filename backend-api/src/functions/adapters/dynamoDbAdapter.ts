@@ -176,9 +176,8 @@ export class DynamoDbAdapter implements SessionRegistry {
         });
       }
       if (error instanceof ConditionalCheckFailedException) {
-        const getAttributesResult = updateOperation.getSessionAttributes(
-          error.Item,
-        );
+        const getAttributesResult =
+          updateOperation.getSessionAttributesFromDynamoDbItem(error.Item);
         if (getAttributesResult.isError) {
           return this.handleUpdateSessionInternalServerError(
             error,
@@ -202,9 +201,8 @@ export class DynamoDbAdapter implements SessionRegistry {
       }
     }
 
-    const getAttributesResult = updateOperation.getSessionAttributes(
-      response.Attributes,
-    );
+    const getAttributesResult =
+      updateOperation.getSessionAttributesFromDynamoDbItem(response.Attributes);
 
     if (getAttributesResult.isError) {
       return this.handleUpdateSessionInternalServerError(
