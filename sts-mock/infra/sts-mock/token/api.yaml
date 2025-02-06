@@ -25,7 +25,7 @@ Resources:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: "./openapi/sts-mock-spec.yaml"
+            Location: "./openApiSpecs/sts-mock-spec.yaml"
 
   StsMockApiAccessLogs:
     Type: AWS::Logs::LogGroup
@@ -39,7 +39,7 @@ Resources:
       DomainName: !If
         - DevelopmentStack
         - !Sub
-          - ${AWS::StackName}.${DNS_RECORD}
+          - sts-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
@@ -65,7 +65,7 @@ Resources:
       DomainName: !If
         - DevelopmentStack
         - !Sub
-          - ${AWS::StackName}.${DNS_RECORD}
+          - sts-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
@@ -85,7 +85,7 @@ Resources:
       Name: !If
         - DevelopmentStack
         - !Sub
-          - ${AWS::StackName}.${DNS_RECORD}
+          - sts-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
