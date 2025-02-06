@@ -7,7 +7,6 @@
   "scripts": {
     "build:env": "./generate_env_file.sh",
     "build:infra": "./combine_template.sh",
-    "deploy": "../helper-scripts/deploy_test_resources.sh",
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
     "lint": "./node_modules/.bin/eslint ./src",
