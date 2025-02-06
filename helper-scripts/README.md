@@ -16,7 +16,7 @@ export STACK_NAME=backend-stack-name    (REQUIRED)
 
 ### What it does
 
-This script provides the ability to deploy a full backend application. This includes the cloudfront distribution, backend-api and test-resources applications. It also sets up local `.env` files for API testing.
+This script provides the ability to deploy a `backend-api` stack in the AWS dev account.
 
 ### How to use it
 
@@ -30,7 +30,6 @@ npm run deploy-backend-to-dev <your-stack-name>
 The deployed stacks will be named as follows:
 
 - `<your-stack-name>-async-backend`
-- `<your-stack-name>-test-resources`
-- `<your-stack-name>-async-backend-cf-dist`
+- `<your-stack-name>-sts-mock`
 
-Note: This script generates individual `.env` files your `backend-api` stack and `test-resources` directories. This completes all setup needed to run API tests against your deployed backend application.
+Note: This script will generate an `.env` file your `backend-api` stack to allow api testing

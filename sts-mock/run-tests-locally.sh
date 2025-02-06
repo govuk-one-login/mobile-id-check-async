@@ -1,13 +1,7 @@
 #!/bin/bash
 set -eu
 
-if [ $# -ge 1 ] && [ -n "$1" ] ; then
-  stack_name="${1}-test-resources"
-else
-  # default stack name in dev
-  stack_name="test-resources"
-fi
-
+stack_name=${1:-mob-sts-mock}
 
 echo "Running tests against ${stack_name}"
 
@@ -31,8 +25,6 @@ awk '{ printf("CFN_%s=\"%s\"\n", $1, $2) }' cf-output.txt >>docker-vars.env
   echo TEST_ENVIRONMENT="$ENVIRONMENT"
   echo SAM_STACK_NAME="$stack_name"
 } >>docker-vars.env
-
-aws configure export-credentials --format env-no-export >> docker-vars.env
 
 docker build --tag testcontainer .
 
