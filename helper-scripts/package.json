@@ -2,10 +2,10 @@
   "name": "helper-scripts",
   "version": "1.0.0",
   "description": "Scripts for deploying, updating and deleting AWS SAM stacks",
-  "main": "index.js",
+  "main": "index.mjs",
   "scripts": {
     "build": "./node_modules/.bin/tsc",
-    "start": "node dist/index.js",
+    "start": "node dist/index.mjs",
     "deleteStacks": "./node_modules/.bin/tsx ./deleteStacksZx/deleteStacks.mts",
     "format": "./node_modules/.bin/prettier --write '**/*.ts'"
   },
