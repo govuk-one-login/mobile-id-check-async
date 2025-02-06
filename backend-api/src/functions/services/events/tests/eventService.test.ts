@@ -46,7 +46,6 @@ describe("Event Service", () => {
           MessageBody: JSON.stringify({
             user: {
               user_id: "mockSub",
-              transaction_id: "",
               session_id: "mockSessionId",
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
             },
@@ -86,7 +85,6 @@ describe("Event Service", () => {
           MessageBody: JSON.stringify({
             user: {
               user_id: "mockSub",
-              transaction_id: "",
               session_id: "mockSessionId",
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
             },
