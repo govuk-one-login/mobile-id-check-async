@@ -66,7 +66,7 @@ describe("Event Service", () => {
       });
     });
 
-    describe(`Given writing ${genericEventName} SQS is successful`, () => {
+    describe(`Given writing ${genericEventName} to SQS is successful`, () => {
       beforeEach(async () => {
         sqsMock.on(SendMessageCommand).resolves({});
 
