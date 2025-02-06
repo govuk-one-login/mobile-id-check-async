@@ -31,5 +31,6 @@ The deployed stacks will be named as follows:
 
 - `<your-stack-name>-async-backend`
 - `<your-stack-name>-test-resources`
+- `<your-stack-name>-async-backend-cf-dist`
 
 Note: This script will generate individual `.env` files your `backend-api` stack and `test-resources` stack to allow api testing
