@@ -33,4 +33,4 @@ The deployed stacks will be named as follows:
 - `<your-stack-name>-test-resources`
 - `<your-stack-name>-async-backend-cf-dist`
 
-Note: This script will generate individual `.env` files your `backend-api` stack and `test-resources` stack to allow api testing
+Note: This script generates individual `.env` files your `backend-api` stack and `test-resources` directories. This completes all setup needed to run API tests against your deployed backend application.
