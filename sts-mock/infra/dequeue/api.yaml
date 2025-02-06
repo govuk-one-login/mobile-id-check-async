@@ -82,7 +82,7 @@ Resources:
     Type: AWS::ApiGateway::DomainName
     Properties:
       DomainName: !If
-        - TestResourcesDevelopmentStack
+        - DevelopmentStack
         - !Sub
           - events-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
@@ -99,7 +99,7 @@ Resources:
         Types:
           - REGIONAL
       RegionalCertificateArn: !If
-        - TestResourcesDevelopmentStack
+        - DevelopmentStack
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneEventsCertificateV2ARN}}'
       SecurityPolicy: TLS_1_2
@@ -108,7 +108,7 @@ Resources:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
       DomainName: !If
-        - TestResourcesDevelopmentStack
+        - DevelopmentStack
         - !Sub
           - events-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
@@ -128,7 +128,7 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       Name: !If
-        - TestResourcesDevelopmentStack
+        - DevelopmentStack
         - !Sub
           - events-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap

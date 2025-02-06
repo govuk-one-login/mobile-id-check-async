@@ -104,7 +104,7 @@ Conditions:
       - !Ref DevOverrideSessionsBaseUrl
       - none
 
-  TestResourcesDevelopmentStack: !And
+  DevelopmentStack: !And
     - !Equals
       - !Ref Environment
       - dev
