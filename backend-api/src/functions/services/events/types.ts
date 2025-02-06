@@ -28,16 +28,16 @@ export interface BaseUserTxmaEvent extends BaseTxmaEvent {
   };
 }
 
-export type GenericEventName =
+export type GenericEventNames =
   | "DCMAW_ASYNC_CRI_START"
   | "DCMAW_ASYNC_CRI_4XXERROR";
 
 export type EventNames =
-  | GenericEventName
+  | GenericEventNames
   | "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
 
 export interface GenericEventConfig extends BaseUserEventConfig {
-  eventName: GenericEventName;
+  eventName: GenericEventNames;
 }
 
 export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
@@ -45,7 +45,7 @@ export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
 }
 
 export interface GenericTxmaEvent extends BaseUserTxmaEvent {
-  event_name: GenericEventName;
+  event_name: GenericEventNames;
 }
 
 export interface CredentialTokenIssuedEvent extends BaseTxmaEvent {

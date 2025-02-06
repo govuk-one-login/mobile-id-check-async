@@ -7,7 +7,7 @@ import {
 } from "@aws-sdk/client-sqs";
 import { EventService } from "../eventService";
 import { sqsClient } from "../sqsClient";
-import { GenericEventName } from "../types";
+import { GenericEventNames } from "../types";
 import { Result } from "../../../utils/result";
 
 describe("Event Service", () => {
@@ -23,7 +23,7 @@ describe("Event Service", () => {
     sqsMock = mockClient(sqsClient);
   });
 
-  describe.each<GenericEventName>([
+  describe.each<GenericEventNames>([
     "DCMAW_ASYNC_CRI_START",
     "DCMAW_ASYNC_CRI_4XXERROR",
   ])("Writing generic TxMA events to SQS", (genericEventName) => {
