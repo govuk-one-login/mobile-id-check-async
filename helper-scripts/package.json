@@ -9,9 +9,14 @@
   },
   "author": "",
   "license": "ISC",
+  "dependencies": {
+    "commander": "^13.1.0",
+    "inquirer": "^12.4.1",
+    "zx": "^8.3.0"
+  },
   "devDependencies": {
     "prettier": "^3.4.2",
     "tsx": "^4.19.2",
-    "zx": "^8.3.0"
+    "typescript": "^5.7.3"
   }
 }
