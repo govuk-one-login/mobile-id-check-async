@@ -16,7 +16,7 @@ export STACK_NAME=backend-stack-name    (REQUIRED)
 
 ### What it does
 
-This script provides the ability to deploy a `backend-api` stack and a `test-resources` stack in the AWS dev account.
+This script provides the ability to deploy a full backend application. This includes the cloudfront distribution, backend-api and test-resources applications. It also sets up local `.env` files for API testing.
 
 ### How to use it
 
