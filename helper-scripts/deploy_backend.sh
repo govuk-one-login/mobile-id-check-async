@@ -48,7 +48,7 @@ while true; do
       break
       ;;
     [nN] | "")
-      echo "Skipping sts-mock stack deployment"
+      echo "Skipping test-resources stack deployment"
       break
       ;;
     *)
