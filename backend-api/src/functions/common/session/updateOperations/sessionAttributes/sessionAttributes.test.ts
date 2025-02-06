@@ -1,9 +1,23 @@
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { getBaseSessionAttributes } from "./sessionAttributes";
 import { emptyFailure, successResult } from "../../../../utils/result";
+import { SessionAttributes, SessionState } from "../../session";
+import { AttributeValue } from "@aws-sdk/client-dynamodb";
 
 describe("Session attributes", () => {
   describe("getBaseSessionAttributes", () => {
+    const validBaseSessionAttributes = {
+      clientId: "mockClientId",
+      govukSigninJourneyId: "mockGovukSigninJourneyId",
+      createdAt: 12345,
+      issuer: "mockIssuer",
+      sessionId: "mockSessionId",
+      sessionState: SessionState.AUTH_SESSION_CREATED,
+      clientState: "mockClientState",
+      subjectIdentifier: "mockSubjectIdentifier",
+      timeToLive: 12345,
+    };
+
     describe("Given an invalid base session attribute record", () => {
       describe.each([
         {
@@ -16,157 +30,76 @@ describe("Session attributes", () => {
         },
         {
           scenario: "Given clientId is missing",
-          attributes: marshall({
-            govukSigninJourneyId: "mockGovukSigninJourneyId",
-            createdAt: 12345,
-            issuer: "mockIssuer",
-            sessionId: "mockSessionId",
-            sessionState: "mockSessionState",
-            clientState: "mockClientState",
-            subjectIdentifier: "mockSubjectIdentifier",
-            timeToLive: 12345,
+          attributes: buildSessionAttributes(validBaseSessionAttributes, {
+            clientId: undefined,
           }),
         },
         {
           scenario: "Given govukSigninJourneyId is missing",
-          attributes: marshall({
-            clientId: "mockClientId",
-            createdAt: 12345,
-            issuer: "mockIssuer",
-            sessionId: "mockSessionId",
-            sessionState: "mockSessionState",
-            clientState: "mockClientState",
-            subjectIdentifier: "mockSubjectIdentifier",
-            timeToLive: 12345,
+          attributes: buildSessionAttributes(validBaseSessionAttributes, {
+            govukSigninJourneyId: undefined,
           }),
         },
         {
           scenario: "Given createdAt is missing",
-          attributes: marshall({
-            clientId: "mockClientId",
-            govukSigninJourneyId: "mockGovukSigninJourneyId",
-            issuer: "mockIssuer",
-            sessionId: "mockSessionId",
-            sessionState: "mockSessionState",
-            clientState: "mockClientState",
-            subjectIdentifier: "mockSubjectIdentifier",
-            timeToLive: 12345,
+          attributes: buildSessionAttributes(validBaseSessionAttributes, {
+            createdAt: undefined,
           }),
         },
         {
           scenario: "Given issuer is missing",
-          attributes: marshall({
-            clientId: "mockClientId",
-            govukSigninJourneyId: "mockGovukSigninJourneyId",
-            createdAt: 12345,
-            sessionId: "mockSessionId",
-            sessionState: "mockSessionState",
-            clientState: "mockClientState",
-            subjectIdentifier: "mockSubjectIdentifier",
-            timeToLive: 12345,
+          attributes: buildSessionAttributes(validBaseSessionAttributes, {
+            issuer: undefined,
           }),
         },
         {
           scenario: "Given sessionId is missing",
-          attributes: marshall({
-            clientId: "mockClientId",
-            govukSigninJourneyId: "mockGovukSigninJourneyId",
-            createdAt: 12345,
-            issuer: "mockIssuer",
-            sessionState: "mockSessionState",
-            clientState: "mockClientState",
-            subjectIdentifier: "mockSubjectIdentifier",
-            timeToLive: 12345,
+          attributes: buildSessionAttributes(validBaseSessionAttributes, {
+            sessionId: undefined,
           }),
         },
         {
           scenario: "Given sessionState is missing",
-          attributes: marshall({
-            clientId: "mockClientId",
-            govukSigninJourneyId: "mockGovukSigninJourneyId",
-            createdAt: 12345,
-            issuer: "mockIssuer",
-            sessionId: "mockSessionId",
-            clientState: "mockClientState",
-            subjectIdentifier: "mockSubjectIdentifier",
-            timeToLive: 12345,
+          attributes: buildSessionAttributes(validBaseSessionAttributes, {
+            sessionState: undefined,
           }),
         },
         {
           scenario: "Given clientState is missing",
-          attributes: marshall({
-            clientId: "mockClientId",
-            govukSigninJourneyId: "mockGovukSigninJourneyId",
-            createdAt: 12345,
-            issuer: "mockIssuer",
-            sessionId: "mockSessionId",
-            sessionState: "mockSessionState",
-            subjectIdentifier: "mockSubjectIdentifier",
-            timeToLive: 12345,
+          attributes: buildSessionAttributes(validBaseSessionAttributes, {
+            clientState: undefined,
           }),
         },
         {
           scenario: "Given subjectIdentifier is missing",
-          attributes: marshall({
-            clientId: "mockClientId",
-            govukSigninJourneyId: "mockGovukSigninJourneyId",
-            createdAt: 12345,
-            issuer: "mockIssuer",
-            sessionId: "mockSessionId",
-            sessionState: "mockSessionState",
-            clientState: "mockClientState",
-            timeToLive: 12345,
+          attributes: buildSessionAttributes(validBaseSessionAttributes, {
+            subjectIdentifier: undefined,
           }),
         },
         {
           scenario: "Given timeToLive is missing",
-          attributes: marshall({
-            clientId: "mockClientId",
-            govukSigninJourneyId: "mockGovukSigninJourneyId",
-            createdAt: 12345,
-            issuer: "mockIssuer",
-            sessionId: "mockSessionId",
-            sessionState: "mockSessionState",
-            clientState: "mockClientState",
-            subjectIdentifier: "mockSubjectIdentifier",
+          attributes: buildSessionAttributes(validBaseSessionAttributes, {
+            timeToLive: undefined,
           }),
         },
         {
           scenario:
             "Given mandatory attribute values are present but not all the correct type",
           attributes: marshall({
-            clientId: "mockClientId",
-            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            ...validBaseSessionAttributes,
             createdAt: "mockInvalidStringType",
-            issuer: "mockIssuer",
-            sessionId: "mockSessionId",
-            sessionState: "mockSessionState",
-            clientState: "mockClientState",
-            subjectIdentifier: "mockSubjectIdentifier",
-            timeToLive: 12345,
           }),
         },
         {
           scenario: "Given redirectUri is present but not of type string",
           attributes: marshall({
-            clientId: "mockClientId",
-            govukSigninJourneyId: "mockGovukSigninJourneyId",
-            createdAt: 12345,
-            issuer: "mockIssuer",
-            sessionId: "mockSessionId",
-            sessionState: "mockSessionState",
-            clientState: "mockClientState",
-            subjectIdentifier: "mockSubjectIdentifier",
-            timeToLive: 12345,
+            ...validBaseSessionAttributes,
             redirectUri: [],
           }),
         },
-      ])("$scenario", (invalidBaseSession) => {
+      ])("$scenario", ({ attributes }) => {
         it("Returns an emptyFailure", () => {
-          const result = getBaseSessionAttributes(
-            invalidBaseSession.attributes,
-          );
-
+          const result = getBaseSessionAttributes(attributes);
           expect(result).toEqual(emptyFailure());
         });
       });
@@ -176,30 +109,11 @@ describe("Session attributes", () => {
       describe.each([
         {
           scenario: "Given redirectUri attribute is undefined",
-          attributes: marshall({
-            clientId: "mockClientId",
-            govukSigninJourneyId: "mockGovukSigninJourneyId",
-            createdAt: 12345,
-            issuer: "mockIssuer",
-            sessionId: "mockSessionId",
-            sessionState: "mockSessionState",
-            clientState: "mockClientState",
-            subjectIdentifier: "mockSubjectIdentifier",
-            timeToLive: 12345,
-          }),
+          attributes: buildSessionAttributes(validBaseSessionAttributes),
         },
         {
           scenario: "Given redirectUri attribute is defined",
-          attributes: marshall({
-            clientId: "mockClientId",
-            govukSigninJourneyId: "mockGovukSigninJourneyId",
-            createdAt: 12345,
-            issuer: "mockIssuer",
-            sessionId: "mockSessionId",
-            sessionState: "mockSessionState",
-            clientState: "mockClientState",
-            subjectIdentifier: "mockSubjectIdentifier",
-            timeToLive: 12345,
+          attributes: buildSessionAttributes(validBaseSessionAttributes, {
             redirectUri: "https://www.mockRedirectUri.com",
           }),
         },
@@ -215,3 +129,18 @@ describe("Session attributes", () => {
     });
   });
 });
+
+function buildSessionAttributes(
+  validSessionAttributes: SessionAttributes,
+  overrides: Partial<SessionAttributes> = {},
+): Record<string, AttributeValue> {
+  const attributes = { ...validSessionAttributes, ...overrides };
+
+  Object.keys(attributes).forEach((key) => {
+    if (attributes[key as keyof typeof attributes] === undefined) {
+      delete attributes[key as keyof typeof attributes];
+    }
+  });
+
+  return marshall(attributes);
+}
