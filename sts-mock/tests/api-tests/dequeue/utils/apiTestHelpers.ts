@@ -255,9 +255,6 @@ async function getEvents(
     },
   });
 
-  const { status } = response;
-  if (status !== 200) throw new Error(`Error: ${status} Status code`);
-
   const events = response.data;
   return Array.isArray(events) ? events : []; // If response is malformed, return empty array so polling can be retried
 }
