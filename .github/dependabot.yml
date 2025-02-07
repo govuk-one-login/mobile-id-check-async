@@ -38,7 +38,7 @@ updates:
           - "minor"
           - "patch"
   - package-ecosystem: "npm"
-    directory: "test-resources"
+    directory: "sts-mock"
     schedule:
       interval: "weekly"
       day: "tuesday"

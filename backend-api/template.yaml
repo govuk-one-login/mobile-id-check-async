@@ -68,7 +68,7 @@ Mappings:
       BiometricSubmitterKeySecretPathPassport: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
       ClientRegistrySecretPath: build/clientRegistry
       ReadIdBaseUrl: https://readid-mock.review-b-async.build.account.gov.uk/v2
-      STSBASEURL: https://test-resources.review-b-async.build.account.gov.uk
+      STSBASEURL: https://sts-mock.review-b-async.build.account.gov.uk
     dev:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
@@ -76,7 +76,7 @@ Mappings:
       BiometricSubmitterKeySecretPathPassport: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
       ClientRegistrySecretPath: dev/clientRegistry
       ReadIdBaseUrl: https://readid-mock.review-b-async.dev.account.gov.uk/v2
-      STSBASEURL: https://test-resources.review-b-async.dev.account.gov.uk
+      STSBASEURL: https://sts-mock.review-b-async.dev.account.gov.uk
     integration:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP

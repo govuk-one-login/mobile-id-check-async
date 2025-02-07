@@ -5,7 +5,7 @@ remove_quotes() {
   echo "$1" | tr -d '"'
 }
 
-cd /test-resources
+cd /sts-mock
 
 export STS_MOCK_API_URL=$(remove_quotes "$CFN_StsMockApiUrl")
 export SESSIONS_API_URL=$(remove_quotes "$CFN_SessionsApiUrl")

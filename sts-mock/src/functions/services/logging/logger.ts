@@ -1,6 +1,6 @@
 import { Context } from "aws-lambda";
 import { LogMessage, RegisteredLogMessages } from "./types";
-import { LogAttributes } from "@aws-lambda-powertools/logger/types";
+import { LogAttributes } from "@aws-lambda-powertools/logger/lib/cjs/types";
 
 export interface ILogger<T extends string> {
   log(message: T, data: LogAttributes): void;
