@@ -1,4 +1,4 @@
-import { Result, errorResult, successResult } from "../../utils/result";
+import { Result, emptyFailure, emptySuccess } from "../../utils/result";
 import { sqsClient } from "./sqsClient";
 import { SendMessageCommand } from "@aws-sdk/client-sqs";
 import {
@@ -18,21 +18,21 @@ export class EventService implements IEventService {
 
   async writeGenericEvent(
     eventConfig: GenericEventConfig,
-  ): Promise<Result<null>> {
+  ): Promise<Result<void, void>> {
     const txmaEvent = this.buildGenericEvent(eventConfig);
     return await this.writeToSqs(txmaEvent);
   }
 
   async writeCredentialTokenIssuedEvent(
     eventConfig: CredentialTokenIssuedEventConfig,
-  ): Promise<Result<null>> {
+  ): Promise<Result<void, void>> {
     const txmaEvent = this.buildCredentialTokenIssuedEvent(eventConfig);
     return await this.writeToSqs(txmaEvent);
   }
 
   private async writeToSqs(
     txmaEvent: GenericTxmaEvent | CredentialTokenIssuedEvent,
-  ): Promise<Result<null>> {
+  ): Promise<Result<void, void>> {
     try {
       await sqsClient.send(
         new SendMessageCommand({
@@ -40,11 +40,9 @@ export class EventService implements IEventService {
           MessageBody: JSON.stringify(txmaEvent),
         }),
       );
-      return successResult(null);
+      return emptySuccess();
     } catch {
-      return errorResult({
-        errorMessage: "Failed to write to SQS",
-      });
+      return emptyFailure();
     }
   }
 

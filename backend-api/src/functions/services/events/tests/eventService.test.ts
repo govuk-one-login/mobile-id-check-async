@@ -8,7 +8,7 @@ import {
 import { EventService } from "../eventService";
 import { sqsClient } from "../sqsClient";
 import { GenericEventNames } from "../types";
-import { Result } from "../../../utils/result";
+import { emptyFailure, emptySuccess, Result } from "../../../utils/result";
 import "aws-sdk-client-mock-jest";
 
 describe("Event Service", () => {
@@ -19,7 +19,7 @@ describe("Event Service", () => {
     ServiceOutputTypes,
     SQSClientResolvedConfig
   >;
-  let result: Result<null>;
+  let result: Result<void, void>;
   beforeEach(() => {
     sqsMock = mockClient(sqsClient);
   });
@@ -64,11 +64,8 @@ describe("Event Service", () => {
         );
       });
 
-      it("Returns an error result", () => {
-        expect(result.isError).toBe(true);
-        expect(result.value).toStrictEqual({
-          errorMessage: "Failed to write to SQS",
-        });
+      it("Returns an emptyFailure", () => {
+        expect(result).toEqual(emptyFailure());
       });
     });
 
@@ -108,9 +105,8 @@ describe("Event Service", () => {
         );
       });
 
-      it("Returns a success result", () => {
-        expect(result.isError).toBe(false);
-        expect(result.value).toEqual(null);
+      it("Returns an emptySuccess", () => {
+        expect(result).toEqual(emptySuccess());
       });
     });
   });
@@ -144,11 +140,8 @@ describe("Event Service", () => {
         );
       });
 
-      it("Returns an error result", () => {
-        expect(result.isError).toBe(true);
-        expect(result.value).toStrictEqual({
-          errorMessage: "Failed to write to SQS",
-        });
+      it("Returns an emptyFailure", () => {
+        expect(result).toEqual(emptyFailure());
       });
     });
 
@@ -180,9 +173,8 @@ describe("Event Service", () => {
         );
       });
 
-      it("Returns a success result", () => {
-        expect(result.isError).toBe(false);
-        expect(result.value).toEqual(null);
+      it("Returns an emptySuccess", () => {
+        expect(result).toEqual(emptySuccess());
       });
     });
   });

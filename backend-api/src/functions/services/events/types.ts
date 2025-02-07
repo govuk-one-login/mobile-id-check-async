@@ -55,6 +55,8 @@ export interface CredentialTokenIssuedEvent extends BaseTxmaEvent {
 export interface IEventService {
   writeCredentialTokenIssuedEvent: (
     eventConfig: CredentialTokenIssuedEventConfig,
-  ) => Promise<Result<null>>;
-  writeGenericEvent: (eventConfig: GenericEventConfig) => Promise<Result<null>>;
+  ) => Promise<Result<void, void>>;
+  writeGenericEvent: (
+    eventConfig: GenericEventConfig,
+  ) => Promise<Result<void, void>>;
 }
