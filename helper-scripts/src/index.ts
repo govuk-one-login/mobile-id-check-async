@@ -1,6 +1,6 @@
 import inquirer from "inquirer";
-import { deleteDevStacks } from "./deleteDevStacks.js";
-import { deleteDevStacksLegacy } from "./deleteDevStacksLegacy.js";
+import { deleteDevStacks } from "./deleteDevStacks/deleteDevStacks.js";
+import { deleteDevStacksLegacy } from "./deleteDevStackLegacy/deleteDevStacksLegacy.js";
 import { echo } from "zx";
 
 const { whichTool } = await inquirer.prompt<{
