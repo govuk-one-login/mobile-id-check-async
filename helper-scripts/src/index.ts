@@ -19,44 +19,8 @@ const doesStackExist = async (stackName: string): Promise<void> => {
   await $`aws cloudformation describe-stacks --stack-name ${stackName} 2>/dev/null`;
 };
 
-const selectStacksToDelete = async (
-  candidates: StackToDeleteCandidates,
-): Promise<StackToDelete> => {
-  const { priorityOneStacksToDelete } = await inquirer.prompt<{
-    priorityOneStacksToDelete: string[];
-  }>([
-    {
-      type: "checkbox",
-      name: "priorityOneStacksToDelete",
-      message: "Confirm which of the following stacks you want to delete",
-      choices: candidates.priorityOneCandidate,
-    },
-  ]);
-
-  console.log();
-
-  const { priorityZeroStacksToDelete } = await inquirer.prompt<{
-    priorityZeroStacksToDelete: string[];
-  }>([
-    {
-      type: "checkbox",
-      name: "priorityZeroStacksToDelete",
-      message: "Confirm which of the following stacks you want to delete",
-      choices: candidates.priorityZeroCandidate,
-    },
-  ]);
-
-  return {
-    priorityOneStacksToDelete,
-    priorityZeroStacksToDelete,
-  };
-};
-
-const getEnvironment = async (
-  baseStackName: string,
-): Promise<StackToDeleteCandidates> => {
-  const priorityZeroCandidate: string[] = [];
-  const priorityOneCandidate: string[] = [];
+const getStackCandidates = async (baseStackName: string): Promise<string[]> => {
+  const candidates: string[] = [];
 
   const stsMockStackName = `${baseStackName}-sts-mock`;
   const backendStackName = `${baseStackName}-async-backend`;
@@ -64,46 +28,50 @@ const getEnvironment = async (
 
   try {
     await doesStackExist(stsMockStackName);
-    priorityOneCandidate.push(stsMockStackName);
+    candidates.push(stsMockStackName);
   } catch (error) {
     console.log("No STS mock stack");
   }
 
   try {
     await doesStackExist(backendStackName);
-    priorityOneCandidate.push(backendStackName);
+    candidates.push(backendStackName);
   } catch (error) {
     console.log("No backend stack");
   }
 
   try {
     await doesStackExist(backendCfStackName);
-    priorityZeroCandidate.push(backendCfStackName);
+    candidates.push(backendCfStackName);
   } catch (error) {
     console.log("No backend cf stack");
   }
 
-  return {
-    priorityZeroCandidate,
-    priorityOneCandidate,
-  };
+  return candidates;
+};
+
+const selectStacksToDelete = async (
+  candidates: string[],
+): Promise<string[]> => {
+  const { stacksToDelete } = await inquirer.prompt<{
+    stacksToDelete: string[];
+  }>([
+    {
+      type: "checkbox",
+      name: "stacksToDelete",
+      message: "Confirm which of the following stacks you want to delete",
+      choices: candidates,
+    },
+  ]);
+
+  return stacksToDelete;
 };
 
 try {
   const baseStackName = await getBaseStackName();
-  const candidates = await getEnvironment(baseStackName);
+  const candidates = await getStackCandidates(baseStackName);
   console.log("candidates", candidates);
   console.log("what did we pick", await selectStacksToDelete(candidates));
 } catch (error: unknown) {
   console.log("There was an error. Error:", error);
-}
-
-interface StackToDeleteCandidates {
-  priorityZeroCandidate: string[];
-  priorityOneCandidate: string[];
-}
-
-interface StackToDelete {
-  priorityZeroStacksToDelete: string[];
-  priorityOneStacksToDelete: string[];
 }
