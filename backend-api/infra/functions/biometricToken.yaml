@@ -120,7 +120,6 @@ Resources:
                 Resource: !GetAtt TxMASQSQueue.Arn
               - Effect: Allow
                 Action:
-                  - kms:Encrypt
                   - kms:Decrypt
                   - kms:GenerateDataKey
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
