@@ -121,6 +121,16 @@ const prioritiseStacks = (candidates: string[]): PrioritisedStacks => {
   };
 };
 
+const getStacks = async (): Promise<PrioritisedStacks> => {
+  const selectedStacks: string[] = [];
+
+  const baseStackName = await getBaseStackNames();
+  const candidates = await getStackCandidates(baseStackName);
+  selectedStacks.push(...(await selectStacksToDelete(candidates)));
+
+  return prioritiseStacks(selectedStacks);
+};
+
 const deleteStack = async (stackName: string): Promise<void> => {
   try {
     await $`./delete_stack.sh ${stackName}`;
@@ -149,16 +159,6 @@ const deleteStacks = async (stacks: PrioritisedStacks): Promise<void> => {
       echo(chalk.bold(`${stackName} deleted`));
     }),
   );
-};
-
-const getStacks = async (): Promise<PrioritisedStacks> => {
-  const selectedStacks: string[] = [];
-
-  const baseStackName = await getBaseStackNames();
-  const candidates = await getStackCandidates(baseStackName);
-  selectedStacks.push(...(await selectStacksToDelete(candidates)));
-
-  return prioritiseStacks(selectedStacks);
 };
 
 try {
