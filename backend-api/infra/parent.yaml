@@ -256,7 +256,6 @@ Conditions:
         - !Ref Environment
         - dev
     - !Equals [!Ref DeployAlarmsInDev, true]
-  
   Never: !Equals
     - true
     - false

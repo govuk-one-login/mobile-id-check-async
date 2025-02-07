@@ -32,8 +32,8 @@ Resources:
         Variables:
           STS_MOCK_BASE_URL: !Sub https://${StsMockApiDomainName}
           ASYNC_BACKEND_BASE_URL: !If
-            - UseDevOverrideAsyncBackendBaseUrl
-            - !Ref DevOverrideAsyncBackendBaseUrl
+            - UseDevOverrideSessionsBaseUrl
+            - !Ref DevOverrideSessionsBaseUrl
             - !Sub https://sessions.review-b-async.${Environment}.account.gov.uk
           KEY_STORAGE_BUCKET_NAME: !Ref JwksBucket
       VpcConfig:

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eu
 
-stack_name=${1:-mob-async-backend}
+stack_name="${1:-mob}-async-backend"
 
 echo "Running test against ${stack_name}"
 
