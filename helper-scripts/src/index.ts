@@ -1,9 +1,19 @@
 import inquirer from "inquirer";
-import { $, chalk, echo, sleep } from "zx";
+import { $, chalk, echo } from "zx";
 
 console.log("Hello, world!");
 
-export const getBaseStackNames = async (): Promise<string[]> => {
+export const protectedStacks = [
+  "mob-sts-mock",
+  "mob-sts-mock-tir",
+  "mob-sts-mock-pl",
+  "mob-async-backend",
+  "mob-async-backend-tir",
+  "mob-async-backend-pl",
+  "mob-async-backend-cf-dist",
+];
+
+const getBaseStackNames = async (): Promise<string[]> => {
   const baseStackNames: string[] = [];
   let addAnother = true;
   while (addAnother) {
@@ -121,19 +131,52 @@ const prioritiseStacks = (candidates: string[]): PrioritisedStacks => {
   };
 };
 
+const confirmStacks = async (stacks: string[]): Promise<void> => {
+  console.log("You are about to delete the following stacks:");
+  stacks.forEach((stackName) => console.log(`- ${stackName}`));
+
+  const { isHappy } = await inquirer.prompt<{ isHappy: boolean }>([
+    {
+      type: "confirm",
+      name: "isHappy",
+      message: "Are you happy to continue?",
+      default: true,
+    },
+  ]);
+  if (!isHappy) {
+    console.log("Exiting script as requested.");
+    process.exit(0);
+  } else {
+    console.log("Continuing with the script...");
+  }
+};
+
+const checkIfProtectedStack = (stacks: string[], protectedStacks: string[]) => {
+  stacks.forEach(async (stackName) => {
+    if (protectedStacks.includes(stackName)) {
+      echo(chalk.red(`It is not permitted to delete stack: ${stackName}`));
+      echo(chalk.red("Please remove this stack before continuing"));
+      process.exit(1);
+    }
+    return;
+  });
+};
+
 const getStacks = async (): Promise<PrioritisedStacks> => {
   const selectedStacks: string[] = [];
 
   const baseStackName = await getBaseStackNames();
   const candidates = await getStackCandidates(baseStackName);
   selectedStacks.push(...(await selectStacksToDelete(candidates)));
+  await confirmStacks(selectedStacks);
+  await checkIfProtectedStack(selectedStacks, protectedStacks);
 
   return prioritiseStacks(selectedStacks);
 };
 
 const deleteStack = async (stackName: string): Promise<void> => {
   try {
-    await $`./delete_stack.sh ${stackName}`;
+    await $`./src/james_delete_stack.sh ${stackName}`;
   } catch (error: unknown) {
     echo(chalk.red(`Unable to delete stack: ${stackName}`));
     echo(chalk.red(`Error: ${error}`));
