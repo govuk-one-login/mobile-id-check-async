@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: SAM template for the STS mock
+Description: SAM template for the test resources stack. This contains the asynchronous events test harness and the sts-mock applications.
 
 Parameters:
   BackendStackName:

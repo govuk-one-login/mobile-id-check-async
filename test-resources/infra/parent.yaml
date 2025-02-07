@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: SAM template for the STS mock
+Description: SAM template for the test resources stack. This contains the asynchronous events test harness and the sts-mock applications.
 
 Globals:
   Function:
