@@ -4,6 +4,7 @@ Description: SAM template for the STS mock
 
 Globals:
   Function:
+    AutoPublishAliasAllProperties: true
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
