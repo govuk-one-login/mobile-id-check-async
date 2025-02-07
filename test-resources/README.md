@@ -67,9 +67,9 @@ npm run lint
 
 ### Testing changes in `backend-api`
 
-If you are deploying an `sts-mock` stack to test local changes made in `backend-api`, please follow the deployment instructions found in the helper-scripts [README](../helper-scripts/README.md).
+If you are deploying a `test-resources` stack to test local changes made in `backend-api`, please follow the deployment instructions found in the helper-scripts [README](../helper-scripts/README.md).
 
-If you are testing local changes made in `sts-mock` only, follow the below instructions.
+If you are testing local changes made in `test-resources` only, follow the below instructions.
 
 ### Manual Deployment
 To manually deploy changes made to the stack (i.e. resources or source code) to the `dev` AWS account, run the following command after assuming your credentials:
