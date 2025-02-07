@@ -12,6 +12,7 @@ Globals:
       - UsePermissionsBoundary
       - !Ref PermissionsBoundary
       - !Ref AWS::NoValue
+    AutoPublishAliasAllProperties: true
 
 Parameters:
   Environment:

@@ -271,6 +271,7 @@ Globals:
     Architectures:
       - arm64
     AutoPublishAlias: live
+    AutoPublishAliasAllProperties: true
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn

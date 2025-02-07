@@ -262,6 +262,7 @@ Conditions:
 
 Globals:
   Function:
+    AutoPublishAliasAllProperties: true
     Timeout: 5
     MemorySize: 512
     ReservedConcurrentExecutions: !FindInMap
