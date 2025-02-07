@@ -1,6 +1,8 @@
 import { UpdateSessionOperation } from "../UpdateSessionOperation";
 import { DocumentType } from "../../../../types/document";
 import { SessionState } from "../../session";
+import { AttributeValue } from "@aws-sdk/client-dynamodb";
+import { getBaseSessionAttributes } from "../sessionAttributes/sessionAttributes";
 
 export class BiometricTokenIssued implements UpdateSessionOperation {
   constructor(
@@ -23,5 +25,11 @@ export class BiometricTokenIssued implements UpdateSessionOperation {
       ":biometricTokenIssued": { S: SessionState.BIOMETRIC_TOKEN_ISSUED },
       ":authSessionCreated": { S: SessionState.AUTH_SESSION_CREATED },
     };
+  }
+
+  getSessionAttributesFromDynamoDbItem(
+    item: Record<string, AttributeValue> | undefined,
+  ) {
+    return getBaseSessionAttributes(item);
   }
 }

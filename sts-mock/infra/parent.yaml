@@ -2,23 +2,9 @@ AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: SAM template for the STS mock
 
-Mappings:
-  StsMockApiGateway:
-    dev:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
-    build:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
-
-  DNS:
-    dev:
-      BaseDns: review-b-async.dev.account.gov.uk
-    build:
-      BaseDns: review-b-async.build.account.gov.uk
-
 Globals:
   Function:
+    AutoPublishAliasAllProperties: true
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
@@ -30,7 +16,7 @@ Globals:
 
 Parameters:
   Environment:
-    Description: The name of the environment to deploy to
+    Description: The name of the deployment environment
     Type: String
     Default: dev
     AllowedValues:
@@ -49,11 +35,47 @@ Parameters:
       Type: String
       Default: none
 
-  DevOverrideAsyncBackendBaseUrl:
+  BackendStackName:
     Description: |
-      Override the ASYNC_BACKEND_BASE_URL value for development deployments
+      The Stack name of the Async Backend API stack
+    Type: String
+    Default: mob-async-backend
+
+  DevOverrideProxyBaseUrl:
+    Description: |
+      Override the Proxy URL used in the API tests
     Type: String
     Default: none
+
+  DevOverrideSessionsBaseUrl:
+    Description: |
+      Override the Sessions URL used in the API tests
+    Type: String
+    Default: none
+
+
+Mappings:
+  StsMockApiGateway:
+    dev:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+    build:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+
+  EventsApiGateway:
+    dev:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+    build:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+
+  DNS:
+    dev:
+      BaseDns: review-b-async.dev.account.gov.uk
+    build:
+      BaseDns: review-b-async.build.account.gov.uk
 
 Conditions:
   UseCodeSigning:
@@ -67,14 +89,24 @@ Conditions:
       - !Ref PermissionsBoundary
       - none
 
-  UseDevOverrideAsyncBackendBaseUrl: !Not
+  UseDevOverrideProxyBaseUrl: !Not
     - !Equals
-      - !Ref DevOverrideAsyncBackendBaseUrl
+      - !Ref DevOverrideProxyBaseUrl
+      - none
+
+  UseDevOverrideSessionsBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideSessionsBaseUrl
       - none
 
   DevelopmentStack: !And
-    - !Equals [!Ref Environment, dev]
-    - !Not [!Equals [!Ref AWS::StackName, mob-sts-mock]]
+    - !Equals
+      - !Ref Environment
+      - dev
+    - !Not
+      - !Equals
+        - !Ref AWS::StackName
+        - mob-sts-mock
 
   Never: !Equals
     - true
@@ -91,3 +123,21 @@ Outputs:
   StsMockApiUrl:
     Description: STS Mock API Gateway DNS
     Value: !Sub https://${StsMockApiDomainName}
+
+  EventsApiUrl:
+    Description: Events API URL
+    Value: !Sub https://${EventsApiDomainName}
+
+  ProxyApiUrl:
+    Description: Proxy API URL used in the Events API tests
+    Value: !If
+      - UseDevOverrideProxyBaseUrl
+      - !Ref DevOverrideProxyBaseUrl
+      - !Sub https://proxy.review-b-async.${Environment}.account.gov.uk
+
+  SessionsApiUrl:
+    Description: Sessions API URL used in the Events API tests
+    Value: !If
+      - UseDevOverrideSessionsBaseUrl
+      - !Ref DevOverrideSessionsBaseUrl
+      - !Sub https://sessions.review-b-async.${Environment}.account.gov.uk

@@ -419,7 +419,8 @@ describe("Async Token", () => {
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
           });
           expect(mockLogger.getLogMessages()[1].data).toMatchObject({
-            errorMessage: "Error writing to SQS",
+            errorMessage:
+              "Unexpected error writing the DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event",
           });
 
           expect(result.statusCode).toBe(500);

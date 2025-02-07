@@ -271,6 +271,7 @@ Globals:
     Architectures:
       - arm64
     AutoPublishAlias: live
+    AutoPublishAliasAllProperties: true
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
@@ -859,6 +860,19 @@ Resources:
                 Effect: Allow
                 Resource: !GetAtt SessionsTable.Arn
           PolicyName: AsyncBiometricTokenFunctionDynamodbPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - sqs:SendMessage
+                Effect: Allow
+                Resource: !GetAtt TxMASQSQueue.Arn
+              - Action:
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Effect: Allow
+                Resource: !GetAtt TxMAKMSEncryptionKey.Arn
+            Version: "2012-10-17"
+          PolicyName: AsyncBiometricTokenFunctionTxmaSQSPolicy
       RoleName: !Sub ${AWS::StackName}-biometric-token-lambda
 
   AsyncBiometricTokenLogGroup:

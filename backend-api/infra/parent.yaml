@@ -256,13 +256,13 @@ Conditions:
         - !Ref Environment
         - dev
     - !Equals [!Ref DeployAlarmsInDev, true]
-  
   Never: !Equals
     - true
     - false
 
 Globals:
   Function:
+    AutoPublishAliasAllProperties: true
     Timeout: 5
     MemorySize: 512
     ReservedConcurrentExecutions: !FindInMap
