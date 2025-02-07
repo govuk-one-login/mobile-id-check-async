@@ -529,6 +529,12 @@ describe("Backend application infrastructure", () => {
           template.toJSON().Globals.Function.AutoPublishAlias;
         expect(autoPublishAlias).toStrictEqual("live");
       });
+
+      test("Global AutoPublishAliasAllProperties is set to true", () => {
+        const autoPublishAliasAllProperties =
+          template.toJSON().Globals.Function.AutoPublishAliasAllProperties;
+        expect(autoPublishAliasAllProperties).toStrictEqual(true);
+      });
     });
 
     test("All lambdas have a FunctionName defined", () => {

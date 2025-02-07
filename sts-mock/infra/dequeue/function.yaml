@@ -1,0 +1,114 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  DequeueFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - DequeueLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2022
+        Sourcemap: false
+        EntryPoints:
+          - src/functions/dequeue/dequeueHandler.ts
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-dequeue
+      Runtime: nodejs20.x
+      Handler: dequeueHandler.lambdaHandler
+      Role: !GetAtt DequeueRole.Arn
+      Environment:
+        Variables:
+          TXMA_EVENT_TTL_DURATION_IN_SECONDS: 900
+          EVENTS_TABLE_NAME: !Ref EventsTable
+      Timeout: 10
+      VpcConfig:
+        SubnetIds:
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+
+  DequeueLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue
+
+  DequeueRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-dequeue-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LoggingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+        - PolicyName: SQSPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource:
+                  Fn::ImportValue: !Sub ${BackendStackName}-txma-sqs-queue-arn
+        - PolicyName: DynamoDBPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                Resource: !GetAtt EventsTable.Arn
+        - PolicyName: KMSPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                Resource:
+                  Fn::ImportValue: !Sub ${BackendStackName}-txma-kms-encryption-key-arn
+        - PolicyName: VpcPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+
+  DequeueEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 10
+      Enabled: true
+      EventSourceArn:
+        Fn::ImportValue: !Sub ${BackendStackName}-txma-sqs-queue-arn
+      FunctionName: !GetAtt DequeueFunction.Arn
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
