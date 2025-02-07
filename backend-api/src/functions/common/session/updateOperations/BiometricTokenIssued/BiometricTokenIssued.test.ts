@@ -41,19 +41,4 @@ describe("BiometricTokenIssued", () => {
       });
     });
   });
-
-  describe("When I request the ReturnValues", () => {
-    it("Returns the ReturnValues with ALL_NEW", () => {
-      const result = biometricTokenIssued.getDynamoDbReturnValues();
-      expect(result).toEqual("ALL_NEW");
-    });
-  });
-
-  describe("When I request the ReturnValuesOnConditionCheckFailure", () => {
-    it("Returns the ReturnValuesOnConditionCheckFailure with ALL_OLD", () => {
-      const result =
-        biometricTokenIssued.getDynamoDbReturnValuesOnConditionCheckFailure();
-      expect(result).toEqual("ALL_OLD");
-    });
-  });
 });

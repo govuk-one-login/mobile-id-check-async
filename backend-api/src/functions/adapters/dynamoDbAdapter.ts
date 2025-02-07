@@ -6,6 +6,8 @@ import {
   QueryCommand,
   QueryCommandInput,
   QueryCommandOutput,
+  ReturnValue,
+  ReturnValuesOnConditionCheckFailure,
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import { CreateSessionAttributes } from "../services/session/sessionService";
@@ -136,9 +138,6 @@ export class DynamoDbAdapter implements SessionRegistry {
     const updateExpressionDataToLog = {
       updateExpression: updateOperation.getDynamoDbUpdateExpression(),
       conditionExpression: updateOperation.getDynamoDbConditionExpression(),
-      returnValues: updateOperation.getDynamoDbReturnValues(),
-      returnValuesOnConditionCheckFailure:
-        updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
     };
 
     let response;
@@ -156,9 +155,9 @@ export class DynamoDbAdapter implements SessionRegistry {
           ConditionExpression: updateOperation.getDynamoDbConditionExpression(),
           ExpressionAttributeValues:
             updateOperation.getDynamoDbExpressionAttributeValues(),
-          ReturnValues: updateOperation.getDynamoDbReturnValues(),
+          ReturnValues: ReturnValue.ALL_NEW,
           ReturnValuesOnConditionCheckFailure:
-            updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
+            ReturnValuesOnConditionCheckFailure.ALL_OLD,
         }),
       );
     } catch (error) {

@@ -1,11 +1,7 @@
 import { UpdateSessionOperation } from "../UpdateSessionOperation";
 import { DocumentType } from "../../../../types/document";
 import { SessionState } from "../../session";
-import {
-  AttributeValue,
-  ReturnValue,
-  ReturnValuesOnConditionCheckFailure,
-} from "@aws-sdk/client-dynamodb";
+import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { getBaseSessionAttributes } from "../sessionAttributes/sessionAttributes";
 
 export class BiometricTokenIssued implements UpdateSessionOperation {
@@ -29,14 +25,6 @@ export class BiometricTokenIssued implements UpdateSessionOperation {
       ":biometricTokenIssued": { S: SessionState.BIOMETRIC_TOKEN_ISSUED },
       ":authSessionCreated": { S: SessionState.AUTH_SESSION_CREATED },
     };
-  }
-
-  getDynamoDbReturnValues() {
-    return ReturnValue.ALL_NEW;
-  }
-
-  getDynamoDbReturnValuesOnConditionCheckFailure() {
-    return ReturnValuesOnConditionCheckFailure.ALL_OLD;
   }
 
   getSessionAttributesFromDynamoDbItem(

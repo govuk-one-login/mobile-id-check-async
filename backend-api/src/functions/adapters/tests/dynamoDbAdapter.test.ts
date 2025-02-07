@@ -12,6 +12,8 @@ import {
 import {
   ConditionalCheckFailedException,
   DynamoDBClient,
+  ReturnValue,
+  ReturnValuesOnConditionCheckFailure,
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import { mockClient } from "aws-sdk-client-mock";
@@ -65,9 +67,6 @@ describe("DynamoDbAdapter", () => {
             updateExpression: updateOperation.getDynamoDbUpdateExpression(),
             conditionExpression:
               updateOperation.getDynamoDbConditionExpression(),
-            returnValues: updateOperation.getDynamoDbReturnValues(),
-            returnValuesOnConditionCheckFailure:
-              updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
           },
         });
       });
@@ -95,9 +94,6 @@ describe("DynamoDbAdapter", () => {
               updateExpression: updateOperation.getDynamoDbUpdateExpression(),
               conditionExpression:
                 updateOperation.getDynamoDbConditionExpression(),
-              returnValues: updateOperation.getDynamoDbReturnValues(),
-              returnValuesOnConditionCheckFailure:
-                updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
             },
           });
         });
@@ -134,9 +130,6 @@ describe("DynamoDbAdapter", () => {
                 updateExpression: updateOperation.getDynamoDbUpdateExpression(),
                 conditionExpression:
                   updateOperation.getDynamoDbConditionExpression(),
-                returnValues: updateOperation.getDynamoDbReturnValues(),
-                returnValuesOnConditionCheckFailure:
-                  updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
               },
             });
           });
@@ -174,9 +167,6 @@ describe("DynamoDbAdapter", () => {
                 updateExpression: updateOperation.getDynamoDbUpdateExpression(),
                 conditionExpression:
                   updateOperation.getDynamoDbConditionExpression(),
-                returnValues: updateOperation.getDynamoDbReturnValues(),
-                returnValuesOnConditionCheckFailure:
-                  updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
               },
             });
           });
@@ -209,9 +199,6 @@ describe("DynamoDbAdapter", () => {
             updateExpression: updateOperation.getDynamoDbUpdateExpression(),
             conditionExpression:
               updateOperation.getDynamoDbConditionExpression(),
-            returnValues: updateOperation.getDynamoDbReturnValues(),
-            returnValuesOnConditionCheckFailure:
-              updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
           },
         });
       });
@@ -238,9 +225,6 @@ describe("DynamoDbAdapter", () => {
               updateOperation.getDynamoDbConditionExpression(),
             ExpressionAttributeValues:
               updateOperation.getDynamoDbExpressionAttributeValues(),
-            ReturnValues: updateOperation.getDynamoDbReturnValues(),
-            ReturnValuesOnConditionCheckFailure:
-              updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
           };
           mockDynamoDbClient
             .onAnyCommand() // default
@@ -260,9 +244,6 @@ describe("DynamoDbAdapter", () => {
               updateExpression: updateOperation.getDynamoDbUpdateExpression(),
               conditionExpression:
                 updateOperation.getDynamoDbConditionExpression(),
-              returnValues: updateOperation.getDynamoDbReturnValues(),
-              returnValuesOnConditionCheckFailure:
-                updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
             },
           });
         });
@@ -288,9 +269,9 @@ describe("DynamoDbAdapter", () => {
               updateOperation.getDynamoDbConditionExpression(),
             ExpressionAttributeValues:
               updateOperation.getDynamoDbExpressionAttributeValues(),
-            ReturnValues: updateOperation.getDynamoDbReturnValues(),
+            ReturnValues: ReturnValue.ALL_NEW,
             ReturnValuesOnConditionCheckFailure:
-              updateOperation.getDynamoDbReturnValuesOnConditionCheckFailure(),
+              ReturnValuesOnConditionCheckFailure.ALL_OLD,
           };
           mockDynamoDbClient
             .onAnyCommand() // default

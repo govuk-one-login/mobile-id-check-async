@@ -1,11 +1,6 @@
 import { SessionAttributes } from "./session";
 import { Result } from "../../utils/result";
 import { UpdateSessionOperation } from "./updateOperations/UpdateSessionOperation";
-import {
-  ReturnValue,
-  ReturnValuesOnConditionCheckFailure,
-} from "@aws-sdk/client-dynamodb";
-
 export interface SessionRegistry {
   updateSession(
     sessionId: string,
@@ -44,6 +39,4 @@ export enum UpdateSessionError {
 export interface UpdateExpressionDataToLog {
   updateExpression: string;
   conditionExpression: string | undefined;
-  returnValues: ReturnValue;
-  returnValuesOnConditionCheckFailure: ReturnValuesOnConditionCheckFailure;
 }
