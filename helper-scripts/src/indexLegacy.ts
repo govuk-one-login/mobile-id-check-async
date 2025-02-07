@@ -64,17 +64,17 @@ const getStackCandidates = async (
   const candidates: string[] = [];
 
   for (const stackName of baseStackNames) {
-    const testResourcesStackName = `${stackName}-test-resources`;
+    const stsMockStackName = `${stackName}-sts-mock`;
     const backendStackName = `${stackName}-async-backend`;
     const backendCfStackName = `${stackName}-async-backend-cf-dist`;
 
     try {
-      await doesStackExist(testResourcesStackName);
-      candidates.push(testResourcesStackName);
+      await doesStackExist(stsMockStackName);
+      candidates.push(stsMockStackName);
     } catch (error) {
       echo(
         chalk.dim(
-          `No testResources stack found when using base stack name: ${stackName}`,
+          `No stsMock stack found when using base stack name: ${stackName}`,
         ),
       );
     }
@@ -132,32 +132,23 @@ const selectStacksToDelete = async (
 const prioritiseStacks = (candidates: string[]): PrioritisedStacks => {
   const stacksToDeleteOrder01: string[] = [];
   const stacksToDeleteOrder02: string[] = [];
-  const stacksToDeleteOrder03: string[] = [];
 
   for (const stackName of candidates) {
     if (stackName.includes("cf-dist")) {
-      stacksToDeleteOrder03.push(stackName);
-    } else if (stackName.includes("test-resources")) {
-      stacksToDeleteOrder01.push(stackName);
-    } else {
       stacksToDeleteOrder02.push(stackName);
+    } else {
+      stacksToDeleteOrder01.push(stackName);
     }
   }
 
   return {
     stacksToDeleteOrder01,
     stacksToDeleteOrder02,
-    stacksToDeleteOrder03,
   };
 };
 
 const confirmStacks = async (stacks: string[]): Promise<void> => {
   echo("");
-  if (stacks.length === 0) {
-    echo(chalk.red("No stacks selected for deletion, please try again"));
-    echo("");
-    process.exit(1);
-  }
   echo(chalk.bold("You are about to delete the following stacks:"));
   stacks.forEach((stackName) => console.log(`- ${stackName}`));
 
@@ -213,19 +204,13 @@ const deleteStack = async (stackName: string): Promise<void> => {
 };
 
 const deleteStacks = async (stacks: PrioritisedStacks): Promise<void> => {
-  const {
-    stacksToDeleteOrder01,
-    stacksToDeleteOrder02,
-    stacksToDeleteOrder03,
-  } = stacks;
+  const { stacksToDeleteOrder01, stacksToDeleteOrder02 } = stacks;
 
   await Promise.all(
     stacksToDeleteOrder01.map(async (stackName) => {
-      echo("");
       echo(`Deleting stack: ${stackName}`);
       await deleteStack(stackName);
-      echo(chalk.green.bold(`${stackName} stack deleted`));
-      echo("");
+      echo(chalk.bold(`${stackName} deleted`));
     }),
   );
 
@@ -233,16 +218,7 @@ const deleteStacks = async (stacks: PrioritisedStacks): Promise<void> => {
     stacksToDeleteOrder02.map(async (stackName) => {
       echo(`Deleting stack: ${stackName}`);
       await deleteStack(stackName);
-      echo(chalk.green.bold(`${stackName} stack deleted`));
-      echo("");
-    }),
-  );
-  await Promise.all(
-    stacksToDeleteOrder03.map(async (stackName) => {
-      echo(`Deleting stack: ${stackName}`);
-      await deleteStack(stackName);
-      echo(chalk.green.bold(`${stackName} stack deleted`));
-      echo("");
+      echo(chalk.bold(`${stackName} deleted`));
     }),
   );
 };
@@ -257,5 +233,4 @@ try {
 interface PrioritisedStacks {
   stacksToDeleteOrder01: string[];
   stacksToDeleteOrder02: string[];
-  stacksToDeleteOrder03: string[];
 }
