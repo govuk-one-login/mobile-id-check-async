@@ -1,7 +1,8 @@
 import inquirer from "inquirer";
 import { $, chalk, echo } from "zx";
 
-console.log("Hello, world!");
+echo(chalk.bold("Stack Delete Tool, at your service!"));
+echo("");
 
 export const protectedStacks = [
   "mob-sts-mock",
@@ -32,6 +33,7 @@ const getBaseStackNames = async (): Promise<string[]> => {
     ]);
     baseStackNames.push(baseStackName);
 
+    echo("");
     const { continueChoice } = await inquirer.prompt<{
       continueChoice: string;
     }>([
@@ -67,8 +69,10 @@ const getStackCandidates = async (
       await doesStackExist(stsMockStackName);
       candidates.push(stsMockStackName);
     } catch (error) {
-      console.log(
-        `No stsMock stack found when using base stack name: ${stackName}`,
+      echo(
+        chalk.dim(
+          `No stsMock stack found when using base stack name: ${stackName}`,
+        ),
       );
     }
 
@@ -76,8 +80,10 @@ const getStackCandidates = async (
       await doesStackExist(backendStackName);
       candidates.push(backendStackName);
     } catch (error) {
-      console.log(
-        `No backend stack found  when using base stack name: ${stackName}`,
+      echo(
+        chalk.dim(
+          `No backend stack found when using base stack name: ${stackName}`,
+        ),
       );
     }
 
@@ -85,8 +91,10 @@ const getStackCandidates = async (
       await doesStackExist(backendCfStackName);
       candidates.push(backendCfStackName);
     } catch (error) {
-      console.log(
-        `No backend cf dist stack found when using base stack name: ${stackName}`,
+      echo(
+        chalk.dim(
+          `No backend cf dist stack found when using base stack name: ${stackName}`,
+        ),
       );
     }
   }
@@ -97,6 +105,7 @@ const getStackCandidates = async (
 const selectStacksToDelete = async (
   candidates: string[],
 ): Promise<string[]> => {
+  echo("");
   const { stacksToDelete } = await inquirer.prompt<{
     stacksToDelete: string[];
   }>([
@@ -122,8 +131,6 @@ const prioritiseStacks = (candidates: string[]): PrioritisedStacks => {
       stacksToDeleteOrder01.push(stackName);
     }
   }
-  console.log("01", stacksToDeleteOrder01);
-  console.log("02", stacksToDeleteOrder02);
 
   return {
     stacksToDeleteOrder01,
@@ -132,9 +139,11 @@ const prioritiseStacks = (candidates: string[]): PrioritisedStacks => {
 };
 
 const confirmStacks = async (stacks: string[]): Promise<void> => {
-  console.log("You are about to delete the following stacks:");
+  echo("");
+  echo(chalk.bold("You are about to delete the following stacks:"));
   stacks.forEach((stackName) => console.log(`- ${stackName}`));
 
+  echo("");
   const { isHappy } = await inquirer.prompt<{ isHappy: boolean }>([
     {
       type: "confirm",
@@ -144,10 +153,11 @@ const confirmStacks = async (stacks: string[]): Promise<void> => {
     },
   ]);
   if (!isHappy) {
-    console.log("Exiting script as requested.");
+    echo("");
+    echo(chalk.yellow("Exiting script as requested."));
     process.exit(0);
   } else {
-    console.log("Continuing with the script...");
+    echo("Continuing with the script...");
   }
 };
 
@@ -206,10 +216,9 @@ const deleteStacks = async (stacks: PrioritisedStacks): Promise<void> => {
 
 try {
   const stacks = await getStacks();
-  console.log("stacks", stacks);
-  await deleteStacks(stacks);
+  // await deleteStacks(stacks);
 } catch (error: unknown) {
-  console.log("There was an error. Error:", error);
+  echo(chalk.red("There was an error. Error:", error));
 }
 
 interface PrioritisedStacks {
