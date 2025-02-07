@@ -21,9 +21,7 @@ echo("");
 if (
   whichTool === "Legacy (if your environment still is using an sts-mock stack)"
 ) {
-  console.log("1");
   await deleteDevStacksLegacy();
 }
-console.log("2");
 
 await deleteDevStacks();
