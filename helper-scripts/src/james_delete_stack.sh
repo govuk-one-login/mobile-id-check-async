@@ -38,11 +38,13 @@ list_500() {
     --query="{Objects: ${2}[0:500].{Key:Key,VersionId:VersionId}}"
 }
 
+mkdir -p "./src/deleteResponses"
+
 delete() {
   aws s3api delete-objects \
     --bucket "${1}" \
     --delete "$(list_500 "${1}" "${2}")" \
-    >"./delete_response_${1}_${2}_${i}.json"
+    >"./src/deleteResponses/delete_response_${1}_${2}_${i}.json"
 }
 
 for bucket in $buckets; do
