@@ -12,17 +12,18 @@ export STACK_NAME=backend-stack-name    (REQUIRED)
 ./delete_stack.sh
 ```
 
-## `index.ts` (in testing)
+## Stack management tool `index.ts` (in testing)
 
-This script provides the ability to:
+This script allows you to deploy or delete stacks
 
-- empty and delete any versioned S3 buckets (if present in a SAM application)
-- deletes multiple SAM applications
-- delete SAM applications in a valid order to avoid dependency related deletion failures
+- The deploy stack option simply asks for a base stack name calls deploy_backend.sh passing the user's answer as an argument (see above for more info)
+- This delete stack option provides the ability to:
 
-The script will ask you for base stack names and lets a you pick associated stacks you want to delete.
+  - empty and delete any versioned S3 buckets (if present in a SAM application)
+  - deletes multiple SAM applications
+  - delete SAM applications in a valid order to avoid dependency related deletion failures
 
-The script delete stsMock and backend stacks in parallel and once finished, will delete backend cf-dists in parallel
+  - The delete script will ask you for base stack names and lets a you pick associated stacks you want to delete. It will delete all stacks that are on the same priority level in paralel
 
 Ensure you have all packages installed:
 
