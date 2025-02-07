@@ -239,6 +239,53 @@ describe("Async Biometric Token", () => {
       );
     });
 
+    describe("Given DCMAW_ASYNC_CRI_5XXERROR event fails to write to TxMA", () => {
+      beforeEach(async () => {
+        dependencies.getEventService = () => ({
+          ...mockInertEventService,
+          writeGenericEvent: jest.fn().mockResolvedValue(
+            errorResult({
+              errorMessage: "mockError",
+            }),
+          ),
+        });
+
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+
+      it("Logs the error", async () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          message: "ERROR_WRITING_AUDIT_EVENT",
+          function_arn: "arn:12345", // example field to verify that context has been added
+        });
+      });
+
+      it("Returns 500 Internal Server Error ", async () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
+        });
+      });
+    });
+
+    it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
+      expect(
+        expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
+          expect.objectContaining({
+            eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+          }),
+        ),
+      );
+    });
+
     it("returns 500 Internal server error", async () => {
       expect(result).toStrictEqual({
         statusCode: 500,

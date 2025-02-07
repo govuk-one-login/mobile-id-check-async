@@ -72,11 +72,28 @@ export async function lambdaHandlerConstructor(
   }
   const submitterKey = submitterKeyResult.value;
 
+  const eventService = dependencies.getEventService(config.TXMA_SQS);
+
   const biometricTokenResult = await dependencies.getBiometricToken(
     config.READID_BASE_URL,
     submitterKey,
   );
   if (biometricTokenResult.isError) {
+    const writeEventResult = await eventService.writeGenericEvent({
+      eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+      sub: undefined,
+      sessionId: sessionId,
+      govukSigninJourneyId: undefined,
+      getNowInMilliseconds: Date.now,
+      componentId: config.ISSUER,
+    });
+
+    if (writeEventResult.isError) {
+      logger.error("ERROR_WRITING_AUDIT_EVENT", {
+        errorMessage:
+          "Unexpected error writing the DCMAW_ASYNC_CRI_5XXERROR event",
+      });
+    }
     return serverErrorResponse;
   }
 
@@ -85,7 +102,6 @@ export async function lambdaHandlerConstructor(
     config.SESSION_TABLE_NAME,
   );
 
-  const eventService = dependencies.getEventService(config.TXMA_SQS);
   const updateSessionResult = await sessionRegistry.updateSession(
     sessionId,
     new BiometricTokenIssued(documentType, opaqueId),
