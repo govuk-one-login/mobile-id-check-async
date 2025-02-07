@@ -1,4 +1,4 @@
-name: sts-mock pull request
+name: test-resources pull request
 on:
   # Triggers the workflow on pull request events for all branches
   pull_request:
@@ -10,8 +10,8 @@ on:
       - ready_for_review
       - synchronize
     paths:
-      - "sts-mock/**"
-      - ".github/workflows/sts-mock-pull-request.yml"
+      - "test-resources/**"
+      - ".github/workflows/test-resources-pull-request.yml"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -23,7 +23,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: sts-mock
+        working-directory: test-resources
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -36,7 +36,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: sts-mock/package-lock.json
+          cache-dependency-path: test-resources/package-lock.json
 
       - name: Install dependencies
         run: npm install
@@ -48,7 +48,7 @@ jobs:
         run: npm run format:check
 
       # Runs unit and infrastructure tests
-      - name: Run tests 
+      - name: Run tests
         run: npm run test
 
       - name: Validate SAM template
@@ -60,7 +60,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          projectBaseDir: sts-mock
+          projectBaseDir: test-resources
 
       - name: SonarQube Quality Gate check
         uses: Sonarsource/sonarqube-quality-gate-action@8406f4f1edaffef38e9fb9c53eb292fc1d7684fa # master
@@ -69,4 +69,4 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          scanMetadataReportFile: sts-mock/.scannerwork/report-task.txt
+          scanMetadataReportFile: test-resources/.scannerwork/report-task.txt
