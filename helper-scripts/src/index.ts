@@ -222,7 +222,7 @@ const deleteStacks = async (stacks: PrioritisedStacks): Promise<void> => {
 
 try {
   const stacks = await getStacks();
-  // await deleteStacks(stacks);
+  await deleteStacks(stacks);
 } catch (error: unknown) {
   echo(chalk.red("There was an error. Error:", error));
 }
