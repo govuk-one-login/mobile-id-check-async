@@ -106,18 +106,24 @@ const selectStacksToDelete = async (
   candidates: string[],
 ): Promise<string[]> => {
   echo("");
-  const { stacksToDelete } = await inquirer.prompt<{
-    stacksToDelete: string[];
-  }>([
-    {
-      type: "checkbox",
-      name: "stacksToDelete",
-      message: "Confirm which of the following stacks you want to delete",
-      choices: candidates,
-    },
-  ]);
+  let answer;
 
-  return stacksToDelete;
+  try {
+    answer = await inquirer.prompt<{
+      stacksToDelete: string[];
+    }>([
+      {
+        type: "checkbox",
+        name: "stacksToDelete",
+        message: "Confirm which of the following stacks you want to delete",
+        choices: candidates,
+      },
+    ]);
+  } catch (error) {
+    echo(chalk.red("Base stack name was not provided, try again"));
+    process.exit(1);
+  }
+  return answer.stacksToDelete;
 };
 
 const prioritiseStacks = (candidates: string[]): PrioritisedStacks => {
