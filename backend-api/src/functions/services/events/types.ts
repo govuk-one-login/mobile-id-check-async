@@ -22,7 +22,6 @@ export interface BaseTxmaEvent {
 export interface BaseUserTxmaEvent extends BaseTxmaEvent {
   user: {
     user_id: string | undefined;
-    transaction_id: string | undefined;
     session_id: string;
     govuk_signin_journey_id: string | undefined;
   };
