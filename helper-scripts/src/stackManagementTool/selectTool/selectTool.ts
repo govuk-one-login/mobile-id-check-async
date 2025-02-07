@@ -1,15 +1,11 @@
 import inquirer from "inquirer";
-import { chalk, echo } from "zx";
+import { echo } from "zx";
 import { whichDeletionTool } from "../deleteDevStacks/utils/whichDeletionTool.js";
 import { deployDevStack } from "../deployDevStack/deployDevStack.js";
+import { welcomeMessage } from "../styling/styling.js";
 
 export const selectTool = async (): Promise<void> => {
-  echo("");
-  echo(
-    chalk.cyanBright.bold.italic(
-      "Welcome to ID Check's stack management tool!",
-    ),
-  );
+  welcomeMessage();
   echo("");
 
   const { choice } = await inquirer.prompt<{
@@ -26,7 +22,7 @@ export const selectTool = async (): Promise<void> => {
 
   if (choice === "Delete stacks") {
     await whichDeletionTool();
+  } else {
+    await deployDevStack();
   }
-
-  await deployDevStack();
 };
