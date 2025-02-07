@@ -82,7 +82,7 @@ export async function lambdaHandlerConstructor(
     const writeEventResult = await eventService.writeGenericEvent({
       eventName: "DCMAW_ASYNC_CRI_5XXERROR",
       sub: undefined,
-      sessionId: sessionId,
+      sessionId,
       govukSigninJourneyId: undefined,
       getNowInMilliseconds: Date.now,
       componentId: config.ISSUER,
@@ -208,7 +208,7 @@ async function handleUpdateSessionSessionNotFound(
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_4XXERROR",
     sub: undefined,
-    sessionId: sessionId,
+    sessionId,
     govukSigninJourneyId: undefined,
     getNowInMilliseconds: Date.now,
     componentId: issuer,
@@ -232,7 +232,7 @@ async function handleUpdateSessionInternalServerError(
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_5XXERROR",
     sub: undefined,
-    sessionId: sessionId,
+    sessionId,
     govukSigninJourneyId: undefined,
     getNowInMilliseconds: Date.now,
     componentId: issuer,
