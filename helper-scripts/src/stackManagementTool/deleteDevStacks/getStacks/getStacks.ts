@@ -20,13 +20,13 @@ const getBaseStackNames = async (): Promise<string[]> => {
       {
         type: "input",
         name: "baseStackName",
-        message: "Provide a base stack name:",
+        message: "Please provide a base stack name:",
         validate: (input: string) => {
           if (!input.trim()) {
-            return "Answer cannot be empty!";
+            return "Your answer seems to be empty, please provide a stack name...";
           }
           if (baseStackNames.includes(input)) {
-            return "This base stack name has already been provided. Please provide a different one.";
+            return `You've already chosen ${input}, please provide another base stack name...`;
           }
           return true;
         },
@@ -48,6 +48,7 @@ const getBaseStackNames = async (): Promise<string[]> => {
     if (continueChoice === "No") {
       addAnother = false;
     }
+    echo("");
   }
   return baseStackNames;
 };

@@ -1,7 +1,9 @@
 import inquirer from "inquirer";
-import { $, echo } from "zx";
+import { $, chalk, echo } from "zx";
 
 export const deployDevStack = async (): Promise<void> => {
+  echo(chalk.italic("Running stack deployment tool..."));
+  echo("");
   const { baseStackName } = await inquirer.prompt<{ baseStackName: string }>([
     {
       type: "input",

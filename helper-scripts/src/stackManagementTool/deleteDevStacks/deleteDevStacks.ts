@@ -4,6 +4,8 @@ import { deleteStacks } from "./deleteStacks/deleteStacks.js";
 
 export const deleteDevStacks = async (): Promise<void> => {
   try {
+    echo(chalk.italic("Running stack deletion tool..."));
+    echo("");
     const stacks = await getStacks();
     await deleteStacks(stacks);
   } catch (error: unknown) {
