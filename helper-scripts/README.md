@@ -12,7 +12,7 @@ export STACK_NAME=backend-stack-name    (REQUIRED)
 ./delete_stack.sh
 ```
 
-## `deleteStacks.mts` (in testing - not approved)
+## `index.ts` (in testing)
 
 This script provides the ability to:
 
@@ -20,15 +20,11 @@ This script provides the ability to:
 - deletes multiple SAM applications
 - delete SAM applications in a valid order to avoid dependency related deletion failures
 
-Add the name of any stack you want to delete, in a string format, to the appropriate array within `./deleteStackZx/stacksToDelete.ts`
+The script will ask you for base stack names and lets a you pick associated stacks you want to delete.
 
-```typescript
-  export const stsMockStacksToDelete: string[] = ["mock-sts-stack-1", "mock-sts-stack-2"];
-  export const backendStacksToDelete: string[] = ["mock-backend-stack-1", "mock-backend-stack-2"];
-  export const backendCfStacksToDelete: string[] = ["mock-backend-cf-stack-1", "mock-backend-cf-stack-2"];
-```
+The script delete stsMock and backend stacks in parallel and once finished, will delete backend cf-dists in parallel
 
-Ensure you have the `zx` package installed:
+Ensure you have all packages installed:
 
 ```bash
 # From /helper-scripts
