@@ -578,7 +578,7 @@ Resources:
               - !Ref Environment
               - BaseDns
         - !Sub
-          - test-resources.${DNS_RECORD}
+          - sts-mock.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
               - DNS
               - !Ref Environment
