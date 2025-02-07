@@ -9,16 +9,18 @@ import {
   IEventService,
   CredentialTokenIssuedEventConfig,
   EventNames,
-} from "../eventService";
+} from "../types";
 
 export class MockEventWriterSuccess implements IEventService {
   auditEvents: EventNames[] = [];
+
   writeGenericEvent = async (
     eventConfig: GenericEventConfig,
   ): Promise<Result<null>> => {
     this.auditEvents.push(eventConfig.eventName);
     return successResult(null);
   };
+
   writeCredentialTokenIssuedEvent = async (
     eventConfig: CredentialTokenIssuedEventConfig,
   ): Promise<Result<null>> => {
@@ -29,9 +31,11 @@ export class MockEventWriterSuccess implements IEventService {
 
 export class MockEventServiceFailToWrite implements IEventService {
   private eventNameToFail: EventNames;
+
   constructor(eventNameToFail: EventNames) {
     this.eventNameToFail = eventNameToFail;
   }
+
   writeGenericEvent = async (
     eventConfig: GenericEventConfig,
   ): Promise<Result<null>> => {

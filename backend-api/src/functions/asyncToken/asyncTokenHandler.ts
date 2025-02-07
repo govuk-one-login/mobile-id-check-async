@@ -105,7 +105,8 @@ export async function lambdaHandlerConstructor(
   });
   if (writeEventResult.isError) {
     logger.log("ERROR_WRITING_AUDIT_EVENT", {
-      errorMessage: writeEventResult.value.errorMessage,
+      errorMessage:
+        "Unexpected error writing the DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event",
     });
     return serverErrorResponse;
   }

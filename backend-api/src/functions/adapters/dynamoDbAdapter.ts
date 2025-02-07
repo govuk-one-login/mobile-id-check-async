@@ -6,6 +6,8 @@ import {
   QueryCommand,
   QueryCommandInput,
   QueryCommandOutput,
+  ReturnValue,
+  ReturnValuesOnConditionCheckFailure,
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import { CreateSessionAttributes } from "../services/session/sessionService";
@@ -16,10 +18,19 @@ import {
   unmarshall,
 } from "@aws-sdk/util-dynamodb";
 import { UpdateSessionOperation } from "../common/session/updateOperations/UpdateSessionOperation";
-import { emptySuccess, errorResult, Result } from "../utils/result";
+import {
+  errorResult,
+  FailureWithValue,
+  Result,
+  successResult,
+} from "../utils/result";
 import {
   SessionRegistry,
+  UpdateExpressionDataToLog,
   UpdateSessionError,
+  SessionUpdateFailed,
+  SessionUpdateFailedInternalServerError,
+  SessionUpdated,
 } from "../common/session/SessionRegistry";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
@@ -123,17 +134,18 @@ export class DynamoDbAdapter implements SessionRegistry {
   async updateSession(
     sessionId: string,
     updateOperation: UpdateSessionOperation,
-  ): Promise<Result<void, UpdateSessionError>> {
+  ): Promise<Result<SessionUpdated, SessionUpdateFailed>> {
     const updateExpressionDataToLog = {
       updateExpression: updateOperation.getDynamoDbUpdateExpression(),
       conditionExpression: updateOperation.getDynamoDbConditionExpression(),
     };
 
+    let response;
     try {
       logger.debug(LogMessage.UPDATE_SESSION_ATTEMPT, {
         data: updateExpressionDataToLog,
       });
-      await this.dynamoDbClient.send(
+      response = await this.dynamoDbClient.send(
         new UpdateItemCommand({
           TableName: this.tableName,
           Key: {
@@ -143,28 +155,78 @@ export class DynamoDbAdapter implements SessionRegistry {
           ConditionExpression: updateOperation.getDynamoDbConditionExpression(),
           ExpressionAttributeValues:
             updateOperation.getDynamoDbExpressionAttributeValues(),
+          ReturnValues: ReturnValue.ALL_NEW,
+          ReturnValuesOnConditionCheckFailure:
+            ReturnValuesOnConditionCheckFailure.ALL_OLD,
         }),
       );
     } catch (error) {
+      if (
+        error instanceof ConditionalCheckFailedException &&
+        error.Item == null
+      ) {
+        logger.error(LogMessage.UPDATE_SESSION_SESSION_NOT_FOUND, {
+          error: error.message,
+          data: updateExpressionDataToLog,
+        });
+        return errorResult({
+          errorType: UpdateSessionError.SESSION_NOT_FOUND as const,
+        });
+      }
       if (error instanceof ConditionalCheckFailedException) {
+        const getAttributesResult =
+          updateOperation.getSessionAttributesFromDynamoDbItem(error.Item);
+        if (getAttributesResult.isError) {
+          return this.handleUpdateSessionInternalServerError(
+            error,
+            updateExpressionDataToLog,
+          );
+        }
+
         logger.error(LogMessage.UPDATE_SESSION_CONDITIONAL_CHECK_FAILURE, {
           error: error.message,
           data: updateExpressionDataToLog,
         });
-        return errorResult(UpdateSessionError.CONDITIONAL_CHECK_FAILURE);
-      } else {
-        logger.error(LogMessage.UPDATE_SESSION_UNEXPECTED_FAILURE, {
-          error: error,
-          data: updateExpressionDataToLog,
+        return errorResult({
+          errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
+          attributes: getAttributesResult.value,
         });
-        return errorResult(UpdateSessionError.INTERNAL_SERVER_ERROR);
+      } else {
+        return this.handleUpdateSessionInternalServerError(
+          error,
+          updateExpressionDataToLog,
+        );
       }
     }
+
+    const getAttributesResult =
+      updateOperation.getSessionAttributesFromDynamoDbItem(response.Attributes);
+
+    if (getAttributesResult.isError) {
+      return this.handleUpdateSessionInternalServerError(
+        "Could not parse valid session attributes after successful update command",
+        updateExpressionDataToLog,
+      );
+    }
+
     logger.debug(LogMessage.UPDATE_SESSION_SUCCESS);
-    return emptySuccess();
+    return successResult({ attributes: getAttributesResult.value });
   }
 
   private getTimeNowInSeconds() {
     return Math.floor(Date.now() / 1000);
+  }
+
+  private handleUpdateSessionInternalServerError(
+    error: unknown,
+    updateExpressionDataToLog: UpdateExpressionDataToLog,
+  ): FailureWithValue<SessionUpdateFailedInternalServerError> {
+    logger.error(LogMessage.UPDATE_SESSION_UNEXPECTED_FAILURE, {
+      error: error,
+      data: updateExpressionDataToLog,
+    });
+    return errorResult({
+      errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
+    });
   }
 }

@@ -37,6 +37,11 @@ export class LogMessage implements LogAttributes {
     "One or more required conditions were not met when trying to update the user session in DynamoDB.",
   );
 
+  static readonly UPDATE_SESSION_SESSION_NOT_FOUND = new LogMessage(
+    "MOBILE_ASYNC_UPDATE_SESSION_SESSION_NOT_FOUND",
+    "No session found while trying to update the user session in DynamoDB.",
+  );
+
   // Biometric Token
   static readonly BIOMETRIC_TOKEN_STARTED = new LogMessage(
     "MOBILE_ASYNC_BIOMETRIC_TOKEN_STARTED",

@@ -29,8 +29,13 @@ import {
 } from "../utils/result";
 import { DocumentType } from "../types/document";
 import { BiometricTokenIssued } from "../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
-import { UpdateSessionError } from "../common/session/SessionRegistry";
+import {
+  UpdateSessionError,
+  SessionUpdateFailed,
+} from "../common/session/SessionRegistry";
 import { randomUUID } from "crypto";
+import { IEventService } from "../services/events/types";
+import { BaseSessionAttributes } from "../common/session/session";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
@@ -76,16 +81,23 @@ export async function lambdaHandlerConstructor(
   }
 
   const opaqueId = generateOpaqueId();
-
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
   );
+
+  const eventService = dependencies.getEventService(config.TXMA_SQS);
   const updateSessionResult = await sessionRegistry.updateSession(
     sessionId,
     new BiometricTokenIssued(documentType, opaqueId),
   );
+
   if (updateSessionResult.isError) {
-    return handleUpdateSessionFailure(updateSessionResult);
+    return handleUpdateSessionError(
+      updateSessionResult,
+      eventService,
+      sessionId,
+      config.ISSUER,
+    );
   }
 
   logger.info(LogMessage.BIOMETRIC_TOKEN_COMPLETED);
@@ -141,20 +153,82 @@ async function getSubmitterKeyForDocumentType(
   }
 }
 
-function handleUpdateSessionFailure(
-  failure: FailureWithValue<UpdateSessionError>,
-): APIGatewayProxyResult {
-  switch (failure.value) {
+function generateOpaqueId(): string {
+  return randomUUID();
+}
+
+async function handleUpdateSessionConditionalCheckFailure(
+  eventService: IEventService,
+  sessionAttributes: BaseSessionAttributes,
+  issuer: string,
+): Promise<APIGatewayProxyResult> {
+  const writeEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+    sub: sessionAttributes.subjectIdentifier,
+    sessionId: sessionAttributes.sessionId,
+    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+    getNowInMilliseconds: Date.now,
+    componentId: issuer,
+  });
+
+  if (writeEventResult.isError) {
+    logger.error("ERROR_WRITING_AUDIT_EVENT", {
+      errorMessage:
+        "Unexpected error writing the DCMAW_ASYNC_CRI_4XXERROR event",
+    });
+    return serverErrorResponse;
+  }
+  return unauthorizedResponse(
+    "invalid_session",
+    "User session is not in a valid state for this operation.",
+  );
+}
+async function handleUpdateSessionSessionNotFound(
+  eventService: IEventService,
+  sessionId: string,
+  issuer: string,
+): Promise<APIGatewayProxyResult> {
+  const writeEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+    sub: undefined,
+    sessionId: sessionId,
+    govukSigninJourneyId: undefined,
+    getNowInMilliseconds: Date.now,
+    componentId: issuer,
+  });
+
+  if (writeEventResult.isError) {
+    logger.error("ERROR_WRITING_AUDIT_EVENT", {
+      errorMessage:
+        "Unexpected error writing the DCMAW_ASYNC_CRI_4XXERROR event",
+    });
+    return serverErrorResponse;
+  }
+  return unauthorizedResponse("invalid_session", "Session not found");
+}
+
+async function handleUpdateSessionError(
+  updateSessionResult: FailureWithValue<SessionUpdateFailed>,
+  eventService: IEventService,
+  sessionId: string,
+  issuer: string,
+): Promise<APIGatewayProxyResult> {
+  let sessionAttributes;
+  switch (updateSessionResult.value.errorType) {
     case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
-      return unauthorizedResponse(
-        "invalid_session",
-        "User session is not in a valid state for this operation.",
+      sessionAttributes = updateSessionResult.value.attributes;
+      return handleUpdateSessionConditionalCheckFailure(
+        eventService,
+        sessionAttributes,
+        issuer,
+      );
+    case UpdateSessionError.SESSION_NOT_FOUND:
+      return handleUpdateSessionSessionNotFound(
+        eventService,
+        sessionId,
+        issuer,
       );
     case UpdateSessionError.INTERNAL_SERVER_ERROR:
       return serverErrorResponse;
   }
-}
-
-function generateOpaqueId(): string {
-  return randomUUID();
 }
