@@ -9,6 +9,7 @@ import { EventService } from "../eventService";
 import { sqsClient } from "../sqsClient";
 import { GenericEventNames } from "../types";
 import { Result } from "../../../utils/result";
+import "aws-sdk-client-mock-jest";
 
 describe("Event Service", () => {
   const eventWriter = new EventService("mockSqsQueue");
@@ -42,7 +43,7 @@ describe("Event Service", () => {
       });
 
       it(`Attempts to send ${genericEventName} TxMA event to SQS`, () => {
-        expect(sqsMock.call(0).args[0].input).toEqual({
+        const expectedCommandInput = {
           MessageBody: JSON.stringify({
             user: {
               user_id: "mockSub",
@@ -55,7 +56,12 @@ describe("Event Service", () => {
             component_id: "mockComponentId",
           }),
           QueueUrl: "mockSqsQueue",
-        });
+        };
+
+        expect(sqsMock).toHaveReceivedCommandWith(
+          SendMessageCommand,
+          expectedCommandInput,
+        );
       });
 
       it("Returns an error result", () => {
@@ -81,7 +87,7 @@ describe("Event Service", () => {
       });
 
       it(`Attempts to send ${genericEventName} event to SQS`, () => {
-        expect(sqsMock.call(0).args[0].input).toEqual({
+        const expectedCommandInput = {
           MessageBody: JSON.stringify({
             user: {
               user_id: "mockSub",
@@ -94,7 +100,12 @@ describe("Event Service", () => {
             component_id: "mockComponentId",
           }),
           QueueUrl: "mockSqsQueue",
-        });
+        };
+
+        expect(sqsMock).toHaveReceivedCommandWith(
+          SendMessageCommand,
+          expectedCommandInput,
+        );
       });
 
       it("Returns a success result", () => {
@@ -117,7 +128,7 @@ describe("Event Service", () => {
       });
 
       it("Attempts to send DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event to SQS", () => {
-        expect(sqsMock.call(0).args[0].input).toStrictEqual({
+        const expectedCommandInput = {
           MessageBody: JSON.stringify({
             event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
             component_id: "mockComponentId",
@@ -125,7 +136,12 @@ describe("Event Service", () => {
             event_timestamp_ms: 1609462861000,
           }),
           QueueUrl: "mockSqsQueue",
-        });
+        };
+
+        expect(sqsMock).toHaveReceivedCommandWith(
+          SendMessageCommand,
+          expectedCommandInput,
+        );
       });
 
       it("Returns an error result", () => {
@@ -148,7 +164,7 @@ describe("Event Service", () => {
       });
 
       it("Attempts to send DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event to SQS", () => {
-        expect(sqsMock.call(0).args[0].input).toStrictEqual({
+        const expectedCommandInput = {
           MessageBody: JSON.stringify({
             event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
             component_id: "mockComponentId",
@@ -156,7 +172,12 @@ describe("Event Service", () => {
             event_timestamp_ms: 1609462861000,
           }),
           QueueUrl: "mockSqsQueue",
-        });
+        };
+
+        expect(sqsMock).toHaveReceivedCommandWith(
+          SendMessageCommand,
+          expectedCommandInput,
+        );
       });
 
       it("Returns a success result", () => {
