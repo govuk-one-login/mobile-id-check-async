@@ -25,7 +25,7 @@ Resources:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: "./openApiSpecs/sts-mock-spec.yaml"
+            Location: "./openApiSpecs/test-resources-spec.yaml"
 
   StsMockApiAccessLogs:
     Type: AWS::Logs::LogGroup
@@ -45,7 +45,7 @@ Resources:
             - !Ref Environment
             - BaseDns
         - !Sub
-          - sts-mock.${DNS_RECORD}
+          - test-resources.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
@@ -71,7 +71,7 @@ Resources:
             - !Ref Environment
             - BaseDns
         - !Sub
-          - sts-mock.${DNS_RECORD}
+          - test-resources.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
@@ -91,7 +91,7 @@ Resources:
             - !Ref Environment
             - BaseDns
         - !Sub
-          - sts-mock.${DNS_RECORD}
+          - test-resources.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment

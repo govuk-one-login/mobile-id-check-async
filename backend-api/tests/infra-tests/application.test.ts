@@ -19,8 +19,8 @@ describe("Backend application infrastructure", () => {
   describe("EnvironmentVariable mapping values", () => {
     test("STS base url is set", () => {
       const expectedEnvironmentVariablesValues = {
-        dev: "https://sts-mock.review-b-async.dev.account.gov.uk",
-        build: "https://sts-mock.review-b-async.build.account.gov.uk",
+        dev: "https://sts-test-resources.review-b-async.dev.account.gov.uk",
+        build: "https://sts-test-resources.review-b-async.build.account.gov.uk",
         staging: "https://token.staging.account.gov.uk",
         integration: "https://token.integration.account.gov.uk",
         production: "https://token.account.gov.uk",

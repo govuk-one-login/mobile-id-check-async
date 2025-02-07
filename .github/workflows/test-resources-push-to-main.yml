@@ -1,11 +1,11 @@
-name: sts-mock push to main
+name: test-resources push to main
 on:
   push:
     branches:
       - main
     paths:
-      - "sts-mock/**"
-      - ".github/workflows/sts-mock-push-to-main.yml"
+      - "test-resources/**"
+      - ".github/workflows/test-resources-push-to-main.yml"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -17,7 +17,7 @@ permissions:
 defaults:
   run:
     shell: bash
-    working-directory: sts-mock
+    working-directory: test-resources
 
 jobs:
   sonar-scan:
@@ -35,7 +35,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: sts-mock/package-lock.json
+          cache-dependency-path: test-resources/package-lock.json
 
       - name: Install dependencies
         run: npm install
@@ -50,14 +50,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          projectBaseDir: sts-mock
+          projectBaseDir: test-resources
 
   test-image-dev:
     name: build and push test image to dev
     uses:
       ./.github/workflows/job-build-and-push-test-image.yml
     with:
-      WORKING_DIRECTORY: sts-mock
+      WORKING_DIRECTORY: test-resources
     secrets:
       GH_ACTIONS_ROLE_ARN: ${{ secrets.STS_MOCK_DEV_GH_ACTIONS_ROLE_ARN }}
       TEST_IMAGE_REPOSITOR_URI: ${{ secrets.STS_MOCK_DEV_TEST_IMAGE_REPOSITORY_URI }}
@@ -76,9 +76,9 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af #v4.1.0
         with:
-          node-version-file: 'sts-mock/.nvmrc'
+          node-version-file: 'test-resources/.nvmrc'
           cache: npm
-          cache-dependency-path: sts-mock/package-lock.json
+          cache-dependency-path: test-resources/package-lock.json
 
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
@@ -107,14 +107,14 @@ jobs:
           artifact-bucket-name: ${{ secrets.STS_MOCK_DEV_ARTIFACT_BUCKET }}
           signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
           template-file: .aws-sam/build/template.yaml
-          working-directory: sts-mock
+          working-directory: test-resources
 
   test-image-build:
     name: build and push test image to build
     uses:
       ./.github/workflows/job-build-and-push-test-image.yml
     with:
-      WORKING_DIRECTORY: sts-mock
+      WORKING_DIRECTORY: test-resources
     secrets:
       GH_ACTIONS_ROLE_ARN: ${{ secrets.STS_MOCK_BUILD_GH_ACTIONS_ROLE_ARN }}
       TEST_IMAGE_REPOSITOR_URI: ${{ secrets.STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI }}
@@ -133,9 +133,9 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af #v4.1.0
         with:
-          node-version-file: 'sts-mock/.nvmrc'
+          node-version-file: 'test-resources/.nvmrc'
           cache: npm
-          cache-dependency-path: sts-mock/package-lock.json
+          cache-dependency-path: test-resources/package-lock.json
 
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
@@ -164,4 +164,4 @@ jobs:
           artifact-bucket-name: ${{ secrets.STS_MOCK_BUILD_ARTIFACT_BUCKET }}
           signing-profile-name: ${{ secrets.BUILD_SIGNING_PROFILE_NAME }}
           template-file: .aws-sam/build/template.yaml
-          working-directory: sts-mock
+          working-directory: test-resources

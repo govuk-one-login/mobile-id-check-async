@@ -1,7 +1,7 @@
 import { Context } from "vm";
 import { ILoggerAdapter } from "../logger";
 import { LogMessage } from "../types";
-import { LogAttributes } from "@aws-lambda-powertools/logger/lib/cjs/types";
+import { LogAttributes } from "@aws-lambda-powertools/logger/types";
 
 export class MockLoggingAdapter<T extends string> implements ILoggerAdapter<T> {
   private logMessages: { logMessage: LogMessage<T>; data: LogAttributes }[] =

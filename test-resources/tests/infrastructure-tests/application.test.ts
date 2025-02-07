@@ -35,7 +35,7 @@ describe("STS mock infrastructure", () => {
         DefinitionBody: {
           "Fn::Transform": {
             Name: "AWS::Include",
-            Parameters: { Location: "./openApiSpecs/sts-mock-spec.yaml" },
+            Parameters: { Location: "./openApiSpecs/test-resources-spec.yaml" },
           },
         },
       });

@@ -72,7 +72,7 @@ Conditions:
     - !Not
       - !Equals
         - !Ref AWS::StackName
-        - mob-sts-mock
+        - mob-test-resources
 
   Never: !Equals
     - true
@@ -519,7 +519,7 @@ Resources:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: ./openApiSpecs/sts-mock-spec.yaml
+            Location: ./openApiSpecs/test-resources-spec.yaml
       Description: Public API gateway for STS Mock
       EndpointConfiguration: REGIONAL
       MethodSettings:
@@ -558,7 +558,7 @@ Resources:
               - !Ref Environment
               - BaseDns
         - !Sub
-          - sts-mock.${DNS_RECORD}
+          - test-resources.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
               - DNS
               - !Ref Environment
@@ -578,7 +578,7 @@ Resources:
               - !Ref Environment
               - BaseDns
         - !Sub
-          - sts-mock.${DNS_RECORD}
+          - test-resources.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
               - DNS
               - !Ref Environment
@@ -608,7 +608,7 @@ Resources:
               - !Ref Environment
               - BaseDns
         - !Sub
-          - sts-mock.${DNS_RECORD}
+          - test-resources.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
               - DNS
               - !Ref Environment
@@ -623,7 +623,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         EntryPoints:
-          - src/functions/sts-mock/token/tokenHandler.ts
+          - src/functions/test-resources/token/tokenHandler.ts
         Minify: true
         Sourcemap: false
         Target: es2022
