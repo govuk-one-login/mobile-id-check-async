@@ -5,6 +5,7 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
+    "manageStacks": "cd ../helper-scripts && npm i && npm run manageStacks",
     "deploy-backend-to-dev": "cd ../helper-scripts && ./deploy_backend.sh",
     "build:infra": "./combine_template.sh",
     "generate-proxy-open-api": "node ./generate-proxy-private-openapi.js",
