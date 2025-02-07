@@ -519,7 +519,7 @@ Resources:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: ./openApiSpecs/test-resources-spec.yaml
+            Location: ./openApiSpecs/sts-mock-spec.yaml
       Description: Public API gateway for STS Mock
       EndpointConfiguration: REGIONAL
       MethodSettings:
