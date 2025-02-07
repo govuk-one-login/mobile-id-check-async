@@ -59,8 +59,8 @@ jobs:
     with:
       WORKING_DIRECTORY: test-resources
     secrets:
-      GH_ACTIONS_ROLE_ARN: ${{ secrets.STS_MOCK_DEV_GH_ACTIONS_ROLE_ARN }}
-      TEST_IMAGE_REPOSITOR_URI: ${{ secrets.STS_MOCK_DEV_TEST_IMAGE_REPOSITORY_URI }}
+      GH_ACTIONS_ROLE_ARN: ${{ secrets.TEST_RESOURCES_DEV_GH_ACTIONS_ROLE_ARN }}
+      TEST_IMAGE_REPOSITOR_URI: ${{ secrets.TEST_RESOURCES_DEV_TEST_IMAGE_REPOSITORY_URI }}
       CONTAINER_SIGN_KMS_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
 
   build-and-upload-sam-artifact-to-dev:
@@ -90,7 +90,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@97834a484a5ab3c40fa9e2eb40fcf8041105a573 #main
         with:
           aws-region: eu-west-2
-          role-to-assume: ${{ secrets.STS_MOCK_DEV_GH_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.TEST_RESOURCES_DEV_GH_ACTIONS_ROLE_ARN }}
 
       - name: Sam Validate
         run: |
@@ -104,7 +104,7 @@ jobs:
       - name: Upload SAM artifact into the DEV artifact bucket
         uses: govuk-one-login/devplatform-upload-action@v3.9.2
         with:
-          artifact-bucket-name: ${{ secrets.STS_MOCK_DEV_ARTIFACT_BUCKET }}
+          artifact-bucket-name: ${{ secrets.TEST_RESOURCES_DEV_ARTIFACT_BUCKET }}
           signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
           template-file: .aws-sam/build/template.yaml
           working-directory: test-resources
@@ -116,8 +116,8 @@ jobs:
     with:
       WORKING_DIRECTORY: test-resources
     secrets:
-      GH_ACTIONS_ROLE_ARN: ${{ secrets.STS_MOCK_BUILD_GH_ACTIONS_ROLE_ARN }}
-      TEST_IMAGE_REPOSITOR_URI: ${{ secrets.STS_MOCK_BUILD_TEST_IMAGE_REPOSITORY_URI }}
+      GH_ACTIONS_ROLE_ARN: ${{ secrets.TEST_RESOURCES_BUILD_GH_ACTIONS_ROLE_ARN }}
+      TEST_IMAGE_REPOSITOR_URI: ${{ secrets.TEST_RESOURCES_BUILD_TEST_IMAGE_REPOSITORY_URI }}
       CONTAINER_SIGN_KMS_KEY: ${{ secrets.BUILD_CONTAINER_SIGN_KMS_KEY }}
 
   build-and-upload-sam-artifact-to-build:
@@ -147,7 +147,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@97834a484a5ab3c40fa9e2eb40fcf8041105a573 #main
         with:
           aws-region: eu-west-2
-          role-to-assume: ${{ secrets.STS_MOCK_BUILD_GH_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.TEST_RESOURCES_BUILD_GH_ACTIONS_ROLE_ARN }}
 
       - name: Sam Validate
         run: |
@@ -161,7 +161,7 @@ jobs:
       - name: Upload SAM artifact into the BUILD artifact bucket
         uses: govuk-one-login/devplatform-upload-action@v3.9.2
         with:
-          artifact-bucket-name: ${{ secrets.STS_MOCK_BUILD_ARTIFACT_BUCKET }}
+          artifact-bucket-name: ${{ secrets.TEST_RESOURCES_BUILD_ARTIFACT_BUCKET }}
           signing-profile-name: ${{ secrets.BUILD_SIGNING_PROFILE_NAME }}
           template-file: .aws-sam/build/template.yaml
           working-directory: test-resources
