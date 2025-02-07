@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: SAM template for the test resources stack. This contains the asynchronous events test harness and the sts-mock applications.
+Description: SAM template for the STS mock
 
 Parameters:
   BackendStackName:
@@ -72,7 +72,7 @@ Conditions:
     - !Not
       - !Equals
         - !Ref AWS::StackName
-        - mob-test-resources
+        - mob-sts-mock
 
   Never: !Equals
     - true
