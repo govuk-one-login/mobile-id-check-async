@@ -72,7 +72,7 @@ const getStackCandidates = async (
     } catch (error) {
       echo(
         chalk.dim(
-          `No testResources stack found when using base stack name: ${stackName}`,
+          `No test-resources stack found when using base stack name: ${stackName}`,
         ),
       );
     }
@@ -94,7 +94,7 @@ const getStackCandidates = async (
     } catch (error) {
       echo(
         chalk.dim(
-          `No backend cf dist stack found when using base stack name: ${stackName}`,
+          `No backend-cf-dist stack found when using base stack name: ${stackName}`,
         ),
       );
     }
