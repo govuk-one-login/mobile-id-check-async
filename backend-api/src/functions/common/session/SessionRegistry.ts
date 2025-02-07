@@ -10,28 +10,28 @@ export interface SessionRegistry {
   updateSession(
     sessionId: string,
     updateOperation: UpdateSessionOperation,
-  ): Promise<Result<UpdateSessionSuccess, UpdateSessionFailure>>;
+  ): Promise<Result<SessionUpdated, SessionUpdateFailed>>;
 }
 
-export interface UpdateSessionSuccess {
+export interface SessionUpdated {
   attributes: SessionAttributes;
 }
 
-export type UpdateSessionFailure =
-  | UpdateSessionFailureConditionalCheckFailure
-  | UpdateSessionFailureInternalServerError
-  | UpdateSessionFailureSessionNotFound;
+export type SessionUpdateFailed =
+  | SessionUpdateFailedConditionalCheckFailure
+  | SessionUpdateFailedInternalServerError
+  | SessionUpdateFailedSessionNotFound;
 
-export interface UpdateSessionFailureConditionalCheckFailure {
+export interface SessionUpdateFailedConditionalCheckFailure {
   errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE;
   attributes: SessionAttributes;
 }
 
-export interface UpdateSessionFailureInternalServerError {
+export interface SessionUpdateFailedInternalServerError {
   errorType: UpdateSessionError.INTERNAL_SERVER_ERROR;
 }
 
-export interface UpdateSessionFailureSessionNotFound {
+export interface SessionUpdateFailedSessionNotFound {
   errorType: UpdateSessionError.SESSION_NOT_FOUND;
 }
 

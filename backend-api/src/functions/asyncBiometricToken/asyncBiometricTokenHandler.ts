@@ -31,7 +31,7 @@ import { DocumentType } from "../types/document";
 import { BiometricTokenIssued } from "../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 import {
   UpdateSessionError,
-  UpdateSessionFailure,
+  SessionUpdateFailed,
 } from "../common/session/SessionRegistry";
 import { randomUUID } from "crypto";
 import { IEventService } from "../services/events/types";
@@ -208,7 +208,7 @@ async function handleUpdateSessionSessionNotFound(
 }
 
 async function handleUpdateSessionError(
-  updateSessionResult: FailureWithValue<UpdateSessionFailure>,
+  updateSessionResult: FailureWithValue<SessionUpdateFailed>,
   eventService: IEventService,
   sessionId: string,
   issuer: string,

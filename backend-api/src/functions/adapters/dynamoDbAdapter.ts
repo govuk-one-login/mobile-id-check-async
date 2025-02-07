@@ -26,9 +26,9 @@ import {
   SessionRegistry,
   UpdateExpressionDataToLog,
   UpdateSessionError,
-  UpdateSessionFailure,
-  UpdateSessionFailureInternalServerError,
-  UpdateSessionSuccess,
+  SessionUpdateFailed,
+  SessionUpdateFailedInternalServerError,
+  SessionUpdated,
 } from "../common/session/SessionRegistry";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
@@ -132,7 +132,7 @@ export class DynamoDbAdapter implements SessionRegistry {
   async updateSession(
     sessionId: string,
     updateOperation: UpdateSessionOperation,
-  ): Promise<Result<UpdateSessionSuccess, UpdateSessionFailure>> {
+  ): Promise<Result<SessionUpdated, SessionUpdateFailed>> {
     const updateExpressionDataToLog = {
       updateExpression: updateOperation.getDynamoDbUpdateExpression(),
       conditionExpression: updateOperation.getDynamoDbConditionExpression(),
@@ -221,7 +221,7 @@ export class DynamoDbAdapter implements SessionRegistry {
   private handleUpdateSessionInternalServerError(
     error: unknown,
     updateExpressionDataToLog: UpdateExpressionDataToLog,
-  ): FailureWithValue<UpdateSessionFailureInternalServerError> {
+  ): FailureWithValue<SessionUpdateFailedInternalServerError> {
     logger.error(LogMessage.UPDATE_SESSION_UNEXPECTED_FAILURE, {
       error: error,
       data: updateExpressionDataToLog,

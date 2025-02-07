@@ -6,8 +6,8 @@ import { BiometricTokenIssued } from "../../common/session/updateOperations/Biom
 import {
   SessionRegistry,
   UpdateSessionError,
-  UpdateSessionFailure,
-  UpdateSessionSuccess,
+  SessionUpdateFailed,
+  SessionUpdated,
 } from "../../common/session/SessionRegistry";
 import {
   ConditionalCheckFailedException,
@@ -32,7 +32,7 @@ describe("DynamoDbAdapter", () => {
     consoleDebugSpy = jest.spyOn(console, "debug");
   });
   describe("updateSession", () => {
-    let result: Result<UpdateSessionSuccess, UpdateSessionFailure>;
+    let result: Result<SessionUpdated, SessionUpdateFailed>;
 
     const updateOperation: UpdateSessionOperation = new BiometricTokenIssued(
       "NFC_PASSPORT",
