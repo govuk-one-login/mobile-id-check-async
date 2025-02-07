@@ -623,7 +623,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         EntryPoints:
-          - src/functions/test-resources/token/tokenHandler.ts
+          - src/functions/sts-mock/token/tokenHandler.ts
         Minify: true
         Sourcemap: false
         Target: es2022
