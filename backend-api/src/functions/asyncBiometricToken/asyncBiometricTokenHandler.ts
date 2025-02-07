@@ -199,6 +199,7 @@ async function handleUpdateSessionConditionalCheckFailure(
     "User session is not in a valid state for this operation.",
   );
 }
+
 async function handleUpdateSessionSessionNotFound(
   eventService: IEventService,
   sessionId: string,
@@ -223,6 +224,29 @@ async function handleUpdateSessionSessionNotFound(
   return unauthorizedResponse("invalid_session", "Session not found");
 }
 
+async function handleUpdateSessionInternalServerError(
+  eventService: IEventService,
+  sessionId: string,
+  issuer: string,
+): Promise<APIGatewayProxyResult> {
+  const writeEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+    sub: undefined,
+    sessionId: sessionId,
+    govukSigninJourneyId: undefined,
+    getNowInMilliseconds: Date.now,
+    componentId: issuer,
+  });
+
+  if (writeEventResult.isError) {
+    logger.error("ERROR_WRITING_AUDIT_EVENT", {
+      errorMessage:
+        "Unexpected error writing the DCMAW_ASYNC_CRI_5XXERROR event",
+    });
+  }
+  return serverErrorResponse;
+}
+
 async function handleUpdateSessionError(
   updateSessionResult: FailureWithValue<SessionUpdateFailed>,
   eventService: IEventService,
@@ -245,6 +269,10 @@ async function handleUpdateSessionError(
         issuer,
       );
     case UpdateSessionError.INTERNAL_SERVER_ERROR:
-      return serverErrorResponse;
+      return handleUpdateSessionInternalServerError(
+        eventService,
+        sessionId,
+        issuer,
+      );
   }
 }
