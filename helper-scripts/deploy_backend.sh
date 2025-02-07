@@ -61,7 +61,7 @@ done
 if [ $deploy_test_resources == true ]; then
   while true; do
     echo
-    echo "Generating and publishing a signing key pair to S3 is required the first time you deploy an test-resources, optional for subsequent deployments."
+    echo "Generating and publishing a signing key pair to S3 for the sts-mock is required the first time you deploy the test-resources stack, optional for subsequent deployments."
     read -r -p "Do you want to generate and publish a signing key pair to S3 for your test-resources? [y/N]: " yn
 
     case "$yn" in
