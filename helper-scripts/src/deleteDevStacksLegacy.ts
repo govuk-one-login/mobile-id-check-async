@@ -1,9 +1,6 @@
 import inquirer from "inquirer";
 import { $, chalk, echo } from "zx";
 
-echo(chalk.bold("Stack Delete Tool, at your service!"));
-echo("");
-
 export const protectedStacks = [
   "mob-sts-mock",
   "mob-sts-mock-tir",
@@ -223,12 +220,14 @@ const deleteStacks = async (stacks: PrioritisedStacks): Promise<void> => {
   );
 };
 
-try {
-  const stacks = await getStacks();
-  await deleteStacks(stacks);
-} catch (error: unknown) {
-  echo(chalk.red("There was an error. Error:", error));
-}
+export const deleteDevStacksLegacy = async (): Promise<void> => {
+  try {
+    const stacks = await getStacks();
+    await deleteStacks(stacks);
+  } catch (error: unknown) {
+    echo(chalk.red("There was an error. Error:", error));
+  }
+};
 
 interface PrioritisedStacks {
   stacksToDeleteOrder01: string[];
