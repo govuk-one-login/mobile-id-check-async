@@ -1,50 +1,84 @@
 import inquirer from "inquirer";
-import { $ } from "zx";
+import { $, chalk, echo, sleep } from "zx";
 
 console.log("Hello, world!");
 
-const getBaseStackName = async (): Promise<string> => {
-  const { baseStackName } = await inquirer.prompt<{ baseStackName: string }>([
-    {
-      type: "input",
-      name: "baseStackName",
-      message: "Provide a base stack name",
-    },
-  ]);
+export const getBaseStackNames = async (): Promise<string[]> => {
+  const baseStackNames: string[] = [];
+  let addAnother = true;
+  while (addAnother) {
+    const { baseStackName } = await inquirer.prompt<{ baseStackName: string }>([
+      {
+        type: "input",
+        name: "baseStackName",
+        message: "Provide a base stack name:",
+        validate: (input: string) => {
+          if (baseStackNames.includes(input)) {
+            return "This base stack name has already been provided. Please provide a different one.";
+          }
+          return true;
+        },
+      },
+    ]);
+    baseStackNames.push(baseStackName);
 
-  return baseStackName;
+    const { continueChoice } = await inquirer.prompt<{
+      continueChoice: string;
+    }>([
+      {
+        type: "list",
+        name: "continueChoice",
+        message: "Do you want to add another base stack name?",
+        choices: ["Yes", "No"],
+      },
+    ]);
+    if (continueChoice === "No") {
+      addAnother = false;
+    }
+  }
+  return baseStackNames;
 };
 
 const doesStackExist = async (stackName: string): Promise<void> => {
   await $`aws cloudformation describe-stacks --stack-name ${stackName} 2>/dev/null`;
 };
 
-const getStackCandidates = async (baseStackName: string): Promise<string[]> => {
+const getStackCandidates = async (
+  baseStackNames: string[],
+): Promise<string[]> => {
   const candidates: string[] = [];
 
-  const stsMockStackName = `${baseStackName}-sts-mock`;
-  const backendStackName = `${baseStackName}-async-backend`;
-  const backendCfStackName = `${baseStackName}-async-backend-cf-dist`;
+  for (const stackName of baseStackNames) {
+    const stsMockStackName = `${stackName}-sts-mock`;
+    const backendStackName = `${stackName}-async-backend`;
+    const backendCfStackName = `${stackName}-async-backend-cf-dist`;
 
-  try {
-    await doesStackExist(stsMockStackName);
-    candidates.push(stsMockStackName);
-  } catch (error) {
-    console.log("No STS mock stack");
-  }
+    try {
+      await doesStackExist(stsMockStackName);
+      candidates.push(stsMockStackName);
+    } catch (error) {
+      console.log(
+        `No stsMock stack found when using base stack name: ${stackName}`,
+      );
+    }
 
-  try {
-    await doesStackExist(backendStackName);
-    candidates.push(backendStackName);
-  } catch (error) {
-    console.log("No backend stack");
-  }
+    try {
+      await doesStackExist(backendStackName);
+      candidates.push(backendStackName);
+    } catch (error) {
+      console.log(
+        `No backend stack found  when using base stack name: ${stackName}`,
+      );
+    }
 
-  try {
-    await doesStackExist(backendCfStackName);
-    candidates.push(backendCfStackName);
-  } catch (error) {
-    console.log("No backend cf stack");
+    try {
+      await doesStackExist(backendCfStackName);
+      candidates.push(backendCfStackName);
+    } catch (error) {
+      console.log(
+        `No backend cf dist stack found when using base stack name: ${stackName}`,
+      );
+    }
   }
 
   return candidates;
@@ -87,12 +121,50 @@ const prioritiseStacks = (candidates: string[]): PrioritisedStacks => {
   };
 };
 
-try {
-  const baseStackName = await getBaseStackName();
+const deleteStack = async (stackName: string): Promise<void> => {
+  try {
+    await $`./delete_stack.sh ${stackName}`;
+  } catch (error: unknown) {
+    echo(chalk.red(`Unable to delete stack: ${stackName}`));
+    echo(chalk.red(`Error: ${error}`));
+    process.exit(1);
+  }
+};
+
+const deleteStacks = async (stacks: PrioritisedStacks): Promise<void> => {
+  const { stacksToDeleteOrder01, stacksToDeleteOrder02 } = stacks;
+
+  await Promise.all(
+    stacksToDeleteOrder01.map(async (stackName) => {
+      echo(`Deleting stack: ${stackName}`);
+      await deleteStack(stackName);
+      echo(chalk.bold(`${stackName} deleted`));
+    }),
+  );
+
+  await Promise.all(
+    stacksToDeleteOrder02.map(async (stackName) => {
+      echo(`Deleting stack: ${stackName}`);
+      await deleteStack(stackName);
+      echo(chalk.bold(`${stackName} deleted`));
+    }),
+  );
+};
+
+const getStacks = async (): Promise<PrioritisedStacks> => {
+  const selectedStacks: string[] = [];
+
+  const baseStackName = await getBaseStackNames();
   const candidates = await getStackCandidates(baseStackName);
-  console.log("candidates", candidates);
-  console.log("what did we pick", await selectStacksToDelete(candidates));
-  prioritiseStacks(candidates);
+  selectedStacks.push(...(await selectStacksToDelete(candidates)));
+
+  return prioritiseStacks(selectedStacks);
+};
+
+try {
+  const stacks = await getStacks();
+  console.log("stacks", stacks);
+  await deleteStacks(stacks);
 } catch (error: unknown) {
   console.log("There was an error. Error:", error);
 }
