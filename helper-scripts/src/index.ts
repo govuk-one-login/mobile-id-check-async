@@ -24,6 +24,9 @@ const getBaseStackNames = async (): Promise<string[]> => {
         name: "baseStackName",
         message: "Provide a base stack name:",
         validate: (input: string) => {
+          if (!input.trim()) {
+            return "Answer cannot be empty!";
+          }
           if (baseStackNames.includes(input)) {
             return "This base stack name has already been provided. Please provide a different one.";
           }
@@ -120,7 +123,7 @@ const selectStacksToDelete = async (
       },
     ]);
   } catch (error) {
-    echo(chalk.red("Base stack name was not provided, try again"));
+    echo(chalk.red("Error selecting stacks to delete. Error: ", error));
     process.exit(1);
   }
   return answer.stacksToDelete;
