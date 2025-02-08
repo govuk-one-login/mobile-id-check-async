@@ -1,3 +1,3 @@
-import { selectTool } from "./stackManagementTool/selectTool/selectTool.js";
+import { stackManagementTool } from "./stackManagementTool/stackManagementTool.js";
 
-await selectTool();
+await stackManagementTool();

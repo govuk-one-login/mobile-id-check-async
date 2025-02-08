@@ -141,6 +141,7 @@ export const getStacks = async (): Promise<PrioritisedStacks> => {
   const baseStackName = await getBaseStackNames();
   const candidates = await getStackCandidates(baseStackName);
   selectedStacks.push(...(await selectStacksToDelete(candidates)));
+
   await confirmStacks(selectedStacks);
   checkIfProtectedStack(selectedStacks, protectedStacks);
 
