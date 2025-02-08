@@ -59,7 +59,7 @@ const getStackCandidates = async (
     try {
       await doesStackExist(stsMockStackName);
       candidates.push(stsMockStackName);
-    } catch (error) {
+    } catch {
       echo(
         chalk.dim(
           `No stsMock stack found when using base stack name: ${stackName}`,
@@ -70,7 +70,7 @@ const getStackCandidates = async (
     try {
       await doesStackExist(backendStackName);
       candidates.push(backendStackName);
-    } catch (error) {
+    } catch {
       echo(
         chalk.dim(
           `No backend stack found when using base stack name: ${stackName}`,
@@ -81,7 +81,7 @@ const getStackCandidates = async (
     try {
       await doesStackExist(backendCfStackName);
       candidates.push(backendCfStackName);
-    } catch (error) {
+    } catch {
       echo(
         chalk.dim(
           `No backend cf dist stack found when using base stack name: ${stackName}`,

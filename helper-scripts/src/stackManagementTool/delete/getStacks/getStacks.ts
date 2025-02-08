@@ -49,21 +49,21 @@ const getStackCandidates = async (
     try {
       await doesStackExist(testResourcesStackName);
       candidates.push(testResourcesStackName);
-    } catch (error) {
+    } catch {
       noStackForBaseStackNameInfoLog("test-resource", stackName);
     }
 
     try {
       await doesStackExist(backendStackName);
       candidates.push(backendStackName);
-    } catch (error) {
+    } catch {
       noStackForBaseStackNameInfoLog("backend", stackName);
     }
 
     try {
       await doesStackExist(backendCfStackName);
       candidates.push(backendCfStackName);
-    } catch (error) {
+    } catch {
       noStackForBaseStackNameInfoLog("backend-cf-dist", stackName);
     }
   }

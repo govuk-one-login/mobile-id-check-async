@@ -1,4 +1,4 @@
-import { chalk, echo } from "zx";
+import { chalk } from "zx";
 
 export const multiColouredText = (text: string): string => {
   const colours = [

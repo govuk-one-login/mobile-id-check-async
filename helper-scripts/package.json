@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "description": "Scripts for deploying, updating and deleting AWS SAM stacks",
   "main": "index.js",
-  "type":"module",
+  "type": "module",
   "scripts": {
     "build": "./node_modules/.bin/tsc",
     "start": "node dist/index.js",
     "manageStacks": "npm run build --silent && npm run start --silent",
     "playground": "npm run build --silent && node ./dist/playground.js --silent",
-    "format": "./node_modules/.bin/prettier --write '**/*.ts'"
+    "format": "./node_modules/.bin/prettier --write '**/*.ts'",
+    "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
+    "lint": "./node_modules/.bin/eslint ./src"
   },
   "author": "",
   "license": "ISC",
@@ -19,7 +21,10 @@
     "zx": "^8.3.0"
   },
   "devDependencies": {
+    "eslint": "^9.20.0",
+    "eslint-config-prettier": "^10.0.1",
     "prettier": "^3.4.2",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.23.0"
   }
 }
