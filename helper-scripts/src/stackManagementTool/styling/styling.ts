@@ -34,4 +34,5 @@ export const welcomeMessage = (): void => {
     " ID Check stack management tool...",
   );
   echo(part1 + part2 + part3 + part4);
+  echo("");
 };
