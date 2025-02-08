@@ -3,7 +3,7 @@ import { PrioritisedStacks } from "../deleteDevStacks.js";
 
 const deleteStack = async (stackName: string): Promise<void> => {
   try {
-    await $`./src/james_delete_stack.sh ${stackName}`;
+    await $`./delete_stack_no_prompt.sh ${stackName}`;
   } catch (error: unknown) {
     echo(chalk.red(`Unable to delete stack: ${stackName}`));
     echo(chalk.red(`Error: ${error}`));
