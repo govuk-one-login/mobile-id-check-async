@@ -1,6 +1,7 @@
 import { echo } from "zx";
 import { deployDevStack } from "../deploy/deployDevStack.js";
-import { askWhichTool, welcomeMessage, whichDeletionTool } from "./prompts.js";
+import { askWhichTool, welcomeMessage } from "./prompts.js";
+import { whichDeletionTool } from "./selectDeletionTool/selectDeletionTool.js";
 
 export const selectTool = async (): Promise<void> => {
   welcomeMessage();
