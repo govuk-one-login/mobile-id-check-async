@@ -25,14 +25,3 @@ export const multiColouredText = (text: string): string => {
   }
   return result;
 };
-
-export const welcomeMessage = (): void => {
-  const part1 = chalk.italic(multiColouredText("Welcome"));
-  const part2 = chalk.cyanBright.bold.italic(" to the ");
-  const part3 = chalk.cyanBright.bold.italic.underline("unofficial");
-  const part4 = chalk.cyanBright.bold.italic(
-    " ID Check stack management tool...",
-  );
-  echo(part1 + part2 + part3 + part4);
-  echo("");
-};

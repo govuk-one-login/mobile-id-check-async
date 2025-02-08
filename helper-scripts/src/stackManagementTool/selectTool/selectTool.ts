@@ -1,9 +1,7 @@
-import inquirer from "inquirer";
 import { echo } from "zx";
 import { whichDeletionTool } from "../deleteDevStacks/utils/whichDeletionTool.js";
 import { deployDevStack } from "../deployDevStack/deployDevStack.js";
-import { welcomeMessage } from "../styling/styling.js";
-import { askWhichTool } from "./prompts.js";
+import { askWhichTool, welcomeMessage } from "./prompts.js";
 
 export const selectTool = async (): Promise<void> => {
   welcomeMessage();
