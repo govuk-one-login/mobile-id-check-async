@@ -8,10 +8,10 @@ export const askForBaseStackNames = async (): Promise<{
     {
       type: "input",
       name: "baseStackName",
-      message: "Provide a base stack name:",
+      message: "Please provide a base stack name:",
       validate: (input: string) => {
         if (!input.trim()) {
-          return "Answer cannot be empty!";
+          return "Your answer seems to be empty, please provide a stack name...";
         }
         return true;
       },
