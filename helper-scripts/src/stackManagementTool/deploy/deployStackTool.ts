@@ -1,7 +1,7 @@
 import { $, echo } from "zx";
 import { askForBaseStackNames, runningToolMessage } from "./prompts.js";
 
-export const deployDevStack = async (): Promise<void> => {
+export const deployStackTool = async (): Promise<void> => {
   runningToolMessage();
 
   const { baseStackName } = await askForBaseStackNames();

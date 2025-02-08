@@ -1,6 +1,6 @@
 import inquirer from "inquirer";
 import { $, chalk, echo } from "zx";
-import { protectedStacks } from "../protectedStacks/protectedStacks.js";
+import { protectedStacks } from "../../protectedStacks/protectedStacks.js";
 
 const getBaseStackNames = async (): Promise<string[]> => {
   const baseStackNames: string[] = [];
