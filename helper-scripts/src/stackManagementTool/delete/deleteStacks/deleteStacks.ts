@@ -1,5 +1,5 @@
 import { $ } from "zx";
-import { PrioritisedStacks } from "../deleteDevStacks.js";
+import { PrioritisedStacks } from "../deleteStacksTool.js";
 import {
   deletedStackMessage,
   deletingStackMessage,

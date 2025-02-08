@@ -2,7 +2,7 @@ import { chalk, echo } from "zx";
 import { getStacks } from "./getStacks/getStacks.js";
 import { deleteStacks } from "./deleteStacks/deleteStacks.js";
 
-export const deleteDevStacks = async (): Promise<void> => {
+export const deleteStacksTool = async (): Promise<void> => {
   try {
     echo(chalk.italic("Running stack deletion tool..."));
     echo("");

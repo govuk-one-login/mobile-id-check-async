@@ -1,5 +1,5 @@
 import { $, echo } from "zx";
-import { PrioritisedStacks } from "../deleteDevStacks.js";
+import { PrioritisedStacks } from "../deleteStacksTool.js";
 import {
   areYouHappyToDeleteMessage,
   askForBaseStackNames,

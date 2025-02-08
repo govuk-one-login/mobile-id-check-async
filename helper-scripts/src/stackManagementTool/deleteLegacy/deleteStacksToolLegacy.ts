@@ -211,7 +211,7 @@ const deleteStacks = async (stacks: PrioritisedStacks): Promise<void> => {
   );
 };
 
-export const deleteDevStacksLegacy = async (): Promise<void> => {
+export const deleteStacksToolLegacy = async (): Promise<void> => {
   try {
     const stacks = await getStacks();
     await deleteStacks(stacks);

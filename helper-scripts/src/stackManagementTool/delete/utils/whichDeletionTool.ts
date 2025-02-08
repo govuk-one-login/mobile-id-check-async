@@ -1,7 +1,7 @@
 import inquirer from "inquirer";
 import { chalk, echo } from "zx";
-import { deleteDevStacksLegacy } from "../../deleteLegacy/deleteDevStacksLegacy.js";
-import { deleteDevStacks } from "../deleteDevStacks.js";
+import { deleteStacksToolLegacy } from "../../deleteLegacy/deleteStacksToolLegacy.js";
+import { deleteStacksTool } from "../deleteStacksTool.js";
 
 export const whichDeletionTool = async (): Promise<void> => {
   const { choice } = await inquirer.prompt<{
@@ -22,8 +22,8 @@ export const whichDeletionTool = async (): Promise<void> => {
   if (
     choice === "Legacy (if your environment still is using an sts-mock stack)"
   ) {
-    await deleteDevStacksLegacy();
+    await deleteStacksToolLegacy();
   }
 
-  await deleteDevStacks();
+  await deleteStacksTool();
 };
