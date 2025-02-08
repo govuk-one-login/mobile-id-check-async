@@ -1,5 +1,4 @@
-import inquirer from "inquirer";
-import { $, chalk, echo } from "zx";
+import { $, echo } from "zx";
 import { askForBaseStackNames, runningToolMessage } from "./prompts.js";
 
 export const deployDevStack = async (): Promise<void> => {

@@ -1,6 +1,6 @@
 import inquirer from "inquirer";
 import { chalk, echo } from "zx";
-import { deleteDevStacksLegacy } from "../../deleteDevStackLegacy/deleteDevStacksLegacy.js";
+import { deleteDevStacksLegacy } from "../../deleteLegacy/deleteDevStacksLegacy.js";
 import { deleteDevStacks } from "../deleteDevStacks.js";
 
 export const whichDeletionTool = async (): Promise<void> => {

@@ -1,6 +1,6 @@
 import { echo } from "zx";
-import { whichDeletionTool } from "../deleteDevStacks/utils/whichDeletionTool.js";
-import { deployDevStack } from "../deployDevStack/deployDevStack.js";
+import { whichDeletionTool } from "../delete/utils/whichDeletionTool.js";
+import { deployDevStack } from "../deploy/deployDevStack.js";
 import { askWhichTool, welcomeMessage } from "./prompts.js";
 
 export const selectTool = async (): Promise<void> => {

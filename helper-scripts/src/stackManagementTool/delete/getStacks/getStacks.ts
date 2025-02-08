@@ -1,4 +1,4 @@
-import { $, chalk, echo } from "zx";
+import { $, echo } from "zx";
 import { PrioritisedStacks } from "../deleteDevStacks.js";
 import {
   areYouHappyToDeleteMessage,
@@ -13,16 +13,7 @@ import {
   selectingStacksErrorMessage,
   youAreAboutToDeleteMessage,
 } from "./prompts.js";
-
-export const protectedStacks = [
-  "mob-sts-mock",
-  "mob-sts-mock-tir",
-  "mob-sts-mock-pl",
-  "mob-async-backend",
-  "mob-async-backend-tir",
-  "mob-async-backend-pl",
-  "mob-async-backend-cf-dist",
-];
+import { protectedStacks } from "../../protectedStacks/protectedStacks.js";
 
 const getBaseStackNames = async (): Promise<string[]> => {
   const baseStackNames: string[] = [];

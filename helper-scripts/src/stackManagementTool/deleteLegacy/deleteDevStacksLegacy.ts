@@ -1,15 +1,6 @@
 import inquirer from "inquirer";
 import { $, chalk, echo } from "zx";
-
-export const protectedStacks = [
-  "mob-sts-mock",
-  "mob-sts-mock-tir",
-  "mob-sts-mock-pl",
-  "mob-async-backend",
-  "mob-async-backend-tir",
-  "mob-async-backend-pl",
-  "mob-async-backend-cf-dist",
-];
+import { protectedStacks } from "../protectedStacks/protectedStacks.js";
 
 const getBaseStackNames = async (): Promise<string[]> => {
   const baseStackNames: string[] = [];
@@ -185,7 +176,7 @@ const getStacks = async (): Promise<PrioritisedStacks> => {
   const candidates = await getStackCandidates(baseStackName);
   selectedStacks.push(...(await selectStacksToDelete(candidates)));
   await confirmStacks(selectedStacks);
-  await checkIfProtectedStack(selectedStacks, protectedStacks);
+  checkIfProtectedStack(selectedStacks, protectedStacks);
 
   return prioritiseStacks(selectedStacks);
 };

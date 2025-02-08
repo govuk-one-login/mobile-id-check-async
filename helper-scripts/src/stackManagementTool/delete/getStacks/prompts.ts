@@ -89,7 +89,7 @@ export const areYouHappyToDeleteMessage = async (): Promise<{
 
 export const exitingToolWarningMessage = (): void => {
   echo("");
-  echo(chalk.yellow("Exiting tool as request..."));
+  echo(chalk.yellow("Exiting tool..."));
 };
 
 export const continueDimMessage = (): void => {
