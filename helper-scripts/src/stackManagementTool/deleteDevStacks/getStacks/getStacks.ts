@@ -1,6 +1,18 @@
 import { $, chalk, echo } from "zx";
 import { PrioritisedStacks } from "../deleteDevStacks.js";
-import inquirer from "inquirer";
+import {
+  areYouHappyToDeleteMessage,
+  askForBaseStackNames,
+  askToAddMoreBaseStacks,
+  askWhichStacksToDelete,
+  cannotDeleteProtectStackErrorMessage,
+  continueDimMessage,
+  exitingToolWarningMessage,
+  noStackForBaseStackNameInfoLog,
+  noStacksSelectedErrorMessage,
+  selectingStacksErrorMessage,
+  youAreAboutToDeleteMessage,
+} from "./prompts.js";
 
 export const protectedStacks = [
   "mob-sts-mock",
@@ -16,36 +28,12 @@ const getBaseStackNames = async (): Promise<string[]> => {
   const baseStackNames: string[] = [];
   let addAnother = true;
   while (addAnother) {
-    const { baseStackName } = await inquirer.prompt<{ baseStackName: string }>([
-      {
-        type: "input",
-        name: "baseStackName",
-        message: "Please provide a base stack name:",
-        validate: (input: string) => {
-          if (!input.trim()) {
-            return "Your answer seems to be empty, please provide a stack name...";
-          }
-          if (baseStackNames.includes(input)) {
-            return `You've already chosen ${input}, please provide another base stack name...`;
-          }
-          return true;
-        },
-      },
-    ]);
+    const { baseStackName } = await askForBaseStackNames(baseStackNames);
     baseStackNames.push(baseStackName);
 
     echo("");
-    const { continueChoice } = await inquirer.prompt<{
-      continueChoice: string;
-    }>([
-      {
-        type: "list",
-        name: "continueChoice",
-        message: "Do you want to add another base stack name?",
-        choices: ["Yes", "No"],
-      },
-    ]);
-    if (continueChoice === "No") {
+    const { choice } = await askToAddMoreBaseStacks();
+    if (choice === "No") {
       addAnother = false;
     }
     echo("");
@@ -71,33 +59,21 @@ const getStackCandidates = async (
       await doesStackExist(testResourcesStackName);
       candidates.push(testResourcesStackName);
     } catch (error) {
-      echo(
-        chalk.dim(
-          `No test-resources stack found when using base stack name: ${stackName}`,
-        ),
-      );
+      noStackForBaseStackNameInfoLog("test-resource", stackName);
     }
 
     try {
       await doesStackExist(backendStackName);
       candidates.push(backendStackName);
     } catch (error) {
-      echo(
-        chalk.dim(
-          `No backend stack found when using base stack name: ${stackName}`,
-        ),
-      );
+      noStackForBaseStackNameInfoLog("backend", stackName);
     }
 
     try {
       await doesStackExist(backendCfStackName);
       candidates.push(backendCfStackName);
     } catch (error) {
-      echo(
-        chalk.dim(
-          `No backend-cf-dist stack found when using base stack name: ${stackName}`,
-        ),
-      );
+      noStackForBaseStackNameInfoLog("backend-cf-dist", stackName);
     }
   }
 
@@ -111,18 +87,9 @@ const selectStacksToDelete = async (
   let answer;
 
   try {
-    answer = await inquirer.prompt<{
-      stacksToDelete: string[];
-    }>([
-      {
-        type: "checkbox",
-        name: "stacksToDelete",
-        message: "Confirm which of the following stacks you want to delete",
-        choices: candidates,
-      },
-    ]);
+    answer = await askWhichStacksToDelete(candidates);
   } catch (error) {
-    echo(chalk.red("Error selecting stacks to delete. Error: ", error));
+    selectingStacksErrorMessage(error);
     process.exit(1);
   }
   return answer.stacksToDelete;
@@ -153,36 +120,24 @@ const prioritiseStacks = (candidates: string[]): PrioritisedStacks => {
 const confirmStacks = async (stacks: string[]): Promise<void> => {
   echo("");
   if (stacks.length === 0) {
-    echo(chalk.red("No stacks selected for deletion, please try again"));
-    echo("");
+    noStacksSelectedErrorMessage();
     process.exit(1);
   }
-  echo(chalk.bold("You are about to delete the following stacks:"));
-  stacks.forEach((stackName) => console.log(`- ${stackName}`));
 
-  echo("");
-  const { isHappy } = await inquirer.prompt<{ isHappy: boolean }>([
-    {
-      type: "confirm",
-      name: "isHappy",
-      message: "Are you happy to continue?",
-      default: true,
-    },
-  ]);
+  youAreAboutToDeleteMessage(stacks);
+  const { isHappy } = await areYouHappyToDeleteMessage();
   if (!isHappy) {
-    echo("");
-    echo(chalk.yellow("Exiting script as requested."));
+    exitingToolWarningMessage();
     process.exit(0);
   } else {
-    echo("Continuing with the script...");
+    continueDimMessage();
   }
 };
 
 const checkIfProtectedStack = (stacks: string[], protectedStacks: string[]) => {
   stacks.forEach(async (stackName) => {
     if (protectedStacks.includes(stackName)) {
-      echo(chalk.red(`It is not permitted to delete stack: ${stackName}`));
-      echo(chalk.red("Please remove this stack before continuing"));
+      cannotDeleteProtectStackErrorMessage(stackName);
       process.exit(1);
     }
     return;

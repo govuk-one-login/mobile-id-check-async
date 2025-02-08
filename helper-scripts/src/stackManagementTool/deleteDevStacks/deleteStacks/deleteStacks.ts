@@ -1,12 +1,16 @@
-import { $, chalk, echo } from "zx";
+import { $ } from "zx";
 import { PrioritisedStacks } from "../deleteDevStacks.js";
+import {
+  deletedStackMessage,
+  deletingStackMessage,
+  unableToDeleteStackErrorMessage,
+} from "./prompts.js";
 
 const deleteStack = async (stackName: string): Promise<void> => {
   try {
     await $`./delete_stack_no_prompt.sh ${stackName}`;
   } catch (error: unknown) {
-    echo(chalk.red(`Unable to delete stack: ${stackName}`));
-    echo(chalk.red(`Error: ${error}`));
+    unableToDeleteStackErrorMessage(error, stackName);
     process.exit(1);
   }
 };
@@ -22,28 +26,24 @@ export const deleteStacks = async (
 
   await Promise.all(
     stacksToDeleteOrder01.map(async (stackName) => {
-      echo("");
-      echo(`Deleting stack: ${stackName}`);
+      deletingStackMessage(stackName);
       await deleteStack(stackName);
-      echo(chalk.green.bold(`${stackName} stack deleted`));
-      echo("");
+      deletedStackMessage(stackName);
     }),
   );
 
   await Promise.all(
     stacksToDeleteOrder02.map(async (stackName) => {
-      echo(`Deleting stack: ${stackName}`);
+      deletingStackMessage(stackName);
       await deleteStack(stackName);
-      echo(chalk.green.bold(`${stackName} stack deleted`));
-      echo("");
+      deletedStackMessage(stackName);
     }),
   );
   await Promise.all(
     stacksToDeleteOrder03.map(async (stackName) => {
-      echo(`Deleting stack: ${stackName}`);
+      deletingStackMessage(stackName);
       await deleteStack(stackName);
-      echo(chalk.green.bold(`${stackName} stack deleted`));
-      echo("");
+      deletedStackMessage(stackName);
     }),
   );
 };

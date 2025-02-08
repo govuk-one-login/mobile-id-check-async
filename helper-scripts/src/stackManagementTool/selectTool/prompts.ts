@@ -1,6 +1,6 @@
 import inquirer from "inquirer";
 import { chalk, echo } from "zx";
-import { multiColouredText } from "../styling/styling";
+import { multiColouredText } from "../styling/styling.js";
 
 export const welcomeMessage = (): void => {
   const part1 = chalk.italic(multiColouredText("Welcome"));
