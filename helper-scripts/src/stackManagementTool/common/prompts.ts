@@ -1,4 +1,5 @@
 import inquirer from "inquirer";
+import { chalk, echo } from "zx";
 
 export const askForBaseStackName = async (): Promise<{
   baseStackName: string;
@@ -16,4 +17,9 @@ export const askForBaseStackName = async (): Promise<{
       },
     },
   ]);
+};
+
+export const runningToolMessage = (toolName: string): void => {
+  echo(chalk.italic(`Running ${toolName} tool...`));
+  echo("");
 };
