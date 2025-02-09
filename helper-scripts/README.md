@@ -1,5 +1,34 @@
 # Helper scripts
 
+## Stack Management Tool
+
+### What Stack Management Tool does
+
+This tool provides an interface to use the deploy and delete stack scripts described below,
+as well as the ability to generate .env files for stacks that you haven't just deployed
+
+### How to use Stack Management Tool
+
+#### From `/backend-api`
+
+```zsh
+npm run manageStacks
+```
+
+#### From `/helper-scripts`
+
+Ensure you have the latest packages installed
+
+```zsh
+npm i
+```
+
+Execute the tool
+
+```zsh
+npm run manageStacks
+```
+
 ## `delete_stack.sh`
 
 This script provides the ability to:
@@ -34,37 +63,6 @@ The deployed stacks will be named as follows:
 - `<your-stack-name>-async-backend-cf-dist`
 
 Note: This script generates individual `.env` files your `backend-api` stack and `test-resources` directories. This completes all setup needed to run API tests against your deployed backend application.
-
-## Stack Management Tool
-
-### What Stack Management Tool does
-
-This tool provides an interface to use the above deploy and delete stack scripts,
-as well as the ability to generate .env files for stacks that you haven't just deployed
-
-### How to use Stack Management Tool
-
-#### From /backend-api
-
-```zsh
-npm run manageStacks
-```
-
-#### From /helper-scripts
-
-Ensure you have the latest packages installed
-
-```zsh
-# From /helper-scripts
-npm i
-```
-
-Execute the tool
-
-```zsh
-# From /helper-scripts
-npm run manageStacks
-```
 
 ## Formatting
 
