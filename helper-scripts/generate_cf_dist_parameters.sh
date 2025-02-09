@@ -6,6 +6,8 @@ if [ $# -ne 1 ]; then
   exit 1
 fi
 
+  mkdir -p "deployResponses"
+
 stackName=$1
 
 # Check correct AWS account is active

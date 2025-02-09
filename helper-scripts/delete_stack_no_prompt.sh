@@ -38,7 +38,7 @@ list_500() {
     --query="{Objects: ${2}[0:500].{Key:Key,VersionId:VersionId}}"
 }
 
-mkdir -p "./deleteResponses"
+mkdir -p "deleteResponses"
 
 delete() {
   aws s3api delete-objects \
