@@ -27,3 +27,9 @@ export const askWhichTool = async (): Promise<{ choice: string }> => {
 export const quitMessage = (): void => {
   echo(chalk.dim.italic("Quitting tool..."));
 };
+
+export const toolStoppedMessage = (error: unknown): void => {
+  echo("");
+  echo(chalk.dim.italic("Script stopped..."));
+  echo(chalk.dim.italic(`- ${error}`));
+};
