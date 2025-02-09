@@ -10,15 +10,15 @@ export const stackManagementTool = async (): Promise<void> => {
   const { choice } = await askWhichTool();
   echo("");
 
-  if (choice === "Delete stacks") {
+  if (choice.includes("Delete")) {
     await whichDeletionTool();
   }
 
-  if (choice === "Deploy stacks") {
+  if (choice.includes("Deploy")) {
     await deployStackTool();
   }
 
-  if (choice === "Generate .env") {
+  if (choice.includes("Generate")) {
     await generateEnvTool();
   }
 };
