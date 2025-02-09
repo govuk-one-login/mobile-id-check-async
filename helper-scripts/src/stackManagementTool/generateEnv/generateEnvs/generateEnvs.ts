@@ -1,7 +1,7 @@
 import { echo } from "zx";
 import { $ } from "zx";
-import { pleaseTryAgainErrorMessage } from "../../common/prompts.js";
 import {
+  pleaseTryAgainErrorMessage,
   successfullyGeneratedBothEnvsMessage,
   successfullyGeneratedEnvMessage,
 } from "./prompts.js";

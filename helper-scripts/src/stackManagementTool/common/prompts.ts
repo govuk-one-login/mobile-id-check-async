@@ -1,5 +1,4 @@
 import inquirer from "inquirer";
-import { echo, chalk } from "zx";
 
 export const askForBaseStackName = async (): Promise<{
   baseStackName: string;
@@ -17,9 +16,4 @@ export const askForBaseStackName = async (): Promise<{
       },
     },
   ]);
-};
-
-export const pleaseTryAgainErrorMessage = (): void => {
-  echo("");
-  echo(chalk.red("Please try again!"));
 };

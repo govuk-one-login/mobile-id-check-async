@@ -15,3 +15,8 @@ export const successfullyGeneratedEnvMessage = (stackName: string): void => {
   echo("");
   echo(chalk.green.bold(`Successfully generated .env file for ${stackName}`));
 };
+
+export const pleaseTryAgainErrorMessage = (): void => {
+  echo("");
+  echo(chalk.red("Please try again!"));
+};
