@@ -225,7 +225,7 @@ export const deleteStacksLegacyToolInfoMessage = (): void => {
   echo(chalk.italic.dim("Please note:"));
   echo(
     chalk.italic.dim(
-      `- This legacy tool is ${chalk.underline("not")} being updated`,
+      `- This legacy tool is ${chalk.underline("not")} being maintained`,
     ),
   );
   echo(
