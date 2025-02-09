@@ -68,14 +68,14 @@ Note: This script generates individual `.env` files your `backend-api` stack and
 
 This helper-script directory uses Prettier as an opinionated formatter to ensure code style is consistent.
 
-To format your code:
+### Format your code
 
 ```zsh
 # From /helper-scripts
 npm run format
 ```
 
-To validate your code adheres to the formatting rules:
+### Validate your code adheres to the formatting rules:
 
 ```zsh
 # From /helper-scripts
@@ -84,7 +84,7 @@ npm run format:check
 
 ## Linting
 
-To lint your code:
+### Lint your code
 
 ```zsh
 # From /helper-scripts
