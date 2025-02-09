@@ -44,6 +44,14 @@ as well as the ability to generate .env files for stacks that you haven't just d
 
 ### How to use it
 
+#### From /backend-api
+
+```zsh
+npm run manageStacks
+```
+
+#### From /helper-scripts
+
 Ensure you have the latest packages installed
 
 ```zsh
