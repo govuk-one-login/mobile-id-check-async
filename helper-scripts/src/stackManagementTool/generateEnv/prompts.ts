@@ -13,3 +13,20 @@ export const askCustomStackOrMainDev = async (): Promise<{
     },
   ]);
 };
+
+export const whichStacksToGenerateEnvFor = async (
+  baseStackName: string,
+): Promise<{ choice: string }> => {
+  return await inquirer.prompt<{ choice: string }>([
+    {
+      type: "list",
+      name: "choice",
+      message: "Which of your stacks do you want to generate .env files for?",
+      choices: [
+        "Both",
+        `${baseStackName}-async-backend`,
+        `${baseStackName}-test-resources`,
+      ],
+    },
+  ]);
+};
