@@ -55,7 +55,7 @@ export const noStackForBaseStackNameInfoMessage = (
   stackName: string,
 ): void => {
   echo(
-    chalk.dim(`No ${stackType} stack found for base stack name: ${stackName}`),
+    chalk.dim.italic(`No ${stackType} stack found for base stack name: ${stackName}`),
   );
 };
 
@@ -108,7 +108,7 @@ export const exitingToolWarningMessage = (): void => {
 };
 
 export const continueDimMessage = (): void => {
-  echo(chalk.dim("Continuing..."));
+  echo(chalk.dim.italic("Continuing..."));
 };
 
 export const cannotDeleteProtectStackErrorMessage = (
