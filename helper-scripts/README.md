@@ -37,12 +37,12 @@ Note: This script generates individual `.env` files your `backend-api` stack and
 
 ## Stack Management Tool
 
-### What it does
+### What Stack Management Tool does
 
 This tool provides an interface to use the above deploy and delete stack scripts,
 as well as the ability to generate .env files for stacks that you haven't just deployed
 
-### How to use it
+### How to use Stack Management Tool
 
 #### From /backend-api
 
@@ -64,4 +64,31 @@ Execute the tool
 ```zsh
 # From /helper-scripts
 npm run manageStacks
+```
+
+## Formatting
+
+This helper-script directory uses Prettier as an opinionated formatter to ensure code style is consistent.
+
+To format your code:
+
+```bash
+# From /helper-scripts
+npm run format
+```
+
+To validate your code adheres to the formatting rules:
+
+```bash
+# From /helper-scripts
+npm run format:check
+```
+
+## Linting
+
+To lint your code:
+
+```bash
+# From /helper-scripts
+npm run lint
 ```
