@@ -11,6 +11,7 @@ import {
   noStackForBaseStackNameInfoMessage,
   noStacksSelectedErrorMessage,
   selectingStacksErrorMessage,
+  selectingStacksForDeletionInfoMessage,
   youAreAboutToDeleteMessage,
 } from "./prompts.js";
 import { protectedStacks } from "../../../protectedStacks/protectedStacks.js";
@@ -75,6 +76,7 @@ const selectStacksToDelete = async (
   candidates: string[],
 ): Promise<string[]> => {
   echo("");
+  selectingStacksForDeletionInfoMessage();
   let answer;
 
   try {

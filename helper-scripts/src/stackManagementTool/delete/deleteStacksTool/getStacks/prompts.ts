@@ -1,6 +1,21 @@
 import inquirer from "inquirer";
 import { chalk, echo } from "zx";
 
+export const selectingStacksForDeletionInfoMessage = (): void => {
+  echo(
+    chalk.italic.dim("Please note, the following stack dependencies exists:"),
+  );
+  echo(
+    chalk.italic.dim("- The test-resource stack depends on the backend stack"),
+  );
+  echo(
+    chalk.italic.dim(
+      "- The backend stack depends on the backend-cf-dist stack",
+    ),
+  );
+  echo("");
+};
+
 export const askForBaseStackNames = async (
   baseStackNames: string[],
 ): Promise<{ baseStackName: string }> => {
