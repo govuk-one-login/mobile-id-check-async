@@ -67,16 +67,16 @@ npm run manageStacks
 
 Follow the prompts to generate an `.env`
 
-##### Run api tests against your custom backend stack
+##### Run API tests against your custom backend stack
 
 ```bash
 # From /backend-api
 npm run test:api
 ```
 
-#### Testing the `main` dev or build stacks
+#### Testing the `main` stack in `dev` or `build`
 
-##### Activate AWS credentials in dev or build
+##### Activate AWS credentials in `dev` or `build`
 
 Ensure you are in account `di-mobile-id-check-async-dev` or `di-mobile-id-check-async-dev`
 
@@ -87,13 +87,13 @@ Ensure you are in account `di-mobile-id-check-async-dev` or `di-mobile-id-check-
 npm run manageStacks
 ```
 
-Follow the prompts to generate a .env for the Main stack(s)
+Follow the prompts to generate a `.env` for the Main stack(s)
 
-##### Manually update .env if testing in `build`
+##### Manually update `.env` if testing in `build`
 
 Update your `.env` so `TEST_ENVIRONMENT=build`
 
-##### Run api tests against `main`
+##### Run API tests against `main`
 
 ```bash
 # From /backend-api
