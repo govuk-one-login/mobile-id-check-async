@@ -7,7 +7,7 @@ import { echo } from "zx";
 import { generateEnvs } from "./generateEnvs/generateEnvs.js";
 import { getStackName } from "./getStackName/getStackName.js";
 import { runningToolMessage } from "../common/prompts.js";
-import { goBackToMainMenu } from "../common/Back/goBack.js";
+import { goBackToMenu } from "../common/Back/goBackToMenu.js";
 
 export const generateEnvTool = async (): Promise<void> => {
   runningToolMessage("Generate .env");
@@ -17,7 +17,7 @@ export const generateEnvTool = async (): Promise<void> => {
   echo("");
 
   if (customStackOrMain.includes("Back")) {
-    await goBackToMainMenu();
+    await goBackToMenu();
   }
 
   const baseStackName = await getStackName(customStackOrMain);

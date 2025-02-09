@@ -2,7 +2,7 @@ import { echo } from "zx";
 import { deleteStacksToolLegacy } from "../deleteLegacy/deleteStacksToolLegacy.js";
 import { askWhichDeletionTool } from "./prompts.js";
 import { deleteStacksTool } from "../deleteStacksTool/deleteStacksTool.js";
-import { goBackToMainMenu } from "../../common/Back/goBack.js";
+import { goBackToMenu } from "../../common/Back/goBackToMenu.js";
 
 export const whichDeletionTool = async (): Promise<void> => {
   const { choice } = await askWhichDeletionTool();
@@ -17,6 +17,6 @@ export const whichDeletionTool = async (): Promise<void> => {
   }
 
   if (choice.includes("Back")) {
-    await goBackToMainMenu();
+    await goBackToMenu();
   }
 };
