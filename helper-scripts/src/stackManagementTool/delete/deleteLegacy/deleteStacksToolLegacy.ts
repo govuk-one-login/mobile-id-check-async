@@ -212,12 +212,28 @@ const deleteStacks = async (stacks: PrioritisedStacks): Promise<void> => {
 };
 
 export const deleteStacksToolLegacy = async (): Promise<void> => {
+  deleteStacksLegacyToolInfoMessage();
   try {
     const stacks = await getStacks();
     await deleteStacks(stacks);
   } catch (error: unknown) {
     echo(chalk.red("There was an error. Error:", error));
   }
+};
+
+export const deleteStacksLegacyToolInfoMessage = (): void => {
+  echo(chalk.italic.dim("Please note:"));
+  echo(
+    chalk.italic.dim(
+      `- This legacy tool is ${chalk.underline("not")} being updated`,
+    ),
+  );
+  echo(
+    chalk.italic.dim(
+      `- This legacy tool will be ${chalk.underline("deleted")} following the complete migration to the test-resource stack`,
+    ),
+  );
+  echo("");
 };
 
 interface PrioritisedStacks {

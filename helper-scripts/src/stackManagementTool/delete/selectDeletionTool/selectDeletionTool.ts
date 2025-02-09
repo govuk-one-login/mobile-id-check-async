@@ -7,9 +7,9 @@ export const whichDeletionTool = async (): Promise<void> => {
   const { choice } = await askWhichDeletionTool();
   echo("");
 
-  if (choice === "Legacy (if your environment still has an sts-mock stack)") {
+  if (choice.includes("Legacy")) {
     await deleteStacksToolLegacy();
+  } else {
+    await deleteStacksTool();
   }
-
-  await deleteStacksTool();
 };
