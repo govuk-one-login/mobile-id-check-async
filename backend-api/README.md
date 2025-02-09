@@ -74,7 +74,7 @@ Follow the prompts to generate an `.env`
 npm run test:api
 ```
 
-#### Test the `main` dev or build stacks
+#### Testing the `main` dev or build stacks
 
 ##### Activate AWS credentials in dev or build
 
