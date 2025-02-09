@@ -35,7 +35,7 @@ The deployed stacks will be named as follows:
 
 Note: This script generates individual `.env` files your `backend-api` stack and `test-resources` directories. This completes all setup needed to run API tests against your deployed backend application.
 
-## Stack Management Tool (in testing)
+## Stack Management Tool
 
 ### What it does
 
