@@ -9,7 +9,10 @@ export const deployStackTool = async (): Promise<void> => {
   echo("");
 
   try {
-    await $({ stdio: "inherit" })`sh deploy_backend.sh ${baseStackName}`;
+    await $({
+      stdio: "inherit",
+      signal: new AbortController().signal,
+    })`sh deploy_backend.sh ${baseStackName}`;
   } catch (error) {
     errorDeployingStacksMessage(error);
   }

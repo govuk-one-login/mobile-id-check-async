@@ -8,7 +8,9 @@ import {
 
 const deleteStack = async (stackName: string): Promise<void> => {
   try {
-    await $`./delete_stack_no_prompt.sh ${stackName}`;
+    await $({
+      signal: new AbortController().signal,
+    })`./delete_stack_no_prompt.sh ${stackName}`;
   } catch (error: unknown) {
     unableToDeleteStackErrorMessage(error, stackName);
     process.exit(1);
