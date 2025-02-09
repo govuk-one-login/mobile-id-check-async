@@ -3,7 +3,7 @@ import { chalk, echo } from "zx";
 
 export const generateEnvToolInfoMessage = (): void => {
   echo(
-    chalk.italic(
+    chalk.italic.dim(
       `Please note, you do ${chalk.underline("not")} need to use this tool after deploying a stack, as the deployment tool will do this for you`,
     ),
   );
