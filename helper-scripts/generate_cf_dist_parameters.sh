@@ -74,4 +74,4 @@ jq --null-input \
     "ParameterKey": "LogDestination",
     "ParameterValue": "none"
   }
-]' >"parameters-${stackName}-cf-dist.json"
+]' >"./src/deployResponses/parameters-${stackName}-cf-dist.json"

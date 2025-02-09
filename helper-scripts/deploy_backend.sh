@@ -152,7 +152,9 @@ if [[ $deploy_cf_dist == true ]]; then
   CF_DIST_ARGS="${CF_DIST_ARGS} --template-url https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/cloudfront-distribution/template.yaml?versionId=jZcckkadQOPteu3t24UktqjOehImqD1K" # v1.8.0
   CF_DIST_ARGS="${CF_DIST_ARGS} --capabilities CAPABILITY_AUTO_EXPAND CAPABILITY_IAM CAPABILITY_NAMED_IAM"
 
-  aws cloudformation create-stack $CF_DIST_ARGS --parameters="$(jq -r '. | tojson' "parameters-${BACKEND_CF_DIST_STACK_NAME}.json")" || aws cloudformation update-stack $CF_DIST_ARGS --parameters="$(jq -r '. | tojson' "parameters-${BACKEND_CF_DIST_STACK_NAME}.json")"
+  mkdir -p "./src/deployResponses"
+
+  aws cloudformation create-stack $CF_DIST_ARGS --parameters="$(jq -r '. | tojson' "./src/deployResponses/parameters-${BACKEND_CF_DIST_STACK_NAME}.json")" || aws cloudformation update-stack $CF_DIST_ARGS --parameters="$(jq -r '. | tojson' "./src/deployResponses/parameters-${BACKEND_CF_DIST_STACK_NAME}.json")"
 
   echo "Waiting for stack create/updates to complete"
   aws cloudformation wait stack-create-complete --stack-name "${BACKEND_CF_DIST_STACK_NAME}" || aws cloudformation wait stack-update-complete --stack-name "${BACKEND_CF_DIST_STACK_NAME}"
