@@ -70,14 +70,14 @@ This helper-script directory uses Prettier as an opinionated formatter to ensure
 
 To format your code:
 
-```bash
+```zsh
 # From /helper-scripts
 npm run format
 ```
 
 To validate your code adheres to the formatting rules:
 
-```bash
+```zsh
 # From /helper-scripts
 npm run format:check
 ```
@@ -86,7 +86,7 @@ npm run format:check
 
 To lint your code:
 
-```bash
+```zsh
 # From /helper-scripts
 npm run lint
 ```
