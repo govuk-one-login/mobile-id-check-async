@@ -12,6 +12,7 @@ export const askWhichDeletionTool = async (): Promise<{ choice: string }> => {
       choices: [
         `Standard ${chalk.dim.italic("(recommended: test-resource stack era)")}`,
         `Legacy ${chalk.dim.italic("(not recommended: sts-mock stack era)")}`,
+        "Back",
       ],
     },
   ]);

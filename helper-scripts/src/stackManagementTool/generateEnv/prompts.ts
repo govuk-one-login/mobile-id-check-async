@@ -20,7 +20,7 @@ export const askCustomStackOrMainDev = async (): Promise<{
       name: "customStackOrMain",
       message:
         "Do you want to generate a .env files for custom dev stacks or the main dev stack?",
-      choices: ["Custom stack(s)", "Main stack(s)"],
+      choices: ["Custom stack(s)", "Main stack(s)", "Back"],
     },
   ]);
 };

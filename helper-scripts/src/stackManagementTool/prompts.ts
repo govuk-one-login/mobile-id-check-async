@@ -19,7 +19,11 @@ export const askWhichTool = async (): Promise<{ choice: string }> => {
       type: "list",
       name: "choice",
       message: "What do you want to do?",
-      choices: ["Deploy stacks", "Delete stacks", "Generate .env"],
+      choices: ["Deploy stacks", "Delete stacks", "Generate .env", "Quit"],
     },
   ]);
+};
+
+export const quitMessage = (): void => {
+  echo(chalk.dim.italic("Quitting tool..."));
 };
