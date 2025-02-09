@@ -1,16 +1,6 @@
 import inquirer from "inquirer";
 import { chalk, echo } from "zx";
 
-export const generateEnvToolInfoMessage = (): void => {
-  echo(chalk.italic.dim("Please note:"));
-  echo(
-    chalk.italic.dim(
-      `- You do ${chalk.underline("not")} need to use this tool after deploying a stack, as the deployment tool will do this for you`,
-    ),
-  );
-  echo("");
-};
-
 export const askCustomStackOrMainDev = async (): Promise<{
   customStackOrMain: string;
 }> => {
@@ -40,4 +30,14 @@ export const whichStacksToGenerateEnvFor = async (
       ],
     },
   ]);
+};
+
+export const generateEnvToolInfoMessage = (): void => {
+  echo(chalk.italic.dim("Please note:"));
+  echo(
+    chalk.italic.dim(
+      `- You do ${chalk.underline("not")} need to use this tool after deploying a stack, as the deployment tool will do this for you`,
+    ),
+  );
+  echo("");
 };
