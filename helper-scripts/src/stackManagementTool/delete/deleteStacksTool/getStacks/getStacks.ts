@@ -22,15 +22,12 @@ export interface PrioritisedStacks {
 }
 
 export const getStacks = async (): Promise<PrioritisedStacks> => {
-  const selectedStacks: string[] = [];
-
   const baseStackName = await getBaseStackNames();
   const candidates = await getStackCandidates(baseStackName);
-  selectedStacks.push(...(await selectStacksToDelete(candidates)));
+  const selectedStacks = await selectStacksToDelete(candidates);
 
   await confirmStacks(selectedStacks);
   checkIfProtectedStack(selectedStacks, protectedStacks);
-
   return prioritiseStacks(selectedStacks);
 };
 
