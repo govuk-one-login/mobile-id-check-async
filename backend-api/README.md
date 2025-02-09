@@ -89,10 +89,6 @@ npm run manageStacks
 
 Follow the prompts to generate a `.env` for the Main stack(s)
 
-##### Manually update `.env` if testing in `build`
-
-Update your `.env` so `TEST_ENVIRONMENT=build`
-
 ##### Run API tests against `main`
 
 ```bash
