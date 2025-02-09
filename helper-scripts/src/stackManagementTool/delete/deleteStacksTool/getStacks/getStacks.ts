@@ -8,7 +8,7 @@ import {
   cannotDeleteProtectStackErrorMessage,
   continueDimMessage,
   exitingToolWarningMessage,
-  noStackForBaseStackNameInfoLog,
+  noStackForBaseStackNameInfoMessage,
   noStacksSelectedErrorMessage,
   selectingStacksErrorMessage,
   youAreAboutToDeleteMessage,
@@ -50,21 +50,21 @@ const getStackCandidates = async (
       await doesStackExist(testResourcesStackName);
       candidates.push(testResourcesStackName);
     } catch {
-      noStackForBaseStackNameInfoLog("test-resource", stackName);
+      noStackForBaseStackNameInfoMessage("test-resource", stackName);
     }
 
     try {
       await doesStackExist(backendStackName);
       candidates.push(backendStackName);
     } catch {
-      noStackForBaseStackNameInfoLog("backend", stackName);
+      noStackForBaseStackNameInfoMessage("backend", stackName);
     }
 
     try {
       await doesStackExist(backendCfStackName);
       candidates.push(backendCfStackName);
     } catch {
-      noStackForBaseStackNameInfoLog("backend-cf-dist", stackName);
+      noStackForBaseStackNameInfoMessage("backend-cf-dist", stackName);
     }
   }
 

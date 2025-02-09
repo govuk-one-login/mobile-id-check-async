@@ -35,7 +35,7 @@ export const askToAddMoreBaseStacks = async (): Promise<{ choice: string }> => {
   ]);
 };
 
-export const noStackForBaseStackNameInfoLog = (
+export const noStackForBaseStackNameInfoMessage = (
   stackType: string,
   stackName: string,
 ): void => {
