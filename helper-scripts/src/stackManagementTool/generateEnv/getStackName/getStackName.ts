@@ -4,7 +4,7 @@ export const getStackName = async (
   customStackOrMain: string,
 ): Promise<string> => {
   let baseStackName;
-  if (customStackOrMain === "Main stack(s) in dev") {
+  if (customStackOrMain.includes("Main")) {
     baseStackName = "mob";
   } else {
     const answer = await askForBaseStackName();
