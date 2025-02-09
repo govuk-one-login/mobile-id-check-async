@@ -15,8 +15,9 @@ PRIVATE_API_URL=$(aws cloudformation describe-stacks --stack-name "$BACKEND_STAC
 PROXY_API_URL=$(aws cloudformation describe-stacks --stack-name "$BACKEND_STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='ProxyApiUrl'].OutputValue" --output text)
 SESSIONS_API_URL=$(aws cloudformation describe-stacks --stack-name "$BACKEND_STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='SessionsApiUrl'].OutputValue" --output text)
 STS_MOCK_API_URL=$(aws cloudformation describe-stacks --stack-name "$BACKEND_STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='StsMockApiUrl'].OutputValue" --output text)
+TEST_ENVIRONMENT=$(aws cloudformation describe-stacks --stack-name "$BACKEND_STACK_NAME" --query "Stacks[0].Parameters[?ParameterKey=='Environment'].ParameterValue" --output text)
 
-echo "TEST_ENVIRONMENT=dev" > .env
+echo "TEST_ENVIRONMENT=${TEST_ENVIRONMENT}" > .env
 {
   echo "IS_LOCAL_TEST=true"
   echo "PRIVATE_API_URL=${PRIVATE_API_URL}"
