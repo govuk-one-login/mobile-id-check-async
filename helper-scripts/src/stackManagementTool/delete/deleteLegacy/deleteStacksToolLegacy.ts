@@ -2,6 +2,9 @@ import inquirer from "inquirer";
 import { $, chalk, echo } from "zx";
 import { protectedStacks } from "../../protectedStacks/protectedStacks.js";
 
+// This legacy delete tool is intended for deleting stacks that include an sts-mock stack
+// It has not been updated for a while however should still delete stacks just fine
+
 const getBaseStackNames = async (): Promise<string[]> => {
   const baseStackNames: string[] = [];
   let addAnother = true;

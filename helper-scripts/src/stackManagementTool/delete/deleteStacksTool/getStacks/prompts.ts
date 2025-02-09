@@ -1,21 +1,6 @@
 import inquirer from "inquirer";
 import { chalk, echo } from "zx";
 
-export const selectingStacksForDeletionInfoMessage = (): void => {
-  echo(
-    chalk.italic.dim("Please note, the following stack dependencies exists:"),
-  );
-  echo(
-    chalk.italic.dim("- The test-resource stack depends on the backend stack"),
-  );
-  echo(
-    chalk.italic.dim(
-      "- The backend stack depends on the backend-cf-dist stack",
-    ),
-  );
-  echo("");
-};
-
 export const askForBaseStackNames = async (
   baseStackNames: string[],
 ): Promise<{ baseStackName: string }> => {
@@ -50,15 +35,6 @@ export const askToAddMoreBaseStacks = async (): Promise<{ choice: string }> => {
   ]);
 };
 
-export const noStackForBaseStackNameInfoMessage = (
-  stackType: string,
-  stackName: string,
-): void => {
-  echo(
-    chalk.dim.italic(`No ${stackType} stack found for base stack name: ${stackName}`),
-  );
-};
-
 export const askWhichStacksToDelete = async (
   candidates: string[],
 ): Promise<{ stacksToDelete: string[] }> => {
@@ -72,6 +48,45 @@ export const askWhichStacksToDelete = async (
       choices: candidates,
     },
   ]);
+};
+
+export const areYouHappyToDeleteMessage = async (): Promise<{
+  isHappy: boolean;
+}> => {
+  return await inquirer.prompt<{ isHappy: boolean }>([
+    {
+      type: "confirm",
+      name: "isHappy",
+      message: "Are you happy to continue?",
+      default: true,
+    },
+  ]);
+};
+
+export const noStackForBaseStackNameInfoMessage = (
+  stackType: string,
+  stackName: string,
+): void => {
+  echo(
+    chalk.dim.italic(
+      `No ${stackType} stack found for base stack name: ${stackName}`,
+    ),
+  );
+};
+
+export const selectingStacksForDeletionInfoMessage = (): void => {
+  echo(
+    chalk.italic.dim("Please note, the following stack dependencies exists:"),
+  );
+  echo(
+    chalk.italic.dim("- The test-resource stack depends on the backend stack"),
+  );
+  echo(
+    chalk.italic.dim(
+      "- The backend stack depends on the backend-cf-dist stack",
+    ),
+  );
+  echo("");
 };
 
 export const selectingStacksErrorMessage = (error: unknown): void => {
@@ -89,25 +104,13 @@ export const youAreAboutToDeleteMessage = (stacks: string[]): void => {
   echo("");
 };
 
-export const areYouHappyToDeleteMessage = async (): Promise<{
-  isHappy: boolean;
-}> => {
-  return await inquirer.prompt<{ isHappy: boolean }>([
-    {
-      type: "confirm",
-      name: "isHappy",
-      message: "Are you happy to continue?",
-      default: true,
-    },
-  ]);
-};
-
 export const exitingToolWarningMessage = (): void => {
   echo("");
   echo(chalk.yellow("Exiting tool..."));
 };
 
 export const continueDimMessage = (): void => {
+  echo("");
   echo(chalk.dim.italic("Continuing..."));
 };
 

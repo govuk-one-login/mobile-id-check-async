@@ -1,21 +1,10 @@
 import { $ } from "zx";
-import { PrioritisedStacks } from "../deleteStacksTool.js";
+import { PrioritisedStacks } from "../getStacks/getStacks.js";
 import {
   deletedStackMessage,
   deletingStackMessage,
   unableToDeleteStackErrorMessage,
 } from "./prompts.js";
-
-const deleteStack = async (stackName: string): Promise<void> => {
-  try {
-    await $({
-      signal: new AbortController().signal,
-    })`./delete_stack_no_prompt.sh ${stackName}`;
-  } catch (error: unknown) {
-    unableToDeleteStackErrorMessage(error, stackName);
-    process.exit(1);
-  }
-};
 
 export const deleteStacks = async (
   stacks: PrioritisedStacks,
@@ -48,4 +37,15 @@ export const deleteStacks = async (
       deletedStackMessage(stackName);
     }),
   );
+};
+
+const deleteStack = async (stackName: string): Promise<void> => {
+  try {
+    await $({
+      signal: new AbortController().signal,
+    })`./delete_stack_no_prompt.sh ${stackName}`;
+  } catch (error: unknown) {
+    unableToDeleteStackErrorMessage(error, stackName);
+    process.exit(1);
+  }
 };

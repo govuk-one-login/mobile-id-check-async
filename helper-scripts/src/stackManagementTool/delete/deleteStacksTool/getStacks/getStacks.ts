@@ -1,5 +1,4 @@
 import { $, echo } from "zx";
-import { PrioritisedStacks } from "../deleteStacksTool.js";
 import {
   areYouHappyToDeleteMessage,
   askForBaseStackNames,
@@ -16,6 +15,25 @@ import {
 } from "./prompts.js";
 import { protectedStacks } from "../../../protectedStacks/protectedStacks.js";
 
+export interface PrioritisedStacks {
+  stacksToDeleteOrder01: string[];
+  stacksToDeleteOrder02: string[];
+  stacksToDeleteOrder03: string[];
+}
+
+export const getStacks = async (): Promise<PrioritisedStacks> => {
+  const selectedStacks: string[] = [];
+
+  const baseStackName = await getBaseStackNames();
+  const candidates = await getStackCandidates(baseStackName);
+  selectedStacks.push(...(await selectStacksToDelete(candidates)));
+
+  await confirmStacks(selectedStacks);
+  checkIfProtectedStack(selectedStacks, protectedStacks);
+
+  return prioritiseStacks(selectedStacks);
+};
+
 const getBaseStackNames = async (): Promise<string[]> => {
   const baseStackNames: string[] = [];
   let addAnother = true;
@@ -31,10 +49,6 @@ const getBaseStackNames = async (): Promise<string[]> => {
     echo("");
   }
   return baseStackNames;
-};
-
-const doesStackExist = async (stackName: string): Promise<void> => {
-  await $`aws cloudformation describe-stacks --stack-name ${stackName} 2>/dev/null`;
 };
 
 const getStackCandidates = async (
@@ -72,6 +86,10 @@ const getStackCandidates = async (
   return candidates;
 };
 
+const doesStackExist = async (stackName: string): Promise<void> => {
+  await $`aws cloudformation describe-stacks --stack-name ${stackName} 2>/dev/null`;
+};
+
 const selectStacksToDelete = async (
   candidates: string[],
 ): Promise<string[]> => {
@@ -86,28 +104,6 @@ const selectStacksToDelete = async (
     process.exit(1);
   }
   return answer.stacksToDelete;
-};
-
-const prioritiseStacks = (candidates: string[]): PrioritisedStacks => {
-  const stacksToDeleteOrder01: string[] = [];
-  const stacksToDeleteOrder02: string[] = [];
-  const stacksToDeleteOrder03: string[] = [];
-
-  for (const stackName of candidates) {
-    if (stackName.includes("cf-dist")) {
-      stacksToDeleteOrder03.push(stackName);
-    } else if (stackName.includes("test-resources")) {
-      stacksToDeleteOrder01.push(stackName);
-    } else {
-      stacksToDeleteOrder02.push(stackName);
-    }
-  }
-
-  return {
-    stacksToDeleteOrder01,
-    stacksToDeleteOrder02,
-    stacksToDeleteOrder03,
-  };
 };
 
 const confirmStacks = async (stacks: string[]): Promise<void> => {
@@ -137,15 +133,24 @@ const checkIfProtectedStack = (stacks: string[], protectedStacks: string[]) => {
   });
 };
 
-export const getStacks = async (): Promise<PrioritisedStacks> => {
-  const selectedStacks: string[] = [];
+const prioritiseStacks = (candidates: string[]): PrioritisedStacks => {
+  const stacksToDeleteOrder01: string[] = [];
+  const stacksToDeleteOrder02: string[] = [];
+  const stacksToDeleteOrder03: string[] = [];
 
-  const baseStackName = await getBaseStackNames();
-  const candidates = await getStackCandidates(baseStackName);
-  selectedStacks.push(...(await selectStacksToDelete(candidates)));
+  for (const stackName of candidates) {
+    if (stackName.includes("cf-dist")) {
+      stacksToDeleteOrder03.push(stackName);
+    } else if (stackName.includes("test-resources")) {
+      stacksToDeleteOrder01.push(stackName);
+    } else {
+      stacksToDeleteOrder02.push(stackName);
+    }
+  }
 
-  await confirmStacks(selectedStacks);
-  checkIfProtectedStack(selectedStacks, protectedStacks);
-
-  return prioritiseStacks(selectedStacks);
+  return {
+    stacksToDeleteOrder01,
+    stacksToDeleteOrder02,
+    stacksToDeleteOrder03,
+  };
 };

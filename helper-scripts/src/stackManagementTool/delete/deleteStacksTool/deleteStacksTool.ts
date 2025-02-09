@@ -12,8 +12,3 @@ export const deleteStacksTool = async (): Promise<void> => {
     deleteStacksToolErrorMessage(error);
   }
 };
-export interface PrioritisedStacks {
-  stacksToDeleteOrder01: string[];
-  stacksToDeleteOrder02: string[];
-  stacksToDeleteOrder03: string[];
-}
