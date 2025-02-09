@@ -100,5 +100,5 @@ export const cannotDeleteProtectStackErrorMessage = (
   stackName: string,
 ): void => {
   echo(chalk.red(`It is not permitted to delete stack: ${stackName}`));
-  echo(chalk.red("Please remove this stack before continuing"));
+  echo(chalk.red("Please try again without including this stack"));
 };

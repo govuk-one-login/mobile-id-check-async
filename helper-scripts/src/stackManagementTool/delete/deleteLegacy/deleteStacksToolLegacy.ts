@@ -162,7 +162,7 @@ const checkIfProtectedStack = (stacks: string[], protectedStacks: string[]) => {
   stacks.forEach(async (stackName) => {
     if (protectedStacks.includes(stackName)) {
       echo(chalk.red(`It is not permitted to delete stack: ${stackName}`));
-      echo(chalk.red("Please remove this stack before continuing"));
+      echo(chalk.red("Please try again without including this stack"));
       process.exit(1);
     }
     return;
