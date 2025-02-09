@@ -78,7 +78,7 @@ npm run test:api
 
 ##### Activate AWS credentials in `dev` or `build`
 
-Ensure you are in account `di-mobile-id-check-async-dev` or `di-mobile-id-check-async-dev`
+Ensure you are in account `di-mobile-id-check-async-dev` or `di-mobile-id-check-async-build`
 
 ##### Generate an `.env`
 
