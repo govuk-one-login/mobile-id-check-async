@@ -7,7 +7,7 @@ export const welcomeMessage = (): void => {
   const part2 = chalk.cyanBright.bold.italic(" to the ");
   const part3 = chalk.cyanBright.bold.italic.underline("unofficial");
   const part4 = chalk.cyanBright.bold.italic(
-    " ID Check stack management tool...",
+    " ID Check Async stack management tool...",
   );
   echo(part1 + part2 + part3 + part4);
   echo("");
