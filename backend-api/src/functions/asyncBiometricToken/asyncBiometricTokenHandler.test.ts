@@ -58,7 +58,7 @@ describe("Async Biometric Token", () => {
     govukSigninJourneyId: "mockGovukSigninJourneyId",
     createdAt: 12345,
     issuer: "mockIssuer",
-    sessionId: "mockSessionId",
+    sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
     sessionState: "mockSessionState",
     clientState: "mockClientState",
     subjectIdentifier: "mockSubjectIdentifier",
@@ -439,7 +439,7 @@ describe("Async Biometric Token", () => {
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
             govukSigninJourneyId: "mockGovukSigninJourneyId",
-            sessionId: "mockSessionId",
+            sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
             sub: "mockSubjectIdentifier",
           });
         });
