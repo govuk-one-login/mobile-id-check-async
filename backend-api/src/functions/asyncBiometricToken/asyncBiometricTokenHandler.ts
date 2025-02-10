@@ -79,7 +79,7 @@ export async function lambdaHandlerConstructor(
     submitterKey,
   );
   if (biometricTokenResult.isError) {
-    return handle5xxEventInternalServerError(
+    return handleWrite5xxEventInternalServerError(
       eventService,
       sessionId,
       config.ISSUER,
@@ -213,7 +213,7 @@ async function handleUpdateSessionSessionNotFound(
   return unauthorizedResponse("invalid_session", "Session not found");
 }
 
-async function handle5xxEventInternalServerError(
+async function handleWrite5xxEventInternalServerError(
   eventService: IEventService,
   sessionId: string,
   issuer: string,
@@ -258,6 +258,6 @@ async function handleUpdateSessionError(
         issuer,
       );
     case UpdateSessionError.INTERNAL_SERVER_ERROR:
-      return handle5xxEventInternalServerError(eventService, sessionId, issuer);
+      return handleWrite5xxEventInternalServerError(eventService, sessionId, issuer);
   }
 }
