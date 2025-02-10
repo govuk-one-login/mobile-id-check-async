@@ -630,7 +630,6 @@ Resources:
           ReturnData: false
           Expression: (errorSum5XX/invocations) * 100
 
-
   AsyncActiveSession4XXLowThresholdAlarm:
     Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm
