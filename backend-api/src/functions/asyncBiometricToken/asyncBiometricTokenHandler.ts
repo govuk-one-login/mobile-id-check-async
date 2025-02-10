@@ -158,7 +158,7 @@ function generateOpaqueId(): string {
   return randomUUID();
 }
 
-async function handleUnauthorizedConditionalCheckFailure(
+async function handleConditionalCheckFailure(
   eventService: IEventService,
   sessionAttributes: BaseSessionAttributes,
   issuer: string,
@@ -185,7 +185,7 @@ async function handleUnauthorizedConditionalCheckFailure(
   );
 }
 
-async function handleUnauthorizedSessionNotFound(
+async function handleSessionNotFound(
   eventService: IEventService,
   sessionId: string,
   issuer: string,
@@ -242,13 +242,13 @@ async function handleUpdateSessionError(
   switch (updateSessionResult.value.errorType) {
     case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
       sessionAttributes = updateSessionResult.value.attributes;
-      return handleUnauthorizedConditionalCheckFailure(
+      return handleConditionalCheckFailure(
         eventService,
         sessionAttributes,
         issuer,
       );
     case UpdateSessionError.SESSION_NOT_FOUND:
-      return handleUnauthorizedSessionNotFound(eventService, sessionId, issuer);
+      return handleSessionNotFound(eventService, sessionId, issuer);
     case UpdateSessionError.INTERNAL_SERVER_ERROR:
       return handleInternalServerError(eventService, sessionId, issuer);
   }
