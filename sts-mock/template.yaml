@@ -102,7 +102,7 @@ Transform: AWS::Serverless-2016-10-31
 
 Globals:
   Function:
-    AutoPublisLive: true
+    AutoPublishAlias: live
     AutoPublishAliasAllProperties: true
     CodeSigningConfigArn: !If
       - UseCodeSigning

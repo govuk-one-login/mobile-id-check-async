@@ -4,7 +4,7 @@ Description: SAM template for the STS mock
 
 Globals:
   Function:
-    AutoPublisLive: true
+    AutoPublishAlias: live
     AutoPublishAliasAllProperties: true
     CodeSigningConfigArn: !If
       - UseCodeSigning
