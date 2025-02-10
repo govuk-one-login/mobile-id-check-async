@@ -37,7 +37,7 @@ import { randomUUID } from "crypto";
 import { IEventService } from "../services/events/types";
 import {
   BaseSessionAttributes,
-  SessionAttributes,
+  BiometricTokenIssuedSessionAttributes,
 } from "../common/session/session";
 
 export async function lambdaHandlerConstructor(
@@ -110,10 +110,9 @@ export async function lambdaHandlerConstructor(
   };
 
   return await handleOkResponse(
-    updateSessionResult.value.attributes,
     eventService,
-    sessionId,
-    documentType,
+    updateSessionResult.value
+      .attributes as BiometricTokenIssuedSessionAttributes,
     config.ISSUER,
     responseBody,
   );
@@ -266,21 +265,19 @@ async function handleUpdateSessionError(
 }
 
 async function handleOkResponse(
-  sessionAttributes: SessionAttributes,
   eventService: IEventService,
-  sessionId: string,
-  documentType: DocumentType,
+  sessionAttributes: BiometricTokenIssuedSessionAttributes,
   issuer: string,
-  responseBody: BiometricTokenIssuedOKResponseBody,
+  responseBody: BiometricTokenIssuedOkResponseBody,
 ): Promise<APIGatewayProxyResult> {
   const writeEventResult = await eventService.writeBiometricTokenIssuedEvent({
     eventName: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
     sub: sessionAttributes.subjectIdentifier,
-    sessionId,
+    sessionId: sessionAttributes.sessionId,
     govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
     getNowInMilliseconds: Date.now,
     componentId: issuer,
-    documentType,
+    documentType: sessionAttributes.documentType,
   });
 
   if (writeEventResult.isError) {
@@ -295,7 +292,7 @@ async function handleOkResponse(
   return okResponse(responseBody);
 }
 
-interface BiometricTokenIssuedOKResponseBody {
+interface BiometricTokenIssuedOkResponseBody {
   accessToken: string;
   opaqueId: string;
 }

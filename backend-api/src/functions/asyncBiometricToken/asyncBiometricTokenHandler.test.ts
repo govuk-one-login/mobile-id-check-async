@@ -63,6 +63,8 @@ describe("Async Biometric Token", () => {
     clientState: "mockClientState",
     subjectIdentifier: "mockSubjectIdentifier",
     timeToLive: 12345,
+    documentType: "NFC_PASSPORT",
+    opaqueId: "mockOpaqueId",
     redirectUri: "https://www.mockRedirectUri.com",
   };
 
