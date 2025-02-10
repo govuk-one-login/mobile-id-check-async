@@ -4,8 +4,8 @@
 
 ### What Stack Management Tool does
 
-This tool provides an interface to use the deploy and delete stack scripts described below,
-as well as the ability to generate .env files for stacks that you haven't just deployed
+This tool provides an interface to use the deploy and delete stack scripts described below, as well as the ability to generate `.env` files for
+any deployed stack
 
 ### How to use Stack Management Tool
 
@@ -17,13 +17,13 @@ npm run manageStacks
 
 #### From `/helper-scripts`
 
-Ensure you have the latest packages installed
+##### Ensure you have the latest packages installed
 
 ```zsh
 npm i
 ```
 
-Execute the tool
+##### Execute the tool
 
 ```zsh
 npm run manageStacks
