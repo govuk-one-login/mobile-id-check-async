@@ -87,7 +87,7 @@ export class EventService implements IEventService {
     };
   };
 
-  private buildBiometricTokenEvent = (
+  private readonly buildBiometricTokenEvent = (
     eventConfig: BiometricTokenIssuedEventConfig,
   ): BiometricTokenIssuedEvent => {
     const timestampInMillis = eventConfig.getNowInMilliseconds();
