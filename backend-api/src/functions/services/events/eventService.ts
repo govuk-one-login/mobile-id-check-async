@@ -2,6 +2,8 @@ import { Result, emptyFailure, emptySuccess } from "../../utils/result";
 import { sqsClient } from "./sqsClient";
 import { SendMessageCommand } from "@aws-sdk/client-sqs";
 import {
+  BiometricTokenIssuedEvent,
+  BiometricTokenIssuedEventConfig,
   CredentialTokenIssuedEvent,
   CredentialTokenIssuedEventConfig,
   GenericEventConfig,
@@ -30,8 +32,18 @@ export class EventService implements IEventService {
     return await this.writeToSqs(txmaEvent);
   }
 
+  async writeBiometricTokenIssuedEvent(
+    eventConfig: BiometricTokenIssuedEventConfig,
+  ): Promise<Result<void, void>> {
+    const txmaEvent = this.buildBiometricTokenEvent(eventConfig);
+    return await this.writeToSqs(txmaEvent);
+  }
+
   private async writeToSqs(
-    txmaEvent: GenericTxmaEvent | CredentialTokenIssuedEvent,
+    txmaEvent:
+      | GenericTxmaEvent
+      | CredentialTokenIssuedEvent
+      | BiometricTokenIssuedEvent,
   ): Promise<Result<void, void>> {
     try {
       await sqsClient.send(
@@ -72,6 +84,26 @@ export class EventService implements IEventService {
       component_id: eventConfig.componentId,
       timestamp: Math.floor(timestampInMillis / 1000),
       event_timestamp_ms: timestampInMillis,
+    };
+  };
+
+  private buildBiometricTokenEvent = (
+    eventConfig: BiometricTokenIssuedEventConfig,
+  ): BiometricTokenIssuedEvent => {
+    const timestampInMillis = eventConfig.getNowInMilliseconds();
+    return {
+      user: {
+        user_id: eventConfig.sub,
+        session_id: eventConfig.sessionId,
+        govuk_signin_journey_id: eventConfig.govukSigninJourneyId,
+      },
+      timestamp: Math.floor(timestampInMillis / 1000),
+      event_timestamp_ms: timestampInMillis,
+      event_name: eventConfig.eventName,
+      component_id: eventConfig.componentId,
+      extensions: {
+        documentType: eventConfig.documentType,
+      },
     };
   };
 }
