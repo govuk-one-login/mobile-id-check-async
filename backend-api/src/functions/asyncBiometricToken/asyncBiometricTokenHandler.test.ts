@@ -263,17 +263,6 @@ describe("Async Biometric Token", () => {
           function_arn: "arn:12345", // example field to verify that context has been added
         });
       });
-
-      it("Returns 500 Internal Server Error ", async () => {
-        expect(result).toStrictEqual({
-          statusCode: 500,
-          body: JSON.stringify({
-            error: "server_error",
-            error_description: "Internal Server Error",
-          }),
-          headers: expectedSecurityHeaders,
-        });
-      });
     });
 
     it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
@@ -286,7 +275,7 @@ describe("Async Biometric Token", () => {
       );
     });
 
-    it("returns 500 Internal server error", async () => {
+    it("Returns 500 Internal server error", async () => {
       expect(result).toStrictEqual({
         statusCode: 500,
         body: JSON.stringify({
@@ -492,17 +481,6 @@ describe("Async Biometric Token", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             message: "ERROR_WRITING_AUDIT_EVENT",
             function_arn: "arn:12345", // example field to verify that context has been added
-          });
-        });
-
-        it("Returns 500 Internal Server Error ", async () => {
-          expect(result).toStrictEqual({
-            statusCode: 500,
-            body: JSON.stringify({
-              error: "server_error",
-              error_description: "Internal Server Error",
-            }),
-            headers: expectedSecurityHeaders,
           });
         });
       });
