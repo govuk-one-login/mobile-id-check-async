@@ -79,22 +79,11 @@ export async function lambdaHandlerConstructor(
     submitterKey,
   );
   if (biometricTokenResult.isError) {
-    const writeEventResult = await eventService.writeGenericEvent({
-      eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-      sub: undefined,
+    return handle5xxEventInternalServerError(
+      eventService,
       sessionId,
-      govukSigninJourneyId: undefined,
-      getNowInMilliseconds: Date.now,
-      componentId: config.ISSUER,
-    });
-
-    if (writeEventResult.isError) {
-      logger.error("ERROR_WRITING_AUDIT_EVENT", {
-        errorMessage:
-          "Unexpected error writing the DCMAW_ASYNC_CRI_5XXERROR event",
-      });
-    }
-    return serverErrorResponse;
+      config.ISSUER,
+    );
   }
 
   const opaqueId = generateOpaqueId();
@@ -224,7 +213,7 @@ async function handleUpdateSessionSessionNotFound(
   return unauthorizedResponse("invalid_session", "Session not found");
 }
 
-async function handleUpdateSessionInternalServerError(
+async function handle5xxEventInternalServerError(
   eventService: IEventService,
   sessionId: string,
   issuer: string,
@@ -269,10 +258,6 @@ async function handleUpdateSessionError(
         issuer,
       );
     case UpdateSessionError.INTERNAL_SERVER_ERROR:
-      return handleUpdateSessionInternalServerError(
-        eventService,
-        sessionId,
-        issuer,
-      );
+      return handle5xxEventInternalServerError(eventService, sessionId, issuer);
   }
 }
