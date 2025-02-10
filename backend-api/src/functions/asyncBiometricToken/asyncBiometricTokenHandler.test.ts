@@ -58,7 +58,7 @@ describe("Async Biometric Token", () => {
     govukSigninJourneyId: "mockGovukSigninJourneyId",
     createdAt: 12345,
     issuer: "mockIssuer",
-    sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+    sessionId: mockSessionId,
     sessionState: "mockSessionState",
     clientState: "mockClientState",
     subjectIdentifier: "mockSubjectIdentifier",
