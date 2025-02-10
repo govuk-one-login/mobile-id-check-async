@@ -278,13 +278,14 @@ describe("Async Biometric Token", () => {
 
     describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully to write to TxMA", () => {
       it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
-        expect(
-          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
-            expect.objectContaining({
-              eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-            }),
-          ),
-        );
+        expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+          eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+          componentId: "mockIssuer",
+          getNowInMilliseconds: Date.now,
+          govukSigninJourneyId: undefined,
+          sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+          sub: undefined,
+        });
       });
 
       it("Returns 500 Internal server error", async () => {
@@ -356,13 +357,14 @@ describe("Async Biometric Token", () => {
         });
 
         it("Writes DCMAW_ASYNC_CRI_4XXERROR event to TxMA", () => {
-          expect(
-            expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
-              expect.objectContaining({
-                eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-              }),
-            ),
-          );
+          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+            eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+            componentId: "mockIssuer",
+            getNowInMilliseconds: Date.now,
+            govukSigninJourneyId: undefined,
+            sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+            sub: undefined,
+          });
         });
 
         it("Returns 401 Unauthorized", () => {
@@ -432,13 +434,14 @@ describe("Async Biometric Token", () => {
         });
 
         it("Writes DCMAW_ASYNC_CRI_4XXERROR event to TxMA", () => {
-          expect(
-            expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
-              expect.objectContaining({
-                eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-              }),
-            ),
-          );
+          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+            eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+            componentId: "mockIssuer",
+            getNowInMilliseconds: Date.now,
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            sessionId: "mockSessionId",
+            sub: "mockSubjectIdentifier",
+          });
         });
 
         it("Returns 401 Unauthorized", () => {
@@ -511,13 +514,14 @@ describe("Async Biometric Token", () => {
 
       describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully to write to TxMA", () => {
         it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
-          expect(
-            expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
-              expect.objectContaining({
-                eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-              }),
-            ),
-          );
+          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+            eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+            componentId: "mockIssuer",
+            getNowInMilliseconds: Date.now,
+            govukSigninJourneyId: undefined,
+            sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+            sub: undefined,
+          });
         });
 
         it("Returns 500 Internal Server Error", () => {
