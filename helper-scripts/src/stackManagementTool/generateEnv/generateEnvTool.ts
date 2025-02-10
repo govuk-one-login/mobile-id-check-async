@@ -18,11 +18,11 @@ export const generateEnvTool = async (): Promise<void> => {
 
   if (customStackOrMain.includes("Back")) {
     await goBackToMenu();
+  } else {
+    const baseStackName = await getStackName(customStackOrMain);
+    echo("");
+
+    const { choice } = await whichStacksToGenerateEnvFor(baseStackName);
+    await generateEnvs(baseStackName, choice);
   }
-
-  const baseStackName = await getStackName(customStackOrMain);
-  echo("");
-
-  const { choice } = await whichStacksToGenerateEnvFor(baseStackName);
-  await generateEnvs(baseStackName, choice);
 };

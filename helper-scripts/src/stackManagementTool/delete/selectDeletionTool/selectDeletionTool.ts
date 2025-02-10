@@ -8,15 +8,15 @@ export const whichDeletionTool = async (): Promise<void> => {
   const { choice } = await askWhichDeletionTool();
   echo("");
 
-  if (choice.includes("Legacy")) {
-    await deleteStacksToolLegacy();
-  }
-
-  if (choice.includes("Standard")) {
-    await deleteStacksTool();
-  }
-
   if (choice.includes("Back")) {
     await goBackToMenu();
+  } else {
+    if (choice.includes("Legacy")) {
+      await deleteStacksToolLegacy();
+    }
+
+    if (choice.includes("Standard")) {
+      await deleteStacksTool();
+    }
   }
 };
