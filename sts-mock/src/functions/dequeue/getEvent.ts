@@ -60,8 +60,12 @@ export interface TxmaEvent {
 export const allowedTxmaEventNames = [
   "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
   "DCMAW_ASYNC_CRI_START",
+  "DCMAW_ASYNC_CRI_4XXERROR",
+  "DCMAW_ASYNC_CRI_5XXERROR",
 ];
 
 const allowedTxmaEventNamesWithoutSessionId = [
   "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+  "DCMAW_ASYNC_CRI_4XXERROR",
+  "DCMAW_ASYNC_CRI_5XXERROR",
 ];
