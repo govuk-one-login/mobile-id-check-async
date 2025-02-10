@@ -263,18 +263,27 @@ describe("Async Biometric Token", () => {
           function_arn: "arn:12345", // example field to verify that context has been added
         });
       });
+
+      it("Returns 500 Internal server error", async () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
+        });
+      });
     });
 
-    describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully writes to TxMA", () => {
-      it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
-        expect(
-          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
-            expect.objectContaining({
-              eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-            }),
-          ),
-        );
-      });
+    it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
+      expect(
+        expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
+          expect.objectContaining({
+            eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+          }),
+        ),
+      );
     });
 
     it("Returns 500 Internal server error", async () => {
@@ -485,18 +494,27 @@ describe("Async Biometric Token", () => {
             function_arn: "arn:12345", // example field to verify that context has been added
           });
         });
+
+        it("Returns 500 Internal Server Error", () => {
+          expect(result).toStrictEqual({
+            statusCode: 500,
+            body: JSON.stringify({
+              error: "server_error",
+              error_description: "Internal Server Error",
+            }),
+            headers: expectedSecurityHeaders,
+          });
+        });
       });
 
-      describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully writes to TxMA", () => {
-        it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
-          expect(
-            expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
-              expect.objectContaining({
-                eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-              }),
-            ),
-          );
-        });
+      it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
+        expect(
+          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
+            expect.objectContaining({
+              eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+            }),
+          ),
+        );
       });
 
       it("Returns 500 Internal Server Error", () => {
