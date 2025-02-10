@@ -29,7 +29,8 @@ export interface BaseUserTxmaEvent extends BaseTxmaEvent {
 
 export type GenericEventNames =
   | "DCMAW_ASYNC_CRI_START"
-  | "DCMAW_ASYNC_CRI_4XXERROR";
+  | "DCMAW_ASYNC_CRI_4XXERROR"
+  | "DCMAW_ASYNC_CRI_5XXERROR";
 
 export type EventNames =
   | GenericEventNames

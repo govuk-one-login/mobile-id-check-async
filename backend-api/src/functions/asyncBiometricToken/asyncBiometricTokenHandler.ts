@@ -72,12 +72,14 @@ export async function lambdaHandlerConstructor(
   }
   const submitterKey = submitterKeyResult.value;
 
+  const eventService = dependencies.getEventService(config.TXMA_SQS);
+
   const biometricTokenResult = await dependencies.getBiometricToken(
     config.READID_BASE_URL,
     submitterKey,
   );
   if (biometricTokenResult.isError) {
-    return serverErrorResponse;
+    return handleInternalServerError(eventService, sessionId, config.ISSUER);
   }
 
   const opaqueId = generateOpaqueId();
@@ -85,7 +87,6 @@ export async function lambdaHandlerConstructor(
     config.SESSION_TABLE_NAME,
   );
 
-  const eventService = dependencies.getEventService(config.TXMA_SQS);
   const updateSessionResult = await sessionRegistry.updateSession(
     sessionId,
     new BiometricTokenIssued(documentType, opaqueId),
@@ -157,7 +158,7 @@ function generateOpaqueId(): string {
   return randomUUID();
 }
 
-async function handleUpdateSessionConditionalCheckFailure(
+async function handleConditionalCheckFailure(
   eventService: IEventService,
   sessionAttributes: BaseSessionAttributes,
   issuer: string,
@@ -183,7 +184,8 @@ async function handleUpdateSessionConditionalCheckFailure(
     "User session is not in a valid state for this operation.",
   );
 }
-async function handleUpdateSessionSessionNotFound(
+
+async function handleSessionNotFound(
   eventService: IEventService,
   sessionId: string,
   issuer: string,
@@ -191,7 +193,7 @@ async function handleUpdateSessionSessionNotFound(
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_4XXERROR",
     sub: undefined,
-    sessionId: sessionId,
+    sessionId,
     govukSigninJourneyId: undefined,
     getNowInMilliseconds: Date.now,
     componentId: issuer,
@@ -207,6 +209,29 @@ async function handleUpdateSessionSessionNotFound(
   return unauthorizedResponse("invalid_session", "Session not found");
 }
 
+async function handleInternalServerError(
+  eventService: IEventService,
+  sessionId: string,
+  issuer: string,
+): Promise<APIGatewayProxyResult> {
+  const writeEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+    sub: undefined,
+    sessionId,
+    govukSigninJourneyId: undefined,
+    getNowInMilliseconds: Date.now,
+    componentId: issuer,
+  });
+
+  if (writeEventResult.isError) {
+    logger.error("ERROR_WRITING_AUDIT_EVENT", {
+      errorMessage:
+        "Unexpected error writing the DCMAW_ASYNC_CRI_5XXERROR event",
+    });
+  }
+  return serverErrorResponse;
+}
+
 async function handleUpdateSessionError(
   updateSessionResult: FailureWithValue<SessionUpdateFailed>,
   eventService: IEventService,
@@ -217,18 +242,14 @@ async function handleUpdateSessionError(
   switch (updateSessionResult.value.errorType) {
     case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
       sessionAttributes = updateSessionResult.value.attributes;
-      return handleUpdateSessionConditionalCheckFailure(
+      return handleConditionalCheckFailure(
         eventService,
         sessionAttributes,
         issuer,
       );
     case UpdateSessionError.SESSION_NOT_FOUND:
-      return handleUpdateSessionSessionNotFound(
-        eventService,
-        sessionId,
-        issuer,
-      );
+      return handleSessionNotFound(eventService, sessionId, issuer);
     case UpdateSessionError.INTERNAL_SERVER_ERROR:
-      return serverErrorResponse;
+      return handleInternalServerError(eventService, sessionId, issuer);
   }
 }

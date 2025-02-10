@@ -58,7 +58,7 @@ describe("Async Biometric Token", () => {
     govukSigninJourneyId: "mockGovukSigninJourneyId",
     createdAt: 12345,
     issuer: "mockIssuer",
-    sessionId: "mockSessionId",
+    sessionId: mockSessionId,
     sessionState: "mockSessionState",
     clientState: "mockClientState",
     subjectIdentifier: "mockSubjectIdentifier",
@@ -239,14 +239,64 @@ describe("Async Biometric Token", () => {
       );
     });
 
-    it("returns 500 Internal server error", async () => {
-      expect(result).toStrictEqual({
-        statusCode: 500,
-        body: JSON.stringify({
-          error: "server_error",
-          error_description: "Internal Server Error",
-        }),
-        headers: expectedSecurityHeaders,
+    describe("Given DCMAW_ASYNC_CRI_5XXERROR event fails to write to TxMA", () => {
+      beforeEach(async () => {
+        dependencies.getEventService = () => ({
+          ...mockInertEventService,
+          writeGenericEvent: jest.fn().mockResolvedValue(
+            errorResult({
+              errorMessage: "mockError",
+            }),
+          ),
+        });
+
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+
+      it("Logs the error", async () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          message: "ERROR_WRITING_AUDIT_EVENT",
+          function_arn: "arn:12345", // example field to verify that context has been added
+        });
+      });
+
+      it("Returns 500 Internal server error", async () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
+        });
+      });
+    });
+
+    describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully to write to TxMA", () => {
+      it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
+        expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+          eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+          componentId: "mockIssuer",
+          getNowInMilliseconds: Date.now,
+          govukSigninJourneyId: undefined,
+          sessionId: mockSessionId,
+          sub: undefined,
+        });
+      });
+
+      it("Returns 500 Internal server error", async () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
+        });
       });
     });
   });
@@ -307,13 +357,14 @@ describe("Async Biometric Token", () => {
         });
 
         it("Writes DCMAW_ASYNC_CRI_4XXERROR event to TxMA", () => {
-          expect(
-            expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
-              expect.objectContaining({
-                eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-              }),
-            ),
-          );
+          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+            eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+            componentId: "mockIssuer",
+            getNowInMilliseconds: Date.now,
+            govukSigninJourneyId: undefined,
+            sessionId: mockSessionId,
+            sub: undefined,
+          });
         });
 
         it("Returns 401 Unauthorized", () => {
@@ -383,13 +434,14 @@ describe("Async Biometric Token", () => {
         });
 
         it("Writes DCMAW_ASYNC_CRI_4XXERROR event to TxMA", () => {
-          expect(
-            expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
-              expect.objectContaining({
-                eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-              }),
-            ),
-          );
+          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+            eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+            componentId: "mockIssuer",
+            getNowInMilliseconds: Date.now,
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            sessionId: mockSessionId,
+            sub: "mockSubjectIdentifier",
+          });
         });
 
         it("Returns 401 Unauthorized", () => {
@@ -423,14 +475,64 @@ describe("Async Biometric Token", () => {
         );
       });
 
-      it("Returns 500 Internal Server Error", () => {
-        expect(result).toStrictEqual({
-          statusCode: 500,
-          body: JSON.stringify({
-            error: "server_error",
-            error_description: "Internal Server Error",
-          }),
-          headers: expectedSecurityHeaders,
+      describe("Given DCMAW_ASYNC_CRI_5XXERROR event fails to write to TxMA", () => {
+        beforeEach(async () => {
+          dependencies.getEventService = () => ({
+            ...mockInertEventService,
+            writeGenericEvent: jest.fn().mockResolvedValue(
+              errorResult({
+                errorMessage: "mockError",
+              }),
+            ),
+          });
+
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+
+        it("Logs the error", async () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            message: "ERROR_WRITING_AUDIT_EVENT",
+            function_arn: "arn:12345", // example field to verify that context has been added
+          });
+        });
+
+        it("Returns 500 Internal Server Error", () => {
+          expect(result).toStrictEqual({
+            statusCode: 500,
+            body: JSON.stringify({
+              error: "server_error",
+              error_description: "Internal Server Error",
+            }),
+            headers: expectedSecurityHeaders,
+          });
+        });
+      });
+
+      describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully to write to TxMA", () => {
+        it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
+          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+            eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+            componentId: "mockIssuer",
+            getNowInMilliseconds: Date.now,
+            govukSigninJourneyId: undefined,
+            sessionId: mockSessionId,
+            sub: undefined,
+          });
+        });
+
+        it("Returns 500 Internal Server Error", () => {
+          expect(result).toStrictEqual({
+            statusCode: 500,
+            body: JSON.stringify({
+              error: "server_error",
+              error_description: "Internal Server Error",
+            }),
+            headers: expectedSecurityHeaders,
+          });
         });
       });
     });
