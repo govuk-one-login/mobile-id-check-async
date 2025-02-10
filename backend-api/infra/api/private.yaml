@@ -61,25 +61,11 @@ Resources:
       EndpointConfiguration:
         Types:
           - PRIVATE
-      RegionalCertificateArn: !If
+      CertificateArn: !If
         - DevelopmentStack
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZonePrivateCertificateV1ARN}}'
       SecurityPolicy: TLS_1_2
-      Policy:
-        Statement:
-            - Action: 'execute-api:Invoke'
-              Effect: Allow
-              Principal: '*'
-              Resource: 'execute-api:/*'
-            - Action: 'execute-api:Invoke'
-              Condition:
-                StringNotEquals:
-                  'aws:SourceVpce': vpce-0825f978898f57283 # hardcoded
-              Effect: Deny
-              Principal: '*'
-              Resource: 'execute-api:/*'
-        Version: 2012-10-17
 
   PrivateApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMappingV2
@@ -115,7 +101,7 @@ Resources:
             - !Ref Environment
             - BaseDns
       Type: A
-      HostedZoneId: Z093122231WWEIPRH1ARO # hardcoded
+      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneIDPrivate}}'
       AliasTarget:
-        DNSName: vpce-0825f978898f57283-zlowa17c.execute-api.eu-west-2.vpce.amazonaws.com # hardcoded
-        HostedZoneId: Z7K1066E3PUKB # hardcoded
+        DNSName: !GetAtt PrivateApiDomainName.DomainNameArn
+        HostedZoneId: !GetAtt PrivateApiDomainName.RegionalHostedZoneId
