@@ -73,14 +73,16 @@ describe("Async Biometric Token", () => {
       .mockResolvedValue(successResult({ attributes: validSessionAttributes })),
   };
 
-  const mockWriteGenericEventSuccessResult = jest
+  const mockWriteEventSuccessResult = jest
     .fn()
     .mockResolvedValue(emptySuccess());
 
   const mockSuccessfulEventService = {
     ...mockInertEventService,
-    writeGenericEvent: mockWriteGenericEventSuccessResult,
+    writeGenericEvent: mockWriteEventSuccessResult,
+    writeBiometricTokenIssuedEvent: mockWriteEventSuccessResult,
   };
+
   beforeEach(() => {
     dependencies = {
       env: {
@@ -278,7 +280,7 @@ describe("Async Biometric Token", () => {
 
     describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully to write to TxMA", () => {
       it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
-        expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+        expect(mockWriteEventSuccessResult).toBeCalledWith({
           eventName: "DCMAW_ASYNC_CRI_5XXERROR",
           componentId: "mockIssuer",
           getNowInMilliseconds: Date.now,
@@ -357,7 +359,7 @@ describe("Async Biometric Token", () => {
         });
 
         it("Writes DCMAW_ASYNC_CRI_4XXERROR event to TxMA", () => {
-          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+          expect(mockWriteEventSuccessResult).toBeCalledWith({
             eventName: "DCMAW_ASYNC_CRI_4XXERROR",
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
@@ -434,7 +436,7 @@ describe("Async Biometric Token", () => {
         });
 
         it("Writes DCMAW_ASYNC_CRI_4XXERROR event to TxMA", () => {
-          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+          expect(mockWriteEventSuccessResult).toBeCalledWith({
             eventName: "DCMAW_ASYNC_CRI_4XXERROR",
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
@@ -514,7 +516,7 @@ describe("Async Biometric Token", () => {
 
       describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully to write to TxMA", () => {
         it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
-          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+          expect(mockWriteEventSuccessResult).toBeCalledWith({
             eventName: "DCMAW_ASYNC_CRI_5XXERROR",
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
@@ -572,20 +574,70 @@ describe("Async Biometric Token", () => {
       );
     });
 
-    it("Logs COMPLETED", async () => {
-      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-        messageCode: "MOBILE_ASYNC_BIOMETRIC_TOKEN_COMPLETED",
+    describe("Given DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED event fails to write to TxMA", () => {
+      beforeEach(async () => {
+        dependencies.getEventService = () => ({
+          ...mockInertEventService,
+          writeBiometricTokenIssuedEvent: jest.fn().mockResolvedValue(
+            errorResult({
+              errorMessage: "mockError",
+            }),
+          ),
+        });
+
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+      it("Logs the error", async () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          message: "ERROR_WRITING_AUDIT_EVENT",
+          function_arn: "arn:12345", // example field to verify that context has been added
+        });
+      });
+
+      it("Returns 500 Internal Server Error ", async () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
+        });
       });
     });
 
-    it("Returns 200 response with biometric access token and opaque ID", async () => {
-      expect(result).toStrictEqual({
-        headers: expectedSecurityHeaders,
-        statusCode: 200,
-        body: JSON.stringify({
-          accessToken: "mockBiometricToken",
-          opaqueId: "mock_opaque_id",
-        }),
+    describe("Given DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED event successfully to write to TxMA", () => {
+      it("Writes DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED event to TxMA", () => {
+        expect(mockWriteEventSuccessResult).toBeCalledWith({
+          eventName: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
+          componentId: "mockIssuer",
+          getNowInMilliseconds: Date.now,
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
+          sessionId: mockSessionId,
+          sub: "mockSubjectIdentifier",
+          documentType: "NFC_PASSPORT",
+        });
+      });
+
+      it("Logs COMPLETED", async () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_BIOMETRIC_TOKEN_COMPLETED",
+        });
+      });
+
+      it("Returns 200 response with biometric access token and opaque ID", async () => {
+        expect(result).toStrictEqual({
+          headers: expectedSecurityHeaders,
+          statusCode: 200,
+          body: JSON.stringify({
+            accessToken: "mockBiometricToken",
+            opaqueId: "mock_opaque_id",
+          }),
+        });
       });
     });
   });

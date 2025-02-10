@@ -35,7 +35,10 @@ import {
 } from "../common/session/SessionRegistry";
 import { randomUUID } from "crypto";
 import { IEventService } from "../services/events/types";
-import { BaseSessionAttributes } from "../common/session/session";
+import {
+  BaseSessionAttributes,
+  SessionAttributes,
+} from "../common/session/session";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
@@ -101,11 +104,19 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  logger.info(LogMessage.BIOMETRIC_TOKEN_COMPLETED);
-  return okResponse({
+  const responseBody = {
     accessToken: biometricTokenResult.value,
     opaqueId,
-  });
+  };
+
+  return await handleOkResponse(
+    updateSessionResult.value.attributes,
+    eventService,
+    sessionId,
+    documentType,
+    config.ISSUER,
+    responseBody,
+  );
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(
@@ -252,4 +263,39 @@ async function handleUpdateSessionError(
     case UpdateSessionError.INTERNAL_SERVER_ERROR:
       return handleInternalServerError(eventService, sessionId, issuer);
   }
+}
+
+async function handleOkResponse(
+  sessionAttributes: SessionAttributes,
+  eventService: IEventService,
+  sessionId: string,
+  documentType: DocumentType,
+  issuer: string,
+  responseBody: BiometricTokenIssuedOKResponseBody,
+): Promise<APIGatewayProxyResult> {
+  const writeEventResult = await eventService.writeBiometricTokenIssuedEvent({
+    eventName: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
+    sub: sessionAttributes.subjectIdentifier,
+    sessionId,
+    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+    getNowInMilliseconds: Date.now,
+    componentId: issuer,
+    documentType,
+  });
+
+  if (writeEventResult.isError) {
+    logger.error("ERROR_WRITING_AUDIT_EVENT", {
+      errorMessage:
+        "Unexpected error writing the DCMAW_ASYNC_CRI_4XXERROR event",
+    });
+    return serverErrorResponse;
+  }
+
+  logger.info(LogMessage.BIOMETRIC_TOKEN_COMPLETED);
+  return okResponse(responseBody);
+}
+
+interface BiometricTokenIssuedOKResponseBody {
+  accessToken: string;
+  opaqueId: string;
 }
