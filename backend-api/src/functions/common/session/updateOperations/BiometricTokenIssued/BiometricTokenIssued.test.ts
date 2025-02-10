@@ -1,7 +1,7 @@
 import { BiometricTokenIssued } from "./BiometricTokenIssued";
 import { SessionState } from "../../session";
 import { emptyFailure, successResult } from "../../../../utils/result";
-import { marshall } from "@aws-sdk/util-dynamodb";
+import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
 describe("BiometricTokenIssued", () => {
   let biometricTokenIssued: BiometricTokenIssued;
@@ -45,18 +45,62 @@ describe("BiometricTokenIssued", () => {
   });
 
   describe("When I request the getSessionAttributesFromDynamoDbItem", () => {
-    describe("Given invalid session attributes item was provided", () => {
-      it("Returns an emptyFailure", () => {
-        const result =
-          biometricTokenIssued.getSessionAttributesFromDynamoDbItem({});
+    const validBaseSessionAttributesItem = marshall({
+      clientId: "mockClientId",
+      govukSigninJourneyId: "mockGovukSigninJourneyId",
+      createdAt: 12345,
+      issuer: "mockIssuer",
+      sessionId: "mockSessionId",
+      sessionState: SessionState.AUTH_SESSION_CREATED,
+      clientState: "mockClientState",
+      subjectIdentifier: "mockSubjectIdentifier",
+      timeToLive: 12345,
+    });
 
-        expect(result).toEqual(emptyFailure());
+    describe("Given isError is true", () => {
+      describe("Given a session attributes item was provided that does not include all BaseSessionAttributes properties", () => {
+        it("Returns an emptyFailure", () => {
+          const result =
+            biometricTokenIssued.getSessionAttributesFromDynamoDbItem(
+              marshall({
+                clientId: "mockClientId",
+              }),
+              true,
+            );
+
+          expect(result).toEqual(emptyFailure());
+        });
+      });
+
+      describe("Given a valid BaseSessionAttributes item was provided", () => {
+        it("Returns successResult with BaseSessionAttributes session attributes", () => {
+          const result =
+            biometricTokenIssued.getSessionAttributesFromDynamoDbItem(
+              validBaseSessionAttributesItem,
+              true,
+            );
+
+          expect(result).toEqual(
+            successResult(unmarshall(validBaseSessionAttributesItem)),
+          );
+        });
       });
     });
 
-    describe("Given valid session attributes item was provided", () => {
-      it("Returns successResult with valid session attributes", () => {
-        const validSessionAttributes = {
+    describe("Given isError is not true", () => {
+      describe("Given a session attributes item was provided that does not include all BiometricTokenIssuedSessionAttributes properties", () => {
+        it("Returns an emptyFailure", () => {
+          const result =
+            biometricTokenIssued.getSessionAttributesFromDynamoDbItem(
+              validBaseSessionAttributesItem,
+            );
+
+          expect(result).toEqual(emptyFailure());
+        });
+      });
+
+      describe("Given valid BiometricTokenIssuedSessionAttributes item was provided", () => {
+        const validBiometricTokenIssuedSessionAttributesItem = marshall({
           clientId: "mockClientId",
           govukSigninJourneyId: "mockGovukSigninJourneyId",
           createdAt: 12345,
@@ -66,13 +110,22 @@ describe("BiometricTokenIssued", () => {
           clientState: "mockClientState",
           subjectIdentifier: "mockSubjectIdentifier",
           timeToLive: 12345,
-        };
-        const result =
-          biometricTokenIssued.getSessionAttributesFromDynamoDbItem(
-            marshall(validSessionAttributes),
-          );
+          documentType: "NFC_PASSPORT",
+          opaqueId: "mockOpaqueId",
+        });
 
-        expect(result).toEqual(successResult(validSessionAttributes));
+        it("Returns successResult with BiometricTokenIssuedSessionAttributes session attributes", () => {
+          const result =
+            biometricTokenIssued.getSessionAttributesFromDynamoDbItem(
+              validBiometricTokenIssuedSessionAttributesItem,
+            );
+
+          expect(result).toEqual(
+            successResult(
+              unmarshall(validBiometricTokenIssuedSessionAttributesItem),
+            ),
+          );
+        });
       });
     });
   });

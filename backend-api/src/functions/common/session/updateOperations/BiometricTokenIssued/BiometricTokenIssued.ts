@@ -2,7 +2,10 @@ import { UpdateSessionOperation } from "../UpdateSessionOperation";
 import { DocumentType } from "../../../../types/document";
 import { SessionState } from "../../session";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
-import { getBaseSessionAttributes } from "../sessionAttributes/sessionAttributes";
+import {
+  getBaseSessionAttributes,
+  getBiometricTokenIssuedSessionAttributes,
+} from "../sessionAttributes/sessionAttributes";
 
 export class BiometricTokenIssued implements UpdateSessionOperation {
   constructor(
@@ -29,7 +32,12 @@ export class BiometricTokenIssued implements UpdateSessionOperation {
 
   getSessionAttributesFromDynamoDbItem(
     item: Record<string, AttributeValue> | undefined,
+    isError?: boolean,
   ) {
-    return getBaseSessionAttributes(item);
+    if (isError) {
+      return getBaseSessionAttributes(item);
+    } else {
+      return getBiometricTokenIssuedSessionAttributes(item);
+    }
   }
 }

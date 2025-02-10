@@ -8,5 +8,6 @@ export interface UpdateSessionOperation {
   getDynamoDbExpressionAttributeValues(): Record<string, AttributeValue>;
   getSessionAttributesFromDynamoDbItem(
     item: Record<string, AttributeValue> | undefined,
+    isError?: boolean,
   ): Result<SessionAttributes, void>;
 }
