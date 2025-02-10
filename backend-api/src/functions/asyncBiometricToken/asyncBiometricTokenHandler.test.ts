@@ -265,14 +265,16 @@ describe("Async Biometric Token", () => {
       });
     });
 
-    it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
-      expect(
-        expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
-          expect.objectContaining({
-            eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-          }),
-        ),
-      );
+    describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully writes to TxMA", () => {
+      it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
+        expect(
+          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
+            expect.objectContaining({
+              eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+            }),
+          ),
+        );
+      });
     });
 
     it("Returns 500 Internal server error", async () => {
@@ -485,14 +487,16 @@ describe("Async Biometric Token", () => {
         });
       });
 
-      it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
-        expect(
-          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
-            expect.objectContaining({
-              eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-            }),
-          ),
-        );
+      describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully writes to TxMA", () => {
+        it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
+          expect(
+            expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
+              expect.objectContaining({
+                eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+              }),
+            ),
+          );
+        });
       });
 
       it("Returns 500 Internal Server Error", () => {
