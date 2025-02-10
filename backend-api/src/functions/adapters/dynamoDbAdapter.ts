@@ -175,7 +175,10 @@ export class DynamoDbAdapter implements SessionRegistry {
       }
       if (error instanceof ConditionalCheckFailedException) {
         const getAttributesResult =
-          updateOperation.getSessionAttributesFromDynamoDbItem(error.Item);
+          updateOperation.getSessionAttributesFromDynamoDbItem(
+            error.Item,
+            true,
+          );
         if (getAttributesResult.isError) {
           return this.handleUpdateSessionInternalServerError(
             error,

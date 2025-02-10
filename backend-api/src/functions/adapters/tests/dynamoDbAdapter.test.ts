@@ -54,6 +54,21 @@ describe("DynamoDbAdapter", () => {
       redirectUri: "https://www.mockRedirectUri.com",
     };
 
+    const biometricTokenIssuedSessionAttributes = {
+      clientId: "mockClientId",
+      govukSigninJourneyId: "mockGovukSigninJourneyId",
+      createdAt: 12345,
+      issuer: "mockIssuer",
+      sessionId: "mockSessionId",
+      sessionState: "mockSessionState",
+      clientState: "mockClientState",
+      subjectIdentifier: "mockSubjectIdentifier",
+      timeToLive: 12345,
+      documentType: "NFC_PASSPORT",
+      opaqueId: "mockOpaqueId",
+      redirectUri: "https://www.mockRedirectUri.com",
+    };
+
     describe("On every attempt", () => {
       beforeEach(async () => {
         mockDynamoDbClient.on(UpdateItemCommand).resolves({});
@@ -277,7 +292,9 @@ describe("DynamoDbAdapter", () => {
             .onAnyCommand() // default
             .rejects("Did not receive expected input")
             .on(UpdateItemCommand, expectedUpdateItemCommandInput, true) // match to expected input
-            .resolves({ Attributes: marshall(baseSessionAttributes) });
+            .resolves({
+              Attributes: marshall(biometricTokenIssuedSessionAttributes),
+            });
           result = await sessionRegistry.updateSession(
             "mock_session_id",
             updateOperation,
@@ -292,7 +309,9 @@ describe("DynamoDbAdapter", () => {
 
         it("Returns a success", () => {
           expect(result).toEqual(
-            successResult({ attributes: baseSessionAttributes }),
+            successResult({
+              attributes: biometricTokenIssuedSessionAttributes,
+            }),
           );
         });
       });
