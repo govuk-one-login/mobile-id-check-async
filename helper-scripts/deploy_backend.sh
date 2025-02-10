@@ -36,7 +36,7 @@ enable_alarms=false
 deploy_test_resources=false
 publish_sts_mock_keys_to_s3=false
 
-# Ask the user about deploying sts-mock
+# Ask the user about deploying test-resources
 while true; do
   echo
   echo "Deploying a test-resources stack is required the first time you deploy a backend-api stack. It's optional for subsequent deployments."
@@ -57,12 +57,12 @@ while true; do
   esac
 done
 
-# After deploying sts-mock, ask user if they want to generate keys
+# After deploying test-resources, ask user if they want to generate keys
 if [ $deploy_test_resources == true ]; then
   while true; do
     echo
-    echo "Generating and publishing a signing key pair to S3 is required the first time you deploy an sts-mock, optional for subsequent deployments."
-    read -r -p "Do you want to generate and publish a signing key pair to S3 for your sts-mock? [y/N]: " yn
+    echo "Generating and publishing a signing key pair to S3 for the sts-mock is required the first time you deploy the test-resources stack, optional for subsequent deployments."
+    read -r -p "Do you want to generate and publish a signing key pair to S3 for your test-resources? [y/N]: " yn
 
     case "$yn" in
       [yY])
@@ -189,10 +189,10 @@ if [[ $deploy_test_resources == true ]]; then
   # Build and deploy test-resources
   echo "Building and deploying test-resources stack: $TEST_RESOURCES_STACK_NAME"
   echo
-  cd ../sts-mock || exit 1
+  cd ../test-resources || exit 1
   npm run build:infra
   npm ci
-  sam build --cached
+  sam build
   sam deploy \
     --stack-name $TEST_RESOURCES_STACK_NAME \
     --parameter-overrides \
@@ -210,7 +210,7 @@ if [[ $deploy_test_resources == true ]]; then
 fi
 
 if [[ $publish_sts_mock_keys_to_s3 == true ]]; then
-  cd ../sts-mock/jwks-helper-script
+  cd ../test-resources/jwks-helper-script
   ./publish_keys_to_s3.sh "${TEST_RESOURCES_STACK_NAME}" "dev"
   cd ../../helper-scripts
 fi
