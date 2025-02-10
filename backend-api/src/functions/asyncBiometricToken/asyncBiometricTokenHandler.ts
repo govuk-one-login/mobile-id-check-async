@@ -79,11 +79,7 @@ export async function lambdaHandlerConstructor(
     submitterKey,
   );
   if (biometricTokenResult.isError) {
-    return handleInternalServerErrorResponse(
-      eventService,
-      sessionId,
-      config.ISSUER,
-    );
+    return handleInternalServerError(eventService, sessionId, config.ISSUER);
   }
 
   const opaqueId = generateOpaqueId();
@@ -162,7 +158,7 @@ function generateOpaqueId(): string {
   return randomUUID();
 }
 
-async function handleUnauthorizedResponseConditionalCheckFailure(
+async function handleUnauthorizedConditionalCheckFailure(
   eventService: IEventService,
   sessionAttributes: BaseSessionAttributes,
   issuer: string,
@@ -189,7 +185,7 @@ async function handleUnauthorizedResponseConditionalCheckFailure(
   );
 }
 
-async function handleUnauthorizedResponseSessionNotFound(
+async function handleUnauthorizedSessionNotFound(
   eventService: IEventService,
   sessionId: string,
   issuer: string,
@@ -213,7 +209,7 @@ async function handleUnauthorizedResponseSessionNotFound(
   return unauthorizedResponse("invalid_session", "Session not found");
 }
 
-async function handleInternalServerErrorResponse(
+async function handleInternalServerError(
   eventService: IEventService,
   sessionId: string,
   issuer: string,
@@ -246,18 +242,14 @@ async function handleUpdateSessionError(
   switch (updateSessionResult.value.errorType) {
     case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
       sessionAttributes = updateSessionResult.value.attributes;
-      return handleUnauthorizedResponseConditionalCheckFailure(
+      return handleUnauthorizedConditionalCheckFailure(
         eventService,
         sessionAttributes,
         issuer,
       );
     case UpdateSessionError.SESSION_NOT_FOUND:
-      return handleUnauthorizedResponseSessionNotFound(
-        eventService,
-        sessionId,
-        issuer,
-      );
+      return handleUnauthorizedSessionNotFound(eventService, sessionId, issuer);
     case UpdateSessionError.INTERNAL_SERVER_ERROR:
-      return handleInternalServerErrorResponse(eventService, sessionId, issuer);
+      return handleInternalServerError(eventService, sessionId, issuer);
   }
 }

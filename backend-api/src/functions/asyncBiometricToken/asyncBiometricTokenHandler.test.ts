@@ -297,7 +297,7 @@ describe("Async Biometric Token", () => {
           headers: expectedSecurityHeaders,
         });
       });
-    })
+    });
   });
 
   describe("When session update fails", () => {
