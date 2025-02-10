@@ -362,7 +362,7 @@ describe("Async Biometric Token", () => {
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
             govukSigninJourneyId: undefined,
-            sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+            sessionId: mockSessionId,
             sub: undefined,
           });
         });
@@ -439,7 +439,7 @@ describe("Async Biometric Token", () => {
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
             govukSigninJourneyId: "mockGovukSigninJourneyId",
-            sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+            sessionId: mockSessionId,
             sub: "mockSubjectIdentifier",
           });
         });
@@ -519,7 +519,7 @@ describe("Async Biometric Token", () => {
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
             govukSigninJourneyId: undefined,
-            sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+            sessionId: mockSessionId,
             sub: undefined,
           });
         });
