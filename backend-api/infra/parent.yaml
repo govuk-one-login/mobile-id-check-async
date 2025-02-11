@@ -106,7 +106,6 @@ Mappings:
 
   Lambda:
     dev:
-      ReservedConcurrentExecutions: 1
       LogLevel: DEBUG
     build:
       ReservedConcurrentExecutions: 15
@@ -214,6 +213,10 @@ Conditions:
       - !Ref PermissionsBoundary
       - none
 
+  isDev: !Equals
+      - !Ref Environment
+      - dev
+
   isNotDevOrBuild: !Or
     - !Equals
       - !Ref Environment
@@ -265,7 +268,10 @@ Globals:
     AutoPublishAliasAllProperties: true
     Timeout: 5
     MemorySize: 512
-    ReservedConcurrentExecutions: !FindInMap
+    ReservedConcurrentExecutions: !If
+      - isDev
+      - !Ref AWS::NoValue
+      - !FindInMap
       - Lambda
       - !Ref Environment
       - ReservedConcurrentExecutions
