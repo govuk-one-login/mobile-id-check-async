@@ -1,3 +1,4 @@
+import { SessionState } from "../common/session/session";
 import { SessionRegistry } from "../common/session/SessionRegistry";
 import { IEventService } from "../services/events/types";
 
@@ -26,4 +27,26 @@ export const mockInertEventService: IEventService = {
   writeCredentialTokenIssuedEvent: jest.fn(() => {
     throw new Error("Not implemented");
   }),
+  writeBiometricTokenIssuedEvent: jest.fn(() => {
+    throw new Error("Not implemented");
+  }),
+};
+
+export const validBaseSessionAttributes = {
+  clientId: "mockClientId",
+  govukSigninJourneyId: "mockGovukSigninJourneyId",
+  createdAt: 12345,
+  issuer: "mockIssuer",
+  sessionId: "mockSessionId",
+  sessionState: SessionState.AUTH_SESSION_CREATED,
+  clientState: "mockClientState",
+  subjectIdentifier: "mockSubjectIdentifier",
+  timeToLive: 12345,
+};
+
+export const validBiometricTokenIssuedSessionAttributes = {
+  ...validBaseSessionAttributes,
+  sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,
+  documentType: "NFC_PASSPORT",
+  opaqueId: "mockOpaqueId",
 };

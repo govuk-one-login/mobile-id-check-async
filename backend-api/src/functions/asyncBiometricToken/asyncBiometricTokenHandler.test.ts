@@ -63,6 +63,8 @@ describe("Async Biometric Token", () => {
     clientState: "mockClientState",
     subjectIdentifier: "mockSubjectIdentifier",
     timeToLive: 12345,
+    documentType: "NFC_PASSPORT",
+    opaqueId: "mockOpaqueId",
     redirectUri: "https://www.mockRedirectUri.com",
   };
 
@@ -77,10 +79,17 @@ describe("Async Biometric Token", () => {
     .fn()
     .mockResolvedValue(emptySuccess());
 
+  const mockWriteBiometricTokenIssuedEventSuccessResult = jest
+    .fn()
+    .mockResolvedValue(emptySuccess());
+
   const mockSuccessfulEventService = {
     ...mockInertEventService,
     writeGenericEvent: mockWriteGenericEventSuccessResult,
+    writeBiometricTokenIssuedEvent:
+      mockWriteBiometricTokenIssuedEventSuccessResult,
   };
+
   beforeEach(() => {
     dependencies = {
       env: {
@@ -259,8 +268,10 @@ describe("Async Biometric Token", () => {
 
       it("Logs the error", async () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          message: "ERROR_WRITING_AUDIT_EVENT",
-          function_arn: "arn:12345", // example field to verify that context has been added
+          messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+          data: {
+            auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+          },
         });
       });
 
@@ -339,8 +350,10 @@ describe("Async Biometric Token", () => {
           });
           it("Logs the error", async () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-              message: "ERROR_WRITING_AUDIT_EVENT",
-              function_arn: "arn:12345", // example field to verify that context has been added
+              messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+              data: {
+                auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
+              },
             });
           });
 
@@ -414,10 +427,13 @@ describe("Async Biometric Token", () => {
               context,
             );
           });
+
           it("Logs the error", async () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-              message: "ERROR_WRITING_AUDIT_EVENT",
-              function_arn: "arn:12345", // example field to verify that context has been added
+              messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+              data: {
+                auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
+              },
             });
           });
 
@@ -495,8 +511,10 @@ describe("Async Biometric Token", () => {
 
         it("Logs the error", async () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            message: "ERROR_WRITING_AUDIT_EVENT",
-            function_arn: "arn:12345", // example field to verify that context has been added
+            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+            data: {
+              auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+            },
           });
         });
 
@@ -572,20 +590,71 @@ describe("Async Biometric Token", () => {
       );
     });
 
-    it("Logs COMPLETED", async () => {
-      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-        messageCode: "MOBILE_ASYNC_BIOMETRIC_TOKEN_COMPLETED",
+    describe("Given DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED event fails to write to TxMA", () => {
+      beforeEach(async () => {
+        dependencies.getEventService = () => ({
+          ...mockInertEventService,
+          writeBiometricTokenIssuedEvent: jest.fn().mockResolvedValue(
+            errorResult({
+              errorMessage: "mockError",
+            }),
+          ),
+        });
+
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+      it("Logs the error", async () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+          data: {
+            auditEventName: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED", // example field to verify that context has been added
+          },
+        });
+      });
+
+      it("Returns 500 Internal Server Error ", async () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
+        });
       });
     });
 
-    it("Returns 200 response with biometric access token and opaque ID", async () => {
-      expect(result).toStrictEqual({
-        headers: expectedSecurityHeaders,
-        statusCode: 200,
-        body: JSON.stringify({
-          accessToken: "mockBiometricToken",
-          opaqueId: "mock_opaque_id",
-        }),
+    describe("Given DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED event successfully writes to TxMA", () => {
+      it("Writes DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED event to TxMA", () => {
+        expect(mockWriteBiometricTokenIssuedEventSuccessResult).toBeCalledWith({
+          componentId: "mockIssuer",
+          getNowInMilliseconds: Date.now,
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
+          sessionId: mockSessionId,
+          sub: "mockSubjectIdentifier",
+          documentType: "NFC_PASSPORT",
+        });
+      });
+
+      it("Logs COMPLETED", async () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_BIOMETRIC_TOKEN_COMPLETED",
+        });
+      });
+
+      it("Returns 200 response with biometric access token and opaque ID", async () => {
+        expect(result).toStrictEqual({
+          headers: expectedSecurityHeaders,
+          statusCode: 200,
+          body: JSON.stringify({
+            accessToken: "mockBiometricToken",
+            opaqueId: "mock_opaque_id",
+          }),
+        });
       });
     });
   });

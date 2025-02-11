@@ -42,6 +42,11 @@ export class LogMessage implements LogAttributes {
     "No session found while trying to update the user session in DynamoDB.",
   );
 
+  static readonly ERROR_WRITING_AUDIT_EVENT = new LogMessage(
+    "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+    "Unexpected error writing audit event to SQS",
+  );
+
   // Biometric Token
   static readonly BIOMETRIC_TOKEN_STARTED = new LogMessage(
     "MOBILE_ASYNC_BIOMETRIC_TOKEN_STARTED",
