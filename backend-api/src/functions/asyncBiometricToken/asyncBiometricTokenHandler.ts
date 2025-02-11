@@ -183,9 +183,10 @@ async function handleConditionalCheckFailure(
   });
 
   if (writeEventResult.isError) {
-    logger.error("ERROR_WRITING_AUDIT_EVENT", {
-      errorMessage:
-        "Unexpected error writing the DCMAW_ASYNC_CRI_4XXERROR event",
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
+      },
     });
     return serverErrorResponse;
   }
@@ -210,9 +211,10 @@ async function handleSessionNotFound(
   });
 
   if (writeEventResult.isError) {
-    logger.error("ERROR_WRITING_AUDIT_EVENT", {
-      errorMessage:
-        "Unexpected error writing the DCMAW_ASYNC_CRI_4XXERROR event",
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
+      },
     });
     return serverErrorResponse;
   }
@@ -234,9 +236,10 @@ async function handleInternalServerError(
   });
 
   if (writeEventResult.isError) {
-    logger.error("ERROR_WRITING_AUDIT_EVENT", {
-      errorMessage:
-        "Unexpected error writing the DCMAW_ASYNC_CRI_5XXERROR event",
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+      },
     });
   }
   return serverErrorResponse;
@@ -281,9 +284,10 @@ async function handleOkResponse(
   });
 
   if (writeEventResult.isError) {
-    logger.error("ERROR_WRITING_AUDIT_EVENT", {
-      errorMessage:
-        "Unexpected error writing the DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED event",
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
+      },
     });
     return serverErrorResponse;
   }

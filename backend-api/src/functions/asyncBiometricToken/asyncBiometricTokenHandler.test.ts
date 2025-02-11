@@ -268,8 +268,10 @@ describe("Async Biometric Token", () => {
 
       it("Logs the error", async () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          message: "ERROR_WRITING_AUDIT_EVENT",
-          function_arn: "arn:12345", // example field to verify that context has been added
+          messageCode: "ERROR_WRITING_AUDIT_EVENT",
+          data: {
+            auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+          },
         });
       });
 
@@ -348,8 +350,10 @@ describe("Async Biometric Token", () => {
           });
           it("Logs the error", async () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-              message: "ERROR_WRITING_AUDIT_EVENT",
-              function_arn: "arn:12345", // example field to verify that context has been added
+              messageCode: "ERROR_WRITING_AUDIT_EVENT",
+              data: {
+                auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
+              },
             });
           });
 
@@ -423,10 +427,13 @@ describe("Async Biometric Token", () => {
               context,
             );
           });
+
           it("Logs the error", async () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-              message: "ERROR_WRITING_AUDIT_EVENT",
-              function_arn: "arn:12345", // example field to verify that context has been added
+              messageCode: "ERROR_WRITING_AUDIT_EVENT",
+              data: {
+                auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
+              },
             });
           });
 
@@ -504,8 +511,10 @@ describe("Async Biometric Token", () => {
 
         it("Logs the error", async () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            message: "ERROR_WRITING_AUDIT_EVENT",
-            function_arn: "arn:12345", // example field to verify that context has been added
+            messageCode: "ERROR_WRITING_AUDIT_EVENT",
+            data: {
+              auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+            },
           });
         });
 
@@ -600,8 +609,10 @@ describe("Async Biometric Token", () => {
       });
       it("Logs the error", async () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          message: "ERROR_WRITING_AUDIT_EVENT",
-          function_arn: "arn:12345", // example field to verify that context has been added
+          messageCode: "ERROR_WRITING_AUDIT_EVENT",
+          data: {
+            auditEventName: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED", // example field to verify that context has been added
+          },
         });
       });
 
