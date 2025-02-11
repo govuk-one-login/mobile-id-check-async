@@ -5,7 +5,7 @@ if [ $# -ge 1 ] && [ -n "$1" ] ; then
   stack_name="${1}-test-resources"
 else
   # default stack name in dev
-  stack_name="test-resources"
+  stack_name="mob-test-resources"
 fi
 
 
