@@ -43,7 +43,7 @@ export class LogMessage implements LogAttributes {
   );
 
   static readonly ERROR_WRITING_AUDIT_EVENT = new LogMessage(
-    "ERROR_WRITING_AUDIT_EVENT",
+    "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
     "Unexpected error writing audit event to SQS",
   );
 

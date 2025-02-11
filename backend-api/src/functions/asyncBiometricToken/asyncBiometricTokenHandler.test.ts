@@ -268,7 +268,7 @@ describe("Async Biometric Token", () => {
 
       it("Logs the error", async () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "ERROR_WRITING_AUDIT_EVENT",
+          messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
           data: {
             auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
           },
@@ -350,7 +350,7 @@ describe("Async Biometric Token", () => {
           });
           it("Logs the error", async () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-              messageCode: "ERROR_WRITING_AUDIT_EVENT",
+              messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
               data: {
                 auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
               },
@@ -430,7 +430,7 @@ describe("Async Biometric Token", () => {
 
           it("Logs the error", async () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-              messageCode: "ERROR_WRITING_AUDIT_EVENT",
+              messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
               data: {
                 auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
               },
@@ -511,7 +511,7 @@ describe("Async Biometric Token", () => {
 
         it("Logs the error", async () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "ERROR_WRITING_AUDIT_EVENT",
+            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
             data: {
               auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
             },
@@ -609,7 +609,7 @@ describe("Async Biometric Token", () => {
       });
       it("Logs the error", async () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "ERROR_WRITING_AUDIT_EVENT",
+          messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
           data: {
             auditEventName: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED", // example field to verify that context has been added
           },
