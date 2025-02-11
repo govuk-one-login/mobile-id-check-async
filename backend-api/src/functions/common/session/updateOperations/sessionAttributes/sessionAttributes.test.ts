@@ -4,7 +4,7 @@ import {
   getBiometricTokenIssuedSessionAttributes,
 } from "./sessionAttributes";
 import { emptyFailure, successResult } from "../../../../utils/result";
-import { SessionAttributes } from "../../session";
+import { SessionAttributes, SessionState } from "../../session";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import {
   validBaseSessionAttributes,
@@ -101,13 +101,6 @@ describe("Session attributes", () => {
         }),
       },
       {
-        scenario: "Given sessionState is not a string",
-        attributes: marshall({
-          ...sessionAttributes,
-          sessionState: 12345,
-        }),
-      },
-      {
         scenario: "Given clientState is missing",
         attributes: buildSessionAttributes(sessionAttributes, {
           clientState: undefined,
@@ -160,6 +153,13 @@ describe("Session attributes", () => {
     describe("Given an invalid base session attribute record", () => {
       describe.each([
         ...givenAnyCommonSessionAttributeIsInvalid(validBaseSessionAttributes),
+        {
+          scenario: "Given sessionState is not a string",
+          attributes: marshall({
+            ...validBaseSessionAttributes,
+            sessionState: 12345,
+          }),
+        },
       ])("$scenario", ({ attributes }) => {
         it("Returns an emptyFailure", () => {
           const result = getBaseSessionAttributes(attributes);
@@ -198,6 +198,15 @@ describe("Session attributes", () => {
         ...givenAnyCommonSessionAttributeIsInvalid(
           validBiometricTokenIssuedSessionAttributes,
         ),
+        {
+          scenario: "Given sessionState is not ASYNC_BIOMETRIC_TOKEN_ISSUED",
+          attributes: buildSessionAttributes(
+            validBiometricTokenIssuedSessionAttributes,
+            {
+              sessionState: SessionState.AUTH_SESSION_CREATED,
+            },
+          ),
+        },
         {
           scenario: "Given documentType is missing",
           attributes: buildSessionAttributes(

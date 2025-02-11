@@ -4,6 +4,7 @@ import { Result, emptyFailure, successResult } from "../../../../utils/result";
 import {
   BaseSessionAttributes,
   BiometricTokenIssuedSessionAttributes,
+  SessionState,
 } from "../../session";
 
 export const getBaseSessionAttributes = (
@@ -55,7 +56,7 @@ export const isBiometricTokenIssuedSessionAttributes = (
   if (typeof item.createdAt !== "number") return false;
   if (typeof item.issuer !== "string") return false;
   if (typeof item.sessionId !== "string") return false;
-  if (typeof item.sessionState !== "string") return false;
+  if (item.sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) return false;
   if (typeof item.clientState !== "string") return false;
   if (typeof item.subjectIdentifier !== "string") return false;
   if (typeof item.timeToLive !== "number") return false;
