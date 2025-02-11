@@ -40,6 +40,7 @@ describe("Async Finish Biometric Session", () => {
         function_arn: "arn:12345", // example field to verify that context has been added
       });
     });
+
     it("Clears pre-existing log attributes", async () => {
       logger.appendKeys({ testKey: "testValue" });
       result = await lambdaHandlerConstructor(
