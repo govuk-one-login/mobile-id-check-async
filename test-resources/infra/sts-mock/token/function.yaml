@@ -15,7 +15,6 @@ Resources:
           - src/functions/sts-mock/token/tokenHandler.ts
     Properties:
       Description: Mock STS token function for exchanging an access token for a service token
-      AutoPublishAlias: live
       FunctionName: !Sub ${AWS::StackName}-token
       Runtime: nodejs20.x
       Handler: tokenHandler.lambdaHandler

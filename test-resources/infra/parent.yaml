@@ -4,6 +4,7 @@ Description: SAM template for the test resources stack. This contains the asynch
 
 Globals:
   Function:
+    AutoPublishAlias: live
     AutoPublishAliasAllProperties: true
     CodeSigningConfigArn: !If
       - UseCodeSigning

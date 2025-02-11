@@ -102,6 +102,7 @@ Transform: AWS::Serverless-2016-10-31
 
 Globals:
   Function:
+    AutoPublishAlias: live
     AutoPublishAliasAllProperties: true
     CodeSigningConfigArn: !If
       - UseCodeSigning
@@ -628,7 +629,6 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
-      AutoPublishAlias: live
       Description: Mock STS token function for exchanging an access token for a service token
       Environment:
         Variables:
