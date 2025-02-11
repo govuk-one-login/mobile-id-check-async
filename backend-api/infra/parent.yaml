@@ -106,7 +106,7 @@ Mappings:
 
   Lambda:
     dev:
-      ReservedConcurrentExecutions: 15
+      ReservedConcurrentExecutions: 0 # Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
       LogLevel: DEBUG
     build:
       ReservedConcurrentExecutions: 15
@@ -214,6 +214,10 @@ Conditions:
       - !Ref PermissionsBoundary
       - none
 
+  isDev: !Equals
+      - !Ref Environment
+      - dev
+
   isNotDevOrBuild: !Or
     - !Equals
       - !Ref Environment
@@ -266,10 +270,13 @@ Globals:
     AutoPublishAliasAllProperties: true
     Timeout: 5
     MemorySize: 512
-    ReservedConcurrentExecutions: !FindInMap
-      - Lambda
-      - !Ref Environment
-      - ReservedConcurrentExecutions
+    ReservedConcurrentExecutions: !If
+      - isDev
+      - !Ref AWS::NoValue
+      - !FindInMap
+        - Lambda
+        - !Ref Environment
+        - ReservedConcurrentExecutions
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn

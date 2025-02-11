@@ -497,7 +497,7 @@ describe("Backend application infrastructure", () => {
         expect(reservedConcurrentExecutionMapping).toStrictEqual({
           Lambda: {
             dev: expect.objectContaining({
-              ReservedConcurrentExecutions: 15,
+              ReservedConcurrentExecutions: 0, // Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
             }),
             build: expect.objectContaining({
               ReservedConcurrentExecutions: 15,
@@ -516,11 +516,22 @@ describe("Backend application infrastructure", () => {
 
         const reservedConcurrentExecutions =
           template.toJSON().Globals.Function.ReservedConcurrentExecutions;
+
         expect(reservedConcurrentExecutions).toStrictEqual({
-          "Fn::FindInMap": [
-            "Lambda",
-            { Ref: "Environment" },
-            "ReservedConcurrentExecutions",
+          "Fn::If": [
+            "isDev",
+            {
+              Ref: "AWS::NoValue",
+            },
+            {
+              "Fn::FindInMap": [
+                "Lambda",
+                {
+                  Ref: "Environment",
+                },
+                "ReservedConcurrentExecutions",
+              ],
+            },
           ],
         });
       });
