@@ -4,7 +4,7 @@ import "../../../tests/testUtils/matchers";
 import "dotenv/config";
 import { IAsyncFinishBiometricSessionDependencies } from "./handlerDenpendencies";
 import { buildLambdaContext } from "../testUtils/mockContext";
-import { lambdaHandlerConstructor } from "./asyncFinishBiometricSession";
+import { lambdaHandlerConstructor } from "./asyncFinishBiometricSessionHandler";
 import { buildRequest } from "../testUtils/mockRequest";
 import { logger } from "../common/logging/logger";
 import { expectedSecurityHeaders } from "../testUtils/unitTestData";
