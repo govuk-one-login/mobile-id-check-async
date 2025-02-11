@@ -617,7 +617,7 @@ describe("Async Biometric Token", () => {
       });
     });
 
-    describe("Given DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED event successfully to write to TxMA", () => {
+    describe("Given DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED event successfully writes to TxMA", () => {
       it("Writes DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED event to TxMA", () => {
         expect(mockWriteBiometricTokenIssuedEventSuccessResult).toBeCalledWith({
           eventName: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
