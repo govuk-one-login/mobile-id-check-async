@@ -283,7 +283,7 @@ async function handleOkResponse(
   if (writeEventResult.isError) {
     logger.error("ERROR_WRITING_AUDIT_EVENT", {
       errorMessage:
-        "Unexpected error writing the DCMAW_ASYNC_CRI_4XXERROR event",
+        "Unexpected error writing the DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED event",
     });
     return serverErrorResponse;
   }
