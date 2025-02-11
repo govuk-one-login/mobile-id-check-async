@@ -497,7 +497,7 @@ describe("Backend application infrastructure", () => {
         expect(reservedConcurrentExecutionMapping).toStrictEqual({
           Lambda: {
             dev: expect.objectContaining({
-              ReservedConcurrentExecutions: 0, // Dummy value for CloudFormation's validation behaviour - will not be used
+              ReservedConcurrentExecutions: 0, // Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
             }),
             build: expect.objectContaining({
               ReservedConcurrentExecutions: 15,

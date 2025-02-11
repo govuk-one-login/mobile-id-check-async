@@ -106,7 +106,7 @@ Mappings:
 
   Lambda:
     dev:
-      ReservedConcurrentExecutions: 0 # Dummy value for CloudFormation's validation behaviour - will not be used
+      ReservedConcurrentExecutions: 0 # Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
       LogLevel: DEBUG
     build:
       ReservedConcurrentExecutions: 15
