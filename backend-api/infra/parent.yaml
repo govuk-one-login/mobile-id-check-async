@@ -262,6 +262,7 @@ Conditions:
 
 Globals:
   Function:
+    AutoPublishAlias: live
     AutoPublishAliasAllProperties: true
     Timeout: 5
     MemorySize: 512
@@ -284,7 +285,6 @@ Globals:
       LogFormat: JSON
     Architectures:
       - arm64
-    AutoPublishAlias: live
     Environment:
       Variables:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
