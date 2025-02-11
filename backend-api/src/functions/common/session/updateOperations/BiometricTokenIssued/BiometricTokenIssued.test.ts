@@ -57,7 +57,10 @@ describe("BiometricTokenIssued", () => {
       timeToLive: 12345,
     });
 
-    describe("Given isError is true", () => {
+    describe("Given operationFailed in options is true", () => {
+      const getSessionAttributesOptions = {
+        operationFailed: true,
+      };
       describe("Given a session attributes item was provided that does not include all BaseSessionAttributes properties", () => {
         it("Returns an emptyFailure", () => {
           const result =
@@ -65,7 +68,7 @@ describe("BiometricTokenIssued", () => {
               marshall({
                 clientId: "mockClientId",
               }),
-              true,
+              getSessionAttributesOptions,
             );
 
           expect(result).toEqual(emptyFailure());
@@ -77,7 +80,7 @@ describe("BiometricTokenIssued", () => {
           const result =
             biometricTokenIssued.getSessionAttributesFromDynamoDbItem(
               validBaseSessionAttributesItem,
-              true,
+              getSessionAttributesOptions,
             );
 
           expect(result).toEqual(
@@ -87,7 +90,7 @@ describe("BiometricTokenIssued", () => {
       });
     });
 
-    describe("Given isError is not true", () => {
+    describe("Given operationFailed in options is falsy", () => {
       describe("Given a session attributes item was provided that does not include all BiometricTokenIssuedSessionAttributes properties", () => {
         it("Returns an emptyFailure", () => {
           const result =
