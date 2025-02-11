@@ -5,5 +5,5 @@
 **/template.yaml @govuk-one-login/mobile-id-check-sre @govuk-one-login/mobile-leads
 **/Dockerfile @govuk-one-login/mobile-id-check-sre @govuk-one-login/mobile-leads
 
-# All other changes review a review from backend engineers
+# All other changes require a review from backend engineers
 * @govuk-one-login/mobile-id-check-backend @govuk-one-login/mobile-leads
