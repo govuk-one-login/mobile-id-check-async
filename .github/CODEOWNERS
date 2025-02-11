@@ -1,11 +1,9 @@
-# This is the CODEOWNERS file. These owners will be the default owners for everything in the DI-IPV-DCA-BACK repository
-# The following below will be requested for review when someone opens a pull request.
-
-* @govuk-one-login/mobile-id-check @govuk-one-login/mobile-leads
-
 # All changes in .github directory to be checked by SRE
 .github/ @govuk-one-login/mobile-id-check-sre @govuk-one-login/mobile-leads
 
 # All changes to Dockerfiles and CloudFormation templates to be checked by SRE
 **/template.yaml @govuk-one-login/mobile-id-check-sre @govuk-one-login/mobile-leads
 **/Dockerfile @govuk-one-login/mobile-id-check-sre @govuk-one-login/mobile-leads
+
+# All other changes review a review from backend engineers
+* @govuk-one-login/mobile-id-check-backend @govuk-one-login/mobile-leads
