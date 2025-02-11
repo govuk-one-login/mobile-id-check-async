@@ -29,6 +29,11 @@ Parameters:
       - staging
     Default: dev
 
+  NeverDeployNullResource:
+    Description: NullResource exists to satisfy linter. This parameter ensures it is never deployed.
+    Type: String
+    Default: true
+
   PermissionsBoundary:
     Description: |
       The ARN of the permissions boundary to apply to any role created by the template
@@ -227,7 +232,7 @@ Conditions:
       - build
 
   Never: !Equals
-    - true
+    - !Ref NeverDeployNullResource
     - false
 
   ProxyApiDeployment: !Or

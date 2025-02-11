@@ -35,6 +35,11 @@ Parameters:
       - build
     Default: dev
 
+  NeverDeployNullResource:
+    Description: NullResource exists to satisfy linter. This parameter ensures it is never deployed.
+    Type: String
+    Default: true
+
   PermissionsBoundary:
     Description: |
       The ARN of the permissions boundary to apply to any role created by the template
@@ -75,7 +80,7 @@ Conditions:
         - mob-test-resources
 
   Never: !Equals
-    - true
+    - !Ref NeverDeployNullResource
     - false
 
   UseCodeSigning: !Not
