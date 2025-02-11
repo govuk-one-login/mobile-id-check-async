@@ -641,7 +641,7 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("ActiveSession, BiometricToken and FinishBiometricToken lambdas are attached to a VPC and subnets are protected", () => {
+    test("ActiveSession, BiometricToken and FinishBiometricSession lambdas are attached to a VPC and subnets are protected", () => {
       const lambdaHandlers = [
         "asyncActiveSessionHandler.lambdaHandler",
         "asyncBiometricTokenHandler.lambdaHandler",
