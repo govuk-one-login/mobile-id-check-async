@@ -120,7 +120,8 @@ Mappings:
       ReservedConcurrentExecutions: 15
     dev:
       LogLevel: DEBUG
-      ReservedConcurrentExecutions: 0
+      ReservedConcurrentExecutions:
+        - !Ref AWS::NoValue
     integration:
       LogLevel: INFO
       ReservedConcurrentExecutions: 0
