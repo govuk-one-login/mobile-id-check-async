@@ -516,11 +516,22 @@ describe("Backend application infrastructure", () => {
 
         const reservedConcurrentExecutions =
           template.toJSON().Globals.Function.ReservedConcurrentExecutions;
+
         expect(reservedConcurrentExecutions).toStrictEqual({
-          "Fn::FindInMap": [
-            "Lambda",
-            { Ref: "Environment" },
-            "ReservedConcurrentExecutions",
+          "Fn::If": [
+            "isDev",
+            {
+              Ref: "AWS::NoValue",
+            },
+            {
+              "Fn::FindInMap": [
+                "Lambda",
+                {
+                  Ref: "Environment",
+                },
+                "ReservedConcurrentExecutions",
+              ],
+            },
           ],
         });
       });
