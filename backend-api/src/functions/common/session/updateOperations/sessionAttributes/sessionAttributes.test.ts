@@ -146,6 +146,13 @@ describe("Session attributes", () => {
           timeToLive: "mockInvalidTimeToLive",
         }),
       },
+      {
+        scenario: "Given redirectUri is present but not of type string",
+        attributes: marshall({
+          ...sessionAttributes,
+          redirectUri: 12345,
+        }),
+      },
     ];
   };
 
@@ -198,13 +205,6 @@ describe("Session attributes", () => {
         ...givenAnyCommonSessionAttributeIsInvalid(
           validBiometricTokenIssuedSessionAttributes,
         ),
-        {
-          scenario: "Given redirectUri is present but not of type string",
-          attributes: marshall({
-            ...validBiometricTokenIssuedSessionAttributes,
-            redirectUri: [],
-          }),
-        },
         {
           scenario: "Given documentType is missing",
           attributes: buildSessionAttributes(
