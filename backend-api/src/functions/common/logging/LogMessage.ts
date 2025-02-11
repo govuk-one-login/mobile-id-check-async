@@ -81,7 +81,6 @@ export class LogMessage implements LogAttributes {
     );
 
   // Finish Biometric Session
-  // Biometric Token
   static readonly FINISH_BIOMETRIC_SESSION_STARTED = new LogMessage(
     "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_STARTED",
     "Lambda handler processing has started.",
