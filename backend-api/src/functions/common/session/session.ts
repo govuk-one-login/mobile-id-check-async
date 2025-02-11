@@ -21,17 +21,9 @@ export interface BaseSessionAttributes {
   redirectUri?: string;
 }
 
-export interface BiometricTokenIssuedSessionAttributes {
-  clientId: string;
-  govukSigninJourneyId: string;
-  createdAt: number;
-  issuer: string;
-  sessionId: string;
-  sessionState: SessionState;
-  clientState: string;
-  subjectIdentifier: string;
-  timeToLive: number;
+export interface BiometricTokenIssuedSessionAttributes
+  extends BaseSessionAttributes {
+  sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED;
   documentType: DocumentType;
   opaqueId: string;
-  redirectUri?: string;
 }
