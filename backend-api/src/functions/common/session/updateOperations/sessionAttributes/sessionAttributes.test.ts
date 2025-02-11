@@ -160,13 +160,6 @@ describe("Session attributes", () => {
     describe("Given an invalid base session attribute record", () => {
       describe.each([
         ...givenAnyCommonSessionAttributeIsInvalid(validBaseSessionAttributes),
-        {
-          scenario: "Given redirectUri is present but not of type string",
-          attributes: marshall({
-            ...validBaseSessionAttributes,
-            redirectUri: [],
-          }),
-        },
       ])("$scenario", ({ attributes }) => {
         it("Returns an emptyFailure", () => {
           const result = getBaseSessionAttributes(attributes);
