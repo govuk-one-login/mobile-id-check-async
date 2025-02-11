@@ -186,7 +186,6 @@ describe("Event Service", () => {
         sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
 
         result = await eventWriter.writeBiometricTokenIssuedEvent({
-          eventName: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
           sub: "mockSub",
           sessionId: "mockSessionId",
           govukSigninJourneyId: "mockGovukSigninJourneyId",
@@ -231,7 +230,6 @@ describe("Event Service", () => {
         sqsMock.on(SendMessageCommand).resolves({});
 
         result = await eventWriter.writeBiometricTokenIssuedEvent({
-          eventName: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
           sub: "mockSub",
           sessionId: "mockSessionId",
           govukSigninJourneyId: "mockGovukSigninJourneyId",

@@ -99,7 +99,7 @@ export class EventService implements IEventService {
       },
       timestamp: Math.floor(timestampInMillis / 1000),
       event_timestamp_ms: timestampInMillis,
-      event_name: eventConfig.eventName,
+      event_name: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
       component_id: eventConfig.componentId,
       extensions: {
         documentType: eventConfig.documentType,

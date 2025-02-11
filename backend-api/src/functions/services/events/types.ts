@@ -4,7 +4,6 @@ import { DocumentType } from "../../types/document";
 interface BaseEventConfig {
   getNowInMilliseconds: () => number;
   componentId: string;
-  eventName: EventNames;
 }
 
 export interface BaseUserEventConfig extends BaseEventConfig {
@@ -47,7 +46,6 @@ export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
 }
 
 export interface BiometricTokenIssuedEventConfig extends BaseUserEventConfig {
-  eventName: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED";
   documentType: DocumentType;
 }
 

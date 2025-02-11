@@ -274,7 +274,6 @@ async function handleOkResponse(
   responseBody: BiometricTokenIssuedOkResponseBody,
 ): Promise<APIGatewayProxyResult> {
   const writeEventResult = await eventService.writeBiometricTokenIssuedEvent({
-    eventName: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
     sub: sessionAttributes.subjectIdentifier,
     sessionId: sessionAttributes.sessionId,
     govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,

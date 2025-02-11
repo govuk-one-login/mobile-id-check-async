@@ -30,9 +30,9 @@ export class MockEventWriterSuccess implements IEventService {
   };
 
   writeBiometricTokenIssuedEvent = async (
-    eventConfig: BiometricTokenIssuedEventConfig,
+    _eventConfig: BiometricTokenIssuedEventConfig,
   ): Promise<Result<null>> => {
-    this.auditEvents.push(eventConfig.eventName);
+    this.auditEvents.push("DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED");
     return successResult(null);
   };
 }
