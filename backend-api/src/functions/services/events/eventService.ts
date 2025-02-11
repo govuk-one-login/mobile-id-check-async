@@ -9,6 +9,7 @@ import {
   GenericEventConfig,
   GenericTxmaEvent,
   IEventService,
+  TxmaEvents,
 } from "./types";
 
 export class EventService implements IEventService {
@@ -39,12 +40,7 @@ export class EventService implements IEventService {
     return await this.writeToSqs(txmaEvent);
   }
 
-  private async writeToSqs(
-    txmaEvent:
-      | GenericTxmaEvent
-      | CredentialTokenIssuedEvent
-      | BiometricTokenIssuedEvent,
-  ): Promise<Result<void, void>> {
+  private async writeToSqs(txmaEvent: TxmaEvents): Promise<Result<void, void>> {
     try {
       await sqsClient.send(
         new SendMessageCommand({
