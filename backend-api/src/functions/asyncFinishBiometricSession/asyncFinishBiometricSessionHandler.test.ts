@@ -48,6 +48,7 @@ describe("Async Finish Biometric Session", () => {
         validRequest,
         context,
       );
+
       expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
         testKey: "testValue",
       });
