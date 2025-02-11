@@ -45,15 +45,8 @@ export const validBaseSessionAttributes = {
 };
 
 export const validBiometricTokenIssuedSessionAttributes = {
-  clientId: "mockClientId",
-  govukSigninJourneyId: "mockGovukSigninJourneyId",
-  createdAt: 12345,
-  issuer: "mockIssuer",
-  sessionId: "mockSessionId",
+  ...validBaseSessionAttributes,
   sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,
-  clientState: "mockClientState",
-  subjectIdentifier: "mockSubjectIdentifier",
-  timeToLive: 12345,
   documentType: "NFC_PASSPORT",
   opaqueId: "mockOpaqueId",
 };
