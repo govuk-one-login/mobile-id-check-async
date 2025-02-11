@@ -20,6 +20,10 @@ import { mockClient } from "aws-sdk-client-mock";
 import { errorResult, Result, successResult } from "../../utils/result";
 import { UpdateSessionOperation } from "../../common/session/updateOperations/UpdateSessionOperation";
 import { marshall } from "@aws-sdk/util-dynamodb";
+import {
+  validBaseSessionAttributes,
+  validBiometricTokenIssuedSessionAttributes,
+} from "../../testUtils/unitTestData";
 
 const mockDynamoDbClient = mockClient(DynamoDBClient);
 
@@ -40,34 +44,6 @@ describe("DynamoDbAdapter", () => {
       "NFC_PASSPORT",
       "mock_opaque_id",
     );
-
-    const baseSessionAttributes = {
-      clientId: "mockClientId",
-      govukSigninJourneyId: "mockGovukSigninJourneyId",
-      createdAt: 12345,
-      issuer: "mockIssuer",
-      sessionId: "mockSessionId",
-      sessionState: "mockSessionState",
-      clientState: "mockClientState",
-      subjectIdentifier: "mockSubjectIdentifier",
-      timeToLive: 12345,
-      redirectUri: "https://www.mockRedirectUri.com",
-    };
-
-    const biometricTokenIssuedSessionAttributes = {
-      clientId: "mockClientId",
-      govukSigninJourneyId: "mockGovukSigninJourneyId",
-      createdAt: 12345,
-      issuer: "mockIssuer",
-      sessionId: "mockSessionId",
-      sessionState: "mockSessionState",
-      clientState: "mockClientState",
-      subjectIdentifier: "mockSubjectIdentifier",
-      timeToLive: 12345,
-      documentType: "NFC_PASSPORT",
-      opaqueId: "mockOpaqueId",
-      redirectUri: "https://www.mockRedirectUri.com",
-    };
 
     describe("On every attempt", () => {
       beforeEach(async () => {
@@ -164,7 +140,7 @@ describe("DynamoDbAdapter", () => {
               new ConditionalCheckFailedException({
                 $metadata: {},
                 message: "Conditional check failed",
-                Item: marshall(baseSessionAttributes),
+                Item: marshall(validBaseSessionAttributes),
               }),
             );
             result = await sessionRegistry.updateSession(
@@ -190,7 +166,7 @@ describe("DynamoDbAdapter", () => {
             expect(result).toEqual(
               errorResult({
                 errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
-                attributes: baseSessionAttributes,
+                attributes: validBaseSessionAttributes,
               }),
             );
           });
@@ -293,7 +269,7 @@ describe("DynamoDbAdapter", () => {
             .rejects("Did not receive expected input")
             .on(UpdateItemCommand, expectedUpdateItemCommandInput, true) // match to expected input
             .resolves({
-              Attributes: marshall(biometricTokenIssuedSessionAttributes),
+              Attributes: marshall(validBiometricTokenIssuedSessionAttributes),
             });
           result = await sessionRegistry.updateSession(
             "mock_session_id",
@@ -310,7 +286,7 @@ describe("DynamoDbAdapter", () => {
         it("Returns a success", () => {
           expect(result).toEqual(
             successResult({
-              attributes: biometricTokenIssuedSessionAttributes,
+              attributes: validBiometricTokenIssuedSessionAttributes,
             }),
           );
         });

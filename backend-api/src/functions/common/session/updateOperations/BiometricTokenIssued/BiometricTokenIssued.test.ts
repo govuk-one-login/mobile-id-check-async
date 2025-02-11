@@ -2,6 +2,10 @@ import { BiometricTokenIssued } from "./BiometricTokenIssued";
 import { SessionState } from "../../session";
 import { emptyFailure, successResult } from "../../../../utils/result";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
+import {
+  validBaseSessionAttributes,
+  validBiometricTokenIssuedSessionAttributes,
+} from "../../../../testUtils/unitTestData";
 
 describe("BiometricTokenIssued", () => {
   let biometricTokenIssued: BiometricTokenIssued;
@@ -45,17 +49,7 @@ describe("BiometricTokenIssued", () => {
   });
 
   describe("When I request the getSessionAttributesFromDynamoDbItem", () => {
-    const validBaseSessionAttributesItem = marshall({
-      clientId: "mockClientId",
-      govukSigninJourneyId: "mockGovukSigninJourneyId",
-      createdAt: 12345,
-      issuer: "mockIssuer",
-      sessionId: "mockSessionId",
-      sessionState: SessionState.AUTH_SESSION_CREATED,
-      clientState: "mockClientState",
-      subjectIdentifier: "mockSubjectIdentifier",
-      timeToLive: 12345,
-    });
+    const validBaseSessionAttributesItem = marshall(validBaseSessionAttributes);
 
     describe("Given operationFailed in options is true", () => {
       const getSessionAttributesOptions = {
@@ -103,19 +97,9 @@ describe("BiometricTokenIssued", () => {
       });
 
       describe("Given valid BiometricTokenIssuedSessionAttributes item was provided", () => {
-        const validBiometricTokenIssuedSessionAttributesItem = marshall({
-          clientId: "mockClientId",
-          govukSigninJourneyId: "mockGovukSigninJourneyId",
-          createdAt: 12345,
-          issuer: "mockIssuer",
-          sessionId: "mockSessionId",
-          sessionState: SessionState.AUTH_SESSION_CREATED,
-          clientState: "mockClientState",
-          subjectIdentifier: "mockSubjectIdentifier",
-          timeToLive: 12345,
-          documentType: "NFC_PASSPORT",
-          opaqueId: "mockOpaqueId",
-        });
+        const validBiometricTokenIssuedSessionAttributesItem = marshall(
+          validBiometricTokenIssuedSessionAttributes,
+        );
 
         it("Returns successResult with BiometricTokenIssuedSessionAttributes session attributes", () => {
           const result =

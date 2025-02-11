@@ -4,8 +4,12 @@ import {
   getBiometricTokenIssuedSessionAttributes,
 } from "./sessionAttributes";
 import { emptyFailure, successResult } from "../../../../utils/result";
-import { SessionAttributes, SessionState } from "../../session";
+import { SessionAttributes } from "../../session";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
+import {
+  validBaseSessionAttributes,
+  validBiometricTokenIssuedSessionAttributes,
+} from "../../../../testUtils/unitTestData";
 
 describe("Session attributes", () => {
   interface TestScenario {
@@ -83,18 +87,6 @@ describe("Session attributes", () => {
   };
 
   describe("getBaseSessionAttributes", () => {
-    const validBaseSessionAttributes = {
-      clientId: "mockClientId",
-      govukSigninJourneyId: "mockGovukSigninJourneyId",
-      createdAt: 12345,
-      issuer: "mockIssuer",
-      sessionId: "mockSessionId",
-      sessionState: SessionState.AUTH_SESSION_CREATED,
-      clientState: "mockClientState",
-      subjectIdentifier: "mockSubjectIdentifier",
-      timeToLive: 12345,
-    };
-
     describe("Given an invalid base session attribute record", () => {
       describe.each([
         ...givenAnyCommonSessionAttributeIsUndefined(
@@ -148,20 +140,6 @@ describe("Session attributes", () => {
   });
 
   describe("getBiometricTokenIssuedSessionAttributes", () => {
-    const validBiometricTokenIssuedSessionAttributes = {
-      clientId: "mockClientId",
-      govukSigninJourneyId: "mockGovukSigninJourneyId",
-      createdAt: 12345,
-      issuer: "mockIssuer",
-      sessionId: "mockSessionId",
-      sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,
-      clientState: "mockClientState",
-      subjectIdentifier: "mockSubjectIdentifier",
-      timeToLive: 12345,
-      documentType: "NFC_PASSPORT",
-      opaqueId: "mockOpaqueId",
-    };
-
     describe("Given an invalid biometric token issued session attribute record", () => {
       describe.each([
         ...givenAnyCommonSessionAttributeIsUndefined(
