@@ -641,10 +641,11 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("ActiveSession and BiometricToken lambdas are attached to a VPC and subnets are protected", () => {
+    test("ActiveSession, BiometricToken and FinishBiometricToken lambdas are attached to a VPC and subnets are protected", () => {
       const lambdaHandlers = [
         "asyncActiveSessionHandler.lambdaHandler",
         "asyncBiometricTokenHandler.lambdaHandler",
+        "asyncFinishBiometricSession.lambdaHandler",
       ];
       lambdaHandlers.forEach((lambdaHandler) => {
         template.hasResourceProperties("AWS::Serverless::Function", {
