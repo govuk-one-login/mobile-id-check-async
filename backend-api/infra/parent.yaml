@@ -273,7 +273,10 @@ Globals:
     ReservedConcurrentExecutions: !If
       - isDev
       - !Ref AWS::NoValue
-      - !FindInMap [ Lambda, !Ref Environment, ReservedConcurrentExecutions ]
+      - !FindInMap
+        - Lambda
+        - !Ref Environment
+        - ReservedConcurrentExecutions
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
