@@ -215,6 +215,13 @@ describe("Session attributes", () => {
           ),
         },
         {
+          scenario: "Given documentType is present but not of type string",
+          attributes: marshall({
+            ...validBiometricTokenIssuedSessionAttributes,
+            documentType: 12345,
+          }),
+        },
+        {
           scenario: "Given opaqueId is missing",
           attributes: buildSessionAttributes(
             validBiometricTokenIssuedSessionAttributes,
@@ -222,6 +229,13 @@ describe("Session attributes", () => {
               opaqueId: undefined,
             },
           ),
+        },
+        {
+          scenario: "Given opaqueId is present but not of type string",
+          attributes: marshall({
+            ...validBiometricTokenIssuedSessionAttributes,
+            opaqueId: 12345,
+          }),
         },
       ])("$scenario", ({ attributes }) => {
         it("Returns an emptyFailure", () => {
