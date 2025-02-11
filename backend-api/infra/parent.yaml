@@ -106,7 +106,7 @@ Mappings:
 
   Lambda:
     dev:
-      ReservedConcurrentExecutions: 15
+      ReservedConcurrentExecutions: 0
       LogLevel: DEBUG
     build:
       ReservedConcurrentExecutions: 15
