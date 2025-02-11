@@ -106,8 +106,7 @@ Mappings:
 
   Lambda:
     dev:
-      ReservedConcurrentExecutions:
-        - !Ref AWS::NoValue
+      ReservedConcurrentExecutions: 1
       LogLevel: DEBUG
     build:
       ReservedConcurrentExecutions: 15
