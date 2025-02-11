@@ -36,6 +36,11 @@ Parameters:
     Type: String
     Default: false
 
+  NeverDeployNullResource:
+    Description: NullResource exists to satisfy linter. This parameter ensures it is never deployed.
+    Type: String
+    Default: true
+
 Mappings:
   StaticVariables:
     urls:
@@ -256,8 +261,9 @@ Conditions:
         - !Ref Environment
         - dev
     - !Equals [!Ref DeployAlarmsInDev, true]
+
   Never: !Equals
-    - true
+    - !Ref NeverDeployNullResource
     - false
 
 Globals:

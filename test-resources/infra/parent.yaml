@@ -54,6 +54,10 @@ Parameters:
     Type: String
     Default: none
 
+  NeverDeployNullResource:
+    Description: NullResource exists to satisfy linter. This parameter ensures it is never deployed.
+    Type: String
+    Default: true
 
 Mappings:
   StsMockApiGateway:
@@ -110,7 +114,7 @@ Conditions:
         - mob-test-resources
 
   Never: !Equals
-    - true
+    - !Ref NeverDeployNullResource
     - false
 
 Resources:
