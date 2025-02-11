@@ -5,7 +5,7 @@ RUN chown test .
 
 RUN apk upgrade && apk update; apk add --no-cache bash aws-cli && aws --version
 
-WORKDIR /sts-mock
+WORKDIR /test-resources
 
 COPY package.json package-lock.json ./
 RUN npm clean-install --no-scripts

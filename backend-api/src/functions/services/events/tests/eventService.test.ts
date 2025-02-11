@@ -27,6 +27,7 @@ describe("Event Service", () => {
   describe.each<GenericEventNames>([
     "DCMAW_ASYNC_CRI_START",
     "DCMAW_ASYNC_CRI_4XXERROR",
+    "DCMAW_ASYNC_CRI_5XXERROR",
   ])("Writing generic TxMA events to SQS", (genericEventName) => {
     describe(`Given writing ${genericEventName} event to SQS fails`, () => {
       beforeEach(async () => {

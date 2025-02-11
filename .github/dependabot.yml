@@ -38,7 +38,7 @@ updates:
           - "minor"
           - "patch"
   - package-ecosystem: "npm"
-    directory: "sts-mock"
+    directory: "test-resources"
     schedule:
       interval: "weekly"
       day: "tuesday"
@@ -62,25 +62,3 @@ updates:
     ignore:
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
-  - package-ecosystem: "npm"
-    directory: "test-resources"
-    schedule:
-      interval: "weekly"
-      day: "tuesday"
-      time: "03:00"
-    open-pull-requests-limit: 5
-    groups:
-      backend-version:
-        applies-to: version-updates
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
-      backend-security:
-        applies-to: security-updates
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
