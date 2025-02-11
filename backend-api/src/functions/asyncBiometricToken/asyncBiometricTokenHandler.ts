@@ -35,7 +35,10 @@ import {
 } from "../common/session/SessionRegistry";
 import { randomUUID } from "crypto";
 import { IEventService } from "../services/events/types";
-import { BaseSessionAttributes } from "../common/session/session";
+import {
+  BaseSessionAttributes,
+  BiometricTokenIssuedSessionAttributes,
+} from "../common/session/session";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
@@ -72,12 +75,14 @@ export async function lambdaHandlerConstructor(
   }
   const submitterKey = submitterKeyResult.value;
 
+  const eventService = dependencies.getEventService(config.TXMA_SQS);
+
   const biometricTokenResult = await dependencies.getBiometricToken(
     config.READID_BASE_URL,
     submitterKey,
   );
   if (biometricTokenResult.isError) {
-    return serverErrorResponse;
+    return handleInternalServerError(eventService, sessionId, config.ISSUER);
   }
 
   const opaqueId = generateOpaqueId();
@@ -85,7 +90,6 @@ export async function lambdaHandlerConstructor(
     config.SESSION_TABLE_NAME,
   );
 
-  const eventService = dependencies.getEventService(config.TXMA_SQS);
   const updateSessionResult = await sessionRegistry.updateSession(
     sessionId,
     new BiometricTokenIssued(documentType, opaqueId),
@@ -100,11 +104,18 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  logger.info(LogMessage.BIOMETRIC_TOKEN_COMPLETED);
-  return okResponse({
+  const responseBody = {
     accessToken: biometricTokenResult.value,
     opaqueId,
-  });
+  };
+
+  return await handleOkResponse(
+    eventService,
+    updateSessionResult.value
+      .attributes as BiometricTokenIssuedSessionAttributes,
+    config.ISSUER,
+    responseBody,
+  );
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(
@@ -157,7 +168,7 @@ function generateOpaqueId(): string {
   return randomUUID();
 }
 
-async function handleUpdateSessionConditionalCheckFailure(
+async function handleConditionalCheckFailure(
   eventService: IEventService,
   sessionAttributes: BaseSessionAttributes,
   issuer: string,
@@ -172,9 +183,10 @@ async function handleUpdateSessionConditionalCheckFailure(
   });
 
   if (writeEventResult.isError) {
-    logger.error("ERROR_WRITING_AUDIT_EVENT", {
-      errorMessage:
-        "Unexpected error writing the DCMAW_ASYNC_CRI_4XXERROR event",
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
+      },
     });
     return serverErrorResponse;
   }
@@ -183,7 +195,8 @@ async function handleUpdateSessionConditionalCheckFailure(
     "User session is not in a valid state for this operation.",
   );
 }
-async function handleUpdateSessionSessionNotFound(
+
+async function handleSessionNotFound(
   eventService: IEventService,
   sessionId: string,
   issuer: string,
@@ -191,20 +204,45 @@ async function handleUpdateSessionSessionNotFound(
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_4XXERROR",
     sub: undefined,
-    sessionId: sessionId,
+    sessionId,
     govukSigninJourneyId: undefined,
     getNowInMilliseconds: Date.now,
     componentId: issuer,
   });
 
   if (writeEventResult.isError) {
-    logger.error("ERROR_WRITING_AUDIT_EVENT", {
-      errorMessage:
-        "Unexpected error writing the DCMAW_ASYNC_CRI_4XXERROR event",
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
+      },
     });
     return serverErrorResponse;
   }
   return unauthorizedResponse("invalid_session", "Session not found");
+}
+
+async function handleInternalServerError(
+  eventService: IEventService,
+  sessionId: string,
+  issuer: string,
+): Promise<APIGatewayProxyResult> {
+  const writeEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+    sub: undefined,
+    sessionId,
+    govukSigninJourneyId: undefined,
+    getNowInMilliseconds: Date.now,
+    componentId: issuer,
+  });
+
+  if (writeEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+      },
+    });
+  }
+  return serverErrorResponse;
 }
 
 async function handleUpdateSessionError(
@@ -217,18 +255,47 @@ async function handleUpdateSessionError(
   switch (updateSessionResult.value.errorType) {
     case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
       sessionAttributes = updateSessionResult.value.attributes;
-      return handleUpdateSessionConditionalCheckFailure(
+      return handleConditionalCheckFailure(
         eventService,
         sessionAttributes,
         issuer,
       );
     case UpdateSessionError.SESSION_NOT_FOUND:
-      return handleUpdateSessionSessionNotFound(
-        eventService,
-        sessionId,
-        issuer,
-      );
+      return handleSessionNotFound(eventService, sessionId, issuer);
     case UpdateSessionError.INTERNAL_SERVER_ERROR:
-      return serverErrorResponse;
+      return handleInternalServerError(eventService, sessionId, issuer);
   }
+}
+
+async function handleOkResponse(
+  eventService: IEventService,
+  sessionAttributes: BiometricTokenIssuedSessionAttributes,
+  issuer: string,
+  responseBody: BiometricTokenIssuedOkResponseBody,
+): Promise<APIGatewayProxyResult> {
+  const writeEventResult = await eventService.writeBiometricTokenIssuedEvent({
+    sub: sessionAttributes.subjectIdentifier,
+    sessionId: sessionAttributes.sessionId,
+    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+    getNowInMilliseconds: Date.now,
+    componentId: issuer,
+    documentType: sessionAttributes.documentType,
+  });
+
+  if (writeEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
+      },
+    });
+    return serverErrorResponse;
+  }
+
+  logger.info(LogMessage.BIOMETRIC_TOKEN_COMPLETED);
+  return okResponse(responseBody);
+}
+
+interface BiometricTokenIssuedOkResponseBody {
+  accessToken: string;
+  opaqueId: string;
 }

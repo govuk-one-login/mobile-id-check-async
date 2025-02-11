@@ -1,100 +1,163 @@
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
-import { getBaseSessionAttributes } from "./sessionAttributes";
+import {
+  getBaseSessionAttributes,
+  getBiometricTokenIssuedSessionAttributes,
+} from "./sessionAttributes";
 import { emptyFailure, successResult } from "../../../../utils/result";
 import { SessionAttributes, SessionState } from "../../session";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
+import {
+  validBaseSessionAttributes,
+  validBiometricTokenIssuedSessionAttributes,
+} from "../../../../testUtils/unitTestData";
 
 describe("Session attributes", () => {
-  describe("getBaseSessionAttributes", () => {
-    const validBaseSessionAttributes = {
-      clientId: "mockClientId",
-      govukSigninJourneyId: "mockGovukSigninJourneyId",
-      createdAt: 12345,
-      issuer: "mockIssuer",
-      sessionId: "mockSessionId",
-      sessionState: SessionState.AUTH_SESSION_CREATED,
-      clientState: "mockClientState",
-      subjectIdentifier: "mockSubjectIdentifier",
-      timeToLive: 12345,
-    };
+  interface TestScenario {
+    scenario: string;
+    attributes: Record<string, AttributeValue> | undefined;
+  }
 
+  const givenAnyCommonSessionAttributeIsInvalid = (
+    sessionAttributes: SessionAttributes,
+  ): TestScenario[] => {
+    return [
+      {
+        scenario: "Given attributes is undefined",
+        attributes: undefined,
+      },
+      {
+        scenario: "Given attributes is an empty object",
+        attributes: {},
+      },
+      {
+        scenario: "Given clientId is missing",
+        attributes: buildSessionAttributes(sessionAttributes, {
+          clientId: undefined,
+        }),
+      },
+      {
+        scenario: "Given clientId is not a string",
+        attributes: marshall({
+          ...sessionAttributes,
+          clientId: 12345,
+        }),
+      },
+      {
+        scenario: "Given govukSigninJourneyId is missing",
+        attributes: buildSessionAttributes(sessionAttributes, {
+          govukSigninJourneyId: undefined,
+        }),
+      },
+      {
+        scenario: "Given govukSigninJourneyId is not a string",
+        attributes: marshall({
+          ...sessionAttributes,
+          govukSigninJourneyId: 12345,
+        }),
+      },
+      {
+        scenario: "Given createdAt is missing",
+        attributes: buildSessionAttributes(sessionAttributes, {
+          createdAt: undefined,
+        }),
+      },
+      {
+        scenario: "Given createdAt is not a number",
+        attributes: marshall({
+          ...sessionAttributes,
+          createdAt: "mockInvalidCreatedAt",
+        }),
+      },
+      {
+        scenario: "Given issuer is missing",
+        attributes: buildSessionAttributes(sessionAttributes, {
+          issuer: undefined,
+        }),
+      },
+      {
+        scenario: "Given issuer is not a string",
+        attributes: marshall({
+          ...sessionAttributes,
+          issuer: 12345,
+        }),
+      },
+      {
+        scenario: "Given sessionId is missing",
+        attributes: buildSessionAttributes(sessionAttributes, {
+          sessionId: undefined,
+        }),
+      },
+      {
+        scenario: "Given sessionId is not a string",
+        attributes: marshall({
+          ...sessionAttributes,
+          sessionId: 12345,
+        }),
+      },
+      {
+        scenario: "Given sessionState is missing",
+        attributes: buildSessionAttributes(sessionAttributes, {
+          sessionState: undefined,
+        }),
+      },
+      {
+        scenario: "Given clientState is missing",
+        attributes: buildSessionAttributes(sessionAttributes, {
+          clientState: undefined,
+        }),
+      },
+      {
+        scenario: "Given clientState is not a string",
+        attributes: marshall({
+          ...sessionAttributes,
+          clientState: 12345,
+        }),
+      },
+      {
+        scenario: "Given subjectIdentifier is missing",
+        attributes: buildSessionAttributes(sessionAttributes, {
+          subjectIdentifier: undefined,
+        }),
+      },
+      {
+        scenario: "Given subjectIdentifier is not a string",
+        attributes: marshall({
+          ...sessionAttributes,
+          subjectIdentifier: 12345,
+        }),
+      },
+      {
+        scenario: "Given timeToLive is missing",
+        attributes: buildSessionAttributes(sessionAttributes, {
+          timeToLive: undefined,
+        }),
+      },
+      {
+        scenario: "Given timeToLive is not a number",
+        attributes: marshall({
+          ...sessionAttributes,
+          timeToLive: "mockInvalidTimeToLive",
+        }),
+      },
+      {
+        scenario: "Given redirectUri is present but not of type string",
+        attributes: marshall({
+          ...sessionAttributes,
+          redirectUri: 12345,
+        }),
+      },
+    ];
+  };
+
+  describe("getBaseSessionAttributes", () => {
     describe("Given an invalid base session attribute record", () => {
       describe.each([
+        ...givenAnyCommonSessionAttributeIsInvalid(validBaseSessionAttributes),
         {
-          scenario: "Given attributes is undefined",
-          attributes: undefined,
-        },
-        {
-          scenario: "Given attributes is an empty object",
-          attributes: {},
-        },
-        {
-          scenario: "Given clientId is missing",
-          attributes: buildSessionAttributes(validBaseSessionAttributes, {
-            clientId: undefined,
-          }),
-        },
-        {
-          scenario: "Given govukSigninJourneyId is missing",
-          attributes: buildSessionAttributes(validBaseSessionAttributes, {
-            govukSigninJourneyId: undefined,
-          }),
-        },
-        {
-          scenario: "Given createdAt is missing",
-          attributes: buildSessionAttributes(validBaseSessionAttributes, {
-            createdAt: undefined,
-          }),
-        },
-        {
-          scenario: "Given issuer is missing",
-          attributes: buildSessionAttributes(validBaseSessionAttributes, {
-            issuer: undefined,
-          }),
-        },
-        {
-          scenario: "Given sessionId is missing",
-          attributes: buildSessionAttributes(validBaseSessionAttributes, {
-            sessionId: undefined,
-          }),
-        },
-        {
-          scenario: "Given sessionState is missing",
-          attributes: buildSessionAttributes(validBaseSessionAttributes, {
-            sessionState: undefined,
-          }),
-        },
-        {
-          scenario: "Given clientState is missing",
-          attributes: buildSessionAttributes(validBaseSessionAttributes, {
-            clientState: undefined,
-          }),
-        },
-        {
-          scenario: "Given subjectIdentifier is missing",
-          attributes: buildSessionAttributes(validBaseSessionAttributes, {
-            subjectIdentifier: undefined,
-          }),
-        },
-        {
-          scenario: "Given timeToLive is missing",
-          attributes: buildSessionAttributes(validBaseSessionAttributes, {
-            timeToLive: undefined,
-          }),
-        },
-        {
-          scenario:
-            "Given mandatory attribute values are present but not all the correct type",
+          scenario: "Given sessionState is not a string",
           attributes: marshall({
             ...validBaseSessionAttributes,
-            createdAt: "mockInvalidStringType",
-          }),
-        },
-        {
-          scenario: "Given redirectUri is present but not of type string",
-          attributes: marshall({
-            ...validBaseSessionAttributes,
-            redirectUri: [],
+            sessionState: 12345,
           }),
         },
       ])("$scenario", ({ attributes }) => {
@@ -123,6 +186,94 @@ describe("Session attributes", () => {
 
           expect(result).toEqual(
             successResult(unmarshall(validBaseSession.attributes)),
+          );
+        });
+      });
+    });
+  });
+
+  describe("getBiometricTokenIssuedSessionAttributes", () => {
+    describe("Given an invalid biometric token issued session attribute record", () => {
+      describe.each([
+        ...givenAnyCommonSessionAttributeIsInvalid(
+          validBiometricTokenIssuedSessionAttributes,
+        ),
+        {
+          scenario: "Given sessionState is not ASYNC_BIOMETRIC_TOKEN_ISSUED",
+          attributes: buildSessionAttributes(
+            validBiometricTokenIssuedSessionAttributes,
+            {
+              sessionState: SessionState.AUTH_SESSION_CREATED,
+            },
+          ),
+        },
+        {
+          scenario: "Given documentType is missing",
+          attributes: buildSessionAttributes(
+            validBiometricTokenIssuedSessionAttributes,
+            {
+              documentType: undefined,
+            },
+          ),
+        },
+        {
+          scenario: "Given documentType is present but not of type string",
+          attributes: marshall({
+            ...validBiometricTokenIssuedSessionAttributes,
+            documentType: 12345,
+          }),
+        },
+        {
+          scenario: "Given opaqueId is missing",
+          attributes: buildSessionAttributes(
+            validBiometricTokenIssuedSessionAttributes,
+            {
+              opaqueId: undefined,
+            },
+          ),
+        },
+        {
+          scenario: "Given opaqueId is present but not of type string",
+          attributes: marshall({
+            ...validBiometricTokenIssuedSessionAttributes,
+            opaqueId: 12345,
+          }),
+        },
+      ])("$scenario", ({ attributes }) => {
+        it("Returns an emptyFailure", () => {
+          const result = getBiometricTokenIssuedSessionAttributes(attributes);
+          expect(result).toEqual(emptyFailure());
+        });
+      });
+    });
+
+    describe("Given a valid biometric token issued session attribute record", () => {
+      describe.each([
+        {
+          scenario: "Given redirectUri attribute is undefined",
+          attributes: buildSessionAttributes(
+            validBiometricTokenIssuedSessionAttributes,
+          ),
+        },
+        {
+          scenario: "Given redirectUri attribute is defined",
+          attributes: buildSessionAttributes(
+            validBiometricTokenIssuedSessionAttributes,
+            {
+              redirectUri: "https://www.mockRedirectUri.com",
+            },
+          ),
+        },
+      ])("$scenario", (validBiometricTokenIssuedSession) => {
+        it("Returns successResult with BiometricTokenIssuedSessionAttributes", () => {
+          const result = getBiometricTokenIssuedSessionAttributes(
+            validBiometricTokenIssuedSession.attributes,
+          );
+
+          expect(result).toEqual(
+            successResult(
+              unmarshall(validBiometricTokenIssuedSession.attributes),
+            ),
           );
         });
       });

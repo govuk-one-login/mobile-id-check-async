@@ -12,6 +12,11 @@ export const SESSIONS_API_INSTANCE = getSessionsApiInstance();
 export const PROXY_API_INSTANCE = getProxyApiInstance();
 export const EVENTS_API_INSTANCE = getEventsApiInstance();
 
+console.log("STS_MOCK_API_INSTANCE", STS_MOCK_API_INSTANCE.getUri());
+console.log("SESSIONS_API_INSTANCE", SESSIONS_API_INSTANCE.getUri());
+console.log("PROXY_API_INSTANCE", PROXY_API_INSTANCE.getUri());
+console.log("EVENTS_API_INSTANCE", EVENTS_API_INSTANCE.getUri());
+
 function getStsMockInstance() {
   const apiUrl = process.env.STS_MOCK_API_URL;
   if (!apiUrl)
@@ -90,22 +95,33 @@ export async function createSession(sub: string): Promise<void> {
     clientIdAndSecret,
   );
   const requestBody = getCredentialRequestBody(clientDetails, sub);
-  PROXY_API_INSTANCE.post(`/async/credential`, requestBody, {
-    headers: {
-      "x-custom-auth": "Bearer " + accessToken,
+  const response = await PROXY_API_INSTANCE.post(
+    `/async/credential`,
+    requestBody,
+    {
+      headers: {
+        "x-custom-auth": "Bearer " + accessToken,
+      },
     },
+  );
+
+  console.log("/async/credential response", {
+    data: response.data,
+    status: response.status,
   });
 }
 
 export async function getActiveSessionId(sub: string): Promise<string> {
   const accessToken = await getServiceToken(sub);
-  const { sessionId } = (
-    await SESSIONS_API_INSTANCE.get("/async/activeSession", {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
-  ).data;
+  const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  console.log("/async/activeSession response", {
+    data: response.data,
+    status: response.status,
+  });
 
-  return sessionId;
+  return response.data.sessionId;
 }
 
 async function getRegisteredClientDetails(): Promise<ClientDetails> {
@@ -139,6 +155,11 @@ async function getCredentialAccessToken(
     },
   );
 
+  console.log("/async/token response", {
+    data: response.data,
+    status: response.status,
+  });
+
   return response.data.access_token as string;
 }
 
@@ -170,6 +191,11 @@ async function getServiceToken(sub: string): Promise<string> {
     "/token",
     requestBody,
   );
+
+  console.log("sts /token response", {
+    data: stsMockResponse.data,
+    status: stsMockResponse.status,
+  });
 
   return stsMockResponse.data.access_token;
 }
