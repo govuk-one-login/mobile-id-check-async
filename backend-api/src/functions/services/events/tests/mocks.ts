@@ -9,6 +9,7 @@ import {
   IEventService,
   CredentialTokenIssuedEventConfig,
   EventNames,
+  BiometricTokenIssuedEventConfig,
 } from "../types";
 
 export class MockEventWriterSuccess implements IEventService {
@@ -25,6 +26,13 @@ export class MockEventWriterSuccess implements IEventService {
     eventConfig: CredentialTokenIssuedEventConfig,
   ): Promise<Result<null>> => {
     this.auditEvents.push(eventConfig.eventName);
+    return successResult(null);
+  };
+
+  writeBiometricTokenIssuedEvent = async (
+    _eventConfig: BiometricTokenIssuedEventConfig,
+  ): Promise<Result<null>> => {
+    this.auditEvents.push("DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED");
     return successResult(null);
   };
 }
@@ -48,6 +56,13 @@ export class MockEventServiceFailToWrite implements IEventService {
   };
 
   writeCredentialTokenIssuedEvent = async (): Promise<Result<null>> => {
+    return errorResult({
+      errorMessage: "Error writing to SQS",
+      errorCategory: ErrorCategory.SERVER_ERROR,
+    });
+  };
+
+  writeBiometricTokenIssuedEvent = async (): Promise<Result<null>> => {
     return errorResult({
       errorMessage: "Error writing to SQS",
       errorCategory: ErrorCategory.SERVER_ERROR,

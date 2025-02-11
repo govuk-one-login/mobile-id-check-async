@@ -35,7 +35,10 @@ import {
 } from "../common/session/SessionRegistry";
 import { randomUUID } from "crypto";
 import { IEventService } from "../services/events/types";
-import { BaseSessionAttributes } from "../common/session/session";
+import {
+  BaseSessionAttributes,
+  BiometricTokenIssuedSessionAttributes,
+} from "../common/session/session";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
@@ -101,11 +104,18 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  logger.info(LogMessage.BIOMETRIC_TOKEN_COMPLETED);
-  return okResponse({
+  const responseBody = {
     accessToken: biometricTokenResult.value,
     opaqueId,
-  });
+  };
+
+  return await handleOkResponse(
+    eventService,
+    updateSessionResult.value
+      .attributes as BiometricTokenIssuedSessionAttributes,
+    config.ISSUER,
+    responseBody,
+  );
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(
@@ -173,9 +183,10 @@ async function handleConditionalCheckFailure(
   });
 
   if (writeEventResult.isError) {
-    logger.error("ERROR_WRITING_AUDIT_EVENT", {
-      errorMessage:
-        "Unexpected error writing the DCMAW_ASYNC_CRI_4XXERROR event",
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
+      },
     });
     return serverErrorResponse;
   }
@@ -200,9 +211,10 @@ async function handleSessionNotFound(
   });
 
   if (writeEventResult.isError) {
-    logger.error("ERROR_WRITING_AUDIT_EVENT", {
-      errorMessage:
-        "Unexpected error writing the DCMAW_ASYNC_CRI_4XXERROR event",
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
+      },
     });
     return serverErrorResponse;
   }
@@ -224,9 +236,10 @@ async function handleInternalServerError(
   });
 
   if (writeEventResult.isError) {
-    logger.error("ERROR_WRITING_AUDIT_EVENT", {
-      errorMessage:
-        "Unexpected error writing the DCMAW_ASYNC_CRI_5XXERROR event",
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+      },
     });
   }
   return serverErrorResponse;
@@ -252,4 +265,37 @@ async function handleUpdateSessionError(
     case UpdateSessionError.INTERNAL_SERVER_ERROR:
       return handleInternalServerError(eventService, sessionId, issuer);
   }
+}
+
+async function handleOkResponse(
+  eventService: IEventService,
+  sessionAttributes: BiometricTokenIssuedSessionAttributes,
+  issuer: string,
+  responseBody: BiometricTokenIssuedOkResponseBody,
+): Promise<APIGatewayProxyResult> {
+  const writeEventResult = await eventService.writeBiometricTokenIssuedEvent({
+    sub: sessionAttributes.subjectIdentifier,
+    sessionId: sessionAttributes.sessionId,
+    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+    getNowInMilliseconds: Date.now,
+    componentId: issuer,
+    documentType: sessionAttributes.documentType,
+  });
+
+  if (writeEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
+      },
+    });
+    return serverErrorResponse;
+  }
+
+  logger.info(LogMessage.BIOMETRIC_TOKEN_COMPLETED);
+  return okResponse(responseBody);
+}
+
+interface BiometricTokenIssuedOkResponseBody {
+  accessToken: string;
+  opaqueId: string;
 }
