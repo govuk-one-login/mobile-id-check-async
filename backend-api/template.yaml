@@ -120,6 +120,7 @@ Mappings:
       ReservedConcurrentExecutions: 15
     dev:
       LogLevel: DEBUG
+      ReservedConcurrentExecutions: 0
     integration:
       LogLevel: INFO
       ReservedConcurrentExecutions: 0
@@ -340,10 +341,10 @@ Globals:
     ReservedConcurrentExecutions: !If
       - isDev
       - !Ref AWS::NoValue
-      - !FindInMap null
-      - Lambda
-      - !Ref Environment
-      - ReservedConcurrentExecutions
+      - !FindInMap
+        - Lambda
+        - !Ref Environment
+        - ReservedConcurrentExecutions
     Timeout: 5
 
 Resources:

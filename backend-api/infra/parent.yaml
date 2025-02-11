@@ -106,6 +106,7 @@ Mappings:
 
   Lambda:
     dev:
+      ReservedConcurrentExecutions: 0 # Dummy value for CloudFormation's validation behaviour - will not be used
       LogLevel: DEBUG
     build:
       ReservedConcurrentExecutions: 15
@@ -271,10 +272,7 @@ Globals:
     ReservedConcurrentExecutions: !If
       - isDev
       - !Ref AWS::NoValue
-      - !FindInMap
-      - Lambda
-      - !Ref Environment
-      - ReservedConcurrentExecutions
+      - !FindInMap [ Lambda, !Ref Environment, ReservedConcurrentExecutions ]
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
