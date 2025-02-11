@@ -8,6 +8,80 @@ import { SessionAttributes, SessionState } from "../../session";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 
 describe("Session attributes", () => {
+  interface TestScenario {
+    scenario: string;
+    attributes: Record<string, AttributeValue> | undefined;
+  }
+
+  const givenAnyCommonSessionAttributeIsUndefined = (
+    sessionAttributes: SessionAttributes,
+  ): TestScenario[] => {
+    return [
+      {
+        scenario: "Given attributes is undefined",
+        attributes: undefined,
+      },
+      {
+        scenario: "Given attributes is an empty object",
+        attributes: {},
+      },
+      {
+        scenario: "Given clientId is missing",
+        attributes: buildSessionAttributes(sessionAttributes, {
+          clientId: undefined,
+        }),
+      },
+      {
+        scenario: "Given govukSigninJourneyId is missing",
+        attributes: buildSessionAttributes(sessionAttributes, {
+          govukSigninJourneyId: undefined,
+        }),
+      },
+      {
+        scenario: "Given createdAt is missing",
+        attributes: buildSessionAttributes(sessionAttributes, {
+          createdAt: undefined,
+        }),
+      },
+      {
+        scenario: "Given issuer is missing",
+        attributes: buildSessionAttributes(sessionAttributes, {
+          issuer: undefined,
+        }),
+      },
+      {
+        scenario: "Given sessionId is missing",
+        attributes: buildSessionAttributes(sessionAttributes, {
+          sessionId: undefined,
+        }),
+      },
+      {
+        scenario: "Given sessionState is missing",
+        attributes: buildSessionAttributes(sessionAttributes, {
+          sessionState: undefined,
+        }),
+      },
+      {
+        scenario: "Given clientState is missing",
+        attributes: buildSessionAttributes(sessionAttributes, {
+          clientState: undefined,
+        }),
+      },
+      {
+        scenario: "Given subjectIdentifier is missing",
+        attributes: buildSessionAttributes(sessionAttributes, {
+          subjectIdentifier: undefined,
+        }),
+      },
+      {
+        scenario: "Given timeToLive is missing",
+        attributes: buildSessionAttributes(sessionAttributes, {
+          timeToLive: undefined,
+        }),
+      },
+    ];
+  };
+
   describe("getBaseSessionAttributes", () => {
     const validBaseSessionAttributes = {
       clientId: "mockClientId",
@@ -23,68 +97,9 @@ describe("Session attributes", () => {
 
     describe("Given an invalid base session attribute record", () => {
       describe.each([
-        {
-          scenario: "Given attributes is undefined",
-          attributes: undefined,
-        },
-        {
-          scenario: "Given attributes is an empty object",
-          attributes: {},
-        },
-        {
-          scenario: "Given clientId is missing",
-          attributes: buildSessionAttributes(validBaseSessionAttributes, {
-            clientId: undefined,
-          }),
-        },
-        {
-          scenario: "Given govukSigninJourneyId is missing",
-          attributes: buildSessionAttributes(validBaseSessionAttributes, {
-            govukSigninJourneyId: undefined,
-          }),
-        },
-        {
-          scenario: "Given createdAt is missing",
-          attributes: buildSessionAttributes(validBaseSessionAttributes, {
-            createdAt: undefined,
-          }),
-        },
-        {
-          scenario: "Given issuer is missing",
-          attributes: buildSessionAttributes(validBaseSessionAttributes, {
-            issuer: undefined,
-          }),
-        },
-        {
-          scenario: "Given sessionId is missing",
-          attributes: buildSessionAttributes(validBaseSessionAttributes, {
-            sessionId: undefined,
-          }),
-        },
-        {
-          scenario: "Given sessionState is missing",
-          attributes: buildSessionAttributes(validBaseSessionAttributes, {
-            sessionState: undefined,
-          }),
-        },
-        {
-          scenario: "Given clientState is missing",
-          attributes: buildSessionAttributes(validBaseSessionAttributes, {
-            clientState: undefined,
-          }),
-        },
-        {
-          scenario: "Given subjectIdentifier is missing",
-          attributes: buildSessionAttributes(validBaseSessionAttributes, {
-            subjectIdentifier: undefined,
-          }),
-        },
-        {
-          scenario: "Given timeToLive is missing",
-          attributes: buildSessionAttributes(validBaseSessionAttributes, {
-            timeToLive: undefined,
-          }),
-        },
+        ...givenAnyCommonSessionAttributeIsUndefined(
+          validBaseSessionAttributes,
+        ),
         {
           scenario:
             "Given mandatory attribute values are present but not all the correct type",
@@ -149,94 +164,23 @@ describe("Session attributes", () => {
 
     describe("Given an invalid biometric token issued session attribute record", () => {
       describe.each([
+        ...givenAnyCommonSessionAttributeIsUndefined(
+          validBiometricTokenIssuedSessionAttributes,
+        ),
         {
-          scenario: "Given attributes is undefined",
-          attributes: undefined,
+          scenario:
+            "Given mandatory attribute values are present but not all the correct type",
+          attributes: marshall({
+            ...validBiometricTokenIssuedSessionAttributes,
+            createdAt: "mockInvalidStringType",
+          }),
         },
         {
-          scenario: "Given attributes is an empty object",
-          attributes: {},
-        },
-        {
-          scenario: "Given clientId is missing",
-          attributes: buildSessionAttributes(
-            validBiometricTokenIssuedSessionAttributes,
-            {
-              clientId: undefined,
-            },
-          ),
-        },
-        {
-          scenario: "Given govukSigninJourneyId is missing",
-          attributes: buildSessionAttributes(
-            validBiometricTokenIssuedSessionAttributes,
-            {
-              govukSigninJourneyId: undefined,
-            },
-          ),
-        },
-        {
-          scenario: "Given createdAt is missing",
-          attributes: buildSessionAttributes(
-            validBiometricTokenIssuedSessionAttributes,
-            {
-              createdAt: undefined,
-            },
-          ),
-        },
-        {
-          scenario: "Given issuer is missing",
-          attributes: buildSessionAttributes(
-            validBiometricTokenIssuedSessionAttributes,
-            {
-              issuer: undefined,
-            },
-          ),
-        },
-        {
-          scenario: "Given sessionId is missing",
-          attributes: buildSessionAttributes(
-            validBiometricTokenIssuedSessionAttributes,
-            {
-              sessionId: undefined,
-            },
-          ),
-        },
-        {
-          scenario: "Given sessionState is missing",
-          attributes: buildSessionAttributes(
-            validBiometricTokenIssuedSessionAttributes,
-            {
-              sessionState: undefined,
-            },
-          ),
-        },
-        {
-          scenario: "Given clientState is missing",
-          attributes: buildSessionAttributes(
-            validBiometricTokenIssuedSessionAttributes,
-            {
-              clientState: undefined,
-            },
-          ),
-        },
-        {
-          scenario: "Given subjectIdentifier is missing",
-          attributes: buildSessionAttributes(
-            validBiometricTokenIssuedSessionAttributes,
-            {
-              subjectIdentifier: undefined,
-            },
-          ),
-        },
-        {
-          scenario: "Given timeToLive is missing",
-          attributes: buildSessionAttributes(
-            validBiometricTokenIssuedSessionAttributes,
-            {
-              timeToLive: undefined,
-            },
-          ),
+          scenario: "Given redirectUri is present but not of type string",
+          attributes: marshall({
+            ...validBiometricTokenIssuedSessionAttributes,
+            redirectUri: [],
+          }),
         },
         {
           scenario: "Given documentType is missing",
@@ -255,21 +199,6 @@ describe("Session attributes", () => {
               opaqueId: undefined,
             },
           ),
-        },
-        {
-          scenario:
-            "Given mandatory attribute values are present but not all the correct type",
-          attributes: marshall({
-            ...validBiometricTokenIssuedSessionAttributes,
-            createdAt: "mockInvalidStringType",
-          }),
-        },
-        {
-          scenario: "Given redirectUri is present but not of type string",
-          attributes: marshall({
-            ...validBiometricTokenIssuedSessionAttributes,
-            redirectUri: [],
-          }),
         },
       ])("$scenario", ({ attributes }) => {
         it("Returns an emptyFailure", () => {
