@@ -1,7 +1,7 @@
 import { APIGatewayProxyResult, Context } from "aws-lambda";
 import { expect } from "@jest/globals";
 import "../../../tests/testUtils/matchers";
-import { IAsyncFinishBiometricSessionDependencies } from "./handlerDenpendencies";
+import { IAsyncFinishBiometricSessionDependencies } from "./handlerDependencies";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { lambdaHandlerConstructor } from "./asyncFinishBiometricSessionHandler";
 import { buildRequest } from "../testUtils/mockRequest";

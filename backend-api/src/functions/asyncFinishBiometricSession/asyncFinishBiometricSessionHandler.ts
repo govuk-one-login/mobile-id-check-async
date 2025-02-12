@@ -7,7 +7,7 @@ import { notImplementedResponse } from "../common/lambdaResponses";
 import {
   IAsyncFinishBiometricSessionDependencies,
   runtimeDependencies,
-} from "./handlerDenpendencies";
+} from "./handlerDependencies";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 
