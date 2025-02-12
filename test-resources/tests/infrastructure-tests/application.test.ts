@@ -94,6 +94,34 @@ describe("STS mock infrastructure", () => {
       });
     });
 
+    describe("Domain Names", () => {
+      test("They should always pin ACM certificates to an SSM Parameter version", () => {
+        const ssmWildcardCertRegex =
+          /\{\{resolve\:ssm\:\/\$\{Environment\}\/Platform\/ACM\/AsyncPrimaryZoneWildcardCertificateARN\:[0-9]+\}\}/;
+        const ssmCertRegex =
+          /\{\{resolve\:ssm\:\/\$\{Environment\}\/Platform\/ACM\/[a-zA-Z]+\:[0-9]+\}\}/;
+
+        let ssmWildcardCert = new Capture();
+        let ssmCert = new Capture();
+
+        template.allResourcesProperties("AWS::ApiGateway::DomainName", {
+          RegionalCertificateArn: {
+            "Fn::If": [
+              "DevelopmentStack",
+              { "Fn::Sub": ssmWildcardCert },
+              { "Fn::Sub": ssmCert },
+            ],
+          },
+        });
+
+        expect(ssmWildcardCert.asString()).toEqual(
+          expect.stringMatching(ssmWildcardCertRegex),
+        );
+
+        expect(ssmCert.asString()).toEqual(expect.stringMatching(ssmCertRegex));
+      });
+    });
+
     test("access log group is attached to the API gateway", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
         Name: { "Fn::Sub": "${AWS::StackName}-api" },
