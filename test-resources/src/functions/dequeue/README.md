@@ -3,7 +3,7 @@
 ## Contents
 - [Overview](#overview)
 - [Dependencies](#dependencies)
-- [Flow](#flow)
+- [Dequeue events flow](#dequeue-events-flow)
 - [How it works](#how-it-works)
     - [Backend API SQS queue](#backend-api-sqs-queue)
     - [Dequeue Lambda](#dequeue-lambda)
@@ -17,7 +17,7 @@
 ## Overview
 
 The Dequeue Events functionality adds the ability to test two existing patterns
-within the Async repo architecture that were previously not possible to test:
+within the Async repo architecture:
 
 - TxMA audit events sent to SQS
 -  Messages sent to the following during handback:
@@ -32,7 +32,7 @@ within the Async repo architecture that were previously not possible to test:
 - `@aws-sdk/util-dynamodb`
 - `@smithy/node-http-handler`
 
-## Flow
+## Dequeue events flow
 
 1. An event is sent to the TxMA event SQS queue
 1. The Dequeue Lambda is triggered by SQS receiving the TxMA event
