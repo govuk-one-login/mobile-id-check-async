@@ -55,8 +55,8 @@ Resources:
           - REGIONAL
       RegionalCertificateArn: !If
         - DevelopmentStack
-        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
-        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneStsMockCertificateV2ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateARN:1}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneStsMockCertificateARN:1}}'
       SecurityPolicy: TLS_1_2
 
   StsMockApiBasePathMapping:
