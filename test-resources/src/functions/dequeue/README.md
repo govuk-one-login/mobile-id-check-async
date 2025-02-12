@@ -12,8 +12,7 @@
         - [Storing events in DynamoDB](#storing-events-in-dynamodb)
             - [Partition Key and Sort Key](#partition-key-and-sort-key)
         - [`BatchItemFailures`](#batchitemfailures)
-        - [Visibility Timeout](#visibility-timeout)
-    - [Log messages](#log-messages)
+- [Log messages](#log-messages)
 
 ## Overview
 
@@ -57,7 +56,7 @@ event to SQS.
 Once events reach SQS, they are then pulled off of the queue by the Dequeue
 Lambda to be processed.
 
-### Dequeue Lambda
+### [Dequeue Lambda](./dequeueHandler.ts)
 ---
 
 #### Lambda invocation
@@ -79,7 +78,7 @@ the next event to be processed if there is one.
 #### Storing events in DynamoDB
 
 A valid event that has passed the previous check is then sent to the Events
-table via a DynamoDB `PutItemCommand`. This call contains the following Item
+table via a DynamoDB `PutItemCommand`. This call contains the following `Item`
 schema:
 
 ```typescript
