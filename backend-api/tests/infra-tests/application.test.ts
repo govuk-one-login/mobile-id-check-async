@@ -615,11 +615,12 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("Token, Credential and JWKS lambdas are attached to a VPC and subnets are private", () => {
+    test("Token, Credential, JWKS and finishBiometricSession lambdas are attached to a VPC and subnets are private", () => {
       const lambdaHandlers = [
         "asyncTokenHandler.lambdaHandler",
         "asyncCredentialHandler.lambdaHandler",
         "jwksHandler.lambdaHandler",
+        "asyncFinishBiometricSessionHandler.lambdaHandler"
       ];
       lambdaHandlers.forEach((lambdaHandler) => {
         template.hasResourceProperties("AWS::Serverless::Function", {
@@ -641,11 +642,10 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("ActiveSession, BiometricToken and FinishBiometricSession lambdas are attached to a VPC and subnets are protected", () => {
+    test("ActiveSession, BiometricToken lambdas are attached to a VPC and subnets are protected", () => {
       const lambdaHandlers = [
         "asyncActiveSessionHandler.lambdaHandler",
-        "asyncBiometricTokenHandler.lambdaHandler",
-        "asyncFinishBiometricSessionHandler.lambdaHandler",
+        "asyncBiometricTokenHandler.lambdaHandler"
       ];
       lambdaHandlers.forEach((lambdaHandler) => {
         template.hasResourceProperties("AWS::Serverless::Function", {
