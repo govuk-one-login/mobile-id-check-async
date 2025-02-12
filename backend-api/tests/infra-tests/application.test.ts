@@ -615,7 +615,7 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("Token, Credential, JWKS and finishBiometricSession lambdas are attached to a VPC and subnets are private", () => {
+    test("Token, Credential, JWKS and FinishBiometricSession lambdas are attached to a VPC and subnets are private", () => {
       const lambdaHandlers = [
         "asyncTokenHandler.lambdaHandler",
         "asyncCredentialHandler.lambdaHandler",
