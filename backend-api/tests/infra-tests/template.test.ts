@@ -136,13 +136,7 @@ describe("Template", () => {
     const parent = cfnParse.yamlParse(readFileSync(parentFilePath, "utf8"));
     const resources = parent.Resources || {};
     const resourceKeys = Object.keys(resources);
-
-    expect(resourceKeys).toHaveLength(1);
-    expect(resourceKeys[0]).toBe("NullResource");
-    expect(resources.NullResource).toEqual({
-      Type: "AWS::CloudFormation::WaitConditionHandle",
-      Condition: "Never",
-    });
+    expect(resourceKeys).toHaveLength(0);
   });
 
   it("should match template.yaml with sum of its parts", () => {
