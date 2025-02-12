@@ -226,6 +226,10 @@ Conditions:
       - !Ref Environment
       - build
 
+  Never: !Equals
+    - "true"
+    - "false"
+
   ProxyApiDeployment: !Or
     - !Equals
       - !Ref Environment
@@ -2027,6 +2031,10 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-token
       RetentionInDays: 30
+
+  Foo:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    Condition: Never
 
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket

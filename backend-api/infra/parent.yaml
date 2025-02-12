@@ -261,6 +261,15 @@ Conditions:
         - dev
     - !Equals [!Ref DeployAlarmsInDev, true]
 
+  Never: !Equals
+    - "true"
+    - "false"
+
+Resources:
+  Foo:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    Condition: Never
+
 Globals:
   Function:
     AutoPublishAlias: live
