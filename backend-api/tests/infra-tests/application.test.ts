@@ -620,7 +620,7 @@ describe("Backend application infrastructure", () => {
         "asyncTokenHandler.lambdaHandler",
         "asyncCredentialHandler.lambdaHandler",
         "jwksHandler.lambdaHandler",
-        "asyncFinishBiometricSessionHandler.lambdaHandler"
+        "asyncFinishBiometricSessionHandler.lambdaHandler",
       ];
       lambdaHandlers.forEach((lambdaHandler) => {
         template.hasResourceProperties("AWS::Serverless::Function", {
@@ -645,7 +645,7 @@ describe("Backend application infrastructure", () => {
     test("ActiveSession, BiometricToken lambdas are attached to a VPC and subnets are protected", () => {
       const lambdaHandlers = [
         "asyncActiveSessionHandler.lambdaHandler",
-        "asyncBiometricTokenHandler.lambdaHandler"
+        "asyncBiometricTokenHandler.lambdaHandler",
       ];
       lambdaHandlers.forEach((lambdaHandler) => {
         template.hasResourceProperties("AWS::Serverless::Function", {
