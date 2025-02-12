@@ -15,7 +15,7 @@
 
 ## Overview
 
-#### What problem does it solve?
+#### What problem does this solve?
 
 This repository is part of a microservice architecture. Unlike applications
 that are built as a monolith, microservice applications often rely on queues to
@@ -23,7 +23,7 @@ send data between different pieces of functionality. This adds a layer of
 complexity when it comes to testing a particular function's output once it is
 sent.
 
-#### Why do we need to test?
+#### Why do we need to test this?
 
 The purpose of the Dequeue functionality is to provide a way to assert that TxMA
 audit events sent to the backend-api SQS queue are 1) successfully added to the
@@ -45,8 +45,8 @@ map a Lambda function to an SQS queue. An event triggers the Lambda to pull one
 or more *`Records` from the queue to process and store in an Events table in
 DynamoDB.
 
-> *Note: a `Record` is the data structure that contains a payload (in this case an
-**audit event**).
+> *Note: a `Record` is the data structure that contains a payload, e.g., an
+**audit event**.
 
 ## Dependencies
 
