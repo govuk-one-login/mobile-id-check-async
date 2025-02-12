@@ -261,6 +261,17 @@ Conditions:
         - dev
     - !Equals [!Ref DeployAlarmsInDev, true]
 
+  Never: !Equals
+    - !Ref AWS::NoValue
+    - "false"
+
+Resources:
+  # CloudFormation requires at least one resource definition per template, so this resource is here to satisfy various
+  # linting . It has no required properties, will never be deployed, and would have no effect if it were deployed.
+  NullResource:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    Condition: Never
+
 Globals:
   Function:
     AutoPublishAlias: live
