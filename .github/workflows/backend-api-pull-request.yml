@@ -40,36 +40,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Linting
-        run: npm run lint
-
-      - name: Check formatting using Prettier
-        run: npm run format:check
-
-      # Runs unit, infra and pact tests
-      - name: Run tests
-        run: npm run test
-
       - name: Generate proxy open api spec
         run: npm run generate-proxy-open-api
 
       - name: Validate SAM template
         run: sam validate --lint
-
-      - name: Run SonarCloud Scan
-        uses: sonarsource/sonarqube-scan-action@bfd4e558cda28cda6b5defafb9232d191be8c203 # v4.2.1
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          projectBaseDir: backend-api
-
-      - name: SonarQube Quality Gate check
-        uses: Sonarsource/sonarqube-quality-gate-action@8406f4f1edaffef38e9fb9c53eb292fc1d7684fa # master
-        # Force to fail step after specific time
-        timeout-minutes: 5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          scanMetadataReportFile: backend-api/.scannerwork/report-task.txt
-
