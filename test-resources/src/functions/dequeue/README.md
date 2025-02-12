@@ -5,24 +5,48 @@
 - [Dependencies](#dependencies)
 - [Dequeue events flow](#dequeue-events-flow)
 - [How it works](#how-it-works)
-    - [Backend API SQS queue](#backend-api-sqs-queue)
-    - [Dequeue Lambda](#dequeue-lambda)
-        - [Lambda invocation](#lambda-invocation)
-        - [Processing events](#processing-events)
-        - [Storing events in DynamoDB](#storing-events-in-dynamodb)
-            - [Partition Key and Sort Key](#partition-key-and-sort-key)
-        - [`BatchItemFailures`](#batchitemfailures)
+  - [Backend API SQS queue](#backend-api-sqs-queue)
+  - [Dequeue Lambda](#dequeue-lambda)
+    - [Lambda invocation](#lambda-invocation)
+    - [Processing events](#processing-events)
+    - [Storing events in DynamoDB](#storing-events-in-dynamodb)
+    - [`BatchItemFailures`](#batchitemfailures)
 - [Log messages](#log-messages)
 
 ## Overview
 
-The Dequeue Events functionality adds the ability to test two existing patterns
-within the Async repo architecture:
+#### What problem does it solve?
+
+This repository is part of a microservice architecture. Unlike applications
+that are built as a monolith, microservice applications often rely on queues to
+send data between different pieces of functionality. This adds a layer of
+complexity when it comes to testing a particular function's output once it is
+sent.
+
+#### Why do we need to test?
+
+The purpose of the Dequeue functionality is to provide a way to assert that TxMA
+audit events sent to the backend-api SQS queue are 1) successfully added to the
+queue, and 2) are the correct shape.
+
+It achieves this by writing events to a database, so that they can later be
+retrieved and tested against, adding the ability to test two existing
+patterns within the Async repo architecture:
 
 - TxMA audit events sent to SQS
 -  Messages sent to the following during handback:
     - Vendor processing queue
     - Outbound queue for IPV
+
+#### How does it work?
+
+To enable assertions on audit events, this test harness uses an AWS resource to
+map a Lambda function to an SQS queue. An event triggers the Lambda to pull one
+or more *`Records` from the queue to process and store in an Events table in
+DynamoDB.
+
+> *Note: a `Record` is the data structure that contains a payload (in this case an
+**audit event**).
 
 ## Dependencies
 
@@ -33,14 +57,18 @@ within the Async repo architecture:
 
 ## Dequeue events flow
 
-1. An event is sent to the TxMA event SQS queue
-1. The Dequeue Lambda is triggered by SQS receiving the TxMA event
-1. Events are processed by the Dequeue Lambda.
-1. For each event processed, the Dequeue Lambda makes a call to DynamoDB saving
-the event to the Events table.
-1. Events successfully written to the Events table can then be retrieved using
+1. _An event is sent to the TxMA event SQS queue_
+
+1. _The Dequeue Lambda is triggered by SQS receiving the TxMA event_
+
+1. _Events are processed by the Dequeue Lambda._
+
+1. _For each event processed, the Dequeue Lambda makes a call to DynamoDB saving
+the event to the Events table._
+
+1. _Events successfully written to the Events table can then be retrieved using
 the `/events` endpoint on the test-resources
-[Events API](../../../openApiSpecs/events-spec.yaml)
+[Events API](../../../openApiSpecs/events-spec.yaml)_
 
 ## How it works
 
