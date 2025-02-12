@@ -24,7 +24,6 @@ within the Async repo architecture:
     - Vendor processing queue
     - Outbound queue for IPV
 
-
 ## Dependencies
 
 - `aws-lambda`
