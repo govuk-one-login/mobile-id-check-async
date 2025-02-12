@@ -262,7 +262,7 @@ Conditions:
     - !Equals [!Ref DeployAlarmsInDev, true]
 
   Never: !Equals
-    - "true"
+    - !Ref AWS::NoValue
     - "false"
 
 Resources:
