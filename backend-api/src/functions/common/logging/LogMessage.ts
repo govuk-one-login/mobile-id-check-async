@@ -89,6 +89,11 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_COMPLETED",
     "Lambda handler processing has completed successfully.",
   );
+  static readonly FINISH_BIOMETRIC_SESSION_REQUEST_BODY_INVALID =
+    new LogMessage(
+      "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_REQUEST_BODY_INVALID",
+      "The incoming request body was missing or invalid.",
+    );
 
   private constructor(
     public readonly messageCode: string,

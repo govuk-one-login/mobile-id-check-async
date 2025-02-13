@@ -3,6 +3,8 @@ import { SessionRegistry } from "../common/session/SessionRegistry";
 import { IEventService } from "../services/events/types";
 
 export const mockSessionId = "58f4281d-d988-49ce-9586-6ef70a2be0b4";
+export const mockBiometricSessionId = "58f4281d-d988-49ce-9586-6ef70a2be0b4";
+export const mockInvalidUUID = "invalidUUID";
 
 export const expectedSecurityHeaders = {
   "Cache-Control": "no-store",
