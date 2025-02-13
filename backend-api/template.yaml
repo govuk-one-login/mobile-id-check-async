@@ -341,7 +341,7 @@ Globals:
         - Lambda
         - !Ref Environment
         - ReservedConcurrentExecutions
-    Timeout: 5
+    Timeout: 6
 
 Resources:
   AsyncActiveSession4XXHighThresholdAlarm:
