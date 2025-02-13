@@ -1,9 +1,6 @@
-# All changes in .github directory to be checked by SRE
-.github/ @govuk-one-login/mobile-id-check-sre @govuk-one-login/mobile-leads
+* @govuk-one-login/mobile-id-check-backend @govuk-one-login/mobile-leads
 
-# All changes to Dockerfiles and CloudFormation templates to be checked by SRE
+.github/ @govuk-one-login/mobile-id-check-sre @govuk-one-login/mobile-leads
 **/template.yaml @govuk-one-login/mobile-id-check-sre @govuk-one-login/mobile-leads
 **/Dockerfile @govuk-one-login/mobile-id-check-sre @govuk-one-login/mobile-leads
 
-# All other changes require a review from backend engineers
-* @govuk-one-login/mobile-id-check-backend @govuk-one-login/mobile-leads
