@@ -1,19 +1,18 @@
 # How to add new TxMA events to the Async Backend
 
-This guide shows you how to add a new TxMA event to the Async Backend.
-
-There are a few steps you will need to follow to ensure new events are added
-correctly and are available for testing.
+This guide provides steps for adding a new TxMA event to the Async Backend to
+ensure it is registered, added to the correct files, and is available for
+testing.
 
 ## Process
 
-### Register event
+### 1. Register event
 
 Follow this guide to register an new TxMA event:
 
 https://github.com/govuk-one-login/event-catalogue/blob/main/README.md
 
-### Update Dequeue validation
+### 2. Update Dequeue validation
 
 Once the event is registered, update the Dequeue Lambda validation by adding the
 new event to the relevant array in the [`getEvents`](../../test-resources/src/functions/dequeue/getEvent.ts)
@@ -32,5 +31,5 @@ export const allowedTxmaEventNames = [
 ];
 ```
 
-### Write an API test
+### 3. Write an API test
 
