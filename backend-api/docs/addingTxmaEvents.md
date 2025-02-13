@@ -1,6 +1,6 @@
 # How to add new TxMA events to the Async Backend
 
-This guide provides steps for adding a new TxMA event to the Async Backend to
+This guide provides the steps for adding a new TxMA event to the Async Backend to
 ensure it is registered, added to the correct files, and is available for
 testing.
 
