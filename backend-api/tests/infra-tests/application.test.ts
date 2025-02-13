@@ -54,7 +54,10 @@ describe("Backend application infrastructure", () => {
     test("The endpoints are Private", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
         Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
-        EndpointConfiguration: "PRIVATE",
+        EndpointConfiguration: {
+          "Type": "PRIVATE",
+          "VPCEndpointIds": { "Fn::FindInMap": ["PrivateApigw", { "Ref": "Environment" }, "VPCEndpointIds"] }
+        },
       });
     });
 
