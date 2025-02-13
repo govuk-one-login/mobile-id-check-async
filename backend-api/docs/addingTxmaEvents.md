@@ -14,9 +14,10 @@ https://github.com/govuk-one-login/event-catalogue/blob/main/README.md
 
 ### 2. Update Dequeue validation
 
-Once the event is registered, update the Dequeue Lambda validation by adding the
-new event to the relevant array in the [`getEvents`](../../test-resources/src/functions/dequeue/getEvent.ts)
-file - `allowedTxmaEventNames` or `allowedTxmaEventNamesWithoutSessionId`.
+Once the event is registered, update the Dequeue Lambda validation, in the
+test-resources directory, by adding the new event to the relevant array in the
+[`getEvents`](../../test-resources/src/functions/dequeue/getEvent.ts) file -
+`allowedTxmaEventNames` or `allowedTxmaEventNamesWithoutSessionId`.
 
 ###### Example
 
@@ -32,4 +33,19 @@ export const allowedTxmaEventNames = [
 ```
 
 ### 3. Write an API test
+
+To add an assertion on the new event, the `pollForEvents` API test helper
+function can be used to retrieve the event under test.
+
+Use the `partitionKey` and `sortKeyPrefix` parameters on `pollForEvents` to
+query the Events table.
+
+###### Example
+
+```typescript
+const partitionKey = `SESSION#${sessionId}`;
+const sortKeyPrefix = `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START`;
+
+const response = await pollForEvents(partitionKey, sortKeyPrefix, 1);
+```
 
