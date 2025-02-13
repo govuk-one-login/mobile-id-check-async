@@ -80,7 +80,6 @@ describe("Async Finish Biometric Session", () => {
       });
 
       it("Logs the error", async () => {
-        console.log("consoleErrorSpy invalid", consoleErrorSpy);
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode:
             "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_REQUEST_BODY_INVALID",
@@ -111,7 +110,6 @@ describe("Async Finish Biometric Session", () => {
     });
 
     it("Logs COMPLETED", async () => {
-      console.log("consoleInfoSpy valid", consoleInfoSpy);
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_COMPLETED",
       });

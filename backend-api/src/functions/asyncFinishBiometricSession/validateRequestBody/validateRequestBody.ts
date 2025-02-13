@@ -9,8 +9,6 @@ export function validateRequestBody(
     });
   }
 
-  console.log("body", body);
-
   let parsedBody;
   try {
     parsedBody = JSON.parse(body);
