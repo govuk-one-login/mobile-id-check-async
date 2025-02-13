@@ -73,7 +73,6 @@ the `/events` endpoint on the test-resources
 ## How it works
 
 ### Backend API SQS queue
----
 
 The first step in the Dequeue events flow happens when a TxMA audit event is
 sent to the backend-api SQS queue. This can be done manually in the AWS console
@@ -83,8 +82,9 @@ event to SQS.
 Once events reach SQS, they are then pulled off of the queue by the Dequeue
 Lambda to be processed.
 
+##
+
 ### [Dequeue Lambda](./dequeueHandler.ts)
----
 
 #### Lambda invocation
 
