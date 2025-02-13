@@ -7,7 +7,7 @@ RUN adduser --disabled-password test && chown test .
 
 COPY package.json package-lock.json ./
 RUN npm install --ignore-scripts
-
+RUN echo "foo"
 
 ## Update container, install awscli and check awscli is installed correctly
 RUN apk upgrade && apk update; apk add --no-cache bash aws-cli && aws --version
