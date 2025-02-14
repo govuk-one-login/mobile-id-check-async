@@ -133,11 +133,3 @@ cannot be processed by other consumers of the backend-api SQS queue due to the
 Events successfully written to the Events table can be retrieved using
 the `/events` endpoint on the test-resources
 [Events API](../../../openApiSpecs/events-spec.yaml)
-
-## Troubleshooting
-
-#### Event registration
-
-#### Test setup
-
-#### DynamoDB record
