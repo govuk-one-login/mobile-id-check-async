@@ -139,7 +139,7 @@ Mappings:
     dev:
       ApiBurstLimit: 10
       ApiRateLimit: 10
-      IpvCoreVpceId: vpce-05d65e10c17d56327
+      IpvCoreVpceId: ""
     integration:
       ApiBurstLimit: 0
       ApiRateLimit: 0

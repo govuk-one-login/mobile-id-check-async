@@ -55,14 +55,22 @@ describe("Backend application infrastructure", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
         Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
         EndpointConfiguration: {
-          "Type": "PRIVATE",
-          "VPCEndpointIds": {
-            "Fn::If": [ 
-              "IntegrateIpvCore", 
-              [{"Fn::FindInMap": ["PrivateApigw", { Ref: "Environment" }, "IpvCoreVpceId"]}],
-              [{ Ref: "AWS::NoValue" }]
-            ]
-          }
+          Type: "PRIVATE",
+          VPCEndpointIds: {
+            "Fn::If": [
+              "IntegrateIpvCore",
+              [
+                {
+                  "Fn::FindInMap": [
+                    "PrivateApigw",
+                    { Ref: "Environment" },
+                    "IpvCoreVpceId",
+                  ],
+                },
+              ],
+              [{ Ref: "AWS::NoValue" }],
+            ],
+          },
         },
       });
     });
