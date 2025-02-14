@@ -60,13 +60,13 @@ DynamoDB.
 
 1. #### Writing to TxMA SQS
 
-    The first step in the Dequeue events flow happens when a TxMA audit event is
+The first step in the Dequeue events flow happens when a TxMA audit event is
 sent to the backend-api SQS queue. This can be done manually in the AWS console
 and by calling any Lambda, in a deployed backend-api stack, that pushes a TxMA
 event to SQS.
 
 2. #### Async Backend API TxMA SQS queue
-    Once events reach SQS, they are then pulled off of the queue by the Dequeue
+Once events reach SQS, they are then pulled off of the queue by the Dequeue
 Lambda to be processed.
 
 ##
@@ -75,23 +75,23 @@ Lambda to be processed.
 
 3. #### Lambda invocation
 
-    The Dequeue Lambda receives an event when a new event is added to the
+The Dequeue Lambda receives an event when a new event is added to the
 backend-api SQS queue. This is done using an [`EventSourceMapping` AWS resource](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-eventsourcemapping.html).
 
 4. #### Processing events
 
-    A new event is sent from the backend-api SQS queue to the Dequeue Lambda.
+A new event is sent from the backend-api SQS queue to the Dequeue Lambda.
 Multiple TxMA events can be sent, in a `Records` array, by configuring the
 `BatchSize` on the `EventSourceMapping` resource (an example can be found in the
 [SAM template](../../../infra/dequeue/function.yaml)).
 
-    Each Record is processed individually with an initial check that logs if there
+Each Record is processed individually with an initial check that logs if there
 is an error retrieving the event from the Record. The Lambda will then skip to
 the next event to be processed if there is one.
 
 5. #### Storing events in DynamoDB
 
-    An event that has passed the previous check is then sent to the Events
+An event that has passed the previous check is then sent to the Events
 table via a DynamoDB `PutItemCommand`. This call contains the following `Item`
 schema:
 
@@ -111,7 +111,6 @@ const putItemCommandInput: PutItemCommandInput = {
 > The Partition Key (PK) and Sort Key (SK) make up the composite key use to
 > query the Events table.
 
-<div style="padding-left: 31px;">
 An error writing to DynamoDB results in a message being logged and the
 `messageId` from the current record being pushed to a `batchItemFailures` array.
 
@@ -128,11 +127,10 @@ to be reprocessed.
 Records being worked on by the Dequeue Lambda are considered 'in-fight' and
 cannot be processed by other consumers of the backend-api SQS queue due to the
 [visibility timeout](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html).
-</div>
 
 6. #### Retrieving events
 
-    Events successfully written to the Events table can be retrieved using
+Events successfully written to the Events table can be retrieved using
 the `/events` endpoint on the test-resources
 [Events API](../../../openApiSpecs/events-spec.yaml)
 
