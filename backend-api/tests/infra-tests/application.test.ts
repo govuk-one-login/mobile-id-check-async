@@ -56,7 +56,13 @@ describe("Backend application infrastructure", () => {
         Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
         EndpointConfiguration: {
           "Type": "PRIVATE",
-          "VPCEndpointIds": { "Fn::FindInMap": ["PrivateApigw", { "Ref": "Environment" }, "VPCEndpointIds"] }
+          "VPCEndpointIds": {
+            "Fn::If": [ 
+              "IntegrateIpvCore", 
+              [{"Fn::FindInMap": ["PrivateApigw", { Ref: "Environment" }, "IpvCoreVpceId"]}],
+              [{ Ref: "AWS::NoValue" }]
+            ]
+          }
         },
       });
     });
