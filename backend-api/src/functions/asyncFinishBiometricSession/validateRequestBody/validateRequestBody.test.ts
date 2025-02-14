@@ -45,9 +45,9 @@ describe("Validate request body", () => {
           "sessionId in request body is not of type string. sessionId: 123",
       },
       {
-        scenario: "Given sessionId is not a valid UUID",
+        scenario: "Given sessionId is not a valid v4 UUID",
         requestBody: { sessionId: mockInvalidUUID },
-        expectedErrorMessage: `sessionId in request body is not a valid UUID. sessionId: ${mockInvalidUUID}`,
+        expectedErrorMessage: `sessionId in request body is not a valid v4 UUID. sessionId: ${mockInvalidUUID}`,
       },
       {
         scenario: "Given biometricSessionId is not present",

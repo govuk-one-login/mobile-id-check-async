@@ -32,9 +32,9 @@ export function validateRequestBody(
     });
   }
 
-  if (!isValidUUID(sessionId)) {
+  if (!isValidUUIDv4(sessionId)) {
     return errorResult({
-      errorMessage: `sessionId in request body is not a valid UUID. sessionId: ${sessionId}`,
+      errorMessage: `sessionId in request body is not a valid v4 UUID. sessionId: ${sessionId}`,
     });
   }
 
@@ -60,7 +60,7 @@ function isString(field: unknown): field is string {
   return typeof field === "string";
 }
 
-function isValidUUID(uuid: string): boolean {
+function isValidUUIDv4(uuid: string): boolean {
   const uuidRegex =
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
   return uuidRegex.test(uuid);

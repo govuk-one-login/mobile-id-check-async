@@ -83,7 +83,7 @@ describe("Async Finish Biometric Session", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode:
             "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_REQUEST_BODY_INVALID",
-          errorMessage: `sessionId in request body is not a valid UUID. sessionId: ${mockInvalidUUID}`,
+          errorMessage: `sessionId in request body is not a valid v4 UUID. sessionId: ${mockInvalidUUID}`,
         });
       });
 
@@ -93,7 +93,7 @@ describe("Async Finish Biometric Session", () => {
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: `sessionId in request body is not a valid UUID. sessionId: ${mockInvalidUUID}`,
+            error_description: `sessionId in request body is not a valid v4 UUID. sessionId: ${mockInvalidUUID}`,
           }),
         });
       });
