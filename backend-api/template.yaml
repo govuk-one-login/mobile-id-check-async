@@ -135,18 +135,23 @@ Mappings:
     build:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      IpvCoreVpceId: ""
     dev:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      IpvCoreVpceId: ""
     integration:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+      IpvCoreVpceId: ""
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+      IpvCoreVpceId: ""
     staging:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      IpvCoreVpceId: vpce-0555f751a645d7639
 
   ProxyApigw:
     build:
@@ -218,6 +223,10 @@ Conditions:
         - !Ref AWS::StackName
         - mob-async-backend
 
+  IntegrateIpvCore: !Equals
+    - !Ref Environment
+    - staging
+
   IsDevOrBuild: !Or
     - !Equals
       - !Ref Environment
@@ -225,10 +234,6 @@ Conditions:
     - !Equals
       - !Ref Environment
       - build
-
-  Never: !Equals
-    - true
-    - false
 
   ProxyApiDeployment: !Or
     - !Equals
@@ -1565,6 +1570,90 @@ Resources:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
       RetentionInDays: 30
 
+  AsyncFinishBiometricSessionFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - AsyncFinishBiometricSessionLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - src/functions/asyncFinishBiometricSession/asyncFinishBiometricSessionHandler.ts
+        Minify: true
+        Sourcemap: false
+        Target: es2022
+    Properties:
+      Events:
+        AsyncFinishBiometricSession:
+          Properties:
+            Method: post
+            Path: /async/finishBiometricSession
+            RestApiId: !Ref SessionsApi
+          Type: Api
+      FunctionName: !Sub ${AWS::StackName}-finish-biometric-session
+      Handler: asyncFinishBiometricSessionHandler.lambdaHandler
+      Role: !GetAtt AsyncFinishBiometricSessionLambdaRole.Arn
+      Runtime: nodejs20.x
+      VpcConfig:
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+
+  AsyncFinishBiometricSessionFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt AsyncFinishBiometricSessionFunction.Arn
+      Principal: events.amazonaws.com
+      SourceAccount: !Sub ${AWS::AccountId}
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SessionsApi}/*/*/*
+
+  AsyncFinishBiometricSessionLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: arn:aws:logs:*:*:*
+            Version: "2012-10-17"
+          PolicyName: AsyncFinishBiometricSessionFunctionLoggingPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Effect: Allow
+                Resource: '*'
+            Version: "2012-10-17"
+          PolicyName: VpcPolicy
+      RoleName: !Sub ${AWS::StackName}-finish-biometric-session-lambda
+
+  AsyncFinishBiometricSessionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-finish-biometric-session
+      RetentionInDays: 30
+
   AsyncToken4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -2220,10 +2309,6 @@ Resources:
       AliasName: !Sub alias/${AWS::StackName}-signing-key
       TargetKeyId: !Ref KMSSigningKey
 
-  NullResource:
-    Type: AWS::CloudFormation::WaitConditionHandle
-    Condition: Never
-
   PrivateApi:
     Type: AWS::Serverless::Api
     Properties:
@@ -2234,13 +2319,28 @@ Resources:
         ResourcePolicy:
           IntrinsicVpceWhitelist:
             - !ImportValue devplatform-vpc-ExecuteApiGatewayEndpointId
+            - !If
+              - IntegrateIpvCore
+              - !FindInMap
+                - PrivateApigw
+                - !Ref Environment
+                - IpvCoreVpceId
+              - !Ref AWS::NoValue
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
             Location: ./openApiSpecs/async-private-spec.yaml
       Description: Private API gateway for Client Credentials flow
-      EndpointConfiguration: PRIVATE
+      EndpointConfiguration:
+        Type: PRIVATE
+        VPCEndpointIds: !If
+          - IntegrateIpvCore
+          - - !FindInMap
+              - PrivateApigw
+              - !Ref Environment
+              - IpvCoreVpceId
+          - - !Ref AWS::NoValue
       MethodSettings:
         - DataTraceEnabled: false
           HttpMethod: '*'

@@ -57,18 +57,23 @@ Mappings:
     dev:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      IpvCoreVpceId: ""
     build:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      IpvCoreVpceId: ""
     staging:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      IpvCoreVpceId: "vpce-0555f751a645d7639"
     integration:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+      IpvCoreVpceId: ""
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+      IpvCoreVpceId: ""
 
   SessionsApigw:
     dev:
@@ -260,9 +265,10 @@ Conditions:
         - !Ref Environment
         - dev
     - !Equals [!Ref DeployAlarmsInDev, true]
-  Never: !Equals
-    - true
-    - false
+
+  IntegrateIpvCore: !Equals
+      - !Ref Environment
+      - staging
 
 Globals:
   Function:
@@ -321,12 +327,6 @@ Globals:
       - !Sub
         - '{{resolve:secretsmanager:${SecretArn}:SecretString:NODEJS_LAYER}}'
         - SecretArn: !FindInMap [EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]
-Resources:
-  # CloudFormation requires at least one resource definition per template, so this resource is here to satisfy the
-  # linter. It has no required properties, will never be deployed, and would have no effect if it were deployed.
-  NullResource:
-    Type: AWS::CloudFormation::WaitConditionHandle
-    Condition: Never
 
 Outputs:
   SessionsApiUrl:

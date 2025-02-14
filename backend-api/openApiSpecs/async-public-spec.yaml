@@ -390,7 +390,9 @@ paths:
             statusCode: 200
         httpMethod: "POST"
         passthroughBehavior: "when_no_match"
-        type: "mock"
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AsyncFinishBiometricSessionFunction}:live/invocations"
+        type: "aws_proxy"
 
   /.well-known/jwks.json:
     get:
