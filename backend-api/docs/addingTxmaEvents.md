@@ -1,25 +1,15 @@
-# How to add new TxMA events to the Async Backend
+# How to update TxMA test harness when new events are being developed
 
-This guide provides the steps for adding a new TxMA event to the Async Backend to
-ensure it is registered, added to the correct files, and is available for
+This guide provides the steps for updating the async test harness with a new
+TxMA event to ensure it is added to the correct files, and is available for
 testing.
 
 ## Process
 
-### 1. Register event
+### 1. Update the allowed events in the Dequeue Lambda
 
-Follow this guide to register an new TxMA event:
-
-https://github.com/govuk-one-login/event-catalogue/blob/main/README.md
-
-> An example can be viewed [here](https://github.com/govuk-one-login/event-catalogue/pull/353).
-
-### 2. Update the allowed events in the Dequeue Lambda
-
-Once the event is registered, update the Dequeue Lambda validation, in the
-test-resources directory, by adding the new event to the relevant array in the
-[`getEvents`](../../test-resources/src/functions/dequeue/getEvent.ts) file -
-`allowedTxmaEventNames` or `allowedTxmaEventNamesWithoutSessionId`.
+Update the [`getEvents`](../../test-resources/src/functions/dequeue/getEvent.ts)
+file to include the new TxMA event name.
 
 ###### Example
 
@@ -34,38 +24,43 @@ export const allowedTxmaEventNames = [
 ];
 ```
 
-### 3. How to use the Dequeue resources
+### 2. Test the event is being dequeued correctly
 
-To query the Events table, pass the `pkPrefix` and `skPrefix` parameters in an
-`axios` call to the `/events` endpoint on the Events API.
+1. Write the event to SQS by triggering the Lambda that sends the event.
+
+1. Make a request to the `/events` API to validate the event has been
+correctly dequeued and present in DynamoDB.
+
+###### Example event sent to TxMA SQS
+
+```typescript
+{
+  "user": {
+    "user_id": "the subject identifier",
+    "session_id": "mockSessionId",
+    "ip_address": "$.user.ip_address",
+    "govuk_signin_journey_id": "the journey ID passed in from Auth/IPV Core"
+  },
+  "timestamp": 1234567890,
+  "event_timestamp_ms": 1234567890000,
+  "event_name": "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
+  "component_id": "https://sessions-mob-async-backend.review-b-async.account.gov.uk",
+  "extensions":{
+    "documentType": "NFC_PASSPORT"
+  },
+}
+```
+
 
 ###### Example request to the `/events` endpoint
 
 ```typescript
 const params = {
   pkPrefix: `SESSION%23mockSessionId`,
-  skPrefix: `TXMA%23EVENT_NAME%23DCMAW_ASYNC_CRI_START`,
+  skPrefix: `TXMA%23EVENT_NAME%DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED`,
 };
 
 const response = await EVENTS_API_INSTANCE.get("/events", {
   params,
 });
 ```
-
-
-
-<!-- To add an assertion on the new event, the `pollForEvents` API test helper
-function can be used to retrieve the event under test.
-
-Use the `partitionKey` and `sortKeyPrefix` parameters on `pollForEvents` to
-query the Events table.
-
-###### Example
-
-```typescript
-const partitionKey = `SESSION#${sessionId}`;
-const sortKeyPrefix = `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START`;
-
-const response = await pollForEvents(partitionKey, sortKeyPrefix, 1);
-``` -->
-
