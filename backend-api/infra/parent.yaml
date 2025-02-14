@@ -339,8 +339,8 @@ Outputs:
     Value: !Sub https://${ProxyApiDomainName}
 
   PrivateApiUrl:
-    Description: Private API Gateway base URL
-    Value: !Sub https://${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
+    Description: Private API Gateway Pretty URL
+    Value: !Sub https://${PrivateApiDomainName}/${Environment}
 
   StsMockApiUrl:
     Description: STS Mock API Gateway base URL

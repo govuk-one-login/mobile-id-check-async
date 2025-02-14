@@ -2359,6 +2359,48 @@ Resources:
       OpenApiVersion: 3.0.1
       StageName: !Ref Environment
 
+  PrivateApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMappingV2
+    DependsOn: PrivateApiDomainName
+    Properties:
+      DomainNameArn: !GetAtt PrivateApiDomainName.DomainNameArn
+      RestApiId: !Ref PrivateApi
+      Stage: !Ref PrivateApi.Stage
+
+  PrivateApiDomainName:
+    Type: AWS::ApiGateway::DomainNameV2
+    Properties:
+      CertificateArn: !If
+        - DevelopmentStack
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZonePrivateCertificateV1ARN}}'
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - private-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+        - !Sub
+          - private.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+      EndpointConfiguration:
+        Types:
+          - PRIVATE
+      SecurityPolicy: TLS_1_2
+
+  PrivateApiDomainNameAccessAssociation:
+    Type: AWS::ApiGateway::DomainNameAccessAssociation
+    DependsOn: PrivateApiDomainName
+    Properties:
+      AccessAssociationSource: vpce-0825f978898f57283
+      AccessAssociationSourceType: VPCE
+      DomainNameArn: !GetAtt PrivateApiDomainName.DomainNameArn
+
   ProxyApi:
     Type: AWS::Serverless::Api
     Properties:
@@ -2963,8 +3005,8 @@ Resources:
 
 Outputs:
   PrivateApiUrl:
-    Description: Private API Gateway base URL
-    Value: !Sub https://${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
+    Description: Private API Gateway Pretty URL
+    Value: !Sub https://${PrivateApiDomainName}/${Environment}
 
   ProxyApiUrl:
     Description: Proxy API Gateway Pretty DNS

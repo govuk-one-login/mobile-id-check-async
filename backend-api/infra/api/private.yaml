@@ -55,3 +55,91 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
       RetentionInDays: 30
+
+  PrivateApiDomainName:
+    Type: AWS::ApiGateway::DomainNameV2
+    Properties:
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - private-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - private.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      EndpointConfiguration:
+        Types:
+          - PRIVATE
+      CertificateArn: !If
+        - DevelopmentStack
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZonePrivateCertificateV1ARN}}'
+      SecurityPolicy: TLS_1_2
+      Policy:
+        Statement:
+        - Action: 'execute-api:Invoke'
+          Effect: Allow
+          Principal: '*'
+          Resource: 'execute-api:/*'
+        - Action: 'execute-api:Invoke'
+          Condition:
+            StringNotEquals:
+              'aws:SourceVpce': 'vpce-0825f978898f57283' #hardcoded
+          Effect: Deny
+          Principal: '*'
+          Resource: 'execute-api:/*'
+        Version: 2012-10-17
+
+  PrivateApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMappingV2
+    DependsOn: PrivateApiDomainName
+    Properties:
+      DomainNameArn: !GetAtt PrivateApiDomainName.DomainNameArn
+      RestApiId: !Ref PrivateApi
+      Stage: !Ref PrivateApi.Stage
+
+  PrivateApiDomainNameAccessAssociation: 
+    Type: AWS::ApiGateway::DomainNameAccessAssociation
+    DependsOn: PrivateApiDomainName
+    Properties:
+      DomainNameArn: !GetAtt PrivateApiDomainName.DomainNameArn
+      AccessAssociationSource: vpce-0825f978898f57283 # hardcoded
+      AccessAssociationSourceType: VPCE
+
+  PrivateApiRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !If
+        - DevelopmentStack
+        - !Sub
+          - private-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - private.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      Type: A
+      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneIDPrivate}}'
+      AliasTarget:
+        DNSName: !GetAtt PrivateApiDomainName.DomainNameArn
+        HostedZoneId: !GetAtt PrivateApiDomainName.RegionalHostedZoneId
+
+  PrivateApiDomainNameRamShare:
+    Type: AWS::RAM::ResourceShare
+    Properties:
+      Name: PrivateApiDomainName
+      ResourceArns:
+        - !GetAtt PrivateApiDomainName.DomainNameArn
+      Principals:
+        - o-dpp53lco28 # should be just IPVCore account
