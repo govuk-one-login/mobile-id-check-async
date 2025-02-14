@@ -50,12 +50,6 @@ export function validateRequestBody(
     });
   }
 
-  if (!isValidUUID(biometricSessionId)) {
-    return errorResult({
-      errorMessage: `biometricSessionId in request body is not a valid UUID. biometricSessionId: ${biometricSessionId}`,
-    });
-  }
-
   return successResult({
     sessionId,
     biometricSessionId,
@@ -68,7 +62,7 @@ function isString(field: unknown): field is string {
 
 function isValidUUID(uuid: string): boolean {
   const uuidRegex =
-    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
   return uuidRegex.test(uuid);
 }
 

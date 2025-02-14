@@ -72,8 +72,8 @@ describe("Async Finish Biometric Session", () => {
       beforeEach(async () => {
         const request = buildRequest({
           body: JSON.stringify({
-            sessionId: mockSessionId,
-            biometricSessionId: mockInvalidUUID,
+            sessionId: mockInvalidUUID,
+            biometricSessionId: mockBiometricSessionId,
           }),
         });
         result = await lambdaHandlerConstructor(dependencies, request, context);
@@ -83,7 +83,7 @@ describe("Async Finish Biometric Session", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode:
             "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_REQUEST_BODY_INVALID",
-          errorMessage: `biometricSessionId in request body is not a valid UUID. biometricSessionId: ${mockInvalidUUID}`,
+          errorMessage: `sessionId in request body is not a valid UUID. sessionId: ${mockInvalidUUID}`,
         });
       });
 
@@ -93,7 +93,7 @@ describe("Async Finish Biometric Session", () => {
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: `biometricSessionId in request body is not a valid UUID. biometricSessionId: ${mockInvalidUUID}`,
+            error_description: `sessionId in request body is not a valid UUID. sessionId: ${mockInvalidUUID}`,
           }),
         });
       });

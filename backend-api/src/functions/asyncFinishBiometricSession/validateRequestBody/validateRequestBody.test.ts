@@ -64,14 +64,6 @@ describe("Validate request body", () => {
         expectedErrorMessage:
           "biometricSessionId in request body is not of type string. biometricSessionId: 123",
       },
-      {
-        scenario: "Given biometricSessionId is not a valid UUID",
-        requestBody: {
-          sessionId: mockSessionId,
-          biometricSessionId: mockInvalidUUID,
-        },
-        expectedErrorMessage: `biometricSessionId in request body is not a valid UUID. biometricSessionId: ${mockInvalidUUID}`,
-      },
     ])("$scenario", ({ requestBody, expectedErrorMessage }) => {
       it("Returns an error result", () => {
         const result = validateRequestBody(JSON.stringify(requestBody));
