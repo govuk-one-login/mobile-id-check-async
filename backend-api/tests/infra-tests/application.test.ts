@@ -54,7 +54,24 @@ describe("Backend application infrastructure", () => {
     test("The endpoints are Private", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
         Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
-        EndpointConfiguration: "PRIVATE",
+        EndpointConfiguration: {
+          Type: "PRIVATE",
+          VPCEndpointIds: {
+            "Fn::If": [
+              "IntegrateIpvCore",
+              [
+                {
+                  "Fn::FindInMap": [
+                    "PrivateApigw",
+                    { Ref: "Environment" },
+                    "IpvCoreVpceId",
+                  ],
+                },
+              ],
+              [{ Ref: "AWS::NoValue" }],
+            ],
+          },
+        },
       });
     });
 
@@ -78,6 +95,21 @@ describe("Backend application infrastructure", () => {
           MethodSettings: methodSettings,
         });
         expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
+      });
+
+      test("IPV Core VPCe mappings are set", () => {
+        const expectedIpvCoreVpceIdMapping = {
+          dev: "",
+          build: "",
+          staging: "vpce-0555f751a645d7639",
+          integration: "",
+          production: "",
+        };
+        const mappingHelper = new Mappings(template);
+        mappingHelper.validatePrivateAPIMapping({
+          environmentFlags: expectedIpvCoreVpceIdMapping,
+          mappingBottomLevelKey: "IpvCoreVpceId",
+        });
       });
 
       test("Rate and burst limit mappings are set", () => {
