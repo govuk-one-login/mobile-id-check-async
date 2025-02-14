@@ -135,18 +135,23 @@ Mappings:
     build:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      IpvCoreVpceId: ""
     dev:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      IpvCoreVpceId: ""
     integration:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+      IpvCoreVpceId: ""
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+      IpvCoreVpceId: ""
     staging:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      IpvCoreVpceId: vpce-0555f751a645d7639
 
   ProxyApigw:
     build:
@@ -217,6 +222,10 @@ Conditions:
       - !Equals
         - !Ref AWS::StackName
         - mob-async-backend
+
+  IntegrateIpvCore: !Equals
+    - !Ref Environment
+    - staging
 
   IsDevOrBuild: !Or
     - !Equals
@@ -2310,13 +2319,28 @@ Resources:
         ResourcePolicy:
           IntrinsicVpceWhitelist:
             - !ImportValue devplatform-vpc-ExecuteApiGatewayEndpointId
+            - !If
+              - IntegrateIpvCore
+              - !FindInMap
+                - PrivateApigw
+                - !Ref Environment
+                - IpvCoreVpceId
+              - !Ref AWS::NoValue
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
             Location: ./openApiSpecs/async-private-spec.yaml
       Description: Private API gateway for Client Credentials flow
-      EndpointConfiguration: PRIVATE
+      EndpointConfiguration:
+        Type: PRIVATE
+        VPCEndpointIds: !If
+          - IntegrateIpvCore
+          - - !FindInMap
+              - PrivateApigw
+              - !Ref Environment
+              - IpvCoreVpceId
+          - - !Ref AWS::NoValue
       MethodSettings:
         - DataTraceEnabled: false
           HttpMethod: '*'

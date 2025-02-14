@@ -5,11 +5,26 @@ Resources:
     Properties:
       Name: !Sub ${AWS::StackName}-private-api
       Description: Private API gateway for Client Credentials flow
-      EndpointConfiguration: PRIVATE
+      EndpointConfiguration:
+        Type: PRIVATE
+        VPCEndpointIds: !If
+          - IntegrateIpvCore
+          - - !FindInMap
+              - PrivateApigw
+              - !Ref Environment
+              - IpvCoreVpceId
+          - - Ref: "AWS::NoValue"
       Auth:
         ResourcePolicy:
           IntrinsicVpceWhitelist:
             - !ImportValue devplatform-vpc-ExecuteApiGatewayEndpointId
+            - !If
+              - IntegrateIpvCore
+              - !FindInMap
+                - PrivateApigw
+                - !Ref Environment
+                - IpvCoreVpceId
+              - Ref: "AWS::NoValue"
       StageName: !Ref Environment
       OpenApiVersion: 3.0.1
       AccessLogSetting:
