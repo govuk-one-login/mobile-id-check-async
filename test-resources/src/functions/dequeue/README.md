@@ -111,7 +111,7 @@ const putItemCommandInput: PutItemCommandInput = {
 > The Partition Key (PK) and Sort Key (SK) make up the composite key use to
 > query the Events table.
 
-<div style="padding-left: 2.3rem;">
+<div style="padding-left: 31px;">
 An error writing to DynamoDB results in a message being logged and the
 `messageId` from the current record being pushed to a `batchItemFailures` array.
 
