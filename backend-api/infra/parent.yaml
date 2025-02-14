@@ -57,18 +57,23 @@ Mappings:
     dev:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      IpvCoreVpceId: ""
     build:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      IpvCoreVpceId: ""
     staging:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      IpvCoreVpceId: "vpce-0555f751a645d7639"
     integration:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+      IpvCoreVpceId: ""
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+      IpvCoreVpceId: ""
 
   SessionsApigw:
     dev:
@@ -260,6 +265,10 @@ Conditions:
         - !Ref Environment
         - dev
     - !Equals [!Ref DeployAlarmsInDev, true]
+
+  IntegrateIpvCore: !Equals
+      - !Ref Environment
+      - staging
 
 Globals:
   Function:
