@@ -12,7 +12,9 @@ Follow this guide to register an new TxMA event:
 
 https://github.com/govuk-one-login/event-catalogue/blob/main/README.md
 
-### 2. Update Dequeue validation
+> An example can be viewed [here](https://github.com/govuk-one-login/event-catalogue/pull/353).
+
+### 2. Update the allowed events in the Dequeue Lambda
 
 Once the event is registered, update the Dequeue Lambda validation, in the
 test-resources directory, by adding the new event to the relevant array in the
@@ -32,9 +34,27 @@ export const allowedTxmaEventNames = [
 ];
 ```
 
-### 3. Write an API test
+### 3. How to use the Dequeue resources
 
-To add an assertion on the new event, the `pollForEvents` API test helper
+To query the Events table, pass the `pkPrefix` and `skPrefix` parameters in an
+`axios` call to the `/events` endpoint on the Events API.
+
+###### Example request to the `/events` endpoint
+
+```typescript
+const params = {
+  pkPrefix: `SESSION%23mockSessionId`,
+  skPrefix: `TXMA%23EVENT_NAME%23DCMAW_ASYNC_CRI_START`,
+};
+
+const response = await EVENTS_API_INSTANCE.get("/events", {
+  params,
+});
+```
+
+
+
+<!-- To add an assertion on the new event, the `pollForEvents` API test helper
 function can be used to retrieve the event under test.
 
 Use the `partitionKey` and `sortKeyPrefix` parameters on `pollForEvents` to
@@ -47,5 +67,5 @@ const partitionKey = `SESSION#${sessionId}`;
 const sortKeyPrefix = `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START`;
 
 const response = await pollForEvents(partitionKey, sortKeyPrefix, 1);
-```
+``` -->
 
