@@ -97,6 +97,21 @@ describe("Backend application infrastructure", () => {
         expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
       });
 
+      test("IPV Core VPCe mappings are set", () => {
+        const expectedIpvCoreVpceIdMapping = {
+          dev: "",
+          build: "",
+          staging: "vpce-0555f751a645d7639",
+          integration: "",
+          production: "",
+        };
+        const mappingHelper = new Mappings(template);
+        mappingHelper.validatePrivateAPIMapping({
+          environmentFlags: expectedIpvCoreVpceIdMapping,
+          mappingBottomLevelKey: "IpvCoreVpceId",
+        });
+      });
+
       test("Rate and burst limit mappings are set", () => {
         const expectedBurstLimits = {
           dev: 10,
