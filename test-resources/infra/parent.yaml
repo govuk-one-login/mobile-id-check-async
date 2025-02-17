@@ -85,7 +85,7 @@ Mappings:
 Conditions:
   NeverDeploy: !Equals
     - !Ref SamValidateLintWorkaround
-    - Should always equal false
+    - "Should always equal false"
 
   UseCodeSigning:
     Fn::Not:
