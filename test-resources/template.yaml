@@ -37,7 +37,7 @@ Parameters:
 
   NeverDeploy: !Equals
     - !Ref SamValidateLintWorkaround
-    - Never equal
+    - Should always equal false
 
   PermissionsBoundary:
     Description: |

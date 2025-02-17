@@ -242,7 +242,7 @@ Conditions:
 
   NeverDeploy: !Equals
     - !Ref SamValidateLintWorkaround
-    - Never equal
+    - Should always equal false
 
   ProxyApiDeployment: !Or
     - !Equals

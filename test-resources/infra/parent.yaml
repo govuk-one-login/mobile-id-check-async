@@ -57,7 +57,7 @@ Parameters:
 # This condition is in place so that we can add a resource to this parent.yaml template that is never deployed.
   NeverDeploy: !Equals
     - !Ref SamValidateLintWorkaround
-    - "Never equal"
+    - "Should always equal false"
 
 Mappings:
   StsMockApiGateway:
