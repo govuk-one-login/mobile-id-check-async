@@ -30,7 +30,7 @@ describe("POST /async/finishBiometricSession", () => {
       expect(response.status).toBe(400);
       expect(response.data).toStrictEqual({
         error: "invalid_request",
-        error_description: `sessionId in request body is not a valid v4 UUID. sessionId: ${mockSessionId}`,
+        error_description: `sessionId in request body is not a valid v4 UUID. sessionId: ${mockInvalidSessionId}`,
       });
     });
   });
