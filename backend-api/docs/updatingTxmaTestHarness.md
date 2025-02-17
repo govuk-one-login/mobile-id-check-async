@@ -1,8 +1,6 @@
 # How to update TxMA test harness when new events are being developed
 
-This guide provides the steps for updating the async test harness with a new
-TxMA event to ensure it is added to the correct files, and is available for
-testing.
+This guide provides the steps for updating the async test harness to process new TxMA events being developed in the async backend.
 
 ## Process
 
