@@ -35,6 +35,11 @@ Parameters:
     Type: String
     Default: none
 
+  SamValidateLintWorkaround:
+    Description: Do not update or override. This allows the definition of a resource that is never deployed.
+    Type: String
+    Default: unused
+
 Mappings:
   DNS:
     build:
@@ -235,9 +240,9 @@ Conditions:
       - !Ref Environment
       - build
 
-  Never: !Equals
-    - !Ref AWS::NoValue
-    - "false"
+  NeverDeploy: !Equals
+    - !Ref SamValidateLintWorkaround
+    - Should always equal false
 
   ProxyApiDeployment: !Or
     - !Equals
@@ -2315,7 +2320,7 @@ Resources:
 
   NullResource:
     Type: AWS::CloudFormation::WaitConditionHandle
-    Condition: Never
+    Condition: NeverDeploy
 
   PrivateApi:
     Type: AWS::Serverless::Api

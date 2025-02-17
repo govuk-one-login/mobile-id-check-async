@@ -28,7 +28,7 @@ describe("Sub-templates", () => {
     expect(resources).toStrictEqual({
       NullResource: {
         Type: "AWS::CloudFormation::WaitConditionHandle",
-        Condition: "Never",
+        Condition: "NeverDeploy",
       },
     });
   });

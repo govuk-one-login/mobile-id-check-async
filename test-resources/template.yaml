@@ -41,6 +41,11 @@ Parameters:
     Type: String
     Default: none
 
+  SamValidateLintWorkaround:
+    Description: Do not update or override. This allows the definition of a resource that is never deployed.
+    Type: String
+    Default: unused
+
 Mappings:
   DNS:
     build:
@@ -74,9 +79,9 @@ Conditions:
         - !Ref AWS::StackName
         - mob-test-resources
 
-  Never: !Equals
-    - !Ref AWS::NoValue
-    - "false"
+  NeverDeploy: !Equals
+    - !Ref SamValidateLintWorkaround
+    - Should always equal false
 
   UseCodeSigning: !Not
     - !Equals
@@ -508,7 +513,7 @@ Resources:
 
   NullResource:
     Type: AWS::CloudFormation::WaitConditionHandle
-    Condition: Never
+    Condition: NeverDeploy
 
   StsMockApi:
     Type: AWS::Serverless::Api

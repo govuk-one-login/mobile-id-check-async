@@ -138,7 +138,7 @@ describe("Template", () => {
     expect(resources).toStrictEqual({
       NullResource: {
         Type: "AWS::CloudFormation::WaitConditionHandle",
-        Condition: "Never",
+        Condition: "NeverDeploy",
       },
     });
   });
