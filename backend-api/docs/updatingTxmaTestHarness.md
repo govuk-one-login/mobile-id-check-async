@@ -5,8 +5,9 @@ TxMA events being developed in the async backend.
 
 ### 1. Update the allowed events in the Dequeue Lambda
 
-Update the [`getEvents`](../../test-resources/src/functions/dequeue/getEvent.ts)
-file to include the new TxMA event name.
+Update the `allowedTxmaEventNames` array in
+[`getEvents`](../../test-resources/src/functions/dequeue/getEvent.ts) to include
+the new TxMA event being developed.
 
 ###### Example
 
