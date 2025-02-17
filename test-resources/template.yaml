@@ -35,6 +35,10 @@ Parameters:
       - build
     Default: dev
 
+  NeverDeploy: !Equals
+    - !Ref SamValidateLintWorkaround
+    - Never equal
+
   PermissionsBoundary:
     Description: |
       The ARN of the permissions boundary to apply to any role created by the template
@@ -73,10 +77,6 @@ Conditions:
       - !Equals
         - !Ref AWS::StackName
         - mob-test-resources
-
-  Never: !Equals
-    - true
-    - false
 
   UseCodeSigning: !Not
     - !Equals
@@ -508,7 +508,7 @@ Resources:
 
   NullResource:
     Type: AWS::CloudFormation::WaitConditionHandle
-    Condition: Never
+    Condition: NeverDeploy
 
   StsMockApi:
     Type: AWS::Serverless::Api

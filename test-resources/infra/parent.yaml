@@ -54,6 +54,10 @@ Parameters:
     Type: String
     Default: none
 
+# This condition is in place so that we can add a resource to this parent.yaml template that is never deployed.
+  NeverDeploy: !Equals
+    - !Ref SamValidateLintWorkaround
+    - "Never equal"
 
 Mappings:
   StsMockApiGateway:
@@ -109,16 +113,12 @@ Conditions:
         - !Ref AWS::StackName
         - mob-test-resources
 
-  Never: !Equals
-    - true
-    - false
-
 Resources:
-  # CloudFormation requires at least one resource definition per template, so this resource is here to satisfy the
-  # linter. It has no required properties, will never be deployed, and would have no effect if it were deployed.
+  # CloudFormation requires at least one resource definition per template, so this resource is here to satisfy various
+  # linting . It has no required properties, will never be deployed, and would have no effect if it were deployed.
   NullResource:
     Type: AWS::CloudFormation::WaitConditionHandle
-    Condition: Never
+    Condition: NeverDeploy
 
 Outputs:
   StsMockApiUrl:

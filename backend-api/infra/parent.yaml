@@ -275,6 +275,7 @@ Conditions:
       - !Ref Environment
       - staging
 
+# This condition is in place so that we can add a resource to this parent.yaml template that is never deployed.
   NeverDeploy: !Equals
     - !Ref SamValidateLintWorkaround
     - "Never equal"
