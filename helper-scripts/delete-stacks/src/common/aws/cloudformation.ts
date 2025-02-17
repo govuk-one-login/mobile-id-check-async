@@ -13,7 +13,7 @@ export const deleteStack = async (stackName: string): Promise<void> => {
   await deleteVersionedResources(stackName);
   await sendDeleteStackCommand(stackName);
   await waitUntilStackDeleteComplete(
-    { client: cloudFormationClient, maxWaitTime: 10000 },
+    { client: cloudFormationClient, maxWaitTime: 10000, minDelay: 4, maxDelay: 10 },
     { StackName: stackName },
   );
   logCompletedMessage(stackName);
