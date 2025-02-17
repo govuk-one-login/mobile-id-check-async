@@ -36,6 +36,11 @@ Parameters:
     Type: String
     Default: false
 
+  SamValidateLintWorkaround:
+    Description: Do not update or override. This allows the definition of a resource that is never deployed.
+    Type: String
+    Default: unused
+
 Mappings:
   StaticVariables:
     urls:
@@ -270,6 +275,10 @@ Conditions:
       - !Ref Environment
       - staging
 
+  NeverDeploy: !Equals
+    - !Ref SamValidateLintWorkaround
+    - "Never equal"
+
 Globals:
   Function:
     AutoPublishAlias: live
@@ -327,6 +336,13 @@ Globals:
       - !Sub
         - '{{resolve:secretsmanager:${SecretArn}:SecretString:NODEJS_LAYER}}'
         - SecretArn: !FindInMap [EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]
+
+Resources:
+  # CloudFormation requires at least one resource definition per template, so this resource is here to satisfy various
+  # linting . It has no required properties, will never be deployed, and would have no effect if it were deployed.
+  NullResource:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    Condition: NeverDeploy
 
 Outputs:
   SessionsApiUrl:
