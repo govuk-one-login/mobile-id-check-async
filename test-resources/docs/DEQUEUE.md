@@ -107,22 +107,23 @@ const putItemCommandInput: PutItemCommandInput = {
 > The Partition Key (PK) and Sort Key (SK) make up the composite key use to
 > query the Events table.
 
-An error writing to DynamoDB results in a message being logged and the
-`messageId` from the current record being pushed to a `batchItemFailures` array.
+5. #### Returning `BatchItemFailures`
 
 If storing the event in the Events table is successful, the `event_name` and
 `session_id` from that event is pushed to a `processedMessages` array, which is
 logged once all events have been processed.
 
-5. #### Returning `BatchItemFailures`
+If there is an error writing to DynamoDB, a message is logged and the
+`messageId` from the current batch item is pushed to a `batchItemFailures`
+array.
 
-An object with `batchItemFailures` is returned from the Dequeue Lambda.
-This puts events that failed to be written to DynamoDB back into the SQS queue
-to be reprocessed.
+The `batchItemFailures` array is then returned in an object from the Dequeue
+Lambda. This puts the events that failed to be written to DynamoDB back into the
+SQS queue to be reprocessed.
 
-> Note: `bactchItemFailures` is an array and can be empty when returned
+> Note: `batchItemFailures` is an array and can be empty when returned.
 
-Records being worked on by the Dequeue Lambda are considered 'in-fight' and
+Batch items being worked on by the Dequeue Lambda are considered 'in-fight' and
 cannot be processed by other consumers of the backend API SQS queue due to the
 [visibility timeout](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html).
 
