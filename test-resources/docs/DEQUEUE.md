@@ -17,29 +17,37 @@
 
 ##### Context
 
-The backend API lambdas send audit events to SQS. A TxMA lambda (from a separate team's AWS account) polls the SQS for messages before they eventually appear in Splunk.
+The backend API lambdas send audit events to SQS. A TxMA lambda (from a separate
+team's AWS account) polls the SQS for messages before they eventually appear in
+Splunk.
 
-It is not possible to test that these events have been sent to the queue via API tests on the async backend's Session API, as these events trigger the start of an asynchronous flow.
+It is not possible to test that these events have been sent to the queue via API
+tests on the async backend's Session API, as these events trigger the start of
+an asynchronous flow.
 
-Events can be tested manually by inspecting the queue; however, it is not feasible to test events for every deployment.
+Events can be tested manually by inspecting the queue; however, it is not
+feasible to test events for every deployment.
 
-The Dequeue events functionality provides an automated test solution that can be used to replace the manual test effort and therefore can be run as part of regression suites in deployment pipelines.
+The Dequeue events functionality provides an automated test solution that can be
+used to replace the manual test effort and therefore can be run as part of
+regression suites in deployment pipelines.
 
 ##### The solution
 
 The Dequeue events functionality provides an API Gateway for use in testing to
 query and retrieve events that are sent to the TxMA SQS.
 
-The purpose of the Dequeue functionality is to switch from manual testing to an automated
-testing strategy, providing a way to assert that TxMA audit events sent to the
-backend API SQS queue are 1) successfully added to the queue, and 2) are in the
-correct shape.
+The purpose of the Dequeue functionality is to switch from manual testing to an
+automated testing strategy, providing a way to assert that TxMA audit events
+sent to the backend API SQS queue are 1) successfully added to the queue, and 2)
+are in the correct shape.
 
-It achieves this by polling SQS with a lambda and when messages are present, the lambda processes and writes the events into DynamoDB, so that they can later be
+It achieves this by polling SQS with a lambda and when messages are present, the
+lambda processes and writes the events into DynamoDB, so that they can later be
 retrieved and tested against with an API.
 
-This adds the ability to test two existing
-patterns within the async repo architecture:
+This adds the ability to test two existing patterns within the async repo
+architecture:
 
 - TxMA audit events sent to SQS
 -  Messages sent to the following during handback:
@@ -65,7 +73,8 @@ patterns within the async repo architecture:
 2. #### Lambda polls SQS for messages
 
 The Dequeue Lambda receives events in batches when new events are added to the
-backend API SQS queue. This is done using an [`EventSourceMapping` AWS resource](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-eventsourcemapping.html)
+backend API SQS queue. This is done using an
+[`EventSourceMapping` AWS resource](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-eventsourcemapping.html)
 (an example can be found in the [SAM template](../../../infra/dequeue/function.yaml)).
 
 > Note: the number of TxMA events that are sent in a batch can be configuring by
