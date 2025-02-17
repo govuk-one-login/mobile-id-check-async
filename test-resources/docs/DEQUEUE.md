@@ -28,7 +28,7 @@ The Dequeue events functionality provides an automated test solution that can be
 ##### The solution
 
 The Dequeue events functionality provides an API Gateway for use in testing to
-query and retrieve events from DynamoDB.
+query and retrieve events that are sent to the TxMA SQS.
 
 The purpose of the Dequeue functionality is to switch from manual testing to an automated
 testing strategy, providing a way to assert that TxMA audit events sent to the
