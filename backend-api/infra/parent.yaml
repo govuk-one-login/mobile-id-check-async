@@ -31,6 +31,12 @@ Parameters:
     Type: String
     Default: none
 
+  DevOverrideReadIdBaseUrl:
+    Description: |
+      Override the ReadIdBaseUrl value for development deployments
+    Type: String
+    Default: none
+
   DeployAlarmsInDev:
     Description: Set to `true` to deploy alarms in a dev environment
     Type: String
@@ -258,6 +264,11 @@ Conditions:
   UseDevOverrideStsBaseUrl: !Not
     - !Equals
       - !Ref DevOverrideStsBaseUrl
+      - none
+
+  UseDevOverrideReadIdBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideReadIdBaseUrl
       - none
 
   DevelopmentStack: !And

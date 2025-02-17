@@ -14,6 +14,12 @@ Parameters:
     Type: String
     Default: false
 
+  DevOverrideReadIdBaseUrl:
+    Description: |
+      Override the ReadIdBaseUrl value for development deployments
+    Type: String
+    Default: none
+
   DevOverrideStsBaseUrl:
     Description: |
       Override the STS_BASE_URL value for development deployments
@@ -255,6 +261,11 @@ Conditions:
   UseCodeSigning: !Not
     - !Equals
       - !Ref CodeSigningConfigArn
+      - none
+
+  UseDevOverrideReadIdBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideReadIdBaseUrl
       - none
 
   UseDevOverrideStsBaseUrl: !Not
@@ -1045,10 +1056,13 @@ Resources:
             - EnvironmentVariables
             - !Ref Environment
             - BiometricSubmitterKeySecretPathPassport
-          READID_BASE_URL: !FindInMap
-            - EnvironmentVariables
-            - !Ref Environment
-            - ReadIdBaseUrl
+          READID_BASE_URL: !If
+            - UseDevOverrideReadIdBaseUrl
+            - !Ref DevOverrideReadIdBaseUrl
+            - !FindInMap
+              - EnvironmentVariables
+              - !Ref Environment
+              - ReadIdBaseUrl
       Events:
         AsyncBiometricToken:
           Properties:
