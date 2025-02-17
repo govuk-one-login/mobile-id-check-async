@@ -103,8 +103,6 @@ describe("Template", () => {
     expect(mainKeys).toEqual(parentKeys);
 
     parentKeys.forEach((key) => {
-      console.log("main " + key, main.Outputs[key]);
-      console.log("parent " + key, parent.Outputs[key]);
       expect(isDeepStrictEqual(main.Outputs[key], parent.Outputs[key])).toBe(
         true,
       );
