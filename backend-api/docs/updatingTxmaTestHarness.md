@@ -1,6 +1,7 @@
 # How to update TxMA test harness when new events are being developed
 
-This guide provides the steps for updating the async test harness to process new TxMA events being developed in the async backend.
+This guide provides the steps for updating the async test harness to process new
+TxMA events being developed in the async backend.
 
 ## Process
 
@@ -34,10 +35,10 @@ correctly dequeued and present in DynamoDB.
 ```typescript
 {
   "user": {
-    "user_id": "the subject identifier",
+    "user_id": "mockSubjectIdentifier",
     "session_id": "mockSessionId",
-    "ip_address": "$.user.ip_address",
-    "govuk_signin_journey_id": "the journey ID passed in from Auth/IPV Core"
+    "ip_address": "mockUserIpAddress",
+    "govuk_signin_journey_id": "mockJourneyId"
   },
   "timestamp": 1234567890,
   "event_timestamp_ms": 1234567890000,
