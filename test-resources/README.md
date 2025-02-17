@@ -8,7 +8,7 @@ This stack manages the following resources needed for the STS mock API:
 * an S3 bucket for storing the private key and also storing and serving the public key (`/.well-known/jwks.json`)
 
 ### Dequeue
-This provides functionality to retrieve events sent to the TxMA SQS (for more, see the [Dequeue README](./src/functions/dequeue/README.md)). This can then be used to validate TxMA SQS events in the backend API test suite.
+This provides functionality to retrieve events sent to the TxMA SQS (for more, see the [Dequeue README](./docs/dequeue.md)). This can then be used to validate TxMA SQS events in the backend API test suite.
 
 ## Pre-requisites
 - Node.js v20
