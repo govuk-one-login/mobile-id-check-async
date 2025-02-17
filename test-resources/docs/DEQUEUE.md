@@ -17,13 +17,13 @@
 
 ##### Context
 
-The async backend sends audit events to SQS as part of an asynchronous
-pattern. Tests for this pattern may need to inject messages into a queue or
-assert against a message on a queue. However, it is not always possible to test
-responses from external interfaces of a system that has an asynchronous
-architecture. This can be tested manually, but it does not guarantee the code
-will work when it is part of a deployment pipeline. The Dequeue events
-functionality provides an automated test solution.
+The async backend lambdas send audit events to SQS. A TxMA lambda (from a separate team's AWS account) polls the SQS for messages before they eventually appear in Splunk. 
+
+It is not possible to test that these events have been sent to the queue via API tests on the async backend's Session API, as these events trigger the start of an asynchronous flow.
+
+Events can be tested manually by inspecting the queue; however, it is not feasible to test events for every deployment. 
+
+The Dequeue events functionality provides an automated test solution that can be used to replace the manual test effort and therefore can be run as part of regression suites in deployment pipelines.
 
 ##### The solution
 
