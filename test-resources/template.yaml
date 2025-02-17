@@ -35,15 +35,16 @@ Parameters:
       - build
     Default: dev
 
-  NeverDeploy: !Equals
-    - !Ref SamValidateLintWorkaround
-    - Should always equal false
-
   PermissionsBoundary:
     Description: |
       The ARN of the permissions boundary to apply to any role created by the template
     Type: String
     Default: none
+
+  SamValidateLintWorkaround:
+    Description: Do not update or override. This allows the definition of a resource that is never deployed.
+    Type: String
+    Default: unused
 
 Mappings:
   DNS:
@@ -77,6 +78,10 @@ Conditions:
       - !Equals
         - !Ref AWS::StackName
         - mob-test-resources
+
+  NeverDeploy: !Equals
+    - !Ref SamValidateLintWorkaround
+    - Should always equal false
 
   UseCodeSigning: !Not
     - !Equals

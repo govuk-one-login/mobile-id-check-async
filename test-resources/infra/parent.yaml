@@ -54,10 +54,10 @@ Parameters:
     Type: String
     Default: none
 
-# This condition is in place so that we can add a resource to this parent.yaml template that is never deployed.
-  NeverDeploy: !Equals
-    - !Ref SamValidateLintWorkaround
-    - "Should always equal false"
+  SamValidateLintWorkaround:
+    Description: Do not update or override. This allows the definition of a resource that is never deployed.
+    Type: String
+    Default: unused
 
 Mappings:
   StsMockApiGateway:
@@ -83,6 +83,10 @@ Mappings:
       BaseDns: review-b-async.build.account.gov.uk
 
 Conditions:
+  NeverDeploy: !Equals
+    - !Ref SamValidateLintWorkaround
+    - Should always equal false
+
   UseCodeSigning:
     Fn::Not:
       - Fn::Equals:
