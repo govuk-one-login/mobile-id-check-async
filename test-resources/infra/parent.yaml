@@ -110,8 +110,8 @@ Conditions:
         - mob-test-resources
 
   Never: !Equals
-    - !Ref AWS::NoValue
-    - "false"
+    - true
+    - false
 
 Resources:
   # CloudFormation requires at least one resource definition per template, so this resource is here to satisfy the

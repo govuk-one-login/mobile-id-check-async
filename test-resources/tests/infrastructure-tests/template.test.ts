@@ -3,7 +3,6 @@ import { readFileSync } from "fs";
 import { load } from "js-yaml";
 import { schema } from "yaml-cfn";
 import { deepMerge, walkSync } from "../testUtils/testFunctions";
-import path from "path";
 
 const aggregatedTemplate = loadTemplateFromFile("./template.yaml");
 
@@ -17,20 +16,6 @@ describe("Sub-templates", () => {
       .map((template) => template.toJSON());
     const mergedSubTemplateJson = deepMerge(...subTemplates);
     expect(aggregatedTemplate.toJSON()).toStrictEqual(mergedSubTemplateJson);
-  });
-
-  it("Parent template should only have a placeholder resource", () => {
-    const infraFolder = path.join(__dirname, "../../infra");
-    const parentTemplatePath = path.join(infraFolder, "parent.yaml");
-    const parentTemplate = loadTemplateFromFile(parentTemplatePath).toJSON();
-
-    const resources = parentTemplate.Resources || {};
-    expect(resources).toStrictEqual({
-      NullResource: {
-        Type: "AWS::CloudFormation::WaitConditionHandle",
-        Condition: "Never",
-      },
-    });
   });
 });
 

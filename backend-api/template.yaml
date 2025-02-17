@@ -235,10 +235,6 @@ Conditions:
       - !Ref Environment
       - build
 
-  Never: !Equals
-    - !Ref AWS::NoValue
-    - "false"
-
   ProxyApiDeployment: !Or
     - !Equals
       - !Ref Environment
@@ -2312,10 +2308,6 @@ Resources:
     Properties:
       AliasName: !Sub alias/${AWS::StackName}-signing-key
       TargetKeyId: !Ref KMSSigningKey
-
-  NullResource:
-    Type: AWS::CloudFormation::WaitConditionHandle
-    Condition: Never
 
   PrivateApi:
     Type: AWS::Serverless::Api
