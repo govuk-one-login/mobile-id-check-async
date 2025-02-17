@@ -170,7 +170,7 @@ Mappings:
   EnvironmentVariables:
     dev:
       STSBASEURL: 'https://sts-mock.review-b-async.dev.account.gov.uk'
-      ReadIdBaseUrl: 'https://readid-mock.review-b-async.dev.account.gov.uk/v2'
+      ReadIdBaseUrl: 'https://readid-proxy.review-b-async.dev.account.gov.uk/v2'
       ClientRegistrySecretPath: 'dev/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
@@ -179,7 +179,7 @@ Mappings:
 
     build:
       STSBASEURL: 'https://sts-mock.review-b-async.build.account.gov.uk'
-      ReadIdBaseUrl: 'https://readid-mock.review-b-async.build.account.gov.uk/v2'
+      ReadIdBaseUrl: 'https://readid-proxy.review-b-async.build.account.gov.uk/v2'
       ClientRegistrySecretPath: 'build/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
@@ -188,7 +188,7 @@ Mappings:
 
     staging:
       STSBASEURL: 'https://token.staging.account.gov.uk'
-      ReadIdBaseUrl: '' #TODO: Update this value with new ReadID URL once available
+      ReadIdBaseUrl: 'https://readid-proxy.review-b-async.staging.account.gov.uk'
       ClientRegistrySecretPath: 'staging/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
@@ -197,7 +197,7 @@ Mappings:
 
     integration:
       STSBASEURL: 'https://token.integration.account.gov.uk'
-      ReadIdBaseUrl: '' #TODO: Update this value with new ReadID URL once available
+      ReadIdBaseUrl: 'https://readid-proxy.review-b-async.integration.account.gov.uk'
       ClientRegistrySecretPath: 'integration/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
@@ -206,7 +206,7 @@ Mappings:
 
     production:
       STSBASEURL: 'https://token.account.gov.uk'
-      ReadIdBaseUrl: '' #TODO: Update this value with new ReadID URL once available
+      ReadIdBaseUrl: 'https://readid-proxy.review-b-async.account.gov.uk'
       ClientRegistrySecretPath: 'production/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
