@@ -109,6 +109,10 @@ const putItemCommandInput: PutItemCommandInput = {
 > The Partition Key (PK) and Sort Key (SK) make up the composite key use to
 > query the Events table.
 
+If a `session_id` is not present in the SQS message, it is saved to Dynamo with
+a value of `UNKNOWN`. This is to allow for events that do not contain a
+`session_id` in the event schema.
+
 5. #### Returning `BatchItemFailures`
 
 If storing the event in the Events table is successful, the `event_name` and
