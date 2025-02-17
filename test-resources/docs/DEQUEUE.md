@@ -7,10 +7,11 @@
 - [How it works](#how-it-works)
   - [Backend API SQS queue](#backend-api-sqs-queue)
   - [Dequeue Lambda](#dequeue-lambda)
-    - [Lambda invocation](#lambda-invocation)
-    - [Processing events](#processing-events)
+    - [Lambda polls SQS for messages](#lambda-polls-sqs-for-messages)
+    - [Event validation](#event-validation)
     - [Storing events in DynamoDB](#storing-events-in-dynamodb)
-    - [`BatchItemFailures`](#batchitemfailures)
+    - [Returning `BatchItemFailures`](#returning-batchitemfailures)
+  - [Retrieving events](#retrieving-events)
 
 ## Overview
 
@@ -43,51 +44,11 @@ patterns within the async repo architecture:
     - Vendor processing queue
     - Outbound queue for IPV
 
-<!-- #### How does it work? -->
-
-<!-- To enable assertions on audit events, this test harness uses an AWS resource to
-map a Lambda function to an SQS queue. An event triggers the Lambda to pull one
-or more *`Records` from the queue to process and store in an Events table in
-DynamoDB.
-
-> *Note: a `Record` is the data structure that contains a payload, e.g., an
-**audit event**. -->
-
-<!-- The async backend sends audit events to the TxMA SQS queue. The Dequeue Lambda
-then asynchronously polls the queue and reads messages in batches. The Lambda validates and saves the event payloads in DynamoDB.
-
-The Events API provides the ability to query DynamoDB to retrieve one or more
-events from the Events table. This API can be used to assert that audit events
-have successfully been sent to SQS and that an event is sent in the correct
-shape. -->
-
-<!-- The purpose of the Dequeue flow is to switch from manual testing to an automated
-testing strategy, providing a way to assert that TxMA audit events sent to the
-backend-api SQS queue are 1) successfully added to the queue, and 2) are in the
-correct shape.
-
-It achieves this by writing events to a database, so that they can later be
-retrieved and tested against, adding the ability to test two existing
-patterns within the async repo architecture:
-
-- TxMA audit events sent to SQS
--  Messages sent to the following during handback:
-    - Vendor processing queue
-    - Outbound queue for IPV -->
-
 ## How it works
 
 <img src="events_flow_diagram.png">
 
 > ###### Dequeue events flow
-
-<!-- The async backend sends audit events to the TxMA SQS queue. The Dequeue Lambda
-then asynchronously polls the queue and reads messages in batches. The Lambda validates and saves the event payloads in DynamoDB.
-
-The Events API provides the ability to query DynamoDB to retrieve one or more
-events from the Events table. This API can be used to assert that audit events
-have successfully been sent to SQS and that an event is sent in the correct
-shape. -->
 
 ##
 
@@ -95,19 +56,11 @@ shape. -->
 
 1. #### Backend API writes to TxMA SQS
 
-<!-- The first step in the Dequeue events flow happens when a TxMA audit event is
-sent to the backend-api SQS queue. This can be done manually in the AWS console
-and by calling any Lambda, in a deployed backend-api stack, that pushes a TxMA
-event to SQS. -->
-
 ##
 
 ### [Dequeue Lambda](./dequeueHandler.ts)
 
 2. #### Lambda polls SQS for messages
-
-<!-- Once events reach SQS, they are then pulled off of the queue by the Dequeue
-Lambda to be processed. -->
 
 The Dequeue Lambda receives events in batches when new events are added to the
 backend-api SQS queue. This is done using an [`EventSourceMapping` AWS resource](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-eventsourcemapping.html)
@@ -116,20 +69,11 @@ backend-api SQS queue. This is done using an [`EventSourceMapping` AWS resource]
 > Note: the number of TxMA events that are sent in a batch can be configuring by
 specifying the `BatchSize` on the `EventSourceMapping` resource.
 
-<!-- A new event is sent from the backend-api SQS queue to the Dequeue Lambda.
-Multiple TxMA events can be sent, in a `Records` array, by configuring the
-`BatchSize` on the `EventSourceMapping` resource (an example can be found in the
-[SAM template](../../../infra/dequeue/function.yaml)). -->
-
 3. #### Event validation
 
 The Lambda processes each event in the batch. If event validation fails, an
 error is logged and the Lambda will then skip to the next event to be processed
 if one exists.
-
-<!-- Each event is processed individually with an initial check that logs an error if
-event validation fails. The Lambda will then skip to the next event to be
-processed if one exists. -->
 
 4. #### Storing events in DynamoDB
 
@@ -170,6 +114,10 @@ to be reprocessed.
 Records being worked on by the Dequeue Lambda are considered 'in-fight' and
 cannot be processed by other consumers of the backend-api SQS queue due to the
 [visibility timeout](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html).
+
+##
+
+### Events API
 
 6. #### Retrieving events
 
