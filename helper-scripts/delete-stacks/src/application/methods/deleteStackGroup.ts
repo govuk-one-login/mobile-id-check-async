@@ -75,7 +75,7 @@ const buildFullStackNames = (
   cfDistStackName: string,
 ] => {
   return [
-    `${baseStackName}-sts-mock`,
+    `${baseStackName}-test-resources`,
     `${baseStackName}-async-backend`,
     `${baseStackName}-async-backend-cf-dist`,
   ];
