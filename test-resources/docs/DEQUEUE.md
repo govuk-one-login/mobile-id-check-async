@@ -35,8 +35,10 @@ testing strategy, providing a way to assert that TxMA audit events sent to the
 backend-api SQS queue are 1) successfully added to the queue, and 2) are in the
 correct shape.
 
-It achieves this by writing events to a database, so that they can later be
-retrieved and tested against, adding the ability to test two existing
+It achieves this by polling SQS with a lambda and when messages are present, the lambda processes and writes the events into DynamoDB, so that they can later be
+retrieved and tested against with an API. 
+
+This adds the ability to test two existing
 patterns within the async repo architecture:
 
 - TxMA audit events sent to SQS
