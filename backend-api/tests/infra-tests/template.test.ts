@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from "fs";
+import { existsSync, readFileSync, readdirSync } from "fs";
 import * as path from "path";
 import { isDeepStrictEqual } from "util";
 import * as cfnParse from "yaml-cfn";
@@ -132,15 +132,11 @@ describe("Template", () => {
     });
   });
 
-  it("parent template should only have a placeholder resource", () => {
+  it("parent template should not have any Resources", () => {
     const parent = cfnParse.yamlParse(readFileSync(parentFilePath, "utf8"));
     const resources = parent.Resources || {};
-    expect(resources).toStrictEqual({
-      NullResource: {
-        Type: "AWS::CloudFormation::WaitConditionHandle",
-        Condition: "Never",
-      },
-    });
+    const resourceKeys = Object.keys(resources);
+    expect(resourceKeys).toHaveLength(0);
   });
 
   it("should match template.yaml with sum of its parts", () => {

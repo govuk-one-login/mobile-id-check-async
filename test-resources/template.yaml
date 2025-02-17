@@ -75,8 +75,8 @@ Conditions:
         - mob-test-resources
 
   Never: !Equals
-    - !Ref AWS::NoValue
-    - "false"
+    - true
+    - false
 
   UseCodeSigning: !Not
     - !Equals
