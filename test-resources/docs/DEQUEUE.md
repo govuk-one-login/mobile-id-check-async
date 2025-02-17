@@ -15,7 +15,7 @@
 
 ## Overview
 
-##### Context
+#### Context
 
 The backend API lambdas send audit events to SQS. A TxMA lambda (from a separate
 team's AWS account) polls the SQS for messages before they eventually appear in
@@ -32,7 +32,7 @@ The Dequeue events functionality provides an automated test solution that can be
 used to replace the manual test effort and therefore can be run as part of
 regression suites in deployment pipelines.
 
-##### The solution
+#### The solution
 
 The Dequeue events functionality provides an API Gateway for use in testing to
 query and retrieve events that are sent to the TxMA SQS.
@@ -82,7 +82,9 @@ specifying the `BatchSize` on the `EventSourceMapping` resource.
 
 3. #### Event validation
 
-The Lambda processes each event in the batch. If event validation fails, an
+The Lambda processes each event in the batch, checking that the `event_name`
+exists in either the `allowedTxmaEventNames` or
+`allowedTxmaEventNamesWithoutSessionId` array. If event validation fails, an
 error is logged and the Lambda will then skip to the next event to be processed
 if one exists.
 
@@ -114,7 +116,8 @@ If storing the event in the Events table is successful, the `event_name` and
 logged once all events have been processed.
 
 If there is an error writing to DynamoDB, a message is logged and the
-`messageId` from the current batch item is pushed to a `batchItemFailures`
+`messageId` from the current `Record` (the batch item containing a payload,
+in this case, an audit event) is pushed to a `batchItemFailures`
 array.
 
 The `batchItemFailures` array is then returned in an object from the Dequeue
