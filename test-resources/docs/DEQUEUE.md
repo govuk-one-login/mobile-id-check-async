@@ -46,14 +46,6 @@ It achieves this by polling SQS with a lambda and when messages are present, the
 lambda processes and writes the events into DynamoDB, so that they can later be
 retrieved and tested against with an API.
 
-This adds the ability to test two existing patterns within the async repo
-architecture:
-
-- TxMA audit events sent to SQS
--  Messages sent to the following during handback:
-    - Vendor processing queue
-    - Outbound queue for IPV
-
 ## How it works
 
 <img src="events_flow_diagram.png">
@@ -106,8 +98,9 @@ const putItemCommandInput: PutItemCommandInput = {
 ```
 
 > ###### Partition Key and Sort Key
-> The Partition Key (PK) and Sort Key (SK) make up the composite key use to
-> query the Events table.
+> The Partition Key (PK) and Sort Key (SK) make up the composite key used to
+> query the Events table. The structure of the keys allows for multiple types of
+> event and event identifier, keeping the schema flexible for future use cases.
 
 If a `session_id` is not present in the SQS message, it is saved to Dynamo with
 a value of `UNKNOWN`. This is to allow for events that do not contain a
