@@ -48,7 +48,7 @@ retrieved and tested against with an API.
 
 ## How it works
 
-<img src="events_flow_diagram.png">
+<img src="dequeue_events_diagram.png">
 
 > ###### Dequeue events flow
 
