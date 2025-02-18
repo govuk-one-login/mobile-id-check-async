@@ -47,7 +47,7 @@ retrieved and tested against with an API.
 
 ##
 
-### [Dequeue Lambda](./dequeueHandler.ts)
+### [Dequeue Lambda](../src/functions/dequeue/dequeueHandler.ts)
 
 2. #### Lambda polls SQS for messages
 
