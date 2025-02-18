@@ -76,9 +76,9 @@ specifying the `BatchSize` on the `EventSourceMapping` resource.
 
 The Lambda processes each event in the batch, checking that the `event_name`
 exists in either the `allowedTxmaEventNames` or
-`allowedTxmaEventNamesWithoutSessionId` array. If event validation fails, an
-error is logged and the Lambda will then skip to the next event to be processed
-if one exists.
+`allowedTxmaEventNamesWithoutSessionId` array. If event validation fails, the
+event will not be retained on the queue and the Lambda will log an error then
+skip to the next event to be processed if one exists.
 
 4. #### Storing events in DynamoDB
 
@@ -113,13 +113,27 @@ If storing the event in the Events table is successful, the `event_name` and
 logged once all events have been processed.
 
 If there is an error writing to DynamoDB, a message is logged and the
-`messageId` from the current `Record` (the batch item containing a payload,
-in this case, an audit event) is pushed to a `batchItemFailures`
-array.
+`messageId` from the current event being processed is pushed to a
+`batchItemFailures` array.
 
-The `batchItemFailures` array is then returned in an object from the Dequeue
-Lambda. This puts the events that failed to be written to DynamoDB back into the
-SQS queue to be reprocessed.
+The `batchItemFailures` array is sent in response from the Dequeue lambda. This
+puts the events that failed to be written to DynamoDB back into the SQS queue to
+be reprocessed.
+
+###### Example failure response
+
+```typescript
+{
+  batchItemFailures: [
+    {
+      itemIdentifier: '62ca7bbf-ae6d-47b1-9120-59bc28bbebeb'
+    },
+    {
+      itemIdentifier: 'ea20501e-d117-4556-96ed-7c46de41d81c'
+    }
+  ]
+}
+```
 
 > Note: `batchItemFailures` is an array and can be empty when returned.
 
