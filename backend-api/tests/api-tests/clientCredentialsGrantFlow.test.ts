@@ -149,36 +149,11 @@ describe.each(apis)(
       });
 
       it("Writes a DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event to TxMA", async () => {
-        const apiInstance = axios.create({
-          baseURL: process.env.EVENTS_API_URL,
-        });
-
-        const interceptor = aws4Interceptor({
-          options: {
-            region: "eu-west-2",
-            service: "execute-api",
-          },
-          credentials: {
-            getCredentials: fromNodeProviderChain({
-              timeout: 1000,
-              maxRetries: 1,
-              profile: process.env.AWS_PROFILE,
-            }),
-          },
-        });
-
-        apiInstance.interceptors.request.use(interceptor);
-
         const response = await pollForEvents({
-          apiInstance,
           partitionKey: `SESSION#UNKNOWN`,
           sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED`,
           numberOfEvents: 1,
         });
-
-        // const response = await apiInstance.get("/events", {
-        //   params,
-        // });
 
         const eventTimestamp = parseInt(response[0].sk.split("#")[4]);
         const isEventCreationDateLessThanOrEqualTo60SecondsOld =

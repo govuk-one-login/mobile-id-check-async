@@ -2,13 +2,13 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
+import { randomUUID } from "crypto";
 import {
+  EVENTS_API_INSTANCE,
   PROXY_API_INSTANCE,
   SESSIONS_API_INSTANCE,
   STS_MOCK_API_INSTANCE,
 } from "./apiInstance";
-import { randomUUID } from "crypto";
-import { AxiosInstance } from "axios";
 
 export interface ClientDetails {
   client_id: string;
@@ -114,12 +114,10 @@ function isValidEventResponse(
 }
 
 export async function pollForEvents({
-  apiInstance,
   partitionKey,
   sortKeyPrefix,
   numberOfEvents,
 }: {
-  apiInstance: AxiosInstance;
   partitionKey: string;
   sortKeyPrefix: string;
   numberOfEvents: number;
@@ -151,7 +149,7 @@ export async function pollForEvents({
     currentTime() + waitTime < pollEndTime
   ) {
     await wait(waitTime);
-    events = await getEvents({ apiInstance, partitionKey, sortKeyPrefix });
+    events = await getEvents({ partitionKey, sortKeyPrefix });
 
     waitTime = calculateExponentialBackoff(attempts++);
   }
@@ -169,15 +167,13 @@ export async function pollForEvents({
 
 // Call /events API
 async function getEvents({
-  apiInstance,
   partitionKey,
   sortKeyPrefix,
 }: {
-  apiInstance: AxiosInstance;
   partitionKey: string;
   sortKeyPrefix: string;
 }): Promise<unknown[]> {
-  const response = await apiInstance.get("events", {
+  const response = await EVENTS_API_INSTANCE.get("events", {
     params: {
       pkPrefix: partitionKey,
       skPrefix: sortKeyPrefix,
