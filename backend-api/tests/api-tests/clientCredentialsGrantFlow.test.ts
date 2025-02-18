@@ -1,11 +1,14 @@
-import { AxiosInstance } from "axios";
+import axios, { AxiosInstance } from "axios";
 import { randomUUID, UUID } from "crypto";
 import "dotenv/config";
 import { PRIVATE_API_INSTANCE, PROXY_API_INSTANCE } from "./utils/apiInstance";
 import {
   ClientDetails,
   getFirstRegisteredClient,
+  pollForEvents,
 } from "./utils/apiTestHelpers";
+import aws4Interceptor from "aws4-axios";
+import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
 
 const getApisToTest = (): {
   apiName: string;
@@ -144,6 +147,49 @@ describe.each(apis)(
         expect(response.data).toHaveProperty("token_type", "Bearer");
         expect(response.status).toBe(200);
       });
+
+      it("Writes a DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event to TxMA", async () => {
+        const apiInstance = axios.create({ baseURL: process.env.EVENTS_API_URL });
+
+        const interceptor = aws4Interceptor({
+          options: {
+            region: "eu-west-2",
+            service: "execute-api",
+          },
+          credentials: {
+            getCredentials: fromNodeProviderChain({
+              timeout: 1000,
+              maxRetries: 1,
+              profile: process.env.AWS_PROFILE,
+            }),
+          },
+        });
+
+        apiInstance.interceptors.request.use(interceptor);
+
+        const response = await pollForEvents({
+          apiInstance,
+          partitionKey: `SESSION#UNKNOWN`,
+          sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED`,
+          numberOfEvents: 1
+        })
+
+        // const response = await apiInstance.get("/events", {
+        //   params,
+        // });
+
+        const eventTimestamp = parseInt(response[0].sk.split("#")[4])
+        const isEventCreationDateLessThanOrEqualTo60SecondsOld = eventTimestamp <= getTimeNowInSeconds()
+        const pk = response[0].pk
+
+        expect(isEventCreationDateLessThanOrEqualTo60SecondsOld).toBe(true)
+        expect(pk).toEqual("SESSION#UNKNOWN")
+        expect(response[0].event).toEqual(
+          expect.objectContaining({
+            event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+          }),
+        );
+      })
     });
 
     describe("POST /credential", () => {
@@ -387,4 +433,8 @@ function getRequestBody(
 function makeSignatureUnverifiable(accessToken: string, newSignature: string) {
   accessToken = accessToken.substring(0, accessToken.lastIndexOf(".") + 1);
   return accessToken + newSignature;
+}
+
+function getTimeNowInSeconds() {
+  return Math.floor(Date.now() / 1000);
 }
