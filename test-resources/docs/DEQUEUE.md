@@ -1,18 +1,5 @@
 # Dequeue events
 
-## Contents
-- [Overview](#overview)
-- [Dependencies](#dependencies)
-- [Dequeue events flow](#dequeue-events-flow)
-- [How it works](#how-it-works)
-  - [Backend API SQS queue](#backend-api-sqs-queue)
-  - [Dequeue Lambda](#dequeue-lambda)
-    - [Lambda polls SQS for messages](#lambda-polls-sqs-for-messages)
-    - [Event validation](#event-validation)
-    - [Storing events in DynamoDB](#storing-events-in-dynamodb)
-    - [Returning `BatchItemFailures`](#returning-batchitemfailures)
-  - [Retrieving events](#retrieving-events)
-
 ## Overview
 
 #### Context
