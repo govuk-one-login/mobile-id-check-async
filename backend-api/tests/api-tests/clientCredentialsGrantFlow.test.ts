@@ -149,7 +149,9 @@ describe.each(apis)(
       });
 
       it("Writes a DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event to TxMA", async () => {
-        const apiInstance = axios.create({ baseURL: process.env.EVENTS_API_URL });
+        const apiInstance = axios.create({
+          baseURL: process.env.EVENTS_API_URL,
+        });
 
         const interceptor = aws4Interceptor({
           options: {
@@ -171,25 +173,26 @@ describe.each(apis)(
           apiInstance,
           partitionKey: `SESSION#UNKNOWN`,
           sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED`,
-          numberOfEvents: 1
-        })
+          numberOfEvents: 1,
+        });
 
         // const response = await apiInstance.get("/events", {
         //   params,
         // });
 
-        const eventTimestamp = parseInt(response[0].sk.split("#")[4])
-        const isEventCreationDateLessThanOrEqualTo60SecondsOld = eventTimestamp <= getTimeNowInSeconds()
-        const pk = response[0].pk
+        const eventTimestamp = parseInt(response[0].sk.split("#")[4]);
+        const isEventCreationDateLessThanOrEqualTo60SecondsOld =
+          eventTimestamp <= getTimeNowInSeconds();
+        const { pk, event } = response[0];
 
-        expect(isEventCreationDateLessThanOrEqualTo60SecondsOld).toBe(true)
-        expect(pk).toEqual("SESSION#UNKNOWN")
-        expect(response[0].event).toEqual(
+        expect(isEventCreationDateLessThanOrEqualTo60SecondsOld).toBe(true);
+        expect(pk).toEqual("SESSION#UNKNOWN");
+        expect(event).toEqual(
           expect.objectContaining({
             event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
           }),
         );
-      })
+      });
     });
 
     describe("POST /credential", () => {

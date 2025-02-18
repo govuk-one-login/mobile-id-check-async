@@ -117,12 +117,12 @@ export async function pollForEvents({
   apiInstance,
   partitionKey,
   sortKeyPrefix,
-  numberOfEvents
+  numberOfEvents,
 }: {
-  apiInstance: AxiosInstance,
-  partitionKey: string,
-  sortKeyPrefix: string,
-  numberOfEvents: number
+  apiInstance: AxiosInstance;
+  partitionKey: string;
+  sortKeyPrefix: string;
+  numberOfEvents: number;
 }): Promise<EventResponse[]> {
   async function wait(delayMillis: number): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, delayMillis));
@@ -173,9 +173,9 @@ async function getEvents({
   partitionKey,
   sortKeyPrefix,
 }: {
-  apiInstance: AxiosInstance,
-  partitionKey: string,
-  sortKeyPrefix: string,
+  apiInstance: AxiosInstance;
+  partitionKey: string;
+  sortKeyPrefix: string;
 }): Promise<unknown[]> {
   const response = await apiInstance.get("events", {
     params: {
