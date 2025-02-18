@@ -155,12 +155,11 @@ describe.each(apis)(
           numberOfEvents: 1,
         });
 
-        const eventTimestamp = parseInt(response[0].sk.split("#")[4]);
-        const isEventCreationDateLessThanOrEqualTo60SecondsOld =
-          eventTimestamp <= getTimeNowInSeconds();
-        const { pk, event } = response[0];
+        const { pk, sk, event } = response[0];
+        const isEventCreationDateWithinTestTimeframe =
+          isEventLessThanOrEqualTo60SecondsOld(sk);
 
-        expect(isEventCreationDateLessThanOrEqualTo60SecondsOld).toBe(true);
+        expect(isEventCreationDateWithinTestTimeframe).toBe(true);
         expect(pk).toEqual("SESSION#UNKNOWN");
         expect(event).toEqual(
           expect.objectContaining({
@@ -415,4 +414,9 @@ function makeSignatureUnverifiable(accessToken: string, newSignature: string) {
 
 function getTimeNowInSeconds() {
   return Math.floor(Date.now() / 1000);
+}
+
+function isEventLessThanOrEqualTo60SecondsOld(sortKey: string) {
+  const eventTimestamp = parseInt(sortKey.split("#")[4]);
+  return eventTimestamp <= getTimeNowInSeconds();
 }
