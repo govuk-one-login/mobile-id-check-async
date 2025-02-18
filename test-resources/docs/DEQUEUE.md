@@ -135,6 +135,12 @@ queue to be reprocessed.
 }
 ```
 
+The `batchItemFailures` array only contains the messages that fail to be written
+to DynamoDB. If there are multiple messages in a batch and some are successfully
+written to DynamoDB, only the messages that failed to write are returned in this
+array. This is known as a
+[partial batch response](https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-errorhandling.html#services-sqs-batchfailurereporting).
+
 Batch items being worked on by the Dequeue Lambda are considered 'in-fight' and
 cannot be processed by other consumers of the backend API SQS queue due to the
 [visibility timeout](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html).
