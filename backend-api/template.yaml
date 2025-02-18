@@ -14,6 +14,12 @@ Parameters:
     Type: String
     Default: false
 
+  DevOverrideReadIdBaseUrl:
+    Description: |
+      Override the ReadIdBaseUrl value for development deployments
+    Type: String
+    Default: none
+
   DevOverrideStsBaseUrl:
     Description: |
       Override the STS_BASE_URL value for development deployments
@@ -34,6 +40,11 @@ Parameters:
       The ARN of the permissions boundary to apply to any role created by the template
     Type: String
     Default: none
+
+  SamValidateLintWorkaround:
+    Description: Do not update or override. This allows the definition of a resource that is never deployed.
+    Type: String
+    Default: unused
 
 Mappings:
   DNS:
@@ -67,7 +78,7 @@ Mappings:
       BiometricSubmitterKeySecretPathDl: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
       ClientRegistrySecretPath: build/clientRegistry
-      ReadIdBaseUrl: https://readid-mock.review-b-async.build.account.gov.uk/v2
+      ReadIdBaseUrl: https://readid-proxy.review-b-async.build.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.build.account.gov.uk
     dev:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
@@ -75,7 +86,7 @@ Mappings:
       BiometricSubmitterKeySecretPathDl: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
       ClientRegistrySecretPath: dev/clientRegistry
-      ReadIdBaseUrl: https://readid-mock.review-b-async.dev.account.gov.uk/v2
+      ReadIdBaseUrl: https://readid-proxy.review-b-async.dev.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.dev.account.gov.uk
     integration:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
@@ -83,7 +94,7 @@ Mappings:
       BiometricSubmitterKeySecretPathDl: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
       ClientRegistrySecretPath: integration/clientRegistry
-      ReadIdBaseUrl: ""
+      ReadIdBaseUrl: https://readid-proxy.review-b-async.integration.account.gov.uk
       STSBASEURL: https://token.integration.account.gov.uk
     production:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
@@ -91,7 +102,7 @@ Mappings:
       BiometricSubmitterKeySecretPathDl: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
       ClientRegistrySecretPath: production/clientRegistry
-      ReadIdBaseUrl: ""
+      ReadIdBaseUrl: https://readid-proxy.review-b-async.account.gov.uk
       STSBASEURL: https://token.account.gov.uk
     staging:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
@@ -99,7 +110,7 @@ Mappings:
       BiometricSubmitterKeySecretPathDl: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
       ClientRegistrySecretPath: staging/clientRegistry
-      ReadIdBaseUrl: ""
+      ReadIdBaseUrl: https://readid-proxy.review-b-async.staging.account.gov.uk
       STSBASEURL: https://token.staging.account.gov.uk
 
   KMS:
@@ -235,6 +246,10 @@ Conditions:
       - !Ref Environment
       - build
 
+  NeverDeploy: !Equals
+    - !Ref SamValidateLintWorkaround
+    - Should always equal false
+
   ProxyApiDeployment: !Or
     - !Equals
       - !Ref Environment
@@ -246,6 +261,11 @@ Conditions:
   UseCodeSigning: !Not
     - !Equals
       - !Ref CodeSigningConfigArn
+      - none
+
+  UseDevOverrideReadIdBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideReadIdBaseUrl
       - none
 
   UseDevOverrideStsBaseUrl: !Not
@@ -1036,10 +1056,13 @@ Resources:
             - EnvironmentVariables
             - !Ref Environment
             - BiometricSubmitterKeySecretPathPassport
-          READID_BASE_URL: !FindInMap
-            - EnvironmentVariables
-            - !Ref Environment
-            - ReadIdBaseUrl
+          READID_BASE_URL: !If
+            - UseDevOverrideReadIdBaseUrl
+            - !Ref DevOverrideReadIdBaseUrl
+            - !FindInMap
+              - EnvironmentVariables
+              - !Ref Environment
+              - ReadIdBaseUrl
       Events:
         AsyncBiometricToken:
           Properties:
@@ -2308,6 +2331,10 @@ Resources:
     Properties:
       AliasName: !Sub alias/${AWS::StackName}-signing-key
       TargetKeyId: !Ref KMSSigningKey
+
+  NullResource:
+    Type: AWS::CloudFormation::WaitConditionHandle
+    Condition: NeverDeploy
 
   PrivateApi:
     Type: AWS::Serverless::Api
