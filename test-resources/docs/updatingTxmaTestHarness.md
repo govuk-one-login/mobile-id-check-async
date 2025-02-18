@@ -85,3 +85,5 @@ const response = await apiInstance.get("/events", {
   params,
 });
 ```
+> Given this an asynchronous flow, the user may need to poll this endpoint
+until the event has been dequeued.

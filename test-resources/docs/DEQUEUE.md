@@ -56,7 +56,7 @@ backend API SQS queue. This is done using an
 [`EventSourceMapping` AWS resource](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-eventsourcemapping.html)
 (an example can be found in the [SAM template](../../../infra/dequeue/function.yaml)).
 
-> Note: the number of TxMA events that are sent in a batch can be configuring by
+> The number of TxMA events that are sent in a batch can be configuring by
 specifying the `BatchSize` on the `EventSourceMapping` resource.
 
 3. #### Event validation
