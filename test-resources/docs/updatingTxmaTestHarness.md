@@ -51,13 +51,37 @@ correctly dequeued and present in DynamoDB.
 
 ###### Example request to the `/events` endpoint
 
+This API requires Signature V4 headers as it uses `IAM_AUTH` authorization.
+This can be done with a combination of `axios` and `aws4-axios` npm packages.
+
 ```typescript
+import axios from "axios";
+import { aws4Interceptor } from "aws4-axios";
+
+const apiInstance = axios.create({ baseURL: "API URL" });
+
+const interceptor = aws4Interceptor({
+  options: {
+    region: "eu-west-2",
+    service: "execute-api",
+  },
+  credentials: {
+    getCredentials: fromNodeProviderChain({
+      timeout: 1000,
+      maxRetries: 1,
+      profile: process.env.AWS_PROFILE,
+    }),
+  },
+});
+
+apiInstance.interceptors.request.use(interceptor);
+
 const params = {
   pkPrefix: `SESSION%23mockSessionId`,
   skPrefix: `TXMA%23EVENT_NAME%DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED`,
 };
 
-const response = await EVENTS_API_INSTANCE.get("/events", {
+const response = await apiInstance.get("/events", {
   params,
 });
 ```
