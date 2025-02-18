@@ -5,6 +5,7 @@ import { PRIVATE_API_INSTANCE, PROXY_API_INSTANCE } from "./utils/apiInstance";
 import {
   ClientDetails,
   getFirstRegisteredClient,
+  isEventLessThanOrEqualTo60SecondsOld,
   pollForEvents,
 } from "./utils/apiTestHelpers";
 import aws4Interceptor from "aws4-axios";
@@ -410,13 +411,4 @@ function getRequestBody(
 function makeSignatureUnverifiable(accessToken: string, newSignature: string) {
   accessToken = accessToken.substring(0, accessToken.lastIndexOf(".") + 1);
   return accessToken + newSignature;
-}
-
-function getTimeNowInSeconds() {
-  return Math.floor(Date.now() / 1000);
-}
-
-function isEventLessThanOrEqualTo60SecondsOld(sortKey: string) {
-  const eventTimestamp = parseInt(sortKey.split("#")[4]);
-  return eventTimestamp <= getTimeNowInSeconds();
 }

@@ -2,7 +2,11 @@ import { expect } from "@jest/globals";
 import "../../tests/testUtils/matchers";
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 import { expectedSecurityHeaders, mockSessionId } from "./utils/apiTestData";
-import { getValidSessionId } from "./utils/apiTestHelpers";
+import {
+  getValidSessionId,
+  isEventLessThanOrEqualTo60SecondsOld,
+  pollForEvents,
+} from "./utils/apiTestHelpers";
 
 describe("POST /async/biometricToken", () => {
   describe("Given request body is invalid", () => {
@@ -53,8 +57,13 @@ describe("POST /async/biometricToken", () => {
   });
 
   describe("Given there is a valid request", () => {
+    let sessionId: string | null;
+
+    beforeAll(async () => {
+      sessionId = await getValidSessionId();
+    }, 15000);
+
     it("Returns a 200 response with biometric access token and opaque ID", async () => {
-      const sessionId = await getValidSessionId();
       if (!sessionId)
         throw new Error(
           "Failed to get valid session ID to call biometricToken endpoint",
@@ -78,6 +87,26 @@ describe("POST /async/biometricToken", () => {
       expect(response.headers).toEqual(
         expect.objectContaining(expectedSecurityHeaders),
       );
-    }, 15000);
+    }, 5000);
+
+    it("Writes DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED event to TxMA", async () => {
+      const response = await pollForEvents({
+        partitionKey: `SESSION#${sessionId}`,
+        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED`,
+        numberOfEvents: 1,
+      });
+
+      const { pk, sk, event } = response[0];
+      const isEventCreationDateWithinTestTimeframe =
+        isEventLessThanOrEqualTo60SecondsOld(sk);
+
+      expect(isEventCreationDateWithinTestTimeframe).toBe(true);
+      expect(pk).toEqual(`SESSION#${sessionId}`);
+      expect(event).toEqual(
+        expect.objectContaining({
+          event_name: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
+        }),
+      );
+    }, 5000);
   });
 });
