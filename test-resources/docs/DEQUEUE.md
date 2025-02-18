@@ -116,9 +116,9 @@ If there is an error writing to DynamoDB, a message is logged and the
 `messageId` from the current event being processed is pushed to a
 `batchItemFailures` array.
 
-The `batchItemFailures` array is sent in response from the Dequeue lambda. This
-puts the events that failed to be written to DynamoDB back into the SQS queue to
-be reprocessed.
+The `batchItemFailures` array is sent in the response from the Dequeue lambda.
+This puts the events that failed to be written to DynamoDB back into the SQS
+queue to be reprocessed.
 
 ###### Example failure response
 
@@ -134,8 +134,6 @@ be reprocessed.
   ]
 }
 ```
-
-> Note: `batchItemFailures` is an array and can be empty when returned.
 
 Batch items being worked on by the Dequeue Lambda are considered 'in-fight' and
 cannot be processed by other consumers of the backend API SQS queue due to the
