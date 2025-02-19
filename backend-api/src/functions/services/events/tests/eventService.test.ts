@@ -396,4 +396,104 @@ describe("Event Service", () => {
       });
     });
   });
+
+  describe("Writing biometric session finished event to SQS", () => {
+    describe(`Given writing biometric session finished event to SQS fails`, () => {
+      beforeEach(async () => {
+        sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
+
+        result = await eventWriter.writeBiometricSessionFinishedEvent({
+          sub: "mockSub",
+          sessionId: "mockSessionId",
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
+          getNowInMilliseconds: () => 1609462861000,
+          componentId: "mockComponentId",
+          eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+          transactionId: "mockTransactionId",
+          extensions: {
+            suspected_fraud_signal: "AUTH_SESSION_NOT_FOUND",
+          },
+        });
+      });
+
+      it(`Attempts to send biometric session finished TxMA event to SQS`, () => {
+        const expectedCommandInput = {
+          MessageBody: JSON.stringify({
+            user: {
+              user_id: "mockSub",
+              session_id: "mockSessionId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              transaction_id: "mockTransactionId",
+            },
+            timestamp: 1609462861,
+            event_timestamp_ms: 1609462861000,
+            event_name: "DCMAW_ASYNC_CRI_4XXERROR",
+            component_id: "mockComponentId",
+            extensions: {
+              suspected_fraud_signal: "AUTH_SESSION_NOT_FOUND",
+            },
+          }),
+          QueueUrl: "mockSqsQueue",
+        };
+
+        expect(sqsMock).toHaveReceivedCommandWith(
+          SendMessageCommand,
+          expectedCommandInput,
+        );
+      });
+
+      it("Returns an emptyFailure", () => {
+        expect(result).toEqual(emptyFailure());
+      });
+    });
+
+    describe(`Given writing biometric session finished event to SQS is successful`, () => {
+      beforeEach(async () => {
+        sqsMock.on(SendMessageCommand).resolves({});
+
+        result = await eventWriter.writeBiometricSessionFinishedEvent({
+          sub: "mockSub",
+          sessionId: "mockSessionId",
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
+          getNowInMilliseconds: () => 1609462861000,
+          componentId: "mockComponentId",
+          eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+          transactionId: "mockTransactionId",
+          extensions: {
+            suspected_fraud_signal: "AUTH_SESSION_NOT_FOUND",
+          },
+        });
+      });
+
+      it(`Attempts to send biometric session finished event to SQS`, () => {
+        const expectedCommandInput = {
+          MessageBody: JSON.stringify({
+            user: {
+              user_id: "mockSub",
+              session_id: "mockSessionId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              transaction_id: "mockTransactionId",
+            },
+            timestamp: 1609462861,
+            event_timestamp_ms: 1609462861000,
+            event_name: "DCMAW_ASYNC_CRI_4XXERROR",
+            component_id: "mockComponentId",
+            extensions: {
+              suspected_fraud_signal: "AUTH_SESSION_NOT_FOUND",
+            },
+          }),
+          QueueUrl: "mockSqsQueue",
+        };
+
+        expect(sqsMock).toHaveReceivedCommandWith(
+          SendMessageCommand,
+          expectedCommandInput,
+        );
+      });
+
+      it("Returns an emptySuccess", () => {
+        expect(result).toEqual(emptySuccess());
+      });
+    });
+  });
 });
