@@ -58,3 +58,17 @@ export const serverErrorResponse: APIGatewayProxyResult = {
     error_description: "Internal Server Error",
   }),
 };
+
+export const forbiddenResponse = (
+  error: string,
+  errorDescription: string,
+): APIGatewayProxyResult => {
+  return {
+    headers: securityHeaders,
+    statusCode: 403,
+    body: JSON.stringify({
+      error,
+      error_description: errorDescription,
+    }),
+  };
+};
