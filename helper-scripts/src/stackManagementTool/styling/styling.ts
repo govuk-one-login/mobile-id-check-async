@@ -14,12 +14,13 @@ export const multiColouredText = (text: string): string => {
   let result = "";
   for (let i = 0; i < text.length; i++) {
     const char = text[i];
-    // If the character is whitespace, add it without colour
+    // TODO If the character is whitespace, add it without colour
     if (char === " ") {
       result += char;
       continue;
     }
 
+    // TODO - naming, helpers!
     const colourFn = colours[i % colours.length];
     result += colourFn(char);
   }

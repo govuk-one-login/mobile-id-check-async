@@ -10,6 +10,7 @@ export const deployStackTool = async (): Promise<void> => {
 
   try {
     await $({
+      // TODO could be a helper func here as not a great interface
       stdio: "inherit",
       signal: new AbortController().signal,
     })`sh deploy_backend.sh ${baseStackName}`;

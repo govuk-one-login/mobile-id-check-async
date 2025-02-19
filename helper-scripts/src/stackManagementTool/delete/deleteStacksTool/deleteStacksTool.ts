@@ -4,6 +4,7 @@ import { deleteStacksToolErrorMessage } from "./prompts.js";
 import { runningToolMessage } from "../../common/prompts.js";
 
 export const deleteStacksTool = async (): Promise<void> => {
+  // TODO Add another option somewhere to delete custom stack names not following base stack name convention
   try {
     runningToolMessage("stack deletion");
     const stacks = await getStacks();

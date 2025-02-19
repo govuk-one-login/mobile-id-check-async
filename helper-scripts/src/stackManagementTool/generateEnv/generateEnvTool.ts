@@ -17,12 +17,13 @@ export const generateEnvTool = async (): Promise<void> => {
   echo("");
 
   if (customStackOrMain.includes("Back")) {
+    // TODO Better name here or split out? Weird having back here
     await goBackToMenu();
   } else {
-    const baseStackName = await getStackName(customStackOrMain);
+    const baseStackName = await getStackName(customStackOrMain); // TODO is it base stack or stack name??
     echo("");
 
-    const { choice } = await whichStacksToGenerateEnvFor(baseStackName);
+    const { choice } = await whichStacksToGenerateEnvFor(baseStackName); // TODO Both or just one or the other?
     await generateEnvs(baseStackName, choice);
   }
 };
