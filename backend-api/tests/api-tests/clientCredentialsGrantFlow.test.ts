@@ -154,9 +154,10 @@ describe.each(apis)(
           numberOfEvents: 1,
         });
 
-        const { pk, sk, event } = response[0];
+        const { pk, event } = response[0];
+        const timestamp = (event as any).timestamp;
         const isEventCreationDateWithinTestTimeframe =
-          isEventLessThanOrEqualTo60SecondsOld(sk);
+          isEventLessThanOrEqualTo60SecondsOld(timestamp);
 
         expect(isEventCreationDateWithinTestTimeframe).toBe(true);
         expect(pk).toEqual("SESSION#UNKNOWN");
