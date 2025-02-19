@@ -14,6 +14,12 @@ Parameters:
     Type: String
     Default: false
 
+  DevOverrideReadIdBaseUrl:
+    Description: |
+      Override the ReadIdBaseUrl value for development deployments
+    Type: String
+    Default: none
+
   DevOverrideStsBaseUrl:
     Description: |
       Override the STS_BASE_URL value for development deployments
@@ -34,6 +40,11 @@ Parameters:
       The ARN of the permissions boundary to apply to any role created by the template
     Type: String
     Default: none
+
+  SamValidateLintWorkaround:
+    Description: Do not update or override. This allows the definition of a resource that is never deployed.
+    Type: String
+    Default: unused
 
 Mappings:
   DNS:
@@ -67,7 +78,7 @@ Mappings:
       BiometricSubmitterKeySecretPathDl: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
       ClientRegistrySecretPath: build/clientRegistry
-      ReadIdBaseUrl: https://readid-mock.review-b-async.build.account.gov.uk/v2
+      ReadIdBaseUrl: https://readid-proxy.review-b-async.build.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.build.account.gov.uk
     dev:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
@@ -75,7 +86,7 @@ Mappings:
       BiometricSubmitterKeySecretPathDl: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
       ClientRegistrySecretPath: dev/clientRegistry
-      ReadIdBaseUrl: https://readid-mock.review-b-async.dev.account.gov.uk/v2
+      ReadIdBaseUrl: https://readid-proxy.review-b-async.dev.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.dev.account.gov.uk
     integration:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
@@ -83,7 +94,7 @@ Mappings:
       BiometricSubmitterKeySecretPathDl: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
       ClientRegistrySecretPath: integration/clientRegistry
-      ReadIdBaseUrl: ""
+      ReadIdBaseUrl: https://readid-proxy.review-b-async.integration.account.gov.uk
       STSBASEURL: https://token.integration.account.gov.uk
     production:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
@@ -91,7 +102,7 @@ Mappings:
       BiometricSubmitterKeySecretPathDl: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
       ClientRegistrySecretPath: production/clientRegistry
-      ReadIdBaseUrl: ""
+      ReadIdBaseUrl: https://readid-proxy.review-b-async.account.gov.uk
       STSBASEURL: https://token.account.gov.uk
     staging:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
@@ -99,7 +110,7 @@ Mappings:
       BiometricSubmitterKeySecretPathDl: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
       ClientRegistrySecretPath: staging/clientRegistry
-      ReadIdBaseUrl: ""
+      ReadIdBaseUrl: https://readid-proxy.review-b-async.staging.account.gov.uk
       STSBASEURL: https://token.staging.account.gov.uk
 
   KMS:
@@ -120,7 +131,7 @@ Mappings:
       ReservedConcurrentExecutions: 15
     dev:
       LogLevel: DEBUG
-      ReservedConcurrentExecutions: 15
+      ReservedConcurrentExecutions: 0
     integration:
       LogLevel: INFO
       ReservedConcurrentExecutions: 0
@@ -135,18 +146,23 @@ Mappings:
     build:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      IpvCoreVpceId: ""
     dev:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      IpvCoreVpceId: ""
     integration:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+      IpvCoreVpceId: ""
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+      IpvCoreVpceId: ""
     staging:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      IpvCoreVpceId: vpce-0555f751a645d7639
 
   ProxyApigw:
     build:
@@ -218,6 +234,10 @@ Conditions:
         - !Ref AWS::StackName
         - mob-async-backend
 
+  IntegrateIpvCore: !Equals
+    - !Ref Environment
+    - staging
+
   IsDevOrBuild: !Or
     - !Equals
       - !Ref Environment
@@ -226,9 +246,9 @@ Conditions:
       - !Ref Environment
       - build
 
-  Never: !Equals
-    - true
-    - false
+  NeverDeploy: !Equals
+    - !Ref SamValidateLintWorkaround
+    - Should always equal false
 
   ProxyApiDeployment: !Or
     - !Equals
@@ -243,6 +263,11 @@ Conditions:
       - !Ref CodeSigningConfigArn
       - none
 
+  UseDevOverrideReadIdBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideReadIdBaseUrl
+      - none
+
   UseDevOverrideStsBaseUrl: !Not
     - !Equals
       - !Ref DevOverrideStsBaseUrl
@@ -252,6 +277,10 @@ Conditions:
     - !Equals
       - !Ref PermissionsBoundary
       - none
+
+  isDev: !Equals
+    - !Ref Environment
+    - dev
 
   isNotDevOrBuild: !Or
     - !Equals
@@ -334,10 +363,13 @@ Globals:
       - UsePermissionsBoundary
       - !Ref PermissionsBoundary
       - !Ref AWS::NoValue
-    ReservedConcurrentExecutions: !FindInMap
-      - Lambda
-      - !Ref Environment
-      - ReservedConcurrentExecutions
+    ReservedConcurrentExecutions: !If
+      - isDev
+      - !Ref AWS::NoValue
+      - !FindInMap
+        - Lambda
+        - !Ref Environment
+        - ReservedConcurrentExecutions
     Timeout: 5
 
 Resources:
@@ -1024,10 +1056,13 @@ Resources:
             - EnvironmentVariables
             - !Ref Environment
             - BiometricSubmitterKeySecretPathPassport
-          READID_BASE_URL: !FindInMap
-            - EnvironmentVariables
-            - !Ref Environment
-            - ReadIdBaseUrl
+          READID_BASE_URL: !If
+            - UseDevOverrideReadIdBaseUrl
+            - !Ref DevOverrideReadIdBaseUrl
+            - !FindInMap
+              - EnvironmentVariables
+              - !Ref Environment
+              - ReadIdBaseUrl
       Events:
         AsyncBiometricToken:
           Properties:
@@ -1556,6 +1591,354 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
+      RetentionInDays: 30
+
+  AsyncFinishBiometricSession4XXHighThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - '80% or more of requests are failing on the /async/finishBiometricSession endpoint with a 4XX error. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - CriticalAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-high-threshold-async-finish-biometric-session-4xx-api-gw
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      Metrics:
+        - Expression: IF(invocations>=10,errorPercentage4XX,0)
+          Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+        - Id: invocations
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/finishBiometricSession
+              MetricName: Count
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: errorSum4XX
+          Label: Number of 4XX errors
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/finishBiometricSession
+              MetricName: 4XXError
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (errorSum4XX/invocations) * 100
+          Id: errorPercentage4XX
+          Label: Number of 4XX errors returned as a percentage
+          ReturnData: false
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 80
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  AsyncFinishBiometricSession4XXLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - '1% or more of requests are failing on the /async/finishBiometricSession endpoint with a 4XX error. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-low-threshold-async-finish-biometric-session-4xx-api-gw
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      Metrics:
+        - Expression: IF((invocations>=4) && (errorSum4XX>=2),errorPercentage4XX,0)
+          Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+        - Id: invocations
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/finishBiometricSession
+              MetricName: Count
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: errorSum4XX
+          Label: Number of 4XX errors
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/finishBiometricSession
+              MetricName: 4XXError
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (errorSum4XX/invocations) * 100
+          Id: errorPercentage4XX
+          Label: Number of 4XX errors returned as a percentage
+          ReturnData: false
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  AsyncFinishBiometricSession5XXHighThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - '80% or more of requests are failing on the /async/finishBiometricSession endpoint with a 5XX error. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - CriticalAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-high-threshold-async-finish-biometric-session-5xx-api-gw
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      Metrics:
+        - Expression: IF(invocations>=10,errorPercentage5XX,0)
+          Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+        - Id: invocations
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/finishBiometricSession
+              MetricName: Count
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: errorSum5XX
+          Label: Number of 5XX errors
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/finishBiometricSession
+              MetricName: 5XXError
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (errorSum5XX/invocations) * 100
+          Id: errorPercentage5XX
+          Label: Number of 5XX errors returned as a percentage
+          ReturnData: false
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 80
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  AsyncFinishBiometricSession5XXLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - '1% or more of requests are failing on the /async/finishBiometricSession endpoint with a 5XX error. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-low-threshold-async-finish-biometric-session-5xx-api-gw
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      Metrics:
+        - Expression: IF((invocations>=4) && (errorSum5XX>=2),errorPercentage5XX,0)
+          Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+        - Id: invocations
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/finishBiometricSession
+              MetricName: Count
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: errorSum5XX
+          Label: Number of 5XX errors
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/finishBiometricSession
+              MetricName: 5XXError
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (errorSum5XX/invocations) * 100
+          Id: errorPercentage5XX
+          Label: Number of 5XX errors returned as a percentage
+          ReturnData: false
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  AsyncFinishBiometricSessionFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - AsyncFinishBiometricSessionLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - src/functions/asyncFinishBiometricSession/asyncFinishBiometricSessionHandler.ts
+        Minify: true
+        Sourcemap: false
+        Target: es2022
+    Properties:
+      Events:
+        AsyncFinishBiometricSession:
+          Properties:
+            Method: post
+            Path: /async/finishBiometricSession
+            RestApiId: !Ref SessionsApi
+          Type: Api
+      FunctionName: !Sub ${AWS::StackName}-finish-biometric-session
+      Handler: asyncFinishBiometricSessionHandler.lambdaHandler
+      Role: !GetAtt AsyncFinishBiometricSessionLambdaRole.Arn
+      Runtime: nodejs20.x
+      VpcConfig:
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+
+  AsyncFinishBiometricSessionFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt AsyncFinishBiometricSessionFunction.Arn
+      Principal: events.amazonaws.com
+      SourceAccount: !Sub ${AWS::AccountId}
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SessionsApi}/*/*/*
+
+  AsyncFinishBiometricSessionLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: arn:aws:logs:*:*:*
+            Version: "2012-10-17"
+          PolicyName: AsyncFinishBiometricSessionFunctionLoggingPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Effect: Allow
+                Resource: '*'
+            Version: "2012-10-17"
+          PolicyName: VpcPolicy
+      RoleName: !Sub ${AWS::StackName}-finish-biometric-session-lambda
+
+  AsyncFinishBiometricSessionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-finish-biometric-session
       RetentionInDays: 30
 
   AsyncToken4XXHighThresholdAlarm:
@@ -2215,7 +2598,7 @@ Resources:
 
   NullResource:
     Type: AWS::CloudFormation::WaitConditionHandle
-    Condition: Never
+    Condition: NeverDeploy
 
   PrivateApi:
     Type: AWS::Serverless::Api
@@ -2227,13 +2610,28 @@ Resources:
         ResourcePolicy:
           IntrinsicVpceWhitelist:
             - !ImportValue devplatform-vpc-ExecuteApiGatewayEndpointId
+            - !If
+              - IntegrateIpvCore
+              - !FindInMap
+                - PrivateApigw
+                - !Ref Environment
+                - IpvCoreVpceId
+              - !Ref AWS::NoValue
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
             Location: ./openApiSpecs/async-private-spec.yaml
       Description: Private API gateway for Client Credentials flow
-      EndpointConfiguration: PRIVATE
+      EndpointConfiguration:
+        Type: PRIVATE
+        VPCEndpointIds: !If
+          - IntegrateIpvCore
+          - - !FindInMap
+              - PrivateApigw
+              - !Ref Environment
+              - IpvCoreVpceId
+          - - !Ref AWS::NoValue
       MethodSettings:
         - DataTraceEnabled: false
           HttpMethod: '*'

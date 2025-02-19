@@ -33,13 +33,14 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("ReadIdBaseUrl assigned ID Check mock values in dev and build and vendor values in staging, integration and production", () => {
+    test("ReadIdBaseUrl is the ReadID Proxy", () => {
       const expectedEnvironmentVariablesValues = {
-        dev: "https://readid-mock.review-b-async.dev.account.gov.uk/v2",
-        build: "https://readid-mock.review-b-async.build.account.gov.uk/v2",
-        staging: "", // To be updated with new ReadID URL once available
-        integration: "", // To be updated with new ReadID URL once available
-        production: "", // To be updated with new ReadID URL once available
+        dev: "https://readid-proxy.review-b-async.dev.account.gov.uk/v2",
+        build: "https://readid-proxy.review-b-async.build.account.gov.uk/v2",
+        staging: "https://readid-proxy.review-b-async.staging.account.gov.uk",
+        integration:
+          "https://readid-proxy.review-b-async.integration.account.gov.uk",
+        production: "https://readid-proxy.review-b-async.account.gov.uk",
       };
 
       const mappingHelper = new Mappings(template);
@@ -54,7 +55,24 @@ describe("Backend application infrastructure", () => {
     test("The endpoints are Private", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
         Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
-        EndpointConfiguration: "PRIVATE",
+        EndpointConfiguration: {
+          Type: "PRIVATE",
+          VPCEndpointIds: {
+            "Fn::If": [
+              "IntegrateIpvCore",
+              [
+                {
+                  "Fn::FindInMap": [
+                    "PrivateApigw",
+                    { Ref: "Environment" },
+                    "IpvCoreVpceId",
+                  ],
+                },
+              ],
+              [{ Ref: "AWS::NoValue" }],
+            ],
+          },
+        },
       });
     });
 
@@ -78,6 +96,21 @@ describe("Backend application infrastructure", () => {
           MethodSettings: methodSettings,
         });
         expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
+      });
+
+      test("IPV Core VPCe mappings are set", () => {
+        const expectedIpvCoreVpceIdMapping = {
+          dev: "",
+          build: "",
+          staging: "vpce-0555f751a645d7639",
+          integration: "",
+          production: "",
+        };
+        const mappingHelper = new Mappings(template);
+        mappingHelper.validatePrivateAPIMapping({
+          environmentFlags: expectedIpvCoreVpceIdMapping,
+          mappingBottomLevelKey: "IpvCoreVpceId",
+        });
       });
 
       test("Rate and burst limit mappings are set", () => {
@@ -166,6 +199,8 @@ describe("Backend application infrastructure", () => {
         "high-threshold-async-active-session-4xx-api-gw": false,
         "high-threshold-async-biometric-token-5xx-api-gw": false,
         "high-threshold-async-biometric-token-4xx-api-gw": false,
+        "high-threshold-async-finish-biometric-session-5xx-api-gw": false,
+        "high-threshold-async-finish-biometric-session-4xx-api-gw": false,
       };
 
       const alarms = template.findResources("AWS::CloudWatch::Alarm");
@@ -220,6 +255,10 @@ describe("Backend application infrastructure", () => {
         ["low-threshold-async-biometric-token-4xx-api-gw"],
         ["high-threshold-async-biometric-token-5xx-api-gw"],
         ["low-threshold-async-biometric-token-5xx-api-gw"],
+        ["high-threshold-async-finish-biometric-session-4xx-api-gw"],
+        ["low-threshold-async-finish-biometric-session-4xx-api-gw"],
+        ["high-threshold-async-finish-biometric-session-5xx-api-gw"],
+        ["low-threshold-async-finish-biometric-session-5xx-api-gw"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
@@ -497,7 +536,7 @@ describe("Backend application infrastructure", () => {
         expect(reservedConcurrentExecutionMapping).toStrictEqual({
           Lambda: {
             dev: expect.objectContaining({
-              ReservedConcurrentExecutions: 15,
+              ReservedConcurrentExecutions: 0, // Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
             }),
             build: expect.objectContaining({
               ReservedConcurrentExecutions: 15,
@@ -516,11 +555,22 @@ describe("Backend application infrastructure", () => {
 
         const reservedConcurrentExecutions =
           template.toJSON().Globals.Function.ReservedConcurrentExecutions;
+
         expect(reservedConcurrentExecutions).toStrictEqual({
-          "Fn::FindInMap": [
-            "Lambda",
-            { Ref: "Environment" },
-            "ReservedConcurrentExecutions",
+          "Fn::If": [
+            "isDev",
+            {
+              Ref: "AWS::NoValue",
+            },
+            {
+              "Fn::FindInMap": [
+                "Lambda",
+                {
+                  Ref: "Environment",
+                },
+                "ReservedConcurrentExecutions",
+              ],
+            },
           ],
         });
       });
@@ -604,11 +654,12 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("Token, Credential and JWKS lambdas are attached to a VPC and subnets are private", () => {
+    test("Token, Credential, JWKS and FinishBiometricSession lambdas are attached to a VPC and subnets are private", () => {
       const lambdaHandlers = [
         "asyncTokenHandler.lambdaHandler",
         "asyncCredentialHandler.lambdaHandler",
         "jwksHandler.lambdaHandler",
+        "asyncFinishBiometricSessionHandler.lambdaHandler",
       ];
       lambdaHandlers.forEach((lambdaHandler) => {
         template.hasResourceProperties("AWS::Serverless::Function", {

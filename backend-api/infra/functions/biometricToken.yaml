@@ -29,7 +29,10 @@ Resources:
           BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_BRP: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathBrp]
           BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_DL: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathDl]
           BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS: !FindInMap [ EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretCacheDurationInSeconds ]
-          READID_BASE_URL: !FindInMap [EnvironmentVariables, !Ref Environment, ReadIdBaseUrl]
+          READID_BASE_URL: !If
+            - UseDevOverrideReadIdBaseUrl
+            - !Ref DevOverrideReadIdBaseUrl
+            - !FindInMap [EnvironmentVariables, !Ref Environment, ReadIdBaseUrl]
       Role: !GetAtt AsyncBiometricTokenLambdaRole.Arn
       VpcConfig:
         SubnetIds:

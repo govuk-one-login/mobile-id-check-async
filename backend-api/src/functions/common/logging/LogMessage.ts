@@ -80,6 +80,21 @@ export class LogMessage implements LogAttributes {
       "Successfully retrieved biometric access token from ReadID",
     );
 
+  // Finish Biometric Session
+  static readonly FINISH_BIOMETRIC_SESSION_STARTED = new LogMessage(
+    "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_STARTED",
+    "Lambda handler processing has started.",
+  );
+  static readonly FINISH_BIOMETRIC_SESSION_COMPLETED = new LogMessage(
+    "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_COMPLETED",
+    "Lambda handler processing has completed successfully.",
+  );
+  static readonly FINISH_BIOMETRIC_SESSION_REQUEST_BODY_INVALID =
+    new LogMessage(
+      "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_REQUEST_BODY_INVALID",
+      "The incoming request body was missing or invalid.",
+    );
+
   private constructor(
     public readonly messageCode: string,
     public readonly message: string,

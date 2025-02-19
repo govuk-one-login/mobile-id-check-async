@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from "fs";
+import { readFileSync, readdirSync } from "fs";
 import * as path from "path";
 import { isDeepStrictEqual } from "util";
 import * as cfnParse from "yaml-cfn";
@@ -103,8 +103,6 @@ describe("Template", () => {
     expect(mainKeys).toEqual(parentKeys);
 
     parentKeys.forEach((key) => {
-      console.log("main " + key, main.Outputs[key]);
-      console.log("parent " + key, parent.Outputs[key]);
       expect(isDeepStrictEqual(main.Outputs[key], parent.Outputs[key])).toBe(
         true,
       );
@@ -132,16 +130,14 @@ describe("Template", () => {
     });
   });
 
-  it("parent template should not have any Resources", () => {
+  it("parent template should only have a placeholder resource", () => {
     const parent = cfnParse.yamlParse(readFileSync(parentFilePath, "utf8"));
     const resources = parent.Resources || {};
-    const resourceKeys = Object.keys(resources);
-
-    expect(resourceKeys).toHaveLength(1);
-    expect(resourceKeys[0]).toBe("NullResource");
-    expect(resources.NullResource).toEqual({
-      Type: "AWS::CloudFormation::WaitConditionHandle",
-      Condition: "Never",
+    expect(resources).toStrictEqual({
+      NullResource: {
+        Type: "AWS::CloudFormation::WaitConditionHandle",
+        Condition: "NeverDeploy",
+      },
     });
   });
 

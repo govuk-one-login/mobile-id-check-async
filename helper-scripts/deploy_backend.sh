@@ -24,17 +24,21 @@ DEV_OVERRIDE_BACKEND_STACK_NAME="BackendStackName"
 DEV_OVERRIDE_PROXY_BASE_URL="DevOverrideProxyBaseUrl"
 DEV_OVERRIDE_SESSIONS_BASE_URL="DevOverrideSessionsBaseUrl"
 DEV_OVERRIDE_STS_BASE_URL="DevOverrideStsBaseUrl"
+DEV_OVERRIDE_READID_PROXY_BASE_URL="DevOverrideReadIdBaseUrl"
 DEPLOY_ALARMS_IN_DEV="DeployAlarmsInDev"
 
-PROXY_URL="https://proxy-${BACKEND_STACK_NAME}.review-b-async.dev.account.gov.uk"
-SESSIONS_URL="https://sessions-${BACKEND_STACK_NAME}.review-b-async.dev.account.gov.uk"
-STS_MOCK_URL="https://sts-${TEST_RESOURCES_STACK_NAME}.review-b-async.dev.account.gov.uk"
+ASYNC_DOMAIN="review-b-async.dev.account.gov.uk"
+
+PROXY_URL="https://proxy-${BACKEND_STACK_NAME}.${ASYNC_DOMAIN}"
+SESSIONS_URL="https://sessions-${BACKEND_STACK_NAME}.${ASYNC_DOMAIN}"
+STS_MOCK_URL="https://sts-${TEST_RESOURCES_STACK_NAME}.${ASYNC_DOMAIN}"
 
 deploy_cf_dist=false
 deploy_backend_api_stack=false
 enable_alarms=false
 deploy_test_resources=false
 publish_sts_mock_keys_to_s3=false
+overrideReadIdBaseUrl=false
 
 # Ask the user about deploying test-resources
 while true; do
@@ -105,38 +109,54 @@ done
 while true; do
   echo
   read -r -p "Do you want to deploy a backend-api stack? [Y/n]: " yn
-
   case "$yn" in
-    [yY] | "")
-      deploy_backend_api_stack=true
+  [yY] | "")
+    deploy_backend_api_stack=true
+    while true; do
+      echo
+      read -r -p "Do you want to enable alarms for your backend-api stack? [y/N]: " yn
+      case "$yn" in
+      [yY])
+        enable_alarms=true
+        break
+        ;;
+      [nN] | "")
+        break
+        ;;
+      *)
+        echo "Invalid input. Please enter 'y' or 'n'."
+        ;;
+      esac
+    done
 
-      while true; do
-        echo
-        read -r -p "Do you want to enable alarms for your backend-api stack? [y/N]: " yn
-
-        case "$yn" in
-          [yY])
-            enable_alarms=true
-            break
-            ;;
-          [nN] | "")
-            break
-            ;;
-          *)
-            echo "Invalid input. Please enter 'y' or 'n'."
-            ;;
-        esac
-      done
-
-      break
-      ;;
-    [nN])
-      echo "Skipping backend-api deployment"
-      break
-      ;;
-    *)
-      echo "Invalid input. Please enter 'y' or 'n'."
-      ;;
+    # Ask if the user wants to override the base URL
+    while true; do
+      echo
+      echo "Overriding the ReadId Proxy Url is not needed for the majority of use cases."
+      read -r -p "Do you want to override the ReadId Proxy Url? [y/N]: " yn
+      case "$yn" in
+      [yY])
+        overrideReadIdBaseUrl=true
+        read -r -p "Enter your ReadId proxy stack name: " readIdProxyStackName
+        break
+        ;;
+      [nN] | "")
+        break
+        ;;
+      *)
+        echo "Invalid input. Please enter 'y' or 'n'."
+        ;;
+      esac
+    done
+    break
+    ;;
+  [nN])
+    echo "Skipping backend-api deployment"
+    break
+    ;;
+  *)
+    echo "Invalid input. Please enter 'y' or 'n'."
+    ;;
   esac
 done
 
@@ -167,24 +187,26 @@ if [[ $deploy_backend_api_stack == true ]]; then
       parameter_overrides+=" $DEPLOY_ALARMS_IN_DEV=true"
   fi
 
+  if [[ $overrideReadIdBaseUrl == true ]]; then
+      parameter_overrides+=" $DEV_OVERRIDE_READID_PROXY_BASE_URL=https://readid-proxy-${readIdProxyStackName}.${ASYNC_DOMAIN}"
+  fi
+
   # Build and deploy backend-api
   echo "Building and deploying backend-api stack: $BACKEND_STACK_NAME"
+
   echo
   cd ../backend-api || exit 1
   npm run build:infra
   npm ci
   sam build --cached
   sam deploy \
-      --stack-name $BACKEND_STACK_NAME \
-      --parameter-overrides $parameter_overrides \
+      --stack-name "$BACKEND_STACK_NAME" \
+      --parameter-overrides "$parameter_overrides" \
       --capabilities CAPABILITY_NAMED_IAM \
       --resolve-s3
 
-  echo "Waiting for stack create/updates to complete"
-  aws cloudformation wait stack-create-complete --stack-name $BACKEND_STACK_NAME || aws cloudformation wait stack-update-complete --stack-name $BACKEND_STACK_NAME
-
-  ./generate_env_file.sh $STACK_IDENTIFIER
-  cd ../helper-scripts
+  ./generate_env_file.sh "$STACK_IDENTIFIER"
+  cd ../helper-scripts || exit
 fi
 
 if [[ $deploy_test_resources == true ]]; then
@@ -196,7 +218,7 @@ if [[ $deploy_test_resources == true ]]; then
   npm ci
   sam build
   sam deploy \
-    --stack-name $TEST_RESOURCES_STACK_NAME \
+    --stack-name "$TEST_RESOURCES_STACK_NAME" \
     --parameter-overrides \
       "${DEV_OVERRIDE_BACKEND_STACK_NAME}=${BACKEND_STACK_NAME} \
       ${DEV_OVERRIDE_PROXY_BASE_URL}=${PROXY_URL} \
@@ -204,11 +226,8 @@ if [[ $deploy_test_resources == true ]]; then
     --capabilities CAPABILITY_NAMED_IAM \
     --resolve-s3
 
-  echo "Waiting for stack create/updates to complete"
-  aws cloudformation wait stack-create-complete --stack-name $TEST_RESOURCES_STACK_NAME || aws cloudformation wait stack-update-complete --stack-name $TEST_RESOURCES_STACK_NAME
-
   npm run build:env $STACK_IDENTIFIER
-  cd ../helper-scripts
+  cd ../helper-scripts || exit
 fi
 
 if [[ $publish_sts_mock_keys_to_s3 == true ]]; then
