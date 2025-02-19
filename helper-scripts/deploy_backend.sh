@@ -160,6 +160,16 @@ while true; do
   esac
 done
 
+# if [[ $deploy_cf_dist == true ]]; then
+#   # Build and deploy backend-cf-dist stack
+#   echo "Deploying cloudfront stack: $BACKEND_CF_DIST_STACK_NAME"
+#   echo
+
+#   sh ./generate_cf_dist_parameters.sh "${BACKEND_STACK_NAME}"
+
+#   provisioner legacy --aws-account-name di-mobile-id-check-async-dev --stack-name "${BACKEND_CF_DIST_STACK_NAME}" --template-name cloudfront-distribution --template-version v2.0.0 --parameters-file "parameters-${BACKEND_CF_DIST_STACK_NAME}.json"
+# fi
+
 if [[ $deploy_cf_dist == true ]]; then
   # Build and deploy backend-cf-dist stack
   echo "Deploying cloudfront stack: $BACKEND_CF_DIST_STACK_NAME"
@@ -167,9 +177,11 @@ if [[ $deploy_cf_dist == true ]]; then
 
   sh ./generate_cf_dist_parameters.sh "${BACKEND_STACK_NAME}"
 
+  TEMPLATE_URL=$(sh get_template_versionid.sh cloudfront-distribution v2.0.0)
+
   CF_DIST_ARGS="--region eu-west-2"
   CF_DIST_ARGS="${CF_DIST_ARGS} --stack-name ${BACKEND_CF_DIST_STACK_NAME}"
-  CF_DIST_ARGS="${CF_DIST_ARGS} --template-url https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/cloudfront-distribution/template.yaml?versionId=jZcckkadQOPteu3t24UktqjOehImqD1K" # v1.8.0
+  CF_DIST_ARGS="${CF_DIST_ARGS} --template-url ${TEMPLATE_URL}"
   CF_DIST_ARGS="${CF_DIST_ARGS} --capabilities CAPABILITY_AUTO_EXPAND CAPABILITY_IAM CAPABILITY_NAMED_IAM"
 
   aws cloudformation create-stack $CF_DIST_ARGS --parameters="$(jq -r '. | tojson' "parameters-${BACKEND_CF_DIST_STACK_NAME}.json")" || aws cloudformation update-stack $CF_DIST_ARGS --parameters="$(jq -r '. | tojson' "parameters-${BACKEND_CF_DIST_STACK_NAME}.json")"
