@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from "axios";
+import { AxiosInstance } from "axios";
 import { randomUUID, UUID } from "crypto";
 import "dotenv/config";
 import { PRIVATE_API_INSTANCE, PROXY_API_INSTANCE } from "./utils/apiInstance";
@@ -8,8 +8,6 @@ import {
   isEventLessThanOrEqualTo60SecondsOld,
   pollForEvents,
 } from "./utils/apiTestHelpers";
-import aws4Interceptor from "aws4-axios";
-import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
 
 const getApisToTest = (): {
   apiName: string;
