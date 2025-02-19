@@ -92,7 +92,7 @@ export async function getValidSessionId(): Promise<string | null> {
   return activeSessionResponse.data["sessionId"] ?? null;
 }
 
-type EventResponse = {
+export type EventResponse = {
   pk: string;
   sk: string;
   event: object;

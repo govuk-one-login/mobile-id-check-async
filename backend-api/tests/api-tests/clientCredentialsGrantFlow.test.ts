@@ -1,13 +1,15 @@
-import { AxiosInstance } from "axios";
+import { AxiosInstance, AxiosResponse } from "axios";
 import { randomUUID, UUID } from "crypto";
 import "dotenv/config";
 import { PRIVATE_API_INSTANCE, PROXY_API_INSTANCE } from "./utils/apiInstance";
 import {
   ClientDetails,
+  EventResponse,
   getFirstRegisteredClient,
   isEventLessThanOrEqualTo60SecondsOld,
   pollForEvents,
 } from "./utils/apiTestHelpers";
+import { APIGatewayProxyResult } from "aws-lambda";
 
 const getApisToTest = (): {
   apiName: string;
@@ -118,8 +120,13 @@ describe.each(apis)(
     });
 
     describe("Given the request is valid and the client is registered", () => {
-      it("Returns a 200 OK response and the access token", async () => {
-        const response = await axiosInstance.post(
+      let tokenResponse: AxiosResponse;
+      let accessTokenParts: string[];
+      let header: object;
+      let payload: object;
+
+      beforeAll(async () => {
+        tokenResponse = await axiosInstance.post(
           `/async/token`,
           "grant_type=client_credentials",
           {
@@ -129,11 +136,13 @@ describe.each(apis)(
           },
         );
 
-        const accessTokenParts = response.data.access_token.split(".");
-        const header = JSON.parse(fromBase64(accessTokenParts[0])) as object;
-        const payload = JSON.parse(fromBase64(accessTokenParts[1])) as object;
+        accessTokenParts = tokenResponse.data.access_token.split(".");
+        header = JSON.parse(fromBase64(accessTokenParts[0])) as object;
+        payload = JSON.parse(fromBase64(accessTokenParts[1])) as object;
+      });
 
-        expect(response.data).toHaveProperty("access_token");
+      it("Returns a 200 OK response and the access token", async () => {
+        expect(tokenResponse.data).toHaveProperty("access_token");
         expect(header).toHaveProperty("kid");
         expect(header).toHaveProperty("alg", "ES256");
         expect(header).toHaveProperty("typ", "JWT");
@@ -142,30 +151,46 @@ describe.each(apis)(
         expect(payload).toHaveProperty("exp");
         expect(payload).toHaveProperty("iss");
         expect(payload).toHaveProperty("scope", "dcmaw.session.async_create");
-        expect(response.data).toHaveProperty("expires_in", 3600);
-        expect(response.data).toHaveProperty("token_type", "Bearer");
-        expect(response.status).toBe(200);
+        expect(tokenResponse.data).toHaveProperty("expires_in", 3600);
+        expect(tokenResponse.data).toHaveProperty("token_type", "Bearer");
+        expect(tokenResponse.status).toBe(200);
       });
 
-      it("Writes a DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event to TxMA", async () => {
-        const response = await pollForEvents({
-          partitionKey: `SESSION#UNKNOWN`,
-          sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED`,
-          numberOfEvents: 1,
+      describe("Writing to TxMA", () => {
+        let eventsResponse: EventResponse[];
+        let event: object;
+
+        beforeAll(async () => {
+          eventsResponse = await pollForEvents({
+            partitionKey: `SESSION#UNKNOWN`,
+            sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED`,
+            numberOfEvents: 1,
+          });
+
+          ({ event } = eventsResponse[0]);
         });
 
-        const { pk, event } = response[0];
-        const timestamp = (event as any).timestamp;
-        const isEventCreationDateWithinTestTimeframe =
-          isEventLessThanOrEqualTo60SecondsOld(timestamp);
+        it("Occurred within the last 60 seconds", () => {
+          const timestamp = (event as any).timestamp;
+          const isEventCreationDateWithinTestTimeframe =
+            isEventLessThanOrEqualTo60SecondsOld(timestamp);
 
-        expect(isEventCreationDateWithinTestTimeframe).toBe(true);
-        expect(pk).toEqual("SESSION#UNKNOWN");
-        expect(event).toEqual(
-          expect.objectContaining({
-            event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
-          }),
-        );
+          expect(isEventCreationDateWithinTestTimeframe).toBe(true);
+        });
+
+        it("Writes an event with the correct session ID", () => {
+          const { pk } = eventsResponse[0];
+
+          expect(pk).toEqual("SESSION#UNKNOWN");
+        });
+
+        it("Writes an event with the correct event_name", () => {
+          expect(event).toEqual(
+            expect.objectContaining({
+              event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+            }),
+          );
+        });
       });
     });
 
