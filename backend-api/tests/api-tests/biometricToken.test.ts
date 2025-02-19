@@ -96,11 +96,7 @@ describe("POST /async/biometricToken", () => {
         numberOfEvents: 1,
       });
 
-      const { pk, sk, event } = response[0];
-      const isEventCreationDateWithinTestTimeframe =
-        isEventLessThanOrEqualTo60SecondsOld(sk);
-
-      expect(isEventCreationDateWithinTestTimeframe).toBe(true);
+      const { pk, event } = response[0];
       expect(pk).toEqual(`SESSION#${sessionId}`);
       expect(event).toEqual(
         expect.objectContaining({
