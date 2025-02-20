@@ -168,14 +168,16 @@ describe.each(apis)(
 
           const eventsFound = eventsResponse.find((event) => {
             const timestamp = (event.event as any).timestamp;
-            return isEventLessThanOrEqualTo60SecondsOld(timestamp)
-          })
+            return isEventLessThanOrEqualTo60SecondsOld(timestamp);
+          });
 
           if (!eventsFound) {
-            throw new Error("An event created within the testing time frame could not be found");
+            throw new Error(
+              "Could not find event created within the testing time frame.",
+            );
           }
 
-          ({ event } = eventsFound)
+          ({ event } = eventsFound);
         }, 5000);
 
         it("Writes an event with the correct session ID", () => {
