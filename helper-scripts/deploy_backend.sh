@@ -160,16 +160,6 @@ while true; do
   esac
 done
 
-# if [[ $deploy_cf_dist == true ]]; then
-#   # Build and deploy backend-cf-dist stack
-#   echo "Deploying cloudfront stack: $BACKEND_CF_DIST_STACK_NAME"
-#   echo
-
-#   sh ./generate_cf_dist_parameters.sh "${BACKEND_STACK_NAME}"
-
-#   provisioner legacy --aws-account-name di-mobile-id-check-async-dev --stack-name "${BACKEND_CF_DIST_STACK_NAME}" --template-name cloudfront-distribution --template-version v2.0.0 --parameters-file "parameters-${BACKEND_CF_DIST_STACK_NAME}.json"
-# fi
-
 if [[ $deploy_cf_dist == true ]]; then
   # Build and deploy backend-cf-dist stack
   echo "Deploying cloudfront stack: $BACKEND_CF_DIST_STACK_NAME"
@@ -177,7 +167,7 @@ if [[ $deploy_cf_dist == true ]]; then
 
   sh ./generate_cf_dist_parameters.sh "${BACKEND_STACK_NAME}"
 
-  TEMPLATE_URL=$(sh get_template_versionid.sh cloudfront-distribution v2.0.0)
+  TEMPLATE_URL=$(sh get_template_versionid.sh cloudfront-distribution v2.1.0)
 
   CF_DIST_ARGS="--region eu-west-2"
   CF_DIST_ARGS="${CF_DIST_ARGS} --stack-name ${BACKEND_CF_DIST_STACK_NAME}"
