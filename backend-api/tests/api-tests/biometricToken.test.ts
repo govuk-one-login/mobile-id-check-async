@@ -5,7 +5,6 @@ import { expectedSecurityHeaders, mockSessionId } from "./utils/apiTestData";
 import {
   EventResponse,
   getValidSessionId,
-  isEventLessThanOrEqualTo60SecondsOld,
   pollForEvents,
 } from "./utils/apiTestHelpers";
 import { AxiosResponse } from "axios";
@@ -80,7 +79,7 @@ describe("POST /async/biometricToken", () => {
       );
     }, 15000);
 
-    it("Returns a 200 response with biometric access token and opaque ID", async () => {
+    it("Returns a 200 response with biometric access token and opaque ID", () => {
       expect(biometricTokenResponse.status).toBe(200);
       expect(biometricTokenResponse.data).toStrictEqual({
         accessToken: expect.any(String),
