@@ -9,7 +9,6 @@ import {
   isEventLessThanOrEqualTo60SecondsOld,
   pollForEvents,
 } from "./utils/apiTestHelpers";
-import { APIGatewayProxyResult } from "aws-lambda";
 
 const getApisToTest = (): {
   apiName: string;
@@ -139,7 +138,7 @@ describe.each(apis)(
         accessTokenParts = tokenResponse.data.access_token.split(".");
         header = JSON.parse(fromBase64(accessTokenParts[0])) as object;
         payload = JSON.parse(fromBase64(accessTokenParts[1])) as object;
-      });
+      }, 15000);
 
       it("Returns a 200 OK response and the access token", async () => {
         expect(tokenResponse.data).toHaveProperty("access_token");
@@ -168,15 +167,16 @@ describe.each(apis)(
           });
 
           ({ event } = eventsResponse[0]);
-        });
-
-        it("Occurred within the last 60 seconds", () => {
           const timestamp = (event as any).timestamp;
-          const isEventCreationDateWithinTestTimeframe =
+          const isEventCreationDateWithinTestTimeFrame =
             isEventLessThanOrEqualTo60SecondsOld(timestamp);
 
-          expect(isEventCreationDateWithinTestTimeframe).toBe(true);
-        });
+          if (!isEventCreationDateWithinTestTimeFrame) {
+            throw new Error(
+              "The event being tested was not created within the testing time frame",
+            );
+          }
+        }, 5000);
 
         it("Writes an event with the correct session ID", () => {
           const { pk } = eventsResponse[0];
