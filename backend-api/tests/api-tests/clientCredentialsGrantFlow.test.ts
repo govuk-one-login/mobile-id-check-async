@@ -6,7 +6,6 @@ import {
   ClientDetails,
   EventResponse,
   getFirstRegisteredClient,
-  isEventLessThanOrEqualTo60SecondsOld,
   pollForEvents,
 } from "./utils/apiTestHelpers";
 
@@ -166,18 +165,7 @@ describe.each(apis)(
             numberOfEvents: 1,
           });
 
-          const eventsFound = eventsResponse.find((event) => {
-            const timestamp = (event.event as any).timestamp;
-            return isEventLessThanOrEqualTo60SecondsOld(timestamp);
-          });
-
-          if (!eventsFound) {
-            throw new Error(
-              "Could not find event created within the testing time frame.",
-            );
-          }
-
-          ({ event } = eventsFound);
+          ({ event } = getEventUnderTest(eventsResponse));
         }, 5000);
 
         it("Writes an event with the correct session ID", () => {
@@ -437,4 +425,30 @@ function getRequestBody(
 function makeSignatureUnverifiable(accessToken: string, newSignature: string) {
   accessToken = accessToken.substring(0, accessToken.lastIndexOf(".") + 1);
   return accessToken + newSignature;
+}
+
+function getEventUnderTest(events: EventResponse[]) {
+  const eventsFound = events.find((event) => {
+    const timestamp = (event.event as any).timestamp;
+    return isEventLessThanOrEqualTo60SecondsOld(timestamp);
+  });
+
+  if (!eventsFound) {
+    throw new Error(
+      "Could not find an event created within the testing time frame.",
+    );
+  }
+
+  return eventsFound;
+}
+
+function isEventLessThanOrEqualTo60SecondsOld(timestamp: number) {
+  const SIXTY_SECONDS = 60;
+  const validFrom = getTimeNowInSeconds() - SIXTY_SECONDS;
+
+  return timestamp >= validFrom;
+}
+
+function getTimeNowInSeconds() {
+  return Math.floor(Date.now() / 1000);
 }

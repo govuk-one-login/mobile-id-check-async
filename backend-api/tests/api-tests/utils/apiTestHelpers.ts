@@ -183,14 +183,3 @@ async function getEvents({
   const events = response.data;
   return Array.isArray(events) ? events : []; // If response is malformed, return empty array so polling can be retried
 }
-
-export function isEventLessThanOrEqualTo60SecondsOld(timestamp: number) {
-  const SIXTY_SECONDS = 60;
-  const validFrom = getTimeNowInSeconds() - SIXTY_SECONDS;
-
-  return timestamp >= validFrom;
-}
-
-function getTimeNowInSeconds() {
-  return Math.floor(Date.now() / 1000);
-}
