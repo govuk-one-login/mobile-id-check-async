@@ -122,6 +122,8 @@ describe.each(apis)(
       let accessTokenParts: string[];
       let header: object;
       let payload: object;
+      let eventsResponse: EventResponse[];
+      let event: object;
 
       beforeAll(async () => {
         tokenResponse = await axiosInstance.post(
@@ -137,7 +139,31 @@ describe.each(apis)(
         accessTokenParts = tokenResponse.data.access_token.split(".");
         header = JSON.parse(fromBase64(accessTokenParts[0])) as object;
         payload = JSON.parse(fromBase64(accessTokenParts[1])) as object;
-      }, 15000);
+
+        eventsResponse = await pollForEvents({
+          partitionKey: `SESSION#UNKNOWN`,
+          sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED`,
+          numberOfEvents: 1,
+        });
+
+        ({ event } = getEventUnderTest(eventsResponse));
+      }, 20000);
+
+      describe("Writing to TxMA", () => {
+        it("Writes an event with the correct session ID", () => {
+          const { pk } = eventsResponse[0];
+
+          expect(pk).toEqual("SESSION#UNKNOWN");
+        });
+
+        it("Writes an event with the correct event_name", () => {
+          expect(event).toEqual(
+            expect.objectContaining({
+              event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+            }),
+          );
+        });
+      });
 
       it("Returns a 200 OK response and the access token", async () => {
         expect(tokenResponse.data).toHaveProperty("access_token");
@@ -152,35 +178,6 @@ describe.each(apis)(
         expect(tokenResponse.data).toHaveProperty("expires_in", 3600);
         expect(tokenResponse.data).toHaveProperty("token_type", "Bearer");
         expect(tokenResponse.status).toBe(200);
-      });
-
-      describe("Writing to TxMA", () => {
-        let eventsResponse: EventResponse[];
-        let event: object;
-
-        beforeAll(async () => {
-          eventsResponse = await pollForEvents({
-            partitionKey: `SESSION#UNKNOWN`,
-            sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED`,
-            numberOfEvents: 1,
-          });
-
-          ({ event } = getEventUnderTest(eventsResponse));
-        }, 5000);
-
-        it("Writes an event with the correct session ID", () => {
-          const { pk } = eventsResponse[0];
-
-          expect(pk).toEqual("SESSION#UNKNOWN");
-        });
-
-        it("Writes an event with the correct event_name", () => {
-          expect(event).toEqual(
-            expect.objectContaining({
-              event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
-            }),
-          );
-        });
       });
     });
 
