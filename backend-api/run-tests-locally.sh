@@ -4,9 +4,6 @@ set -eu
 BACKEND_STACK_NAME="${1:-mob}-async-backend"
 TEST_RESOURCES_STACK_NAME="${1:-mob}-test-resources"
 
-echo "BACKEND_STACK_NAME: ${BACKEND_STACK_NAME}"
-echo "TEST_RESOURCES_STACK_NAME: ${TEST_RESOURCES_STACK_NAME}"
-
 echo "Running test against ${BACKEND_STACK_NAME}"
 
 rm -rf docker-vars.env
