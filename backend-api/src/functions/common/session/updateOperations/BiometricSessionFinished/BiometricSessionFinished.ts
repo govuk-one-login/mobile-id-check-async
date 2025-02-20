@@ -1,11 +1,10 @@
 import { UpdateSessionOperation } from "../UpdateSessionOperation";
-import { SessionState } from "../../session";
+import { SessionState, SessionAttributes } from "../../session";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import {
   getBaseSessionAttributes,
   getBiometricSessionFinishedSessionAttributes,
 } from "../sessionAttributes/sessionAttributes";
-import { SessionAttributes } from "../../session";
 import { Result } from "../../../../utils/result";
 
 export class BiometricSessionFinished implements UpdateSessionOperation {
