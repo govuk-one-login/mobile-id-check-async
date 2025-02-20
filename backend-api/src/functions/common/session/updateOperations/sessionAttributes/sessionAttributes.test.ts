@@ -1,6 +1,7 @@
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import {
   getBaseSessionAttributes,
+  getBiometricSessionFinishedSessionAttributes,
   getBiometricTokenIssuedSessionAttributes,
 } from "./sessionAttributes";
 import { emptyFailure, successResult } from "../../../../utils/result";
@@ -8,6 +9,7 @@ import { SessionAttributes, SessionState } from "../../session";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import {
   validBaseSessionAttributes,
+  validBiometricSessionFinishedAttributes,
   validBiometricTokenIssuedSessionAttributes,
 } from "../../../../testUtils/unitTestData";
 
@@ -274,6 +276,110 @@ describe("Session attributes", () => {
             successResult(
               unmarshall(validBiometricTokenIssuedSession.attributes),
             ),
+          );
+        });
+      });
+    });
+  });
+
+  describe("getBiometricSessionFinishedSessionAttributes", () => {
+    describe("Given an invalid biometric session finished attribute record", () => {
+      describe.each([
+        ...givenAnyCommonSessionAttributeIsInvalid(
+          validBiometricSessionFinishedAttributes,
+        ),
+        {
+          scenario: "Given sessionState is not BIOMETRIC_SESSION_FINISHED",
+          attributes: buildSessionAttributes(
+            validBiometricSessionFinishedAttributes,
+            {
+              sessionState: SessionState.AUTH_SESSION_CREATED,
+            },
+          ),
+        },
+        {
+          scenario: "Given documentType is missing",
+          attributes: buildSessionAttributes(
+            validBiometricSessionFinishedAttributes,
+            {
+              documentType: undefined,
+            },
+          ),
+        },
+        {
+          scenario: "Given documentType is present but not of type string",
+          attributes: marshall({
+            ...validBiometricSessionFinishedAttributes,
+            documentType: 12345,
+          }),
+        },
+        {
+          scenario: "Given opaqueId is missing",
+          attributes: buildSessionAttributes(
+            validBiometricSessionFinishedAttributes,
+            {
+              opaqueId: undefined,
+            },
+          ),
+        },
+        {
+          scenario: "Given opaqueId is present but not of type string",
+          attributes: marshall({
+            ...validBiometricSessionFinishedAttributes,
+            opaqueId: 12345,
+          }),
+        },
+        {
+          scenario: "Given biometricSessionId is missing",
+          attributes: buildSessionAttributes(
+            validBiometricSessionFinishedAttributes,
+            {
+              biometricSessionId: undefined,
+            },
+          ),
+        },
+        {
+          scenario:
+            "Given biometricSessionId is present but not of type string",
+          attributes: marshall({
+            ...validBiometricSessionFinishedAttributes,
+            biometricSessionId: 12345,
+          }),
+        },
+      ])("$scenario", ({ attributes }) => {
+        it("Returns an emptyFailure", () => {
+          const result =
+            getBiometricSessionFinishedSessionAttributes(attributes);
+          expect(result).toEqual(emptyFailure());
+        });
+      });
+    });
+
+    describe("Given a valid biometric session finished attribute record", () => {
+      describe.each([
+        {
+          scenario: "Given redirectUri attribute is undefined",
+          attributes: buildSessionAttributes(
+            validBiometricSessionFinishedAttributes,
+          ),
+        },
+        {
+          scenario: "Given redirectUri attribute is defined",
+          attributes: buildSessionAttributes(
+            validBiometricSessionFinishedAttributes,
+            {
+              redirectUri: "https://www.mockRedirectUri.com",
+            },
+          ),
+        },
+      ])("$scenario", (validBiometricSessionFinished) => {
+        it("Returns successResult with BiometricSessionFinishedAttributes", () => {
+          const result = getBiometricSessionFinishedSessionAttributes(
+            validBiometricSessionFinished.attributes,
+          );
+
+          expect(result).toEqual(
+            successResult(unmarshall(validBiometricSessionFinished.attributes)),
           );
         });
       });

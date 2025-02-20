@@ -3,13 +3,13 @@ import { SessionState } from "../../session";
 import { emptyFailure, successResult } from "../../../../utils/result";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import {
-  validBaseSessionAttributes,
   validBiometricSessionFinishedAttributes,
+  validBiometricTokenIssuedSessionAttributes,
 } from "../../../../testUtils/unitTestData";
 
 describe("BiometricSessionFinished", () => {
   let biometricSessionFinished: BiometricSessionFinished;
-  const mockBiometricSessionId = "mock-bio-session-id";
+  const mockBiometricSessionId = "mock-biometric-session-id";
 
   beforeEach(() => {
     biometricSessionFinished = new BiometricSessionFinished(
@@ -61,7 +61,9 @@ describe("BiometricSessionFinished", () => {
   });
 
   describe("When I request the getSessionAttributesFromDynamoDbItem", () => {
-    const validBaseSessionAttributesItem = marshall(validBaseSessionAttributes);
+    const validBiometricTokenIssuedSessionAttributesItem = marshall(
+      validBiometricTokenIssuedSessionAttributes,
+    );
 
     describe("Given operationFailed in options is true", () => {
       const getSessionAttributesOptions = { operationFailed: true };
@@ -78,11 +80,13 @@ describe("BiometricSessionFinished", () => {
       it("Returns successResult with BaseSessionAttributes for valid base attributes", () => {
         const result =
           biometricSessionFinished.getSessionAttributesFromDynamoDbItem(
-            validBaseSessionAttributesItem,
+            validBiometricTokenIssuedSessionAttributesItem,
             getSessionAttributesOptions,
           );
         expect(result).toEqual(
-          successResult(unmarshall(validBaseSessionAttributesItem)),
+          successResult(
+            unmarshall(validBiometricTokenIssuedSessionAttributesItem),
+          ),
         );
       });
     });
@@ -91,7 +95,7 @@ describe("BiometricSessionFinished", () => {
       it("Returns emptyFailure for invalid finished session attributes", () => {
         const result =
           biometricSessionFinished.getSessionAttributesFromDynamoDbItem(
-            validBaseSessionAttributesItem,
+            validBiometricTokenIssuedSessionAttributesItem,
           );
         expect(result).toEqual(emptyFailure());
       });

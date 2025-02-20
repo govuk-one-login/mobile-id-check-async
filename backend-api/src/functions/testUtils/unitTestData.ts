@@ -32,9 +32,6 @@ export const mockInertEventService: IEventService = {
   writeBiometricTokenIssuedEvent: jest.fn(() => {
     throw new Error("Not implemented");
   }),
-  writeBiometricSessionFinishedEvent: jest.fn(() => {
-    throw new Error("Not implemented");
-  }),
 };
 
 export const validBaseSessionAttributes = {

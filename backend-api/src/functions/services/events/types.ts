@@ -12,12 +12,18 @@ export interface BaseUserEventConfig extends BaseEventConfig {
   govukSigninJourneyId: string | undefined;
   ipAddress: string | undefined;
   txmaAuditEncoded: string | undefined;
+  transactionId?: string;
 }
 
 export interface RestrictedData {
   device_information: {
     encoded: string;
   };
+  transactionId?: string;
+}
+
+export interface Extensions {
+  suspected_fraud_signal?: string;
 }
 
 export interface BaseTxmaEvent {
@@ -34,6 +40,7 @@ export interface BaseUserTxmaEvent extends BaseTxmaEvent {
     session_id: string;
     govuk_signin_journey_id: string | undefined;
     ip_address: string | undefined;
+    transaction_id?: string;
   };
 }
 
@@ -45,11 +52,11 @@ export type GenericEventNames =
 export type EventNames =
   | GenericEventNames
   | "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED"
-  | "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED"
-  | "DCMAW_ASYNC_BIOMETRIC_SESSION_FINISHED";
+  | "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED";
 
 export interface GenericEventConfig extends BaseUserEventConfig {
   eventName: GenericEventNames;
+  extensions?: Extensions;
 }
 
 export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
@@ -60,19 +67,9 @@ export interface BiometricTokenIssuedEventConfig extends BaseUserEventConfig {
   documentType: DocumentType;
 }
 
-export interface BiometricSessionFinishedEventConfig
-  extends BaseUserEventConfigWithTransaction {
-  eventName: GenericEventNames;
-  extensions?: {
-    suspected_fraud_signal?: string;
-  };
-}
-
 export interface GenericTxmaEvent extends BaseUserTxmaEvent {
   event_name: GenericEventNames;
-  extensions?: {
-    suspected_fraud_signal?: string;
-  };
+  extensions?: Extensions;
 }
 
 export interface CredentialTokenIssuedEvent extends BaseTxmaEvent {
@@ -88,9 +85,7 @@ export interface BiometricTokenIssuedEvent extends BaseUserTxmaEvent {
 
 export interface BiometricSessionFinishedEvent extends BaseUserTxmaEvent {
   event_name: GenericEventNames;
-  extensions?: {
-    suspected_fraud_signal?: string;
-  };
+  extensions?: Extensions;
 }
 
 export type TxmaEvents =
@@ -108,8 +103,5 @@ export interface IEventService {
   ) => Promise<Result<void, void>>;
   writeBiometricTokenIssuedEvent: (
     eventConfig: BiometricTokenIssuedEventConfig,
-  ) => Promise<Result<void, void>>;
-  writeBiometricSessionFinishedEvent: (
-    eventConfig: BiometricSessionFinishedEventConfig,
   ) => Promise<Result<void, void>>;
 }

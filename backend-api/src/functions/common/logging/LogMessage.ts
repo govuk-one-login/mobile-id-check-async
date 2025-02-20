@@ -103,10 +103,6 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_INVALID_CONFIG",
     "One or more required environment variables were missing or invalid.",
   );
-  static readonly FINISH_BIOMETRIC_SESSION_ERROR = new LogMessage(
-    "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_ERROR",
-    "An error occurred during finish biometric session processing.",
-  );
 
   private constructor(
     public readonly messageCode: string,

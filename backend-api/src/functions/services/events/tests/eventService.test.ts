@@ -402,7 +402,7 @@ describe("Event Service", () => {
       beforeEach(async () => {
         sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
 
-        result = await eventWriter.writeBiometricSessionFinishedEvent({
+        result = await eventWriter.writeGenericEvent({
           sub: "mockSub",
           sessionId: "mockSessionId",
           govukSigninJourneyId: "mockGovukSigninJourneyId",
@@ -410,9 +410,8 @@ describe("Event Service", () => {
           componentId: "mockComponentId",
           eventName: "DCMAW_ASYNC_CRI_4XXERROR",
           transactionId: "mockTransactionId",
-          extensions: {
-            suspected_fraud_signal: "AUTH_SESSION_NOT_FOUND",
-          },
+          ipAddress: "mockIpAddress",
+          txmaAuditEncoded: undefined,
         });
       });
 
@@ -424,14 +423,12 @@ describe("Event Service", () => {
               session_id: "mockSessionId",
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
               transaction_id: "mockTransactionId",
+              ip_address: "mockIpAddress",
             },
             timestamp: 1609462861,
             event_timestamp_ms: 1609462861000,
             event_name: "DCMAW_ASYNC_CRI_4XXERROR",
             component_id: "mockComponentId",
-            extensions: {
-              suspected_fraud_signal: "AUTH_SESSION_NOT_FOUND",
-            },
           }),
           QueueUrl: "mockSqsQueue",
         };
@@ -451,7 +448,7 @@ describe("Event Service", () => {
       beforeEach(async () => {
         sqsMock.on(SendMessageCommand).resolves({});
 
-        result = await eventWriter.writeBiometricSessionFinishedEvent({
+        result = await eventWriter.writeGenericEvent({
           sub: "mockSub",
           sessionId: "mockSessionId",
           govukSigninJourneyId: "mockGovukSigninJourneyId",
@@ -462,6 +459,8 @@ describe("Event Service", () => {
           extensions: {
             suspected_fraud_signal: "AUTH_SESSION_NOT_FOUND",
           },
+          ipAddress: undefined,
+          txmaAuditEncoded: undefined,
         });
       });
 

@@ -10,7 +10,6 @@ import {
   CredentialTokenIssuedEventConfig,
   EventNames,
   BiometricTokenIssuedEventConfig,
-  BiometricSessionFinishedEventConfig,
 } from "../types";
 
 export class MockEventWriterSuccess implements IEventService {
@@ -34,13 +33,6 @@ export class MockEventWriterSuccess implements IEventService {
     _eventConfig: BiometricTokenIssuedEventConfig,
   ): Promise<Result<null>> => {
     this.auditEvents.push("DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED");
-    return successResult(null);
-  };
-
-  writeBiometricSessionFinishedEvent = async (
-    _eventConfig: BiometricSessionFinishedEventConfig,
-  ): Promise<Result<null>> => {
-    this.auditEvents.push("DCMAW_ASYNC_BIOMETRIC_SESSION_FINISHED");
     return successResult(null);
   };
 }

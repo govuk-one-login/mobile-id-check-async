@@ -44,7 +44,7 @@ npm run test
 2. Deploy your stack
 ```bash
 # From /backend-api
-npm run deploy-backend-to-dev <your-stack-name>
+npm deploy:dev <your-stack-name>
 ```
 Note: For more information, see `helper-scripts` [README](../helper-scripts/README.md#deploy_backend.sh))
 3. The deployment script will generate you a `.env` file for your stack. To generate a `.env` for another deployed stack
