@@ -122,27 +122,27 @@ export async function pollForEvents({
   sortKeyPrefix: string;
   numberOfEvents: number;
 }): Promise<EventResponse[]> {
+  function currentTime() {
+    return Date.now();
+  }
+
   async function wait(delayMillis: number): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, delayMillis));
   }
 
-  function currentTime() {
-    return Date.now();
-  }
+  const INITIAL_DELAY_MILLIS = 500; // initial wait time before calling API
+  const MAX_BACKOFF_MILLIS = 10000; // maximum wait time between API calls
 
   function calculateExponentialBackoff(attempts: number) {
     return Math.min(2 ** attempts * INITIAL_DELAY_MILLIS, MAX_BACKOFF_MILLIS);
   }
 
-  const POLLING_DURATION_MILLIS = 40000; // maximum time to poll API
-  const MAX_BACKOFF_MILLIS = 10000; // maximum wait time between API calls
-  const INITIAL_DELAY_MILLIS = 500; // initial wait time before calling API
-
+  const POLLING_DURATION_MILLIS = 40000;
   const pollEndTime = currentTime() + POLLING_DURATION_MILLIS;
 
   let events: unknown[] = [];
-  let attempts = 0;
   let waitTime = 0;
+  let attempts = 0;
 
   while (
     events.length < numberOfEvents &&
