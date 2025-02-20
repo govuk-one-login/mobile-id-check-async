@@ -166,16 +166,16 @@ describe.each(apis)(
             numberOfEvents: 1,
           });
 
-          ({ event } = eventsResponse[0]);
-          const timestamp = (event as any).timestamp;
-          const isEventCreationDateWithinTestTimeFrame =
-            isEventLessThanOrEqualTo60SecondsOld(timestamp);
+          const eventsFound = eventsResponse.find((event) => {
+            const timestamp = (event.event as any).timestamp;
+            return isEventLessThanOrEqualTo60SecondsOld(timestamp)
+          })
 
-          if (!isEventCreationDateWithinTestTimeFrame) {
-            throw new Error(
-              "The event being tested was not created within the testing time frame",
-            );
+          if (!eventsFound) {
+            throw new Error("An event created within the testing time frame could not be found");
           }
+
+          ({ event } = eventsFound)
         }, 5000);
 
         it("Writes an event with the correct session ID", () => {
