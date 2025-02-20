@@ -60,6 +60,9 @@ describe("POST /async/biometricToken", () => {
   describe("Given there is a valid request", () => {
     let sessionId: string | null;
     let biometricTokenResponse: AxiosResponse;
+    let eventsResponse: EventResponse[];
+    let pk: string;
+    let event: object;
 
     beforeAll(async () => {
       sessionId = await getValidSessionId();
@@ -77,34 +80,17 @@ describe("POST /async/biometricToken", () => {
         "/async/biometricToken",
         requestBody,
       );
-    }, 15000);
 
-    it("Returns a 200 response with biometric access token and opaque ID", () => {
-      expect(biometricTokenResponse.status).toBe(200);
-      expect(biometricTokenResponse.data).toStrictEqual({
-        accessToken: expect.any(String),
-        opaqueId: expect.toBeValidUuid(),
+      eventsResponse = await pollForEvents({
+        partitionKey: `SESSION#${sessionId}`,
+        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED`,
+        numberOfEvents: 1,
       });
-      expect(biometricTokenResponse.headers).toEqual(
-        expect.objectContaining(expectedSecurityHeaders),
-      );
-    }, 5000);
+
+      ({ pk, event } = eventsResponse[0]);
+    }, 20000);
 
     describe("Writing to TxMA", () => {
-      let eventsResponse: EventResponse[];
-      let pk: string;
-      let event: object;
-
-      beforeAll(async () => {
-        eventsResponse = await pollForEvents({
-          partitionKey: `SESSION#${sessionId}`,
-          sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED`,
-          numberOfEvents: 1,
-        });
-
-        ({ pk, event } = eventsResponse[0]);
-      }, 5000);
-
       it("Writes an event with the correct session ID", () => {
         expect(pk).toEqual(`SESSION#${sessionId}`);
       });
@@ -117,5 +103,16 @@ describe("POST /async/biometricToken", () => {
         );
       });
     });
+
+    it("Returns a 200 response with biometric access token and opaque ID", () => {
+      expect(biometricTokenResponse.status).toBe(200);
+      expect(biometricTokenResponse.data).toStrictEqual({
+        accessToken: expect.any(String),
+        opaqueId: expect.toBeValidUuid(),
+      });
+      expect(biometricTokenResponse.headers).toEqual(
+        expect.objectContaining(expectedSecurityHeaders),
+      );
+    }, 5000);
   });
 });
