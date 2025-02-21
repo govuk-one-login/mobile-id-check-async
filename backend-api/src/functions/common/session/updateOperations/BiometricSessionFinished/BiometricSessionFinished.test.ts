@@ -9,7 +9,7 @@ import {
 
 describe("BiometricSessionFinished", () => {
   let biometricSessionFinished: BiometricSessionFinished;
-  const mockBiometricSessionId = "mock-bio-session-id";
+  const mockBiometricSessionId = "mock-biometric-session-id";
 
   beforeEach(() => {
     biometricSessionFinished = new BiometricSessionFinished(
