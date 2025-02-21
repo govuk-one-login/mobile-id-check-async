@@ -39,6 +39,7 @@ import {
   BaseSessionAttributes,
   BiometricTokenIssuedSessionAttributes,
 } from "../common/session/session";
+import { getIpAddress } from "../common/request/getIpAddress/getIpAddress";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
@@ -76,13 +77,19 @@ export async function lambdaHandlerConstructor(
   const submitterKey = submitterKeyResult.value;
 
   const eventService = dependencies.getEventService(config.TXMA_SQS);
+  const ipAddress = getIpAddress(event);
 
   const biometricTokenResult = await dependencies.getBiometricToken(
     config.READID_BASE_URL,
     submitterKey,
   );
   if (biometricTokenResult.isError) {
-    return handleInternalServerError(eventService, sessionId, config.ISSUER);
+    return handleInternalServerError(
+      eventService,
+      sessionId,
+      config.ISSUER,
+      ipAddress,
+    );
   }
 
   const opaqueId = generateOpaqueId();
@@ -101,6 +108,7 @@ export async function lambdaHandlerConstructor(
       eventService,
       sessionId,
       config.ISSUER,
+      ipAddress,
     );
   }
 
@@ -115,6 +123,7 @@ export async function lambdaHandlerConstructor(
       .attributes as BiometricTokenIssuedSessionAttributes,
     config.ISSUER,
     responseBody,
+    ipAddress,
   );
 }
 
@@ -172,6 +181,7 @@ async function handleConditionalCheckFailure(
   eventService: IEventService,
   sessionAttributes: BaseSessionAttributes,
   issuer: string,
+  ipAddress: string,
 ): Promise<APIGatewayProxyResult> {
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_4XXERROR",
@@ -180,7 +190,7 @@ async function handleConditionalCheckFailure(
     govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
     getNowInMilliseconds: Date.now,
     componentId: issuer,
-    ipAddress: "mockIpAddress", // TODO implement
+    ipAddress,
   });
 
   if (writeEventResult.isError) {
@@ -201,6 +211,7 @@ async function handleSessionNotFound(
   eventService: IEventService,
   sessionId: string,
   issuer: string,
+  ipAddress: string,
 ): Promise<APIGatewayProxyResult> {
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_4XXERROR",
@@ -209,7 +220,7 @@ async function handleSessionNotFound(
     govukSigninJourneyId: undefined,
     getNowInMilliseconds: Date.now,
     componentId: issuer,
-    ipAddress: "mockIpAddress", // TODO implement
+    ipAddress,
   });
 
   if (writeEventResult.isError) {
@@ -227,6 +238,7 @@ async function handleInternalServerError(
   eventService: IEventService,
   sessionId: string,
   issuer: string,
+  ipAddress: string,
 ): Promise<APIGatewayProxyResult> {
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_5XXERROR",
@@ -235,7 +247,7 @@ async function handleInternalServerError(
     govukSigninJourneyId: undefined,
     getNowInMilliseconds: Date.now,
     componentId: issuer,
-    ipAddress: "mockIpAddress", // TODO implement
+    ipAddress,
   });
 
   if (writeEventResult.isError) {
@@ -253,6 +265,7 @@ async function handleUpdateSessionError(
   eventService: IEventService,
   sessionId: string,
   issuer: string,
+  ipAddress: string,
 ): Promise<APIGatewayProxyResult> {
   let sessionAttributes;
   switch (updateSessionResult.value.errorType) {
@@ -262,11 +275,17 @@ async function handleUpdateSessionError(
         eventService,
         sessionAttributes,
         issuer,
+        ipAddress,
       );
     case UpdateSessionError.SESSION_NOT_FOUND:
-      return handleSessionNotFound(eventService, sessionId, issuer);
+      return handleSessionNotFound(eventService, sessionId, issuer, ipAddress);
     case UpdateSessionError.INTERNAL_SERVER_ERROR:
-      return handleInternalServerError(eventService, sessionId, issuer);
+      return handleInternalServerError(
+        eventService,
+        sessionId,
+        issuer,
+        ipAddress,
+      );
   }
 }
 
@@ -275,6 +294,7 @@ async function handleOkResponse(
   sessionAttributes: BiometricTokenIssuedSessionAttributes,
   issuer: string,
   responseBody: BiometricTokenIssuedOkResponseBody,
+  ipAddress: string,
 ): Promise<APIGatewayProxyResult> {
   const writeEventResult = await eventService.writeBiometricTokenIssuedEvent({
     sub: sessionAttributes.subjectIdentifier,
@@ -283,7 +303,7 @@ async function handleOkResponse(
     getNowInMilliseconds: Date.now,
     componentId: issuer,
     documentType: sessionAttributes.documentType,
-    ipAddress: "mockIpAddress", // TODO implement
+    ipAddress,
   });
 
   if (writeEventResult.isError) {
