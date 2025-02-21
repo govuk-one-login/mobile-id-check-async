@@ -180,6 +180,7 @@ async function handleConditionalCheckFailure(
     govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
     getNowInMilliseconds: Date.now,
     componentId: issuer,
+    ipAddress: "mockIpAddress", // TODO implement
   });
 
   if (writeEventResult.isError) {
@@ -208,6 +209,7 @@ async function handleSessionNotFound(
     govukSigninJourneyId: undefined,
     getNowInMilliseconds: Date.now,
     componentId: issuer,
+    ipAddress: "mockIpAddress", // TODO implement
   });
 
   if (writeEventResult.isError) {
@@ -233,6 +235,7 @@ async function handleInternalServerError(
     govukSigninJourneyId: undefined,
     getNowInMilliseconds: Date.now,
     componentId: issuer,
+    ipAddress: "mockIpAddress", // TODO implement
   });
 
   if (writeEventResult.isError) {
@@ -280,6 +283,7 @@ async function handleOkResponse(
     getNowInMilliseconds: Date.now,
     componentId: issuer,
     documentType: sessionAttributes.documentType,
+    ipAddress: "mockIpAddress", // TODO implement
   });
 
   if (writeEventResult.isError) {
