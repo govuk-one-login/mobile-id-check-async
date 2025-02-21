@@ -374,16 +374,17 @@ Outputs:
     Description: Sessions API Gateway base URL
     Value: !Sub https://${SessionsApiDomainName}
 
+  PrivateApiUrl:
+    Description: Private API Gateway base URL
+    Value: !Sub https://${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
+
   ProxyApiUrl:
     Condition: ProxyApiDeployment
     Description: Proxy API Gateway Pretty DNS
     Value: !Sub https://${ProxyApiDomainName}
 
-  PrivateApiUrl:
-    Description: Private API Gateway base URL
-    Value: !Sub https://${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
-
   StsMockApiUrl:
+    Condition: IsDevOrBuild
     Description: STS Mock API Gateway base URL
     Value: !If
       - UseDevOverrideStsBaseUrl
@@ -391,6 +392,7 @@ Outputs:
       - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
 
   EventsApiUrl:
+    Condition: IsDevOrBuild
     Description: Events API Gateway base URL
     Value: !If
       - UseDevOverrideEventsBaseUrl

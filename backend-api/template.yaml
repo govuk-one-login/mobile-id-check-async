@@ -3275,6 +3275,7 @@ Outputs:
         - EnvironmentVariables
         - !Ref Environment
         - EventsBaseUrl
+    Condition: IsDevOrBuild
 
   PrivateApiUrl:
     Description: Private API Gateway base URL
@@ -3298,6 +3299,7 @@ Outputs:
         - EnvironmentVariables
         - !Ref Environment
         - STSBASEURL
+    Condition: IsDevOrBuild
 
   TxmaKmsEncryptionKeyArn:
     Description: TxMA KMS Encryption Key ARN
