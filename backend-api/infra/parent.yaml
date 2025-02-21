@@ -203,7 +203,6 @@ Mappings:
     staging:
       STSBASEURL: 'https://token.staging.account.gov.uk'
       ReadIdBaseUrl: 'https://readid-proxy.review-b-async.staging.account.gov.uk'
-      EventsBaseUrl: 'https://events.review-b-async.staging.account.gov.uk'
       ClientRegistrySecretPath: 'staging/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
