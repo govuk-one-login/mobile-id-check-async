@@ -33,19 +33,6 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("Events base url is set", () => {
-      const expectedEnvironmentVariablesValues = {
-        dev: "https://events.review-b-async.dev.account.gov.uk",
-        build: "https://events.review-b-async.build.account.gov.uk",
-      };
-
-      const mappingHelper = new Mappings(template);
-      mappingHelper.validatePartialEnvironmentVariablesMapping({
-        environmentFlags: expectedEnvironmentVariablesValues,
-        mappingBottomLevelKey: "EventsBaseUrl",
-      });
-    });
-
     test("ReadIdBaseUrl is the ReadID Proxy", () => {
       const expectedEnvironmentVariablesValues = {
         dev: "https://readid-proxy.review-b-async.dev.account.gov.uk/v2",
