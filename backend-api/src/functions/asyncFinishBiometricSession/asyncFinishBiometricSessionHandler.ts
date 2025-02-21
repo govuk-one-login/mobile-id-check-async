@@ -46,12 +46,11 @@ async function handleConditionalCheckFailure(
       componentId: issuer,
       getNowInMilliseconds: Date.now,
       transactionId: biometricSessionId,
-      extensions:
-      isSessionExpired
-          ? {
-              suspected_fraud_signal: "AUTH_SESSION_TOO_OLD",
-            }
-          : undefined,
+      extensions: isSessionExpired
+        ? {
+            suspected_fraud_signal: "AUTH_SESSION_TOO_OLD",
+          }
+        : undefined,
     });
 
   if (writeEventResult.isError) {
@@ -168,7 +167,7 @@ export async function lambdaHandlerConstructor(
   if (configResult.isError) {
     return serverErrorResponse;
   }
-  
+
   const config = configResult.value;
 
   const validateResult = validateRequestBody(event.body);
@@ -183,9 +182,7 @@ export async function lambdaHandlerConstructor(
   }
 
   const { sessionId, biometricSessionId } = validateResult.value;
-  const eventService = dependencies.getEventService(
-    config.TXMA_SQS,
-  );
+  const eventService = dependencies.getEventService(config.TXMA_SQS);
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
   );
