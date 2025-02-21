@@ -14,25 +14,10 @@ if [ "$(aws sts get-caller-identity --output text --query 'Account')" != "211125
   exit 1
 fi
 
-# Check if cloudfront distribution stack already exists
-originCloakingHeaderSecretArn=$(aws cloudformation describe-stacks \
-  --stack-name "${stackName}-cf-dist" \
-  --query "Stacks[0].Outputs[?(@.OutputKey == 'CloakingSecretArn')].OutputValue" \
-  --output text 2>/dev/null)
-originCloakingHeaderSecretArnResult=$?
-
-# Either retrieve current originCloakingHeader or generate a new one
-if [ "${originCloakingHeaderSecretArnResult}" != "0" ]; then
-  originCloakingHeader="$(
-    LC_ALL=C tr -dc A-Za-z0-9 </dev/urandom | head -c 64
-    echo | base64
-  )"
-else
-  originCloakingHeader=$(aws secretsmanager get-secret-value \
-    --secret-id "${originCloakingHeaderSecretArn}" \
-    --query "SecretString" \
-    --output text)
-fi
+originCloakingHeaderManagedSecretRotationMonthWeekDaySchedule="MON#2"
+originCloakingHeaderManagedSecretAlarmSNSTopicARN="arn:aws:sns:eu-west-2:211125300205:platform-alarms-sns-warning"
+originCloakingHeaderManagedSecretNotificationSNSTopicARN="arn:aws:sns:eu-west-2:211125300205:devplatform-build-notifications-BuildNotificationDetailedTopic-joUMhH5nXhrk"
+originCloakingHeaderManagedSecretNotificationSNSTopicKMSKeyARN="arn:aws:kms:eu-west-2:211125300205:key/56de6d5d-c2e7-4c4b-ad77-31f8a51c73ca"
 
 # Retrieve ACM certificate arn
 certificateArn=$(aws acm list-certificates \
@@ -43,8 +28,12 @@ certificateArn=$(aws acm list-certificates \
 # Generate parameters json
 jq --null-input \
   --arg stackName "${stackName}" \
-  --arg originCloakingHeader "${originCloakingHeader}" \
+  --arg originCloakingHeader "none" \
   --arg certificateArn "${certificateArn}" \
+  --arg originCloakingHeaderManagedSecretRotationMonthWeekDaySchedule "${originCloakingHeaderManagedSecretRotationMonthWeekDaySchedule}" \
+  --arg originCloakingHeaderManagedSecretAlarmSNSTopicARN "${originCloakingHeaderManagedSecretAlarmSNSTopicARN}" \
+  --arg originCloakingHeaderManagedSecretNotificationSNSTopicARN "${originCloakingHeaderManagedSecretNotificationSNSTopicARN}" \
+  --arg originCloakingHeaderManagedSecretNotificationSNSTopicKMSKeyARN "${originCloakingHeaderManagedSecretNotificationSNSTopicKMSKeyARN}" \
   '[
   {
     "ParameterKey": "DistributionAlias",
@@ -57,6 +46,22 @@ jq --null-input \
   {
     "ParameterKey": "FraudHeaderEnabled",
     "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "OriginCloakingHeaderManagedSecretRotationMonthWeekDaySchedule",
+    "ParameterValue": $originCloakingHeaderManagedSecretRotationMonthWeekDaySchedule
+  },
+  {
+    "ParameterKey": "OriginCloakingHeaderManagedSecretAlarmSNSTopicARN",
+    "ParameterValue": $originCloakingHeaderManagedSecretAlarmSNSTopicARN
+  },
+  {
+    "ParameterKey": "OriginCloakingHeaderManagedSecretNotificationSNSTopicARN",
+    "ParameterValue": $originCloakingHeaderManagedSecretNotificationSNSTopicARN
+  },
+  {
+    "ParameterKey": "OriginCloakingHeaderManagedSecretNotificationSNSTopicKMSKeyARN",
+    "ParameterValue": $originCloakingHeaderManagedSecretNotificationSNSTopicKMSKeyARN
   },
   {
     "ParameterKey": "OriginCloakingHeader",
