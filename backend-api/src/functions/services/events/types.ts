@@ -10,6 +10,7 @@ export interface BaseUserEventConfig extends BaseEventConfig {
   sub: string | undefined;
   sessionId: string;
   govukSigninJourneyId: string | undefined;
+  ipAddress: string | undefined;
 }
 
 export interface BaseTxmaEvent {
@@ -24,6 +25,7 @@ export interface BaseUserTxmaEvent extends BaseTxmaEvent {
     user_id: string | undefined;
     session_id: string;
     govuk_signin_journey_id: string | undefined;
+    ip_address: string | undefined;
   };
 }
 
