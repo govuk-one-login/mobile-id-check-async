@@ -31,6 +31,12 @@ Parameters:
     Type: String
     Default: none
 
+  DevOverrideEventsBaseUrl:
+    Description: |
+      Override the EventsBaseUrl value for development deployments
+    Type: String
+    Default: none
+
   DevOverrideReadIdBaseUrl:
     Description: |
       Override the ReadIdBaseUrl value for development deployments
@@ -177,6 +183,7 @@ Mappings:
     dev:
       STSBASEURL: 'https://sts-mock.review-b-async.dev.account.gov.uk'
       ReadIdBaseUrl: 'https://readid-proxy.review-b-async.dev.account.gov.uk/v2'
+      EventsBaseUrl: 'https://events.review-b-async.dev.account.gov.uk'
       ClientRegistrySecretPath: 'dev/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
@@ -186,6 +193,7 @@ Mappings:
     build:
       STSBASEURL: 'https://sts-mock.review-b-async.build.account.gov.uk'
       ReadIdBaseUrl: 'https://readid-proxy.review-b-async.build.account.gov.uk/v2'
+      EventsBaseUrl: 'https://events.review-b-async.build.account.gov.uk'
       ClientRegistrySecretPath: 'build/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
@@ -195,6 +203,7 @@ Mappings:
     staging:
       STSBASEURL: 'https://token.staging.account.gov.uk'
       ReadIdBaseUrl: 'https://readid-proxy.review-b-async.staging.account.gov.uk'
+      EventsBaseUrl: 'https://events.review-b-async.staging.account.gov.uk'
       ClientRegistrySecretPath: 'staging/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
@@ -264,6 +273,11 @@ Conditions:
   UseDevOverrideStsBaseUrl: !Not
     - !Equals
       - !Ref DevOverrideStsBaseUrl
+      - none
+
+  UseDevOverrideEventsBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideEventsBaseUrl
       - none
 
   UseDevOverrideReadIdBaseUrl: !Not
@@ -376,6 +390,13 @@ Outputs:
       - UseDevOverrideStsBaseUrl
       - !Ref DevOverrideStsBaseUrl
       - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
+
+  EventsApiUrl:
+    Description: Events API Gateway base URL
+    Value: !If
+      - UseDevOverrideEventsBaseUrl
+      - !Ref DevOverrideEventsBaseUrl
+      - !FindInMap [EnvironmentVariables, !Ref Environment, EventsBaseUrl]
 
   TxmaSqsQueueArn:
     Condition: IsDevOrBuild

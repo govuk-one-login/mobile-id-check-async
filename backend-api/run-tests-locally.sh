@@ -2,7 +2,6 @@
 set -eu
 
 BACKEND_STACK_NAME="${1:-mob}-async-backend"
-TEST_RESOURCES_STACK_NAME="${1:-mob}-test-resources"
 
 echo "Running test against ${BACKEND_STACK_NAME}"
 
@@ -17,11 +16,6 @@ aws cloudformation describe-stacks \
   --stack-name "$BACKEND_STACK_NAME" \
   --query 'Stacks[0].Outputs[].{key: OutputKey, value: OutputValue}' \
   --output text > cf-output.txt
-
-aws cloudformation describe-stacks \
-  --stack-name "$TEST_RESOURCES_STACK_NAME" \
-  --query "Stacks[0].Outputs[?OutputKey=='EventsApiUrl'].{key: OutputKey, value: OutputValue}" \
-  --output text >> cf-output.txt
 
 eval $(awk '{ printf("export CFN_%s=\"%s\"\n", $1, $2) }' cf-output.txt)
 awk '{ printf("CFN_%s=\"%s\"\n", $1, $2) }' cf-output.txt >> docker-vars.env

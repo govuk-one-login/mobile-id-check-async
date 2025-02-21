@@ -14,6 +14,12 @@ Parameters:
     Type: String
     Default: false
 
+  DevOverrideEventsBaseUrl:
+    Description: |
+      Override the EventsBaseUrl value for development deployments
+    Type: String
+    Default: none
+
   DevOverrideReadIdBaseUrl:
     Description: |
       Override the ReadIdBaseUrl value for development deployments
@@ -78,6 +84,7 @@ Mappings:
       BiometricSubmitterKeySecretPathDl: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
       ClientRegistrySecretPath: build/clientRegistry
+      EventsBaseUrl: https://events.review-b-async.build.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.build.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.build.account.gov.uk
     dev:
@@ -86,6 +93,7 @@ Mappings:
       BiometricSubmitterKeySecretPathDl: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
       ClientRegistrySecretPath: dev/clientRegistry
+      EventsBaseUrl: https://events.review-b-async.dev.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.dev.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.dev.account.gov.uk
     integration:
@@ -110,6 +118,7 @@ Mappings:
       BiometricSubmitterKeySecretPathDl: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
       ClientRegistrySecretPath: staging/clientRegistry
+      EventsBaseUrl: https://events.review-b-async.staging.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.staging.account.gov.uk
       STSBASEURL: https://token.staging.account.gov.uk
 
@@ -261,6 +270,11 @@ Conditions:
   UseCodeSigning: !Not
     - !Equals
       - !Ref CodeSigningConfigArn
+      - none
+
+  UseDevOverrideEventsBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideEventsBaseUrl
       - none
 
   UseDevOverrideReadIdBaseUrl: !Not
@@ -3253,6 +3267,16 @@ Resources:
     Condition: DeployAlarms
 
 Outputs:
+  EventsApiUrl:
+    Description: Events API Gateway base URL
+    Value: !If
+      - UseDevOverrideEventsBaseUrl
+      - !Ref DevOverrideEventsBaseUrl
+      - !FindInMap
+        - EnvironmentVariables
+        - !Ref Environment
+        - EventsBaseUrl
+
   PrivateApiUrl:
     Description: Private API Gateway base URL
     Value: !Sub https://${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}

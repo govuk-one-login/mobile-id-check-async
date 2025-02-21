@@ -130,7 +130,7 @@ export async function pollForEvents({
     await new Promise((resolve) => setTimeout(resolve, delayMillis));
   }
 
-  const INITIAL_DELAY_MILLIS = 500; // initial wait time before calling API
+  const INITIAL_DELAY_MILLIS = 1000; // initial wait time before calling API
   const MAX_BACKOFF_MILLIS = 10000; // maximum wait time between API calls
 
   function calculateExponentialBackoff(attempts: number) {
