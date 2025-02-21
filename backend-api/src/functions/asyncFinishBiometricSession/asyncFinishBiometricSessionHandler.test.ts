@@ -390,7 +390,6 @@ describe("Async Finish Biometric Session", () => {
         });
 
         it("Logs audit event error and returns 500", () => {
-          console.log("consoleErrorSpy", consoleErrorSpy.mock.calls);
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
             data: { auditEventName: "DCMAW_ASYNC_CRI_5XXERROR" },

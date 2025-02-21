@@ -35,6 +35,8 @@ async function handleConditionalCheckFailure(
 ): Promise<APIGatewayProxyResult> {
   const sessionAge = Date.now() - sessionAttributes.createdAt;
 
+  const isSessionExpired = sessionAge > 60 * 60 * 1000;
+
   const writeEventResult =
     await eventService.writeBiometricSessionFinishedEvent({
       eventName: "DCMAW_ASYNC_CRI_4XXERROR",
@@ -45,7 +47,7 @@ async function handleConditionalCheckFailure(
       getNowInMilliseconds: Date.now,
       transactionId: biometricSessionId,
       extensions:
-        sessionAge > 60 * 60 * 1000
+      isSessionExpired
           ? {
               suspected_fraud_signal: "AUTH_SESSION_TOO_OLD",
             }
@@ -59,7 +61,7 @@ async function handleConditionalCheckFailure(
     return serverErrorResponse;
   }
 
-  if (sessionAge > 60 * 60 * 1000) {
+  if (isSessionExpired) {
     return forbiddenResponse("expired_session", "Session has expired");
   }
 
@@ -162,11 +164,12 @@ export async function lambdaHandlerConstructor(
   logger.resetKeys();
   logger.addContext(context);
   logger.info(LogMessage.FINISH_BIOMETRIC_SESSION_STARTED);
-
   const configResult = getFinishBiometricSessionConfig(dependencies.env);
   if (configResult.isError) {
     return serverErrorResponse;
   }
+  
+  const config = configResult.value;
 
   const validateResult = validateRequestBody(event.body);
   if (validateResult.isError) {
@@ -181,10 +184,10 @@ export async function lambdaHandlerConstructor(
 
   const { sessionId, biometricSessionId } = validateResult.value;
   const eventService = dependencies.getEventService(
-    configResult.value.TXMA_SQS,
+    config.TXMA_SQS,
   );
   const sessionRegistry = dependencies.getSessionRegistry(
-    configResult.value.SESSION_TABLE_NAME,
+    config.SESSION_TABLE_NAME,
   );
 
   const updateResult = await sessionRegistry.updateSession(
@@ -198,7 +201,7 @@ export async function lambdaHandlerConstructor(
       eventService,
       sessionId,
       biometricSessionId,
-      configResult.value.ISSUER,
+      config.ISSUER,
     );
   }
 
