@@ -187,6 +187,35 @@ describe("Async Finish Biometric Session", () => {
 
   describe("Session update scenarios", () => {
     describe("When session not found", () => {
+      describe("and audit event write fails", () => {
+        beforeEach(async () => {
+          dependencies = {
+            ...dependencies,
+            getEventService: () => mockFailingEventService,
+            getSessionRegistry: () => ({
+              ...mockInertSessionRegistry,
+              updateSession: jest.fn().mockResolvedValue(
+                errorResult({
+                  errorType: UpdateSessionError.SESSION_NOT_FOUND,
+                }),
+              ),
+            }),
+          };
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+
+        it("Logs audit event error and returns 500", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+            data: { auditEventName: "DCMAW_ASYNC_CRI_4XXERROR" },
+          });
+          expect(result.statusCode).toBe(500);
+        });
+      });
       describe("and audit event succeeds", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () => ({
@@ -218,36 +247,6 @@ describe("Async Finish Biometric Session", () => {
             },
           });
           expect(result.statusCode).toBe(401);
-        });
-      });
-
-      describe("and audit event write fails", () => {
-        beforeEach(async () => {
-          dependencies = {
-            ...dependencies,
-            getEventService: () => mockFailingEventService,
-            getSessionRegistry: () => ({
-              ...mockInertSessionRegistry,
-              updateSession: jest.fn().mockResolvedValue(
-                errorResult({
-                  errorType: UpdateSessionError.SESSION_NOT_FOUND,
-                }),
-              ),
-            }),
-          };
-          result = await lambdaHandlerConstructor(
-            dependencies,
-            validRequest,
-            context,
-          );
-        });
-
-        it("Logs audit event error and returns 500", () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-            data: { auditEventName: "DCMAW_ASYNC_CRI_4XXERROR" },
-          });
-          expect(result.statusCode).toBe(500);
         });
       });
     });
@@ -369,37 +368,6 @@ describe("Async Finish Biometric Session", () => {
     });
 
     describe("When there is an internal server error", () => {
-      describe("and audit event succeeds", () => {
-        beforeEach(async () => {
-          dependencies.getSessionRegistry = () => ({
-            ...mockInertSessionRegistry,
-            updateSession: jest.fn().mockResolvedValue(
-              errorResult({
-                errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
-              }),
-            ),
-          });
-          result = await lambdaHandlerConstructor(
-            dependencies,
-            validRequest,
-            context,
-          );
-        });
-
-        it("Writes error event and returns 500", () => {
-          expect(mockWriteBiometricSessionFinishedEventSuccess).toBeCalledWith({
-            eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-            componentId: "mockIssuer",
-            getNowInMilliseconds: Date.now,
-            govukSigninJourneyId: undefined,
-            sessionId: mockSessionId,
-            sub: undefined,
-            transactionId: mockBiometricSessionId,
-          });
-          expect(result.statusCode).toBe(500);
-        });
-      });
-
       describe("and audit event write fails", () => {
         beforeEach(async () => {
           dependencies = {
@@ -426,6 +394,36 @@ describe("Async Finish Biometric Session", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
             data: { auditEventName: "DCMAW_ASYNC_CRI_5XXERROR" },
+          });
+          expect(result.statusCode).toBe(500);
+        });
+      });
+      describe("and audit event succeeds", () => {
+        beforeEach(async () => {
+          dependencies.getSessionRegistry = () => ({
+            ...mockInertSessionRegistry,
+            updateSession: jest.fn().mockResolvedValue(
+              errorResult({
+                errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
+              }),
+            ),
+          });
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+
+        it("Writes error event and returns 500", () => {
+          expect(mockWriteBiometricSessionFinishedEventSuccess).toBeCalledWith({
+            eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+            componentId: "mockIssuer",
+            getNowInMilliseconds: Date.now,
+            govukSigninJourneyId: undefined,
+            sessionId: mockSessionId,
+            sub: undefined,
+            transactionId: mockBiometricSessionId,
           });
           expect(result.statusCode).toBe(500);
         });
