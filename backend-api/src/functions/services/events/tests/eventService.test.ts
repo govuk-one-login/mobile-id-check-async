@@ -40,6 +40,7 @@ describe("Event Service", () => {
           govukSigninJourneyId: "mockGovukSigninJourneyId",
           getNowInMilliseconds: () => 1609462861000,
           componentId: "mockComponentId",
+          ipAddress: "mockIpAddress",
         });
       });
 
@@ -50,6 +51,7 @@ describe("Event Service", () => {
               user_id: "mockSub",
               session_id: "mockSessionId",
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              ip_address: "mockIpAddress",
             },
             timestamp: 1609462861,
             event_timestamp_ms: 1609462861000,
@@ -81,6 +83,7 @@ describe("Event Service", () => {
           govukSigninJourneyId: "mockGovukSigninJourneyId",
           getNowInMilliseconds: () => 1609462861000,
           componentId: "mockComponentId",
+          ipAddress: "mockIpAddress",
         });
       });
 
@@ -91,6 +94,7 @@ describe("Event Service", () => {
               user_id: "mockSub",
               session_id: "mockSessionId",
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              ip_address: "mockIpAddress",
             },
             timestamp: 1609462861,
             event_timestamp_ms: 1609462861000,
@@ -192,6 +196,7 @@ describe("Event Service", () => {
           getNowInMilliseconds: () => 1609462861000,
           componentId: "mockComponentId",
           documentType: "NFC_PASSPORT",
+          ipAddress: "mockIpAddress",
         });
       });
 
@@ -202,6 +207,7 @@ describe("Event Service", () => {
               user_id: "mockSub",
               session_id: "mockSessionId",
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              ip_address: "mockIpAddress",
             },
             timestamp: 1609462861,
             event_timestamp_ms: 1609462861000,
@@ -236,6 +242,7 @@ describe("Event Service", () => {
           getNowInMilliseconds: () => 1609462861000,
           componentId: "mockComponentId",
           documentType: "NFC_PASSPORT",
+          ipAddress: "mockIpAddress",
         });
       });
 
@@ -246,6 +253,7 @@ describe("Event Service", () => {
               user_id: "mockSub",
               session_id: "mockSessionId",
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              ip_address: "mockIpAddress",
             },
             timestamp: 1609462861,
             event_timestamp_ms: 1609462861000,
