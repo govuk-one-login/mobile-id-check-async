@@ -34,52 +34,13 @@ describe("Backend application infrastructure", () => {
     });
 
     test("Events base url is set", () => {
-      interface EnvironmentFlags {
-        dev: string | boolean | number;
-        build: string | boolean | number;
-        staging: string | boolean | number;
-        integration: string | boolean | number;
-        production: string | boolean | number;
-      }
-
-      const environments = [
-        "dev",
-        "build",
-        "staging",
-        "integration",
-        "production",
-      ];
-
-      function validatePartialEnvironmentVariablesMapping(args: {
-        environmentFlags: Partial<EnvironmentFlags>;
-        mappingBottomLevelKey: string;
-      }) {
-        validateMapping({
-          ...args,
-          mappingTopLevelKey: "EnvironmentVariables",
-        });
-      }
-
-      function validateMapping(args: {
-        environmentFlags: Partial<EnvironmentFlags>;
-        mappingTopLevelKey: string;
-        mappingBottomLevelKey: string;
-      }) {
-        const mappings = template.findMappings(args.mappingTopLevelKey);
-        for (const env of environments) {
-          expect(
-            mappings[args.mappingTopLevelKey][env][args.mappingBottomLevelKey],
-          ).toStrictEqual(args.environmentFlags[env as keyof EnvironmentFlags]);
-          // Typescript needs you to strongly type the key if it's also used as a type
-        }
-      }
-
       const expectedEnvironmentVariablesValues = {
         dev: "https://events.review-b-async.dev.account.gov.uk",
         build: "https://events.review-b-async.build.account.gov.uk",
       };
 
-      validatePartialEnvironmentVariablesMapping({
+      const mappingHelper = new Mappings(template);
+      mappingHelper.validatePartialEnvironmentVariablesMapping({
         environmentFlags: expectedEnvironmentVariablesValues,
         mappingBottomLevelKey: "EventsBaseUrl",
       });
