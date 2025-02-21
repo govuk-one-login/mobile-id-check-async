@@ -25,6 +25,12 @@ describe("Async Finish Biometric Session", () => {
   let consoleErrorSpy: jest.SpyInstance;
   let result: APIGatewayProxyResult;
 
+  // Constants for epoch timestamps
+  const CURRENT_TIME = 1708531200000; // 2024-02-21T12:00:00.000Z
+  const VALID_TIME = CURRENT_TIME - (30 * 60 * 1000); // 30 minutes old
+  const EXPIRED_TIME = CURRENT_TIME - (61 * 60 * 1000); // Over 1 hour old
+
+
   const validRequest = buildRequest({
     body: JSON.stringify({
       sessionId: mockSessionId,
@@ -75,6 +81,12 @@ describe("Async Finish Biometric Session", () => {
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
     consoleErrorSpy = jest.spyOn(console, "error");
+    jest.useFakeTimers();
+    jest.setSystemTime(CURRENT_TIME);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   describe("On every invocation", () => {
@@ -245,7 +257,7 @@ describe("Async Finish Biometric Session", () => {
       describe("and session is expired", () => {
         const expiredSessionAttributes = {
           ...validBiometricSessionFinishedAttributes,
-          createdAt: Date.now() - 61 * 60 * 1000,
+          createdAt: EXPIRED_TIME,
         };
 
         beforeEach(async () => {
@@ -285,7 +297,7 @@ describe("Async Finish Biometric Session", () => {
       describe("and session is not expired", () => {
         const validSessionAttributes = {
           ...validBiometricSessionFinishedAttributes,
-          createdAt: Date.now() - 30 * 60 * 1000,
+          createdAt: VALID_TIME,
         };
 
         beforeEach(async () => {
@@ -323,7 +335,7 @@ describe("Async Finish Biometric Session", () => {
       describe("and audit event write fails", () => {
         const validSessionAttributes = {
           ...validBiometricSessionFinishedAttributes,
-          createdAt: Date.now() - 30 * 60 * 1000,
+          createdAt: EXPIRED_TIME,
         };
 
         beforeEach(async () => {
