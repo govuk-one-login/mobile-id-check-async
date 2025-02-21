@@ -27,9 +27,8 @@ describe("Async Finish Biometric Session", () => {
 
   // Constants for epoch timestamps
   const CURRENT_TIME = 1708531200000; // 2024-02-21T12:00:00.000Z
-  const VALID_TIME = CURRENT_TIME - (30 * 60 * 1000); // 30 minutes old
-  const EXPIRED_TIME = CURRENT_TIME - (61 * 60 * 1000); // Over 1 hour old
-
+  const VALID_TIME = CURRENT_TIME - 30 * 60 * 1000; // 30 minutes old
+  const EXPIRED_TIME = CURRENT_TIME - 61 * 60 * 1000; // Over 1 hour old
 
   const validRequest = buildRequest({
     body: JSON.stringify({
