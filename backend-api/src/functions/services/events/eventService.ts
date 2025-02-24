@@ -71,7 +71,9 @@ export class EventService implements IEventService {
       component_id: eventConfig.componentId,
       extensions: {
         restricted: {
-          encoded: eventConfig.txmaAuditEncoded,
+          device_information: {
+            encoded: eventConfig.txmaAuditEncoded,
+          },
         },
       },
     };
@@ -107,7 +109,9 @@ export class EventService implements IEventService {
       extensions: {
         documentType: eventConfig.documentType,
         restricted: {
-          encoded: eventConfig.txmaAuditEncoded,
+          device_information: {
+            encoded: eventConfig.txmaAuditEncoded,
+          },
         },
       },
     };

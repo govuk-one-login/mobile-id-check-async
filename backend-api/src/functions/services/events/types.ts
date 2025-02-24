@@ -16,7 +16,9 @@ export interface BaseUserEventConfig extends BaseEventConfig {
 
 export interface BaseTxmaExtensions {
   restricted?: {
-    encoded: string | undefined;
+    device_information: {
+      encoded: string | undefined;
+    };
   };
 }
 

@@ -60,7 +60,9 @@ describe("Event Service", () => {
             component_id: "mockComponentId",
             extensions: {
               restricted: {
-                encoded: "mockTxmaAuditEncoded",
+                device_information: {
+                  encoded: "mockTxmaAuditEncoded",
+                },
               },
             },
           }),
@@ -109,7 +111,9 @@ describe("Event Service", () => {
             component_id: "mockComponentId",
             extensions: {
               restricted: {
-                encoded: "mockTxmaAuditEncoded",
+                device_information: {
+                  encoded: "mockTxmaAuditEncoded",
+                },
               },
             },
           }),
@@ -229,7 +233,9 @@ describe("Event Service", () => {
             extensions: {
               documentType: "NFC_PASSPORT",
               restricted: {
-                encoded: "mockTxmaAuditEncoded",
+                device_information: {
+                  encoded: "mockTxmaAuditEncoded",
+                },
               },
             },
           }),
@@ -279,7 +285,9 @@ describe("Event Service", () => {
             extensions: {
               documentType: "NFC_PASSPORT",
               restricted: {
-                encoded: "mockTxmaAuditEncoded",
+                device_information: {
+                  encoded: "mockTxmaAuditEncoded",
+                },
               },
             },
           }),
