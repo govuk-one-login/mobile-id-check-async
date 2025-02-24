@@ -9,6 +9,7 @@ import {
   GenericEventConfig,
   GenericTxmaEvent,
   IEventService,
+  RestrictedData,
   TxmaEvents,
 } from "./types";
 
@@ -69,13 +70,7 @@ export class EventService implements IEventService {
       event_timestamp_ms: timestampInMillis,
       event_name: eventConfig.eventName,
       component_id: eventConfig.componentId,
-      restricted: eventConfig.txmaAuditEncoded
-        ? {
-            device_information: {
-              encoded: eventConfig.txmaAuditEncoded,
-            },
-          }
-        : undefined,
+      restricted: this.getRestrictedData(eventConfig.txmaAuditEncoded),
     };
   };
 
@@ -109,13 +104,21 @@ export class EventService implements IEventService {
       extensions: {
         documentType: eventConfig.documentType,
       },
-      restricted: eventConfig.txmaAuditEncoded
-        ? {
-            device_information: {
-              encoded: eventConfig.txmaAuditEncoded,
-            },
-          }
-        : undefined,
+      restricted: this.getRestrictedData(eventConfig.txmaAuditEncoded),
+    };
+  };
+
+  private readonly getRestrictedData = (
+    txmaAuditEncoded: string | undefined,
+  ): RestrictedData | undefined => {
+    if (txmaAuditEncoded == null) {
+      return undefined;
+    }
+
+    return {
+      device_information: {
+        encoded: txmaAuditEncoded,
+      },
     };
   };
 }

@@ -14,16 +14,18 @@ export interface BaseUserEventConfig extends BaseEventConfig {
   txmaAuditEncoded: string | undefined;
 }
 
+export interface RestrictedData {
+  device_information: {
+    encoded: string;
+  };
+}
+
 export interface BaseTxmaEvent {
   timestamp: number;
   event_timestamp_ms: number;
   event_name: EventNames;
   component_id: string;
-  restricted?: {
-    device_information: {
-      encoded: string | undefined;
-    };
-  };
+  restricted?: RestrictedData;
 }
 
 export interface BaseUserTxmaEvent extends BaseTxmaEvent {
