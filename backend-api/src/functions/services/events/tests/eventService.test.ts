@@ -81,6 +81,101 @@ describe("Event Service", () => {
     });
 
     describe(`Given writing ${genericEventName} to SQS is successful`, () => {
+      describe("Given txmaAuditEncoded is undefined", () => {
+        beforeEach(async () => {
+          sqsMock.on(SendMessageCommand).resolves({});
+
+          result = await eventWriter.writeGenericEvent({
+            eventName: genericEventName,
+            sub: "mockSub",
+            sessionId: "mockSessionId",
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            getNowInMilliseconds: () => 1609462861000,
+            componentId: "mockComponentId",
+            ipAddress: "mockIpAddress",
+            txmaAuditEncoded: undefined,
+          });
+        });
+
+        it(`Attempts to send ${genericEventName} event to SQS without extensions`, () => {
+          const expectedCommandInput = {
+            MessageBody: JSON.stringify({
+              user: {
+                user_id: "mockSub",
+                session_id: "mockSessionId",
+                govuk_signin_journey_id: "mockGovukSigninJourneyId",
+                ip_address: "mockIpAddress",
+              },
+              timestamp: 1609462861,
+              event_timestamp_ms: 1609462861000,
+              event_name: genericEventName,
+              component_id: "mockComponentId",
+            }),
+            QueueUrl: "mockSqsQueue",
+          };
+
+          expect(sqsMock).toHaveReceivedCommandWith(
+            SendMessageCommand,
+            expectedCommandInput,
+          );
+        });
+
+        it("Returns an emptySuccess", () => {
+          expect(result).toEqual(emptySuccess());
+        });
+      });
+
+      describe("Given txmaAuditEncoded is defined", () => {
+        beforeEach(async () => {
+          sqsMock.on(SendMessageCommand).resolves({});
+
+          result = await eventWriter.writeGenericEvent({
+            eventName: genericEventName,
+            sub: "mockSub",
+            sessionId: "mockSessionId",
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            getNowInMilliseconds: () => 1609462861000,
+            componentId: "mockComponentId",
+            ipAddress: "mockIpAddress",
+            txmaAuditEncoded: "mockTxmaAuditEncoded",
+          });
+        });
+
+        it(`Attempts to send ${genericEventName} event to SQS with extensions`, () => {
+          const expectedCommandInput = {
+            MessageBody: JSON.stringify({
+              user: {
+                user_id: "mockSub",
+                session_id: "mockSessionId",
+                govuk_signin_journey_id: "mockGovukSigninJourneyId",
+                ip_address: "mockIpAddress",
+              },
+              timestamp: 1609462861,
+              event_timestamp_ms: 1609462861000,
+              event_name: genericEventName,
+              component_id: "mockComponentId",
+              extensions: {
+                restricted: {
+                  device_information: {
+                    encoded: "mockTxmaAuditEncoded",
+                  },
+                },
+              },
+            }),
+            QueueUrl: "mockSqsQueue",
+          };
+
+          expect(sqsMock).toHaveReceivedCommandWith(
+            SendMessageCommand,
+            expectedCommandInput,
+          );
+        });
+
+        it("Returns an emptySuccess", () => {
+          expect(result).toEqual(emptySuccess());
+        });
+      });
+
       beforeEach(async () => {
         sqsMock.on(SendMessageCommand).resolves({});
 
