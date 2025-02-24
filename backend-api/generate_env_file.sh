@@ -16,6 +16,7 @@ PROXY_API_URL=$(aws cloudformation describe-stacks --stack-name "$BACKEND_STACK_
 SESSIONS_API_URL=$(aws cloudformation describe-stacks --stack-name "$BACKEND_STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='SessionsApiUrl'].OutputValue" --output text)
 STS_MOCK_API_URL=$(aws cloudformation describe-stacks --stack-name "$BACKEND_STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='StsMockApiUrl'].OutputValue" --output text)
 TEST_ENVIRONMENT=$(aws cloudformation describe-stacks --stack-name "$BACKEND_STACK_NAME" --query "Stacks[0].Parameters[?ParameterKey=='Environment'].ParameterValue" --output text)
+EVENTS_API_URL=$(aws cloudformation describe-stacks --stack-name "$BACKEND_STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='EventsApiUrl'].OutputValue" --output text)
 
 echo "TEST_ENVIRONMENT=${TEST_ENVIRONMENT}" > .env
 {
@@ -24,4 +25,5 @@ echo "TEST_ENVIRONMENT=${TEST_ENVIRONMENT}" > .env
   echo "PROXY_API_URL=${PROXY_API_URL}"
   echo "SESSIONS_API_URL=${SESSIONS_API_URL}"
   echo "STS_MOCK_API_URL=${STS_MOCK_API_URL}"
+  echo "EVENTS_API_URL=${EVENTS_API_URL}"
 } >> .env

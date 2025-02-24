@@ -24,6 +24,7 @@ DEV_OVERRIDE_BACKEND_STACK_NAME="BackendStackName"
 DEV_OVERRIDE_PROXY_BASE_URL="DevOverrideProxyBaseUrl"
 DEV_OVERRIDE_SESSIONS_BASE_URL="DevOverrideSessionsBaseUrl"
 DEV_OVERRIDE_STS_BASE_URL="DevOverrideStsBaseUrl"
+DEV_OVERRIDE_EVENTS_BASE_URL="DevOverrideEventsBaseUrl"
 DEV_OVERRIDE_READID_PROXY_BASE_URL="DevOverrideReadIdBaseUrl"
 DEPLOY_ALARMS_IN_DEV="DeployAlarmsInDev"
 
@@ -32,6 +33,7 @@ ASYNC_DOMAIN="review-b-async.dev.account.gov.uk"
 PROXY_URL="https://proxy-${BACKEND_STACK_NAME}.${ASYNC_DOMAIN}"
 SESSIONS_URL="https://sessions-${BACKEND_STACK_NAME}.${ASYNC_DOMAIN}"
 STS_MOCK_URL="https://sts-${TEST_RESOURCES_STACK_NAME}.${ASYNC_DOMAIN}"
+EVENTS_URL="https://events-${TEST_RESOURCES_STACK_NAME}.${ASYNC_DOMAIN}"
 
 deploy_cf_dist=false
 deploy_backend_api_stack=false
@@ -39,6 +41,28 @@ enable_alarms=false
 deploy_test_resources=false
 publish_sts_mock_keys_to_s3=false
 overrideReadIdBaseUrl=false
+
+
+# Ask the user if they want to deploy the backend-cf-dist stack
+while true; do
+  echo
+  echo "Each backend stack requires a cloudfront distribution in front of it. The stack name is of the form ${BACKEND_STACK_NAME}-cf-dist. If it already exists this can be skipped."
+  read -r -p "Do you want to deploy a cloudfront distribution stack? [y/N]: " yn
+
+  case "$yn" in
+    [yY])
+      deploy_cf_dist=true
+      break
+      ;;
+    [nN] | "")
+      echo "Skipping cf-dist stack deployment"
+      break
+      ;;
+    *)
+      echo "Invalid input. Please enter 'y' or 'n'."
+      ;;
+  esac
+done
 
 # Ask the user about deploying test-resources
 while true; do
@@ -83,27 +107,6 @@ if [ $deploy_test_resources == true ]; then
     esac
   done
 fi
-
-# Ask the user if they want to deploy the backend-cf-dist stack
-while true; do
-  echo
-  echo "Each backend stack requires a cloudfront distribution in front of it. The stack name is of the form ${BACKEND_STACK_NAME}-cf-dist. If it already exists this can be skipped."
-  read -r -p "Do you want to deploy a cloudfront distribution stack? [y/N]: " yn
-
-  case "$yn" in
-    [yY])
-      deploy_cf_dist=true
-      break
-      ;;
-    [nN] | "")
-      echo "Skipping cf-dist stack deployment"
-      break
-      ;;
-    *)
-      echo "Invalid input. Please enter 'y' or 'n'."
-      ;;
-  esac
-done
 
 # Ask the user if they want to deploy backend-api
 while true; do
@@ -167,9 +170,11 @@ if [[ $deploy_cf_dist == true ]]; then
 
   sh ./generate_cf_dist_parameters.sh "${BACKEND_STACK_NAME}"
 
+  TEMPLATE_URL=$(sh get_template_versionid.sh cloudfront-distribution v2.1.0)
+
   CF_DIST_ARGS="--region eu-west-2"
   CF_DIST_ARGS="${CF_DIST_ARGS} --stack-name ${BACKEND_CF_DIST_STACK_NAME}"
-  CF_DIST_ARGS="${CF_DIST_ARGS} --template-url https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/cloudfront-distribution/template.yaml?versionId=jZcckkadQOPteu3t24UktqjOehImqD1K" # v1.8.0
+  CF_DIST_ARGS="${CF_DIST_ARGS} --template-url ${TEMPLATE_URL}"
   CF_DIST_ARGS="${CF_DIST_ARGS} --capabilities CAPABILITY_AUTO_EXPAND CAPABILITY_IAM CAPABILITY_NAMED_IAM"
 
   mkdir -p "deployResponses"
@@ -182,6 +187,7 @@ fi
 
 if [[ $deploy_backend_api_stack == true ]]; then
   parameter_overrides="${DEV_OVERRIDE_STS_BASE_URL}=${STS_MOCK_URL}"
+  parameter_overrides+=" ${DEV_OVERRIDE_EVENTS_BASE_URL}=${EVENTS_URL}"
 
   if [[ $enable_alarms == true ]]; then
       parameter_overrides+=" $DEPLOY_ALARMS_IN_DEV=true"
@@ -205,6 +211,8 @@ if [[ $deploy_backend_api_stack == true ]]; then
       --capabilities CAPABILITY_NAMED_IAM \
       --resolve-s3
 
+  aws cloudformation wait stack-create-complete --stack-name "${BACKEND_STACK_NAME}" || aws cloudformation wait stack-update-complete --stack-name "${BACKEND_STACK_NAME}"
+
   ./generate_env_file.sh "$STACK_IDENTIFIER"
   cd ../helper-scripts || exit
 fi
@@ -225,6 +233,8 @@ if [[ $deploy_test_resources == true ]]; then
       ${DEV_OVERRIDE_SESSIONS_BASE_URL}=${SESSIONS_URL}" \
     --capabilities CAPABILITY_NAMED_IAM \
     --resolve-s3
+
+  aws cloudformation wait stack-create-complete --stack-name "${TEST_RESOURCES_STACK_NAME}" || aws cloudformation wait stack-update-complete --stack-name "${TEST_RESOURCES_STACK_NAME}"
 
   npm run build:env $STACK_IDENTIFIER
   cd ../helper-scripts || exit
