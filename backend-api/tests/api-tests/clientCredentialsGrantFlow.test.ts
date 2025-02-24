@@ -334,7 +334,6 @@ describe.each(apis)(
       describe("Given the request is valid and there is no active session for the given sub", () => {
         let randomSub: UUID;
         let response: AxiosResponse;
-        let eventsResponse: EventResponse[];
 
         beforeAll(async () => {
           randomSub = randomUUID();
@@ -364,7 +363,7 @@ describe.each(apis)(
 
         it("Writes an event with the correct event_name", async () => {
           const sessionId = await getActiveSessionIdFromSub(randomSub);
-          eventsResponse = await pollForEvents({
+          const eventsResponse = await pollForEvents({
             partitionKey: `SESSION#${sessionId}`,
             sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START`,
             numberOfEvents: 1,

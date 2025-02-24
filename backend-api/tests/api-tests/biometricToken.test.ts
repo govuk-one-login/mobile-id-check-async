@@ -1,4 +1,5 @@
 import { expect } from "@jest/globals";
+import { AxiosResponse } from "axios";
 import "../../tests/testUtils/matchers";
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 import { expectedSecurityHeaders, mockSessionId } from "./utils/apiTestData";
@@ -7,7 +8,6 @@ import {
   getValidSessionId,
   pollForEvents,
 } from "./utils/apiTestHelpers";
-import { AxiosResponse } from "axios";
 
 describe("POST /async/biometricToken", () => {
   describe("Given request body is invalid", () => {
@@ -50,9 +50,18 @@ describe("POST /async/biometricToken", () => {
         "/async/biometricToken",
         requestBody,
       );
+    }, 5000);
 
-      await SESSIONS_API_INSTANCE.post("/async/biometricToken", requestBody);
-    }, 10000);
+    it("Returns an error and 401 status code", async () => {
+      expect(response.status).toBe(401);
+      expect(response.data).toStrictEqual({
+        error: "invalid_session",
+        error_description: "Session not found",
+      });
+      expect(response.headers).toEqual(
+        expect.objectContaining(expectedSecurityHeaders),
+      );
+    });
 
     it("Writes an event with the correct event_name", async () => {
       eventsResponse = await pollForEvents({
@@ -67,23 +76,11 @@ describe("POST /async/biometricToken", () => {
         }),
       );
     }, 40000);
-
-    it("Returns an error and 401 status code", async () => {
-      expect(response.status).toBe(401);
-      expect(response.data).toStrictEqual({
-        error: "invalid_session",
-        error_description: "Session not found",
-      });
-      expect(response.headers).toEqual(
-        expect.objectContaining(expectedSecurityHeaders),
-      );
-    });
   });
 
   describe("Given there is a valid request", () => {
     let sessionId: string | null;
     let biometricTokenResponse: AxiosResponse;
-    let eventsResponse: EventResponse[];
 
     beforeAll(async () => {
       sessionId = await getValidSessionId();
@@ -115,7 +112,7 @@ describe("POST /async/biometricToken", () => {
     });
 
     it("Writes an event with the correct event_name", async () => {
-      eventsResponse = await pollForEvents({
+      const eventsResponse = await pollForEvents({
         partitionKey: `SESSION#${sessionId}`,
         sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED`,
         numberOfEvents: 1,
