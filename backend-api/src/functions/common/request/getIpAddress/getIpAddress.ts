@@ -27,5 +27,5 @@ export const getIpAddress = (event: APIGatewayProxyEvent): string => {
 
 function parseIp(ip: string) {
   const url = new URL(`http://${ip}`);
-  return url.hostname.replace(/[[\]]/gi, ""); // removes square brackets from IP
+  return url.hostname.replace(/[[\]]/gi, ""); // removes square brackets
 }
