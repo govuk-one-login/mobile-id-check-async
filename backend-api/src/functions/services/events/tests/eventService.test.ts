@@ -58,11 +58,9 @@ describe("Event Service", () => {
             event_timestamp_ms: 1609462861000,
             event_name: genericEventName,
             component_id: "mockComponentId",
-            extensions: {
-              restricted: {
-                device_information: {
-                  encoded: "mockTxmaAuditEncoded",
-                },
+            restricted: {
+              device_information: {
+                encoded: "mockTxmaAuditEncoded",
               },
             },
           }),
@@ -97,7 +95,7 @@ describe("Event Service", () => {
           });
         });
 
-        it(`Attempts to send ${genericEventName} event to SQS without extensions`, () => {
+        it(`Attempts to send ${genericEventName} event to SQS without restricted data`, () => {
           const expectedCommandInput = {
             MessageBody: JSON.stringify({
               user: {
@@ -141,7 +139,7 @@ describe("Event Service", () => {
           });
         });
 
-        it(`Attempts to send ${genericEventName} event to SQS with extensions`, () => {
+        it(`Attempts to send ${genericEventName} event to SQS with restricted data`, () => {
           const expectedCommandInput = {
             MessageBody: JSON.stringify({
               user: {
@@ -154,11 +152,9 @@ describe("Event Service", () => {
               event_timestamp_ms: 1609462861000,
               event_name: genericEventName,
               component_id: "mockComponentId",
-              extensions: {
-                restricted: {
-                  device_information: {
-                    encoded: "mockTxmaAuditEncoded",
-                  },
+              restricted: {
+                device_information: {
+                  encoded: "mockTxmaAuditEncoded",
                 },
               },
             }),
@@ -204,11 +200,9 @@ describe("Event Service", () => {
             event_timestamp_ms: 1609462861000,
             event_name: genericEventName,
             component_id: "mockComponentId",
-            extensions: {
-              restricted: {
-                device_information: {
-                  encoded: "mockTxmaAuditEncoded",
-                },
+            restricted: {
+              device_information: {
+                encoded: "mockTxmaAuditEncoded",
               },
             },
           }),
@@ -327,10 +321,10 @@ describe("Event Service", () => {
             component_id: "mockComponentId",
             extensions: {
               documentType: "NFC_PASSPORT",
-              restricted: {
-                device_information: {
-                  encoded: "mockTxmaAuditEncoded",
-                },
+            },
+            restricted: {
+              device_information: {
+                encoded: "mockTxmaAuditEncoded",
               },
             },
           }),
@@ -379,10 +373,10 @@ describe("Event Service", () => {
             component_id: "mockComponentId",
             extensions: {
               documentType: "NFC_PASSPORT",
-              restricted: {
-                device_information: {
-                  encoded: "mockTxmaAuditEncoded",
-                },
+            },
+            restricted: {
+              device_information: {
+                encoded: "mockTxmaAuditEncoded",
               },
             },
           }),

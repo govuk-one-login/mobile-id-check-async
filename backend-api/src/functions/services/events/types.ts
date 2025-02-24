@@ -14,24 +14,16 @@ export interface BaseUserEventConfig extends BaseEventConfig {
   txmaAuditEncoded: string | undefined;
 }
 
-export interface BaseTxmaExtensions {
-  restricted?: {
-    device_information: {
-      encoded: string | undefined;
-    };
-  };
-}
-
-export interface BiometricTokenIssuedExtensions extends BaseTxmaExtensions {
-  documentType: DocumentType;
-}
-
 export interface BaseTxmaEvent {
   timestamp: number;
   event_timestamp_ms: number;
   event_name: EventNames;
   component_id: string;
-  extensions?: BaseTxmaExtensions;
+  restricted?: {
+    device_information: {
+      encoded: string | undefined;
+    };
+  };
 }
 
 export interface BaseUserTxmaEvent extends BaseTxmaEvent {
@@ -75,7 +67,9 @@ export interface CredentialTokenIssuedEvent extends BaseTxmaEvent {
 
 export interface BiometricTokenIssuedEvent extends BaseUserTxmaEvent {
   event_name: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED";
-  extensions: BiometricTokenIssuedExtensions;
+  extensions: {
+    documentType: DocumentType;
+  };
 }
 
 export type TxmaEvents =

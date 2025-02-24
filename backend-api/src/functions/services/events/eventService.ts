@@ -69,12 +69,10 @@ export class EventService implements IEventService {
       event_timestamp_ms: timestampInMillis,
       event_name: eventConfig.eventName,
       component_id: eventConfig.componentId,
-      extensions: eventConfig.txmaAuditEncoded
+      restricted: eventConfig.txmaAuditEncoded
         ? {
-            restricted: {
-              device_information: {
-                encoded: eventConfig.txmaAuditEncoded,
-              },
+            device_information: {
+              encoded: eventConfig.txmaAuditEncoded,
             },
           }
         : undefined,
@@ -110,12 +108,14 @@ export class EventService implements IEventService {
       component_id: eventConfig.componentId,
       extensions: {
         documentType: eventConfig.documentType,
-        restricted: {
-          device_information: {
-            encoded: eventConfig.txmaAuditEncoded,
-          },
-        },
       },
+      restricted: eventConfig.txmaAuditEncoded
+        ? {
+            device_information: {
+              encoded: eventConfig.txmaAuditEncoded,
+            },
+          }
+        : undefined,
     };
   };
 }
