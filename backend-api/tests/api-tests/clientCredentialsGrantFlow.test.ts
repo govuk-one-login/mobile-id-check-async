@@ -1,7 +1,12 @@
 import { AxiosInstance, AxiosResponse } from "axios";
 import { randomUUID, UUID } from "crypto";
 import "dotenv/config";
-import { PRIVATE_API_INSTANCE, PROXY_API_INSTANCE } from "./utils/apiInstance";
+import {
+  PRIVATE_API_INSTANCE,
+  PROXY_API_INSTANCE,
+  SESSIONS_API_INSTANCE,
+  STS_MOCK_API_INSTANCE,
+} from "./utils/apiInstance";
 import {
   ClientDetails,
   EventResponse,
@@ -149,20 +154,12 @@ describe.each(apis)(
         ({ event } = getEventUnderTest(eventsResponse));
       }, 20000);
 
-      describe("Writing to TxMA", () => {
-        it("Writes an event with the correct session ID", () => {
-          const { pk } = eventsResponse[0];
-
-          expect(pk).toEqual("SESSION#UNKNOWN");
-        });
-
-        it("Writes an event with the correct event_name", () => {
-          expect(event).toEqual(
-            expect.objectContaining({
-              event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
-            }),
-          );
-        });
+      it("Writes an event with the correct event_name", () => {
+        expect(event).toEqual(
+          expect.objectContaining({
+            event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+          }),
+        );
       });
 
       it("Returns a 200 OK response and the access token", async () => {
@@ -183,8 +180,8 @@ describe.each(apis)(
 
     describe("POST /credential", () => {
       let clientDetails: ClientDetails;
-      let credentialRequestBody: CredentialRequestBody;
       let accessToken: string;
+      // let credentialRequestBody: CredentialRequestBody;
 
       beforeAll(async () => {
         clientDetails = await getFirstRegisteredClient();
@@ -194,11 +191,12 @@ describe.each(apis)(
           clientIdAndSecret,
           authorizationHeader,
         );
-        credentialRequestBody = getRequestBody(clientDetails);
+        // credentialRequestBody = getRequestBody(clientDetails);
       });
 
       describe("Given there is no Authorization header in the request", () => {
         it("Returns a 401 Unauthorized response", async () => {
+          const credentialRequestBody = getRequestBody(clientDetails);
           const response = await axiosInstance.post(
             `/async/credential`,
             credentialRequestBody,
@@ -214,6 +212,7 @@ describe.each(apis)(
 
       describe("Given the Bearer token in the Authorization header is not a valid token", () => {
         it("Returns a 400 Bad Request response", async () => {
+          const credentialRequestBody = getRequestBody(clientDetails);
           const response = await axiosInstance.post(
             `/async/credential`,
             credentialRequestBody,
@@ -254,6 +253,7 @@ describe.each(apis)(
 
       describe("Given the access token signature could not be verified", () => {
         it("Returns 400 Bad Request", async () => {
+          const credentialRequestBody = getRequestBody(clientDetails);
           const accessTokenWithInvalidSignature = makeSignatureUnverifiable(
             accessToken,
             "6T5a8kCTyXsmw_2ATkyPgtLRzsuot-_ZIXWnuXNftZP8SHHkNxwFyMaZxEnqqtQst-99AoRrUDZnPov0oztbSA",
@@ -280,6 +280,7 @@ describe.each(apis)(
 
       describe("Given the request is valid and an active session is found for a given sub", () => {
         it("Returns 200 OK", async () => {
+          const credentialRequestBody = getRequestBody(clientDetails);
           // Create session if it does not exist
           await axiosInstance.post(`/async/credential`, credentialRequestBody, {
             headers: {
@@ -307,6 +308,7 @@ describe.each(apis)(
 
       describe("Given the same access token is used more than once to fetch an active session", () => {
         it("Returns 200 OK", async () => {
+          const credentialRequestBody = getRequestBody(clientDetails);
           // use access token once
           const responseOne = await axiosInstance.post(
             `/async/credential`,
@@ -343,14 +345,45 @@ describe.each(apis)(
       });
 
       describe("Given the request is valid and there is no active session for the given sub", () => {
-        it("Returns 201 Created", async () => {
-          const randomSub = randomUUID();
+        let clientIdAndSecret: string;
+
+        let tokenResponse: AxiosResponse;
+
+        let accessToken: string;
+
+        let randomSub: UUID;
+        let response: AxiosResponse;
+        let eventsResponse: EventResponse[];
+
+        beforeAll(async () => {
+          const clientDetails = await getFirstRegisteredClient();
+          clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
+
+          tokenResponse = await axiosInstance.post(
+            `/async/token`,
+            "grant_type=client_credentials",
+            {
+              headers: {
+                [authorizationHeader]: "Basic " + toBase64(clientIdAndSecret),
+              },
+            },
+          );
+
+          accessToken = await getAccessToken(
+            axiosInstance,
+            clientIdAndSecret,
+            authorizationHeader,
+          );
+
+          randomSub = randomUUID();
           const credentialRequestBody = getRequestBody(
             clientDetails,
             randomSub,
           );
 
-          const response = await axiosInstance.post(
+          console.log("RANDOM SUB >>>>>", randomSub);
+
+          response = await axiosInstance.post(
             `/async/credential`,
             credentialRequestBody,
             {
@@ -360,11 +393,51 @@ describe.each(apis)(
             },
           );
 
+          const requestBody = new URLSearchParams({
+            subject_token: randomSub,
+            scope: "idCheck.activeSession.read",
+            grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
+            subject_token_type: "urn:ietf:params:oauth:token-type:access_token",
+          });
+          const stsMockResponse = await STS_MOCK_API_INSTANCE.post(
+            "/token",
+            requestBody,
+          );
+
+          const activeSessionAccessToken = stsMockResponse.data.access_token;
+
+          const activeSessionResponse = await SESSIONS_API_INSTANCE.get(
+            "/async/activeSession",
+            {
+              headers: { Authorization: `Bearer ${activeSessionAccessToken}` },
+            },
+          );
+
+          const sessionId = activeSessionResponse.data.sessionId;
+
+          eventsResponse = await pollForEvents({
+            partitionKey: `SESSION#${sessionId}`,
+            sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START`,
+            numberOfEvents: 1,
+          });
+
+          console.log("EVENTS RESPONSE >>>>>", eventsResponse);
+        }, 60000);
+
+        it("Writes an event with the correct event_name", () => {
+          expect(eventsResponse[0].event).toEqual(
+            expect.objectContaining({
+              event_name: "DCMAW_ASYNC_CRI_START",
+            }),
+          );
+        });
+
+        it("Returns 201 Created", async () => {
+          expect(response.status).toBe(201);
           expect(response.data).toStrictEqual({
             "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
             sub: randomSub,
           });
-          expect(response.status).toBe(201);
         });
       });
     });
