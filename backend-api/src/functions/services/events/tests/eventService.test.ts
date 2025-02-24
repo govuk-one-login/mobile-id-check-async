@@ -40,6 +40,8 @@ describe("Event Service", () => {
           govukSigninJourneyId: "mockGovukSigninJourneyId",
           getNowInMilliseconds: () => 1609462861000,
           componentId: "mockComponentId",
+          ipAddress: "mockIpAddress",
+          txmaAuditEncoded: "mockTxmaAuditEncoded",
         });
       });
 
@@ -50,11 +52,17 @@ describe("Event Service", () => {
               user_id: "mockSub",
               session_id: "mockSessionId",
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              ip_address: "mockIpAddress",
             },
             timestamp: 1609462861,
             event_timestamp_ms: 1609462861000,
             event_name: genericEventName,
             component_id: "mockComponentId",
+            restricted: {
+              device_information: {
+                encoded: "mockTxmaAuditEncoded",
+              },
+            },
           }),
           QueueUrl: "mockSqsQueue",
         };
@@ -71,43 +79,97 @@ describe("Event Service", () => {
     });
 
     describe(`Given writing ${genericEventName} to SQS is successful`, () => {
-      beforeEach(async () => {
-        sqsMock.on(SendMessageCommand).resolves({});
+      describe("Given txmaAuditEncoded is undefined", () => {
+        beforeEach(async () => {
+          sqsMock.on(SendMessageCommand).resolves({});
 
-        result = await eventWriter.writeGenericEvent({
-          eventName: genericEventName,
-          sub: "mockSub",
-          sessionId: "mockSessionId",
-          govukSigninJourneyId: "mockGovukSigninJourneyId",
-          getNowInMilliseconds: () => 1609462861000,
-          componentId: "mockComponentId",
+          result = await eventWriter.writeGenericEvent({
+            eventName: genericEventName,
+            sub: "mockSub",
+            sessionId: "mockSessionId",
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            getNowInMilliseconds: () => 1609462861000,
+            componentId: "mockComponentId",
+            ipAddress: "mockIpAddress",
+            txmaAuditEncoded: undefined,
+          });
+        });
+
+        it(`Attempts to send ${genericEventName} event to SQS without restricted data`, () => {
+          const expectedCommandInput = {
+            MessageBody: JSON.stringify({
+              user: {
+                user_id: "mockSub",
+                session_id: "mockSessionId",
+                govuk_signin_journey_id: "mockGovukSigninJourneyId",
+                ip_address: "mockIpAddress",
+              },
+              timestamp: 1609462861,
+              event_timestamp_ms: 1609462861000,
+              event_name: genericEventName,
+              component_id: "mockComponentId",
+            }),
+            QueueUrl: "mockSqsQueue",
+          };
+
+          expect(sqsMock).toHaveReceivedCommandWith(
+            SendMessageCommand,
+            expectedCommandInput,
+          );
+        });
+
+        it("Returns an emptySuccess", () => {
+          expect(result).toEqual(emptySuccess());
         });
       });
 
-      it(`Attempts to send ${genericEventName} event to SQS`, () => {
-        const expectedCommandInput = {
-          MessageBody: JSON.stringify({
-            user: {
-              user_id: "mockSub",
-              session_id: "mockSessionId",
-              govuk_signin_journey_id: "mockGovukSigninJourneyId",
-            },
-            timestamp: 1609462861,
-            event_timestamp_ms: 1609462861000,
-            event_name: genericEventName,
-            component_id: "mockComponentId",
-          }),
-          QueueUrl: "mockSqsQueue",
-        };
+      describe("Given txmaAuditEncoded is defined", () => {
+        beforeEach(async () => {
+          sqsMock.on(SendMessageCommand).resolves({});
 
-        expect(sqsMock).toHaveReceivedCommandWith(
-          SendMessageCommand,
-          expectedCommandInput,
-        );
-      });
+          result = await eventWriter.writeGenericEvent({
+            eventName: genericEventName,
+            sub: "mockSub",
+            sessionId: "mockSessionId",
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            getNowInMilliseconds: () => 1609462861000,
+            componentId: "mockComponentId",
+            ipAddress: "mockIpAddress",
+            txmaAuditEncoded: "mockTxmaAuditEncoded",
+          });
+        });
 
-      it("Returns an emptySuccess", () => {
-        expect(result).toEqual(emptySuccess());
+        it(`Attempts to send ${genericEventName} event to SQS with restricted data`, () => {
+          const expectedCommandInput = {
+            MessageBody: JSON.stringify({
+              user: {
+                user_id: "mockSub",
+                session_id: "mockSessionId",
+                govuk_signin_journey_id: "mockGovukSigninJourneyId",
+                ip_address: "mockIpAddress",
+              },
+              timestamp: 1609462861,
+              event_timestamp_ms: 1609462861000,
+              event_name: genericEventName,
+              component_id: "mockComponentId",
+              restricted: {
+                device_information: {
+                  encoded: "mockTxmaAuditEncoded",
+                },
+              },
+            }),
+            QueueUrl: "mockSqsQueue",
+          };
+
+          expect(sqsMock).toHaveReceivedCommandWith(
+            SendMessageCommand,
+            expectedCommandInput,
+          );
+        });
+
+        it("Returns an emptySuccess", () => {
+          expect(result).toEqual(emptySuccess());
+        });
       });
     });
   });
@@ -192,6 +254,8 @@ describe("Event Service", () => {
           getNowInMilliseconds: () => 1609462861000,
           componentId: "mockComponentId",
           documentType: "NFC_PASSPORT",
+          ipAddress: "mockIpAddress",
+          txmaAuditEncoded: "mockTxmaAuditEncoded",
         });
       });
 
@@ -202,6 +266,7 @@ describe("Event Service", () => {
               user_id: "mockSub",
               session_id: "mockSessionId",
               govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              ip_address: "mockIpAddress",
             },
             timestamp: 1609462861,
             event_timestamp_ms: 1609462861000,
@@ -209,6 +274,11 @@ describe("Event Service", () => {
             component_id: "mockComponentId",
             extensions: {
               documentType: "NFC_PASSPORT",
+            },
+            restricted: {
+              device_information: {
+                encoded: "mockTxmaAuditEncoded",
+              },
             },
           }),
           QueueUrl: "mockSqsQueue",
@@ -226,46 +296,103 @@ describe("Event Service", () => {
     });
 
     describe(`Given writing "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED" to SQS is successful`, () => {
-      beforeEach(async () => {
-        sqsMock.on(SendMessageCommand).resolves({});
+      describe("Given txmaAuditEncoded is undefined", () => {
+        beforeEach(async () => {
+          sqsMock.on(SendMessageCommand).resolves({});
 
-        result = await eventWriter.writeBiometricTokenIssuedEvent({
-          sub: "mockSub",
-          sessionId: "mockSessionId",
-          govukSigninJourneyId: "mockGovukSigninJourneyId",
-          getNowInMilliseconds: () => 1609462861000,
-          componentId: "mockComponentId",
-          documentType: "NFC_PASSPORT",
+          result = await eventWriter.writeBiometricTokenIssuedEvent({
+            sub: "mockSub",
+            sessionId: "mockSessionId",
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            getNowInMilliseconds: () => 1609462861000,
+            componentId: "mockComponentId",
+            documentType: "NFC_PASSPORT",
+            ipAddress: "mockIpAddress",
+            txmaAuditEncoded: undefined,
+          });
+        });
+
+        it(`Attempts to send "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED" event to SQS without restricted data`, () => {
+          const expectedCommandInput = {
+            MessageBody: JSON.stringify({
+              user: {
+                user_id: "mockSub",
+                session_id: "mockSessionId",
+                govuk_signin_journey_id: "mockGovukSigninJourneyId",
+                ip_address: "mockIpAddress",
+              },
+              timestamp: 1609462861,
+              event_timestamp_ms: 1609462861000,
+              event_name: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
+              component_id: "mockComponentId",
+              extensions: {
+                documentType: "NFC_PASSPORT",
+              },
+            }),
+            QueueUrl: "mockSqsQueue",
+          };
+
+          expect(sqsMock).toHaveReceivedCommandWith(
+            SendMessageCommand,
+            expectedCommandInput,
+          );
+        });
+
+        it("Returns an emptySuccess", () => {
+          expect(result).toEqual(emptySuccess());
         });
       });
 
-      it(`Attempts to send "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED" event to SQS`, () => {
-        const expectedCommandInput = {
-          MessageBody: JSON.stringify({
-            user: {
-              user_id: "mockSub",
-              session_id: "mockSessionId",
-              govuk_signin_journey_id: "mockGovukSigninJourneyId",
-            },
-            timestamp: 1609462861,
-            event_timestamp_ms: 1609462861000,
-            event_name: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
-            component_id: "mockComponentId",
-            extensions: {
-              documentType: "NFC_PASSPORT",
-            },
-          }),
-          QueueUrl: "mockSqsQueue",
-        };
+      describe("Given txmaAuditEncoded is defined", () => {
+        beforeEach(async () => {
+          sqsMock.on(SendMessageCommand).resolves({});
 
-        expect(sqsMock).toHaveReceivedCommandWith(
-          SendMessageCommand,
-          expectedCommandInput,
-        );
-      });
+          result = await eventWriter.writeBiometricTokenIssuedEvent({
+            sub: "mockSub",
+            sessionId: "mockSessionId",
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            getNowInMilliseconds: () => 1609462861000,
+            componentId: "mockComponentId",
+            documentType: "NFC_PASSPORT",
+            ipAddress: "mockIpAddress",
+            txmaAuditEncoded: "mockTxmaAuditEncoded",
+          });
+        });
 
-      it("Returns an emptySuccess", () => {
-        expect(result).toEqual(emptySuccess());
+        it(`Attempts to send "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED" event to SQS with restricted data`, () => {
+          const expectedCommandInput = {
+            MessageBody: JSON.stringify({
+              user: {
+                user_id: "mockSub",
+                session_id: "mockSessionId",
+                govuk_signin_journey_id: "mockGovukSigninJourneyId",
+                ip_address: "mockIpAddress",
+              },
+              timestamp: 1609462861,
+              event_timestamp_ms: 1609462861000,
+              event_name: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
+              component_id: "mockComponentId",
+              extensions: {
+                documentType: "NFC_PASSPORT",
+              },
+              restricted: {
+                device_information: {
+                  encoded: "mockTxmaAuditEncoded",
+                },
+              },
+            }),
+            QueueUrl: "mockSqsQueue",
+          };
+
+          expect(sqsMock).toHaveReceivedCommandWith(
+            SendMessageCommand,
+            expectedCommandInput,
+          );
+        });
+
+        it("Returns an emptySuccess", () => {
+          expect(result).toEqual(emptySuccess());
+        });
       });
     });
   });

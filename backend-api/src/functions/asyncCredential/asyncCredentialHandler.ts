@@ -186,6 +186,9 @@ export async function lambdaHandlerConstructor(
     govukSigninJourneyId: requestBody.govuk_signin_journey_id,
     getNowInMilliseconds: Date.now,
     componentId: config.ISSUER,
+    // ipAddress and txmaAuditEncoded values only required for lambdas that are triggered as a result of a direct user interaction to the ID Check service
+    ipAddress: undefined,
+    txmaAuditEncoded: undefined,
   });
   if (writeEventResult.isError) {
     logger.log("ERROR_WRITING_AUDIT_EVENT", {
