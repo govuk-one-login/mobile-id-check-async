@@ -296,6 +296,8 @@ describe("Async Biometric Token", () => {
           govukSigninJourneyId: undefined,
           sessionId: mockSessionId,
           sub: undefined,
+          ipAddress: "1.1.1.1",
+          txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
         });
       });
 
@@ -377,6 +379,8 @@ describe("Async Biometric Token", () => {
             govukSigninJourneyId: undefined,
             sessionId: mockSessionId,
             sub: undefined,
+            ipAddress: "1.1.1.1",
+            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
           });
         });
 
@@ -457,6 +461,8 @@ describe("Async Biometric Token", () => {
             govukSigninJourneyId: "mockGovukSigninJourneyId",
             sessionId: mockSessionId,
             sub: "mockSubjectIdentifier",
+            ipAddress: "1.1.1.1",
+            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
           });
         });
 
@@ -539,6 +545,8 @@ describe("Async Biometric Token", () => {
             govukSigninJourneyId: undefined,
             sessionId: mockSessionId,
             sub: undefined,
+            ipAddress: "1.1.1.1",
+            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
           });
         });
 
@@ -637,6 +645,8 @@ describe("Async Biometric Token", () => {
           sessionId: mockSessionId,
           sub: "mockSubjectIdentifier",
           documentType: "NFC_PASSPORT",
+          ipAddress: "1.1.1.1",
+          txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
         });
       });
 

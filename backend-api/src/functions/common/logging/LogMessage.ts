@@ -47,6 +47,11 @@ export class LogMessage implements LogAttributes {
     "Unexpected error writing audit event to SQS",
   );
 
+  static readonly IP_ADDRESS_FROM_CLOUDFRONT_IS_MALFORMED = new LogMessage(
+    "MOBILE_ASYNC_IP_ADDRESS_FROM_CLOUDFRONT_IS_MALFORMED",
+    "IP Address could not be retrieved from the cloudfront-viewer-address header and the fallback value of event.requestContext.identity.sourceIp will be used for TxMA events.",
+  );
+
   // Biometric Token
   static readonly BIOMETRIC_TOKEN_STARTED = new LogMessage(
     "MOBILE_ASYNC_BIOMETRIC_TOKEN_STARTED",

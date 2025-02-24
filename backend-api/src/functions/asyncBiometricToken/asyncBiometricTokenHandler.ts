@@ -39,6 +39,8 @@ import {
   BaseSessionAttributes,
   BiometricTokenIssuedSessionAttributes,
 } from "../common/session/session";
+import { getIpAddress } from "../common/request/getIpAddress/getIpAddress";
+import { getHeader } from "../common/request/getHeader/getHeader";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
@@ -77,12 +79,20 @@ export async function lambdaHandlerConstructor(
 
   const eventService = dependencies.getEventService(config.TXMA_SQS);
 
+  const ipAddress = getIpAddress(event);
+  const txmaAuditEncoded = getHeader(event.headers, "Txma-Audit-Encoded");
+
   const biometricTokenResult = await dependencies.getBiometricToken(
     config.READID_BASE_URL,
     submitterKey,
   );
   if (biometricTokenResult.isError) {
-    return handleInternalServerError(eventService, sessionId, config.ISSUER);
+    return handleInternalServerError(eventService, {
+      sessionId,
+      issuer: config.ISSUER,
+      ipAddress,
+      txmaAuditEncoded,
+    });
   }
 
   const opaqueId = generateOpaqueId();
@@ -96,12 +106,13 @@ export async function lambdaHandlerConstructor(
   );
 
   if (updateSessionResult.isError) {
-    return handleUpdateSessionError(
+    return handleUpdateSessionError(eventService, {
       updateSessionResult,
-      eventService,
       sessionId,
-      config.ISSUER,
-    );
+      issuer: config.ISSUER,
+      ipAddress,
+      txmaAuditEncoded,
+    });
   }
 
   const responseBody = {
@@ -109,13 +120,14 @@ export async function lambdaHandlerConstructor(
     opaqueId,
   };
 
-  return await handleOkResponse(
-    eventService,
-    updateSessionResult.value
+  return await handleOkResponse(eventService, {
+    sessionAttributes: updateSessionResult.value
       .attributes as BiometricTokenIssuedSessionAttributes,
-    config.ISSUER,
+    issuer: config.ISSUER,
     responseBody,
-  );
+    ipAddress,
+    txmaAuditEncoded,
+  });
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(
@@ -168,11 +180,18 @@ function generateOpaqueId(): string {
   return randomUUID();
 }
 
+interface HandleConditionalCheckFailureData {
+  sessionAttributes: BaseSessionAttributes;
+  issuer: string;
+  ipAddress: string;
+  txmaAuditEncoded: string | undefined;
+}
+
 async function handleConditionalCheckFailure(
   eventService: IEventService,
-  sessionAttributes: BaseSessionAttributes,
-  issuer: string,
+  data: HandleConditionalCheckFailureData,
 ): Promise<APIGatewayProxyResult> {
+  const { sessionAttributes, issuer, ipAddress, txmaAuditEncoded } = data;
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_4XXERROR",
     sub: sessionAttributes.subjectIdentifier,
@@ -180,6 +199,8 @@ async function handleConditionalCheckFailure(
     govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
     getNowInMilliseconds: Date.now,
     componentId: issuer,
+    ipAddress,
+    txmaAuditEncoded,
   });
 
   if (writeEventResult.isError) {
@@ -196,11 +217,18 @@ async function handleConditionalCheckFailure(
   );
 }
 
+interface HandleSessionNotFoundData {
+  sessionId: string;
+  issuer: string;
+  ipAddress: string;
+  txmaAuditEncoded: string | undefined;
+}
+
 async function handleSessionNotFound(
   eventService: IEventService,
-  sessionId: string,
-  issuer: string,
+  data: HandleSessionNotFoundData,
 ): Promise<APIGatewayProxyResult> {
+  const { sessionId, issuer, ipAddress, txmaAuditEncoded } = data;
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_4XXERROR",
     sub: undefined,
@@ -208,6 +236,8 @@ async function handleSessionNotFound(
     govukSigninJourneyId: undefined,
     getNowInMilliseconds: Date.now,
     componentId: issuer,
+    ipAddress,
+    txmaAuditEncoded,
   });
 
   if (writeEventResult.isError) {
@@ -221,11 +251,18 @@ async function handleSessionNotFound(
   return unauthorizedResponse("invalid_session", "Session not found");
 }
 
+interface HandleInternalServerErrorData {
+  sessionId: string;
+  issuer: string;
+  ipAddress: string;
+  txmaAuditEncoded: string | undefined;
+}
+
 async function handleInternalServerError(
   eventService: IEventService,
-  sessionId: string,
-  issuer: string,
+  data: HandleInternalServerErrorData,
 ): Promise<APIGatewayProxyResult> {
+  const { sessionId, issuer, ipAddress, txmaAuditEncoded } = data;
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_5XXERROR",
     sub: undefined,
@@ -233,6 +270,8 @@ async function handleInternalServerError(
     govukSigninJourneyId: undefined,
     getNowInMilliseconds: Date.now,
     componentId: issuer,
+    ipAddress,
+    txmaAuditEncoded,
   });
 
   if (writeEventResult.isError) {
@@ -245,34 +284,76 @@ async function handleInternalServerError(
   return serverErrorResponse;
 }
 
+interface HandleUpdateSessionErrorData {
+  updateSessionResult: FailureWithValue<SessionUpdateFailed>;
+  sessionId: string;
+  issuer: string;
+  ipAddress: string;
+  txmaAuditEncoded: string | undefined;
+}
+
 async function handleUpdateSessionError(
-  updateSessionResult: FailureWithValue<SessionUpdateFailed>,
   eventService: IEventService,
-  sessionId: string,
-  issuer: string,
+  data: HandleUpdateSessionErrorData,
 ): Promise<APIGatewayProxyResult> {
+  const {
+    updateSessionResult,
+    sessionId,
+    issuer,
+    ipAddress,
+    txmaAuditEncoded,
+  } = data;
   let sessionAttributes;
   switch (updateSessionResult.value.errorType) {
     case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
       sessionAttributes = updateSessionResult.value.attributes;
-      return handleConditionalCheckFailure(
-        eventService,
+      return handleConditionalCheckFailure(eventService, {
         sessionAttributes,
         issuer,
-      );
+        ipAddress,
+        txmaAuditEncoded,
+      });
     case UpdateSessionError.SESSION_NOT_FOUND:
-      return handleSessionNotFound(eventService, sessionId, issuer);
+      return handleSessionNotFound(eventService, {
+        sessionId,
+        issuer,
+        ipAddress,
+        txmaAuditEncoded,
+      });
     case UpdateSessionError.INTERNAL_SERVER_ERROR:
-      return handleInternalServerError(eventService, sessionId, issuer);
+      return handleInternalServerError(eventService, {
+        sessionId,
+        issuer,
+        ipAddress,
+        txmaAuditEncoded,
+      });
   }
+}
+
+interface BiometricTokenIssuedOkResponseBody {
+  accessToken: string;
+  opaqueId: string;
+}
+
+interface HandleOkResponseData {
+  sessionAttributes: BiometricTokenIssuedSessionAttributes;
+  issuer: string;
+  responseBody: BiometricTokenIssuedOkResponseBody;
+  ipAddress: string;
+  txmaAuditEncoded: string | undefined;
 }
 
 async function handleOkResponse(
   eventService: IEventService,
-  sessionAttributes: BiometricTokenIssuedSessionAttributes,
-  issuer: string,
-  responseBody: BiometricTokenIssuedOkResponseBody,
+  data: HandleOkResponseData,
 ): Promise<APIGatewayProxyResult> {
+  const {
+    sessionAttributes,
+    issuer,
+    responseBody,
+    ipAddress,
+    txmaAuditEncoded,
+  } = data;
   const writeEventResult = await eventService.writeBiometricTokenIssuedEvent({
     sub: sessionAttributes.subjectIdentifier,
     sessionId: sessionAttributes.sessionId,
@@ -280,6 +361,8 @@ async function handleOkResponse(
     getNowInMilliseconds: Date.now,
     componentId: issuer,
     documentType: sessionAttributes.documentType,
+    ipAddress,
+    txmaAuditEncoded,
   });
 
   if (writeEventResult.isError) {
@@ -293,9 +376,4 @@ async function handleOkResponse(
 
   logger.info(LogMessage.BIOMETRIC_TOKEN_COMPLETED);
   return okResponse(responseBody);
-}
-
-interface BiometricTokenIssuedOkResponseBody {
-  accessToken: string;
-  opaqueId: string;
 }
