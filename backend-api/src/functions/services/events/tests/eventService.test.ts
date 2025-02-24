@@ -343,7 +343,7 @@ describe("Event Service", () => {
     });
 
     describe(`Given writing "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED" to SQS is successful`, () => {
-      describe("Given txmaAuditEncoded is defined", () => {
+      describe("Given txmaAuditEncoded is undefined", () => {
         beforeEach(async () => {
           sqsMock.on(SendMessageCommand).resolves({});
 
