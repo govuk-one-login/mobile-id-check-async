@@ -33,20 +33,6 @@ export async function getFirstRegisteredClient(): Promise<ClientDetails> {
   return clientsDetails[0];
 }
 
-export async function getAccessToken(sub?: string, scope?: string) {
-  const requestBody = new URLSearchParams({
-    subject_token: sub ?? randomUUID(),
-    scope: scope ?? "idCheck.activeSession.read",
-    grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
-    subject_token_type: "urn:ietf:params:oauth:token-type:access_token",
-  });
-  const stsMockResponse = await STS_MOCK_API_INSTANCE.post(
-    "/token",
-    requestBody,
-  );
-  return stsMockResponse.data.access_token;
-}
-
 export async function createSessionForSub(sub: string) {
   const clientDetails = await getFirstRegisteredClient();
   const clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
@@ -61,6 +47,7 @@ export async function createSessionForSub(sub: string) {
       },
     },
   );
+
   const asyncCredentialResponse = await PROXY_API_INSTANCE.post(
     "/async/credential",
     {
@@ -76,7 +63,31 @@ export async function createSessionForSub(sub: string) {
       },
     },
   );
+
   return asyncCredentialResponse.data;
+}
+
+export async function getActiveSessionIdFromSub(sub: string): Promise<string> {
+  const serviceToken = await getAccessToken(sub);
+  const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
+    headers: { Authorization: `Bearer ${serviceToken}` },
+  });
+
+  return response.data.sessionId;
+}
+
+export async function getAccessToken(sub?: string, scope?: string) {
+  const requestBody = new URLSearchParams({
+    subject_token: sub ?? randomUUID(),
+    scope: scope ?? "idCheck.activeSession.read",
+    grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
+    subject_token_type: "urn:ietf:params:oauth:token-type:access_token",
+  });
+  const stsMockResponse = await STS_MOCK_API_INSTANCE.post(
+    "/token",
+    requestBody,
+  );
+  return stsMockResponse.data.access_token;
 }
 
 export async function getValidSessionId(): Promise<string | null> {
@@ -89,6 +100,7 @@ export async function getValidSessionId(): Promise<string | null> {
       headers: { Authorization: `Bearer ${serviceToken}` },
     },
   );
+
   return activeSessionResponse.data["sessionId"] ?? null;
 }
 

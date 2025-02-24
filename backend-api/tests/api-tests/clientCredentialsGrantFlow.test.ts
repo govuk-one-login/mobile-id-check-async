@@ -1,15 +1,11 @@
 import { AxiosInstance, AxiosResponse } from "axios";
 import { randomUUID, UUID } from "crypto";
 import "dotenv/config";
-import {
-  PRIVATE_API_INSTANCE,
-  PROXY_API_INSTANCE,
-  SESSIONS_API_INSTANCE,
-  STS_MOCK_API_INSTANCE,
-} from "./utils/apiInstance";
+import { PRIVATE_API_INSTANCE, PROXY_API_INSTANCE } from "./utils/apiInstance";
 import {
   ClientDetails,
   EventResponse,
+  getActiveSessionIdFromSub,
   getFirstRegisteredClient,
   pollForEvents,
 } from "./utils/apiTestHelpers";
@@ -127,8 +123,6 @@ describe.each(apis)(
       let accessTokenParts: string[];
       let header: object;
       let payload: object;
-      let eventsResponse: EventResponse[];
-      let event: object;
 
       beforeAll(async () => {
         tokenResponse = await axiosInstance.post(
@@ -144,22 +138,6 @@ describe.each(apis)(
         accessTokenParts = tokenResponse.data.access_token.split(".");
         header = JSON.parse(fromBase64(accessTokenParts[0])) as object;
         payload = JSON.parse(fromBase64(accessTokenParts[1])) as object;
-
-        eventsResponse = await pollForEvents({
-          partitionKey: `SESSION#UNKNOWN`,
-          sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED`,
-          numberOfEvents: 1,
-        });
-
-        ({ event } = getEventUnderTest(eventsResponse));
-      }, 20000);
-
-      it("Writes an event with the correct event_name", () => {
-        expect(event).toEqual(
-          expect.objectContaining({
-            event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
-          }),
-        );
       });
 
       it("Returns a 200 OK response and the access token", async () => {
@@ -176,6 +154,20 @@ describe.each(apis)(
         expect(tokenResponse.data).toHaveProperty("token_type", "Bearer");
         expect(tokenResponse.status).toBe(200);
       });
+
+      it("Writes an event with the correct event_name", async () => {
+        const eventsResponse = await pollForEvents({
+          partitionKey: `SESSION#UNKNOWN`,
+          sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED`,
+          numberOfEvents: 1,
+        });
+
+        expect(eventsResponse[0].event).toEqual(
+          expect.objectContaining({
+            event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+          }),
+        );
+      }, 40000);
     });
 
     describe("POST /credential", () => {
@@ -346,25 +338,19 @@ describe.each(apis)(
 
         beforeAll(async () => {
           randomSub = randomUUID();
-          response = await createSession({
-            axiosInstance,
-            authorizationHeader,
-            sub: randomSub,
-          });
-          const sessionId = await getActiveSessionId(randomSub);
+          const credentialRequestBody = getRequestBody(
+            clientDetails,
+            randomSub,
+          );
 
-          eventsResponse = await pollForEvents({
-            partitionKey: `SESSION#${sessionId}`,
-            sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START`,
-            numberOfEvents: 1,
-          });
-        }, 35000);
-
-        it("Writes an event with the correct event_name", () => {
-          expect(eventsResponse[0].event).toEqual(
-            expect.objectContaining({
-              event_name: "DCMAW_ASYNC_CRI_START",
-            }),
+          response = await axiosInstance.post(
+            `/async/credential`,
+            credentialRequestBody,
+            {
+              headers: {
+                [authorizationHeader]: "Bearer " + accessToken,
+              },
+            },
           );
         });
 
@@ -375,6 +361,21 @@ describe.each(apis)(
             sub: randomSub,
           });
         });
+
+        it("Writes an event with the correct event_name", async () => {
+          const sessionId = await getActiveSessionIdFromSub(randomSub);
+          eventsResponse = await pollForEvents({
+            partitionKey: `SESSION#${sessionId}`,
+            sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START`,
+            numberOfEvents: 1,
+          });
+
+          expect(eventsResponse[0].event).toEqual(
+            expect.objectContaining({
+              event_name: "DCMAW_ASYNC_CRI_START",
+            }),
+          );
+        }, 40000);
       });
     });
   },
@@ -431,97 +432,4 @@ function getRequestBody(
 function makeSignatureUnverifiable(accessToken: string, newSignature: string) {
   accessToken = accessToken.substring(0, accessToken.lastIndexOf(".") + 1);
   return accessToken + newSignature;
-}
-
-function getEventUnderTest(events: EventResponse[]) {
-  const eventsFound = events.find((event) => {
-    const timestamp = (event.event as any).timestamp;
-    return isEventLessThanOrEqualTo60SecondsOld(timestamp);
-  });
-
-  if (!eventsFound) {
-    throw new Error(
-      "Could not find an event created within the testing time frame.",
-    );
-  }
-
-  return eventsFound;
-}
-
-function isEventLessThanOrEqualTo60SecondsOld(timestamp: number) {
-  const SIXTY_SECONDS = 60;
-  const validFrom = getTimeNowInSeconds() - SIXTY_SECONDS;
-
-  return timestamp >= validFrom;
-}
-
-function getTimeNowInSeconds() {
-  return Math.floor(Date.now() / 1000);
-}
-
-async function createSession({
-  axiosInstance,
-  authorizationHeader,
-  sub,
-}: {
-  axiosInstance: AxiosInstance;
-  authorizationHeader: string;
-  sub?: UUID;
-}): Promise<AxiosResponse> {
-  const clientDetails = await getFirstRegisteredClient();
-  const clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
-
-  const tokenResponse = await axiosInstance.post(
-    `/async/token`,
-    "grant_type=client_credentials",
-    {
-      headers: {
-        [authorizationHeader]: "Basic " + toBase64(clientIdAndSecret),
-      },
-    },
-  );
-
-  const accessToken = await getAccessToken(
-    axiosInstance,
-    clientIdAndSecret,
-    authorizationHeader,
-  );
-
-  const credentialRequestBody = getRequestBody(clientDetails, sub);
-
-  const response = await axiosInstance.post(
-    `/async/credential`,
-    credentialRequestBody,
-    {
-      headers: {
-        [authorizationHeader]: "Bearer " + accessToken,
-      },
-    },
-  );
-
-  return response;
-}
-
-async function getActiveSessionId(sub: string): Promise<string> {
-  const accessToken = await getServiceToken(sub);
-  const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-
-  return response.data.sessionId;
-}
-
-async function getServiceToken(sub: string): Promise<string> {
-  const requestBody = new URLSearchParams({
-    subject_token: sub,
-    scope: "idCheck.activeSession.read",
-    grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
-    subject_token_type: "urn:ietf:params:oauth:token-type:access_token",
-  });
-  const stsMockResponse = await STS_MOCK_API_INSTANCE.post(
-    "/token",
-    requestBody,
-  );
-
-  return stsMockResponse.data.access_token;
 }

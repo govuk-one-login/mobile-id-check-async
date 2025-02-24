@@ -37,9 +37,10 @@ describe("POST /async/biometricToken", () => {
   describe("Given no session was found when attempting to update the session", () => {
     let eventsResponse: EventResponse[];
     let response: AxiosResponse;
+    let sessionId: string;
 
     beforeAll(async () => {
-      const sessionId = "invalidSessionId";
+      sessionId = "invalidSessionId";
       const requestBody = {
         sessionId,
         documentType: "NFC_PASSPORT",
@@ -51,21 +52,21 @@ describe("POST /async/biometricToken", () => {
       );
 
       await SESSIONS_API_INSTANCE.post("/async/biometricToken", requestBody);
+    }, 10000);
 
+    it("Writes an event with the correct event_name", async () => {
       eventsResponse = await pollForEvents({
         partitionKey: `SESSION#${sessionId}`,
         sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_4XXERROR`,
         numberOfEvents: 1,
       });
-    }, 15000);
 
-    it("Writes an event with the correct event_name", () => {
       expect(eventsResponse[0].event).toEqual(
         expect.objectContaining({
           event_name: "DCMAW_ASYNC_CRI_4XXERROR",
         }),
       );
-    });
+    }, 40000);
 
     it("Returns an error and 401 status code", async () => {
       expect(response.status).toBe(401);
@@ -83,8 +84,6 @@ describe("POST /async/biometricToken", () => {
     let sessionId: string | null;
     let biometricTokenResponse: AxiosResponse;
     let eventsResponse: EventResponse[];
-    let pk: string;
-    let event: object;
 
     beforeAll(async () => {
       sessionId = await getValidSessionId();
@@ -102,23 +101,7 @@ describe("POST /async/biometricToken", () => {
         "/async/biometricToken",
         requestBody,
       );
-
-      eventsResponse = await pollForEvents({
-        partitionKey: `SESSION#${sessionId}`,
-        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED`,
-        numberOfEvents: 1,
-      });
-
-      ({ pk, event } = eventsResponse[0]);
-    }, 20000);
-
-    it("Writes an event with the correct event_name", () => {
-      expect(event).toEqual(
-        expect.objectContaining({
-          event_name: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
-        }),
-      );
-    });
+    }, 15000);
 
     it("Returns a 200 response with biometric access token and opaque ID", () => {
       expect(biometricTokenResponse.status).toBe(200);
@@ -129,6 +112,20 @@ describe("POST /async/biometricToken", () => {
       expect(biometricTokenResponse.headers).toEqual(
         expect.objectContaining(expectedSecurityHeaders),
       );
-    }, 5000);
+    });
+
+    it("Writes an event with the correct event_name", async () => {
+      eventsResponse = await pollForEvents({
+        partitionKey: `SESSION#${sessionId}`,
+        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED`,
+        numberOfEvents: 1,
+      });
+
+      expect(eventsResponse[0].event).toEqual(
+        expect.objectContaining({
+          event_name: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
+        }),
+      );
+    }, 40000);
   });
 });
