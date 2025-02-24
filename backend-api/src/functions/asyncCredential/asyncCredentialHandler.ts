@@ -187,6 +187,7 @@ export async function lambdaHandlerConstructor(
     getNowInMilliseconds: Date.now,
     componentId: config.ISSUER,
     ipAddress: undefined, // Value only required for lambdas that been triggered as a result of a direct user interaction to the ID Check service
+    txmaAuditEncoded: undefined, // Value only required for lambdas that been triggered as a result of a direct user interaction to the ID Check service
   });
   if (writeEventResult.isError) {
     logger.log("ERROR_WRITING_AUDIT_EVENT", {
