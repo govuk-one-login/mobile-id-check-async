@@ -297,6 +297,7 @@ describe("Async Biometric Token", () => {
           sessionId: mockSessionId,
           sub: undefined,
           ipAddress: "1.1.1.1",
+          txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
         });
       });
 
@@ -379,6 +380,7 @@ describe("Async Biometric Token", () => {
             sessionId: mockSessionId,
             sub: undefined,
             ipAddress: "1.1.1.1",
+            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
           });
         });
 
@@ -460,6 +462,7 @@ describe("Async Biometric Token", () => {
             sessionId: mockSessionId,
             sub: "mockSubjectIdentifier",
             ipAddress: "1.1.1.1",
+            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
           });
         });
 
@@ -543,6 +546,7 @@ describe("Async Biometric Token", () => {
             sessionId: mockSessionId,
             sub: undefined,
             ipAddress: "1.1.1.1",
+            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
           });
         });
 
@@ -642,6 +646,7 @@ describe("Async Biometric Token", () => {
           sub: "mockSubjectIdentifier",
           documentType: "NFC_PASSPORT",
           ipAddress: "1.1.1.1",
+          txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
         });
       });
 

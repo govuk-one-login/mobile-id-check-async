@@ -7,6 +7,7 @@ export function buildRequest(overrides?: any): APIGatewayProxyEvent {
     body: "",
     headers: {
       "x-correlation-id": "correlationId",
+      "Txma-Audit-Encoded": "mockTxmaAuditEncodedHeader",
     },
     isBase64Encoded: false,
     multiValueHeaders: {},
