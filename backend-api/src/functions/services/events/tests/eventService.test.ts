@@ -41,6 +41,7 @@ describe("Event Service", () => {
           getNowInMilliseconds: () => 1609462861000,
           componentId: "mockComponentId",
           ipAddress: "mockIpAddress",
+          txmaAuditEncoded: "mockTxmaAuditEncoded",
         });
       });
 
@@ -57,6 +58,11 @@ describe("Event Service", () => {
             event_timestamp_ms: 1609462861000,
             event_name: genericEventName,
             component_id: "mockComponentId",
+            extensions: {
+              restricted: {
+                encoded: "mockTxmaAuditEncoded",
+              },
+            },
           }),
           QueueUrl: "mockSqsQueue",
         };
@@ -84,6 +90,7 @@ describe("Event Service", () => {
           getNowInMilliseconds: () => 1609462861000,
           componentId: "mockComponentId",
           ipAddress: "mockIpAddress",
+          txmaAuditEncoded: "mockTxmaAuditEncoded",
         });
       });
 
@@ -100,6 +107,11 @@ describe("Event Service", () => {
             event_timestamp_ms: 1609462861000,
             event_name: genericEventName,
             component_id: "mockComponentId",
+            extensions: {
+              restricted: {
+                encoded: "mockTxmaAuditEncoded",
+              },
+            },
           }),
           QueueUrl: "mockSqsQueue",
         };
@@ -197,6 +209,7 @@ describe("Event Service", () => {
           componentId: "mockComponentId",
           documentType: "NFC_PASSPORT",
           ipAddress: "mockIpAddress",
+          txmaAuditEncoded: "mockTxmaAuditEncoded",
         });
       });
 
@@ -215,6 +228,9 @@ describe("Event Service", () => {
             component_id: "mockComponentId",
             extensions: {
               documentType: "NFC_PASSPORT",
+              restricted: {
+                encoded: "mockTxmaAuditEncoded",
+              },
             },
           }),
           QueueUrl: "mockSqsQueue",
@@ -243,6 +259,7 @@ describe("Event Service", () => {
           componentId: "mockComponentId",
           documentType: "NFC_PASSPORT",
           ipAddress: "mockIpAddress",
+          txmaAuditEncoded: "mockTxmaAuditEncoded",
         });
       });
 
@@ -261,6 +278,9 @@ describe("Event Service", () => {
             component_id: "mockComponentId",
             extensions: {
               documentType: "NFC_PASSPORT",
+              restricted: {
+                encoded: "mockTxmaAuditEncoded",
+              },
             },
           }),
           QueueUrl: "mockSqsQueue",

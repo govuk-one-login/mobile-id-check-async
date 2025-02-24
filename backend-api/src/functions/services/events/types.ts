@@ -11,6 +11,17 @@ export interface BaseUserEventConfig extends BaseEventConfig {
   sessionId: string;
   govukSigninJourneyId: string | undefined;
   ipAddress: string | undefined;
+  txmaAuditEncoded: string | undefined;
+}
+
+export interface BaseTxmaExtensions {
+  restricted?: {
+    encoded: string | undefined;
+  };
+}
+
+export interface BiometricTokenIssuedExtensions extends BaseTxmaExtensions {
+  documentType: DocumentType;
 }
 
 export interface BaseTxmaEvent {
@@ -18,6 +29,7 @@ export interface BaseTxmaEvent {
   event_timestamp_ms: number;
   event_name: EventNames;
   component_id: string;
+  extensions?: BaseTxmaExtensions;
 }
 
 export interface BaseUserTxmaEvent extends BaseTxmaEvent {
@@ -61,9 +73,7 @@ export interface CredentialTokenIssuedEvent extends BaseTxmaEvent {
 
 export interface BiometricTokenIssuedEvent extends BaseUserTxmaEvent {
   event_name: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED";
-  extensions: {
-    documentType: DocumentType;
-  };
+  extensions: BiometricTokenIssuedExtensions;
 }
 
 export type TxmaEvents =

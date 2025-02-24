@@ -69,6 +69,11 @@ export class EventService implements IEventService {
       event_timestamp_ms: timestampInMillis,
       event_name: eventConfig.eventName,
       component_id: eventConfig.componentId,
+      extensions: {
+        restricted: {
+          encoded: eventConfig.txmaAuditEncoded,
+        },
+      },
     };
   };
 
@@ -101,6 +106,9 @@ export class EventService implements IEventService {
       component_id: eventConfig.componentId,
       extensions: {
         documentType: eventConfig.documentType,
+        restricted: {
+          encoded: eventConfig.txmaAuditEncoded,
+        },
       },
     };
   };
