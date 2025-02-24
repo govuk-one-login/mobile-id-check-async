@@ -345,84 +345,25 @@ describe.each(apis)(
       });
 
       describe("Given the request is valid and there is no active session for the given sub", () => {
-        let clientIdAndSecret: string;
-
-        let tokenResponse: AxiosResponse;
-
-        let accessToken: string;
-
         let randomSub: UUID;
         let response: AxiosResponse;
         let eventsResponse: EventResponse[];
 
         beforeAll(async () => {
-          const clientDetails = await getFirstRegisteredClient();
-          clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
-
-          tokenResponse = await axiosInstance.post(
-            `/async/token`,
-            "grant_type=client_credentials",
-            {
-              headers: {
-                [authorizationHeader]: "Basic " + toBase64(clientIdAndSecret),
-              },
-            },
-          );
-
-          accessToken = await getAccessToken(
-            axiosInstance,
-            clientIdAndSecret,
-            authorizationHeader,
-          );
-
           randomSub = randomUUID();
-          const credentialRequestBody = getRequestBody(
-            clientDetails,
-            randomSub,
-          );
-
-          console.log("RANDOM SUB >>>>>", randomSub);
-
-          response = await axiosInstance.post(
-            `/async/credential`,
-            credentialRequestBody,
-            {
-              headers: {
-                [authorizationHeader]: "Bearer " + accessToken,
-              },
-            },
-          );
-
-          const requestBody = new URLSearchParams({
-            subject_token: randomSub,
-            scope: "idCheck.activeSession.read",
-            grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
-            subject_token_type: "urn:ietf:params:oauth:token-type:access_token",
+          response = await createSession({
+            axiosInstance,
+            authorizationHeader,
+            sub: randomSub,
           });
-          const stsMockResponse = await STS_MOCK_API_INSTANCE.post(
-            "/token",
-            requestBody,
-          );
-
-          const activeSessionAccessToken = stsMockResponse.data.access_token;
-
-          const activeSessionResponse = await SESSIONS_API_INSTANCE.get(
-            "/async/activeSession",
-            {
-              headers: { Authorization: `Bearer ${activeSessionAccessToken}` },
-            },
-          );
-
-          const sessionId = activeSessionResponse.data.sessionId;
+          const sessionId = await getActiveSessionId(randomSub);
 
           eventsResponse = await pollForEvents({
             partitionKey: `SESSION#${sessionId}`,
             sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START`,
             numberOfEvents: 1,
           });
-
-          console.log("EVENTS RESPONSE >>>>>", eventsResponse);
-        }, 60000);
+        }, 35000);
 
         it("Writes an event with the correct event_name", () => {
           expect(eventsResponse[0].event).toEqual(
@@ -521,4 +462,71 @@ function isEventLessThanOrEqualTo60SecondsOld(timestamp: number) {
 
 function getTimeNowInSeconds() {
   return Math.floor(Date.now() / 1000);
+}
+
+async function createSession({
+  axiosInstance,
+  authorizationHeader,
+  sub,
+}: {
+  axiosInstance: AxiosInstance;
+  authorizationHeader: string;
+  sub?: UUID;
+}): Promise<AxiosResponse> {
+  const clientDetails = await getFirstRegisteredClient();
+  const clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
+
+  const tokenResponse = await axiosInstance.post(
+    `/async/token`,
+    "grant_type=client_credentials",
+    {
+      headers: {
+        [authorizationHeader]: "Basic " + toBase64(clientIdAndSecret),
+      },
+    },
+  );
+
+  const accessToken = await getAccessToken(
+    axiosInstance,
+    clientIdAndSecret,
+    authorizationHeader,
+  );
+
+  const credentialRequestBody = getRequestBody(clientDetails, sub);
+
+  const response = await axiosInstance.post(
+    `/async/credential`,
+    credentialRequestBody,
+    {
+      headers: {
+        [authorizationHeader]: "Bearer " + accessToken,
+      },
+    },
+  );
+
+  return response;
+}
+
+async function getActiveSessionId(sub: string): Promise<string> {
+  const accessToken = await getServiceToken(sub);
+  const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  return response.data.sessionId;
+}
+
+async function getServiceToken(sub: string): Promise<string> {
+  const requestBody = new URLSearchParams({
+    subject_token: sub,
+    scope: "idCheck.activeSession.read",
+    grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
+    subject_token_type: "urn:ietf:params:oauth:token-type:access_token",
+  });
+  const stsMockResponse = await STS_MOCK_API_INSTANCE.post(
+    "/token",
+    requestBody,
+  );
+
+  return stsMockResponse.data.access_token;
 }
