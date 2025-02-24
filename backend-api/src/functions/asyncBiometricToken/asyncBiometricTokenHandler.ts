@@ -40,6 +40,7 @@ import {
   BiometricTokenIssuedSessionAttributes,
 } from "../common/session/session";
 import { getIpAddress } from "../common/request/getIpAddress/getIpAddress";
+import { getHeader } from "../common/request/getHeader/getHeader";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
@@ -77,7 +78,9 @@ export async function lambdaHandlerConstructor(
   const submitterKey = submitterKeyResult.value;
 
   const eventService = dependencies.getEventService(config.TXMA_SQS);
+
   const ipAddress = getIpAddress(event);
+  const txmaAuditEncoded = getHeader(event.headers, "Txma-Audit-Encoded");
 
   const biometricTokenResult = await dependencies.getBiometricToken(
     config.READID_BASE_URL,
@@ -89,6 +92,7 @@ export async function lambdaHandlerConstructor(
       sessionId,
       config.ISSUER,
       ipAddress,
+      txmaAuditEncoded,
     );
   }
 
@@ -109,6 +113,7 @@ export async function lambdaHandlerConstructor(
       sessionId,
       config.ISSUER,
       ipAddress,
+      txmaAuditEncoded,
     );
   }
 
@@ -124,6 +129,7 @@ export async function lambdaHandlerConstructor(
     config.ISSUER,
     responseBody,
     ipAddress,
+    txmaAuditEncoded,
   );
 }
 
@@ -182,6 +188,7 @@ async function handleConditionalCheckFailure(
   sessionAttributes: BaseSessionAttributes,
   issuer: string,
   ipAddress: string,
+  txmaAuditEncoded: string | undefined,
 ): Promise<APIGatewayProxyResult> {
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_4XXERROR",
@@ -191,6 +198,7 @@ async function handleConditionalCheckFailure(
     getNowInMilliseconds: Date.now,
     componentId: issuer,
     ipAddress,
+    txmaAuditEncoded,
   });
 
   if (writeEventResult.isError) {
@@ -212,6 +220,7 @@ async function handleSessionNotFound(
   sessionId: string,
   issuer: string,
   ipAddress: string,
+  txmaAuditEncoded: string | undefined,
 ): Promise<APIGatewayProxyResult> {
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_4XXERROR",
@@ -221,6 +230,7 @@ async function handleSessionNotFound(
     getNowInMilliseconds: Date.now,
     componentId: issuer,
     ipAddress,
+    txmaAuditEncoded,
   });
 
   if (writeEventResult.isError) {
@@ -239,6 +249,7 @@ async function handleInternalServerError(
   sessionId: string,
   issuer: string,
   ipAddress: string,
+  txmaAuditEncoded: string | undefined,
 ): Promise<APIGatewayProxyResult> {
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_5XXERROR",
@@ -248,6 +259,7 @@ async function handleInternalServerError(
     getNowInMilliseconds: Date.now,
     componentId: issuer,
     ipAddress,
+    txmaAuditEncoded,
   });
 
   if (writeEventResult.isError) {
@@ -266,6 +278,7 @@ async function handleUpdateSessionError(
   sessionId: string,
   issuer: string,
   ipAddress: string,
+  txmaAuditEncoded: string | undefined,
 ): Promise<APIGatewayProxyResult> {
   let sessionAttributes;
   switch (updateSessionResult.value.errorType) {
@@ -276,15 +289,23 @@ async function handleUpdateSessionError(
         sessionAttributes,
         issuer,
         ipAddress,
+        txmaAuditEncoded,
       );
     case UpdateSessionError.SESSION_NOT_FOUND:
-      return handleSessionNotFound(eventService, sessionId, issuer, ipAddress);
+      return handleSessionNotFound(
+        eventService,
+        sessionId,
+        issuer,
+        ipAddress,
+        txmaAuditEncoded,
+      );
     case UpdateSessionError.INTERNAL_SERVER_ERROR:
       return handleInternalServerError(
         eventService,
         sessionId,
         issuer,
         ipAddress,
+        txmaAuditEncoded,
       );
   }
 }
@@ -295,6 +316,7 @@ async function handleOkResponse(
   issuer: string,
   responseBody: BiometricTokenIssuedOkResponseBody,
   ipAddress: string,
+  txmaAuditEncoded: string | undefined,
 ): Promise<APIGatewayProxyResult> {
   const writeEventResult = await eventService.writeBiometricTokenIssuedEvent({
     sub: sessionAttributes.subjectIdentifier,
@@ -304,6 +326,7 @@ async function handleOkResponse(
     componentId: issuer,
     documentType: sessionAttributes.documentType,
     ipAddress,
+    txmaAuditEncoded,
   });
 
   if (writeEventResult.isError) {
