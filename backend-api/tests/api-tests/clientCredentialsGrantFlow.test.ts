@@ -181,7 +181,7 @@ describe.each(apis)(
     describe("POST /credential", () => {
       let clientDetails: ClientDetails;
       let accessToken: string;
-      // let credentialRequestBody: CredentialRequestBody;
+      let credentialRequestBody: CredentialRequestBody;
 
       beforeAll(async () => {
         clientDetails = await getFirstRegisteredClient();
@@ -191,12 +191,11 @@ describe.each(apis)(
           clientIdAndSecret,
           authorizationHeader,
         );
-        // credentialRequestBody = getRequestBody(clientDetails);
+        credentialRequestBody = getRequestBody(clientDetails);
       });
 
       describe("Given there is no Authorization header in the request", () => {
         it("Returns a 401 Unauthorized response", async () => {
-          const credentialRequestBody = getRequestBody(clientDetails);
           const response = await axiosInstance.post(
             `/async/credential`,
             credentialRequestBody,
@@ -212,7 +211,6 @@ describe.each(apis)(
 
       describe("Given the Bearer token in the Authorization header is not a valid token", () => {
         it("Returns a 400 Bad Request response", async () => {
-          const credentialRequestBody = getRequestBody(clientDetails);
           const response = await axiosInstance.post(
             `/async/credential`,
             credentialRequestBody,
@@ -253,7 +251,6 @@ describe.each(apis)(
 
       describe("Given the access token signature could not be verified", () => {
         it("Returns 400 Bad Request", async () => {
-          const credentialRequestBody = getRequestBody(clientDetails);
           const accessTokenWithInvalidSignature = makeSignatureUnverifiable(
             accessToken,
             "6T5a8kCTyXsmw_2ATkyPgtLRzsuot-_ZIXWnuXNftZP8SHHkNxwFyMaZxEnqqtQst-99AoRrUDZnPov0oztbSA",
@@ -280,7 +277,6 @@ describe.each(apis)(
 
       describe("Given the request is valid and an active session is found for a given sub", () => {
         it("Returns 200 OK", async () => {
-          const credentialRequestBody = getRequestBody(clientDetails);
           // Create session if it does not exist
           await axiosInstance.post(`/async/credential`, credentialRequestBody, {
             headers: {
@@ -308,7 +304,6 @@ describe.each(apis)(
 
       describe("Given the same access token is used more than once to fetch an active session", () => {
         it("Returns 200 OK", async () => {
-          const credentialRequestBody = getRequestBody(clientDetails);
           // use access token once
           const responseOne = await axiosInstance.post(
             `/async/credential`,
