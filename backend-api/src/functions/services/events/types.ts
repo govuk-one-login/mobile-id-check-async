@@ -12,12 +12,18 @@ export interface BaseUserEventConfig extends BaseEventConfig {
   govukSigninJourneyId: string | undefined;
   ipAddress: string | undefined;
   txmaAuditEncoded: string | undefined;
+  transactionId?: string;
 }
 
 export interface RestrictedData {
   device_information: {
     encoded: string;
   };
+  transactionId?: string;
+}
+
+export interface Extensions {
+  suspected_fraud_signal?: string;
 }
 
 export interface BaseTxmaEvent {
@@ -34,6 +40,7 @@ export interface BaseUserTxmaEvent extends BaseTxmaEvent {
     session_id: string;
     govuk_signin_journey_id: string | undefined;
     ip_address: string | undefined;
+    transaction_id?: string;
   };
 }
 
@@ -49,6 +56,7 @@ export type EventNames =
 
 export interface GenericEventConfig extends BaseUserEventConfig {
   eventName: GenericEventNames;
+  extensions?: Extensions;
 }
 
 export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
@@ -61,6 +69,7 @@ export interface BiometricTokenIssuedEventConfig extends BaseUserEventConfig {
 
 export interface GenericTxmaEvent extends BaseUserTxmaEvent {
   event_name: GenericEventNames;
+  extensions?: Extensions;
 }
 
 export interface CredentialTokenIssuedEvent extends BaseTxmaEvent {
