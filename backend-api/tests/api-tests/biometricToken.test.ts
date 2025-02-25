@@ -35,7 +35,6 @@ describe("POST /async/biometricToken", () => {
   });
 
   describe("Given no session was found when attempting to update the session", () => {
-    let eventsResponse: EventResponse[];
     let response: AxiosResponse;
     let sessionId: string;
 
@@ -64,7 +63,7 @@ describe("POST /async/biometricToken", () => {
     });
 
     it("Writes an event with the correct event_name", async () => {
-      eventsResponse = await pollForEvents({
+      const eventsResponse = await pollForEvents({
         partitionKey: `SESSION#${sessionId}`,
         sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_4XXERROR`,
         numberOfEvents: 1,
