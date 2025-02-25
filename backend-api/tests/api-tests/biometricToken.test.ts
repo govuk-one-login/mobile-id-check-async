@@ -94,10 +94,7 @@ describe("POST /async/biometricToken", () => {
         documentType: "NFC_PASSPORT",
       };
 
-      await SESSIONS_API_INSTANCE.post(
-        "/async/biometricToken",
-        requestBody,
-      );
+      await SESSIONS_API_INSTANCE.post("/async/biometricToken", requestBody);
 
       biometricTokenResponse = await SESSIONS_API_INSTANCE.post(
         "/async/biometricToken",
