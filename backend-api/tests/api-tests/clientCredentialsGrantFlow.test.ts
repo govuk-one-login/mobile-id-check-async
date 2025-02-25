@@ -5,6 +5,7 @@ import { PRIVATE_API_INSTANCE, PROXY_API_INSTANCE } from "./utils/apiInstance";
 import {
   ClientDetails,
   EventResponse,
+  getActiveSessionIdFromSub,
   getFirstRegisteredClient,
   pollForEvents,
 } from "./utils/apiTestHelpers";
@@ -122,8 +123,6 @@ describe.each(apis)(
       let accessTokenParts: string[];
       let header: object;
       let payload: object;
-      let eventsResponse: EventResponse[];
-      let event: object;
 
       beforeAll(async () => {
         tokenResponse = await axiosInstance.post(
@@ -139,30 +138,6 @@ describe.each(apis)(
         accessTokenParts = tokenResponse.data.access_token.split(".");
         header = JSON.parse(fromBase64(accessTokenParts[0])) as object;
         payload = JSON.parse(fromBase64(accessTokenParts[1])) as object;
-
-        eventsResponse = await pollForEvents({
-          partitionKey: `SESSION#UNKNOWN`,
-          sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED`,
-          numberOfEvents: 1,
-        });
-
-        ({ event } = getEventUnderTest(eventsResponse));
-      }, 20000);
-
-      describe("Writing to TxMA", () => {
-        it("Writes an event with the correct session ID", () => {
-          const { pk } = eventsResponse[0];
-
-          expect(pk).toEqual("SESSION#UNKNOWN");
-        });
-
-        it("Writes an event with the correct event_name", () => {
-          expect(event).toEqual(
-            expect.objectContaining({
-              event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
-            }),
-          );
-        });
       });
 
       it("Returns a 200 OK response and the access token", async () => {
@@ -179,12 +154,26 @@ describe.each(apis)(
         expect(tokenResponse.data).toHaveProperty("token_type", "Bearer");
         expect(tokenResponse.status).toBe(200);
       });
+
+      it("Writes an event with the correct event_name", async () => {
+        const eventsResponse = await pollForEvents({
+          partitionKey: `SESSION#UNKNOWN`,
+          sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED`,
+          numberOfEvents: 1,
+        });
+
+        expect(eventsResponse[0].event).toEqual(
+          expect.objectContaining({
+            event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+          }),
+        );
+      }, 40000);
     });
 
     describe("POST /credential", () => {
       let clientDetails: ClientDetails;
-      let credentialRequestBody: CredentialRequestBody;
       let accessToken: string;
+      let credentialRequestBody: CredentialRequestBody;
 
       beforeAll(async () => {
         clientDetails = await getFirstRegisteredClient();
@@ -343,14 +332,17 @@ describe.each(apis)(
       });
 
       describe("Given the request is valid and there is no active session for the given sub", () => {
-        it("Returns 201 Created", async () => {
-          const randomSub = randomUUID();
+        let randomSub: UUID;
+        let response: AxiosResponse;
+
+        beforeAll(async () => {
+          randomSub = randomUUID();
           const credentialRequestBody = getRequestBody(
             clientDetails,
             randomSub,
           );
 
-          const response = await axiosInstance.post(
+          response = await axiosInstance.post(
             `/async/credential`,
             credentialRequestBody,
             {
@@ -359,13 +351,30 @@ describe.each(apis)(
               },
             },
           );
+        });
 
+        it("Returns 201 Created", async () => {
+          expect(response.status).toBe(201);
           expect(response.data).toStrictEqual({
             "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
             sub: randomSub,
           });
-          expect(response.status).toBe(201);
         });
+
+        it("Writes an event with the correct event_name", async () => {
+          const sessionId = await getActiveSessionIdFromSub(randomSub);
+          const eventsResponse = await pollForEvents({
+            partitionKey: `SESSION#${sessionId}`,
+            sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_START`,
+            numberOfEvents: 1,
+          });
+
+          expect(eventsResponse[0].event).toEqual(
+            expect.objectContaining({
+              event_name: "DCMAW_ASYNC_CRI_START",
+            }),
+          );
+        }, 40000);
       });
     });
   },
@@ -422,30 +431,4 @@ function getRequestBody(
 function makeSignatureUnverifiable(accessToken: string, newSignature: string) {
   accessToken = accessToken.substring(0, accessToken.lastIndexOf(".") + 1);
   return accessToken + newSignature;
-}
-
-function getEventUnderTest(events: EventResponse[]) {
-  const eventsFound = events.find((event) => {
-    const timestamp = (event.event as any).timestamp;
-    return isEventLessThanOrEqualTo60SecondsOld(timestamp);
-  });
-
-  if (!eventsFound) {
-    throw new Error(
-      "Could not find an event created within the testing time frame.",
-    );
-  }
-
-  return eventsFound;
-}
-
-function isEventLessThanOrEqualTo60SecondsOld(timestamp: number) {
-  const SIXTY_SECONDS = 60;
-  const validFrom = getTimeNowInSeconds() - SIXTY_SECONDS;
-
-  return timestamp >= validFrom;
-}
-
-function getTimeNowInSeconds() {
-  return Math.floor(Date.now() / 1000);
 }

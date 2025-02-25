@@ -10,6 +10,14 @@ export interface BaseUserEventConfig extends BaseEventConfig {
   sub: string | undefined;
   sessionId: string;
   govukSigninJourneyId: string | undefined;
+  ipAddress: string | undefined;
+  txmaAuditEncoded: string | undefined;
+}
+
+export interface RestrictedData {
+  device_information: {
+    encoded: string;
+  };
 }
 
 export interface BaseTxmaEvent {
@@ -17,6 +25,7 @@ export interface BaseTxmaEvent {
   event_timestamp_ms: number;
   event_name: EventNames;
   component_id: string;
+  restricted?: RestrictedData;
 }
 
 export interface BaseUserTxmaEvent extends BaseTxmaEvent {
@@ -24,6 +33,7 @@ export interface BaseUserTxmaEvent extends BaseTxmaEvent {
     user_id: string | undefined;
     session_id: string;
     govuk_signin_journey_id: string | undefined;
+    ip_address: string | undefined;
   };
 }
 
