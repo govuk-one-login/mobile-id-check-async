@@ -91,9 +91,11 @@ async function handleConditionalCheckFailure(
   function getFraudSignal(
     expired: boolean,
   ): Record<string, string> | undefined {
-    if (expired) {
-      return { suspected_fraud_signal: "AUTH_SESSION_TOO_OLD" };
+    if (!expired) {
+      return undefined;
     }
+
+    return { suspected_fraud_signal: "AUTH_SESSION_TOO_OLD" };
   }
 
   const writeEventResult = await eventService.writeGenericEvent({
