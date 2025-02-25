@@ -39,17 +39,17 @@ describe("Backend application infrastructure", () => {
         build: "https://events.review-b-async.build.account.gov.uk",
       };
 
-      template.hasMapping("EnvironmentVariables", {
-        dev: Match.objectLike({
-          EventsBaseUrl: expectedEnvironmentVariables.dev,
+      template.hasMapping(
+        "EnvironmentVariables",
+        Match.objectLike({
+          dev: {
+            EventsBaseUrl: expectedEnvironmentVariables.dev,
+          },
+          build: {
+            EventsBaseUrl: expectedEnvironmentVariables.build,
+          },
         }),
-      });
-
-      template.hasMapping("EnvironmentVariables", {
-        build: Match.objectLike({
-          EventsBaseUrl: expectedEnvironmentVariables.build,
-        }),
-      });
+      );
     });
 
     test("ReadIdBaseUrl is the ReadID Proxy", () => {
