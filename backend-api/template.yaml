@@ -2350,6 +2350,13 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
+      Events:
+        AsyncTxmaEvent:
+          Properties:
+            Method: post
+            Path: /async/txmaEvent
+            RestApiId: !Ref SessionsApi
+          Type: Api
       FunctionName: !Sub ${AWS::StackName}-txmaEvent
       Handler: asyncTxmaEventHandler.lambdaHandler
       Role: !GetAtt AsyncTxmaEventLambdaRole.Arn
@@ -2369,7 +2376,7 @@ Resources:
       FunctionName: !GetAtt AsyncTxmaEventFunction.Arn
       Principal: apigateway.amazonaws.com
       SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApi}/*/*/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SessionsApi}/*/*/*
 
   AsyncTxmaEventLambdaRole:
     Type: AWS::IAM::Role
@@ -2439,12 +2446,12 @@ Resources:
                   - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-timeToLive-index
             Version: "2012-10-17"
           PolicyName: DynamoReadSessionsTable
-      RoleName: !Sub ${AWS::StackName}-txmaEvent-lambda
+      RoleName: !Sub ${AWS::StackName}-txma-event-lambda
 
   AsyncTxmaEventLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-txmaEvent
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-txma-event
       RetentionInDays: 30
 
   JsonWebKeysBucket:

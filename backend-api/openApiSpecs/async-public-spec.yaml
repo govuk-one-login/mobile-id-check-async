@@ -529,7 +529,7 @@ paths:
         httpMethod: "GET"
         type: "aws"
 
-  /txmaEvent:
+  /async/txmaEvent:
     post:
       operationId: postTxmaEvent
       summary: Writes an event to TxMA by `POST /txmaEvent`.

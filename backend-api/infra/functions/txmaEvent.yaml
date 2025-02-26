@@ -16,11 +16,17 @@ Resources:
     Properties:
       FunctionName: !Sub ${AWS::StackName}-txmaEvent
       Runtime: nodejs20.x
-      Handler: asyncTxmaEventHandler.lambdaHandler
       Role: !GetAtt AsyncTxmaEventLambdaRole.Arn
+      Handler: asyncTxmaEventHandler.lambdaHandler
       # Environment:
       #   Variables:
-
+      Events:
+        AsyncTxmaEvent:
+          Type: Api
+          Properties:
+            Path: /async/txmaEvent
+            Method: post
+            RestApiId: !Ref SessionsApi
       VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-PrivateSubnetIdA
@@ -33,7 +39,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-txmaEvent
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-txma-event
 
   AsyncTxmaEventFunctionPermission:
     Type: AWS::Lambda::Permission
@@ -42,12 +48,12 @@ Resources:
       FunctionName: !GetAtt AsyncTxmaEventFunction.Arn
       Principal: apigateway.amazonaws.com
       SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApi}/*/*/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SessionsApi}/*/*/*
 
   AsyncTxmaEventLambdaRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-txmaEvent-lambda
+      RoleName: !Sub ${AWS::StackName}-txma-event-lambda
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
