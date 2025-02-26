@@ -579,11 +579,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/WriteTxmaEventResponse'
       x-amazon-apigateway-integration:
-        requestTemplates:
-          application/json:
-            statusCode: 200
+        type: "aws_proxy"
         httpMethod: "POST"
         passthroughBehavior: "when_no_match"
         uri:
           Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AsyncTxmaEventFunction}:live/invocations"
-        type: "aws_proxy"
+        requestTemplates:
+          application/json:
+            statusCode: 200
+        responses:
+          "501":
+            statusCode: "501"
+            responseParameters:
+              method.response.header.Cache-Control: "'no-store'"
+              method.response.header.Content-Type: "'application/json'"
+              method.response.header.Strict-Transport-Security: "'max-age=31536000'"
+              method.response.header.X-Content-Type-Options: "'nosniff'"
+              method.response.header.X-Frame-Options: "'DENY'"
+            responseTemplates:
+              text/plain: Not Implemented
+          default:
+            statusCode: "500"
+            responseParameters:
+              method.response.header.Cache-Control: "'no-store'"
+              method.response.header.Content-Type: "'application/json'"
+              method.response.header.Strict-Transport-Security: "'max-age=31536000'"
+              method.response.header.X-Content-Type-Options: "'nosniff'"
+              method.response.header.X-Frame-Options: "'DENY'"
+            responseTemplates:
+              text/plain: Internal Server Error
