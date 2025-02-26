@@ -28,7 +28,9 @@ describe("POST /async/txmaEvent", () => {
 
     it("Returns a 200 response with biometric access token and opaque ID", () => {
       expect(biometricTokenResponse.status).toBe(501);
-      expect(biometricTokenResponse.data).toStrictEqual("Not implemented");
+      expect(biometricTokenResponse.data).toStrictEqual({
+        error: "Not Implemented",
+      });
       expect(biometricTokenResponse.headers).toEqual(
         expect.objectContaining(expectedSecurityHeaders),
       );
