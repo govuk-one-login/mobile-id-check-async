@@ -18,8 +18,8 @@ Resources:
       Runtime: nodejs20.x
       Handler: asyncTxmaEventHandler.lambdaHandler
       Role: !GetAtt AsyncTxmaEventLambdaRole.Arn
-      Environment:
-        Variables:
+      # Environment:
+      #   Variables:
 
       VpcConfig:
         SubnetIds:

@@ -2350,8 +2350,6 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
-      Environment:
-        Variables: null
       FunctionName: !Sub ${AWS::StackName}-txmaEvent
       Handler: asyncTxmaEventHandler.lambdaHandler
       Role: !GetAtt AsyncTxmaEventLambdaRole.Arn
