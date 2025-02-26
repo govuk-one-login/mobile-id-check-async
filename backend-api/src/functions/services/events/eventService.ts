@@ -64,6 +64,7 @@ export class EventService implements IEventService {
         user_id: eventConfig.sub,
         session_id: eventConfig.sessionId,
         govuk_signin_journey_id: eventConfig.govukSigninJourneyId,
+        transaction_id: eventConfig.transactionId,
         ip_address: eventConfig.ipAddress,
       },
       timestamp: Math.floor(timestampInMillis / 1000),
@@ -71,6 +72,7 @@ export class EventService implements IEventService {
       event_name: eventConfig.eventName,
       component_id: eventConfig.componentId,
       restricted: this.getRestrictedData(eventConfig.txmaAuditEncoded),
+      extensions: eventConfig.extensions,
     };
   };
 

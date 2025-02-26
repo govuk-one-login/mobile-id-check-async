@@ -99,6 +99,10 @@ export class LogMessage implements LogAttributes {
       "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_REQUEST_BODY_INVALID",
       "The incoming request body was missing or invalid.",
     );
+  static readonly FINISH_BIOMETRIC_SESSION_INVALID_CONFIG = new LogMessage(
+    "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_INVALID_CONFIG",
+    "One or more required environment variables were missing or invalid.",
+  );
 
   // TxMA Event
   static readonly TXMA_EVENT_STARTED = new LogMessage(
