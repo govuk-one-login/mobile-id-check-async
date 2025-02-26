@@ -82,7 +82,7 @@ describe("Async TxMA Event", () => {
       });
     });
 
-    it("Returns 200 response with biometric access token and opaque ID", () => {
+    it("Returns 501 Not Implemented response", () => {
       expect(result).toStrictEqual({
         headers: expectedSecurityHeaders,
         statusCode: 501,
