@@ -9,6 +9,7 @@ import {
   IAsyncTxmaEventDependencies,
   runtimeDependencies,
 } from "./handlerDependencies";
+import { notImplementedResponse } from "../common/lambdaResponses";
 
 export async function lambdaHandlerConstructor(
   _dependencies: IAsyncTxmaEventDependencies,
@@ -21,22 +22,10 @@ export async function lambdaHandlerConstructor(
 
   logger.info(LogMessage.TXMA_EVENT_COMPLETED);
 
-  return {
-    headers: securityHeaders,
-    statusCode: 501,
-    body: "Not implemented",
-  };
+  return notImplementedResponse;
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(
   null,
   runtimeDependencies,
 );
-
-const securityHeaders = {
-  "Cache-Control": "no-store",
-  "Content-Type": "application/json",
-  "Strict-Transport-Security": "max-age=31536000",
-  "X-Content-Type-Options": "nosniff",
-  "X-Frame-Options": "DENY",
-};

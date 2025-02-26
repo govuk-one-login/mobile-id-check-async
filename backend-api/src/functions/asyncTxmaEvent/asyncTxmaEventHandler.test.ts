@@ -86,7 +86,7 @@ describe("Async TxMA Event", () => {
       expect(result).toStrictEqual({
         headers: expectedSecurityHeaders,
         statusCode: 501,
-        body: "Not implemented",
+        body: JSON.stringify({ error: "Not Implemented" }),
       });
     });
   });
