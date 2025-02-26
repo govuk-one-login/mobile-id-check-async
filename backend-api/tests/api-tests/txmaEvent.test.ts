@@ -33,5 +33,5 @@ describe("POST /async/txmaEvent", () => {
         expect.objectContaining(expectedSecurityHeaders),
       );
     });
-  })
-})
+  });
+});
