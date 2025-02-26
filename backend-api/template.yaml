@@ -2440,7 +2440,6 @@ Resources:
                 Effect: Allow
                 Resource: !GetAtt TxMASQSQueue.Arn
               - Action:
-                  - kms:Encrypt
                   - kms:Decrypt
                   - kms:GenerateDataKey
                 Effect: Allow
@@ -2461,9 +2460,7 @@ Resources:
                   StringEquals:
                     dynamodb:Select: SPECIFIC_ATTRIBUTES
                 Effect: Allow
-                Resource:
-                  - !GetAtt SessionsTable.Arn
-                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-timeToLive-index
+                Resource: !GetAtt SessionsTable.Arn
             Version: "2012-10-17"
           PolicyName: DynamoReadSessionsTable
       RoleName: !Sub ${AWS::StackName}-txma-event-lambda

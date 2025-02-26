@@ -94,7 +94,6 @@ Resources:
                 Resource: !GetAtt TxMASQSQueue.Arn
               - Effect: Allow
                 Action:
-                  - kms:Encrypt
                   - kms:Decrypt
                   - kms:GenerateDataKey
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
@@ -105,9 +104,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - dynamodb:Query
-                Resource:
-                  - Fn::GetAtt: ["SessionsTable", "Arn"]
-                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-timeToLive-index
+                Resource: !GetAtt SessionsTable.Arn
                 Condition:
                   ForAllValues:StringEquals:
                     dynamodb:Attributes:
