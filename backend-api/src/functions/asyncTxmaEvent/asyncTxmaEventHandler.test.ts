@@ -4,10 +4,7 @@ import "../../../tests/testUtils/matchers";
 import { logger } from "../common/logging/logger";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { buildRequest } from "../testUtils/mockRequest";
-import {
-  expectedSecurityHeaders,
-  mockSessionId,
-} from "../testUtils/unitTestData";
+import { expectedSecurityHeaders } from "../testUtils/unitTestData";
 import { lambdaHandlerConstructor } from "./asyncTxmaEventHandler";
 import { IAsyncTxmaEventDependencies } from "./handlerDependencies";
 
@@ -17,12 +14,7 @@ describe("Async TxMA Event", () => {
   let consoleInfoSpy: jest.SpyInstance;
   let result: APIGatewayProxyResult;
 
-  const validRequest = buildRequest({
-    body: JSON.stringify({
-      sessionId: mockSessionId,
-      eventName: "DCMAW_READID_NFC_BILLING_STARTED",
-    }),
-  });
+  const validRequest = buildRequest();
 
   beforeEach(() => {
     dependencies = {
