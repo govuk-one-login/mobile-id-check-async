@@ -2357,7 +2357,7 @@ Resources:
             Path: /async/txmaEvent
             RestApiId: !Ref SessionsApi
           Type: Api
-      FunctionName: !Sub ${AWS::StackName}-txmaEvent
+      FunctionName: !Sub ${AWS::StackName}-txma-event
       Handler: asyncTxmaEventHandler.lambdaHandler
       Role: !GetAtt AsyncTxmaEventLambdaRole.Arn
       Runtime: nodejs20.x

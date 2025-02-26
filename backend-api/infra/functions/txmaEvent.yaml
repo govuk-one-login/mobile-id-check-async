@@ -14,7 +14,7 @@ Resources:
         EntryPoints:
           - src/functions/asyncTxmaEvent/asyncTxmaEventHandler.ts
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-txmaEvent
+      FunctionName: !Sub ${AWS::StackName}-txma-event
       Runtime: nodejs20.x
       Role: !GetAtt AsyncTxmaEventLambdaRole.Arn
       Handler: asyncTxmaEventHandler.lambdaHandler
