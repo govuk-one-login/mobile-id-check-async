@@ -1,6 +1,5 @@
 import { expect } from "@jest/globals";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
-import "dotenv/config";
 import "../../../tests/testUtils/matchers";
 import { logger } from "../common/logging/logger";
 import { buildLambdaContext } from "../testUtils/mockContext";
@@ -11,11 +10,6 @@ import {
 } from "../testUtils/unitTestData";
 import { lambdaHandlerConstructor } from "./asyncTxmaEventHandler";
 import { IAsyncTxmaEventDependencies } from "./handlerDependencies";
-
-jest.mock("crypto", () => ({
-  ...jest.requireActual("crypto"),
-  randomUUID: () => "mock_opaque_id",
-}));
 
 describe("Async TxMA Event", () => {
   let dependencies: IAsyncTxmaEventDependencies;
