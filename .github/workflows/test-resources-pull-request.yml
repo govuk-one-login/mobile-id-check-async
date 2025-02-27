@@ -1,6 +1,5 @@
 name: test-resources pull request
 on:
-  # Triggers the workflow on pull request events for all branches
   pull_request:
     branches:
       - main
@@ -15,60 +14,24 @@ on:
       - "!test-resources/**/*.md"
       - "!test-resources/**/*.png"
 
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
   ci-checks:
-    name: Run CI checks
-    runs-on: ubuntu-22.04
-    defaults:
-      run:
-        shell: bash
-        working-directory: test-resources
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-          fetch-depth: 0
+    name: CI Checks
+    if: github.event.pull_request.draft == false
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_ci-checks.yml@DCMAW-11654
+    with:
+      WORKING_DIRECTORY: test-resources
+    secrets: inherit
 
-      - name: Setup nodeJS v20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: test-resources/package-lock.json
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Linting
-        run: npm run lint
-
-      - name: Check formatting using Prettier
-        run: npm run format:check
-
-      # Runs unit and infrastructure tests
-      - name: Run tests
-        run: npm run test
-
-      - name: Validate SAM template
-        run: sam validate --lint
-
-      - name: Run SonarCloud Scan
-        uses: sonarsource/sonarqube-scan-action@0303d6b62e310685c0e34d0b9cde218036885c4d # v5.0.0
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          projectBaseDir: test-resources
-
-      - name: SonarQube Quality Gate check
-        uses: Sonarsource/sonarqube-quality-gate-action@8406f4f1edaffef38e9fb9c53eb292fc1d7684fa # master
-        # Force to fail step after specific time
-        timeout-minutes: 5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          scanMetadataReportFile: test-resources/.scannerwork/report-task.txt
+  sonarqube:
+    name: SonarQube
+    needs: ci-checks
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_sonarqube.yml@DCMAW-11654
+    with:
+      RUN_SONARQUBE_QUALITY_GATE_CHECK: true
+      WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
+    secrets: inherit

@@ -1,0 +1,60 @@
+name: SonarQube Scan
+
+on:
+  workflow_call:
+    inputs:
+      RUN_SONARQUBE_QUALITY_GATE_CHECK:
+        description: Whether to run SonarQube Quality Gate check
+        required: false
+        type: boolean
+        default: false
+      WORKING_DIRECTORY:
+        description: Working directory
+        required: true
+        type: string
+
+jobs:
+  sonarqube-scan:
+    name: SonarQube Scan
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.WORKING_DIRECTORY }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@9a9194f87191a7e9055e3e9b95b8cfb13023bb08 #main
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Setup nodeJS v20
+        uses: actions/setup-node@26961cf329f22f6837d5f54c3efd76b480300ace #main
+        with:
+          cache: npm
+          cache-dependency-path: ${{ inputs.WORKING_DIRECTORY }}/package-lock.json
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm clean-install
+
+      - name: Generate test coverage report for SonarQube Quality Gate Check
+        run: npm run test:unit
+
+      - name: Run SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@0303d6b62e310685c0e34d0b9cde218036885c4d # v5.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: ${{ inputs.WORKING_DIRECTORY }}
+
+      - name: Run SonarQube Quality Gate Check
+        if: ${{ inputs.RUN_SONARQUBE_QUALITY_GATE_CHECK }}
+        uses: Sonarsource/sonarqube-quality-gate-action@8406f4f1edaffef38e9fb9c53eb292fc1d7684fa # master
+        # Force to fail step after specific time
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          scanMetadataReportFile: ${{ inputs.WORKING_DIRECTORY }}/.scannerwork/report-task.txt
