@@ -4,22 +4,28 @@ on:
   workflow_call:
     inputs:
       WORKING_DIRECTORY:
+        description: Working directory
         required: true
         type: string
     secrets:
-      GH_ACTIONS_ROLE_ARN:
-        required: true
-      TEST_IMAGE_REPOSITOR_URI:
-        required: true
       CONTAINER_SIGN_KMS_KEY:
+        description: AWS Role for pushing the test image and AWS artifact to AWS
+        required: true
+      GH_ACTIONS_ROLE_ARN:
+        description: uri of the ECR for the test images
+        required: true
+      TEST_IMAGE_REPOSITORY_URI: 
+        description: KMS key for encrypting the test image
         required: true
 
 jobs:
-  build-and-push:
-    name: build-and-push
+  build-and-push-image:
+    name: Build, push, and sign image
     runs-on: ubuntu-24.04
     env:
+      CONTAINER_SIGN_KMS_KEY: ${{ secrets.CONTAINER_SIGN_KMS_KEY }}
       IMAGE_TAG: latest
+      TEST_IMAGE_REPOSITORY_URI: ${{ secrets.TEST_IMAGE_REPOSITORY_URI }}
     defaults:
       run:
         shell: bash
@@ -32,27 +38,30 @@ jobs:
           fetch-depth: 0
 
       - name: Install Cosign
-        uses: sigstore/cosign-installer@d7d6bc7722e3daa8354c50bcb52f4837da5e9b6a #v3.8.1
+        uses: sigstore/cosign-installer@c56c2d3e59e4281cc41dea2217323ba5694b171e #v3.8.0
         with:
           cosign-release: 'v1.9.0'
 
       - name: Authenticate with AWS
-        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 #v4.0.2
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 #v4.1.0
         with:
           aws-region: eu-west-2
           role-to-assume: ${{ secrets.GH_ACTIONS_ROLE_ARN }}
+
+      - name: Run custom tests
+        run: npm run test
 
       - name: Login to AWS ECR
         uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 #v2.0.1
 
       - name: Build image
         run: |
-          docker build -t ${{ secrets.TEST_IMAGE_REPOSITOR_URI }}:$IMAGE_TAG . 
+          docker build -t $TEST_IMAGE_REPOSITORY_URI:$IMAGE_TAG . 
 
       - name: Push image
         run: |
-          docker push ${{ secrets.TEST_IMAGE_REPOSITOR_URI }}:$IMAGE_TAG
+          docker push $TEST_IMAGE_REPOSITORY_URI:$IMAGE_TAG
 
       - name: Sign image
         run: |
-          cosign sign --key awskms:///${{ secrets.CONTAINER_SIGN_KMS_KEY }} ${{ secrets.TEST_IMAGE_REPOSITOR_URI }}:$IMAGE_TAG
+          cosign sign --key awskms:///$CONTAINER_SIGN_KMS_KEY TEST_IMAGE_REPOSITORY_URI:$IMAGE_TAG

@@ -1,0 +1,89 @@
+name: CI Checks
+
+on:
+  workflow_call:
+    inputs:
+      GENERATE_PROXY_OPEN_API_SPEC:
+        description: Whether to run script to generate proxy openAPI spec
+        required: false
+        type: boolean
+        default: false
+      RUN_LINTER:
+        description: Whether to run a linter
+        required: false
+        type: boolean
+        default: true
+      TEMPLATE_NAME:
+        description: CloudFormation template name
+        required: false
+        type: string
+        default: template.yaml
+      VERIFY_TEMPLATE_RAIN:
+        description: Whether to install and verify templates with rain
+        required: false
+        type: boolean
+        default: false
+      WORKING_DIRECTORY:
+        description: Working directory
+        required: true
+        type: string
+
+jobs:
+  ci-checks:
+    name: Run CI checks
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.WORKING_DIRECTORY }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Setup nodeJS v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: ${{ inputs.WORKING_DIRECTORY }}/package-lock.json
+
+      - name: Install dependencies
+        run: npm clean-install
+
+      - name: Linting
+        if: ${{ inputs.RUN_LINTER }}
+        run: npm run lint
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Run custom tests
+        run: npm run test
+        # output the file the unit tests generates for use in sonar quality gate
+
+      - name: Generate proxy open api spec
+        if: ${{ inputs.GENERATE_PROXY_OPEN_API_SPEC }}
+        run: npm run generate-proxy-open-api
+
+      - name: Set up Homebrew
+        if: ${{ inputs.VERIFY_TEMPLATE_RAIN }}
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@a7a36215df86859f163fbb774ebe0cecf9ec8547 
+
+      - name: Install rain
+        if: ${{ inputs.VERIFY_TEMPLATE_RAIN }}
+        run: brew install rain
+
+      - name: Verify template format using rain
+        if: ${{ inputs.VERIFY_TEMPLATE_RAIN }}
+        run: npm run infra:format:verify
+
+      - name: Validate SAM template
+        run: |
+          TEMPLATES="$(find . -name ${{ inputs.TEMPLATE_NAME }})"
+          for template in $TEMPLATES; do
+            sam validate --lint --template-file $template
+          done

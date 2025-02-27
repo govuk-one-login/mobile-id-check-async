@@ -1,0 +1,75 @@
+name: Build and upload SAM application
+
+on:
+  workflow_call:
+    inputs:
+      TEMPLATE_NAME:
+        description: CloudFormation template name
+        required: false
+        type: string
+        default: template.yaml
+      WORKING_DIRECTORY:
+        description: Working directory
+        required: true
+        type: string
+    secrets:
+      ARTIFACT_BUCKET_NAME:
+        description: Artifact source bucket for SAM artifact
+        required: true
+      CONTAINER_SIGN_KMS_KEY:
+        description: AWS Role for pushing the test image and AWS artifact to AWS
+        required: true
+      GH_ACTIONS_ROLE_ARN:
+        description: uri of the ECR for the test images
+        required: true
+      SIGNING_PROFILE_NAME: 
+        description: Profile used to sign SAM artifact
+        required: true
+
+jobs:
+  build-and-upload-sam-artifact:
+    name: Build and upload SAM artifact to S3 bucket
+    runs-on: ubuntu-24.04
+    env:
+      TEMPLATE_NAME: ${{ inputs.TEMPLATE_NAME }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.WORKING_DIRECTORY }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 #v4.2.2
+        with:
+          submodules: true
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722 #v4.1.0
+        with:
+          aws-region: eu-west-2
+          role-to-assume: ${{ secrets.GH_ACTIONS_ROLE_ARN }}
+
+      # - name: Cache SAM builds
+      #   uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # pin@v4
+      #   with:
+      #     path: |
+      #       ./backend-api/.aws-sam/cache
+      #       ./backend-api/.aws-sam/deps
+      #       ./backend-api/.aws-sam/build.toml
+      #     key: sam-${{ inputs.WORKING_DIRECTORY }}
+
+      - name: Sam validate
+        run: |
+          echo "SAM_CLI_TELEMETRY=0" >> $GITHUB_ENV
+          sam validate --lint --template $TEMPLATE_NAME
+
+      - name: Build SAM artifact from template file
+        run: |
+          sam build --template $TEMPLATE_NAME
+
+      - name: Upload SAM artifact into the S3 artifact bucket
+        uses: govuk-one-login/devplatform-upload-action@a3ea2d79b7ee95bc6ecea69aea6ec75f19faee41 #v3.9.3
+        with:
+          artifact-bucket-name: ${{ secrets.ARTIFACT_BUCKET_NAME }}
+          signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
+          template-file: .aws-sam/build/template.yaml
+          working-directory: ${{ inputs.WORKING_DIRECTORY }}

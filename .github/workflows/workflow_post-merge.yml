@@ -1,0 +1,60 @@
+name: Post Merge
+
+on:
+  workflow_call:
+    inputs:
+      TEMPLATE_NAME:
+        description: CloudFormation template name
+        required: false
+        type: string
+        default: template.yaml
+      WORKING_DIRECTORY:
+        description: Working directory
+        required: true
+        type: string
+    secrets:
+      ARTIFACT_BUCKET_NAME:
+        description: Artifact source bucket for SAM artifact
+        required: true
+      CONTAINER_SIGN_KMS_KEY:
+        description: AWS Role for pushing the test image and AWS artifact to AWS
+        required: true
+      GH_ACTIONS_ROLE_ARN:
+        description: uri of the ECR for the test images
+        required: true
+      SIGNING_PROFILE_NAME: 
+        description: Profile used to sign SAM artifact
+        required: true
+      TEST_IMAGE_REPOSITORY_URI: 
+        description: KMS key for encrypting the test image
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-and-push-image:
+    name: Build and push test image
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_build-and-push-test-image.yml@DCMAW-11654
+    with:
+      WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
+    secrets:
+      CONTAINER_SIGN_KMS_KEY: ${{ secrets.CONTAINER_SIGN_KMS_KEY }}
+      GH_ACTIONS_ROLE_ARN: ${{ secrets.GH_ACTIONS_ROLE_ARN }}
+      TEST_IMAGE_REPOSITORY_URI: ${{ secrets.TEST_IMAGE_REPOSITORY_URI }}
+
+  build-and-upload-sam-artifact:
+    name: Build and upload SAM artifact
+    needs: build-and-push-image
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_build-and-upload-sam-app.yml@DCMAW-11654
+    with:
+      TEMPLATE_NAME: ${{ inputs.TEMPLATE_NAME }}
+      WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
+    secrets:
+      ARTIFACT_BUCKET_NAME: ${{ secrets.ARTIFACT_BUCKET_NAME }}
+      CONTAINER_SIGN_KMS_KEY: ${{ secrets.CONTAINER_SIGN_KMS_KEY }}
+      GH_ACTIONS_ROLE_ARN: ${{ secrets.GH_ACTIONS_ROLE_ARN }}
+      SIGNING_PROFILE_NAME: ${{ secrets.SIGNING_PROFILE_NAME }}
