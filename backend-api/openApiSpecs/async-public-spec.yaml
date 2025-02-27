@@ -64,7 +64,7 @@ components:
             - DCMAW_READID_NFC_BILLING_STARTED
     WriteTxmaEventResponse:
       type: string
-      description: confirms the TxMA event has been written.
+      description: Confirms the TxMA event has been written.
 
 paths:
   /async/activeSession:
