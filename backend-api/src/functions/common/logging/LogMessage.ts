@@ -2,7 +2,6 @@ import { LogAttributes } from "@aws-lambda-powertools/logger/types";
 
 export class LogMessage implements LogAttributes {
   // Shared
-
   static readonly GET_CLIENT_REGISTRY_FAILURE = new LogMessage(
     "MOBILE_ASYNC_GET_CLIENT_REGISTRY_FAILURE",
     "Failed to retrieve client registry from Secrets Manager.",
