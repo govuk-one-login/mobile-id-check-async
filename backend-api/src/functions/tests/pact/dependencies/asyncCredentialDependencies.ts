@@ -1,12 +1,9 @@
-import { registeredLogs } from "../../../asyncCredential/registeredLogs";
 import {
   MockTokenServiceGetDecodedTokenErrorResult,
   MockTokenServiceSuccessIPV,
 } from "../../../asyncCredential/tokenService/tests/mocks";
 import { MockClientRegistryServiceGetPartialClientSuccessResultIPV } from "../../../services/clientRegistryService/tests/mocks";
 import { MockEventWriterSuccess } from "../../../services/events/tests/mocks";
-import { Logger } from "../../../services/logging/logger";
-import { MockLoggingAdapter } from "../../../services/logging/tests/mockLogger";
 import { MockSessionServiceCreateSuccessResult } from "../../../services/session/tests/mocks";
 
 const defaultPassingDependencies = {
@@ -20,7 +17,6 @@ const defaultPassingDependencies = {
     CLIENT_REGISTRY_SECRET_NAME: "mockParmaterName",
   },
   eventService: () => new MockEventWriterSuccess(),
-  logger: () => new Logger(new MockLoggingAdapter(), registeredLogs),
   clientRegistryService: () =>
     new MockClientRegistryServiceGetPartialClientSuccessResultIPV(),
   tokenService: () => new MockTokenServiceSuccessIPV(),
