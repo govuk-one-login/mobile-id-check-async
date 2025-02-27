@@ -104,6 +104,16 @@ export class LogMessage implements LogAttributes {
     "One or more required environment variables were missing or invalid.",
   );
 
+  // TxMA Event
+  static readonly TXMA_EVENT_STARTED = new LogMessage(
+    "MOBILE_ASYNC_TXMA_EVENT_STARTED",
+    "Lambda handler processing has started.",
+  );
+  static readonly TXMA_EVENT_COMPLETED = new LogMessage(
+    "MOBILE_ASYNC_TXMA_EVENT_COMPLETED",
+    "Lambda handler processing has completed successfully.",
+  );
+
   private constructor(
     public readonly messageCode: string,
     public readonly message: string,
