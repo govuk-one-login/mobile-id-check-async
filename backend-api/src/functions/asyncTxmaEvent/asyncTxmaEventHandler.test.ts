@@ -14,7 +14,7 @@ describe("Async TxMA Event", () => {
   let consoleInfoSpy: jest.SpyInstance;
   let result: APIGatewayProxyResult;
 
-  const validRequest = buildRequest();
+  const request = buildRequest();
 
   beforeEach(() => {
     dependencies = {
@@ -26,11 +26,7 @@ describe("Async TxMA Event", () => {
 
   describe("On every invocation", () => {
     beforeEach(async () => {
-      result = await lambdaHandlerConstructor(
-        dependencies,
-        validRequest,
-        context,
-      );
+      result = await lambdaHandlerConstructor(dependencies, request, context);
     });
 
     it("Adds context to log attributes and logs STARTED message", () => {
@@ -42,11 +38,7 @@ describe("Async TxMA Event", () => {
 
     it("Clears pre-existing log attributes", async () => {
       logger.appendKeys({ testKey: "testValue" });
-      result = await lambdaHandlerConstructor(
-        dependencies,
-        validRequest,
-        context,
-      );
+      result = await lambdaHandlerConstructor(dependencies, request, context);
       expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
         testKey: "testValue",
       });
@@ -55,11 +47,7 @@ describe("Async TxMA Event", () => {
 
   describe("Given a valid request is made", () => {
     beforeEach(async () => {
-      result = await lambdaHandlerConstructor(
-        dependencies,
-        validRequest,
-        context,
-      );
+      result = await lambdaHandlerConstructor(dependencies, request, context);
     });
 
     it("Logs COMPLETED", () => {
