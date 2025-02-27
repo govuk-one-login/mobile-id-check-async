@@ -1,0 +1,57 @@
+name: Post Merge
+
+on:
+  workflow_call:
+    inputs:
+      WORKING_DIRECTORY:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  sonarqube-scan:
+    name: SonarQube Scan
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_sonarqube.yml@DCMAW-11654
+    with:
+      WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
+    secrets: inherit
+
+  dev-build-and-push-image:
+    name: "Dev: Build and Push Test Image"
+    needs: sonarqube-scan
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_build-and-push-test-image.yml@DCMAW-11654
+    with:
+      WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
+    secrets: inherit
+
+  dev-build-and-upload-sam-artifact:
+    name: "Dev: Build and Upload SAM artifact"
+    needs: dev-build-and-push-image
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_build-and-upload-sam-app.yml@DCMAW-11654
+    with:
+      WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
+    secrets: inherit
+
+  build-build-and-push-image:
+    name: "Build: Build and Push Test Image"
+    needs: sonarqube-scan
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_build-and-push-test-image.yml@DCMAW-11654
+    with:
+      WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
+    secrets: inherit
+
+  build-build-and-upload-sam-artifact:
+    name: "Build: Build and Upload SAM artifact"
+    needs: build-build-and-push-image
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_build-and-upload-sam-app.yml@DCMAW-11654
+    with:
+      WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
+    secrets: inherit

@@ -1,0 +1,27 @@
+# name: backend-api post merge
+
+# on:
+#   push:
+#     branches:
+#       - main
+#     paths:
+#       - "backend-api/**"
+#       - ".github/workflows/backend-api-post-merge.yml"
+#       - "!backend-api/**/*.md"
+#       - "!backend-api/**/*.png"
+
+#   # Allows you to run this workflow manually from the Actions tab
+#   workflow_dispatch:
+
+# permissions:
+#   contents: read
+#   id-token: write
+
+# jobs:
+#   post-merge:
+#     name: Post Merge
+#     uses:
+#       govuk-one-login/mobile-id-check-async/.github/workflows/workflow_post-merge.yml@DCMAW-11654
+#     with:
+#       WORKING_DIRECTORY: backend-api
+#     secrets: inherit

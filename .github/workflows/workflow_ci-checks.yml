@@ -1,0 +1,64 @@
+name: Pull Request Checks
+
+on:
+  workflow_call:
+    inputs:
+      WORKING_DIRECTORY:
+        required: true
+        type: string
+      GENERATE_PROXY_OPEN_API_SPEC:
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  ci-checks:
+    name: Run CI checks
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.WORKING_DIRECTORY }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Setup nodeJS v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: ${{ inputs.WORKING_DIRECTORY }}/package-lock.json
+
+      - name: Install dependencies
+        run: npm clean-install
+
+      - name: Linting
+        run: npm run lint
+
+      - name: Check formatting using Prettier
+        run: npm run format:check
+
+      # Runs unit, infra and pact tests
+      - name: Run tests
+        run: npm run test
+
+      - name: Generate proxy open api spec
+        if: ${{ inputs.GENERATE_PROXY_OPEN_API_SPEC }}
+        run: npm run generate-proxy-open-api
+
+      - name: Validate SAM template
+        run: sam validate --lint
+        
+  sonarqube:
+    name: SonarQube
+    needs: ci-checks
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_sonarqube.yml@DCMAW-11654
+    with:
+      WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
+      RUN_SONARQUBE_QUALITY_GATE_CHECK: true
+    secrets: inherit
