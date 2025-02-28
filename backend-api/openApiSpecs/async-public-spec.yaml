@@ -53,6 +53,12 @@ components:
       properties:
         sessionId:
           type: string
+          format: uuid
+          example: 11111111-1111-1111-1111-111111111111
+          description: |
+            sessionId for a user journey.
+          pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          type: string
         eventName:
           type: string
           description: The name of the txma event being written to SQS
@@ -544,6 +550,40 @@ paths:
       tags:
         - TxMA
       responses:
+        '400':
+          description: Bad Request
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Cache-Control:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+            Strict-Transport-Security:
+              schema:
+                type: string
+            X-Content-Type-Options:
+              schema:
+                type: string
+            X-Frame-Options:
+              schema:
+                type: string
+            Content-Security-Policy:
+              schema:
+                type: string
+            Feature-Policy:
+              schema:
+                type: string
+            Referrer-Policy:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WriteTxmaEventResponse'
         '501':
           description: Not Implemented
           headers:
@@ -588,6 +628,16 @@ paths:
           application/json:
             statusCode: 200
         responses:
+          "400":
+            statusCode: "400"
+            responseParameters:
+              method.response.header.Cache-Control: "'no-store'"
+              method.response.header.Content-Type: "'application/json'"
+              method.response.header.Strict-Transport-Security: "'max-age=31536000'"
+              method.response.header.X-Content-Type-Options: "'nosniff'"
+              method.response.header.X-Frame-Options: "'DENY'"
+            responseTemplates:
+              text/plain: Bad Request
           "501":
             statusCode: "501"
             responseParameters:
