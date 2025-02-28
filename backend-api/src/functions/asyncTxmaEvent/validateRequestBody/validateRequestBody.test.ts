@@ -96,7 +96,7 @@ describe("Validate request body", () => {
       const result = validateRequestBody(
         JSON.stringify({
           sessionId: mockSessionId,
-          eventName: "DCMAW_HYBRID_BILLING_STARTED",
+          eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
         }),
       );
 
@@ -104,7 +104,7 @@ describe("Validate request body", () => {
         isError: false,
         value: {
           sessionId: mockSessionId,
-          eventName: "DCMAW_HYBRID_BILLING_STARTED",
+          eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
         },
       });
     });
