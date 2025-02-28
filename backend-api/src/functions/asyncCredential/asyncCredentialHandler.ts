@@ -13,6 +13,7 @@ import { RequestService } from "./requestService/requestService";
 import { ErrorCategory } from "../utils/result";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
+import { setupLogger } from "../common/logging/setupLogger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncCredentialDependencies,
@@ -207,12 +208,6 @@ export async function lambdaHandlerConstructor(
 
   logger.info(LogMessage.CREDENTIAL_COMPLETED);
   return sessionCreatedResponse(requestBody.sub);
-}
-
-function setupLogger(context: Context) {
-  logger.resetKeys();
-  logger.addContext(context);
-  logger.appendKeys({ functionVersion: context.functionVersion });
 }
 
 const badRequestResponse = (responseInput: {

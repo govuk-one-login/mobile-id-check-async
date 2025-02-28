@@ -11,15 +11,14 @@ import {
 import { ErrorCategory } from "../utils/result";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
+import { setupLogger } from "../common/logging/setupLogger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
-  logger.resetKeys();
-  logger.addContext(context);
-  logger.appendKeys({ functionVersion: context.functionVersion });
+  setupLogger(context)
   logger.info(LogMessage.TOKEN_STARTED);
 
   const configResult = new ConfigService().getConfig(dependencies.env);
