@@ -210,6 +210,12 @@ export async function lambdaHandlerConstructor(
   return sessionCreatedResponse(requestBody.sub);
 }
 
+function setupLogger(context: Context) {
+  logger.resetKeys();
+  logger.addContext(context);
+  logger.appendKeys({ functionVersion: context.functionVersion });
+}
+
 const badRequestResponse = (responseInput: {
   error: string;
   errorDescription: string;
