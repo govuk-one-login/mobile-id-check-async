@@ -98,6 +98,7 @@ describe("Async Finish Biometric Session", () => {
     it("Adds context to log attributes and logs STARTED message", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_STARTED",
+        functionVersion: "1",
         function_arn: "arn:12345",
       });
     });

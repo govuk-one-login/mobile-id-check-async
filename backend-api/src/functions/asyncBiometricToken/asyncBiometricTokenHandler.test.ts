@@ -124,6 +124,7 @@ describe("Async Biometric Token", () => {
     it("Adds context to log attributes and logs STARTED message", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_BIOMETRIC_TOKEN_STARTED",
+        functionVersion: "1",
         function_arn: "arn:12345", // example field to verify that context has been added
       });
     });

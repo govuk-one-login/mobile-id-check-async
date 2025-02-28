@@ -26,14 +26,14 @@ import { getFinishBiometricSessionConfig } from "./finishBiometricSessionConfig"
 import { IEventService } from "../services/events/types";
 import { FailureWithValue } from "../utils/result";
 import { SessionAttributes } from "../common/session/session";
+import { setupLogger } from "../common/logging/setupLogger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncFinishBiometricSessionDependencies,
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
-  logger.resetKeys();
-  logger.addContext(context);
+  setupLogger(context);
   logger.info(LogMessage.FINISH_BIOMETRIC_SESSION_STARTED);
   const configResult = getFinishBiometricSessionConfig(dependencies.env);
   if (configResult.isError) {
