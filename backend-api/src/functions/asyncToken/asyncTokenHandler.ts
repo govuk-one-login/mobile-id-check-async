@@ -18,7 +18,7 @@ export async function lambdaHandlerConstructor(
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
-  setupLogger(context)
+  setupLogger(context);
   logger.info(LogMessage.TOKEN_STARTED);
 
   const configResult = new ConfigService().getConfig(dependencies.env);
