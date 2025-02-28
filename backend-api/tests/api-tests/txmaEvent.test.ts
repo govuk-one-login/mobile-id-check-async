@@ -44,8 +44,6 @@ describe("POST /async/txmaEvent", () => {
         "/async/txmaEvent",
         requestBody,
       );
-
-      console.log("RESPONSE >>>>>", response);
     });
 
     it("Returns 501 Not Implemented response", () => {

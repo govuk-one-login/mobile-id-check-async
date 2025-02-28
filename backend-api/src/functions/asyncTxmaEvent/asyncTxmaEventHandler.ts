@@ -3,10 +3,7 @@ import {
   APIGatewayProxyResult,
   Context,
 } from "aws-lambda";
-import {
-  badRequestResponse,
-  notImplementedResponse,
-} from "../common/lambdaResponses";
+import { notImplementedResponse } from "../common/lambdaResponses";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import {
@@ -26,11 +23,7 @@ export async function lambdaHandlerConstructor(
 
   const validateRequestBodyResult = validateRequestBody(event.body);
   if (validateRequestBodyResult.isError) {
-    const { errorMessage } = validateRequestBodyResult.value;
-    logger.error(LogMessage.TXMA_EVENT_REQUEST_BODY_INVALID, {
-      errorMessage,
-    });
-    return badRequestResponse("invalid_request", errorMessage);
+    return validateRequestBodyResult.value.handleErrorResponse();
   }
 
   logger.info(LogMessage.TXMA_EVENT_COMPLETED);
