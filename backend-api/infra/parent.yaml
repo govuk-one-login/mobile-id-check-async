@@ -336,6 +336,7 @@ Globals:
       Variables:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
         TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
+        VENDOR_PROCESSING_SQS: !GetAtt VendorProcessingSQSQueue.QueueUrl
         # ISSUER should be updated with DNS once available
         ISSUER: mockIssuer
         SESSION_TABLE_NAME: !Ref SessionsTable
@@ -406,9 +407,23 @@ Outputs:
       Name: !Sub ${AWS::StackName}-txma-sqs-queue-arn
     Value: !GetAtt TxMASQSQueue.Arn
 
+  VendorProcessingSqsQueueArn:
+    Condition: IsDevOrBuild
+    Description: TxMA SQS Queue ARN
+    Export:
+      Name: !Sub ${AWS::StackName}-vendor-processing-sqs-queue-arn
+    Value: !GetAtt VendorProcessingSQSQueue.Arn
+
   TxmaKmsEncryptionKeyArn:
     Condition: IsDevOrBuild
     Description: TxMA KMS Encryption Key ARN
     Export:
       Name: !Sub ${AWS::StackName}-txma-kms-encryption-key-arn
     Value: !GetAtt TxMAKMSEncryptionKey.Arn
+
+  VendorProcessingKmsEncryptionKeyArn:
+    Condition: IsDevOrBuild
+    Description: Vendor Processing KMS Encryption Key ARN
+    Export:
+      Name: !Sub ${AWS::StackName}-vendor-processing-kms-encryption-key-arn
+    Value: !GetAtt VendorProcessingKMSEncryptionKey.Arn

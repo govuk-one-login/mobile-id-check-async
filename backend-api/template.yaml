@@ -357,6 +357,7 @@ Globals:
         SESSION_TABLE_NAME: !Ref SessionsTable
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
         TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
+        VENDOR_PROCESSING_SQS: !GetAtt VendorProcessingSQSQueue.QueueUrl
     Layers:
       - !Sub
         - '{{resolve:secretsmanager:${SecretArn}:SecretString:NODEJS_LAYER}}'
@@ -3237,6 +3238,74 @@ Resources:
         - !Ref TxMASQSQueue
     Condition: isNotDevOrBuild
 
+  VendorProcessingKMSEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A KMS Key for encrypting the VendorProcessing SQS Queue
+      EnableKeyRotation: true
+      Enabled: true
+      KeyPolicy:
+        Statement:
+          - Action:
+              - kms:decrypt
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Resource:
+              - '*'
+        Version: "2012-10-17"
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyUsage: ENCRYPT_DECRYPT
+      MultiRegion: false
+      PendingWindowInDays: !FindInMap
+        - KMS
+        - !Ref Environment
+        - VendorProcessingPendingDeletionInDays
+
+  VendorProcessingKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}-VendorProcessingKMSEncryptionKey
+      TargetKeyId: !Ref VendorProcessingKMSEncryptionKey
+
+  VendorProcessingSQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      DelaySeconds: 5
+      KmsMasterKeyId: !Ref VendorProcessingKeyAlias
+      MessageRetentionPeriod: 1209600
+      ReceiveMessageWaitTimeSeconds: 5
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt VendorProcessingSQSQueueDeadLetterQueue.Arn
+        maxReceiveCount: 360
+      VisibilityTimeout: 10
+
+  VendorProcessingSQSQueueDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      KmsMasterKeyId: !Sub VendorProcessingKMSEncryptionKey
+      MessageRetentionPeriod: 1209600
+
+  VendorProcessingSQSQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+              - sqs:ChangeMessageVisibility
+              - sqs:ReceiveMessage
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Resource:
+              - !GetAtt VendorProcessingSQSQueue.Arn
+        Version: "2012-10-17"
+      Queues:
+        - !Ref VendorProcessingSQSQueue
+    Condition: isNotDevOrBuild
+
   WellKnown5XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -3417,4 +3486,18 @@ Outputs:
     Value: !GetAtt TxMASQSQueue.Arn
     Export:
       Name: !Sub ${AWS::StackName}-txma-sqs-queue-arn
+    Condition: IsDevOrBuild
+
+  VendorProcessingKmsEncryptionKeyArn:
+    Description: Vendor Processing KMS Encryption Key ARN
+    Value: !GetAtt VendorProcessingKMSEncryptionKey.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-vendor-processing-kms-encryption-key-arn
+    Condition: IsDevOrBuild
+
+  VendorProcessingSqsQueueArn:
+    Description: TxMA SQS Queue ARN
+    Value: !GetAtt VendorProcessingSQSQueue.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-vendor-processing-sqs-queue-arn
     Condition: IsDevOrBuild

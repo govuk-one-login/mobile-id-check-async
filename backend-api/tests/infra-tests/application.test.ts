@@ -530,6 +530,7 @@ describe("Backend application infrastructure", () => {
           "SIGNING_KEY_ID",
           "ISSUER",
           "TXMA_SQS",
+          "VENDOR_PROCESSING_SQS",
           "SESSION_TABLE_NAME",
           "POWERTOOLS_SERVICE_NAME",
           "AWS_LAMBDA_EXEC_WRAPPER",
@@ -729,6 +730,7 @@ describe("Backend application infrastructure", () => {
 
   describe("KMS", () => {
     test("All keys have a retention window once deleted", () => {
+      // TODO I am using a different var name for this, may have to change approach or test differently
       const kmsKeys = template.findResources("AWS::KMS::Key");
       const kmsKeyList = Object.keys(kmsKeys);
       kmsKeyList.forEach((kmsKey) => {

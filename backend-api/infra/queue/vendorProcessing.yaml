@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  VendorProcessingSQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 1209600
+      VisibilityTimeout: 10
+      DelaySeconds: 5
+      ReceiveMessageWaitTimeSeconds: 5
+      KmsMasterKeyId: !Ref VendorProcessingKeyAlias
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt VendorProcessingSQSQueueDeadLetterQueue.Arn
+        maxReceiveCount: 360
+
+  VendorProcessingSQSQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref VendorProcessingSQSQueue
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+              - sqs:ChangeMessageVisibility
+              - sqs:ReceiveMessage
+            Resource:
+              - !GetAtt VendorProcessingSQSQueue.Arn
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+    Condition: isNotDevOrBuild
+
+  VendorProcessingSQSQueueDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 1209600
+      KmsMasterKeyId: !Sub VendorProcessingKMSEncryptionKey
+
+  VendorProcessingKMSEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A KMS Key for encrypting the VendorProcessing SQS Queue
+      Enabled: true
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action:
+              - kms:decrypt
+            Resource:
+              - '*'
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyUsage: ENCRYPT_DECRYPT
+      MultiRegion: false
+      PendingWindowInDays: !FindInMap
+        - KMS
+        - !Ref Environment
+        - VendorProcessingPendingDeletionInDays
+
+  VendorProcessingKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}-VendorProcessingKMSEncryptionKey
+      TargetKeyId: !Ref VendorProcessingKMSEncryptionKey
