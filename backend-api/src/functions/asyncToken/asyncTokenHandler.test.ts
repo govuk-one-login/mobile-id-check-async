@@ -59,7 +59,7 @@ describe("Async Token", () => {
     };
   });
 
-  describe("On every invocation", () => {
+  describe("Adds context and version to log attributes and logs STARTED message", () => {
     beforeEach(async () => {
       logger.appendKeys({ testKey: "testValue" });
       const event = buildRequest();
