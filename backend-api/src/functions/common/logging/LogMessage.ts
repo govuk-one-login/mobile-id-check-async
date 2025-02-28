@@ -72,6 +72,32 @@ export class LogMessage implements LogAttributes {
     "IP Address could not be retrieved from the cloudfront-viewer-address header and the fallback value of event.requestContext.identity.sourceIp will be used for TxMA events.",
   );
 
+  // Token
+  static readonly TOKEN_STARTED = new LogMessage(
+    "MOBILE_ASYNC_TOKEN_STARTED",
+    "Lambda handler processing has started.",
+  );
+  static readonly TOKEN_COMPLETED = new LogMessage(
+    "MOBILE_ASYNC_TOKEN_COMPLETED",
+    "Lambda handler processing has completed successfully.",
+  );
+  static readonly TOKEN_INVALID_CONFIG = new LogMessage(
+    "MOBILE_ASYNC_TOKEN_INVALID_CONFIG",
+    "One or more required environment variables were missing or invalid.",
+  );
+  static readonly TOKEN_REQUEST_BODY_INVALID = new LogMessage(
+    "MOBILE_ASYNC_TOKEN_REQUEST_BODY_INVALID",
+    "The incoming request body was missing or invalid.",
+  );
+  static readonly TOKEN_REQUEST_HEADERS_INVALID = new LogMessage(
+    "MOBILE_ASYNC_TOKEN_REQUEST_HEADERS_INVALID",
+    "The incoming request headers were missing or invalid.",
+  );
+  static readonly TOKEN_FAILED_TO_MINT_TOKEN = new LogMessage(
+    "MOBILE_ASYNC_TOKEN_FAILED_TO_MINT_TOKEN",
+    "Failed to mint and sign a new access token.",
+  );
+
   // Credential
   static readonly CREDENTIAL_STARTED = new LogMessage(
     "MOBILE_ASYNC_CREDENTIAL_STARTED",

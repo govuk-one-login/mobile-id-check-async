@@ -10,14 +10,14 @@ import {
   runtimeDependencies,
 } from "./handlerDependencies";
 import { notImplementedResponse } from "../common/lambdaResponses";
+import { setupLogger } from "../common/logging/setupLogger";
 
 export async function lambdaHandlerConstructor(
   _dependencies: IAsyncTxmaEventDependencies,
   _event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
-  logger.resetKeys();
-  logger.addContext(context);
+  setupLogger(context);
   logger.info(LogMessage.TXMA_EVENT_STARTED);
 
   logger.info(LogMessage.TXMA_EVENT_COMPLETED);
