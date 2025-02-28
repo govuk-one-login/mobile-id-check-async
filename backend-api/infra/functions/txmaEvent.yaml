@@ -1,9 +1,10 @@
 AWSTemplateFormatVersion: "2010-09-09"
+
 Resources:
-  AsyncFinishBiometricSessionFunction:
+  AsyncTxmaEventFunction:
     Type: AWS::Serverless::Function
     DependsOn:
-      - AsyncFinishBiometricSessionLogGroup
+      - AsyncTxmaEventLogGroup
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -11,19 +12,19 @@ Resources:
         Target: es2022
         Sourcemap: false
         EntryPoints:
-          - src/functions/asyncFinishBiometricSession/asyncFinishBiometricSessionHandler.ts
+          - src/functions/asyncTxmaEvent/asyncTxmaEventHandler.ts
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-finish-biometric-session
+      FunctionName: !Sub ${AWS::StackName}-txma-event
       Runtime: nodejs20.x
-      Handler: asyncFinishBiometricSessionHandler.lambdaHandler
+      Role: !GetAtt AsyncTxmaEventLambdaRole.Arn
+      Handler: asyncTxmaEventHandler.lambdaHandler
       Events:
-        AsyncFinishBiometricSession:
+        AsyncTxmaEvent:
           Type: Api
           Properties:
-            Path: /async/finishBiometricSession
+            Path: /async/txmaEvent
             Method: post
             RestApiId: !Ref SessionsApi
-      Role: !GetAtt AsyncFinishBiometricSessionLambdaRole.Arn
       VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-PrivateSubnetIdA
@@ -32,25 +33,29 @@ Resources:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
 
-  AsyncFinishBiometricSessionFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt AsyncFinishBiometricSessionFunction.Arn
-      Principal: events.amazonaws.com
-      SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SessionsApi}/*/*/*
-
-  AsyncFinishBiometricSessionLogGroup:
+  AsyncTxmaEventLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-finish-biometric-session
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-txma-event
 
-  AsyncFinishBiometricSessionLambdaRole:
+  AsyncTxmaEventFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt AsyncTxmaEventFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceAccount: !Sub ${AWS::AccountId}
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SessionsApi}/*/*/*
+
+  AsyncTxmaEventLambdaRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-finish-biometric-session-lambda
+      RoleName: !Sub ${AWS::StackName}-txma-event-lambda
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -59,7 +64,7 @@ Resources:
               Service: lambda.amazonaws.com
             Action: sts:AssumeRole
       Policies:
-        - PolicyName: AsyncFinishBiometricSessionFunctionLoggingPolicy
+        - PolicyName: AsyncTxmaEventFunctionLoggingPolicy
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -79,27 +84,3 @@ Resources:
                   - ec2:CreateNetworkInterface
                   - ec2:DeleteNetworkInterface
                 Resource: '*'
-        - PolicyName: AsyncFinishBiometricSessionFunctionDynamodbPolicy
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "dynamodb:UpdateItem"
-                Resource: !GetAtt SessionsTable.Arn
-        - PolicyName: AsyncFinishBiometricSessionFunctionTxmaSQSPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - sqs:SendMessage
-                Resource: !GetAtt TxMASQSQueue.Arn
-              - Effect: Allow
-                Action:
-                  - kms:Decrypt
-                  - kms:GenerateDataKey
-                Resource: !GetAtt TxMAKMSEncryptionKey.Arn
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue

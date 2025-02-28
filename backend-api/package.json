@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "manageStacks": "cd ../helper-scripts && npm i --silent && npm run manageStacks --silent",
-    "deploy-backend-to-dev": "cd ../helper-scripts && ./deploy_backend.sh",
+    "deploy:dev": "cd ../helper-scripts && ./deploy_backend.sh",
     "build:infra": "./combine_template.sh",
     "generate-proxy-open-api": "node ./generate-proxy-private-openapi.js",
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",

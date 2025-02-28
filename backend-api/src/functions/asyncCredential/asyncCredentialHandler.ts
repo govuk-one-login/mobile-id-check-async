@@ -1,4 +1,8 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context,
+} from "aws-lambda";
 import { IDecodedToken } from "./tokenService/tokenService";
 import { ConfigService } from "./configService/configService";
 import {
@@ -7,17 +11,22 @@ import {
 } from "./handlerDependencies";
 import { RequestService } from "./requestService/requestService";
 import { ErrorCategory } from "../utils/result";
+import { logger } from "../common/logging/logger";
+import { LogMessage } from "../common/logging/LogMessage";
+import { setupLogger } from "../common/logging/setupLogger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncCredentialDependencies,
   event: APIGatewayProxyEvent,
+  context: Context,
 ): Promise<APIGatewayProxyResult> {
-  const logger = dependencies.logger();
+  setupLogger(context);
+  logger.info(LogMessage.CREDENTIAL_STARTED);
 
   // Get environment variables
   const configResult = new ConfigService().getConfig(dependencies.env);
   if (configResult.isError) {
-    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
+    logger.error(LogMessage.CREDENTIAL_INVALID_CONFIG, {
       errorMessage: configResult.value.errorMessage,
     });
     return serverErrorResponse;
@@ -30,7 +39,7 @@ export async function lambdaHandlerConstructor(
     event.headers["Authorization"] ?? event.headers["authorization"],
   );
   if (authorizationHeaderResult.isError) {
-    logger.log("AUTHENTICATION_HEADER_INVALID", {
+    logger.error(LogMessage.CREDENTIAL_AUTHORIZATION_HEADER_INVALID, {
       errorMessage: authorizationHeaderResult.value.errorMessage,
     });
     return unauthorizedResponse;
@@ -44,7 +53,7 @@ export async function lambdaHandlerConstructor(
     issuer: config.ISSUER,
   });
   if (validTokenClaimsResult.isError) {
-    logger.log("JWT_CLAIM_INVALID", {
+    logger.error(LogMessage.CREDENTIAL_INVALID_CLAIMS_IN_AUTHORIZATION_JWT, {
       errorMessage: validTokenClaimsResult.value.errorMessage,
     });
     return badRequestResponse({
@@ -61,7 +70,7 @@ export async function lambdaHandlerConstructor(
     jwtPayload.client_id,
   );
   if (requestBodyResult.isError) {
-    logger.log("REQUEST_BODY_INVALID", {
+    logger.error(LogMessage.CREDENTIAL_REQUEST_BODY_INVALID, {
       errorMessage: requestBodyResult.value.errorMessage,
     });
 
@@ -79,7 +88,7 @@ export async function lambdaHandlerConstructor(
   );
   if (verifyTokenSignatureResult.isError) {
     const errorMessage = verifyTokenSignatureResult.value.errorMessage;
-    logger.log("ERROR_VERIFYING_SIGNATURE", {
+    logger.error(LogMessage.CREDENTIAL_FAILED_TO_VALIDATE_TOKEN_SIGNATURE, {
       errorMessage,
     });
     return badRequestResponse({
@@ -101,13 +110,13 @@ export async function lambdaHandlerConstructor(
       getPartialRegisteredClientResponse.value.errorCategory ===
       ErrorCategory.SERVER_ERROR
     ) {
-      logger.log("ERROR_RETRIEVING_REGISTERED_CLIENT", {
+      logger.error(LogMessage.GET_CLIENT_REGISTRY_FAILURE, {
         errorMessage: getPartialRegisteredClientResponse.value.errorMessage,
       });
       return serverErrorResponse;
     }
 
-    logger.log("CLIENT_CREDENTIALS_INVALID", {
+    logger.error(LogMessage.CLIENT_NOT_FOUND_IN_REGISTRY, {
       errorMessage: getPartialRegisteredClientResponse.value.errorMessage,
     });
     return badRequestResponse({
@@ -122,7 +131,7 @@ export async function lambdaHandlerConstructor(
     getPartialRegisteredClientResponse.value.redirectUri;
 
   if (jwtPayload.iss !== registeredIssuer) {
-    logger.log("REQUEST_BODY_INVALID", {
+    logger.error(LogMessage.CREDENTIAL_REQUEST_BODY_INVALID, {
       errorMessage: "issuer does not match value from client registry",
     });
 
@@ -134,7 +143,7 @@ export async function lambdaHandlerConstructor(
 
   if (requestBody.redirect_uri) {
     if (requestBody.redirect_uri !== registeredRedirectUri) {
-      logger.log("REQUEST_BODY_INVALID", {
+      logger.error(LogMessage.CREDENTIAL_REQUEST_BODY_INVALID, {
         errorMessage: "redirect_uri does not match value from client registry",
       });
 
@@ -151,14 +160,14 @@ export async function lambdaHandlerConstructor(
     requestBody.sub,
   );
   if (getActiveSessionIdResult.isError) {
-    logger.log("ERROR_RETRIEVING_SESSION", {
+    logger.error(LogMessage.GET_ACTIVE_SESSION_FAILURE, {
       errorMessage: getActiveSessionIdResult.value.errorMessage,
     });
     return serverErrorResponse;
   }
   if (getActiveSessionIdResult.value) {
-    logger.setSessionId({ sessionId: getActiveSessionIdResult.value });
-    logger.log("COMPLETED");
+    logger.appendKeys({ sessionId: getActiveSessionIdResult.value });
+    logger.info(LogMessage.CREDENTIAL_COMPLETED);
     return activeSessionFoundResponse(requestBody.sub);
   }
 
@@ -169,13 +178,13 @@ export async function lambdaHandlerConstructor(
   });
 
   if (createSessionResult.isError) {
-    logger.log("ERROR_CREATING_SESSION", {
+    logger.error(LogMessage.CREATE_SESSION_FAILURE, {
       errorMessage: createSessionResult.value.errorMessage,
     });
     return serverErrorResponse;
   }
   const sessionId = createSessionResult.value;
-  logger.setSessionId({ sessionId });
+  logger.appendKeys({ sessionId });
 
   // Write audit event
   const eventService = dependencies.eventService(config.TXMA_SQS);
@@ -191,13 +200,13 @@ export async function lambdaHandlerConstructor(
     txmaAuditEncoded: undefined,
   });
   if (writeEventResult.isError) {
-    logger.log("ERROR_WRITING_AUDIT_EVENT", {
-      errorMessage: "Unexpected error writing the DCMAW_ASYNC_CRI_START event",
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: { auditEventName: "DCMAW_ASYNC_CRI_START" },
     });
     return serverErrorResponse;
   }
 
-  logger.log("COMPLETED");
+  logger.info(LogMessage.CREDENTIAL_COMPLETED);
   return sessionCreatedResponse(requestBody.sub);
 }
 

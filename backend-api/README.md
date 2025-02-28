@@ -51,6 +51,11 @@ Ensure you are in account `di-mobile-id-check-async-dev`
 
 ```bash
 # From /backend-api
+npm deploy:dev <your-stack-name>
+```
+
+```bash
+# From /backend-api
 npm run manageStacks
 ```
 

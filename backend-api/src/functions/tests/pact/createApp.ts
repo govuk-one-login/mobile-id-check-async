@@ -26,6 +26,7 @@ export async function createApp(): Promise<Application> {
     const result = await credentialLambdaHandlerConstructor(
       asyncCredentialDependencies.dependencies,
       buildRequest({ headers: req.headers, body: JSON.stringify(req.body) }),
+      buildLambdaContext(),
     );
 
     res.status(result.statusCode);
