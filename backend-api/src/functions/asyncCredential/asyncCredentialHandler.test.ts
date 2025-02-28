@@ -1,25 +1,24 @@
-import { APIGatewayProxyResult } from "aws-lambda";
+import { expect } from "@jest/globals";
+import "../../../tests/testUtils/matchers";
+import { APIGatewayProxyResult, Context } from "aws-lambda";
 import {
   MockEventServiceFailToWrite,
   MockEventWriterSuccess,
 } from "../services/events/tests/mocks";
-import { Logger } from "../services/logging/logger";
-import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import { MockJWTBuilder } from "../testUtils/mockJwtBuilder";
 import { buildRequest } from "../testUtils/mockRequest";
 import { Result, successResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncCredentialHandler";
 import { IAsyncCredentialDependencies } from "./handlerDependencies";
-import { MessageName, registeredLogs } from "./registeredLogs";
 import {
   IDecodedToken,
   IDecodeToken,
   IVerifyTokenSignature,
 } from "./tokenService/tokenService";
 import {
+  MockTokenServiceErrorResult,
   MockTokenServiceGetDecodedTokenErrorResult,
   MockTokenServiceSuccess,
-  MockTokenServiceErrorResult,
 } from "./tokenService/tests/mocks";
 import {
   MockClientRegistryServiceeGetPartialClientInternalServerResult,
@@ -27,11 +26,13 @@ import {
   MockClientRegistryServiceGetPartialClientSuccessResult,
 } from "../services/clientRegistryService/tests/mocks";
 import {
-  MockSessionServiceGetErrorResult,
   MockSessionServiceCreateErrorResult,
   MockSessionServiceCreateSuccessResult,
+  MockSessionServiceGetErrorResult,
   MockSessionServiceGetSuccessResult,
 } from "../services/session/tests/mocks";
+import { buildLambdaContext } from "../testUtils/mockContext";
+import { logger } from "../common/logging/logger";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -44,19 +45,44 @@ const env = {
 
 describe("Async Credential", () => {
   let dependencies: IAsyncCredentialDependencies;
-  let mockLogger: MockLoggingAdapter<MessageName>;
+  let consoleInfoSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpyInstance;
+  let context: Context;
 
   beforeEach(() => {
-    mockLogger = new MockLoggingAdapter();
+    consoleInfoSpy = jest.spyOn(console, "info");
+    consoleErrorSpy = jest.spyOn(console, "error");
     dependencies = {
       eventService: () => new MockEventWriterSuccess(),
-      logger: () => new Logger(mockLogger, registeredLogs),
       tokenService: () => new MockTokenServiceSuccess(),
       clientRegistryService: () =>
         new MockClientRegistryServiceGetPartialClientSuccessResult(),
       sessionService: () => new MockSessionServiceGetSuccessResult(),
       env,
     };
+    context = buildLambdaContext();
+  });
+
+  describe("On every invocation", () => {
+    beforeEach(async () => {
+      logger.appendKeys({ testKey: "testValue" });
+      const event = buildRequest();
+      await lambdaHandlerConstructor(dependencies, event, context);
+    });
+
+    it("Adds context and version to log attributes and logs STARTED message", () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "MOBILE_ASYNC_CREDENTIAL_STARTED",
+        functionVersion: "1",
+        function_arn: "arn:12345", // example field to verify that context has been added
+      });
+    });
+
+    it("Clears pre-existing log attributes", async () => {
+      expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+        testKey: "testValue",
+      });
+    });
   });
 
   describe("Environment variable validation", () => {
@@ -66,14 +92,17 @@ describe("Async Credential", () => {
         delete dependencies.env[envVar];
         const event = buildRequest();
 
-        const result = await lambdaHandlerConstructor(dependencies, event);
-
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-          "ENVIRONMENT_VARIABLE_MISSING",
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+          context,
         );
-        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_CREDENTIAL_INVALID_CONFIG",
           errorMessage: `No ${envVar}`,
         });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 500,
@@ -92,14 +121,17 @@ describe("Async Credential", () => {
           "mockInvalidSessionTtlSecs";
         const event = buildRequest();
 
-        const result = await lambdaHandlerConstructor(dependencies, event);
-
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-          "ENVIRONMENT_VARIABLE_MISSING",
+        const result = await lambdaHandlerConstructor(
+          dependencies,
+          event,
+          context,
         );
-        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_CREDENTIAL_INVALID_CONFIG",
           errorMessage: "SESSION_DURATION_IN_SECONDS is not a valid number",
         });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 500,
@@ -120,14 +152,14 @@ describe("Async Credential", () => {
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
           event,
+          context,
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-          "AUTHENTICATION_HEADER_INVALID",
-        );
-        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_CREDENTIAL_AUTHORIZATION_HEADER_INVALID",
           errorMessage: "No Authentication header present",
         });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -148,15 +180,15 @@ describe("Async Credential", () => {
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
           event,
+          context,
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-          "AUTHENTICATION_HEADER_INVALID",
-        );
-        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_CREDENTIAL_AUTHORIZATION_HEADER_INVALID",
           errorMessage:
             "Invalid authentication header format - does not start with Bearer",
         });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -177,15 +209,15 @@ describe("Async Credential", () => {
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
           event,
+          context,
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-          "AUTHENTICATION_HEADER_INVALID",
-        );
-        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_CREDENTIAL_AUTHORIZATION_HEADER_INVALID",
           errorMessage:
             "Invalid authentication header format - contains spaces",
         });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -206,14 +238,14 @@ describe("Async Credential", () => {
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
           event,
+          context,
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-          "AUTHENTICATION_HEADER_INVALID",
-        );
-        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_CREDENTIAL_AUTHORIZATION_HEADER_INVALID",
           errorMessage: "Invalid authentication header format - missing token",
         });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -239,14 +271,15 @@ describe("Async Credential", () => {
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
           event,
+          context,
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-          "JWT_CLAIM_INVALID",
-        );
-        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "MOBILE_ASYNC_CREDENTIAL_INVALID_CLAIMS_IN_AUTHORIZATION_JWT",
           errorMessage: "Mock decoding token error",
         });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -272,14 +305,14 @@ describe("Async Credential", () => {
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
           event,
+          context,
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-          "REQUEST_BODY_INVALID",
-        );
-        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_CREDENTIAL_REQUEST_BODY_INVALID",
           errorMessage: "Missing request body",
         });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -311,14 +344,14 @@ describe("Async Credential", () => {
           const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
             dependencies,
             event,
+            context,
           );
 
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "REQUEST_BODY_INVALID",
-          );
-          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_CREDENTIAL_REQUEST_BODY_INVALID",
             errorMessage: "Invalid JSON in request body",
           });
+
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
@@ -343,14 +376,14 @@ describe("Async Credential", () => {
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
           event,
+          context,
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-          "REQUEST_BODY_INVALID",
-        );
-        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_CREDENTIAL_REQUEST_BODY_INVALID",
           errorMessage: "Missing state in request body",
         });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -376,14 +409,14 @@ describe("Async Credential", () => {
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
           event,
+          context,
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-          "REQUEST_BODY_INVALID",
-        );
-        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_CREDENTIAL_REQUEST_BODY_INVALID",
           errorMessage: "Missing sub in request body",
         });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -410,14 +443,14 @@ describe("Async Credential", () => {
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
           event,
+          context,
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-          "REQUEST_BODY_INVALID",
-        );
-        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_CREDENTIAL_REQUEST_BODY_INVALID",
           errorMessage: "Missing client_id in request body",
         });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -445,15 +478,15 @@ describe("Async Credential", () => {
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
           event,
+          context,
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-          "REQUEST_BODY_INVALID",
-        );
-        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_CREDENTIAL_REQUEST_BODY_INVALID",
           errorMessage:
             "client_id in request body does not match value in access_token",
         });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -481,14 +514,14 @@ describe("Async Credential", () => {
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
           event,
+          context,
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-          "REQUEST_BODY_INVALID",
-        );
-        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_CREDENTIAL_REQUEST_BODY_INVALID",
           errorMessage: "Missing govuk_signin_journey_id in request body",
         });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -518,14 +551,14 @@ describe("Async Credential", () => {
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
           event,
+          context,
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-          "REQUEST_BODY_INVALID",
-        );
-        expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_CREDENTIAL_REQUEST_BODY_INVALID",
           errorMessage: "redirect_uri in request body is not a URL",
         });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -556,14 +589,15 @@ describe("Async Credential", () => {
         const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
           dependencies,
           event,
+          context,
         );
 
-        expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-          "ERROR_VERIFYING_SIGNATURE",
-        );
-        expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
-          "Some error",
-        );
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "MOBILE_ASYNC_CREDENTIAL_FAILED_TO_VALIDATE_TOKEN_SIGNATURE",
+          errorMessage: "Some error",
+        });
+
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -593,14 +627,17 @@ describe("Async Credential", () => {
             }),
           });
 
-          const result = await lambdaHandlerConstructor(dependencies, event);
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            event,
+            context,
+          );
 
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "ERROR_RETRIEVING_REGISTERED_CLIENT",
-          );
-          expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
-            "Unexpected error retrieving registered client",
-          );
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_GET_CLIENT_REGISTRY_FAILURE",
+            errorMessage: "Unexpected error retrieving registered client",
+          });
+
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 500,
@@ -627,14 +664,18 @@ describe("Async Credential", () => {
               redirect_uri: "https://www.unregisteredRedirectUri.com",
             }),
           });
-          const result = await lambdaHandlerConstructor(dependencies, event);
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            event,
+            context,
+          );
 
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "REQUEST_BODY_INVALID",
-          );
-          expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
-            "redirect_uri does not match value from client registry",
-          );
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_CREDENTIAL_REQUEST_BODY_INVALID",
+            errorMessage:
+              "redirect_uri does not match value from client registry",
+          });
+
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
@@ -681,14 +722,17 @@ describe("Async Credential", () => {
           }
           dependencies.tokenService = () => new MockTokenServiceInvalidIssuer();
 
-          const result = await lambdaHandlerConstructor(dependencies, event);
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            event,
+            context,
+          );
 
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "REQUEST_BODY_INVALID",
-          );
-          expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
-            "issuer does not match value from client registry",
-          );
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_CREDENTIAL_REQUEST_BODY_INVALID",
+            errorMessage: "issuer does not match value from client registry",
+          });
+
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 400,
@@ -717,14 +761,17 @@ describe("Async Credential", () => {
       dependencies.clientRegistryService = () =>
         new MockClientRegistryServiceGetPartialClientBadRequestResponse();
 
-      const result = await lambdaHandlerConstructor(dependencies, event);
+      const result = await lambdaHandlerConstructor(
+        dependencies,
+        event,
+        context,
+      );
 
-      expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-        "CLIENT_CREDENTIALS_INVALID",
-      );
-      expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
-        "Client Id is not registered",
-      );
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "MOBILE_ASYNC_CLIENT_NOT_FOUND_IN_REGISTRY",
+        errorMessage: "Client Id is not registered",
+      });
+
       expect(result).toStrictEqual({
         headers: { "Content-Type": "application/json" },
         statusCode: 400,
@@ -753,14 +800,17 @@ describe("Async Credential", () => {
           dependencies.sessionService = () =>
             new MockSessionServiceGetErrorResult();
 
-          const result = await lambdaHandlerConstructor(dependencies, event);
-
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "ERROR_RETRIEVING_SESSION",
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            event,
+            context,
           );
-          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_GET_ACTIVE_SESSION_FAILURE",
             errorMessage: "Mock error when getting session ID",
           });
+
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 500,
@@ -787,14 +837,16 @@ describe("Async Credential", () => {
             }),
           });
 
-          const result = await lambdaHandlerConstructor(dependencies, event);
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            event,
+            context,
+          );
 
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "COMPLETED",
-          );
-          expect(mockLogger.getLogMessages()[0].logMessage.sessionId).toBe(
-            "mockSessionId",
-          );
+          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_CREDENTIAL_COMPLETED",
+          });
+
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 200,
@@ -825,14 +877,17 @@ describe("Async Credential", () => {
           dependencies.sessionService = () =>
             new MockSessionServiceCreateErrorResult();
 
-          const result = await lambdaHandlerConstructor(dependencies, event);
-
-          expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-            "ERROR_CREATING_SESSION",
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            event,
+            context,
           );
-          expect(mockLogger.getLogMessages()[0].data).toStrictEqual({
+
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_CREATE_SESSION_FAILURE",
             errorMessage: "Mock error when creating session",
           });
+
           expect(result).toStrictEqual({
             headers: { "Content-Type": "application/json" },
             statusCode: 500,
@@ -864,14 +919,19 @@ describe("Async Credential", () => {
             dependencies.sessionService = () =>
               new MockSessionServiceCreateSuccessResult();
 
-            const result = await lambdaHandlerConstructor(dependencies, event);
+            const result = await lambdaHandlerConstructor(
+              dependencies,
+              event,
+              context,
+            );
 
-            expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-              "ERROR_WRITING_AUDIT_EVENT",
-            );
-            expect(mockLogger.getLogMessages()[0].data.errorMessage).toBe(
-              "Unexpected error writing the DCMAW_ASYNC_CRI_START event",
-            );
+            expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+              messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+              data: {
+                auditEventName: "DCMAW_ASYNC_CRI_START",
+              },
+            });
+
             expect(result).toStrictEqual({
               headers: { "Content-Type": "application/json" },
               statusCode: 500,
@@ -902,17 +962,20 @@ describe("Async Credential", () => {
             dependencies.sessionService = () =>
               new MockSessionServiceCreateSuccessResult();
 
-            const result = await lambdaHandlerConstructor(dependencies, event);
+            const result = await lambdaHandlerConstructor(
+              dependencies,
+              event,
+              context,
+            );
 
             expect(mockEventService.auditEvents[0]).toEqual(
               "DCMAW_ASYNC_CRI_START",
             );
-            expect(mockLogger.getLogMessages()[0].logMessage.message).toBe(
-              "COMPLETED",
-            );
-            expect(mockLogger.getLogMessages()[0].logMessage.sessionId).toEqual(
-              "mockSessionId",
-            );
+
+            expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+              messageCode: "MOBILE_ASYNC_CREDENTIAL_COMPLETED",
+            });
+
             expect(result).toStrictEqual({
               headers: { "Content-Type": "application/json" },
               statusCode: 201,
