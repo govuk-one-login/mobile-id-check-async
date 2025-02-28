@@ -21,10 +21,10 @@ export function validateRequestBody(
   }
   const { sessionId, eventName } = parsedBody;
 
-  const validateSessionIdResult = validateSessionId(sessionId)
+  const validateSessionIdResult = validateSessionId(sessionId);
   if (validateSessionIdResult.isError) {
     return errorResult({
-      errorMessage: validateSessionIdResult.value.errorMessage
+      errorMessage: validateSessionIdResult.value.errorMessage,
     });
   }
 

@@ -1,5 +1,6 @@
+import { validateSessionId } from "../../common/request/validateSessionId/validateSessionId";
 import { errorResult, Result, successResult } from "../../utils/result";
-import { isString, isValidUUIDv4 } from "../../utils/utils";
+import { isString } from "../../utils/utils";
 
 export function validateRequestBody(
   body: string | null,
@@ -21,21 +22,10 @@ export function validateRequestBody(
 
   const { sessionId, biometricSessionId } = parsedBody;
 
-  if (sessionId == null) {
+  const validateSessionIdResult = validateSessionId(sessionId);
+  if (validateSessionIdResult.isError) {
     return errorResult({
-      errorMessage: `sessionId in request body is either null or undefined.`,
-    });
-  }
-
-  if (!isString(sessionId)) {
-    return errorResult({
-      errorMessage: `sessionId in request body is not of type string. sessionId: ${sessionId}`,
-    });
-  }
-
-  if (!isValidUUIDv4(sessionId)) {
-    return errorResult({
-      errorMessage: `sessionId in request body is not a valid v4 UUID. sessionId: ${sessionId}`,
+      errorMessage: validateSessionIdResult.value.errorMessage,
     });
   }
 

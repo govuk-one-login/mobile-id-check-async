@@ -1,4 +1,3 @@
-
 export function isString(field: unknown): field is string {
   return typeof field === "string";
 }

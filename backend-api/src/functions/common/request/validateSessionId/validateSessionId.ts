@@ -1,4 +1,3 @@
-
 import { errorResult, Result, successResult } from "../../../utils/result";
 import { isString, isValidUUIDv4 } from "../../../utils/utils";
 
@@ -27,9 +26,9 @@ export function validateSessionId(sessionId: string): Result<IValidSessionId> {
     });
   }
 
-  return successResult({ sessionId })
+  return successResult({ sessionId });
 }
 
 interface IValidSessionId {
-  sessionId: string
+  sessionId: string;
 }
