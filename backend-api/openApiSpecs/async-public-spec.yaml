@@ -53,6 +53,12 @@ components:
       properties:
         sessionId:
           type: string
+          format: uuid
+          example: 11111111-1111-1111-1111-111111111111
+          description: |
+            sessionId for a user journey.
+          pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          type: string
         eventName:
           type: string
           description: The name of the txma event being written to SQS

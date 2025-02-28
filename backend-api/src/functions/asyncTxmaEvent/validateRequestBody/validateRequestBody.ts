@@ -1,4 +1,6 @@
+import { validateSessionId } from "../../common/request/validateSessionId/validateSessionId";
 import { errorResult, Result, successResult } from "../../utils/result";
+import { isString } from "../../utils/utils";
 
 export function validateRequestBody(
   body: string | null,
@@ -19,21 +21,10 @@ export function validateRequestBody(
   }
   const { sessionId, eventName } = parsedBody;
 
-  if (sessionId == null) {
+  const validateSessionIdResult = validateSessionId(sessionId)
+  if (validateSessionIdResult.isError) {
     return errorResult({
-      errorMessage: `sessionId in request body is either null or undefined.`,
-    });
-  }
-
-  if (!isString(sessionId)) {
-    return errorResult({
-      errorMessage: `sessionId in request body is not of type string. sessionId: ${sessionId}`,
-    });
-  }
-
-  if (sessionId === "") {
-    return errorResult({
-      errorMessage: `sessionId in request body is an empty string.`,
+      errorMessage: validateSessionIdResult.value.errorMessage
     });
   }
 
@@ -69,10 +60,6 @@ export function validateRequestBody(
 
 function isAllowableEventName(eventName: string): eventName is EventName {
   return allowableEventNames.includes(eventName);
-}
-
-function isString(field: unknown): field is string {
-  return typeof field === "string";
 }
 
 interface IAsyncTxmaEventRequestBody {

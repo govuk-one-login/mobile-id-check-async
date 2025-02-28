@@ -1,5 +1,5 @@
 import { validateRequestBody } from "./validateRequestBody";
-import { mockSessionId } from "../../testUtils/unitTestData";
+import { mockInvalidUUID, mockSessionId } from "../../testUtils/unitTestData";
 
 describe("Validate request body", () => {
   describe("Given body is invalid", () => {
@@ -44,6 +44,11 @@ describe("Validate request body", () => {
         scenario: "Given sessionId is an empty string",
         requestBody: { sessionId: "" },
         expectedErrorMessage: "sessionId in request body is an empty string.",
+      },
+      {
+        scenario: "Given sessionId is not a valid v4 UUID",
+        requestBody: { sessionId: mockInvalidUUID },
+        expectedErrorMessage: `sessionId in request body is not a valid v4 UUID. sessionId: ${mockInvalidUUID}`,
       },
       {
         scenario: "Given eventName is not present",

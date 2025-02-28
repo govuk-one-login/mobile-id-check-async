@@ -1,5 +1,6 @@
 import { errorResult, Result, successResult } from "../../utils/result";
 import { DocumentType } from "../../types/document";
+import { isString, isValidUUIDv4 } from "../../utils/utils";
 
 export function validateRequestBody(
   body: string | null,
@@ -35,6 +36,12 @@ export function validateRequestBody(
   if (sessionId === "") {
     return errorResult({
       errorMessage: `sessionId in request body is an empty string.`,
+    });
+  }
+
+  if (!isValidUUIDv4(sessionId)) {
+    return errorResult({
+      errorMessage: `sessionId in request body is not a valid v4 UUID. sessionId: ${sessionId}`,
     });
   }
 
@@ -74,10 +81,6 @@ function isAllowableDocumentType(
   return ["NFC_PASSPORT", "UK_DRIVING_LICENCE", "UK_NFC_BRP"].includes(
     documentType,
   );
-}
-
-function isString(field: unknown): field is string {
-  return typeof field === "string";
 }
 
 interface IAsyncBiometricTokenValidParsedRequestBody {
