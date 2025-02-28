@@ -1,10 +1,5 @@
+import { validateRequestBody } from "./validateRequestBody";
 import { mockSessionId } from "../../testUtils/unitTestData";
-import { FailureWithValue, SuccessWithValue } from "../../utils/result";
-import {
-  IAsyncTxmaEventRequestBody,
-  IHandleErrorResponse,
-  validateRequestBody,
-} from "./validateRequestBody";
 
 describe("Validate request body", () => {
   describe("Given body is invalid", () => {
@@ -21,14 +16,14 @@ describe("Validate request body", () => {
       },
     ])("$scenario", ({ requestBody, expectedErrorMessage }) => {
       it("Returns an error result", () => {
-        const result = validateRequestBody(
-          requestBody,
-        ) as FailureWithValue<IHandleErrorResponse>;
-        const errorResult = result.value.handleErrorResponse();
-        const errorMessage = JSON.parse(errorResult.body).error_description;
+        const result = validateRequestBody(requestBody);
 
-        expect(result.isError).toBe(true);
-        expect(errorMessage).toEqual(expectedErrorMessage);
+        expect(result).toStrictEqual({
+          isError: true,
+          value: {
+            errorMessage: expectedErrorMessage,
+          },
+        });
       });
     });
 
@@ -84,14 +79,14 @@ describe("Validate request body", () => {
       },
     ])("$scenario", ({ requestBody, expectedErrorMessage }) => {
       it("Returns an error result", () => {
-        const result = validateRequestBody(
-          JSON.stringify(requestBody),
-        ) as FailureWithValue<IHandleErrorResponse>;
-        const errorResult = result.value.handleErrorResponse();
-        const errorMessage = JSON.parse(errorResult.body).error_description;
+        const result = validateRequestBody(JSON.stringify(requestBody));
 
-        expect(result.isError).toBe(true);
-        expect(errorMessage).toEqual(expectedErrorMessage);
+        expect(result).toStrictEqual({
+          isError: true,
+          value: {
+            errorMessage: expectedErrorMessage,
+          },
+        });
       });
     });
   });
@@ -101,15 +96,15 @@ describe("Validate request body", () => {
       const result = validateRequestBody(
         JSON.stringify({
           sessionId: mockSessionId,
-          eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+          eventName: "DCMAW_HYBRID_BILLING_STARTED",
         }),
-      ) as SuccessWithValue<IAsyncTxmaEventRequestBody>;
+      );
 
       expect(result).toStrictEqual({
         isError: false,
         value: {
           sessionId: mockSessionId,
-          eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+          eventName: "DCMAW_HYBRID_BILLING_STARTED",
         },
       });
     });
