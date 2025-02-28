@@ -134,6 +134,5 @@ In any jest test file where we need to make log assertions, we must import the f
 
 ```
 import {expect} from "@jest/globals";
-import 'dotenv/config'
 import 'relative/path/to/testUtils/matchers'
 ```

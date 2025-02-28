@@ -1,17 +1,16 @@
-import { APIGatewayProxyEvent } from "aws-lambda";
+import { expect } from "@jest/globals";
+import "../../../tests/testUtils/matchers";
+import { APIGatewayProxyEvent, Context } from "aws-lambda";
 import {
   MockEventServiceFailToWrite,
   MockEventWriterSuccess,
 } from "../services/events/tests/mocks";
-import { Logger } from "../services/logging/logger";
-import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import {
   buildRequest,
   buildTokenHandlerRequest,
 } from "../testUtils/mockRequest";
 import { lambdaHandlerConstructor } from "./asyncTokenHandler";
-import { MessageName, registeredLogs } from "./registeredLogs";
 import { IAsyncTokenRequestDependencies } from "./handlerDependencies";
 import {
   MockClientRegistryServiceSuccessResult,
@@ -23,11 +22,14 @@ import {
   MockTokenServiceErrorResult,
 } from "./tokenService/tests/mocks";
 import { RequestService } from "./requestService/requestService";
+import { logger } from "../common/logging/logger";
 
 describe("Async Token", () => {
-  let mockLogger: MockLoggingAdapter<MessageName>;
   let request: APIGatewayProxyEvent;
   let dependencies: IAsyncTokenRequestDependencies;
+  let consoleInfoSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpyInstance;
+  let context: Context;
 
   const env = {
     SIGNING_KEY_ID: "mockSigningKeyId",
@@ -40,20 +42,43 @@ describe("Async Token", () => {
     "Basic bW9ja0NsaWVudElkOm1vY2tDbGllbnRTZWNyZXQ="; // Header decodes to base64encoded mockClientId:mockClientSecret
 
   beforeEach(() => {
+    consoleInfoSpy = jest.spyOn(console, "info");
+    consoleErrorSpy = jest.spyOn(console, "error");
+    context = buildLambdaContext();
     // Header decodes to base64encoded mockClientId:mockClientSecret
     request = buildTokenHandlerRequest({
       body: "grant_type=client_credentials",
       authorizationHeader: validAuthorizationHeader,
     });
-    mockLogger = new MockLoggingAdapter();
     dependencies = {
       env,
       eventService: () => new MockEventWriterSuccess(),
-      logger: () => new Logger(mockLogger, registeredLogs),
       clientRegistryService: () => new MockClientRegistryServiceSuccessResult(),
       tokenService: () => new MockTokenServiceSuccessResult(),
       requestService: () => new RequestService(),
     };
+  });
+
+  describe("Adds context and version to log attributes and logs STARTED message", () => {
+    beforeEach(async () => {
+      logger.appendKeys({ testKey: "testValue" });
+      const event = buildRequest();
+      await lambdaHandlerConstructor(dependencies, event, context);
+    });
+
+    it("Adds context and version to log attributes and logs STARTED message", () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "MOBILE_ASYNC_TOKEN_STARTED",
+        functionVersion: "1",
+        function_arn: "arn:12345", // example field to verify that context has been added
+      });
+    });
+
+    it("Clears pre-existing log attributes", async () => {
+      expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+        testKey: "testValue",
+      });
+    });
   });
 
   describe("Environment variable validation", () => {
@@ -67,10 +92,8 @@ describe("Async Token", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
-          "ENVIRONMENT_VARIABLE_MISSING",
-        );
-        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_TOKEN_INVALID_CONFIG",
           errorMessage: `No ${envVar}`,
         });
 
@@ -99,14 +122,11 @@ describe("Async Token", () => {
             buildLambdaContext(),
           );
 
-          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-            message: "INVALID_REQUEST",
-            messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
-          });
-
-          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_TOKEN_REQUEST_BODY_INVALID",
             errorMessage: "Missing request body",
           });
+
           expect(result.statusCode).toBe(400);
           expect(JSON.parse(result.body).error).toEqual("invalid_grant");
           expect(JSON.parse(result.body).error_description).toEqual(
@@ -126,14 +146,11 @@ describe("Async Token", () => {
             buildLambdaContext(),
           );
 
-          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-            message: "INVALID_REQUEST",
-            messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
-          });
-
-          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_TOKEN_REQUEST_BODY_INVALID",
             errorMessage: "Missing grant_type",
           });
+
           expect(result.statusCode).toBe(400);
           expect(JSON.parse(result.body).error).toEqual("invalid_grant");
           expect(JSON.parse(result.body).error_description).toEqual(
@@ -154,14 +171,11 @@ describe("Async Token", () => {
             buildLambdaContext(),
           );
 
-          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-            message: "INVALID_REQUEST",
-            messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
-          });
-
-          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_TOKEN_REQUEST_BODY_INVALID",
             errorMessage: "Invalid grant_type",
           });
+
           expect(result.statusCode).toBe(400);
           expect(JSON.parse(result.body).error).toEqual("invalid_grant");
           expect(JSON.parse(result.body).error_description).toEqual(
@@ -182,14 +196,11 @@ describe("Async Token", () => {
             buildLambdaContext(),
           );
 
-          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-            message: "INVALID_REQUEST",
-            messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
-          });
-
-          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_TOKEN_REQUEST_HEADERS_INVALID",
             errorMessage: "Missing authorization header",
           });
+
           expect(result.statusCode).toBe(401);
           expect(JSON.parse(result.body).error).toEqual("invalid_client");
           expect(JSON.parse(result.body).error_description).toEqual(
@@ -209,14 +220,11 @@ describe("Async Token", () => {
             buildLambdaContext(),
           );
 
-          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-            message: "INVALID_REQUEST",
-            messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
-          });
-
-          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_TOKEN_REQUEST_HEADERS_INVALID",
             errorMessage: "Missing authorization header",
           });
+
           expect(result.statusCode).toBe(401);
           expect(JSON.parse(result.body).error).toEqual("invalid_client");
           expect(JSON.parse(result.body).error_description).toEqual(
@@ -236,14 +244,11 @@ describe("Async Token", () => {
             buildLambdaContext(),
           );
 
-          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-            message: "INVALID_REQUEST",
-            messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
-          });
-
-          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_TOKEN_REQUEST_HEADERS_INVALID",
             errorMessage: "Missing authorization header",
           });
+
           expect(result.statusCode).toBe(401);
           expect(JSON.parse(result.body).error).toEqual("invalid_client");
           expect(JSON.parse(result.body).error_description).toEqual(
@@ -264,14 +269,11 @@ describe("Async Token", () => {
             buildLambdaContext(),
           );
 
-          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-            message: "INVALID_REQUEST",
-            messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
-          });
-
-          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_TOKEN_REQUEST_HEADERS_INVALID",
             errorMessage: "Invalid authorization header",
           });
+
           expect(result.statusCode).toBe(401);
           expect(JSON.parse(result.body).error).toEqual("invalid_client");
           expect(JSON.parse(result.body).error_description).toEqual(
@@ -293,14 +295,11 @@ describe("Async Token", () => {
             buildLambdaContext(),
           );
 
-          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-            message: "INVALID_REQUEST",
-            messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
-          });
-
-          expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_TOKEN_REQUEST_HEADERS_INVALID",
             errorMessage: "Client secret incorrectly formatted",
           });
+
           expect(result.statusCode).toBe(401);
           expect(JSON.parse(result.body).error).toEqual("invalid_client");
           expect(JSON.parse(result.body).error_description).toEqual(
@@ -325,11 +324,8 @@ describe("Async Token", () => {
             buildLambdaContext(),
           );
 
-          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-            message: "INTERNAL_SERVER_ERROR",
-            messageCode: "MOBILE_ASYNC_INTERNAL_SERVER_ERROR",
-          });
-          expect(mockLogger.getLogMessages()[1].data).toMatchObject({
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_GET_CLIENT_REGISTRY_FAILURE",
             errorMessage: "Unexpected error retrieving issuer",
           });
 
@@ -352,11 +348,8 @@ describe("Async Token", () => {
             buildLambdaContext(),
           );
 
-          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-            message: "INVALID_REQUEST",
-            messageCode: "MOBILE_ASYNC_INVALID_REQUEST",
-          });
-          expect(mockLogger.getLogMessages()[1].data).toMatchObject({
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_CLIENT_NOT_FOUND_IN_REGISTRY",
             errorMessage: "Client secrets invalid",
           });
 
@@ -382,11 +375,8 @@ describe("Async Token", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-          message: "INTERNAL_SERVER_ERROR",
-          messageCode: "MOBILE_ASYNC_INTERNAL_SERVER_ERROR",
-        });
-        expect(mockLogger.getLogMessages()[1].data).toMatchObject({
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_TOKEN_FAILED_TO_MINT_TOKEN",
           errorMessage: "Failed to sign Jwt",
         });
 
@@ -414,11 +404,8 @@ describe("Async Token", () => {
             buildLambdaContext(),
           );
 
-          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-            message: "ERROR_WRITING_AUDIT_EVENT",
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-          });
-          expect(mockLogger.getLogMessages()[1].data).toMatchObject({
             errorMessage:
               "Unexpected error writing the DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event",
           });
@@ -440,18 +427,9 @@ describe("Async Token", () => {
             request,
             buildLambdaContext(),
           );
-          expect(mockLogger.getLogMessages()[0].logMessage).toMatchObject({
-            message: "STARTED",
-            messageCode: "MOBILE_ASYNC_STARTED",
-            awsRequestId: "awsRequestId",
-            functionName: "lambdaFunctionName",
-          });
 
-          expect(mockLogger.getLogMessages()[1].logMessage).toMatchObject({
-            message: "COMPLETED",
-            messageCode: "MOBILE_ASYNC_COMPLETED",
-            awsRequestId: "awsRequestId",
-            functionName: "lambdaFunctionName",
+          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_TOKEN_COMPLETED",
           });
 
           expect(mockEventWriter.auditEvents[0]).toBe(

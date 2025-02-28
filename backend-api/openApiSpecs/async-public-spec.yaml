@@ -45,6 +45,26 @@ components:
       required:
         - error
         - error_description
+    WriteTxmaEventBody:
+      type: object
+      required:
+        - sessionId
+        - eventName
+      properties:
+        sessionId:
+          type: string
+        eventName:
+          type: string
+          description: The name of the txma event being written to SQS
+          enum:
+            - DCMAW_APP_HANDOFF_START
+            - DCMAW_APP_HANDOFF_FAILURE
+            - DCMAW_HYBRID_BILLING_STARTED
+            - DCMAW_IPROOV_BILLING_STARTED
+            - DCMAW_READID_NFC_BILLING_STARTED
+    WriteTxmaEventResponse:
+      type: string
+      description: Confirms the TxMA event has been written.
 
 paths:
   /async/activeSession:
@@ -307,6 +327,7 @@ paths:
         uri:
           Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AsyncBiometricTokenFunction}:live/invocations"
         type: "aws_proxy"
+
   /async/finishBiometricSession:
     post:
       summary: App signifies to backend that user interaction for biometric session is complete
@@ -507,3 +528,83 @@ paths:
         passthroughBehavior: "when_no_match"
         httpMethod: "GET"
         type: "aws"
+
+  /async/txmaEvent:
+    post:
+      operationId: postTxmaEvent
+      summary: Writes an event to TxMA by `POST /txmaEvent`.
+      description: Write an event to TxMA.
+      requestBody:
+        description: A JSON object containing a sessionId and an event name
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WriteTxmaEventBody'
+      tags:
+        - TxMA
+      responses:
+        '501':
+          description: Not Implemented
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Cache-Control:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+            Strict-Transport-Security:
+              schema:
+                type: string
+            X-Content-Type-Options:
+              schema:
+                type: string
+            X-Frame-Options:
+              schema:
+                type: string
+            Content-Security-Policy:
+              schema:
+                type: string
+            Feature-Policy:
+              schema:
+                type: string
+            Referrer-Policy:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WriteTxmaEventResponse'
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        passthroughBehavior: "when_no_match"
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AsyncTxmaEventFunction}:live/invocations"
+        requestTemplates:
+          application/json:
+            statusCode: 200
+        responses:
+          "501":
+            statusCode: "501"
+            responseParameters:
+              method.response.header.Cache-Control: "'no-store'"
+              method.response.header.Content-Type: "'application/json'"
+              method.response.header.Strict-Transport-Security: "'max-age=31536000'"
+              method.response.header.X-Content-Type-Options: "'nosniff'"
+              method.response.header.X-Frame-Options: "'DENY'"
+            responseTemplates:
+              text/plain: Not Implemented
+          default:
+            statusCode: "500"
+            responseParameters:
+              method.response.header.Cache-Control: "'no-store'"
+              method.response.header.Content-Type: "'application/json'"
+              method.response.header.Strict-Transport-Security: "'max-age=31536000'"
+              method.response.header.X-Content-Type-Options: "'nosniff'"
+              method.response.header.X-Frame-Options: "'DENY'"
+            responseTemplates:
+              text/plain: Internal Server Error

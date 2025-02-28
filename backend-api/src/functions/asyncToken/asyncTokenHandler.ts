@@ -9,19 +9,21 @@ import {
   IAsyncTokenRequestDependencies,
 } from "./handlerDependencies";
 import { ErrorCategory } from "../utils/result";
+import { logger } from "../common/logging/logger";
+import { LogMessage } from "../common/logging/LogMessage";
+import { setupLogger } from "../common/logging/setupLogger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTokenRequestDependencies,
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
-  const logger = dependencies.logger();
-  logger.addContext(context);
-  logger.log("STARTED");
+  setupLogger(context);
+  logger.info(LogMessage.TOKEN_STARTED);
 
   const configResult = new ConfigService().getConfig(dependencies.env);
   if (configResult.isError) {
-    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
+    logger.error(LogMessage.TOKEN_INVALID_CONFIG, {
       errorMessage: configResult.value.errorMessage,
     });
     return serverErrorResponse;
@@ -34,7 +36,7 @@ export async function lambdaHandlerConstructor(
   // Ensure that request contains expected params
   const eventBodyResult = requestService.validateBody(event.body);
   if (eventBodyResult.isError) {
-    logger.log("INVALID_REQUEST", {
+    logger.error(LogMessage.TOKEN_REQUEST_BODY_INVALID, {
       errorMessage: eventBodyResult.value.errorMessage,
     });
     return badRequestResponse("Invalid grant type or grant type not specified");
@@ -42,7 +44,7 @@ export async function lambdaHandlerConstructor(
 
   const eventHeadersResult = requestService.getClientCredentials(event.headers);
   if (eventHeadersResult.isError) {
-    logger.log("INVALID_REQUEST", {
+    logger.error(LogMessage.TOKEN_REQUEST_HEADERS_INVALID, {
       errorMessage: eventHeadersResult.value.errorMessage,
     });
     return unauthorizedResponse;
@@ -63,13 +65,13 @@ export async function lambdaHandlerConstructor(
       getRegisteredIssuerByClientSecretsResult.value.errorCategory ===
       ErrorCategory.SERVER_ERROR
     ) {
-      logger.log("INTERNAL_SERVER_ERROR", {
+      logger.error(LogMessage.GET_CLIENT_REGISTRY_FAILURE, {
         errorMessage:
           getRegisteredIssuerByClientSecretsResult.value.errorMessage,
       });
       return serverErrorResponse;
     }
-    logger.log("INVALID_REQUEST", {
+    logger.error(LogMessage.CLIENT_NOT_FOUND_IN_REGISTRY, {
       errorMessage: getRegisteredIssuerByClientSecretsResult.value.errorMessage,
     });
     return badRequestResponse("Supplied client credentials not recognised");
@@ -90,7 +92,7 @@ export async function lambdaHandlerConstructor(
 
   const mintTokenResult = await tokenService.mintToken(jwtPayload);
   if (mintTokenResult.isError) {
-    logger.log("INTERNAL_SERVER_ERROR", {
+    logger.error(LogMessage.TOKEN_FAILED_TO_MINT_TOKEN, {
       errorMessage: mintTokenResult.value.errorMessage,
     });
     return serverErrorResponse;
@@ -104,13 +106,13 @@ export async function lambdaHandlerConstructor(
     eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
   });
   if (writeEventResult.isError) {
-    logger.log("ERROR_WRITING_AUDIT_EVENT", {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       errorMessage:
         "Unexpected error writing the DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event",
     });
     return serverErrorResponse;
   }
-  logger.log("COMPLETED");
+  logger.info(LogMessage.TOKEN_COMPLETED);
 
   return {
     headers: {
