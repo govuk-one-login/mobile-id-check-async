@@ -124,14 +124,19 @@ Mappings:
   KMS:
     build:
       PendingDeletionInDays: 30
+      VendorProcessingPendingDeletionInDays: 14
     dev:
       PendingDeletionInDays: 7
+      VendorProcessingPendingDeletionInDays: 7
     integration:
       PendingDeletionInDays: 30
+      VendorProcessingPendingDeletionInDays: 14
     production:
       PendingDeletionInDays: 30
+      VendorProcessingPendingDeletionInDays: 14
     staging:
       PendingDeletionInDays: 30
+      VendorProcessingPendingDeletionInDays: 14
 
   Lambda:
     build:
