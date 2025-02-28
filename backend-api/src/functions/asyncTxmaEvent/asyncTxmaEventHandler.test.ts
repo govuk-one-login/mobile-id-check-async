@@ -36,7 +36,7 @@ describe("Async TxMA Event", () => {
       );
     });
 
-    it("Adds context to log attributes and logs STARTED message", () => {
+    it("Adds context and version to log attributes and logs STARTED message", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_TXMA_EVENT_STARTED",
         function_arn: "arn:12345", // example field to verify that context has been added

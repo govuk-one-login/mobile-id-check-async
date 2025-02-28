@@ -6,6 +6,7 @@ import {
 import { notImplementedResponse } from "../common/lambdaResponses";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
+import { setupLogger } from "../common/logging/setupLogger";
 import {
   IAsyncTxmaEventDependencies,
   runtimeDependencies,
@@ -17,8 +18,7 @@ export async function lambdaHandlerConstructor(
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
-  logger.resetKeys();
-  logger.addContext(context);
+  setupLogger(context);
   logger.info(LogMessage.TXMA_EVENT_STARTED);
 
   const validateRequestBodyResult = validateRequestBody(event.body);

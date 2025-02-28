@@ -41,14 +41,14 @@ import {
 } from "../common/session/session";
 import { getIpAddress } from "../common/request/getIpAddress/getIpAddress";
 import { getHeader } from "../common/request/getHeader/getHeader";
+import { setupLogger } from "../common/logging/setupLogger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
-  logger.resetKeys();
-  logger.addContext(context);
+  setupLogger(context);
   logger.info(LogMessage.BIOMETRIC_TOKEN_STARTED);
 
   const configResult = getBiometricTokenConfig(dependencies.env);
