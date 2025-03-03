@@ -24,6 +24,7 @@ describe("Write to SQS", () => {
     consoleDebugSpy = jest.spyOn(console, "debug");
     consoleErrorSpy = jest.spyOn(console, "error");
     sqsMock = mockClient(sqsClient);
+    sqsMock.on(SendMessageCommand).resolves({});
   });
 
   describe("On every invocation", () => {
