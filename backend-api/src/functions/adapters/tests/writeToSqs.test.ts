@@ -19,6 +19,10 @@ describe("Write to SQS", () => {
     SQSClientResolvedConfig
   >;
   let result: Result<void, void>;
+  const mockMessage = {
+    biometricSessionId: "mockBiometricSessionId",
+    sessionId: "mockSessionId",
+  };
 
   beforeEach(() => {
     consoleDebugSpy = jest.spyOn(console, "debug");
@@ -29,7 +33,7 @@ describe("Write to SQS", () => {
 
   describe("On every invocation", () => {
     beforeEach(async () => {
-      await writeToSqs("www.mockQueueArn.com", "mockMessage");
+      await writeToSqs("www.mockQueueArn.com", mockMessage);
     });
 
     it("Logs attempt at debug level", () => {
@@ -43,7 +47,7 @@ describe("Write to SQS", () => {
     beforeEach(async () => {
       sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
 
-      result = await writeToSqs("www.mockQueueArn.com", "mockMessage");
+      result = await writeToSqs("www.mockQueueArn.com", mockMessage);
     });
 
     it("Logs failed attempt", () => {
@@ -61,7 +65,7 @@ describe("Write to SQS", () => {
     beforeEach(async () => {
       sqsMock.on(SendMessageCommand).resolves({});
 
-      result = await writeToSqs("www.mockQueueArn.com", "mockMessage");
+      result = await writeToSqs("www.mockQueueArn.com", mockMessage);
     });
 
     it("Logs successful attempt at debug level", () => {
