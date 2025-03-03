@@ -1972,6 +1972,19 @@ Resources:
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
             Version: "2012-10-17"
           PolicyName: AsyncFinishBiometricSessionFunctionTxmaSQSPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - sqs:SendMessage
+                Effect: Allow
+                Resource: !GetAtt VendorProcessingSQSQueue.Arn
+              - Action:
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Effect: Allow
+                Resource: !GetAtt VendorProcessingKMSEncryptionKey.Arn
+            Version: "2012-10-17"
+          PolicyName: AsyncFinishBiometricSessionFunctionVendorProcessingSQSPolicy
       RoleName: !Sub ${AWS::StackName}-finish-biometric-session-lambda
 
   AsyncFinishBiometricSessionLogGroup:
