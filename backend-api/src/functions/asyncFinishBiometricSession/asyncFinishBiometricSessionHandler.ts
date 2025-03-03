@@ -25,7 +25,10 @@ import { BiometricSessionFinished } from "../common/session/updateOperations/Bio
 import { getFinishBiometricSessionConfig } from "./finishBiometricSessionConfig";
 import { IEventService } from "../services/events/types";
 import { FailureWithValue } from "../utils/result";
-import { SessionAttributes } from "../common/session/session";
+import {
+  BiometricSessionFinishedAttributes,
+  SessionAttributes,
+} from "../common/session/session";
 import { setupLogger } from "../common/logging/setupLogger";
 import { writeToSqs } from "../adapters/writeToSqs";
 
@@ -86,28 +89,13 @@ export async function lambdaHandlerConstructor(
     vendorProcessingMessage,
   );
 
-  const sessionAttributes = updateResult.value.attributes;
-
   if (writeToVendorProcessingQueueResult.isError) {
-    const writeEventResult = await eventService.writeGenericEvent({
-      eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-      sub: sessionAttributes.subjectIdentifier,
-      sessionId: sessionAttributes.sessionId,
-      govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
-      componentId: config.ISSUER,
-      getNowInMilliseconds: Date.now,
-      transactionId: biometricSessionId,
-      ipAddress: undefined,
-      txmaAuditEncoded: undefined,
+    return await handleWriteToVendorProcessingQueueFailure(eventService, {
+      sessionAttributes: updateResult.value
+        .attributes as BiometricSessionFinishedAttributes,
+      issuer: config.ISSUER,
+      biometricSessionId,
     });
-
-    if (writeEventResult.isError) {
-      logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-        data: { auditEventName: "DCMAW_ASYNC_CRI_5XXERROR" },
-      });
-    }
-
-    return serverErrorResponse;
   }
 
   logger.info(LogMessage.FINISH_BIOMETRIC_SESSION_COMPLETED);
@@ -246,6 +234,39 @@ async function handleUpdateSessionError(
       );
   }
 }
+
+interface HandleWriteToVendorProcessingQueueFailure {
+  sessionAttributes: BiometricSessionFinishedAttributes;
+  issuer: string;
+  biometricSessionId: string;
+}
+
+const handleWriteToVendorProcessingQueueFailure = async (
+  eventService: IEventService,
+  data: HandleWriteToVendorProcessingQueueFailure,
+): Promise<APIGatewayProxyResult> => {
+  const { subjectIdentifier, sessionId, govukSigninJourneyId } =
+    data.sessionAttributes;
+  const writeEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+    sub: subjectIdentifier,
+    sessionId,
+    govukSigninJourneyId,
+    componentId: data.issuer,
+    getNowInMilliseconds: Date.now,
+    transactionId: data.biometricSessionId,
+    ipAddress: undefined,
+    txmaAuditEncoded: undefined,
+  });
+
+  if (writeEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: { auditEventName: "DCMAW_ASYNC_CRI_5XXERROR" },
+    });
+  }
+
+  return serverErrorResponse;
+};
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(
   null,
