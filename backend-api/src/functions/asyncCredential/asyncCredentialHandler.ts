@@ -14,6 +14,7 @@ import { ErrorCategory } from "../utils/result";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
+import { getTxMAExtensions } from "../common/helpers/txmaExtensions";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncCredentialDependencies,
@@ -146,7 +147,6 @@ export async function lambdaHandlerConstructor(
       logger.error(LogMessage.CREDENTIAL_REQUEST_BODY_INVALID, {
         errorMessage: "redirect_uri does not match value from client registry",
       });
-
       return badRequestResponse({
         error: "invalid_request",
         errorDescription: "Request body validation failed",
@@ -195,10 +195,13 @@ export async function lambdaHandlerConstructor(
     govukSigninJourneyId: requestBody.govuk_signin_journey_id,
     getNowInMilliseconds: Date.now,
     componentId: config.ISSUER,
+    extensions: getTxMAExtensions({ redirect_uri: requestBody.redirect_uri }),
+
     // ipAddress and txmaAuditEncoded values only required for lambdas that are triggered as a result of a direct user interaction to the ID Check service
     ipAddress: undefined,
     txmaAuditEncoded: undefined,
   });
+
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: { auditEventName: "DCMAW_ASYNC_CRI_START" },
