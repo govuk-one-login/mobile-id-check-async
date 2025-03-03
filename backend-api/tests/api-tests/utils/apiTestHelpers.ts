@@ -104,6 +104,25 @@ export async function getValidSessionId(): Promise<string | null> {
   return activeSessionResponse.data["sessionId"] ?? null;
 }
 
+export const startBiometricSession = async (
+  sessionId: string,
+): Promise<void> => {
+  const requestBody = {
+    sessionId,
+    documentType: "NFC_PASSPORT",
+  };
+
+  const response = await SESSIONS_API_INSTANCE.post(
+    "/async/biometricToken",
+    requestBody,
+  );
+  if (response.status !== 200) {
+    throw new Error(
+      `Failed to start biometric session with response status: ${response.status}`,
+    );
+  }
+};
+
 export type EventResponse = {
   pk: string;
   sk: string;
