@@ -20,15 +20,21 @@ import {
   successResult,
   errorResult,
   emptyFailure,
+  Result,
 } from "../utils/result";
 import { UpdateSessionError } from "../common/session/SessionRegistry";
 import * as writeToSqs from "../adapters/sqs/writeToSqs";
+import { AsyncSqsMessages } from "../adapters/sqs/types";
 
 describe("Async Finish Biometric Session", () => {
   let dependencies: IAsyncFinishBiometricSessionDependencies;
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
+  let writeToSqsMock: jest.SpyInstance<
+    Promise<Result<void, void>>,
+    [sqsQueue: string, message: AsyncSqsMessages]
+  >;
   let result: APIGatewayProxyResult;
 
   // Constants for epoch timestamps
@@ -443,13 +449,14 @@ describe("Async Finish Biometric Session", () => {
   });
 
   describe("Writing message to vendor processing queue", () => {
-    describe("Given writing to vendor processing queue fails", () => {
+    describe("Given writing message fails", () => {
       beforeEach(() => {
-        jest.spyOn(writeToSqs, "writeToSqs").mockImplementation(async () => {
-          return emptyFailure();
-        });
+        writeToSqsMock = jest
+          .spyOn(writeToSqs, "writeToSqs")
+          .mockImplementation(async () => {
+            return emptyFailure();
+          });
       });
-
       describe("Given DCMAW_ASYNC_CRI_5XXERROR event fails to write to TxMA", () => {
         beforeEach(async () => {
           dependencies = {
@@ -461,6 +468,16 @@ describe("Async Finish Biometric Session", () => {
             dependencies,
             validRequest,
             context,
+          );
+        });
+
+        it("Attempts to write message to the Vendor Processing queue", () => {
+          expect(writeToSqsMock).toHaveBeenCalledWith(
+            "mockVendorProcessingSqs",
+            {
+              biometricSessionId: mockBiometricSessionId,
+              sessionId: mockSessionId,
+            },
           );
         });
 
@@ -494,6 +511,16 @@ describe("Async Finish Biometric Session", () => {
           );
         });
 
+        it("Attempts to write message to the Vendor Processing queue", () => {
+          expect(writeToSqsMock).toHaveBeenCalledWith(
+            "mockVendorProcessingSqs",
+            {
+              biometricSessionId: mockBiometricSessionId,
+              sessionId: mockSessionId,
+            },
+          );
+        });
+
         it("Writes DCMAW_ASYNC_CRI_5XXERROR event", () => {
           expect(mockWriteGenericEventSuccess).toBeCalledWith({
             eventName: "DCMAW_ASYNC_CRI_5XXERROR",
@@ -524,11 +551,24 @@ describe("Async Finish Biometric Session", () => {
 
   describe("Given a valid request is made", () => {
     beforeEach(async () => {
+      writeToSqsMock = jest
+        .spyOn(writeToSqs, "writeToSqs")
+        .mockImplementation(async () => {
+          return emptySuccess();
+        });
+
       result = await lambdaHandlerConstructor(
         dependencies,
         validRequest,
         context,
       );
+    });
+
+    it("Writes message to the Vendor Processing queue", () => {
+      expect(writeToSqsMock).toHaveBeenCalledWith("mockVendorProcessingSqs", {
+        biometricSessionId: mockBiometricSessionId,
+        sessionId: mockSessionId,
+      });
     });
 
     it("Logs COMPLETED", async () => {
