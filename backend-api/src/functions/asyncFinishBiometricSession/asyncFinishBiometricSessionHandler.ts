@@ -41,15 +41,14 @@ export async function lambdaHandlerConstructor(
 ): Promise<APIGatewayProxyResult> {
   setupLogger(context);
   logger.info(LogMessage.FINISH_BIOMETRIC_SESSION_STARTED);
+
   const configResult = getFinishBiometricSessionConfig(dependencies.env);
   if (configResult.isError) {
     return serverErrorResponse;
   }
-
   const config = configResult.value;
 
   const validateResult = validateRequestBody(event.body);
-
   if (validateResult.isError) {
     logger.error(LogMessage.FINISH_BIOMETRIC_SESSION_REQUEST_BODY_INVALID, {
       errorMessage: validateResult.value.errorMessage,
@@ -59,9 +58,11 @@ export async function lambdaHandlerConstructor(
       validateResult.value.errorMessage,
     );
   }
-
   const { sessionId, biometricSessionId } = validateResult.value;
+
   const eventService = dependencies.getEventService(config.TXMA_SQS);
+  const ipAddress = getIpAddress(event);
+  const txmaAuditEncoded = getHeader(event.headers, "Txma-Audit-Encoded");
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
   );
@@ -70,7 +71,6 @@ export async function lambdaHandlerConstructor(
     sessionId,
     new BiometricSessionFinished(biometricSessionId),
   );
-
   if (updateResult.isError) {
     return handleUpdateSessionError(
       updateResult,
@@ -90,9 +90,6 @@ export async function lambdaHandlerConstructor(
     config.VENDOR_PROCESSING_SQS,
     vendorProcessingMessage,
   );
-
-  const ipAddress = getIpAddress(event);
-  const txmaAuditEncoded = getHeader(event.headers, "Txma-Audit-Encoded");
 
   if (writeToVendorProcessingQueueResult.isError) {
     return await handleWriteToVendorProcessingQueueFailure(eventService, {
