@@ -457,6 +457,7 @@ describe("Async Finish Biometric Session", () => {
             return emptyFailure();
           });
       });
+
       describe("Given DCMAW_ASYNC_CRI_5XXERROR event fails to write to TxMA", () => {
         beforeEach(async () => {
           dependencies = {
