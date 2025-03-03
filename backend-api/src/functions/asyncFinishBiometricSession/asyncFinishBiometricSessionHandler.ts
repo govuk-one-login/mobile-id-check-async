@@ -79,10 +79,10 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  const vendorProcessingMessage = JSON.stringify({
+  const vendorProcessingMessage = {
     biometricSessionId,
     sessionId,
-  });
+  };
 
   const writeToVendorProcessingQueueResult = await writeToSqs(
     config.VENDOR_PROCESSING_SQS,

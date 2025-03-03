@@ -6,7 +6,7 @@ import { logger } from "../common/logging/logger";
 
 export const writeToSqs = async (
   sqsQueue: string,
-  message: string,
+  message: IdCheckSqsMessages,
 ): Promise<Result<void, void>> => {
   try {
     logger.debug(LogMessage.WRITE_TO_SQS_ATTEMPT, {
@@ -40,3 +40,10 @@ export const sqsClient = new SQSClient({
     requestTimeout: 5000,
   }),
 });
+
+type IdCheckSqsMessages = VendorProccessingMessage;
+
+interface VendorProccessingMessage {
+  biometricSessionId: string;
+  sessionId: string;
+}
