@@ -455,7 +455,7 @@ Resources:
       TreatMissingData: notBreaching
       Metrics:
         - Id: m1
-          Label: "Sum of MOBILE_ASYNC_STARTED messageCodes for latest Lambda version"
+          Label: "Sum of MOBILE_ASYNC_TOKEN_STARTED messageCodes for latest Lambda version"
           ReturnData: false
           MetricStat:
             Metric:
@@ -463,15 +463,13 @@ Resources:
               MetricName: AsyncCredentialMessageCode
               Dimensions:
                 - Name: MessageCode
-                  Value: MOBILE_ASYNC_STARTED
-                - Name: Level
-                  Value: Informational
+                  Value: MOBILE_ASYNC_TOKEN_STARTED
                 - Name: Version
                   Value: !GetAtt AsyncTokenFunction.Version.Version
             Period: 300
             Stat: Sum
         - Id: m2
-          Label: "Sum of MOBILE_ASYNC_COMPLETED messageCodes for latest Lambda version"
+          Label: "Sum of MOBILE_ASYNC_TOKEN_COMPLETED messageCodes for latest Lambda version"
           ReturnData: false
           MetricStat:
             Metric:
@@ -479,9 +477,7 @@ Resources:
               MetricName: AsyncTokenMessageCode
               Dimensions:
                 - Name: MessageCode
-                  Value: MOBILE_ASYNC_COMPLETED
-                - Name: Level
-                  Value: Informational
+                  Value: MOBILE_ASYNC_TOKEN_COMPLETED                
                 - Name: Version
                   Value: !GetAtt AsyncTokenFunction.Version.Version
             Period: 300
@@ -499,16 +495,14 @@ Resources:
     Type: AWS::Logs::MetricFilter    
     Properties:
       LogGroupName: !Ref AsyncTokenLogGroup
-      FilterPattern: "{ ($.messageCode = *) && ($.functionVersion = *) && ($.level = *) }"
+      FilterPattern: "{ ($.messageCode = *) && ($.functionVersion = *) }"
       MetricTransformations:
         - MetricValue: "1"
           MetricNamespace: !Sub "${AWS::StackName}/LogMessages"
           MetricName: "AsyncTokenMessageCode"
           Dimensions:
             - Key: MessageCode
-              Value: $.messageCode
-            - Key: Level
-              Value: $.level
+              Value: $.messageCode           
             - Key: Version
               Value: $.functionVersion
 
@@ -841,7 +835,7 @@ Resources:
       TreatMissingData: notBreaching
       Metrics:
         - Id: m1
-          Label: "Sum of DCMAW_VERIFY_AUTHORIZE_REQUEST_STARTED messageCodes for latest Lambda version"
+          Label: "Sum of MOBILE_ASYNC_CREDENTIAL_STARTED messageCodes for latest Lambda version"
           ReturnData: false
           MetricStat:
             Metric:
@@ -849,15 +843,13 @@ Resources:
               MetricName: AsyncCredentialMessageCode
               Dimensions:
                 - Name: MessageCode
-                  Value: DCMAW_VERIFY_AUTHORIZE_REQUEST_STARTED
-                - Name: Level
-                  Value: Informational
+                  Value: MOBILE_ASYNC_CREDENTIAL_STARTED                
                 - Name: Version
                   Value: !GetAtt AsyncCredentialFunction.Version.Version
             Period: 300
             Stat: Sum
         - Id: m2
-          Label: "Sum of MOBILE_ASYNC_COMPLETED messageCodes for latest Lambda version"
+          Label: "Sum of MOBILE_ASYNC_CREDENTIAL_COMPLETED messageCodes for latest Lambda version"
           ReturnData: false
           MetricStat:
             Metric:
@@ -865,9 +857,7 @@ Resources:
               MetricName: AsyncCredentialMessageCode
               Dimensions:
                 - Name: MessageCode
-                  Value: MOBILE_ASYNC_COMPLETED
-                - Name: Level
-                  Value: Informational
+                  Value: MOBILE_ASYNC_CREDENTIAL_COMPLETED                
                 - Name: Version
                   Value: !GetAtt AsyncCredentialFunction.Version.Version
             Period: 300
@@ -885,7 +875,7 @@ Resources:
     Type: AWS::Logs::MetricFilter    
     Properties:
       LogGroupName: !Ref AsyncCredentialLogGroup
-      FilterPattern: "{ ($.messageCode = *) && ($.functionVersion = *) && ($.level = *) }"
+      FilterPattern: "{ ($.messageCode = *) && ($.functionVersion = *) }"
       MetricTransformations:
         - MetricValue: "1"
           MetricNamespace: !Sub "${AWS::StackName}/LogMessages"
@@ -893,8 +883,6 @@ Resources:
           Dimensions:
             - Key: MessageCode
               Value: $.messageCode
-            - Key: Level
-              Value: $.level
             - Key: Version
               Value: $.functionVersion
 
@@ -1227,7 +1215,7 @@ Resources:
       TreatMissingData: notBreaching
       Metrics:
         - Id: m1
-          Label: "Sum of MOBILE_ASYNC_STARTED messageCodes for latest Lambda version"
+          Label: "Sum of MOBILE_ASYNC_ACTIVE_SESSION_STARTED messageCodes for latest Lambda version"
           ReturnData: false
           MetricStat:
             Metric:
@@ -1235,9 +1223,7 @@ Resources:
               MetricName: AsyncCredentialMessageCode
               Dimensions:
                 - Name: MessageCode
-                  Value: MOBILE_ASYNC_STARTED
-                - Name: Level
-                  Value: Informational
+                  Value: MOBILE_ASYNC_ACTIVE_SESSION_STARTED
                 - Name: Version
                   Value: !GetAtt AsyncActiveSessionFunction.Version.Version
             Period: 300
@@ -1251,9 +1237,7 @@ Resources:
               MetricName: AsyncCredentialMessageCode
               Dimensions:
                 - Name: MessageCode
-                  Value: MOBILE_ASYNC_COMPLETED
-                - Name: Level
-                  Value: Informational
+                  Value: MOBILE_ASYNC_ACTIVE_SESSION_COMPLETED               
                 - Name: Version
                   Value: !GetAtt AsyncActiveSessionFunction.Version.Version
             Period: 300
@@ -1271,7 +1255,7 @@ Resources:
     Type: AWS::Logs::MetricFilter    
     Properties:
       LogGroupName: !Ref AsyncActiveSessionLogGroup
-      FilterPattern: "{ ($.messageCode = *) && ($.functionVersion = *) && ($.level = *) }"
+      FilterPattern: "{ ($.messageCode = *) && ($.functionVersion = *) }"
       MetricTransformations:
         - MetricValue: "1"
           MetricNamespace: !Sub "${AWS::StackName}/LogMessages"
@@ -1279,8 +1263,6 @@ Resources:
           Dimensions:
             - Key: MessageCode
               Value: $.messageCode
-            - Key: Level
-              Value: $.level
             - Key: Version
               Value: $.functionVersion
 
@@ -1613,7 +1595,7 @@ Resources:
       TreatMissingData: notBreaching
       Metrics:
         - Id: m1
-          Label: "Sum of MOBILE_ASYNC_STARTED messageCodes for latest Lambda version"
+          Label: "Sum of MOBILE_ASYNC_BIOMETRIC_TOKEN_STARTED messageCodes for latest Lambda version"
           ReturnData: false
           MetricStat:
             Metric:
@@ -1621,15 +1603,13 @@ Resources:
               MetricName: AsyncCredentialMessageCode
               Dimensions:
                 - Name: MessageCode
-                  Value: MOBILE_ASYNC_STARTED
-                - Name: Level
-                  Value: Informational
+                  Value: MOBILE_ASYNC_BIOMETRIC_TOKEN_STARTED
                 - Name: Version
                   Value: !GetAtt AsyncBiometricTokenFunction.Version.Version
             Period: 300
             Stat: Sum
         - Id: m2
-          Label: "Sum of MOBILE_ASYNC_COMPLETED messageCodes for latest Lambda version"
+          Label: "Sum of MOBILE_ASYNC_BIOMETRIC_TOKEN_COMPLETED messageCodes for latest Lambda version"
           ReturnData: false
           MetricStat:
             Metric:
@@ -1637,9 +1617,7 @@ Resources:
               MetricName: AsyncTokenMessageCode
               Dimensions:
                 - Name: MessageCode
-                  Value: MOBILE_ASYNC_COMPLETED
-                - Name: Level
-                  Value: Informational
+                  Value: MOBILE_ASYNC_BIOMETRIC_TOKEN_COMPLETED
                 - Name: Version
                   Value: !GetAtt AsyncBiometricTokenFunction.Version.Version
             Period: 300
@@ -1657,7 +1635,7 @@ Resources:
     Type: AWS::Logs::MetricFilter    
     Properties:
       LogGroupName: !Ref AsyncBiometricTokenLogGroup
-      FilterPattern: "{ ($.messageCode = *) && ($.functionVersion = *) && ($.level = *) }"
+      FilterPattern: "{ ($.messageCode = *) && ($.functionVersion = *) }"
       MetricTransformations:
         - MetricValue: "1"
           MetricNamespace: !Sub "${AWS::StackName}/LogMessages"
@@ -1665,8 +1643,6 @@ Resources:
           Dimensions:
             - Key: MessageCode
               Value: $.messageCode
-            - Key: Level
-              Value: $.level
             - Key: Version
               Value: $.functionVersion
 
@@ -1999,7 +1975,7 @@ Resources:
       TreatMissingData: notBreaching
       Metrics:
         - Id: m1
-          Label: "Sum of MOBILE_ASYNC_STARTED messageCodes for latest Lambda version"
+          Label: "Sum of MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_STARTED messageCodes for latest Lambda version"
           ReturnData: false
           MetricStat:
             Metric:
@@ -2007,15 +1983,13 @@ Resources:
               MetricName: AsyncCredentialMessageCode
               Dimensions:
                 - Name: MessageCode
-                  Value: MOBILE_ASYNC_STARTED
-                - Name: Level
-                  Value: Informational
+                  Value: MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_STARTED
                 - Name: Version
                   Value: !GetAtt AsyncFinishBiometricSessionFunction.Version.Version
             Period: 300
             Stat: Sum
         - Id: m2
-          Label: "Sum of MOBILE_ASYNC_COMPLETED messageCodes for latest Lambda version"
+          Label: "Sum of MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_COMPLETED messageCodes for latest Lambda version"
           ReturnData: false
           MetricStat:
             Metric:
@@ -2023,9 +1997,7 @@ Resources:
               MetricName: AsyncTokenMessageCode
               Dimensions:
                 - Name: MessageCode
-                  Value: MOBILE_ASYNC_COMPLETED
-                - Name: Level
-                  Value: Informational
+                  Value: MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_COMPLETED
                 - Name: Version
                   Value: !GetAtt AsyncFinishBiometricSessionFunction.Version.Version
             Period: 300
@@ -2043,7 +2015,7 @@ Resources:
     Type: AWS::Logs::MetricFilter    
     Properties:
       LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
-      FilterPattern: "{ ($.messageCode = *) && ($.functionVersion = *) && ($.level = *) }"
+      FilterPattern: "{ ($.messageCode = *) && ($.functionVersion = *) }"
       MetricTransformations:
         - MetricValue: "1"
           MetricNamespace: !Sub "${AWS::StackName}/LogMessages"
@@ -2051,7 +2023,5 @@ Resources:
           Dimensions:
             - Key: MessageCode
               Value: $.messageCode
-            - Key: Level
-              Value: $.level
             - Key: Version
               Value: $.functionVersion
