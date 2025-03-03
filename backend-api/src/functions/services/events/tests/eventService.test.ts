@@ -46,7 +46,7 @@ describe("Event Service", () => {
       });
 
       it(`Attempts to send ${genericEventName} TxMA event to SQS`, () => {
-        const expectedCommandInput = {
+        const txmaEvent = {
           user: {
             user_id: "mockSub",
             session_id: "mockSessionId",
@@ -64,10 +64,7 @@ describe("Event Service", () => {
           },
         };
 
-        expect(writeToSqsMock).toHaveBeenCalledWith(
-          "mockSqsQueue",
-          expectedCommandInput,
-        );
+        expect(writeToSqsMock).toHaveBeenCalledWith("mockSqsQueue", txmaEvent);
       });
 
       it("Returns an emptyFailure", () => {
@@ -97,7 +94,7 @@ describe("Event Service", () => {
         });
 
         it(`Attempts to send ${genericEventName} event to SQS without restricted data`, () => {
-          const expectedCommandInput = {
+          const txmaEvent = {
             user: {
               user_id: "mockSub",
               session_id: "mockSessionId",
@@ -112,7 +109,7 @@ describe("Event Service", () => {
 
           expect(writeToSqsMock).toHaveBeenCalledWith(
             "mockSqsQueue",
-            expectedCommandInput,
+            txmaEvent,
           );
         });
 
@@ -142,7 +139,7 @@ describe("Event Service", () => {
         });
 
         it(`Attempts to send ${genericEventName} event to SQS with restricted data`, () => {
-          const expectedCommandInput = {
+          const txmaEvent = {
             user: {
               user_id: "mockSub",
               session_id: "mockSessionId",
@@ -162,7 +159,7 @@ describe("Event Service", () => {
 
           expect(writeToSqsMock).toHaveBeenCalledWith(
             "mockSqsQueue",
-            expectedCommandInput,
+            txmaEvent,
           );
         });
 
@@ -190,17 +187,14 @@ describe("Event Service", () => {
       });
 
       it("Attempts to send DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event to SQS", () => {
-        const expectedCommandInput = {
+        const txmaEvent = {
           event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
           component_id: "mockComponentId",
           timestamp: 1609462861,
           event_timestamp_ms: 1609462861000,
         };
 
-        expect(writeToSqsMock).toHaveBeenCalledWith(
-          "mockSqsQueue",
-          expectedCommandInput,
-        );
+        expect(writeToSqsMock).toHaveBeenCalledWith("mockSqsQueue", txmaEvent);
       });
 
       it("Returns an emptyFailure", () => {
@@ -224,17 +218,14 @@ describe("Event Service", () => {
       });
 
       it("Attempts to send DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event to SQS", () => {
-        const expectedCommandInput = {
+        const txmaEvent = {
           event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
           component_id: "mockComponentId",
           timestamp: 1609462861,
           event_timestamp_ms: 1609462861000,
         };
 
-        expect(writeToSqsMock).toHaveBeenCalledWith(
-          "mockSqsQueue",
-          expectedCommandInput,
-        );
+        expect(writeToSqsMock).toHaveBeenCalledWith("mockSqsQueue", txmaEvent);
       });
 
       it("Returns an emptySuccess", () => {
@@ -265,7 +256,7 @@ describe("Event Service", () => {
       });
 
       it(`Attempts to send "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED" TxMA event to SQS`, () => {
-        const expectedCommandInput = {
+        const txmaEvent = {
           user: {
             user_id: "mockSub",
             session_id: "mockSessionId",
@@ -286,10 +277,7 @@ describe("Event Service", () => {
           },
         };
 
-        expect(writeToSqsMock).toHaveBeenCalledWith(
-          "mockSqsQueue",
-          expectedCommandInput,
-        );
+        expect(writeToSqsMock).toHaveBeenCalledWith("mockSqsQueue", txmaEvent);
       });
 
       it("Returns an emptyFailure", () => {
@@ -319,7 +307,7 @@ describe("Event Service", () => {
         });
 
         it(`Attempts to send "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED" event to SQS without restricted data`, () => {
-          const expectedCommandInput = {
+          const txmaEvent = {
             user: {
               user_id: "mockSub",
               session_id: "mockSessionId",
@@ -337,7 +325,7 @@ describe("Event Service", () => {
 
           expect(writeToSqsMock).toHaveBeenCalledWith(
             "mockSqsQueue",
-            expectedCommandInput,
+            txmaEvent,
           );
         });
 
@@ -367,7 +355,7 @@ describe("Event Service", () => {
         });
 
         it(`Attempts to send "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED" event to SQS with restricted data`, () => {
-          const expectedCommandInput = {
+          const txmaEvent = {
             user: {
               user_id: "mockSub",
               session_id: "mockSessionId",
@@ -390,7 +378,7 @@ describe("Event Service", () => {
 
           expect(writeToSqsMock).toHaveBeenCalledWith(
             "mockSqsQueue",
-            expectedCommandInput,
+            txmaEvent,
           );
         });
 
@@ -424,7 +412,7 @@ describe("Event Service", () => {
       });
 
       it(`Attempts to send biometric session finished TxMA event to SQS`, () => {
-        const expectedCommandInput = {
+        const txmaEvent = {
           user: {
             user_id: "mockSub",
             session_id: "mockSessionId",
@@ -438,10 +426,7 @@ describe("Event Service", () => {
           component_id: "mockComponentId",
         };
 
-        expect(writeToSqsMock).toHaveBeenCalledWith(
-          "mockSqsQueue",
-          expectedCommandInput,
-        );
+        expect(writeToSqsMock).toHaveBeenCalledWith("mockSqsQueue", txmaEvent);
       });
 
       it("Returns an emptyFailure", () => {
@@ -474,7 +459,7 @@ describe("Event Service", () => {
       });
 
       it(`Attempts to send biometric session finished event to SQS`, () => {
-        const expectedCommandInput = {
+        const txmaEvent = {
           user: {
             user_id: "mockSub",
             session_id: "mockSessionId",
@@ -490,10 +475,7 @@ describe("Event Service", () => {
           },
         };
 
-        expect(writeToSqsMock).toHaveBeenCalledWith(
-          "mockSqsQueue",
-          expectedCommandInput,
-        );
+        expect(writeToSqsMock).toHaveBeenCalledWith("mockSqsQueue", txmaEvent);
       });
 
       it("Returns an emptySuccess", () => {
