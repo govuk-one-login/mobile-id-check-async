@@ -118,7 +118,7 @@ export const startBiometricSession = async (
   );
   if (response.status !== 200) {
     throw new Error(
-      `Failed to start biometric session with response status: ${response.status}`,
+      `Failed to start biometric session. Response status from /async/biometricToken: ${response.status}`,
     );
   }
 };
