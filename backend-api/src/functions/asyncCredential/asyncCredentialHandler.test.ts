@@ -954,6 +954,7 @@ describe("Async Credential", () => {
                 sub: "mockSub",
                 client_id: "mockClientId",
                 govuk_signin_journey_id: "mockGovukSigninJourneyId",
+                redirect_uri: "https://www.mockUrl.com",
               }),
             });
             const mockEventService = new MockEventWriterSuccess();
@@ -971,9 +972,26 @@ describe("Async Credential", () => {
               "DCMAW_ASYNC_CRI_START",
             );
 
+
+            //Check the event config contains redirect url
+            expect(mockEventService.eventConfig).toEqual(
+              expect.objectContaining({
+                eventName: "DCMAW_ASYNC_CRI_START",
+                componentId: "mockIssuer",
+                getNowInMilliseconds: Date.now,
+                govukSigninJourneyId: "mockGovukSigninJourneyId",
+                sub: "mockSub",
+                sessionId: "mockSessionId",
+                extensions: expect.objectContaining({
+                  redirect_uri: "https://www.mockUrl.com",
+                }),
+              }),
+            );
+
             expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
               messageCode: "MOBILE_ASYNC_CREDENTIAL_COMPLETED",
             });
+
 
             expect(result).toStrictEqual({
               headers: { "Content-Type": "application/json" },

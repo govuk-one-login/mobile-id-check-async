@@ -41,6 +41,7 @@ import {
 } from "../common/session/session";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
+import { getTxMAExtensions } from "../common/helpers/txmaExtensions";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
@@ -199,6 +200,9 @@ async function handleConditionalCheckFailure(
     componentId: issuer,
     ipAddress,
     txmaAuditEncoded,
+    extensions: getTxMAExtensions({
+      redirect_uri: sessionAttributes.redirectUri,
+    }),
   });
 
   if (writeEventResult.isError) {
@@ -361,6 +365,9 @@ async function handleOkResponse(
     documentType: sessionAttributes.documentType,
     ipAddress,
     txmaAuditEncoded,
+    extensions: getTxMAExtensions({
+      redirect_uri: sessionAttributes.redirectUri,
+    }),
   });
 
   if (writeEventResult.isError) {
