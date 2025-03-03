@@ -530,8 +530,8 @@ describe("Async Finish Biometric Session", () => {
             sessionId: "mockSessionId",
             sub: "mockSubjectIdentifier",
             transactionId: mockBiometricSessionId,
-            ipAddress: undefined,
-            txmaAuditEncoded: undefined,
+            ipAddress: "1.1.1.1",
+            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
           });
         });
 

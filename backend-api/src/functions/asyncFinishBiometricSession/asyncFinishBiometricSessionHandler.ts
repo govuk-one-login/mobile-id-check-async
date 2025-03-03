@@ -31,6 +31,8 @@ import {
 } from "../common/session/session";
 import { setupLogger } from "../common/logging/setupLogger";
 import { writeToSqs } from "../adapters/sqs/writeToSqs";
+import { getIpAddress } from "../common/request/getIpAddress/getIpAddress";
+import { getHeader } from "../common/request/getHeader/getHeader";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncFinishBiometricSessionDependencies,
@@ -89,12 +91,17 @@ export async function lambdaHandlerConstructor(
     vendorProcessingMessage,
   );
 
+  const ipAddress = getIpAddress(event);
+  const txmaAuditEncoded = getHeader(event.headers, "Txma-Audit-Encoded");
+
   if (writeToVendorProcessingQueueResult.isError) {
     return await handleWriteToVendorProcessingQueueFailure(eventService, {
       sessionAttributes: updateResult.value
         .attributes as BiometricSessionFinishedAttributes,
       issuer: config.ISSUER,
       biometricSessionId,
+      ipAddress,
+      txmaAuditEncoded,
     });
   }
 
@@ -239,24 +246,34 @@ interface HandleWriteToVendorProcessingQueueFailure {
   sessionAttributes: BiometricSessionFinishedAttributes;
   issuer: string;
   biometricSessionId: string;
+  ipAddress: string;
+  txmaAuditEncoded: string | undefined;
 }
 
 const handleWriteToVendorProcessingQueueFailure = async (
   eventService: IEventService,
   data: HandleWriteToVendorProcessingQueueFailure,
 ): Promise<APIGatewayProxyResult> => {
+  const {
+    biometricSessionId,
+    issuer,
+    ipAddress,
+    sessionAttributes,
+    txmaAuditEncoded,
+  } = data;
   const { subjectIdentifier, sessionId, govukSigninJourneyId } =
-    data.sessionAttributes;
+    sessionAttributes;
+
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_5XXERROR",
     sub: subjectIdentifier,
     sessionId,
     govukSigninJourneyId,
-    componentId: data.issuer,
+    componentId: issuer,
     getNowInMilliseconds: Date.now,
-    transactionId: data.biometricSessionId,
-    ipAddress: undefined,
-    txmaAuditEncoded: undefined,
+    transactionId: biometricSessionId,
+    ipAddress,
+    txmaAuditEncoded,
   });
 
   if (writeEventResult.isError) {
