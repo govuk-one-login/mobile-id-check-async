@@ -64,9 +64,9 @@ jobs:
         run: npm run test
         # output the file the unit tests generates for use in sonar quality gate
 
-      - name: Generate proxy open api spec
-        if: ${{ inputs.GENERATE_PROXY_OPEN_API_SPEC }}
-        run: npm run generate-proxy-open-api
+      # - name: Generate proxy open api spec
+      #   if: ${{ inputs.GENERATE_PROXY_OPEN_API_SPEC }}
+      #   run: npm run generate-proxy-open-api
 
       - name: Set up Homebrew
         if: ${{ inputs.VERIFY_TEMPLATE_RAIN }}
