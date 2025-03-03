@@ -27,6 +27,7 @@ import { IEventService } from "../services/events/types";
 import { FailureWithValue } from "../utils/result";
 import { SessionAttributes } from "../common/session/session";
 import { setupLogger } from "../common/logging/setupLogger";
+import { writeToSqs } from "../adapters/writeToSqs";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncFinishBiometricSessionDependencies,
@@ -73,6 +74,40 @@ export async function lambdaHandlerConstructor(
       biometricSessionId,
       config.ISSUER,
     );
+  }
+
+  const vendorProcessingMessage = JSON.stringify({
+    biometricSessionId,
+    sessionId,
+  });
+
+  const writeToVendorProcessingQueueResult = await writeToSqs(
+    config.VENDOR_PROCESSING_SQS,
+    vendorProcessingMessage,
+  );
+
+  const sessionAttributes = updateResult.value.attributes;
+
+  if (writeToVendorProcessingQueueResult.isError) {
+    const writeEventResult = await eventService.writeGenericEvent({
+      eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+      sub: sessionAttributes.subjectIdentifier,
+      sessionId: sessionAttributes.sessionId,
+      govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+      componentId: config.ISSUER,
+      getNowInMilliseconds: Date.now,
+      transactionId: biometricSessionId,
+      ipAddress: undefined,
+      txmaAuditEncoded: undefined,
+    });
+
+    if (writeEventResult.isError) {
+      logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+        data: { auditEventName: "DCMAW_ASYNC_CRI_5XXERROR" },
+      });
+    }
+
+    return serverErrorResponse;
   }
 
   logger.info(LogMessage.FINISH_BIOMETRIC_SESSION_COMPLETED);

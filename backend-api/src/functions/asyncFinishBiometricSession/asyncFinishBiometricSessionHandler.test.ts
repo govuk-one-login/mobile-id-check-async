@@ -15,8 +15,14 @@ import {
   mockInertEventService,
   validBiometricSessionFinishedAttributes,
 } from "../testUtils/unitTestData";
-import { emptySuccess, successResult, errorResult } from "../utils/result";
+import {
+  emptySuccess,
+  successResult,
+  errorResult,
+  emptyFailure,
+} from "../utils/result";
 import { UpdateSessionError } from "../common/session/SessionRegistry";
+import * as writeToSqs from "../adapters/writeToSqs";
 
 describe("Async Finish Biometric Session", () => {
   let dependencies: IAsyncFinishBiometricSessionDependencies;
@@ -57,7 +63,9 @@ describe("Async Finish Biometric Session", () => {
 
   const mockSessionUpdateSuccess = jest
     .fn()
-    .mockResolvedValue(successResult(validBiometricSessionFinishedAttributes));
+    .mockResolvedValue(
+      successResult({ attributes: validBiometricSessionFinishedAttributes }),
+    );
 
   const mockSuccessfulSessionRegistry = {
     ...mockInertSessionRegistry,
@@ -81,10 +89,14 @@ describe("Async Finish Biometric Session", () => {
     consoleErrorSpy = jest.spyOn(console, "error");
     jest.useFakeTimers();
     jest.setSystemTime(MOCK_CURRENT_TIME);
+    jest.spyOn(writeToSqs, "writeToSqs").mockImplementation(async () => {
+      return emptySuccess();
+    });
   });
 
   afterEach(() => {
     jest.useRealTimers();
+    jest.clearAllMocks();
   });
 
   describe("On every invocation", () => {
@@ -425,6 +437,86 @@ describe("Async Finish Biometric Session", () => {
             transactionId: mockBiometricSessionId,
           });
           expect(result.statusCode).toBe(500);
+        });
+      });
+    });
+  });
+
+  describe("Writing message to vendor processing queue", () => {
+    describe("Given writing to vendor processing queue fails", () => {
+      beforeEach(() => {
+        jest.spyOn(writeToSqs, "writeToSqs").mockImplementation(async () => {
+          return emptyFailure();
+        });
+      });
+
+      describe("Given DCMAW_ASYNC_CRI_5XXERROR event fails to write to TxMA", () => {
+        beforeEach(async () => {
+          dependencies = {
+            ...dependencies,
+            getEventService: () => mockFailingEventService,
+          };
+
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+
+        it("Logs the error", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+            data: {
+              auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+            },
+          });
+        });
+
+        it("Returns 500 Internal server error", () => {
+          expect(result).toStrictEqual({
+            statusCode: 500,
+            body: JSON.stringify({
+              error: "server_error",
+              error_description: "Internal Server Error",
+            }),
+            headers: expectedSecurityHeaders,
+          });
+        });
+      });
+
+      describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully writes to TxMA", () => {
+        beforeEach(async () => {
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+
+        it("Writes DCMAW_ASYNC_CRI_5XXERROR event", () => {
+          expect(mockWriteGenericEventSuccess).toBeCalledWith({
+            eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+            componentId: "mockIssuer",
+            getNowInMilliseconds: Date.now,
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            sessionId: "mockSessionId",
+            sub: "mockSubjectIdentifier",
+            transactionId: mockBiometricSessionId,
+            ipAddress: undefined,
+            txmaAuditEncoded: undefined,
+          });
+        });
+
+        it("Returns 500 Interal server error", () => {
+          expect(result).toStrictEqual({
+            statusCode: 500,
+            body: JSON.stringify({
+              error: "server_error",
+              error_description: "Internal Server Error",
+            }),
+            headers: expectedSecurityHeaders,
+          });
         });
       });
     });
