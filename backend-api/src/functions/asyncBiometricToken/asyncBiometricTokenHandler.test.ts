@@ -542,10 +542,6 @@ describe("Async Biometric Token", () => {
 
       describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully to write to TxMA", () => {
         it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
-          console.log(
-            "mockWriteGenericEventSuccessResult",
-            mockWriteGenericEventSuccessResult.mock.calls,
-          );
           expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
             eventName: "DCMAW_ASYNC_CRI_5XXERROR",
             componentId: "mockIssuer",
