@@ -23,7 +23,7 @@ import {
   Result,
 } from "../utils/result";
 import { UpdateSessionError } from "../common/session/SessionRegistry";
-import * as writeToSqs from "../adapters/sqs/writeToSqs";
+import * as sendMessageToSqs from "../adapters/sqs/sendMessageToSqs";
 import { AsyncSqsMessages } from "../adapters/sqs/types";
 
 describe("Async Finish Biometric Session", () => {
@@ -31,7 +31,7 @@ describe("Async Finish Biometric Session", () => {
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
-  let writeToSqsMock: jest.SpyInstance<
+  let sendMessageToSqsMock: jest.SpyInstance<
     Promise<Result<void, void>>,
     [sqsQueue: string, message: AsyncSqsMessages]
   >;
@@ -95,9 +95,11 @@ describe("Async Finish Biometric Session", () => {
     consoleErrorSpy = jest.spyOn(console, "error");
     jest.useFakeTimers();
     jest.setSystemTime(MOCK_CURRENT_TIME);
-    jest.spyOn(writeToSqs, "writeToSqs").mockImplementation(async () => {
-      return emptySuccess();
-    });
+    jest
+      .spyOn(sendMessageToSqs, "sendMessageToSqs")
+      .mockImplementation(async () => {
+        return emptySuccess();
+      });
   });
 
   afterEach(() => {
@@ -448,11 +450,11 @@ describe("Async Finish Biometric Session", () => {
     });
   });
 
-  describe("Writing message to vendor processing queue", () => {
-    describe("Given writing message fails", () => {
+  describe("Sending message to vendor processing queue", () => {
+    describe("Given sending message fails", () => {
       beforeEach(() => {
-        writeToSqsMock = jest
-          .spyOn(writeToSqs, "writeToSqs")
+        sendMessageToSqsMock = jest
+          .spyOn(sendMessageToSqs, "sendMessageToSqs")
           .mockImplementation(async () => {
             return emptyFailure();
           });
@@ -472,8 +474,8 @@ describe("Async Finish Biometric Session", () => {
           );
         });
 
-        it("Attempts to write message to the Vendor Processing queue", () => {
-          expect(writeToSqsMock).toHaveBeenCalledWith(
+        it("Attempts to send message to the Vendor Processing queue", () => {
+          expect(sendMessageToSqsMock).toHaveBeenCalledWith(
             "mockVendorProcessingSqs",
             {
               biometricSessionId: mockBiometricSessionId,
@@ -512,8 +514,8 @@ describe("Async Finish Biometric Session", () => {
           );
         });
 
-        it("Attempts to write message to the Vendor Processing queue", () => {
-          expect(writeToSqsMock).toHaveBeenCalledWith(
+        it("Attempts to send message to the Vendor Processing queue", () => {
+          expect(sendMessageToSqsMock).toHaveBeenCalledWith(
             "mockVendorProcessingSqs",
             {
               biometricSessionId: mockBiometricSessionId,
@@ -552,8 +554,8 @@ describe("Async Finish Biometric Session", () => {
 
   describe("Given a valid request is made", () => {
     beforeEach(async () => {
-      writeToSqsMock = jest
-        .spyOn(writeToSqs, "writeToSqs")
+      sendMessageToSqsMock = jest
+        .spyOn(sendMessageToSqs, "sendMessageToSqs")
         .mockImplementation(async () => {
           return emptySuccess();
         });
@@ -565,11 +567,14 @@ describe("Async Finish Biometric Session", () => {
       );
     });
 
-    it("Writes message to the Vendor Processing queue", () => {
-      expect(writeToSqsMock).toHaveBeenCalledWith("mockVendorProcessingSqs", {
-        biometricSessionId: mockBiometricSessionId,
-        sessionId: mockSessionId,
-      });
+    it("Sends message to the Vendor Processing queue", () => {
+      expect(sendMessageToSqsMock).toHaveBeenCalledWith(
+        "mockVendorProcessingSqs",
+        {
+          biometricSessionId: mockBiometricSessionId,
+          sessionId: mockSessionId,
+        },
+      );
     });
 
     it("Logs COMPLETED", async () => {

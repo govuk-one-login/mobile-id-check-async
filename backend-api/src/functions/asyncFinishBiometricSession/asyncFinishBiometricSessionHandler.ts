@@ -30,7 +30,7 @@ import {
   SessionAttributes,
 } from "../common/session/session";
 import { setupLogger } from "../common/logging/setupLogger";
-import { writeToSqs } from "../adapters/sqs/writeToSqs";
+import { sendMessageToSqs } from "../adapters/sqs/sendMessageToSqs";
 import { getIpAddress } from "../common/request/getIpAddress/getIpAddress";
 import { getHeader } from "../common/request/getHeader/getHeader";
 
@@ -86,7 +86,7 @@ export async function lambdaHandlerConstructor(
     sessionId,
   };
 
-  const writeToVendorProcessingQueueResult = await writeToSqs(
+  const writeToVendorProcessingQueueResult = await sendMessageToSqs(
     config.VENDOR_PROCESSING_SQS,
     vendorProcessingMessage,
   );

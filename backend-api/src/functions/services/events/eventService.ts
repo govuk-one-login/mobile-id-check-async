@@ -9,7 +9,7 @@ import {
   IEventService,
   RestrictedData,
 } from "./types";
-import { writeToSqs } from "../../adapters/sqs/writeToSqs";
+import { sendMessageToSqs } from "../../adapters/sqs/sendMessageToSqs";
 
 export class EventService implements IEventService {
   private sqsQueue: string;
@@ -22,21 +22,21 @@ export class EventService implements IEventService {
     eventConfig: GenericEventConfig,
   ): Promise<Result<void, void>> {
     const txmaEvent = this.buildGenericEvent(eventConfig);
-    return await writeToSqs(this.sqsQueue, txmaEvent);
+    return await sendMessageToSqs(this.sqsQueue, txmaEvent);
   }
 
   async writeCredentialTokenIssuedEvent(
     eventConfig: CredentialTokenIssuedEventConfig,
   ): Promise<Result<void, void>> {
     const txmaEvent = this.buildCredentialTokenIssuedEvent(eventConfig);
-    return await writeToSqs(this.sqsQueue, txmaEvent);
+    return await sendMessageToSqs(this.sqsQueue, txmaEvent);
   }
 
   async writeBiometricTokenIssuedEvent(
     eventConfig: BiometricTokenIssuedEventConfig,
   ): Promise<Result<void, void>> {
     const txmaEvent = this.buildBiometricTokenEvent(eventConfig);
-    return await writeToSqs(this.sqsQueue, txmaEvent);
+    return await sendMessageToSqs(this.sqsQueue, txmaEvent);
   }
 
   private buildGenericEvent = (

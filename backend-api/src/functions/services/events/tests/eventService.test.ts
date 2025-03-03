@@ -1,20 +1,20 @@
 import { EventService } from "../eventService";
 import { GenericEventNames } from "../types";
 import { emptyFailure, emptySuccess, Result } from "../../../utils/result";
-import * as writeToSqs from "../../../adapters/sqs/writeToSqs";
+import * as sendMessageToSqs from "../../../adapters/sqs/sendMessageToSqs";
 import { AsyncSqsMessages } from "../../../adapters/sqs/types";
 
 describe("Event Service", () => {
   const eventWriter = new EventService("mockSqsQueue");
 
-  let writeToSqsMock: jest.SpyInstance<
+  let sendMessageToSqsMock: jest.SpyInstance<
     Promise<Result<void, void>>,
     [sqsQueue: string, message: AsyncSqsMessages]
   >;
   let result: Result<void, void>;
   beforeEach(() => {
-    writeToSqsMock = jest
-      .spyOn(writeToSqs, "writeToSqs")
+    sendMessageToSqsMock = jest
+      .spyOn(sendMessageToSqs, "sendMessageToSqs")
       .mockImplementation(async () => {
         return emptySuccess();
       });
@@ -27,8 +27,8 @@ describe("Event Service", () => {
   ])("Writing generic TxMA events to SQS", (genericEventName) => {
     describe(`Given writing ${genericEventName} event to SQS fails`, () => {
       beforeEach(async () => {
-        writeToSqsMock = jest
-          .spyOn(writeToSqs, "writeToSqs")
+        sendMessageToSqsMock = jest
+          .spyOn(sendMessageToSqs, "sendMessageToSqs")
           .mockImplementation(async () => {
             return emptyFailure();
           });
@@ -64,7 +64,10 @@ describe("Event Service", () => {
           },
         };
 
-        expect(writeToSqsMock).toHaveBeenCalledWith("mockSqsQueue", txmaEvent);
+        expect(sendMessageToSqsMock).toHaveBeenCalledWith(
+          "mockSqsQueue",
+          txmaEvent,
+        );
       });
 
       it("Returns an emptyFailure", () => {
@@ -75,8 +78,8 @@ describe("Event Service", () => {
     describe(`Given writing ${genericEventName} to SQS is successful`, () => {
       describe("Given txmaAuditEncoded is undefined", () => {
         beforeEach(async () => {
-          writeToSqsMock = jest
-            .spyOn(writeToSqs, "writeToSqs")
+          sendMessageToSqsMock = jest
+            .spyOn(sendMessageToSqs, "sendMessageToSqs")
             .mockImplementation(async () => {
               return emptySuccess();
             });
@@ -107,7 +110,7 @@ describe("Event Service", () => {
             component_id: "mockComponentId",
           };
 
-          expect(writeToSqsMock).toHaveBeenCalledWith(
+          expect(sendMessageToSqsMock).toHaveBeenCalledWith(
             "mockSqsQueue",
             txmaEvent,
           );
@@ -120,8 +123,8 @@ describe("Event Service", () => {
 
       describe("Given txmaAuditEncoded is defined", () => {
         beforeEach(async () => {
-          writeToSqsMock = jest
-            .spyOn(writeToSqs, "writeToSqs")
+          sendMessageToSqsMock = jest
+            .spyOn(sendMessageToSqs, "sendMessageToSqs")
             .mockImplementation(async () => {
               return emptySuccess();
             });
@@ -157,7 +160,7 @@ describe("Event Service", () => {
             },
           };
 
-          expect(writeToSqsMock).toHaveBeenCalledWith(
+          expect(sendMessageToSqsMock).toHaveBeenCalledWith(
             "mockSqsQueue",
             txmaEvent,
           );
@@ -173,8 +176,8 @@ describe("Event Service", () => {
   describe("Writing credential token issued event to SQS", () => {
     describe("Given writing DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event to SQS fails", () => {
       beforeEach(async () => {
-        writeToSqsMock = jest
-          .spyOn(writeToSqs, "writeToSqs")
+        sendMessageToSqsMock = jest
+          .spyOn(sendMessageToSqs, "sendMessageToSqs")
           .mockImplementation(async () => {
             return emptyFailure();
           });
@@ -194,7 +197,10 @@ describe("Event Service", () => {
           event_timestamp_ms: 1609462861000,
         };
 
-        expect(writeToSqsMock).toHaveBeenCalledWith("mockSqsQueue", txmaEvent);
+        expect(sendMessageToSqsMock).toHaveBeenCalledWith(
+          "mockSqsQueue",
+          txmaEvent,
+        );
       });
 
       it("Returns an emptyFailure", () => {
@@ -204,8 +210,8 @@ describe("Event Service", () => {
 
     describe("Given writing to SQS is successful", () => {
       beforeEach(async () => {
-        writeToSqsMock = jest
-          .spyOn(writeToSqs, "writeToSqs")
+        sendMessageToSqsMock = jest
+          .spyOn(sendMessageToSqs, "sendMessageToSqs")
           .mockImplementation(async () => {
             return emptySuccess();
           });
@@ -225,7 +231,10 @@ describe("Event Service", () => {
           event_timestamp_ms: 1609462861000,
         };
 
-        expect(writeToSqsMock).toHaveBeenCalledWith("mockSqsQueue", txmaEvent);
+        expect(sendMessageToSqsMock).toHaveBeenCalledWith(
+          "mockSqsQueue",
+          txmaEvent,
+        );
       });
 
       it("Returns an emptySuccess", () => {
@@ -237,8 +246,8 @@ describe("Event Service", () => {
   describe("Writing biometric token issued event to SQS", () => {
     describe(`Given writing "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED" event to SQS fails`, () => {
       beforeEach(async () => {
-        writeToSqsMock = jest
-          .spyOn(writeToSqs, "writeToSqs")
+        sendMessageToSqsMock = jest
+          .spyOn(sendMessageToSqs, "sendMessageToSqs")
           .mockImplementation(async () => {
             return emptyFailure();
           });
@@ -277,7 +286,10 @@ describe("Event Service", () => {
           },
         };
 
-        expect(writeToSqsMock).toHaveBeenCalledWith("mockSqsQueue", txmaEvent);
+        expect(sendMessageToSqsMock).toHaveBeenCalledWith(
+          "mockSqsQueue",
+          txmaEvent,
+        );
       });
 
       it("Returns an emptyFailure", () => {
@@ -288,8 +300,8 @@ describe("Event Service", () => {
     describe(`Given writing "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED" to SQS is successful`, () => {
       describe("Given txmaAuditEncoded is undefined", () => {
         beforeEach(async () => {
-          writeToSqsMock = jest
-            .spyOn(writeToSqs, "writeToSqs")
+          sendMessageToSqsMock = jest
+            .spyOn(sendMessageToSqs, "sendMessageToSqs")
             .mockImplementation(async () => {
               return emptySuccess();
             });
@@ -323,7 +335,7 @@ describe("Event Service", () => {
             },
           };
 
-          expect(writeToSqsMock).toHaveBeenCalledWith(
+          expect(sendMessageToSqsMock).toHaveBeenCalledWith(
             "mockSqsQueue",
             txmaEvent,
           );
@@ -336,8 +348,8 @@ describe("Event Service", () => {
 
       describe("Given txmaAuditEncoded is defined", () => {
         beforeEach(async () => {
-          writeToSqsMock = jest
-            .spyOn(writeToSqs, "writeToSqs")
+          sendMessageToSqsMock = jest
+            .spyOn(sendMessageToSqs, "sendMessageToSqs")
             .mockImplementation(async () => {
               return emptySuccess();
             });
@@ -376,7 +388,7 @@ describe("Event Service", () => {
             },
           };
 
-          expect(writeToSqsMock).toHaveBeenCalledWith(
+          expect(sendMessageToSqsMock).toHaveBeenCalledWith(
             "mockSqsQueue",
             txmaEvent,
           );
@@ -392,8 +404,8 @@ describe("Event Service", () => {
   describe("Writing biometric session finished event to SQS", () => {
     describe(`Given writing biometric session finished event to SQS fails`, () => {
       beforeEach(async () => {
-        writeToSqsMock = jest
-          .spyOn(writeToSqs, "writeToSqs")
+        sendMessageToSqsMock = jest
+          .spyOn(sendMessageToSqs, "sendMessageToSqs")
           .mockImplementation(async () => {
             return emptyFailure();
           });
@@ -426,7 +438,10 @@ describe("Event Service", () => {
           component_id: "mockComponentId",
         };
 
-        expect(writeToSqsMock).toHaveBeenCalledWith("mockSqsQueue", txmaEvent);
+        expect(sendMessageToSqsMock).toHaveBeenCalledWith(
+          "mockSqsQueue",
+          txmaEvent,
+        );
       });
 
       it("Returns an emptyFailure", () => {
@@ -436,8 +451,8 @@ describe("Event Service", () => {
 
     describe(`Given writing biometric session finished event to SQS is successful`, () => {
       beforeEach(async () => {
-        writeToSqsMock = jest
-          .spyOn(writeToSqs, "writeToSqs")
+        sendMessageToSqsMock = jest
+          .spyOn(sendMessageToSqs, "sendMessageToSqs")
           .mockImplementation(async () => {
             return emptySuccess();
           });
@@ -475,7 +490,10 @@ describe("Event Service", () => {
           },
         };
 
-        expect(writeToSqsMock).toHaveBeenCalledWith("mockSqsQueue", txmaEvent);
+        expect(sendMessageToSqsMock).toHaveBeenCalledWith(
+          "mockSqsQueue",
+          txmaEvent,
+        );
       });
 
       it("Returns an emptySuccess", () => {
