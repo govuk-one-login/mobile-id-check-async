@@ -730,15 +730,19 @@ describe("Backend application infrastructure", () => {
 
   describe("KMS", () => {
     test("All keys have a retention window once deleted", () => {
-      // TODO I am using a different var name for this, may have to change approach or test differently
       const kmsKeys = template.findResources("AWS::KMS::Key");
       const kmsKeyList = Object.keys(kmsKeys);
       kmsKeyList.forEach((kmsKey) => {
+        let pendingDeletionInDays = "PendingDeletionInDays";
+        if (kmsKey === "VendorProcessingKMSEncryptionKey") {
+          pendingDeletionInDays = "VendorProcessingPendingDeletionInDays";
+        }
+
         expect(kmsKeys[kmsKey].Properties.PendingWindowInDays).toStrictEqual({
           "Fn::FindInMap": [
             "KMS",
             { Ref: "Environment" },
-            "PendingDeletionInDays",
+            pendingDeletionInDays,
           ],
         });
       });
