@@ -1,27 +1,23 @@
-import { AwsStub, mockClient } from "aws-sdk-client-mock";
-import {
-  SendMessageCommand,
-  ServiceInputTypes,
-  ServiceOutputTypes,
-  SQSClientResolvedConfig,
-} from "@aws-sdk/client-sqs";
 import { EventService } from "../eventService";
 import { GenericEventNames } from "../types";
 import { emptyFailure, emptySuccess, Result } from "../../../utils/result";
-import "aws-sdk-client-mock-jest";
-import { sqsClient } from "../../../adapters/sqs/sqsClient";
+import * as writeToSqs from "../../../adapters/sqs/writeToSqs";
+import { AsyncSqsMessages } from "../../../adapters/sqs/types";
 
 describe("Event Service", () => {
   const eventWriter = new EventService("mockSqsQueue");
 
-  let sqsMock: AwsStub<
-    ServiceInputTypes,
-    ServiceOutputTypes,
-    SQSClientResolvedConfig
+  let writeToSqsMock: jest.SpyInstance<
+    Promise<Result<void, void>>,
+    [sqsQueue: string, message: AsyncSqsMessages]
   >;
   let result: Result<void, void>;
   beforeEach(() => {
-    sqsMock = mockClient(sqsClient);
+    writeToSqsMock = jest
+      .spyOn(writeToSqs, "writeToSqs")
+      .mockImplementation(async () => {
+        return emptySuccess();
+      });
   });
 
   describe.each<GenericEventNames>([
@@ -31,7 +27,11 @@ describe("Event Service", () => {
   ])("Writing generic TxMA events to SQS", (genericEventName) => {
     describe(`Given writing ${genericEventName} event to SQS fails`, () => {
       beforeEach(async () => {
-        sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
+        writeToSqsMock = jest
+          .spyOn(writeToSqs, "writeToSqs")
+          .mockImplementation(async () => {
+            return emptyFailure();
+          });
 
         result = await eventWriter.writeGenericEvent({
           eventName: genericEventName,
@@ -47,28 +47,25 @@ describe("Event Service", () => {
 
       it(`Attempts to send ${genericEventName} TxMA event to SQS`, () => {
         const expectedCommandInput = {
-          MessageBody: JSON.stringify({
-            user: {
-              user_id: "mockSub",
-              session_id: "mockSessionId",
-              govuk_signin_journey_id: "mockGovukSigninJourneyId",
-              ip_address: "mockIpAddress",
+          user: {
+            user_id: "mockSub",
+            session_id: "mockSessionId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+            ip_address: "mockIpAddress",
+          },
+          timestamp: 1609462861,
+          event_timestamp_ms: 1609462861000,
+          event_name: genericEventName,
+          component_id: "mockComponentId",
+          restricted: {
+            device_information: {
+              encoded: "mockTxmaAuditEncoded",
             },
-            timestamp: 1609462861,
-            event_timestamp_ms: 1609462861000,
-            event_name: genericEventName,
-            component_id: "mockComponentId",
-            restricted: {
-              device_information: {
-                encoded: "mockTxmaAuditEncoded",
-              },
-            },
-          }),
-          QueueUrl: "mockSqsQueue",
+          },
         };
 
-        expect(sqsMock).toHaveReceivedCommandWith(
-          SendMessageCommand,
+        expect(writeToSqsMock).toHaveBeenCalledWith(
+          "mockSqsQueue",
           expectedCommandInput,
         );
       });
@@ -81,7 +78,11 @@ describe("Event Service", () => {
     describe(`Given writing ${genericEventName} to SQS is successful`, () => {
       describe("Given txmaAuditEncoded is undefined", () => {
         beforeEach(async () => {
-          sqsMock.on(SendMessageCommand).resolves({});
+          writeToSqsMock = jest
+            .spyOn(writeToSqs, "writeToSqs")
+            .mockImplementation(async () => {
+              return emptySuccess();
+            });
 
           result = await eventWriter.writeGenericEvent({
             eventName: genericEventName,
@@ -97,23 +98,20 @@ describe("Event Service", () => {
 
         it(`Attempts to send ${genericEventName} event to SQS without restricted data`, () => {
           const expectedCommandInput = {
-            MessageBody: JSON.stringify({
-              user: {
-                user_id: "mockSub",
-                session_id: "mockSessionId",
-                govuk_signin_journey_id: "mockGovukSigninJourneyId",
-                ip_address: "mockIpAddress",
-              },
-              timestamp: 1609462861,
-              event_timestamp_ms: 1609462861000,
-              event_name: genericEventName,
-              component_id: "mockComponentId",
-            }),
-            QueueUrl: "mockSqsQueue",
+            user: {
+              user_id: "mockSub",
+              session_id: "mockSessionId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              ip_address: "mockIpAddress",
+            },
+            timestamp: 1609462861,
+            event_timestamp_ms: 1609462861000,
+            event_name: genericEventName,
+            component_id: "mockComponentId",
           };
 
-          expect(sqsMock).toHaveReceivedCommandWith(
-            SendMessageCommand,
+          expect(writeToSqsMock).toHaveBeenCalledWith(
+            "mockSqsQueue",
             expectedCommandInput,
           );
         });
@@ -125,7 +123,11 @@ describe("Event Service", () => {
 
       describe("Given txmaAuditEncoded is defined", () => {
         beforeEach(async () => {
-          sqsMock.on(SendMessageCommand).resolves({});
+          writeToSqsMock = jest
+            .spyOn(writeToSqs, "writeToSqs")
+            .mockImplementation(async () => {
+              return emptySuccess();
+            });
 
           result = await eventWriter.writeGenericEvent({
             eventName: genericEventName,
@@ -141,28 +143,25 @@ describe("Event Service", () => {
 
         it(`Attempts to send ${genericEventName} event to SQS with restricted data`, () => {
           const expectedCommandInput = {
-            MessageBody: JSON.stringify({
-              user: {
-                user_id: "mockSub",
-                session_id: "mockSessionId",
-                govuk_signin_journey_id: "mockGovukSigninJourneyId",
-                ip_address: "mockIpAddress",
+            user: {
+              user_id: "mockSub",
+              session_id: "mockSessionId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              ip_address: "mockIpAddress",
+            },
+            timestamp: 1609462861,
+            event_timestamp_ms: 1609462861000,
+            event_name: genericEventName,
+            component_id: "mockComponentId",
+            restricted: {
+              device_information: {
+                encoded: "mockTxmaAuditEncoded",
               },
-              timestamp: 1609462861,
-              event_timestamp_ms: 1609462861000,
-              event_name: genericEventName,
-              component_id: "mockComponentId",
-              restricted: {
-                device_information: {
-                  encoded: "mockTxmaAuditEncoded",
-                },
-              },
-            }),
-            QueueUrl: "mockSqsQueue",
+            },
           };
 
-          expect(sqsMock).toHaveReceivedCommandWith(
-            SendMessageCommand,
+          expect(writeToSqsMock).toHaveBeenCalledWith(
+            "mockSqsQueue",
             expectedCommandInput,
           );
         });
@@ -177,7 +176,11 @@ describe("Event Service", () => {
   describe("Writing credential token issued event to SQS", () => {
     describe("Given writing DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event to SQS fails", () => {
       beforeEach(async () => {
-        sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
+        writeToSqsMock = jest
+          .spyOn(writeToSqs, "writeToSqs")
+          .mockImplementation(async () => {
+            return emptyFailure();
+          });
 
         result = await eventWriter.writeCredentialTokenIssuedEvent({
           getNowInMilliseconds: () => 1609462861000,
@@ -188,17 +191,14 @@ describe("Event Service", () => {
 
       it("Attempts to send DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event to SQS", () => {
         const expectedCommandInput = {
-          MessageBody: JSON.stringify({
-            event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
-            component_id: "mockComponentId",
-            timestamp: 1609462861,
-            event_timestamp_ms: 1609462861000,
-          }),
-          QueueUrl: "mockSqsQueue",
+          event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+          component_id: "mockComponentId",
+          timestamp: 1609462861,
+          event_timestamp_ms: 1609462861000,
         };
 
-        expect(sqsMock).toHaveReceivedCommandWith(
-          SendMessageCommand,
+        expect(writeToSqsMock).toHaveBeenCalledWith(
+          "mockSqsQueue",
           expectedCommandInput,
         );
       });
@@ -210,7 +210,11 @@ describe("Event Service", () => {
 
     describe("Given writing to SQS is successful", () => {
       beforeEach(async () => {
-        sqsMock.on(SendMessageCommand).resolves({});
+        writeToSqsMock = jest
+          .spyOn(writeToSqs, "writeToSqs")
+          .mockImplementation(async () => {
+            return emptySuccess();
+          });
 
         result = await eventWriter.writeCredentialTokenIssuedEvent({
           getNowInMilliseconds: () => 1609462861000,
@@ -221,17 +225,14 @@ describe("Event Service", () => {
 
       it("Attempts to send DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED event to SQS", () => {
         const expectedCommandInput = {
-          MessageBody: JSON.stringify({
-            event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
-            component_id: "mockComponentId",
-            timestamp: 1609462861,
-            event_timestamp_ms: 1609462861000,
-          }),
-          QueueUrl: "mockSqsQueue",
+          event_name: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
+          component_id: "mockComponentId",
+          timestamp: 1609462861,
+          event_timestamp_ms: 1609462861000,
         };
 
-        expect(sqsMock).toHaveReceivedCommandWith(
-          SendMessageCommand,
+        expect(writeToSqsMock).toHaveBeenCalledWith(
+          "mockSqsQueue",
           expectedCommandInput,
         );
       });
@@ -245,7 +246,11 @@ describe("Event Service", () => {
   describe("Writing biometric token issued event to SQS", () => {
     describe(`Given writing "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED" event to SQS fails`, () => {
       beforeEach(async () => {
-        sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
+        writeToSqsMock = jest
+          .spyOn(writeToSqs, "writeToSqs")
+          .mockImplementation(async () => {
+            return emptyFailure();
+          });
 
         result = await eventWriter.writeBiometricTokenIssuedEvent({
           sub: "mockSub",
@@ -261,7 +266,108 @@ describe("Event Service", () => {
 
       it(`Attempts to send "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED" TxMA event to SQS`, () => {
         const expectedCommandInput = {
-          MessageBody: JSON.stringify({
+          user: {
+            user_id: "mockSub",
+            session_id: "mockSessionId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+            ip_address: "mockIpAddress",
+          },
+          timestamp: 1609462861,
+          event_timestamp_ms: 1609462861000,
+          event_name: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
+          component_id: "mockComponentId",
+          extensions: {
+            documentType: "NFC_PASSPORT",
+          },
+          restricted: {
+            device_information: {
+              encoded: "mockTxmaAuditEncoded",
+            },
+          },
+        };
+
+        expect(writeToSqsMock).toHaveBeenCalledWith(
+          "mockSqsQueue",
+          expectedCommandInput,
+        );
+      });
+
+      it("Returns an emptyFailure", () => {
+        expect(result).toEqual(emptyFailure());
+      });
+    });
+
+    describe(`Given writing "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED" to SQS is successful`, () => {
+      describe("Given txmaAuditEncoded is undefined", () => {
+        beforeEach(async () => {
+          writeToSqsMock = jest
+            .spyOn(writeToSqs, "writeToSqs")
+            .mockImplementation(async () => {
+              return emptySuccess();
+            });
+
+          result = await eventWriter.writeBiometricTokenIssuedEvent({
+            sub: "mockSub",
+            sessionId: "mockSessionId",
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            getNowInMilliseconds: () => 1609462861000,
+            componentId: "mockComponentId",
+            documentType: "NFC_PASSPORT",
+            ipAddress: "mockIpAddress",
+            txmaAuditEncoded: undefined,
+          });
+        });
+
+        it(`Attempts to send "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED" event to SQS without restricted data`, () => {
+          const expectedCommandInput = {
+            user: {
+              user_id: "mockSub",
+              session_id: "mockSessionId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              ip_address: "mockIpAddress",
+            },
+            timestamp: 1609462861,
+            event_timestamp_ms: 1609462861000,
+            event_name: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
+            component_id: "mockComponentId",
+            extensions: {
+              documentType: "NFC_PASSPORT",
+            },
+          };
+
+          expect(writeToSqsMock).toHaveBeenCalledWith(
+            "mockSqsQueue",
+            expectedCommandInput,
+          );
+        });
+
+        it("Returns an emptySuccess", () => {
+          expect(result).toEqual(emptySuccess());
+        });
+      });
+
+      describe("Given txmaAuditEncoded is defined", () => {
+        beforeEach(async () => {
+          writeToSqsMock = jest
+            .spyOn(writeToSqs, "writeToSqs")
+            .mockImplementation(async () => {
+              return emptySuccess();
+            });
+
+          result = await eventWriter.writeBiometricTokenIssuedEvent({
+            sub: "mockSub",
+            sessionId: "mockSessionId",
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            getNowInMilliseconds: () => 1609462861000,
+            componentId: "mockComponentId",
+            documentType: "NFC_PASSPORT",
+            ipAddress: "mockIpAddress",
+            txmaAuditEncoded: "mockTxmaAuditEncoded",
+          });
+        });
+
+        it(`Attempts to send "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED" event to SQS with restricted data`, () => {
+          const expectedCommandInput = {
             user: {
               user_id: "mockSub",
               session_id: "mockSessionId",
@@ -280,112 +386,10 @@ describe("Event Service", () => {
                 encoded: "mockTxmaAuditEncoded",
               },
             },
-          }),
-          QueueUrl: "mockSqsQueue",
-        };
-
-        expect(sqsMock).toHaveReceivedCommandWith(
-          SendMessageCommand,
-          expectedCommandInput,
-        );
-      });
-
-      it("Returns an emptyFailure", () => {
-        expect(result).toEqual(emptyFailure());
-      });
-    });
-
-    describe(`Given writing "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED" to SQS is successful`, () => {
-      describe("Given txmaAuditEncoded is undefined", () => {
-        beforeEach(async () => {
-          sqsMock.on(SendMessageCommand).resolves({});
-
-          result = await eventWriter.writeBiometricTokenIssuedEvent({
-            sub: "mockSub",
-            sessionId: "mockSessionId",
-            govukSigninJourneyId: "mockGovukSigninJourneyId",
-            getNowInMilliseconds: () => 1609462861000,
-            componentId: "mockComponentId",
-            documentType: "NFC_PASSPORT",
-            ipAddress: "mockIpAddress",
-            txmaAuditEncoded: undefined,
-          });
-        });
-
-        it(`Attempts to send "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED" event to SQS without restricted data`, () => {
-          const expectedCommandInput = {
-            MessageBody: JSON.stringify({
-              user: {
-                user_id: "mockSub",
-                session_id: "mockSessionId",
-                govuk_signin_journey_id: "mockGovukSigninJourneyId",
-                ip_address: "mockIpAddress",
-              },
-              timestamp: 1609462861,
-              event_timestamp_ms: 1609462861000,
-              event_name: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
-              component_id: "mockComponentId",
-              extensions: {
-                documentType: "NFC_PASSPORT",
-              },
-            }),
-            QueueUrl: "mockSqsQueue",
           };
 
-          expect(sqsMock).toHaveReceivedCommandWith(
-            SendMessageCommand,
-            expectedCommandInput,
-          );
-        });
-
-        it("Returns an emptySuccess", () => {
-          expect(result).toEqual(emptySuccess());
-        });
-      });
-
-      describe("Given txmaAuditEncoded is defined", () => {
-        beforeEach(async () => {
-          sqsMock.on(SendMessageCommand).resolves({});
-
-          result = await eventWriter.writeBiometricTokenIssuedEvent({
-            sub: "mockSub",
-            sessionId: "mockSessionId",
-            govukSigninJourneyId: "mockGovukSigninJourneyId",
-            getNowInMilliseconds: () => 1609462861000,
-            componentId: "mockComponentId",
-            documentType: "NFC_PASSPORT",
-            ipAddress: "mockIpAddress",
-            txmaAuditEncoded: "mockTxmaAuditEncoded",
-          });
-        });
-
-        it(`Attempts to send "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED" event to SQS with restricted data`, () => {
-          const expectedCommandInput = {
-            MessageBody: JSON.stringify({
-              user: {
-                user_id: "mockSub",
-                session_id: "mockSessionId",
-                govuk_signin_journey_id: "mockGovukSigninJourneyId",
-                ip_address: "mockIpAddress",
-              },
-              timestamp: 1609462861,
-              event_timestamp_ms: 1609462861000,
-              event_name: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
-              component_id: "mockComponentId",
-              extensions: {
-                documentType: "NFC_PASSPORT",
-              },
-              restricted: {
-                device_information: {
-                  encoded: "mockTxmaAuditEncoded",
-                },
-              },
-            }),
-            QueueUrl: "mockSqsQueue",
-          };
-
-          expect(sqsMock).toHaveReceivedCommandWith(
-            SendMessageCommand,
+          expect(writeToSqsMock).toHaveBeenCalledWith(
+            "mockSqsQueue",
             expectedCommandInput,
           );
         });
@@ -400,7 +404,11 @@ describe("Event Service", () => {
   describe("Writing biometric session finished event to SQS", () => {
     describe(`Given writing biometric session finished event to SQS fails`, () => {
       beforeEach(async () => {
-        sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
+        writeToSqsMock = jest
+          .spyOn(writeToSqs, "writeToSqs")
+          .mockImplementation(async () => {
+            return emptyFailure();
+          });
 
         result = await eventWriter.writeGenericEvent({
           sub: "mockSub",
@@ -417,24 +425,21 @@ describe("Event Service", () => {
 
       it(`Attempts to send biometric session finished TxMA event to SQS`, () => {
         const expectedCommandInput = {
-          MessageBody: JSON.stringify({
-            user: {
-              user_id: "mockSub",
-              session_id: "mockSessionId",
-              govuk_signin_journey_id: "mockGovukSigninJourneyId",
-              transaction_id: "mockTransactionId",
-              ip_address: "mockIpAddress",
-            },
-            timestamp: 1609462861,
-            event_timestamp_ms: 1609462861000,
-            event_name: "DCMAW_ASYNC_CRI_4XXERROR",
-            component_id: "mockComponentId",
-          }),
-          QueueUrl: "mockSqsQueue",
+          user: {
+            user_id: "mockSub",
+            session_id: "mockSessionId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+            transaction_id: "mockTransactionId",
+            ip_address: "mockIpAddress",
+          },
+          timestamp: 1609462861,
+          event_timestamp_ms: 1609462861000,
+          event_name: "DCMAW_ASYNC_CRI_4XXERROR",
+          component_id: "mockComponentId",
         };
 
-        expect(sqsMock).toHaveReceivedCommandWith(
-          SendMessageCommand,
+        expect(writeToSqsMock).toHaveBeenCalledWith(
+          "mockSqsQueue",
           expectedCommandInput,
         );
       });
@@ -446,7 +451,11 @@ describe("Event Service", () => {
 
     describe(`Given writing biometric session finished event to SQS is successful`, () => {
       beforeEach(async () => {
-        sqsMock.on(SendMessageCommand).resolves({});
+        writeToSqsMock = jest
+          .spyOn(writeToSqs, "writeToSqs")
+          .mockImplementation(async () => {
+            return emptySuccess();
+          });
 
         result = await eventWriter.writeGenericEvent({
           sub: "mockSub",
@@ -466,26 +475,23 @@ describe("Event Service", () => {
 
       it(`Attempts to send biometric session finished event to SQS`, () => {
         const expectedCommandInput = {
-          MessageBody: JSON.stringify({
-            user: {
-              user_id: "mockSub",
-              session_id: "mockSessionId",
-              govuk_signin_journey_id: "mockGovukSigninJourneyId",
-              transaction_id: "mockTransactionId",
-            },
-            timestamp: 1609462861,
-            event_timestamp_ms: 1609462861000,
-            event_name: "DCMAW_ASYNC_CRI_4XXERROR",
-            component_id: "mockComponentId",
-            extensions: {
-              suspected_fraud_signal: "AUTH_SESSION_NOT_FOUND",
-            },
-          }),
-          QueueUrl: "mockSqsQueue",
+          user: {
+            user_id: "mockSub",
+            session_id: "mockSessionId",
+            govuk_signin_journey_id: "mockGovukSigninJourneyId",
+            transaction_id: "mockTransactionId",
+          },
+          timestamp: 1609462861,
+          event_timestamp_ms: 1609462861000,
+          event_name: "DCMAW_ASYNC_CRI_4XXERROR",
+          component_id: "mockComponentId",
+          extensions: {
+            suspected_fraud_signal: "AUTH_SESSION_NOT_FOUND",
+          },
         };
 
-        expect(sqsMock).toHaveReceivedCommandWith(
-          SendMessageCommand,
+        expect(writeToSqsMock).toHaveBeenCalledWith(
+          "mockSqsQueue",
           expectedCommandInput,
         );
       });
