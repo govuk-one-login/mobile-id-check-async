@@ -4,11 +4,11 @@ import { SendMessageCommand } from "@aws-sdk/client-sqs";
 import { LogMessage } from "../../common/logging/LogMessage";
 import { logger } from "../../common/logging/logger";
 import { sqsClient } from "./sqsClient";
-import { IdCheckSqsMessages } from "./types";
+import { AsyncSqsMessages } from "./types";
 
 export const writeToSqs = async (
   sqsQueue: string,
-  message: IdCheckSqsMessages,
+  message: AsyncSqsMessages,
 ): Promise<Result<void, void>> => {
   try {
     logger.debug(LogMessage.WRITE_TO_SQS_ATTEMPT, {

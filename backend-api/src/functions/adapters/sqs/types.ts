@@ -1,4 +1,4 @@
-export type IdCheckSqsMessages = VendorProccessingMessage;
+export type AsyncSqsMessages = VendorProccessingMessage;
 
 interface VendorProccessingMessage {
   biometricSessionId: string;
