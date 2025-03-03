@@ -10,6 +10,7 @@ import {
 } from "@aws-sdk/client-sqs";
 import { emptyFailure, emptySuccess, Result } from "../../utils/result";
 import { sqsClient } from "./sqsClient";
+import "aws-sdk-client-mock-jest";
 
 describe("Write to SQS", () => {
   let consoleDebugSpy: jest.SpyInstance;
@@ -51,6 +52,18 @@ describe("Write to SQS", () => {
       result = await writeToSqs("www.mockQueueArn.com", mockMessage);
     });
 
+    it("Attempts to send message to SQS", () => {
+      const expectedCommandInput = {
+        MessageBody: JSON.stringify(mockMessage),
+        QueueUrl: "www.mockQueueArn.com",
+      };
+
+      expect(sqsMock).toHaveReceivedCommandWith(
+        SendMessageCommand,
+        expectedCommandInput,
+      );
+    });
+
     it("Logs failed attempt", () => {
       expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_WRITE_TO_SQS_FAILURE",
@@ -67,6 +80,18 @@ describe("Write to SQS", () => {
       sqsMock.on(SendMessageCommand).resolves({});
 
       result = await writeToSqs("www.mockQueueArn.com", mockMessage);
+    });
+
+    it("Attempts to send message to SQS", () => {
+      const expectedCommandInput = {
+        MessageBody: JSON.stringify(mockMessage),
+        QueueUrl: "www.mockQueueArn.com",
+      };
+
+      expect(sqsMock).toHaveReceivedCommandWith(
+        SendMessageCommand,
+        expectedCommandInput,
+      );
     });
 
     it("Logs successful attempt at debug level", () => {
