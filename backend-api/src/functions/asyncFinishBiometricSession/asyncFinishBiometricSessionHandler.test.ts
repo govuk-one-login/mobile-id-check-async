@@ -22,7 +22,7 @@ import {
   emptyFailure,
 } from "../utils/result";
 import { UpdateSessionError } from "../common/session/SessionRegistry";
-import * as writeToSqs from "../adapters/writeToSqs";
+import * as writeToSqs from "../adapters/sqs/writeToSqs";
 
 describe("Async Finish Biometric Session", () => {
   let dependencies: IAsyncFinishBiometricSessionDependencies;

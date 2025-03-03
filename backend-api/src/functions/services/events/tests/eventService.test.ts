@@ -6,10 +6,10 @@ import {
   SQSClientResolvedConfig,
 } from "@aws-sdk/client-sqs";
 import { EventService } from "../eventService";
-import { sqsClient } from "../sqsClient";
 import { GenericEventNames } from "../types";
 import { emptyFailure, emptySuccess, Result } from "../../../utils/result";
 import "aws-sdk-client-mock-jest";
+import { sqsClient } from "../../../adapters/sqs/sqsClient";
 
 describe("Event Service", () => {
   const eventWriter = new EventService("mockSqsQueue");

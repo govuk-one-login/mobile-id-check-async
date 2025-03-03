@@ -30,7 +30,7 @@ import {
   SessionAttributes,
 } from "../common/session/session";
 import { setupLogger } from "../common/logging/setupLogger";
-import { writeToSqs } from "../adapters/writeToSqs";
+import { writeToSqs } from "../adapters/sqs/writeToSqs";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncFinishBiometricSessionDependencies,

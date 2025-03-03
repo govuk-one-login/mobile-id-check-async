@@ -1,4 +1,4 @@
-import { sqsClient, writeToSqs } from "../writeToSqs";
+import { writeToSqs } from "../sqs/writeToSqs";
 import { expect } from "@jest/globals";
 import "../../../../tests/testUtils/matchers";
 import { AwsStub, mockClient } from "aws-sdk-client-mock";
@@ -9,6 +9,7 @@ import {
   SQSClientResolvedConfig,
 } from "@aws-sdk/client-sqs";
 import { emptyFailure, emptySuccess, Result } from "../../utils/result";
+import { sqsClient } from "./sqsClient";
 
 describe("Write to SQS", () => {
   let consoleDebugSpy: jest.SpyInstance;

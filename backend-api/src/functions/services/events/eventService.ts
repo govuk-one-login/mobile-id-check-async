@@ -1,5 +1,4 @@
 import { Result, emptyFailure, emptySuccess } from "../../utils/result";
-import { sqsClient } from "./sqsClient";
 import { SendMessageCommand } from "@aws-sdk/client-sqs";
 import {
   BiometricTokenIssuedEvent,
@@ -12,6 +11,7 @@ import {
   RestrictedData,
   TxmaEvents,
 } from "./types";
+import { sqsClient } from "../../adapters/sqs/sqsClient";
 
 export class EventService implements IEventService {
   private sqsQueue: string;
