@@ -11,6 +11,7 @@ const REQUIRED_ENVIRONMENT_VARIABLES = [
   "SESSION_TABLE_NAME",
   "TXMA_SQS",
   "ISSUER",
+  "VENDOR_PROCESSING_SQS",
 ] as const;
 
 export type FinishBiometricSessionConfig = Config<

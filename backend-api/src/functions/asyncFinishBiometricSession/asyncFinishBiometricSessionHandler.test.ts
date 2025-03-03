@@ -70,6 +70,7 @@ describe("Async Finish Biometric Session", () => {
         SESSION_TABLE_NAME: "mockTableName",
         TXMA_SQS: "mockTxmaSqs",
         ISSUER: "mockIssuer",
+        VENDOR_PROCESSING_SQS: "mockVendorProcessingSqs",
       },
       getSessionRegistry: () => mockSuccessfulSessionRegistry,
       getEventService: () => mockSuccessfulEventService,
@@ -118,37 +119,39 @@ describe("Async Finish Biometric Session", () => {
   });
 
   describe("Config validation", () => {
-    describe.each([["SESSION_TABLE_NAME"], ["TXMA_SQS"], ["ISSUER"]])(
-      "Given %s environment variable is missing",
-      (envVar: string) => {
-        beforeEach(async () => {
-          delete dependencies.env[envVar];
-          result = await lambdaHandlerConstructor(
-            dependencies,
-            validRequest,
-            context,
-          );
+    describe.each([
+      ["SESSION_TABLE_NAME"],
+      ["TXMA_SQS"],
+      ["ISSUER"],
+      ["VENDOR_PROCESSING_SQS"],
+    ])("Given %s environment variable is missing", (envVar: string) => {
+      beforeEach(async () => {
+        delete dependencies.env[envVar];
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+      it("returns 500 Internal server error", async () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
         });
-        it("returns 500 Internal server error", async () => {
-          expect(result).toStrictEqual({
-            statusCode: 500,
-            body: JSON.stringify({
-              error: "server_error",
-              error_description: "Internal Server Error",
-            }),
-            headers: expectedSecurityHeaders,
-          });
+      });
+      it("logs INVALID_CONFIG", async () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_INVALID_CONFIG",
+          data: {
+            missingEnvironmentVariables: [envVar],
+          },
         });
-        it("logs INVALID_CONFIG", async () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_INVALID_CONFIG",
-            data: {
-              missingEnvironmentVariables: [envVar],
-            },
-          });
-        });
-      },
-    );
+      });
+    });
   });
 
   describe("Request body validation", () => {
