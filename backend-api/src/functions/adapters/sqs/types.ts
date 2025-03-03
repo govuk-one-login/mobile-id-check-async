@@ -1,6 +1,6 @@
-export type AsyncSqsMessages = VendorProccessingMessage;
+export type AsyncSqsMessages = VendorProcessingMessage;
 
-interface VendorProccessingMessage {
+interface VendorProcessingMessage {
   biometricSessionId: string;
   sessionId: string;
 }
