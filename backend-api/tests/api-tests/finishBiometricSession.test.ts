@@ -1,9 +1,14 @@
+import { AxiosResponse } from "axios";
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 import {
   mockBiometricSessionId,
   mockSessionId,
   expectedSecurityHeaders,
 } from "./utils/apiTestData";
+import {
+  getValidSessionId,
+  startBiometricSession,
+} from "./utils/apiTestHelpers";
 
 describe("POST /async/finishBiometricSession", () => {
   describe("Given the request body is invalid", () => {
@@ -44,6 +49,35 @@ describe("POST /async/finishBiometricSession", () => {
         error: "invalid_session",
         error_description: "Session not found",
       });
+      expect(response.headers).toEqual(
+        expect.objectContaining(expectedSecurityHeaders),
+      );
+    });
+  });
+
+  describe("Given there is a valid request", () => {
+    let sessionId: string | null;
+    let response: AxiosResponse;
+
+    beforeAll(async () => {
+      sessionId = await getValidSessionId();
+      if (!sessionId)
+        throw new Error(
+          "Failed to get valid session ID to call biometricToken endpoint",
+        );
+      await startBiometricSession(sessionId);
+
+      response = await SESSIONS_API_INSTANCE.post(
+        "/async/finishBiometricSession",
+        {
+          sessionId,
+          biometricSessionId: mockBiometricSessionId,
+        },
+      );
+    }, 20000);
+
+    it("Returns a 501 Not Implemented response", () => {
+      expect(response.status).toEqual(501);
       expect(response.headers).toEqual(
         expect.objectContaining(expectedSecurityHeaders),
       );
