@@ -3252,7 +3252,7 @@ Resources:
       KeyPolicy:
         Statement:
           - Action:
-              - kms:decrypt
+              - kms:*
             Effect: Allow
             Principal:
               AWS: !Sub arn:aws:iam::${AWS::AccountId}:root

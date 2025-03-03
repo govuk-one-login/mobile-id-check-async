@@ -51,7 +51,7 @@ Resources:
             Principal:
               AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
             Action:
-              - kms:decrypt
+              - kms:*
             Resource:
               - '*'
       KeySpec: SYMMETRIC_DEFAULT
