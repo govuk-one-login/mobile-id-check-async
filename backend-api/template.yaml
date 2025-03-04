@@ -3504,15 +3504,3 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-txma-sqs-queue-arn
     Condition: IsDevOrBuild
-
-  VendorProcessingKmsEncryptionKeyArn:
-    Description: Vendor Processing KMS Encryption Key ARN
-    Value: !GetAtt VendorProcessingKMSEncryptionKey.Arn
-    Export:
-      Name: !Sub ${AWS::StackName}-vendor-processing-kms-encryption-key-arn
-
-  VendorProcessingSqsArn:
-    Description: TxMA SQS Queue ARN
-    Value: !GetAtt VendorProcessingSQS.Arn
-    Export:
-      Name: !Sub ${AWS::StackName}-vendor-processing-sqs-queue-arn
