@@ -237,7 +237,7 @@ async function handleUpdateSessionError(
   }
 }
 
-interface HandleSendMessageToSqsFailureData {
+interface HandleSendMessageToVendorProcessingQueueFailureData {
   sessionAttributes: BiometricSessionFinishedAttributes;
   issuer: string;
   biometricSessionId: string;
@@ -247,7 +247,7 @@ interface HandleSendMessageToSqsFailureData {
 
 const handleSendMessageToVendorProcessingQueueFailure = async (
   eventService: IEventService,
-  data: HandleSendMessageToSqsFailureData,
+  data: HandleSendMessageToVendorProcessingQueueFailureData,
 ): Promise<APIGatewayProxyResult> => {
   const {
     biometricSessionId,
