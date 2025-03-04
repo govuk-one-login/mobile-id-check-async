@@ -362,7 +362,7 @@ Globals:
         SESSION_TABLE_NAME: !Ref SessionsTable
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
         TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
-        VENDOR_PROCESSING_SQS: !GetAtt VendorProcessingSQSQueue.QueueUrl
+        VENDOR_PROCESSING_SQS: !GetAtt VendorProcessingSQS.QueueUrl
     Layers:
       - !Sub
         - '{{resolve:secretsmanager:${SecretArn}:SecretString:NODEJS_LAYER}}'
@@ -1977,7 +1977,7 @@ Resources:
               - Action:
                   - sqs:SendMessage
                 Effect: Allow
-                Resource: !GetAtt VendorProcessingSQSQueue.Arn
+                Resource: !GetAtt VendorProcessingSQS.Arn
               - Action:
                   - kms:Decrypt
                   - kms:GenerateDataKey
@@ -3286,7 +3286,7 @@ Resources:
       AliasName: !Sub alias/${AWS::StackName}-VendorProcessingKMSEncryptionKey
       TargetKeyId: !Ref VendorProcessingKMSEncryptionKey
 
-  VendorProcessingSQSQueue:
+  VendorProcessingSQS:
     Type: AWS::SQS::Queue
     Properties:
       DelaySeconds: 5
@@ -3294,17 +3294,17 @@ Resources:
       MessageRetentionPeriod: 1209600
       ReceiveMessageWaitTimeSeconds: 5
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt VendorProcessingSQSQueueDeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt VendorProcessingSQSDeadLetterQueue.Arn
         maxReceiveCount: 360
       VisibilityTimeout: 10
 
-  VendorProcessingSQSQueueDeadLetterQueue:
+  VendorProcessingSQSDeadLetterQueue:
     Type: AWS::SQS::Queue
     Properties:
       KmsMasterKeyId: !Sub VendorProcessingKMSEncryptionKey
       MessageRetentionPeriod: 1209600
 
-  VendorProcessingSQSQueuePolicy:
+  VendorProcessingSQSPolicy:
     Type: AWS::SQS::QueuePolicy
     Properties:
       PolicyDocument:
@@ -3318,10 +3318,10 @@ Resources:
             Principal:
               AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
             Resource:
-              - !GetAtt VendorProcessingSQSQueue.Arn
+              - !GetAtt VendorProcessingSQS.Arn
         Version: "2012-10-17"
       Queues:
-        - !Ref VendorProcessingSQSQueue
+        - !Ref VendorProcessingSQS
 
   WellKnown5XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -3511,8 +3511,8 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-vendor-processing-kms-encryption-key-arn
 
-  VendorProcessingSqsQueueArn:
+  VendorProcessingSqsArn:
     Description: TxMA SQS Queue ARN
-    Value: !GetAtt VendorProcessingSQSQueue.Arn
+    Value: !GetAtt VendorProcessingSQS.Arn
     Export:
       Name: !Sub ${AWS::StackName}-vendor-processing-sqs-queue-arn

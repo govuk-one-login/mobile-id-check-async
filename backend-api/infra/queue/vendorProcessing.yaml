@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Resources:
-  VendorProcessingSQSQueue:
+  VendorProcessingSQS:
     Type: AWS::SQS::Queue
     Properties:
       MessageRetentionPeriod: 1209600
@@ -9,14 +9,14 @@ Resources:
       ReceiveMessageWaitTimeSeconds: 5
       KmsMasterKeyId: !Ref VendorProcessingKeyAlias
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt VendorProcessingSQSQueueDeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt VendorProcessingSQSDeadLetterQueue.Arn
         maxReceiveCount: 360
 
-  VendorProcessingSQSQueuePolicy:
+  VendorProcessingSQSPolicy:
     Type: AWS::SQS::QueuePolicy
     Properties:
       Queues:
-        - !Ref VendorProcessingSQSQueue
+        - !Ref VendorProcessingSQS
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -27,11 +27,11 @@ Resources:
               - sqs:ChangeMessageVisibility
               - sqs:ReceiveMessage
             Resource:
-              - !GetAtt VendorProcessingSQSQueue.Arn
+              - !GetAtt VendorProcessingSQS.Arn
             Principal:
               AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
 
-  VendorProcessingSQSQueueDeadLetterQueue:
+  VendorProcessingSQSDeadLetterQueue:
     Type: AWS::SQS::Queue
     Properties:
       MessageRetentionPeriod: 1209600

@@ -106,7 +106,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - sqs:SendMessage
-                Resource: !GetAtt VendorProcessingSQSQueue.Arn
+                Resource: !GetAtt VendorProcessingSQS.Arn
               - Effect: Allow
                 Action:
                   - kms:Decrypt
