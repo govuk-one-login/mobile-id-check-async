@@ -100,7 +100,7 @@ describe("Sending a message to SQS", () => {
       );
     });
 
-    it("Logs successful attempt", () => {
+    it("Logs successful attempt at debug level", () => {
       expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_SEND_MESSAGE_TO_SQS_SUCCESS",
       });
