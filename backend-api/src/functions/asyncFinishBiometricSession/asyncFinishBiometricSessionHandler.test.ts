@@ -24,7 +24,7 @@ import {
 } from "../utils/result";
 import { UpdateSessionError } from "../common/session/SessionRegistry";
 import * as sendMessageToSqs from "../adapters/sqs/sendMessageToSqs";
-import { AsyncSqsMessages } from "../adapters/sqs/types";
+import { SqsMessageBodies } from "../adapters/sqs/types";
 
 describe("Async Finish Biometric Session", () => {
   let dependencies: IAsyncFinishBiometricSessionDependencies;
@@ -33,7 +33,7 @@ describe("Async Finish Biometric Session", () => {
   let consoleErrorSpy: jest.SpyInstance;
   let sendMessageToSqsMock: jest.SpyInstance<
     Promise<Result<void, void>>,
-    [sqsQueue: string, message: AsyncSqsMessages]
+    [sqsQueue: string, message: SqsMessageBodies]
   >;
   let result: APIGatewayProxyResult;
 

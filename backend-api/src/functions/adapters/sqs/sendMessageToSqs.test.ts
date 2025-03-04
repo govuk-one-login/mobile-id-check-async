@@ -21,7 +21,7 @@ describe("Sending a message to SQS", () => {
     SQSClientResolvedConfig
   >;
   let result: Result<void, void>;
-  const mockMessage = {
+  const mockMessageBody = {
     biometricSessionId: "mockBiometricSessionId",
     sessionId: "mockSessionId",
   };
@@ -35,7 +35,7 @@ describe("Sending a message to SQS", () => {
 
   describe("On every invocation", () => {
     beforeEach(async () => {
-      await sendMessageToSqs("mockQueueArn", mockMessage);
+      await sendMessageToSqs("mockQueueArn", mockMessageBody);
     });
 
     it("Logs attempt at debug level", () => {
@@ -43,7 +43,7 @@ describe("Sending a message to SQS", () => {
         messageCode: "MOBILE_ASYNC_SEND_MESSAGE_TO_SQS_ATTEMPT",
         data: {
           sqsArn: "mockQueueArn",
-          message: mockMessage,
+          messageBody: mockMessageBody,
         },
       });
     });
@@ -53,12 +53,12 @@ describe("Sending a message to SQS", () => {
     beforeEach(async () => {
       sqsMock.on(SendMessageCommand).rejects("Failed to send message to SQS");
 
-      result = await sendMessageToSqs("mockQueueArn", mockMessage);
+      result = await sendMessageToSqs("mockQueueArn", mockMessageBody);
     });
 
     it("Attempts to send message to SQS", () => {
       const expectedCommandInput = {
-        MessageBody: JSON.stringify(mockMessage),
+        MessageBody: JSON.stringify(mockMessageBody),
         QueueUrl: "mockQueueArn",
       };
 
@@ -83,12 +83,12 @@ describe("Sending a message to SQS", () => {
     beforeEach(async () => {
       sqsMock.on(SendMessageCommand).resolves({});
 
-      result = await sendMessageToSqs("mockQueueArn", mockMessage);
+      result = await sendMessageToSqs("mockQueueArn", mockMessageBody);
     });
 
     it("Attempts to send message to SQS", () => {
       const expectedCommandInput = {
-        MessageBody: JSON.stringify(mockMessage),
+        MessageBody: JSON.stringify(mockMessageBody),
         QueueUrl: "mockQueueArn",
       };
 

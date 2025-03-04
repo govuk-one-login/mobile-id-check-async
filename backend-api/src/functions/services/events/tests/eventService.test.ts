@@ -2,14 +2,14 @@ import { EventService } from "../eventService";
 import { GenericEventNames } from "../types";
 import { emptyFailure, emptySuccess, Result } from "../../../utils/result";
 import * as sendMessageToSqs from "../../../adapters/sqs/sendMessageToSqs";
-import { AsyncSqsMessages } from "../../../adapters/sqs/types";
+import { SqsMessageBodies } from "../../../adapters/sqs/types";
 
 describe("Event Service", () => {
   const eventWriter = new EventService("mockSqsQueue");
 
   let sendMessageToSqsMock: jest.SpyInstance<
     Promise<Result<void, void>>,
-    [sqsQueue: string, message: AsyncSqsMessages]
+    [sqsQueue: string, message: SqsMessageBodies]
   >;
   let result: Result<void, void>;
   beforeEach(() => {

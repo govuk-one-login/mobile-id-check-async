@@ -3,23 +3,23 @@ import { SendMessageCommand } from "@aws-sdk/client-sqs";
 import { LogMessage } from "../../common/logging/LogMessage";
 import { logger } from "../../common/logging/logger";
 import { sqsClient } from "./sqsClient";
-import { AsyncSqsMessages } from "./types";
+import { SqsMessageBodies } from "./types";
 
 export const sendMessageToSqs = async (
   sqsArn: string,
-  message: AsyncSqsMessages,
+  messageBody: SqsMessageBodies,
 ): Promise<Result<void, void>> => {
   try {
     logger.debug(LogMessage.SEND_MESSAGE_TO_SQS_ATTEMPT, {
       data: {
         sqsArn,
-        message,
+        messageBody,
       },
     });
     await sqsClient.send(
       new SendMessageCommand({
         QueueUrl: sqsArn,
-        MessageBody: JSON.stringify(message),
+        MessageBody: JSON.stringify(messageBody),
       }),
     );
   } catch (error: unknown) {
