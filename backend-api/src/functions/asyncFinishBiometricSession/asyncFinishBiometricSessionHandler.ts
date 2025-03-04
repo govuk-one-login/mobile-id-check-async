@@ -165,6 +165,7 @@ async function handleSessionNotFound(
     transactionId: biometricSessionId,
     ipAddress: undefined,
     txmaAuditEncoded: undefined,
+    extensions: undefined,
   });
 
   if (writeEventResult.isError) {
@@ -193,6 +194,7 @@ async function handleInternalServerError(
     transactionId: biometricSessionId,
     ipAddress: undefined,
     txmaAuditEncoded: undefined,
+    extensions: undefined,
   });
 
   if (writeEventResult.isError) {
