@@ -30,7 +30,6 @@ import {
   SessionAttributes,
 } from "../common/session/session";
 import { setupLogger } from "../common/logging/setupLogger";
-import { sendMessageToSqs } from "../adapters/sqs/sendMessageToSqs";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
 
 export async function lambdaHandlerConstructor(
@@ -78,6 +77,8 @@ export async function lambdaHandlerConstructor(
       config.ISSUER,
     );
   }
+
+  const sendMessageToSqs = dependencies.getSendMessageToSqs();
 
   const vendorProcessingMessage = {
     biometricSessionId,

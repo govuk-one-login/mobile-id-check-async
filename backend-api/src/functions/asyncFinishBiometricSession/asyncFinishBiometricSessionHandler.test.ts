@@ -20,21 +20,14 @@ import {
   successResult,
   errorResult,
   emptyFailure,
-  Result,
 } from "../utils/result";
 import { UpdateSessionError } from "../common/session/SessionRegistry";
-import * as sendMessageToSqs from "../adapters/sqs/sendMessageToSqs";
-import { SqsMessageBodies } from "../adapters/sqs/types";
 
 describe("Async Finish Biometric Session", () => {
   let dependencies: IAsyncFinishBiometricSessionDependencies;
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
-  let sendMessageToSqsMock: jest.SpyInstance<
-    Promise<Result<void, void>>,
-    [sqsQueue: string, message: SqsMessageBodies]
-  >;
   let result: APIGatewayProxyResult;
 
   // Constants for epoch timestamps
@@ -78,6 +71,14 @@ describe("Async Finish Biometric Session", () => {
     updateSession: mockSessionUpdateSuccess,
   };
 
+  const mockSuccessfulSendMessageToSqs = jest
+    .fn()
+    .mockResolvedValue(emptySuccess());
+
+  const mockFailingSendMessageToSqs = jest
+    .fn()
+    .mockResolvedValue(emptyFailure());
+
   beforeEach(() => {
     dependencies = {
       env: {
@@ -88,6 +89,7 @@ describe("Async Finish Biometric Session", () => {
       },
       getSessionRegistry: () => mockSuccessfulSessionRegistry,
       getEventService: () => mockSuccessfulEventService,
+      getSendMessageToSqs: () => mockSuccessfulSendMessageToSqs,
     };
 
     context = buildLambdaContext();
@@ -95,11 +97,6 @@ describe("Async Finish Biometric Session", () => {
     consoleErrorSpy = jest.spyOn(console, "error");
     jest.useFakeTimers();
     jest.setSystemTime(MOCK_CURRENT_TIME);
-    jest
-      .spyOn(sendMessageToSqs, "sendMessageToSqs")
-      .mockImplementation(async () => {
-        return emptySuccess();
-      });
   });
 
   afterEach(() => {
@@ -452,18 +449,11 @@ describe("Async Finish Biometric Session", () => {
 
   describe("Sending message to vendor processing queue", () => {
     describe("Given sending message fails", () => {
-      beforeEach(() => {
-        sendMessageToSqsMock = jest
-          .spyOn(sendMessageToSqs, "sendMessageToSqs")
-          .mockImplementation(async () => {
-            return emptyFailure();
-          });
-      });
-
       describe("Given DCMAW_ASYNC_CRI_5XXERROR event fails to write to TxMA", () => {
         beforeEach(async () => {
           dependencies = {
             ...dependencies,
+            getSendMessageToSqs: () => mockFailingSendMessageToSqs,
             getEventService: () => mockFailingEventService,
           };
 
@@ -475,7 +465,7 @@ describe("Async Finish Biometric Session", () => {
         });
 
         it("Attempts to send message to the Vendor Processing queue", () => {
-          expect(sendMessageToSqsMock).toHaveBeenCalledWith(
+          expect(mockFailingSendMessageToSqs).toHaveBeenCalledWith(
             "mockVendorProcessingSqs",
             {
               biometricSessionId: mockBiometricSessionId,
@@ -507,6 +497,10 @@ describe("Async Finish Biometric Session", () => {
 
       describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully writes to TxMA", () => {
         beforeEach(async () => {
+          dependencies = {
+            ...dependencies,
+            getSendMessageToSqs: () => mockFailingSendMessageToSqs,
+          };
           result = await lambdaHandlerConstructor(
             dependencies,
             validRequest,
@@ -515,7 +509,7 @@ describe("Async Finish Biometric Session", () => {
         });
 
         it("Attempts to send message to the Vendor Processing queue", () => {
-          expect(sendMessageToSqsMock).toHaveBeenCalledWith(
+          expect(mockFailingSendMessageToSqs).toHaveBeenCalledWith(
             "mockVendorProcessingSqs",
             {
               biometricSessionId: mockBiometricSessionId,
@@ -554,12 +548,6 @@ describe("Async Finish Biometric Session", () => {
 
   describe("Given a valid request is made", () => {
     beforeEach(async () => {
-      sendMessageToSqsMock = jest
-        .spyOn(sendMessageToSqs, "sendMessageToSqs")
-        .mockImplementation(async () => {
-          return emptySuccess();
-        });
-
       result = await lambdaHandlerConstructor(
         dependencies,
         validRequest,
@@ -568,7 +556,7 @@ describe("Async Finish Biometric Session", () => {
     });
 
     it("Sends message to the Vendor Processing queue", () => {
-      expect(sendMessageToSqsMock).toHaveBeenCalledWith(
+      expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
         "mockVendorProcessingSqs",
         {
           biometricSessionId: mockBiometricSessionId,
