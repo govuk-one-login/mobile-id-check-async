@@ -35,7 +35,7 @@ describe("Sending a message to SQS", () => {
 
   describe("On every invocation", () => {
     beforeEach(async () => {
-      await sendMessageToSqs("www.mockQueueArn.com", mockMessage);
+      await sendMessageToSqs("mockQueueArn", mockMessage);
     });
 
     it("Logs attempt at debug level", () => {
@@ -49,13 +49,13 @@ describe("Sending a message to SQS", () => {
     beforeEach(async () => {
       sqsMock.on(SendMessageCommand).rejects("Failed to send message to SQS");
 
-      result = await sendMessageToSqs("www.mockQueueUrl.com", mockMessage);
+      result = await sendMessageToSqs("mockQueueArn", mockMessage);
     });
 
     it("Attempts to send message to SQS", () => {
       const expectedCommandInput = {
         MessageBody: JSON.stringify(mockMessage),
-        QueueUrl: "www.mockQueueUrl.com",
+        QueueUrl: "mockQueueArn",
       };
 
       expect(sqsMock).toHaveReceivedCommandWith(
@@ -79,13 +79,13 @@ describe("Sending a message to SQS", () => {
     beforeEach(async () => {
       sqsMock.on(SendMessageCommand).resolves({});
 
-      result = await sendMessageToSqs("www.mockQueueUrl.com", mockMessage);
+      result = await sendMessageToSqs("mockQueueArn", mockMessage);
     });
 
     it("Attempts to send message to SQS", () => {
       const expectedCommandInput = {
         MessageBody: JSON.stringify(mockMessage),
-        QueueUrl: "www.mockQueueUrl.com",
+        QueueUrl: "mockQueueArn",
       };
 
       expect(sqsMock).toHaveReceivedCommandWith(
