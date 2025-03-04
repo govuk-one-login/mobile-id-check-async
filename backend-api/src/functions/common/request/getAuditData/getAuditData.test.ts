@@ -6,7 +6,7 @@ describe("Get audit data", () => {
   let event: APIGatewayProxyEvent;
   let result: AuditData;
 
-  describe("Given txma header is not present", () => {
+  describe("Given txma audit encoded header is not present", () => {
     beforeEach(() => {
       event = buildRequest({
         headers: {
@@ -23,7 +23,7 @@ describe("Get audit data", () => {
     });
   });
 
-  describe("Given txma header is present", () => {
+  describe("Given txma audit encoded header is present", () => {
     beforeEach(() => {
       event = buildRequest();
       result = getAuditData(event);
