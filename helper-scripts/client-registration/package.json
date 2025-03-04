@@ -1,0 +1,17 @@
+{
+  "name": "delete-stacks",
+  "dependencies": {
+    "@inquirer/prompts": "7.3.2",
+    "@aws-sdk/client-sts": "3.734.0"
+  },
+  "type": "module",
+  "scripts": {
+    "start": " rm -rf ./dist && tsc && node ./dist/main.js",
+    "config": "./node_modules/.bin/ts-jest config:init",
+    "format": "./node_modules/.bin/prettier --write src"
+  },
+  "devDependencies": {
+    "prettier": "3.4.2",
+    "typescript": "5.7.3"
+  }
+}
