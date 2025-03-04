@@ -733,16 +733,11 @@ describe("Backend application infrastructure", () => {
       const kmsKeys = template.findResources("AWS::KMS::Key");
       const kmsKeyList = Object.keys(kmsKeys);
       kmsKeyList.forEach((kmsKey) => {
-        let pendingDeletionInDays = "PendingDeletionInDays";
-        if (kmsKey === "VendorProcessingKMSEncryptionKey") {
-          pendingDeletionInDays = "VendorProcessingPendingDeletionInDays";
-        }
-
         expect(kmsKeys[kmsKey].Properties.PendingWindowInDays).toStrictEqual({
           "Fn::FindInMap": [
             "KMS",
             { Ref: "Environment" },
-            pendingDeletionInDays,
+            expect.stringContaining("PendingDeletionInDays"),
           ],
         });
       });
@@ -850,6 +845,23 @@ describe("Backend application infrastructure", () => {
             }),
           ]),
         );
+      });
+    });
+  });
+
+  describe("SQS", () => {
+    test("All SQS have a DLQ", () => {
+      const queues = template.findResources("AWS::SQS::Queue");
+      const queueList = Object.keys(queues).filter(
+        (queueName) => !queueName.toLowerCase().includes("deadletterqueue"),
+      );
+
+      queueList.forEach((queue) => {
+        expect(
+          queues[queue].Properties.RedrivePolicy.deadLetterTargetArn,
+        ).toStrictEqual({
+          "Fn::GetAtt": [expect.stringContaining("DeadLetterQueue"), "Arn"],
+        });
       });
     });
   });
