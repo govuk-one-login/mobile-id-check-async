@@ -42,6 +42,7 @@ describe("Event Service", () => {
           componentId: "mockComponentId",
           ipAddress: "mockIpAddress",
           txmaAuditEncoded: "mockTxmaAuditEncoded",
+          extensions: undefined,
         });
       });
 
@@ -92,6 +93,7 @@ describe("Event Service", () => {
             componentId: "mockComponentId",
             ipAddress: "mockIpAddress",
             txmaAuditEncoded: undefined,
+            extensions: undefined,
           });
         });
 
@@ -136,6 +138,7 @@ describe("Event Service", () => {
             componentId: "mockComponentId",
             ipAddress: "mockIpAddress",
             txmaAuditEncoded: "mockTxmaAuditEncoded",
+            extensions: undefined,
           });
         });
 
@@ -256,6 +259,7 @@ describe("Event Service", () => {
           documentType: "NFC_PASSPORT",
           ipAddress: "mockIpAddress",
           txmaAuditEncoded: "mockTxmaAuditEncoded",
+          extensions: undefined,
         });
       });
 
@@ -309,6 +313,7 @@ describe("Event Service", () => {
             documentType: "NFC_PASSPORT",
             ipAddress: "mockIpAddress",
             txmaAuditEncoded: undefined,
+            extensions: undefined,
           });
         });
 
@@ -356,6 +361,7 @@ describe("Event Service", () => {
             documentType: "NFC_PASSPORT",
             ipAddress: "mockIpAddress",
             txmaAuditEncoded: "mockTxmaAuditEncoded",
+            extensions: undefined,
           });
         });
 
@@ -412,6 +418,7 @@ describe("Event Service", () => {
           transactionId: "mockTransactionId",
           ipAddress: "mockIpAddress",
           txmaAuditEncoded: undefined,
+          extensions: undefined,
         });
       });
 

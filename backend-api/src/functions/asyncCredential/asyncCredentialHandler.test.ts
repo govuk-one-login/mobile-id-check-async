@@ -972,7 +972,6 @@ describe("Async Credential", () => {
               "DCMAW_ASYNC_CRI_START",
             );
 
-
             //Check the event config contains redirect url
             expect(mockEventService.eventConfig).toEqual(
               expect.objectContaining({
@@ -991,7 +990,6 @@ describe("Async Credential", () => {
             expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
               messageCode: "MOBILE_ASYNC_CREDENTIAL_COMPLETED",
             });
-
 
             expect(result).toStrictEqual({
               headers: { "Content-Type": "application/json" },
