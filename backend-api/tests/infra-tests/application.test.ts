@@ -738,7 +738,7 @@ describe("Backend application infrastructure", () => {
           "Fn::FindInMap": [
             "KMS",
             { Ref: "Environment" },
-            expect.stringContaining("PendingDeletionInDays"),
+            "PendingDeletionInDays",
           ],
         });
       });

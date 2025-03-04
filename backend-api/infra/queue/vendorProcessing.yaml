@@ -40,7 +40,7 @@ Resources:
       PendingWindowInDays: !FindInMap
         - KMS
         - !Ref Environment
-        - VendorProcessingPendingDeletionInDays
+        - PendingDeletionInDays
 
   VendorProcessingKeyAlias:
     Type: AWS::KMS::Alias
