@@ -30,7 +30,6 @@ Resources:
               - !GetAtt VendorProcessingSQSQueue.Arn
             Principal:
               AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
-    Condition: isNotDevOrBuild
 
   VendorProcessingSQSQueueDeadLetterQueue:
     Type: AWS::SQS::Queue

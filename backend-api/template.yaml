@@ -3322,7 +3322,6 @@ Resources:
         Version: "2012-10-17"
       Queues:
         - !Ref VendorProcessingSQSQueue
-    Condition: isNotDevOrBuild
 
   WellKnown5XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -3511,11 +3510,9 @@ Outputs:
     Value: !GetAtt VendorProcessingKMSEncryptionKey.Arn
     Export:
       Name: !Sub ${AWS::StackName}-vendor-processing-kms-encryption-key-arn
-    Condition: IsDevOrBuild
 
   VendorProcessingSqsQueueArn:
     Description: TxMA SQS Queue ARN
     Value: !GetAtt VendorProcessingSQSQueue.Arn
     Export:
       Name: !Sub ${AWS::StackName}-vendor-processing-sqs-queue-arn
-    Condition: IsDevOrBuild
