@@ -21,7 +21,7 @@ Resources:
   VendorProcessingKMSEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
-      Description: A KMS Key for encrypting the VendorProcessing SQS Queue
+      Description: A KMS Key for encrypting the VendorProcessing SQS
       Enabled: true
       EnableKeyRotation: true
       KeyPolicy:
