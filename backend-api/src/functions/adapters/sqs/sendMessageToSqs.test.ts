@@ -25,6 +25,7 @@ describe("Sending a message to SQS", () => {
     biometricSessionId: "mockBiometricSessionId",
     sessionId: "mockSessionId",
   };
+  const mockQueueArn = "mockQueueArn";
 
   beforeEach(() => {
     consoleDebugSpy = jest.spyOn(console, "debug");
@@ -35,14 +36,14 @@ describe("Sending a message to SQS", () => {
 
   describe("On every invocation", () => {
     beforeEach(async () => {
-      await sendMessageToSqs("mockQueueArn", mockMessageBody);
+      await sendMessageToSqs(mockQueueArn, mockMessageBody);
     });
 
     it("Logs attempt at debug level", () => {
       expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_SEND_MESSAGE_TO_SQS_ATTEMPT",
         data: {
-          sqsArn: "mockQueueArn",
+          sqsArn: mockQueueArn,
           messageBody: mockMessageBody,
         },
       });
@@ -53,13 +54,13 @@ describe("Sending a message to SQS", () => {
     beforeEach(async () => {
       sqsMock.on(SendMessageCommand).rejects("Failed to send message to SQS");
 
-      result = await sendMessageToSqs("mockQueueArn", mockMessageBody);
+      result = await sendMessageToSqs(mockQueueArn, mockMessageBody);
     });
 
     it("Attempts to send message to SQS", () => {
       const expectedCommandInput = {
         MessageBody: JSON.stringify(mockMessageBody),
-        QueueUrl: "mockQueueArn",
+        QueueUrl: mockQueueArn,
       };
 
       expect(sqsMock).toHaveReceivedCommandWith(
@@ -83,13 +84,13 @@ describe("Sending a message to SQS", () => {
     beforeEach(async () => {
       sqsMock.on(SendMessageCommand).resolves({});
 
-      result = await sendMessageToSqs("mockQueueArn", mockMessageBody);
+      result = await sendMessageToSqs(mockQueueArn, mockMessageBody);
     });
 
     it("Attempts to send message to SQS", () => {
       const expectedCommandInput = {
         MessageBody: JSON.stringify(mockMessageBody),
-        QueueUrl: "mockQueueArn",
+        QueueUrl: mockQueueArn,
       };
 
       expect(sqsMock).toHaveReceivedCommandWith(
