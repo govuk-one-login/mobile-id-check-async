@@ -42,7 +42,7 @@ describe("Sending a message to SQS", () => {
       expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_SEND_MESSAGE_TO_SQS_ATTEMPT",
         data: {
-          sqsQueue: "mockQueueArn",
+          sqsArn: "mockQueueArn",
           message: mockMessage,
         },
       });
