@@ -31,11 +31,12 @@ describe("Sending a message to SQS", () => {
     consoleDebugSpy = jest.spyOn(console, "debug");
     consoleErrorSpy = jest.spyOn(console, "error");
     sqsMock = mockClient(sqsClient);
-    sqsMock.on(SendMessageCommand).resolves({});
   });
 
   describe("On every invocation", () => {
     beforeEach(async () => {
+      sqsMock.on(SendMessageCommand).resolves({});
+
       await sendMessageToSqs(mockQueueArn, mockMessageBody);
     });
 
