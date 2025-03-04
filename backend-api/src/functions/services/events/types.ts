@@ -57,7 +57,7 @@ export type EventNames =
 
 export interface GenericEventConfig extends BaseUserEventConfig {
   eventName: GenericEventNames;
-  extensions?: Extensions;
+  extensions: Extensions | undefined;
 }
 
 export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
@@ -66,12 +66,12 @@ export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
 
 export interface BiometricTokenIssuedEventConfig extends BaseUserEventConfig {
   documentType: DocumentType;
-  extensions?: Extensions;
+  extensions: Extensions | undefined;
 }
 
 export interface GenericTxmaEvent extends BaseUserTxmaEvent {
   event_name: GenericEventNames;
-  extensions?: Extensions;
+  extensions: Extensions | undefined;
 }
 
 export interface CredentialTokenIssuedEvent extends BaseTxmaEvent {

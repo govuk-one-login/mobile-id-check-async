@@ -241,6 +241,7 @@ async function handleSessionNotFound(
     componentId: issuer,
     ipAddress,
     txmaAuditEncoded,
+    extensions: undefined,
   });
 
   if (writeEventResult.isError) {
@@ -275,6 +276,7 @@ async function handleInternalServerError(
     componentId: issuer,
     ipAddress,
     txmaAuditEncoded,
+    extensions: undefined,
   });
 
   if (writeEventResult.isError) {
