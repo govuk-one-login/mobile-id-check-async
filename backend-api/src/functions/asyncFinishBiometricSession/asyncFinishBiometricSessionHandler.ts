@@ -84,13 +84,13 @@ export async function lambdaHandlerConstructor(
     sessionId,
   };
 
-  const sendMessageToSqsResult = await sendMessageToSqs(
+  const sendMessageToVendorProcessingQueueResult = await sendMessageToSqs(
     config.VENDOR_PROCESSING_SQS,
     vendorProcessingMessage,
   );
 
-  if (sendMessageToSqsResult.isError) {
-    return await handleSendMessageToSqsFailure(eventService, {
+  if (sendMessageToVendorProcessingQueueResult.isError) {
+    return await handleSendMessageToVendorProcessingQueueFailure(eventService, {
       sessionAttributes: updateResult.value
         .attributes as BiometricSessionFinishedAttributes,
       issuer: config.ISSUER,
@@ -245,7 +245,7 @@ interface HandleSendMessageToSqsFailureData {
   txmaAuditEncoded: string | undefined;
 }
 
-const handleSendMessageToSqsFailure = async (
+const handleSendMessageToVendorProcessingQueueFailure = async (
   eventService: IEventService,
   data: HandleSendMessageToSqsFailureData,
 ): Promise<APIGatewayProxyResult> => {
