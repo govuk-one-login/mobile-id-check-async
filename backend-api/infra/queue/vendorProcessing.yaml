@@ -12,25 +12,6 @@ Resources:
         deadLetterTargetArn: !GetAtt VendorProcessingDLQ.Arn
         maxReceiveCount: 360
 
-  VendorProcessingSQSPolicy:
-    Type: AWS::SQS::QueuePolicy
-    Properties:
-      Queues:
-        - !Ref VendorProcessingSQS
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action:
-              - sqs:DeleteMessage
-              - sqs:GetQueueAttributes
-              - sqs:ChangeMessageVisibility
-              - sqs:ReceiveMessage
-            Resource:
-              - !GetAtt VendorProcessingSQS.Arn
-            Principal:
-              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
-
   VendorProcessingDLQ:
     Type: AWS::SQS::Queue
     Properties:

@@ -3304,25 +3304,6 @@ Resources:
         maxReceiveCount: 360
       VisibilityTimeout: 10
 
-  VendorProcessingSQSPolicy:
-    Type: AWS::SQS::QueuePolicy
-    Properties:
-      PolicyDocument:
-        Statement:
-          - Action:
-              - sqs:DeleteMessage
-              - sqs:GetQueueAttributes
-              - sqs:ChangeMessageVisibility
-              - sqs:ReceiveMessage
-            Effect: Allow
-            Principal:
-              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
-            Resource:
-              - !GetAtt VendorProcessingSQS.Arn
-        Version: "2012-10-17"
-      Queues:
-        - !Ref VendorProcessingSQS
-
   WellKnown5XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
