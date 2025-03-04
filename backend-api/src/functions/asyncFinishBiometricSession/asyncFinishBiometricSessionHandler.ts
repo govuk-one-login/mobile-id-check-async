@@ -31,8 +31,7 @@ import {
 } from "../common/session/session";
 import { setupLogger } from "../common/logging/setupLogger";
 import { sendMessageToSqs } from "../adapters/sqs/sendMessageToSqs";
-import { getIpAddress } from "../common/request/getIpAddress/getIpAddress";
-import { getHeader } from "../common/request/getHeader/getHeader";
+import { getAuditData } from "../common/request/getAuditData/getAuditData";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncFinishBiometricSessionDependencies,
@@ -61,11 +60,10 @@ export async function lambdaHandlerConstructor(
   const { sessionId, biometricSessionId } = validateResult.value;
 
   const eventService = dependencies.getEventService(config.TXMA_SQS);
-  const ipAddress = getIpAddress(event);
-  const txmaAuditEncoded = getHeader(event.headers, "Txma-Audit-Encoded");
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
   );
+  const { ipAddress, txmaAuditEncoded } = getAuditData(event);
 
   const updateResult = await sessionRegistry.updateSession(
     sessionId,
