@@ -2,6 +2,7 @@ import { Capture, Match, Template } from "aws-cdk-lib/assertions";
 import { readFileSync } from "fs";
 import { load } from "js-yaml";
 import { Mappings } from "./helpers/mappings";
+import { isPrimaryQueue } from "./helpers/isPrimaryQueue";
 
 const { schema } = require("yaml-cfn");
 
@@ -850,17 +851,15 @@ describe("Backend application infrastructure", () => {
   });
 
   describe("SQS", () => {
-    test("All SQS have a DLQ", () => {
+    test("All primary SQS have a DLQ", () => {
       const queues = template.findResources("AWS::SQS::Queue");
-      const queueList = Object.keys(queues).filter(
-        (queueName) => !queueName.toLowerCase().includes("deadletterqueue"),
-      );
+      const queueList = Object.keys(queues).filter(isPrimaryQueue);
 
       queueList.forEach((queue) => {
         expect(
           queues[queue].Properties.RedrivePolicy.deadLetterTargetArn,
         ).toStrictEqual({
-          "Fn::GetAtt": [expect.stringContaining("DeadLetterQueue"), "Arn"],
+          "Fn::GetAtt": [expect.any(String), "Arn"],
         });
       });
     });

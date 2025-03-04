@@ -9,7 +9,7 @@ Resources:
       ReceiveMessageWaitTimeSeconds: 5
       KmsMasterKeyId: !Ref VendorProcessingKeyAlias
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt VendorProcessingSQSDeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt VendorProcessingDLQ.Arn
         maxReceiveCount: 360
 
   VendorProcessingSQSPolicy:
@@ -31,7 +31,7 @@ Resources:
             Principal:
               AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
 
-  VendorProcessingSQSDeadLetterQueue:
+  VendorProcessingDLQ:
     Type: AWS::SQS::Queue
     Properties:
       MessageRetentionPeriod: 1209600

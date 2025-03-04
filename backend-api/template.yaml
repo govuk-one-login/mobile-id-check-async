@@ -3256,6 +3256,12 @@ Resources:
         - !Ref TxMASQSQueue
     Condition: isNotDevOrBuild
 
+  VendorProcessingDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      KmsMasterKeyId: !Sub VendorProcessingKMSEncryptionKey
+      MessageRetentionPeriod: 1209600
+
   VendorProcessingKMSEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
@@ -3294,15 +3300,9 @@ Resources:
       MessageRetentionPeriod: 1209600
       ReceiveMessageWaitTimeSeconds: 5
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt VendorProcessingSQSDeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt VendorProcessingDLQ.Arn
         maxReceiveCount: 360
       VisibilityTimeout: 10
-
-  VendorProcessingSQSDeadLetterQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      KmsMasterKeyId: !Sub VendorProcessingKMSEncryptionKey
-      MessageRetentionPeriod: 1209600
 
   VendorProcessingSQSPolicy:
     Type: AWS::SQS::QueuePolicy
