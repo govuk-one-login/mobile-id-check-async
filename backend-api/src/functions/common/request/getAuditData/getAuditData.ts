@@ -3,12 +3,9 @@ import { getIpAddress } from "../getIpAddress/getIpAddress";
 import { getHeader } from "../getHeader/getHeader";
 
 export const getAuditData = (event: APIGatewayProxyEvent): AuditData => {
-  const ipAddress = getIpAddress(event);
-  const txmaAuditEncoded = getHeader(event.headers, "Txma-Audit-Encoded");
-
   return {
-    ipAddress,
-    txmaAuditEncoded,
+    ipAddress: getIpAddress(event),
+    txmaAuditEncoded: getHeader(event.headers, "Txma-Audit-Encoded"),
   };
 };
 
