@@ -25,7 +25,11 @@ describe("Get audit data", () => {
 
   describe("Given txma audit encoded header is present", () => {
     beforeEach(() => {
-      event = buildRequest();
+      event = buildRequest({
+        headers: {
+          "Txma-Audit-Encoded": "mockTxmaAuditEncodedHeader",
+        },
+      });
       result = getAuditData(event);
     });
 
