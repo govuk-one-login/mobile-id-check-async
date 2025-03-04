@@ -1,4 +1,6 @@
-import { Result } from "../../utils/result";
+import { Result, emptyFailure, emptySuccess } from "../../utils/result";
+import { sqsClient } from "./sqsClient";
+import { SendMessageCommand } from "@aws-sdk/client-sqs";
 import {
   BiometricTokenIssuedEvent,
   BiometricTokenIssuedEventConfig,
@@ -8,8 +10,8 @@ import {
   GenericTxmaEvent,
   IEventService,
   RestrictedData,
+  TxmaEvents,
 } from "./types";
-import { sendMessageToSqs } from "../../adapters/sqs/sendMessageToSqs";
 
 export class EventService implements IEventService {
   private sqsQueue: string;
@@ -22,21 +24,35 @@ export class EventService implements IEventService {
     eventConfig: GenericEventConfig,
   ): Promise<Result<void, void>> {
     const txmaEvent = this.buildGenericEvent(eventConfig);
-    return await sendMessageToSqs(this.sqsQueue, txmaEvent);
+    return await this.writeToSqs(txmaEvent);
   }
 
   async writeCredentialTokenIssuedEvent(
     eventConfig: CredentialTokenIssuedEventConfig,
   ): Promise<Result<void, void>> {
     const txmaEvent = this.buildCredentialTokenIssuedEvent(eventConfig);
-    return await sendMessageToSqs(this.sqsQueue, txmaEvent);
+    return await this.writeToSqs(txmaEvent);
   }
 
   async writeBiometricTokenIssuedEvent(
     eventConfig: BiometricTokenIssuedEventConfig,
   ): Promise<Result<void, void>> {
     const txmaEvent = this.buildBiometricTokenEvent(eventConfig);
-    return await sendMessageToSqs(this.sqsQueue, txmaEvent);
+    return await this.writeToSqs(txmaEvent);
+  }
+
+  private async writeToSqs(txmaEvent: TxmaEvents): Promise<Result<void, void>> {
+    try {
+      await sqsClient.send(
+        new SendMessageCommand({
+          QueueUrl: this.sqsQueue,
+          MessageBody: JSON.stringify(txmaEvent),
+        }),
+      );
+      return emptySuccess();
+    } catch {
+      return emptyFailure();
+    }
   }
 
   private buildGenericEvent = (

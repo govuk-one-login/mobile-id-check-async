@@ -1,6 +1,4 @@
-import { TxmaEvents } from "../../services/events/types";
-
-export type SqsMessageBodies = VendorProcessingMessage | TxmaEvents;
+export type SqsMessageBodies = VendorProcessingMessage;
 
 interface VendorProcessingMessage {
   biometricSessionId: string;
