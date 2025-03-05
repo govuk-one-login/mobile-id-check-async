@@ -3,7 +3,7 @@ import { DynamoDbAdapter } from "../adapters/dynamoDbAdapter";
 import { EventService } from "../services/events/eventService";
 import { IEventService } from "../services/events/types";
 import { sendMessageToSqs } from "../adapters/sqs/sendMessageToSqs";
-import { SqsMessageBodies } from "../adapters/sqs/types";
+import { VendorProcessingMessage } from "../adapters/sqs/types";
 import { Result } from "../utils/result";
 
 export type IAsyncFinishBiometricSessionDependencies = {
@@ -12,7 +12,7 @@ export type IAsyncFinishBiometricSessionDependencies = {
   getEventService: (sqsQueue: string) => IEventService;
   getSendMessageToSqs: () => (
     sqsArn: string,
-    messageBody: SqsMessageBodies,
+    messageBody: VendorProcessingMessage,
   ) => Promise<Result<void, void>>;
 };
 
@@ -20,6 +20,6 @@ export const runtimeDependencies: IAsyncFinishBiometricSessionDependencies = {
   env: process.env,
   getSessionRegistry: (tableName: string) => new DynamoDbAdapter(tableName),
   getEventService: (sqsQueue: string) => new EventService(sqsQueue),
-  getSendMessageToSqs: () => (sqsArn: string, messageBody: SqsMessageBodies) =>
+  getSendMessageToSqs: () => (sqsArn: string, messageBody: VendorProcessingMessage) =>
     sendMessageToSqs(sqsArn, messageBody),
 };

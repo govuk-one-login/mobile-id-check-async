@@ -1,6 +1,4 @@
-export type SqsMessageBodies = VendorProcessingMessage;
-
-interface VendorProcessingMessage {
+export interface VendorProcessingMessage {
   biometricSessionId: string;
   sessionId: string;
 }
