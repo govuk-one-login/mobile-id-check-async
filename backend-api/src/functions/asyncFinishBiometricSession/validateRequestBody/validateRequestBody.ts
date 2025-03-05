@@ -24,9 +24,7 @@ export function validateRequestBody(
 
   const validateSessionIdResult = validateSessionId(sessionId);
   if (validateSessionIdResult.isError) {
-    return errorResult({
-      errorMessage: validateSessionIdResult.value.errorMessage,
-    });
+    return validateSessionIdResult;
   }
 
   if (biometricSessionId == null) {
