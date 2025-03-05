@@ -130,6 +130,38 @@ export class LogMessage implements LogAttributes {
       "Bearer token signature could not be validated using the ID Check signing key.",
     );
 
+  // Active Session
+  static readonly ACTIVE_SESSION_STARTED = new LogMessage(
+    "MOBILE_ASYNC_ACTIVE_SESSION_STARTED",
+    "Lambda handler processing has started.",
+  );
+  static readonly ACTIVE_SESSION_INVALID_CONFIG = new LogMessage(
+    "MOBILE_ASYNC_ACTIVE_SESSION_INVALID_CONFIG",
+    "One or more required environment variables were missing or invalid.",
+  );
+  static readonly ACTIVE_SESSION_AUTHORIZATION_HEADER_INVALID = new LogMessage(
+    "MOBILE_ASYNC_ACTIVE_SESSION_AUTHORIZATION_HEADER_INVALID",
+    "Bearer token not present in authorization header.",
+  );
+  static readonly ACTIVE_SESSION_JWE_DECRYPTION_ERROR = new LogMessage(
+    "MOBILE_ASYNC_ACTIVE_SESSION_JWE_DECRYPTION_ERROR",
+    "Error whilst decrypting JWE service token.",
+  );
+  static readonly ACTIVE_SESSION_SERVICE_TOKEN_VALIDATION_ERROR =
+    new LogMessage(
+      "MOBILE_ASYNC_ACTIVE_SESSION_SERVICE_TOKEN_VALIDATION_ERROR",
+      "Error whilst validating decrypted service token.",
+    );
+  static readonly ACTIVE_SESSION_ERROR_LOOKING_UP_SESSION_IN_DB =
+    new LogMessage(
+      "MOBILE_ASYNC_ACTIVE_SESSION_ERROR_LOOKING_UP_SESSION_IN_DB",
+      "Error whilst looking up session in database.",
+    );
+  static readonly ACTIVE_SESSION_COMPLETED = new LogMessage(
+    "MOBILE_ASYNC_ACTIVE_SESSION_COMPLETED",
+    "Lambda handler processing has completed successfully.",
+  );
+
   // Biometric Token
   static readonly BIOMETRIC_TOKEN_STARTED = new LogMessage(
     "MOBILE_ASYNC_BIOMETRIC_TOKEN_STARTED",
