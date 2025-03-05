@@ -1,4 +1,6 @@
+import { validateSessionId } from "../../common/request/validateSessionId/validateSessionId";
 import { errorResult, Result, successResult } from "../../utils/result";
+import { isString } from "../../utils/utils";
 
 export function validateRequestBody(
   body: string | null,
@@ -20,22 +22,9 @@ export function validateRequestBody(
 
   const { sessionId, biometricSessionId } = parsedBody;
 
-  if (sessionId == null) {
-    return errorResult({
-      errorMessage: `sessionId in request body is either null or undefined.`,
-    });
-  }
-
-  if (!isString(sessionId)) {
-    return errorResult({
-      errorMessage: `sessionId in request body is not of type string. sessionId: ${sessionId}`,
-    });
-  }
-
-  if (!isValidUUIDv4(sessionId)) {
-    return errorResult({
-      errorMessage: `sessionId in request body is not a valid v4 UUID. sessionId: ${sessionId}`,
-    });
+  const validateSessionIdResult = validateSessionId(sessionId);
+  if (validateSessionIdResult.isError) {
+    return validateSessionIdResult;
   }
 
   if (biometricSessionId == null) {
@@ -54,16 +43,6 @@ export function validateRequestBody(
     sessionId,
     biometricSessionId,
   });
-}
-
-function isString(field: unknown): field is string {
-  return typeof field === "string";
-}
-
-function isValidUUIDv4(uuid: string): boolean {
-  const uuidRegex =
-    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
-  return uuidRegex.test(uuid);
 }
 
 interface IAsyncFinishBiometricSessionValidParsedRequestBody {
