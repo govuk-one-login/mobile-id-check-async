@@ -611,6 +611,46 @@ describe("Backend application infrastructure", () => {
           template.toJSON().Globals.Function.AutoPublishAliasAllProperties;
         expect(autoPublishAliasAllProperties).toStrictEqual(true);
       });
+
+      test("Global application and system log level is set", () => {
+        const lambdaMapping = template.findMappings("Lambda");
+        const loggingConfig =
+          template.toJSON().Globals.Function.LoggingConfig;
+
+        expect(lambdaMapping).toStrictEqual({
+          Lambda: {
+            dev: expect.objectContaining({
+              LogLevel: "DEBUG",
+            }),
+            build: expect.objectContaining({
+              LogLevel: "INFO",
+            }),
+            staging: expect.objectContaining({
+              LogLevel: "INFO",
+            }),
+            integration: expect.objectContaining({
+              LogLevel: "INFO",
+            }),
+            production: expect.objectContaining({
+              LogLevel: "INFO",
+            }),
+          },
+        });
+
+        expect(loggingConfig).toStrictEqual({
+          ApplicationLogLevel: {
+            "Fn::FindInMap": [
+              "Lambda",
+              {
+                Ref: "Environment",
+              },
+              "LogLevel",
+            ],
+          },
+          LogFormat: "JSON",
+          SystemLogLevel: "INFO",
+        });
+      });
     });
 
     test("All lambdas have a FunctionName defined", () => {
