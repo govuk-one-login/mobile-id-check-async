@@ -20,6 +20,7 @@ export const runtimeDependencies: IAsyncFinishBiometricSessionDependencies = {
   env: process.env,
   getSessionRegistry: (tableName: string) => new DynamoDbAdapter(tableName),
   getEventService: (sqsQueue: string) => new EventService(sqsQueue),
-  getSendMessageToSqs: () => (sqsArn: string, messageBody: VendorProcessingMessage) =>
-    sendMessageToSqs(sqsArn, messageBody),
+  getSendMessageToSqs:
+    () => (sqsArn: string, messageBody: VendorProcessingMessage) =>
+      sendMessageToSqs(sqsArn, messageBody),
 };
