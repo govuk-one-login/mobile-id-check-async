@@ -379,11 +379,12 @@ Resources:
           Expression: (errorSum5XX/invocations) * 100
 
   AsyncTokenErrorRateAlarm:
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
       AlarmDescription: "The number of Async Token Lambda errors is greater than or equal to 10% of all function invocations."
-      AlarmName: !Sub "${AWS::StackName}-${AsyncTokenFunction}-error-rate"
+      AlarmName: !Sub "${AWS::StackName}-token-error-rate"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       OKActions:
@@ -436,6 +437,7 @@ Resources:
           Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage, 0)
 
   AsyncTokenLowCompletionAlarm:
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm    
     DependsOn:
       - "AsyncTokenCompletionMetricFilter"
@@ -447,7 +449,7 @@ Resources:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       InsufficientDataActions: []
       AlarmDescription: "A large proportion of Async Token requests have not completed successfully."
-      AlarmName: !Sub "${AWS::StackName}-${AsyncTokenFunction}-low-completion"
+      AlarmName: !Sub "${AWS::StackName}-token-low-completion"
       EvaluationPeriods: 1
       DatapointsToAlarm: 1
       Threshold: 80
@@ -492,6 +494,7 @@ Resources:
           Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage, 100)
 
   AsyncTokenCompletionMetricFilter:
+    Condition: DeployAlarms
     Type: AWS::Logs::MetricFilter    
     Properties:
       LogGroupName: !Ref AsyncTokenLogGroup
@@ -759,11 +762,12 @@ Resources:
           Expression: (errorSum5XX/invocations) * 100
   
   AsyncCredentialErrorRateAlarm:
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
       AlarmDescription: "The number of Async Credential Lambda errors is greater than or equal to 10% of all function invocations."
-      AlarmName: !Sub "${AWS::StackName}-${AsyncCredentialFunction}-error-rate"
+      AlarmName: !Sub "${AWS::StackName}-credential-error-rate"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       OKActions:
@@ -816,6 +820,7 @@ Resources:
           Expression: IF(lambdaErrors >= 5,lambdaErrorPercentage, 0)
 
   AsyncCredentialLowCompletionAlarm:
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm    
     DependsOn:
       - "AsyncCredentialCompletionMetricFilter"
@@ -827,7 +832,7 @@ Resources:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       InsufficientDataActions: []
       AlarmDescription: "A large proportion of Async Credential requests have not completed successfully."
-      AlarmName: !Sub "${AWS::StackName}-${AsyncCredentialFunction}-low-completion"
+      AlarmName: !Sub "${AWS::StackName}-credential-low-completion"
       EvaluationPeriods: 1
       DatapointsToAlarm: 1
       Threshold: 80
@@ -872,6 +877,7 @@ Resources:
           Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage, 100)
 
   AsyncCredentialCompletionMetricFilter:
+    Condition: DeployAlarms
     Type: AWS::Logs::MetricFilter    
     Properties:
       LogGroupName: !Ref AsyncCredentialLogGroup
@@ -1139,11 +1145,12 @@ Resources:
           Expression: (errorSum5XX/invocations) * 100
 
   AsyncActiveSessionErrorRateAlarm:
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
       AlarmDescription: "The number of Async Active Session Lambda errors is greater than or equal to 10% of all function invocations."
-      AlarmName: !Sub "${AWS::StackName}-${AsyncActiveSessionFunction}-error-rate"
+      AlarmName: !Sub "${AWS::StackName}-active-session-error-rate"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       OKActions:
@@ -1196,6 +1203,7 @@ Resources:
           Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage, 0)
 
   AsyncActiveSessionLowCompletionAlarm:
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm    
     DependsOn:
       - "AsyncActiveSessionCompletionMetricFilter"
@@ -1207,7 +1215,7 @@ Resources:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       InsufficientDataActions: []
       AlarmDescription: "A large proportion of Async Active Session requests have not completed successfully."
-      AlarmName: !Sub "${AWS::StackName}-${AsyncActiveSessionFunction}-low-completion"
+      AlarmName: !Sub "${AWS::StackName}-active-session-low-completion"
       EvaluationPeriods: 1
       DatapointsToAlarm: 1
       Threshold: 80
@@ -1252,6 +1260,7 @@ Resources:
           Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage, 100)
 
   AsyncActiveSessionCompletionMetricFilter:
+    Condition: DeployAlarms
     Type: AWS::Logs::MetricFilter    
     Properties:
       LogGroupName: !Ref AsyncActiveSessionLogGroup
@@ -1519,11 +1528,12 @@ Resources:
           Expression: (errorSum5XX/invocations) * 100
 
   AsyncBiometricTokenErrorRateAlarm:
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
       AlarmDescription: "The number of Async Biometric Token Lambda errors is greater than or equal to 10% of all function invocations."
-      AlarmName: !Sub "${AWS::StackName}-${AsyncBiometricTokenFunction}-error-rate"
+      AlarmName: !Sub "${AWS::StackName}-biometric-token-error-rate"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       OKActions:
@@ -1576,6 +1586,7 @@ Resources:
           Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage, 0)
 
   AsyncBiometricTokenLowCompletionAlarm:
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm    
     DependsOn:
       - "AsyncBiometricTokenCompletionMetricFilter"
@@ -1587,7 +1598,7 @@ Resources:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       InsufficientDataActions: []
       AlarmDescription: "A large proportion of Async Biometric Token requests have not completed successfully."
-      AlarmName: !Sub "${AWS::StackName}-${AsyncBiometricTokenFunction}-low-completion"
+      AlarmName: !Sub "${AWS::StackName}-biometric-token-low-completion"
       EvaluationPeriods: 1
       DatapointsToAlarm: 1
       Threshold: 80
@@ -1632,6 +1643,7 @@ Resources:
           Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage, 100)
 
   AsyncBiometricTokenCompletionMetricFilter:
+    Condition: DeployAlarms
     Type: AWS::Logs::MetricFilter    
     Properties:
       LogGroupName: !Ref AsyncBiometricTokenLogGroup
@@ -1899,11 +1911,12 @@ Resources:
           Expression: (errorSum5XX/invocations) * 100
 
   AsyncFinishBiometricSessionErrorRateAlarm:
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
       AlarmDescription: "The number of Async Finish Biometric Token Lambda errors is greater than or equal to 10% of all function invocations."
-      AlarmName: !Sub "${AWS::StackName}-${AsyncFinishBiometricSessionFunction}-error-rate"
+      AlarmName: !Sub "${AWS::StackName}-finish-biometric-session-error-rate"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       OKActions:
@@ -1956,6 +1969,7 @@ Resources:
           Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage, 0)
 
   AsyncFinishBiometricSessionLowCompletionAlarm:
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm    
     DependsOn:
       - "AsyncFinishBiometricSessionCompletionMetricFilter"
@@ -1967,7 +1981,7 @@ Resources:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       InsufficientDataActions: []
       AlarmDescription: "A large proportion of Async Finish Biometric Session requests have not completed successfully."
-      AlarmName: !Sub "${AWS::StackName}-${AsyncFinishBiometricSessionFunction}-low-completion"
+      AlarmName: !Sub "${AWS::StackName}-finish-biometric-session-low-completion"
       EvaluationPeriods: 1
       DatapointsToAlarm: 1
       Threshold: 80
@@ -2012,6 +2026,7 @@ Resources:
           Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage, 100)
 
   AsyncFinishBiometricSessionCompletionMetricFilter:
+    Condition: DeployAlarms
     Type: AWS::Logs::MetricFilter    
     Properties:
       LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup

@@ -243,17 +243,15 @@ describe("Backend application infrastructure", () => {
       expect(activeCriticalAlertsWithNoRunbook).toHaveLength(0);
     });
 
-    test("We have 22 alarms that are not deployed in Dev", () => {
+    test("All alarms are configured with the DeployAlarm Condition", () => {
       const alarms = Object.values(
         template.findResources("AWS::CloudWatch::Alarm"),
       );
-      let nonDevAlarms = [];
       alarms.forEach((alarm) => {
-        if (alarm.Condition == "DeployAlarms") {
-          nonDevAlarms.push(alarm);
-        }
+        expect(alarm).toEqual(
+          expect.objectContaining({ Condition: "DeployAlarms" }),
+        );
       });
-      expect(nonDevAlarms.length).toEqual(22);
     });
 
     describe("Warning alarms", () => {
@@ -280,16 +278,16 @@ describe("Backend application infrastructure", () => {
         ["low-threshold-async-finish-biometric-session-4xx-api-gw"],
         ["high-threshold-async-finish-biometric-session-5xx-api-gw"],
         ["low-threshold-async-finish-biometric-session-5xx-api-gw"],
-        ["async-backend-finish-biometric-session-error-rate"],
-        ["async-backend-finish-biometric-session-low-completion"],
-        ["async-backend-biometric-token-low-completion"],
-        ["async-backend-biometric-token-error-rate"],
-        ["async-backend-token-error-rate"],
-        ["async-backend-token-low-completion"],
-        ["async-backend-credential-error-rate"],
-        ["async-backend-credential-low-completion"],
-        ["async-backend-active-session-error-rate"],
-        ["async-backend-active-session-low-completion"],
+        ["finish-biometric-session-error-rate"],
+        ["finish-biometric-session-low-completion"],
+        ["biometric-token-low-completion"],
+        ["biometric-token-error-rate"],
+        ["token-error-rate"],
+        ["token-low-completion"],
+        ["credential-error-rate"],
+        ["credential-low-completion"],
+        ["active-session-error-rate"],
+        ["active-session-low-completion"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
