@@ -614,8 +614,7 @@ describe("Backend application infrastructure", () => {
 
       test("Global application and system log level is set", () => {
         const lambdaMapping = template.findMappings("Lambda");
-        const loggingConfig =
-          template.toJSON().Globals.Function.LoggingConfig;
+        const loggingConfig = template.toJSON().Globals.Function.LoggingConfig;
 
         expect(lambdaMapping).toStrictEqual({
           Lambda: {
