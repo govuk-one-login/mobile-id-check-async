@@ -128,7 +128,7 @@ async function handleConditionalCheckFailure(
     componentId: issuer,
     getNowInMilliseconds: Date.now,
     transactionId: biometricSessionId,
-    redirect_uri: undefined,
+    redirect_uri: sessionAttributes.redirectUri,
     suspected_fraud_signal: getFraudSignal(isSessionExpired),
     ipAddress: undefined,
     txmaAuditEncoded: undefined,
