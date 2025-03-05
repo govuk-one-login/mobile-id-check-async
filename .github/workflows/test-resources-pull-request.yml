@@ -1,4 +1,4 @@
-name: test-resources pull request
+name: test-resources push to main
 on:
   pull_request:
     branches:

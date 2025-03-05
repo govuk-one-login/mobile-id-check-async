@@ -45,14 +45,14 @@ jobs:
         #  Note It is not recommended to cache node_modules, as it can break across Node versions and won't work with npm ci
 
       - name: Download coverage artifact
-        if: ${{ inputs.DOWNLOAD_TEST_COVERAGE }} == true
-        uses: actions/download-artifact@v3
+        if: ${{ inputs.DOWNLOAD_TEST_COVERAGE }}
+        uses: actions/download-artifact@v4
         with:
           name: test-coverage
-          path: coverage/
+          path: ${{ inputs.WORKING_DIRECTORY }}/coverage/
 
       - name: Generate test coverage report for SonarQube Quality Gate Check
-        if: ${{ inputs.DOWNLOAD_TEST_COVERAGE }} == false
+        if: ${{ ! inputs.DOWNLOAD_TEST_COVERAGE }}
         run: npm run test:unit
 
       - name: Run SonarQube Scan
