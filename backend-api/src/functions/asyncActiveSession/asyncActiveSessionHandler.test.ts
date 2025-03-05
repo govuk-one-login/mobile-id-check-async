@@ -2,9 +2,6 @@ import { APIGatewayProxyResult, Context } from "aws-lambda";
 import { buildRequest } from "../testUtils/mockRequest";
 import { lambdaHandlerConstructor } from "./asyncActiveSessionHandler";
 import { IAsyncActiveSessionDependencies } from "./handlerDependencies";
-import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
-import { MessageName, registeredLogs } from "./registeredLogs";
-import { Logger } from "../services/logging/logger";
 import { MockJWTBuilder } from "../testUtils/mockJwtBuilder";
 import {
   MockSessionServiceGetErrorResult,
@@ -35,7 +32,6 @@ const env = {
 
 describe("Async Active Session", () => {
   let dependencies: IAsyncActiveSessionDependencies;
-  let mockLoggingAdapter: MockLoggingAdapter<MessageName>;
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
@@ -47,10 +43,8 @@ describe("Async Active Session", () => {
   });
 
   beforeEach(() => {
-    mockLoggingAdapter = new MockLoggingAdapter();
     dependencies = {
       env,
-      logger: () => new Logger(mockLoggingAdapter, registeredLogs),
       jweDecrypter: () => new MockJweDecrypterSuccess(),
       tokenService: () => new MockTokenServiceSuccess(),
       sessionService: () => new MockSessionServiceGetSuccessResult(),
