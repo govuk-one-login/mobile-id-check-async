@@ -37,7 +37,7 @@ jobs:
   build-and-push-image:
     name: Build and push test image
     uses:
-      govuk-one-login/mobile-id-check-async/.github/workflows/job_build-and-push-test-image.yml@DCMAW-11654
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_build-and-push-test-image.yml@DCMAW-11675
     with:
       WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
     secrets:
@@ -49,7 +49,7 @@ jobs:
     name: Build and upload SAM artifact
     needs: build-and-push-image
     uses:
-      govuk-one-login/mobile-id-check-async/.github/workflows/job_build-and-upload-sam-app.yml@DCMAW-11654
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_build-and-upload-sam-app.yml@DCMAW-11675
     with:
       TEMPLATE_NAME: ${{ inputs.TEMPLATE_NAME }}
       WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
