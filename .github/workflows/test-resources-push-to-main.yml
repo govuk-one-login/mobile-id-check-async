@@ -1,0 +1,63 @@
+name: test-resources post merge
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "test-resources/**"
+      - ".github/workflows/test-resources-post-merge.yml"
+      - "!test-resources/**/*.md"
+      - "!test-resources/**/*.png"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  # run-test-suite:
+  #   name: Run test suite
+  #   uses:
+  #     govuk-one-login/mobile-id-check-async/.github/workflows/job_test-suite.yml@DCMAW-11654
+  #   with:
+  #     WORKING_DIRECTORY: test-resources
+
+  # sonarqube-scan:
+  #   name: SonarQube Scan
+  #   needs: run-test-suite
+  #   uses:
+  #     govuk-one-login/mobile-id-check-async/.github/workflows/job_sonarqube.yml@DCMAW-11654
+  #   with:
+  #     DOWNLOAD_TEST_COVERAGE: true
+  #     WORKING_DIRECTORY: test-resources
+  #   secrets: inherit
+
+  dev-post-merge:
+    name: Build and push image, build and upload artifact to S3 for dev
+    # needs: run-test-suite
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/workflow_post-merge.yml@DCMAW-11654
+    with:
+      WORKING_DIRECTORY: test-resources
+    secrets:
+      ARTIFACT_BUCKET_NAME: ${{ secrets.TEST_RESOURCES_DEV_ARTIFACT_BUCKET }}
+      CONTAINER_SIGN_KMS_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
+      GH_ACTIONS_ROLE_ARN: ${{ secrets.TEST_RESOURCES_DEV_GH_ACTIONS_ROLE_ARN }}
+      SIGNING_PROFILE_NAME: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
+      TEST_IMAGE_REPOSITORY_URI: ${{ secrets.TEST_RESOURCES_DEV_TEST_IMAGE_REPOSITORY_URI }}
+
+  # build-post-merge:
+  #   name: Build and push image, build and upload artifact to S3 for build
+  #   needs: dev-post-merge
+  #   uses:
+  #     govuk-one-login/mobile-id-check-async/.github/workflows/workflow_post-merge.yml@DCMAW-11654
+  #   with:
+  #     WORKING_DIRECTORY: test-resources
+  #   secrets:
+  #     ARTIFACT_BUCKET_NAME: ${{ secrets.TEST_RESOURCES_BUILD_ARTIFACT_BUCKET }}
+  #     CONTAINER_SIGN_KMS_KEY: ${{ secrets.BUILD_CONTAINER_SIGN_KMS_KEY }}
+  #     GH_ACTIONS_ROLE_ARN: ${{ secrets.BACKEND_API_BUILD_GH_ACTIONS_ROLE_ARN }}
+  #     SIGNING_PROFILE_NAME: ${{ secrets.BUILD_SIGNING_PROFILE_NAME }}
+  #     TEST_IMAGE_REPOSITORY_URI: ${{ secrets.BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY }}

@@ -60,10 +60,6 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
-      - name: Run custom tests
-        run: npm run test
-        # output the file the unit tests generates for use in sonar quality gate
-
       # - name: Generate proxy open api spec
       #   if: ${{ inputs.GENERATE_PROXY_OPEN_API_SPEC }}
       #   run: npm run generate-proxy-open-api

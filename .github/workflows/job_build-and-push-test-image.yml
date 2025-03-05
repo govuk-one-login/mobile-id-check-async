@@ -48,9 +48,6 @@ jobs:
           aws-region: eu-west-2
           role-to-assume: ${{ secrets.GH_ACTIONS_ROLE_ARN }}
 
-      - name: Run custom tests
-        run: npm run test
-
       - name: Login to AWS ECR
         uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 #v2.0.1
 

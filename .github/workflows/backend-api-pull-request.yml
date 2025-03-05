@@ -26,13 +26,22 @@ jobs:
       GENERATE_PROXY_OPEN_API_SPEC: true
       WORKING_DIRECTORY: backend-api
     secrets: inherit
+
+  run-test-suite:
+    name: Run test suite
+    if: github.event.pull_request.draft == false
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_test-suite.yml@DCMAW-11654
+    with:
+      WORKING_DIRECTORY: backend-api
         
   sonarqube:
     name: SonarQube
-    needs: ci-checks
+    needs: run-test-suite
     uses:
       govuk-one-login/mobile-id-check-async/.github/workflows/job_sonarqube.yml@DCMAW-11654
     with:
+      DOWNLOAD_TEST_COVERAGE: true
       RUN_SONARQUBE_QUALITY_GATE_CHECK: true
       WORKING_DIRECTORY: backend-api
     secrets: inherit

@@ -3,6 +3,11 @@ name: SonarQube Scan
 on:
   workflow_call:
     inputs:
+      DOWNLOAD_TEST_COVERAGE:
+        description: Set to true if test coverage artifact has been uploaded. If false, test suite will run
+        required: false
+        type: boolean
+        default: false
       RUN_SONARQUBE_QUALITY_GATE_CHECK:
         description: Whether to run SonarQube Quality Gate check
         required: false
@@ -38,7 +43,15 @@ jobs:
       - name: Install dependencies
         run: npm clean-install
 
+      - name: Download coverage artifact
+        if: ${{ inputs.DOWNLOAD_TEST_COVERAGE }} == true
+        uses: actions/download-artifact@v3
+        with:
+          name: test-coverage
+          path: coverage/
+
       - name: Generate test coverage report for SonarQube Quality Gate Check
+        if: ${{ inputs.DOWNLOAD_TEST_COVERAGE }} == false
         run: npm run test:unit
 
       - name: Run SonarQube Scan
