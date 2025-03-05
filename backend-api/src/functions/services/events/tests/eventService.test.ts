@@ -65,7 +65,6 @@ describe("Event Service", () => {
                 encoded: "mockTxmaAuditEncoded",
               },
             },
-            extensions: {},
           }),
           QueueUrl: "mockSqsQueue",
         };
@@ -113,7 +112,6 @@ describe("Event Service", () => {
               event_timestamp_ms: 1609462861000,
               event_name: genericEventName,
               component_id: "mockComponentId",
-              extensions: {},
             }),
             QueueUrl: "mockSqsQueue",
           };
@@ -165,7 +163,6 @@ describe("Event Service", () => {
                   encoded: "mockTxmaAuditEncoded",
                 },
               },
-              extensions: {},
             }),
             QueueUrl: "mockSqsQueue",
           };
@@ -443,7 +440,6 @@ describe("Event Service", () => {
             event_timestamp_ms: 1609462861000,
             event_name: "DCMAW_ASYNC_CRI_4XXERROR",
             component_id: "mockComponentId",
-            extensions: {},
           }),
           QueueUrl: "mockSqsQueue",
         };
