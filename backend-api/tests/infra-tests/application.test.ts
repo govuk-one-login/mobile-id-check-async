@@ -246,14 +246,14 @@ describe("Backend application infrastructure", () => {
     test("We have 22 alarms that are not deployed in Dev", () => {
       const alarms = Object.values(
         template.findResources("AWS::CloudWatch::Alarm"),
-      );      
-      let nonDevAlarms = []
-      alarms.forEach((alarm) => {          
-          if(alarm.Condition == "DeployAlarms"){
-            nonDevAlarms.push(alarm)
-          }
+      );
+      let nonDevAlarms = [];
+      alarms.forEach((alarm) => {
+        if (alarm.Condition == "DeployAlarms") {
+          nonDevAlarms.push(alarm);
+        }
       });
-      expect(nonDevAlarms.length).toEqual(22)
+      expect(nonDevAlarms.length).toEqual(22);
     });
 
     describe("Warning alarms", () => {
