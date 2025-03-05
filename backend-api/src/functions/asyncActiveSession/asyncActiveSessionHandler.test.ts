@@ -408,8 +408,7 @@ describe("Async Active Session", () => {
 
       it("Logs error", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode:
-            "MOBILE_ASYNC_ACTIVE_SESSION_ERROR_LOOKING_UP_SESSION_IN_DB",
+          messageCode: "MOBILE_ASYNC_GET_ACTIVE_SESSION_FAILURE",
           errorMessage: "Mock error when getting session details",
         });
       });

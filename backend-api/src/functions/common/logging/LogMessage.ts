@@ -152,11 +152,6 @@ export class LogMessage implements LogAttributes {
       "MOBILE_ASYNC_ACTIVE_SESSION_SERVICE_TOKEN_VALIDATION_ERROR",
       "Error whilst validating decrypted service token.",
     );
-  static readonly ACTIVE_SESSION_ERROR_LOOKING_UP_SESSION_IN_DB =
-    new LogMessage(
-      "MOBILE_ASYNC_ACTIVE_SESSION_ERROR_LOOKING_UP_SESSION_IN_DB",
-      "Error whilst looking up session in database.",
-    );
   static readonly ACTIVE_SESSION_COMPLETED = new LogMessage(
     "MOBILE_ASYNC_ACTIVE_SESSION_COMPLETED",
     "Lambda handler processing has completed successfully.",

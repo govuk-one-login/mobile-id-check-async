@@ -76,7 +76,7 @@ export async function lambdaHandlerConstructor(
   const sessionService = dependencies.sessionService(config.SESSION_TABLE_NAME);
   const getActiveSessionResult = await sessionService.getActiveSession(sub);
   if (getActiveSessionResult.isError) {
-    logger.error(LogMessage.ACTIVE_SESSION_ERROR_LOOKING_UP_SESSION_IN_DB, {
+    logger.error(LogMessage.GET_ACTIVE_SESSION_FAILURE, {
       errorMessage: getActiveSessionResult.value.errorMessage,
     });
     return serverErrorResponse;
