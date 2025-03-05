@@ -1,7 +1,7 @@
-import { errorResult, Result, successResult } from "../../../utils/result";
+import { emptySuccess, errorResult, Result } from "../../../utils/result";
 import { isString, isValidUUIDv4 } from "../../../utils/utils";
 
-export function validateSessionId(sessionId: string): Result<IValidSessionId> {
+export function validateSessionId(sessionId: string): Result<void> {
   if (sessionId == null) {
     return errorResult({
       errorMessage: `sessionId in request body is either null or undefined.`,
@@ -26,9 +26,5 @@ export function validateSessionId(sessionId: string): Result<IValidSessionId> {
     });
   }
 
-  return successResult({ sessionId });
-}
-
-interface IValidSessionId {
-  sessionId: string;
+  return emptySuccess();
 }
