@@ -13,7 +13,6 @@ export const sendMessageToSqs = async (
     logger.debug(LogMessage.SEND_MESSAGE_TO_SQS_ATTEMPT, {
       data: {
         sqsArn,
-        messageBody,
       },
     });
     await sqsClient.send(

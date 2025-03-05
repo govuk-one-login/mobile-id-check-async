@@ -44,7 +44,6 @@ describe("Sending a message to SQS", () => {
         messageCode: "MOBILE_ASYNC_SEND_MESSAGE_TO_SQS_ATTEMPT",
         data: {
           sqsArn: mockQueueArn,
-          messageBody: mockMessageBody,
         },
       });
     });
