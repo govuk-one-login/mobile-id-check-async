@@ -4,6 +4,7 @@ import {
 } from "../common/config/environment";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
+import { isValidUrl } from "../services/utils/isValidUrl";
 import { emptyFailure, Result } from "../utils/result";
 
 const REQUIRED_ENVIRONMENT_VARIABLES = [
@@ -48,10 +49,5 @@ const isStsUrlValidUrl = (env: NodeJS.ProcessEnv): boolean => {
     return false;
   }
 
-  try {
-    new URL(env.STS_BASE_URL);
-  } catch {
-    return false;
-  }
-  return true;
+  return isValidUrl(env.STS_BASE_URL);
 };
