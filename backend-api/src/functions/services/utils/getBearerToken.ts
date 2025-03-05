@@ -10,7 +10,7 @@ export const getBearerToken = (
 ): Result<string> => {
   if (authorizationHeader == null) {
     return errorResult({
-      errorMessage: "No Authentication header present",
+      errorMessage: "No authorization header present",
       errorCategory: ErrorCategory.CLIENT_ERROR,
     });
   }
@@ -18,14 +18,14 @@ export const getBearerToken = (
   if (!authorizationHeader.startsWith("Bearer ")) {
     return errorResult({
       errorMessage:
-        "Invalid authentication header format - does not start with Bearer",
+        "Invalid authorization header format - does not start with Bearer",
       errorCategory: ErrorCategory.CLIENT_ERROR,
     });
   }
 
   if (authorizationHeader.split(" ").length !== 2) {
     return errorResult({
-      errorMessage: "Invalid authentication header format - contains spaces",
+      errorMessage: "Invalid authorization header format - contains spaces",
       errorCategory: ErrorCategory.CLIENT_ERROR,
     });
   }
@@ -34,7 +34,7 @@ export const getBearerToken = (
 
   if (token.length == 0) {
     return errorResult({
-      errorMessage: "Invalid authentication header format - missing token",
+      errorMessage: "Invalid authorization header format - missing token",
       errorCategory: ErrorCategory.CLIENT_ERROR,
     });
   }
