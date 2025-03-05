@@ -194,8 +194,8 @@ export async function lambdaHandlerConstructor(
     govukSigninJourneyId: requestBody.govuk_signin_journey_id,
     getNowInMilliseconds: Date.now,
     componentId: config.ISSUER,
-    extensions: { redirect_uri: requestBody.redirect_uri },
-
+    redirect_uri: requestBody.redirect_uri,
+    suspected_fraud_signal: undefined,
     // ipAddress and txmaAuditEncoded values only required for lambdas that are triggered as a result of a direct user interaction to the ID Check service
     ipAddress: undefined,
     txmaAuditEncoded: undefined,

@@ -42,7 +42,8 @@ describe("Event Service", () => {
           componentId: "mockComponentId",
           ipAddress: "mockIpAddress",
           txmaAuditEncoded: "mockTxmaAuditEncoded",
-          extensions: undefined,
+          redirect_uri: undefined,
+          suspected_fraud_signal: undefined,
         });
       });
 
@@ -64,6 +65,7 @@ describe("Event Service", () => {
                 encoded: "mockTxmaAuditEncoded",
               },
             },
+            extensions: {},
           }),
           QueueUrl: "mockSqsQueue",
         };
@@ -93,7 +95,8 @@ describe("Event Service", () => {
             componentId: "mockComponentId",
             ipAddress: "mockIpAddress",
             txmaAuditEncoded: undefined,
-            extensions: undefined,
+            redirect_uri: undefined,
+            suspected_fraud_signal: undefined,
           });
         });
 
@@ -110,6 +113,7 @@ describe("Event Service", () => {
               event_timestamp_ms: 1609462861000,
               event_name: genericEventName,
               component_id: "mockComponentId",
+              extensions: {},
             }),
             QueueUrl: "mockSqsQueue",
           };
@@ -138,7 +142,8 @@ describe("Event Service", () => {
             componentId: "mockComponentId",
             ipAddress: "mockIpAddress",
             txmaAuditEncoded: "mockTxmaAuditEncoded",
-            extensions: undefined,
+            redirect_uri: undefined,
+            suspected_fraud_signal: undefined,
           });
         });
 
@@ -160,6 +165,7 @@ describe("Event Service", () => {
                   encoded: "mockTxmaAuditEncoded",
                 },
               },
+              extensions: {},
             }),
             QueueUrl: "mockSqsQueue",
           };
@@ -418,7 +424,8 @@ describe("Event Service", () => {
           transactionId: "mockTransactionId",
           ipAddress: "mockIpAddress",
           txmaAuditEncoded: undefined,
-          extensions: undefined,
+          redirect_uri: undefined,
+          suspected_fraud_signal: undefined,
         });
       });
 
@@ -436,6 +443,7 @@ describe("Event Service", () => {
             event_timestamp_ms: 1609462861000,
             event_name: "DCMAW_ASYNC_CRI_4XXERROR",
             component_id: "mockComponentId",
+            extensions: {},
           }),
           QueueUrl: "mockSqsQueue",
         };
@@ -463,9 +471,8 @@ describe("Event Service", () => {
           componentId: "mockComponentId",
           eventName: "DCMAW_ASYNC_CRI_4XXERROR",
           transactionId: "mockTransactionId",
-          extensions: {
-            suspected_fraud_signal: "AUTH_SESSION_NOT_FOUND",
-          },
+          redirect_uri: undefined,
+          suspected_fraud_signal: "AUTH_SESSION_NOT_FOUND",
           ipAddress: undefined,
           txmaAuditEncoded: undefined,
         });

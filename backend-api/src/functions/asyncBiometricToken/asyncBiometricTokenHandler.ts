@@ -199,9 +199,8 @@ async function handleConditionalCheckFailure(
     componentId: issuer,
     ipAddress,
     txmaAuditEncoded,
-    extensions: {
-      redirect_uri: sessionAttributes.redirectUri,
-    },
+    redirect_uri: sessionAttributes.redirectUri,
+    suspected_fraud_signal: undefined,
   });
 
   if (writeEventResult.isError) {
@@ -239,7 +238,8 @@ async function handleSessionNotFound(
     componentId: issuer,
     ipAddress,
     txmaAuditEncoded,
-    extensions: undefined,
+    redirect_uri: undefined,
+    suspected_fraud_signal: undefined,
   });
 
   if (writeEventResult.isError) {
@@ -274,7 +274,8 @@ async function handleInternalServerError(
     componentId: issuer,
     ipAddress,
     txmaAuditEncoded,
-    extensions: undefined,
+    redirect_uri: undefined,
+    suspected_fraud_signal: undefined,
   });
 
   if (writeEventResult.isError) {

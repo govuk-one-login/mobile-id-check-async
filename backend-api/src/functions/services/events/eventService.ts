@@ -72,7 +72,10 @@ export class EventService implements IEventService {
       event_name: eventConfig.eventName,
       component_id: eventConfig.componentId,
       restricted: this.getRestrictedData(eventConfig.txmaAuditEncoded),
-      extensions: eventConfig.extensions,
+      extensions: {
+        redirect_uri: eventConfig.redirect_uri,
+        suspected_fraud_signal: eventConfig.suspected_fraud_signal,
+      },
     };
   };
 
