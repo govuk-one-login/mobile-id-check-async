@@ -46,7 +46,7 @@ export function validateRequestBody(
     });
   }
 
-  if (!isAllowableEventName(eventName)) {
+  if (!isEventName(eventName)) {
     return errorResult({
       errorMessage: `eventName in request body is invalid. eventName: ${eventName}`,
     });
@@ -58,8 +58,8 @@ export function validateRequestBody(
   });
 }
 
-function isAllowableEventName(eventName: string): eventName is EventName {
-  return allowableEventNames.includes(eventName);
+function isEventName(eventName: string): eventName is EventName {
+  return eventNames.includes(eventName);
 }
 
 interface IAsyncTxmaEventRequestBody {
@@ -67,9 +67,9 @@ interface IAsyncTxmaEventRequestBody {
   eventName: EventName;
 }
 
-type EventName = (typeof allowableEventNames)[number];
+type EventName = (typeof eventNames)[number];
 
-const allowableEventNames = [
+const eventNames = [
   "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
   "DCMAW_ASYNC_IPROOV_BILLING_STARTED",
   "DCMAW_ASYNC_READID_NFC_BILLING_STARTED",
