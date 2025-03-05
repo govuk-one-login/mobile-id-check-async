@@ -20,14 +20,17 @@ export class EventService implements IEventService {
     this.sqsQueue = sqsQueue;
   }
 
-  private getExtensionsObject(redirect_uri?: string, suspected_fraud_signal?: string) {
+  private getExtensionsObject(
+    redirect_uri?: string,
+    suspected_fraud_signal?: string,
+  ) {
     if (redirect_uri === undefined && suspected_fraud_signal === undefined) {
       return undefined;
     }
-    
+
     return {
       redirect_uri,
-      suspected_fraud_signal
+      suspected_fraud_signal,
     };
   }
 
@@ -71,10 +74,10 @@ export class EventService implements IEventService {
   ): GenericTxmaEvent => {
     const timestampInMillis = eventConfig.getNowInMilliseconds();
     const extensions = this.getExtensionsObject(
-      eventConfig.redirect_uri, 
-      eventConfig.suspected_fraud_signal
+      eventConfig.redirect_uri,
+      eventConfig.suspected_fraud_signal,
     );
-    
+
     const event: GenericTxmaEvent = {
       user: {
         user_id: eventConfig.sub,
@@ -88,13 +91,13 @@ export class EventService implements IEventService {
       event_name: eventConfig.eventName,
       component_id: eventConfig.componentId,
       restricted: this.getRestrictedData(eventConfig.txmaAuditEncoded),
-      extensions: undefined
+      extensions: undefined,
     };
-    
+
     if (extensions !== undefined) {
       event.extensions = extensions;
     }
-    
+
     return event;
   };
 
