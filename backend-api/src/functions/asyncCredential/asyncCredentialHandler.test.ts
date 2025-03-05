@@ -982,9 +982,10 @@ describe("Async Credential", () => {
                 govukSigninJourneyId: "mockGovukSigninJourneyId",
                 sub: "mockSub",
                 sessionId: "mockSessionId",
-                extensions: expect.objectContaining({
-                  redirect_uri: "https://www.mockUrl.com",
-                }),
+                ipAddress: undefined,
+                redirect_uri: "https://www.mockUrl.com",
+                suspected_fraud_signal: undefined,
+                txmaAuditEncoded: undefined,
               }),
             );
 

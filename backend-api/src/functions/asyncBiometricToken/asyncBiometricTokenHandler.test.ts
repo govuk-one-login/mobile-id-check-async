@@ -464,9 +464,8 @@ describe("Async Biometric Token", () => {
             sub: "mockSubjectIdentifier",
             ipAddress: "1.1.1.1",
             txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
-            extensions: {
-              redirect_uri: "https://www.mockRedirectUri.com",
-            },
+            redirect_uri: "https://www.mockRedirectUri.com",
+            suspected_fraud_signal: undefined,
           });
         });
 

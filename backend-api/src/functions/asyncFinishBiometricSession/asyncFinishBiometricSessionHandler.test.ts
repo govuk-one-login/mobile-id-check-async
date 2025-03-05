@@ -280,9 +280,7 @@ describe("Async Finish Biometric Session", () => {
             sessionId: expiredSessionAttributes.sessionId,
             sub: expiredSessionAttributes.subjectIdentifier,
             transactionId: mockBiometricSessionId,
-            extensions: {
-              suspected_fraud_signal: "AUTH_SESSION_TOO_OLD",
-            },
+            suspected_fraud_signal: "AUTH_SESSION_TOO_OLD",
           });
           expect(result.statusCode).toBe(403);
         });

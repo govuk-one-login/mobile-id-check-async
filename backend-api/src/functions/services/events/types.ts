@@ -57,7 +57,8 @@ export type EventNames =
 
 export interface GenericEventConfig extends BaseUserEventConfig {
   eventName: GenericEventNames;
-  extensions: Extensions | undefined;
+  redirect_uri: string | undefined;
+  suspected_fraud_signal: string | undefined;
 }
 
 export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
