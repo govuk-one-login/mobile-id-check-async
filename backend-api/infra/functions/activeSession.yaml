@@ -24,6 +24,13 @@ Resources:
             Method: get
             RestApiId: !Ref SessionsApi
       Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
+      DeploymentPreference:
+        Enabled: True
+        Alarms: !If
+          - UseCanaryDeployments
+          - - !Ref AsyncActiveSessionErrorRateAlarm            
+            - !Ref AsyncActiveSessionLowCompletionAlarm
+          - - !Ref AWS::NoValue
       Environment:
         Variables:
           ENCRYPTION_KEY_ARN: !GetAtt KMSEncryptionKey.Arn

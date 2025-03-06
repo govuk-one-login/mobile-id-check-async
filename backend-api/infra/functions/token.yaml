@@ -27,6 +27,13 @@ Resources:
           - !ImportValue devplatform-vpc-PrivateSubnetIdC
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+      DeploymentPreference:
+        Enabled: True
+        Alarms: !If
+          - UseCanaryDeployments
+          - - !Ref AsyncTokenErrorRateAlarm            
+            - !Ref AsyncTokenLowCompletionAlarm
+          - - !Ref AWS::NoValue
 
   AsyncTokenFunctionPermission:
     Type: AWS::Lambda::Permission
