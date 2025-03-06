@@ -20,6 +20,7 @@ Resources:
           !Ref PermissionsBoundary,
           !Ref AWS::NoValue,
         ]
+      RoleName: !Sub ${AWS::StackName}-code-deploy-service-role
   
   # DeploymentConfig is used to describe the traffic shifting pattern for blue/green deploys used for lambdas.
   Linear20PercentEvery1Minute:

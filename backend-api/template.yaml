@@ -3196,6 +3196,7 @@ Resources:
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
+      RoleName: !Sub ${AWS::StackName}-code-deploy-service-role
 
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket
