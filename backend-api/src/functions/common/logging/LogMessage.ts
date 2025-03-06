@@ -87,12 +87,6 @@ export class LogMessage implements LogAttributes {
     "Successfully writen message to SQS.",
   );
 
-  static readonly SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE =
-    new LogMessage(
-      "MOBILE_ASYNC_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE",
-      "Failed to send message to vendor processing queue.",
-    );
-
   // Token
   static readonly TOKEN_STARTED = new LogMessage(
     "MOBILE_ASYNC_TOKEN_STARTED",
@@ -202,6 +196,11 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_INVALID_CONFIG",
     "One or more required environment variables were missing or invalid.",
   );
+  static readonly FINISH_BIOMETRIC_SESSION_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE =
+    new LogMessage(
+      "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE",
+      "Failed to send message to vendor processing queue.",
+    );
 
   // TxMA Event
   static readonly TXMA_EVENT_STARTED = new LogMessage(

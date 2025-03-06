@@ -248,7 +248,9 @@ const handleSendMessageToVendorProcessingQueueFailure = async (
   eventService: IEventService,
   data: HandleSendMessageToVendorProcessingQueueFailureData,
 ): Promise<APIGatewayProxyResult> => {
-  logger.error(LogMessage.SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE);
+  logger.error(
+    LogMessage.FINISH_BIOMETRIC_SESSION_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE,
+  );
 
   const {
     biometricSessionId,

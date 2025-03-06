@@ -466,7 +466,7 @@ describe("Async Finish Biometric Session", () => {
       it("Logs the send message to vendor processing queue failure", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode:
-            "MOBILE_ASYNC_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE",
+            "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE",
         });
       });
 
@@ -507,7 +507,7 @@ describe("Async Finish Biometric Session", () => {
       it("Logs the send message to vendor processing queue failure", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode:
-            "MOBILE_ASYNC_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE",
+            "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE",
         });
       });
 
