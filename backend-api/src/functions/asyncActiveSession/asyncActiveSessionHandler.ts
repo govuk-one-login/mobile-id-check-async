@@ -83,7 +83,7 @@ export async function lambdaHandlerConstructor(
   }
   const session = getActiveSessionResult.value;
   if (session === null) {
-    logger.error(LogMessage.ACTIVE_SESSION_ACTIVE_SESSION_NOT_FOUND);
+    logger.info(LogMessage.ACTIVE_SESSION_ACTIVE_SESSION_NOT_FOUND);
     return notFoundResponse;
   }
 

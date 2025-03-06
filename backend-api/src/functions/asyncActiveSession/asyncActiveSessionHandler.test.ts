@@ -435,8 +435,8 @@ describe("Async Active Session", () => {
 
         result = await lambdaHandlerConstructor(dependencies, request, context);
       });
-      it("Logs the error", () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+      it("Logs ACTIVE_SESSION_NOT_FOUND", () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_ACTIVE_SESSION_NOT_FOUND",
         });
       });
