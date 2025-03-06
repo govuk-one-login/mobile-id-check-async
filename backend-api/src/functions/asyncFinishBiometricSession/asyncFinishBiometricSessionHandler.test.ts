@@ -449,7 +449,7 @@ describe("Async Finish Biometric Session", () => {
 
   describe("Sending message to vendor processing queue", () => {
     describe("Given sending message fails", () => {
-      describe("Given DCMAW_ASYNC_CRI_5XXERROR event fails to write to TxMA", () => {
+      describe("Given sending DCMAW_ASYNC_CRI_5XXERROR event ALSO fails", () => {
         beforeEach(async () => {
           dependencies = {
             ...dependencies,
