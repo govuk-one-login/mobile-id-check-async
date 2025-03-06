@@ -39,7 +39,7 @@ describe("POST /async/biometricToken", () => {
     let sessionId: string;
 
     beforeAll(async () => {
-      sessionId = "invalidSessionId";
+      sessionId = mockSessionId;
       const requestBody = {
         sessionId,
         documentType: "NFC_PASSPORT",
