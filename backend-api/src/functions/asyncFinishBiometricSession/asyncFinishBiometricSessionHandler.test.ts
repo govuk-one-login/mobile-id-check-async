@@ -447,100 +447,92 @@ describe("Async Finish Biometric Session", () => {
     });
   });
 
-  describe("Sending message to vendor processing queue", () => {
-    describe("Given sending message fails", () => {
-      describe("Given sending DCMAW_ASYNC_CRI_5XXERROR event ALSO fails", () => {
-        beforeEach(async () => {
-          dependencies = {
-            ...dependencies,
-            getSendMessageToSqs: () => mockFailingSendMessageToSqs,
-            getEventService: () => mockFailingEventService,
-          };
+  describe("Given sending message to vendor processing queue fails", () => {
+    describe("Given sending DCMAW_ASYNC_CRI_5XXERROR event also fails", () => {
+      beforeEach(async () => {
+        dependencies = {
+          ...dependencies,
+          getSendMessageToSqs: () => mockFailingSendMessageToSqs,
+          getEventService: () => mockFailingEventService,
+        };
 
-          result = await lambdaHandlerConstructor(
-            dependencies,
-            validRequest,
-            context,
-          );
-        });
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
 
-        it("Attempts to send message to the Vendor Processing queue", () => {
-          expect(mockFailingSendMessageToSqs).toHaveBeenCalledWith(
-            "mockVendorProcessingSqs",
-            {
-              biometricSessionId: mockBiometricSessionId,
-              sessionId: mockSessionId,
-            },
-          );
-        });
-
-        it("Logs the DCMAW_ASYNC_CRI_5XXERROR event failure", () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-            data: {
-              auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
-            },
-          });
-        });
-
-        it("Returns 500 Internal server error", () => {
-          expect(result).toStrictEqual({
-            statusCode: 500,
-            body: JSON.stringify({
-              error: "server_error",
-              error_description: "Internal Server Error",
-            }),
-            headers: expectedSecurityHeaders,
-          });
+      it("Logs the send message to vendor processing queue failure", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "MOBILE_ASYNC_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE",
         });
       });
 
-      describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully writes to TxMA", () => {
-        beforeEach(async () => {
-          dependencies = {
-            ...dependencies,
-            getSendMessageToSqs: () => mockFailingSendMessageToSqs,
-          };
-          result = await lambdaHandlerConstructor(
-            dependencies,
-            validRequest,
-            context,
-          );
+      it("Logs the DCMAW_ASYNC_CRI_5XXERROR event failure", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+          data: {
+            auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+          },
         });
+      });
 
-        it("Attempts to send message to the Vendor Processing queue", () => {
-          expect(mockFailingSendMessageToSqs).toHaveBeenCalledWith(
-            "mockVendorProcessingSqs",
-            {
-              biometricSessionId: mockBiometricSessionId,
-              sessionId: mockSessionId,
-            },
-          );
+      it("Returns 500 Internal server error", () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
         });
+      });
+    });
 
-        it("Writes DCMAW_ASYNC_CRI_5XXERROR event", () => {
-          expect(mockWriteGenericEventSuccess).toBeCalledWith({
-            eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-            componentId: "mockIssuer",
-            getNowInMilliseconds: Date.now,
-            govukSigninJourneyId: "mockGovukSigninJourneyId",
-            sessionId: "mockSessionId",
-            sub: "mockSubjectIdentifier",
-            transactionId: mockBiometricSessionId,
-            ipAddress: "1.1.1.1",
-            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
-          });
+    describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully writes to TxMA", () => {
+      beforeEach(async () => {
+        dependencies = {
+          ...dependencies,
+          getSendMessageToSqs: () => mockFailingSendMessageToSqs,
+        };
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+
+      it("Logs the send message to vendor processing queue failure", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "MOBILE_ASYNC_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE",
         });
+      });
 
-        it("Returns 500 Internal server error", () => {
-          expect(result).toStrictEqual({
-            statusCode: 500,
-            body: JSON.stringify({
-              error: "server_error",
-              error_description: "Internal Server Error",
-            }),
-            headers: expectedSecurityHeaders,
-          });
+      it("Writes DCMAW_ASYNC_CRI_5XXERROR event", () => {
+        expect(mockWriteGenericEventSuccess).toBeCalledWith({
+          eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+          componentId: "mockIssuer",
+          getNowInMilliseconds: Date.now,
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
+          sessionId: "mockSessionId",
+          sub: "mockSubjectIdentifier",
+          transactionId: mockBiometricSessionId,
+          ipAddress: "1.1.1.1",
+          txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
+        });
+      });
+
+      it("Returns 500 Internal server error", () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
         });
       });
     });

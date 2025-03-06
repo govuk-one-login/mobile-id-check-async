@@ -87,6 +87,12 @@ export class LogMessage implements LogAttributes {
     "Successfully writen message to SQS.",
   );
 
+  static readonly SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE =
+    new LogMessage(
+      "MOBILE_ASYNC_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE",
+      "Failed to send message to vendor processing queue.",
+    );
+
   // Token
   static readonly TOKEN_STARTED = new LogMessage(
     "MOBILE_ASYNC_TOKEN_STARTED",
