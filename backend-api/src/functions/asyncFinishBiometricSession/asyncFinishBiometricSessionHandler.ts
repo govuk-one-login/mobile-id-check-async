@@ -83,54 +83,30 @@ export async function lambdaHandlerConstructor(
   return notImplementedResponse;
 }
 
-const buildEventWithSessionRegistryData = ({
-  eventName,
-  sub,
-  sessionId,
-  govukSigninJourneyId,
-  componentId,
-  transactionId,
-  redirect_uri,
-  suspected_fraud_signal,
-}: GenericEventConfig): GenericEventConfig => {
+function buildEventConfig(
+  config: Partial<GenericEventConfig> &
+    Pick<
+      GenericEventConfig,
+      "eventName" | "sessionId" | "componentId" | "transactionId"
+    >,
+  includeSessionData: boolean = false,
+): GenericEventConfig {
   return {
-    eventName,
-    sub,
-    sessionId,
-    govukSigninJourneyId,
-    componentId,
+    eventName: config.eventName,
+    sub: includeSessionData ? config.sub : undefined,
+    sessionId: config.sessionId,
+    govukSigninJourneyId: includeSessionData
+      ? config.govukSigninJourneyId
+      : undefined,
+    componentId: config.componentId,
     getNowInMilliseconds: Date.now,
-    transactionId,
-    redirect_uri: redirect_uri,
-    suspected_fraud_signal,
+    transactionId: config.transactionId,
+    redirect_uri: config.redirect_uri,
+    suspected_fraud_signal: config.suspected_fraud_signal,
     ipAddress: undefined,
     txmaAuditEncoded: undefined,
   };
-};
-
-const buildEventWithoutSessionRegistryData = ({
-  eventName,
-  sessionId,
-  componentId,
-  transactionId,
-  redirect_uri,
-  suspected_fraud_signal,
-}: GenericEventConfig): GenericEventConfig => {
-  return {
-    eventName,
-    sub: undefined,
-    sessionId,
-    govukSigninJourneyId: undefined,
-    componentId,
-    getNowInMilliseconds: Date.now,
-    transactionId,
-    redirect_uri: redirect_uri,
-    suspected_fraud_signal,
-    ipAddress: undefined,
-    txmaAuditEncoded: undefined,
-  };
-};
-
+}
 async function handleConditionalCheckFailure(
   eventService: IEventService,
   sessionAttributes: SessionAttributes,
@@ -148,24 +124,21 @@ async function handleConditionalCheckFailure(
     return "AUTH_SESSION_TOO_OLD";
   }
 
-  const txmaEvent: GenericEventConfig = {
-    eventName: "DCMAW_ASYNC_CRI_4XXERROR" as GenericEventNames,
-    sub: sessionAttributes.subjectIdentifier,
-    sessionId: sessionAttributes.sessionId,
-    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
-    componentId: issuer,
-    getNowInMilliseconds: Date.now,
-    transactionId: biometricSessionId,
-    redirect_uri: sessionAttributes.redirectUri,
-    suspected_fraud_signal: getFraudSignal(isSessionExpired),
-    ipAddress: undefined,
-    txmaAuditEncoded: undefined,
-  };
-
-  const writeEventResult = await eventService.writeGenericEvent(
-    buildEventWithSessionRegistryData(txmaEvent),
+  const txmaEvent: GenericEventConfig = buildEventConfig(
+    {
+      eventName: "DCMAW_ASYNC_CRI_4XXERROR" as GenericEventNames,
+      sub: sessionAttributes.subjectIdentifier,
+      sessionId: sessionAttributes.sessionId,
+      govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+      componentId: issuer,
+      transactionId: biometricSessionId,
+      redirect_uri: sessionAttributes.redirectUri,
+      suspected_fraud_signal: getFraudSignal(isSessionExpired),
+    },
+    true,
   );
 
+  const writeEventResult = await eventService.writeGenericEvent(txmaEvent);
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: { auditEventName: "DCMAW_ASYNC_CRI_4XXERROR" },
@@ -186,23 +159,18 @@ async function handleSessionNotFound(
   biometricSessionId: string,
   issuer: string,
 ): Promise<APIGatewayProxyResult> {
-  const txmaEvent: GenericEventConfig = {
-    eventName: "DCMAW_ASYNC_CRI_4XXERROR" as GenericEventNames,
-    sub: undefined,
-    sessionId,
-    govukSigninJourneyId: undefined,
-    componentId: issuer,
-    getNowInMilliseconds: Date.now,
-    transactionId: biometricSessionId,
-    redirect_uri: undefined,
-    suspected_fraud_signal: undefined,
-    ipAddress: undefined,
-    txmaAuditEncoded: undefined,
-  };
-  const writeEventResult = await eventService.writeGenericEvent(
-    buildEventWithoutSessionRegistryData(txmaEvent),
+  const txmaEvent: GenericEventConfig = buildEventConfig(
+    {
+      eventName: "DCMAW_ASYNC_CRI_4XXERROR" as GenericEventNames,
+      sessionId,
+      componentId: issuer,
+      transactionId: biometricSessionId,
+      redirect_uri: undefined,
+      suspected_fraud_signal: undefined,
+    },
+    false,
   );
-
+  const writeEventResult = await eventService.writeGenericEvent(txmaEvent);
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: { auditEventName: "DCMAW_ASYNC_CRI_4XXERROR" },
@@ -219,23 +187,18 @@ async function handleInternalServerError(
   biometricSessionId: string,
   issuer: string,
 ): Promise<APIGatewayProxyResult> {
-  const txmaEvent: GenericEventConfig = {
-    eventName: "DCMAW_ASYNC_CRI_5XXERROR" as GenericEventNames,
-    sub: undefined,
-    sessionId,
-    govukSigninJourneyId: undefined,
-    componentId: issuer,
-    getNowInMilliseconds: Date.now,
-    transactionId: biometricSessionId,
-    redirect_uri: undefined,
-    suspected_fraud_signal: undefined,
-    ipAddress: undefined,
-    txmaAuditEncoded: undefined,
-  };
-  const writeEventResult = await eventService.writeGenericEvent(
-    buildEventWithoutSessionRegistryData(txmaEvent),
+  const txmaEvent: GenericEventConfig = buildEventConfig(
+    {
+      eventName: "DCMAW_ASYNC_CRI_5XXERROR" as GenericEventNames,
+      sessionId,
+      componentId: issuer,
+      transactionId: biometricSessionId,
+      redirect_uri: undefined,
+      suspected_fraud_signal: undefined,
+    },
+    false,
   );
-
+  const writeEventResult = await eventService.writeGenericEvent(txmaEvent);
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: { auditEventName: "DCMAW_ASYNC_CRI_5XXERROR" },
