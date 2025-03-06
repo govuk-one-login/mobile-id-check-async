@@ -58,6 +58,11 @@ Parameters:
     Type: String
     Default: unused
 
+  LambdaDeploymentPreference:
+    Description: "Specifies the configuration to enable gradual Lambda deployments"
+    Type: String
+    Default: None
+
 Mappings:
   StaticVariables:
     urls:
@@ -306,6 +311,17 @@ Conditions:
       - !Ref Environment
       - staging
 
+  UseLambdaDeploymentPreference:
+    !Not [!Equals [!Ref LambdaDeploymentPreference, "None"]]
+
+  UseCanaryDeployments: !And
+    - Condition: UseLambdaDeploymentPreference
+    - !Not [!Equals [!Ref LambdaDeploymentPreference, "AllAtOnce"]]
+
+  DeployCanaryAlarms: !Or
+    - Condition: UseLambdaDeploymentPreference
+    - Condition: DeployAlarms
+
 # This condition is in place so that we can add a resource to this parent.yaml template that is never deployed.
   NeverDeploy: !Equals
     - !Ref SamValidateLintWorkaround
@@ -339,6 +355,13 @@ Globals:
       LogFormat: JSON
     Architectures:
       - arm64
+    DeploymentPreference:
+      Enabled: False
+      Type: !If 
+        - UseLambdaDeploymentPreference
+        - !Ref LambdaDeploymentPreference
+        - AllAtOnce
+      Role: !GetAtt CodeDeployServiceRole.Arn
     Environment:
       Variables:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
