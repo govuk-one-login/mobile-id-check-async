@@ -532,7 +532,7 @@ describe("Async Finish Biometric Session", () => {
           });
         });
 
-        it("Returns 500 Interal server error", () => {
+        it("Returns 500 Internal server error", () => {
           expect(result).toStrictEqual({
             statusCode: 500,
             body: JSON.stringify({
