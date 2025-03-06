@@ -1,24 +1,29 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context,
+} from "aws-lambda";
 import { RequestService } from "./requestService/requestService";
 import {
   dependencies,
   IAsyncActiveSessionDependencies,
 } from "./handlerDependencies";
-import { ConfigService } from "./configService/configService";
 import { ErrorCategory } from "../utils/result";
+import { setupLogger } from "../common/logging/setupLogger";
+import { logger } from "../common/logging/logger";
+import { LogMessage } from "../common/logging/LogMessage";
+import { getActiveSessionConfig } from "./getActiveSessionConfig";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncActiveSessionDependencies,
   event: APIGatewayProxyEvent,
+  context: Context,
 ): Promise<APIGatewayProxyResult> {
-  const logger = dependencies.logger();
-  logger.log("STARTED");
+  setupLogger(context);
+  logger.info(LogMessage.ACTIVE_SESSION_STARTED);
 
-  const configResult = new ConfigService().getConfig(dependencies.env);
+  const configResult = getActiveSessionConfig(dependencies.env);
   if (configResult.isError) {
-    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
-      errorMessage: configResult.value.errorMessage,
-    });
     return serverErrorResponse;
   }
   const config = configResult.value;
@@ -27,7 +32,7 @@ export async function lambdaHandlerConstructor(
     event.headers["Authorization"] ?? event.headers["authorization"],
   );
   if (authorizationHeaderResult.isError) {
-    logger.log("AUTHENTICATION_HEADER_INVALID", {
+    logger.error(LogMessage.ACTIVE_SESSION_AUTHORIZATION_HEADER_INVALID, {
       errorMessage: authorizationHeaderResult.value.errorMessage,
     });
     return unauthorizedResponse;
@@ -38,15 +43,12 @@ export async function lambdaHandlerConstructor(
     .jweDecrypter(config.ENCRYPTION_KEY_ARN)
     .decrypt(serviceTokenJwe);
   if (decryptResult.isError) {
-    if (decryptResult.value.errorCategory === ErrorCategory.CLIENT_ERROR) {
-      logger.log("JWE_DECRYPTION_ERROR", {
-        errorMessage: decryptResult.value.errorMessage,
-      });
-      return badRequestResponse("Failed to decrypt service token");
-    }
-    logger.log("INTERNAL_SERVER_ERROR", {
+    logger.error(LogMessage.ACTIVE_SESSION_JWE_DECRYPTION_ERROR, {
       errorMessage: decryptResult.value.errorMessage,
     });
+    if (decryptResult.value.errorCategory === ErrorCategory.CLIENT_ERROR) {
+      return badRequestResponse("Failed to decrypt service token");
+    }
     return serverErrorResponse;
   }
   const serviceTokenJwt = decryptResult.value;
@@ -58,18 +60,15 @@ export async function lambdaHandlerConstructor(
     config.STS_BASE_URL,
   );
   if (validateServiceTokenResult.isError) {
+    logger.error(LogMessage.ACTIVE_SESSION_SERVICE_TOKEN_VALIDATION_ERROR, {
+      errorMessage: validateServiceTokenResult.value.errorMessage,
+    });
     if (
       validateServiceTokenResult.value.errorCategory ===
       ErrorCategory.CLIENT_ERROR
     ) {
-      logger.log("SERVICE_TOKEN_VALIDATION_ERROR", {
-        errorMessage: validateServiceTokenResult.value.errorMessage,
-      });
       return badRequestResponse("Failed to validate service token");
     }
-    logger.log("INTERNAL_SERVER_ERROR", {
-      errorMessage: validateServiceTokenResult.value.errorMessage,
-    });
     return serverErrorResponse;
   }
   const sub = validateServiceTokenResult.value;
@@ -77,17 +76,18 @@ export async function lambdaHandlerConstructor(
   const sessionService = dependencies.sessionService(config.SESSION_TABLE_NAME);
   const getActiveSessionResult = await sessionService.getActiveSession(sub);
   if (getActiveSessionResult.isError) {
-    logger.log("INTERNAL_SERVER_ERROR", {
+    logger.error(LogMessage.GET_ACTIVE_SESSION_FAILURE, {
       errorMessage: getActiveSessionResult.value.errorMessage,
     });
     return serverErrorResponse;
   }
   const session = getActiveSessionResult.value;
   if (session === null) {
+    logger.info(LogMessage.ACTIVE_SESSION_ACTIVE_SESSION_NOT_FOUND);
     return notFoundResponse;
   }
 
-  logger.log("COMPLETED");
+  logger.info(LogMessage.ACTIVE_SESSION_COMPLETED);
 
   return {
     headers: { "Content-Type": "application/json" },

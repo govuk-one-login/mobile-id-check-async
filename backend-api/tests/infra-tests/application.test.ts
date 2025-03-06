@@ -530,6 +530,7 @@ describe("Backend application infrastructure", () => {
           "SIGNING_KEY_ID",
           "ISSUER",
           "TXMA_SQS",
+          "VENDOR_PROCESSING_SQS",
           "SESSION_TABLE_NAME",
           "POWERTOOLS_SERVICE_NAME",
           "AWS_LAMBDA_EXEC_WRAPPER",
@@ -609,6 +610,45 @@ describe("Backend application infrastructure", () => {
         const autoPublishAliasAllProperties =
           template.toJSON().Globals.Function.AutoPublishAliasAllProperties;
         expect(autoPublishAliasAllProperties).toStrictEqual(true);
+      });
+
+      test("Global application and system log level is set", () => {
+        const lambdaMapping = template.findMappings("Lambda");
+        const loggingConfig = template.toJSON().Globals.Function.LoggingConfig;
+
+        expect(lambdaMapping).toStrictEqual({
+          Lambda: {
+            dev: expect.objectContaining({
+              LogLevel: "DEBUG",
+            }),
+            build: expect.objectContaining({
+              LogLevel: "INFO",
+            }),
+            staging: expect.objectContaining({
+              LogLevel: "INFO",
+            }),
+            integration: expect.objectContaining({
+              LogLevel: "INFO",
+            }),
+            production: expect.objectContaining({
+              LogLevel: "INFO",
+            }),
+          },
+        });
+
+        expect(loggingConfig).toStrictEqual({
+          ApplicationLogLevel: {
+            "Fn::FindInMap": [
+              "Lambda",
+              {
+                Ref: "Environment",
+              },
+              "LogLevel",
+            ],
+          },
+          LogFormat: "JSON",
+          SystemLogLevel: "INFO",
+        });
       });
     });
 
@@ -844,6 +884,27 @@ describe("Backend application infrastructure", () => {
             }),
           ]),
         );
+      });
+    });
+  });
+
+  describe("SQS", () => {
+    test("All primary SQS have a DLQ", () => {
+      const queues = template.findResources("AWS::SQS::Queue");
+      const deadLetterQueueNames = [
+        "TxMASQSQueueDeadLetterQueue",
+        "VendorProcessingDLQ",
+      ];
+      const queueList = Object.keys(queues).filter(
+        (queueName: string) => !deadLetterQueueNames.includes(queueName),
+      );
+
+      queueList.forEach((queue) => {
+        expect(
+          queues[queue].Properties.RedrivePolicy.deadLetterTargetArn,
+        ).toStrictEqual({
+          "Fn::GetAtt": [expect.any(String), "Arn"],
+        });
       });
     });
   });

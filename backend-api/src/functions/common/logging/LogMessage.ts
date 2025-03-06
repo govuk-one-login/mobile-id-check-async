@@ -72,6 +72,21 @@ export class LogMessage implements LogAttributes {
     "IP Address could not be retrieved from the cloudfront-viewer-address header and the fallback value of event.requestContext.identity.sourceIp will be used for TxMA events.",
   );
 
+  static readonly SEND_MESSAGE_TO_SQS_ATTEMPT = new LogMessage(
+    "MOBILE_ASYNC_SEND_MESSAGE_TO_SQS_ATTEMPT",
+    "Attempting to write message to SQS.",
+  );
+
+  static readonly SEND_MESSAGE_TO_SQS_FAILURE = new LogMessage(
+    "MOBILE_ASYNC_SEND_MESSAGE_TO_SQS_FAILURE",
+    "An unexpected failure occurred while attempting to write message to SQS.",
+  );
+
+  static readonly SEND_MESSAGE_TO_SQS_SUCCESS = new LogMessage(
+    "MOBILE_ASYNC_SEND_MESSAGE_TO_SQS_SUCCESS",
+    "Successfully writen message to SQS.",
+  );
+
   // Token
   static readonly TOKEN_STARTED = new LogMessage(
     "MOBILE_ASYNC_TOKEN_STARTED",
@@ -130,6 +145,37 @@ export class LogMessage implements LogAttributes {
       "Bearer token signature could not be validated using the ID Check signing key.",
     );
 
+  // Active Session
+  static readonly ACTIVE_SESSION_STARTED = new LogMessage(
+    "MOBILE_ASYNC_ACTIVE_SESSION_STARTED",
+    "Lambda handler processing has started.",
+  );
+  static readonly ACTIVE_SESSION_INVALID_CONFIG = new LogMessage(
+    "MOBILE_ASYNC_ACTIVE_SESSION_INVALID_CONFIG",
+    "One or more required environment variables were missing or invalid.",
+  );
+  static readonly ACTIVE_SESSION_AUTHORIZATION_HEADER_INVALID = new LogMessage(
+    "MOBILE_ASYNC_ACTIVE_SESSION_AUTHORIZATION_HEADER_INVALID",
+    "Bearer token not present in authorization header.",
+  );
+  static readonly ACTIVE_SESSION_JWE_DECRYPTION_ERROR = new LogMessage(
+    "MOBILE_ASYNC_ACTIVE_SESSION_JWE_DECRYPTION_ERROR",
+    "Error whilst decrypting JWE service token.",
+  );
+  static readonly ACTIVE_SESSION_SERVICE_TOKEN_VALIDATION_ERROR =
+    new LogMessage(
+      "MOBILE_ASYNC_ACTIVE_SESSION_SERVICE_TOKEN_VALIDATION_ERROR",
+      "Error whilst validating decrypted service token.",
+    );
+  static readonly ACTIVE_SESSION_ACTIVE_SESSION_NOT_FOUND = new LogMessage(
+    "MOBILE_ASYNC_ACTIVE_SESSION_ACTIVE_SESSION_NOT_FOUND",
+    "An active session was not found.",
+  );
+  static readonly ACTIVE_SESSION_COMPLETED = new LogMessage(
+    "MOBILE_ASYNC_ACTIVE_SESSION_COMPLETED",
+    "Lambda handler processing has completed successfully.",
+  );
+
   // Biometric Token
   static readonly BIOMETRIC_TOKEN_STARTED = new LogMessage(
     "MOBILE_ASYNC_BIOMETRIC_TOKEN_STARTED",
@@ -181,11 +227,20 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_INVALID_CONFIG",
     "One or more required environment variables were missing or invalid.",
   );
+  static readonly FINISH_BIOMETRIC_SESSION_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE =
+    new LogMessage(
+      "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE",
+      "Failed to send message to vendor processing queue.",
+    );
 
   // TxMA Event
   static readonly TXMA_EVENT_STARTED = new LogMessage(
     "MOBILE_ASYNC_TXMA_EVENT_STARTED",
     "Lambda handler processing has started.",
+  );
+  static readonly TXMA_EVENT_REQUEST_BODY_INVALID = new LogMessage(
+    "MOBILE_ASYNC_TXMA_EVENT_REQUEST_BODY_INVALID",
+    "The incoming request body was missing or invalid.",
   );
   static readonly TXMA_EVENT_COMPLETED = new LogMessage(
     "MOBILE_ASYNC_TXMA_EVENT_COMPLETED",

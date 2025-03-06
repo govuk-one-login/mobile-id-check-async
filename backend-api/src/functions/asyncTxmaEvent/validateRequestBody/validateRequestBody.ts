@@ -1,11 +1,10 @@
 import { validateSessionId } from "../../common/request/validateSessionId/validateSessionId";
-import { DocumentType } from "../../types/document";
 import { errorResult, Result, successResult } from "../../utils/result";
 import { isString } from "../../utils/utils";
 
 export function validateRequestBody(
   body: string | null,
-): Result<IAsyncBiometricTokenValidParsedRequestBody> {
+): Result<IAsyncTxmaEventRequestBody> {
   if (body == null) {
     return errorResult({
       errorMessage: `Request body is either null or undefined.`,
@@ -20,52 +19,56 @@ export function validateRequestBody(
       errorMessage: `Request body could not be parsed as JSON. ${error}`,
     });
   }
-  const { sessionId, documentType } = parsedBody;
+  const { sessionId, eventName } = parsedBody;
 
   const validateSessionIdResult = validateSessionId(sessionId);
   if (validateSessionIdResult.isError) {
     return validateSessionIdResult;
   }
 
-  if (documentType == null) {
+  if (eventName == null) {
     return errorResult({
-      errorMessage: `documentType in request body is either null or undefined.`,
+      errorMessage: `eventName in request body is either null or undefined.`,
     });
   }
 
-  if (!isString(documentType)) {
+  if (!isString(eventName)) {
     return errorResult({
-      errorMessage: `documentType in request body is not of type string. documentType: ${documentType}`,
+      errorMessage: `eventName in request body is not of type string. eventName: ${eventName}`,
     });
   }
 
-  if (documentType === "") {
+  if (eventName === "") {
     return errorResult({
-      errorMessage: `documentType in request body is an empty string.`,
+      errorMessage: `eventName in request body is an empty string.`,
     });
   }
 
-  if (!isAllowableDocumentType(documentType)) {
+  if (!isEventName(eventName)) {
     return errorResult({
-      errorMessage: `documentType in request body is invalid. documentType: ${documentType}`,
+      errorMessage: `eventName in request body is invalid. eventName: ${eventName}`,
     });
   }
 
   return successResult({
     sessionId,
-    documentType,
+    eventName,
   });
 }
 
-function isAllowableDocumentType(
-  documentType: string,
-): documentType is DocumentType {
-  return ["NFC_PASSPORT", "UK_DRIVING_LICENCE", "UK_NFC_BRP"].includes(
-    documentType,
-  );
+function isEventName(eventName: string): eventName is EventName {
+  return eventNames.includes(eventName);
 }
 
-interface IAsyncBiometricTokenValidParsedRequestBody {
+interface IAsyncTxmaEventRequestBody {
   sessionId: string;
-  documentType: DocumentType;
+  eventName: EventName;
 }
+
+type EventName = (typeof eventNames)[number];
+
+const eventNames = [
+  "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+  "DCMAW_ASYNC_IPROOV_BILLING_STARTED",
+  "DCMAW_ASYNC_READID_NFC_BILLING_STARTED",
+];
