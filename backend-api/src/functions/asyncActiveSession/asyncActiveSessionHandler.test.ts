@@ -98,7 +98,7 @@ describe("Async Active Session", () => {
         );
       });
 
-      it("logs INVALID_CONFIG", async () => {
+      it("logs INVALID_CONFIG", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_INVALID_CONFIG",
           data: {
@@ -107,7 +107,7 @@ describe("Async Active Session", () => {
         });
       });
 
-      it("Returns a 500 Server Error response", async () => {
+      it("Returns a 500 Server Error response", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 500,
@@ -131,14 +131,14 @@ describe("Async Active Session", () => {
         );
       });
 
-      it("logs INVALID_CONFIG", async () => {
+      it("logs INVALID_CONFIG", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_INVALID_CONFIG",
           errorMessage: "STS_BASE_URL is not a URL",
         });
       });
 
-      it("Returns a 500 Server Error response", async () => {
+      it("Returns a 500 Server Error response", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 500,
@@ -167,7 +167,7 @@ describe("Async Active Session", () => {
         });
       });
 
-      it("Returns 401 Unauthorized", async () => {
+      it("Returns 401 Unauthorized", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -197,7 +197,7 @@ describe("Async Active Session", () => {
         });
       });
 
-      it("Returns 401 Unauthorized", async () => {
+      it("Returns 401 Unauthorized", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -226,7 +226,7 @@ describe("Async Active Session", () => {
         });
       });
 
-      it("Returns 401 Unauthorized", async () => {
+      it("Returns 401 Unauthorized", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -255,7 +255,7 @@ describe("Async Active Session", () => {
         });
       });
 
-      it("Returns 401 Unauthorized", async () => {
+      it("Returns 401 Unauthorized", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -288,7 +288,7 @@ describe("Async Active Session", () => {
         });
       });
 
-      it("Returns 500 Server Error response", async () => {
+      it("Returns 500 Server Error response", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 500,
@@ -319,7 +319,7 @@ describe("Async Active Session", () => {
         });
       });
 
-      it("Returns 400 Bad Request response", async () => {
+      it("Returns 400 Bad Request response", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -351,7 +351,7 @@ describe("Async Active Session", () => {
         });
       });
 
-      it("Returns 500 Server Error response", async () => {
+      it("Returns 500 Server Error response", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 500,
@@ -381,7 +381,7 @@ describe("Async Active Session", () => {
         });
       });
 
-      it("Returns 400 Bad Request response", async () => {
+      it("Returns 400 Bad Request response", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -413,7 +413,7 @@ describe("Async Active Session", () => {
         });
       });
 
-      it("Returns 500 Server Error", async () => {
+      it("Returns 500 Server Error", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 500,
@@ -441,7 +441,7 @@ describe("Async Active Session", () => {
         });
       });
 
-      it("Returns 404 Not Found", async () => {
+      it("Returns 404 Not Found", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 404,
@@ -471,7 +471,7 @@ describe("Async Active Session", () => {
         });
       });
 
-      it("Returns 200 and the session details", async () => {
+      it("Returns 200 and the session details", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 200,
