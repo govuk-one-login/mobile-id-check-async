@@ -83,38 +83,52 @@ export async function lambdaHandlerConstructor(
   return notImplementedResponse;
 }
 
-const buildEvent = (
-  config: GenericEventConfig,
-  includeSessionRegistry: boolean = true,
-): GenericEventConfig => {
+const buildEventWithSessionRegistryData = ({
+  eventName,
+  sub,
+  sessionId,
+  govukSigninJourneyId,
+  componentId,
+  transactionId,
+  redirect_uri,
+  suspected_fraud_signal,
+}: GenericEventConfig): GenericEventConfig => {
   return {
-    eventName: config.eventName,
-    sub: includeSessionRegistry ? config.sub : undefined,
-    sessionId: config.sessionId,
-    govukSigninJourneyId: includeSessionRegistry
-      ? config.govukSigninJourneyId
-      : undefined,
-    componentId: config.componentId,
+    eventName,
+    sub,
+    sessionId,
+    govukSigninJourneyId,
+    componentId,
     getNowInMilliseconds: Date.now,
-    transactionId: config.transactionId,
-    redirect_uri: config.redirect_uri,
-    suspected_fraud_signal: config.suspected_fraud_signal,
+    transactionId,
+    redirect_uri: redirect_uri,
+    suspected_fraud_signal,
     ipAddress: undefined,
     txmaAuditEncoded: undefined,
   };
 };
 
-// These functions can now be simplified to call the unified builder
-const buildEventWithSessionRegistryData = (
-  config: GenericEventConfig,
-): GenericEventConfig => {
-  return buildEvent(config, true);
-};
-
-const buildEventWithoutSessionRegistryData = (
-  config: GenericEventConfig,
-): GenericEventConfig => {
-  return buildEvent(config, false);
+const buildEventWithoutSessionRegistryData = ({
+  eventName,
+  sessionId,
+  componentId,
+  transactionId,
+  redirect_uri,
+  suspected_fraud_signal,
+}: GenericEventConfig): GenericEventConfig => {
+  return {
+    eventName,
+    sub: undefined,
+    sessionId,
+    govukSigninJourneyId: undefined,
+    componentId,
+    getNowInMilliseconds: Date.now,
+    transactionId,
+    redirect_uri: redirect_uri,
+    suspected_fraud_signal,
+    ipAddress: undefined,
+    txmaAuditEncoded: undefined,
+  };
 };
 
 async function handleConditionalCheckFailure(
