@@ -6,6 +6,7 @@ import {
 import {
   badRequestResponse,
   notImplementedResponse,
+  serverErrorResponse,
 } from "../common/lambdaResponses";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
@@ -15,14 +16,20 @@ import {
   runtimeDependencies,
 } from "./handlerDependencies";
 import { validateRequestBody } from "./validateRequestBody/validateRequestBody";
+import { getTxmaEventConfig } from "./txmaEventConfig";
 
 export async function lambdaHandlerConstructor(
-  _dependencies: IAsyncTxmaEventDependencies,
+  dependencies: IAsyncTxmaEventDependencies,
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
   setupLogger(context);
   logger.info(LogMessage.TXMA_EVENT_STARTED);
+
+  const configResult = getTxmaEventConfig(dependencies.env);
+  if (configResult.isError) {
+    return serverErrorResponse;
+  }
 
   const validateRequestBodyResult = validateRequestBody(event.body);
   if (validateRequestBodyResult.isError) {

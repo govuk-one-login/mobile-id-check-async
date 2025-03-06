@@ -187,6 +187,10 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_TXMA_EVENT_STARTED",
     "Lambda handler processing has started.",
   );
+  static readonly TXMA_EVENT_INVALID_CONFIG = new LogMessage(
+    "MOBILE_ASYNC_TXMA_EVENT_INVALID_CONFIG",
+    "One or more required environment variables were missing or invalid.",
+  );
   static readonly TXMA_EVENT_REQUEST_BODY_INVALID = new LogMessage(
     "MOBILE_ASYNC_TXMA_EVENT_REQUEST_BODY_INVALID",
     "The incoming request body was missing or invalid.",

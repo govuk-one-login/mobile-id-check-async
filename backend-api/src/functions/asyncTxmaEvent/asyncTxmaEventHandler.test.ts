@@ -56,6 +56,40 @@ describe("Async TxMA Event", () => {
     });
   });
 
+  describe("Config validation", () => {
+    describe.each(["SESSION_TABLE_NAME"])(
+      "Given %s environment variable is missing",
+      (envVar: string) => {
+        beforeEach(async () => {
+          delete dependencies.env[envVar];
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+        it("returns 500 Internal server error", async () => {
+          expect(result).toStrictEqual({
+            statusCode: 500,
+            body: JSON.stringify({
+              error: "server_error",
+              error_description: "Internal Server Error",
+            }),
+            headers: expectedSecurityHeaders,
+          });
+        });
+        it("logs INVALID_CONFIG", async () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_TXMA_EVENT_INVALID_CONFIG",
+            data: {
+              missingEnvironmentVariables: [envVar],
+            },
+          });
+        });
+      },
+    );
+  });
+
   describe("Request body validation", () => {
     describe("Given request body is invalid", () => {
       beforeEach(async () => {
