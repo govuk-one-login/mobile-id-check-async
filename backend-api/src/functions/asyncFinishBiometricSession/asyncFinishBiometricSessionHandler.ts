@@ -23,7 +23,11 @@ import {
 } from "../common/session/SessionRegistry";
 import { BiometricSessionFinished } from "../common/session/updateOperations/BiometricSessionFinished/BiometricSessionFinished";
 import { getFinishBiometricSessionConfig } from "./finishBiometricSessionConfig";
-import { IEventService } from "../services/events/types";
+import {
+  GenericEventConfig,
+  GenericEventNames,
+  IEventService,
+} from "../services/events/types";
 import { FailureWithValue } from "../utils/result";
 import { SessionAttributes } from "../common/session/session";
 import { setupLogger } from "../common/logging/setupLogger";
@@ -79,6 +83,31 @@ export async function lambdaHandlerConstructor(
   return notImplementedResponse;
 }
 
+const buildEventWithSessionRegistryData = ({
+  eventName,
+  sub,
+  sessionId,
+  govukSigninJourneyId,
+  componentId,
+  transactionId,
+  redirect_uri,
+  suspected_fraud_signal,
+}: GenericEventConfig): GenericEventConfig => {
+  return {
+    eventName,
+    sub,
+    sessionId,
+    govukSigninJourneyId,
+    componentId,
+    getNowInMilliseconds: Date.now,
+    transactionId,
+    redirect_uri: redirect_uri,
+    suspected_fraud_signal,
+    ipAddress: undefined,
+    txmaAuditEncoded: undefined,
+  };
+};
+
 async function handleConditionalCheckFailure(
   eventService: IEventService,
   sessionAttributes: SessionAttributes,
@@ -96,8 +125,8 @@ async function handleConditionalCheckFailure(
     return "AUTH_SESSION_TOO_OLD";
   }
 
-  const writeEventResult = await eventService.writeGenericEvent({
-    eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+  const txmaEvent: GenericEventConfig = {
+    eventName: "DCMAW_ASYNC_CRI_4XXERROR" as GenericEventNames,
     sub: sessionAttributes.subjectIdentifier,
     sessionId: sessionAttributes.sessionId,
     govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
@@ -108,7 +137,11 @@ async function handleConditionalCheckFailure(
     suspected_fraud_signal: getFraudSignal(isSessionExpired),
     ipAddress: undefined,
     txmaAuditEncoded: undefined,
-  });
+  };
+
+  const writeEventResult = await eventService.writeGenericEvent(
+    buildEventWithSessionRegistryData(txmaEvent),
+  );
 
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
