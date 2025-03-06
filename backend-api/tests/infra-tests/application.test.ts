@@ -2,6 +2,14 @@ import { Capture, Match, Template } from "aws-cdk-lib/assertions";
 import { readFileSync } from "fs";
 import { load } from "js-yaml";
 import { Mappings } from "./helpers/mappings";
+import { LogMessage } from '../../src/functions/common/logging/LogMessage'
+import { expect } from '@jest/globals'
+import {
+  extractCustomMetricsFromAlarms,
+  extractCustomMetricsFromMetricFilters,  
+  toHaveCustomMetricDefinitionIn,
+  toUseDimensionFromCustomMetricsIn,
+} from '../testUtils/alarmTestFunctions'
 
 const { schema } = require("yaml-cfn");
 
@@ -309,7 +317,74 @@ describe("Backend application infrastructure", () => {
           });
         },
       );
+      describe('Usage of Custom Metrics', () => {
+        const customMetricsFromAlarms =
+          extractCustomMetricsFromAlarms(template)
+        const customMetricsFromMetricFilters =
+          extractCustomMetricsFromMetricFilters(template)
+  
+        expect.extend({
+          toHaveCustomMetricDefinitionIn,
+          toUseDimensionFromCustomMetricsIn,
+        })
+  
+        it.each(customMetricsFromAlarms)(
+          'The $alarmName alarm uses custom metrics defined in this template',
+          alarmMetric => {
+            expect(alarmMetric).toHaveCustomMetricDefinitionIn(
+              customMetricsFromMetricFilters,
+            )
+          },
+        )
+  
+        it.each(customMetricsFromAlarms)(
+          'The $alarmName alarm uses custom metrics with the correct dimensions as defined in this template',
+          alarmMetric => {
+            expect(alarmMetric).toUseDimensionFromCustomMetricsIn(
+              customMetricsFromMetricFilters,
+            )
+          },
+        )
+      })
     });
+    describe('Metric alarms', () => {
+      it('All MessageCodes match a log message definition', () => {
+        // Gather all valid message codes
+        const validMessageCodes = Object.values(LogMessage).map(
+          message => message.messageCode,
+        )
+
+        // Gather all alarm definitions which use MessageCode as a dimension
+        const metricAlarms = Object.values(
+          template.findResources('AWS::CloudWatch::Alarm', {
+            Properties: {
+              Metrics: Match.arrayWith([
+                Match.objectLike({
+                  MetricStat: {
+                    Metric: {
+                      Dimensions: Match.arrayWith([
+                        { Name: 'MessageCode', Value: Match.anyValue() },
+                      ]),
+                    },
+                  },
+                }),
+              ]),
+            },
+          }),
+        )
+
+        // Validate all message codes used in the alarms have a defined message code
+        metricAlarms.forEach(alarm => {
+          alarm.Properties.Metrics.forEach((metric: { MetricStat: { Metric: { Dimensions: any[]; }; }; }) => {
+            metric.MetricStat?.Metric?.Dimensions?.forEach(dimension => {
+              if (dimension.Name === 'MessageCode') {
+                expect(validMessageCodes).toContain(dimension.Value)
+              }
+            })
+          })
+        })
+      })
+    })
   });
 
   describe("Sessions APIgw", () => {
