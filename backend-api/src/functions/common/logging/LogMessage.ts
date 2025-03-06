@@ -72,6 +72,21 @@ export class LogMessage implements LogAttributes {
     "IP Address could not be retrieved from the cloudfront-viewer-address header and the fallback value of event.requestContext.identity.sourceIp will be used for TxMA events.",
   );
 
+  static readonly SEND_MESSAGE_TO_SQS_ATTEMPT = new LogMessage(
+    "MOBILE_ASYNC_SEND_MESSAGE_TO_SQS_ATTEMPT",
+    "Attempting to write message to SQS.",
+  );
+
+  static readonly SEND_MESSAGE_TO_SQS_FAILURE = new LogMessage(
+    "MOBILE_ASYNC_SEND_MESSAGE_TO_SQS_FAILURE",
+    "An unexpected failure occurred while attempting to write message to SQS.",
+  );
+
+  static readonly SEND_MESSAGE_TO_SQS_SUCCESS = new LogMessage(
+    "MOBILE_ASYNC_SEND_MESSAGE_TO_SQS_SUCCESS",
+    "Successfully writen message to SQS.",
+  );
+
   // Token
   static readonly TOKEN_STARTED = new LogMessage(
     "MOBILE_ASYNC_TOKEN_STARTED",
@@ -212,6 +227,11 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_INVALID_CONFIG",
     "One or more required environment variables were missing or invalid.",
   );
+  static readonly FINISH_BIOMETRIC_SESSION_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE =
+    new LogMessage(
+      "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE",
+      "Failed to send message to vendor processing queue.",
+    );
 
   // TxMA Event
   static readonly TXMA_EVENT_STARTED = new LogMessage(
