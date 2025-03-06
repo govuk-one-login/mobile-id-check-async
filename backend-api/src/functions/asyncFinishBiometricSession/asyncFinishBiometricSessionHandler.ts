@@ -108,6 +108,29 @@ const buildEventWithSessionRegistryData = ({
   };
 };
 
+const buildEventWithoutSessionRegistryData = ({
+  eventName,
+  sessionId,
+  componentId,
+  transactionId,
+  redirect_uri,
+  suspected_fraud_signal,
+}: GenericEventConfig): GenericEventConfig => {
+  return {
+    eventName,
+    sub: undefined,
+    sessionId,
+    govukSigninJourneyId: undefined,
+    componentId,
+    getNowInMilliseconds: Date.now,
+    transactionId,
+    redirect_uri: redirect_uri,
+    suspected_fraud_signal,
+    ipAddress: undefined,
+    txmaAuditEncoded: undefined,
+  };
+};
+
 async function handleConditionalCheckFailure(
   eventService: IEventService,
   sessionAttributes: SessionAttributes,
@@ -163,19 +186,22 @@ async function handleSessionNotFound(
   biometricSessionId: string,
   issuer: string,
 ): Promise<APIGatewayProxyResult> {
-  const writeEventResult = await eventService.writeGenericEvent({
-    eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-    sessionId,
+  const txmaEvent: GenericEventConfig = {
+    eventName: "DCMAW_ASYNC_CRI_4XXERROR" as GenericEventNames,
     sub: undefined,
+    sessionId,
     govukSigninJourneyId: undefined,
     componentId: issuer,
     getNowInMilliseconds: Date.now,
     transactionId: biometricSessionId,
-    ipAddress: undefined,
-    txmaAuditEncoded: undefined,
     redirect_uri: undefined,
     suspected_fraud_signal: undefined,
-  });
+    ipAddress: undefined,
+    txmaAuditEncoded: undefined,
+  };
+  const writeEventResult = await eventService.writeGenericEvent(
+    buildEventWithoutSessionRegistryData(txmaEvent),
+  );
 
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
@@ -193,19 +219,22 @@ async function handleInternalServerError(
   biometricSessionId: string,
   issuer: string,
 ): Promise<APIGatewayProxyResult> {
-  const writeEventResult = await eventService.writeGenericEvent({
-    eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-    sessionId,
+  const txmaEvent: GenericEventConfig = {
+    eventName: "DCMAW_ASYNC_CRI_5XXERROR" as GenericEventNames,
     sub: undefined,
+    sessionId,
     govukSigninJourneyId: undefined,
     componentId: issuer,
     getNowInMilliseconds: Date.now,
     transactionId: biometricSessionId,
-    ipAddress: undefined,
-    txmaAuditEncoded: undefined,
     redirect_uri: undefined,
     suspected_fraud_signal: undefined,
-  });
+    ipAddress: undefined,
+    txmaAuditEncoded: undefined,
+  };
+  const writeEventResult = await eventService.writeGenericEvent(
+    buildEventWithoutSessionRegistryData(txmaEvent),
+  );
 
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
