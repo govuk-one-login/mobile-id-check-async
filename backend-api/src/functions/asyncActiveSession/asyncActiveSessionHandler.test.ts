@@ -435,6 +435,12 @@ describe("Async Active Session", () => {
 
         result = await lambdaHandlerConstructor(dependencies, request, context);
       });
+      it("Logs the error", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_ACTIVE_SESSION_NOT_FOUND",
+        });
+      });
+
       it("Returns 404 Not Found", async () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
