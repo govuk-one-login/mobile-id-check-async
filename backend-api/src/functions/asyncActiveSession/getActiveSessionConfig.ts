@@ -33,7 +33,7 @@ export function getActiveSessionConfig(
     return emptyFailure();
   }
 
-  if (!isStsUrlValidUrl(env)) {
+  if (!isValidUrl(envVarsResult.value.STS_BASE_URL)) {
     logger.error(LogMessage.ACTIVE_SESSION_INVALID_CONFIG, {
       errorMessage: "STS_BASE_URL is not a URL",
     });
@@ -42,12 +42,3 @@ export function getActiveSessionConfig(
 
   return envVarsResult;
 }
-
-const isStsUrlValidUrl = (env: NodeJS.ProcessEnv): boolean => {
-  // To satisfy typescript, this has already been checked in getRequiredEnvironmentVariables
-  if (!env.STS_BASE_URL) {
-    return false;
-  }
-
-  return isValidUrl(env.STS_BASE_URL);
-};
