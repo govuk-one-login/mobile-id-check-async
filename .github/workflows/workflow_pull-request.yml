@@ -1,0 +1,49 @@
+name: Pull request - runs linters, tests, and sonarQube required before merging
+
+on:
+  workflow_call:
+    inputs:
+      RUN_SONARQUBE_SCAN:
+        description: Whether to run sonarQube scans
+        required: false
+        type: boolean
+        default: false
+      VERIFY_TEMPLATE_RAIN:
+        description: Whether to install and verify templates with rain
+        required: false
+        type: boolean
+        default: false
+      WORKING_DIRECTORY:
+        description: Working directory
+        required: true
+        type: string
+
+jobs:
+  ci-checks:
+    name: CI Checks
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_ci-checks.yml@DCMAW-11654
+    with:
+      VERIFY_TEMPLATE_RAIN: ${{ inputs.VERIFY_TEMPLATE_RAIN }}
+      WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
+    secrets: inherit
+
+  run-test-suite:
+    name: Run test suite
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_test-suite.yml@DCMAW-11654
+    with:
+      RUN_SONARQUBE_SCAN: ${{ inputs.RUN_SONARQUBE_SCAN }}
+      WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
+        
+  sonarqube-scan:
+    name: SonarQube scan
+    if: ${{ inputs.RUN_SONARQUBE_SCAN }}
+    needs: run-test-suite
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_sonarqube.yml@DCMAW-11654
+    with:
+      DOWNLOAD_TEST_COVERAGE: true
+      RUN_SONARQUBE_QUALITY_GATE_CHECK: true
+      WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
+    secrets: inherit

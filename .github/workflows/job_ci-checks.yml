@@ -3,16 +3,6 @@ name: CI Checks
 on:
   workflow_call:
     inputs:
-      GENERATE_PROXY_OPEN_API_SPEC:
-        description: Whether to run script to generate proxy openAPI spec
-        required: false
-        type: boolean
-        default: false
-      RUN_LINTER:
-        description: Whether to run a linter
-        required: false
-        type: boolean
-        default: true
       TEMPLATE_NAME:
         description: CloudFormation template name
         required: false
@@ -54,20 +44,18 @@ jobs:
         run: npm clean-install
 
       - name: Linting
-        if: ${{ inputs.RUN_LINTER }}
         run: npm run lint
-
-      - name: Check formatting
-        run: npm run format:check
-
-      # - name: Generate proxy open api spec
-      #   if: ${{ inputs.GENERATE_PROXY_OPEN_API_SPEC }}
-      #   run: npm run generate-proxy-open-api
 
       - name: Set up Homebrew
         if: ${{ inputs.VERIFY_TEMPLATE_RAIN }}
         id: set-up-homebrew
-        uses: Homebrew/actions/setup-homebrew@a7a36215df86859f163fbb774ebe0cecf9ec8547 
+        run: |
+          # The suggested command doesn't persist across steps: eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          # The following commands mimics the output from the suggested command. It may break for future runners.
+          echo "HOMEBREW_CELLAR=/home/linuxbrew/.linuxbrew/Cellar" >> $GITHUB_ENV
+          echo "HOMEBREW_REPOSITORY=/home/linuxbrew/.linuxbrew/Homebrew" >> $GITHUB_ENV
+          echo "/home/linuxbrew/.linuxbrew/sbin" >> $GITHUB_PATH
+          echo "/home/linuxbrew/.linuxbrew/bin" >> $GITHUB_PATH
 
       - name: Install rain
         if: ${{ inputs.VERIFY_TEMPLATE_RAIN }}

@@ -48,23 +48,27 @@ jobs:
           aws-region: eu-west-2
           role-to-assume: ${{ secrets.GH_ACTIONS_ROLE_ARN }}
 
-      # - name: Cache SAM builds
-      #   uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # pin@v4
-      #   with:
-      #     path: |
-      #       ./backend-api/.aws-sam/cache
-      #       ./backend-api/.aws-sam/deps
-      #       ./backend-api/.aws-sam/build.toml
-      #     key: sam-${{ inputs.WORKING_DIRECTORY }}
-
       - name: Sam validate
         run: |
           echo "SAM_CLI_TELEMETRY=0" >> $GITHUB_ENV
           sam validate --lint --template $TEMPLATE_NAME
 
-      - name: Build SAM artifact from template file
+      - name: Get cache key
+        id: get-cache-key
         run: |
-          sam build --template $TEMPLATE_NAME
+          echo "cache-key=sam-$WORKING_DIRECTORY-${{ hashFiles('**/template.yaml') }}" >> "$GITHUB_OUTPUT"
+          echo "restore-keys=sam-$WORKING_DIRECTORY-" >> "$GITHUB_OUTPUT"
+
+      - name: Cache SAM dependencies
+        uses: actions/cache@v4
+        with:
+          key: ${{ steps.get-cache-key.outputs.cache-key }}
+          restore-keys: ${{ steps.get-cache-key.outputs.restore-keys }}
+          path: .aws-sam
+
+      - name: Build SAM artifact from template
+        run: |
+          sam build --cached --template $TEMPLATE_NAME
 
       - name: Upload SAM artifact into the S3 artifact bucket
         uses: govuk-one-login/devplatform-upload-action@a3ea2d79b7ee95bc6ecea69aea6ec75f19faee41 #v3.9.3

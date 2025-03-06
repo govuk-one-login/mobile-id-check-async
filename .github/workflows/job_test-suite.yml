@@ -3,6 +3,11 @@ name: Run Test Suite
 on:
   workflow_call:
     inputs:
+      RUN_SONARQUBE_SCAN:
+        description: Whether to run sonarQube scans
+        required: false
+        type: boolean
+        default: false
       WORKING_DIRECTORY:
         description: Working directory
         required: true
@@ -36,8 +41,9 @@ jobs:
       - name: Run all tests
         run: npm run test
 
-      - name: Upload coverage artifact
-        uses: actions/upload-artifact@v3
+      - name: Upload coverage artifact, if running SonarQube scan
+        if: ${{ inputs.RUN_SONARQUBE_SCAN }}
+        uses: actions/upload-artifact@v4
         with:
           name: test-coverage
           path: coverage/

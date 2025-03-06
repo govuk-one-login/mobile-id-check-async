@@ -44,14 +44,14 @@ jobs:
         run: npm clean-install
 
       - name: Download coverage artifact
-        if: ${{ inputs.DOWNLOAD_TEST_COVERAGE }} == true
-        uses: actions/download-artifact@v3
+        if: ${{ inputs.DOWNLOAD_TEST_COVERAGE }}
+        uses: actions/download-artifact@v4
         with:
           name: test-coverage
           path: coverage/
 
       - name: Generate test coverage report for SonarQube Quality Gate Check
-        if: ${{ inputs.DOWNLOAD_TEST_COVERAGE }} == false
+        if: ${{ ! inputs.DOWNLOAD_TEST_COVERAGE }}
         run: npm run test:unit
 
       - name: Run SonarQube Scan
