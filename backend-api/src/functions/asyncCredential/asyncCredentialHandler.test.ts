@@ -157,7 +157,7 @@ describe("Async Credential", () => {
 
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_CREDENTIAL_AUTHORIZATION_HEADER_INVALID",
-          errorMessage: "No Authentication header present",
+          errorMessage: "No authorization header present",
         });
 
         expect(result).toStrictEqual({
@@ -186,7 +186,7 @@ describe("Async Credential", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_CREDENTIAL_AUTHORIZATION_HEADER_INVALID",
           errorMessage:
-            "Invalid authentication header format - does not start with Bearer",
+            "Invalid authorization header format - does not start with Bearer",
         });
 
         expect(result).toStrictEqual({
@@ -214,8 +214,7 @@ describe("Async Credential", () => {
 
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_CREDENTIAL_AUTHORIZATION_HEADER_INVALID",
-          errorMessage:
-            "Invalid authentication header format - contains spaces",
+          errorMessage: "Invalid authorization header format - contains spaces",
         });
 
         expect(result).toStrictEqual({
@@ -243,7 +242,7 @@ describe("Async Credential", () => {
 
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_CREDENTIAL_AUTHORIZATION_HEADER_INVALID",
-          errorMessage: "Invalid authentication header format - missing token",
+          errorMessage: "Invalid authorization header format - missing token",
         });
 
         expect(result).toStrictEqual({
