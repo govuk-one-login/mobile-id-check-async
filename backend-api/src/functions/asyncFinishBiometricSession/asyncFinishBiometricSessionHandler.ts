@@ -85,13 +85,15 @@ export async function lambdaHandlerConstructor(
 
 const buildEvent = (
   config: GenericEventConfig,
-  includeSessionRegistry: boolean = true
+  includeSessionRegistry: boolean = true,
 ): GenericEventConfig => {
   return {
     eventName: config.eventName,
     sub: includeSessionRegistry ? config.sub : undefined,
     sessionId: config.sessionId,
-    govukSigninJourneyId: includeSessionRegistry ? config.govukSigninJourneyId : undefined,
+    govukSigninJourneyId: includeSessionRegistry
+      ? config.govukSigninJourneyId
+      : undefined,
     componentId: config.componentId,
     getNowInMilliseconds: Date.now,
     transactionId: config.transactionId,
@@ -103,11 +105,15 @@ const buildEvent = (
 };
 
 // These functions can now be simplified to call the unified builder
-const buildEventWithSessionRegistryData = (config: GenericEventConfig): GenericEventConfig => {
+const buildEventWithSessionRegistryData = (
+  config: GenericEventConfig,
+): GenericEventConfig => {
   return buildEvent(config, true);
 };
 
-const buildEventWithoutSessionRegistryData = (config: GenericEventConfig): GenericEventConfig => {
+const buildEventWithoutSessionRegistryData = (
+  config: GenericEventConfig,
+): GenericEventConfig => {
   return buildEvent(config, false);
 };
 
