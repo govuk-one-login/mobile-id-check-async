@@ -78,18 +78,16 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  const sendMessageToSqs = dependencies.getSendMessageToSqs();
-
   const vendorProcessingMessage = {
     biometricSessionId,
     sessionId,
   };
+  const sendMessageToSqs = dependencies.getSendMessageToSqs();
 
   const sendMessageToVendorProcessingQueueResult = await sendMessageToSqs(
     config.VENDOR_PROCESSING_SQS,
     vendorProcessingMessage,
   );
-
   if (sendMessageToVendorProcessingQueueResult.isError) {
     return await handleSendMessageToVendorProcessingQueueFailure(eventService, {
       sessionAttributes: updateResult.value
