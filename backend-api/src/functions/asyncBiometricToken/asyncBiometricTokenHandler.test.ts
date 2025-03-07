@@ -650,9 +650,7 @@ describe("Async Biometric Token", () => {
           documentType: "NFC_PASSPORT",
           ipAddress: "1.1.1.1",
           txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
-          extensions: {
-            redirect_uri: "https://www.mockRedirectUri.com",
-          },
+          redirect_uri: "https://www.mockRedirectUri.com",
         });
       });
 

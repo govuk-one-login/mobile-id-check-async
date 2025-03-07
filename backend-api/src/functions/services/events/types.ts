@@ -67,7 +67,7 @@ export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
 
 export interface BiometricTokenIssuedEventConfig extends BaseUserEventConfig {
   documentType: DocumentType;
-  extensions: Extensions | undefined;
+  redirect_uri: string | undefined;
 }
 
 export interface GenericTxmaEvent extends BaseUserTxmaEvent {

@@ -20,20 +20,6 @@ export class EventService implements IEventService {
     this.sqsQueue = sqsQueue;
   }
 
-  private getExtensionsObject(
-    redirect_uri?: string,
-    suspected_fraud_signal?: string,
-  ) {
-    if (redirect_uri === undefined && suspected_fraud_signal === undefined) {
-      return undefined;
-    }
-
-    return {
-      redirect_uri,
-      suspected_fraud_signal,
-    };
-  }
-
   async writeGenericEvent(
     eventConfig: GenericEventConfig,
   ): Promise<Result<void, void>> {
@@ -91,15 +77,25 @@ export class EventService implements IEventService {
       event_name: eventConfig.eventName,
       component_id: eventConfig.componentId,
       restricted: this.getRestrictedData(eventConfig.txmaAuditEncoded),
-      extensions: undefined,
+      extensions,
     };
-
-    if (extensions !== undefined) {
-      event.extensions = extensions;
-    }
 
     return event;
   };
+
+  private getExtensionsObject(
+    redirect_uri?: string,
+    suspected_fraud_signal?: string,
+  ) {
+    if (redirect_uri === undefined && suspected_fraud_signal === undefined) {
+      return undefined;
+    }
+
+    return {
+      redirect_uri,
+      suspected_fraud_signal,
+    };
+  }
 
   private buildCredentialTokenIssuedEvent = (
     eventConfig: CredentialTokenIssuedEventConfig,

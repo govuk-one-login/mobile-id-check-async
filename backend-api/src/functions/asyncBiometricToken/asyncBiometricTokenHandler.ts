@@ -367,9 +367,7 @@ async function handleOkResponse(
     documentType: sessionAttributes.documentType,
     ipAddress,
     txmaAuditEncoded,
-    extensions: {
-      redirect_uri: sessionAttributes.redirectUri,
-    },
+    redirect_uri: sessionAttributes.redirectUri,
   });
 
   if (writeEventResult.isError) {
