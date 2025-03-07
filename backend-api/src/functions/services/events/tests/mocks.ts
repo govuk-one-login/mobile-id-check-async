@@ -14,11 +14,13 @@ import {
 
 export class MockEventWriterSuccess implements IEventService {
   auditEvents: EventNames[] = [];
+  eventConfig?: GenericEventConfig;
 
   writeGenericEvent = async (
     eventConfig: GenericEventConfig,
   ): Promise<Result<null>> => {
     this.auditEvents.push(eventConfig.eventName);
+    this.eventConfig = eventConfig;
     return successResult(null);
   };
 

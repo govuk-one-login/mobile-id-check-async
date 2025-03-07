@@ -112,14 +112,12 @@ async function handleConditionalCheckFailure(
   const sessionAge = Date.now() - sessionAttributes.createdAt;
   const isSessionExpired = sessionAge > 60 * 60 * 1000;
 
-  function getFraudSignal(
-    expired: boolean,
-  ): Record<string, string> | undefined {
+  function getFraudSignal(expired: boolean): string | undefined {
     if (!expired) {
       return undefined;
     }
 
-    return { suspected_fraud_signal: "AUTH_SESSION_TOO_OLD" };
+    return "AUTH_SESSION_TOO_OLD";
   }
 
   const writeEventResult = await eventService.writeGenericEvent({
@@ -130,7 +128,8 @@ async function handleConditionalCheckFailure(
     componentId: issuer,
     getNowInMilliseconds: Date.now,
     transactionId: biometricSessionId,
-    extensions: getFraudSignal(isSessionExpired),
+    redirect_uri: sessionAttributes.redirectUri,
+    suspected_fraud_signal: getFraudSignal(isSessionExpired),
     ipAddress: undefined,
     txmaAuditEncoded: undefined,
   });
@@ -165,6 +164,8 @@ async function handleSessionNotFound(
     transactionId: biometricSessionId,
     ipAddress: undefined,
     txmaAuditEncoded: undefined,
+    redirect_uri: undefined,
+    suspected_fraud_signal: undefined,
   });
 
   if (writeEventResult.isError) {
@@ -193,6 +194,8 @@ async function handleInternalServerError(
     transactionId: biometricSessionId,
     ipAddress: undefined,
     txmaAuditEncoded: undefined,
+    redirect_uri: undefined,
+    suspected_fraud_signal: undefined,
   });
 
   if (writeEventResult.isError) {
@@ -272,6 +275,8 @@ const handleSendMessageToVendorProcessingQueueFailure = async (
     transactionId: biometricSessionId,
     ipAddress,
     txmaAuditEncoded,
+    redirect_uri: undefined,
+    suspected_fraud_signal: undefined,
   });
 
   if (writeEventResult.isError) {
