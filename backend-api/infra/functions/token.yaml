@@ -17,6 +17,17 @@ Resources:
       Runtime: nodejs20.x
       Handler: asyncTokenHandler.lambdaHandler
       Role: !GetAtt AsyncTokenLambdaRole.Arn
+      DeploymentPreference:
+        Type: !Ref LambdaCanaryDeployment
+        Alarms: !If
+          - UseLinearCanaryDeployments
+          - - !Sub "${AWS::StackName}-token-lambda-error-rate"        
+            - !Sub "${AWS::StackName}-token-lambda-low-completion"
+          - - !Ref AWS::NoValue
+        Role: !If
+          - UseLinearCanaryDeployments
+          - !GetAtt CodeDeployServiceRole.Arn
+          - !Ref AWS::NoValue
       Environment:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !FindInMap [EnvironmentVariables, !Ref Environment, ClientRegistrySecretPath]
