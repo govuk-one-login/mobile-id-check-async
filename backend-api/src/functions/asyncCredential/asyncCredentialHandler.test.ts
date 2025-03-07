@@ -972,7 +972,6 @@ describe("Async Credential", () => {
               "DCMAW_ASYNC_CRI_START",
             );
 
-            //Check the event config contains redirect url
             expect(mockEventService.eventConfig).toEqual(
               expect.objectContaining({
                 eventName: "DCMAW_ASYNC_CRI_START",
