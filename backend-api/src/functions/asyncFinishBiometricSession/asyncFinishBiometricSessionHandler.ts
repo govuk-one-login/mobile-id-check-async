@@ -275,6 +275,8 @@ const handleSendMessageToVendorProcessingQueueFailure = async (
     transactionId: biometricSessionId,
     ipAddress,
     txmaAuditEncoded,
+    redirect_uri: undefined,
+    suspected_fraud_signal: undefined,
   });
 
   if (writeEventResult.isError) {
