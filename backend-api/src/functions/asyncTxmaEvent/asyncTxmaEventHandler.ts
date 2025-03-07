@@ -63,6 +63,17 @@ export async function lambdaHandlerConstructor(
     txmaAuditEncoded: getHeader(event.headers, "Txma-Audit-Encoded"),
   };
   if (getSessionResult.isError) {
+    // const getAttributesResult = getSessionAttributesFromDynamoDbItem(
+    //   error.Item,
+    //   getSessionAttributesOptions,
+    // );
+    // if (getAttributesResult.isError) {
+    //   return this.handleUpdateSessionInternalServerError(
+    //     error,
+    //     updateExpressionDataToLog,
+    //   );
+    // }
+
     return handleGetSessionError(eventService, {
       getSessionResult,
       ...eventData,
