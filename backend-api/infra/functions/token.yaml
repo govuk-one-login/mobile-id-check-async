@@ -28,12 +28,16 @@ Resources:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
       DeploymentPreference:
-        Enabled: True
+        Type: !Ref LambdaCanaryDeployment
         Alarms: !If
-          - UseCanaryDeployments
+          - UseLinearCanaryDeployments
           - - !Ref AsyncTokenErrorRateAlarm            
             - !Ref AsyncTokenLowCompletionAlarm
           - - !Ref AWS::NoValue
+        Role: !If
+          - UseLinearCanaryDeployments
+          - !GetAtt CodeDeployServiceRole.Arn
+          - !Ref AWS::NoValue
 
   AsyncTokenFunctionPermission:
     Type: AWS::Lambda::Permission

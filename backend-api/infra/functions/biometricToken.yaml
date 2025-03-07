@@ -24,12 +24,16 @@ Resources:
             Method: post
             RestApiId: !Ref SessionsApi
       DeploymentPreference:
-        Enabled: True
+        Type: !Ref LambdaCanaryDeployment
         Alarms: !If
-          - UseCanaryDeployments
+          - UseLinearCanaryDeployments
           - - !Ref AsyncBiometricTokenErrorRateAlarm            
             - !Ref AsyncBiometricTokenLowCompletionAlarm
           - - !Ref AWS::NoValue
+        Role: !If
+          - UseLinearCanaryDeployments
+          - !GetAtt CodeDeployServiceRole.Arn
+          - !Ref AWS::NoValue
       Environment:
         Variables:
           BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_PASSPORT: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathPassport]

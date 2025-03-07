@@ -53,15 +53,18 @@ Parameters:
     Type: String
     Default: false
 
+  LambdaCanaryDeployment:
+    Description: "Specifies the configuration to enable gradual Lambda deployments"
+    Type: String
+    AllowedValues:
+      - AllAtOnce
+      - Linear20PercentEvery1Minute
+    Default: AllAtOnce
+
   SamValidateLintWorkaround:
     Description: Do not update or override. This allows the definition of a resource that is never deployed.
     Type: String
     Default: unused
-
-  LambdaDeploymentPreference:
-    Description: "Specifies the configuration to enable gradual Lambda deployments"
-    Type: String
-    Default: None
 
 Mappings:
   StaticVariables:
@@ -311,16 +314,10 @@ Conditions:
       - !Ref Environment
       - staging
 
-  UseLambdaDeploymentPreference:
-    !Not [!Equals [!Ref LambdaDeploymentPreference, "None"]]
-
-  UseCanaryDeployments: !And
-    - Condition: UseLambdaDeploymentPreference
-    - !Not [!Equals [!Ref LambdaDeploymentPreference, "AllAtOnce"]]
-
-  DeployCanaryAlarms: !Or
-    - Condition: UseLambdaDeploymentPreference
-    - Condition: DeployAlarms
+  UseLinearCanaryDeployments: !Not
+    - !Equals
+      - !Ref LambdaCanaryDeployment
+      - AllAtOnce
 
 # This condition is in place so that we can add a resource to this parent.yaml template that is never deployed.
   NeverDeploy: !Equals
@@ -356,12 +353,7 @@ Globals:
     Architectures:
       - arm64
     DeploymentPreference:
-      Enabled: False
-      Type: !If 
-        - UseLambdaDeploymentPreference
-        - !Ref LambdaDeploymentPreference
-        - AllAtOnce
-      Role: !GetAtt CodeDeployServiceRole.Arn
+      Type: AllAtOnce
     Environment:
       Variables:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn

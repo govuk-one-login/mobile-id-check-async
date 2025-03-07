@@ -46,10 +46,13 @@ Parameters:
       - staging
     Default: dev
 
-  LambdaDeploymentPreference:
+  LambdaCanaryDeployment:
     Description: Specifies the configuration to enable gradual Lambda deployments
     Type: String
-    Default: None
+    AllowedValues:
+      - AllAtOnce
+      - Linear20PercentEvery1Minute
+    Default: AllAtOnce
 
   PermissionsBoundary:
     Description: |
@@ -280,13 +283,6 @@ Conditions:
       - !Ref Environment
       - build
 
-  UseCanaryDeployments: !And
-    - !Condition UseLambdaDeploymentPreference
-    - !Not
-      - !Equals
-        - !Ref LambdaDeploymentPreference
-        - AllAtOnce
-
   UseCodeSigning: !Not
     - !Equals
       - !Ref CodeSigningConfigArn
@@ -307,10 +303,10 @@ Conditions:
       - !Ref DevOverrideStsBaseUrl
       - none
 
-  UseLambdaDeploymentPreference: !Not
+  UseLinearCanaryDeployments: !Not
     - !Equals
-      - !Ref LambdaDeploymentPreference
-      - None
+      - !Ref LambdaCanaryDeployment
+      - AllAtOnce
 
   UsePermissionsBoundary: !Not
     - !Equals
@@ -345,12 +341,7 @@ Globals:
       - !Ref CodeSigningConfigArn
       - !Ref AWS::NoValue
     DeploymentPreference:
-      Enabled: false
-      Role: !GetAtt CodeDeployServiceRole.Arn
-      Type: !If
-        - UseLambdaDeploymentPreference
-        - !Ref LambdaDeploymentPreference
-        - AllAtOnce
+      Type: AllAtOnce
     Environment:
       Variables:
         AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
@@ -773,11 +764,15 @@ Resources:
     Properties:
       DeploymentPreference:
         Alarms: !If
-          - UseCanaryDeployments
+          - UseLinearCanaryDeployments
           - - !Ref AsyncActiveSessionErrorRateAlarm
             - !Ref AsyncActiveSessionLowCompletionAlarm
           - - !Ref AWS::NoValue
-        Enabled: true
+        Role: !If
+          - UseLinearCanaryDeployments
+          - !GetAtt CodeDeployServiceRole.Arn
+          - !Ref AWS::NoValue
+        Type: !Ref LambdaCanaryDeployment
       Environment:
         Variables:
           AUDIENCE: !Sub https://${SessionsApiDomainName}
@@ -1299,11 +1294,15 @@ Resources:
     Properties:
       DeploymentPreference:
         Alarms: !If
-          - UseCanaryDeployments
+          - UseLinearCanaryDeployments
           - - !Ref AsyncBiometricTokenErrorRateAlarm
             - !Ref AsyncBiometricTokenLowCompletionAlarm
           - - !Ref AWS::NoValue
-        Enabled: true
+        Role: !If
+          - UseLinearCanaryDeployments
+          - !GetAtt CodeDeployServiceRole.Arn
+          - !Ref AWS::NoValue
+        Type: !Ref LambdaCanaryDeployment
       Environment:
         Variables:
           BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS: !FindInMap
@@ -1856,11 +1855,15 @@ Resources:
     Properties:
       DeploymentPreference:
         Alarms: !If
-          - UseCanaryDeployments
+          - UseLinearCanaryDeployments
           - - !Ref AsyncCredentialErrorRateAlarm
             - !Ref AsyncCredentialLowCompletionAlarm
           - - !Ref AWS::NoValue
-        Enabled: true
+        Role: !If
+          - UseLinearCanaryDeployments
+          - !GetAtt CodeDeployServiceRole.Arn
+          - !Ref AWS::NoValue
+        Type: !Ref LambdaCanaryDeployment
       Environment:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !FindInMap
@@ -2407,11 +2410,15 @@ Resources:
     Properties:
       DeploymentPreference:
         Alarms: !If
-          - UseCanaryDeployments
+          - UseLinearCanaryDeployments
           - - !Ref AsyncFinishBiometricSessionErrorRateAlarm
             - !Ref AsyncFinishBiometricSessionLowCompletionAlarm
           - - !Ref AWS::NoValue
-        Enabled: true
+        Role: !If
+          - UseLinearCanaryDeployments
+          - !GetAtt CodeDeployServiceRole.Arn
+          - !Ref AWS::NoValue
+        Type: !Ref LambdaCanaryDeployment
       Events:
         AsyncFinishBiometricSession:
           Properties:
@@ -2926,11 +2933,15 @@ Resources:
     Properties:
       DeploymentPreference:
         Alarms: !If
-          - UseCanaryDeployments
+          - UseLinearCanaryDeployments
           - - !Ref AsyncTokenErrorRateAlarm
             - !Ref AsyncTokenLowCompletionAlarm
           - - !Ref AWS::NoValue
-        Enabled: true
+        Role: !If
+          - UseLinearCanaryDeployments
+          - !GetAtt CodeDeployServiceRole.Arn
+          - !Ref AWS::NoValue
+        Type: !Ref LambdaCanaryDeployment
       Environment:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !FindInMap
