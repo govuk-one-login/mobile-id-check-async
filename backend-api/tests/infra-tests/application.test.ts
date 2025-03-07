@@ -2,6 +2,7 @@ import { Capture, Match, Template } from "aws-cdk-lib/assertions";
 import { readFileSync } from "fs";
 import { load } from "js-yaml";
 import { Mappings } from "./helpers/mappings";
+import { expect } from "@jest/globals";
 
 const { schema } = require("yaml-cfn");
 
@@ -243,14 +244,14 @@ describe("Backend application infrastructure", () => {
       expect(activeCriticalAlertsWithNoRunbook).toHaveLength(0);
     });
 
-    test("All alarms are configured with the DeployAlarm Condition", () => {
+    test("All alarms are configured with a Condition", () => {
+      const conditionalNames = ["DeployAlarms", "DeployCanaryAlarms"];
       const alarms = Object.values(
         template.findResources("AWS::CloudWatch::Alarm"),
       );
+
       alarms.forEach((alarm) => {
-        expect(alarm).toEqual(
-          expect.objectContaining({ Condition: "DeployAlarms" }),
-        );
+        expect(conditionalNames).toContain(alarm.Condition);
       });
     });
 
@@ -278,6 +279,16 @@ describe("Backend application infrastructure", () => {
         ["low-threshold-async-finish-biometric-session-4xx-api-gw"],
         ["high-threshold-async-finish-biometric-session-5xx-api-gw"],
         ["low-threshold-async-finish-biometric-session-5xx-api-gw"],
+        ["finish-biometric-session-error-rate"],
+        ["finish-biometric-session-low-completion"],
+        ["biometric-token-low-completion"],
+        ["biometric-token-error-rate"],
+        ["token-error-rate"],
+        ["token-low-completion"],
+        ["credential-error-rate"],
+        ["credential-low-completion"],
+        ["active-session-error-rate"],
+        ["active-session-low-completion"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {

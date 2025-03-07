@@ -24,6 +24,17 @@ Resources:
             Method: post
             RestApiId: !Ref SessionsApi
       Role: !GetAtt AsyncFinishBiometricSessionLambdaRole.Arn
+      DeploymentPreference:
+        Type: !Ref LambdaCanaryDeployment
+        Alarms: !If
+          - UseLinearCanaryDeployments
+          - - !Ref AsyncFinishBiometricSessionErrorRateAlarm            
+            - !Ref AsyncFinishBiometricSessionLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Role: !If
+          - UseLinearCanaryDeployments
+          - !GetAtt CodeDeployServiceRole.Arn
+          - !Ref AWS::NoValue
       VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-PrivateSubnetIdA

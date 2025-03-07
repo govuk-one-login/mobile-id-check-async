@@ -48,6 +48,19 @@ Parameters:
     Type: String
     Default: false
 
+  DeployCanaryAlarms:
+    Description: Whether to deploy canary alarms or not
+    Type: String
+    Default: false
+
+  LambdaCanaryDeployment:
+    Description: "Specifies the configuration to enable gradual Lambda deployments"
+    Type: String
+    AllowedValues:
+      - AllAtOnce
+      - Linear20PercentEvery1Minute
+    Default: AllAtOnce
+
   SamValidateLintWorkaround:
     Description: Do not update or override. This allows the definition of a resource that is never deployed.
     Type: String
@@ -295,9 +308,16 @@ Conditions:
         - dev
     - !Equals [!Ref DeployAlarmsInDev, true]
 
+  DeployCanaryAlarms: !Equals [!Ref DeployCanaryAlarms, true]
+
   IntegrateIpvCore: !Equals
       - !Ref Environment
       - staging
+
+  UseLinearCanaryDeployments: !Not
+    - !Equals
+      - !Ref LambdaCanaryDeployment
+      - AllAtOnce
 
 # This condition is in place so that we can add a resource to this parent.yaml template that is never deployed.
   NeverDeploy: !Equals
@@ -332,6 +352,8 @@ Globals:
       LogFormat: JSON
     Architectures:
       - arm64
+    DeploymentPreference:
+      Type: AllAtOnce
     Environment:
       Variables:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
