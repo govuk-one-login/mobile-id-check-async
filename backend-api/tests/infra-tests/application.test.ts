@@ -121,7 +121,7 @@ describe("Backend application infrastructure", () => {
         const expectedIpvCoreVpceIdMapping = {
           dev: "",
           build: "",
-          staging: "vpce-0555f751a645d7639",
+          staging: "vpce-0cc0de10742b83b8a",
           integration: "",
           production: "",
         };
