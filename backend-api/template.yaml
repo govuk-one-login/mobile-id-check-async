@@ -170,7 +170,7 @@ Mappings:
     staging:
       ApiBurstLimit: 10
       ApiRateLimit: 10
-      IpvCoreVpceId: vpce-0555f751a645d7639
+      IpvCoreVpceId: vpce-0cc0de10742b83b8a
 
   ProxyApigw:
     build:
