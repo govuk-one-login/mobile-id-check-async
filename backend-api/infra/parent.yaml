@@ -345,6 +345,8 @@ Globals:
       LogFormat: JSON
     Architectures:
       - arm64
+    DeploymentPreference:
+      Type: AllAtOnce
     Environment:
       Variables:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
