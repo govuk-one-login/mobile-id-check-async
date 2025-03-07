@@ -1,9 +1,9 @@
-import { Result } from "../../../utils/result";
+import { Result } from "../../utils/result";
 import {
   HttpError,
   sendHttpRequest,
   SuccessfulHttpResponse,
-} from "../sendHttpRequest";
+} from "./sendHttpRequest";
 
 describe("Send HTTP request", () => {
   const MOCK_JITTER_MULTIPLIER = 0.5;
