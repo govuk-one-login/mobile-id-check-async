@@ -1,9 +1,9 @@
-import { GetSecrets } from "../common/config/secrets";
+import { GetSecrets } from "../../../common/config/secrets";
 import { getParametersByName } from "@aws-lambda-powertools/parameters/ssm";
 import { SSMGetParametersByNameOptions } from "@aws-lambda-powertools/parameters/ssm/types";
-import { emptyFailure, successResult } from "../utils/result";
-import { logger } from "../common/logging/logger";
-import { LogMessage } from "../common/logging/LogMessage";
+import { emptyFailure, successResult } from "../../../utils/result";
+import { logger } from "../../../common/logging/logger";
+import { LogMessage } from "../../../common/logging/LogMessage";
 
 export const getSecretsFromParameterStore: GetSecrets = async ({
   secretNames,

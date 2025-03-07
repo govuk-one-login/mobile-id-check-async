@@ -1,7 +1,7 @@
-import { emptyFailure, emptySuccess, Result } from "../../utils/result";
+import { emptyFailure, emptySuccess, Result } from "../../../utils/result";
 import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
-import { LogMessage } from "../../common/logging/LogMessage";
-import { logger } from "../../common/logging/logger";
+import { LogMessage } from "../../../common/logging/LogMessage";
+import { logger } from "../../../common/logging/logger";
 import { VendorProcessingMessage } from "./types";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 

@@ -1,11 +1,11 @@
 import { GetSecrets } from "../common/config/secrets";
-import { getSecretsFromParameterStore } from "../adapters/getSecretsFromParameterStore";
+import { getSecretsFromParameterStore } from "../adapters/aws/parameterStore/getSecretsFromParameterStore";
 import {
   getBiometricToken,
   GetBiometricToken,
 } from "./getBiometricToken/getBiometricToken";
 import { SessionRegistry } from "../common/session/SessionRegistry";
-import { DynamoDbAdapter } from "../adapters/dynamoDbAdapter";
+import { DynamoDbAdapter } from "../adapters/aws/dynamo/dynamoDbAdapter";
 import { EventService } from "../services/events/eventService";
 import { IEventService } from "../services/events/types";
 

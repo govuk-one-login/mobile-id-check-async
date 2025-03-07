@@ -1,14 +1,14 @@
 import { expect } from "@jest/globals";
 import "dotenv/config";
-import "../../../../tests/testUtils/matchers";
-import { DynamoDbAdapter } from "../dynamoDbAdapter";
-import { BiometricTokenIssued } from "../../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
+import "../../../../../tests/testUtils/matchers";
+import { DynamoDbAdapter } from "./dynamoDbAdapter";
+import { BiometricTokenIssued } from "../../../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 import {
   SessionRegistry,
   UpdateSessionError,
   SessionUpdateFailed,
   SessionUpdated,
-} from "../../common/session/SessionRegistry";
+} from "../../../common/session/SessionRegistry";
 import {
   ConditionalCheckFailedException,
   DynamoDBClient,
@@ -17,13 +17,13 @@ import {
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import { mockClient } from "aws-sdk-client-mock";
-import { errorResult, Result, successResult } from "../../utils/result";
-import { UpdateSessionOperation } from "../../common/session/updateOperations/UpdateSessionOperation";
+import { errorResult, Result, successResult } from "../../../utils/result";
+import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import {
   validBaseSessionAttributes,
   validBiometricTokenIssuedSessionAttributes,
-} from "../../testUtils/unitTestData";
+} from "../../../testUtils/unitTestData";
 
 const mockDynamoDbClient = mockClient(DynamoDBClient);
 

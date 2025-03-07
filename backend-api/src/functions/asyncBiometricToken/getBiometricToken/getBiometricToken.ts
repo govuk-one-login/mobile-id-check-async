@@ -5,7 +5,7 @@ import {
   ISendHttpRequest,
   sendHttpRequest as sendHttpRequestDefault,
   SuccessfulHttpResponse,
-} from "../../services/http/sendHttpRequest";
+} from "../../adapters/http/sendHttpRequest";
 import { emptyFailure, Result, successResult } from "../../utils/result";
 
 export type GetBiometricToken = (

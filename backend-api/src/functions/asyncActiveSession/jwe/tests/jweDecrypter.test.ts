@@ -7,7 +7,7 @@ import {
   MockAsymmetricDecrypterClientError,
   MockAsymmetricDecrypterError,
   MockAsymmetricDecrypterSuccess,
-} from "../../../adapters/tests/mocks";
+} from "../../../adapters/aws/kms/mocks";
 import { ErrorCategory } from "../../../utils/result";
 
 describe("Decrypt JWE", () => {

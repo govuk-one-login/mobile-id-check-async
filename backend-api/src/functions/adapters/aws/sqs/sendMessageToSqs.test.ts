@@ -1,6 +1,6 @@
 import { sendMessageToSqs, sqsClient } from "./sendMessageToSqs";
 import { expect } from "@jest/globals";
-import "../../../../tests/testUtils/matchers";
+import "../../../../../tests/testUtils/matchers";
 import { AwsStub, mockClient } from "aws-sdk-client-mock";
 import {
   SendMessageCommand,
@@ -8,7 +8,7 @@ import {
   ServiceOutputTypes,
   SQSClientResolvedConfig,
 } from "@aws-sdk/client-sqs";
-import { emptyFailure, emptySuccess, Result } from "../../utils/result";
+import { emptyFailure, emptySuccess, Result } from "../../../utils/result";
 import "aws-sdk-client-mock-jest";
 
 describe("Sending a message to SQS", () => {
