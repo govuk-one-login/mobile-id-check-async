@@ -48,6 +48,11 @@ Parameters:
     Type: String
     Default: false
 
+  DeployCanaryAlarms:
+    Description: Whether to deploy canary alarms or not
+    Type: String
+    Default: false
+
   SamValidateLintWorkaround:
     Description: Do not update or override. This allows the definition of a resource that is never deployed.
     Type: String
@@ -294,6 +299,8 @@ Conditions:
         - !Ref Environment
         - dev
     - !Equals [!Ref DeployAlarmsInDev, true]
+
+  DeployCanaryAlarms: !Equals [!Ref DeployCanaryAlarms, true]
 
   IntegrateIpvCore: !Equals
       - !Ref Environment
