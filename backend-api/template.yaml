@@ -41,12 +41,10 @@ Parameters:
       - staging
     Default: dev
 
-  LambdaCanaryDeployment:
-    Description: Specifies the configuration to enable gradual Lambda deployments
+  LambdaDeploymentPreference:
+    Description: |
+      Specifies the configuration to enable gradual Lambda deployments. Value can be 'AllAtOnce', a default deployment config, or name of custom DeploymentConfig.
     Type: String
-    AllowedValues:
-      - AllAtOnce
-      - Linear20PercentEvery1Minute
     Default: AllAtOnce
 
   PermissionsBoundary:
@@ -294,11 +292,6 @@ Conditions:
       - !Ref DevOverrideStsBaseUrl
       - none
 
-  UseLinearCanaryDeployments: !Not
-    - !Equals
-      - !Ref LambdaCanaryDeployment
-      - AllAtOnce
-
   UsePermissionsBoundary: !Not
     - !Equals
       - !Ref PermissionsBoundary
@@ -331,6 +324,9 @@ Globals:
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
       - !Ref AWS::NoValue
+    DeploymentPreference:
+      Enabled: false
+      Role: !GetAtt CodeDeployServiceRole.Arn
     Environment:
       Variables:
         AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
@@ -678,7 +674,7 @@ Resources:
           MetricName: AsyncActiveSessionMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
 
   AsyncActiveSessionErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -736,7 +732,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 10
       TreatMissingData: notBreaching
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
 
   AsyncActiveSessionFunction:
     Type: AWS::Serverless::Function
@@ -751,6 +747,14 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
+      DeploymentPreference:
+        Alarms: !If
+          - DeployAlarms
+          - - !Ref AsyncActiveSessionErrorRateAlarm
+            - !Ref AsyncActiveSessionLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Enabled: true
+        Type: !Ref LambdaDeploymentPreference
       Environment:
         Variables:
           AUDIENCE: !Sub https://${SessionsApiDomainName}
@@ -909,7 +913,7 @@ Resources:
           Id: lambdaLogCompletePercentage
           Label: Percentage of invocations that complete successfully
           ReturnData: false
-        - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage, 100)
+        - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage)
           Id: lowCompletionRateThreshold
           Label: Error threshold calculation
           ReturnData: true
@@ -917,7 +921,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 60
       TreatMissingData: notBreaching
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
 
   AsyncBiometricToken4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -1197,7 +1201,7 @@ Resources:
           MetricName: AsyncBiometricTokenMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
 
   AsyncBiometricTokenErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -1255,7 +1259,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 10
       TreatMissingData: notBreaching
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
 
   AsyncBiometricTokenFunction:
     Type: AWS::Serverless::Function
@@ -1270,6 +1274,14 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
+      DeploymentPreference:
+        Alarms: !If
+          - DeployAlarms
+          - - !Ref AsyncBiometricTokenErrorRateAlarm
+            - !Ref AsyncBiometricTokenLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Enabled: true
+        Type: !Ref LambdaDeploymentPreference
       Environment:
         Variables:
           BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS: !FindInMap
@@ -1459,7 +1471,7 @@ Resources:
           Id: lambdaLogCompletePercentage
           Label: Percentage of invocations that complete successfully
           ReturnData: false
-        - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage, 100)
+        - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage)
           Id: lowCompletionRateThreshold
           Label: Error threshold calculation
           ReturnData: true
@@ -1467,7 +1479,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 60
       TreatMissingData: notBreaching
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
 
   AsyncCredential4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -1747,7 +1759,7 @@ Resources:
           MetricName: AsyncCredentialMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
 
   AsyncCredentialErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -1805,7 +1817,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 10
       TreatMissingData: notBreaching
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
 
   AsyncCredentialFunction:
     Type: AWS::Serverless::Function
@@ -1820,6 +1832,14 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
+      DeploymentPreference:
+        Alarms: !If
+          - DeployAlarms
+          - - !Ref AsyncCredentialErrorRateAlarm
+            - !Ref AsyncCredentialLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Enabled: true
+        Type: !Ref LambdaDeploymentPreference
       Environment:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !FindInMap
@@ -1997,7 +2017,7 @@ Resources:
           Id: lambdaLogCompletePercentage
           Label: Percentage of invocations that complete successfully
           ReturnData: false
-        - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage, 100)
+        - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage)
           Id: lowCompletionRateThreshold
           Label: Error threshold calculation
           ReturnData: true
@@ -2005,7 +2025,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 60
       TreatMissingData: notBreaching
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
 
   AsyncCredentialPrivateApiAccessLogs:
     Type: AWS::Logs::LogGroup
@@ -2291,7 +2311,7 @@ Resources:
           MetricName: AsyncFinishBiometricSessionMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
 
   AsyncFinishBiometricSessionErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2349,7 +2369,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 10
       TreatMissingData: notBreaching
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
 
   AsyncFinishBiometricSessionFunction:
     Type: AWS::Serverless::Function
@@ -2364,6 +2384,14 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
+      DeploymentPreference:
+        Alarms: !If
+          - DeployAlarms
+          - - !Ref AsyncFinishBiometricSessionErrorRateAlarm
+            - !Ref AsyncFinishBiometricSessionLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Enabled: true
+        Type: !Ref LambdaDeploymentPreference
       Events:
         AsyncFinishBiometricSession:
           Properties:
@@ -2515,7 +2543,7 @@ Resources:
           Id: lambdaLogCompletePercentage
           Label: Percentage of invocations that complete successfully
           ReturnData: false
-        - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage, 100)
+        - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage)
           Id: lowCompletionRateThreshold
           Label: Error threshold calculation
           ReturnData: true
@@ -2523,7 +2551,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 60
       TreatMissingData: notBreaching
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
 
   AsyncToken4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2803,7 +2831,7 @@ Resources:
           MetricName: AsyncTokenMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
 
   AsyncTokenErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2861,7 +2889,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 10
       TreatMissingData: notBreaching
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
 
   AsyncTokenFunction:
     Type: AWS::Serverless::Function
@@ -2876,6 +2904,14 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
+      DeploymentPreference:
+        Alarms: !If
+          - DeployAlarms
+          - - !Ref AsyncTokenErrorRateAlarm
+            - !Ref AsyncTokenLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Enabled: true
+        Type: !Ref LambdaDeploymentPreference
       Environment:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !FindInMap
@@ -3029,7 +3065,7 @@ Resources:
           Id: lambdaLogCompletePercentage
           Label: Percentage of invocations that complete successfully
           ReturnData: false
-        - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage, 100)
+        - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage)
           Id: lowCompletionRateThreshold
           Label: Error threshold calculation
           ReturnData: true
@@ -3037,7 +3073,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 60
       TreatMissingData: notBreaching
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
 
   AsyncTxmaEventFunction:
     Type: AWS::Serverless::Function
@@ -3122,6 +3158,26 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-txma-event
       RetentionInDays: 30
+
+  CodeDeployServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - codedeploy.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForLambda
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      RoleName: !Sub ${AWS::StackName}-code-deploy-service-role
 
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket
@@ -3394,6 +3450,17 @@ Resources:
     Properties:
       AliasName: !Sub alias/${AWS::StackName}-signing-key
       TargetKeyId: !Ref KMSSigningKey
+
+  Linear20PercentEvery1Minute:
+    Type: AWS::CodeDeploy::DeploymentConfig
+    Properties:
+      ComputePlatform: Lambda
+      DeploymentConfigName: !Sub ${AWS::StackName}-Linear20PercentEvery1Minute
+      TrafficRoutingConfig:
+        TimeBasedLinear:
+          LinearInterval: 1
+          LinearPercentage: 20
+        Type: TimeBasedLinear
 
   NullResource:
     Type: AWS::CloudFormation::WaitConditionHandle
