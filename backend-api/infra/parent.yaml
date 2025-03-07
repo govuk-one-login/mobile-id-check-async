@@ -336,6 +336,7 @@ Globals:
       Variables:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
         TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
+        VENDOR_PROCESSING_SQS: !GetAtt VendorProcessingSQS.QueueUrl
         # ISSUER should be updated with DNS once available
         ISSUER: mockIssuer
         SESSION_TABLE_NAME: !Ref SessionsTable

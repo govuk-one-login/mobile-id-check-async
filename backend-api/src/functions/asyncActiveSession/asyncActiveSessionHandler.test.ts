@@ -1,10 +1,7 @@
-import { APIGatewayProxyResult } from "aws-lambda";
+import { APIGatewayProxyResult, Context } from "aws-lambda";
 import { buildRequest } from "../testUtils/mockRequest";
 import { lambdaHandlerConstructor } from "./asyncActiveSessionHandler";
 import { IAsyncActiveSessionDependencies } from "./handlerDependencies";
-import { MockLoggingAdapter } from "../services/logging/tests/mockLogger";
-import { MessageName, registeredLogs } from "./registeredLogs";
-import { Logger } from "../services/logging/logger";
 import { MockJWTBuilder } from "../testUtils/mockJwtBuilder";
 import {
   MockSessionServiceGetErrorResult,
@@ -21,6 +18,10 @@ import {
   MockTokenServiceServerError,
   MockTokenServiceSuccess,
 } from "./tokenService/tests/mocks";
+import { buildLambdaContext } from "../testUtils/mockContext";
+import { logger } from "../common/logging/logger";
+import "../../../tests/testUtils/matchers";
+import { expect } from "@jest/globals";
 
 const env = {
   ENCRYPTION_KEY_ARN: "mockEncryptionKeyArn",
@@ -31,34 +32,82 @@ const env = {
 
 describe("Async Active Session", () => {
   let dependencies: IAsyncActiveSessionDependencies;
-  let mockLoggingAdapter: MockLoggingAdapter<MessageName>;
+  let context: Context;
+  let consoleInfoSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpyInstance;
+  let result: APIGatewayProxyResult;
+
+  const jwtBuilder = new MockJWTBuilder();
+  const validRequest = buildRequest({
+    headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
+  });
 
   beforeEach(() => {
-    mockLoggingAdapter = new MockLoggingAdapter();
     dependencies = {
       env,
-      logger: () => new Logger(mockLoggingAdapter, registeredLogs),
       jweDecrypter: () => new MockJweDecrypterSuccess(),
       tokenService: () => new MockTokenServiceSuccess(),
       sessionService: () => new MockSessionServiceGetSuccessResult(),
     };
+    context = buildLambdaContext();
+    consoleInfoSpy = jest.spyOn(console, "info");
+    consoleErrorSpy = jest.spyOn(console, "error");
+  });
+
+  describe("On every invocation", () => {
+    beforeEach(async () => {
+      result = await lambdaHandlerConstructor(
+        dependencies,
+        validRequest,
+        context,
+      );
+    });
+
+    it("Adds context and version to log attributes and logs STARTED message", () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_STARTED",
+        functionVersion: "1",
+        function_arn: "arn:12345",
+      });
+    });
+
+    it("Clears pre-existing log attributes", async () => {
+      logger.appendKeys({ testKey: "testValue" });
+      result = await lambdaHandlerConstructor(
+        dependencies,
+        validRequest,
+        context,
+      );
+
+      expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+        testKey: "testValue",
+      });
+    });
   });
 
   describe("Environment variable validation", () => {
     describe.each(Object.keys(env))("Given %s is missing", (envVar: string) => {
-      it("Returns a 500 Server Error response", async () => {
+      beforeEach(async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
         delete dependencies.env[envVar];
-        const event = buildRequest();
 
-        const result = await lambdaHandlerConstructor(dependencies, event);
-
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "ENVIRONMENT_VARIABLE_MISSING",
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
         );
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: `No ${envVar}`,
+      });
+
+      it("logs INVALID_CONFIG", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_INVALID_CONFIG",
+          data: {
+            missingEnvironmentVariables: [envVar],
+          },
         });
+      });
+
+      it("Returns a 500 Server Error response", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 500,
@@ -71,19 +120,25 @@ describe("Async Active Session", () => {
     });
 
     describe("Given the STS_BASE_URL is not a URL", () => {
-      it("Returns a 500 Server Error response", async () => {
+      beforeEach(async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
-        dependencies.env["STS_BASE_URL"] = "mockInvalidSessionTtlSecs";
-        const event = buildRequest();
+        dependencies.env["STS_BASE_URL"] = "mockInvalidUrl";
 
-        const result = await lambdaHandlerConstructor(dependencies, event);
-
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "ENVIRONMENT_VARIABLE_MISSING",
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
         );
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+      });
+
+      it("logs INVALID_CONFIG", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_INVALID_CONFIG",
           errorMessage: "STS_BASE_URL is not a URL",
         });
+      });
+
+      it("Returns a 500 Server Error response", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 500,
@@ -98,20 +153,21 @@ describe("Async Active Session", () => {
 
   describe("Request Service", () => {
     describe("Given Authentication header is missing", () => {
-      it("Returns 401 Unauthorized", async () => {
-        const event = buildRequest();
+      beforeEach(async () => {
+        const request = buildRequest();
 
-        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-        );
+        result = await lambdaHandlerConstructor(dependencies, request, context);
+      });
 
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "AUTHENTICATION_HEADER_INVALID",
-        );
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "No Authentication header present",
+      it("Logs error", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "MOBILE_ASYNC_ACTIVE_SESSION_AUTHORIZATION_HEADER_INVALID",
+          errorMessage: "No authorization header present",
         });
+      });
+
+      it("Returns 401 Unauthorized", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -124,23 +180,24 @@ describe("Async Active Session", () => {
     });
 
     describe("Given access token does not start with Bearer", () => {
-      it("Returns 401 Unauthorized", async () => {
-        const event = buildRequest({
+      beforeEach(async () => {
+        const request = buildRequest({
           headers: { Authorization: "noBearerString mockToken" },
         });
 
-        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-        );
+        result = await lambdaHandlerConstructor(dependencies, request, context);
+      });
 
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "AUTHENTICATION_HEADER_INVALID",
-        );
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+      it("Logs error", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "MOBILE_ASYNC_ACTIVE_SESSION_AUTHORIZATION_HEADER_INVALID",
           errorMessage:
-            "Invalid authentication header format - does not start with Bearer",
+            "Invalid authorization header format - does not start with Bearer",
         });
+      });
+
+      it("Returns 401 Unauthorized", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -153,23 +210,23 @@ describe("Async Active Session", () => {
     });
 
     describe("Given Bearer token is not in expected format - contains spaces", () => {
-      it("Returns 401 Unauthorized", async () => {
-        const event = buildRequest({
+      beforeEach(async () => {
+        const request = buildRequest({
           headers: { Authorization: "Bearer mock token" },
         });
 
-        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-        );
+        result = await lambdaHandlerConstructor(dependencies, request, context);
+      });
 
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "AUTHENTICATION_HEADER_INVALID",
-        );
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage:
-            "Invalid authentication header format - contains spaces",
+      it("Logs error", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "MOBILE_ASYNC_ACTIVE_SESSION_AUTHORIZATION_HEADER_INVALID",
+          errorMessage: "Invalid authorization header format - contains spaces",
         });
+      });
+
+      it("Returns 401 Unauthorized", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -182,22 +239,23 @@ describe("Async Active Session", () => {
     });
 
     describe("Given Bearer token is not in expected format - missing token", () => {
-      it("Returns 401 Unauthorized", async () => {
-        const event = buildRequest({
+      beforeEach(async () => {
+        const request = buildRequest({
           headers: { Authorization: "Bearer " },
         });
 
-        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-        );
+        result = await lambdaHandlerConstructor(dependencies, request, context);
+      });
 
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "AUTHENTICATION_HEADER_INVALID",
-        );
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
-          errorMessage: "Invalid authentication header format - missing token",
+      it("Logs error", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "MOBILE_ASYNC_ACTIVE_SESSION_AUTHORIZATION_HEADER_INVALID",
+          errorMessage: "Invalid authorization header format - missing token",
         });
+      });
+
+      it("Returns 401 Unauthorized", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 401,
@@ -212,26 +270,25 @@ describe("Async Active Session", () => {
 
   describe("Decrypt JWE", () => {
     describe("Given decrypting the service token fails due to a server error", () => {
-      it("Logs and returns 500 Server Error response", async () => {
+      beforeEach(async () => {
         dependencies.jweDecrypter = () => new MockJweDecrypterServerError();
-
-        const event = buildRequest({
+        const request = buildRequest({
           headers: {
             Authorization: "Bearer protectedHeader.encryptedKey.iv.ciphertext",
           },
         });
 
-        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-        );
+        result = await lambdaHandlerConstructor(dependencies, request, context);
+      });
 
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "INTERNAL_SERVER_ERROR",
-        );
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+      it("Logs error", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_JWE_DECRYPTION_ERROR",
           errorMessage: "Some mock decryption server error",
         });
+      });
+
+      it("Returns 500 Server Error response", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 500,
@@ -244,26 +301,25 @@ describe("Async Active Session", () => {
     });
 
     describe("Given decrypting the service token fails due to a client error", () => {
-      it("Logs and returns 400 Bad Request response", async () => {
+      beforeEach(async () => {
         dependencies.jweDecrypter = () => new MockJweDecrypterClientError();
-
-        const event = buildRequest({
+        const request = buildRequest({
           headers: {
             Authorization: "Bearer protectedHeader.encryptedKey.iv.ciphertext",
           },
         });
 
-        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-        );
+        result = await lambdaHandlerConstructor(dependencies, request, context);
+      });
 
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "JWE_DECRYPTION_ERROR",
-        );
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+      it("Logs error", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_JWE_DECRYPTION_ERROR",
           errorMessage: "Some mock decryption client error",
         });
+      });
+
+      it("Returns 400 Bad Request response", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -278,23 +334,24 @@ describe("Async Active Session", () => {
 
   describe("Token Service", () => {
     describe("Given the service token fails to validate due to an internal server error", () => {
-      it("Logs and returns 500 Server Error response", async () => {
-        const jwtBuilder = new MockJWTBuilder();
-        const event = buildRequest({
+      beforeEach(async () => {
+        const request = buildRequest({
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
         dependencies.tokenService = () => new MockTokenServiceServerError();
-        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-        );
 
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "INTERNAL_SERVER_ERROR",
-        );
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        result = await lambdaHandlerConstructor(dependencies, request, context);
+      });
+
+      it("Logs error", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "MOBILE_ASYNC_ACTIVE_SESSION_SERVICE_TOKEN_VALIDATION_ERROR",
           errorMessage: "Mock server error",
         });
+      });
+
+      it("Returns 500 Server Error response", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 500,
@@ -307,23 +364,24 @@ describe("Async Active Session", () => {
     });
 
     describe("Given the service token fails to validate due to a client error", () => {
-      it("Logs and returns 400 Bad Request response", async () => {
-        const jwtBuilder = new MockJWTBuilder();
-        const event = buildRequest({
+      beforeEach(async () => {
+        const request = buildRequest({
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
         dependencies.tokenService = () => new MockTokenServiceClientError();
-        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-        );
 
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "SERVICE_TOKEN_VALIDATION_ERROR",
-        );
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        result = await lambdaHandlerConstructor(dependencies, request, context);
+      });
+
+      it("Logs error", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "MOBILE_ASYNC_ACTIVE_SESSION_SERVICE_TOKEN_VALIDATION_ERROR",
           errorMessage: "Mock client error",
         });
+      });
+
+      it("Returns 400 Bad Request response", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 400,
@@ -338,25 +396,24 @@ describe("Async Active Session", () => {
 
   describe("Session Service", () => {
     describe("Given an error happens when trying to get an active session", () => {
-      it("Returns 500 Server Error", async () => {
-        const jwtBuilder = new MockJWTBuilder();
-        const event = buildRequest({
+      beforeEach(async () => {
+        const request = buildRequest({
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
         dependencies.sessionService = () =>
           new MockSessionServiceGetErrorResult();
 
-        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-        );
+        result = await lambdaHandlerConstructor(dependencies, request, context);
+      });
 
-        expect(mockLoggingAdapter.getLogMessages()[1].logMessage.message).toBe(
-          "INTERNAL_SERVER_ERROR",
-        );
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+      it("Logs error", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_GET_ACTIVE_SESSION_FAILURE",
           errorMessage: "Mock error when getting session details",
         });
+      });
+
+      it("Returns 500 Server Error", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 500,
@@ -369,19 +426,22 @@ describe("Async Active Session", () => {
     });
 
     describe("Given an active session is not found", () => {
-      it("Returns 404 Not Found", async () => {
-        const jwtBuilder = new MockJWTBuilder();
-        const event = buildRequest({
+      beforeEach(async () => {
+        const request = buildRequest({
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
         dependencies.sessionService = () =>
           new MockSessionServiceGetNullSuccessResult();
 
-        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-        );
+        result = await lambdaHandlerConstructor(dependencies, request, context);
+      });
+      it("Logs ACTIVE_SESSION_NOT_FOUND", () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_ACTIVE_SESSION_NOT_FOUND",
+        });
+      });
 
+      it("Returns 404 Not Found", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 404,
@@ -395,19 +455,23 @@ describe("Async Active Session", () => {
     });
 
     describe("Given an active session is found", () => {
-      it("Returns 200 and the session details", async () => {
-        const jwtBuilder = new MockJWTBuilder();
-        const event = buildRequest({
+      beforeEach(async () => {
+        const request = buildRequest({
           headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
         });
         dependencies.sessionService = () =>
           new MockSessionServiceGetSuccessResult();
 
-        const result: APIGatewayProxyResult = await lambdaHandlerConstructor(
-          dependencies,
-          event,
-        );
+        result = await lambdaHandlerConstructor(dependencies, request, context);
+      });
 
+      it("Logs COMPLETED", () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_STARTED",
+        });
+      });
+
+      it("Returns 200 and the session details", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
           statusCode: 200,

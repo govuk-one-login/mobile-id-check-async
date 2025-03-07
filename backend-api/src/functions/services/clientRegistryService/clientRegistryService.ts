@@ -9,6 +9,7 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
+import { isValidUrl } from "../utils/isValidUrl";
 
 let cache: CacheEntry | null = null;
 
@@ -143,7 +144,7 @@ export class ClientRegistryService
         typeof registeredClient.issuer === "string" &&
         typeof registeredClient.salt === "string" &&
         typeof registeredClient.hashed_client_secret === "string" &&
-        this.isValidUrl(registeredClient.redirect_uri) &&
+        isValidUrl(registeredClient.redirect_uri) &&
         Object.keys(registeredClient).length === 5,
     );
     if (!allPropertiesPresent)
@@ -158,14 +159,6 @@ export class ClientRegistryService
     return successResult(clientRegistry);
   };
 
-  private readonly isValidUrl = (rawUrl: string): boolean => {
-    try {
-      new URL(rawUrl);
-    } catch {
-      return false;
-    }
-    return true;
-  };
   private readonly getRegisteredClientByClientId = (
     clientRegistry: IClientRegistry,
     clientId: string,
