@@ -1,26 +1,26 @@
 import { expect } from "@jest/globals";
-import "../../../tests/testUtils/matchers";
-import "dotenv/config";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
-import { buildLambdaContext } from "../testUtils/mockContext";
-import { buildRequest } from "../testUtils/mockRequest";
-import { lambdaHandlerConstructor } from "./asyncBiometricTokenHandler";
-import { IAsyncBiometricTokenDependencies } from "./handlerDependencies";
-import {
-  expectedSecurityHeaders,
-  mockSessionId,
-  mockInertSessionRegistry,
-  mockInertEventService,
-} from "../testUtils/unitTestData";
+import "dotenv/config";
+import "../../../tests/testUtils/matchers";
 import { logger } from "../common/logging/logger";
-import {
-  emptyFailure,
-  emptySuccess,
-  errorResult,
-  successResult,
-} from "../utils/result";
 import { UpdateSessionError } from "../common/session/SessionRegistry";
 import { BiometricTokenIssued } from "../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
+import { buildLambdaContext } from "../testUtils/mockContext";
+import { buildRequest } from "../testUtils/mockRequest";
+import {
+  expectedSecurityHeaders,
+  mockInertEventService,
+  mockInertSessionRegistry,
+  mockSessionId,
+  mockSuccessfulEventService,
+  mockSuccessfulSessionRegistry,
+  mockWriteBiometricTokenIssuedEventSuccessResult,
+  mockWriteGenericEventSuccessResult,
+  validBiometricTokenIssuedSessionAttributesMobileApp,
+} from "../testUtils/unitTestData";
+import { emptyFailure, errorResult, successResult } from "../utils/result";
+import { lambdaHandlerConstructor } from "./asyncBiometricTokenHandler";
+import { IAsyncBiometricTokenDependencies } from "./handlerDependencies";
 
 jest.mock("crypto", () => ({
   ...jest.requireActual("crypto"),
@@ -52,43 +52,6 @@ describe("Async Biometric Token", () => {
   const mockGetBiometricTokenSuccess = jest
     .fn()
     .mockResolvedValue(successResult("mockBiometricToken"));
-
-  const validSessionAttributes = {
-    clientId: "mockClientId",
-    govukSigninJourneyId: "mockGovukSigninJourneyId",
-    createdAt: 12345,
-    issuer: "mockIssuer",
-    sessionId: mockSessionId,
-    sessionState: "mockSessionState",
-    clientState: "mockClientState",
-    subjectIdentifier: "mockSubjectIdentifier",
-    timeToLive: 12345,
-    documentType: "NFC_PASSPORT",
-    opaqueId: "mockOpaqueId",
-    redirectUri: "https://www.mockRedirectUri.com",
-  };
-
-  const mockSuccessfulSessionRegistry = {
-    ...mockInertSessionRegistry,
-    updateSession: jest
-      .fn()
-      .mockResolvedValue(successResult({ attributes: validSessionAttributes })),
-  };
-
-  const mockWriteGenericEventSuccessResult = jest
-    .fn()
-    .mockResolvedValue(emptySuccess());
-
-  const mockWriteBiometricTokenIssuedEventSuccessResult = jest
-    .fn()
-    .mockResolvedValue(emptySuccess());
-
-  const mockSuccessfulEventService = {
-    ...mockInertEventService,
-    writeGenericEvent: mockWriteGenericEventSuccessResult,
-    writeBiometricTokenIssuedEvent:
-      mockWriteBiometricTokenIssuedEventSuccessResult,
-  };
 
   beforeEach(() => {
     dependencies = {
@@ -351,6 +314,7 @@ describe("Async Biometric Token", () => {
               context,
             );
           });
+
           it("Logs the error", async () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
               messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
@@ -404,7 +368,7 @@ describe("Async Biometric Token", () => {
             updateSession: jest.fn().mockResolvedValue(
               errorResult({
                 errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
-                attributes: validSessionAttributes,
+                attributes: validBiometricTokenIssuedSessionAttributesMobileApp,
               }),
             ),
           });
