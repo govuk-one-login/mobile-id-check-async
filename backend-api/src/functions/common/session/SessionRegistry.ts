@@ -6,6 +6,10 @@ export interface SessionRegistry {
     sessionId: string,
     updateOperation: UpdateSessionOperation,
   ): Promise<Result<SessionUpdated, SessionUpdateFailed>>;
+
+  getSession(
+    sessionId: string,
+  ): Promise<Result<SessionRetrieved, SessionRetrievalFailed>>;
 }
 
 export interface SessionUpdated {
@@ -39,4 +43,25 @@ export enum UpdateSessionError {
 export interface UpdateExpressionDataToLog {
   updateExpression: string;
   conditionExpression: string | undefined;
+}
+
+export interface SessionRetrieved {
+  attributes: SessionAttributes;
+}
+
+export type SessionRetrievalFailed =
+  | SessionRetrievalFailedInternalServerError
+  | SessionRetrievalFailedSessionNotFound;
+
+export interface SessionRetrievalFailedInternalServerError {
+  errorType: GetSessionError.INTERNAL_SERVER_ERROR;
+}
+
+export interface SessionRetrievalFailedSessionNotFound {
+  errorType: GetSessionError.SESSION_NOT_FOUND;
+}
+
+export enum GetSessionError {
+  INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR",
+  SESSION_NOT_FOUND = "SESSION_NOT_FOUND",
 }

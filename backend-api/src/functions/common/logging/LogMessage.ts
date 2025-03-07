@@ -37,6 +37,11 @@ export class LogMessage implements LogAttributes {
     "Error occurred while attempting to retrieve active session by subject ID.",
   );
 
+  static readonly GET_SESSION_ATTEMPT = new LogMessage(
+    "MOBILE_ASYNC_GET_SESSION_ATTEMPT",
+    "Attempting to retrieve session by session ID from DynamoDB.",
+  );
+
   static readonly UPDATE_SESSION_ATTEMPT = new LogMessage(
     "MOBILE_ASYNC_UPDATE_SESSION_ATTEMPT",
     "Attempting to update user session in DynamoDB.",

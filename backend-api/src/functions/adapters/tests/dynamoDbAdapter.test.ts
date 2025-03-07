@@ -1,29 +1,30 @@
-import { expect } from "@jest/globals";
-import "dotenv/config";
-import "../../../../tests/testUtils/matchers";
-import { DynamoDbAdapter } from "../dynamoDbAdapter";
-import { BiometricTokenIssued } from "../../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
-import {
-  SessionRegistry,
-  UpdateSessionError,
-  SessionUpdateFailed,
-  SessionUpdated,
-} from "../../common/session/SessionRegistry";
 import {
   ConditionalCheckFailedException,
   DynamoDBClient,
+  GetItemCommand,
   ReturnValue,
   ReturnValuesOnConditionCheckFailure,
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
-import { mockClient } from "aws-sdk-client-mock";
-import { errorResult, Result, successResult } from "../../utils/result";
-import { UpdateSessionOperation } from "../../common/session/updateOperations/UpdateSessionOperation";
 import { marshall } from "@aws-sdk/util-dynamodb";
+import { expect } from "@jest/globals";
+import { mockClient } from "aws-sdk-client-mock";
+import "dotenv/config";
+import "../../../../tests/testUtils/matchers";
+import {
+  SessionRegistry,
+  SessionUpdated,
+  SessionUpdateFailed,
+  UpdateSessionError,
+} from "../../common/session/SessionRegistry";
+import { BiometricTokenIssued } from "../../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
+import { UpdateSessionOperation } from "../../common/session/updateOperations/UpdateSessionOperation";
 import {
   validBaseSessionAttributes,
   validBiometricTokenIssuedSessionAttributes,
 } from "../../testUtils/unitTestData";
+import { errorResult, Result, successResult } from "../../utils/result";
+import { DynamoDbAdapter } from "../dynamoDbAdapter";
 
 const mockDynamoDbClient = mockClient(DynamoDBClient);
 
@@ -37,6 +38,7 @@ describe("DynamoDbAdapter", () => {
     consoleErrorSpy = jest.spyOn(console, "error");
     consoleDebugSpy = jest.spyOn(console, "debug");
   });
+
   describe("updateSession", () => {
     let result: Result<SessionUpdated, SessionUpdateFailed>;
 
@@ -293,4 +295,40 @@ describe("DynamoDbAdapter", () => {
       });
     });
   });
+
+  describe("getSession", () => {
+    // let result: Result<SessionRetrieved, SessionRetrievalFailed>;
+
+    describe("On every attempt", () => {
+      beforeEach(async () => {
+        mockDynamoDbClient.on(GetItemCommand).resolves({});
+        await sessionRegistry.getSession("mock_session_id");
+      });
+
+      it("Logs the attempt", () => {
+        expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_GET_SESSION_ATTEMPT",
+          data: {
+            Key: {
+              sessionId: {
+                S: "mock_session_id",
+              },
+            },
+          },
+        });
+      });
+    });
+  });
 });
+
+// interface GetSessionOperation {
+//   getDynamoDbUpdateExpression(): string;
+//   getDynamoDbConditionExpression(): string | undefined;
+//   getDynamoDbExpressionAttributeValues(): Record<string, AttributeValue>;
+//   getSessionAttributesFromDynamoDbItem(
+//     item: Record<string, AttributeValue> | undefined,
+//     options?: {
+//       operationFailed: boolean;
+//     },
+//   ): Result<SessionAttributes, void>;
+// }

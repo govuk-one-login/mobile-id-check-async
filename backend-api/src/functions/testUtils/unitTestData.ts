@@ -20,6 +20,10 @@ export const mockInertSessionRegistry: SessionRegistry = {
   updateSession: jest.fn(() => {
     throw new Error("Not implemented");
   }),
+
+  getSession: jest.fn(() => {
+    throw new Error("Not implemented");
+  }),
 };
 
 export const mockInertEventService: IEventService = {

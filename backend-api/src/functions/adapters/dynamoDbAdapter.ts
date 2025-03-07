@@ -31,6 +31,9 @@ import {
   SessionUpdateFailed,
   SessionUpdateFailedInternalServerError,
   SessionUpdated,
+  SessionRetrieved,
+  SessionRetrievalFailed,
+  GetSessionError,
 } from "../common/session/SessionRegistry";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
@@ -129,6 +132,32 @@ export class DynamoDbAdapter implements SessionRegistry {
         throw error;
       }
     }
+  }
+
+  async getSession(
+    sessionId: string,
+  ): Promise<Result<SessionRetrieved, SessionRetrievalFailed>> {
+    const getItemCommandKey = { Key: marshall({ sessionId }) };
+
+    logger.debug(LogMessage.GET_SESSION_ATTEMPT, {
+      data: getItemCommandKey,
+    });
+
+    return errorResult({ errorType: GetSessionError.INTERNAL_SERVER_ERROR });
+
+    // return successResult({
+    //   clientId: "mockClientId",
+    //   govukSigninJourneyId: "mockGovukSigninJourneyId",
+    //   createdAt: 12345,
+    //   issuer: "mockIssuer",
+    //   sessionId: "mockSessionId",
+    //   sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,
+    //   clientState: "mockClientState",
+    //   subjectIdentifier: "mockSubjectIdentifier",
+    //   timeToLive: 12345,
+    //   documentType: "NFC_PASSPORT",
+    //   opaqueId: "mockOpaqueId",
+    // })
   }
 
   async updateSession(
