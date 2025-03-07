@@ -59,7 +59,12 @@ export class EventService implements IEventService {
     eventConfig: GenericEventConfig,
   ): GenericTxmaEvent => {
     const timestampInMillis = eventConfig.getNowInMilliseconds();
-    return {
+    const extensions = this.getExtensionsObject(
+      eventConfig.redirect_uri,
+      eventConfig.suspected_fraud_signal,
+    );
+
+    const event: GenericTxmaEvent = {
       user: {
         user_id: eventConfig.sub,
         session_id: eventConfig.sessionId,
@@ -72,9 +77,25 @@ export class EventService implements IEventService {
       event_name: eventConfig.eventName,
       component_id: eventConfig.componentId,
       restricted: this.getRestrictedData(eventConfig.txmaAuditEncoded),
-      extensions: eventConfig.extensions,
+      extensions,
     };
+
+    return event;
   };
+
+  private getExtensionsObject(
+    redirect_uri?: string,
+    suspected_fraud_signal?: string,
+  ) {
+    if (redirect_uri === undefined && suspected_fraud_signal === undefined) {
+      return undefined;
+    }
+
+    return {
+      redirect_uri,
+      suspected_fraud_signal,
+    };
+  }
 
   private buildCredentialTokenIssuedEvent = (
     eventConfig: CredentialTokenIssuedEventConfig,

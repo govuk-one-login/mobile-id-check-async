@@ -24,6 +24,7 @@ export interface RestrictedData {
 
 export interface Extensions {
   suspected_fraud_signal?: string;
+  redirect_uri?: string;
 }
 
 export interface BaseTxmaEvent {
@@ -56,7 +57,8 @@ export type EventNames =
 
 export interface GenericEventConfig extends BaseUserEventConfig {
   eventName: GenericEventNames;
-  extensions?: Extensions;
+  redirect_uri: string | undefined;
+  suspected_fraud_signal: string | undefined;
 }
 
 export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
@@ -65,11 +67,12 @@ export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
 
 export interface BiometricTokenIssuedEventConfig extends BaseUserEventConfig {
   documentType: DocumentType;
+  redirect_uri: string | undefined;
 }
 
 export interface GenericTxmaEvent extends BaseUserTxmaEvent {
   event_name: GenericEventNames;
-  extensions?: Extensions;
+  extensions: Extensions | undefined;
 }
 
 export interface CredentialTokenIssuedEvent extends BaseTxmaEvent {
