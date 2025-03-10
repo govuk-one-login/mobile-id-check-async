@@ -1,4 +1,4 @@
-import { ClientError, IKmsAdapter } from "../kmsAdapter";
+import { ClientError, IKmsAdapter } from "./kmsAdapter";
 
 export class MockAsymmetricDecrypterSuccess implements IKmsAdapter {
   async decrypt(): Promise<Uint8Array> {

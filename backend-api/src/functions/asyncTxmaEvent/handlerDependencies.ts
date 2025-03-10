@@ -1,4 +1,4 @@
-import { DynamoDbAdapter } from "../adapters/dynamoDbAdapter";
+import { DynamoDbAdapter } from "../adapters/aws/dynamo/dynamoDbAdapter";
 import { SessionRegistry } from "../common/session/SessionRegistry";
 import { EventService } from "../services/events/eventService";
 import { IEventService } from "../services/events/types";

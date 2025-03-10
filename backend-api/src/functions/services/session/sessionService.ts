@@ -6,9 +6,9 @@ import {
   successResult,
 } from "../../utils/result";
 import {
-  DatabaseRecord,
   DynamoDbAdapter,
-} from "../../adapters/dynamoDbAdapter";
+  DatabaseRecord,
+} from "../../adapters/aws/dynamo/dynamoDbAdapter";
 
 export interface ISessionService {
   createSession: (
