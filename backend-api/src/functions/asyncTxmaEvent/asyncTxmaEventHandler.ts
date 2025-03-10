@@ -18,7 +18,7 @@ import {
   GetSessionError,
   SessionRetrievalFailed,
 } from "../common/session/SessionRegistry";
-import { IEventService } from "../services/events/types";
+import { GenericEventNames, IEventService } from "../services/events/types";
 import {
   IAsyncTxmaEventDependencies,
   runtimeDependencies,
@@ -121,7 +121,11 @@ async function handleSessionNotFound(
   eventService: IEventService,
   data: BaseErrorData,
 ): Promise<APIGatewayProxyResult> {
-  const writeEventResult = await writeGenericEvent(eventService, data);
+  const writeEventResult = await writeGenericEvent({
+    eventService,
+    eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+    data,
+  });
 
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
@@ -138,7 +142,11 @@ async function handleInternalServerError(
   eventService: IEventService,
   data: BaseErrorData,
 ): Promise<APIGatewayProxyResult> {
-  const writeEventResult = await writeGenericEvent(eventService, data);
+  const writeEventResult = await writeGenericEvent({
+    eventService,
+    eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+    data,
+  });
 
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
@@ -158,13 +166,18 @@ const genericTxmaEventData = {
   suspected_fraud_signal: undefined,
 };
 
-async function writeGenericEvent(
-  eventService: IEventService,
-  data: BaseErrorData,
-) {
+async function writeGenericEvent({
+  eventService,
+  eventName,
+  data,
+}: {
+  eventService: IEventService;
+  eventName: GenericEventNames;
+  data: BaseErrorData;
+}) {
   const { sessionId, issuer, ipAddress, txmaAuditEncoded } = data;
   return await eventService.writeGenericEvent({
-    eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+    eventName,
     sessionId,
     componentId: issuer,
     ipAddress,
