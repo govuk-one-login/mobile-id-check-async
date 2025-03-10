@@ -83,6 +83,8 @@ export async function lambdaHandlerConstructor(
     biometricSessionId,
     sessionId,
   };
+  const sessionAttributes = updateResult.value
+    .attributes as BiometricSessionFinishedAttributes;
 
   const sendMessageToVendorProcessingQueueResult = await sendMessageToSqs(
     config.VENDOR_PROCESSING_SQS,
@@ -90,17 +92,13 @@ export async function lambdaHandlerConstructor(
   );
   if (sendMessageToVendorProcessingQueueResult.isError) {
     return await handleSendMessageToVendorProcessingQueueFailure(eventService, {
-      sessionAttributes: updateResult.value
-        .attributes as BiometricSessionFinishedAttributes,
+      sessionAttributes,
       issuer: config.ISSUER,
       biometricSessionId,
       ipAddress,
       txmaAuditEncoded,
     });
   }
-
-  const sessionAttributes = updateResult.value
-    .attributes as BiometricSessionFinishedAttributes;
 
   const writeAppEndEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_APP_END",
