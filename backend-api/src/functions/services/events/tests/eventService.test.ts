@@ -28,6 +28,7 @@ describe("Event Service", () => {
     "DCMAW_ASYNC_CRI_START",
     "DCMAW_ASYNC_CRI_4XXERROR",
     "DCMAW_ASYNC_CRI_5XXERROR",
+    "DCMAW_ASYNC_APP_END",
   ])("Writing generic TxMA events to SQS", (genericEventName) => {
     describe(`Given writing ${genericEventName} event to SQS fails`, () => {
       beforeEach(async () => {

@@ -83,6 +83,8 @@ export async function lambdaHandlerConstructor(
     biometricSessionId,
     sessionId,
   };
+  const sessionAttributes = updateResult.value
+    .attributes as BiometricSessionFinishedAttributes;
 
   const sendMessageToVendorProcessingQueueResult = await sendMessageToSqs(
     config.VENDOR_PROCESSING_SQS,
@@ -90,13 +92,34 @@ export async function lambdaHandlerConstructor(
   );
   if (sendMessageToVendorProcessingQueueResult.isError) {
     return await handleSendMessageToVendorProcessingQueueFailure(eventService, {
-      sessionAttributes: updateResult.value
-        .attributes as BiometricSessionFinishedAttributes,
+      sessionAttributes,
       issuer: config.ISSUER,
       biometricSessionId,
       ipAddress,
       txmaAuditEncoded,
     });
+  }
+
+  const writeAppEndEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_APP_END",
+    sub: sessionAttributes.subjectIdentifier,
+    sessionId: sessionAttributes.sessionId,
+    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+    componentId: config.ISSUER,
+    getNowInMilliseconds: Date.now,
+    transactionId: biometricSessionId,
+    redirect_uri: sessionAttributes.redirectUri,
+    suspected_fraud_signal: undefined,
+    ipAddress,
+    txmaAuditEncoded,
+  });
+  if (writeAppEndEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_APP_END",
+      },
+    });
+    return serverErrorResponse;
   }
 
   logger.info(LogMessage.FINISH_BIOMETRIC_SESSION_COMPLETED);

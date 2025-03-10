@@ -39,7 +39,7 @@ export const validBaseSessionAttributes = {
   govukSigninJourneyId: "mockGovukSigninJourneyId",
   createdAt: 12345,
   issuer: "mockIssuer",
-  sessionId: "mockSessionId",
+  sessionId: mockSessionId,
   sessionState: SessionState.AUTH_SESSION_CREATED,
   clientState: "mockClientState",
   subjectIdentifier: "mockSubjectIdentifier",
