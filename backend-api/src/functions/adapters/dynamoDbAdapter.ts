@@ -1,6 +1,8 @@
 import {
+  AttributeValue,
   ConditionalCheckFailedException,
   DynamoDBClient,
+  GetItemCommand,
   PutItemCommand,
   PutItemCommandInput,
   QueryCommand,
@@ -10,31 +12,40 @@ import {
   ReturnValuesOnConditionCheckFailure,
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
-import { CreateSessionAttributes } from "../services/session/sessionService";
-import { NodeHttpHandler } from "@smithy/node-http-handler";
 import {
   marshall,
   NativeAttributeValue,
   unmarshall,
 } from "@aws-sdk/util-dynamodb";
-import { UpdateSessionOperation } from "../common/session/updateOperations/UpdateSessionOperation";
+import { NodeHttpHandler } from "@smithy/node-http-handler";
+import { logger } from "../common/logging/logger";
+import { LogMessage } from "../common/logging/LogMessage";
+import { SessionAttributes, SessionState } from "../common/session/session";
 import {
+  GetSessionError,
+  SessionRegistry,
+  SessionRetrievalFailed,
+  SessionRetrievalFailedInternalServerError,
+  SessionRetrievalFailedSessionNotFound,
+  SessionUpdated,
+  SessionUpdateFailed,
+  SessionUpdateFailedInternalServerError,
+  UpdateExpressionDataToLog,
+  UpdateSessionError,
+} from "../common/session/SessionRegistry";
+import {
+  getBaseSessionAttributes,
+  getBiometricTokenIssuedSessionAttributes,
+} from "../common/session/updateOperations/sessionAttributes/sessionAttributes";
+import { UpdateSessionOperation } from "../common/session/updateOperations/UpdateSessionOperation";
+import { CreateSessionAttributes } from "../services/session/sessionService";
+import {
+  emptySuccess,
   errorResult,
   FailureWithValue,
   Result,
   successResult,
 } from "../utils/result";
-import {
-  SessionRegistry,
-  UpdateExpressionDataToLog,
-  UpdateSessionError,
-  SessionUpdateFailed,
-  SessionUpdateFailedInternalServerError,
-  SessionUpdated,
-} from "../common/session/SessionRegistry";
-import { logger } from "../common/logging/logger";
-import { LogMessage } from "../common/logging/LogMessage";
-import { SessionState } from "../common/session/session";
 
 export type DatabaseRecord = Record<string, NativeAttributeValue>;
 
@@ -131,6 +142,55 @@ export class DynamoDbAdapter implements SessionRegistry {
     }
   }
 
+  async getSession(
+    sessionId: string,
+  ): Promise<Result<void, SessionRetrievalFailed>> {
+    let response;
+    try {
+      logger.debug(LogMessage.GET_SESSION_ATTEMPT);
+
+      response = await this.dynamoDbClient.send(
+        new GetItemCommand({
+          TableName: this.tableName,
+          Key: marshall({ sessionId }),
+        }),
+      );
+    } catch (error) {
+      return this.handleGetSessionInternalServerError(error);
+    }
+
+    const responseItem = response.Item;
+    if (responseItem == null) {
+      logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND);
+
+      return errorResult({
+        errorType: GetSessionError.SESSION_NOT_FOUND,
+      });
+    }
+
+    const getSessionAttributesResult =
+      this.getSessionAttributesFromDynamoDbItem(responseItem);
+    if (getSessionAttributesResult.isError) {
+      return this.handleGetSessionNotFoundError(
+        "Could not parse valid session attributes after successful get command",
+      );
+    }
+    const sessionAttributes = getSessionAttributesResult.value;
+
+    const { createdAt } = sessionAttributes;
+    if (this.isOlderThan60minutes(createdAt)) {
+      logger.error(LogMessage.GET_SESSION_SESSION_TOO_OLD);
+
+      return errorResult({
+        errorType: GetSessionError.SESSION_NOT_FOUND,
+      });
+    }
+
+    logger.debug(LogMessage.GET_SESSION_SUCCESS);
+
+    return emptySuccess();
+  }
+
   async updateSession(
     sessionId: string,
     updateOperation: UpdateSessionOperation,
@@ -177,11 +237,10 @@ export class DynamoDbAdapter implements SessionRegistry {
         const getSessionAttributesOptions = {
           operationFailed: true,
         };
-        const getAttributesResult =
-          updateOperation.getSessionAttributesFromDynamoDbItem(
-            error.Item,
-            getSessionAttributesOptions,
-          );
+        const getAttributesResult = this.getSessionAttributesFromDynamoDbItem(
+          error.Item,
+          getSessionAttributesOptions,
+        );
         if (getAttributesResult.isError) {
           return this.handleUpdateSessionInternalServerError(
             error,
@@ -205,8 +264,9 @@ export class DynamoDbAdapter implements SessionRegistry {
       }
     }
 
-    const getAttributesResult =
-      updateOperation.getSessionAttributesFromDynamoDbItem(response.Attributes);
+    const getAttributesResult = this.getSessionAttributesFromDynamoDbItem(
+      response.Attributes,
+    );
 
     if (getAttributesResult.isError) {
       return this.handleUpdateSessionInternalServerError(
@@ -223,6 +283,18 @@ export class DynamoDbAdapter implements SessionRegistry {
     return Math.floor(Date.now() / 1000);
   }
 
+  private getTimeNowInMilliseconds() {
+    return Math.floor(Date.now());
+  }
+
+  private isOlderThan60minutes(createdAtInMilliseconds: number) {
+    const SIXTY_MINUTES_IN_MILLISECONDS = 3600000;
+    const validFrom =
+      this.getTimeNowInMilliseconds() - SIXTY_MINUTES_IN_MILLISECONDS;
+
+    return createdAtInMilliseconds < validFrom;
+  }
+
   private handleUpdateSessionInternalServerError(
     error: unknown,
     updateExpressionDataToLog: UpdateExpressionDataToLog,
@@ -234,5 +306,40 @@ export class DynamoDbAdapter implements SessionRegistry {
     return errorResult({
       errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
     });
+  }
+
+  private handleGetSessionInternalServerError(
+    error: unknown,
+  ): FailureWithValue<SessionRetrievalFailedInternalServerError> {
+    logger.error(LogMessage.GET_SESSION_UNEXPECTED_FAILURE, {
+      data: { error },
+    });
+    return errorResult({
+      errorType: GetSessionError.INTERNAL_SERVER_ERROR,
+    });
+  }
+
+  private handleGetSessionNotFoundError(
+    error: unknown,
+  ): FailureWithValue<SessionRetrievalFailedSessionNotFound> {
+    logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND, {
+      data: { error },
+    });
+    return errorResult({
+      errorType: GetSessionError.SESSION_NOT_FOUND,
+    });
+  }
+
+  private getSessionAttributesFromDynamoDbItem(
+    item: Record<string, AttributeValue> | undefined,
+    options?: {
+      operationFailed: boolean;
+    },
+  ): Result<SessionAttributes, void> {
+    if (options?.operationFailed) {
+      return getBaseSessionAttributes(item);
+    } else {
+      return getBiometricTokenIssuedSessionAttributes(item);
+    }
   }
 }
