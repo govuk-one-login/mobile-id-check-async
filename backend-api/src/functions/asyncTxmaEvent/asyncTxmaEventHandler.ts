@@ -12,8 +12,7 @@ import {
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
-import { getHeader } from "../common/request/getHeader/getHeader";
-import { getIpAddress } from "../common/request/getIpAddress/getIpAddress";
+import { getAuditData } from "../common/request/getAuditData/getAuditData";
 import {
   GetSessionError,
   SessionRetrievalFailed,
@@ -55,11 +54,12 @@ export async function lambdaHandlerConstructor(
   );
   const getSessionResult = await sessionRegistry.getSession(sessionId);
   const eventService = dependencies.getEventService(config.TXMA_SQS);
+  const { ipAddress, txmaAuditEncoded } = getAuditData(event);
   const eventData = {
     sessionId,
     issuer: config.ISSUER,
-    ipAddress: getIpAddress(event),
-    txmaAuditEncoded: getHeader(event.headers, "Txma-Audit-Encoded"),
+    ipAddress,
+    txmaAuditEncoded,
   };
   if (getSessionResult.isError) {
     return handleGetSessionError(

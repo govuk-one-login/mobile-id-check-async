@@ -437,7 +437,7 @@ describe("DynamoDbAdapter", () => {
         });
 
         it("Logs the failure", () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_GET_SESSION_SUCCESS",
           });
         });
