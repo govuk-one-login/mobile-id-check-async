@@ -138,7 +138,7 @@ describe("Async TxMA Event", () => {
     });
   });
 
-  describe("Given session retrieval fails", () => {
+  describe("Retrieving a session", () => {
     describe("Given there is an error retrieving the session", () => {
       beforeEach(async () => {
         dependencies.getSessionRegistry = () => ({

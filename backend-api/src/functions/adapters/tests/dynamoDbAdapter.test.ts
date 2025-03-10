@@ -323,7 +323,7 @@ describe("DynamoDbAdapter", () => {
       });
     });
 
-    describe("When there is an unexpected error retrieving the session", () => {
+    describe("Given there is an unexpected error retrieving the session", () => {
       beforeEach(async () => {
         mockDynamoDbClient.on(GetItemCommand).rejects("mock_error");
         result = await sessionRegistry.getSession("mock_session_id");
@@ -386,14 +386,14 @@ describe("DynamoDbAdapter", () => {
 
         it("Logs the failure", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_GET_SESSION_UNEXPECTED_FAILURE",
+            messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_NOT_FOUND",
           });
         });
 
         it("Returns failure with server error", () => {
           expect(result).toEqual(
             errorResult({
-              errorType: GetSessionError.INTERNAL_SERVER_ERROR,
+              errorType: GetSessionError.SESSION_NOT_FOUND,
             }),
           );
         });

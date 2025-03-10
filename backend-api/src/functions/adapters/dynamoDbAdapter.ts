@@ -26,6 +26,7 @@ import {
   SessionRegistry,
   SessionRetrievalFailed,
   SessionRetrievalFailedInternalServerError,
+  SessionRetrievalFailedSessionNotFound,
   SessionUpdated,
   SessionUpdateFailed,
   SessionUpdateFailedInternalServerError,
@@ -170,8 +171,8 @@ export class DynamoDbAdapter implements SessionRegistry {
     const getSessionAttributesResult =
       this.getSessionAttributesFromDynamoDbItem(responseItem);
     if (getSessionAttributesResult.isError) {
-      return this.handleGetSessionInternalServerError(
-        "Could not parse valid session attributes after successful update command",
+      return this.handleGetSessionNotFoundError(
+        "Could not parse valid session attributes after successful get command",
       );
     }
     const sessionAttributes = getSessionAttributesResult.value;
@@ -315,6 +316,17 @@ export class DynamoDbAdapter implements SessionRegistry {
     });
     return errorResult({
       errorType: GetSessionError.INTERNAL_SERVER_ERROR,
+    });
+  }
+
+  private handleGetSessionNotFoundError(
+    error: unknown,
+  ): FailureWithValue<SessionRetrievalFailedSessionNotFound> {
+    logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND, {
+      data: { error },
+    });
+    return errorResult({
+      errorType: GetSessionError.SESSION_NOT_FOUND,
     });
   }
 
