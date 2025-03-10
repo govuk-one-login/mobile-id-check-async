@@ -42,6 +42,11 @@ export class LogMessage implements LogAttributes {
     "Attempting to retrieve session by session ID from DynamoDB.",
   );
 
+  static readonly GET_SESSION_UNEXPECTED_FAILURE = new LogMessage(
+    "MOBILE_ASYNC_GET_SESSION_UNEXPECTED_FAILURE",
+    "An unexpected failure occurred while trying to retrieve the user session from DynamoDB.",
+  );
+
   static readonly GET_SESSION_SESSION_NOT_FOUND = new LogMessage(
     "MOBILE_ASYNC_GET_SESSION_SESSION_NOT_FOUND",
     "No session found when attempting to get the user session from DynamoDB.",

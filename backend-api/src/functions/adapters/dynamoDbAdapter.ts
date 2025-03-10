@@ -12,40 +12,40 @@ import {
   ReturnValuesOnConditionCheckFailure,
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
-import { CreateSessionAttributes } from "../services/session/sessionService";
-import { NodeHttpHandler } from "@smithy/node-http-handler";
 import {
   marshall,
   NativeAttributeValue,
   unmarshall,
 } from "@aws-sdk/util-dynamodb";
-import { UpdateSessionOperation } from "../common/session/updateOperations/UpdateSessionOperation";
+import { NodeHttpHandler } from "@smithy/node-http-handler";
+import { logger } from "../common/logging/logger";
+import { LogMessage } from "../common/logging/LogMessage";
+import { SessionAttributes, SessionState } from "../common/session/session";
 import {
+  GetItemCommandDataToLog,
+  GetSessionError,
+  SessionRegistry,
+  SessionRetrievalFailed,
+  SessionRetrievalFailedInternalServerError,
+  SessionUpdated,
+  SessionUpdateFailed,
+  SessionUpdateFailedInternalServerError,
+  UpdateExpressionDataToLog,
+  UpdateSessionError,
+} from "../common/session/SessionRegistry";
+import {
+  getBaseSessionAttributes,
+  getBiometricTokenIssuedSessionAttributes,
+} from "../common/session/updateOperations/sessionAttributes/sessionAttributes";
+import { UpdateSessionOperation } from "../common/session/updateOperations/UpdateSessionOperation";
+import { CreateSessionAttributes } from "../services/session/sessionService";
+import {
+  emptySuccess,
   errorResult,
   FailureWithValue,
   Result,
   successResult,
 } from "../utils/result";
-import {
-  SessionRegistry,
-  UpdateExpressionDataToLog,
-  UpdateSessionError,
-  SessionUpdateFailed,
-  SessionUpdateFailedInternalServerError,
-  SessionUpdated,
-  SessionRetrieved,
-  SessionRetrievalFailed,
-  GetSessionError,
-  GetItemCommandDataToLog,
-  SessionRetrievalFailedInternalServerError,
-} from "../common/session/SessionRegistry";
-import { logger } from "../common/logging/logger";
-import { LogMessage } from "../common/logging/LogMessage";
-import { SessionAttributes, SessionState } from "../common/session/session";
-import {
-  getBaseSessionAttributes,
-  getBiometricTokenIssuedSessionAttributes,
-} from "../common/session/updateOperations/sessionAttributes/sessionAttributes";
 
 export type DatabaseRecord = Record<string, NativeAttributeValue>;
 
@@ -144,11 +144,11 @@ export class DynamoDbAdapter implements SessionRegistry {
 
   async getSession(
     sessionId: string,
-  ): Promise<Result<SessionRetrieved, SessionRetrievalFailed>> {
+  ): Promise<Result<void, SessionRetrievalFailed>> {
     const getItemCommandKey = { Key: { S: { sessionId } } };
 
     logger.debug(LogMessage.GET_SESSION_ATTEMPT, {
-      data: getItemCommandKey,
+      data: { getItemCommandKey: getItemCommandKey },
     });
 
     let response;
@@ -168,6 +168,7 @@ export class DynamoDbAdapter implements SessionRegistry {
       logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND, {
         data: getItemCommandKey,
       });
+
       return errorResult({
         errorType: GetSessionError.SESSION_NOT_FOUND,
       });
@@ -182,23 +183,7 @@ export class DynamoDbAdapter implements SessionRegistry {
       );
     }
 
-    logger.debug(LogMessage.GET_SESSION_SUCCESS);
-
-    return successResult({ item: getSessionAttributesResult.value });
-
-    // return successResult({
-    //   clientId: "mockClientId",
-    //   govukSigninJourneyId: "mockGovukSigninJourneyId",
-    //   createdAt: 12345,
-    //   issuer: "mockIssuer",
-    //   sessionId: "mockSessionId",
-    //   sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,
-    //   clientState: "mockClientState",
-    //   subjectIdentifier: "mockSubjectIdentifier",
-    //   timeToLive: 12345,
-    //   documentType: "NFC_PASSPORT",
-    //   opaqueId: "mockOpaqueId",
-    // })
+    return emptySuccess();
   }
 
   async updateSession(
@@ -310,9 +295,11 @@ export class DynamoDbAdapter implements SessionRegistry {
     error: unknown,
     getItemCommandDataToLog: GetItemCommandDataToLog,
   ): FailureWithValue<SessionRetrievalFailedInternalServerError> {
-    logger.error(LogMessage.UPDATE_SESSION_UNEXPECTED_FAILURE, {
-      error,
-      data: getItemCommandDataToLog,
+    logger.error(LogMessage.GET_SESSION_UNEXPECTED_FAILURE, {
+      data: {
+        error,
+        getItemCommandData: getItemCommandDataToLog,
+      },
     });
     return errorResult({
       errorType: GetSessionError.INTERNAL_SERVER_ERROR,

@@ -15,7 +15,6 @@ import {
   GetSessionError,
   SessionRegistry,
   SessionRetrievalFailed,
-  SessionRetrieved,
   SessionUpdated,
   SessionUpdateFailed,
   UpdateSessionError,
@@ -300,7 +299,7 @@ describe("DynamoDbAdapter", () => {
   });
 
   describe("getSession", () => {
-    let result: Result<SessionRetrieved, SessionRetrievalFailed>;
+    let result: Result<void, SessionRetrievalFailed>;
 
     describe("On every attempt", () => {
       beforeEach(async () => {
@@ -312,13 +311,36 @@ describe("DynamoDbAdapter", () => {
         expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_GET_SESSION_ATTEMPT",
           data: {
-            Key: {
-              sessionId: {
-                S: "mock_session_id",
-              },
+            getItemCommandKey: { Key: { S: { sessionId: "mock_session_id" } } },
+          },
+        });
+      });
+    });
+
+    describe("When there is an unexpected error retrieving the session", () => {
+      beforeEach(async () => {
+        mockDynamoDbClient.on(GetItemCommand).rejects("mock_error");
+        result = await sessionRegistry.getSession("mock_session_id");
+      });
+
+      it("Logs the failure", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_GET_SESSION_UNEXPECTED_FAILURE",
+          data: {
+            error: expect.anything(),
+            getItemCommandData: {
+              Key: { S: { sessionId: "mock_session_id" } },
             },
           },
         });
+      });
+
+      it("Returns failure with server error", () => {
+        expect(result).toEqual(
+          errorResult({
+            errorType: GetSessionError.INTERNAL_SERVER_ERROR,
+          }),
+        );
       });
     });
 
@@ -332,10 +354,8 @@ describe("DynamoDbAdapter", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_NOT_FOUND",
           data: {
-            Key: {
-              sessionId: {
-                S: "mock_session_id",
-              },
+            getItemCommandData: {
+              Key: { S: { sessionId: "mock_session_id" } },
             },
           },
         });
@@ -361,10 +381,8 @@ describe("DynamoDbAdapter", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_GET_SESSION_UNEXPECTED_FAILURE",
             data: {
-              Key: {
-                sessionId: {
-                  S: "mock_session_id",
-                },
+              getItemCommandData: {
+                Key: { S: { sessionId: "mock_session_id" } },
               },
             },
           });
@@ -379,92 +397,48 @@ describe("DynamoDbAdapter", () => {
         });
       });
 
-      describe("Given valid session attributes were returned in response", () => {
-        // beforeEach(async () => {
-        //   mockDynamoDbClient.on(GetItemCommand).resolves({
-        //     Item: marshall({
-        //       clientId: "mockClientId",
-        //       govukSigninJourneyId: "mockGovukSigninJourneyId",
-        //       createdAt: 12345,
-        //       issuer: "mockIssuer",
-        //       sessionId: "mock_session_id",
-        //       sessionState: SessionState.AUTH_SESSION_CREATED,
-        //       clientState: "mockClientState",
-        //       subjectIdentifier: "mockSubjectIdentifier",
-        //       timeToLive: 12345,
-        //     })
-        //   }),
-        //   result = await sessionRegistry.getSession(
-        //     "mock_session_id",
-        //   );
-        // });
-        // it("Logs the failure", () => {
-        //   expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-        //     messageCode:
-        //       "MOBILE_ASYNC_GET_SESSION_CONDITIONAL_CHECK_FAILURE",
-        //     error: "Conditional check failed",
-        //     data: {
-        //       Key: {
-        //         sessionId: {
-        //           S: "mock_session_id",
-        //         },
-        //       },
-        //     },
-        //   });
-        // });
-        // it("Returns failure with conditional check failure error", () => {
-        //   expect(result).toEqual(
-        //     errorResult({
-        //       errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
-        //       attributes: validBaseSessionAttributes,
-        //     }),
-        //   );
-        // });
-      });
+      // describe("Given valid session attributes were returned in response", () => {
+      // beforeEach(async () => {
+      //   mockDynamoDbClient.on(GetItemCommand).resolves({
+      //     Item: marshall({
+      //       clientId: "mockClientId",
+      //       govukSigninJourneyId: "mockGovukSigninJourneyId",
+      //       createdAt: 12345,
+      //       issuer: "mockIssuer",
+      //       sessionId: "mock_session_id",
+      //       sessionState: SessionState.AUTH_SESSION_CREATED,
+      //       clientState: "mockClientState",
+      //       subjectIdentifier: "mockSubjectIdentifier",
+      //       timeToLive: 12345,
+      //     })
+      //   }),
+      //   result = await sessionRegistry.getSession(
+      //     "mock_session_id",
+      //   );
+      // });
+      // it("Logs the failure", () => {
+      //   expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+      //     messageCode:
+      //       "MOBILE_ASYNC_GET_SESSION_CONDITIONAL_CHECK_FAILURE",
+      //     error: "Conditional check failed",
+      //     data: {
+      //       Key: {
+      //         sessionId: {
+      //           S: "mock_session_id",
+      //         },
+      //       },
+      //     },
+      //   });
+      // });
+      // it("Returns failure with conditional check failure error", () => {
+      //   expect(result).toEqual(
+      //     errorResult({
+      //       errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
+      //       attributes: validBaseSessionAttributes,
+      //     }),
+      //   );
+      // });
+      // });
     });
   });
 });
-
-// interface GetSessionOperation {
-//   getDynamoDbUpdateExpression(): string;
-//   getDynamoDbConditionExpression(): string | undefined;
-//   getDynamoDbExpressionAttributeValues(): Record<string, AttributeValue>;
-//   getSessionAttributesFromDynamoDbItem(
-//     item: Record<string, AttributeValue> | undefined,
-//     options?: {
-//       operationFailed: boolean;
-//     },
-//   ): Result<SessionAttributes, void>;
-// }
-
-// export const getBiometricTokenIssuedSessionAttributes = (
-//   item: Record<string, AttributeValue> | undefined,
-// ): Result<BiometricTokenIssuedSessionAttributes, void> => {
-//   if (item == null) return emptyFailure();
-
-//   const sessionAttributes = unmarshall(item);
-//   if (!isBiometricTokenIssuedSessionAttributes(sessionAttributes))
-//     return emptyFailure();
-
-//   return successResult(sessionAttributes);
-// };
-
-// export const isBiometricTokenIssuedSessionAttributes = (
-//   item: Record<string, NativeAttributeValue>,
-// ): item is BiometricTokenIssuedSessionAttributes => {
-//   if (typeof item.clientId !== "string") return false;
-//   if (typeof item.govukSigninJourneyId !== "string") return false;
-//   if (typeof item.createdAt !== "number") return false;
-//   if (typeof item.issuer !== "string") return false;
-//   if (typeof item.sessionId !== "string") return false;
-//   if (item.sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) return false;
-//   if (typeof item.clientState !== "string") return false;
-//   if (typeof item.subjectIdentifier !== "string") return false;
-//   if (typeof item.timeToLive !== "number") return false;
-//   if (typeof item.documentType !== "string") return false;
-//   if (typeof item.opaqueId !== "string") return false;
-//   if ("redirectUri" in item && typeof item.redirectUri !== "string") {
-//     return false;
-//   }
-//   return true;
-// };

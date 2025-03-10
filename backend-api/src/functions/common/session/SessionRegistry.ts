@@ -7,9 +7,7 @@ export interface SessionRegistry {
     updateOperation: UpdateSessionOperation,
   ): Promise<Result<SessionUpdated, SessionUpdateFailed>>;
 
-  getSession(
-    sessionId: string,
-  ): Promise<Result<SessionRetrieved, SessionRetrievalFailed>>;
+  getSession(sessionId: string): Promise<Result<void, SessionRetrievalFailed>>;
 }
 
 export interface SessionUpdated {

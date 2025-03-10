@@ -12,20 +12,19 @@ import {
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
-import {
-  IAsyncTxmaEventDependencies,
-  runtimeDependencies,
-} from "./handlerDependencies";
-import { validateRequestBody } from "./validateRequestBody/validateRequestBody";
-import { getTxmaEventConfig } from "./txmaEventConfig";
-import { IEventService } from "../services/events/types";
+import { getHeader } from "../common/request/getHeader/getHeader";
+import { getIpAddress } from "../common/request/getIpAddress/getIpAddress";
 import {
   GetSessionError,
   SessionRetrievalFailed,
 } from "../common/session/SessionRegistry";
-import { FailureWithValue } from "../utils/result";
-import { getIpAddress } from "../common/request/getIpAddress/getIpAddress";
-import { getHeader } from "../common/request/getHeader/getHeader";
+import { IEventService } from "../services/events/types";
+import {
+  IAsyncTxmaEventDependencies,
+  runtimeDependencies,
+} from "./handlerDependencies";
+import { getTxmaEventConfig } from "./txmaEventConfig";
+import { validateRequestBody } from "./validateRequestBody/validateRequestBody";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTxmaEventDependencies,
@@ -63,21 +62,11 @@ export async function lambdaHandlerConstructor(
     txmaAuditEncoded: getHeader(event.headers, "Txma-Audit-Encoded"),
   };
   if (getSessionResult.isError) {
-    // const getAttributesResult = getSessionAttributesFromDynamoDbItem(
-    //   error.Item,
-    //   getSessionAttributesOptions,
-    // );
-    // if (getAttributesResult.isError) {
-    //   return this.handleUpdateSessionInternalServerError(
-    //     error,
-    //     updateExpressionDataToLog,
-    //   );
-    // }
-
-    return handleGetSessionError(eventService, {
-      getSessionResult,
-      ...eventData,
-    });
+    return handleGetSessionError(
+      eventService,
+      getSessionResult.value,
+      eventData,
+    );
   }
 
   logger.info(LogMessage.TXMA_EVENT_COMPLETED);
@@ -91,7 +80,6 @@ export const lambdaHandler = lambdaHandlerConstructor.bind(
 );
 
 interface HandleGetSessionErrorData {
-  getSessionResult: FailureWithValue<SessionRetrievalFailed>;
   sessionId: string;
   issuer: string;
   ipAddress: string;
@@ -100,20 +88,20 @@ interface HandleGetSessionErrorData {
 
 async function handleGetSessionError(
   eventService: IEventService,
+  getSessionResult: SessionRetrievalFailed,
   data: HandleGetSessionErrorData,
 ): Promise<APIGatewayProxyResult> {
-  const { getSessionResult, sessionId, issuer, ipAddress, txmaAuditEncoded } =
-    data;
-  switch (getSessionResult.value.errorType) {
-    case GetSessionError.SESSION_NOT_FOUND:
-      return handleSessionNotFound(eventService, {
+  const { sessionId, issuer, ipAddress, txmaAuditEncoded } = data;
+  switch (getSessionResult.errorType) {
+    case GetSessionError.INTERNAL_SERVER_ERROR:
+      return handleInternalServerError(eventService, {
         sessionId,
         issuer,
         ipAddress,
         txmaAuditEncoded,
       });
-    case GetSessionError.INTERNAL_SERVER_ERROR:
-      return handleInternalServerError(eventService, {
+    case GetSessionError.SESSION_NOT_FOUND:
+      return handleSessionNotFound(eventService, {
         sessionId,
         issuer,
         ipAddress,
