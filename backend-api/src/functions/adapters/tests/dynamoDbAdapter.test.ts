@@ -27,6 +27,7 @@ import {
 } from "../../testUtils/unitTestData";
 import { errorResult, Result, successResult } from "../../utils/result";
 import { DynamoDbAdapter } from "../dynamoDbAdapter";
+import { SessionState } from "../../common/session/session";
 
 const mockDynamoDbClient = mockClient(DynamoDBClient);
 
@@ -310,9 +311,6 @@ describe("DynamoDbAdapter", () => {
       it("Logs the attempt", () => {
         expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_GET_SESSION_ATTEMPT",
-          data: {
-            getItemCommandKey: { Key: { S: { sessionId: "mock_session_id" } } },
-          },
         });
       });
     });
@@ -326,12 +324,6 @@ describe("DynamoDbAdapter", () => {
       it("Logs the failure", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_GET_SESSION_UNEXPECTED_FAILURE",
-          data: {
-            error: expect.anything(),
-            getItemCommandData: {
-              Key: { S: { sessionId: "mock_session_id" } },
-            },
-          },
         });
       });
 
@@ -353,11 +345,6 @@ describe("DynamoDbAdapter", () => {
       it("Logs the failure", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_NOT_FOUND",
-          data: {
-            getItemCommandData: {
-              Key: { S: { sessionId: "mock_session_id" } },
-            },
-          },
         });
       });
 
@@ -373,18 +360,24 @@ describe("DynamoDbAdapter", () => {
     describe("Given session was found", () => {
       describe("Given invalid session attributes were returned in response", () => {
         beforeEach(async () => {
-          mockDynamoDbClient.on(GetItemCommand).resolves({});
+          mockDynamoDbClient.on(GetItemCommand).resolves({
+            Item: marshall({
+              clientId: "mockClientId",
+              govukSigninJourneyId: "mockGovukSigninJourneyId",
+              createdAt: 12345,
+              issuer: "mockIssuer",
+              sessionId: "mock_session_id",
+              clientState: "mockClientState",
+              subjectIdentifier: "mockSubjectIdentifier",
+              timeToLive: 12345,
+            }),
+          });
           result = await sessionRegistry.getSession("mock_session_id");
         });
 
         it("Logs the failure", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_GET_SESSION_UNEXPECTED_FAILURE",
-            data: {
-              getItemCommandData: {
-                Key: { S: { sessionId: "mock_session_id" } },
-              },
-            },
           });
         });
 
@@ -396,49 +389,6 @@ describe("DynamoDbAdapter", () => {
           );
         });
       });
-
-      // describe("Given valid session attributes were returned in response", () => {
-      // beforeEach(async () => {
-      //   mockDynamoDbClient.on(GetItemCommand).resolves({
-      //     Item: marshall({
-      //       clientId: "mockClientId",
-      //       govukSigninJourneyId: "mockGovukSigninJourneyId",
-      //       createdAt: 12345,
-      //       issuer: "mockIssuer",
-      //       sessionId: "mock_session_id",
-      //       sessionState: SessionState.AUTH_SESSION_CREATED,
-      //       clientState: "mockClientState",
-      //       subjectIdentifier: "mockSubjectIdentifier",
-      //       timeToLive: 12345,
-      //     })
-      //   }),
-      //   result = await sessionRegistry.getSession(
-      //     "mock_session_id",
-      //   );
-      // });
-      // it("Logs the failure", () => {
-      //   expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-      //     messageCode:
-      //       "MOBILE_ASYNC_GET_SESSION_CONDITIONAL_CHECK_FAILURE",
-      //     error: "Conditional check failed",
-      //     data: {
-      //       Key: {
-      //         sessionId: {
-      //           S: "mock_session_id",
-      //         },
-      //       },
-      //     },
-      //   });
-      // });
-      // it("Returns failure with conditional check failure error", () => {
-      //   expect(result).toEqual(
-      //     errorResult({
-      //       errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
-      //       attributes: validBaseSessionAttributes,
-      //     }),
-      //   );
-      // });
-      // });
     });
   });
 });

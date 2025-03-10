@@ -145,11 +145,7 @@ export class DynamoDbAdapter implements SessionRegistry {
   async getSession(
     sessionId: string,
   ): Promise<Result<void, SessionRetrievalFailed>> {
-    const getItemCommandKey = { Key: { S: { sessionId } } };
-
-    logger.debug(LogMessage.GET_SESSION_ATTEMPT, {
-      data: { getItemCommandKey: getItemCommandKey },
-    });
+    logger.debug(LogMessage.GET_SESSION_ATTEMPT);
 
     let response;
     try {
@@ -160,14 +156,12 @@ export class DynamoDbAdapter implements SessionRegistry {
         }),
       );
     } catch (error) {
-      return this.handleGetSessionInternalServerError(error, getItemCommandKey);
+      return this.handleGetSessionInternalServerError(error);
     }
 
     const responseItem = response.Item;
     if (responseItem == null) {
-      logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND, {
-        data: getItemCommandKey,
-      });
+      logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND);
 
       return errorResult({
         errorType: GetSessionError.SESSION_NOT_FOUND,
@@ -179,7 +173,6 @@ export class DynamoDbAdapter implements SessionRegistry {
     if (getSessionAttributesResult.isError) {
       return this.handleGetSessionInternalServerError(
         "Could not parse valid session attributes after successful update command",
-        getItemCommandKey,
       );
     }
 
@@ -293,13 +286,9 @@ export class DynamoDbAdapter implements SessionRegistry {
 
   private handleGetSessionInternalServerError(
     error: unknown,
-    getItemCommandDataToLog: GetItemCommandDataToLog,
   ): FailureWithValue<SessionRetrievalFailedInternalServerError> {
     logger.error(LogMessage.GET_SESSION_UNEXPECTED_FAILURE, {
-      data: {
-        error,
-        getItemCommandData: getItemCommandDataToLog,
-      },
+      data: { error },
     });
     return errorResult({
       errorType: GetSessionError.INTERNAL_SERVER_ERROR,
