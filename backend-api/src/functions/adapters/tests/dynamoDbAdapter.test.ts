@@ -25,7 +25,12 @@ import {
   validBaseSessionAttributes,
   validBiometricTokenIssuedSessionAttributes,
 } from "../../testUtils/unitTestData";
-import { errorResult, Result, successResult } from "../../utils/result";
+import {
+  emptySuccess,
+  errorResult,
+  Result,
+  successResult,
+} from "../../utils/result";
 import { DynamoDbAdapter } from "../dynamoDbAdapter";
 
 const mockDynamoDbClient = mockClient(DynamoDBClient);
@@ -386,6 +391,25 @@ describe("DynamoDbAdapter", () => {
               errorType: GetSessionError.INTERNAL_SERVER_ERROR,
             }),
           );
+        });
+      });
+
+      describe("Given valid session attributes were returned in response", () => {
+        beforeEach(async () => {
+          mockDynamoDbClient.on(GetItemCommand).resolves({
+            Item: marshall(validBiometricTokenIssuedSessionAttributes),
+          });
+          result = await sessionRegistry.getSession("mock_session_id");
+        });
+
+        it("Logs the failure", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_GET_SESSION_SUCCESS",
+          });
+        });
+
+        it("Returns success with null", () => {
+          expect(result).toEqual(emptySuccess());
         });
       });
     });
