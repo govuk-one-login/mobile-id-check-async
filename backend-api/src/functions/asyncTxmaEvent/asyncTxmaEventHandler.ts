@@ -117,27 +117,11 @@ interface BaseErrorData {
   txmaAuditEncoded: string | undefined;
 }
 
-const genericTxmaEventData = {
-  sub: undefined,
-  govukSigninJourneyId: undefined,
-  getNowInMilliseconds: Date.now,
-  redirect_uri: undefined,
-  suspected_fraud_signal: undefined,
-};
-
 async function handleSessionNotFound(
   eventService: IEventService,
   data: BaseErrorData,
 ): Promise<APIGatewayProxyResult> {
-  const { sessionId, issuer, ipAddress, txmaAuditEncoded } = data;
-  const writeEventResult = await eventService.writeGenericEvent({
-    eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-    sessionId,
-    componentId: issuer,
-    ipAddress,
-    txmaAuditEncoded,
-    ...genericTxmaEventData,
-  });
+  const writeEventResult = await writeGenericEvent(eventService, data);
 
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
@@ -154,15 +138,7 @@ async function handleInternalServerError(
   eventService: IEventService,
   data: BaseErrorData,
 ): Promise<APIGatewayProxyResult> {
-  const { sessionId, issuer, ipAddress, txmaAuditEncoded } = data;
-  const writeEventResult = await eventService.writeGenericEvent({
-    eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-    sessionId,
-    componentId: issuer,
-    ipAddress,
-    txmaAuditEncoded,
-    ...genericTxmaEventData,
-  });
+  const writeEventResult = await writeGenericEvent(eventService, data);
 
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
@@ -172,4 +148,27 @@ async function handleInternalServerError(
     });
   }
   return serverErrorResponse;
+}
+
+const genericTxmaEventData = {
+  sub: undefined,
+  govukSigninJourneyId: undefined,
+  getNowInMilliseconds: Date.now,
+  redirect_uri: undefined,
+  suspected_fraud_signal: undefined,
+};
+
+async function writeGenericEvent(
+  eventService: IEventService,
+  data: BaseErrorData,
+) {
+  const { sessionId, issuer, ipAddress, txmaAuditEncoded } = data;
+  return await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+    sessionId,
+    componentId: issuer,
+    ipAddress,
+    txmaAuditEncoded,
+    ...genericTxmaEventData,
+  });
 }
