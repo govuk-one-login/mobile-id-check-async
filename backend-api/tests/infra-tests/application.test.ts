@@ -660,6 +660,24 @@ describe("Backend application infrastructure", () => {
           SystemLogLevel: "INFO",
         });
       });
+
+      describe("Global CodeDeploy Deployment Preference", () => {
+        test("IAM service role is attached", () => {
+          const globalDeploymentPreferenceRole =
+            template.toJSON().Globals.Function.DeploymentPreference.Role;
+
+          expect(globalDeploymentPreferenceRole).toEqual({
+            "Fn::GetAtt": ["CodeDeployServiceRole", "Arn"],
+          });
+        });
+
+        test("Type set to AllAtOnce", () => {
+          const globalDeploymentPreferenceType =
+            template.toJSON().Globals.Function.DeploymentPreference.Type;
+
+          expect(globalDeploymentPreferenceType).toEqual("AllAtOnce");
+        });
+      });
     });
 
     test("All lambdas have a FunctionName defined", () => {
@@ -835,6 +853,14 @@ describe("Backend application infrastructure", () => {
         const roleNameConformsToStandards =
           roleName.startsWith("${AWS::StackName}-");
         expect(roleNameConformsToStandards).toBe(true);
+      });
+    });
+
+    test("IAM service role is created with CodeDeployRoleForLambda policy attached", () => {
+      template.hasResourceProperties("AWS::IAM::Role", {
+        ManagedPolicyArns: [
+          "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForLambda",
+        ],
       });
     });
   });
