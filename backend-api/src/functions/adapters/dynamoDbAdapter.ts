@@ -174,6 +174,16 @@ export class DynamoDbAdapter implements SessionRegistry {
         "Could not parse valid session attributes after successful update command",
       );
     }
+    const sessionAttributes = getSessionAttributesResult.value;
+
+    const { createdAt } = sessionAttributes;
+    if (this.isOlderThan60minutes(createdAt)) {
+      logger.error(LogMessage.GET_SESSION_SESSION_TOO_OLD);
+
+      return errorResult({
+        errorType: GetSessionError.SESSION_NOT_FOUND,
+      });
+    }
 
     logger.error(LogMessage.GET_SESSION_SUCCESS);
 
@@ -270,6 +280,18 @@ export class DynamoDbAdapter implements SessionRegistry {
 
   private getTimeNowInSeconds() {
     return Math.floor(Date.now() / 1000);
+  }
+
+  private getTimeNowInMilliseconds() {
+    return Math.floor(Date.now());
+  }
+
+  private isOlderThan60minutes(createdAtInMilliseconds: number) {
+    const SIXTY_MINUTES_IN_MILLISECONDS = 3600000;
+    const validFrom =
+      this.getTimeNowInMilliseconds() - SIXTY_MINUTES_IN_MILLISECONDS;
+
+    return createdAtInMilliseconds < validFrom;
   }
 
   private handleUpdateSessionInternalServerError(

@@ -52,6 +52,11 @@ export class LogMessage implements LogAttributes {
     "No session found when attempting to get the user session from DynamoDB.",
   );
 
+  static readonly GET_SESSION_SESSION_TOO_OLD = new LogMessage(
+    "MOBILE_ASYNC_GET_SESSION_SESSION_TOO_OLD",
+    "Session was not created within the valid timeframe",
+  );
+
   static readonly GET_SESSION_SUCCESS = new LogMessage(
     "MOBILE_ASYNC_GET_SESSION_SUCCESS",
     "Successfully retrieved user session from DynamoDB.",

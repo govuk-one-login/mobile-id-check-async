@@ -11,6 +11,7 @@ import { expect } from "@jest/globals";
 import { mockClient } from "aws-sdk-client-mock";
 import "dotenv/config";
 import "../../../../tests/testUtils/matchers";
+import { SessionState } from "../../common/session/session";
 import {
   GetSessionError,
   SessionRegistry,
@@ -22,6 +23,7 @@ import {
 import { BiometricTokenIssued } from "../../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 import { UpdateSessionOperation } from "../../common/session/updateOperations/UpdateSessionOperation";
 import {
+  NOW_IN_MILLISECONDS,
   validBaseSessionAttributes,
   validBiometricTokenIssuedSessionAttributes,
 } from "../../testUtils/unitTestData";
@@ -41,6 +43,8 @@ let consoleDebugSpy: jest.SpyInstance;
 
 describe("DynamoDbAdapter", () => {
   beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(NOW_IN_MILLISECONDS);
     sessionRegistry = new DynamoDbAdapter("mock_table_name");
     consoleErrorSpy = jest.spyOn(console, "error");
     consoleDebugSpy = jest.spyOn(console, "debug");
@@ -352,7 +356,7 @@ describe("DynamoDbAdapter", () => {
         });
       });
 
-      it("Returns failure with server error", () => {
+      it("Returns failure with an invalid session error", () => {
         expect(result).toEqual(
           errorResult({
             errorType: GetSessionError.SESSION_NOT_FOUND,
@@ -371,6 +375,7 @@ describe("DynamoDbAdapter", () => {
               createdAt: 12345,
               issuer: "mockIssuer",
               sessionId: "mock_session_id",
+              sessionState: SessionState.AUTH_SESSION_CREATED,
               clientState: "mockClientState",
               subjectIdentifier: "mockSubjectIdentifier",
               timeToLive: 12345,
@@ -394,10 +399,39 @@ describe("DynamoDbAdapter", () => {
         });
       });
 
+      describe("Given session is more than 60 minutes old", () => {
+        beforeEach(async () => {
+          mockDynamoDbClient.on(GetItemCommand).resolves({
+            Item: marshall({
+              ...validBiometricTokenIssuedSessionAttributes,
+              createdAt: 1704106740000, // 2024-01-01T10:59:00.000Z
+            }),
+          });
+          result = await sessionRegistry.getSession("mock_session_id");
+        });
+
+        it("Logs the failure", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_TOO_OLD",
+          });
+        });
+
+        it("Returns failure with an invalid session error", () => {
+          expect(result).toEqual(
+            errorResult({
+              errorType: GetSessionError.SESSION_NOT_FOUND,
+            }),
+          );
+        });
+      });
+
       describe("Given valid session attributes were returned in response", () => {
         beforeEach(async () => {
           mockDynamoDbClient.on(GetItemCommand).resolves({
-            Item: marshall(validBiometricTokenIssuedSessionAttributes),
+            Item: marshall({
+              ...validBiometricTokenIssuedSessionAttributes,
+              createdAt: 1704106860000, // 2024-01-01T11:01:00.000Z
+            }),
           });
           result = await sessionRegistry.getSession("mock_session_id");
         });
