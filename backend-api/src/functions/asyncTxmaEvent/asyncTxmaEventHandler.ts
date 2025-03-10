@@ -24,6 +24,7 @@ import {
 } from "./handlerDependencies";
 import { getTxmaEventConfig } from "./txmaEventConfig";
 import { validateRequestBody } from "./validateRequestBody/validateRequestBody";
+import { TxmaEvent } from "../common/session/getOperations/TxmaEvent/TxmaEvent";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTxmaEventDependencies,
@@ -52,7 +53,9 @@ export async function lambdaHandlerConstructor(
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
   );
-  const getSessionResult = await sessionRegistry.getSession(sessionId);
+  const getSessionResult = await sessionRegistry.getSession(
+    new TxmaEvent({ sessionId }),
+  );
   const eventService = dependencies.getEventService(config.TXMA_SQS);
   const { ipAddress, txmaAuditEncoded } = getAuditData(event);
   const eventData = {

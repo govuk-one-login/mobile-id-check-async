@@ -1,5 +1,4 @@
 import {
-  AttributeValue,
   ConditionalCheckFailedException,
   DynamoDBClient,
   GetItemCommand,
@@ -20,7 +19,8 @@ import {
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
-import { SessionAttributes, SessionState } from "../common/session/session";
+import { GetSessionOperation } from "../common/session/getOperations/GetSessionOperation";
+import { SessionState } from "../common/session/session";
 import {
   GetSessionError,
   SessionRegistry,
@@ -33,10 +33,6 @@ import {
   UpdateExpressionDataToLog,
   UpdateSessionError,
 } from "../common/session/SessionRegistry";
-import {
-  getBaseSessionAttributes,
-  getBiometricTokenIssuedSessionAttributes,
-} from "../common/session/updateOperations/sessionAttributes/sessionAttributes";
 import { UpdateSessionOperation } from "../common/session/updateOperations/UpdateSessionOperation";
 import { CreateSessionAttributes } from "../services/session/sessionService";
 import {
@@ -143,7 +139,7 @@ export class DynamoDbAdapter implements SessionRegistry {
   }
 
   async getSession(
-    sessionId: string,
+    getOperation: GetSessionOperation,
   ): Promise<Result<void, SessionRetrievalFailed>> {
     let response;
     try {
@@ -152,7 +148,7 @@ export class DynamoDbAdapter implements SessionRegistry {
       response = await this.dynamoDbClient.send(
         new GetItemCommand({
           TableName: this.tableName,
-          Key: marshall({ sessionId }),
+          Key: getOperation.getDynamoDbGetKeyExpression(),
         }),
       );
     } catch (error) {
@@ -169,7 +165,7 @@ export class DynamoDbAdapter implements SessionRegistry {
     }
 
     const getSessionAttributesResult =
-      this.getSessionAttributesFromDynamoDbItem(responseItem);
+      getOperation.getSessionAttributesFromDynamoDbItem(responseItem);
     if (getSessionAttributesResult.isError) {
       return this.handleGetSessionNotFoundError(
         "Could not parse valid session attributes after successful get command",
@@ -237,10 +233,11 @@ export class DynamoDbAdapter implements SessionRegistry {
         const getSessionAttributesOptions = {
           operationFailed: true,
         };
-        const getAttributesResult = this.getSessionAttributesFromDynamoDbItem(
-          error.Item,
-          getSessionAttributesOptions,
-        );
+        const getAttributesResult =
+          updateOperation.getSessionAttributesFromDynamoDbItem(
+            error.Item,
+            getSessionAttributesOptions,
+          );
         if (getAttributesResult.isError) {
           return this.handleUpdateSessionInternalServerError(
             error,
@@ -264,9 +261,8 @@ export class DynamoDbAdapter implements SessionRegistry {
       }
     }
 
-    const getAttributesResult = this.getSessionAttributesFromDynamoDbItem(
-      response.Attributes,
-    );
+    const getAttributesResult =
+      updateOperation.getSessionAttributesFromDynamoDbItem(response.Attributes);
 
     if (getAttributesResult.isError) {
       return this.handleUpdateSessionInternalServerError(
@@ -328,18 +324,5 @@ export class DynamoDbAdapter implements SessionRegistry {
     return errorResult({
       errorType: GetSessionError.SESSION_NOT_FOUND,
     });
-  }
-
-  private getSessionAttributesFromDynamoDbItem(
-    item: Record<string, AttributeValue> | undefined,
-    options?: {
-      operationFailed: boolean;
-    },
-  ): Result<SessionAttributes, void> {
-    if (options?.operationFailed) {
-      return getBaseSessionAttributes(item);
-    } else {
-      return getBiometricTokenIssuedSessionAttributes(item);
-    }
   }
 }

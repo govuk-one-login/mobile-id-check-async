@@ -1,5 +1,6 @@
-import { SessionAttributes } from "./session";
 import { Result } from "../../utils/result";
+import { GetSessionOperation } from "./getOperations/GetSessionOperation";
+import { SessionAttributes } from "./session";
 import { UpdateSessionOperation } from "./updateOperations/UpdateSessionOperation";
 export interface SessionRegistry {
   updateSession(
@@ -7,7 +8,9 @@ export interface SessionRegistry {
     updateOperation: UpdateSessionOperation,
   ): Promise<Result<SessionUpdated, SessionUpdateFailed>>;
 
-  getSession(sessionId: string): Promise<Result<void, SessionRetrievalFailed>>;
+  getSession(
+    getOperation: GetSessionOperation,
+  ): Promise<Result<void, SessionRetrievalFailed>>;
 }
 
 export interface SessionUpdated {

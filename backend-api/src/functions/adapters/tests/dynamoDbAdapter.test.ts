@@ -23,6 +23,7 @@ import {
 import { BiometricTokenIssued } from "../../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 import { UpdateSessionOperation } from "../../common/session/updateOperations/UpdateSessionOperation";
 import {
+  mockSessionId,
   NOW_IN_MILLISECONDS,
   validBaseSessionAttributes,
   validBiometricTokenIssuedSessionAttributes,
@@ -34,6 +35,8 @@ import {
   successResult,
 } from "../../utils/result";
 import { DynamoDbAdapter } from "../dynamoDbAdapter";
+import { GetSessionOperation } from "../../common/session/getOperations/GetSessionOperation";
+import { TxmaEvent } from "../../common/session/getOperations/TxmaEvent/TxmaEvent";
 
 const mockDynamoDbClient = mockClient(DynamoDBClient);
 
@@ -308,12 +311,15 @@ describe("DynamoDbAdapter", () => {
   });
 
   describe("getSession", () => {
+    const getOperation: GetSessionOperation = new TxmaEvent({
+      sessionId: mockSessionId,
+    });
     let result: Result<void, SessionRetrievalFailed>;
 
     describe("On every attempt", () => {
       beforeEach(async () => {
         mockDynamoDbClient.on(GetItemCommand).resolves({});
-        await sessionRegistry.getSession("mock_session_id");
+        await sessionRegistry.getSession(getOperation);
       });
 
       it("Logs the attempt", () => {
@@ -326,7 +332,7 @@ describe("DynamoDbAdapter", () => {
     describe("Given there is an unexpected error retrieving the session", () => {
       beforeEach(async () => {
         mockDynamoDbClient.on(GetItemCommand).rejects("mock_error");
-        result = await sessionRegistry.getSession("mock_session_id");
+        result = await sessionRegistry.getSession(getOperation);
       });
 
       it("Logs the failure", () => {
@@ -347,7 +353,7 @@ describe("DynamoDbAdapter", () => {
     describe("Given session was not found", () => {
       beforeEach(async () => {
         mockDynamoDbClient.on(GetItemCommand).resolves({});
-        result = await sessionRegistry.getSession("mock_session_id");
+        result = await sessionRegistry.getSession(getOperation);
       });
 
       it("Logs the failure", () => {
@@ -374,14 +380,14 @@ describe("DynamoDbAdapter", () => {
               govukSigninJourneyId: "mockGovukSigninJourneyId",
               createdAt: 12345,
               issuer: "mockIssuer",
-              sessionId: "mock_session_id",
+              sessionId: mockSessionId,
               sessionState: SessionState.AUTH_SESSION_CREATED,
               clientState: "mockClientState",
               subjectIdentifier: "mockSubjectIdentifier",
               timeToLive: 12345,
             }),
           });
-          result = await sessionRegistry.getSession("mock_session_id");
+          result = await sessionRegistry.getSession(getOperation);
         });
 
         it("Logs the failure", () => {
@@ -407,7 +413,7 @@ describe("DynamoDbAdapter", () => {
               createdAt: 1704106740000, // 2024-01-01T10:59:00.000Z
             }),
           });
-          result = await sessionRegistry.getSession("mock_session_id");
+          result = await sessionRegistry.getSession(getOperation);
         });
 
         it("Logs the failure", () => {
@@ -433,7 +439,7 @@ describe("DynamoDbAdapter", () => {
               createdAt: 1704106860000, // 2024-01-01T11:01:00.000Z
             }),
           });
-          result = await sessionRegistry.getSession("mock_session_id");
+          result = await sessionRegistry.getSession(getOperation);
         });
 
         it("Logs the failure", () => {
