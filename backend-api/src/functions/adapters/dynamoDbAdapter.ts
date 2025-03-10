@@ -145,10 +145,10 @@ export class DynamoDbAdapter implements SessionRegistry {
   async getSession(
     sessionId: string,
   ): Promise<Result<void, SessionRetrievalFailed>> {
-    logger.debug(LogMessage.GET_SESSION_ATTEMPT);
-
     let response;
     try {
+      logger.debug(LogMessage.GET_SESSION_ATTEMPT);
+
       response = await this.dynamoDbClient.send(
         new GetItemCommand({
           TableName: this.tableName,
