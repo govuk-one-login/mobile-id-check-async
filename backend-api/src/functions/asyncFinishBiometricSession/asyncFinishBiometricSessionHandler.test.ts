@@ -518,7 +518,7 @@ describe("Async Finish Biometric Session", () => {
           componentId: "mockIssuer",
           getNowInMilliseconds: Date.now,
           govukSigninJourneyId: "mockGovukSigninJourneyId",
-          sessionId: "mockSessionId",
+          sessionId: mockSessionId,
           sub: "mockSubjectIdentifier",
           transactionId: mockBiometricSessionId,
           ipAddress: "1.1.1.1",
@@ -597,7 +597,7 @@ describe("Async Finish Biometric Session", () => {
       expect(mockWriteGenericEventSuccess).toBeCalledWith({
         eventName: "DCMAW_ASYNC_APP_END",
         sub: "mockSubjectIdentifier",
-        sessionId: "mockSessionId",
+        sessionId: mockSessionId,
         govukSigninJourneyId: "mockGovukSigninJourneyId",
         componentId: "mockIssuer",
         transactionId: "f32432a9-0965-4da9-8a2c-a98a79349d4a",
