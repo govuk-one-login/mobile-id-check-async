@@ -7,15 +7,15 @@ const { schema } = require("yaml-cfn");
 
 // https://docs.aws.amazon.com/cdk/v2/guide/testing.html <--- how to use this file
 
-describe("Backend application infrastructure", () => {
-  let template: Template;
-  beforeEach(() => {
-    let yamltemplate: any = load(readFileSync("template.yaml", "utf-8"), {
-      schema: schema,
-    });
-    template = Template.fromJSON(yamltemplate);
-  });
+const yamltemplate: any = load(readFileSync("template.yaml", "utf-8"), {
+  schema: schema,
+});
 
+const template = Template.fromJSON(yamltemplate, {
+  skipCyclicalDependenciesCheck: true, // Note: canary alarms falsely trigger the circular dependency check. sam validate --lint (cfn-lint) can correctly handle this so we do not miss out here.
+});
+
+describe("Backend application infrastructure", () => {
   describe("EnvironmentVariable mapping values", () => {
     test("STS base url is set", () => {
       const expectedEnvironmentVariablesValues = {
@@ -837,6 +837,14 @@ describe("Backend application infrastructure", () => {
         expect(roleNameConformsToStandards).toBe(true);
       });
     });
+
+    test("IAM service role is created with CodeDeployRoleForLambda policy attached", () => {
+      template.hasResourceProperties("AWS::IAM::Role", {
+        ManagedPolicyArns: [
+          "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForLambda",
+        ],
+      });
+    });
   });
 
   describe("S3", () => {
@@ -918,4 +926,209 @@ describe("Backend application infrastructure", () => {
       });
     });
   });
+
+  describe("Canary Deployments", () => {
+    it("Template parameter LambdaCanaryDeployment is present", () => {
+      template.findParameters("LambdaCanaryDeployment", {
+        Type: "String",
+        Default: "AllAtOnce",
+      });
+    });
+
+    it("Template condition UseLinearCanaryDeployments is present", () => {
+      template.findConditions("UseLinearCanaryDeployments");
+    });
+
+    it("Global configuration defines default deployment preference values", () => {
+      template.templateMatches({
+        Globals: {
+          Function: {
+            DeploymentPreference: {
+              Enabled: false,
+              Role: { "Fn::GetAtt": ["CodeDeployServiceRole", "Arn"] },
+            },
+          },
+        },
+      });
+    });
+
+    const canaryFunctions = template.findResources("AWS::Serverless::Function");
+
+    // Maintain a list of functions to skip when checking for canary configuration.
+    // This ensures new functions will cause a failing tests until explicitly told otherwise.
+    const canaryFunctionExclusionList = [
+      "AsyncTxmaEventFunction",
+      "JsonWebKeysFunction",
+      "ProxyLambda",
+    ];
+
+    canaryFunctionExclusionList.forEach((canaryFunctionExclusion) => {
+      delete canaryFunctions[canaryFunctionExclusion];
+    });
+
+    describe.each(Object.entries(canaryFunctions))(
+      "Function definition - %s",
+      (canaryFunction: string, canaryFunctionDefinition) => {
+        it("correctly configures DeploymentPreference for canaries", () => {
+          expect(canaryFunctionDefinition).toMatchObject({
+            Properties: {
+              DeploymentPreference: {
+                Enabled: true,
+                Type: { Ref: "LambdaCanaryDeployment" },
+                Alarms: {
+                  "Fn::If": [
+                    "UseLinearCanaryDeployments",
+                    expect.any(Array),
+                    [{ Ref: "AWS::NoValue" }],
+                  ],
+                },
+              },
+            },
+          });
+        });
+
+        const canaryFunctionAlarmNames = retrieveCanaryAlarmNames(
+          canaryFunctionDefinition,
+        );
+
+        if (canaryFunctionAlarmNames) {
+          const canaryFunctionAlarms = Object.entries(
+            template.findResources("AWS::CloudWatch::Alarm"),
+          ).filter(([alarmName, _]) => {
+            return canaryFunctionAlarmNames.includes(alarmName);
+          });
+
+          // The following test enforces a structure not just onto the function and its related canary alarms, but also onto the metric filter and thus restricts the name of the logging field used in setup logging.
+          // The test here also specifies the dimensions. Perhaps this is overkill since we have already verified that the dimensions match between the metric filter and the alarms?
+          // This test will ensure that future canary alarms with the correct function name at least once. But future testing will still be required.
+          // An exclusion list for this test may be useful in future to allow custom + advanced tests (tracking error rates across multiple lambdas?)
+          it.each(canaryFunctionAlarms)(
+            "Canary alarm %s references the function version",
+            (_, alarmDefinition) => {
+              // Checks if the namespace matches our custom metric filter namespace.
+              // Verifies the dimensions used follow the pattern in this template.
+              // May be restrictive for future alarms.
+              alarmDefinition.Properties.Metrics.forEach(
+                (metricDataQuery: any) => {
+                  if (
+                    metricDataQuery.MetricStat?.Metric?.Namespace &&
+                    metricDataQuery.MetricStat?.Metric?.Namespace["Fn::Sub"] ==
+                      "${AWS::StackName}/LogMessages"
+                  ) {
+                    expect(metricDataQuery.MetricStat.Period).toEqual(60);
+                    expect(metricDataQuery.MetricStat.Stat).toEqual("Sum");
+
+                    expect(
+                      metricDataQuery.MetricStat.Metric.Dimensions,
+                    ).toEqual(
+                      expect.arrayContaining([
+                        {
+                          Name: "MessageCode",
+                          Value: expect.any(String),
+                        },
+                        {
+                          Name: "Version",
+                          Value: {
+                            "Fn::GetAtt": [canaryFunction, "Version.Version"],
+                          },
+                        },
+                      ]),
+                    );
+                  }
+
+                  // Checks if the namespace matches the AWS namespace
+                  // Verifies the dimensions used are valid for this namespace
+                  // May be restrictive for future alarms.
+                  if (
+                    metricDataQuery.MetricStat?.Metric?.Namespace ===
+                    "AWS/Lambda"
+                  ) {
+                    expect(metricDataQuery.MetricStat.Period).toEqual(60);
+                    expect(metricDataQuery.MetricStat.Stat).toEqual("Sum");
+
+                    expect(
+                      metricDataQuery.MetricStat.Metric.Dimensions,
+                    ).toEqual(
+                      expect.arrayContaining([
+                        {
+                          Name: "Resource",
+                          Value: {
+                            "Fn::Sub": "${" + canaryFunction + "}:live",
+                          },
+                        },
+                        {
+                          Name: "FunctionName",
+                          Value: {
+                            Ref: canaryFunction,
+                          },
+                        },
+                        {
+                          Name: "ExecutedVersion",
+                          Value: {
+                            "Fn::GetAtt": [canaryFunction, "Version.Version"],
+                          },
+                        },
+                      ]),
+                    );
+                  }
+                },
+              );
+
+              // Generic bare minimum assertion that the function version is used for some dimension in some metric in the alarm.
+              // It doesn't enforce all references, just checks fr a single one.
+              // The stricter tests above does enforce that all references point toward the function version, but could be restrictive in the future.
+              expect(alarmDefinition.Properties.Metrics).toMatchObject(
+                expect.arrayContaining([
+                  expect.objectContaining({
+                    MetricStat: expect.objectContaining({
+                      Metric: expect.objectContaining({
+                        Dimensions: expect.arrayContaining([
+                          {
+                            Name: expect.any(String),
+                            Value: {
+                              "Fn::GetAtt": [canaryFunction, "Version.Version"],
+                            },
+                          },
+                        ]),
+                      }),
+                    }),
+                  }),
+                ]),
+              );
+            },
+          );
+        }
+      },
+    );
+  });
 });
+
+// Pulls out a list of Alarm names used to configure canary deployments from function definition
+// Requires the function definition to match that as defined in the 'correctly configures DeploymentPreference for canaries' test
+// Aims to return undefined if that structure is not followed.
+function retrieveCanaryAlarmNames(functionDefinition: {
+  [key: string]: any; // eslint-disable-line  @typescript-eslint/no-explicit-any
+}): string[] | undefined {
+  if (
+    !functionDefinition.Properties ||
+    !functionDefinition.Properties.DeploymentPreference ||
+    !functionDefinition.Properties.DeploymentPreference.Alarms ||
+    !functionDefinition.Properties.DeploymentPreference.Alarms["Fn::If"] ||
+    !functionDefinition.Properties.DeploymentPreference.Alarms["Fn::If"].at(1)
+  ) {
+    return undefined;
+  }
+
+  const canaryFunctionAlarms =
+    functionDefinition.Properties.DeploymentPreference.Alarms["Fn::If"].at(1);
+  const canaryFunctionAlarmNames: string[] = [];
+
+  canaryFunctionAlarms.forEach((canaryFunctionAlarm: any) => {
+    if (typeof canaryFunctionAlarm !== "object" || !canaryFunctionAlarm.Ref) {
+      return;
+    }
+
+    canaryFunctionAlarmNames.push(canaryFunctionAlarm.Ref);
+  });
+  return canaryFunctionAlarmNames;
+}

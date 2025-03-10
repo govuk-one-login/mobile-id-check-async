@@ -331,6 +331,9 @@ Globals:
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
       - !Ref AWS::NoValue
+    DeploymentPreference:
+      Enabled: false
+      Role: !GetAtt CodeDeployServiceRole.Arn
     Environment:
       Variables:
         AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
@@ -751,6 +754,14 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
+      DeploymentPreference:
+        Alarms: !If
+          - UseLinearCanaryDeployments
+          - - !Ref AsyncActiveSessionErrorRateAlarm
+            - !Ref AsyncActiveSessionLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Enabled: true
+        Type: !Ref LambdaCanaryDeployment
       Environment:
         Variables:
           AUDIENCE: !Sub https://${SessionsApiDomainName}
@@ -1270,6 +1281,14 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
+      DeploymentPreference:
+        Alarms: !If
+          - UseLinearCanaryDeployments
+          - - !Ref AsyncBiometricTokenErrorRateAlarm
+            - !Ref AsyncBiometricTokenLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Enabled: true
+        Type: !Ref LambdaCanaryDeployment
       Environment:
         Variables:
           BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS: !FindInMap
@@ -1820,6 +1839,14 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
+      DeploymentPreference:
+        Alarms: !If
+          - UseLinearCanaryDeployments
+          - - !Ref AsyncCredentialErrorRateAlarm
+            - !Ref AsyncCredentialLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Enabled: true
+        Type: !Ref LambdaCanaryDeployment
       Environment:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !FindInMap
@@ -2364,6 +2391,14 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
+      DeploymentPreference:
+        Alarms: !If
+          - UseLinearCanaryDeployments
+          - - !Ref AsyncFinishBiometricSessionErrorRateAlarm
+            - !Ref AsyncFinishBiometricSessionLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Enabled: true
+        Type: !Ref LambdaCanaryDeployment
       Events:
         AsyncFinishBiometricSession:
           Properties:
@@ -2876,6 +2911,14 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
+      DeploymentPreference:
+        Alarms: !If
+          - UseLinearCanaryDeployments
+          - - !Ref AsyncTokenErrorRateAlarm
+            - !Ref AsyncTokenLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Enabled: true
+        Type: !Ref LambdaCanaryDeployment
       Environment:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !FindInMap
@@ -3122,6 +3165,26 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-txma-event
       RetentionInDays: 30
+
+  CodeDeployServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - codedeploy.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForLambda
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      RoleName: !Sub ${AWS::StackName}-code-deploy-service-role
 
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket
@@ -3394,6 +3457,17 @@ Resources:
     Properties:
       AliasName: !Sub alias/${AWS::StackName}-signing-key
       TargetKeyId: !Ref KMSSigningKey
+
+  Linear20PercentEvery1Minute:
+    Type: AWS::CodeDeploy::DeploymentConfig
+    Properties:
+      ComputePlatform: Lambda
+      DeploymentConfigName: !Sub ${AWS::StackName}-Linear20PercentEvery1Minute
+      TrafficRoutingConfig:
+        TimeBasedLinear:
+          LinearInterval: 1
+          LinearPercentage: 20
+        Type: TimeBasedLinear
 
   NullResource:
     Type: AWS::CloudFormation::WaitConditionHandle
