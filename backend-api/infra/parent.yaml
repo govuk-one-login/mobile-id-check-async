@@ -346,7 +346,7 @@ Globals:
     Architectures:
       - arm64
     DeploymentPreference:
-      Type: AllAtOnce
+      Enabled: false
       Role: !GetAtt CodeDeployServiceRole.Arn
     Environment:
       Variables:

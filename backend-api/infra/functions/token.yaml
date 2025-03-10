@@ -18,11 +18,12 @@ Resources:
       Handler: asyncTokenHandler.lambdaHandler
       Role: !GetAtt AsyncTokenLambdaRole.Arn
       DeploymentPreference:
+        Enabled: true
         Type: !Ref LambdaCanaryDeployment
         Alarms: !If
           - UseLinearCanaryDeployments
-          - - !Sub "${AWS::StackName}-token-lambda-error-rate"        
-            - !Sub "${AWS::StackName}-token-lambda-low-completion"
+          - - !Ref AsyncTokenErrorRateAlarm      
+            - !Ref AsyncTokenLowCompletionAlarm
           - - !Ref AWS::NoValue
       Environment:
         Variables:

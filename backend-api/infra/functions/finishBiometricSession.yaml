@@ -17,11 +17,12 @@ Resources:
       Runtime: nodejs20.x
       Handler: asyncFinishBiometricSessionHandler.lambdaHandler
       DeploymentPreference:
+        Enabled: true
         Type: !Ref LambdaCanaryDeployment
         Alarms: !If
           - UseLinearCanaryDeployments
-          - - !Sub "${AWS::StackName}-finish-biometric-session-lambda-error-rate"            
-            - !Sub "${AWS::StackName}-finish-biometric-session-lambda-low-completion"
+          - - !Ref AsyncFinishBiometricSessionErrorRateAlarm            
+            - !Ref AsyncFinishBiometricSessionLowCompletionAlarm
           - - !Ref AWS::NoValue
       Events:
         AsyncFinishBiometricSession:

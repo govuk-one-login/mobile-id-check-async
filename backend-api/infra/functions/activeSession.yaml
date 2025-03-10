@@ -25,11 +25,12 @@ Resources:
             RestApiId: !Ref SessionsApi
       Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
       DeploymentPreference:
+        Enabled: true
         Type: !Ref LambdaCanaryDeployment
         Alarms: !If
           - UseLinearCanaryDeployments
-          - - !Sub "${AWS::StackName}-active-session-lambda-error-rate"         
-            - !Sub "${AWS::StackName}-active-session-lambda-low-completion"
+          - - !Ref AsyncActiveSessionErrorRateAlarm        
+            - !Ref AsyncActiveSessionLowCompletionAlarm
           - - !Ref AWS::NoValue
       Environment:
         Variables:

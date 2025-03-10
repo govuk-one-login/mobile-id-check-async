@@ -332,8 +332,8 @@ Globals:
       - !Ref CodeSigningConfigArn
       - !Ref AWS::NoValue
     DeploymentPreference:
+      Enabled: false
       Role: !GetAtt CodeDeployServiceRole.Arn
-      Type: AllAtOnce
     Environment:
       Variables:
         AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
@@ -757,9 +757,10 @@ Resources:
       DeploymentPreference:
         Alarms: !If
           - UseLinearCanaryDeployments
-          - - !Sub ${AWS::StackName}-active-session-lambda-error-rate
-            - !Sub ${AWS::StackName}-active-session-lambda-low-completion
+          - - !Ref AsyncActiveSessionErrorRateAlarm
+            - !Ref AsyncActiveSessionLowCompletionAlarm
           - - !Ref AWS::NoValue
+        Enabled: true
         Type: !Ref LambdaCanaryDeployment
       Environment:
         Variables:
@@ -1283,9 +1284,10 @@ Resources:
       DeploymentPreference:
         Alarms: !If
           - UseLinearCanaryDeployments
-          - - !Sub ${AWS::StackName}-biometric-token-lambda-error-rate
-            - !Sub ${AWS::StackName}-biometric-token-lambda-low-completion
+          - - !Ref AsyncBiometricTokenErrorRateAlarm
+            - !Ref AsyncBiometricTokenLowCompletionAlarm
           - - !Ref AWS::NoValue
+        Enabled: true
         Type: !Ref LambdaCanaryDeployment
       Environment:
         Variables:
@@ -1840,9 +1842,10 @@ Resources:
       DeploymentPreference:
         Alarms: !If
           - UseLinearCanaryDeployments
-          - - !Sub ${AWS::StackName}-credential-lambda-error-rate
-            - !Sub ${AWS::StackName}-credential-lambda-low-completion
+          - - !Ref AsyncCredentialErrorRateAlarm
+            - !Ref AsyncCredentialLowCompletionAlarm
           - - !Ref AWS::NoValue
+        Enabled: true
         Type: !Ref LambdaCanaryDeployment
       Environment:
         Variables:
@@ -2391,9 +2394,10 @@ Resources:
       DeploymentPreference:
         Alarms: !If
           - UseLinearCanaryDeployments
-          - - !Sub ${AWS::StackName}-finish-biometric-session-lambda-error-rate
-            - !Sub ${AWS::StackName}-finish-biometric-session-lambda-low-completion
+          - - !Ref AsyncFinishBiometricSessionErrorRateAlarm
+            - !Ref AsyncFinishBiometricSessionLowCompletionAlarm
           - - !Ref AWS::NoValue
+        Enabled: true
         Type: !Ref LambdaCanaryDeployment
       Events:
         AsyncFinishBiometricSession:
@@ -2910,9 +2914,10 @@ Resources:
       DeploymentPreference:
         Alarms: !If
           - UseLinearCanaryDeployments
-          - - !Sub ${AWS::StackName}-token-lambda-error-rate
-            - !Sub ${AWS::StackName}-token-lambda-low-completion
+          - - !Ref AsyncTokenErrorRateAlarm
+            - !Ref AsyncTokenLowCompletionAlarm
           - - !Ref AWS::NoValue
+        Enabled: true
         Type: !Ref LambdaCanaryDeployment
       Environment:
         Variables:

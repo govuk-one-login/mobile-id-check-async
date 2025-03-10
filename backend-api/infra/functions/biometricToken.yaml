@@ -24,11 +24,12 @@ Resources:
             Method: post
             RestApiId: !Ref SessionsApi
       DeploymentPreference:
+        Enabled: true
         Type: !Ref LambdaCanaryDeployment
         Alarms: !If
           - UseLinearCanaryDeployments
-          - - !Sub "${AWS::StackName}-biometric-token-lambda-error-rate"          
-            - !Sub "${AWS::StackName}-biometric-token-lambda-low-completion"
+          - - !Ref AsyncBiometricTokenErrorRateAlarm        
+            - !Ref AsyncBiometricTokenLowCompletionAlarm
           - - !Ref AWS::NoValue
       Environment:
         Variables:
