@@ -7,17 +7,15 @@ const { schema } = require("yaml-cfn");
 
 // https://docs.aws.amazon.com/cdk/v2/guide/testing.html <--- how to use this file
 
-describe("Backend application infrastructure", () => {
-  let template: Template;
-  beforeEach(() => {
-    let yamltemplate: any = load(readFileSync("template.yaml", "utf-8"), {
-      schema: schema,
-    });
-    template = Template.fromJSON(yamltemplate, {
-      skipCyclicalDependenciesCheck: true, // Note: canary alarms falsely trigger the circular dependency check. sam validate --lint (cfn-lint) can correctly handle this so we do not miss out here.
-    });
-  });
+const yamltemplate: any = load(readFileSync("template.yaml", "utf-8"), {
+  schema: schema,
+});
 
+const template = Template.fromJSON(yamltemplate, {
+  skipCyclicalDependenciesCheck: true, // Note: canary alarms falsely trigger the circular dependency check. sam validate --lint (cfn-lint) can correctly handle this so we do not miss out here.
+});
+
+describe("Backend application infrastructure", () => {
   describe("EnvironmentVariable mapping values", () => {
     test("STS base url is set", () => {
       const expectedEnvironmentVariablesValues = {
@@ -1010,66 +1008,71 @@ describe("Backend application infrastructure", () => {
               // Checks if the namespace matches our custom metric filter namespace.
               // Verifies the dimensions used follow the pattern in this template.
               // May be restrictive for future alarms.
-              alarmDefinition.Properties.Metrics.forEach((metricDataQuery) => {
-                if (
-                  metricDataQuery.MetricStat?.Metric?.Namespace &&
-                  metricDataQuery.MetricStat?.Metric?.Namespace["Fn::Sub"] ==
-                    "${AWS::StackName}/LogMessages"
-                ) {
-                  expect(metricDataQuery.MetricStat.Period).toEqual(60);
-                  expect(metricDataQuery.MetricStat.Stat).toEqual("Sum");
+              alarmDefinition.Properties.Metrics.forEach(
+                (metricDataQuery: any) => {
+                  if (
+                    metricDataQuery.MetricStat?.Metric?.Namespace &&
+                    metricDataQuery.MetricStat?.Metric?.Namespace["Fn::Sub"] ==
+                      "${AWS::StackName}/LogMessages"
+                  ) {
+                    expect(metricDataQuery.MetricStat.Period).toEqual(60);
+                    expect(metricDataQuery.MetricStat.Stat).toEqual("Sum");
 
-                  expect(metricDataQuery.MetricStat.Metric.Dimensions).toEqual(
-                    expect.arrayContaining([
-                      {
-                        Name: "MessageCode",
-                        Value: expect.any(String),
-                      },
-                      {
-                        Name: "Level",
-                        Value: expect.any(String),
-                      },
-                      {
-                        Name: "Version",
-                        Value: {
-                          "Fn::GetAtt": [canaryFunction, "Version.Version"],
+                    expect(
+                      metricDataQuery.MetricStat.Metric.Dimensions,
+                    ).toEqual(
+                      expect.arrayContaining([
+                        {
+                          Name: "MessageCode",
+                          Value: expect.any(String),
                         },
-                      },
-                    ]),
-                  );
-                }
+                        {
+                          Name: "Version",
+                          Value: {
+                            "Fn::GetAtt": [canaryFunction, "Version.Version"],
+                          },
+                        },
+                      ]),
+                    );
+                  }
 
-                // Checks if the namespace matches the AWS namespace
-                // Verifies the dimensions used are valid for this namespace
-                // May be restrictive for future alarms.
-                if (
-                  metricDataQuery.MetricStat?.Metric?.Namespace === "AWS/Lambda"
-                ) {
-                  expect(metricDataQuery.MetricStat.Period).toEqual(60);
-                  expect(metricDataQuery.MetricStat.Stat).toEqual("Sum");
+                  // Checks if the namespace matches the AWS namespace
+                  // Verifies the dimensions used are valid for this namespace
+                  // May be restrictive for future alarms.
+                  if (
+                    metricDataQuery.MetricStat?.Metric?.Namespace ===
+                    "AWS/Lambda"
+                  ) {
+                    expect(metricDataQuery.MetricStat.Period).toEqual(60);
+                    expect(metricDataQuery.MetricStat.Stat).toEqual("Sum");
 
-                  expect(metricDataQuery.MetricStat.Metric.Dimensions).toEqual(
-                    expect.arrayContaining([
-                      {
-                        Name: "Resource",
-                        Value: { "Fn::Sub": "${" + canaryFunction + "}:live" },
-                      },
-                      {
-                        Name: "FunctionName",
-                        Value: {
-                          Ref: canaryFunction,
+                    expect(
+                      metricDataQuery.MetricStat.Metric.Dimensions,
+                    ).toEqual(
+                      expect.arrayContaining([
+                        {
+                          Name: "Resource",
+                          Value: {
+                            "Fn::Sub": "${" + canaryFunction + "}:live",
+                          },
                         },
-                      },
-                      {
-                        Name: "ExecutedVersion",
-                        Value: {
-                          "Fn::GetAtt": [canaryFunction, "Version.Version"],
+                        {
+                          Name: "FunctionName",
+                          Value: {
+                            Ref: canaryFunction,
+                          },
                         },
-                      },
-                    ]),
-                  );
-                }
-              });
+                        {
+                          Name: "ExecutedVersion",
+                          Value: {
+                            "Fn::GetAtt": [canaryFunction, "Version.Version"],
+                          },
+                        },
+                      ]),
+                    );
+                  }
+                },
+              );
 
               // Generic bare minimum assertion that the function version is used for some dimension in some metric in the alarm.
               // It doesn't enforce all references, just checks fr a single one.
@@ -1120,7 +1123,7 @@ function retrieveCanaryAlarmNames(functionDefinition: {
     functionDefinition.Properties.DeploymentPreference.Alarms["Fn::If"].at(1);
   const canaryFunctionAlarmNames: string[] = [];
 
-  canaryFunctionAlarms.forEach((canaryFunctionAlarm) => {
+  canaryFunctionAlarms.forEach((canaryFunctionAlarm: any) => {
     if (typeof canaryFunctionAlarm !== "object" || !canaryFunctionAlarm.Ref) {
       return;
     }
