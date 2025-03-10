@@ -22,7 +22,6 @@ import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { SessionAttributes, SessionState } from "../common/session/session";
 import {
-  GetItemCommandDataToLog,
   GetSessionError,
   SessionRegistry,
   SessionRetrievalFailed,

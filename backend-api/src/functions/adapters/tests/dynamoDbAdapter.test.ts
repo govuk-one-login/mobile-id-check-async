@@ -27,7 +27,6 @@ import {
 } from "../../testUtils/unitTestData";
 import { errorResult, Result, successResult } from "../../utils/result";
 import { DynamoDbAdapter } from "../dynamoDbAdapter";
-import { SessionState } from "../../common/session/session";
 
 const mockDynamoDbClient = mockClient(DynamoDBClient);
 
