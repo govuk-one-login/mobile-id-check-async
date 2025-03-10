@@ -131,6 +131,8 @@ async function handleSessionNotFound(
     componentId: issuer,
     ipAddress,
     txmaAuditEncoded,
+    redirect_uri: undefined,
+    suspected_fraud_signal: undefined,
   });
 
   if (writeEventResult.isError) {
@@ -165,6 +167,8 @@ async function handleInternalServerError(
     componentId: issuer,
     ipAddress,
     txmaAuditEncoded,
+    redirect_uri: undefined,
+    suspected_fraud_signal: undefined,
   });
 
   if (writeEventResult.isError) {

@@ -515,7 +515,7 @@ describe("Async Finish Biometric Session", () => {
           componentId: "mockIssuer",
           getNowInMilliseconds: Date.now,
           govukSigninJourneyId: "mockGovukSigninJourneyId",
-          sessionId: "mockSessionId",
+          sessionId: mockSessionId,
           sub: "mockSubjectIdentifier",
           transactionId: mockBiometricSessionId,
           ipAddress: "1.1.1.1",

@@ -139,6 +139,89 @@ describe("Async TxMA Event", () => {
   });
 
   describe("Given session retrieval fails", () => {
+    describe("Given there is an error retrieving the session", () => {
+      beforeEach(async () => {
+        dependencies.getSessionRegistry = () => ({
+          ...mockInertSessionRegistry,
+          getSession: jest.fn().mockResolvedValue(
+            errorResult({
+              errorType: GetSessionError.INTERNAL_SERVER_ERROR,
+            }),
+          ),
+        });
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+
+      describe("Given DCMAW_ASYNC_CRI_5XXERROR event fails to write to TxMA", () => {
+        beforeEach(async () => {
+          dependencies.getEventService = () => ({
+            ...mockInertEventService,
+            writeGenericEvent: jest.fn().mockResolvedValue(
+              errorResult({
+                errorMessage: "mockError",
+              }),
+            ),
+          });
+
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+
+        it("Logs the error", async () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+            data: {
+              auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+            },
+          });
+        });
+
+        it("Returns 500 Internal server error", async () => {
+          expect(result).toStrictEqual({
+            statusCode: 500,
+            body: JSON.stringify({
+              error: "server_error",
+              error_description: "Internal Server Error",
+            }),
+            headers: expectedSecurityHeaders,
+          });
+        });
+      });
+
+      describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully to write to TxMA", () => {
+        it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
+          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+            eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+            componentId: "mockIssuer",
+            getNowInMilliseconds: Date.now,
+            govukSigninJourneyId: undefined,
+            sessionId: mockSessionId,
+            sub: undefined,
+            ipAddress: "1.1.1.1",
+            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
+          });
+        });
+
+        it("Returns 500 Internal server error", async () => {
+          expect(result).toStrictEqual({
+            statusCode: 500,
+            body: JSON.stringify({
+              error: "server_error",
+              error_description: "Internal Server Error",
+            }),
+            headers: expectedSecurityHeaders,
+          });
+        });
+      });
+    });
+
     describe("Given failure is due to client error", () => {
       describe("Given session was not found", () => {
         beforeEach(async () => {
