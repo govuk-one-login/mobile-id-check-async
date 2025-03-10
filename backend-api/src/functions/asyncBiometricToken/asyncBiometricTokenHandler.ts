@@ -39,9 +39,8 @@ import {
   BaseSessionAttributes,
   BiometricTokenIssuedSessionAttributes,
 } from "../common/session/session";
-import { getIpAddress } from "../common/request/getIpAddress/getIpAddress";
-import { getHeader } from "../common/request/getHeader/getHeader";
 import { setupLogger } from "../common/logging/setupLogger";
+import { getAuditData } from "../common/request/getAuditData/getAuditData";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
@@ -79,8 +78,7 @@ export async function lambdaHandlerConstructor(
 
   const eventService = dependencies.getEventService(config.TXMA_SQS);
 
-  const ipAddress = getIpAddress(event);
-  const txmaAuditEncoded = getHeader(event.headers, "Txma-Audit-Encoded");
+  const { ipAddress, txmaAuditEncoded } = getAuditData(event);
 
   const biometricTokenResult = await dependencies.getBiometricToken(
     config.READID_BASE_URL,
@@ -201,6 +199,8 @@ async function handleConditionalCheckFailure(
     componentId: issuer,
     ipAddress,
     txmaAuditEncoded,
+    redirect_uri: sessionAttributes.redirectUri,
+    suspected_fraud_signal: undefined,
   });
 
   if (writeEventResult.isError) {
@@ -238,6 +238,8 @@ async function handleSessionNotFound(
     componentId: issuer,
     ipAddress,
     txmaAuditEncoded,
+    redirect_uri: undefined,
+    suspected_fraud_signal: undefined,
   });
 
   if (writeEventResult.isError) {
@@ -272,6 +274,8 @@ async function handleInternalServerError(
     componentId: issuer,
     ipAddress,
     txmaAuditEncoded,
+    redirect_uri: undefined,
+    suspected_fraud_signal: undefined,
   });
 
   if (writeEventResult.isError) {
@@ -363,6 +367,7 @@ async function handleOkResponse(
     documentType: sessionAttributes.documentType,
     ipAddress,
     txmaAuditEncoded,
+    redirect_uri: sessionAttributes.redirectUri,
   });
 
   if (writeEventResult.isError) {

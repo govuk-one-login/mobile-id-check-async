@@ -15,7 +15,12 @@ import {
   mockInertEventService,
   validBiometricSessionFinishedAttributes,
 } from "../testUtils/unitTestData";
-import { emptySuccess, successResult, errorResult } from "../utils/result";
+import {
+  emptySuccess,
+  successResult,
+  errorResult,
+  emptyFailure,
+} from "../utils/result";
 import { UpdateSessionError } from "../common/session/SessionRegistry";
 
 describe("Async Finish Biometric Session", () => {
@@ -57,12 +62,22 @@ describe("Async Finish Biometric Session", () => {
 
   const mockSessionUpdateSuccess = jest
     .fn()
-    .mockResolvedValue(successResult(validBiometricSessionFinishedAttributes));
+    .mockResolvedValue(
+      successResult({ attributes: validBiometricSessionFinishedAttributes }),
+    );
 
   const mockSuccessfulSessionRegistry = {
     ...mockInertSessionRegistry,
     updateSession: mockSessionUpdateSuccess,
   };
+
+  const mockSuccessfulSendMessageToSqs = jest
+    .fn()
+    .mockResolvedValue(emptySuccess());
+
+  const mockFailingSendMessageToSqs = jest
+    .fn()
+    .mockResolvedValue(emptyFailure());
 
   beforeEach(() => {
     dependencies = {
@@ -70,9 +85,11 @@ describe("Async Finish Biometric Session", () => {
         SESSION_TABLE_NAME: "mockTableName",
         TXMA_SQS: "mockTxmaSqs",
         ISSUER: "mockIssuer",
+        VENDOR_PROCESSING_SQS: "mockVendorProcessingSqs",
       },
       getSessionRegistry: () => mockSuccessfulSessionRegistry,
       getEventService: () => mockSuccessfulEventService,
+      getSendMessageToSqs: () => mockSuccessfulSendMessageToSqs,
     };
 
     context = buildLambdaContext();
@@ -84,6 +101,7 @@ describe("Async Finish Biometric Session", () => {
 
   afterEach(() => {
     jest.useRealTimers();
+    jest.clearAllMocks();
   });
 
   describe("On every invocation", () => {
@@ -118,37 +136,39 @@ describe("Async Finish Biometric Session", () => {
   });
 
   describe("Config validation", () => {
-    describe.each([["SESSION_TABLE_NAME"], ["TXMA_SQS"], ["ISSUER"]])(
-      "Given %s environment variable is missing",
-      (envVar: string) => {
-        beforeEach(async () => {
-          delete dependencies.env[envVar];
-          result = await lambdaHandlerConstructor(
-            dependencies,
-            validRequest,
-            context,
-          );
+    describe.each([
+      ["SESSION_TABLE_NAME"],
+      ["TXMA_SQS"],
+      ["ISSUER"],
+      ["VENDOR_PROCESSING_SQS"],
+    ])("Given %s environment variable is missing", (envVar: string) => {
+      beforeEach(async () => {
+        delete dependencies.env[envVar];
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+      it("returns 500 Internal server error", async () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
         });
-        it("returns 500 Internal server error", async () => {
-          expect(result).toStrictEqual({
-            statusCode: 500,
-            body: JSON.stringify({
-              error: "server_error",
-              error_description: "Internal Server Error",
-            }),
-            headers: expectedSecurityHeaders,
-          });
+      });
+      it("logs INVALID_CONFIG", async () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_INVALID_CONFIG",
+          data: {
+            missingEnvironmentVariables: [envVar],
+          },
         });
-        it("logs INVALID_CONFIG", async () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_INVALID_CONFIG",
-            data: {
-              missingEnvironmentVariables: [envVar],
-            },
-          });
-        });
-      },
-    );
+      });
+    });
   });
 
   describe("Request body validation", () => {
@@ -280,9 +300,7 @@ describe("Async Finish Biometric Session", () => {
             sessionId: expiredSessionAttributes.sessionId,
             sub: expiredSessionAttributes.subjectIdentifier,
             transactionId: mockBiometricSessionId,
-            extensions: {
-              suspected_fraud_signal: "AUTH_SESSION_TOO_OLD",
-            },
+            suspected_fraud_signal: "AUTH_SESSION_TOO_OLD",
           });
           expect(result.statusCode).toBe(403);
         });
@@ -427,12 +445,113 @@ describe("Async Finish Biometric Session", () => {
     });
   });
 
+  describe("Given sending message to vendor processing queue fails", () => {
+    describe("Given sending DCMAW_ASYNC_CRI_5XXERROR event also fails", () => {
+      beforeEach(async () => {
+        dependencies = {
+          ...dependencies,
+          getSendMessageToSqs: () => mockFailingSendMessageToSqs,
+          getEventService: () => mockFailingEventService,
+        };
+
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+
+      it("Logs the send message to vendor processing queue failure", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE",
+        });
+      });
+
+      it("Logs the DCMAW_ASYNC_CRI_5XXERROR event failure", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+          data: {
+            auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+          },
+        });
+      });
+
+      it("Returns 500 Internal server error", () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
+        });
+      });
+    });
+
+    describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully writes to TxMA", () => {
+      beforeEach(async () => {
+        dependencies = {
+          ...dependencies,
+          getSendMessageToSqs: () => mockFailingSendMessageToSqs,
+        };
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+
+      it("Logs the send message to vendor processing queue failure", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE",
+        });
+      });
+
+      it("Writes DCMAW_ASYNC_CRI_5XXERROR event", () => {
+        expect(mockWriteGenericEventSuccess).toBeCalledWith({
+          eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+          componentId: "mockIssuer",
+          getNowInMilliseconds: Date.now,
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
+          sessionId: "mockSessionId",
+          sub: "mockSubjectIdentifier",
+          transactionId: mockBiometricSessionId,
+          ipAddress: "1.1.1.1",
+          txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
+        });
+      });
+
+      it("Returns 500 Internal server error", () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
+        });
+      });
+    });
+  });
+
   describe("Given a valid request is made", () => {
     beforeEach(async () => {
       result = await lambdaHandlerConstructor(
         dependencies,
         validRequest,
         context,
+      );
+    });
+
+    it("Sends message to the Vendor Processing queue", () => {
+      expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
+        "mockVendorProcessingSqs",
+        {
+          biometricSessionId: mockBiometricSessionId,
+          sessionId: mockSessionId,
+        },
       );
     });
 

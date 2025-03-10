@@ -428,6 +428,8 @@ describe("Async Biometric Token", () => {
             sub: "mockSubjectIdentifier",
             ipAddress: "1.1.1.1",
             txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
+            redirect_uri: "https://www.mockRedirectUri.com",
+            suspected_fraud_signal: undefined,
           });
         });
 
@@ -612,6 +614,7 @@ describe("Async Biometric Token", () => {
           documentType: "NFC_PASSPORT",
           ipAddress: "1.1.1.1",
           txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
+          redirect_uri: "https://www.mockRedirectUri.com",
         });
       });
 

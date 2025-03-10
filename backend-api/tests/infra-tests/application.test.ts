@@ -121,7 +121,7 @@ describe("Backend application infrastructure", () => {
         const expectedIpvCoreVpceIdMapping = {
           dev: "",
           build: "",
-          staging: "vpce-0555f751a645d7639",
+          staging: "vpce-0cc0de10742b83b8a",
           integration: "",
           production: "",
         };
@@ -243,14 +243,14 @@ describe("Backend application infrastructure", () => {
       expect(activeCriticalAlertsWithNoRunbook).toHaveLength(0);
     });
 
-    test("All alarms are configured with the DeployAlarm Condition", () => {
+    test("All alarms are configured with a Condition", () => {
+      const conditionalNames = ["DeployAlarms", "UseLinearCanaryDeployments"];
       const alarms = Object.values(
         template.findResources("AWS::CloudWatch::Alarm"),
       );
+
       alarms.forEach((alarm) => {
-        expect(alarm).toEqual(
-          expect.objectContaining({ Condition: "DeployAlarms" }),
-        );
+        expect(conditionalNames).toContain(alarm.Condition);
       });
     });
 
@@ -278,6 +278,16 @@ describe("Backend application infrastructure", () => {
         ["low-threshold-async-finish-biometric-session-4xx-api-gw"],
         ["high-threshold-async-finish-biometric-session-5xx-api-gw"],
         ["low-threshold-async-finish-biometric-session-5xx-api-gw"],
+        ["finish-biometric-session-lambda-error-rate"],
+        ["finish-biometric-session-lambda-low-completion"],
+        ["biometric-token-lambda-low-completion"],
+        ["biometric-token-lambda-error-rate"],
+        ["token-lambda-error-rate"],
+        ["token-lambda-low-completion"],
+        ["credential-lambda-error-rate"],
+        ["credential-lambda-low-completion"],
+        ["active-session-lambda-error-rate"],
+        ["active-session-lambda-low-completion"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
@@ -530,6 +540,7 @@ describe("Backend application infrastructure", () => {
           "SIGNING_KEY_ID",
           "ISSUER",
           "TXMA_SQS",
+          "VENDOR_PROCESSING_SQS",
           "SESSION_TABLE_NAME",
           "POWERTOOLS_SERVICE_NAME",
           "AWS_LAMBDA_EXEC_WRAPPER",
@@ -609,6 +620,45 @@ describe("Backend application infrastructure", () => {
         const autoPublishAliasAllProperties =
           template.toJSON().Globals.Function.AutoPublishAliasAllProperties;
         expect(autoPublishAliasAllProperties).toStrictEqual(true);
+      });
+
+      test("Global application and system log level is set", () => {
+        const lambdaMapping = template.findMappings("Lambda");
+        const loggingConfig = template.toJSON().Globals.Function.LoggingConfig;
+
+        expect(lambdaMapping).toStrictEqual({
+          Lambda: {
+            dev: expect.objectContaining({
+              LogLevel: "DEBUG",
+            }),
+            build: expect.objectContaining({
+              LogLevel: "INFO",
+            }),
+            staging: expect.objectContaining({
+              LogLevel: "INFO",
+            }),
+            integration: expect.objectContaining({
+              LogLevel: "INFO",
+            }),
+            production: expect.objectContaining({
+              LogLevel: "INFO",
+            }),
+          },
+        });
+
+        expect(loggingConfig).toStrictEqual({
+          ApplicationLogLevel: {
+            "Fn::FindInMap": [
+              "Lambda",
+              {
+                Ref: "Environment",
+              },
+              "LogLevel",
+            ],
+          },
+          LogFormat: "JSON",
+          SystemLogLevel: "INFO",
+        });
       });
     });
 
@@ -844,6 +894,27 @@ describe("Backend application infrastructure", () => {
             }),
           ]),
         );
+      });
+    });
+  });
+
+  describe("SQS", () => {
+    test("All primary SQS have a DLQ", () => {
+      const queues = template.findResources("AWS::SQS::Queue");
+      const deadLetterQueueNames = [
+        "TxMASQSQueueDeadLetterQueue",
+        "VendorProcessingDLQ",
+      ];
+      const queueList = Object.keys(queues).filter(
+        (queueName: string) => !deadLetterQueueNames.includes(queueName),
+      );
+
+      queueList.forEach((queue) => {
+        expect(
+          queues[queue].Properties.RedrivePolicy.deadLetterTargetArn,
+        ).toStrictEqual({
+          "Fn::GetAtt": [expect.any(String), "Arn"],
+        });
       });
     });
   });
