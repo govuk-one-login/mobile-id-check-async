@@ -186,7 +186,7 @@ export class DynamoDbAdapter implements SessionRegistry {
       });
     }
 
-    logger.error(LogMessage.GET_SESSION_SUCCESS);
+    logger.debug(LogMessage.GET_SESSION_SUCCESS);
 
     return emptySuccess();
   }
