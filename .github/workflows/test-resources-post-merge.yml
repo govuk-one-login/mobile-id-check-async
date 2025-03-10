@@ -1,0 +1,36 @@
+name: test-resources post merge
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "test-resources/**"
+      - ".github/workflows/test-resources-post-merge.yml"
+      - "!test-resources/**/*.md"
+      - "!test-resources/**/*.png"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  post-merge:
+    name: Run tests, build and push image, build and upload artifact to S3 for dev and build
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/workflow_post-merge.yml@DCMAW-11654
+    with:
+      WORKING_DIRECTORY: test-resources
+    secrets:
+      DEV_ARTIFACT_BUCKET_NAME: ${{ secrets.TEST_RESOURCES_DEV_ARTIFACT_BUCKET }}
+      DEV_CONTAINER_SIGN_KMS_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
+      DEV_GH_ACTIONS_ROLE_ARN: ${{ secrets.TEST_RESOURCES_DEV_GH_ACTIONS_ROLE_ARN }}
+      DEV_SIGNING_PROFILE_NAME: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
+      DEV_TEST_IMAGE_REPOSITORY_URI: ${{ secrets.TEST_RESOURCES_DEV_TEST_IMAGE_REPOSITORY_URI }}
+      BUILD_ARTIFACT_BUCKET_NAME: ${{ secrets.TEST_RESOURCES_BUILD_ARTIFACT_BUCKET }}
+      BUILD_CONTAINER_SIGN_KMS_KEY: ${{ secrets.BUILD_CONTAINER_SIGN_KMS_KEY }}
+      BUILD_GH_ACTIONS_ROLE_ARN: ${{ secrets.TEST_RESOURCES_BUILD_GH_ACTIONS_ROLE_ARN }}
+      BUILD_SIGNING_PROFILE_NAME: ${{ secrets.BUILD_SIGNING_PROFILE_NAME }}
+      BUILD_TEST_IMAGE_REPOSITORY_URI: ${{ secrets.TEST_RESOURCES_BUILD_TEST_IMAGE_REPOSITORY_URI }}
