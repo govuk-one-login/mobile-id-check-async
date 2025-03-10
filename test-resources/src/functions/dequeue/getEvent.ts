@@ -63,6 +63,7 @@ export const allowedTxmaEventNames = [
   "DCMAW_ASYNC_CRI_4XXERROR",
   "DCMAW_ASYNC_CRI_5XXERROR",
   "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
+  "DCMAW_ASYNC_APP_END",
 ];
 
 const allowedTxmaEventNamesWithoutSessionId = [
