@@ -31,10 +31,6 @@ Resources:
           - - !Sub "${AWS::StackName}-active-session-lambda-error-rate"         
             - !Sub "${AWS::StackName}-active-session-lambda-low-completion"
           - - !Ref AWS::NoValue
-        Role: !If
-          - UseLinearCanaryDeployments
-          - !GetAtt CodeDeployServiceRole.Arn
-          - !Ref AWS::NoValue
       Environment:
         Variables:
           ENCRYPTION_KEY_ARN: !GetAtt KMSEncryptionKey.Arn

@@ -23,10 +23,6 @@ Resources:
           - - !Sub "${AWS::StackName}-finish-biometric-session-lambda-error-rate"            
             - !Sub "${AWS::StackName}-finish-biometric-session-lambda-low-completion"
           - - !Ref AWS::NoValue
-        Role: !If
-          - UseLinearCanaryDeployments
-          - !GetAtt CodeDeployServiceRole.Arn
-          - !Ref AWS::NoValue
       Events:
         AsyncFinishBiometricSession:
           Type: Api
