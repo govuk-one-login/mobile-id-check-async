@@ -1,15 +1,47 @@
-import { ConditionalCheckFailedException, DynamoDBClient, GetItemCommand, PutItemCommand, PutItemCommandInput, QueryCommand, QueryCommandInput, QueryCommandOutput, ReturnValue, ReturnValuesOnConditionCheckFailure, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
+import {
+  ConditionalCheckFailedException,
+  DynamoDBClient,
+  GetItemCommand,
+  PutItemCommand,
+  PutItemCommandInput,
+  QueryCommand,
+  QueryCommandInput,
+  QueryCommandOutput,
+  ReturnValue,
+  ReturnValuesOnConditionCheckFailure,
+  UpdateItemCommand,
+} from "@aws-sdk/client-dynamodb";
 import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
-import { NativeAttributeValue, marshall, unmarshall } from "@aws-sdk/util-dynamodb";
+import {
+  NativeAttributeValue,
+  marshall,
+  unmarshall,
+} from "@aws-sdk/util-dynamodb";
 import { logger } from "../../../common/logging/logger";
 import { LogMessage } from "../../../common/logging/LogMessage";
 import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
 import { SessionState } from "../../../common/session/session";
-import { GetSessionError, SessionRegistry, SessionRetrievalFailed, SessionRetrievalFailedInternalServerError, SessionRetrievalFailedSessionNotFound, SessionUpdateFailed, SessionUpdateFailedInternalServerError, SessionUpdated, UpdateExpressionDataToLog, UpdateSessionError } from "../../../common/session/SessionRegistry";
+import {
+  GetSessionError,
+  SessionRegistry,
+  SessionRetrievalFailed,
+  SessionRetrievalFailedInternalServerError,
+  SessionRetrievalFailedSessionNotFound,
+  SessionUpdateFailed,
+  SessionUpdateFailedInternalServerError,
+  SessionUpdated,
+  UpdateExpressionDataToLog,
+  UpdateSessionError,
+} from "../../../common/session/SessionRegistry";
 import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
 import { CreateSessionAttributes } from "../../../services/session/sessionService";
-import { FailureWithValue, Result, emptySuccess, errorResult, successResult } from "../../../utils/result";
-
+import {
+  FailureWithValue,
+  Result,
+  emptySuccess,
+  errorResult,
+  successResult,
+} from "../../../utils/result";
 
 export type DatabaseRecord = Record<string, NativeAttributeValue>;
 

@@ -1,16 +1,40 @@
 import { expect } from "@jest/globals";
 import "dotenv/config";
 import "../../../../../tests/testUtils/matchers";
-import { DynamoDBClient, UpdateItemCommand, ConditionalCheckFailedException, ReturnValue, ReturnValuesOnConditionCheckFailure, GetItemCommand } from "@aws-sdk/client-dynamodb";
+import {
+  DynamoDBClient,
+  UpdateItemCommand,
+  ConditionalCheckFailedException,
+  ReturnValue,
+  ReturnValuesOnConditionCheckFailure,
+  GetItemCommand,
+} from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { mockClient } from "aws-sdk-client-mock";
 import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
 import { TxmaEvent } from "../../../common/session/getOperations/TxmaEvent/TxmaEvent";
-import { SessionRegistry, SessionUpdated, SessionUpdateFailed, UpdateSessionError, SessionRetrievalFailed, GetSessionError } from "../../../common/session/SessionRegistry";
+import {
+  SessionRegistry,
+  SessionUpdated,
+  SessionUpdateFailed,
+  UpdateSessionError,
+  SessionRetrievalFailed,
+  GetSessionError,
+} from "../../../common/session/SessionRegistry";
 import { BiometricTokenIssued } from "../../../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
-import { NOW_IN_MILLISECONDS, validBaseSessionAttributes, validBiometricTokenIssuedSessionAttributes, mockSessionId } from "../../../testUtils/unitTestData";
-import { Result, errorResult, successResult, emptySuccess } from "../../../utils/result";
+import {
+  NOW_IN_MILLISECONDS,
+  validBaseSessionAttributes,
+  validBiometricTokenIssuedSessionAttributes,
+  mockSessionId,
+} from "../../../testUtils/unitTestData";
+import {
+  Result,
+  errorResult,
+  successResult,
+  emptySuccess,
+} from "../../../utils/result";
 import { DynamoDbAdapter } from "./dynamoDbAdapter";
 import { SessionState } from "../../../common/session/session";
 
