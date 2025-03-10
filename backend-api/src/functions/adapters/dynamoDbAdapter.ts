@@ -151,7 +151,7 @@ export class DynamoDbAdapter implements SessionRegistry {
           Key: getOperation.getDynamoDbGetKeyExpression(),
         }),
       );
-    } catch (error) {
+    } catch (error: unknown) {
       return this.handleGetSessionInternalServerError(error);
     }
 
