@@ -60,16 +60,14 @@ describe("Async Finish Biometric Session", () => {
     writeGenericEvent: mockWriteGenericEventFaiilure,
   };
 
-  const mockSessionUpdateSuccess = jest
-    .fn()
-    .mockResolvedValue(
-      successResult({
-        attributes: {
-          ...validBiometricSessionFinishedAttributes,
-          redirectUri: "www.mockRedirectUri.com",
-        },
-      }),
-    );
+  const mockSessionUpdateSuccess = jest.fn().mockResolvedValue(
+    successResult({
+      attributes: {
+        ...validBiometricSessionFinishedAttributes,
+        redirectUri: "www.mockRedirectUri.com",
+      },
+    }),
+  );
 
   const mockSuccessfulSessionRegistry = {
     ...mockInertSessionRegistry,
