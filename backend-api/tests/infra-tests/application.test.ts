@@ -243,14 +243,14 @@ describe("Backend application infrastructure", () => {
       expect(activeCriticalAlertsWithNoRunbook).toHaveLength(0);
     });
 
-    test("All alarms are configured with the DeployAlarm Condition", () => {
+    test("All alarms are configured with a Condition", () => {
+      const conditionalNames = ["DeployAlarms", "UseLinearCanaryDeployments"];
       const alarms = Object.values(
         template.findResources("AWS::CloudWatch::Alarm"),
       );
+
       alarms.forEach((alarm) => {
-        expect(alarm).toEqual(
-          expect.objectContaining({ Condition: "DeployAlarms" }),
-        );
+        expect(conditionalNames).toContain(alarm.Condition);
       });
     });
 
@@ -278,6 +278,16 @@ describe("Backend application infrastructure", () => {
         ["low-threshold-async-finish-biometric-session-4xx-api-gw"],
         ["high-threshold-async-finish-biometric-session-5xx-api-gw"],
         ["low-threshold-async-finish-biometric-session-5xx-api-gw"],
+        ["finish-biometric-session-lambda-error-rate"],
+        ["finish-biometric-session-lambda-low-completion"],
+        ["biometric-token-lambda-low-completion"],
+        ["biometric-token-lambda-error-rate"],
+        ["token-lambda-error-rate"],
+        ["token-lambda-low-completion"],
+        ["credential-lambda-error-rate"],
+        ["credential-lambda-low-completion"],
+        ["active-session-lambda-error-rate"],
+        ["active-session-lambda-low-completion"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
