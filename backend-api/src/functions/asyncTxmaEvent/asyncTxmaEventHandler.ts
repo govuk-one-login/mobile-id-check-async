@@ -110,29 +110,33 @@ async function handleGetSessionError(
   }
 }
 
-interface HandleSessionNotFoundData {
+interface BaseErrorData {
   sessionId: string;
   issuer: string;
   ipAddress: string;
   txmaAuditEncoded: string | undefined;
 }
 
+const genericTxmaEventData = {
+  sub: undefined,
+  govukSigninJourneyId: undefined,
+  getNowInMilliseconds: Date.now,
+  redirect_uri: undefined,
+  suspected_fraud_signal: undefined,
+};
+
 async function handleSessionNotFound(
   eventService: IEventService,
-  data: HandleSessionNotFoundData,
+  data: BaseErrorData,
 ): Promise<APIGatewayProxyResult> {
   const { sessionId, issuer, ipAddress, txmaAuditEncoded } = data;
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-    sub: undefined,
     sessionId,
-    govukSigninJourneyId: undefined,
-    getNowInMilliseconds: Date.now,
     componentId: issuer,
     ipAddress,
     txmaAuditEncoded,
-    redirect_uri: undefined,
-    suspected_fraud_signal: undefined,
+    ...genericTxmaEventData,
   });
 
   if (writeEventResult.isError) {
@@ -146,29 +150,18 @@ async function handleSessionNotFound(
   return unauthorizedResponse("invalid_session", "Session not found");
 }
 
-interface HandleInternalServerErrorData {
-  sessionId: string;
-  issuer: string;
-  ipAddress: string;
-  txmaAuditEncoded: string | undefined;
-}
-
 async function handleInternalServerError(
   eventService: IEventService,
-  data: HandleInternalServerErrorData,
+  data: BaseErrorData,
 ): Promise<APIGatewayProxyResult> {
   const { sessionId, issuer, ipAddress, txmaAuditEncoded } = data;
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-    sub: undefined,
     sessionId,
-    govukSigninJourneyId: undefined,
-    getNowInMilliseconds: Date.now,
     componentId: issuer,
     ipAddress,
     txmaAuditEncoded,
-    redirect_uri: undefined,
-    suspected_fraud_signal: undefined,
+    ...genericTxmaEventData,
   });
 
   if (writeEventResult.isError) {
