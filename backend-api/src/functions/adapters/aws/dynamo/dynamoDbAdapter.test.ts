@@ -12,7 +12,7 @@ import {
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { mockClient } from "aws-sdk-client-mock";
 import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
-import { TxmaEvent } from "../../../common/session/getOperations/TxmaEvent/TxmaEvent";
+import { TxMAEvent } from "../../../common/session/getOperations/TxmaEvent/TxMAEvent";
 import {
   SessionRegistry,
   SessionUpdated,
@@ -311,7 +311,7 @@ describe("DynamoDbAdapter", () => {
   });
 
   describe("getSession", () => {
-    const getOperation: GetSessionOperation = new TxmaEvent({
+    const getOperation: GetSessionOperation = new TxMAEvent({
       sessionId: mockSessionId,
     });
     let result: Result<void, SessionRetrievalFailed>;

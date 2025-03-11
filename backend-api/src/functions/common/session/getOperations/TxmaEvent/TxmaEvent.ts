@@ -5,7 +5,7 @@ import { GetSessionOperation } from "../GetSessionOperation";
 import { getBiometricTokenIssuedSessionAttributes } from "../../updateOperations/sessionAttributes/sessionAttributes";
 import { marshall } from "@aws-sdk/util-dynamodb";
 
-export class TxmaEvent implements GetSessionOperation {
+export class TxMAEvent implements GetSessionOperation {
   private readonly sessionId: string;
 
   constructor({ sessionId }: { sessionId: string }) {
