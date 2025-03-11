@@ -27,6 +27,7 @@ describe("POST /async/finishBiometricSession", () => {
         },
       );
     });
+
     it("Returns 400 invalid request response", async () => {
       expect(response.status).toBe(400);
       expect(response.data).toStrictEqual({
