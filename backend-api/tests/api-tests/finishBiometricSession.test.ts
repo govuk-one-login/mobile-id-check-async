@@ -28,8 +28,9 @@ describe("POST /async/finishBiometricSession", () => {
       );
     });
 
-    it("Returns 400 invalid request response", async () => {
+    it("Returns 400 Bad Request response with invalid_request error", async () => {
       expect(response.status).toBe(400);
+      expect(response.statusText).toBe("Bad Request")
       expect(response.data).toStrictEqual({
         error: "invalid_request",
         error_description: `sessionId in request body is not a valid v4 UUID. sessionId: ${invalidSessionId}`,
@@ -53,8 +54,9 @@ describe("POST /async/finishBiometricSession", () => {
       );
     });
 
-    it("Returns 401 invalid session response", () => {
+    it("Returns 401 Unauthorized response with invalid_session error", () => {
       expect(response.status).toBe(401);
+      expect(response.statusText).toBe("Unauthorized")
       expect(response.data).toStrictEqual({
         error: "invalid_session",
         error_description: "Session not found",
