@@ -17,12 +17,12 @@ import { AxiosResponse } from "axios";
 describe("POST /async/finishBiometricSession", () => {
   describe("Given the request body is invalid", () => {
     let response: AxiosResponse;
-    const invalidSessionId = "invalidSessionId";
+    const mockInvalidSessionId = "invalidSessionId";
     beforeAll(async () => {
       response = await SESSIONS_API_INSTANCE.post(
         "/async/finishBiometricSession",
         {
-          sessionId: invalidSessionId,
+          sessionId: mockInvalidSessionId,
           biometricSessionId: mockBiometricSessionId,
         },
       );
@@ -33,7 +33,7 @@ describe("POST /async/finishBiometricSession", () => {
       expect(response.statusText).toBe("Bad Request");
       expect(response.data).toStrictEqual({
         error: "invalid_request",
-        error_description: `sessionId in request body is not a valid v4 UUID. sessionId: ${invalidSessionId}`,
+        error_description: `sessionId in request body is not a valid v4 UUID. sessionId: ${mockInvalidSessionId}`,
       });
       expect(response.headers).toEqual(
         expect.objectContaining(expectedSecurityHeaders),
