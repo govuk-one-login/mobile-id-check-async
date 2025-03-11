@@ -114,7 +114,6 @@ export const getSessionId = async (sub: string): Promise<string> => {
   );
 
   const sessionId = activeSessionResponse.data["sessionId"];
-
   if (!sessionId) {
     throw new Error(
       "Failed to get valid session ID to call activeSession endpoint",
