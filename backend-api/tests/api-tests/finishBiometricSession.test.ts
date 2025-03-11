@@ -8,7 +8,7 @@ import {
 import {
   createSessionForSub,
   EventResponse,
-  getSessionId,
+  getActiveSessionIdFromSub,
   issueBiometricToken,
   pollForEvents,
 } from "./utils/apiTestHelpers";
@@ -71,7 +71,7 @@ describe("POST /async/finishBiometricSession", () => {
     beforeAll(async () => {
       const sub = randomUUID();
       await createSessionForSub(sub);
-      sessionId = await getSessionId(sub);
+      sessionId = await getActiveSessionIdFromSub(sub);
       await issueBiometricToken(sessionId);
 
       response = await SESSIONS_API_INSTANCE.post(
