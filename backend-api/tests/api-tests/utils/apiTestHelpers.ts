@@ -104,6 +104,35 @@ export async function getValidSessionId(): Promise<string | null> {
   return activeSessionResponse.data["sessionId"] ?? null;
 }
 
+export const getSessionId = async (sub: string): Promise<string> => {
+  const serviceToken = await getAccessToken(sub);
+  const activeSessionResponse = await SESSIONS_API_INSTANCE.get(
+    "/async/activeSession",
+    {
+      headers: { Authorization: `Bearer ${serviceToken}` },
+    },
+  );
+
+  const sessionId = activeSessionResponse.data["sessionId"];
+
+  if (!sessionId) {
+    throw new Error(
+      "Failed to get valid session ID to call activeSession endpoint",
+    );
+  }
+
+  return sessionId;
+};
+
+export async function issueBiometricToken(sessionId: string): Promise<void> {
+  const requestBody = {
+    sessionId,
+    documentType: "NFC_PASSPORT",
+  };
+
+  await SESSIONS_API_INSTANCE.post("/async/biometricToken", requestBody);
+}
+
 export type EventResponse = {
   pk: string;
   sk: string;
