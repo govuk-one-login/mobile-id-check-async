@@ -25,6 +25,7 @@ import {
 import { getTxmaEventConfig } from "./txmaEventConfig";
 import { validateRequestBody } from "./validateRequestBody/validateRequestBody";
 import { TxmaEvent } from "../common/session/getOperations/TxmaEvent/TxmaEvent";
+import { Result } from "../utils/result";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTxmaEventDependencies,
@@ -56,7 +57,6 @@ export async function lambdaHandlerConstructor(
   const getSessionResult = await sessionRegistry.getSession(
     new TxmaEvent({ sessionId }),
   );
-  const eventService = dependencies.getEventService(config.TXMA_SQS);
   const { ipAddress, txmaAuditEncoded } = getAuditData(event);
   const eventData = {
     sessionId,
@@ -65,6 +65,8 @@ export async function lambdaHandlerConstructor(
     txmaAuditEncoded,
   };
   if (getSessionResult.isError) {
+    const eventService = dependencies.getEventService(config.TXMA_SQS);
+
     return handleGetSessionError(
       eventService,
       getSessionResult.value,
@@ -124,7 +126,7 @@ async function handleSessionNotFound(
   eventService: IEventService,
   data: BaseErrorData,
 ): Promise<APIGatewayProxyResult> {
-  const writeEventResult = await writeGenericEvent({
+  const writeEventResult = await writeEvent({
     eventService,
     eventName: "DCMAW_ASYNC_CRI_4XXERROR",
     data,
@@ -138,14 +140,14 @@ async function handleSessionNotFound(
     });
     return serverErrorResponse;
   }
-  return unauthorizedResponse("invalid_session", "Session not found");
+  return unauthorizedResponse("invalid_session", "Session does not exist or in incorrect state");
 }
 
 async function handleInternalServerError(
   eventService: IEventService,
   data: BaseErrorData,
 ): Promise<APIGatewayProxyResult> {
-  const writeEventResult = await writeGenericEvent({
+  const writeEventResult = await writeEvent({
     eventService,
     eventName: "DCMAW_ASYNC_CRI_5XXERROR",
     data,
@@ -169,7 +171,7 @@ const genericTxmaEventData = {
   suspected_fraud_signal: undefined,
 };
 
-async function writeGenericEvent({
+async function writeEvent({
   eventService,
   eventName,
   data,
@@ -177,7 +179,7 @@ async function writeGenericEvent({
   eventService: IEventService;
   eventName: GenericEventNames;
   data: BaseErrorData;
-}) {
+}): Promise<Result<void, void>> {
   const { sessionId, issuer, ipAddress, txmaAuditEncoded } = data;
   return await eventService.writeGenericEvent({
     eventName,

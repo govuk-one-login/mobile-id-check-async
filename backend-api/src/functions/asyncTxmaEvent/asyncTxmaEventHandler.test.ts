@@ -297,7 +297,7 @@ describe("Async TxMA Event", () => {
             statusCode: 401,
             body: JSON.stringify({
               error: "invalid_session",
-              error_description: "Session not found",
+              error_description: "Session does not exist or in incorrect state",
             }),
             headers: expectedSecurityHeaders,
           });

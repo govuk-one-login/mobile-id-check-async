@@ -148,7 +148,7 @@ export class DynamoDbAdapter implements SessionRegistry {
       response = await this.dynamoDbClient.send(
         new GetItemCommand({
           TableName: this.tableName,
-          Key: getOperation.getDynamoDbGetKeyExpression(),
+          Key: getOperation.getDynamoDbKeyExpression(),
         }),
       );
     } catch (error: unknown) {

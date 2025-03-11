@@ -420,9 +420,22 @@ Outputs:
       Name: !Sub ${AWS::StackName}-txma-sqs-queue-arn
     Value: !GetAtt TxMASQSQueue.Arn
 
+  TxMASQSQueueUrl:
+    Description: TxMA SQS Queue URL
+    Value: !Ref TxMASQSQueue
+    Export:
+      Name: !Sub "${AWS::StackName}-txma-sqs-url"
+
   TxmaKmsEncryptionKeyArn:
     Condition: IsDevOrBuild
     Description: TxMA KMS Encryption Key ARN
     Export:
       Name: !Sub ${AWS::StackName}-txma-kms-encryption-key-arn
     Value: !GetAtt TxMAKMSEncryptionKey.Arn
+
+  SessionsTableName:
+    Condition: IsDevOrBuild
+    Description: Sessions Table name
+    Export:
+      Name: !Sub "${AWS::StackName}-sessions-table"
+    Value: !Ref SessionsTable

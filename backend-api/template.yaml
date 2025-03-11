@@ -3115,6 +3115,25 @@ Resources:
                 Resource: '*'
             Version: "2012-10-17"
           PolicyName: VpcPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - dynamodb:GetItem
+                Effect: Allow
+                Resource: !GetAtt SessionsTable.Arn
+          PolicyName: AsyncTxmaEventFunctionDynamodbPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - sqs:SendMessage
+                Effect: Allow
+                Resource: !GetAtt TxMASQSQueue.Arn
+              - Action:
+                  - kms:GenerateDataKey
+                Effect: Allow
+                Resource: !GetAtt TxMAKMSEncryptionKey.Arn
+            Version: "2012-10-17"
+          PolicyName: AsyncTxmaEventFunctionTxmaSQSPolicy
       RoleName: !Sub ${AWS::StackName}-txma-event-lambda
 
   AsyncTxmaEventLogGroup:
@@ -4124,6 +4143,13 @@ Outputs:
     Description: Sessions API Gateway base URL
     Value: !Sub https://${SessionsApiDomainName}
 
+  SessionsTableName:
+    Description: Sessions Table name
+    Value: !Ref SessionsTable
+    Export:
+      Name: !Sub ${AWS::StackName}-sessions-table
+    Condition: IsDevOrBuild
+
   StsMockApiUrl:
     Description: STS Mock API Gateway base URL
     Value: !If
@@ -4134,6 +4160,12 @@ Outputs:
         - !Ref Environment
         - STSBASEURL
     Condition: IsDevOrBuild
+
+  TxMASQSQueueUrl:
+    Description: TxMA SQS Queue URL
+    Value: !Ref TxMASQSQueue
+    Export:
+      Name: !Sub ${AWS::StackName}-txma-sqs-url
 
   TxmaKmsEncryptionKeyArn:
     Description: TxMA KMS Encryption Key ARN

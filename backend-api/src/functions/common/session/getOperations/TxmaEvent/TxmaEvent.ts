@@ -12,7 +12,7 @@ export class TxmaEvent implements GetSessionOperation {
     this.sessionId = sessionId;
   }
 
-  getDynamoDbGetKeyExpression() {
+  getDynamoDbKeyExpression() {
     return { sessionId: marshall(this.sessionId) };
   }
 
