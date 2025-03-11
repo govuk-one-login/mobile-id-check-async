@@ -140,7 +140,10 @@ async function handleSessionNotFound(
     });
     return serverErrorResponse;
   }
-  return unauthorizedResponse("invalid_session", "Session does not exist or in incorrect state");
+  return unauthorizedResponse(
+    "invalid_session",
+    "Session does not exist or in incorrect state",
+  );
 }
 
 async function handleInternalServerError(

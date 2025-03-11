@@ -51,8 +51,7 @@ describe("POST /async/txmaEvent", () => {
       expect(response.status).toBe(401);
       expect(response.data).toStrictEqual({
         error: "invalid_session",
-        error_description:
-          "Session does not exist or in incorrect state",
+        error_description: "Session does not exist or in incorrect state",
       });
       expect(response.headers).toEqual(
         expect.objectContaining(expectedSecurityHeaders),
@@ -61,15 +60,12 @@ describe("POST /async/txmaEvent", () => {
   });
 
   describe("Given the request is valid", () => {
-    let sessionId: string | null
+    let sessionId: string | null;
     let response: AxiosResponse;
 
     beforeAll(async () => {
       sessionId = await getValidSessionId();
-      if (!sessionId)
-        throw new Error(
-          "Failed to get valid session ID",
-        );
+      if (!sessionId) throw new Error("Failed to get valid session ID");
       const biometricTokenRequestBody = {
         sessionId,
         documentType: "NFC_PASSPORT",
@@ -86,7 +82,6 @@ describe("POST /async/txmaEvent", () => {
         "/async/txmaEvent",
         requestBody,
       );
-
     }, 25000);
 
     it("Returns 501 Not Implemented response", () => {
