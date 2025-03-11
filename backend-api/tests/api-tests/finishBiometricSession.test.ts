@@ -22,7 +22,7 @@ describe("POST /async/finishBiometricSession", () => {
       response = await SESSIONS_API_INSTANCE.post(
         "/async/finishBiometricSession",
         {
-          sessionId: "invalidSessionId",
+          sessionId: invalidSessionId,
           biometricSessionId: mockBiometricSessionId,
         },
       );
