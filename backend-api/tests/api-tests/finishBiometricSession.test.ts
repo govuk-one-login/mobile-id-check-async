@@ -5,7 +5,12 @@ import {
   mockSessionId,
   expectedSecurityHeaders,
 } from "./utils/apiTestData";
-import { getValidSessionId } from "./utils/apiTestHelpers";
+import {
+  EventResponse,
+  getValidSessionId,
+  pollForEvents,
+} from "./utils/apiTestHelpers";
+import { AxiosResponse } from "axios";
 
 describe("POST /async/finishBiometricSession", () => {
   describe("Given the request body is invalid", () => {
@@ -54,7 +59,9 @@ describe("POST /async/finishBiometricSession", () => {
 
   describe("Given there is a valid request", () => {
     let sessionId: string | null;
-    beforeEach(async () => {
+    let response: AxiosResponse;
+    let eventsResponse: EventResponse[];
+    beforeAll(async () => {
       sessionId = await getValidSessionId();
       if (!sessionId)
         throw new Error(
@@ -65,10 +72,8 @@ describe("POST /async/finishBiometricSession", () => {
         documentType: "NFC_PASSPORT",
       };
       await SESSIONS_API_INSTANCE.post("/async/biometricToken", requestBody);
-    }, 30000);
 
-    it("Returns 200 OK response", async () => {
-      const response = await SESSIONS_API_INSTANCE.post(
+      response = await SESSIONS_API_INSTANCE.post(
         "/async/finishBiometricSession",
         {
           sessionId,
@@ -76,6 +81,22 @@ describe("POST /async/finishBiometricSession", () => {
         },
       );
 
+      eventsResponse = await pollForEvents({
+        partitionKey: `SESSION#${sessionId}`,
+        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_APP_END`,
+        numberOfEvents: 1,
+      });
+    }, 40000);
+
+    it("Writes DCMAW_ASYNC_APP_END TxMA event", () => {
+      expect(eventsResponse[0].event).toEqual(
+        expect.objectContaining({
+          event_name: "DCMAW_ASYNC_APP_END",
+        }),
+      );
+    });
+
+    it("Returns 200 OK response", () => {
       expect(response.status).toBe(200);
       expect(response.statusText).toBe("OK");
       expect(response.headers).toEqual(
