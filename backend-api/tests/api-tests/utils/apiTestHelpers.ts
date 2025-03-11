@@ -123,14 +123,14 @@ export const getSessionId = async (sub: string): Promise<string> => {
   return sessionId;
 };
 
-export async function issueBiometricToken(sessionId: string): Promise<void> {
+export const issueBiometricToken = async (sessionId: string): Promise<void> => {
   const requestBody = {
     sessionId,
     documentType: "NFC_PASSPORT",
   };
 
   await SESSIONS_API_INSTANCE.post("/async/biometricToken", requestBody);
-}
+};
 
 export type EventResponse = {
   pk: string;
