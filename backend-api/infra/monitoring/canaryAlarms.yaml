@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Resources:
   AsyncTokenCompletionMetricFilter:
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
     Type: AWS::Logs::MetricFilter    
     Properties:
       LogGroupName: !Ref AsyncTokenLogGroup
@@ -17,7 +17,7 @@ Resources:
               Value: $.functionVersion
 
   AsyncTokenErrorRateAlarm:
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
@@ -75,7 +75,7 @@ Resources:
           Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage, 0)
 
   AsyncTokenLowCompletionAlarm:
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm    
     DependsOn:
       - "AsyncTokenCompletionMetricFilter"
@@ -129,10 +129,10 @@ Resources:
         - Id: lowCompletionRateThreshold
           Label: "Error threshold calculation"
           ReturnData: true
-          Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage, 100)
+          Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage)
 
   AsyncCredentialCompletionMetricFilter:
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
     Type: AWS::Logs::MetricFilter    
     Properties:
       LogGroupName: !Ref AsyncCredentialLogGroup
@@ -148,7 +148,7 @@ Resources:
               Value: $.functionVersion
 
   AsyncCredentialErrorRateAlarm:
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
@@ -206,7 +206,7 @@ Resources:
           Expression: IF(lambdaErrors >= 5,lambdaErrorPercentage, 0)
 
   AsyncCredentialLowCompletionAlarm:
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm    
     DependsOn:
       - "AsyncCredentialCompletionMetricFilter"
@@ -260,10 +260,10 @@ Resources:
         - Id: lowCompletionRateThreshold
           Label: "Error threshold calculation"
           ReturnData: true
-          Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage, 100)
+          Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage)
 
   AsyncActiveSessionCompletionMetricFilter:
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
     Type: AWS::Logs::MetricFilter    
     Properties:
       LogGroupName: !Ref AsyncActiveSessionLogGroup
@@ -279,7 +279,7 @@ Resources:
               Value: $.functionVersion
 
   AsyncActiveSessionErrorRateAlarm:
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
@@ -337,7 +337,7 @@ Resources:
           Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage, 0)
 
   AsyncActiveSessionLowCompletionAlarm:
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm    
     DependsOn:
       - "AsyncActiveSessionCompletionMetricFilter"
@@ -391,10 +391,10 @@ Resources:
         - Id: lowCompletionRateThreshold
           Label: "Error threshold calculation"
           ReturnData: true
-          Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage, 100)
+          Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage)
 
   AsyncBiometricTokenCompletionMetricFilter:
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
     Type: AWS::Logs::MetricFilter    
     Properties:
       LogGroupName: !Ref AsyncBiometricTokenLogGroup
@@ -410,7 +410,7 @@ Resources:
               Value: $.functionVersion
 
   AsyncBiometricTokenErrorRateAlarm:
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
@@ -468,7 +468,7 @@ Resources:
           Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage, 0)
 
   AsyncBiometricTokenLowCompletionAlarm:
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm    
     DependsOn:
       - "AsyncBiometricTokenCompletionMetricFilter"
@@ -522,10 +522,10 @@ Resources:
         - Id: lowCompletionRateThreshold
           Label: "Error threshold calculation"
           ReturnData: true
-          Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage, 100)
+          Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage)
 
   AsyncFinishBiometricSessionCompletionMetricFilter:
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
     Type: AWS::Logs::MetricFilter    
     Properties:
       LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
@@ -541,7 +541,7 @@ Resources:
               Value: $.functionVersion
 
   AsyncFinishBiometricSessionErrorRateAlarm:
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
@@ -599,7 +599,7 @@ Resources:
           Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage, 0)
 
   AsyncFinishBiometricSessionLowCompletionAlarm:
-    Condition: UseLinearCanaryDeployments
+    Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm    
     DependsOn:
       - "AsyncFinishBiometricSessionCompletionMetricFilter"
@@ -653,4 +653,4 @@ Resources:
         - Id: lowCompletionRateThreshold
           Label: "Error threshold calculation"
           ReturnData: true
-          Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage, 100)
+          Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage)
