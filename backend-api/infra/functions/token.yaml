@@ -17,6 +17,14 @@ Resources:
       Runtime: nodejs20.x
       Handler: asyncTokenHandler.lambdaHandler
       Role: !GetAtt AsyncTokenLambdaRole.Arn
+      DeploymentPreference:
+        Enabled: true
+        Alarms: !If
+          - DeployAlarms
+          - - !Ref AsyncTokenErrorRateAlarm      
+            - !Ref AsyncTokenLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Type: !Ref LambdaDeploymentPreference
       Environment:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !FindInMap [EnvironmentVariables, !Ref Environment, ClientRegistrySecretPath]

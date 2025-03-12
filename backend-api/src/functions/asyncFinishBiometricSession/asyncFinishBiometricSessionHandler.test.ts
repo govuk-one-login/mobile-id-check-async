@@ -539,7 +539,7 @@ describe("Async Finish Biometric Session", () => {
     });
   });
 
-  describe("Given a valid request is made", () => {
+  describe("Given a request containing a valid sessionId is made", () => {
     beforeEach(async () => {
       result = await lambdaHandlerConstructor(
         dependencies,
@@ -615,11 +615,11 @@ describe("Async Finish Biometric Session", () => {
       });
     });
 
-    it("Returns 501 Not Implemented response", async () => {
+    it("Returns 200 OK response", async () => {
       expect(result).toStrictEqual({
         headers: expectedSecurityHeaders,
-        statusCode: 501,
-        body: JSON.stringify({ error: "Not Implemented" }),
+        statusCode: 200,
+        body: "",
       });
     });
   });

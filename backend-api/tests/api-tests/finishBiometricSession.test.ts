@@ -1,23 +1,36 @@
+import { randomUUID } from "crypto";
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 import {
   mockBiometricSessionId,
-  mockSessionId,
   expectedSecurityHeaders,
+  mockSessionId,
 } from "./utils/apiTestData";
+import {
+  createSessionForSub,
+  EventResponse,
+  getActiveSessionIdFromSub,
+  issueBiometricToken,
+  pollForEvents,
+} from "./utils/apiTestHelpers";
+import { AxiosResponse } from "axios";
 
 describe("POST /async/finishBiometricSession", () => {
   describe("Given the request body is invalid", () => {
-    it("Returns an error and 400 status code", async () => {
-      const mockInvalidSessionId = "invalidSessionId";
-      const response = await SESSIONS_API_INSTANCE.post(
+    let response: AxiosResponse;
+    const mockInvalidSessionId = "invalidSessionId";
+    beforeAll(async () => {
+      response = await SESSIONS_API_INSTANCE.post(
         "/async/finishBiometricSession",
         {
           sessionId: mockInvalidSessionId,
           biometricSessionId: mockBiometricSessionId,
         },
       );
+    });
 
+    it("Returns 400 Bad Request response with invalid_request error", async () => {
       expect(response.status).toBe(400);
+      expect(response.statusText).toBe("Bad Request");
       expect(response.data).toStrictEqual({
         error: "invalid_request",
         error_description: `sessionId in request body is not a valid v4 UUID. sessionId: ${mockInvalidSessionId}`,
@@ -29,17 +42,21 @@ describe("POST /async/finishBiometricSession", () => {
   });
 
   describe("Given the session does not exist", () => {
-    it("Returns an error and 401 status code", async () => {
-      const nonExistentSessionId = mockSessionId;
-      const response = await SESSIONS_API_INSTANCE.post(
+    let response: AxiosResponse;
+    const nonExistentSessionId = mockSessionId;
+    beforeAll(async () => {
+      response = await SESSIONS_API_INSTANCE.post(
         "/async/finishBiometricSession",
         {
           sessionId: nonExistentSessionId,
           biometricSessionId: mockBiometricSessionId,
         },
       );
+    });
 
+    it("Returns 401 Unauthorized response with invalid_session error", () => {
       expect(response.status).toBe(401);
+      expect(response.statusText).toBe("Unauthorized");
       expect(response.data).toStrictEqual({
         error: "invalid_session",
         error_description: "Session not found",
@@ -47,6 +64,49 @@ describe("POST /async/finishBiometricSession", () => {
       expect(response.headers).toEqual(
         expect.objectContaining(expectedSecurityHeaders),
       );
+    });
+  });
+
+  describe("Given there is a valid request", () => {
+    let sessionId: string;
+    let response: AxiosResponse;
+    let eventsResponse: EventResponse[];
+    beforeAll(async () => {
+      const sub = randomUUID();
+      await createSessionForSub(sub);
+      sessionId = await getActiveSessionIdFromSub(sub);
+      await issueBiometricToken(sessionId);
+
+      response = await SESSIONS_API_INSTANCE.post(
+        "/async/finishBiometricSession",
+        {
+          sessionId,
+          biometricSessionId: randomUUID(),
+        },
+      );
+
+      eventsResponse = await pollForEvents({
+        partitionKey: `SESSION#${sessionId}`,
+        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_APP_END`,
+        numberOfEvents: 1,
+      });
+    }, 40000);
+
+    it("Writes DCMAW_ASYNC_APP_END TxMA event", () => {
+      expect(eventsResponse[0].event).toEqual(
+        expect.objectContaining({
+          event_name: "DCMAW_ASYNC_APP_END",
+        }),
+      );
+    });
+
+    it("Returns 200 OK response", () => {
+      expect(response.status).toBe(200);
+      expect(response.statusText).toBe("OK");
+      expect(response.headers).toEqual(
+        expect.objectContaining(expectedSecurityHeaders),
+      );
+      expect(response.data).toEqual("");
     });
   });
 });
