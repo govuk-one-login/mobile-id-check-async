@@ -9,6 +9,7 @@ export interface SessionRegistry {
   ): Promise<Result<SessionUpdated, SessionUpdateFailed>>;
 
   getSession(
+    sessionId: string,
     getOperation: GetSessionOperation,
   ): Promise<Result<SessionAttributes, SessionRetrievalFailed>>;
 }

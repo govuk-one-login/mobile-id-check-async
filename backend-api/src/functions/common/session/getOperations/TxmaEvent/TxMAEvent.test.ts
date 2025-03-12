@@ -13,12 +13,12 @@ describe("BiometricTokenIssued", () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(NOW_IN_MILLISECONDS);
-    txmaEvent = new TxMAEvent({ sessionId: mockSessionId });
+    txmaEvent = new TxMAEvent();
   });
 
   describe("When I request the DynamoDB Key Expression", () => {
     it("Returns the appropriate Key Expression string", () => {
-      const result = txmaEvent.getDynamoDbKeyExpression();
+      const result = txmaEvent.getDynamoDbKeyExpression(mockSessionId);
       expect(result).toEqual({
         sessionId: { S: mockSessionId },
       });

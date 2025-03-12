@@ -57,7 +57,8 @@ export async function lambdaHandlerConstructor(
     config.SESSION_TABLE_NAME,
   );
   const getSessionResult = await sessionRegistry.getSession(
-    new TxMAEvent({ sessionId }),
+    sessionId,
+    new TxMAEvent(),
   );
   const { ipAddress, txmaAuditEncoded } = getAuditData(event);
   const eventData = {

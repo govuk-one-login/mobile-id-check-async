@@ -4210,13 +4210,6 @@ Outputs:
     Description: Sessions API Gateway base URL
     Value: !Sub https://${SessionsApiDomainName}
 
-  SessionsTableName:
-    Description: Sessions Table name
-    Value: !Ref SessionsTable
-    Export:
-      Name: !Sub ${AWS::StackName}-sessions-table
-    Condition: IsDevOrBuild
-
   StsMockApiUrl:
     Description: STS Mock API Gateway base URL
     Value: !If
@@ -4227,12 +4220,6 @@ Outputs:
         - !Ref Environment
         - STSBASEURL
     Condition: IsDevOrBuild
-
-  TxMASQSQueueUrl:
-    Description: TxMA SQS Queue URL
-    Value: !Ref TxMASQSQueue
-    Export:
-      Name: !Sub ${AWS::StackName}-txma-sqs-url
 
   TxmaKmsEncryptionKeyArn:
     Description: TxMA KMS Encryption Key ARN

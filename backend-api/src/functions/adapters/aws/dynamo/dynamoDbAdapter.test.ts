@@ -306,15 +306,13 @@ describe("DynamoDbAdapter", () => {
   });
 
   describe("getSession", () => {
-    const getOperation: GetSessionOperation = new TxMAEvent({
-      sessionId: mockSessionId,
-    });
+    const getOperation: GetSessionOperation = new TxMAEvent();
     let result: Result<void, SessionRetrievalFailed>;
 
     describe("On every attempt", () => {
       beforeEach(async () => {
         mockDynamoDbClient.on(GetItemCommand).resolves({});
-        await sessionRegistry.getSession(getOperation);
+        await sessionRegistry.getSession(mockSessionId, getOperation);
       });
 
       it("Logs the attempt", () => {
@@ -327,7 +325,7 @@ describe("DynamoDbAdapter", () => {
     describe("Given there is an unexpected error retrieving the session", () => {
       beforeEach(async () => {
         mockDynamoDbClient.on(GetItemCommand).rejects("mock_error");
-        result = await sessionRegistry.getSession(getOperation);
+        result = await sessionRegistry.getSession(mockSessionId, getOperation);
       });
 
       it("Logs the failure", () => {
@@ -348,7 +346,7 @@ describe("DynamoDbAdapter", () => {
     describe("Given session was not found", () => {
       beforeEach(async () => {
         mockDynamoDbClient.on(GetItemCommand).resolves({});
-        result = await sessionRegistry.getSession(getOperation);
+        result = await sessionRegistry.getSession(mockSessionId, getOperation);
       });
 
       it("Logs the failure", () => {
@@ -382,7 +380,10 @@ describe("DynamoDbAdapter", () => {
               timeToLive: 12345,
             }),
           });
-          result = await sessionRegistry.getSession(getOperation);
+          result = await sessionRegistry.getSession(
+            mockSessionId,
+            getOperation,
+          );
         });
 
         it("Logs the failure", () => {
@@ -410,7 +411,10 @@ describe("DynamoDbAdapter", () => {
           mockDynamoDbClient.on(GetItemCommand).resolves({
             Item: validBiometricTokenIssuedSessionAttributesItem,
           });
-          result = await sessionRegistry.getSession(getOperation);
+          result = await sessionRegistry.getSession(
+            mockSessionId,
+            getOperation,
+          );
         });
 
         it("Logs the success", () => {

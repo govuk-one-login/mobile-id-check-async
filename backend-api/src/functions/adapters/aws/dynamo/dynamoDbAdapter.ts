@@ -141,6 +141,7 @@ export class DynamoDbAdapter implements SessionRegistry {
   }
 
   async getSession(
+    sessionId: string,
     getOperation: GetSessionOperation,
   ): Promise<Result<SessionAttributes, SessionRetrievalFailed>> {
     let response;
@@ -150,7 +151,7 @@ export class DynamoDbAdapter implements SessionRegistry {
       response = await this.dynamoDbClient.send(
         new GetItemCommand({
           TableName: this.tableName,
-          Key: getOperation.getDynamoDbKeyExpression(),
+          Key: getOperation.getDynamoDbKeyExpression(sessionId),
         }),
       );
     } catch (error: unknown) {
