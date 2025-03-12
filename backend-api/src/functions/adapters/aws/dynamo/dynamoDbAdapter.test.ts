@@ -413,7 +413,7 @@ describe("DynamoDbAdapter", () => {
           result = await sessionRegistry.getSession(getOperation);
         });
 
-        it("Logs the failure", () => {
+        it("Logs the success", () => {
           expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_GET_SESSION_SUCCESS",
           });
