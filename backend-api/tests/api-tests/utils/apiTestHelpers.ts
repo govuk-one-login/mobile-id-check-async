@@ -67,14 +67,26 @@ export async function createSessionForSub(sub: string) {
   return asyncCredentialResponse.data;
 }
 
-export async function getActiveSessionIdFromSub(sub: string): Promise<string> {
+export const getActiveSessionIdFromSub = async (
+  sub: string,
+): Promise<string> => {
   const serviceToken = await getAccessToken(sub);
-  const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
-    headers: { Authorization: `Bearer ${serviceToken}` },
-  });
+  const activeSessionResponse = await SESSIONS_API_INSTANCE.get(
+    "/async/activeSession",
+    {
+      headers: { Authorization: `Bearer ${serviceToken}` },
+    },
+  );
 
-  return response.data.sessionId;
-}
+  const sessionId = activeSessionResponse.data["sessionId"];
+  if (!sessionId) {
+    throw new Error(
+      "Failed to get valid session ID in call to activeSession endpoint",
+    );
+  }
+
+  return sessionId;
+};
 
 export async function getAccessToken(sub?: string, scope?: string) {
   const requestBody = new URLSearchParams({
@@ -90,19 +102,14 @@ export async function getAccessToken(sub?: string, scope?: string) {
   return stsMockResponse.data.access_token;
 }
 
-export async function getValidSessionId(): Promise<string | null> {
-  const sub = randomUUID();
-  await createSessionForSub(sub);
-  const serviceToken = await getAccessToken(sub);
-  const activeSessionResponse = await SESSIONS_API_INSTANCE.get(
-    "/async/activeSession",
-    {
-      headers: { Authorization: `Bearer ${serviceToken}` },
-    },
-  );
+export const issueBiometricToken = async (sessionId: string): Promise<void> => {
+  const requestBody = {
+    sessionId,
+    documentType: "NFC_PASSPORT",
+  };
 
-  return activeSessionResponse.data["sessionId"] ?? null;
-}
+  await SESSIONS_API_INSTANCE.post("/async/biometricToken", requestBody);
+};
 
 export type EventResponse = {
   pk: string;
