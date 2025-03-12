@@ -20,7 +20,10 @@ import {
 import { logger } from "../../../common/logging/logger";
 import { LogMessage } from "../../../common/logging/LogMessage";
 import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
-import { SessionState } from "../../../common/session/session";
+import {
+  SessionAttributes,
+  SessionState,
+} from "../../../common/session/session";
 import {
   GetSessionError,
   SessionRegistry,
@@ -38,7 +41,6 @@ import { CreateSessionAttributes } from "../../../services/session/sessionServic
 import {
   FailureWithValue,
   Result,
-  emptySuccess,
   errorResult,
   successResult,
 } from "../../../utils/result";
@@ -140,7 +142,7 @@ export class DynamoDbAdapter implements SessionRegistry {
 
   async getSession(
     getOperation: GetSessionOperation,
-  ): Promise<Result<void, SessionRetrievalFailed>> {
+  ): Promise<Result<SessionAttributes, SessionRetrievalFailed>> {
     let response;
     try {
       logger.debug(LogMessage.GET_SESSION_ATTEMPT);
@@ -173,18 +175,9 @@ export class DynamoDbAdapter implements SessionRegistry {
     }
     const sessionAttributes = getSessionAttributesResult.value;
 
-    const { createdAt } = sessionAttributes;
-    if (this.isOlderThan60minutes(createdAt)) {
-      logger.error(LogMessage.GET_SESSION_SESSION_TOO_OLD);
-
-      return errorResult({
-        errorType: GetSessionError.SESSION_NOT_FOUND,
-      });
-    }
-
     logger.debug(LogMessage.GET_SESSION_SUCCESS);
 
-    return emptySuccess();
+    return successResult(sessionAttributes);
   }
 
   async updateSession(
@@ -277,18 +270,6 @@ export class DynamoDbAdapter implements SessionRegistry {
 
   private getTimeNowInSeconds() {
     return Math.floor(Date.now() / 1000);
-  }
-
-  private getTimeNowInMilliseconds() {
-    return Math.floor(Date.now());
-  }
-
-  private isOlderThan60minutes(createdAtInMilliseconds: number) {
-    const SIXTY_MINUTES_IN_MILLISECONDS = 3600000;
-    const validFrom =
-      this.getTimeNowInMilliseconds() - SIXTY_MINUTES_IN_MILLISECONDS;
-
-    return createdAtInMilliseconds < validFrom;
   }
 
   private handleUpdateSessionInternalServerError(

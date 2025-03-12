@@ -13,19 +13,20 @@ import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
+import { TxMAEvent } from "../common/session/getOperations/TxmaEvent/TxMAEvent";
+import { SessionAttributes, SessionState } from "../common/session/session";
 import {
   GetSessionError,
   SessionRetrievalFailed,
 } from "../common/session/SessionRegistry";
 import { GenericEventNames, IEventService } from "../services/events/types";
+import { Result } from "../utils/result";
 import {
   IAsyncTxmaEventDependencies,
   runtimeDependencies,
 } from "./handlerDependencies";
 import { getTxmaEventConfig } from "./txmaEventConfig";
 import { validateRequestBody } from "./validateRequestBody/validateRequestBody";
-import { TxMAEvent } from "../common/session/getOperations/TxmaEvent/TxMAEvent";
-import { Result } from "../utils/result";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTxmaEventDependencies,
@@ -50,6 +51,7 @@ export async function lambdaHandlerConstructor(
     return badRequestResponse("invalid_request", errorMessage);
   }
   const { sessionId } = validateRequestBodyResult.value;
+  const eventService = dependencies.getEventService(config.TXMA_SQS);
 
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
@@ -65,14 +67,16 @@ export async function lambdaHandlerConstructor(
     txmaAuditEncoded,
   };
   if (getSessionResult.isError) {
-    const eventService = dependencies.getEventService(config.TXMA_SQS);
-
     return handleGetSessionError(
       eventService,
       getSessionResult.value,
       eventData,
     );
   }
+  const sessionAttributes = getSessionResult.value;
+
+  const isSessionValid = validateSession(sessionAttributes);
+  if (!isSessionValid) return handleSessionNotFound(eventService, eventData);
 
   logger.info(LogMessage.TXMA_EVENT_COMPLETED);
 
@@ -96,22 +100,11 @@ async function handleGetSessionError(
   getSessionResult: SessionRetrievalFailed,
   data: HandleGetSessionErrorData,
 ): Promise<APIGatewayProxyResult> {
-  const { sessionId, issuer, ipAddress, txmaAuditEncoded } = data;
   switch (getSessionResult.errorType) {
     case GetSessionError.INTERNAL_SERVER_ERROR:
-      return handleInternalServerError(eventService, {
-        sessionId,
-        issuer,
-        ipAddress,
-        txmaAuditEncoded,
-      });
+      return handleInternalServerError(eventService, data);
     case GetSessionError.SESSION_NOT_FOUND:
-      return handleSessionNotFound(eventService, {
-        sessionId,
-        issuer,
-        ipAddress,
-        txmaAuditEncoded,
-      });
+      return handleSessionNotFound(eventService, data);
   }
 }
 
@@ -120,6 +113,26 @@ interface BaseErrorData {
   issuer: string;
   ipAddress: string;
   txmaAuditEncoded: string | undefined;
+}
+
+async function handleInternalServerError(
+  eventService: IEventService,
+  data: BaseErrorData,
+): Promise<APIGatewayProxyResult> {
+  const writeEventResult = await writeEvent({
+    eventService,
+    eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+    data,
+  });
+
+  if (writeEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+      },
+    });
+  }
+  return serverErrorResponse;
 }
 
 async function handleSessionNotFound(
@@ -144,26 +157,6 @@ async function handleSessionNotFound(
     "invalid_session",
     "Session does not exist or in incorrect state",
   );
-}
-
-async function handleInternalServerError(
-  eventService: IEventService,
-  data: BaseErrorData,
-): Promise<APIGatewayProxyResult> {
-  const writeEventResult = await writeEvent({
-    eventService,
-    eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-    data,
-  });
-
-  if (writeEventResult.isError) {
-    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-      data: {
-        auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
-      },
-    });
-  }
-  return serverErrorResponse;
 }
 
 const genericTxmaEventData = {
@@ -192,4 +185,31 @@ async function writeEvent({
     txmaAuditEncoded,
     ...genericTxmaEventData,
   });
+}
+
+function validateSession(sessionAttributes: SessionAttributes): boolean {
+  const { sessionState, createdAt } = sessionAttributes;
+  console.log("<<<<< VS 1 >>>>>");
+  if (sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) return false;
+  console.log("<<<<< VS 2 >>>>>");
+
+  if (isOlderThan60minutes(createdAt)) return false;
+  console.log("<<<<< VS 3 >>>>>");
+
+  return true;
+}
+
+function isOlderThan60minutes(createdAtInMilliseconds: number) {
+  const SIXTY_MINUTES_IN_MILLISECONDS = 3600000;
+  const validFrom = getTimeNowInMilliseconds() - SIXTY_MINUTES_IN_MILLISECONDS;
+
+  console.log("<<<<< IOT60M TIME NOW >>>>>", getTimeNowInMilliseconds());
+  console.log("<<<<< IOT60M CREATED AT >>>>>", createdAtInMilliseconds);
+  console.log("<<<<< IOT60M VALID FROM >>>>>", validFrom);
+
+  return createdAtInMilliseconds < validFrom;
+}
+
+function getTimeNowInMilliseconds() {
+  return Math.floor(Date.now());
 }

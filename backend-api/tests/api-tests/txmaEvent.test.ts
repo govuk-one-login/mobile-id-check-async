@@ -1,7 +1,11 @@
 import { AxiosResponse } from "axios";
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 import { expectedSecurityHeaders, mockSessionId } from "./utils/apiTestData";
-import { getValidSessionId } from "./utils/apiTestHelpers";
+import {
+  createSessionForSub,
+  getActiveSessionIdFromSub,
+} from "./utils/apiTestHelpers";
+import { randomUUID } from "crypto";
 
 describe("POST /async/txmaEvent", () => {
   describe("Given request body is invalid", () => {
@@ -64,7 +68,9 @@ describe("POST /async/txmaEvent", () => {
     let response: AxiosResponse;
 
     beforeAll(async () => {
-      sessionId = await getValidSessionId();
+      const sub = randomUUID();
+      await createSessionForSub(sub);
+      sessionId = await getActiveSessionIdFromSub(sub);
       if (!sessionId) throw new Error("Failed to get valid session ID");
       const biometricTokenRequestBody = {
         sessionId,
@@ -82,7 +88,7 @@ describe("POST /async/txmaEvent", () => {
         "/async/txmaEvent",
         requestBody,
       );
-    }, 25000);
+    }, 30000);
 
     it("Returns 501 Not Implemented response", () => {
       expect(response.status).toBe(501);

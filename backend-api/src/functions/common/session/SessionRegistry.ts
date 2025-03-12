@@ -10,7 +10,7 @@ export interface SessionRegistry {
 
   getSession(
     getOperation: GetSessionOperation,
-  ): Promise<Result<void, SessionRetrievalFailed>>;
+  ): Promise<Result<SessionAttributes, SessionRetrievalFailed>>;
 }
 
 export interface SessionUpdated {
@@ -44,10 +44,6 @@ export enum UpdateSessionError {
 export interface UpdateExpressionDataToLog {
   updateExpression: string;
   conditionExpression: string | undefined;
-}
-
-export interface SessionRetrieved {
-  item: SessionAttributes;
 }
 
 export type SessionRetrievalFailed =

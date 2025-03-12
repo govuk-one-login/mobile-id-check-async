@@ -12,11 +12,14 @@ import {
   mockSuccessfulEventService,
   mockSuccessfulSessionRegistry,
   mockWriteGenericEventSuccessResult,
+  NOW_IN_MILLISECONDS,
+  validBaseSessionAttributes,
 } from "../testUtils/unitTestData";
 import { lambdaHandlerConstructor } from "./asyncTxmaEventHandler";
 import { IAsyncTxmaEventDependencies } from "./handlerDependencies";
 import { GetSessionError } from "../common/session/SessionRegistry";
-import { errorResult } from "../utils/result";
+import { errorResult, successResult } from "../utils/result";
+import { SessionState } from "../common/session/session";
 
 describe("Async TxMA Event", () => {
   let dependencies: IAsyncTxmaEventDependencies;
@@ -26,6 +29,8 @@ describe("Async TxMA Event", () => {
   let result: APIGatewayProxyResult;
 
   beforeEach(() => {
+    // jest.useFakeTimers();
+    // jest.setSystemTime(NOW_IN_MILLISECONDS);
     dependencies = {
       env: {
         SESSION_TABLE_NAME: "mockTableName",
@@ -38,6 +43,10 @@ describe("Async TxMA Event", () => {
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
     consoleErrorSpy = jest.spyOn(console, "error");
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   describe("On every invocation", () => {
@@ -206,6 +215,8 @@ describe("Async TxMA Event", () => {
             sub: undefined,
             ipAddress: "1.1.1.1",
             txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
+            redirect_uri: undefined,
+            suspected_fraud_signal: undefined,
           });
         });
 
@@ -289,6 +300,8 @@ describe("Async TxMA Event", () => {
             sub: undefined,
             ipAddress: "1.1.1.1",
             txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
+            redirect_uri: undefined,
+            suspected_fraud_signal: undefined,
           });
         });
 
@@ -306,8 +319,109 @@ describe("Async TxMA Event", () => {
     });
   });
 
+  describe("Session validation", () => {
+    describe("Given the session is more than 60 minutes old", () => {
+      beforeEach(async () => {
+        jest.useFakeTimers();
+        jest.setSystemTime(NOW_IN_MILLISECONDS);
+        dependencies.getSessionRegistry = () => ({
+          ...mockSuccessfulSessionRegistry,
+          getSession: jest.fn().mockResolvedValue(
+            successResult({
+              ...validBaseSessionAttributes,
+              sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,
+              createdAt: 1704106740000,
+            }),
+          ),
+        });
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+
+      describe("Given DCMAW_ASYNC_CRI_4XXERROR event fails to write to TxMA", () => {
+        beforeEach(async () => {
+          dependencies.getEventService = () => ({
+            ...mockInertEventService,
+            writeGenericEvent: jest.fn().mockResolvedValue(
+              errorResult({
+                errorMessage: "mockError",
+              }),
+            ),
+          });
+
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+
+        it("Logs the error", async () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+            data: {
+              auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
+            },
+          });
+        });
+
+        it("Returns 500 Internal Server Error ", async () => {
+          expect(result).toStrictEqual({
+            statusCode: 500,
+            body: JSON.stringify({
+              error: "server_error",
+              error_description: "Internal Server Error",
+            }),
+            headers: expectedSecurityHeaders,
+          });
+        });
+      });
+
+      it("Writes DCMAW_ASYNC_CRI_4XXERROR event to TxMA", () => {
+        expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+          eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+          componentId: "mockIssuer",
+          getNowInMilliseconds: expect.anything(),
+          govukSigninJourneyId: undefined,
+          sessionId: mockSessionId,
+          sub: undefined,
+          ipAddress: "1.1.1.1",
+          txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
+          redirect_uri: undefined,
+          suspected_fraud_signal: undefined,
+        });
+      });
+
+      it("Returns 401 Unauthorized", () => {
+        expect(result).toStrictEqual({
+          statusCode: 401,
+          body: JSON.stringify({
+            error: "invalid_session",
+            error_description: "Session does not exist or in incorrect state",
+          }),
+          headers: expectedSecurityHeaders,
+        });
+      });
+    });
+  });
+
   describe("Given a valid request is made", () => {
     beforeEach(async () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(NOW_IN_MILLISECONDS);
+      dependencies.getSessionRegistry = () => ({
+        ...mockSuccessfulSessionRegistry,
+        getSession: jest.fn().mockResolvedValue(
+          successResult({
+            ...validBaseSessionAttributes,
+            sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,
+            createdAt: 1704110340000, // 2024-01-01T11:59:00.000Z
+          }),
+        ),
+      });
       result = await lambdaHandlerConstructor(
         dependencies,
         validRequest,

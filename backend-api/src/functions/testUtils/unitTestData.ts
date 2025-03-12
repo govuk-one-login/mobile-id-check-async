@@ -57,8 +57,7 @@ export const mockInertSessionRegistry: SessionRegistry = {
   }),
 };
 
-export const mockSuccessfulSessionRegistry = {
-  ...mockInertSessionRegistry,
+export const mockSuccessfulSessionRegistry: SessionRegistry = {
   updateSession: jest.fn().mockResolvedValue(
     successResult({
       attributes: validBiometricTokenIssuedSessionAttributesMobileApp,
@@ -67,7 +66,7 @@ export const mockSuccessfulSessionRegistry = {
 
   getSession: jest.fn().mockResolvedValue(
     successResult({
-      attributes: validBiometricTokenIssuedSessionAttributesMobileApp,
+      attributes: validBaseSessionAttributes,
     }),
   ),
 };
@@ -76,7 +75,7 @@ export const mockSessionRegistryGetSessionError = {
   ...mockInertSessionRegistry,
   updateSession: jest.fn().mockResolvedValue(
     successResult({
-      attributes: validBiometricTokenIssuedSessionAttributesMobileApp,
+      attributes: validBaseSessionAttributes,
     }),
   ),
 };

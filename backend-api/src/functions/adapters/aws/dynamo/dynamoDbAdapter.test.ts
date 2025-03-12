@@ -1,42 +1,37 @@
-import { expect } from "@jest/globals";
-import "dotenv/config";
-import "../../../../../tests/testUtils/matchers";
 import {
-  DynamoDBClient,
-  UpdateItemCommand,
   ConditionalCheckFailedException,
+  DynamoDBClient,
+  GetItemCommand,
   ReturnValue,
   ReturnValuesOnConditionCheckFailure,
-  GetItemCommand,
+  UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
-import { marshall } from "@aws-sdk/util-dynamodb";
+import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
+import { expect } from "@jest/globals";
 import { mockClient } from "aws-sdk-client-mock";
+import "dotenv/config";
+import "../../../../../tests/testUtils/matchers";
 import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
 import { TxMAEvent } from "../../../common/session/getOperations/TxmaEvent/TxMAEvent";
+import { SessionState } from "../../../common/session/session";
 import {
+  GetSessionError,
   SessionRegistry,
+  SessionRetrievalFailed,
   SessionUpdated,
   SessionUpdateFailed,
   UpdateSessionError,
-  SessionRetrievalFailed,
-  GetSessionError,
 } from "../../../common/session/SessionRegistry";
 import { BiometricTokenIssued } from "../../../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
 import {
+  mockSessionId,
   NOW_IN_MILLISECONDS,
   validBaseSessionAttributes,
   validBiometricTokenIssuedSessionAttributes,
-  mockSessionId,
 } from "../../../testUtils/unitTestData";
-import {
-  Result,
-  errorResult,
-  successResult,
-  emptySuccess,
-} from "../../../utils/result";
+import { errorResult, Result, successResult } from "../../../utils/result";
 import { DynamoDbAdapter } from "./dynamoDbAdapter";
-import { SessionState } from "../../../common/session/session";
 
 const mockDynamoDbClient = mockClient(DynamoDBClient);
 
@@ -405,39 +400,15 @@ describe("DynamoDbAdapter", () => {
         });
       });
 
-      describe("Given session is more than 60 minutes old", () => {
-        beforeEach(async () => {
-          mockDynamoDbClient.on(GetItemCommand).resolves({
-            Item: marshall({
-              ...validBiometricTokenIssuedSessionAttributes,
-              createdAt: 1704106740000, // 2024-01-01T10:59:00.000Z
-            }),
-          });
-          result = await sessionRegistry.getSession(getOperation);
-        });
-
-        it("Logs the failure", () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_TOO_OLD",
-          });
-        });
-
-        it("Returns failure with an invalid session error", () => {
-          expect(result).toEqual(
-            errorResult({
-              errorType: GetSessionError.SESSION_NOT_FOUND,
-            }),
-          );
-        });
-      });
-
       describe("Given valid session attributes were returned in response", () => {
+        const validBiometricTokenIssuedSessionAttributesItem = marshall({
+          ...validBiometricTokenIssuedSessionAttributes,
+          createdAt: 1704106860000, // 2024-01-01T11:01:00.000Z
+        });
+
         beforeEach(async () => {
           mockDynamoDbClient.on(GetItemCommand).resolves({
-            Item: marshall({
-              ...validBiometricTokenIssuedSessionAttributes,
-              createdAt: 1704106860000, // 2024-01-01T11:01:00.000Z
-            }),
+            Item: validBiometricTokenIssuedSessionAttributesItem,
           });
           result = await sessionRegistry.getSession(getOperation);
         });
@@ -448,8 +419,12 @@ describe("DynamoDbAdapter", () => {
           });
         });
 
-        it("Returns success with null", () => {
-          expect(result).toEqual(emptySuccess());
+        it("Returns success with session", () => {
+          expect(result).toEqual(
+            successResult(
+              unmarshall(validBiometricTokenIssuedSessionAttributesItem),
+            ),
+          );
         });
       });
     });
