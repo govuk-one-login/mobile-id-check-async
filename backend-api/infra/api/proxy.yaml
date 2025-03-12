@@ -43,11 +43,12 @@ Resources:
     Condition: ProxyApiDeployment
 
   ProxyApiSubscriptionFilter:    
-    Type: AWS:::Logs::SubscriptionFilter
+    Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
       FilterPattern: ""
-      LogGroupName: !Ref ProxyApiLogGroup
+      LogGroupName: !Ref ProxyApiAccessLogs
+    Condition: ProxyApiDeployment
 
   ProxyApiDomainName:
     Type: AWS::ApiGateway::DomainName

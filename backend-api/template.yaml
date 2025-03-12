@@ -919,6 +919,13 @@ Resources:
       TreatMissingData: notBreaching
     Condition: UseLinearCanaryDeployments
 
+  AsyncActiveSessionSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncActiveSessionLogGroup
+
   AsyncBiometricToken4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -1469,6 +1476,13 @@ Resources:
       TreatMissingData: notBreaching
     Condition: UseLinearCanaryDeployments
 
+  AsyncBiometricTokenSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncBiometricTokenLogGroup
+
   AsyncCredential4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -2013,6 +2027,20 @@ Resources:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
       RetentionInDays: 30
 
+  AsyncCredentialPrivateApiSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncCredentialPrivateApiAccessLogs
+
+  AsyncCredentialSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncCredentialLogGroup
+
   AsyncFinishBiometricSession4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -2524,6 +2552,13 @@ Resources:
       Threshold: 60
       TreatMissingData: notBreaching
     Condition: UseLinearCanaryDeployments
+
+  AsyncFinishBiometricSessionSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
 
   AsyncToken4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -3039,6 +3074,13 @@ Resources:
       TreatMissingData: notBreaching
     Condition: UseLinearCanaryDeployments
 
+  AsyncTokenSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncTokenLogGroup
+
   AsyncTxmaEventFunction:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -3122,6 +3164,13 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-txma-event
       RetentionInDays: 30
+
+  AsyncTxmaEventSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncTxmaEventLogGroup
 
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket
@@ -3335,6 +3384,13 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-jwks
       RetentionInDays: 30
+
+  JsonWebKeysFunctionSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      FilterPattern: ""
+      LogGroupName: !Ref JsonWebKeysFunctionLogGroup
 
   KMSEncryptionKey:
     Type: AWS::KMS::Key
@@ -3564,6 +3620,14 @@ Resources:
       Type: A
     Condition: ProxyApiDeployment
 
+  ProxyApiSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      FilterPattern: ""
+      LogGroupName: !Ref ProxyApiAccessLogs
+    Condition: ProxyApiDeployment
+
   ProxyLambda:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -3661,6 +3725,13 @@ Resources:
           ToPort: 443
       VpcId: !ImportValue devplatform-vpc-VpcId
     Condition: ProxyApiDeployment
+
+  ProxyLambdaSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      FilterPattern: ""
+      LogGroupName: !Ref ProxyLambdaLogGroup
 
   SessionsApi:
     Type: AWS::Serverless::Api
@@ -3794,6 +3865,13 @@ Resources:
               - !Ref Environment
               - BaseDns
       Type: A
+
+  SessionsApiSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      FilterPattern: ""
+      LogGroupName: !Ref SessionsApiAccessLogs
 
   SessionsApiWebAclAssociation:
     Type: AWS::WAFv2::WebACLAssociation
