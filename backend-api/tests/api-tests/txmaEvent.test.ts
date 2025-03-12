@@ -71,7 +71,6 @@ describe("POST /async/txmaEvent", () => {
       const sub = randomUUID();
       await createSessionForSub(sub);
       sessionId = await getActiveSessionIdFromSub(sub);
-      if (!sessionId) throw new Error("Failed to get valid session ID");
       const biometricTokenRequestBody = {
         sessionId,
         documentType: "NFC_PASSPORT",

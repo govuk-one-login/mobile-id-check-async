@@ -29,6 +29,8 @@ describe("Async TxMA Event", () => {
   let result: APIGatewayProxyResult;
 
   beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(NOW_IN_MILLISECONDS);
     dependencies = {
       env: {
         SESSION_TABLE_NAME: "mockTableName",
@@ -44,6 +46,7 @@ describe("Async TxMA Event", () => {
   });
 
   afterEach(() => {
+    jest.useRealTimers();
     jest.restoreAllMocks();
   });
 
@@ -320,8 +323,6 @@ describe("Async TxMA Event", () => {
   describe("Session validation", () => {
     describe("Given the session is more than 60 minutes old", () => {
       beforeEach(async () => {
-        jest.useFakeTimers();
-        jest.setSystemTime(NOW_IN_MILLISECONDS);
         dependencies.getSessionRegistry = () => ({
           ...mockSuccessfulSessionRegistry,
           getSession: jest.fn().mockResolvedValue(
@@ -382,7 +383,7 @@ describe("Async TxMA Event", () => {
         expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
           eventName: "DCMAW_ASYNC_CRI_4XXERROR",
           componentId: "mockIssuer",
-          getNowInMilliseconds: expect.anything(),
+          getNowInMilliseconds: Date.now,
           govukSigninJourneyId: undefined,
           sessionId: mockSessionId,
           sub: undefined,
@@ -408,8 +409,6 @@ describe("Async TxMA Event", () => {
 
   describe("Given a valid request is made", () => {
     beforeEach(async () => {
-      jest.useFakeTimers();
-      jest.setSystemTime(NOW_IN_MILLISECONDS);
       dependencies.getSessionRegistry = () => ({
         ...mockSuccessfulSessionRegistry,
         getSession: jest.fn().mockResolvedValue(

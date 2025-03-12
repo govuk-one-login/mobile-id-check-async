@@ -159,14 +159,6 @@ async function handleSessionNotFound(
   );
 }
 
-const genericTxmaEventData = {
-  sub: undefined,
-  govukSigninJourneyId: undefined,
-  getNowInMilliseconds: Date.now,
-  redirect_uri: undefined,
-  suspected_fraud_signal: undefined,
-};
-
 async function writeEvent({
   eventService,
   eventName,
@@ -183,18 +175,18 @@ async function writeEvent({
     componentId: issuer,
     ipAddress,
     txmaAuditEncoded,
-    ...genericTxmaEventData,
+    sub: undefined,
+    govukSigninJourneyId: undefined,
+    getNowInMilliseconds: Date.now,
+    redirect_uri: undefined,
+    suspected_fraud_signal: undefined,
   });
 }
 
 function validateSession(sessionAttributes: SessionAttributes): boolean {
   const { sessionState, createdAt } = sessionAttributes;
-  console.log("<<<<< VS 1 >>>>>");
   if (sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) return false;
-  console.log("<<<<< VS 2 >>>>>");
-
   if (isOlderThan60minutes(createdAt)) return false;
-  console.log("<<<<< VS 3 >>>>>");
 
   return true;
 }
@@ -202,10 +194,6 @@ function validateSession(sessionAttributes: SessionAttributes): boolean {
 function isOlderThan60minutes(createdAtInMilliseconds: number) {
   const SIXTY_MINUTES_IN_MILLISECONDS = 3600000;
   const validFrom = getTimeNowInMilliseconds() - SIXTY_MINUTES_IN_MILLISECONDS;
-
-  console.log("<<<<< IOT60M TIME NOW >>>>>", getTimeNowInMilliseconds());
-  console.log("<<<<< IOT60M CREATED AT >>>>>", createdAtInMilliseconds);
-  console.log("<<<<< IOT60M VALID FROM >>>>>", validFrom);
 
   return createdAtInMilliseconds < validFrom;
 }
