@@ -8,11 +8,11 @@ const securityHeaders = {
   "X-Frame-Options": "DENY",
 };
 
-export const okResponse = (body: object): APIGatewayProxyResult => {
+export const okResponse = (body?: object): APIGatewayProxyResult => {
   return {
     headers: securityHeaders,
     statusCode: 200,
-    body: JSON.stringify(body),
+    body: body ? JSON.stringify(body) : "",
   };
 };
 
