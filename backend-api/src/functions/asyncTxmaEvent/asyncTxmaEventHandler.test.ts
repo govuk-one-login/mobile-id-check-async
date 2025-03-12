@@ -29,8 +29,6 @@ describe("Async TxMA Event", () => {
   let result: APIGatewayProxyResult;
 
   beforeEach(() => {
-    // jest.useFakeTimers();
-    // jest.setSystemTime(NOW_IN_MILLISECONDS);
     dependencies = {
       env: {
         SESSION_TABLE_NAME: "mockTableName",
