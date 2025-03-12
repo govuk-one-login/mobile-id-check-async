@@ -4,9 +4,8 @@ import "dotenv/config";
 import { PRIVATE_API_INSTANCE, PROXY_API_INSTANCE } from "./utils/apiInstance";
 import {
   ClientDetails,
-  EventResponse,
-  getActiveSessionIdFromSub,
   getFirstRegisteredClient,
+  getActiveSessionIdFromSub,
   pollForEvents,
 } from "./utils/apiTestHelpers";
 
