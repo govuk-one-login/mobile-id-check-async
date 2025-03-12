@@ -92,7 +92,7 @@ describe("Async TxMA Event", () => {
             context,
           );
         });
-        it("returns 500 Internal server error", async () => {
+        it("returns 500 Internal server error", () => {
           expect(result).toStrictEqual({
             statusCode: 500,
             body: JSON.stringify({
@@ -102,7 +102,7 @@ describe("Async TxMA Event", () => {
             headers: expectedSecurityHeaders,
           });
         });
-        it("logs INVALID_CONFIG", async () => {
+        it("logs INVALID_CONFIG", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_TXMA_EVENT_INVALID_CONFIG",
             data: {
