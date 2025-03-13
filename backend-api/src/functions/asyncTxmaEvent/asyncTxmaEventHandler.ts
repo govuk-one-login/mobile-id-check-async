@@ -194,11 +194,7 @@ function validateSession(sessionAttributes: SessionAttributes): boolean {
 
 function isOlderThan60minutes(createdAtInMilliseconds: number) {
   const SIXTY_MINUTES_IN_MILLISECONDS = 3600000;
-  const validFrom = getTimeNowInMilliseconds() - SIXTY_MINUTES_IN_MILLISECONDS;
+  const validFrom = Date.now() - SIXTY_MINUTES_IN_MILLISECONDS;
 
   return createdAtInMilliseconds < validFrom;
-}
-
-function getTimeNowInMilliseconds() {
-  return Math.floor(Date.now());
 }
