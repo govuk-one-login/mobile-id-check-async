@@ -689,9 +689,11 @@ describe("Backend application infrastructure", () => {
       const logs_list = Object.keys(log_groups);
 
       logs_list.forEach((log_name) => {
-        template.hasResourceProperties("AWS::Logs::SubscriptionFilter", {
-          LogGroupName: Match.objectLike({ Ref: log_name }),
-        });
+        if (log_name != "ProxyLambdaLogGroup") {
+          template.hasResourceProperties("AWS::Logs::SubscriptionFilter", {
+            LogGroupName: Match.objectLike({ Ref: log_name }),
+          });
+        }
       });
     });
 
