@@ -318,6 +318,9 @@ describe("DynamoDbAdapter", () => {
       it("Logs the attempt", () => {
         expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_GET_SESSION_ATTEMPT",
+          data: {
+            sessionId: mockSessionId,
+          },
         });
       });
     });

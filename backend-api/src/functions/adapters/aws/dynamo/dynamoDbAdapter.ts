@@ -146,7 +146,7 @@ export class DynamoDbAdapter implements SessionRegistry {
   ): Promise<Result<SessionAttributes, SessionRetrievalFailed>> {
     let response;
     try {
-      logger.debug(LogMessage.GET_SESSION_ATTEMPT);
+      logger.debug(LogMessage.GET_SESSION_ATTEMPT, { data: { sessionId } });
 
       response = await this.dynamoDbClient.send(
         new GetItemCommand({
