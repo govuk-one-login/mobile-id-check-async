@@ -66,7 +66,7 @@ export const mockSuccessfulSessionRegistry: SessionRegistry = {
 
   getSession: jest.fn().mockResolvedValue(
     successResult({
-      attributes: validBaseSessionAttributes,
+      attributes: validBiometricTokenIssuedSessionAttributes,
     }),
   ),
 };
