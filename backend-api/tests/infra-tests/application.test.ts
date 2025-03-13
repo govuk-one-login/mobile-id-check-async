@@ -690,6 +690,8 @@ describe("Backend application infrastructure", () => {
       logs_list.forEach((log_name) => {
         template.hasResourceProperties("AWS::Logs::SubscriptionFilter", {
           LogGroupName: Match.objectLike({ Ref: log_name }),
+          DestinationArn:
+            "arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2",
         });
       });
     });

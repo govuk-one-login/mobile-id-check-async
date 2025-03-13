@@ -50,13 +50,13 @@ Resources:
           Parameters:
             Location: ./openApiSpecs/async-private-spec.yaml
 
-  AsyncCredentialPrivateApiAccessLogs:
+  AsyncPrivateApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
       RetentionInDays: 30
 
-  AsyncCredentialPrivateApiSubscriptionFilter:    
+  AsyncPrivateApiSubscriptionFilter:    
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
