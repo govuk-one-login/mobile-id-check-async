@@ -47,7 +47,8 @@ Resources:
     Properties:
       DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
       FilterPattern: ""
-      LogGroupName: !Ref ProxyApiAccessLogs 
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-proxy-api-access-logs
+    Condition: ProxyApiDeployment
 
   ProxyApiDomainName:
     Type: AWS::ApiGateway::DomainName

@@ -3705,7 +3705,8 @@ Resources:
     Properties:
       DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
       FilterPattern: ""
-      LogGroupName: !Ref ProxyApiAccessLogs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-proxy-api-access-logs
+    Condition: ProxyApiDeployment
 
   ProxyLambda:
     Type: AWS::Serverless::Function
@@ -3810,7 +3811,8 @@ Resources:
     Properties:
       DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
       FilterPattern: ""
-      LogGroupName: !Ref ProxyLambdaLogGroup
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-proxy-lambda
+    Condition: ProxyApiDeployment
 
   SessionsApi:
     Type: AWS::Serverless::Api
