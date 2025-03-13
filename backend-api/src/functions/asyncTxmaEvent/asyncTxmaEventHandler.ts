@@ -111,7 +111,7 @@ async function handleGetSessionError(
   }
 }
 
-interface BaseErrorData {
+interface CommonEventData {
   sessionId: string;
   issuer: string;
   ipAddress: string;
@@ -120,12 +120,12 @@ interface BaseErrorData {
 
 async function handleInternalServerError(
   eventService: IEventService,
-  data: BaseErrorData,
+  data: CommonEventData,
 ): Promise<APIGatewayProxyResult> {
   const writeEventResult = await writeEvent({
     eventService,
     eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-    data,
+    eventData: data,
   });
 
   if (writeEventResult.isError) {
@@ -140,13 +140,13 @@ async function handleInternalServerError(
 
 async function handleSessionNotFound(
   eventService: IEventService,
-  errorData: BaseErrorData,
+  eventData: CommonEventData,
   logMessage?: LogMessage,
 ): Promise<APIGatewayProxyResult> {
   const writeEventResult = await writeEvent({
     eventService,
     eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-    data: errorData,
+    eventData: eventData,
   });
 
   const data = { auditEventName: "DCMAW_ASYNC_CRI_4XXERROR" };
@@ -165,13 +165,13 @@ async function handleSessionNotFound(
 async function writeEvent({
   eventService,
   eventName,
-  data,
+  eventData,
 }: {
   eventService: IEventService;
   eventName: GenericEventNames;
-  data: BaseErrorData;
+  eventData: CommonEventData;
 }): Promise<Result<void, void>> {
-  const { sessionId, issuer, ipAddress, txmaAuditEncoded } = data;
+  const { sessionId, issuer, ipAddress, txmaAuditEncoded } = eventData;
   return await eventService.writeGenericEvent({
     eventName,
     sessionId,
