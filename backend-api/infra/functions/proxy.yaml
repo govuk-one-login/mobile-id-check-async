@@ -36,13 +36,6 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-proxy-lambda
     Condition: ProxyApiDeployment
 
-  ProxyLambdaSubscriptionFilter:    
-    Type: AWS::Logs::SubscriptionFilter
-    Properties:
-      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
-      FilterPattern: ""
-      LogGroupName: !Ref ProxyLambdaLogGroup
-
   ProxyLambdaRole:
     Type: AWS::IAM::Role
     Properties:
