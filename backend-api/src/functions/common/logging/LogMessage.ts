@@ -52,11 +52,6 @@ export class LogMessage implements LogAttributes {
     "No session found when attempting to get the user session from DynamoDB.",
   );
 
-  static readonly GET_SESSION_SESSION_TOO_OLD = new LogMessage(
-    "MOBILE_ASYNC_GET_SESSION_SESSION_TOO_OLD",
-    "Session was not created within the valid timeframe",
-  );
-
   static readonly GET_SESSION_SUCCESS = new LogMessage(
     "MOBILE_ASYNC_GET_SESSION_SUCCESS",
     "Successfully retrieved user session from DynamoDB.",
@@ -270,6 +265,14 @@ export class LogMessage implements LogAttributes {
   static readonly TXMA_EVENT_REQUEST_BODY_INVALID = new LogMessage(
     "MOBILE_ASYNC_TXMA_EVENT_REQUEST_BODY_INVALID",
     "The incoming request body was missing or invalid.",
+  );
+  static readonly TXMA_EVENT_SESSION_IN_WRONG_STATE = new LogMessage(
+    "MOBILE_ASYNC_TXMA_EVENT_SESSION_IN_WRONG_STATE",
+    "Session is not in the correct state",
+  );
+  static readonly TXMA_EVENT_SESSION_TOO_OLD = new LogMessage(
+    "MOBILE_ASYNC_TXMA_EVENT_SESSION_TOO_OLD",
+    "Session was not created within the valid timeframe",
   );
   static readonly TXMA_EVENT_COMPLETED = new LogMessage(
     "MOBILE_ASYNC_TXMA_EVENT_COMPLETED",

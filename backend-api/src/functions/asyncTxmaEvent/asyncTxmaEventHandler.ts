@@ -20,7 +20,7 @@ import {
   SessionRetrievalFailed,
 } from "../common/session/SessionRegistry";
 import { GenericEventNames, IEventService } from "../services/events/types";
-import { Result } from "../utils/result";
+import { emptySuccess, errorResult, Result } from "../utils/result";
 import {
   IAsyncTxmaEventDependencies,
   runtimeDependencies,
@@ -76,11 +76,13 @@ export async function lambdaHandlerConstructor(
   }
   const sessionAttributes = getSessionResult.value;
 
-  const isSessionValid = validateSession(sessionAttributes);
-  if (!isSessionValid) return handleSessionNotFound(eventService, eventData);
+  const validateSessionResult = validateSession(sessionAttributes);
+  if (validateSessionResult.isError) {
+    const logMessage = validateSessionResult.value;
+    return handleSessionNotFound(eventService, eventData, logMessage);
+  }
 
   logger.info(LogMessage.TXMA_EVENT_COMPLETED);
-
   return notImplementedResponse;
 }
 
@@ -138,22 +140,22 @@ async function handleInternalServerError(
 
 async function handleSessionNotFound(
   eventService: IEventService,
-  data: BaseErrorData,
+  errorData: BaseErrorData,
+  logMessage?: LogMessage,
 ): Promise<APIGatewayProxyResult> {
   const writeEventResult = await writeEvent({
     eventService,
     eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-    data,
+    data: errorData,
   });
 
+  const data = { auditEventName: "DCMAW_ASYNC_CRI_4XXERROR" };
   if (writeEventResult.isError) {
-    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-      data: {
-        auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
-      },
-    });
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, { data });
     return serverErrorResponse;
   }
+  if (logMessage) logger.error(logMessage, { data });
+
   return unauthorizedResponse(
     "invalid_session",
     "Session does not exist or in incorrect state",
@@ -184,17 +186,22 @@ async function writeEvent({
   });
 }
 
-function validateSession(sessionAttributes: SessionAttributes): boolean {
+function validateSession(
+  sessionAttributes: SessionAttributes,
+): Result<void, LogMessage> {
   const { sessionState, createdAt } = sessionAttributes;
-  if (sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) return false;
-  if (isOlderThan60minutes(createdAt)) return false;
+  if (sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) {
+    return errorResult(LogMessage.TXMA_EVENT_SESSION_IN_WRONG_STATE);
+  }
+  if (isOlderThan60minutes(createdAt)) {
+    return errorResult(LogMessage.TXMA_EVENT_SESSION_TOO_OLD);
+  }
 
-  return true;
+  return emptySuccess();
 }
 
 function isOlderThan60minutes(createdAtInMilliseconds: number) {
   const SIXTY_MINUTES_IN_MILLISECONDS = 3600000;
   const validFrom = Date.now() - SIXTY_MINUTES_IN_MILLISECONDS;
-
   return createdAtInMilliseconds < validFrom;
 }
