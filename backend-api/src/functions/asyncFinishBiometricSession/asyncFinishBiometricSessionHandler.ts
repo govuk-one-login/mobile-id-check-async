@@ -6,7 +6,7 @@ import {
 import {
   badRequestResponse,
   forbiddenResponse,
-  notImplementedResponse,
+  okResponse,
   serverErrorResponse,
   unauthorizedResponse,
 } from "../common/lambdaResponses";
@@ -123,7 +123,7 @@ export async function lambdaHandlerConstructor(
   }
 
   logger.info(LogMessage.FINISH_BIOMETRIC_SESSION_COMPLETED);
-  return notImplementedResponse;
+  return okResponse();
 }
 
 async function handleConditionalCheckFailure(

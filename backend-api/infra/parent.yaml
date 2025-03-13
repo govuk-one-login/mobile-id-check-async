@@ -48,12 +48,10 @@ Parameters:
     Type: String
     Default: false
 
-  LambdaCanaryDeployment:
-    Description: Specifies the configuration to enable gradual Lambda deployments
+  LambdaDeploymentPreference:
+    Description: |
+      Specifies the configuration to enable gradual Lambda deployments. Value can be 'AllAtOnce', a default deployment config, or name of custom DeploymentConfig.
     Type: String
-    AllowedValues:
-      - AllAtOnce
-      - Linear20PercentEvery1Minute
     Default: AllAtOnce
 
   SamValidateLintWorkaround:
@@ -310,11 +308,6 @@ Conditions:
       - !Ref Environment
       - staging
 
-  UseLinearCanaryDeployments: !Not
-    - !Equals
-      - !Ref LambdaCanaryDeployment
-      - AllAtOnce
-
 # This condition is in place so that we can add a resource to this parent.yaml template that is never deployed.
   NeverDeploy: !Equals
     - !Ref SamValidateLintWorkaround
@@ -348,6 +341,9 @@ Globals:
       LogFormat: JSON
     Architectures:
       - arm64
+    DeploymentPreference:
+      Enabled: false
+      Role: !GetAtt CodeDeployServiceRole.Arn
     Environment:
       Variables:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
