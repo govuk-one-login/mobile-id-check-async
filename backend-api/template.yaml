@@ -306,11 +306,6 @@ Conditions:
       - !Ref Environment
       - dev
 
-  isNotDev: !Not
-    - !Equals
-      - !Ref Environment
-      - dev
-
   isNotDevOrBuild: !Or
     - !Equals
       - !Ref Environment
