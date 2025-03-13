@@ -2,6 +2,7 @@ import { expect } from "@jest/globals";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
 import "../../../tests/testUtils/matchers";
 import { logger } from "../common/logging/logger";
+import { GetSessionError } from "../common/session/SessionRegistry";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { buildRequest } from "../testUtils/mockRequest";
 import {
@@ -16,11 +17,9 @@ import {
   validBaseSessionAttributes,
   validBiometricTokenIssuedSessionAttributes,
 } from "../testUtils/unitTestData";
+import { errorResult, successResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncTxmaEventHandler";
 import { IAsyncTxmaEventDependencies } from "./handlerDependencies";
-import { GetSessionError } from "../common/session/SessionRegistry";
-import { errorResult, successResult } from "../utils/result";
-import { SessionState } from "../common/session/session";
 
 describe("Async TxMA Event", () => {
   let dependencies: IAsyncTxmaEventDependencies;
@@ -514,8 +513,7 @@ describe("Async TxMA Event", () => {
         ...mockSuccessfulSessionRegistry,
         getSession: jest.fn().mockResolvedValue(
           successResult({
-            ...validBaseSessionAttributes,
-            sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,
+            ...validBiometricTokenIssuedSessionAttributes,
             createdAt: 1704110340000, // 2024-01-01T11:59:00.000Z
           }),
         ),
