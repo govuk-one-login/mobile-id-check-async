@@ -6,6 +6,7 @@ import {
 } from "../../../../testUtils/unitTestData";
 import { emptyFailure, successResult } from "../../../../utils/result";
 import { TxMAEvent } from "./TxMAEvent";
+import { SessionState } from "../../session";
 
 describe("BiometricTokenIssued", () => {
   let txmaEvent: TxMAEvent;
@@ -16,12 +17,32 @@ describe("BiometricTokenIssued", () => {
     txmaEvent = new TxMAEvent();
   });
 
-  describe("When I request the DynamoDB Key Expression", () => {
-    it("Returns the appropriate Key Expression string", () => {
-      const result = txmaEvent.getDynamoDbKeyExpression(mockSessionId);
+  describe("When I request DynamoDB ExpressionAttributeNames", () => {
+    it("Returns the appropriate ExpressionAttributeNames", () => {
+      const result = txmaEvent.getDynamoDbExpressionAttributeNames();
       expect(result).toEqual({
-        sessionId: { S: mockSessionId },
+        "#sessionState": "sessionState",
+        "#createdAt": "createdAt",
       });
+    });
+  });
+
+  describe("When I request DynamoDB ExpressionAttributeValues", () => {
+    it("Returns the ExpressionAttributeValues with the correct session state", () => {
+      const result = txmaEvent.getDynamoDbExpressionAttributeValues();
+      expect(result).toEqual({
+        ":sessionState": { S: SessionState.BIOMETRIC_TOKEN_ISSUED },
+        ":validFrom": { N: "1704106800000" }, // 2024-01-01T11:00:00.000Z
+      });
+    });
+  });
+
+  describe("When I request DynamoDB ConditionExpression", () => {
+    it("Returns the appropriate ConditionExpression string", () => {
+      const result = txmaEvent.getDynamoDbKeyConditionExpression();
+      expect(result).toEqual(
+        "#sessionState = :sessionState and #createdAt >= :validFrom",
+      );
     });
   });
 
@@ -45,7 +66,7 @@ describe("BiometricTokenIssued", () => {
 
       it("Returns successResult with BiometricTokenIssuedSessionAttributes session attributes", () => {
         const result = txmaEvent.getSessionAttributesFromDynamoDbItem(
-          marshall(validBiometricTokenIssuedSessionAttributes),
+          validBiometricTokenIssuedSessionAttributesItem,
         );
 
         expect(result).toEqual(

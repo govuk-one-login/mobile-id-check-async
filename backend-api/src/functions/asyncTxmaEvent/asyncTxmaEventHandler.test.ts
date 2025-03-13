@@ -3,7 +3,7 @@ import { APIGatewayProxyResult, Context } from "aws-lambda";
 import "../../../tests/testUtils/matchers";
 import { logger } from "../common/logging/logger";
 import { SessionState } from "../common/session/session";
-import { GetSessionError } from "../common/session/SessionRegistry";
+import { QuerySessionError } from "../common/session/SessionRegistry";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { buildRequest } from "../testUtils/mockRequest";
 import {
@@ -153,9 +153,9 @@ describe("Async TxMA Event", () => {
       beforeEach(async () => {
         dependencies.getSessionRegistry = () => ({
           ...mockInertSessionRegistry,
-          getSession: jest.fn().mockResolvedValue(
+          querySession: jest.fn().mockResolvedValue(
             errorResult({
-              errorType: GetSessionError.INTERNAL_SERVER_ERROR,
+              errorType: QuerySessionError.INTERNAL_SERVER_ERROR,
             }),
           ),
         });
@@ -239,9 +239,9 @@ describe("Async TxMA Event", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () => ({
             ...mockInertSessionRegistry,
-            getSession: jest.fn().mockResolvedValue(
+            querySession: jest.fn().mockResolvedValue(
               errorResult({
-                errorType: GetSessionError.SESSION_NOT_FOUND,
+                errorType: QuerySessionError.SESSION_NOT_FOUND,
               }),
             ),
           });
@@ -325,7 +325,7 @@ describe("Async TxMA Event", () => {
       beforeEach(async () => {
         dependencies.getSessionRegistry = () => ({
           ...mockSuccessfulSessionRegistry,
-          getSession: jest.fn().mockResolvedValue(
+          querySession: jest.fn().mockResolvedValue(
             successResult({
               ...validBiometricTokenIssuedSessionAttributes,
               sessionState: SessionState.AUTH_SESSION_CREATED,
@@ -418,7 +418,7 @@ describe("Async TxMA Event", () => {
       beforeEach(async () => {
         dependencies.getSessionRegistry = () => ({
           ...mockSuccessfulSessionRegistry,
-          getSession: jest.fn().mockResolvedValue(
+          querySession: jest.fn().mockResolvedValue(
             successResult({
               ...validBiometricTokenIssuedSessionAttributes,
               createdAt: 1704106740000,
@@ -512,7 +512,7 @@ describe("Async TxMA Event", () => {
     beforeEach(async () => {
       dependencies.getSessionRegistry = () => ({
         ...mockSuccessfulSessionRegistry,
-        getSession: jest.fn().mockResolvedValue(
+        querySession: jest.fn().mockResolvedValue(
           successResult({
             ...validBiometricTokenIssuedSessionAttributes,
             createdAt: 1704110340000, // 2024-01-01T11:59:00.000Z
