@@ -3706,7 +3706,6 @@ Resources:
       DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
       FilterPattern: ""
       LogGroupName: !Ref ProxyApiAccessLogs
-    Condition: isNotDev
 
   ProxyLambda:
     Type: AWS::Serverless::Function
@@ -3805,6 +3804,13 @@ Resources:
           ToPort: 443
       VpcId: !ImportValue devplatform-vpc-VpcId
     Condition: ProxyApiDeployment
+
+  ProxyLambdaSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      FilterPattern: ""
+      LogGroupName: !Ref ProxyLambdaLogGroup
 
   SessionsApi:
     Type: AWS::Serverless::Api
