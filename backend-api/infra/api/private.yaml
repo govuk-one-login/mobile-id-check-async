@@ -5,6 +5,7 @@ Resources:
     Properties:
       Name: !Sub ${AWS::StackName}-private-api
       Description: Private API gateway for Client Credentials flow
+      AlwaysDeploy: true
       EndpointConfiguration:
         Type: PRIVATE
         VPCEndpointIds: !If
