@@ -145,35 +145,19 @@ export class DynamoDbAdapter implements SessionRegistry {
   ): Promise<Result<SessionAttributes, SessionRetrievalFailed>> {
     let queryCommandOutput: QueryCommandOutput;
     try {
-      console.log("<<<<< QS 1 >>>>>");
       logger.debug(LogMessage.GET_SESSION_ATTEMPT, { data: { sessionId } });
-
-      // response = await this.dynamoDbClient.send(
-      //   new GetItemCommand({
-      //     TableName: this.tableName,
-      //     Key: getOperation.getDynamoDbKeyExpression(sessionId),
-      //   }),
-      // );
 
       queryCommandOutput = await this.dynamoDbClient.send(
         new QueryCommand({
           TableName: this.tableName,
-          // ExpressionAttributeNames:
-          //   queryOperation.getDynamoDbExpressionAttributeNames(),
           ExpressionAttributeValues:
             queryOperation.getDynamoDbExpressionAttributeValues(sessionId),
           KeyConditionExpression:
             queryOperation.getDynamoDbKeyConditionExpression(),
-          // ProjectionExpression: "SongTitle",
         }),
       );
     } catch (error: unknown) {
-      console.log("<<<<< QS 2 >>>>>");
-      console.log("<<<<< QS 2 ERROR >>>>>", error);
-
       const errorData = {
-        // ExpressionAttributeNames:
-        //   queryOperation.getDynamoDbExpressionAttributeNames(),
         ExpressionAttributeValues:
           queryOperation.getDynamoDbExpressionAttributeValues(sessionId),
         KeyConditionExpression:
@@ -186,8 +170,6 @@ export class DynamoDbAdapter implements SessionRegistry {
 
     const items = queryCommandOutput.Items;
     if (items == null || items.length === 0) {
-      console.log("<<<<< QS 3 >>>>>");
-
       logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND);
 
       return errorResult({
@@ -198,15 +180,11 @@ export class DynamoDbAdapter implements SessionRegistry {
     const getSessionAttributesResult =
       queryOperation.getSessionAttributesFromDynamoDbItem(items[0]);
     if (getSessionAttributesResult.isError) {
-      console.log("<<<<< QS 4 >>>>>");
-
       return this.handleGetSessionNotFoundError(
         "Could not parse valid session attributes after successful get command",
       );
     }
     const sessionAttributes = getSessionAttributesResult.value;
-    console.log("<<<<< QS 5 >>>>>");
-
     logger.debug(LogMessage.GET_SESSION_SUCCESS);
 
     return successResult(sessionAttributes);
