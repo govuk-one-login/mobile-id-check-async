@@ -4,14 +4,14 @@ import {
   getBiometricSessionFinishedSessionAttributes,
   getBiometricTokenIssuedSessionAttributes,
 } from "./sessionAttributes";
-import { emptyFailure, successResult } from "../../../../utils/result";
-import { SessionAttributes, SessionState } from "../../session";
+import { emptyFailure, successResult } from "../../../utils/result";
+import { SessionAttributes, SessionState } from "../session";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import {
   validBaseSessionAttributes,
   validBiometricSessionFinishedAttributes,
   validBiometricTokenIssuedSessionAttributes,
-} from "../../../../testUtils/unitTestData";
+} from "../../../testUtils/unitTestData";
 
 describe("Session attributes", () => {
   interface TestScenario {
