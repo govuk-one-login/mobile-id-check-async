@@ -6,6 +6,13 @@ import { getBiometricTokenIssuedSessionAttributes } from "../../updateOperations
 import { QuerySessionOperation } from "../QuerySessionOperation";
 
 export class TxMAEvent implements QuerySessionOperation {
+  // getDynamoDbExpressionAttributeNames(): Record<string, string> {
+  //   return {
+  //     "#sessionState": "sessionState",
+  //     "#createdAt": "createdAt",
+  //   };
+  // }
+
   getDynamoDbExpressionAttributeValues(
     sessionId: string,
   ): Record<string, AttributeValue> {
@@ -14,9 +21,25 @@ export class TxMAEvent implements QuerySessionOperation {
     };
   }
 
+  // getDynamoDbExpressionAttributeValues(): Record<string, AttributeValue> {
+  //   console.log("VALID TIME >>>>>", marshall(getValidFromTime()))
+  //   return {
+  //     ":sessionState": marshall(SessionState.BIOMETRIC_TOKEN_ISSUED),
+  //     ":validFrom": marshall(getValidFromTime()),
+  //   };
+  // }
+
   getDynamoDbKeyConditionExpression(): string {
     return "sessionId = :sessionId";
   }
+
+  // getDynamoDbKeyConditionExpression(): string {
+  //   return "#sessionState = :sessionState and #createdAt >= :validFrom";
+  // }
+
+  // getDynamoDbProjectionExpression(): string {
+  //   return ""
+  // }
 
   getSessionAttributesFromDynamoDbItem(
     item: Record<string, AttributeValue> | undefined,
@@ -24,3 +47,8 @@ export class TxMAEvent implements QuerySessionOperation {
     return getBiometricTokenIssuedSessionAttributes(item);
   }
 }
+
+// function getValidFromTime() {
+//   const SIXTY_MINUTES_IN_MILLISECONDS = 3600000;
+//   return Date.now() - SIXTY_MINUTES_IN_MILLISECONDS;
+// }
