@@ -187,7 +187,7 @@ describe("Backend application infrastructure", () => {
         AccessLogSetting: {
           DestinationArn: {
             "Fn::Sub":
-              "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncPrivateApiAccessLogs}-v2",
+              "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncPrivateApiAccessLogs}",
           },
         },
       });
@@ -198,7 +198,7 @@ describe("Backend application infrastructure", () => {
         RetentionInDays: 30,
         LogGroupName: {
           "Fn::Sub":
-            "/aws/apigateway/${AWS::StackName}-private-api-access-logs-v2",
+            "/aws/apigateway/${AWS::StackName}-private-api-access-logs",
         },
       });
     });
