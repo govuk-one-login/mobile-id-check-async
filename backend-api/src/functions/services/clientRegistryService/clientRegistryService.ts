@@ -10,6 +10,7 @@ import {
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
 import { isValidUrl } from "../utils/isValidUrl";
+import { logger } from "../../common/logging/logger";
 
 let cache: CacheEntry | null = null;
 
@@ -31,6 +32,8 @@ export class ClientRegistryService
   getRegisteredIssuerUsingClientSecrets = async (
     secrets: IDecodedClientSecrets,
   ): Promise<Result<string>> => {
+    logger.info("Client ID from request ===> ", secrets.clientId);
+
     const clientRegistryResult = await this.getClientRegistry();
     if (clientRegistryResult.isError)
       return errorResult(clientRegistryResult.value);
