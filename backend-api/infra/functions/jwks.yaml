@@ -93,6 +93,15 @@ Resources:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-jwks
 
+  JsonWebKeysFunctionSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: 
+        !FindInMap [CslsConfiguration, !Ref Environment, CSLSEGRESS]
+      FilterPattern: ""
+      LogGroupName: !Ref JsonWebKeysFunctionLogGroup
+    Condition: isNotDev
+
   JsonWebKeysCustomResource:
     Type: AWS::CloudFormation::CustomResource
     Properties:
