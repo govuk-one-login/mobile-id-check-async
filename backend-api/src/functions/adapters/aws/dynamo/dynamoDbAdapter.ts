@@ -1,6 +1,7 @@
 import {
   ConditionalCheckFailedException,
   DynamoDBClient,
+  GetItemCommand,
   PutItemCommand,
   PutItemCommandInput,
   QueryCommand,
@@ -18,13 +19,13 @@ import {
 } from "@aws-sdk/util-dynamodb";
 import { logger } from "../../../common/logging/logger";
 import { LogMessage } from "../../../common/logging/LogMessage";
-import { QuerySessionOperation } from "../../../common/session/getOperations/QuerySessionOperation";
+import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
 import {
   SessionAttributes,
   SessionState,
 } from "../../../common/session/session";
 import {
-  QuerySessionError,
+  GetSessionError,
   SessionRegistry,
   SessionRetrievalFailed,
   SessionRetrievalFailedInternalServerError,
@@ -139,48 +140,35 @@ export class DynamoDbAdapter implements SessionRegistry {
     }
   }
 
-  async querySession(
+  async getSession(
     sessionId: string,
-    queryOperation: QuerySessionOperation,
+    getOperation: GetSessionOperation,
   ): Promise<Result<SessionAttributes, SessionRetrievalFailed>> {
-    let queryCommandOutput: QueryCommandOutput;
+    let response;
     try {
       logger.debug(LogMessage.GET_SESSION_ATTEMPT, { data: { sessionId } });
 
-      // response = await this.dynamoDbClient.send(
-      //   new GetItemCommand({
-      //     TableName: this.tableName,
-      //     Key: getOperation.getDynamoDbKeyExpression(sessionId),
-      //   }),
-      // );
-
-      queryCommandOutput = await this.dynamoDbClient.send(
-        new QueryCommand({
+      response = await this.dynamoDbClient.send(
+        new GetItemCommand({
           TableName: this.tableName,
-          ExpressionAttributeNames:
-            queryOperation.getDynamoDbExpressionAttributeNames(),
-          ExpressionAttributeValues:
-            queryOperation.getDynamoDbExpressionAttributeValues(),
-          KeyConditionExpression:
-            queryOperation.getDynamoDbKeyConditionExpression(),
-          // ProjectionExpression: "SongTitle",
+          Key: getOperation.getDynamoDbKeyExpression(sessionId),
         }),
       );
     } catch (error: unknown) {
       return this.handleGetSessionInternalServerError(error);
     }
 
-    const items = queryCommandOutput.Items;
-    if (items == null || items.length === 0) {
+    const responseItem = response.Item;
+    if (responseItem == null) {
       logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND);
 
       return errorResult({
-        errorType: QuerySessionError.SESSION_NOT_FOUND,
+        errorType: GetSessionError.SESSION_NOT_FOUND,
       });
     }
 
     const getSessionAttributesResult =
-      queryOperation.getSessionAttributesFromDynamoDbItem(items[0]);
+      getOperation.getSessionAttributesFromDynamoDbItem(responseItem);
     if (getSessionAttributesResult.isError) {
       return this.handleGetSessionNotFoundError(
         "Could not parse valid session attributes after successful get command",
@@ -305,7 +293,7 @@ export class DynamoDbAdapter implements SessionRegistry {
       data: { error },
     });
     return errorResult({
-      errorType: QuerySessionError.INTERNAL_SERVER_ERROR,
+      errorType: GetSessionError.INTERNAL_SERVER_ERROR,
     });
   }
 
@@ -316,7 +304,7 @@ export class DynamoDbAdapter implements SessionRegistry {
       data: { error },
     });
     return errorResult({
-      errorType: QuerySessionError.SESSION_NOT_FOUND,
+      errorType: GetSessionError.SESSION_NOT_FOUND,
     });
   }
 }

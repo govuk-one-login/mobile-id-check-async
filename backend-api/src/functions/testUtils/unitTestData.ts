@@ -52,7 +52,7 @@ export const mockInertSessionRegistry: SessionRegistry = {
     throw new Error("Not implemented");
   }),
 
-  querySession: jest.fn(() => {
+  getSession: jest.fn(() => {
     throw new Error("Not implemented");
   }),
 };
@@ -64,7 +64,7 @@ export const mockSuccessfulSessionRegistry: SessionRegistry = {
     }),
   ),
 
-  querySession: jest.fn().mockResolvedValue(
+  getSession: jest.fn().mockResolvedValue(
     successResult({
       attributes: validBiometricTokenIssuedSessionAttributes,
     }),

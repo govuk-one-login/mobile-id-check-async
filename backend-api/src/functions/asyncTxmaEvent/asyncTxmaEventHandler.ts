@@ -16,7 +16,7 @@ import { getAuditData } from "../common/request/getAuditData/getAuditData";
 import { TxMAEvent } from "../common/session/getOperations/TxmaEvent/TxMAEvent";
 import { SessionAttributes, SessionState } from "../common/session/session";
 import {
-  QuerySessionError,
+  GetSessionError,
   SessionRetrievalFailed,
 } from "../common/session/SessionRegistry";
 import { GenericEventNames, IEventService } from "../services/events/types";
@@ -56,7 +56,7 @@ export async function lambdaHandlerConstructor(
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
   );
-  const getSessionResult = await sessionRegistry.querySession(
+  const getSessionResult = await sessionRegistry.getSession(
     sessionId,
     new TxMAEvent(),
   );
@@ -104,9 +104,9 @@ async function handleGetSessionError(
   data: HandleGetSessionErrorData,
 ): Promise<APIGatewayProxyResult> {
   switch (getSessionResult.errorType) {
-    case QuerySessionError.INTERNAL_SERVER_ERROR:
+    case GetSessionError.INTERNAL_SERVER_ERROR:
       return handleInternalServerError(eventService, data);
-    case QuerySessionError.SESSION_NOT_FOUND:
+    case GetSessionError.SESSION_NOT_FOUND:
       return handleSessionNotFound(eventService, data);
   }
 }

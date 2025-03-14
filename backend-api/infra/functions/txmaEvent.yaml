@@ -89,7 +89,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - "dynamodb:Query"
+                  - "dynamodb:GetItem"
                 Resource: !GetAtt SessionsTable.Arn
         - PolicyName: AsyncTxmaEventFunctionTxmaSQSPolicy
           PolicyDocument:

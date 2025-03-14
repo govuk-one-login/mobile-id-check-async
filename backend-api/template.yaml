@@ -3154,7 +3154,7 @@ Resources:
         - PolicyDocument:
             Statement:
               - Action:
-                  - dynamodb:Query
+                  - dynamodb:GetItem
                 Effect: Allow
                 Resource: !GetAtt SessionsTable.Arn
           PolicyName: AsyncTxmaEventFunctionDynamodbPolicy

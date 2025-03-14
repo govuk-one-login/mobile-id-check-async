@@ -1,7 +1,7 @@
 import {
   ConditionalCheckFailedException,
   DynamoDBClient,
-  QueryCommand,
+  GetItemCommand,
   ReturnValue,
   ReturnValuesOnConditionCheckFailure,
   UpdateItemCommand,
@@ -11,10 +11,11 @@ import { expect } from "@jest/globals";
 import { mockClient } from "aws-sdk-client-mock";
 import "dotenv/config";
 import "../../../../../tests/testUtils/matchers";
-import { QuerySessionOperation } from "../../../common/session/getOperations/QuerySessionOperation";
+import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
 import { TxMAEvent } from "../../../common/session/getOperations/TxmaEvent/TxMAEvent";
+import { SessionState } from "../../../common/session/session";
 import {
-  QuerySessionError,
+  GetSessionError,
   SessionRegistry,
   SessionRetrievalFailed,
   SessionUpdated,
@@ -305,13 +306,13 @@ describe("DynamoDbAdapter", () => {
   });
 
   describe("getSession", () => {
-    const queryOperation: QuerySessionOperation = new TxMAEvent();
+    const getOperation: GetSessionOperation = new TxMAEvent();
     let result: Result<void, SessionRetrievalFailed>;
 
     describe("On every attempt", () => {
       beforeEach(async () => {
-        mockDynamoDbClient.on(QueryCommand).resolves({});
-        await sessionRegistry.querySession(mockSessionId, queryOperation);
+        mockDynamoDbClient.on(GetItemCommand).resolves({});
+        await sessionRegistry.getSession(mockSessionId, getOperation);
       });
 
       it("Logs the attempt", () => {
@@ -326,11 +327,8 @@ describe("DynamoDbAdapter", () => {
 
     describe("Given there is an unexpected error retrieving the session", () => {
       beforeEach(async () => {
-        mockDynamoDbClient.on(QueryCommand).rejects("mock_error");
-        result = await sessionRegistry.querySession(
-          mockSessionId,
-          queryOperation,
-        );
+        mockDynamoDbClient.on(GetItemCommand).rejects("mock_error");
+        result = await sessionRegistry.getSession(mockSessionId, getOperation);
       });
 
       it("Logs the failure", () => {
@@ -342,7 +340,7 @@ describe("DynamoDbAdapter", () => {
       it("Returns failure with server error", () => {
         expect(result).toEqual(
           errorResult({
-            errorType: QuerySessionError.INTERNAL_SERVER_ERROR,
+            errorType: GetSessionError.INTERNAL_SERVER_ERROR,
           }),
         );
       });
@@ -350,11 +348,8 @@ describe("DynamoDbAdapter", () => {
 
     describe("Given session was not found", () => {
       beforeEach(async () => {
-        mockDynamoDbClient.on(QueryCommand).resolves({});
-        result = await sessionRegistry.querySession(
-          mockSessionId,
-          queryOperation,
-        );
+        mockDynamoDbClient.on(GetItemCommand).resolves({});
+        result = await sessionRegistry.getSession(mockSessionId, getOperation);
       });
 
       it("Logs the failure", () => {
@@ -366,32 +361,31 @@ describe("DynamoDbAdapter", () => {
       it("Returns failure with an invalid session error", () => {
         expect(result).toEqual(
           errorResult({
-            errorType: QuerySessionError.SESSION_NOT_FOUND,
+            errorType: GetSessionError.SESSION_NOT_FOUND,
           }),
         );
       });
     });
 
     describe("Given session was found", () => {
-      describe("Given session attributes returned in the response are not valid", () => {
+      describe("Given invalid session attributes were returned in response", () => {
         beforeEach(async () => {
-          mockDynamoDbClient.on(QueryCommand).resolves({
-            Items: [
-              marshall({
-                clientId: "mockClientId",
-                govukSigninJourneyId: "mockGovukSigninJourneyId",
-                createdAt: 12345,
-                issuer: "mockIssuer",
-                sessionId: mockSessionId,
-                clientState: "mockClientState",
-                subjectIdentifier: "mockSubjectIdentifier",
-                timeToLive: 12345,
-              }),
-            ],
+          mockDynamoDbClient.on(GetItemCommand).resolves({
+            Item: marshall({
+              clientId: "mockClientId",
+              govukSigninJourneyId: "mockGovukSigninJourneyId",
+              createdAt: 12345,
+              issuer: "mockIssuer",
+              sessionId: mockSessionId,
+              sessionState: SessionState.AUTH_SESSION_CREATED,
+              clientState: "mockClientState",
+              subjectIdentifier: "mockSubjectIdentifier",
+              timeToLive: 12345,
+            }),
           });
-          result = await sessionRegistry.querySession(
+          result = await sessionRegistry.getSession(
             mockSessionId,
-            queryOperation,
+            getOperation,
           );
         });
 
@@ -404,7 +398,7 @@ describe("DynamoDbAdapter", () => {
         it("Returns failure with server error", () => {
           expect(result).toEqual(
             errorResult({
-              errorType: QuerySessionError.SESSION_NOT_FOUND,
+              errorType: GetSessionError.SESSION_NOT_FOUND,
             }),
           );
         });
@@ -417,12 +411,12 @@ describe("DynamoDbAdapter", () => {
         });
 
         beforeEach(async () => {
-          mockDynamoDbClient.on(QueryCommand).resolves({
-            Items: [validBiometricTokenIssuedSessionAttributesItem],
+          mockDynamoDbClient.on(GetItemCommand).resolves({
+            Item: validBiometricTokenIssuedSessionAttributesItem,
           });
-          result = await sessionRegistry.querySession(
+          result = await sessionRegistry.getSession(
             mockSessionId,
-            queryOperation,
+            getOperation,
           );
         });
 

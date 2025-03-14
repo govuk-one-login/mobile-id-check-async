@@ -1,5 +1,5 @@
 import { Result } from "../../utils/result";
-import { QuerySessionOperation } from "./getOperations/QuerySessionOperation";
+import { GetSessionOperation } from "./getOperations/GetSessionOperation";
 import { SessionAttributes } from "./session";
 import { UpdateSessionOperation } from "./updateOperations/UpdateSessionOperation";
 export interface SessionRegistry {
@@ -8,9 +8,9 @@ export interface SessionRegistry {
     updateOperation: UpdateSessionOperation,
   ): Promise<Result<SessionUpdated, SessionUpdateFailed>>;
 
-  querySession(
+  getSession(
     sessionId: string,
-    queryOperation: QuerySessionOperation,
+    getOperation: GetSessionOperation,
   ): Promise<Result<SessionAttributes, SessionRetrievalFailed>>;
 }
 
@@ -52,14 +52,14 @@ export type SessionRetrievalFailed =
   | SessionRetrievalFailedSessionNotFound;
 
 export interface SessionRetrievalFailedInternalServerError {
-  errorType: QuerySessionError.INTERNAL_SERVER_ERROR;
+  errorType: GetSessionError.INTERNAL_SERVER_ERROR;
 }
 
 export interface SessionRetrievalFailedSessionNotFound {
-  errorType: QuerySessionError.SESSION_NOT_FOUND;
+  errorType: GetSessionError.SESSION_NOT_FOUND;
 }
 
-export enum QuerySessionError {
+export enum GetSessionError {
   INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR",
   SESSION_NOT_FOUND = "SESSION_NOT_FOUND",
 }
