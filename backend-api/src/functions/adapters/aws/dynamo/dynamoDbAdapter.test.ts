@@ -1,29 +1,37 @@
-import { expect } from "@jest/globals";
-import "dotenv/config";
-import "../../../../../tests/testUtils/matchers";
-import { DynamoDbAdapter } from "./dynamoDbAdapter";
-import { BiometricTokenIssued } from "../../../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
-import {
-  SessionRegistry,
-  UpdateSessionError,
-  SessionUpdateFailed,
-  SessionUpdated,
-} from "../../../common/session/SessionRegistry";
 import {
   ConditionalCheckFailedException,
   DynamoDBClient,
+  GetItemCommand,
   ReturnValue,
   ReturnValuesOnConditionCheckFailure,
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
+import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
+import { expect } from "@jest/globals";
 import { mockClient } from "aws-sdk-client-mock";
-import { errorResult, Result, successResult } from "../../../utils/result";
-import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
-import { marshall } from "@aws-sdk/util-dynamodb";
+import "dotenv/config";
+import "../../../../../tests/testUtils/matchers";
+import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
+import { TxMAEvent } from "../../../common/session/getOperations/TxmaEvent/TxMAEvent";
+import { SessionState } from "../../../common/session/session";
 import {
+  GetSessionError,
+  SessionRegistry,
+  SessionRetrievalFailed,
+  SessionUpdated,
+  SessionUpdateFailed,
+  UpdateSessionError,
+} from "../../../common/session/SessionRegistry";
+import { BiometricTokenIssued } from "../../../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
+import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
+import {
+  mockSessionId,
+  NOW_IN_MILLISECONDS,
   validBaseSessionAttributes,
   validBiometricTokenIssuedSessionAttributes,
 } from "../../../testUtils/unitTestData";
+import { errorResult, Result, successResult } from "../../../utils/result";
+import { DynamoDbAdapter } from "./dynamoDbAdapter";
 
 const mockDynamoDbClient = mockClient(DynamoDBClient);
 
@@ -33,10 +41,13 @@ let consoleDebugSpy: jest.SpyInstance;
 
 describe("DynamoDbAdapter", () => {
   beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(NOW_IN_MILLISECONDS);
     sessionRegistry = new DynamoDbAdapter("mock_table_name");
     consoleErrorSpy = jest.spyOn(console, "error");
     consoleDebugSpy = jest.spyOn(console, "debug");
   });
+
   describe("updateSession", () => {
     let result: Result<SessionUpdated, SessionUpdateFailed>;
 
@@ -288,6 +299,141 @@ describe("DynamoDbAdapter", () => {
             successResult({
               attributes: validBiometricTokenIssuedSessionAttributes,
             }),
+          );
+        });
+      });
+    });
+  });
+
+  describe("getSession", () => {
+    const getOperation: GetSessionOperation = new TxMAEvent();
+    let result: Result<void, SessionRetrievalFailed>;
+
+    describe("On every attempt", () => {
+      beforeEach(async () => {
+        mockDynamoDbClient.on(GetItemCommand).resolves({});
+        await sessionRegistry.getSession(mockSessionId, getOperation);
+      });
+
+      it("Logs the attempt", () => {
+        expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_GET_SESSION_ATTEMPT",
+          data: {
+            sessionId: mockSessionId,
+            getItemCommandInput: {
+              Key: getOperation.getDynamoDbKeyExpression(mockSessionId),
+            },
+          },
+        });
+      });
+    });
+
+    describe("Given there is an unexpected error retrieving the session", () => {
+      beforeEach(async () => {
+        mockDynamoDbClient.on(GetItemCommand).rejects("mock_error");
+        result = await sessionRegistry.getSession(mockSessionId, getOperation);
+      });
+
+      it("Logs the failure", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_GET_SESSION_UNEXPECTED_FAILURE",
+        });
+      });
+
+      it("Returns failure with server error", () => {
+        expect(result).toEqual(
+          errorResult({
+            errorType: GetSessionError.INTERNAL_SERVER_ERROR,
+          }),
+        );
+      });
+    });
+
+    describe("Given session was not found", () => {
+      beforeEach(async () => {
+        mockDynamoDbClient.on(GetItemCommand).resolves({});
+        result = await sessionRegistry.getSession(mockSessionId, getOperation);
+      });
+
+      it("Logs the failure", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_NOT_FOUND",
+        });
+      });
+
+      it("Returns failure with an invalid session error", () => {
+        expect(result).toEqual(
+          errorResult({
+            errorType: GetSessionError.SESSION_NOT_FOUND,
+          }),
+        );
+      });
+    });
+
+    describe("Given session was found", () => {
+      describe("Given invalid session attributes were returned in response", () => {
+        beforeEach(async () => {
+          mockDynamoDbClient.on(GetItemCommand).resolves({
+            Item: marshall({
+              clientId: "mockClientId",
+              govukSigninJourneyId: "mockGovukSigninJourneyId",
+              createdAt: 12345,
+              issuer: "mockIssuer",
+              sessionId: mockSessionId,
+              sessionState: SessionState.AUTH_SESSION_CREATED,
+              clientState: "mockClientState",
+              subjectIdentifier: "mockSubjectIdentifier",
+              timeToLive: 12345,
+            }),
+          });
+          result = await sessionRegistry.getSession(
+            mockSessionId,
+            getOperation,
+          );
+        });
+
+        it("Logs the failure", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_NOT_FOUND",
+          });
+        });
+
+        it("Returns failure with server error", () => {
+          expect(result).toEqual(
+            errorResult({
+              errorType: GetSessionError.SESSION_NOT_FOUND,
+            }),
+          );
+        });
+      });
+
+      describe("Given valid session attributes were returned in response", () => {
+        const validBiometricTokenIssuedSessionAttributesItem = marshall({
+          ...validBiometricTokenIssuedSessionAttributes,
+          createdAt: 1704106860000, // 2024-01-01T11:01:00.000Z
+        });
+
+        beforeEach(async () => {
+          mockDynamoDbClient.on(GetItemCommand).resolves({
+            Item: validBiometricTokenIssuedSessionAttributesItem,
+          });
+          result = await sessionRegistry.getSession(
+            mockSessionId,
+            getOperation,
+          );
+        });
+
+        it("Logs the success", () => {
+          expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_GET_SESSION_SUCCESS",
+          });
+        });
+
+        it("Returns success with session", () => {
+          expect(result).toEqual(
+            successResult(
+              unmarshall(validBiometricTokenIssuedSessionAttributesItem),
+            ),
           );
         });
       });

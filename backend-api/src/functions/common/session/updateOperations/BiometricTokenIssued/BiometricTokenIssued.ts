@@ -5,7 +5,7 @@ import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import {
   getBaseSessionAttributes,
   getBiometricTokenIssuedSessionAttributes,
-} from "../sessionAttributes/sessionAttributes";
+} from "../../sessionAttributes/sessionAttributes";
 
 export class BiometricTokenIssued implements UpdateSessionOperation {
   constructor(

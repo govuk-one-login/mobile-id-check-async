@@ -1,12 +1,12 @@
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { NativeAttributeValue, unmarshall } from "@aws-sdk/util-dynamodb";
-import { Result, emptyFailure, successResult } from "../../../../utils/result";
+import { Result, emptyFailure, successResult } from "../../../utils/result";
 import {
   BaseSessionAttributes,
   BiometricSessionFinishedAttributes,
   BiometricTokenIssuedSessionAttributes,
   SessionState,
-} from "../../session";
+} from "../session";
 
 export const getBaseSessionAttributes = (
   item: Record<string, AttributeValue> | undefined,

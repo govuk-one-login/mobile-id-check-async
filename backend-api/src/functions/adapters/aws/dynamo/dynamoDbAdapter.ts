@@ -1,6 +1,7 @@
 import {
   ConditionalCheckFailedException,
   DynamoDBClient,
+  GetItemCommand,
   PutItemCommand,
   PutItemCommandInput,
   QueryCommand,
@@ -10,31 +11,39 @@ import {
   ReturnValuesOnConditionCheckFailure,
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
-import { CreateSessionAttributes } from "../../../services/session/sessionService";
-import { NodeHttpHandler } from "@smithy/node-http-handler";
+import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
 import {
-  marshall,
   NativeAttributeValue,
+  marshall,
   unmarshall,
 } from "@aws-sdk/util-dynamodb";
-import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
+import { logger } from "../../../common/logging/logger";
+import { LogMessage } from "../../../common/logging/LogMessage";
+import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
 import {
-  errorResult,
-  FailureWithValue,
-  Result,
-  successResult,
-} from "../../../utils/result";
+  SessionAttributes,
+  SessionState,
+} from "../../../common/session/session";
 import {
+  GetSessionError,
   SessionRegistry,
-  SessionUpdated,
+  SessionRetrievalFailed,
+  SessionRetrievalFailedInternalServerError,
+  SessionRetrievalFailedSessionNotFound,
   SessionUpdateFailed,
   SessionUpdateFailedInternalServerError,
+  SessionUpdated,
   UpdateExpressionDataToLog,
   UpdateSessionError,
 } from "../../../common/session/SessionRegistry";
-import { logger } from "../../../common/logging/logger";
-import { LogMessage } from "../../../common/logging/LogMessage";
-import { SessionState } from "../../../common/session/session";
+import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
+import { CreateSessionAttributes } from "../../../services/session/sessionService";
+import {
+  FailureWithValue,
+  Result,
+  errorResult,
+  successResult,
+} from "../../../utils/result";
 
 export type DatabaseRecord = Record<string, NativeAttributeValue>;
 
@@ -129,6 +138,52 @@ export class DynamoDbAdapter implements SessionRegistry {
         throw error;
       }
     }
+  }
+
+  async getSession(
+    sessionId: string,
+    getOperation: GetSessionOperation,
+  ): Promise<Result<SessionAttributes, SessionRetrievalFailed>> {
+    let response;
+    try {
+      const getItemCommandInput = {
+        Key: getOperation.getDynamoDbKeyExpression(sessionId),
+      };
+      logger.debug(LogMessage.GET_SESSION_ATTEMPT, {
+        data: { sessionId, getItemCommandInput },
+      });
+
+      response = await this.dynamoDbClient.send(
+        new GetItemCommand({
+          TableName: this.tableName,
+          ...getItemCommandInput,
+        }),
+      );
+    } catch (error: unknown) {
+      return this.handleGetSessionInternalServerError(error);
+    }
+
+    const responseItem = response.Item;
+    if (responseItem == null) {
+      logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND);
+
+      return errorResult({
+        errorType: GetSessionError.SESSION_NOT_FOUND,
+      });
+    }
+
+    const getSessionAttributesResult =
+      getOperation.getSessionAttributesFromDynamoDbItem(responseItem);
+    if (getSessionAttributesResult.isError) {
+      return this.handleGetSessionNotFoundError(
+        "Could not parse valid session attributes after successful get command",
+      );
+    }
+    const sessionAttributes = getSessionAttributesResult.value;
+
+    logger.debug(LogMessage.GET_SESSION_SUCCESS);
+
+    return successResult(sessionAttributes);
   }
 
   async updateSession(
@@ -233,6 +288,28 @@ export class DynamoDbAdapter implements SessionRegistry {
     });
     return errorResult({
       errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
+    });
+  }
+
+  private handleGetSessionInternalServerError(
+    error: unknown,
+  ): FailureWithValue<SessionRetrievalFailedInternalServerError> {
+    logger.error(LogMessage.GET_SESSION_UNEXPECTED_FAILURE, {
+      data: { error },
+    });
+    return errorResult({
+      errorType: GetSessionError.INTERNAL_SERVER_ERROR,
+    });
+  }
+
+  private handleGetSessionNotFoundError(
+    error: unknown,
+  ): FailureWithValue<SessionRetrievalFailedSessionNotFound> {
+    logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND, {
+      data: { error },
+    });
+    return errorResult({
+      errorType: GetSessionError.SESSION_NOT_FOUND,
     });
   }
 }
