@@ -187,7 +187,7 @@ describe("Backend application infrastructure", () => {
         AccessLogSetting: {
           DestinationArn: {
             "Fn::Sub":
-              "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialPrivateApiAccessLogs}",
+              "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncPrivateApiAccessLogs}",
           },
         },
       });
@@ -198,7 +198,7 @@ describe("Backend application infrastructure", () => {
         RetentionInDays: 30,
         LogGroupName: {
           "Fn::Sub":
-            "/aws/apigateway/${AWS::StackName}-private-api-access-logs-v2",
+            "/aws/apigateway/${AWS::StackName}-private-api-access-logs",
         },
       });
     });
@@ -685,6 +685,24 @@ describe("Backend application infrastructure", () => {
         };
         template.hasResourceProperties("AWS::Logs::LogGroup", {
           LogGroupName: Match.objectLike(expectedLogName),
+        });
+      });
+    });
+
+    test("All log groups have a CSLS subscription filter", () => {
+      const log_groups = template.findResources("AWS::Logs::LogGroup");
+      const logs_list = Object.keys(log_groups);
+      console.log(logs_list);
+      logs_list.forEach((log_name) => {
+        template.hasResourceProperties("AWS::Logs::SubscriptionFilter", {
+          LogGroupName: Match.objectLike({ Ref: log_name }),
+          DestinationArn: Match.objectLike({
+            "Fn::FindInMap": [
+              "CslsConfiguration",
+              { Ref: "Environment" },
+              "CSLSEGRESS",
+            ],
+          }),
         });
       });
     });

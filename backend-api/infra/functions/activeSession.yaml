@@ -63,6 +63,15 @@ Resources:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-active-session
 
+  AsyncActiveSessionSubscriptionFilter:    
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn:
+        !FindInMap [CslsConfiguration, !Ref Environment, CSLSEGRESS]
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncActiveSessionLogGroup
+    Condition: isNotDev
+
   AsyncActiveSessionLambdaRole:
     Type: AWS::IAM::Role
     Properties:

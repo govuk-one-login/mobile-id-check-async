@@ -59,6 +59,16 @@ Parameters:
     Default: unused
 
 Mappings:
+  CslsConfiguration:
+    build:
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython
+    integration:
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython
+    production:
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython
+    staging:
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython
+
   DNS:
     build:
       BaseDns: review-b-async.build.account.gov.uk
@@ -239,6 +249,10 @@ Conditions:
       - !Ref DeployAlarmsInDev
       - true
 
+  DeployProxyCsls: !And
+    - !Condition ProxyApiDeployment
+    - !Condition isNotDev
+
   DevelopmentStack: !And
     - !Equals
       - !Ref Environment
@@ -300,6 +314,11 @@ Conditions:
   isDev: !Equals
     - !Ref Environment
     - dev
+
+  isNotDev: !Not
+    - !Equals
+      - !Ref Environment
+      - dev
 
   isNotDevOrBuild: !Or
     - !Equals
@@ -923,6 +942,17 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
+  AsyncActiveSessionSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncActiveSessionLogGroup
+    Condition: isNotDev
+
   AsyncBiometricToken4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -1481,6 +1511,17 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
+  AsyncBiometricTokenSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncBiometricTokenLogGroup
+    Condition: isNotDev
+
   AsyncCredential4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -2027,11 +2068,16 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
-  AsyncCredentialPrivateApiAccessLogs:
-    Type: AWS::Logs::LogGroup
+  AsyncCredentialSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs-v2
-      RetentionInDays: 30
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncCredentialLogGroup
+    Condition: isNotDev
 
   AsyncFinishBiometricSession4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2552,6 +2598,34 @@ Resources:
       Threshold: 60
       TreatMissingData: notBreaching
     Condition: DeployAlarms
+
+  AsyncFinishBiometricSessionSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
+    Condition: isNotDev
+
+  AsyncPrivateApiAccessLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
+      RetentionInDays: 30
+
+  AsyncPrivateApiSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncPrivateApiAccessLogs
+    Condition: isNotDev
 
   AsyncToken4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -3075,6 +3149,17 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
+  AsyncTokenSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncTokenLogGroup
+    Condition: isNotDev
+
   AsyncTxmaEventFunction:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -3158,6 +3243,17 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-txma-event
       RetentionInDays: 30
+
+  AsyncTxmaEventSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncTxmaEventLogGroup
+    Condition: isNotDev
 
   CodeDeployServiceRole:
     Type: AWS::IAM::Role
@@ -3392,6 +3488,17 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-jwks
       RetentionInDays: 30
 
+  JsonWebKeysFunctionSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref JsonWebKeysFunctionLogGroup
+    Condition: isNotDev
+
   KMSEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
@@ -3470,7 +3577,7 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       AccessLogSetting:
-        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialPrivateApiAccessLogs}
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncPrivateApiAccessLogs}
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
       AlwaysDeploy: true
       Auth:
@@ -3632,6 +3739,17 @@ Resources:
       Type: A
     Condition: ProxyApiDeployment
 
+  ProxyApiSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref ProxyApiAccessLogs
+    Condition: DeployProxyCsls
+
   ProxyLambda:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -3729,6 +3847,17 @@ Resources:
           ToPort: 443
       VpcId: !ImportValue devplatform-vpc-VpcId
     Condition: ProxyApiDeployment
+
+  ProxyLambdaSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref ProxyLambdaLogGroup
+    Condition: DeployProxyCsls
 
   SessionsApi:
     Type: AWS::Serverless::Api
@@ -3862,6 +3991,17 @@ Resources:
               - !Ref Environment
               - BaseDns
       Type: A
+
+  SessionsApiSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref SessionsApiAccessLogs
+    Condition: isNotDev
 
   SessionsApiWebAclAssociation:
     Type: AWS::WAFv2::WebACLAssociation
