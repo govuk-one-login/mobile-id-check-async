@@ -73,13 +73,13 @@ export async function lambdaHandlerConstructor(
       eventData,
     );
   }
-  const sessionAttributes = getSessionResult.value;
+  // const sessionAttributes = getSessionResult.value;
 
-  const validateSessionResult = validateSession(sessionAttributes);
-  if (validateSessionResult.isError) {
-    const logMessage = validateSessionResult.value;
-    return handleSessionNotFound(eventService, eventData, logMessage);
-  }
+  // const validateSessionResult = validateSession(sessionAttributes);
+  // if (validateSessionResult.isError) {
+  //   const logMessage = validateSessionResult.value;
+  //   return handleSessionNotFound(eventService, eventData, logMessage);
+  // }
 
   logger.info(LogMessage.TXMA_EVENT_COMPLETED);
   return notImplementedResponse;
