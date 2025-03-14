@@ -7,7 +7,6 @@ export interface QuerySessionOperation {
     sessionId: string,
   ): Record<string, AttributeValue>;
   getDynamoDbKeyConditionExpression(): string;
-  getDynamoDbFilterExpression(): string;
   getSessionAttributesFromDynamoDbItem(
     item: Record<string, AttributeValue> | undefined,
   ): Result<SessionAttributes, void>;

@@ -14,12 +14,13 @@ import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
 import { TxMAEvent } from "../common/session/getOperations/TxmaEvent/TxMAEvent";
+import { SessionAttributes, SessionState } from "../common/session/session";
 import {
   QuerySessionError,
   SessionRetrievalFailed,
 } from "../common/session/SessionRegistry";
 import { GenericEventNames, IEventService } from "../services/events/types";
-import { Result } from "../utils/result";
+import { emptySuccess, errorResult, Result } from "../utils/result";
 import {
   IAsyncTxmaEventDependencies,
   runtimeDependencies,
@@ -73,13 +74,13 @@ export async function lambdaHandlerConstructor(
       eventData,
     );
   }
-  // const sessionAttributes = getSessionResult.value;
+  const sessionAttributes = getSessionResult.value;
 
-  // const validateSessionResult = validateSession(sessionAttributes);
-  // if (validateSessionResult.isError) {
-  //   const logMessage = validateSessionResult.value;
-  //   return handleSessionNotFound(eventService, eventData, logMessage);
-  // }
+  const validateSessionResult = validateSession(sessionAttributes);
+  if (validateSessionResult.isError) {
+    const logMessage = validateSessionResult.value;
+    return handleSessionNotFound(eventService, eventData, logMessage);
+  }
 
   logger.info(LogMessage.TXMA_EVENT_COMPLETED);
   return notImplementedResponse;
@@ -185,16 +186,22 @@ async function writeEvent({
   });
 }
 
-// function validateSession(
-//   sessionAttributes: SessionAttributes,
-// ): Result<void, LogMessage> {
-//   const { sessionState, createdAt } = sessionAttributes;
-//   if (sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) {
-//     return errorResult(LogMessage.TXMA_EVENT_SESSION_IN_WRONG_STATE);
-//   }
-//   if (isOlderThan60minutes(createdAt)) {
-//     return errorResult(LogMessage.TXMA_EVENT_SESSION_TOO_OLD);
-//   }
+function validateSession(
+  sessionAttributes: SessionAttributes,
+): Result<void, LogMessage> {
+  const { sessionState, createdAt } = sessionAttributes;
+  if (sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) {
+    return errorResult(LogMessage.TXMA_EVENT_SESSION_IN_WRONG_STATE);
+  }
+  if (isOlderThan60minutes(createdAt)) {
+    return errorResult(LogMessage.TXMA_EVENT_SESSION_TOO_OLD);
+  }
 
-//   return emptySuccess();
-// }
+  return emptySuccess();
+}
+
+function isOlderThan60minutes(createdAtInMilliseconds: number) {
+  const SIXTY_MINUTES_IN_MILLISECONDS = 3600000;
+  const validFrom = Date.now() - SIXTY_MINUTES_IN_MILLISECONDS;
+  return createdAtInMilliseconds < validFrom;
+}

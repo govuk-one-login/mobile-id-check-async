@@ -5,10 +5,9 @@ import {
   validBiometricTokenIssuedSessionAttributes,
 } from "../../../../testUtils/unitTestData";
 import { emptyFailure, successResult } from "../../../../utils/result";
-import { getValidFromTime, TxMAEvent } from "./TxMAEvent";
-import { SessionState } from "../../session";
+import { TxMAEvent } from "./TxMAEvent";
 
-describe("TxMA Event", () => {
+describe("BiometricTokenIssued", () => {
   let txmaEvent: TxMAEvent;
 
   beforeEach(() => {
@@ -23,25 +22,14 @@ describe("TxMA Event", () => {
         txmaEvent.getDynamoDbExpressionAttributeValues(mockSessionId);
       expect(result).toEqual({
         ":sessionId": { S: mockSessionId },
-        ":sessionState": { S: SessionState.BIOMETRIC_TOKEN_ISSUED },
-        ":validFrom": { N: `${getValidFromTime()}` },
       });
     });
   });
 
-  describe("When I request DynamoDB KeyConditionExpression", () => {
-    it("Returns the appropriate KeyConditionExpression string", () => {
+  describe("When I request DynamoDB ConditionExpression", () => {
+    it("Returns the appropriate ConditionExpression string", () => {
       const result = txmaEvent.getDynamoDbKeyConditionExpression();
       expect(result).toEqual("sessionId = :sessionId");
-    });
-  });
-
-  describe("When I request DynamoDB FilterExpression", () => {
-    it("Returns the appropriate FilterExpression string", () => {
-      const result = txmaEvent.getDynamoDbFilterExpression();
-      expect(result).toEqual(
-        "sessionState = :sessionState and createdAt >= :validFrom",
-      );
     });
   });
 
