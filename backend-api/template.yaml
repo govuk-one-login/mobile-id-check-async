@@ -62,8 +62,6 @@ Mappings:
   CslsConfiguration:
     build:
       CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython
-    dev:
-      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython
     integration:
       CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython
     production:
@@ -250,6 +248,10 @@ Conditions:
     - !Equals
       - !Ref DeployAlarmsInDev
       - true
+
+  DeployProxyCsls: !And
+    - !Condition ProxyApiDeployment
+    - !Condition isNotDev
 
   DevelopmentStack: !And
     - !Equals
@@ -2611,7 +2613,7 @@ Resources:
   AsyncPrivateApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs-v2
       RetentionInDays: 30
 
   AsyncPrivateApiSubscriptionFilter:
@@ -3575,7 +3577,7 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       AccessLogSetting:
-        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncPrivateApiAccessLogs}
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncPrivateApiAccessLogs}-v2
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
       Auth:
         ResourcePolicy:
@@ -3745,7 +3747,7 @@ Resources:
         - CSLSEGRESS
       FilterPattern: ""
       LogGroupName: !Ref ProxyApiAccessLogs
-    Condition: ProxyApiDeployment
+    Condition: DeployProxyCsls
 
   ProxyLambda:
     Type: AWS::Serverless::Function
@@ -3854,7 +3856,7 @@ Resources:
         - CSLSEGRESS
       FilterPattern: ""
       LogGroupName: !Ref ProxyLambdaLogGroup
-    Condition: ProxyApiDeployment
+    Condition: DeployProxyCsls
 
   SessionsApi:
     Type: AWS::Serverless::Api

@@ -49,7 +49,7 @@ Resources:
         !FindInMap [CslsConfiguration, !Ref Environment, CSLSEGRESS]
       FilterPattern: ""
       LogGroupName: !Ref ProxyApiAccessLogs
-    Condition: ProxyApiDeployment
+    Condition: DeployProxyCsls
 
   ProxyApiDomainName:
     Type: AWS::ApiGateway::DomainName

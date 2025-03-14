@@ -43,7 +43,7 @@ Resources:
         !FindInMap [CslsConfiguration, !Ref Environment, CSLSEGRESS]
       FilterPattern: ""
       LogGroupName: !Ref ProxyLambdaLogGroup
-    Condition: ProxyApiDeployment
+    Condition: DeployProxyCsls
 
   ProxyLambdaRole:
     Type: AWS::IAM::Role
