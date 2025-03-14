@@ -4,6 +4,7 @@ import { expectedSecurityHeaders, mockSessionId } from "./utils/apiTestData";
 import {
   createSessionForSub,
   getActiveSessionIdFromSub,
+  pollForEvents,
 } from "./utils/apiTestHelpers";
 import { randomUUID } from "crypto";
 
@@ -38,10 +39,12 @@ describe("POST /async/txmaEvent", () => {
 
   describe("Given the session is not valid", () => {
     let response: AxiosResponse;
+    let sessionId: string;
 
     beforeAll(async () => {
+      sessionId = mockSessionId;
       const requestBody = {
-        sessionId: mockSessionId,
+        sessionId,
         eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
       };
 
@@ -61,6 +64,20 @@ describe("POST /async/txmaEvent", () => {
         expect.objectContaining(expectedSecurityHeaders),
       );
     });
+
+    it("Writes an event with the correct event_name", async () => {
+      const eventsResponse = await pollForEvents({
+        partitionKey: `SESSION#${sessionId}`,
+        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_4XXERROR`,
+        numberOfEvents: 1,
+      });
+
+      expect(eventsResponse[0].event).toEqual(
+        expect.objectContaining({
+          event_name: "DCMAW_ASYNC_CRI_4XXERROR",
+        }),
+      );
+    }, 40000);
   });
 
   describe("Given the request is valid", () => {
