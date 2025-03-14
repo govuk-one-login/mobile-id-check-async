@@ -54,7 +54,7 @@ Resources:
   AsyncPrivateApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs-v2
       RetentionInDays: 30
 
   AsyncPrivateApiSubscriptionFilter:    
