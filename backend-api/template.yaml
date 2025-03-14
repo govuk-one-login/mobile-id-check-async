@@ -59,6 +59,18 @@ Parameters:
     Default: unused
 
 Mappings:
+  CslsConfiguration:
+    build:
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython
+    dev:
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython
+    integration:
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython
+    production:
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython
+    staging:
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython
+
   DNS:
     build:
       BaseDns: review-b-async.build.account.gov.uk
@@ -931,7 +943,10 @@ Resources:
   AsyncActiveSessionSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
-      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
       FilterPattern: ""
       LogGroupName: !Ref AsyncActiveSessionLogGroup
     Condition: isNotDev
@@ -1497,7 +1512,10 @@ Resources:
   AsyncBiometricTokenSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
-      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
       FilterPattern: ""
       LogGroupName: !Ref AsyncBiometricTokenLogGroup
     Condition: isNotDev
@@ -2051,7 +2069,10 @@ Resources:
   AsyncCredentialSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
-      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
       FilterPattern: ""
       LogGroupName: !Ref AsyncCredentialLogGroup
     Condition: isNotDev
@@ -2579,7 +2600,10 @@ Resources:
   AsyncFinishBiometricSessionSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
-      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
       FilterPattern: ""
       LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
     Condition: isNotDev
@@ -2593,9 +2617,12 @@ Resources:
   AsyncPrivateApiSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
-      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
       FilterPattern: ""
-      LogGroupName: !Ref AsyncCredentialPrivateApiAccessLogs
+      LogGroupName: !Ref AsyncPrivateApiAccessLogs
     Condition: isNotDev
 
   AsyncToken4XXHighThresholdAlarm:
@@ -3123,7 +3150,10 @@ Resources:
   AsyncTokenSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
-      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
       FilterPattern: ""
       LogGroupName: !Ref AsyncTokenLogGroup
     Condition: isNotDev
@@ -3215,7 +3245,10 @@ Resources:
   AsyncTxmaEventSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
-      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
       FilterPattern: ""
       LogGroupName: !Ref AsyncTxmaEventLogGroup
     Condition: isNotDev
@@ -3456,7 +3489,10 @@ Resources:
   JsonWebKeysFunctionSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
-      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
       FilterPattern: ""
       LogGroupName: !Ref JsonWebKeysFunctionLogGroup
     Condition: isNotDev
@@ -3703,7 +3739,10 @@ Resources:
   ProxyApiSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
-      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
       FilterPattern: ""
       LogGroupName: !Ref ProxyApiAccessLogs
     Condition: ProxyApiDeployment
@@ -3809,7 +3848,10 @@ Resources:
   ProxyLambdaSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
-      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
       FilterPattern: ""
       LogGroupName: !Ref ProxyLambdaLogGroup
     Condition: ProxyApiDeployment
@@ -3950,7 +3992,10 @@ Resources:
   SessionsApiSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
-      DestinationArn: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
       FilterPattern: ""
       LogGroupName: !Ref SessionsApiAccessLogs
     Condition: isNotDev

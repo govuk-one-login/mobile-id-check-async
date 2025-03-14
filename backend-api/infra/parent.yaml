@@ -185,6 +185,18 @@ Mappings:
     production:
       BaseDns: review-b-async.account.gov.uk
 
+  CslsConfiguration:
+    dev:     
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython
+    build:      
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython
+    staging:      
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython
+    integration:      
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython
+    production:     
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython
+
   EnvironmentVariables:
     dev:
       STSBASEURL: 'https://sts-mock.review-b-async.dev.account.gov.uk'

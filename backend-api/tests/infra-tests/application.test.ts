@@ -687,11 +687,17 @@ describe("Backend application infrastructure", () => {
     test("All log groups have a CSLS subscription filter", () => {
       const log_groups = template.findResources("AWS::Logs::LogGroup");
       const logs_list = Object.keys(log_groups);
+      console.log(logs_list);
       logs_list.forEach((log_name) => {
         template.hasResourceProperties("AWS::Logs::SubscriptionFilter", {
           LogGroupName: Match.objectLike({ Ref: log_name }),
-          DestinationArn:
-            "arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2",
+          DestinationArn: Match.objectLike({
+            "Fn::FindInMap": [
+              "CslsConfiguration",
+              { Ref: "Environment" },
+              "CSLSEGRESS",
+            ],
+          }),
         });
       });
     });
