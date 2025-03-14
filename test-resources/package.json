@@ -51,7 +51,7 @@
     "@aws-sdk/util-dynamodb": "^3.758.0",
     "@smithy/node-http-handler": "^4.0.1",
     "esbuild": "^0.25.1",
-    "jose": "^5.10.0"
+    "jose": "^6.0.9"
   },
   "overrides": {
     "micromatch": "^4.0.8"
