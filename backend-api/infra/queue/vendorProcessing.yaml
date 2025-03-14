@@ -16,7 +16,7 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       MessageRetentionPeriod: 1209600
-      KmsMasterKeyId: !Sub VendorProcessingKMSEncryptionKey
+      KmsMasterKeyId: !Ref VendorProcessingKeyAlias
 
   VendorProcessingKMSEncryptionKey:
     Type: AWS::KMS::Key
