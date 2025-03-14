@@ -11,30 +11,33 @@ export type SessionAttributes =
   | BiometricTokenIssuedSessionAttributes
   | BiometricSessionFinishedAttributes;
 
-export interface BaseSessionAttributes {
+interface CommonSessionAttributes {
   clientId: string;
-  govukSigninJourneyId: string;
+  clientState: string;
   createdAt: number;
+  govukSigninJourneyId: string;
   issuer: string;
   sessionId: string;
-  sessionState: SessionState;
-  clientState: string;
   subjectIdentifier: string;
   timeToLive: number;
   redirectUri?: string;
 }
 
+export interface BaseSessionAttributes extends CommonSessionAttributes {
+  sessionState: SessionState;
+}
+
 export interface BiometricTokenIssuedSessionAttributes
   extends BaseSessionAttributes {
-  sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED;
   documentType: DocumentType;
   opaqueId: string;
+  sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED;
 }
 
 export interface BiometricSessionFinishedAttributes
   extends BaseSessionAttributes {
-  sessionState: SessionState.BIOMETRIC_SESSION_FINISHED;
   documentType: DocumentType;
   opaqueId: string;
+  sessionState: SessionState.BIOMETRIC_SESSION_FINISHED;
   biometricSessionId: string;
 }
