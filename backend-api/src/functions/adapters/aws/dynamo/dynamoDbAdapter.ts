@@ -144,34 +144,34 @@ export class DynamoDbAdapter implements SessionRegistry {
     queryOperation: QuerySessionOperation,
   ): Promise<Result<SessionAttributes, SessionRetrievalFailed>> {
     let queryCommandOutput: QueryCommandOutput;
-    try {
-      logger.debug(LogMessage.GET_SESSION_ATTEMPT, { data: { sessionId } });
 
-      queryCommandOutput = await this.dynamoDbClient.send(
-        new QueryCommand({
-          TableName: this.tableName,
-          ExpressionAttributeValues:
-            queryOperation.getDynamoDbExpressionAttributeValues(sessionId),
-          KeyConditionExpression:
-            queryOperation.getDynamoDbKeyConditionExpression(),
-        }),
-      );
-    } catch (error: unknown) {
-      const errorData = {
+    try {
+      const queryCommandInput = {
         ExpressionAttributeValues:
           queryOperation.getDynamoDbExpressionAttributeValues(sessionId),
         KeyConditionExpression:
           queryOperation.getDynamoDbKeyConditionExpression(),
-        error,
+        FilterExpression: queryOperation.getDynamoDbFilterExpression(),
       };
 
+      logger.debug(LogMessage.GET_SESSION_ATTEMPT, {
+        data: { sessionId, ...queryCommandInput },
+      });
+
+      queryCommandOutput = await this.dynamoDbClient.send(
+        new QueryCommand({
+          TableName: this.tableName,
+          ...queryCommandInput,
+        }),
+      );
+    } catch (error: unknown) {
+      const errorData = { error };
       return this.handleGetSessionInternalServerError(errorData);
     }
 
     const items = queryCommandOutput.Items;
     if (items == null || items.length === 0) {
       logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND);
-
       return errorResult({
         errorType: QuerySessionError.SESSION_NOT_FOUND,
       });
@@ -185,8 +185,8 @@ export class DynamoDbAdapter implements SessionRegistry {
       );
     }
     const sessionAttributes = getSessionAttributesResult.value;
-    logger.debug(LogMessage.GET_SESSION_SUCCESS);
 
+    logger.debug(LogMessage.GET_SESSION_SUCCESS);
     return successResult(sessionAttributes);
   }
 
