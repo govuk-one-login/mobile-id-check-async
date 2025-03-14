@@ -32,7 +32,7 @@ export class ClientRegistryService
   getRegisteredIssuerUsingClientSecrets = async (
     secrets: IDecodedClientSecrets,
   ): Promise<Result<string>> => {
-    logger.info("Client ID from request ===> ", secrets.clientId)
+    logger.info("Client ID from request ===> ", secrets.clientId);
 
     const clientRegistryResult = await this.getClientRegistry();
     if (clientRegistryResult.isError)
