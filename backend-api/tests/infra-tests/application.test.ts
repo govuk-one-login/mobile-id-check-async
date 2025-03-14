@@ -947,13 +947,9 @@ describe("Backend application infrastructure", () => {
 
   describe("Canary Deployments", () => {
     it("Template parameter LambdaDeploymentPreference is present", () => {
-      template.templateMatches({
-        Parameters: {
-          LambdaDeploymentPreference: {
-            Type: "String",
-            Default: "AllAtOnce",
-          },
-        },
+      template.findParameters("LambdaDeploymentPreference", {
+        Type: "String",
+        Default: "AllAtOnce",
       });
     });
 
