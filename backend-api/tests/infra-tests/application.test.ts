@@ -187,7 +187,7 @@ describe("Backend application infrastructure", () => {
         AccessLogSetting: {
           DestinationArn: {
             "Fn::Sub":
-              "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialPrivateApiAccessLogs}",
+              "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncPrivateApiAccessLogs}",
           },
         },
       });
