@@ -448,6 +448,7 @@ describe("DynamoDbAdapter", () => {
         it("Logs the failure", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_NOT_FOUND",
+            session: invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
           });
         });
 
