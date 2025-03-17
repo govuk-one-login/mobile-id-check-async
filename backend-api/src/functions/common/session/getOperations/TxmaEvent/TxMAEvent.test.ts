@@ -7,7 +7,7 @@ import {
 import { emptyFailure, successResult } from "../../../../utils/result";
 import { TxMAEvent } from "./TxMAEvent";
 
-describe("BiometricTokenIssued", () => {
+describe("TxMA event", () => {
   let txmaEvent: TxMAEvent;
 
   beforeEach(() => {
