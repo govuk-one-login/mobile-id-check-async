@@ -166,7 +166,9 @@ export class DynamoDbAdapter implements SessionRegistry {
 
     const responseItem = response.Item;
     if (responseItem == null) {
-      logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND);
+      logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND, {
+        session: "Session not found",
+      });
 
       return errorResult({
         errorType: GetSessionError.SESSION_NOT_FOUND,

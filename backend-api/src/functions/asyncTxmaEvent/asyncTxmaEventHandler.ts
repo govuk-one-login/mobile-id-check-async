@@ -143,7 +143,7 @@ async function handleSessionNotFound(
   const auditEventName = "DCMAW_ASYNC_CRI_4XXERROR";
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-      data: { auditEventName, session },
+      data: { auditEventName },
     });
     return serverErrorResponse;
   }

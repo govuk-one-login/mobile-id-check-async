@@ -242,6 +242,7 @@ describe("Async TxMA Event", () => {
             getSession: jest.fn().mockResolvedValue(
               errorResult({
                 errorType: GetSessionError.SESSION_NOT_FOUND,
+                session: "Session not found",
               }),
             ),
           });
@@ -303,6 +304,16 @@ describe("Async TxMA Event", () => {
             txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
             redirect_uri: undefined,
             suspected_fraud_signal: undefined,
+          });
+        });
+
+        it("Logs the error", async () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_TXMA_EVENT_INVALID_SESSION",
+            data: {
+              auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
+              session: "Session not found",
+            },
           });
         });
 
@@ -368,8 +379,6 @@ describe("Async TxMA Event", () => {
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
             data: {
               auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
-              session:
-                invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
             },
           });
         });
@@ -471,8 +480,6 @@ describe("Async TxMA Event", () => {
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
             data: {
               auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
-              session:
-                invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
             },
           });
         });
