@@ -333,10 +333,8 @@ describe("Async TxMA Event", () => {
           getSession: jest.fn().mockResolvedValue(
             errorResult({
               errorType: GetSessionError.SESSION_NOT_FOUND,
-              data: {
-                session:
-                  invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
-              },
+              session:
+                invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
             }),
           ),
         });
@@ -370,6 +368,8 @@ describe("Async TxMA Event", () => {
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
             data: {
               auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
+              session:
+                invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
             },
           });
         });
@@ -406,7 +406,8 @@ describe("Async TxMA Event", () => {
           messageCode: "MOBILE_ASYNC_TXMA_EVENT_INVALID_SESSION",
           data: {
             auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
-            // session: invalidBiometricTokenIssuedSessionAttributesWrongSessionState
+            session:
+              invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
           },
         });
       });
@@ -426,7 +427,7 @@ describe("Async TxMA Event", () => {
     describe("Given the session is more than 60 minutes old", () => {
       const invalidBiometricTokenIssuedSessionAttributesSessionTooOld = {
         ...validBiometricTokenIssuedSessionAttributes,
-        createdAt: 1704106740000, // 2024-01-01 10:59:00
+        createdAt: 1704106740000, // 2024-01-01 10:59:00.000
       };
 
       beforeEach(async () => {
@@ -533,7 +534,7 @@ describe("Async TxMA Event", () => {
         getSession: jest.fn().mockResolvedValue(
           successResult({
             ...validBiometricTokenIssuedSessionAttributes,
-            createdAt: 1704110340000, // 2024-01-01T11:59:00.000Z
+            createdAt: 1704106860000, // 2024-01-01 11:01:00.000
           }),
         ),
       });

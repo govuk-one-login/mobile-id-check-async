@@ -20,7 +20,7 @@ export const NOW_IN_MILLISECONDS: number = 1704110400000; // 2024-01-01 12:00:00
 export const validBaseSessionAttributes = {
   clientId: "mockClientId",
   govukSigninJourneyId: "mockGovukSigninJourneyId",
-  createdAt: 1704110340000, // 2024-01-01 11:59:00
+  createdAt: 1704110340000, // 2024-01-01 11:59:00.000
   issuer: "mockIssuer",
   sessionId: mockSessionId,
   sessionState: SessionState.AUTH_SESSION_CREATED,
