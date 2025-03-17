@@ -322,13 +322,21 @@ describe("Async TxMA Event", () => {
 
   describe("Session validation", () => {
     describe("Given the session is in the wrong state", () => {
+      const invalidBiometricTokenIssuedSessionAttributesWrongSessionState = {
+        ...validBiometricTokenIssuedSessionAttributes,
+        sessionState: SessionState.AUTH_SESSION_CREATED,
+      };
+
       beforeEach(async () => {
         dependencies.getSessionRegistry = () => ({
           ...mockSuccessfulSessionRegistry,
           getSession: jest.fn().mockResolvedValue(
-            successResult({
-              ...validBiometricTokenIssuedSessionAttributes,
-              sessionState: SessionState.AUTH_SESSION_CREATED,
+            errorResult({
+              errorType: GetSessionError.SESSION_NOT_FOUND,
+              data: {
+                session:
+                  invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
+              },
             }),
           ),
         });
@@ -395,9 +403,10 @@ describe("Async TxMA Event", () => {
 
       it("Logs the error", async () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_TXMA_EVENT_SESSION_IN_WRONG_STATE",
+          messageCode: "MOBILE_ASYNC_TXMA_EVENT_INVALID_SESSION",
           data: {
             auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
+            // session: invalidBiometricTokenIssuedSessionAttributesWrongSessionState
           },
         });
       });
@@ -415,15 +424,23 @@ describe("Async TxMA Event", () => {
     });
 
     describe("Given the session is more than 60 minutes old", () => {
+      const invalidBiometricTokenIssuedSessionAttributesSessionTooOld = {
+        ...validBiometricTokenIssuedSessionAttributes,
+        createdAt: 1704106740000, // 2024-01-01 10:59:00
+      };
+
       beforeEach(async () => {
         dependencies.getSessionRegistry = () => ({
           ...mockSuccessfulSessionRegistry,
-          getSession: jest.fn().mockResolvedValue(
-            successResult({
-              ...validBiometricTokenIssuedSessionAttributes,
-              createdAt: 1704106740000,
-            }),
-          ),
+          getSession: jest
+            .fn()
+            .mockResolvedValue(
+              errorResult({
+                errorType: GetSessionError.SESSION_NOT_FOUND,
+                session:
+                  invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
+              }),
+            ),
         });
         result = await lambdaHandlerConstructor(
           dependencies,
@@ -455,6 +472,8 @@ describe("Async TxMA Event", () => {
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
             data: {
               auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
+              session:
+                invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
             },
           });
         });
@@ -488,9 +507,10 @@ describe("Async TxMA Event", () => {
 
       it("Logs the error", async () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_TXMA_EVENT_SESSION_TOO_OLD",
+          messageCode: "MOBILE_ASYNC_TXMA_EVENT_INVALID_SESSION",
           data: {
             auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
+            session: invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
           },
         });
       });

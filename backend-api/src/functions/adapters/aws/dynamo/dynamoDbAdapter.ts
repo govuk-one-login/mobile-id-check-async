@@ -1,4 +1,5 @@
 import {
+  AttributeValue,
   ConditionalCheckFailedException,
   DynamoDBClient,
   GetItemCommand,
@@ -21,6 +22,7 @@ import { logger } from "../../../common/logging/logger";
 import { LogMessage } from "../../../common/logging/LogMessage";
 import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
 import {
+  BiometricTokenIssuedSessionAttributes,
   SessionAttributes,
   SessionState,
 } from "../../../common/session/session";
@@ -169,20 +171,22 @@ export class DynamoDbAdapter implements SessionRegistry {
 
       return errorResult({
         errorType: GetSessionError.SESSION_NOT_FOUND,
+        session: "Session not found",
       });
     }
 
     const getSessionAttributesResult =
       getOperation.getSessionAttributesFromDynamoDbItem(responseItem);
     if (getSessionAttributesResult.isError) {
-      return this.handleGetSessionNotFoundError(
-        "Could not parse valid session attributes after successful get command",
-      );
+      return this.handleGetSessionNotFoundError({
+        errorMessage:
+          "Session could not be parsed or session validation failed",
+        session: unmarshall(responseItem) || "Session could not be parsed",
+      });
     }
     const sessionAttributes = getSessionAttributesResult.value;
 
     logger.debug(LogMessage.GET_SESSION_SUCCESS);
-
     return successResult(sessionAttributes);
   }
 
@@ -295,21 +299,29 @@ export class DynamoDbAdapter implements SessionRegistry {
     error: unknown,
   ): FailureWithValue<SessionRetrievalFailedInternalServerError> {
     logger.error(LogMessage.GET_SESSION_UNEXPECTED_FAILURE, {
-      data: { error },
+      error,
     });
     return errorResult({
       errorType: GetSessionError.INTERNAL_SERVER_ERROR,
     });
   }
 
-  private handleGetSessionNotFoundError(
-    error: unknown,
-  ): FailureWithValue<SessionRetrievalFailedSessionNotFound> {
+  private handleGetSessionNotFoundError({
+    errorMessage,
+    session,
+  }: ErrorData): FailureWithValue<SessionRetrievalFailedSessionNotFound> {
     logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND, {
-      data: { error },
+      errorMessage,
+      session,
     });
     return errorResult({
       errorType: GetSessionError.SESSION_NOT_FOUND,
+      session,
     });
   }
+}
+
+interface ErrorData {
+  errorMessage: string;
+  session: Partial<BiometricTokenIssuedSessionAttributes> | string;
 }

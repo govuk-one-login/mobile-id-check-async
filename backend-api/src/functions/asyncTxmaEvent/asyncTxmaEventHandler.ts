@@ -14,7 +14,11 @@ import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
 import { TxMAEvent } from "../common/session/getOperations/TxmaEvent/TxMAEvent";
-import { SessionAttributes, SessionState } from "../common/session/session";
+import {
+  BiometricTokenIssuedSessionAttributes,
+  SessionAttributes,
+  SessionState,
+} from "../common/session/session";
 import {
   GetSessionError,
   SessionRetrievalFailed,
@@ -60,6 +64,9 @@ export async function lambdaHandlerConstructor(
     sessionId,
     new TxMAEvent(),
   );
+
+  console.log("getSessionResult >>>>>", getSessionResult);
+
   const { ipAddress, txmaAuditEncoded } = getAuditData(event);
   const eventData = {
     sessionId,
@@ -74,13 +81,13 @@ export async function lambdaHandlerConstructor(
       eventData,
     );
   }
-  const sessionAttributes = getSessionResult.value;
+  // const sessionAttributes = getSessionResult.value;
 
-  const validateSessionResult = validateSession(sessionAttributes);
-  if (validateSessionResult.isError) {
-    const logMessage = validateSessionResult.value;
-    return handleSessionNotFound(eventService, eventData, logMessage);
-  }
+  // const validateSessionResult = validateSession(sessionAttributes);
+  // if (validateSessionResult.isError) {
+  //   const logMessage = validateSessionResult.value;
+  //   return handleSessionNotFound(eventService, eventData, logMessage);
+  // }
 
   logger.info(LogMessage.TXMA_EVENT_COMPLETED);
   return notImplementedResponse;
@@ -91,7 +98,7 @@ export const lambdaHandler = lambdaHandlerConstructor.bind(
   runtimeDependencies,
 );
 
-interface HandleGetSessionErrorData {
+interface BaseEventData {
   sessionId: string;
   issuer: string;
   ipAddress: string;
@@ -101,31 +108,32 @@ interface HandleGetSessionErrorData {
 async function handleGetSessionError(
   eventService: IEventService,
   getSessionResult: SessionRetrievalFailed,
-  data: HandleGetSessionErrorData,
+  eventData: BaseEventData,
 ): Promise<APIGatewayProxyResult> {
   switch (getSessionResult.errorType) {
     case GetSessionError.INTERNAL_SERVER_ERROR:
-      return handleInternalServerError(eventService, data);
+      return handleInternalServerError(eventService, eventData);
     case GetSessionError.SESSION_NOT_FOUND:
-      return handleSessionNotFound(eventService, data);
+      const { session: sessionData } = getSessionResult;
+      return handleSessionNotFound(eventService, eventData, sessionData);
   }
 }
 
-interface BaseErrorData {
-  sessionId: string;
-  issuer: string;
-  ipAddress: string;
-  txmaAuditEncoded: string | undefined;
-}
+// interface BaseErrorData {
+//   sessionId: string;
+//   issuer: string;
+//   ipAddress: string;
+//   txmaAuditEncoded: string | undefined;
+// }
 
 async function handleInternalServerError(
   eventService: IEventService,
-  data: BaseErrorData,
+  eventData: BaseEventData,
 ): Promise<APIGatewayProxyResult> {
   const writeEventResult = await writeEvent({
     eventService,
     eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-    data,
+    eventData,
   });
 
   if (writeEventResult.isError) {
@@ -140,22 +148,29 @@ async function handleInternalServerError(
 
 async function handleSessionNotFound(
   eventService: IEventService,
-  errorData: BaseErrorData,
-  logMessage?: LogMessage,
+  eventData: BaseEventData,
+  session: Partial<BiometricTokenIssuedSessionAttributes> | string,
 ): Promise<APIGatewayProxyResult> {
   const writeEventResult = await writeEvent({
     eventService,
     eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-    data: errorData,
+    eventData,
   });
 
-  const data = { auditEventName: "DCMAW_ASYNC_CRI_4XXERROR" };
+  const auditEventName = "DCMAW_ASYNC_CRI_4XXERROR";
   if (writeEventResult.isError) {
-    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, { data });
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: { auditEventName, session },
+    });
     return serverErrorResponse;
   }
-  if (logMessage) logger.error(logMessage, { data });
 
+  logger.error(LogMessage.TXMA_EVENT_INVALID_SESSION, {
+    data: {
+      auditEventName,
+      session,
+    },
+  });
   return unauthorizedResponse(
     "invalid_session",
     "Session does not exist or in incorrect state",
@@ -165,13 +180,26 @@ async function handleSessionNotFound(
 async function writeEvent({
   eventService,
   eventName,
-  data,
+  eventData,
 }: {
   eventService: IEventService;
   eventName: GenericEventNames;
-  data: BaseErrorData;
+  eventData: BaseEventData;
 }): Promise<Result<void, void>> {
-  const { sessionId, issuer, ipAddress, txmaAuditEncoded } = data;
+  const { sessionId, issuer, ipAddress, txmaAuditEncoded } = eventData;
+  const sessionData = {
+    eventName,
+    sessionId,
+    componentId: issuer,
+    ipAddress,
+    txmaAuditEncoded,
+    sub: undefined,
+    govukSigninJourneyId: undefined,
+    getNowInMilliseconds: Date.now,
+    redirect_uri: undefined,
+    suspected_fraud_signal: undefined,
+  };
+  console.log("SESSION DATA >>>>", sessionData);
   return await eventService.writeGenericEvent({
     eventName,
     sessionId,
@@ -186,22 +214,16 @@ async function writeEvent({
   });
 }
 
-function validateSession(
-  sessionAttributes: SessionAttributes,
-): Result<void, LogMessage> {
-  const { sessionState, createdAt } = sessionAttributes;
-  if (sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) {
-    return errorResult(LogMessage.TXMA_EVENT_SESSION_IN_WRONG_STATE);
-  }
-  if (isOlderThan60minutes(createdAt)) {
-    return errorResult(LogMessage.TXMA_EVENT_SESSION_TOO_OLD);
-  }
+// function validateSession(
+//   sessionAttributes: SessionAttributes,
+// ): Result<void, LogMessage> {
+//   const { sessionState, createdAt } = sessionAttributes;
+//   if (sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) {
+//     return errorResult(LogMessage.TXMA_EVENT_SESSION_IN_WRONG_STATE);
+//   }
+//   if (isOlderThan60minutes(createdAt)) {
+//     return errorResult(LogMessage.TXMA_EVENT_SESSION_TOO_OLD);
+//   }
 
-  return emptySuccess();
-}
-
-function isOlderThan60minutes(createdAtInMilliseconds: number) {
-  const SIXTY_MINUTES_IN_MILLISECONDS = 3600000;
-  const validFrom = Date.now() - SIXTY_MINUTES_IN_MILLISECONDS;
-  return createdAtInMilliseconds < validFrom;
-}
+//   return emptySuccess();
+// }

@@ -48,6 +48,11 @@ describe("DynamoDbAdapter", () => {
     consoleDebugSpy = jest.spyOn(console, "debug");
   });
 
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.useRealTimers();
+  });
+
   describe("updateSession", () => {
     let result: Result<SessionUpdated, SessionUpdateFailed>;
 
@@ -349,7 +354,7 @@ describe("DynamoDbAdapter", () => {
       });
     });
 
-    describe("Given session was not found", () => {
+    describe("Given the session was not found", () => {
       beforeEach(async () => {
         mockDynamoDbClient.on(GetItemCommand).resolves({});
         result = await sessionRegistry.getSession(mockSessionId, getOperation);
@@ -365,27 +370,74 @@ describe("DynamoDbAdapter", () => {
         expect(result).toEqual(
           errorResult({
             errorType: GetSessionError.SESSION_NOT_FOUND,
+            session: "Session not found",
           }),
         );
       });
     });
 
-    describe("Given session was found", () => {
-      describe("Given invalid session attributes were returned in response", () => {
+    describe("Session validation", () => {
+      describe("Given the session is in the wrong state", () => {
+        const invalidBiometricTokenIssuedSessionAttributesWrongSessionState = {
+          ...validBiometricTokenIssuedSessionAttributes,
+          createdAt: 1704106860000, // 2024-01-01 11:01:00.000
+          sessionState: SessionState.AUTH_SESSION_CREATED,
+        };
+        const invalidBiometricTokenIssuedSessionAttributesWrongSessionStateItem =
+          {
+            Item: marshall(
+              invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
+            ),
+          };
+
         beforeEach(async () => {
-          mockDynamoDbClient.on(GetItemCommand).resolves({
-            Item: marshall({
-              clientId: "mockClientId",
-              govukSigninJourneyId: "mockGovukSigninJourneyId",
-              createdAt: 12345,
-              issuer: "mockIssuer",
-              sessionId: mockSessionId,
-              sessionState: SessionState.AUTH_SESSION_CREATED,
-              clientState: "mockClientState",
-              subjectIdentifier: "mockSubjectIdentifier",
-              timeToLive: 12345,
-            }),
+          mockDynamoDbClient
+            .on(GetItemCommand)
+            .resolves(
+              invalidBiometricTokenIssuedSessionAttributesWrongSessionStateItem,
+            );
+          result = await sessionRegistry.getSession(
+            mockSessionId,
+            getOperation,
+          );
+        });
+
+        it("Logs the failure", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_NOT_FOUND",
+            errorMessage:
+              "Session could not be parsed or session validation failed",
+            session:
+              invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
           });
+        });
+
+        it("Returns failure with an invalid session error", () => {
+          expect(result).toStrictEqual(
+            errorResult({
+              errorType: GetSessionError.SESSION_NOT_FOUND,
+              session:
+                invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
+            }),
+          );
+        });
+      });
+
+      describe("Given the session is more than 60 minutes old", () => {
+        const invalidBiometricTokenIssuedSessionAttributesSessionTooOld = {
+          ...validBiometricTokenIssuedSessionAttributes,
+          createdAt: 1704106740000, // 2024-01-01 10:59:00.000
+        };
+        const biometricTokenIssuedSessionAttributesSessionTooOldItem = {
+          Item: marshall(
+            invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
+          ),
+        };
+
+        beforeEach(async () => {
+          mockDynamoDbClient
+            .on(GetItemCommand)
+            .resolves(biometricTokenIssuedSessionAttributesSessionTooOldItem);
           result = await sessionRegistry.getSession(
             mockSessionId,
             getOperation,
@@ -398,10 +450,57 @@ describe("DynamoDbAdapter", () => {
           });
         });
 
+        it("Returns failure with an invalid session error", () => {
+          expect(result).toStrictEqual(
+            errorResult({
+              errorType: GetSessionError.SESSION_NOT_FOUND,
+              session:
+                invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
+            }),
+          );
+        });
+      });
+    });
+
+    describe("Given the session was found", () => {
+      describe("Given invalid session attributes were returned in response", () => {
+        const invalidBiometricTokenIssuedSessionAttributesMissingAttributes = {
+          clientId: "mockClientId",
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
+          createdAt: 1704106860000, // 2024-01-01 11:01:00.000
+          issuer: "mockIssuer",
+          clientState: "mockClientState",
+          subjectIdentifier: "mockSubjectIdentifier",
+          timeToLive: 12345,
+        };
+        beforeEach(async () => {
+          mockDynamoDbClient.on(GetItemCommand).resolves({
+            Item: marshall(
+              invalidBiometricTokenIssuedSessionAttributesMissingAttributes,
+            ),
+          });
+          result = await sessionRegistry.getSession(
+            mockSessionId,
+            getOperation,
+          );
+        });
+
+        it("Logs the failure", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_NOT_FOUND",
+            errorMessage:
+              "Session could not be parsed or session validation failed",
+            session:
+              invalidBiometricTokenIssuedSessionAttributesMissingAttributes,
+          });
+        });
+
         it("Returns failure with server error", () => {
           expect(result).toEqual(
             errorResult({
               errorType: GetSessionError.SESSION_NOT_FOUND,
+              session:
+                invalidBiometricTokenIssuedSessionAttributesMissingAttributes,
             }),
           );
         });

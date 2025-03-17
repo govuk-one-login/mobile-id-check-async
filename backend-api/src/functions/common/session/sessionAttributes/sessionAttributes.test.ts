@@ -8,12 +8,18 @@ import { emptyFailure, successResult } from "../../../utils/result";
 import { SessionAttributes, SessionState } from "../session";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import {
+  NOW_IN_MILLISECONDS,
   validBaseSessionAttributes,
   validBiometricSessionFinishedAttributes,
   validBiometricTokenIssuedSessionAttributes,
 } from "../../../testUtils/unitTestData";
 
 describe("Session attributes", () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(NOW_IN_MILLISECONDS);
+  });
+
   interface TestScenario {
     scenario: string;
     attributes: Record<string, AttributeValue> | undefined;

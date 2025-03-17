@@ -266,13 +266,9 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_TXMA_EVENT_REQUEST_BODY_INVALID",
     "The incoming request body was missing or invalid.",
   );
-  static readonly TXMA_EVENT_SESSION_IN_WRONG_STATE = new LogMessage(
-    "MOBILE_ASYNC_TXMA_EVENT_SESSION_IN_WRONG_STATE",
-    "Session is not in the correct state",
-  );
-  static readonly TXMA_EVENT_SESSION_TOO_OLD = new LogMessage(
-    "MOBILE_ASYNC_TXMA_EVENT_SESSION_TOO_OLD",
-    "Session was not created within the valid timeframe",
+  static readonly TXMA_EVENT_INVALID_SESSION = new LogMessage(
+    "MOBILE_ASYNC_TXMA_EVENT_INVALID_SESSION",
+    "Session is missing or invalid",
   );
   static readonly TXMA_EVENT_COMPLETED = new LogMessage(
     "MOBILE_ASYNC_TXMA_EVENT_COMPLETED",

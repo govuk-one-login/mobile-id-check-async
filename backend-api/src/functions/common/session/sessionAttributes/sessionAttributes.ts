@@ -63,6 +63,7 @@ export const isBiometricTokenIssuedSessionAttributes = (
   if (typeof item.documentType !== "string") return false;
   if (typeof item.opaqueId !== "string") return false;
   if (item.sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) return false;
+  if (isOlderThan60minutes(item.createdAt)) return false;
   return true;
 };
 
@@ -84,8 +85,15 @@ export const isBiometricSessionFinishedSessionAttributes = (
   if (!isCommonSessionAttributes(item)) return false;
   if (typeof item.documentType !== "string") return false;
   if (typeof item.opaqueId !== "string") return false;
+  if (typeof item.biometricSessionId !== "string") return false;
   if (item.sessionState !== SessionState.BIOMETRIC_SESSION_FINISHED)
     return false;
-  if (typeof item.biometricSessionId !== "string") return false;
+  if (isOlderThan60minutes(item.createdAt)) return false;
   return true;
 };
+
+function isOlderThan60minutes(createdAtInMilliseconds: number) {
+  const SIXTY_MINUTES_IN_MILLISECONDS = 3600000;
+  const validFrom = Date.now() - SIXTY_MINUTES_IN_MILLISECONDS;
+  return createdAtInMilliseconds < validFrom;
+}

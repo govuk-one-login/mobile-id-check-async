@@ -1,6 +1,11 @@
+import { AttributeValue } from "aws-lambda";
 import { Result } from "../../utils/result";
+import { LogMessage } from "../logging/LogMessage";
 import { GetSessionOperation } from "./getOperations/GetSessionOperation";
-import { SessionAttributes } from "./session";
+import {
+  BiometricTokenIssuedSessionAttributes,
+  SessionAttributes,
+} from "./session";
 import { UpdateSessionOperation } from "./updateOperations/UpdateSessionOperation";
 export interface SessionRegistry {
   updateSession(
@@ -57,6 +62,7 @@ export interface SessionRetrievalFailedInternalServerError {
 
 export interface SessionRetrievalFailedSessionNotFound {
   errorType: GetSessionError.SESSION_NOT_FOUND;
+  session: Partial<BiometricTokenIssuedSessionAttributes> | string;
 }
 
 export enum GetSessionError {
