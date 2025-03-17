@@ -67,9 +67,3 @@ export enum GetSessionError {
   INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR",
   SESSION_NOT_FOUND = "SESSION_NOT_FOUND",
 }
-
-export interface GetItemCommandDataToLog {
-  Key: {
-    S: { sessionId: string };
-  };
-}
