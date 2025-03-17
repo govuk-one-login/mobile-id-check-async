@@ -396,6 +396,130 @@ Globals:
     Timeout: 5
 
 Resources:
+  AsyncAbortSessionFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - AsyncAbortSessionLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - src/functions/asyncAbortSession/asyncAbortSessionHandler.ts
+        Minify: true
+        Sourcemap: false
+        Target: es2022
+    Properties:
+      DeploymentPreference:
+        Alarms: !If
+          - DeployAlarms
+          - []
+          - - !Ref AWS::NoValue
+        Enabled: true
+        Type: !Ref LambdaDeploymentPreference
+      Events:
+        AsyncAbortSession:
+          Properties:
+            Method: post
+            Path: /async/abortSession
+            RestApiId: !Ref SessionsApi
+          Type: Api
+      FunctionName: !Sub ${AWS::StackName}-abort-session
+      Handler: asyncAbortSessionHandler.lambdaHandler
+      Role: !GetAtt AsyncAbortSessionLambdaRole.Arn
+      Runtime: nodejs20.x
+      VpcConfig:
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+
+  AsyncAbortSessionFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt AsyncAbortSessionFunction.Arn
+      Principal: events.amazonaws.com
+      SourceAccount: !Sub ${AWS::AccountId}
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SessionsApi}/*/*/*
+
+  AsyncAbortSessionLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: arn:aws:logs:*:*:*
+            Version: "2012-10-17"
+          PolicyName: AsyncAbortSessionFunctionLoggingPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Effect: Allow
+                Resource: '*'
+            Version: "2012-10-17"
+          PolicyName: VpcPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - dynamodb:UpdateItem
+                Effect: Allow
+                Resource: !GetAtt SessionsTable.Arn
+          PolicyName: AsyncAbortSessionFunctionDynamodbPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - sqs:SendMessage
+                Effect: Allow
+                Resource: !GetAtt TxMASQSQueue.Arn
+              - Action:
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Effect: Allow
+                Resource: !GetAtt TxMAKMSEncryptionKey.Arn
+            Version: "2012-10-17"
+          PolicyName: AsyncAbortSessionFunctionTxmaSQSPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - sqs:SendMessage
+                Effect: Allow
+                Resource: !GetAtt VendorProcessingSQS.Arn
+              - Action:
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Effect: Allow
+                Resource: !GetAtt VendorProcessingKMSEncryptionKey.Arn
+            Version: "2012-10-17"
+          PolicyName: AsyncAbortSessionFunctionVendorProcessingSQSPolicy
+      RoleName: !Sub ${AWS::StackName}-abort-session-lambda
+
+  AsyncAbortSessionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-abort-session
+      RetentionInDays: 30
+
   AsyncActiveSession4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:

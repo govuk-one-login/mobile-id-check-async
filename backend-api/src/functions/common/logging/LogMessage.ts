@@ -233,6 +233,20 @@ export class LogMessage implements LogAttributes {
       "Failed to send message to vendor processing queue.",
     );
 
+  // Abort Session
+  static readonly ABORT_SESSION_STARTED = new LogMessage(
+    "MOBILE_ASYNC_ABORT_SESSION_STARTED",
+    "Lambda handler processing has started.",
+  );
+  static readonly ABORT_SESSION_COMPLETED = new LogMessage(
+    "MOBILE_ASYNC_ABORT_SESSION_COMPLETED",
+    "Lambda handler processing has completed successfully.",
+  );
+  static readonly ABORT_SESSION_INVALID_CONFIG = new LogMessage(
+    "MOBILE_ASYNC_ABORT_SESSION_INVALID_CONFIG",
+    "One or more required environment variables were missing or invalid.",
+  );
+
   // TxMA Event
   static readonly TXMA_EVENT_STARTED = new LogMessage(
     "MOBILE_ASYNC_TXMA_EVENT_STARTED",
