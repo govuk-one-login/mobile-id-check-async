@@ -432,15 +432,13 @@ describe("Async TxMA Event", () => {
       beforeEach(async () => {
         dependencies.getSessionRegistry = () => ({
           ...mockSuccessfulSessionRegistry,
-          getSession: jest
-            .fn()
-            .mockResolvedValue(
-              errorResult({
-                errorType: GetSessionError.SESSION_NOT_FOUND,
-                session:
-                  invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
-              }),
-            ),
+          getSession: jest.fn().mockResolvedValue(
+            errorResult({
+              errorType: GetSessionError.SESSION_NOT_FOUND,
+              session:
+                invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
+            }),
+          ),
         });
         result = await lambdaHandlerConstructor(
           dependencies,

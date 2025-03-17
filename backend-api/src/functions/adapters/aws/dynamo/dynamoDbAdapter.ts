@@ -1,5 +1,4 @@
 import {
-  AttributeValue,
   ConditionalCheckFailedException,
   DynamoDBClient,
   GetItemCommand,

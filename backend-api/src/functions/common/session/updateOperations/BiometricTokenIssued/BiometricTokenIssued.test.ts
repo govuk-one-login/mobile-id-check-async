@@ -3,6 +3,7 @@ import { SessionState } from "../../session";
 import { emptyFailure, successResult } from "../../../../utils/result";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import {
+  NOW_IN_MILLISECONDS,
   validBaseSessionAttributes,
   validBiometricTokenIssuedSessionAttributes,
 } from "../../../../testUtils/unitTestData";
@@ -11,10 +12,16 @@ describe("BiometricTokenIssued", () => {
   let biometricTokenIssued: BiometricTokenIssued;
 
   beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(NOW_IN_MILLISECONDS);
     biometricTokenIssued = new BiometricTokenIssued(
       "NFC_PASSPORT",
       "mockOpaqueId",
     );
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   describe("When I request the DynamoDB UpdateExpression", () => {

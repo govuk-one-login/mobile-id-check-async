@@ -14,17 +14,13 @@ import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
 import { TxMAEvent } from "../common/session/getOperations/TxmaEvent/TxMAEvent";
-import {
-  BiometricTokenIssuedSessionAttributes,
-  SessionAttributes,
-  SessionState,
-} from "../common/session/session";
+import { BiometricTokenIssuedSessionAttributes } from "../common/session/session";
 import {
   GetSessionError,
   SessionRetrievalFailed,
 } from "../common/session/SessionRegistry";
 import { GenericEventNames, IEventService } from "../services/events/types";
-import { emptySuccess, errorResult, Result } from "../utils/result";
+import { Result } from "../utils/result";
 import {
   IAsyncTxmaEventDependencies,
   runtimeDependencies,
@@ -114,17 +110,13 @@ async function handleGetSessionError(
     case GetSessionError.INTERNAL_SERVER_ERROR:
       return handleInternalServerError(eventService, eventData);
     case GetSessionError.SESSION_NOT_FOUND:
-      const { session: sessionData } = getSessionResult;
-      return handleSessionNotFound(eventService, eventData, sessionData);
+      return handleSessionNotFound(
+        eventService,
+        eventData,
+        getSessionResult.session,
+      );
   }
 }
-
-// interface BaseErrorData {
-//   sessionId: string;
-//   issuer: string;
-//   ipAddress: string;
-//   txmaAuditEncoded: string | undefined;
-// }
 
 async function handleInternalServerError(
   eventService: IEventService,
@@ -187,19 +179,6 @@ async function writeEvent({
   eventData: BaseEventData;
 }): Promise<Result<void, void>> {
   const { sessionId, issuer, ipAddress, txmaAuditEncoded } = eventData;
-  const sessionData = {
-    eventName,
-    sessionId,
-    componentId: issuer,
-    ipAddress,
-    txmaAuditEncoded,
-    sub: undefined,
-    govukSigninJourneyId: undefined,
-    getNowInMilliseconds: Date.now,
-    redirect_uri: undefined,
-    suspected_fraud_signal: undefined,
-  };
-  console.log("SESSION DATA >>>>", sessionData);
   return await eventService.writeGenericEvent({
     eventName,
     sessionId,
@@ -213,17 +192,3 @@ async function writeEvent({
     suspected_fraud_signal: undefined,
   });
 }
-
-// function validateSession(
-//   sessionAttributes: SessionAttributes,
-// ): Result<void, LogMessage> {
-//   const { sessionState, createdAt } = sessionAttributes;
-//   if (sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) {
-//     return errorResult(LogMessage.TXMA_EVENT_SESSION_IN_WRONG_STATE);
-//   }
-//   if (isOlderThan60minutes(createdAt)) {
-//     return errorResult(LogMessage.TXMA_EVENT_SESSION_TOO_OLD);
-//   }
-
-//   return emptySuccess();
-// }

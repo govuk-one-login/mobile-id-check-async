@@ -1,6 +1,4 @@
-import { AttributeValue } from "aws-lambda";
 import { Result } from "../../utils/result";
-import { LogMessage } from "../logging/LogMessage";
 import { GetSessionOperation } from "./getOperations/GetSessionOperation";
 import {
   BiometricTokenIssuedSessionAttributes,
