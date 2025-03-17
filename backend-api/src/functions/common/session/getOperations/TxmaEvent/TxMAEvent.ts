@@ -7,7 +7,7 @@ import { GetSessionOperation } from "../GetSessionOperation";
 
 export class TxMAEvent implements GetSessionOperation {
   getDynamoDbKeyExpression(sessionId: string) {
-    return { sessionId: marshall(sessionId) };
+    return { Key: { sessionId: marshall(sessionId) } };
   }
 
   getSessionAttributesFromDynamoDbItem(

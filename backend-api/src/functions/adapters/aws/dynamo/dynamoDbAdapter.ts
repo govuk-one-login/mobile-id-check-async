@@ -147,9 +147,8 @@ export class DynamoDbAdapter implements SessionRegistry {
   ): Promise<Result<SessionAttributes, SessionRetrievalFailed>> {
     let response;
     try {
-      const getItemCommandInput = {
-        Key: getOperation.getDynamoDbKeyExpression(sessionId),
-      };
+      const getItemCommandInput =
+        getOperation.getDynamoDbKeyExpression(sessionId);
       logger.debug(LogMessage.GET_SESSION_ATTEMPT, {
         data: { sessionId, getItemCommandInput },
       });

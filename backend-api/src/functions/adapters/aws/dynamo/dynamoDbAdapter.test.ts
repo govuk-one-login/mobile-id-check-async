@@ -325,9 +325,8 @@ describe("DynamoDbAdapter", () => {
           messageCode: "MOBILE_ASYNC_GET_SESSION_ATTEMPT",
           data: {
             sessionId: mockSessionId,
-            getItemCommandInput: {
-              Key: getOperation.getDynamoDbKeyExpression(mockSessionId),
-            },
+            getItemCommandInput:
+              getOperation.getDynamoDbKeyExpression(mockSessionId),
           },
         });
       });

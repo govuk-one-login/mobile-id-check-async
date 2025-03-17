@@ -3,8 +3,14 @@ import { Result } from "../../../utils/result";
 import { SessionAttributes } from "../session";
 
 export interface GetSessionOperation {
-  getDynamoDbKeyExpression(sessionId: string): Record<string, AttributeValue>;
+  getDynamoDbKeyExpression(sessionId: string): KeyExpression;
   getSessionAttributesFromDynamoDbItem(
     item: Record<string, AttributeValue> | undefined,
   ): Result<SessionAttributes, void>;
+}
+
+interface KeyExpression {
+  Key: {
+    sessionId: { S: string };
+  };
 }

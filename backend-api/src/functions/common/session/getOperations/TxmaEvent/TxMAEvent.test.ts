@@ -20,7 +20,7 @@ describe("BiometricTokenIssued", () => {
     it("Returns the appropriate Key Expression string", () => {
       const result = txmaEvent.getDynamoDbKeyExpression(mockSessionId);
       expect(result).toEqual({
-        sessionId: marshall(mockSessionId),
+        Key: { sessionId: marshall(mockSessionId) },
       });
     });
   });
