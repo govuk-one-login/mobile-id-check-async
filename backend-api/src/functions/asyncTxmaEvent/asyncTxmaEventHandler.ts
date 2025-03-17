@@ -95,11 +95,11 @@ interface BaseEventData {
 async function handleGetSessionError({
   eventService,
   errorData,
-  eventData
+  eventData,
 }: {
-  eventService: IEventService,
-  errorData: SessionRetrievalFailed,
-  eventData: BaseEventData,
+  eventService: IEventService;
+  errorData: SessionRetrievalFailed;
+  eventData: BaseEventData;
 }): Promise<APIGatewayProxyResult> {
   switch (errorData.errorType) {
     case GetSessionError.INTERNAL_SERVER_ERROR:
@@ -115,10 +115,10 @@ async function handleGetSessionError({
 
 async function handleInternalServerError({
   eventService,
-  eventData
-}:{
-  eventService: IEventService,
-  eventData: BaseEventData,
+  eventData,
+}: {
+  eventService: IEventService;
+  eventData: BaseEventData;
 }): Promise<APIGatewayProxyResult> {
   const writeEventResult = await writeEvent({
     eventService,
@@ -139,11 +139,11 @@ async function handleInternalServerError({
 async function handleSessionNotFound({
   eventService,
   eventData,
-  sessionData
+  sessionData,
 }: {
-  eventService: IEventService,
-  eventData: BaseEventData,
-  sessionData: Partial<BiometricTokenIssuedSessionAttributes> | string,
+  eventService: IEventService;
+  eventData: BaseEventData;
+  sessionData: Partial<BiometricTokenIssuedSessionAttributes> | string;
 }): Promise<APIGatewayProxyResult> {
   const writeEventResult = await writeEvent({
     eventService,
