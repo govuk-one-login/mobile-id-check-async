@@ -187,7 +187,7 @@ describe("Backend application infrastructure", () => {
         AccessLogSetting: {
           DestinationArn: {
             "Fn::Sub":
-              "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialPrivateApiAccessLogs}",
+              "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncPrivateApiAccessLogs}",
           },
         },
       });
@@ -220,6 +220,7 @@ describe("Backend application infrastructure", () => {
         "high-threshold-async-biometric-token-4xx-api-gw": false,
         "high-threshold-async-finish-biometric-session-5xx-api-gw": false,
         "high-threshold-async-finish-biometric-session-4xx-api-gw": false,
+        "high-threshold-vendor-processing-dlq-old-message": false,
       };
 
       const alarms = template.findResources("AWS::CloudWatch::Alarm");
@@ -288,6 +289,10 @@ describe("Backend application infrastructure", () => {
         ["credential-lambda-low-completion"],
         ["active-session-lambda-error-rate"],
         ["active-session-lambda-low-completion"],
+        ["low-threshold-vendor-processing-sqs-old-message"],
+        ["low-threshold-vendor-processing-dlq-new-message"],
+        ["low-threshold-vendor-processing-dlq-old-message"],
+        ["high-threshold-vendor-processing-dlq-old-message"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
@@ -680,6 +685,24 @@ describe("Backend application infrastructure", () => {
         };
         template.hasResourceProperties("AWS::Logs::LogGroup", {
           LogGroupName: Match.objectLike(expectedLogName),
+        });
+      });
+    });
+
+    test("All log groups have a CSLS subscription filter", () => {
+      const log_groups = template.findResources("AWS::Logs::LogGroup");
+      const logs_list = Object.keys(log_groups);
+      console.log(logs_list);
+      logs_list.forEach((log_name) => {
+        template.hasResourceProperties("AWS::Logs::SubscriptionFilter", {
+          LogGroupName: Match.objectLike({ Ref: log_name }),
+          DestinationArn: Match.objectLike({
+            "Fn::FindInMap": [
+              "CslsConfiguration",
+              { Ref: "Environment" },
+              "CSLSEGRESS",
+            ],
+          }),
         });
       });
     });
