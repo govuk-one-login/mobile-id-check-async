@@ -69,11 +69,11 @@ export async function lambdaHandlerConstructor(
     txmaAuditEncoded,
   };
   if (getSessionResult.isError) {
-    return handleGetSessionError(
+    return handleGetSessionError({
       eventService,
-      getSessionResult.value,
+      errorData: getSessionResult.value,
       eventData,
-    );
+    });
   }
 
   logger.info(LogMessage.TXMA_EVENT_COMPLETED);
@@ -92,27 +92,34 @@ interface BaseEventData {
   txmaAuditEncoded: string | undefined;
 }
 
-async function handleGetSessionError(
+async function handleGetSessionError({
+  eventService,
+  errorData,
+  eventData
+}: {
   eventService: IEventService,
-  getSessionResult: SessionRetrievalFailed,
+  errorData: SessionRetrievalFailed,
   eventData: BaseEventData,
-): Promise<APIGatewayProxyResult> {
-  switch (getSessionResult.errorType) {
+}): Promise<APIGatewayProxyResult> {
+  switch (errorData.errorType) {
     case GetSessionError.INTERNAL_SERVER_ERROR:
-      return handleInternalServerError(eventService, eventData);
+      return handleInternalServerError({ eventService, eventData });
     case GetSessionError.SESSION_NOT_FOUND:
-      return handleSessionNotFound(
+      return handleSessionNotFound({
         eventService,
         eventData,
-        getSessionResult.session,
-      );
+        sessionData: errorData.session,
+      });
   }
 }
 
-async function handleInternalServerError(
+async function handleInternalServerError({
+  eventService,
+  eventData
+}:{
   eventService: IEventService,
   eventData: BaseEventData,
-): Promise<APIGatewayProxyResult> {
+}): Promise<APIGatewayProxyResult> {
   const writeEventResult = await writeEvent({
     eventService,
     eventName: "DCMAW_ASYNC_CRI_5XXERROR",
@@ -129,11 +136,15 @@ async function handleInternalServerError(
   return serverErrorResponse;
 }
 
-async function handleSessionNotFound(
+async function handleSessionNotFound({
+  eventService,
+  eventData,
+  sessionData
+}: {
   eventService: IEventService,
   eventData: BaseEventData,
-  session: Partial<BiometricTokenIssuedSessionAttributes> | string,
-): Promise<APIGatewayProxyResult> {
+  sessionData: Partial<BiometricTokenIssuedSessionAttributes> | string,
+}): Promise<APIGatewayProxyResult> {
   const writeEventResult = await writeEvent({
     eventService,
     eventName: "DCMAW_ASYNC_CRI_4XXERROR",
@@ -151,7 +162,7 @@ async function handleSessionNotFound(
   logger.error(LogMessage.TXMA_EVENT_INVALID_SESSION, {
     data: {
       auditEventName,
-      session,
+      session: sessionData,
     },
   });
   return unauthorizedResponse(
