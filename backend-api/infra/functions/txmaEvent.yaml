@@ -39,6 +39,15 @@ Resources:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-txma-event
 
+  AsyncTxmaEventSubscriptionFilter:    
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: 
+        !FindInMap [CslsConfiguration, !Ref Environment, CSLSEGRESS]
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncTxmaEventLogGroup
+    Condition: isNotDev
+
   AsyncTxmaEventFunctionPermission:
     Type: AWS::Lambda::Permission
     Properties:

@@ -51,6 +51,15 @@ Resources:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-token
 
+  AsyncTokenSubscriptionFilter:    
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: 
+        !FindInMap [CslsConfiguration, !Ref Environment, CSLSEGRESS]
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncTokenLogGroup
+    Condition: isNotDev
+
   AsyncTokenLambdaRole:
     Type: AWS::IAM::Role
     Properties:

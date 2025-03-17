@@ -39,6 +39,15 @@ Resources:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sessions-api-access-logs
       RetentionInDays: 30
 
+  SessionsApiSubscriptionFilter:    
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: 
+        !FindInMap [CslsConfiguration, !Ref Environment, CSLSEGRESS]
+      FilterPattern: ""
+      LogGroupName: !Ref SessionsApiAccessLogs
+    Condition: isNotDev
+
   SessionsApiDomainName:
     Type: AWS::ApiGateway::DomainName
     Properties:
