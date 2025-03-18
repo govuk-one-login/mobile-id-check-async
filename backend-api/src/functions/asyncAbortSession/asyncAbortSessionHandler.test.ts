@@ -8,7 +8,7 @@ import { buildRequest } from "../testUtils/mockRequest";
 import { logger } from "../common/logging/logger";
 import { expectedSecurityHeaders } from "../testUtils/unitTestData";
 
-describe("Async Finish Biometric Session", () => {
+describe("Async Abort Session", () => {
   let dependencies: IAsyncAbortSessionDependencies;
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
@@ -26,16 +26,12 @@ describe("Async Finish Biometric Session", () => {
 
   describe("On every invocation", () => {
     beforeEach(async () => {
-      result = await lambdaHandlerConstructor(
-        dependencies,
-        validRequest,
-        context,
-      );
+      await lambdaHandlerConstructor(dependencies, validRequest, context);
     });
 
     it("Adds context and version to log attributes and logs STARTED message", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-        messageCode: "MOBILE_ASYNC_ABORT_SESSION_COMPLETED",
+        messageCode: "MOBILE_ASYNC_ABORT_SESSION_STARTED",
         functionVersion: "1",
         function_arn: "arn:12345",
       });
@@ -43,11 +39,7 @@ describe("Async Finish Biometric Session", () => {
 
     it("Clears pre-existing log attributes", async () => {
       logger.appendKeys({ testKey: "testValue" });
-      result = await lambdaHandlerConstructor(
-        dependencies,
-        validRequest,
-        context,
-      );
+      await lambdaHandlerConstructor(dependencies, validRequest, context);
 
       expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
         testKey: "testValue",

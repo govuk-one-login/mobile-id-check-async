@@ -673,7 +673,7 @@ paths:
       summary: Mark an Auth Session as Aborted
       description: >-
         Mark the session as Aborted. Note this operation is terminal - it cannot be undone.
-        This endpoint is idempotent, i.e. successive invocations will return the same result, and there
+        This endpoint is idempotent, i.e. successive invocations will return the same result, and
         attempting to abort an already aborted session will return a 200 status code.
       requestBody:
         description: A JSON object containing a sessionId
