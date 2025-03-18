@@ -983,6 +983,7 @@ describe("Backend application infrastructure", () => {
       "AsyncTxmaEventFunction",
       "JsonWebKeysFunction",
       "ProxyLambda",
+      "AsyncAbortSessionFunction",
     ];
 
     const canaryFunctions = Object.entries(allFunctions).filter(

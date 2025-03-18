@@ -17,13 +17,6 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-abort-session
       Runtime: nodejs20.x
       Handler: asyncAbortSessionHandler.lambdaHandler
-      DeploymentPreference:
-        Enabled: true
-        Alarms: !If
-          - DeployAlarms
-          - []
-          - - !Ref AWS::NoValue
-        Type: !Ref LambdaDeploymentPreference
       Events:
         AsyncAbortSession:
           Type: Api

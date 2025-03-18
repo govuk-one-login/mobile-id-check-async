@@ -432,13 +432,6 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
-      DeploymentPreference:
-        Alarms: !If
-          - DeployAlarms
-          - []
-          - - !Ref AWS::NoValue
-        Enabled: true
-        Type: !Ref LambdaDeploymentPreference
       Events:
         AsyncAbortSession:
           Properties:
