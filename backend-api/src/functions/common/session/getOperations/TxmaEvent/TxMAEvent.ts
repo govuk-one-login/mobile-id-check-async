@@ -6,8 +6,17 @@ import { getBiometricTokenIssuedSessionAttributes } from "../../sessionAttribute
 import { GetSessionOperation } from "../GetSessionOperation";
 
 export class TxMAEvent implements GetSessionOperation {
-  getDynamoDbKeyExpression(sessionId: string) {
-    return { Key: { sessionId: marshall(sessionId) } };
+  getDynamoDbGetCommandInput({
+    tableName,
+    keyValue,
+  }: {
+    tableName: string;
+    keyValue: string;
+  }) {
+    return {
+      TableName: tableName,
+      Key: { sessionId: marshall(keyValue) },
+    };
   }
 
   getSessionAttributesFromDynamoDbItem(

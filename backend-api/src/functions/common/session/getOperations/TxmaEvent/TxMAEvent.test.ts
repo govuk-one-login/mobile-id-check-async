@@ -18,8 +18,12 @@ describe("TxMA event", () => {
 
   describe("When I request the DynamoDB Key Expression", () => {
     it("Returns the appropriate Key Expression string", () => {
-      const result = txmaEvent.getDynamoDbKeyExpression(mockSessionId);
+      const result = txmaEvent.getDynamoDbGetCommandInput({
+        tableName: "mock_table_name",
+        keyValue: mockSessionId,
+      });
       expect(result).toEqual({
+        TableName: "mock_table_name",
         Key: { sessionId: marshall(mockSessionId) },
       });
     });

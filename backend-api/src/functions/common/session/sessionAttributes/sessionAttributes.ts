@@ -34,13 +34,13 @@ export const isCommonSessionAttributes = (
   if ("redirectUri" in item && typeof item.redirectUri !== "string") {
     return false;
   }
-  return true
+  return true;
 };
 
 export const isBaseSessionAttributes = (
   item: Record<string, NativeAttributeValue>,
 ): item is BaseSessionAttributes => {
-  if (!isCommonSessionAttributes(item)) return false
+  if (!isCommonSessionAttributes(item)) return false;
   return true;
 };
 
@@ -59,7 +59,7 @@ export const getBiometricTokenIssuedSessionAttributes = (
 export const isBiometricTokenIssuedSessionAttributes = (
   item: Record<string, NativeAttributeValue>,
 ): item is BiometricTokenIssuedSessionAttributes => {
-  if (!isCommonSessionAttributes(item)) return false
+  if (!isCommonSessionAttributes(item)) return false;
   if (typeof item.documentType !== "string") return false;
   if (typeof item.opaqueId !== "string") return false;
   if (item.sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) return false;

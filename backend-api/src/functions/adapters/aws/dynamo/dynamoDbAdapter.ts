@@ -147,17 +147,16 @@ export class DynamoDbAdapter implements SessionRegistry {
   ): Promise<Result<SessionAttributes, SessionRetrievalFailed>> {
     let response;
     try {
-      const getItemCommandInput =
-        getOperation.getDynamoDbKeyExpression(sessionId);
+      const getItemCommandInput = getOperation.getDynamoDbGetCommandInput({
+        tableName: this.tableName,
+        keyValue: sessionId,
+      });
       logger.debug(LogMessage.GET_SESSION_ATTEMPT, {
         data: { sessionId, getItemCommandInput },
       });
 
       response = await this.dynamoDbClient.send(
-        new GetItemCommand({
-          TableName: this.tableName,
-          ...getItemCommandInput,
-        }),
+        new GetItemCommand(getItemCommandInput),
       );
     } catch (error: unknown) {
       return this.handleGetSessionInternalServerError(error);
