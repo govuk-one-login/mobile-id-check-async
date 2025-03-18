@@ -77,9 +77,10 @@ components:
       properties:
         sessionId:
           type: string
+          format: uuid
     AbortSessionResponse:
       type: string
-      description: confirms the session has been aborted.
+      description: Confirms the session has been aborted.
 
 
 paths:
