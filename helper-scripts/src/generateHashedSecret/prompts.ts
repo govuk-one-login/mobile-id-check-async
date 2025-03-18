@@ -11,7 +11,7 @@ export const askForSecret = async (): Promise<{
       message: "Please provide a secret",
       validate: (input: string) => {
         if (!input.trim()) {
-          return "Your answer seems to be empty, please provide a secret..";
+          return "Your answer seems to be empty, please provide a secret...";
         }
         return true;
       },
@@ -29,7 +29,7 @@ export const askForSalt = async (): Promise<{
       message: "Please provide a salt",
       validate: (input: string) => {
         if (!input.trim()) {
-          return "Your answer seems to be empty, please provide a salt..";
+          return "Your answer seems to be empty, please provide a salt...";
         }
         return true;
       },
