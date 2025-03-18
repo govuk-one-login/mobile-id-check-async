@@ -11,20 +11,17 @@ export type SessionAttributes =
   | BiometricTokenIssuedSessionAttributes
   | BiometricSessionFinishedAttributes;
 
-interface CommonSessionAttributes {
+export interface BaseSessionAttributes {
   clientId: string;
   clientState: string;
   createdAt: number;
   govukSigninJourneyId: string;
   issuer: string;
   sessionId: string;
+  sessionState: SessionState;
   subjectIdentifier: string;
   timeToLive: number;
   redirectUri?: string;
-}
-
-export interface BaseSessionAttributes extends CommonSessionAttributes {
-  sessionState: SessionState;
 }
 
 export interface BiometricTokenIssuedSessionAttributes
