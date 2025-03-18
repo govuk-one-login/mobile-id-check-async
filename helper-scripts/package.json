@@ -2,7 +2,6 @@
   "name": "helper-scripts",
   "version": "1.0.0",
   "description": "ID Check helper scripts",
-  "main": "index.js",
   "type": "module",
   "scripts": {
     "build": "./node_modules/.bin/tsc",
