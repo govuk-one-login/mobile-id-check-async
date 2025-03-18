@@ -23,6 +23,7 @@ import {
 } from "./tokenService/tests/mocks";
 import { RequestService } from "./requestService/requestService";
 import { logger } from "../common/logging/logger";
+import { createHash } from "node:crypto";
 
 describe("Async Token", () => {
   let request: APIGatewayProxyEvent;
@@ -428,6 +429,8 @@ describe("Async Token", () => {
             buildLambdaContext(),
           );
 
+          console.log(hashSecret())
+
           expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_TOKEN_COMPLETED",
           });
@@ -449,3 +452,9 @@ describe("Async Token", () => {
     });
   });
 });
+
+const hashSecret = (secret: string, salt: string): string => {
+  return createHash("sha256")
+    .update(secret + salt)
+    .digest("hex");
+};

@@ -36,6 +36,7 @@ export class ClientRegistryService
     if (clientRegistryResult.isError)
       return errorResult(clientRegistryResult.value);
     const clientRegistry = clientRegistryResult.value;
+    logger.debug(`IPV_DEBUG clientRegistry1 ${clientRegistry}`)
 
     logger.debug("IPV_DEBUG secrets.clientId", secrets.clientId);
 
@@ -57,11 +58,15 @@ export class ClientRegistryService
       },
       secrets,
     );
-    if (!isClientSecretsValid)
+    if (!isClientSecretsValid) {
+      logger.debug("Am I in the clientSecretValid block?")
+
       return errorResult({
         errorMessage: "Client credentials are invalid",
         errorCategory: ErrorCategory.CLIENT_ERROR,
       });
+    }
+
 
     return successResult(registeredClient.issuer);
   };
