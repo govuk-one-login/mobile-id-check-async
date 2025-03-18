@@ -22,7 +22,7 @@
     "node": "20"
   },
   "devDependencies": {
-    "@aws-sdk/credential-providers": "3.758.0",
+    "@aws-sdk/credential-providers": "3.768.0",
     "@eslint/js": "^9.22.0",
     "@pact-foundation/pact": "^13.2.0",
     "@types/aws-lambda": "8.10.147",
@@ -31,7 +31,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.17.24",
     "@types/node-jose": "^1.1.13",
-    "aws-cdk-lib": "^2.182.0",
+    "aws-cdk-lib": "^2.184.1",
     "aws-sdk-client-mock": "4.1.0",
     "aws-sdk-client-mock-jest": "^4.1.0",
     "aws4-axios": "^3.4.0",
@@ -53,15 +53,15 @@
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.16.0",
     "@aws-lambda-powertools/parameters": "^2.16.0",
-    "@aws-sdk/client-dynamodb": "^3.758.0",
+    "@aws-sdk/client-dynamodb": "^3.767.0",
     "@aws-sdk/client-kms": "3.758.0",
     "@aws-sdk/client-s3": "^3.758.0",
     "@aws-sdk/client-secrets-manager": "3.758.0",
     "@aws-sdk/client-sqs": "^3.758.0",
     "@aws-sdk/client-ssm": "^3.759.0",
     "@aws-sdk/node-http-handler": "3.374.0",
-    "@aws-sdk/util-dynamodb": "^3.758.0",
-    "axios": "1.8.2",
+    "@aws-sdk/util-dynamodb": "^3.767.0",
+    "axios": "1.8.3",
     "ecdsa-sig-formatter": "1.0.11",
     "esbuild": "^0.25.1",
     "jose": "^5.10.0"
