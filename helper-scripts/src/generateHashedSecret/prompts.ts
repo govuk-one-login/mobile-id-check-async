@@ -43,7 +43,7 @@ export const generatingHashedSecretMessage = (): void => {
   echo("");
 };
 
-export const confirmSuccessfullyHashedSecret = (hashedSecret: string): void => {
+export const echoSuccessfullyHashedSecret = (hashedSecret: string): void => {
   echo(chalk.green(hashedSecret));
 };
 

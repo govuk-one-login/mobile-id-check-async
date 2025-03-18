@@ -1,7 +1,7 @@
 import {
   askForSalt,
   askForSecret,
-  confirmSuccessfullyHashedSecret,
+  echoSuccessfullyHashedSecret,
   unexpectedErrorMessage,
 } from "./prompts.js";
 import { hashSecret } from "./hashSecret.js";
@@ -11,7 +11,7 @@ try {
   const { salt } = await askForSalt();
   const hashedSecret = await hashSecret(secret, salt);
 
-  confirmSuccessfullyHashedSecret(hashedSecret);
+  echoSuccessfullyHashedSecret(hashedSecret);
 } catch (error: unknown) {
   unexpectedErrorMessage(error);
 }
