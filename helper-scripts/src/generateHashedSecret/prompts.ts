@@ -1,15 +1,14 @@
 import inquirer from "inquirer";
-import { echo } from "zx";
-import { createHash } from "crypto";
+import { chalk, echo } from "zx";
 
-const askForSecret = async (): Promise<{
+export const askForSecret = async (): Promise<{
   secret: string;
 }> => {
   return await inquirer.prompt<{ secret: string }>([
     {
       type: "input",
       name: "secret",
-      message: "Provide secret",
+      message: "Please provide a secret",
       validate: (input: string) => {
         if (!input.trim()) {
           return "Your answer seems to be empty, please provide a secret..";
@@ -20,14 +19,14 @@ const askForSecret = async (): Promise<{
   ]);
 };
 
-const askForSalt = async (): Promise<{
+export const askForSalt = async (): Promise<{
   salt: string;
 }> => {
   return await inquirer.prompt<{ salt: string }>([
     {
       type: "input",
       name: "salt",
-      message: "Provide salt",
+      message: "Please provide a salt",
       validate: (input: string) => {
         if (!input.trim()) {
           return "Your answer seems to be empty, please provide a salt..";
@@ -38,13 +37,8 @@ const askForSalt = async (): Promise<{
   ]);
 };
 
-const generateHashedSecret = (secret: string, salt: string): string => {
-  return createHash("sha256")
-    .update(secret + salt)
-    .digest("hex");
-};
-
-const { secret } = await askForSecret()
-const { salt } = await askForSalt()
-echo(await generateHashedSecret(secret, salt))
-
+export const generatingHashedSecretMessage = ():void => {
+  echo("")
+  echo(chalk.italic("Generating hashed secret..."))
+  echo("")
+}
