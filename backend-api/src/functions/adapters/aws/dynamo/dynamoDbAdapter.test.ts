@@ -382,7 +382,6 @@ describe("DynamoDbAdapter", () => {
       describe("Given the session is in the wrong state", () => {
         const invalidBiometricTokenIssuedSessionAttributesWrongSessionState = {
           ...validBiometricTokenIssuedSessionAttributes,
-          createdAt: 1704106860000, // 2024-01-01 11:01:00.000
           sessionState: SessionState.AUTH_SESSION_CREATED,
         };
         const invalidBiometricTokenIssuedSessionAttributesWrongSessionStateItem =
