@@ -35,6 +35,13 @@ Resources:
           - !ImportValue devplatform-vpc-PrivateSubnetIdC
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+      LoggingConfig:
+        ApplicationLogLevel: !If
+          - LogIPVCoreRequestHeader
+          - DEBUG # This is to debug the IPVCore request to async/token in staging. This is a temporary measure.
+          - INFO
+        LogFormat: JSON
+        SystemLogLevel: INFO
 
   AsyncTokenFunctionPermission:
     Type: AWS::Lambda::Permission
