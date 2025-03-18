@@ -45,7 +45,7 @@ export const generatingHashedSecretMessage = (): void => {
 
 export const confirmSuccessfullyHashedSecret = (hashedSecret: string): void => {
   echo(chalk.green(hashedSecret));
-}
+};
 
 export const unexpectedErrorMessage = (error: unknown): void => {
   echo("");

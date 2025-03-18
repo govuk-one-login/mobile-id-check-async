@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { generatingHashedSecretMessage } from "./prompts";
+import { generatingHashedSecretMessage } from "./prompts.js";
 
 export const hashSecret = (secret: string, salt: string): string => {
   generatingHashedSecretMessage();

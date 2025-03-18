@@ -11,7 +11,7 @@ try {
   const { salt } = await askForSalt();
   const hashedSecret = await hashSecret(secret, salt);
 
-  confirmSuccessfullyHashedSecret(hashedSecret)
+  confirmSuccessfullyHashedSecret(hashedSecret);
 } catch (error: unknown) {
   unexpectedErrorMessage(error);
 }
