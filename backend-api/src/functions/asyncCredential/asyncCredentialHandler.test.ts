@@ -954,6 +954,7 @@ describe("Async Credential", () => {
                 sub: "mockSub",
                 client_id: "mockClientId",
                 govuk_signin_journey_id: "mockGovukSigninJourneyId",
+                redirect_uri: "https://www.mockUrl.com",
               }),
             });
             const mockEventService = new MockEventWriterSuccess();
@@ -969,6 +970,21 @@ describe("Async Credential", () => {
 
             expect(mockEventService.auditEvents[0]).toEqual(
               "DCMAW_ASYNC_CRI_START",
+            );
+
+            expect(mockEventService.eventConfig).toEqual(
+              expect.objectContaining({
+                eventName: "DCMAW_ASYNC_CRI_START",
+                componentId: "mockIssuer",
+                getNowInMilliseconds: Date.now,
+                govukSigninJourneyId: "mockGovukSigninJourneyId",
+                sub: "mockSub",
+                sessionId: "mockSessionId",
+                ipAddress: undefined,
+                redirect_uri: "https://www.mockUrl.com",
+                suspected_fraud_signal: undefined,
+                txmaAuditEncoded: undefined,
+              }),
             );
 
             expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({

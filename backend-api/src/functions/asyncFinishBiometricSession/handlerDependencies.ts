@@ -1,9 +1,9 @@
 import { SessionRegistry } from "../common/session/SessionRegistry";
-import { DynamoDbAdapter } from "../adapters/dynamoDbAdapter";
+import { DynamoDbAdapter } from "../adapters/aws/dynamo/dynamoDbAdapter";
 import { EventService } from "../services/events/eventService";
 import { IEventService } from "../services/events/types";
-import { sendMessageToSqs } from "../adapters/sqs/sendMessageToSqs";
-import { VendorProcessingMessage } from "../adapters/sqs/types";
+import { sendMessageToSqs } from "../adapters/aws/sqs/sendMessageToSqs";
+import { VendorProcessingMessage } from "../adapters/aws/sqs/types";
 import { Result } from "../utils/result";
 
 export type IAsyncFinishBiometricSessionDependencies = {

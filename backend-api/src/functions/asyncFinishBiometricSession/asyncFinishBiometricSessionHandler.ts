@@ -6,7 +6,7 @@ import {
 import {
   badRequestResponse,
   forbiddenResponse,
-  notImplementedResponse,
+  okResponse,
   serverErrorResponse,
   unauthorizedResponse,
 } from "../common/lambdaResponses";
@@ -83,6 +83,8 @@ export async function lambdaHandlerConstructor(
     biometricSessionId,
     sessionId,
   };
+  const sessionAttributes = updateResult.value
+    .attributes as BiometricSessionFinishedAttributes;
 
   const sendMessageToVendorProcessingQueueResult = await sendMessageToSqs(
     config.VENDOR_PROCESSING_SQS,
@@ -90,8 +92,7 @@ export async function lambdaHandlerConstructor(
   );
   if (sendMessageToVendorProcessingQueueResult.isError) {
     return await handleSendMessageToVendorProcessingQueueFailure(eventService, {
-      sessionAttributes: updateResult.value
-        .attributes as BiometricSessionFinishedAttributes,
+      sessionAttributes,
       issuer: config.ISSUER,
       biometricSessionId,
       ipAddress,
@@ -99,8 +100,30 @@ export async function lambdaHandlerConstructor(
     });
   }
 
+  const writeAppEndEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_APP_END",
+    sub: sessionAttributes.subjectIdentifier,
+    sessionId: sessionAttributes.sessionId,
+    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+    componentId: config.ISSUER,
+    getNowInMilliseconds: Date.now,
+    transactionId: biometricSessionId,
+    redirect_uri: sessionAttributes.redirectUri,
+    suspected_fraud_signal: undefined,
+    ipAddress,
+    txmaAuditEncoded,
+  });
+  if (writeAppEndEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_APP_END",
+      },
+    });
+    return serverErrorResponse;
+  }
+
   logger.info(LogMessage.FINISH_BIOMETRIC_SESSION_COMPLETED);
-  return notImplementedResponse;
+  return okResponse();
 }
 
 async function handleConditionalCheckFailure(
@@ -112,14 +135,12 @@ async function handleConditionalCheckFailure(
   const sessionAge = Date.now() - sessionAttributes.createdAt;
   const isSessionExpired = sessionAge > 60 * 60 * 1000;
 
-  function getFraudSignal(
-    expired: boolean,
-  ): Record<string, string> | undefined {
+  function getFraudSignal(expired: boolean): string | undefined {
     if (!expired) {
       return undefined;
     }
 
-    return { suspected_fraud_signal: "AUTH_SESSION_TOO_OLD" };
+    return "AUTH_SESSION_TOO_OLD";
   }
 
   const writeEventResult = await eventService.writeGenericEvent({
@@ -130,7 +151,8 @@ async function handleConditionalCheckFailure(
     componentId: issuer,
     getNowInMilliseconds: Date.now,
     transactionId: biometricSessionId,
-    extensions: getFraudSignal(isSessionExpired),
+    redirect_uri: sessionAttributes.redirectUri,
+    suspected_fraud_signal: getFraudSignal(isSessionExpired),
     ipAddress: undefined,
     txmaAuditEncoded: undefined,
   });
@@ -165,6 +187,8 @@ async function handleSessionNotFound(
     transactionId: biometricSessionId,
     ipAddress: undefined,
     txmaAuditEncoded: undefined,
+    redirect_uri: undefined,
+    suspected_fraud_signal: undefined,
   });
 
   if (writeEventResult.isError) {
@@ -193,6 +217,8 @@ async function handleInternalServerError(
     transactionId: biometricSessionId,
     ipAddress: undefined,
     txmaAuditEncoded: undefined,
+    redirect_uri: undefined,
+    suspected_fraud_signal: undefined,
   });
 
   if (writeEventResult.isError) {
@@ -272,6 +298,8 @@ const handleSendMessageToVendorProcessingQueueFailure = async (
     transactionId: biometricSessionId,
     ipAddress,
     txmaAuditEncoded,
+    redirect_uri: undefined,
+    suspected_fraud_signal: undefined,
   });
 
   if (writeEventResult.isError) {

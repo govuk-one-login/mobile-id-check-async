@@ -41,6 +41,12 @@ Parameters:
       - staging
     Default: dev
 
+  LambdaDeploymentPreference:
+    Description: |
+      Specifies the configuration to enable gradual Lambda deployments. Value can be 'AllAtOnce', a default deployment config, or name of custom DeploymentConfig.
+    Type: String
+    Default: AllAtOnce
+
   PermissionsBoundary:
     Description: |
       The ARN of the permissions boundary to apply to any role created by the template
@@ -53,6 +59,16 @@ Parameters:
     Default: unused
 
 Mappings:
+  CslsConfiguration:
+    build:
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+    integration:
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+    production:
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+    staging:
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+
   DNS:
     build:
       BaseDns: review-b-async.build.account.gov.uk
@@ -170,7 +186,7 @@ Mappings:
     staging:
       ApiBurstLimit: 10
       ApiRateLimit: 10
-      IpvCoreVpceId: vpce-0555f751a645d7639
+      IpvCoreVpceId: vpce-0cc0de10742b83b8a
 
   ProxyApigw:
     build:
@@ -232,6 +248,10 @@ Conditions:
     - !Equals
       - !Ref DeployAlarmsInDev
       - true
+
+  DeployProxyCsls: !And
+    - !Condition ProxyApiDeployment
+    - !Condition isNotDev
 
   DevelopmentStack: !And
     - !Equals
@@ -295,6 +315,11 @@ Conditions:
     - !Ref Environment
     - dev
 
+  isNotDev: !Not
+    - !Equals
+      - !Ref Environment
+      - dev
+
   isNotDevOrBuild: !Or
     - !Equals
       - !Ref Environment
@@ -318,6 +343,9 @@ Globals:
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
       - !Ref AWS::NoValue
+    DeploymentPreference:
+      Enabled: false
+      Role: !GetAtt CodeDeployServiceRole.Arn
     Environment:
       Variables:
         AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
@@ -651,6 +679,80 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
+  AsyncActiveSessionCompletionMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '{ ($.messageCode = *) && ($.functionVersion = *) }'
+      LogGroupName: !Ref AsyncActiveSessionLogGroup
+      MetricTransformations:
+        - Dimensions:
+            - Key: MessageCode
+              Value: $.messageCode
+            - Key: Version
+              Value: $.functionVersion
+          MetricName: AsyncActiveSessionMessageCode
+          MetricNamespace: !Sub ${AWS::StackName}/LogMessages
+          MetricValue: "1"
+    Condition: DeployAlarms
+
+  AsyncActiveSessionErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: The number of Async Active Session Lambda errors is greater than or equal to 10% for the latest function version
+      AlarmName: !Sub ${AWS::StackName}-active-session-lambda-error-rate
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      Metrics:
+        - Id: lambdaInvocations
+          Label: Sum of invocations for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Resource
+                  Value: !Sub ${AsyncActiveSessionFunction}:live
+                - Name: FunctionName
+                  Value: !Ref AsyncActiveSessionFunction
+                - Name: ExecutedVersion
+                  Value: !GetAtt AsyncActiveSessionFunction.Version.Version
+              MetricName: Invocations
+              Namespace: AWS/Lambda
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: lambdaErrors
+          Label: Sum of function errors for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Resource
+                  Value: !Sub ${AsyncActiveSessionFunction}:live
+                - Name: FunctionName
+                  Value: !Ref AsyncActiveSessionFunction
+                - Name: ExecutedVersion
+                  Value: !GetAtt AsyncActiveSessionFunction.Version.Version
+              MetricName: Errors
+              Namespace: AWS/Lambda
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (lambdaErrors/lambdaInvocations)*100
+          Id: lambdaErrorPercentage
+          Label: Percentage of invocations that result in a function error
+          ReturnData: false
+        - Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage, 0)
+          Id: lambdaErrorRate
+          Label: Error threshold calculation
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 10
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   AsyncActiveSessionFunction:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -664,6 +766,14 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
+      DeploymentPreference:
+        Alarms: !If
+          - DeployAlarms
+          - - !Ref AsyncActiveSessionErrorRateAlarm
+            - !Ref AsyncActiveSessionLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Enabled: true
+        Type: !Ref LambdaDeploymentPreference
       Environment:
         Variables:
           AUDIENCE: !Sub https://${SessionsApiDomainName}
@@ -774,6 +884,74 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-active-session
       RetentionInDays: 30
+
+  AsyncActiveSessionLowCompletionAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncActiveSessionCompletionMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: A large proportion of Async Active Session requests have not completed successfully.
+      AlarmName: !Sub ${AWS::StackName}-active-session-lambda-low-completion
+      ComparisonOperator: LessThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      Metrics:
+        - Id: lambdaLogStarted
+          Label: Sum of MOBILE_ASYNC_ACTIVE_SESSION_STARTED messageCodes for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_ACTIVE_SESSION_STARTED
+                - Name: Version
+                  Value: !GetAtt AsyncActiveSessionFunction.Version.Version
+              MetricName: AsyncActiveSessionMessageCode
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: lambdaLogCompleted
+          Label: Sum of MOBILE_ASYNC_COMPLETED messageCodes for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_ACTIVE_SESSION_COMPLETED
+                - Name: Version
+                  Value: !GetAtt AsyncActiveSessionFunction.Version.Version
+              MetricName: AsyncActiveSessionMessageCode
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (lambdaLogCompleted/lambdaLogStarted)*100
+          Id: lambdaLogCompletePercentage
+          Label: Percentage of invocations that complete successfully
+          ReturnData: false
+        - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage)
+          Id: lowCompletionRateThreshold
+          Label: Error threshold calculation
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 60
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  AsyncActiveSessionSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncActiveSessionLogGroup
+    Condition: isNotDev
 
   AsyncBiometricToken4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -1039,6 +1217,80 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
+  AsyncBiometricTokenCompletionMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '{ ($.messageCode = *) && ($.functionVersion = *) }'
+      LogGroupName: !Ref AsyncBiometricTokenLogGroup
+      MetricTransformations:
+        - Dimensions:
+            - Key: MessageCode
+              Value: $.messageCode
+            - Key: Version
+              Value: $.functionVersion
+          MetricName: AsyncBiometricTokenMessageCode
+          MetricNamespace: !Sub ${AWS::StackName}/LogMessages
+          MetricValue: "1"
+    Condition: DeployAlarms
+
+  AsyncBiometricTokenErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: The number of Async Biometric Token Lambda errors is greater than or equal to 10% for the latest function version
+      AlarmName: !Sub ${AWS::StackName}-biometric-token-lambda-error-rate
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      Metrics:
+        - Id: lambdaInvocations
+          Label: Sum of invocations for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Resource
+                  Value: !Sub ${AsyncBiometricTokenFunction}:live
+                - Name: FunctionName
+                  Value: !Ref AsyncBiometricTokenFunction
+                - Name: ExecutedVersion
+                  Value: !GetAtt AsyncBiometricTokenFunction.Version.Version
+              MetricName: Invocations
+              Namespace: AWS/Lambda
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: lambdaErrors
+          Label: Sum of function errors for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Resource
+                  Value: !Sub ${AsyncBiometricTokenFunction}:live
+                - Name: FunctionName
+                  Value: !Ref AsyncBiometricTokenFunction
+                - Name: ExecutedVersion
+                  Value: !GetAtt AsyncBiometricTokenFunction.Version.Version
+              MetricName: Errors
+              Namespace: AWS/Lambda
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (lambdaErrors/lambdaInvocations)*100
+          Id: lambdaErrorPercentage
+          Label: Percentage of invocations that result in a function error
+          ReturnData: false
+        - Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage, 0)
+          Id: lambdaErrorRate
+          Label: Error threshold calculation
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 10
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   AsyncBiometricTokenFunction:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -1052,6 +1304,14 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
+      DeploymentPreference:
+        Alarms: !If
+          - DeployAlarms
+          - - !Ref AsyncBiometricTokenErrorRateAlarm
+            - !Ref AsyncBiometricTokenLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Enabled: true
+        Type: !Ref LambdaDeploymentPreference
       Environment:
         Variables:
           BIOMETRIC_SUBMITTER_KEY_SECRET_CACHE_DURATION_IN_SECONDS: !FindInMap
@@ -1193,6 +1453,74 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-biometric-token
       RetentionInDays: 30
+
+  AsyncBiometricTokenLowCompletionAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncBiometricTokenCompletionMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: A large proportion of Async Biometric Token requests have not completed successfully.
+      AlarmName: !Sub ${AWS::StackName}-biometric-token-lambda-low-completion
+      ComparisonOperator: LessThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      Metrics:
+        - Id: lambdaLogStarted
+          Label: Sum of MOBILE_ASYNC_BIOMETRIC_TOKEN_STARTED messageCodes for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_BIOMETRIC_TOKEN_STARTED
+                - Name: Version
+                  Value: !GetAtt AsyncBiometricTokenFunction.Version.Version
+              MetricName: AsyncBiometricTokenMessageCode
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: lambdaLogCompleted
+          Label: Sum of MOBILE_ASYNC_BIOMETRIC_TOKEN_COMPLETED messageCodes for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_BIOMETRIC_TOKEN_COMPLETED
+                - Name: Version
+                  Value: !GetAtt AsyncBiometricTokenFunction.Version.Version
+              MetricName: AsyncBiometricTokenMessageCode
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (lambdaLogCompleted/lambdaLogStarted)*100
+          Id: lambdaLogCompletePercentage
+          Label: Percentage of invocations that complete successfully
+          ReturnData: false
+        - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage)
+          Id: lowCompletionRateThreshold
+          Label: Error threshold calculation
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 60
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  AsyncBiometricTokenSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncBiometricTokenLogGroup
+    Condition: isNotDev
 
   AsyncCredential4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -1458,6 +1786,80 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
+  AsyncCredentialCompletionMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '{ ($.messageCode = *) && ($.functionVersion = *) }'
+      LogGroupName: !Ref AsyncCredentialLogGroup
+      MetricTransformations:
+        - Dimensions:
+            - Key: MessageCode
+              Value: $.messageCode
+            - Key: Version
+              Value: $.functionVersion
+          MetricName: AsyncCredentialMessageCode
+          MetricNamespace: !Sub ${AWS::StackName}/LogMessages
+          MetricValue: "1"
+    Condition: DeployAlarms
+
+  AsyncCredentialErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: The number of Async Credential Lambda errors is greater than or equal to 10% for the latest function version
+      AlarmName: !Sub ${AWS::StackName}-credential-lambda-error-rate
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      Metrics:
+        - Id: lambdaInvocations
+          Label: Sum of invocations for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Resource
+                  Value: !Sub ${AsyncCredentialFunction}:live
+                - Name: FunctionName
+                  Value: !Ref AsyncCredentialFunction
+                - Name: ExecutedVersion
+                  Value: !GetAtt AsyncCredentialFunction.Version.Version
+              MetricName: Invocations
+              Namespace: AWS/Lambda
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: lambdaErrors
+          Label: Sum of function errors for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Resource
+                  Value: !Sub ${AsyncCredentialFunction}:live
+                - Name: FunctionName
+                  Value: !Ref AsyncCredentialFunction
+                - Name: ExecutedVersion
+                  Value: !GetAtt AsyncCredentialFunction.Version.Version
+              MetricName: Errors
+              Namespace: AWS/Lambda
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (lambdaErrors/lambdaInvocations)*100
+          Id: lambdaErrorPercentage
+          Label: Percentage of invocations that result in a function error
+          ReturnData: false
+        - Expression: IF(lambdaErrors >= 5,lambdaErrorPercentage, 0)
+          Id: lambdaErrorRateThreshold
+          Label: Error threshold calculation
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 10
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   AsyncCredentialFunction:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -1471,6 +1873,14 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
+      DeploymentPreference:
+        Alarms: !If
+          - DeployAlarms
+          - - !Ref AsyncCredentialErrorRateAlarm
+            - !Ref AsyncCredentialLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Enabled: true
+        Type: !Ref LambdaDeploymentPreference
       Environment:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !FindInMap
@@ -1601,11 +2011,73 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-credential
       RetentionInDays: 30
 
-  AsyncCredentialPrivateApiAccessLogs:
-    Type: AWS::Logs::LogGroup
+  AsyncCredentialLowCompletionAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncCredentialCompletionMetricFilter
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
-      RetentionInDays: 30
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: A large proportion of Async Credential requests have not completed successfully.
+      AlarmName: !Sub ${AWS::StackName}-credential-lambda-low-completion
+      ComparisonOperator: LessThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      Metrics:
+        - Id: lambdaLogStarted
+          Label: Sum of MOBILE_ASYNC_CREDENTIAL_STARTED messageCodes for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_CREDENTIAL_STARTED
+                - Name: Version
+                  Value: !GetAtt AsyncCredentialFunction.Version.Version
+              MetricName: AsyncCredentialMessageCode
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: lambdaLogCompleted
+          Label: Sum of MOBILE_ASYNC_CREDENTIAL_COMPLETED messageCodes for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_CREDENTIAL_COMPLETED
+                - Name: Version
+                  Value: !GetAtt AsyncCredentialFunction.Version.Version
+              MetricName: AsyncCredentialMessageCode
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (lambdaLogCompleted/lambdaLogStarted)*100
+          Id: lambdaLogCompletePercentage
+          Label: Percentage of invocations that complete successfully
+          ReturnData: false
+        - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage)
+          Id: lowCompletionRateThreshold
+          Label: Error threshold calculation
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 60
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  AsyncCredentialSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncCredentialLogGroup
+    Condition: isNotDev
 
   AsyncFinishBiometricSession4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -1871,6 +2343,80 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
+  AsyncFinishBiometricSessionCompletionMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '{ ($.messageCode = *) && ($.functionVersion = *) }'
+      LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
+      MetricTransformations:
+        - Dimensions:
+            - Key: MessageCode
+              Value: $.messageCode
+            - Key: Version
+              Value: $.functionVersion
+          MetricName: AsyncFinishBiometricSessionMessageCode
+          MetricNamespace: !Sub ${AWS::StackName}/LogMessages
+          MetricValue: "1"
+    Condition: DeployAlarms
+
+  AsyncFinishBiometricSessionErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: The number of Async Finish Biometric Token Lambda errors is greater than or equal to 10% for the latest function version
+      AlarmName: !Sub ${AWS::StackName}-finish-biometric-session-lambda-error-rate
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      Metrics:
+        - Id: lambdaInvocations
+          Label: Sum of invocations for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Resource
+                  Value: !Sub ${AsyncFinishBiometricSessionFunction}:live
+                - Name: FunctionName
+                  Value: !Ref AsyncFinishBiometricSessionFunction
+                - Name: ExecutedVersion
+                  Value: !GetAtt AsyncFinishBiometricSessionFunction.Version.Version
+              MetricName: Invocations
+              Namespace: AWS/Lambda
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: lambdaErrors
+          Label: Sum of function errors for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Resource
+                  Value: !Sub ${AsyncFinishBiometricSessionFunction}:live
+                - Name: FunctionName
+                  Value: !Ref AsyncFinishBiometricSessionFunction
+                - Name: ExecutedVersion
+                  Value: !GetAtt AsyncFinishBiometricSessionFunction.Version.Version
+              MetricName: Errors
+              Namespace: AWS/Lambda
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (lambdaErrors/lambdaInvocations)*100
+          Id: lambdaErrorPercentage
+          Label: Percentage of invocations that result in a function error
+          ReturnData: false
+        - Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage, 0)
+          Id: lambdaErrorRate
+          Label: Error threshold calculation
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 10
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   AsyncFinishBiometricSessionFunction:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -1884,6 +2430,14 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
+      DeploymentPreference:
+        Alarms: !If
+          - DeployAlarms
+          - - !Ref AsyncFinishBiometricSessionErrorRateAlarm
+            - !Ref AsyncFinishBiometricSessionLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Enabled: true
+        Type: !Ref LambdaDeploymentPreference
       Events:
         AsyncFinishBiometricSession:
           Properties:
@@ -1987,6 +2541,91 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-finish-biometric-session
       RetentionInDays: 30
+
+  AsyncFinishBiometricSessionLowCompletionAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncFinishBiometricSessionCompletionMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: A large proportion of Async Finish Biometric Session requests have not completed successfully.
+      AlarmName: !Sub ${AWS::StackName}-finish-biometric-session-lambda-low-completion
+      ComparisonOperator: LessThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      Metrics:
+        - Id: lambdaLogStarted
+          Label: Sum of MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_STARTED messageCodes for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_STARTED
+                - Name: Version
+                  Value: !GetAtt AsyncFinishBiometricSessionFunction.Version.Version
+              MetricName: AsyncFinishBiometricSessionMessageCode
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: lambdaLogCompleted
+          Label: Sum of MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_COMPLETED messageCodes for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_COMPLETED
+                - Name: Version
+                  Value: !GetAtt AsyncFinishBiometricSessionFunction.Version.Version
+              MetricName: AsyncFinishBiometricSessionMessageCode
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (lambdaLogCompleted/lambdaLogStarted)*100
+          Id: lambdaLogCompletePercentage
+          Label: Percentage of invocations that complete successfully
+          ReturnData: false
+        - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage)
+          Id: lowCompletionRateThreshold
+          Label: Error threshold calculation
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 60
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  AsyncFinishBiometricSessionSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
+    Condition: isNotDev
+
+  AsyncPrivateApiAccessLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-private-api-access-logs
+      RetentionInDays: 30
+
+  AsyncPrivateApiSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncPrivateApiAccessLogs
+    Condition: isNotDev
 
   AsyncToken4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2252,6 +2891,80 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
+  AsyncTokenCompletionMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '{ ($.messageCode = *) && ($.functionVersion = *) }'
+      LogGroupName: !Ref AsyncTokenLogGroup
+      MetricTransformations:
+        - Dimensions:
+            - Key: MessageCode
+              Value: $.messageCode
+            - Key: Version
+              Value: $.functionVersion
+          MetricName: AsyncTokenMessageCode
+          MetricNamespace: !Sub ${AWS::StackName}/LogMessages
+          MetricValue: "1"
+    Condition: DeployAlarms
+
+  AsyncTokenErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: The number of Async Token Lambda errors is greater than or equal to 10% for the latest function version
+      AlarmName: !Sub ${AWS::StackName}-token-lambda-error-rate
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      Metrics:
+        - Id: lambdaInvocations
+          Label: Sum of invocations for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Resource
+                  Value: !Sub ${AsyncTokenFunction}:live
+                - Name: FunctionName
+                  Value: !Ref AsyncTokenFunction
+                - Name: ExecutedVersion
+                  Value: !GetAtt AsyncTokenFunction.Version.Version
+              MetricName: Invocations
+              Namespace: AWS/Lambda
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: lambdaErrors
+          Label: Sum of function errors for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Resource
+                  Value: !Sub ${AsyncTokenFunction}:live
+                - Name: FunctionName
+                  Value: !Ref AsyncTokenFunction
+                - Name: ExecutedVersion
+                  Value: !GetAtt AsyncTokenFunction.Version.Version
+              MetricName: Errors
+              Namespace: AWS/Lambda
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (lambdaErrors/lambdaInvocations)*100
+          Id: lambdaErrorPercentage
+          Label: Percentage of invocations that result in a function error
+          ReturnData: false
+        - Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage, 0)
+          Id: lambdaErrorRate
+          Label: Error threshold calculation
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 10
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   AsyncTokenFunction:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -2265,6 +2978,14 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
+      DeploymentPreference:
+        Alarms: !If
+          - DeployAlarms
+          - - !Ref AsyncTokenErrorRateAlarm
+            - !Ref AsyncTokenLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Enabled: true
+        Type: !Ref LambdaDeploymentPreference
       Environment:
         Variables:
           CLIENT_REGISTRY_SECRET_NAME: !FindInMap
@@ -2371,6 +3092,74 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-token
       RetentionInDays: 30
 
+  AsyncTokenLowCompletionAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncTokenCompletionMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: A large proportion of Async Token requests have not completed successfully.
+      AlarmName: !Sub ${AWS::StackName}-token-lambda-low-completion
+      ComparisonOperator: LessThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      Metrics:
+        - Id: lambdaLogStarted
+          Label: Sum of MOBILE_ASYNC_TOKEN_STARTED messageCodes for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_TOKEN_STARTED
+                - Name: Version
+                  Value: !GetAtt AsyncTokenFunction.Version.Version
+              MetricName: AsyncTokenMessageCode
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: lambdaLogCompleted
+          Label: Sum of MOBILE_ASYNC_TOKEN_COMPLETED messageCodes for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_TOKEN_COMPLETED
+                - Name: Version
+                  Value: !GetAtt AsyncTokenFunction.Version.Version
+              MetricName: AsyncTokenMessageCode
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (lambdaLogCompleted/lambdaLogStarted)*100
+          Id: lambdaLogCompletePercentage
+          Label: Percentage of invocations that complete successfully
+          ReturnData: false
+        - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage)
+          Id: lowCompletionRateThreshold
+          Label: Error threshold calculation
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 60
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  AsyncTokenSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncTokenLogGroup
+    Condition: isNotDev
+
   AsyncTxmaEventFunction:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -2454,6 +3243,37 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-txma-event
       RetentionInDays: 30
+
+  AsyncTxmaEventSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncTxmaEventLogGroup
+    Condition: isNotDev
+
+  CodeDeployServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - codedeploy.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForLambda
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      RoleName: !Sub ${AWS::StackName}-code-deploy-service-role
 
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket
@@ -2668,6 +3488,17 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-jwks
       RetentionInDays: 30
 
+  JsonWebKeysFunctionSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref JsonWebKeysFunctionLogGroup
+    Condition: isNotDev
+
   KMSEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
@@ -2727,6 +3558,17 @@ Resources:
       AliasName: !Sub alias/${AWS::StackName}-signing-key
       TargetKeyId: !Ref KMSSigningKey
 
+  Linear20PercentEvery1Minute:
+    Type: AWS::CodeDeploy::DeploymentConfig
+    Properties:
+      ComputePlatform: Lambda
+      DeploymentConfigName: !Sub ${AWS::StackName}-Linear20PercentEvery1Minute
+      TrafficRoutingConfig:
+        TimeBasedLinear:
+          LinearInterval: 1
+          LinearPercentage: 20
+        Type: TimeBasedLinear
+
   NullResource:
     Type: AWS::CloudFormation::WaitConditionHandle
     Condition: NeverDeploy
@@ -2735,8 +3577,9 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       AccessLogSetting:
-        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncCredentialPrivateApiAccessLogs}
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${AsyncPrivateApiAccessLogs}
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      AlwaysDeploy: true
       Auth:
         ResourcePolicy:
           IntrinsicVpceWhitelist:
@@ -2896,6 +3739,17 @@ Resources:
       Type: A
     Condition: ProxyApiDeployment
 
+  ProxyApiSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref ProxyApiAccessLogs
+    Condition: DeployProxyCsls
+
   ProxyLambda:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -2993,6 +3847,17 @@ Resources:
           ToPort: 443
       VpcId: !ImportValue devplatform-vpc-VpcId
     Condition: ProxyApiDeployment
+
+  ProxyLambdaSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref ProxyLambdaLogGroup
+    Condition: DeployProxyCsls
 
   SessionsApi:
     Type: AWS::Serverless::Api
@@ -3127,6 +3992,17 @@ Resources:
               - BaseDns
       Type: A
 
+  SessionsApiSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref SessionsApiAccessLogs
+    Condition: isNotDev
+
   SessionsApiWebAclAssociation:
     Type: AWS::WAFv2::WebACLAssociation
     Properties:
@@ -3254,8 +4130,95 @@ Resources:
   VendorProcessingDLQ:
     Type: AWS::SQS::Queue
     Properties:
-      KmsMasterKeyId: !Sub VendorProcessingKMSEncryptionKey
+      KmsMasterKeyId: !Ref VendorProcessingKeyAlias
       MessageRetentionPeriod: 1209600
+
+  VendorProcessingDlqNewMessageLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm when new message gets added to Vendor Processing SQS DLQ. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-low-threshold-vendor-processing-dlq-new-message
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt VendorProcessingDLQ.QueueName
+      EvaluationPeriods: 1
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  VendorProcessingDlqOldMessageHighThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm when the age of the oldest message in Vendor Processing SQS DLQ is 10 days or older. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-high-threshold-vendor-processing-dlq-old-message
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt VendorProcessingDLQ.QueueName
+      EvaluationPeriods: 1
+      MetricName: ApproximateAgeOfOldestMessage
+      Namespace: AWS/SQS
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 864000
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  VendorProcessingDlqOldMessageLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm when the age of the oldest message in Vendor Processing SQS DLQ is 3 days or older. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-low-threshold-vendor-processing-dlq-old-message
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt VendorProcessingDLQ.QueueName
+      EvaluationPeriods: 1
+      MetricName: ApproximateAgeOfOldestMessage
+      Namespace: AWS/SQS
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 259200
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
 
   VendorProcessingKMSEncryptionKey:
     Type: AWS::KMS::Key
@@ -3298,6 +4261,35 @@ Resources:
         deadLetterTargetArn: !GetAtt VendorProcessingDLQ.Arn
         maxReceiveCount: 360
       VisibilityTimeout: 10
+
+  VendorProcessingSqsOldMessageLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm when the age of the oldest message in Vendor Processing SQS queue is 30 minutes or older. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-low-threshold-vendor-processing-sqs-old-message
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt VendorProcessingSQS.QueueName
+      EvaluationPeriods: 1
+      MetricName: ApproximateAgeOfOldestMessage
+      Namespace: AWS/SQS
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 1800
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
 
   WellKnown5XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm

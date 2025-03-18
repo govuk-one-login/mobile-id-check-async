@@ -10,31 +10,31 @@ import {
   ReturnValuesOnConditionCheckFailure,
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
-import { CreateSessionAttributes } from "../services/session/sessionService";
+import { CreateSessionAttributes } from "../../../services/session/sessionService";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 import {
   marshall,
   NativeAttributeValue,
   unmarshall,
 } from "@aws-sdk/util-dynamodb";
-import { UpdateSessionOperation } from "../common/session/updateOperations/UpdateSessionOperation";
+import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
 import {
   errorResult,
   FailureWithValue,
   Result,
   successResult,
-} from "../utils/result";
+} from "../../../utils/result";
 import {
   SessionRegistry,
-  UpdateExpressionDataToLog,
-  UpdateSessionError,
+  SessionUpdated,
   SessionUpdateFailed,
   SessionUpdateFailedInternalServerError,
-  SessionUpdated,
-} from "../common/session/SessionRegistry";
-import { logger } from "../common/logging/logger";
-import { LogMessage } from "../common/logging/LogMessage";
-import { SessionState } from "../common/session/session";
+  UpdateExpressionDataToLog,
+  UpdateSessionError,
+} from "../../../common/session/SessionRegistry";
+import { logger } from "../../../common/logging/logger";
+import { LogMessage } from "../../../common/logging/LogMessage";
+import { SessionState } from "../../../common/session/session";
 
 export type DatabaseRecord = Record<string, NativeAttributeValue>;
 

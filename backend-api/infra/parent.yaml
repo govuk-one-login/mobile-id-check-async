@@ -48,6 +48,12 @@ Parameters:
     Type: String
     Default: false
 
+  LambdaDeploymentPreference:
+    Description: |
+      Specifies the configuration to enable gradual Lambda deployments. Value can be 'AllAtOnce', a default deployment config, or name of custom DeploymentConfig.
+    Type: String
+    Default: AllAtOnce
+
   SamValidateLintWorkaround:
     Description: Do not update or override. This allows the definition of a resource that is never deployed.
     Type: String
@@ -82,7 +88,7 @@ Mappings:
     staging:
       ApiBurstLimit: 10
       ApiRateLimit: 10
-      IpvCoreVpceId: "vpce-0555f751a645d7639"
+      IpvCoreVpceId: "vpce-0cc0de10742b83b8a"
     integration:
       ApiBurstLimit: 0
       ApiRateLimit: 0
@@ -179,6 +185,16 @@ Mappings:
     production:
       BaseDns: review-b-async.account.gov.uk
 
+  CslsConfiguration:    
+    build:      
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+    staging:      
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+    integration:      
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+    production:     
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+
   EnvironmentVariables:
     dev:
       STSBASEURL: 'https://sts-mock.review-b-async.dev.account.gov.uk'
@@ -242,6 +258,9 @@ Conditions:
       - !Ref Environment
       - dev
 
+  isNotDev: 
+    !Not [!Equals [!Ref Environment, dev]]
+
   isNotDevOrBuild: !Or
     - !Equals
       - !Ref Environment
@@ -299,6 +318,10 @@ Conditions:
       - !Ref Environment
       - staging
 
+  DeployProxyCsls: !And
+    - Condition: ProxyApiDeployment
+    - Condition: isNotDev
+    
 # This condition is in place so that we can add a resource to this parent.yaml template that is never deployed.
   NeverDeploy: !Equals
     - !Ref SamValidateLintWorkaround
@@ -332,6 +355,9 @@ Globals:
       LogFormat: JSON
     Architectures:
       - arm64
+    DeploymentPreference:
+      Enabled: false
+      Role: !GetAtt CodeDeployServiceRole.Arn
     Environment:
       Variables:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn

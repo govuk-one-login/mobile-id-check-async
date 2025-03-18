@@ -23,6 +23,14 @@ Resources:
             Path: /async/biometricToken
             Method: post
             RestApiId: !Ref SessionsApi
+      DeploymentPreference:
+        Enabled: true
+        Alarms: !If
+          - DeployAlarms
+          - - !Ref AsyncBiometricTokenErrorRateAlarm        
+            - !Ref AsyncBiometricTokenLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Type: !Ref LambdaDeploymentPreference
       Environment:
         Variables:
           BIOMETRIC_SUBMITTER_KEY_SECRET_PATH_PASSPORT: !FindInMap [EnvironmentVariables, !Ref Environment, BiometricSubmitterKeySecretPathPassport]
@@ -56,6 +64,15 @@ Resources:
     Properties:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-biometric-token
+
+  AsyncBiometricTokenSubscriptionFilter:    
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: 
+        !FindInMap [CslsConfiguration, !Ref Environment, CSLSEGRESS]
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncBiometricTokenLogGroup
+    Condition: isNotDev
 
   AsyncBiometricTokenLambdaRole:
     Type: AWS::IAM::Role

@@ -16,6 +16,14 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-finish-biometric-session
       Runtime: nodejs20.x
       Handler: asyncFinishBiometricSessionHandler.lambdaHandler
+      DeploymentPreference:
+        Enabled: true
+        Alarms: !If
+          - DeployAlarms
+          - - !Ref AsyncFinishBiometricSessionErrorRateAlarm            
+            - !Ref AsyncFinishBiometricSessionLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Type: !Ref LambdaDeploymentPreference
       Events:
         AsyncFinishBiometricSession:
           Type: Api
@@ -46,6 +54,15 @@ Resources:
     Properties:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-finish-biometric-session
+
+  AsyncFinishBiometricSessionSubscriptionFilter:    
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: 
+        !FindInMap [CslsConfiguration, !Ref Environment, CSLSEGRESS]
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
+    Condition: isNotDev
 
   AsyncFinishBiometricSessionLambdaRole:
     Type: AWS::IAM::Role

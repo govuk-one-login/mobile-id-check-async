@@ -60,11 +60,14 @@ describe("Async Finish Biometric Session", () => {
     writeGenericEvent: mockWriteGenericEventFaiilure,
   };
 
-  const mockSessionUpdateSuccess = jest
-    .fn()
-    .mockResolvedValue(
-      successResult({ attributes: validBiometricSessionFinishedAttributes }),
-    );
+  const mockSessionUpdateSuccess = jest.fn().mockResolvedValue(
+    successResult({
+      attributes: {
+        ...validBiometricSessionFinishedAttributes,
+        redirectUri: "www.mockRedirectUri.com",
+      },
+    }),
+  );
 
   const mockSuccessfulSessionRegistry = {
     ...mockInertSessionRegistry,
@@ -300,9 +303,7 @@ describe("Async Finish Biometric Session", () => {
             sessionId: expiredSessionAttributes.sessionId,
             sub: expiredSessionAttributes.subjectIdentifier,
             transactionId: mockBiometricSessionId,
-            extensions: {
-              suspected_fraud_signal: "AUTH_SESSION_TOO_OLD",
-            },
+            suspected_fraud_signal: "AUTH_SESSION_TOO_OLD",
           });
           expect(result.statusCode).toBe(403);
         });
@@ -517,7 +518,7 @@ describe("Async Finish Biometric Session", () => {
           componentId: "mockIssuer",
           getNowInMilliseconds: Date.now,
           govukSigninJourneyId: "mockGovukSigninJourneyId",
-          sessionId: "mockSessionId",
+          sessionId: mockSessionId,
           sub: "mockSubjectIdentifier",
           transactionId: mockBiometricSessionId,
           ipAddress: "1.1.1.1",
@@ -538,7 +539,7 @@ describe("Async Finish Biometric Session", () => {
     });
   });
 
-  describe("Given a valid request is made", () => {
+  describe("Given a request containing a valid sessionId is made", () => {
     beforeEach(async () => {
       result = await lambdaHandlerConstructor(
         dependencies,
@@ -557,17 +558,68 @@ describe("Async Finish Biometric Session", () => {
       );
     });
 
+    describe("Given sending DCMAW_ASYNC_APP_END event fails", () => {
+      beforeEach(async () => {
+        dependencies = {
+          ...dependencies,
+          getEventService: () => mockFailingEventService,
+        };
+
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+
+      it("Logs the DCMAW_ASYNC_APP_END event failure", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+          data: {
+            auditEventName: "DCMAW_ASYNC_APP_END",
+          },
+        });
+      });
+
+      it("Returns 500 Internal server error", () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
+        });
+      });
+    });
+
+    it("Writes DCMAW_ASYNC_APP_END event to TxMA", () => {
+      expect(mockWriteGenericEventSuccess).toBeCalledWith({
+        eventName: "DCMAW_ASYNC_APP_END",
+        sub: "mockSubjectIdentifier",
+        sessionId: mockSessionId,
+        govukSigninJourneyId: "mockGovukSigninJourneyId",
+        componentId: "mockIssuer",
+        transactionId: "f32432a9-0965-4da9-8a2c-a98a79349d4a",
+        redirect_uri: "www.mockRedirectUri.com",
+        suspected_fraud_signal: undefined,
+        getNowInMilliseconds: Date.now,
+        ipAddress: "1.1.1.1",
+        txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
+      });
+    });
+
     it("Logs COMPLETED", async () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_COMPLETED",
       });
     });
 
-    it("Returns 501 Not Implemented response", async () => {
+    it("Returns 200 OK response", async () => {
       expect(result).toStrictEqual({
         headers: expectedSecurityHeaders,
-        statusCode: 501,
-        body: JSON.stringify({ error: "Not Implemented" }),
+        statusCode: 200,
+        body: "",
       });
     });
   });

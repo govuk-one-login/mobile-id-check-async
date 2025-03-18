@@ -28,6 +28,7 @@ describe("Event Service", () => {
     "DCMAW_ASYNC_CRI_START",
     "DCMAW_ASYNC_CRI_4XXERROR",
     "DCMAW_ASYNC_CRI_5XXERROR",
+    "DCMAW_ASYNC_APP_END",
   ])("Writing generic TxMA events to SQS", (genericEventName) => {
     describe(`Given writing ${genericEventName} event to SQS fails`, () => {
       beforeEach(async () => {
@@ -42,6 +43,8 @@ describe("Event Service", () => {
           componentId: "mockComponentId",
           ipAddress: "mockIpAddress",
           txmaAuditEncoded: "mockTxmaAuditEncoded",
+          redirect_uri: undefined,
+          suspected_fraud_signal: undefined,
         });
       });
 
@@ -92,6 +95,8 @@ describe("Event Service", () => {
             componentId: "mockComponentId",
             ipAddress: "mockIpAddress",
             txmaAuditEncoded: undefined,
+            redirect_uri: undefined,
+            suspected_fraud_signal: undefined,
           });
         });
 
@@ -136,6 +141,8 @@ describe("Event Service", () => {
             componentId: "mockComponentId",
             ipAddress: "mockIpAddress",
             txmaAuditEncoded: "mockTxmaAuditEncoded",
+            redirect_uri: undefined,
+            suspected_fraud_signal: undefined,
           });
         });
 
@@ -256,6 +263,7 @@ describe("Event Service", () => {
           documentType: "NFC_PASSPORT",
           ipAddress: "mockIpAddress",
           txmaAuditEncoded: "mockTxmaAuditEncoded",
+          redirect_uri: undefined,
         });
       });
 
@@ -309,6 +317,7 @@ describe("Event Service", () => {
             documentType: "NFC_PASSPORT",
             ipAddress: "mockIpAddress",
             txmaAuditEncoded: undefined,
+            redirect_uri: undefined,
           });
         });
 
@@ -356,6 +365,7 @@ describe("Event Service", () => {
             documentType: "NFC_PASSPORT",
             ipAddress: "mockIpAddress",
             txmaAuditEncoded: "mockTxmaAuditEncoded",
+            redirect_uri: undefined,
           });
         });
 
@@ -412,6 +422,8 @@ describe("Event Service", () => {
           transactionId: "mockTransactionId",
           ipAddress: "mockIpAddress",
           txmaAuditEncoded: undefined,
+          redirect_uri: "http://www.mockRedirectUri.com",
+          suspected_fraud_signal: undefined,
         });
       });
 
@@ -429,6 +441,9 @@ describe("Event Service", () => {
             event_timestamp_ms: 1609462861000,
             event_name: "DCMAW_ASYNC_CRI_4XXERROR",
             component_id: "mockComponentId",
+            extensions: {
+              redirect_uri: "http://www.mockRedirectUri.com",
+            },
           }),
           QueueUrl: "mockSqsQueue",
         };
@@ -456,9 +471,8 @@ describe("Event Service", () => {
           componentId: "mockComponentId",
           eventName: "DCMAW_ASYNC_CRI_4XXERROR",
           transactionId: "mockTransactionId",
-          extensions: {
-            suspected_fraud_signal: "AUTH_SESSION_NOT_FOUND",
-          },
+          redirect_uri: "http://www.mockRedirectUri.com",
+          suspected_fraud_signal: "AUTH_SESSION_NOT_FOUND",
           ipAddress: undefined,
           txmaAuditEncoded: undefined,
         });
@@ -478,6 +492,7 @@ describe("Event Service", () => {
             event_name: "DCMAW_ASYNC_CRI_4XXERROR",
             component_id: "mockComponentId",
             extensions: {
+              redirect_uri: "http://www.mockRedirectUri.com",
               suspected_fraud_signal: "AUTH_SESSION_NOT_FOUND",
             },
           }),
