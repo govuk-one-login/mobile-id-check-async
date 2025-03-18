@@ -52,6 +52,11 @@ export class LogMessage implements LogAttributes {
     "No session found when attempting to get the user session from DynamoDB.",
   );
 
+  static readonly GET_SESSION_SESSION_INVALID = new LogMessage(
+    "MOBILE_ASYNC_GET_SESSION_SESSION_INVALID",
+    "The session retrieved from DynamoDB is not valid.",
+  );
+
   static readonly GET_SESSION_SUCCESS = new LogMessage(
     "MOBILE_ASYNC_GET_SESSION_SUCCESS",
     "Successfully retrieved user session from DynamoDB.",
@@ -266,9 +271,13 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_TXMA_EVENT_REQUEST_BODY_INVALID",
     "The incoming request body was missing or invalid.",
   );
-  static readonly TXMA_EVENT_INVALID_SESSION = new LogMessage(
-    "MOBILE_ASYNC_TXMA_EVENT_INVALID_SESSION",
-    "Session is missing or invalid",
+  static readonly TXMA_EVENT_SESSION_NOT_FOUND = new LogMessage(
+    "MOBILE_ASYNC_TXMA_EVENT_SESSION_NOT_FOUND",
+    "Failed to retrieve a session",
+  );
+  static readonly TXMA_EVENT_SESSION_INVALID = new LogMessage(
+    "MOBILE_ASYNC_TXMA_EVENT_SESSION_INVALID",
+    "The retrieved session is not valid",
   );
   static readonly TXMA_EVENT_COMPLETED = new LogMessage(
     "MOBILE_ASYNC_TXMA_EVENT_COMPLETED",

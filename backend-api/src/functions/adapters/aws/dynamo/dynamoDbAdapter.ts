@@ -21,7 +21,7 @@ import { logger } from "../../../common/logging/logger";
 import { LogMessage } from "../../../common/logging/LogMessage";
 import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
 import {
-  BiometricTokenIssuedSessionAttributes,
+  BaseSessionAttributes,
   SessionAttributes,
   SessionState,
 } from "../../../common/session/session";
@@ -45,6 +45,7 @@ import {
   errorResult,
   successResult,
 } from "../../../utils/result";
+import { InvalidSessionAttributes } from "../../../common/session/getOperations/TxmaEvent/TxMAEvent";
 
 export type DatabaseRecord = Record<string, NativeAttributeValue>;
 
@@ -164,26 +165,35 @@ export class DynamoDbAdapter implements SessionRegistry {
 
     const responseItem = response.Item;
     if (responseItem == null) {
-      logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND, {
-        session: "Session not found",
-      });
-
-      return errorResult({
-        errorType: GetSessionError.SESSION_NOT_FOUND,
-        session: "Session not found",
+      return this.handleGetSessionNotFoundError({
+        errorMessage: sessionNotFound,
       });
     }
 
+    // Attribute type validation
     const getSessionAttributesResult =
       getOperation.getSessionAttributesFromDynamoDbItem(responseItem);
     if (getSessionAttributesResult.isError) {
       return this.handleGetSessionNotFoundError({
-        errorMessage:
-          "Session could not be parsed or session validation failed",
-        session: unmarshall(responseItem) || "Session could not be parsed",
+        errorMessage: sessionNotFound,
       });
     }
     const sessionAttributes = getSessionAttributesResult.value;
+
+    // session validation
+    const { sessionState, createdAt } = sessionAttributes;
+    const validateSessionResult = getOperation.validateSession({
+      sessionState,
+      createdAt,
+    });
+
+    if (validateSessionResult.isError) {
+      const { invalidAttribute } = validateSessionResult.value;
+      return this.handleGetSessionInvalidError({
+        invalidAttribute,
+        sessionAttributes,
+      });
+    }
 
     logger.debug(LogMessage.GET_SESSION_SUCCESS);
     return successResult(sessionAttributes);
@@ -307,20 +317,51 @@ export class DynamoDbAdapter implements SessionRegistry {
 
   private handleGetSessionNotFoundError({
     errorMessage,
-    session,
-  }: ErrorData): FailureWithValue<SessionRetrievalFailedSessionNotFound> {
+  }: {
+    errorMessage: string;
+  }): FailureWithValue<SessionRetrievalFailedSessionNotFound> {
     logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND, {
       errorMessage,
-      session,
     });
+
     return errorResult({
       errorType: GetSessionError.SESSION_NOT_FOUND,
-      session,
+      errorMessage,
+    });
+  }
+
+  private handleGetSessionInvalidError({
+    invalidAttribute,
+    sessionAttributes,
+  }: GetSessionInvalidErrorData): FailureWithValue<SessionRetrievalFailedSessionInvalid> {
+    logger.error(LogMessage.GET_SESSION_SESSION_INVALID, {
+      invalidAttribute,
+      sessionAttributes,
+    });
+
+    return errorResult({
+      errorType: GetSessionError.SESSION_INVALID,
+      data: {
+        invalidAttribute,
+        sessionAttributes,
+      },
     });
   }
 }
 
-interface ErrorData {
-  errorMessage: string;
-  session: Partial<BiometricTokenIssuedSessionAttributes> | string;
+const sessionNotFound = "Session not found";
+
+// interface GetSessionNotFoundErrorData {
+//   errorMessage: string;
+//   session: Partial<BiometricTokenIssuedSessionAttributes> | string;
+// }
+
+interface SessionRetrievalFailedSessionInvalid {
+  errorType: GetSessionError.SESSION_INVALID;
+  data: GetSessionInvalidErrorData;
+}
+
+interface GetSessionInvalidErrorData {
+  invalidAttribute: Partial<InvalidSessionAttributes>;
+  sessionAttributes: Partial<BaseSessionAttributes>;
 }

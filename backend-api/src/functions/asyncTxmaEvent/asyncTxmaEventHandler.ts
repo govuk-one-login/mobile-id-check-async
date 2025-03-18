@@ -14,10 +14,10 @@ import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
 import { TxMAEvent } from "../common/session/getOperations/TxmaEvent/TxMAEvent";
-import { BiometricTokenIssuedSessionAttributes } from "../common/session/session";
 import {
   GetSessionError,
   SessionRetrievalFailed,
+  SessionRetrievalFailedSessionInvalidData,
 } from "../common/session/SessionRegistry";
 import { GenericEventNames, IEventService } from "../services/events/types";
 import { Result } from "../utils/result";
@@ -108,8 +108,9 @@ async function handleGetSessionError({
       return handleSessionNotFound({
         eventService,
         eventData,
-        sessionData: errorData.session,
       });
+    case GetSessionError.SESSION_INVALID:
+      return handleSessionInvalid({ eventService, eventData, sessionData: errorData.data });
   }
 }
 
@@ -139,11 +140,9 @@ async function handleInternalServerError({
 async function handleSessionNotFound({
   eventService,
   eventData,
-  sessionData,
 }: {
   eventService: IEventService;
   eventData: BaseEventData;
-  sessionData: Partial<BiometricTokenIssuedSessionAttributes> | string;
 }): Promise<APIGatewayProxyResult> {
   const writeEventResult = await writeEvent({
     eventService,
@@ -159,10 +158,45 @@ async function handleSessionNotFound({
     return serverErrorResponse;
   }
 
-  logger.error(LogMessage.TXMA_EVENT_INVALID_SESSION, {
+  logger.error(LogMessage.TXMA_EVENT_SESSION_NOT_FOUND, {
+    data: { auditEventName },
+  });
+  return unauthorizedResponse(
+    "invalid_session",
+    "Session does not exist or in incorrect state",
+  );
+}
+
+async function handleSessionInvalid({
+  eventService,
+  eventData,
+  sessionData,
+}: {
+  eventService: IEventService;
+  eventData: BaseEventData;
+  sessionData: SessionRetrievalFailedSessionInvalidData;
+}): Promise<APIGatewayProxyResult> {
+  const writeEventResult = await writeEvent({
+    eventService,
+    eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+    eventData,
+  });
+
+  const auditEventName = "DCMAW_ASYNC_CRI_4XXERROR";
+  if (writeEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName,
+        ...sessionData,
+      },
+    });
+    return serverErrorResponse;
+  }
+
+  logger.error(LogMessage.TXMA_EVENT_SESSION_INVALID, {
     data: {
       auditEventName,
-      session: sessionData,
+      ...sessionData,
     },
   });
   return unauthorizedResponse(

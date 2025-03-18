@@ -364,7 +364,7 @@ describe("DynamoDbAdapter", () => {
       it("Logs the failure", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_NOT_FOUND",
-          session: "Session not found",
+          errorMessage: "Session not found",
         });
       });
 
@@ -372,13 +372,52 @@ describe("DynamoDbAdapter", () => {
         expect(result).toEqual(
           errorResult({
             errorType: GetSessionError.SESSION_NOT_FOUND,
-            session: "Session not found",
+            errorMessage: "Session not found",
           }),
         );
       });
     });
 
     describe("Session validation", () => {
+      describe("Given the session attributes failed type validation", () => {
+        const invalidBiometricTokenIssuedSessionAttributesMissingAttributes = {
+          clientId: "mockClientId",
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
+          createdAt: 1704106860000, // 2024-01-01 11:01:00.000
+          issuer: "mockIssuer",
+          clientState: "mockClientState",
+          subjectIdentifier: "mockSubjectIdentifier",
+          timeToLive: 12345,
+        };
+        beforeEach(async () => {
+          mockDynamoDbClient.on(GetItemCommand).resolves({
+            Item: marshall(
+              invalidBiometricTokenIssuedSessionAttributesMissingAttributes,
+            ),
+          });
+          result = await sessionRegistry.getSession(
+            mockSessionId,
+            getOperation,
+          );
+        });
+
+        it("Logs the failure", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_NOT_FOUND",
+            errorMessage: "Session not found",
+          });
+        });
+
+        it("Returns failure with server error", () => {
+          expect(result).toEqual(
+            errorResult({
+              errorType: GetSessionError.SESSION_NOT_FOUND,
+              errorMessage: "Session not found",
+            }),
+          );
+        });
+      });
+
       describe("Given the session is in the wrong state", () => {
         const invalidBiometricTokenIssuedSessionAttributesWrongSessionState = {
           ...validBiometricTokenIssuedSessionAttributes,
@@ -405,10 +444,11 @@ describe("DynamoDbAdapter", () => {
 
         it("Logs the failure", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_NOT_FOUND",
-            errorMessage:
-              "Session could not be parsed or session validation failed",
-            session:
+            messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_INVALID",
+            invalidAttribute: {
+              sessionState: SessionState.AUTH_SESSION_CREATED,
+            },
+            sessionAttributes:
               invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
           });
         });
@@ -416,8 +456,11 @@ describe("DynamoDbAdapter", () => {
         it("Returns failure with an invalid session error", () => {
           expect(result).toStrictEqual(
             errorResult({
-              errorType: GetSessionError.SESSION_NOT_FOUND,
-              session:
+              errorType: GetSessionError.SESSION_INVALID,
+              invalidAttribute: {
+                sessionState: SessionState.AUTH_SESSION_CREATED,
+              },
+              sessionAttributes:
                 invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
             }),
           );
@@ -447,16 +490,19 @@ describe("DynamoDbAdapter", () => {
 
         it("Logs the failure", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_NOT_FOUND",
-            session: invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
+            messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_INVALID",
+            invalidAttribute: { createdAt: 1704106740000 }, // 2024-01-01 10:59:00.000
+            sessionAttributes:
+              invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
           });
         });
 
         it("Returns failure with an invalid session error", () => {
           expect(result).toStrictEqual(
             errorResult({
-              errorType: GetSessionError.SESSION_NOT_FOUND,
-              session:
+              errorType: GetSessionError.SESSION_INVALID,
+              invalidAttribute: { createdAt: 1704106740000 }, // 2024-01-01 10:59:00.000
+              sessionAttributes:
                 invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
             }),
           );
@@ -465,49 +511,6 @@ describe("DynamoDbAdapter", () => {
     });
 
     describe("Given the session was found", () => {
-      describe("Given invalid session attributes were returned in response", () => {
-        const invalidBiometricTokenIssuedSessionAttributesMissingAttributes = {
-          clientId: "mockClientId",
-          govukSigninJourneyId: "mockGovukSigninJourneyId",
-          createdAt: 1704106860000, // 2024-01-01 11:01:00.000
-          issuer: "mockIssuer",
-          clientState: "mockClientState",
-          subjectIdentifier: "mockSubjectIdentifier",
-          timeToLive: 12345,
-        };
-        beforeEach(async () => {
-          mockDynamoDbClient.on(GetItemCommand).resolves({
-            Item: marshall(
-              invalidBiometricTokenIssuedSessionAttributesMissingAttributes,
-            ),
-          });
-          result = await sessionRegistry.getSession(
-            mockSessionId,
-            getOperation,
-          );
-        });
-
-        it("Logs the failure", () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_NOT_FOUND",
-            errorMessage:
-              "Session could not be parsed or session validation failed",
-            session:
-              invalidBiometricTokenIssuedSessionAttributesMissingAttributes,
-          });
-        });
-
-        it("Returns failure with server error", () => {
-          expect(result).toEqual(
-            errorResult({
-              errorType: GetSessionError.SESSION_NOT_FOUND,
-              session:
-                invalidBiometricTokenIssuedSessionAttributesMissingAttributes,
-            }),
-          );
-        });
-      });
-
       describe("Given valid session attributes were returned in response", () => {
         const validBiometricTokenIssuedSessionAttributesItem = marshall({
           ...validBiometricTokenIssuedSessionAttributes,

@@ -1,6 +1,7 @@
 import { AttributeValue, GetItemCommandInput } from "@aws-sdk/client-dynamodb";
 import { Result } from "../../../utils/result";
-import { SessionAttributes } from "../session";
+import { BaseSessionAttributes, SessionAttributes } from "../session";
+import { InvalidSessionData } from "./TxmaEvent/TxMAEvent";
 
 export interface GetSessionOperation {
   getDynamoDbGetCommandInput({
@@ -14,4 +15,8 @@ export interface GetSessionOperation {
   getSessionAttributesFromDynamoDbItem(
     item: Record<string, AttributeValue> | undefined,
   ): Result<SessionAttributes, void>;
+
+  validateSession(
+    attributes: Partial<BaseSessionAttributes>,
+  ): Result<void, InvalidSessionData>;
 }
