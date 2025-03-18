@@ -51,6 +51,7 @@ export async function lambdaHandlerConstructor(
   }
 
   const clientCredentials = eventHeadersResult.value;
+  logger.debug(`IPV_DEBUG clientCredentials ${clientCredentials}`);
 
   // Retrieving issuer and validating client secrets
   const clientRegistryService = dependencies.clientRegistryService(

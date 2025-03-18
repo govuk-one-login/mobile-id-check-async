@@ -33,7 +33,7 @@ export class RequestService implements IRequestService {
     }
 
     // Temporary log for IPVCore testing in Staging
-    logger.debug("Authorization header", { authorizationHeader });
+    logger.debug("IPV_DEBUG Authorization header", { authorizationHeader });
 
     if (!authorizationHeader.startsWith("Basic ")) {
       return errorResult({
@@ -43,11 +43,16 @@ export class RequestService implements IRequestService {
     }
 
     const base64EncodedCredential = authorizationHeader.split(" ")[1];
+    logger.debug("IPV_DEBUG base64EncodedCredential", base64EncodedCredential);
+
     const base64DecodedCredential = Buffer.from(
       base64EncodedCredential,
       "base64",
     ).toString("utf-8");
+    logger.debug("IPV_DEBUG base64DecodedCredential", base64DecodedCredential);
+
     const [clientId, clientSecret] = base64DecodedCredential.split(":");
+    logger.debug("IPV_DEBUG clientId", clientId);
 
     if (!clientId || !clientSecret) {
       return errorResult({

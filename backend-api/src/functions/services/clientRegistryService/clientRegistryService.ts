@@ -10,6 +10,7 @@ import {
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
 import { isValidUrl } from "../utils/isValidUrl";
+import { logger } from "../../common/logging/logger";
 
 let cache: CacheEntry | null = null;
 
@@ -35,6 +36,8 @@ export class ClientRegistryService
     if (clientRegistryResult.isError)
       return errorResult(clientRegistryResult.value);
     const clientRegistry = clientRegistryResult.value;
+
+    logger.debug("IPV_DEBUG secrets.clientId", secrets.clientId);
 
     const registeredClient = this.getRegisteredClientByClientId(
       clientRegistry,
