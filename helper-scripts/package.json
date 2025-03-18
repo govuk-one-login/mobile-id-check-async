@@ -7,8 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "./node_modules/.bin/tsc",
-    "start": "node dist/createHashedSecret.js",
-    "generateHashedSecret": "npm run build && npm run start"
+    "start": "node dist/generateHashedSecret/generateHashedSecret",
+    "generateHashedSecret": "npm run build --silent && npm run start --silent"
   },
   "author": "",
   "license": "ISC",
