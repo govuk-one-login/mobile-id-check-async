@@ -274,10 +274,6 @@ Conditions:
       - !Ref Environment
       - build
 
-  LogIPVCoreRequestHeader: !Equals
-    - !Ref Environment
-    - staging
-
   NeverDeploy: !Equals
     - !Ref SamValidateLintWorkaround
     - Should always equal false
@@ -2998,13 +2994,6 @@ Resources:
             - ClientRegistrySecretPath
       FunctionName: !Sub ${AWS::StackName}-token
       Handler: asyncTokenHandler.lambdaHandler
-      LoggingConfig:
-        ApplicationLogLevel: !If
-          - LogIPVCoreRequestHeader
-          - DEBUG
-          - INFO
-        LogFormat: JSON
-        SystemLogLevel: INFO
       Role: !GetAtt AsyncTokenLambdaRole.Arn
       Runtime: nodejs20.x
       VpcConfig:
