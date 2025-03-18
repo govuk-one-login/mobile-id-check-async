@@ -42,3 +42,8 @@ export const generatingHashedSecretMessage = ():void => {
   echo(chalk.italic("Generating hashed secret..."))
   echo("")
 }
+
+export const unexpectedErrorMessage = (error: unknown): void => {
+    echo("")
+    echo("Script unexpectedly stopped. ", error)
+}
