@@ -43,6 +43,10 @@ export const generatingHashedSecretMessage = (): void => {
   echo("");
 };
 
+export const confirmSuccessfullyHashedSecret = (hashedSecret: string): void => {
+  echo(chalk.green(hashedSecret));
+}
+
 export const unexpectedErrorMessage = (error: unknown): void => {
   echo("");
   echo("Script unexpectedly stopped. ", error);
