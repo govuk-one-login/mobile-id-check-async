@@ -39,7 +39,7 @@ Note: This script generates individual `.env` files your `backend-api` stack and
 
 ### What it does
 
-Takes in a secret and salt values, and uses them to generate a hashed secret
+Takes in secret and salt values, and uses them to generate a hashed secret
 
 ### How to use it
 
