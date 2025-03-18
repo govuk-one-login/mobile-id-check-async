@@ -8,7 +8,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "./node_modules/.bin/tsc",
     "start": "node dist/generateHashedSecret/generateHashedSecret",
-    "generateHashedSecret": "npm run build --silent && npm run start --silent"
+    "generateHashedSecret": "npm run build --silent && npm run start --silent",
+    "format": "./node_modules/.bin/prettier --write '**/*.ts'",
+    "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
+    "lint": "./node_modules/.bin/eslint ./src"
   },
   "author": "",
   "license": "ISC",
@@ -17,7 +20,11 @@
     "zx": "^8.4.1"
   },
   "devDependencies": {
+    "eslint": "^9.20.0",
+    "eslint-config-prettier": "^10.0.1",
+    "prettier": "^3.4.2",
     "@types/node": "^22.13.10",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.23.0"
   }
 }
