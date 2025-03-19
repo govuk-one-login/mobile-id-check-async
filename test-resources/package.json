@@ -9,11 +9,14 @@
     "build:infra": "./combine_template.sh",
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
+    "format:pull-request": "npm run format:check",
     "lint": "./node_modules/.bin/eslint ./src",
+    "lint:pull-request": "npm run lint",
     "test": "./node_modules/.bin/jest --testPathIgnorePatterns=api-tests/",
     "test:api": "./node_modules/.bin/jest --testPathPattern=api-tests/",
     "test:infra": "./node_modules/.bin/jest --testPathPattern=infrastructure-tests/",
-    "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/infrastructure-tests api-tests"
+    "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/infrastructure-tests api-tests",
+    "test:pull-request": "npm run test"
   },
   "engines": {
     "node": "20"
