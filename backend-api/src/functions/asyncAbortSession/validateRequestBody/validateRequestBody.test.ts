@@ -69,9 +69,7 @@ describe("Validate request body", () => {
 
       expect(result).toStrictEqual({
         isError: false,
-        value: {
-          sessionId: mockSessionId,
-        },
+        value: mockSessionId,
       });
     });
   });
