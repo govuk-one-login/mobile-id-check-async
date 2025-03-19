@@ -11,7 +11,7 @@ import { expect } from "@jest/globals";
 import { mockClient } from "aws-sdk-client-mock";
 import "../../../../../tests/testUtils/matchers";
 import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
-import { TxMAEvent } from "../../../common/session/getOperations/TxmaEvent/TxMAEvent";
+import { TxMAEventGetSessionOperation } from "../../../common/session/getOperations/TxmaEvent/TxmaEventGetSessionOperation";
 import { SessionState } from "../../../common/session/session";
 import {
   GetSessionError,
@@ -486,7 +486,8 @@ describe("DynamoDbAdapter", () => {
   });
 
   describe("getSession", () => {
-    const getOperation: GetSessionOperation = new TxMAEvent();
+    const getOperation: GetSessionOperation =
+      new TxMAEventGetSessionOperation();
     let result: Result<void, GetSessionFailed>;
 
     describe("On every attempt", () => {

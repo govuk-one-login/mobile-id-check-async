@@ -13,7 +13,7 @@ import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
-import { TxMAEvent } from "../common/session/getOperations/TxmaEvent/TxMAEvent";
+import { TxMAEventGetSessionOperation } from "../common/session/getOperations/TxmaEvent/TxmaEventGetSessionOperation";
 import {
   GetSessionError,
   GetSessionFailed,
@@ -58,7 +58,7 @@ export async function lambdaHandlerConstructor(
   );
   const getSessionResult = await sessionRegistry.getSession(
     sessionId,
-    new TxMAEvent(),
+    new TxMAEventGetSessionOperation(),
   );
 
   const { ipAddress, txmaAuditEncoded } = getAuditData(event);

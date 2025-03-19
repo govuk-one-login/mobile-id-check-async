@@ -10,21 +10,21 @@ import {
   errorResult,
   successResult,
 } from "../../../../utils/result";
-import { TxMAEvent } from "./TxMAEvent";
+import { TxMAEventGetSessionOperation } from "./TxmaEventGetSessionOperation";
 import { SessionState } from "../../session";
 
 describe("TxMA event", () => {
-  let txmaEvent: TxMAEvent;
+  let getSessionOperation: TxMAEventGetSessionOperation;
 
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(NOW_IN_MILLISECONDS);
-    txmaEvent = new TxMAEvent();
+    getSessionOperation = new TxMAEventGetSessionOperation();
   });
 
   describe("When I request the DynamoDB command input", () => {
     it("Returns the appropriate GetItemCommand input", () => {
-      const result = txmaEvent.getDynamoDbGetCommandInput({
+      const result = getSessionOperation.getDynamoDbGetCommandInput({
         tableName: "mock_table_name",
         keyValue: mockSessionId,
       });
@@ -38,7 +38,7 @@ describe("TxMA event", () => {
   describe("When I request the getSessionAttributesFromDynamoDbItem", () => {
     describe("Given a session attributes item was provided that does not include all BiometricTokenIssuedSessionAttributes properties", () => {
       it("Returns an emptyFailure", () => {
-        const result = txmaEvent.getSessionAttributesFromDynamoDbItem(
+        const result = getSessionOperation.getSessionAttributesFromDynamoDbItem(
           marshall({
             sessionId: mockSessionId,
           }),
@@ -54,7 +54,7 @@ describe("TxMA event", () => {
       );
 
       it("Returns successResult with BiometricTokenIssuedSessionAttributes session attributes", () => {
-        const result = txmaEvent.getSessionAttributesFromDynamoDbItem(
+        const result = getSessionOperation.getSessionAttributesFromDynamoDbItem(
           marshall(validBiometricTokenIssuedSessionAttributes),
         );
 
@@ -75,7 +75,7 @@ describe("TxMA event", () => {
       };
 
       it("Return and error result with the invalid attribute", () => {
-        const result = txmaEvent.validateSession(
+        const result = getSessionOperation.validateSession(
           invalidSessionAttributesWrongSessionState,
         );
 
@@ -96,7 +96,7 @@ describe("TxMA event", () => {
       };
 
       it("Return and error result with the invalid attribute", () => {
-        const result = txmaEvent.validateSession(
+        const result = getSessionOperation.validateSession(
           invalidSessionAttributesSessionTooOld,
         );
 
@@ -115,7 +115,9 @@ describe("TxMA event", () => {
       };
 
       it("Return and error result with the invalid attribute", () => {
-        const result = txmaEvent.validateSession(validSessionAttributes);
+        const result = getSessionOperation.validateSession(
+          validSessionAttributes,
+        );
 
         expect(result).toEqual(emptySuccess());
       });

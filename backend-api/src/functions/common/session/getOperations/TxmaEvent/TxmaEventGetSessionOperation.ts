@@ -12,7 +12,7 @@ import {
   ValidateSessionAttributes,
 } from "../../SessionRegistry";
 
-export class TxMAEvent implements GetSessionOperation {
+export class TxMAEventGetSessionOperation implements GetSessionOperation {
   getDynamoDbGetCommandInput({
     tableName,
     keyValue,
