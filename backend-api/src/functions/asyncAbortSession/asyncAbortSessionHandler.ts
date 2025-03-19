@@ -26,12 +26,13 @@ export async function lambdaHandlerConstructor(
 
   const validateResult = validateRequestBody(event.body);
   if (validateResult.isError) {
+    const errorMessage = validateResult.value.errorMessage;
     logger.error(LogMessage.ABORT_SESSION_REQUEST_BODY_INVALID, {
-      errorMessage: validateResult.value.errorMessage,
+      errorMessage,
     });
     return badRequestResponse(
       "invalid_request",
-      validateResult.value.errorMessage,
+      errorMessage,
     );
   }
 

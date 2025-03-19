@@ -26,9 +26,7 @@ export function validateRequestBody(
     return validateSessionIdResult;
   }
 
-  return successResult({
-    sessionId,
-  });
+  return successResult(sessionId);
 }
 
 interface IAsyncAbortSessionValidParsedRequestBody {
