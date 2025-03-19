@@ -29,4 +29,4 @@ export function validateRequestBody(
   return successResult(sessionId);
 }
 
-type IAsyncAbortSessionValidParsedRequestBody = string;
+type IAsyncAbortSessionValidParsedRequestBody = Result<string>;
