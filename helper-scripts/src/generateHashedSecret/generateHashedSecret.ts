@@ -14,4 +14,5 @@ try {
   echoSuccessfullyHashedSecret(hashedSecret);
 } catch (error: unknown) {
   unexpectedErrorMessage(error);
+  process.exit(1);
 }
