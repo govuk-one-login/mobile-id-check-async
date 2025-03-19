@@ -5,7 +5,6 @@ import {
   BaseSessionAttributes,
   BiometricSessionFinishedAttributes,
   BiometricTokenIssuedSessionAttributes,
-  SessionState,
 } from "../session";
 
 export const getBaseSessionAttributes = (

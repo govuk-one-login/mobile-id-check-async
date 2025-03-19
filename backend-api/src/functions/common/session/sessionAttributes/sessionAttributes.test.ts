@@ -1,18 +1,18 @@
-import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
-import {
-  getBaseSessionAttributes,
-  getBiometricSessionFinishedSessionAttributes,
-  getBiometricTokenIssuedSessionAttributes,
-} from "./sessionAttributes";
-import { emptyFailure, successResult } from "../../../utils/result";
-import { SessionAttributes, SessionState } from "../session";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
+import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import {
   NOW_IN_MILLISECONDS,
   validBaseSessionAttributes,
   validBiometricSessionFinishedAttributes,
   validBiometricTokenIssuedSessionAttributes,
 } from "../../../testUtils/unitTestData";
+import { emptyFailure, successResult } from "../../../utils/result";
+import { SessionAttributes } from "../session";
+import {
+  getBaseSessionAttributes,
+  getBiometricSessionFinishedSessionAttributes,
+  getBiometricTokenIssuedSessionAttributes,
+} from "./sessionAttributes";
 
 describe("Session attributes", () => {
   beforeEach(() => {
