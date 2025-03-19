@@ -531,8 +531,6 @@ describe("Async Biometric Token", () => {
     });
   });
 
-  // describe("Session validation")
-
   describe("Given a valid request is made", () => {
     beforeEach(async () => {
       result = await lambdaHandlerConstructor(

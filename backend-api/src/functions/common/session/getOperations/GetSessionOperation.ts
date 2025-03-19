@@ -2,7 +2,7 @@ import { AttributeValue, GetItemCommandInput } from "@aws-sdk/client-dynamodb";
 import { Result } from "../../../utils/result";
 import { SessionAttributes } from "../session";
 import {
-  SessionRetrievalValidateSessionInvalidAttribute,
+  ValidateSessionErrorInvalidAttributeData,
   ValidateSessionAttributes,
 } from "../SessionRegistry";
 
@@ -21,5 +21,5 @@ export interface GetSessionOperation {
 
   validateSession(
     attributes: ValidateSessionAttributes,
-  ): Result<void, SessionRetrievalValidateSessionInvalidAttribute>;
+  ): Result<void, ValidateSessionErrorInvalidAttributeData>;
 }

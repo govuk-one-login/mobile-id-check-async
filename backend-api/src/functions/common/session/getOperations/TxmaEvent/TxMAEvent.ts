@@ -8,7 +8,7 @@ import {
 } from "../../sessionAttributes/sessionAttributes";
 import { GetSessionOperation } from "../GetSessionOperation";
 import {
-  SessionRetrievalValidateSessionInvalidAttribute,
+  ValidateSessionErrorInvalidAttributeData,
   ValidateSessionAttributes,
 } from "../../SessionRegistry";
 
@@ -34,7 +34,7 @@ export class TxMAEvent implements GetSessionOperation {
 
   validateSession(
     attributes: ValidateSessionAttributes,
-  ): Result<void, SessionRetrievalValidateSessionInvalidAttribute> {
+  ): Result<void, ValidateSessionErrorInvalidAttributeData> {
     const { sessionState, createdAt } = attributes;
 
     if (!sessionState || sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) {

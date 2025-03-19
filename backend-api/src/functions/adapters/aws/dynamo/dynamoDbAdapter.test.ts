@@ -16,7 +16,7 @@ import { SessionState } from "../../../common/session/session";
 import {
   GetSessionError,
   SessionRegistry,
-  SessionRetrievalFailed,
+  GetSessionFailed,
   SessionUpdated,
   SessionUpdateFailed,
   UpdateSessionError,
@@ -487,7 +487,7 @@ describe("DynamoDbAdapter", () => {
 
   describe("getSession", () => {
     const getOperation: GetSessionOperation = new TxMAEvent();
-    let result: Result<void, SessionRetrievalFailed>;
+    let result: Result<void, GetSessionFailed>;
 
     describe("On every attempt", () => {
       beforeEach(async () => {

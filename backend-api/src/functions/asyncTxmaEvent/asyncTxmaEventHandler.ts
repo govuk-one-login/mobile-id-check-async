@@ -16,8 +16,8 @@ import { getAuditData } from "../common/request/getAuditData/getAuditData";
 import { TxMAEvent } from "../common/session/getOperations/TxmaEvent/TxMAEvent";
 import {
   GetSessionError,
-  SessionRetrievalFailed,
-  SessionRetrievalFailedSessionInvalidData,
+  GetSessionFailed,
+  GetSessionValidateSessionErrorData,
 } from "../common/session/SessionRegistry";
 import { GenericEventNames, IEventService } from "../services/events/types";
 import { Result } from "../utils/result";
@@ -98,7 +98,7 @@ async function handleGetSessionError({
   eventData,
 }: {
   eventService: IEventService;
-  errorData: SessionRetrievalFailed;
+  errorData: GetSessionFailed;
   eventData: BaseEventData;
 }): Promise<APIGatewayProxyResult> {
   switch (errorData.errorType) {
@@ -178,7 +178,7 @@ async function handleSessionInvalid({
 }: {
   eventService: IEventService;
   eventData: BaseEventData;
-  sessionData: SessionRetrievalFailedSessionInvalidData;
+  sessionData: GetSessionValidateSessionErrorData;
 }): Promise<APIGatewayProxyResult> {
   const writeEventResult = await writeEvent({
     eventService,

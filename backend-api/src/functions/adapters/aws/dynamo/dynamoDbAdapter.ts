@@ -22,17 +22,17 @@ import { logger } from "../../../common/logging/logger";
 import { LogMessage } from "../../../common/logging/LogMessage";
 import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
 import {
-  BaseSessionAttributes,
   SessionAttributes,
   SessionState,
 } from "../../../common/session/session";
 import {
   GetSessionError,
+  GetSessionErrorSessionNotFound,
+  GetSessionFailed,
+  GetSessionInternalServerError,
+  GetSessionSessionInvalidErrorData,
+  GetSessionValidateSessionErrorData,
   SessionRegistry,
-  SessionRetrievalFailed,
-  SessionRetrievalFailedInternalServerError,
-  SessionRetrievalFailedSessionNotFound,
-  SessionRetrievalInvalidSessionAttribute,
   SessionUpdateFailed,
   SessionUpdateFailedInternalServerError,
   SessionUpdated,
@@ -146,7 +146,7 @@ export class DynamoDbAdapter implements SessionRegistry {
   async getSession(
     sessionId: string,
     getOperation: GetSessionOperation,
-  ): Promise<Result<SessionAttributes, SessionRetrievalFailed>> {
+  ): Promise<Result<SessionAttributes, GetSessionFailed>> {
     const getItemCommandInput = getOperation.getDynamoDbGetCommandInput({
       tableName: this.tableName,
       keyValue: sessionId,
@@ -329,7 +329,7 @@ export class DynamoDbAdapter implements SessionRegistry {
   }: {
     error: unknown;
     getItemCommandInput: GetItemCommandInput;
-  }): FailureWithValue<SessionRetrievalFailedInternalServerError> {
+  }): FailureWithValue<GetSessionInternalServerError> {
     logger.error(LogMessage.GET_SESSION_UNEXPECTED_FAILURE, {
       error,
       getItemCommandInput,
@@ -343,7 +343,7 @@ export class DynamoDbAdapter implements SessionRegistry {
     errorMessage,
   }: {
     errorMessage: string;
-  }): FailureWithValue<SessionRetrievalFailedSessionNotFound> {
+  }): FailureWithValue<GetSessionErrorSessionNotFound> {
     logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND, {
       errorMessage,
     });
@@ -357,7 +357,7 @@ export class DynamoDbAdapter implements SessionRegistry {
   private handleGetSessionInvalidError({
     invalidAttribute,
     sessionAttributes,
-  }: GetSessionInvalidErrorData): FailureWithValue<SessionRetrievalFailedSessionInvalid> {
+  }: GetSessionValidateSessionErrorData): FailureWithValue<GetSessionSessionInvalidErrorData> {
     logger.error(LogMessage.GET_SESSION_SESSION_INVALID, {
       invalidAttribute,
       sessionAttributes,
@@ -374,13 +374,3 @@ export class DynamoDbAdapter implements SessionRegistry {
 }
 
 const sessionNotFound = "Session not found";
-
-interface SessionRetrievalFailedSessionInvalid {
-  errorType: GetSessionError.SESSION_INVALID;
-  data: GetSessionInvalidErrorData;
-}
-
-interface GetSessionInvalidErrorData {
-  invalidAttribute: SessionRetrievalInvalidSessionAttribute;
-  sessionAttributes: Partial<BaseSessionAttributes>;
-}

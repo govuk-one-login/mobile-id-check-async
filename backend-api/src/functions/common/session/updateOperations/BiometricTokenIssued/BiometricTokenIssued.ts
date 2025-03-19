@@ -8,7 +8,7 @@ import {
   isOlderThan60minutes,
 } from "../../sessionAttributes/sessionAttributes";
 import {
-  UpdateSessionValidateSessionInvalidAttribute,
+  UpdateSessionValidateSessionErrorData,
   ValidateSessionAttributes,
 } from "../../SessionRegistry";
 import { UpdateSessionOperation } from "../UpdateSessionOperation";
@@ -51,7 +51,7 @@ export class BiometricTokenIssued implements UpdateSessionOperation {
 
   validateSession(
     attributes: ValidateSessionAttributes,
-  ): Result<void, UpdateSessionValidateSessionInvalidAttribute> {
+  ): Result<void, UpdateSessionValidateSessionErrorData> {
     const { sessionState, createdAt } = attributes;
 
     if (!sessionState || sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) {
