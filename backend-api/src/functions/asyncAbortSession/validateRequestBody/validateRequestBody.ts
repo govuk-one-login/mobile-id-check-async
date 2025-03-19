@@ -29,6 +29,4 @@ export function validateRequestBody(
   return successResult(sessionId);
 }
 
-interface IAsyncAbortSessionValidParsedRequestBody {
-  sessionId: string;
-}
+type IAsyncAbortSessionValidParsedRequestBody = string;
