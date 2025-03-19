@@ -1,6 +1,11 @@
 import { BiometricSessionFinished } from "./BiometricSessionFinished";
 import { SessionState } from "../../session";
-import { emptyFailure, successResult } from "../../../../utils/result";
+import {
+  emptyFailure,
+  emptySuccess,
+  errorResult,
+  successResult,
+} from "../../../../utils/result";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import {
   NOW_IN_MILLISECONDS,
@@ -122,6 +127,63 @@ describe("BiometricSessionFinished", () => {
             undefined,
           );
         expect(result).toEqual(emptyFailure());
+      });
+    });
+  });
+
+  describe("Session attribute validation", () => {
+    describe("Given the session is in the wrong state - sessionState = AUTH_SESSION_CREATED", () => {
+      const invalidSessionAttributesWrongSessionState = {
+        createdAt: 1704106860000, // 2024-01-01 11:01:00.000
+        sessionState: SessionState.AUTH_SESSION_CREATED,
+      };
+
+      it("Return and error result with the invalid attribute", () => {
+        const result = biometricSessionFinished.validateSession(
+          invalidSessionAttributesWrongSessionState,
+        );
+
+        expect(result).toEqual(
+          errorResult({
+            invalidAttribute: {
+              sessionState: SessionState.AUTH_SESSION_CREATED,
+            },
+          }),
+        );
+      });
+    });
+
+    describe("Given the session is too old", () => {
+      const invalidSessionAttributesSessionTooOld = {
+        sessionState: SessionState.BIOMETRIC_SESSION_FINISHED,
+        createdAt: 1704106740000, // 2024-01-01 10:59:00.000
+      };
+
+      it("Return and error result with the invalid attribute", () => {
+        const result = biometricSessionFinished.validateSession(
+          invalidSessionAttributesSessionTooOld,
+        );
+
+        expect(result).toEqual(
+          errorResult({
+            invalidAttribute: { createdAt: 1704106740000 }, // 2024-01-01 10:59:00.000
+          }),
+        );
+      });
+    });
+
+    describe("Given the session is valid", () => {
+      const validSessionAttributes = {
+        sessionState: SessionState.BIOMETRIC_SESSION_FINISHED,
+        createdAt: validBiometricTokenIssuedSessionAttributes.createdAt,
+      };
+
+      it("Return and error result with the invalid attribute", () => {
+        const result = biometricSessionFinished.validateSession(
+          validSessionAttributes,
+        );
+
+        expect(result).toEqual(emptySuccess());
       });
     });
   });
