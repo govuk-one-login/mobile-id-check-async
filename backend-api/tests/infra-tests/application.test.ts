@@ -746,13 +746,14 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("Token, Credential, JWKS, FinishBiometricSession and TxmaEvent lambdas are attached to a VPC and subnets are private", () => {
+    test("Token, Credential, JWKS, FinishBiometricSession, TxmaEvent and AbortSession lambdas are attached to a VPC and subnets are private", () => {
       const lambdaHandlers = [
         "asyncTokenHandler.lambdaHandler",
         "asyncCredentialHandler.lambdaHandler",
         "jwksHandler.lambdaHandler",
         "asyncFinishBiometricSessionHandler.lambdaHandler",
         "asyncTxmaEventHandler.lambdaHandler",
+        "asyncAbortSessionHandler.lambdaHandler",
       ];
       lambdaHandlers.forEach((lambdaHandler) => {
         template.hasResourceProperties("AWS::Serverless::Function", {
@@ -982,6 +983,7 @@ describe("Backend application infrastructure", () => {
       "AsyncTxmaEventFunction",
       "JsonWebKeysFunction",
       "ProxyLambda",
+      "AsyncAbortSessionFunction",
     ];
 
     const canaryFunctions = Object.entries(allFunctions).filter(

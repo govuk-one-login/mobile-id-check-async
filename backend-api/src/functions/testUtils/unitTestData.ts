@@ -5,7 +5,7 @@ import { emptySuccess, successResult } from "../utils/result";
 
 export const mockSessionId = "58f4281d-d988-49ce-9586-6ef70a2be0b4";
 export const mockBiometricSessionId = "f32432a9-0965-4da9-8a2c-a98a79349d4a";
-export const mockInvalidUUID = "mockInvalidUUID";
+export const mockInvalidUUID = "invalid-uuid";
 
 export const expectedSecurityHeaders = {
   "Cache-Control": "no-store",
