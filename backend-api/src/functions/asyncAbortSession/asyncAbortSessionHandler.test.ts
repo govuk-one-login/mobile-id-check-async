@@ -6,15 +6,24 @@ import { buildLambdaContext } from "../testUtils/mockContext";
 import { lambdaHandlerConstructor } from "./asyncAbortSessionHandler";
 import { buildRequest } from "../testUtils/mockRequest";
 import { logger } from "../common/logging/logger";
-import { expectedSecurityHeaders } from "../testUtils/unitTestData";
+import {
+  expectedSecurityHeaders,
+  mockInvalidUUID,
+  mockSessionId,
+} from "../testUtils/unitTestData";
 
 describe("Async Abort Session", () => {
   let dependencies: IAsyncAbortSessionDependencies;
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpyInstance;
   let result: APIGatewayProxyResult;
 
-  const validRequest = buildRequest();
+  const validRequest = buildRequest({
+    body: JSON.stringify({
+      sessionId: mockSessionId,
+    }),
+  });
 
   beforeEach(() => {
     dependencies = {
@@ -22,6 +31,7 @@ describe("Async Abort Session", () => {
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
+    consoleErrorSpy = jest.spyOn(console, "error");
   });
 
   describe("On every invocation", () => {
@@ -47,7 +57,38 @@ describe("Async Abort Session", () => {
     });
   });
 
-  describe("Given a request is made", () => {
+  describe("Request body validation", () => {
+    describe("Given request body is invalid", () => {
+      beforeEach(async () => {
+        const request = buildRequest({
+          body: JSON.stringify({
+            sessionId: mockInvalidUUID,
+          }),
+        });
+        result = await lambdaHandlerConstructor(dependencies, request, context);
+      });
+
+      it("Logs the error", async () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ABORT_SESSION_REQUEST_BODY_INVALID",
+          errorMessage: `sessionId in request body is not a valid v4 UUID. sessionId: ${mockInvalidUUID}`,
+        });
+      });
+
+      it("Returns 400 Bad Request response", async () => {
+        expect(result).toStrictEqual({
+          headers: expectedSecurityHeaders,
+          statusCode: 400,
+          body: JSON.stringify({
+            error: "invalid_request",
+            error_description: `sessionId in request body is not a valid v4 UUID. sessionId: ${mockInvalidUUID}`,
+          }),
+        });
+      });
+    });
+  });
+
+  describe("Given a request containing a valid sessionId is made", () => {
     beforeEach(async () => {
       result = await lambdaHandlerConstructor(
         dependencies,
@@ -62,11 +103,13 @@ describe("Async Abort Session", () => {
       });
     });
 
-    it("Returns 501 Not Implemented response", async () => {
+    it("Returns 501 OK response", async () => {
       expect(result).toStrictEqual({
         headers: expectedSecurityHeaders,
         statusCode: 501,
-        body: JSON.stringify({ error: "Not Implemented" }),
+        body: JSON.stringify({
+          error: "Not Implemented",
+        }),
       });
     });
   });
