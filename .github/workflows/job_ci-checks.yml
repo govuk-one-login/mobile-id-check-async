@@ -3,6 +3,14 @@ name: CI Checks
 on:
   workflow_call:
     inputs:
+      RUN_FORMATTING:
+        description: Whether to run the `format:check` npm script
+        type: string
+        default: true
+      RUN_LINTER:
+        description: Whether to run the `lint` npm script
+        type: string
+        default: true
       WORKING_DIRECTORY:
         description: Path to working directory in repo
         required: true
@@ -35,10 +43,16 @@ jobs:
         run: npm clean-install
 
       - name: Check formatting
+        if: inputs.RUN_FORMATTING == 'true'
         run: npm run format:check
 
       - name: Check linting
+        if: inputs.RUN_LINTER == 'true'
         run: npm run lint
 
       - name: Validate SAM template
-        run: sam validate --lint
+        run: |
+          TEMPLATES="$(find . -name template.yaml)"
+          for template in $TEMPLATES ; do
+            sam validate --lint --template-file $template
+          done

@@ -11,33 +11,19 @@ on:
     paths:
       - "test-resources/**"
       - ".github/workflows/test-resources-pull-request.yml"
-      - "!test-resources/**/*.md"
-      - "!test-resources/**/*.png"
+      - ".github/workflows/workflow_pull-request.yml"
+      - ".github/workflows/job_ci-checks.yml"
+      - ".github/workflows/job_test-suite.yml"
+      - ".github/workflows/job_sonarqube.yml"
 
   workflow_dispatch:
 
 jobs:
-  ci-checks:
-    name: CI checks
+  test-resources-pull-request:
+    name: Test resources pull request checks
     if: github.event.pull_request.draft == false
     uses:
-      govuk-one-login/mobile-id-check-async/.github/workflows/job_ci-checks.yml@main
-    with:
-      WORKING_DIRECTORY: test-resources
-
-  run-test-suite:
-    name: Run test suite
-    if: github.event.pull_request.draft == false
-    uses:
-      govuk-one-login/mobile-id-check-async/.github/workflows/job_test-suite.yml@main
-    with:
-      WORKING_DIRECTORY: test-resources
-
-  sonarqube-scan:
-    name: SonarQube scan
-    needs: run-test-suite
-    uses:
-      govuk-one-login/mobile-id-check-async/.github/workflows/job_sonarqube.yml@main
+      govuk-one-login/mobile-id-check-async/.github/workflows/workflow_pull-request.yml@DCMAW-12118
     with:
       WORKING_DIRECTORY: test-resources
     secrets: inherit
