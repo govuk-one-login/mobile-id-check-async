@@ -1,7 +1,10 @@
 import { Result } from "../../utils/result";
 import { GetSessionOperation } from "./getOperations/GetSessionOperation";
-import { InvalidSessionAttribute } from "./getOperations/TxmaEvent/TxMAEvent";
-import { BaseSessionAttributes, SessionAttributes } from "./session";
+import {
+  BaseSessionAttributes,
+  SessionAttributes,
+  SessionState,
+} from "./session";
 import { UpdateSessionOperation } from "./updateOperations/UpdateSessionOperation";
 export interface SessionRegistry {
   updateSession(
@@ -15,6 +18,7 @@ export interface SessionRegistry {
   ): Promise<Result<SessionAttributes, SessionRetrievalFailed>>;
 }
 
+// Update session
 export interface SessionUpdated {
   attributes: SessionAttributes;
 }
@@ -43,10 +47,36 @@ export enum UpdateSessionError {
   SESSION_NOT_FOUND = "SESSION_NOT_FOUND",
 }
 
-export interface UpdateExpressionDataToLog {
+export type UpdateOperationDataToLog =
+  | UpdateExpressionDataToLog
+  | UpdateSessionValidateSessionInvalidAttribute;
+
+export interface UpdateSessionValidateSessionInvalidAttribute {
+  invalidAttribute:
+    | UpdateSessionInvalidSessionAttribute
+    | BiometricSessionFinishedInvalidSessionAttribute;
+}
+
+export interface UpdateSessionInvalidSessionAttribute {
+  sessionState?: Exclude<SessionState, SessionState.BIOMETRIC_TOKEN_ISSUED>;
+  createdAt?: number;
+}
+
+export interface BiometricSessionFinishedValidateSessionInvalidAttribute {
+  invalidAttribute: BiometricSessionFinishedInvalidSessionAttribute;
+}
+
+export interface BiometricSessionFinishedInvalidSessionAttribute {
+  sessionState?: Exclude<SessionState, SessionState.BIOMETRIC_SESSION_FINISHED>;
+  createdAt?: number;
+}
+
+interface UpdateExpressionDataToLog {
   updateExpression: string;
   conditionExpression: string | undefined;
 }
+
+// Get session
 
 export type SessionRetrievalFailed =
   | SessionRetrievalFailedInternalServerError
@@ -62,27 +92,34 @@ export interface SessionRetrievalFailedSessionNotFound {
   errorMessage: string;
 }
 
-// export interface SessionRetrievalFailedSessionInvalid {
-//   errorType: GetSessionError.SESSION_INVALID;
-//   invalidAttribute: InvalidSessionAttributes
-// }
-
 export interface SessionRetrievalFailedSessionInvalid {
   errorType: GetSessionError.SESSION_INVALID;
   data: SessionRetrievalFailedSessionInvalidData;
 }
 
 export interface SessionRetrievalFailedSessionInvalidData {
-  invalidAttribute: InvalidSessionAttribute;
+  invalidAttribute: SessionRetrievalInvalidSessionAttribute;
   sessionAttributes: Partial<BaseSessionAttributes>;
 }
 
-// export type InvalidSessionAttributes =
-//   | SessionState
-//   | number
+// export type ValidateSessionError = ValidateSessionInvalidAttribute | UpdateSessionInvalidSessionAttribute
+
+export interface SessionRetrievalValidateSessionInvalidAttribute {
+  invalidAttribute: SessionRetrievalInvalidSessionAttribute;
+}
+
+export interface SessionRetrievalInvalidSessionAttribute {
+  sessionState?: Exclude<SessionState, SessionState.BIOMETRIC_TOKEN_ISSUED>;
+  createdAt?: number;
+}
 
 export enum GetSessionError {
   INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR",
   SESSION_NOT_FOUND = "SESSION_NOT_FOUND",
   SESSION_INVALID = "SESSION_INVALID",
+}
+
+export interface ValidateSessionAttributes {
+  sessionState: SessionState;
+  createdAt: number;
 }

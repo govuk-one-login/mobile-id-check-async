@@ -2,8 +2,15 @@ import { AttributeValue, GetItemCommandInput } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { emptySuccess, errorResult, Result } from "../../../../utils/result";
 import { SessionAttributes, SessionState } from "../../session";
-import { getBiometricTokenIssuedSessionAttributes } from "../../sessionAttributes/sessionAttributes";
+import {
+  getBiometricTokenIssuedSessionAttributes,
+  isOlderThan60minutes,
+} from "../../sessionAttributes/sessionAttributes";
 import { GetSessionOperation } from "../GetSessionOperation";
+import {
+  SessionRetrievalValidateSessionInvalidAttribute,
+  ValidateSessionAttributes,
+} from "../../SessionRegistry";
 
 export class TxMAEvent implements GetSessionOperation {
   getDynamoDbGetCommandInput({
@@ -27,7 +34,7 @@ export class TxMAEvent implements GetSessionOperation {
 
   validateSession(
     attributes: ValidateSessionAttributes,
-  ): Result<void, ValidateSessionError> {
+  ): Result<void, SessionRetrievalValidateSessionInvalidAttribute> {
     const { sessionState, createdAt } = attributes;
 
     if (!sessionState || sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) {
@@ -46,22 +53,8 @@ export class TxMAEvent implements GetSessionOperation {
   }
 }
 
-export interface ValidateSessionAttributes {
-  sessionState: SessionState;
-  createdAt: number;
-}
-
-export interface InvalidSessionAttribute {
-  sessionState?: Exclude<SessionState, SessionState.BIOMETRIC_TOKEN_ISSUED>;
-  createdAt?: number;
-}
-
-export interface ValidateSessionError {
-  invalidAttribute: InvalidSessionAttribute;
-}
-
-function isOlderThan60minutes(createdAtInMilliseconds: number) {
-  const SIXTY_MINUTES_IN_MILLISECONDS = 3600000;
-  const validFrom = Date.now() - SIXTY_MINUTES_IN_MILLISECONDS;
-  return createdAtInMilliseconds < validFrom;
-}
+// function isOlderThan60minutes(createdAtInMilliseconds: number) {
+//   const SIXTY_MINUTES_IN_MILLISECONDS = 3600000;
+//   const validFrom = Date.now() - SIXTY_MINUTES_IN_MILLISECONDS;
+//   return createdAtInMilliseconds < validFrom;
+// }

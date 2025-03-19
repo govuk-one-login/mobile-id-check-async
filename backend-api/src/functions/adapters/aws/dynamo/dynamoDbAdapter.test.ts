@@ -291,6 +291,8 @@ describe("DynamoDbAdapter", () => {
             "mock_session_id",
             updateOperation,
           );
+
+          console.log("<<<<< RESULT VALUE >>>>>", result.value);
         });
 
         it("Logs the success", () => {

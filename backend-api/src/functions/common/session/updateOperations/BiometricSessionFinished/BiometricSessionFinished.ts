@@ -1,11 +1,16 @@
-import { UpdateSessionOperation } from "../UpdateSessionOperation";
-import { SessionState, SessionAttributes } from "../../session";
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
+import { emptySuccess, errorResult, Result } from "../../../../utils/result";
+import { SessionAttributes, SessionState } from "../../session";
 import {
   getBiometricSessionFinishedSessionAttributes,
   getBiometricTokenIssuedSessionAttributes,
+  isOlderThan60minutes,
 } from "../../sessionAttributes/sessionAttributes";
-import { Result } from "../../../../utils/result";
+import {
+  BiometricSessionFinishedValidateSessionInvalidAttribute,
+  ValidateSessionAttributes,
+} from "../../SessionRegistry";
+import { UpdateSessionOperation } from "../UpdateSessionOperation";
 
 export class BiometricSessionFinished implements UpdateSessionOperation {
   constructor(private readonly biometricSessionId: string) {}
@@ -42,4 +47,36 @@ export class BiometricSessionFinished implements UpdateSessionOperation {
       return getBiometricSessionFinishedSessionAttributes(item);
     }
   }
+
+  validateSession(
+    attributes: ValidateSessionAttributes,
+  ): Result<void, BiometricSessionFinishedValidateSessionInvalidAttribute> {
+    const { sessionState, createdAt } = attributes;
+
+    if (
+      !sessionState ||
+      sessionState !== SessionState.BIOMETRIC_SESSION_FINISHED
+    ) {
+      return errorResult({
+        invalidAttribute: { sessionState },
+      });
+    }
+
+    if (!createdAt || isOlderThan60minutes(createdAt)) {
+      return errorResult({
+        invalidAttribute: { createdAt },
+      });
+    }
+
+    return emptySuccess();
+  }
 }
+
+// interface ValidateSessionInvalidAttribute {
+//   invalidAttribute: BiometricSessionFinishedInvalidSessionAttribute
+// }
+
+// interface BiometricSessionFinishedInvalidSessionAttribute {
+//   sessionState?: Exclude<SessionState, SessionState.BIOMETRIC_SESSION_FINISHED>;
+//   createdAt?: number;
+// }

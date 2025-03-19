@@ -31,10 +31,11 @@ import {
   SessionRetrievalFailed,
   SessionRetrievalFailedInternalServerError,
   SessionRetrievalFailedSessionNotFound,
+  SessionRetrievalInvalidSessionAttribute,
   SessionUpdateFailed,
   SessionUpdateFailedInternalServerError,
   SessionUpdated,
-  UpdateExpressionDataToLog,
+  UpdateOperationDataToLog,
   UpdateSessionError,
 } from "../../../common/session/SessionRegistry";
 import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
@@ -45,7 +46,6 @@ import {
   errorResult,
   successResult,
 } from "../../../utils/result";
-import { InvalidSessionAttribute } from "../../../common/session/getOperations/TxmaEvent/TxMAEvent";
 
 export type DatabaseRecord = Record<string, NativeAttributeValue>;
 
@@ -170,21 +170,15 @@ export class DynamoDbAdapter implements SessionRegistry {
       });
     }
 
-    console.log("<<<<< 1 >>>>>");
-
     // Attribute type validation
     const getSessionAttributesResult =
       getOperation.getSessionAttributesFromDynamoDbItem(responseItem);
     if (getSessionAttributesResult.isError) {
-      console.log("<<<<< RESPONSE ITEM >>>>>>", responseItem);
-
       return this.handleGetSessionNotFoundError({
         errorMessage: sessionNotFound,
       });
     }
     const sessionAttributes = getSessionAttributesResult.value;
-
-    console.log("<<<<< 2 >>>>>");
 
     // session validation
     const { sessionState, createdAt } = sessionAttributes;
@@ -200,8 +194,6 @@ export class DynamoDbAdapter implements SessionRegistry {
         sessionAttributes,
       });
     }
-
-    console.log("<<<<< 4 >>>>>");
 
     logger.debug(LogMessage.GET_SESSION_SUCCESS);
     return successResult(sessionAttributes);
@@ -291,6 +283,23 @@ export class DynamoDbAdapter implements SessionRegistry {
       );
     }
 
+    console.log("<<<<< ATTRIBUTES RESULT >>>>>", getAttributesResult.value);
+
+    // validate session
+    const { sessionState, createdAt } = getAttributesResult.value;
+    const validateSessionResult = updateOperation.validateSession({
+      sessionState,
+      createdAt,
+    });
+
+    if (validateSessionResult.isError) {
+      const { invalidAttribute } = validateSessionResult.value;
+      return this.handleUpdateSessionInternalServerError(
+        `Session validation failed`,
+        { invalidAttribute },
+      );
+    }
+
     logger.debug(LogMessage.UPDATE_SESSION_SUCCESS);
     return successResult({ attributes: getAttributesResult.value });
   }
@@ -301,11 +310,11 @@ export class DynamoDbAdapter implements SessionRegistry {
 
   private handleUpdateSessionInternalServerError(
     error: unknown,
-    updateExpressionDataToLog: UpdateExpressionDataToLog,
+    data: UpdateOperationDataToLog,
   ): FailureWithValue<SessionUpdateFailedInternalServerError> {
     logger.error(LogMessage.UPDATE_SESSION_UNEXPECTED_FAILURE, {
       error: error,
-      data: updateExpressionDataToLog,
+      data,
     });
     return errorResult({
       errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
@@ -342,8 +351,6 @@ export class DynamoDbAdapter implements SessionRegistry {
     invalidAttribute,
     sessionAttributes,
   }: GetSessionInvalidErrorData): FailureWithValue<SessionRetrievalFailedSessionInvalid> {
-    console.log("<<<<< 3 >>>>>");
-
     logger.error(LogMessage.GET_SESSION_SESSION_INVALID, {
       invalidAttribute,
       sessionAttributes,
@@ -372,6 +379,6 @@ interface SessionRetrievalFailedSessionInvalid {
 }
 
 interface GetSessionInvalidErrorData {
-  invalidAttribute: InvalidSessionAttribute;
+  invalidAttribute: SessionRetrievalInvalidSessionAttribute;
   sessionAttributes: Partial<BaseSessionAttributes>;
 }
