@@ -180,7 +180,7 @@ export class DynamoDbAdapter implements SessionRegistry {
     }
     const sessionAttributes = getSessionAttributesResult.value;
 
-    // session validation
+    // Session validation
     const { sessionState, createdAt } = sessionAttributes;
     const validateSessionResult = getOperation.validateSession({
       sessionState,

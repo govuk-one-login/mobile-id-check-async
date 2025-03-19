@@ -2,7 +2,6 @@ import { expect } from "@jest/globals";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
 import "../../../tests/testUtils/matchers";
 import { logger } from "../common/logging/logger";
-import { SessionState } from "../common/session/session";
 import { GetSessionError } from "../common/session/SessionRegistry";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { buildRequest } from "../testUtils/mockRequest";
@@ -324,43 +323,17 @@ describe("Async TxMA Event", () => {
           });
         });
       });
-    });
-  });
 
-  describe("Session validation", () => {
-    describe("Given the session fails attribute type validation", () => {
-      // const invalidBiometricTokenIssuedSessionAttributesWrongAttributeType = {
-      //   ...validBiometricTokenIssuedSessionAttributes,
-      //   sessionState: 12345,
-      // };
-
-      beforeEach(async () => {
-        dependencies.getSessionRegistry = () => ({
-          ...mockSuccessfulSessionRegistry,
-          getSession: jest.fn().mockResolvedValue(
-            errorResult({
-              errorType: GetSessionError.SESSION_NOT_FOUND,
-            }),
-          ),
-        });
-        result = await lambdaHandlerConstructor(
-          dependencies,
-          validRequest,
-          context,
-        );
-      });
-
-      describe("Given DCMAW_ASYNC_CRI_4XXERROR event fails to write to TxMA", () => {
+      describe("Given the session is invalid", () => {
         beforeEach(async () => {
-          dependencies.getEventService = () => ({
-            ...mockInertEventService,
-            writeGenericEvent: jest.fn().mockResolvedValue(
+          dependencies.getSessionRegistry = () => ({
+            ...mockInertSessionRegistry,
+            getSession: jest.fn().mockResolvedValue(
               errorResult({
-                errorMessage: "mockError",
+                errorType: GetSessionError.SESSION_INVALID,
               }),
             ),
           });
-
           result = await lambdaHandlerConstructor(
             dependencies,
             validRequest,
@@ -368,275 +341,76 @@ describe("Async TxMA Event", () => {
           );
         });
 
-        it("Logs the error", async () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-            data: {
-              auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
-            },
+        describe("Given DCMAW_ASYNC_CRI_4XXERROR event fails to write to TxMA", () => {
+          beforeEach(async () => {
+            dependencies.getEventService = () => ({
+              ...mockInertEventService,
+              writeGenericEvent: jest.fn().mockResolvedValue(
+                errorResult({
+                  errorMessage: "mockError",
+                }),
+              ),
+            });
+
+            result = await lambdaHandlerConstructor(
+              dependencies,
+              validRequest,
+              context,
+            );
           });
-        });
 
-        it("Returns 500 Internal Server Error ", async () => {
-          expect(result).toStrictEqual({
-            statusCode: 500,
-            body: JSON.stringify({
-              error: "server_error",
-              error_description: "Internal Server Error",
-            }),
-            headers: expectedSecurityHeaders,
+          it("Logs the error", async () => {
+            expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+              messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+              data: { auditEventName: "DCMAW_ASYNC_CRI_4XXERROR" },
+            });
           });
-        });
-      });
 
-      it("Writes DCMAW_ASYNC_CRI_4XXERROR event to TxMA", () => {
-        expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
-          eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-          componentId: "mockIssuer",
-          getNowInMilliseconds: Date.now,
-          govukSigninJourneyId: undefined,
-          sessionId: mockSessionId,
-          sub: undefined,
-          ipAddress: "1.1.1.1",
-          txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
-          redirect_uri: undefined,
-          suspected_fraud_signal: undefined,
-        });
-      });
-
-      it("Logs the error", async () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_TXMA_EVENT_SESSION_NOT_FOUND",
-          data: {
-            auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
-          },
-        });
-      });
-
-      it("Returns 401 Unauthorized", () => {
-        expect(result).toStrictEqual({
-          statusCode: 401,
-          body: JSON.stringify({
-            error: "invalid_session",
-            error_description: "Session does not exist or in incorrect state",
-          }),
-          headers: expectedSecurityHeaders,
-        });
-      });
-    });
-
-    describe("Given the session is in the wrong state", () => {
-      const invalidBiometricTokenIssuedSessionAttributesWrongSessionState = {
-        ...validBiometricTokenIssuedSessionAttributes,
-        sessionState: SessionState.AUTH_SESSION_CREATED,
-      };
-
-      beforeEach(async () => {
-        dependencies.getSessionRegistry = () => ({
-          ...mockSuccessfulSessionRegistry,
-          getSession: jest.fn().mockResolvedValue(
-            errorResult({
-              errorType: GetSessionError.SESSION_INVALID,
-              data: {
-                invalidAttribute: {
-                  sessionState: SessionState.AUTH_SESSION_CREATED,
-                },
-                sessionAttributes:
-                  invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
-              },
-            }),
-          ),
-        });
-        result = await lambdaHandlerConstructor(
-          dependencies,
-          validRequest,
-          context,
-        );
-      });
-
-      describe("Given DCMAW_ASYNC_CRI_4XXERROR event fails to write to TxMA", () => {
-        beforeEach(async () => {
-          dependencies.getEventService = () => ({
-            ...mockInertEventService,
-            writeGenericEvent: jest.fn().mockResolvedValue(
-              errorResult({
-                errorMessage: "mockError",
+          it("Returns 500 Internal Server Error ", async () => {
+            expect(result).toStrictEqual({
+              statusCode: 500,
+              body: JSON.stringify({
+                error: "server_error",
+                error_description: "Internal Server Error",
               }),
-            ),
+              headers: expectedSecurityHeaders,
+            });
           });
+        });
 
-          result = await lambdaHandlerConstructor(
-            dependencies,
-            validRequest,
-            context,
-          );
+        it("Writes DCMAW_ASYNC_CRI_4XXERROR event to TxMA", () => {
+          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+            eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+            componentId: "mockIssuer",
+            getNowInMilliseconds: Date.now,
+            govukSigninJourneyId: undefined,
+            sessionId: mockSessionId,
+            sub: undefined,
+            ipAddress: "1.1.1.1",
+            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
+            redirect_uri: undefined,
+            suspected_fraud_signal: undefined,
+          });
         });
 
         it("Logs the error", async () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+            messageCode: "MOBILE_ASYNC_TXMA_EVENT_SESSION_INVALID",
             data: {
               auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
             },
           });
         });
 
-        it("Returns 500 Internal Server Error ", async () => {
+        it("Returns 401 Unauthorized", () => {
           expect(result).toStrictEqual({
-            statusCode: 500,
+            statusCode: 401,
             body: JSON.stringify({
-              error: "server_error",
-              error_description: "Internal Server Error",
+              error: "invalid_session",
+              error_description: "Session does not exist or in incorrect state",
             }),
             headers: expectedSecurityHeaders,
           });
-        });
-      });
-
-      it("Writes DCMAW_ASYNC_CRI_4XXERROR event to TxMA", () => {
-        expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
-          eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-          componentId: "mockIssuer",
-          getNowInMilliseconds: Date.now,
-          govukSigninJourneyId: undefined,
-          sessionId: mockSessionId,
-          sub: undefined,
-          ipAddress: "1.1.1.1",
-          txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
-          redirect_uri: undefined,
-          suspected_fraud_signal: undefined,
-        });
-      });
-
-      it("Logs the error", async () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_TXMA_EVENT_SESSION_INVALID",
-          data: {
-            auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
-            invalidAttribute: {
-              sessionState: SessionState.AUTH_SESSION_CREATED,
-            },
-            sessionAttributes:
-              invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
-          },
-        });
-      });
-
-      it("Returns 401 Unauthorized", () => {
-        expect(result).toStrictEqual({
-          statusCode: 401,
-          body: JSON.stringify({
-            error: "invalid_session",
-            error_description: "Session does not exist or in incorrect state",
-          }),
-          headers: expectedSecurityHeaders,
-        });
-      });
-    });
-
-    describe("Given the session is more than 60 minutes old", () => {
-      const invalidBiometricTokenIssuedSessionAttributesSessionTooOld = {
-        ...validBiometricTokenIssuedSessionAttributes,
-        createdAt: 1704106740000, // 2024-01-01 10:59:00.000
-      };
-
-      beforeEach(async () => {
-        dependencies.getSessionRegistry = () => ({
-          ...mockSuccessfulSessionRegistry,
-          getSession: jest.fn().mockResolvedValue(
-            errorResult({
-              errorType: GetSessionError.SESSION_INVALID,
-              data: {
-                invalidAttribute: {
-                  createdAt: 1704106740000, // 2024-01-01 10:59:00.000
-                },
-                sessionAttributes:
-                  invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
-              },
-            }),
-          ),
-        });
-        result = await lambdaHandlerConstructor(
-          dependencies,
-          validRequest,
-          context,
-        );
-      });
-
-      describe("Given DCMAW_ASYNC_CRI_4XXERROR event fails to write to TxMA", () => {
-        beforeEach(async () => {
-          dependencies.getEventService = () => ({
-            ...mockInertEventService,
-            writeGenericEvent: jest.fn().mockResolvedValue(
-              errorResult({
-                errorMessage: "mockError",
-              }),
-            ),
-          });
-
-          result = await lambdaHandlerConstructor(
-            dependencies,
-            validRequest,
-            context,
-          );
-        });
-
-        it("Logs the error", async () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-            data: {
-              auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
-            },
-          });
-        });
-
-        it("Returns 500 Internal Server Error ", async () => {
-          expect(result).toStrictEqual({
-            statusCode: 500,
-            body: JSON.stringify({
-              error: "server_error",
-              error_description: "Internal Server Error",
-            }),
-            headers: expectedSecurityHeaders,
-          });
-        });
-      });
-
-      it("Writes DCMAW_ASYNC_CRI_4XXERROR event to TxMA", () => {
-        expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
-          eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-          componentId: "mockIssuer",
-          getNowInMilliseconds: Date.now,
-          govukSigninJourneyId: undefined,
-          sessionId: mockSessionId,
-          sub: undefined,
-          ipAddress: "1.1.1.1",
-          txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
-          redirect_uri: undefined,
-          suspected_fraud_signal: undefined,
-        });
-      });
-
-      it("Logs the error", async () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_TXMA_EVENT_SESSION_INVALID",
-          data: {
-            auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
-            invalidAttribute: { createdAt: 1704106740000 }, // 2024-01-01 10:59:00.000
-            sessionAttributes:
-              invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
-          },
-        });
-      });
-
-      it("Returns 401 Unauthorized", () => {
-        expect(result).toStrictEqual({
-          statusCode: 401,
-          body: JSON.stringify({
-            error: "invalid_session",
-            error_description: "Session does not exist or in incorrect state",
-          }),
-          headers: expectedSecurityHeaders,
         });
       });
     });
