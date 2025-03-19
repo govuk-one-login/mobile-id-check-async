@@ -18,7 +18,7 @@ export const getBaseSessionAttributes = (
   return successResult(sessionAttributes);
 };
 
-export const isCommonSessionAttributes = (
+const isCommonSessionAttributes = (
   item: Record<string, NativeAttributeValue>,
 ): boolean => {
   if (typeof item.clientId !== "string") return false;
@@ -36,7 +36,7 @@ export const isCommonSessionAttributes = (
   return true;
 };
 
-export const isBaseSessionAttributes = (
+const isBaseSessionAttributes = (
   item: Record<string, NativeAttributeValue>,
 ): item is BaseSessionAttributes => {
   if (!isCommonSessionAttributes(item)) return false;
@@ -55,7 +55,7 @@ export const getBiometricTokenIssuedSessionAttributes = (
   return successResult(sessionAttributes);
 };
 
-export const isBiometricTokenIssuedSessionAttributes = (
+const isBiometricTokenIssuedSessionAttributes = (
   item: Record<string, NativeAttributeValue>,
 ): item is BiometricTokenIssuedSessionAttributes => {
   if (!isCommonSessionAttributes(item)) return false;
@@ -76,7 +76,7 @@ export const getBiometricSessionFinishedSessionAttributes = (
   return successResult(sessionAttributes);
 };
 
-export const isBiometricSessionFinishedSessionAttributes = (
+const isBiometricSessionFinishedSessionAttributes = (
   item: Record<string, NativeAttributeValue>,
 ): item is BiometricSessionFinishedAttributes => {
   if (!isCommonSessionAttributes(item)) return false;
