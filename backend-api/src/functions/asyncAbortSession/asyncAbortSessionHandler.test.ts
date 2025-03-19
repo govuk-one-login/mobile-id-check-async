@@ -103,13 +103,11 @@ describe("Async Abort Session", () => {
       });
     });
 
-    it("Returns 501 OK response", async () => {
+    it("Returns 501 Not Implemented response", async () => {
       expect(result).toStrictEqual({
         headers: expectedSecurityHeaders,
         statusCode: 501,
-        body: JSON.stringify({
-          error: "Not Implemented",
-        }),
+        body: JSON.stringify({ error: "Not Implemented" }),
       });
     });
   });
