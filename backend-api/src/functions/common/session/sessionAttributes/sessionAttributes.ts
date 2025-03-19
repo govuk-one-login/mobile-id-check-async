@@ -86,7 +86,6 @@ export const isBiometricSessionFinishedSessionAttributes = (
   if (typeof item.biometricSessionId !== "string") return false;
   if (item.sessionState !== SessionState.BIOMETRIC_SESSION_FINISHED)
     return false;
-  if (isOlderThan60minutes(item.createdAt)) return false;
   return true;
 };
 
