@@ -49,7 +49,7 @@ export const echoSuccessfullyHashedSecret = (hashedSecret: string): void => {
 
 export const unexpectedErrorMessage = (error: unknown): void => {
   echo("");
-  echo("Script unexpectedly stopped. Error:");
+  echo("This script has stopped unexpectedly. Error:");
   echo("");
   echo(chalk.red.italic(error));
 };
