@@ -60,7 +60,7 @@ describe("Validate request body", () => {
   });
 
   describe("Given body is valid", () => {
-    it("Returns a successResult with a valid parsed body as value", () => {
+    it("Returns a successResult with a sessionId", () => {
       const result = validateRequestBody(
         JSON.stringify({
           sessionId: mockSessionId,
