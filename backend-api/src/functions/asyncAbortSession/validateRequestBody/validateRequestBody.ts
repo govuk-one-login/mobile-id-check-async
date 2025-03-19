@@ -1,9 +1,7 @@
 import { validateSessionId } from "../../common/request/validateSessionId/validateSessionId";
 import { errorResult, Result, successResult } from "../../utils/result";
 
-export function validateRequestBody(
-  body: string | null,
-): Result<IAsyncAbortSessionValidParsedRequestBody> {
+export function validateRequestBody(body: string | null): Result<string> {
   if (body == null) {
     return errorResult({
       errorMessage: `Request body is either null or undefined.`,
@@ -28,5 +26,3 @@ export function validateRequestBody(
 
   return successResult(sessionId);
 }
-
-type IAsyncAbortSessionValidParsedRequestBody = Result<string>;
