@@ -22,3 +22,4 @@ if [[ "$TEST_ENVIRONMENT" == "dev" ]] || [[ "$TEST_ENVIRONMENT" == "build" ]]; t
     exit 1
   fi
 fi
+
