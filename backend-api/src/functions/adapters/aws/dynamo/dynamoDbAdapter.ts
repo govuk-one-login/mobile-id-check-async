@@ -2,6 +2,7 @@ import {
   ConditionalCheckFailedException,
   DynamoDBClient,
   GetItemCommand,
+  GetItemCommandInput,
   PutItemCommand,
   PutItemCommandInput,
   QueryCommand,
@@ -146,12 +147,13 @@ export class DynamoDbAdapter implements SessionRegistry {
     sessionId: string,
     getOperation: GetSessionOperation,
   ): Promise<Result<SessionAttributes, SessionRetrievalFailed>> {
+    const getItemCommandInput = getOperation.getDynamoDbGetCommandInput({
+      tableName: this.tableName,
+      keyValue: sessionId,
+    });
+
     let response;
     try {
-      const getItemCommandInput = getOperation.getDynamoDbGetCommandInput({
-        tableName: this.tableName,
-        keyValue: sessionId,
-      });
       logger.debug(LogMessage.GET_SESSION_ATTEMPT, {
         data: { sessionId, getItemCommandInput },
       });
@@ -160,7 +162,10 @@ export class DynamoDbAdapter implements SessionRegistry {
         new GetItemCommand(getItemCommandInput),
       );
     } catch (error: unknown) {
-      return this.handleGetSessionInternalServerError(error);
+      return this.handleGetSessionInternalServerError({
+        error,
+        getItemCommandInput,
+      });
     }
 
     const responseItem = response.Item;
@@ -318,11 +323,16 @@ export class DynamoDbAdapter implements SessionRegistry {
     });
   }
 
-  private handleGetSessionInternalServerError(
-    error: unknown,
-  ): FailureWithValue<SessionRetrievalFailedInternalServerError> {
+  private handleGetSessionInternalServerError({
+    error,
+    getItemCommandInput,
+  }: {
+    error: unknown;
+    getItemCommandInput: GetItemCommandInput;
+  }): FailureWithValue<SessionRetrievalFailedInternalServerError> {
     logger.error(LogMessage.GET_SESSION_UNEXPECTED_FAILURE, {
       error,
+      getItemCommandInput,
     });
     return errorResult({
       errorType: GetSessionError.INTERNAL_SERVER_ERROR,

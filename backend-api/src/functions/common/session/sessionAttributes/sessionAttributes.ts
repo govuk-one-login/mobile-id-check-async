@@ -84,8 +84,6 @@ export const isBiometricSessionFinishedSessionAttributes = (
   if (typeof item.documentType !== "string") return false;
   if (typeof item.opaqueId !== "string") return false;
   if (typeof item.biometricSessionId !== "string") return false;
-  if (item.sessionState !== SessionState.BIOMETRIC_SESSION_FINISHED)
-    return false;
   return true;
 };
 

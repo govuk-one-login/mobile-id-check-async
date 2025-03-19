@@ -206,15 +206,6 @@ describe("Session attributes", () => {
         ...givenAnyCommonSessionAttributeIsInvalid(
           validBiometricTokenIssuedSessionAttributes,
         ),
-        // {
-        //   scenario: "Given sessionState is not ASYNC_BIOMETRIC_TOKEN_ISSUED",
-        //   attributes: buildSessionAttributes(
-        //     validBiometricTokenIssuedSessionAttributes,
-        //     {
-        //       sessionState: SessionState.AUTH_SESSION_CREATED,
-        //     },
-        //   ),
-        // },
         {
           scenario: "Given documentType is missing",
           attributes: buildSessionAttributes(
@@ -294,15 +285,6 @@ describe("Session attributes", () => {
         ...givenAnyCommonSessionAttributeIsInvalid(
           validBiometricSessionFinishedAttributes,
         ),
-        {
-          scenario: "Given sessionState is not BIOMETRIC_SESSION_FINISHED",
-          attributes: buildSessionAttributes(
-            validBiometricSessionFinishedAttributes,
-            {
-              sessionState: SessionState.AUTH_SESSION_CREATED,
-            },
-          ),
-        },
         {
           scenario: "Given documentType is missing",
           attributes: buildSessionAttributes(

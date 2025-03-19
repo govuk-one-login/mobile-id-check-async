@@ -9,7 +9,6 @@ import {
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { expect } from "@jest/globals";
 import { mockClient } from "aws-sdk-client-mock";
-import "dotenv/config";
 import "../../../../../tests/testUtils/matchers";
 import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
 import { TxMAEvent } from "../../../common/session/getOperations/TxmaEvent/TxMAEvent";
@@ -519,6 +518,10 @@ describe("DynamoDbAdapter", () => {
       it("Logs the failure", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_GET_SESSION_UNEXPECTED_FAILURE",
+          getItemCommandInput: {
+            TableName: "mock_table_name",
+            Key: { sessionId: marshall(mockSessionId) },
+          },
         });
       });
 
