@@ -71,12 +71,3 @@ export class BiometricSessionFinished implements UpdateSessionOperation {
     return emptySuccess();
   }
 }
-
-// interface ValidateSessionInvalidAttribute {
-//   invalidAttribute: BiometricSessionFinishedInvalidSessionAttribute
-// }
-
-// interface BiometricSessionFinishedInvalidSessionAttribute {
-//   sessionState?: Exclude<SessionState, SessionState.BIOMETRIC_SESSION_FINISHED>;
-//   createdAt?: number;
-// }
