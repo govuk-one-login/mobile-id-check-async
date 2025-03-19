@@ -52,9 +52,3 @@ export class TxMAEvent implements GetSessionOperation {
     return emptySuccess();
   }
 }
-
-// function isOlderThan60minutes(createdAtInMilliseconds: number) {
-//   const SIXTY_MINUTES_IN_MILLISECONDS = 3600000;
-//   const validFrom = Date.now() - SIXTY_MINUTES_IN_MILLISECONDS;
-//   return createdAtInMilliseconds < validFrom;
-// }

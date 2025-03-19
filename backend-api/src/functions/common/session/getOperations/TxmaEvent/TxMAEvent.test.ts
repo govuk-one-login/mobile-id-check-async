@@ -4,8 +4,14 @@ import {
   NOW_IN_MILLISECONDS,
   validBiometricTokenIssuedSessionAttributes,
 } from "../../../../testUtils/unitTestData";
-import { emptyFailure, successResult } from "../../../../utils/result";
+import {
+  emptyFailure,
+  emptySuccess,
+  errorResult,
+  successResult,
+} from "../../../../utils/result";
 import { TxMAEvent } from "./TxMAEvent";
+import { SessionState } from "../../session";
 
 describe("TxMA event", () => {
   let txmaEvent: TxMAEvent;
@@ -57,6 +63,61 @@ describe("TxMA event", () => {
             unmarshall(validBiometricTokenIssuedSessionAttributesItem),
           ),
         );
+      });
+    });
+  });
+
+  describe("Session attribute validation", () => {
+    describe("Given the session is in the wrong state - sessionState = AUTH_SESSION_CREATED", () => {
+      const invalidSessionAttributesWrongSessionState = {
+        createdAt: 1704106860000, // 2024-01-01 11:01:00.000
+        sessionState: SessionState.AUTH_SESSION_CREATED,
+      };
+
+      it("Return and error result with the invalid attribute", () => {
+        const result = txmaEvent.validateSession(
+          invalidSessionAttributesWrongSessionState,
+        );
+
+        expect(result).toEqual(
+          errorResult({
+            invalidAttribute: {
+              sessionState: SessionState.AUTH_SESSION_CREATED,
+            },
+          }),
+        );
+      });
+    });
+
+    describe("Given the session is too old", () => {
+      const invalidSessionAttributesSessionTooOld = {
+        sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,
+        createdAt: 1704106740000, // 2024-01-01 10:59:00.000
+      };
+
+      it("Return and error result with the invalid attribute", () => {
+        const result = txmaEvent.validateSession(
+          invalidSessionAttributesSessionTooOld,
+        );
+
+        expect(result).toEqual(
+          errorResult({
+            invalidAttribute: { createdAt: 1704106740000 }, // 2024-01-01 10:59:00.000
+          }),
+        );
+      });
+    });
+
+    describe("Given the session is valid", () => {
+      const validSessionAttributes = {
+        sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,
+        createdAt: validBiometricTokenIssuedSessionAttributes.createdAt,
+      };
+
+      it("Return and error result with the invalid attribute", () => {
+        const result = txmaEvent.validateSession(validSessionAttributes);
+
+        expect(result).toEqual(emptySuccess());
       });
     });
   });

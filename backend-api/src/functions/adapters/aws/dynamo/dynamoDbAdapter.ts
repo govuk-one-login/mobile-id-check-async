@@ -283,9 +283,6 @@ export class DynamoDbAdapter implements SessionRegistry {
       );
     }
 
-    console.log("<<<<< ATTRIBUTES RESULT >>>>>", getAttributesResult.value);
-
-    // validate session
     const { sessionState, createdAt } = getAttributesResult.value;
     const validateSessionResult = updateOperation.validateSession({
       sessionState,
@@ -367,11 +364,6 @@ export class DynamoDbAdapter implements SessionRegistry {
 }
 
 const sessionNotFound = "Session not found";
-
-// interface GetSessionNotFoundErrorData {
-//   errorMessage: string;
-//   session: Partial<BiometricTokenIssuedSessionAttributes> | string;
-// }
 
 interface SessionRetrievalFailedSessionInvalid {
   errorType: GetSessionError.SESSION_INVALID;
