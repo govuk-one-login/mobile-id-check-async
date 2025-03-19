@@ -523,6 +523,12 @@ describe("DynamoDbAdapter", () => {
             Key: { sessionId: marshall(mockSessionId) },
           },
         });
+
+        const { name, message } = JSON.parse(
+          consoleErrorSpy.mock.calls[0][0],
+        ).error;
+        expect(name).toEqual("Error");
+        expect(message).toEqual("mock_error");
       });
 
       it("Returns failure with server error", () => {
