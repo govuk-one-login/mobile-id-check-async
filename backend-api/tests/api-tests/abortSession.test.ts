@@ -27,7 +27,7 @@ describe("POST /async/abortSession", () => {
       );
     });
   });
-  
+
   describe("Given there is a valid request", () => {
     let response: AxiosResponse;
     beforeAll(async () => {
