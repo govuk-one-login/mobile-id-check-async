@@ -45,7 +45,7 @@ import {
   errorResult,
   successResult,
 } from "../../../utils/result";
-import { InvalidSessionAttributes } from "../../../common/session/getOperations/TxmaEvent/TxMAEvent";
+import { InvalidSessionAttribute } from "../../../common/session/getOperations/TxmaEvent/TxMAEvent";
 
 export type DatabaseRecord = Record<string, NativeAttributeValue>;
 
@@ -170,15 +170,21 @@ export class DynamoDbAdapter implements SessionRegistry {
       });
     }
 
+    console.log("<<<<< 1 >>>>>");
+
     // Attribute type validation
     const getSessionAttributesResult =
       getOperation.getSessionAttributesFromDynamoDbItem(responseItem);
     if (getSessionAttributesResult.isError) {
+      console.log("<<<<< RESPONSE ITEM >>>>>>", responseItem);
+
       return this.handleGetSessionNotFoundError({
         errorMessage: sessionNotFound,
       });
     }
     const sessionAttributes = getSessionAttributesResult.value;
+
+    console.log("<<<<< 2 >>>>>");
 
     // session validation
     const { sessionState, createdAt } = sessionAttributes;
@@ -194,6 +200,8 @@ export class DynamoDbAdapter implements SessionRegistry {
         sessionAttributes,
       });
     }
+
+    console.log("<<<<< 4 >>>>>");
 
     logger.debug(LogMessage.GET_SESSION_SUCCESS);
     return successResult(sessionAttributes);
@@ -334,6 +342,8 @@ export class DynamoDbAdapter implements SessionRegistry {
     invalidAttribute,
     sessionAttributes,
   }: GetSessionInvalidErrorData): FailureWithValue<SessionRetrievalFailedSessionInvalid> {
+    console.log("<<<<< 3 >>>>>");
+
     logger.error(LogMessage.GET_SESSION_SESSION_INVALID, {
       invalidAttribute,
       sessionAttributes,
@@ -362,6 +372,6 @@ interface SessionRetrievalFailedSessionInvalid {
 }
 
 interface GetSessionInvalidErrorData {
-  invalidAttribute: Partial<InvalidSessionAttributes>;
+  invalidAttribute: InvalidSessionAttribute;
   sessionAttributes: Partial<BaseSessionAttributes>;
 }

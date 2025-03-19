@@ -1,15 +1,8 @@
 import { AttributeValue, GetItemCommandInput } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { emptySuccess, errorResult, Result } from "../../../../utils/result";
-import {
-  BaseSessionAttributes,
-  SessionAttributes,
-  SessionState,
-} from "../../session";
+import { SessionAttributes, SessionState } from "../../session";
 import { getBiometricTokenIssuedSessionAttributes } from "../../sessionAttributes/sessionAttributes";
-import {
-  GetSessionError
-} from "../../SessionRegistry";
 import { GetSessionOperation } from "../GetSessionOperation";
 
 export class TxMAEvent implements GetSessionOperation {
@@ -33,20 +26,18 @@ export class TxMAEvent implements GetSessionOperation {
   }
 
   validateSession(
-    attributes: Partial<BaseSessionAttributes>,
-  ): Result<void, InvalidSessionData> {
+    attributes: ValidateSessionAttributes,
+  ): Result<void, ValidateSessionError> {
     const { sessionState, createdAt } = attributes;
 
-    if (sessionState && sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) {
+    if (!sessionState || sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) {
       return errorResult({
-        errorType: GetSessionError.SESSION_INVALID,
         invalidAttribute: { sessionState },
       });
     }
 
-    if (createdAt && isOlderThan60minutes(createdAt)) {
+    if (!createdAt || isOlderThan60minutes(createdAt)) {
       return errorResult({
-        errorType: GetSessionError.SESSION_INVALID,
         invalidAttribute: { createdAt },
       });
     }
@@ -55,14 +46,18 @@ export class TxMAEvent implements GetSessionOperation {
   }
 }
 
-export interface InvalidSessionData {
-  errorType: GetSessionError.SESSION_INVALID;
-  invalidAttribute: Partial<InvalidSessionAttributes>;
+export interface ValidateSessionAttributes {
+  sessionState: SessionState;
+  createdAt: number;
 }
 
-export interface InvalidSessionAttributes {
-  sessionState: Exclude<SessionState, SessionState.BIOMETRIC_TOKEN_ISSUED>;
-  createdAt: number;
+export interface InvalidSessionAttribute {
+  sessionState?: Exclude<SessionState, SessionState.BIOMETRIC_TOKEN_ISSUED>;
+  createdAt?: number;
+}
+
+export interface ValidateSessionError {
+  invalidAttribute: InvalidSessionAttribute;
 }
 
 function isOlderThan60minutes(createdAtInMilliseconds: number) {

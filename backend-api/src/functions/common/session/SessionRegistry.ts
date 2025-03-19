@@ -1,6 +1,6 @@
 import { Result } from "../../utils/result";
 import { GetSessionOperation } from "./getOperations/GetSessionOperation";
-import { InvalidSessionAttributes } from "./getOperations/TxmaEvent/TxMAEvent";
+import { InvalidSessionAttribute } from "./getOperations/TxmaEvent/TxMAEvent";
 import { BaseSessionAttributes, SessionAttributes } from "./session";
 import { UpdateSessionOperation } from "./updateOperations/UpdateSessionOperation";
 export interface SessionRegistry {
@@ -73,7 +73,7 @@ export interface SessionRetrievalFailedSessionInvalid {
 }
 
 export interface SessionRetrievalFailedSessionInvalidData {
-  invalidAttribute: Partial<InvalidSessionAttributes>;
+  invalidAttribute: InvalidSessionAttribute;
   sessionAttributes: Partial<BaseSessionAttributes>;
 }
 

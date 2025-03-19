@@ -16,8 +16,8 @@ describe("TxMA event", () => {
     txmaEvent = new TxMAEvent();
   });
 
-  describe("When I request the DynamoDB Key Expression", () => {
-    it("Returns the appropriate Key Expression string", () => {
+  describe("When I request the DynamoDB command input", () => {
+    it("Returns the appropriate GetItemCommand input", () => {
       const result = txmaEvent.getDynamoDbGetCommandInput({
         tableName: "mock_table_name",
         keyValue: mockSessionId,

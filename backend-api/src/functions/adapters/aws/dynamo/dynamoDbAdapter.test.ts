@@ -380,19 +380,15 @@ describe("DynamoDbAdapter", () => {
 
     describe("Session validation", () => {
       describe("Given the session attributes failed type validation", () => {
-        const invalidBiometricTokenIssuedSessionAttributesMissingAttributes = {
-          clientId: "mockClientId",
-          govukSigninJourneyId: "mockGovukSigninJourneyId",
-          createdAt: 1704106860000, // 2024-01-01 11:01:00.000
-          issuer: "mockIssuer",
-          clientState: "mockClientState",
-          subjectIdentifier: "mockSubjectIdentifier",
-          timeToLive: 12345,
+        const invalidBiometricTokenIssuedSessionAttributesWrongType = {
+          ...validBiometricTokenIssuedSessionAttributes,
+          sessionState: 12345,
         };
+
         beforeEach(async () => {
           mockDynamoDbClient.on(GetItemCommand).resolves({
             Item: marshall(
-              invalidBiometricTokenIssuedSessionAttributesMissingAttributes,
+              invalidBiometricTokenIssuedSessionAttributesWrongType,
             ),
           });
           result = await sessionRegistry.getSession(
@@ -457,11 +453,13 @@ describe("DynamoDbAdapter", () => {
           expect(result).toStrictEqual(
             errorResult({
               errorType: GetSessionError.SESSION_INVALID,
-              invalidAttribute: {
-                sessionState: SessionState.AUTH_SESSION_CREATED,
+              data: {
+                invalidAttribute: {
+                  sessionState: SessionState.AUTH_SESSION_CREATED,
+                },
+                sessionAttributes:
+                  invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
               },
-              sessionAttributes:
-                invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
             }),
           );
         });
@@ -501,9 +499,11 @@ describe("DynamoDbAdapter", () => {
           expect(result).toStrictEqual(
             errorResult({
               errorType: GetSessionError.SESSION_INVALID,
-              invalidAttribute: { createdAt: 1704106740000 }, // 2024-01-01 10:59:00.000
-              sessionAttributes:
-                invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
+              data: {
+                invalidAttribute: { createdAt: 1704106740000 }, // 2024-01-01 10:59:00.000
+                sessionAttributes:
+                  invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
+              },
             }),
           );
         });

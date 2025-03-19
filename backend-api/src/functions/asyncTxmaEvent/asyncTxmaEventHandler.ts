@@ -110,7 +110,11 @@ async function handleGetSessionError({
         eventData,
       });
     case GetSessionError.SESSION_INVALID:
-      return handleSessionInvalid({ eventService, eventData, sessionData: errorData.data });
+      return handleSessionInvalid({
+        eventService,
+        eventData,
+        sessionData: errorData.data,
+      });
   }
 }
 
@@ -187,7 +191,6 @@ async function handleSessionInvalid({
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: {
         auditEventName,
-        ...sessionData,
       },
     });
     return serverErrorResponse;
