@@ -30,10 +30,7 @@ export async function lambdaHandlerConstructor(
     logger.error(LogMessage.ABORT_SESSION_REQUEST_BODY_INVALID, {
       errorMessage,
     });
-    return badRequestResponse(
-      "invalid_request",
-      errorMessage,
-    );
+    return badRequestResponse("invalid_request", errorMessage);
   }
 
   logger.info(LogMessage.ABORT_SESSION_COMPLETED);

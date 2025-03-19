@@ -1,6 +1,10 @@
 import { AxiosResponse } from "axios";
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
-import { expectedSecurityHeaders, mockInvalidUUID, mockSessionId } from "./utils/apiTestData";
+import {
+  expectedSecurityHeaders,
+  mockInvalidUUID,
+  mockSessionId,
+} from "./utils/apiTestData";
 
 describe("POST /async/abortSession", () => {
   describe("Given the request body is invalid", () => {
@@ -11,8 +15,6 @@ describe("POST /async/abortSession", () => {
       });
     });
 
-    
-
     it("Returns 400 Bad Request response with invalid_request error", async () => {
       expect(response.status).toBe(400);
       expect(response.statusText).toBe("Bad Request");
@@ -21,7 +23,7 @@ describe("POST /async/abortSession", () => {
         error_description: `sessionId in request body is not a valid v4 UUID. sessionId: ${mockInvalidUUID}`,
       });
       expect(response.headers).toEqual(
-        expect.objectContaining(expectedSecurityHeaders)
+        expect.objectContaining(expectedSecurityHeaders),
       );
     });
   });
@@ -33,11 +35,10 @@ describe("POST /async/abortSession", () => {
       });
     }, 5000);
     it("Returns an error and 501 status code", async () => {
-
       expect(response.status).toBe(501);
       expect(response.data).toStrictEqual({ error: "Not Implemented" });
       expect(response.headers).toEqual(
-        expect.objectContaining(expectedSecurityHeaders)
+        expect.objectContaining(expectedSecurityHeaders),
       );
     });
   });
