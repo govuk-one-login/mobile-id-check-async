@@ -157,7 +157,7 @@ describe("Async Credential", () => {
 
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_CREDENTIAL_AUTHORIZATION_HEADER_INVALID",
-          errorMessage: "No Authentication header present",
+          errorMessage: "No authorization header present",
         });
 
         expect(result).toStrictEqual({
@@ -186,7 +186,7 @@ describe("Async Credential", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_CREDENTIAL_AUTHORIZATION_HEADER_INVALID",
           errorMessage:
-            "Invalid authentication header format - does not start with Bearer",
+            "Invalid authorization header format - does not start with Bearer",
         });
 
         expect(result).toStrictEqual({
@@ -214,8 +214,7 @@ describe("Async Credential", () => {
 
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_CREDENTIAL_AUTHORIZATION_HEADER_INVALID",
-          errorMessage:
-            "Invalid authentication header format - contains spaces",
+          errorMessage: "Invalid authorization header format - contains spaces",
         });
 
         expect(result).toStrictEqual({
@@ -243,7 +242,7 @@ describe("Async Credential", () => {
 
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_CREDENTIAL_AUTHORIZATION_HEADER_INVALID",
-          errorMessage: "Invalid authentication header format - missing token",
+          errorMessage: "Invalid authorization header format - missing token",
         });
 
         expect(result).toStrictEqual({
@@ -955,6 +954,7 @@ describe("Async Credential", () => {
                 sub: "mockSub",
                 client_id: "mockClientId",
                 govuk_signin_journey_id: "mockGovukSigninJourneyId",
+                redirect_uri: "https://www.mockUrl.com",
               }),
             });
             const mockEventService = new MockEventWriterSuccess();
@@ -970,6 +970,21 @@ describe("Async Credential", () => {
 
             expect(mockEventService.auditEvents[0]).toEqual(
               "DCMAW_ASYNC_CRI_START",
+            );
+
+            expect(mockEventService.eventConfig).toEqual(
+              expect.objectContaining({
+                eventName: "DCMAW_ASYNC_CRI_START",
+                componentId: "mockIssuer",
+                getNowInMilliseconds: Date.now,
+                govukSigninJourneyId: "mockGovukSigninJourneyId",
+                sub: "mockSub",
+                sessionId: "mockSessionId",
+                ipAddress: undefined,
+                redirect_uri: "https://www.mockUrl.com",
+                suspected_fraud_signal: undefined,
+                txmaAuditEncoded: undefined,
+              }),
             );
 
             expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({

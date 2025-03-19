@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  VendorProcessingSQS:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 1209600
+      VisibilityTimeout: 10
+      DelaySeconds: 5
+      ReceiveMessageWaitTimeSeconds: 5
+      KmsMasterKeyId: !Ref VendorProcessingKeyAlias
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt VendorProcessingDLQ.Arn
+        maxReceiveCount: 360
+
+  VendorProcessingDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 1209600
+      KmsMasterKeyId: !Ref VendorProcessingKeyAlias
+
+  VendorProcessingKMSEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A KMS Key for encrypting the Vendor Processing SQS
+      Enabled: true
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action:
+              - kms:*
+            Resource:
+              - '*'
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyUsage: ENCRYPT_DECRYPT
+      MultiRegion: false
+      PendingWindowInDays: !FindInMap
+        - KMS
+        - !Ref Environment
+        - PendingDeletionInDays
+
+  VendorProcessingKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}-VendorProcessingKMSEncryptionKey
+      TargetKeyId: !Ref VendorProcessingKMSEncryptionKey

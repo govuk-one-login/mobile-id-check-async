@@ -1,5 +1,7 @@
-import { errorResult, Result, successResult } from "../../utils/result";
+import { validateSessionId } from "../../common/request/validateSessionId/validateSessionId";
 import { DocumentType } from "../../types/document";
+import { errorResult, Result, successResult } from "../../utils/result";
+import { isString } from "../../utils/utils";
 
 export function validateRequestBody(
   body: string | null,
@@ -20,22 +22,9 @@ export function validateRequestBody(
   }
   const { sessionId, documentType } = parsedBody;
 
-  if (sessionId == null) {
-    return errorResult({
-      errorMessage: `sessionId in request body is either null or undefined.`,
-    });
-  }
-
-  if (!isString(sessionId)) {
-    return errorResult({
-      errorMessage: `sessionId in request body is not of type string. sessionId: ${sessionId}`,
-    });
-  }
-
-  if (sessionId === "") {
-    return errorResult({
-      errorMessage: `sessionId in request body is an empty string.`,
-    });
+  const validateSessionIdResult = validateSessionId(sessionId);
+  if (validateSessionIdResult.isError) {
+    return validateSessionIdResult;
   }
 
   if (documentType == null) {
@@ -74,10 +63,6 @@ function isAllowableDocumentType(
   return ["NFC_PASSPORT", "UK_DRIVING_LICENCE", "UK_NFC_BRP"].includes(
     documentType,
   );
-}
-
-function isString(field: unknown): field is string {
-  return typeof field === "string";
 }
 
 interface IAsyncBiometricTokenValidParsedRequestBody {

@@ -24,6 +24,14 @@ Resources:
             Method: get
             RestApiId: !Ref SessionsApi
       Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
+      DeploymentPreference:
+        Enabled: true
+        Alarms: !If
+          - DeployAlarms
+          - - !Ref AsyncActiveSessionErrorRateAlarm        
+            - !Ref AsyncActiveSessionLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Type: !Ref LambdaDeploymentPreference
       Environment:
         Variables:
           ENCRYPTION_KEY_ARN: !GetAtt KMSEncryptionKey.Arn
@@ -54,6 +62,15 @@ Resources:
     Properties:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-active-session
+
+  AsyncActiveSessionSubscriptionFilter:    
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn:
+        !FindInMap [CslsConfiguration, !Ref Environment, CSLSEGRESS]
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncActiveSessionLogGroup
+    Condition: isNotDev
 
   AsyncActiveSessionLambdaRole:
     Type: AWS::IAM::Role

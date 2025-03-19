@@ -9,7 +9,7 @@ import {
   HttpError,
   ISendHttpRequest,
   sendHttpRequest,
-} from "../../services/http/sendHttpRequest";
+} from "../../adapters/http/sendHttpRequest";
 
 export interface IPublicKeyGetter {
   getPublicKey: (

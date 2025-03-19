@@ -9,7 +9,7 @@ import {
   ClientError,
   IKmsAdapter,
   KMSAdapter,
-} from "../../adapters/kmsAdapter";
+} from "../../adapters/aws/kms/kmsAdapter";
 
 export interface IDecryptJwe {
   decrypt: (jwe: string) => Promise<Result<string>>;

@@ -36,6 +36,15 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-proxy-lambda
     Condition: ProxyApiDeployment
 
+  ProxyLambdaSubscriptionFilter:    
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: 
+        !FindInMap [CslsConfiguration, !Ref Environment, CSLSEGRESS]
+      FilterPattern: ""
+      LogGroupName: !Ref ProxyLambdaLogGroup
+    Condition: DeployProxyCsls
+
   ProxyLambdaRole:
     Type: AWS::IAM::Role
     Properties:

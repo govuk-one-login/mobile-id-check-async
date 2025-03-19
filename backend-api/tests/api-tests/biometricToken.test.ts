@@ -4,10 +4,11 @@ import "../../tests/testUtils/matchers";
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 import { expectedSecurityHeaders, mockSessionId } from "./utils/apiTestData";
 import {
-  EventResponse,
-  getValidSessionId,
+  createSessionForSub,
+  getActiveSessionIdFromSub,
   pollForEvents,
 } from "./utils/apiTestHelpers";
+import { randomUUID } from "crypto";
 
 describe("POST /async/biometricToken", () => {
   describe("Given request body is invalid", () => {
@@ -39,7 +40,7 @@ describe("POST /async/biometricToken", () => {
     let sessionId: string;
 
     beforeAll(async () => {
-      sessionId = "invalidSessionId";
+      sessionId = mockSessionId;
       const requestBody = {
         sessionId,
         documentType: "NFC_PASSPORT",
@@ -78,15 +79,13 @@ describe("POST /async/biometricToken", () => {
   });
 
   describe("Given the session is not in a valid state", () => {
-    let sessionId: string | null;
+    let sessionId: string;
     let biometricTokenResponse: AxiosResponse;
 
     beforeAll(async () => {
-      sessionId = await getValidSessionId();
-      if (!sessionId)
-        throw new Error(
-          "Failed to get valid session ID to call biometricToken endpoint",
-        );
+      const sub = randomUUID();
+      await createSessionForSub(sub);
+      sessionId = await getActiveSessionIdFromSub(sub);
 
       const requestBody = {
         sessionId,
@@ -133,11 +132,9 @@ describe("POST /async/biometricToken", () => {
     let biometricTokenResponse: AxiosResponse;
 
     beforeAll(async () => {
-      sessionId = await getValidSessionId();
-      if (!sessionId)
-        throw new Error(
-          "Failed to get valid session ID to call biometricToken endpoint",
-        );
+      const sub = randomUUID();
+      await createSessionForSub(sub);
+      sessionId = await getActiveSessionIdFromSub(sub);
 
       const requestBody = {
         sessionId,

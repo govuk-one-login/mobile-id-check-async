@@ -6,7 +6,7 @@ import {
 import {
   badRequestResponse,
   forbiddenResponse,
-  notImplementedResponse,
+  okResponse,
   serverErrorResponse,
   unauthorizedResponse,
 } from "../common/lambdaResponses";
@@ -25,8 +25,12 @@ import { BiometricSessionFinished } from "../common/session/updateOperations/Bio
 import { getFinishBiometricSessionConfig } from "./finishBiometricSessionConfig";
 import { IEventService } from "../services/events/types";
 import { FailureWithValue } from "../utils/result";
-import { SessionAttributes } from "../common/session/session";
+import {
+  BiometricSessionFinishedAttributes,
+  SessionAttributes,
+} from "../common/session/session";
 import { setupLogger } from "../common/logging/setupLogger";
+import { getAuditData } from "../common/request/getAuditData/getAuditData";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncFinishBiometricSessionDependencies,
@@ -35,15 +39,14 @@ export async function lambdaHandlerConstructor(
 ): Promise<APIGatewayProxyResult> {
   setupLogger(context);
   logger.info(LogMessage.FINISH_BIOMETRIC_SESSION_STARTED);
+
   const configResult = getFinishBiometricSessionConfig(dependencies.env);
   if (configResult.isError) {
     return serverErrorResponse;
   }
-
   const config = configResult.value;
 
   const validateResult = validateRequestBody(event.body);
-
   if (validateResult.isError) {
     logger.error(LogMessage.FINISH_BIOMETRIC_SESSION_REQUEST_BODY_INVALID, {
       errorMessage: validateResult.value.errorMessage,
@@ -53,18 +56,18 @@ export async function lambdaHandlerConstructor(
       validateResult.value.errorMessage,
     );
   }
-
   const { sessionId, biometricSessionId } = validateResult.value;
+
   const eventService = dependencies.getEventService(config.TXMA_SQS);
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
   );
+  const { ipAddress, txmaAuditEncoded } = getAuditData(event);
 
   const updateResult = await sessionRegistry.updateSession(
     sessionId,
     new BiometricSessionFinished(biometricSessionId),
   );
-
   if (updateResult.isError) {
     return handleUpdateSessionError(
       updateResult,
@@ -75,8 +78,52 @@ export async function lambdaHandlerConstructor(
     );
   }
 
+  const sendMessageToSqs = dependencies.getSendMessageToSqs();
+  const vendorProcessingMessage = {
+    biometricSessionId,
+    sessionId,
+  };
+  const sessionAttributes = updateResult.value
+    .attributes as BiometricSessionFinishedAttributes;
+
+  const sendMessageToVendorProcessingQueueResult = await sendMessageToSqs(
+    config.VENDOR_PROCESSING_SQS,
+    vendorProcessingMessage,
+  );
+  if (sendMessageToVendorProcessingQueueResult.isError) {
+    return await handleSendMessageToVendorProcessingQueueFailure(eventService, {
+      sessionAttributes,
+      issuer: config.ISSUER,
+      biometricSessionId,
+      ipAddress,
+      txmaAuditEncoded,
+    });
+  }
+
+  const writeAppEndEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_APP_END",
+    sub: sessionAttributes.subjectIdentifier,
+    sessionId: sessionAttributes.sessionId,
+    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+    componentId: config.ISSUER,
+    getNowInMilliseconds: Date.now,
+    transactionId: biometricSessionId,
+    redirect_uri: sessionAttributes.redirectUri,
+    suspected_fraud_signal: undefined,
+    ipAddress,
+    txmaAuditEncoded,
+  });
+  if (writeAppEndEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_APP_END",
+      },
+    });
+    return serverErrorResponse;
+  }
+
   logger.info(LogMessage.FINISH_BIOMETRIC_SESSION_COMPLETED);
-  return notImplementedResponse;
+  return okResponse();
 }
 
 async function handleConditionalCheckFailure(
@@ -88,14 +135,12 @@ async function handleConditionalCheckFailure(
   const sessionAge = Date.now() - sessionAttributes.createdAt;
   const isSessionExpired = sessionAge > 60 * 60 * 1000;
 
-  function getFraudSignal(
-    expired: boolean,
-  ): Record<string, string> | undefined {
+  function getFraudSignal(expired: boolean): string | undefined {
     if (!expired) {
       return undefined;
     }
 
-    return { suspected_fraud_signal: "AUTH_SESSION_TOO_OLD" };
+    return "AUTH_SESSION_TOO_OLD";
   }
 
   const writeEventResult = await eventService.writeGenericEvent({
@@ -106,7 +151,8 @@ async function handleConditionalCheckFailure(
     componentId: issuer,
     getNowInMilliseconds: Date.now,
     transactionId: biometricSessionId,
-    extensions: getFraudSignal(isSessionExpired),
+    redirect_uri: sessionAttributes.redirectUri,
+    suspected_fraud_signal: getFraudSignal(isSessionExpired),
     ipAddress: undefined,
     txmaAuditEncoded: undefined,
   });
@@ -141,6 +187,8 @@ async function handleSessionNotFound(
     transactionId: biometricSessionId,
     ipAddress: undefined,
     txmaAuditEncoded: undefined,
+    redirect_uri: undefined,
+    suspected_fraud_signal: undefined,
   });
 
   if (writeEventResult.isError) {
@@ -169,6 +217,8 @@ async function handleInternalServerError(
     transactionId: biometricSessionId,
     ipAddress: undefined,
     txmaAuditEncoded: undefined,
+    redirect_uri: undefined,
+    suspected_fraud_signal: undefined,
   });
 
   if (writeEventResult.isError) {
@@ -211,6 +261,55 @@ async function handleUpdateSessionError(
       );
   }
 }
+
+interface HandleSendMessageToVendorProcessingQueueFailureData {
+  sessionAttributes: BiometricSessionFinishedAttributes;
+  issuer: string;
+  biometricSessionId: string;
+  ipAddress: string;
+  txmaAuditEncoded: string | undefined;
+}
+
+const handleSendMessageToVendorProcessingQueueFailure = async (
+  eventService: IEventService,
+  data: HandleSendMessageToVendorProcessingQueueFailureData,
+): Promise<APIGatewayProxyResult> => {
+  logger.error(
+    LogMessage.FINISH_BIOMETRIC_SESSION_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE,
+  );
+
+  const {
+    biometricSessionId,
+    issuer,
+    ipAddress,
+    sessionAttributes,
+    txmaAuditEncoded,
+  } = data;
+  const { subjectIdentifier, sessionId, govukSigninJourneyId } =
+    sessionAttributes;
+
+  const writeEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+    sub: subjectIdentifier,
+    sessionId,
+    govukSigninJourneyId,
+    componentId: issuer,
+    getNowInMilliseconds: Date.now,
+    transactionId: biometricSessionId,
+    ipAddress,
+    txmaAuditEncoded,
+    redirect_uri: undefined,
+    suspected_fraud_signal: undefined,
+  });
+
+  if (writeEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: { auditEventName: "DCMAW_ASYNC_CRI_5XXERROR" },
+    });
+  }
+
+  return serverErrorResponse;
+};
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(
   null,
