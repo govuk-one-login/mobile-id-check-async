@@ -219,8 +219,179 @@ describe("DynamoDbAdapter", () => {
       });
     });
 
+    describe("Session validation", () => {
+      describe("Given the session attributes failed type validation", () => {
+        const invalidBiometricTokenIssuedSessionAttributesWrongType = {
+          ...validBiometricTokenIssuedSessionAttributes,
+          sessionId: 12345,
+        };
+
+        beforeEach(async () => {
+          const expectedUpdateItemCommandInput = {
+            TableName: "mock_table_name",
+            Key: {
+              sessionId: { S: "mock_session_id" },
+            },
+            UpdateExpression: updateOperation.getDynamoDbUpdateExpression(),
+            ConditionExpression:
+              updateOperation.getDynamoDbConditionExpression(),
+            ExpressionAttributeValues:
+              updateOperation.getDynamoDbExpressionAttributeValues(),
+            ReturnValues: ReturnValue.ALL_NEW,
+            ReturnValuesOnConditionCheckFailure:
+              ReturnValuesOnConditionCheckFailure.ALL_OLD,
+          };
+          mockDynamoDbClient
+            .onAnyCommand() // default
+            .rejects("Did not receive expected input")
+            .on(UpdateItemCommand, expectedUpdateItemCommandInput, true) // match to expected input
+            .resolves({
+              Attributes: marshall(
+                invalidBiometricTokenIssuedSessionAttributesWrongType,
+              ),
+            });
+          result = await sessionRegistry.updateSession(
+            "mock_session_id",
+            updateOperation,
+          );
+        });
+
+        it("Logs the failure", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_UPDATE_SESSION_UNEXPECTED_FAILURE",
+            data: {
+              updateExpression: updateOperation.getDynamoDbUpdateExpression(),
+              conditionExpression:
+                updateOperation.getDynamoDbConditionExpression(),
+            },
+          });
+        });
+
+        it("Returns failure with server error", () => {
+          expect(result).toEqual(
+            errorResult({
+              errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
+            }),
+          );
+        });
+      });
+
+      describe("Given the session is in the wrong state", () => {
+        const invalidBiometricTokenIssuedSessionAttributesWrongSessionState = {
+          ...validBiometricTokenIssuedSessionAttributes,
+          sessionState: SessionState.AUTH_SESSION_CREATED,
+        };
+        const expectedUpdateItemCommandInput = {
+          TableName: "mock_table_name",
+          Key: {
+            sessionId: { S: "mock_session_id" },
+          },
+          UpdateExpression: updateOperation.getDynamoDbUpdateExpression(),
+          ConditionExpression: updateOperation.getDynamoDbConditionExpression(),
+          ExpressionAttributeValues:
+            updateOperation.getDynamoDbExpressionAttributeValues(),
+          ReturnValues: ReturnValue.ALL_NEW,
+          ReturnValuesOnConditionCheckFailure:
+            ReturnValuesOnConditionCheckFailure.ALL_OLD,
+        };
+        beforeEach(async () => {
+          mockDynamoDbClient
+            .onAnyCommand() // default
+            .rejects("Did not receive expected input")
+            .on(UpdateItemCommand, expectedUpdateItemCommandInput, true) // match to expected input
+            .resolves({
+              Attributes: marshall(
+                invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
+              ),
+            });
+          result = await sessionRegistry.updateSession(
+            "mock_session_id",
+            updateOperation,
+          );
+        });
+
+        it("Logs the failure", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_UPDATE_SESSION_UNEXPECTED_FAILURE",
+            error: "Session validation failed",
+            data: {
+              invalidAttribute: {
+                sessionState: SessionState.AUTH_SESSION_CREATED,
+              },
+            },
+          });
+        });
+
+        it("Returns failure with an invalid session error", () => {
+          expect(result).toEqual(
+            errorResult({
+              errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
+            }),
+          );
+        });
+      });
+
+      describe("Given the session is more than 60 minutes old", () => {
+        const invalidBiometricTokenIssuedSessionAttributesSessionTooOld = {
+          ...validBiometricTokenIssuedSessionAttributes,
+          createdAt: 1704106740000, // 2024-01-01 10:59:00.000
+        };
+
+        beforeEach(async () => {
+          const expectedUpdateItemCommandInput = {
+            TableName: "mock_table_name",
+            Key: {
+              sessionId: { S: "mock_session_id" },
+            },
+            UpdateExpression: updateOperation.getDynamoDbUpdateExpression(),
+            ConditionExpression:
+              updateOperation.getDynamoDbConditionExpression(),
+            ExpressionAttributeValues:
+              updateOperation.getDynamoDbExpressionAttributeValues(),
+            ReturnValues: ReturnValue.ALL_NEW,
+            ReturnValuesOnConditionCheckFailure:
+              ReturnValuesOnConditionCheckFailure.ALL_OLD,
+          };
+          mockDynamoDbClient
+            .onAnyCommand() // default
+            .rejects("Did not receive expected input")
+            .on(UpdateItemCommand, expectedUpdateItemCommandInput, true) // match to expected input
+            .resolves({
+              Attributes: marshall(
+                invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
+              ),
+            });
+          result = await sessionRegistry.updateSession(
+            "mock_session_id",
+            updateOperation,
+          );
+        });
+
+        it("Logs the failure", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_UPDATE_SESSION_UNEXPECTED_FAILURE",
+            error: "Session validation failed",
+            data: { invalidAttribute: { createdAt: 1704106740000 } }, // 2024-01-01 10:59:00.000
+          });
+        });
+
+        it("Returns failure with an invalid session error", () => {
+          expect(result).toEqual(
+            errorResult({
+              errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
+            }),
+          );
+        });
+      });
+    });
+
     describe("Given the session is successfully updated", () => {
       describe("Given invalid session attributes were returned in response", () => {
+        const invalidBiometricTokenIssuedSessionAttributesWrongType = {
+          ...validBiometricTokenIssuedSessionAttributes,
+          sessionId: 12345,
+        };
+
         beforeEach(async () => {
           const expectedUpdateItemCommandInput = {
             TableName: "mock_table_name",
@@ -234,10 +405,13 @@ describe("DynamoDbAdapter", () => {
               updateOperation.getDynamoDbExpressionAttributeValues(),
           };
           mockDynamoDbClient
-            .onAnyCommand() // default
-            .rejects("Did not receive expected input")
-            .on(UpdateItemCommand, expectedUpdateItemCommandInput, true) // match to expected input
-            .resolves({ Attributes: {} });
+            .on(UpdateItemCommand, expectedUpdateItemCommandInput) // match to expected input
+            .resolves({
+              Attributes: marshall(
+                invalidBiometricTokenIssuedSessionAttributesWrongType,
+              ),
+            });
+
           result = await sessionRegistry.updateSession(
             "mock_session_id",
             updateOperation,
@@ -247,6 +421,8 @@ describe("DynamoDbAdapter", () => {
         it("Logs the failure", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_UPDATE_SESSION_UNEXPECTED_FAILURE",
+            error:
+              "Could not parse valid session attributes after successful update command",
             data: {
               updateExpression: updateOperation.getDynamoDbUpdateExpression(),
               conditionExpression:

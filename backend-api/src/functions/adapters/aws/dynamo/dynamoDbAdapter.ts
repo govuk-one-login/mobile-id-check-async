@@ -310,7 +310,7 @@ export class DynamoDbAdapter implements SessionRegistry {
     data: UpdateOperationDataToLog,
   ): FailureWithValue<SessionUpdateFailedInternalServerError> {
     logger.error(LogMessage.UPDATE_SESSION_UNEXPECTED_FAILURE, {
-      error: error,
+      error,
       data,
     });
     return errorResult({
