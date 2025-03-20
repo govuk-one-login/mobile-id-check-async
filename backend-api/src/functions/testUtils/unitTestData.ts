@@ -16,11 +16,13 @@ export const expectedSecurityHeaders = {
 };
 
 export const NOW_IN_MILLISECONDS: number = 1704110400000; // 2024-01-01 12:00:00.000
+export const validCreatedAt: number = 1704106860000; // 2024-01-01 11:01:00.000
+export const invalidCreatedAt: number = 1704106740000; // 2024-01-01 10:59:00.000
 
 export const validBaseSessionAttributes = {
   clientId: "mockClientId",
   govukSigninJourneyId: "mockGovukSigninJourneyId",
-  createdAt: 1704106860000, // 2024-01-01 11:01:00.000
+  createdAt: validCreatedAt,
   issuer: "mockIssuer",
   sessionId: mockSessionId,
   sessionState: SessionState.AUTH_SESSION_CREATED,

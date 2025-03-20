@@ -1,8 +1,10 @@
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import {
+  invalidCreatedAt,
   mockSessionId,
   NOW_IN_MILLISECONDS,
   validBiometricTokenIssuedSessionAttributes,
+  validCreatedAt,
 } from "../../../../testUtils/unitTestData";
 import {
   emptyFailure,
@@ -70,7 +72,7 @@ describe("TxMA event", () => {
   describe("Session attribute validation", () => {
     describe("Given the session is in the wrong state - sessionState = AUTH_SESSION_CREATED", () => {
       const invalidSessionAttributesWrongSessionState = {
-        createdAt: 1704106860000, // 2024-01-01 11:01:00.000
+        createdAt: validCreatedAt,
         sessionState: SessionState.AUTH_SESSION_CREATED,
       };
 
@@ -92,7 +94,7 @@ describe("TxMA event", () => {
     describe("Given the session is too old", () => {
       const invalidSessionAttributesSessionTooOld = {
         sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,
-        createdAt: 1704106740000, // 2024-01-01 10:59:00.000
+        createdAt: invalidCreatedAt,
       };
 
       it("Return and error result with the invalid attribute", () => {
@@ -102,7 +104,7 @@ describe("TxMA event", () => {
 
         expect(result).toEqual(
           errorResult({
-            invalidAttribute: { createdAt: 1704106740000 }, // 2024-01-01 10:59:00.000
+            invalidAttribute: { createdAt: invalidCreatedAt },
           }),
         );
       });

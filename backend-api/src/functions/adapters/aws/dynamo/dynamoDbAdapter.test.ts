@@ -603,7 +603,6 @@ describe("DynamoDbAdapter", () => {
       describe("Given valid session attributes were returned in response", () => {
         const validBiometricTokenIssuedSessionAttributesItem = marshall({
           ...validBiometricTokenIssuedSessionAttributes,
-          createdAt: 1704106860000, // 2024-01-01 11:01:00.000
         });
 
         beforeEach(async () => {
