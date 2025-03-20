@@ -1,0 +1,95 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  AsyncAbortSessionFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - AsyncAbortSessionLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2022
+        Sourcemap: false
+        EntryPoints:
+          - src/functions/asyncAbortSession/asyncAbortSessionHandler.ts
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-abort-session
+      Runtime: nodejs20.x
+      Handler: asyncAbortSessionHandler.lambdaHandler
+      Events:
+        AsyncAbortSession:
+          Type: Api
+          Properties:
+            Path: /async/abortSession
+            Method: post
+            RestApiId: !Ref SessionsApi
+      Role: !GetAtt AsyncAbortSessionLambdaRole.Arn
+      VpcConfig:
+        SubnetIds:
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+
+  AsyncAbortSessionFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt AsyncAbortSessionFunction.Arn
+      Principal: events.amazonaws.com
+      SourceAccount: !Sub ${AWS::AccountId}
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SessionsApi}/*/*/*
+
+  AsyncAbortSessionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-abort-session
+  
+  AsyncAbortSessionSubscriptionFilter:    
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn:
+        !FindInMap [CslsConfiguration, !Ref Environment, CSLSEGRESS]
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncAbortSessionLogGroup
+    Condition: isNotDev
+
+  AsyncAbortSessionLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-abort-session-lambda
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: AsyncAbortSessionFunctionLoggingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+        - PolicyName: VpcPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
