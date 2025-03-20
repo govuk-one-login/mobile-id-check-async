@@ -2,8 +2,9 @@ import { AttributeValue, GetItemCommandInput } from "@aws-sdk/client-dynamodb";
 import { Result } from "../../../utils/result";
 import { SessionAttributes } from "../session";
 import {
-  ValidateSessionErrorInvalidAttributeData,
   ValidateSessionAttributes,
+  ValidateSessionErrorInvalidAttributesData,
+  ValidateSessionErrorInvalidAttributeTypeData,
 } from "../SessionRegistry";
 
 export interface GetSessionOperation {
@@ -17,9 +18,9 @@ export interface GetSessionOperation {
 
   getSessionAttributesFromDynamoDbItem(
     item: Record<string, AttributeValue> | undefined,
-  ): Result<SessionAttributes, void>;
+  ): Result<SessionAttributes, ValidateSessionErrorInvalidAttributeTypeData>;
 
   validateSession(
     attributes: ValidateSessionAttributes,
-  ): Result<void, ValidateSessionErrorInvalidAttributeData>;
+  ): Result<void, ValidateSessionErrorInvalidAttributesData>;
 }

@@ -1,9 +1,8 @@
 import { Result } from "../../utils/result";
 import { GetSessionOperation } from "./getOperations/GetSessionOperation";
 import {
-  BaseSessionAttributes,
   SessionAttributes,
-  SessionState,
+  SessionState
 } from "./session";
 import { UpdateSessionOperation } from "./updateOperations/UpdateSessionOperation";
 
@@ -106,15 +105,23 @@ export interface GetSessionSessionInvalidErrorData {
 }
 
 export interface GetSessionValidateSessionErrorData {
-  invalidAttribute: ValidateSessionInvalidAttribute;
-  sessionAttributes: Partial<BaseSessionAttributes>;
+  invalidAttributes?: ValidateSessionInvalidAttributes;
+  sessionAttributes?: Partial<SessionAttributes>;
 }
 
-export interface ValidateSessionErrorInvalidAttributeData {
-  invalidAttribute: ValidateSessionInvalidAttribute;
+// export interface ValidateSessionErrorInvalidAttributeData {
+//   invalidAttribute: ValidateSessionInvalidAttributes;
+// }
+
+export interface ValidateSessionErrorInvalidAttributesData {
+  invalidAttributes: ValidateSessionInvalidAttributes;
 }
 
-interface ValidateSessionInvalidAttribute {
+export interface ValidateSessionErrorInvalidAttributeTypeData {
+  sessionAttributes: Partial<SessionAttributes>;
+}
+
+export interface ValidateSessionInvalidAttributes {
   sessionState?: Exclude<SessionState, SessionState.BIOMETRIC_TOKEN_ISSUED>;
   createdAt?: number;
 }

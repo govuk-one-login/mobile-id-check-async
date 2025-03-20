@@ -1,11 +1,19 @@
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { NativeAttributeValue, unmarshall } from "@aws-sdk/util-dynamodb";
-import { Result, emptyFailure, successResult } from "../../../utils/result";
+import {
+  emptyFailure,
+  errorResult,
+  Result,
+  successResult
+} from "../../../utils/result";
 import {
   BaseSessionAttributes,
   BiometricSessionFinishedAttributes,
-  BiometricTokenIssuedSessionAttributes,
+  BiometricTokenIssuedSessionAttributes
 } from "../session";
+import {
+  ValidateSessionErrorInvalidAttributeTypeData
+} from "../SessionRegistry";
 
 export const getBaseSessionAttributes = (
   item: Record<string, AttributeValue> | undefined,
@@ -51,6 +59,22 @@ export const getBiometricTokenIssuedSessionAttributes = (
   const sessionAttributes = unmarshall(item);
   if (!isBiometricTokenIssuedSessionAttributes(sessionAttributes))
     return emptyFailure();
+
+  return successResult(sessionAttributes);
+};
+
+export const getTxmaEventBiometricTokenIssuedSessionAttributes = (
+  item: Record<string, AttributeValue>,
+): Result<
+  BiometricTokenIssuedSessionAttributes,
+  ValidateSessionErrorInvalidAttributeTypeData
+> => {
+  const sessionAttributes: Record<string, unknown> = unmarshall(item);
+  if (!isBiometricTokenIssuedSessionAttributes(sessionAttributes)) {
+    return errorResult({
+      sessionAttributes,
+    });
+  }
 
   return successResult(sessionAttributes);
 };

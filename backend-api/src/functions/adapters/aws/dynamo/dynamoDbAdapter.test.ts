@@ -25,11 +25,11 @@ import { BiometricTokenIssued } from "../../../common/session/updateOperations/B
 import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
 import {
   invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
-  invalidBiometricTokenIssuedSessionAttributesWrongType,
+  invalidBiometricTokenIssuedSessionAttributeTypes,
   mockSessionId,
   NOW_IN_MILLISECONDS,
   validBaseSessionAttributes,
-  validBiometricTokenIssuedSessionAttributes,
+  validBiometricTokenIssuedSessionAttributes
 } from "../../../testUtils/unitTestData";
 import { errorResult, Result, successResult } from "../../../utils/result";
 import { DynamoDbAdapter } from "./dynamoDbAdapter";
@@ -347,7 +347,7 @@ describe("DynamoDbAdapter", () => {
             .on(UpdateItemCommand, expectedUpdateItemCommandInput) // match to expected input
             .resolves({
               Attributes: marshall(
-                invalidBiometricTokenIssuedSessionAttributesWrongType,
+                invalidBiometricTokenIssuedSessionAttributeTypes,
               ),
             });
 
@@ -504,13 +504,11 @@ describe("DynamoDbAdapter", () => {
       });
     });
 
-    describe("Session validation", () => {
-      describe("Given session attributes type validation failed", () => {
+    describe("Given the session was found", () => {
+      describe("Given invalid session attribute types were returned in the response", () => {
         beforeEach(async () => {
           mockDynamoDbClient.on(GetItemCommand).resolves({
-            Item: marshall(
-              invalidBiometricTokenIssuedSessionAttributesWrongType,
-            ),
+            Item: marshall(invalidBiometricTokenIssuedSessionAttributeTypes),
           });
           result = await sessionRegistry.getSession(
             mockSessionId,
@@ -520,22 +518,25 @@ describe("DynamoDbAdapter", () => {
 
         it("Logs the failure", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_NOT_FOUND",
-            errorMessage: "Session not found",
+            messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_INVALID",
+            sessionAttributes: invalidBiometricTokenIssuedSessionAttributeTypes,
           });
         });
 
-        it("Returns failure with server error", () => {
+        it("Returns failure with an invalid session error", () => {
           expect(result).toEqual(
             errorResult({
-              errorType: GetSessionError.SESSION_NOT_FOUND,
-              errorMessage: "Session not found",
+              errorType: GetSessionError.SESSION_INVALID,
+              data: {
+                sessionAttributes:
+                  invalidBiometricTokenIssuedSessionAttributeTypes,
+              },
             }),
           );
         });
       });
 
-      describe("Given session validation failed (session in the wrong state)", () => {
+      describe("Given an invalid session was returned in the response (e.g. session in the wrong state)", () => {
         const invalidBiometricTokenIssuedSessionAttributesWrongSessionStateItem =
           {
             Item: marshall(
@@ -558,7 +559,7 @@ describe("DynamoDbAdapter", () => {
         it("Logs the failure", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_INVALID",
-            invalidAttribute: {
+            invalidAttributes: {
               sessionState: SessionState.AUTH_SESSION_CREATED,
             },
             sessionAttributes:
@@ -571,7 +572,7 @@ describe("DynamoDbAdapter", () => {
             errorResult({
               errorType: GetSessionError.SESSION_INVALID,
               data: {
-                invalidAttribute: {
+                invalidAttributes: {
                   sessionState: SessionState.AUTH_SESSION_CREATED,
                 },
                 sessionAttributes:
@@ -581,10 +582,8 @@ describe("DynamoDbAdapter", () => {
           );
         });
       });
-    });
 
-    describe("Given the session was found", () => {
-      describe("Given valid session attributes were returned in response", () => {
+      describe("Given a valid session was returned in the response", () => {
         beforeEach(async () => {
           mockDynamoDbClient.on(GetItemCommand).resolves({
             Item: marshall(validBiometricTokenIssuedSessionAttributes),

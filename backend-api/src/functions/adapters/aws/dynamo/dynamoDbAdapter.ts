@@ -179,9 +179,8 @@ export class DynamoDbAdapter implements SessionRegistry {
     const getSessionAttributesResult =
       getOperation.getSessionAttributesFromDynamoDbItem(responseItem);
     if (getSessionAttributesResult.isError) {
-      return this.handleGetSessionNotFoundError({
-        errorMessage: sessionNotFound,
-      });
+      const sessionAttributes = getSessionAttributesResult.value;
+      return this.handleGetSessionInvalidError(sessionAttributes);
     }
     const sessionAttributes = getSessionAttributesResult.value;
 
@@ -193,9 +192,9 @@ export class DynamoDbAdapter implements SessionRegistry {
     });
 
     if (validateSessionResult.isError) {
-      const { invalidAttribute } = validateSessionResult.value;
+      const { invalidAttributes } = validateSessionResult.value;
       return this.handleGetSessionInvalidError({
-        invalidAttribute,
+        invalidAttributes,
         sessionAttributes,
       });
     }
@@ -355,18 +354,18 @@ export class DynamoDbAdapter implements SessionRegistry {
   }
 
   private handleGetSessionInvalidError({
-    invalidAttribute,
+    invalidAttributes,
     sessionAttributes,
   }: GetSessionValidateSessionErrorData): FailureWithValue<GetSessionSessionInvalidErrorData> {
     logger.error(LogMessage.GET_SESSION_SESSION_INVALID, {
-      invalidAttribute,
+      invalidAttributes,
       sessionAttributes,
     });
 
     return errorResult({
       errorType: GetSessionError.SESSION_INVALID,
       data: {
-        invalidAttribute,
+        invalidAttributes,
         sessionAttributes,
       },
     });

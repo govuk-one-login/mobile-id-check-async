@@ -7,15 +7,14 @@ import {
   validCreatedAt,
 } from "../../../../testUtils/unitTestData";
 import {
-  emptyFailure,
   emptySuccess,
   errorResult,
   successResult,
 } from "../../../../utils/result";
-import { TxMAEventGetSessionOperation } from "./TxmaEventGetSessionOperation";
 import { SessionState } from "../../session";
+import { TxMAEventGetSessionOperation } from "./TxmaEventGetSessionOperation";
 
-describe("TxMA event", () => {
+describe("TxMA event get session operation", () => {
   let getSessionOperation: TxMAEventGetSessionOperation;
 
   beforeEach(() => {
@@ -43,10 +42,18 @@ describe("TxMA event", () => {
         const result = getSessionOperation.getSessionAttributesFromDynamoDbItem(
           marshall({
             sessionId: mockSessionId,
+            sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,
           }),
         );
 
-        expect(result).toEqual(emptyFailure());
+        expect(result).toEqual(
+          errorResult({
+            sessionAttributes: {
+              sessionId: mockSessionId,
+              sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,
+            },
+          }),
+        );
       });
     });
 
@@ -83,7 +90,7 @@ describe("TxMA event", () => {
 
         expect(result).toEqual(
           errorResult({
-            invalidAttribute: {
+            invalidAttributes: {
               sessionState: SessionState.AUTH_SESSION_CREATED,
             },
           }),
@@ -104,7 +111,29 @@ describe("TxMA event", () => {
 
         expect(result).toEqual(
           errorResult({
-            invalidAttribute: { createdAt: invalidCreatedAt },
+            invalidAttributes: { createdAt: invalidCreatedAt },
+          }),
+        );
+      });
+    });
+
+    describe("Given the session has multiple invalid attributes", () => {
+      const invalidSessionAttributesSessionTooOld = {
+        sessionState: SessionState.AUTH_SESSION_CREATED,
+        createdAt: invalidCreatedAt,
+      };
+
+      it("Return and error result with the invalid attribute", () => {
+        const result = getSessionOperation.validateSession(
+          invalidSessionAttributesSessionTooOld,
+        );
+
+        expect(result).toEqual(
+          errorResult({
+            invalidAttributes: {
+              sessionState: SessionState.AUTH_SESSION_CREATED,
+              createdAt: invalidCreatedAt,
+            },
           }),
         );
       });

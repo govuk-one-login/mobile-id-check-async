@@ -6,12 +6,14 @@ import {
   SessionAttributes,
   SessionState,
 } from "../../session";
-import { getBiometricTokenIssuedSessionAttributes } from "../../sessionAttributes/sessionAttributes";
-import { GetSessionOperation } from "../GetSessionOperation";
+import { getTxmaEventBiometricTokenIssuedSessionAttributes } from "../../sessionAttributes/sessionAttributes";
 import {
-  ValidateSessionErrorInvalidAttributeData,
   ValidateSessionAttributes,
+  ValidateSessionErrorInvalidAttributesData,
+  ValidateSessionErrorInvalidAttributeTypeData,
+  ValidateSessionInvalidAttributes,
 } from "../../SessionRegistry";
+import { GetSessionOperation } from "../GetSessionOperation";
 
 export class TxMAEventGetSessionOperation implements GetSessionOperation {
   getDynamoDbGetCommandInput({
@@ -28,27 +30,31 @@ export class TxMAEventGetSessionOperation implements GetSessionOperation {
   }
 
   getSessionAttributesFromDynamoDbItem(
-    item: Record<string, AttributeValue> | undefined,
-  ): Result<SessionAttributes, void> {
-    return getBiometricTokenIssuedSessionAttributes(item);
+    item: Record<string, AttributeValue>,
+  ): Result<SessionAttributes, ValidateSessionErrorInvalidAttributeTypeData> {
+    return getTxmaEventBiometricTokenIssuedSessionAttributes(item);
   }
 
   validateSession(
     attributes: ValidateSessionAttributes,
-  ): Result<void, ValidateSessionErrorInvalidAttributeData> {
+  ): Result<void, ValidateSessionErrorInvalidAttributesData> {
     const { sessionState, createdAt } = attributes;
+    // const invalidAttributes: ValidateSessionInvalidAttributes[] = []
+    const invalidAttributes: ValidateSessionInvalidAttributes = {};
 
     if (!sessionState || sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) {
-      return errorResult({
-        invalidAttribute: { sessionState },
-      });
+      // invalidAttributes.push({ sessionState })
+      invalidAttributes.sessionState = sessionState;
     }
 
     if (!createdAt || isOlderThan60minutes(createdAt)) {
-      return errorResult({
-        invalidAttribute: { createdAt },
-      });
+      // invalidAttributes.push({ createdAt })
+      invalidAttributes.createdAt = createdAt;
     }
+
+    // if (invalidAttributes) return errorResult({ invalidAttributes })
+    if (Object.entries(invalidAttributes).length > 0)
+      return errorResult({ invalidAttributes });
 
     return emptySuccess();
   }

@@ -31,6 +31,18 @@ export const validBaseSessionAttributes = {
   timeToLive: 12345,
 };
 
+export const invalidBaseSessionAttributeTypes = {
+  clientId: "mockClientId",
+  govukSigninJourneyId: "mockGovukSigninJourneyId",
+  createdAt: validCreatedAt,
+  issuer: 12345, // Invalid type
+  sessionId: mockSessionId,
+  sessionState: SessionState.AUTH_SESSION_CREATED,
+  clientState: "mockClientState",
+  subjectIdentifier: "mockSubjectIdentifier",
+  timeToLive: "12345", // Invalid type
+};
+
 // Biometric token issued
 
 export const validBiometricTokenIssuedSessionAttributes = {
@@ -50,9 +62,10 @@ export const invalidBiometricTokenIssuedSessionAttributesWrongSessionState = {
   sessionState: SessionState.AUTH_SESSION_CREATED,
 };
 
-export const invalidBiometricTokenIssuedSessionAttributesWrongType = {
+export const invalidBiometricTokenIssuedSessionAttributeTypes = {
   ...validBiometricTokenIssuedSessionAttributes,
-  sessionId: 12345,
+  issuer: invalidBaseSessionAttributeTypes.issuer,
+  timeToLive: invalidBaseSessionAttributeTypes.timeToLive,
 };
 
 // Biometric session finished
