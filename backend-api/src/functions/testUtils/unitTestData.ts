@@ -31,6 +31,8 @@ export const validBaseSessionAttributes = {
   timeToLive: 12345,
 };
 
+// Biometric token issued
+
 export const validBiometricTokenIssuedSessionAttributes = {
   ...validBaseSessionAttributes,
   sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,
@@ -43,6 +45,18 @@ export const validBiometricTokenIssuedSessionAttributesMobileApp = {
   redirectUri: "https://www.mockRedirectUri.com",
 };
 
+export const invalidBiometricTokenIssuedSessionAttributesWrongSessionState = {
+  ...validBiometricTokenIssuedSessionAttributes,
+  sessionState: SessionState.AUTH_SESSION_CREATED,
+};
+
+export const invalidBiometricTokenIssuedSessionAttributesWrongType = {
+  ...validBiometricTokenIssuedSessionAttributes,
+  sessionId: 12345,
+};
+
+// Biometric session finished
+
 export const validBiometricSessionFinishedAttributes = {
   ...validBiometricTokenIssuedSessionAttributes,
   sessionState: SessionState.BIOMETRIC_SESSION_FINISHED,
@@ -53,6 +67,8 @@ export const validBiometricSessionFinishedAttributesMobileApp = {
   ...validBiometricSessionFinishedAttributes,
   redirectUri: "https://www.mockRedirectUri.com",
 };
+
+// Session registry
 
 export const mockInertSessionRegistry: SessionRegistry = {
   updateSession: jest.fn(() => {

@@ -6,7 +6,7 @@ import {
   ReturnValuesOnConditionCheckFailure,
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
-import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
+import { marshall } from "@aws-sdk/util-dynamodb";
 import { expect } from "@jest/globals";
 import { mockClient } from "aws-sdk-client-mock";
 import "../../../../../tests/testUtils/matchers";
@@ -15,8 +15,8 @@ import { TxMAEventGetSessionOperation } from "../../../common/session/getOperati
 import { SessionState } from "../../../common/session/session";
 import {
   GetSessionError,
-  SessionRegistry,
   GetSessionFailed,
+  SessionRegistry,
   SessionUpdated,
   SessionUpdateFailed,
   UpdateSessionError,
@@ -24,6 +24,8 @@ import {
 import { BiometricTokenIssued } from "../../../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
 import {
+  invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
+  invalidBiometricTokenIssuedSessionAttributesWrongType,
   mockSessionId,
   NOW_IN_MILLISECONDS,
   validBaseSessionAttributes,
@@ -276,10 +278,6 @@ describe("DynamoDbAdapter", () => {
       });
 
       describe("Given session validation failed (session in the wrong state)", () => {
-        const invalidBiometricTokenIssuedSessionAttributesWrongSessionState = {
-          ...validBiometricTokenIssuedSessionAttributes,
-          sessionState: SessionState.AUTH_SESSION_CREATED,
-        };
         const expectedUpdateItemCommandInput = {
           TableName: "mock_table_name",
           Key: {
@@ -333,11 +331,6 @@ describe("DynamoDbAdapter", () => {
 
     describe("Given the session is successfully updated", () => {
       describe("Given invalid session attributes were returned in response", () => {
-        const invalidBiometricTokenIssuedSessionAttributesWrongType = {
-          ...validBiometricTokenIssuedSessionAttributes,
-          sessionId: 12345,
-        };
-
         beforeEach(async () => {
           const expectedUpdateItemCommandInput = {
             TableName: "mock_table_name",
@@ -513,11 +506,6 @@ describe("DynamoDbAdapter", () => {
 
     describe("Session validation", () => {
       describe("Given session attributes type validation failed", () => {
-        const invalidBiometricTokenIssuedSessionAttributesWrongType = {
-          ...validBiometricTokenIssuedSessionAttributes,
-          sessionState: 12345,
-        };
-
         beforeEach(async () => {
           mockDynamoDbClient.on(GetItemCommand).resolves({
             Item: marshall(
@@ -548,10 +536,6 @@ describe("DynamoDbAdapter", () => {
       });
 
       describe("Given session validation failed (session in the wrong state)", () => {
-        const invalidBiometricTokenIssuedSessionAttributesWrongSessionState = {
-          ...validBiometricTokenIssuedSessionAttributes,
-          sessionState: SessionState.AUTH_SESSION_CREATED,
-        };
         const invalidBiometricTokenIssuedSessionAttributesWrongSessionStateItem =
           {
             Item: marshall(
@@ -601,13 +585,9 @@ describe("DynamoDbAdapter", () => {
 
     describe("Given the session was found", () => {
       describe("Given valid session attributes were returned in response", () => {
-        const validBiometricTokenIssuedSessionAttributesItem = marshall({
-          ...validBiometricTokenIssuedSessionAttributes,
-        });
-
         beforeEach(async () => {
           mockDynamoDbClient.on(GetItemCommand).resolves({
-            Item: validBiometricTokenIssuedSessionAttributesItem,
+            Item: marshall(validBiometricTokenIssuedSessionAttributes),
           });
           result = await sessionRegistry.getSession(
             mockSessionId,
@@ -623,9 +603,7 @@ describe("DynamoDbAdapter", () => {
 
         it("Returns success with session", () => {
           expect(result).toEqual(
-            successResult(
-              unmarshall(validBiometricTokenIssuedSessionAttributesItem),
-            ),
+            successResult(validBiometricTokenIssuedSessionAttributes),
           );
         });
       });
