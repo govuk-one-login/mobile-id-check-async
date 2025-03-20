@@ -1,10 +1,13 @@
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { emptySuccess, errorResult, Result } from "../../../../utils/result";
-import { SessionAttributes, SessionState } from "../../session";
+import {
+  isOlderThan60minutes,
+  SessionAttributes,
+  SessionState,
+} from "../../session";
 import {
   getBiometricSessionFinishedSessionAttributes,
   getBiometricTokenIssuedSessionAttributes,
-  isOlderThan60minutes,
 } from "../../sessionAttributes/sessionAttributes";
 import {
   BiometricSessionFinishedValidateSessionErrorData,

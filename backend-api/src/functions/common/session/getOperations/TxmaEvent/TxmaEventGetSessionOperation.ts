@@ -1,11 +1,12 @@
 import { AttributeValue, GetItemCommandInput } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { emptySuccess, errorResult, Result } from "../../../../utils/result";
-import { SessionAttributes, SessionState } from "../../session";
 import {
-  getBiometricTokenIssuedSessionAttributes,
   isOlderThan60minutes,
-} from "../../sessionAttributes/sessionAttributes";
+  SessionAttributes,
+  SessionState,
+} from "../../session";
+import { getBiometricTokenIssuedSessionAttributes } from "../../sessionAttributes/sessionAttributes";
 import { GetSessionOperation } from "../GetSessionOperation";
 import {
   ValidateSessionErrorInvalidAttributeData,
