@@ -240,12 +240,11 @@ describe("Async TxMA Event", () => {
     beforeEach(async () => {
       dependencies.getSessionRegistry = () => ({
         ...mockSuccessfulSessionRegistry,
-        getSession: jest.fn().mockResolvedValue(
-          successResult({
-            ...validBiometricTokenIssuedSessionAttributes,
-            createdAt: 1704106860000, // 2024-01-01 11:01:00.000
-          }),
-        ),
+        getSession: jest
+          .fn()
+          .mockResolvedValue(
+            successResult(validBiometricTokenIssuedSessionAttributes),
+          ),
       });
       result = await lambdaHandlerConstructor(
         dependencies,
