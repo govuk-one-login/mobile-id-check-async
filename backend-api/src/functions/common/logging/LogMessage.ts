@@ -289,10 +289,6 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_TXMA_EVENT_REQUEST_BODY_INVALID",
     "The incoming request body was missing or invalid.",
   );
-  static readonly TXMA_EVENT_SESSION_NOT_FOUND = new LogMessage(
-    "MOBILE_ASYNC_TXMA_EVENT_SESSION_NOT_FOUND",
-    "Failed to retrieve a session",
-  );
   static readonly TXMA_EVENT_SESSION_INVALID = new LogMessage(
     "MOBILE_ASYNC_TXMA_EVENT_SESSION_INVALID",
     "The retrieved session is not valid",

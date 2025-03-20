@@ -193,12 +193,6 @@ describe("Async TxMA Event", () => {
           );
         });
 
-        it("Logs the error", async () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_TXMA_EVENT_SESSION_NOT_FOUND",
-          });
-        });
-
         it("Returns 401 Unauthorized", () => {
           expect(result).toStrictEqual({
             statusCode: 401,
@@ -226,12 +220,6 @@ describe("Async TxMA Event", () => {
             validRequest,
             context,
           );
-        });
-
-        it("Logs the error", async () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_TXMA_EVENT_SESSION_INVALID",
-          });
         });
 
         it("Returns 401 Unauthorized", () => {

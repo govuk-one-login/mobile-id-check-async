@@ -16,7 +16,6 @@ import { TxMAEventGetSessionOperation } from "../common/session/getOperations/Tx
 import {
   GetSessionError,
   GetSessionFailed,
-  GetSessionValidateSessionErrorData,
 } from "../common/session/SessionRegistry";
 import {
   IAsyncTxmaEventDependencies,
@@ -78,42 +77,11 @@ async function handleGetSessionError({
 }): Promise<APIGatewayProxyResult> {
   switch (errorData.errorType) {
     case GetSessionError.INTERNAL_SERVER_ERROR:
-      return handleInternalServerError();
-    case GetSessionError.SESSION_NOT_FOUND:
-      return handleSessionNotFound();
-    case GetSessionError.SESSION_INVALID:
-      return handleSessionInvalid({
-        sessionData: errorData.data,
-      });
+      return serverErrorResponse;
+    default:
+      return unauthorizedResponse(
+        "invalid_session",
+        "Session does not exist or in incorrect state",
+      );
   }
-}
-
-async function handleInternalServerError(): Promise<APIGatewayProxyResult> {
-  return serverErrorResponse;
-}
-
-async function handleSessionNotFound(): Promise<APIGatewayProxyResult> {
-  logger.error(LogMessage.TXMA_EVENT_SESSION_NOT_FOUND);
-
-  return unauthorizedResponse(
-    "invalid_session",
-    "Session does not exist or in incorrect state",
-  );
-}
-
-async function handleSessionInvalid({
-  sessionData,
-}: {
-  sessionData: GetSessionValidateSessionErrorData;
-}): Promise<APIGatewayProxyResult> {
-  logger.error(LogMessage.TXMA_EVENT_SESSION_INVALID, {
-    data: {
-      ...sessionData,
-    },
-  });
-
-  return unauthorizedResponse(
-    "invalid_session",
-    "Session does not exist or in incorrect state",
-  );
 }
