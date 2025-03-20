@@ -35,7 +35,7 @@ jobs:
         run: npm clean-install
 
       - name: Check formatting
-        run: npm run format
+        run: npm run format:check
 
       - name: Check linting
         run: npm run lint
