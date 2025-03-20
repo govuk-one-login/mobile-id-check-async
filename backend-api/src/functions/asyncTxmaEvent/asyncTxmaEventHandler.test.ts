@@ -7,12 +7,10 @@ import { buildLambdaContext } from "../testUtils/mockContext";
 import { buildRequest } from "../testUtils/mockRequest";
 import {
   expectedSecurityHeaders,
-  mockInertEventService,
   mockInertSessionRegistry,
   mockSessionId,
   mockSuccessfulEventService,
   mockSuccessfulSessionRegistry,
-  mockWriteGenericEventSuccessResult,
   NOW_IN_MILLISECONDS,
   validBiometricTokenIssuedSessionAttributes,
 } from "../testUtils/unitTestData";
@@ -165,70 +163,14 @@ describe("Async TxMA Event", () => {
         );
       });
 
-      describe("Given DCMAW_ASYNC_CRI_5XXERROR event fails to write to TxMA", () => {
-        beforeEach(async () => {
-          dependencies.getEventService = () => ({
-            ...mockInertEventService,
-            writeGenericEvent: jest.fn().mockResolvedValue(
-              errorResult({
-                errorMessage: "mockError",
-              }),
-            ),
-          });
-
-          result = await lambdaHandlerConstructor(
-            dependencies,
-            validRequest,
-            context,
-          );
-        });
-
-        it("Logs the error", async () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-            data: {
-              auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
-            },
-          });
-        });
-
-        it("Returns 500 Internal server error", async () => {
-          expect(result).toStrictEqual({
-            statusCode: 500,
-            body: JSON.stringify({
-              error: "server_error",
-              error_description: "Internal Server Error",
-            }),
-            headers: expectedSecurityHeaders,
-          });
-        });
-      });
-
-      describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully to write to TxMA", () => {
-        it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
-          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
-            eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-            componentId: "mockIssuer",
-            getNowInMilliseconds: Date.now,
-            govukSigninJourneyId: undefined,
-            sessionId: mockSessionId,
-            sub: undefined,
-            ipAddress: "1.1.1.1",
-            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
-            redirect_uri: undefined,
-            suspected_fraud_signal: undefined,
-          });
-        });
-
-        it("Returns 500 Internal server error", async () => {
-          expect(result).toStrictEqual({
-            statusCode: 500,
-            body: JSON.stringify({
-              error: "server_error",
-              error_description: "Internal Server Error",
-            }),
-            headers: expectedSecurityHeaders,
-          });
+      it("Returns 500 Internal server error", async () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
         });
       });
     });
@@ -251,64 +193,9 @@ describe("Async TxMA Event", () => {
           );
         });
 
-        describe("Given DCMAW_ASYNC_CRI_4XXERROR event fails to write to TxMA", () => {
-          beforeEach(async () => {
-            dependencies.getEventService = () => ({
-              ...mockInertEventService,
-              writeGenericEvent: jest.fn().mockResolvedValue(
-                errorResult({
-                  errorMessage: "mockError",
-                }),
-              ),
-            });
-
-            result = await lambdaHandlerConstructor(
-              dependencies,
-              validRequest,
-              context,
-            );
-          });
-
-          it("Logs the error", async () => {
-            expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-              messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-              data: { auditEventName: "DCMAW_ASYNC_CRI_4XXERROR" },
-            });
-          });
-
-          it("Returns 500 Internal Server Error ", async () => {
-            expect(result).toStrictEqual({
-              statusCode: 500,
-              body: JSON.stringify({
-                error: "server_error",
-                error_description: "Internal Server Error",
-              }),
-              headers: expectedSecurityHeaders,
-            });
-          });
-        });
-
-        it("Writes DCMAW_ASYNC_CRI_4XXERROR event to TxMA", () => {
-          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
-            eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-            componentId: "mockIssuer",
-            getNowInMilliseconds: Date.now,
-            govukSigninJourneyId: undefined,
-            sessionId: mockSessionId,
-            sub: undefined,
-            ipAddress: "1.1.1.1",
-            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
-            redirect_uri: undefined,
-            suspected_fraud_signal: undefined,
-          });
-        });
-
         it("Logs the error", async () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_TXMA_EVENT_SESSION_NOT_FOUND",
-            data: {
-              auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
-            },
           });
         });
 
@@ -341,64 +228,9 @@ describe("Async TxMA Event", () => {
           );
         });
 
-        describe("Given DCMAW_ASYNC_CRI_4XXERROR event fails to write to TxMA", () => {
-          beforeEach(async () => {
-            dependencies.getEventService = () => ({
-              ...mockInertEventService,
-              writeGenericEvent: jest.fn().mockResolvedValue(
-                errorResult({
-                  errorMessage: "mockError",
-                }),
-              ),
-            });
-
-            result = await lambdaHandlerConstructor(
-              dependencies,
-              validRequest,
-              context,
-            );
-          });
-
-          it("Logs the error", async () => {
-            expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-              messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-              data: { auditEventName: "DCMAW_ASYNC_CRI_4XXERROR" },
-            });
-          });
-
-          it("Returns 500 Internal Server Error ", async () => {
-            expect(result).toStrictEqual({
-              statusCode: 500,
-              body: JSON.stringify({
-                error: "server_error",
-                error_description: "Internal Server Error",
-              }),
-              headers: expectedSecurityHeaders,
-            });
-          });
-        });
-
-        it("Writes DCMAW_ASYNC_CRI_4XXERROR event to TxMA", () => {
-          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
-            eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-            componentId: "mockIssuer",
-            getNowInMilliseconds: Date.now,
-            govukSigninJourneyId: undefined,
-            sessionId: mockSessionId,
-            sub: undefined,
-            ipAddress: "1.1.1.1",
-            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
-            redirect_uri: undefined,
-            suspected_fraud_signal: undefined,
-          });
-        });
-
         it("Logs the error", async () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_TXMA_EVENT_SESSION_INVALID",
-            data: {
-              auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
-            },
           });
         });
 
