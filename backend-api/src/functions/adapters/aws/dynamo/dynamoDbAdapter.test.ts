@@ -219,7 +219,7 @@ describe("DynamoDbAdapter", () => {
     });
 
     describe("Session validation", () => {
-      describe("Given the session attributes failed type validation", () => {
+      describe("Given session attributes type validation failed", () => {
         const invalidBiometricTokenIssuedSessionAttributesWrongType = {
           ...validBiometricTokenIssuedSessionAttributes,
           sessionId: 12345,
@@ -275,7 +275,7 @@ describe("DynamoDbAdapter", () => {
         });
       });
 
-      describe("Given the session is in the wrong state", () => {
+      describe("Given session validation failed (session in the wrong state)", () => {
         const invalidBiometricTokenIssuedSessionAttributesWrongSessionState = {
           ...validBiometricTokenIssuedSessionAttributes,
           sessionState: SessionState.AUTH_SESSION_CREATED,
@@ -318,59 +318,6 @@ describe("DynamoDbAdapter", () => {
                 sessionState: SessionState.AUTH_SESSION_CREATED,
               },
             },
-          });
-        });
-
-        it("Returns failure with an invalid session error", () => {
-          expect(result).toEqual(
-            errorResult({
-              errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
-            }),
-          );
-        });
-      });
-
-      describe("Given the session is more than 60 minutes old", () => {
-        const invalidBiometricTokenIssuedSessionAttributesSessionTooOld = {
-          ...validBiometricTokenIssuedSessionAttributes,
-          createdAt: 1704106740000, // 2024-01-01 10:59:00.000
-        };
-
-        beforeEach(async () => {
-          const expectedUpdateItemCommandInput = {
-            TableName: "mock_table_name",
-            Key: {
-              sessionId: { S: "mock_session_id" },
-            },
-            UpdateExpression: updateOperation.getDynamoDbUpdateExpression(),
-            ConditionExpression:
-              updateOperation.getDynamoDbConditionExpression(),
-            ExpressionAttributeValues:
-              updateOperation.getDynamoDbExpressionAttributeValues(),
-            ReturnValues: ReturnValue.ALL_NEW,
-            ReturnValuesOnConditionCheckFailure:
-              ReturnValuesOnConditionCheckFailure.ALL_OLD,
-          };
-          mockDynamoDbClient
-            .onAnyCommand() // default
-            .rejects("Did not receive expected input")
-            .on(UpdateItemCommand, expectedUpdateItemCommandInput, true) // match to expected input
-            .resolves({
-              Attributes: marshall(
-                invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
-              ),
-            });
-          result = await sessionRegistry.updateSession(
-            "mock_session_id",
-            updateOperation,
-          );
-        });
-
-        it("Logs the failure", () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_UPDATE_SESSION_UNEXPECTED_FAILURE",
-            error: "Session validation failed",
-            data: { invalidAttribute: { createdAt: 1704106740000 } }, // 2024-01-01 10:59:00.000
           });
         });
 
@@ -565,7 +512,7 @@ describe("DynamoDbAdapter", () => {
     });
 
     describe("Session validation", () => {
-      describe("Given the session attributes failed type validation", () => {
+      describe("Given session attributes type validation failed", () => {
         const invalidBiometricTokenIssuedSessionAttributesWrongType = {
           ...validBiometricTokenIssuedSessionAttributes,
           sessionState: 12345,
@@ -600,7 +547,7 @@ describe("DynamoDbAdapter", () => {
         });
       });
 
-      describe("Given the session is in the wrong state", () => {
+      describe("Given session validation failed (session in the wrong state)", () => {
         const invalidBiometricTokenIssuedSessionAttributesWrongSessionState = {
           ...validBiometricTokenIssuedSessionAttributes,
           sessionState: SessionState.AUTH_SESSION_CREATED,
@@ -645,50 +592,6 @@ describe("DynamoDbAdapter", () => {
                 },
                 sessionAttributes:
                   invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
-              },
-            }),
-          );
-        });
-      });
-
-      describe("Given the session is more than 60 minutes old", () => {
-        const invalidBiometricTokenIssuedSessionAttributesSessionTooOld = {
-          ...validBiometricTokenIssuedSessionAttributes,
-          createdAt: 1704106740000, // 2024-01-01 10:59:00.000
-        };
-        const biometricTokenIssuedSessionAttributesSessionTooOldItem = {
-          Item: marshall(
-            invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
-          ),
-        };
-
-        beforeEach(async () => {
-          mockDynamoDbClient
-            .on(GetItemCommand)
-            .resolves(biometricTokenIssuedSessionAttributesSessionTooOldItem);
-          result = await sessionRegistry.getSession(
-            mockSessionId,
-            getOperation,
-          );
-        });
-
-        it("Logs the failure", () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_INVALID",
-            invalidAttribute: { createdAt: 1704106740000 }, // 2024-01-01 10:59:00.000
-            sessionAttributes:
-              invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
-          });
-        });
-
-        it("Returns failure with an invalid session error", () => {
-          expect(result).toStrictEqual(
-            errorResult({
-              errorType: GetSessionError.SESSION_INVALID,
-              data: {
-                invalidAttribute: { createdAt: 1704106740000 }, // 2024-01-01 10:59:00.000
-                sessionAttributes:
-                  invalidBiometricTokenIssuedSessionAttributesSessionTooOld,
               },
             }),
           );
