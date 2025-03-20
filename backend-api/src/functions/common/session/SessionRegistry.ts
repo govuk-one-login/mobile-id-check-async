@@ -6,6 +6,7 @@ import {
   SessionState,
 } from "./session";
 import { UpdateSessionOperation } from "./updateOperations/UpdateSessionOperation";
+
 export interface SessionRegistry {
   updateSession(
     sessionId: string,

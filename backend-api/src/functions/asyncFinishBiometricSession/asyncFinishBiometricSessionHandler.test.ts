@@ -14,6 +14,7 @@ import {
   mockInertSessionRegistry,
   mockInertEventService,
   validBiometricSessionFinishedAttributes,
+  validBiometricSessionFinishedAttributesMobileApp,
 } from "../testUtils/unitTestData";
 import {
   emptySuccess,
@@ -62,10 +63,7 @@ describe("Async Finish Biometric Session", () => {
 
   const mockSessionUpdateSuccess = jest.fn().mockResolvedValue(
     successResult({
-      attributes: {
-        ...validBiometricSessionFinishedAttributes,
-        redirectUri: "www.mockRedirectUri.com",
-      },
+      attributes: validBiometricSessionFinishedAttributesMobileApp,
     }),
   );
 
@@ -601,7 +599,7 @@ describe("Async Finish Biometric Session", () => {
         govukSigninJourneyId: "mockGovukSigninJourneyId",
         componentId: "mockIssuer",
         transactionId: "f32432a9-0965-4da9-8a2c-a98a79349d4a",
-        redirect_uri: "www.mockRedirectUri.com",
+        redirect_uri: "https://www.mockRedirectUri.com",
         suspected_fraud_signal: undefined,
         getNowInMilliseconds: Date.now,
         ipAddress: "1.1.1.1",

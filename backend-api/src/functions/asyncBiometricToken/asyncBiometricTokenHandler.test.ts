@@ -3,7 +3,10 @@ import { APIGatewayProxyResult, Context } from "aws-lambda";
 import "dotenv/config";
 import "../../../tests/testUtils/matchers";
 import { logger } from "../common/logging/logger";
-import { UpdateSessionError } from "../common/session/SessionRegistry";
+import {
+  SessionRegistry,
+  UpdateSessionError,
+} from "../common/session/SessionRegistry";
 import { BiometricTokenIssued } from "../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { buildRequest } from "../testUtils/mockRequest";
@@ -13,9 +16,9 @@ import {
   mockInertSessionRegistry,
   mockSessionId,
   mockSuccessfulEventService,
-  mockSuccessfulSessionRegistry,
   mockWriteBiometricTokenIssuedEventSuccessResult,
   mockWriteGenericEventSuccessResult,
+  validBiometricTokenIssuedSessionAttributes,
   validBiometricTokenIssuedSessionAttributesMobileApp,
 } from "../testUtils/unitTestData";
 import { emptyFailure, errorResult, successResult } from "../utils/result";
@@ -68,7 +71,7 @@ describe("Async Biometric Token", () => {
       },
       getSecrets: mockGetSecretsSuccess,
       getBiometricToken: mockGetBiometricTokenSuccess,
-      getSessionRegistry: () => mockSuccessfulSessionRegistry,
+      getSessionRegistry: () => mockBiometricTokenSessionRegistrySuccess,
       getEventService: () => mockSuccessfulEventService,
     };
     context = buildLambdaContext();
@@ -559,7 +562,9 @@ describe("Async Biometric Token", () => {
     });
 
     it("Passes correct arguments to update session", () => {
-      expect(mockSuccessfulSessionRegistry.updateSession).toHaveBeenCalledWith(
+      expect(
+        mockBiometricTokenSessionRegistrySuccess.updateSession,
+      ).toHaveBeenCalledWith(
         mockSessionId,
         new BiometricTokenIssued("NFC_PASSPORT", "mock_opaque_id"),
       );
@@ -637,3 +642,17 @@ describe("Async Biometric Token", () => {
     });
   });
 });
+
+const mockBiometricTokenSessionRegistrySuccess: SessionRegistry = {
+  updateSession: jest.fn().mockResolvedValue(
+    successResult({
+      attributes: validBiometricTokenIssuedSessionAttributesMobileApp,
+    }),
+  ),
+
+  getSession: jest.fn().mockResolvedValue(
+    successResult({
+      attributes: validBiometricTokenIssuedSessionAttributes,
+    }),
+  ),
+};

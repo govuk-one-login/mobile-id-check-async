@@ -1,7 +1,7 @@
 import { SessionState } from "../common/session/session";
 import { SessionRegistry } from "../common/session/SessionRegistry";
 import { IEventService } from "../services/events/types";
-import { emptySuccess, successResult } from "../utils/result";
+import { emptySuccess } from "../utils/result";
 
 export const mockSessionId = "58f4281d-d988-49ce-9586-6ef70a2be0b4";
 export const mockBiometricSessionId = "f32432a9-0965-4da9-8a2c-a98a79349d4a";
@@ -38,13 +38,18 @@ export const validBiometricTokenIssuedSessionAttributes = {
   opaqueId: "mockOpaqueId",
 };
 
+export const validBiometricTokenIssuedSessionAttributesMobileApp = {
+  ...validBiometricTokenIssuedSessionAttributes,
+  redirectUri: "https://www.mockRedirectUri.com",
+};
+
 export const validBiometricSessionFinishedAttributes = {
   ...validBiometricTokenIssuedSessionAttributes,
   sessionState: SessionState.BIOMETRIC_SESSION_FINISHED,
   biometricSessionId: mockBiometricSessionId,
 };
 
-export const validBiometricTokenIssuedSessionAttributesMobileApp = {
+export const validBiometricSessionFinishedAttributesMobileApp = {
   ...validBiometricSessionFinishedAttributes,
   redirectUri: "https://www.mockRedirectUri.com",
 };
@@ -59,28 +64,7 @@ export const mockInertSessionRegistry: SessionRegistry = {
   }),
 };
 
-export const mockSuccessfulSessionRegistry: SessionRegistry = {
-  updateSession: jest.fn().mockResolvedValue(
-    successResult({
-      attributes: validBiometricTokenIssuedSessionAttributesMobileApp,
-    }),
-  ),
-
-  getSession: jest.fn().mockResolvedValue(
-    successResult({
-      attributes: validBiometricTokenIssuedSessionAttributes,
-    }),
-  ),
-};
-
-export const mockSessionRegistryGetSessionError = {
-  ...mockInertSessionRegistry,
-  updateSession: jest.fn().mockResolvedValue(
-    successResult({
-      attributes: validBaseSessionAttributes,
-    }),
-  ),
-};
+// Event service
 
 export const mockInertEventService: IEventService = {
   writeGenericEvent: jest.fn(() => {

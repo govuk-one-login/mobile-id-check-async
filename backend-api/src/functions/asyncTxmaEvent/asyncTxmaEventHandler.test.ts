@@ -2,7 +2,10 @@ import { expect } from "@jest/globals";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
 import "../../../tests/testUtils/matchers";
 import { logger } from "../common/logging/logger";
-import { GetSessionError } from "../common/session/SessionRegistry";
+import {
+  GetSessionError,
+  SessionRegistry,
+} from "../common/session/SessionRegistry";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { buildRequest } from "../testUtils/mockRequest";
 import {
@@ -10,9 +13,9 @@ import {
   mockInertSessionRegistry,
   mockSessionId,
   mockSuccessfulEventService,
-  mockSuccessfulSessionRegistry,
   NOW_IN_MILLISECONDS,
   validBiometricTokenIssuedSessionAttributes,
+  validBiometricTokenIssuedSessionAttributesMobileApp,
 } from "../testUtils/unitTestData";
 import { errorResult, successResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncTxmaEventHandler";
@@ -34,7 +37,7 @@ describe("Async TxMA Event", () => {
         TXMA_SQS: "mockTxmaSqs",
         ISSUER: "mockIssuer",
       },
-      getSessionRegistry: () => mockSuccessfulSessionRegistry,
+      getSessionRegistry: () => mockTxmaEventSessionRegistrySuccess,
       getEventService: () => mockSuccessfulEventService,
     };
     context = buildLambdaContext();
@@ -238,14 +241,8 @@ describe("Async TxMA Event", () => {
 
   describe("Given a valid request is made", () => {
     beforeEach(async () => {
-      dependencies.getSessionRegistry = () => ({
-        ...mockSuccessfulSessionRegistry,
-        getSession: jest
-          .fn()
-          .mockResolvedValue(
-            successResult(validBiometricTokenIssuedSessionAttributes),
-          ),
-      });
+      dependencies.getSessionRegistry = () =>
+        mockTxmaEventSessionRegistrySuccess;
       result = await lambdaHandlerConstructor(
         dependencies,
         validRequest,
@@ -275,3 +272,17 @@ const validRequest = buildRequest({
     eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
   }),
 });
+
+export const mockTxmaEventSessionRegistrySuccess: SessionRegistry = {
+  updateSession: jest.fn().mockResolvedValue(
+    successResult({
+      attributes: validBiometricTokenIssuedSessionAttributesMobileApp,
+    }),
+  ),
+
+  getSession: jest.fn().mockResolvedValue(
+    successResult({
+      attributes: validBiometricTokenIssuedSessionAttributes,
+    }),
+  ),
+};
