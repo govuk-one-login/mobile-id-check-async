@@ -36,7 +36,7 @@ describe("Logger", () => {
       });
     });
 
-    describe("Given authSessionId is passed to the logger", () => {
+    describe("Given sessionId is passed to the logger", () => {
       it("Writes a log including the session data", () => {
         const loggingAdapter = new MockLoggingAdapter();
         const logger = new Logger<MockMessage>(

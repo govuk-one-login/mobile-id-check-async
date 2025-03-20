@@ -246,6 +246,10 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_ABORT_SESSION_INVALID_CONFIG",
     "One or more required environment variables were missing or invalid.",
   );
+  static readonly ABORT_SESSION_REQUEST_BODY_INVALID = new LogMessage(
+    "MOBILE_ASYNC_ABORT_SESSION_REQUEST_BODY_INVALID",
+    "The incoming request body was missing or invalid.",
+  );
 
   // TxMA Event
   static readonly TXMA_EVENT_STARTED = new LogMessage(
