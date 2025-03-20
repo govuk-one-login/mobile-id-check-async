@@ -3,6 +3,11 @@ name: CI Checks
 on:
   workflow_call:
     inputs:
+      SAM_TEMPLATE_NAME:
+        description: SAM template name
+        required: false
+        type: string
+        default: template.yaml
       WORKING_DIRECTORY:
         description: Path to working directory in repo
         required: true
@@ -14,6 +19,7 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       SAM_CLI_TELEMETRY: 0
+      SAM_TEMPLATE_NAME: ${{ inputs.SAM_TEMPLATE_NAME }}
     defaults:
       run:
         shell: bash
@@ -41,4 +47,5 @@ jobs:
         run: npm run lint
 
       - name: Validate SAM template
-        run: sam validate --lint
+        run: |
+          sam validate --lint --template-file $SAM_TEMPLATE_NAME
