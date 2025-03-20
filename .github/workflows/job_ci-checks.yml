@@ -1,0 +1,73 @@
+name: CI Checks
+
+on:
+  workflow_call:
+    inputs:
+      TEMPLATE_NAME:
+        description: CloudFormation template name
+        required: false
+        type: string
+        default: template.yaml
+      VERIFY_TEMPLATE_RAIN:
+        description: Whether to install and verify templates with rain
+        required: false
+        type: boolean
+        default: false
+      WORKING_DIRECTORY:
+        description: Working directory
+        required: true
+        type: string
+
+jobs:
+  ci-checks:
+    name: Run CI checks
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.WORKING_DIRECTORY }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Setup nodeJS v20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: ${{ inputs.WORKING_DIRECTORY }}/package-lock.json
+
+      - name: Install dependencies
+        run: npm clean-install
+
+      - name: Linting
+        run: npm run lint
+
+      - name: Set up Homebrew
+        if: ${{ inputs.VERIFY_TEMPLATE_RAIN }}
+        id: set-up-homebrew
+        run: |
+          # The suggested command doesn't persist across steps: eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          # The following commands mimics the output from the suggested command. It may break for future runners.
+          echo "HOMEBREW_CELLAR=/home/linuxbrew/.linuxbrew/Cellar" >> $GITHUB_ENV
+          echo "HOMEBREW_REPOSITORY=/home/linuxbrew/.linuxbrew/Homebrew" >> $GITHUB_ENV
+          echo "/home/linuxbrew/.linuxbrew/sbin" >> $GITHUB_PATH
+          echo "/home/linuxbrew/.linuxbrew/bin" >> $GITHUB_PATH
+
+      - name: Install rain
+        if: ${{ inputs.VERIFY_TEMPLATE_RAIN }}
+        run: brew install rain
+
+      - name: Verify template format using rain
+        if: ${{ inputs.VERIFY_TEMPLATE_RAIN }}
+        run: npm run infra:format:verify
+
+      - name: Validate SAM template
+        run: |
+          TEMPLATES="$(find . -name ${{ inputs.TEMPLATE_NAME }})"
+          for template in $TEMPLATES; do
+            sam validate --lint --template-file $template
+          done
