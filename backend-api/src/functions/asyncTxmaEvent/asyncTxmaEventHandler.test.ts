@@ -146,7 +146,7 @@ describe("Async TxMA Event", () => {
   });
 
   describe("Retrieving a session", () => {
-    describe("Given there is an error retrieving the session", () => {
+    describe("Given there is an unexpected error retrieving the session", () => {
       beforeEach(async () => {
         dependencies.getSessionRegistry = () => ({
           ...mockInertSessionRegistry,

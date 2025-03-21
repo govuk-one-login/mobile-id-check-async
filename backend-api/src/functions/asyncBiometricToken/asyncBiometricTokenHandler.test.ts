@@ -1,6 +1,5 @@
 import { expect } from "@jest/globals";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
-import "dotenv/config";
 import "../../../tests/testUtils/matchers";
 import { logger } from "../common/logging/logger";
 import {
