@@ -937,7 +937,7 @@ describe("Backend application infrastructure", () => {
       const deadLetterQueueNames = [
         "TxMASQSQueueDeadLetterQueue",
         "VendorProcessingDLQ",
-        "IPVCoreOutboundSQSDeadLetterQueue",
+        "IPVCoreSQSDeadLetterQueue",
       ];
       const queueList = Object.keys(queues).filter(
         (queueName: string) => !deadLetterQueueNames.includes(queueName),
