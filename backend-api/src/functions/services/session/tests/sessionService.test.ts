@@ -13,6 +13,11 @@ import { AwsStub, mockClient } from "aws-sdk-client-mock";
 import { ISessionService, SessionService } from "../sessionService";
 import "aws-sdk-client-mock-jest";
 import { ErrorCategory } from "../../../utils/result";
+import {
+  NOW_IN_MILLISECONDS,
+  ONE_HOUR_AGO_IN_MILLISECONDS,
+  ONE_HOUR_IN_FUTURE_IN_SECONDS,
+} from "../../../testUtils/unitTestData";
 
 describe("Session Service", () => {
   let sessionService: ISessionService;
@@ -25,11 +30,10 @@ describe("Session Service", () => {
   beforeEach(() => {
     sessionService = new SessionService("mockTableName");
     dynamoDbMockClient = mockClient(DynamoDBClient);
+    jest.useFakeTimers().setSystemTime(NOW_IN_MILLISECONDS);
   });
 
-  beforeAll(() => {
-    jest.useFakeTimers().setSystemTime(new Date("2024-03-10"));
-  });
+  beforeAll(() => {});
 
   describe("Get active session ID", () => {
     describe("Given an error happens when fetching an active session from the table", () => {
@@ -95,14 +99,16 @@ describe("Session Service", () => {
         expect(result.value).toEqual("mockSessionId");
         const expectedCommandInput: QueryCommandInput = {
           ExpressionAttributeValues: {
-            ":currentTimeInSeconds": { N: "1710028800" }, // jest.useFakeTimers().setSystemTime(new Date("2024-03-10"))
-            ":sessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
+            ":oneHourAgoInMilliseconds": {
+              S: ONE_HOUR_AGO_IN_MILLISECONDS.toString(),
+            },
+            ":authSessionCreated": { S: "ASYNC_AUTH_SESSION_CREATED" },
             ":subjectIdentifier": { S: "mockSub" },
           },
-          FilterExpression: "sessionState = :sessionState",
-          IndexName: "subjectIdentifier-timeToLive-index",
+          FilterExpression: "sessionState = :authSessionCreated",
+          IndexName: "subjectIdentifier-createdAt-index",
           KeyConditionExpression:
-            "subjectIdentifier = :subjectIdentifier and :currentTimeInSeconds < timeToLive",
+            "subjectIdentifier = :subjectIdentifier AND createdAt > :oneHourAgoInMilliseconds",
           Limit: 1,
           ProjectionExpression: "sessionId",
           ScanIndexForward: false,
@@ -221,14 +227,16 @@ describe("Session Service", () => {
         });
         const expectedCommandInput: QueryCommandInput = {
           ExpressionAttributeValues: {
-            ":currentTimeInSeconds": { N: "1710028800" }, // jest.useFakeTimers().setSystemTime(new Date("2024-03-10"))
-            ":sessionState": { S: "ASYNC_AUTH_SESSION_CREATED" },
+            ":oneHourAgoInMilliseconds": {
+              S: ONE_HOUR_AGO_IN_MILLISECONDS.toString(),
+            },
+            ":authSessionCreated": { S: "ASYNC_AUTH_SESSION_CREATED" },
             ":subjectIdentifier": { S: "mockSub" },
           },
-          FilterExpression: "sessionState = :sessionState",
-          IndexName: "subjectIdentifier-timeToLive-index",
+          FilterExpression: "sessionState = :authSessionCreated",
+          IndexName: "subjectIdentifier-createdAt-index",
           KeyConditionExpression:
-            "subjectIdentifier = :subjectIdentifier and :currentTimeInSeconds < timeToLive",
+            "subjectIdentifier = :subjectIdentifier AND createdAt > :oneHourAgoInMilliseconds",
           Limit: 1,
           ProjectionExpression: "sessionId, clientState, redirectUri",
           ScanIndexForward: false,
@@ -276,7 +284,7 @@ describe("Session Service", () => {
           sub: "mockSub",
           client_id: "mockClientId",
           govuk_signin_journey_id: "mockJourneyId",
-          sessionDurationInSeconds: 12345,
+          sessionDurationInSeconds: 3600,
           redirect_uri: "https://mockRedirectUri.com",
           issuer: "mockIssuer",
         });
@@ -300,7 +308,7 @@ describe("Session Service", () => {
             client_id: "mockClientId",
             govuk_signin_journey_id: "mockJourneyId",
             issuer: "mockIssuer",
-            sessionDurationInSeconds: 12345,
+            sessionDurationInSeconds: 3600,
           });
 
           expect(result.isError).toBe(false);
@@ -310,13 +318,13 @@ describe("Session Service", () => {
             Item: {
               clientId: { S: "mockClientId" },
               clientState: { S: "mockValidState" },
-              createdAt: { N: "1710028800000" }, // jest.useFakeTimers().setSystemTime(new Date("2024-03-10"))
+              createdAt: { N: NOW_IN_MILLISECONDS.toString() },
               govukSigninJourneyId: { S: "mockJourneyId" },
               issuer: { S: "mockIssuer" },
               sessionId: { S: expect.any(String) },
               sessionState: { S: "ASYNC_AUTH_SESSION_CREATED" },
               subjectIdentifier: { S: "mockSub" },
-              timeToLive: { N: "1710041145" }, // jest.useFakeTimers().setSystemTime(new Date("2024-03-10"))
+              timeToLive: { N: ONE_HOUR_IN_FUTURE_IN_SECONDS.toString() },
             },
             TableName: "mockTableName",
           };
@@ -337,7 +345,7 @@ describe("Session Service", () => {
             govuk_signin_journey_id: "mockJourneyId",
             redirect_uri: "https://mockRedirectUri.com",
             issuer: "mockIssuer",
-            sessionDurationInSeconds: 12345,
+            sessionDurationInSeconds: 3600,
           });
 
           expect(result.isError).toBe(false);
@@ -347,14 +355,14 @@ describe("Session Service", () => {
             Item: {
               clientId: { S: "mockClientId" },
               clientState: { S: "mockValidState" },
-              createdAt: { N: "1710028800000" }, // jest.useFakeTimers().setSystemTime(new Date("2024-03-10"))
+              createdAt: { N: NOW_IN_MILLISECONDS.toString() },
               govukSigninJourneyId: { S: "mockJourneyId" },
               issuer: { S: "mockIssuer" },
               redirectUri: { S: "https://mockRedirectUri.com" },
               sessionId: { S: expect.any(String) },
               sessionState: { S: "ASYNC_AUTH_SESSION_CREATED" },
               subjectIdentifier: { S: "mockSub" },
-              timeToLive: { N: "1710041145" }, // jest.useFakeTimers().setSystemTime(new Date("2024-03-10"))
+              timeToLive: { N: ONE_HOUR_IN_FUTURE_IN_SECONDS.toString() },
             },
             TableName: "mockTableName",
           };
