@@ -27,6 +27,18 @@ Resources:
               - redirectUri
               - clientState
             ProjectionType: INCLUDE
+        - IndexName: subjectIdentifier-createdAt-index
+          KeySchema:
+            - AttributeName: subjectIdentifier
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            NonKeyAttributes:
+              - sessionState
+              - redirectUri
+              - clientState
+            ProjectionType: INCLUDE
       BillingMode: PAY_PER_REQUEST
       SSESpecification:
         SSEEnabled: true
