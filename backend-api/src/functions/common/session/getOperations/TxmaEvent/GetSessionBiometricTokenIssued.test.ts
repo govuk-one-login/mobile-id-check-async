@@ -83,7 +83,7 @@ describe("TxMA event get session operation", () => {
         sessionState: SessionState.AUTH_SESSION_CREATED,
       };
 
-      it("Return and error result with the invalid attribute", () => {
+      it("Returns an error result with the invalid attribute", () => {
         const result = getSessionOperation.validateSession(
           invalidSessionAttributesWrongSessionState,
         );
@@ -104,7 +104,7 @@ describe("TxMA event get session operation", () => {
         createdAt: invalidCreatedAt,
       };
 
-      it("Return and error result with the invalid attribute", () => {
+      it("Returns an error result with the invalid attribute", () => {
         const result = getSessionOperation.validateSession(
           invalidSessionAttributesSessionTooOld,
         );
@@ -123,7 +123,7 @@ describe("TxMA event get session operation", () => {
         createdAt: invalidCreatedAt,
       };
 
-      it("Return and error result with the invalid attribute", () => {
+      it("Returns an error result with all invalid attributes", () => {
         const result = getSessionOperation.validateSession(
           invalidSessionAttributesSessionTooOld,
         );
@@ -145,7 +145,7 @@ describe("TxMA event get session operation", () => {
         createdAt: validBiometricTokenIssuedSessionAttributes.createdAt,
       };
 
-      it("Return and error result with the invalid attribute", () => {
+      it("Returns an empty success result", () => {
         const result = getSessionOperation.validateSession(
           validSessionAttributes,
         );
