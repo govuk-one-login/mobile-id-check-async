@@ -380,7 +380,7 @@ describe("DynamoDbAdapter", () => {
         });
       });
 
-      it("Returns failure with an invalid session error", () => {
+      it("Returns failure with a client error", () => {
         expect(result).toEqual(
           errorResult({
             errorType: GetSessionError.CLIENT_ERROR,
@@ -450,7 +450,7 @@ describe("DynamoDbAdapter", () => {
           });
         });
 
-        it("Returns failure with an invalid session error", () => {
+        it("Returns failure with a client error", () => {
           expect(result).toStrictEqual(
             errorResult({
               errorType: GetSessionError.CLIENT_ERROR,
