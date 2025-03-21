@@ -8,8 +8,10 @@ try {
   const hashedSecret = await hashSecret({ secret, salt });
 
   writeSuccessfullyHashedSecretMessage(hashedSecret);
+  process.exit(0);
 } catch (error: unknown) {
   writeUnexpectedErrorMessage(error);
+  process.exit(1);
 }
 
 function writeSuccessfullyHashedSecretMessage(hashedSecret: string): void {
