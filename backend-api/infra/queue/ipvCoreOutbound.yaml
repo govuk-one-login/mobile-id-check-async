@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Resources:
-  IPVCoreOutboundSQSQueue:
+  IPVCoreOutboundSQS:
     Type: AWS::SQS::Queue
     Properties:
       MessageRetentionPeriod: 345600 # 4 days in seconds
@@ -8,15 +8,14 @@ Resources:
       DelaySeconds: 0
       KmsMasterKeyId: !Ref IPVCoreOutboundKeyAlias
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt IPVCoreOutboundSQSQueueDeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt IPVCoreOutboundSQSDeadLetterQueue.Arn
         maxReceiveCount: 60
 
-  IPVCoreOutboundSQSQueuePolicy:
+  IPVCoreOutboundSQSPolicy:
     Type: AWS::SQS::QueuePolicy
-    Condition: isNotDevOrBuild
     Properties:
       Queues:
-        - !Ref IPVCoreOutboundSQSQueue
+        - !Ref IPVCoreOutboundSQS
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -26,17 +25,17 @@ Resources:
               - sqs:GetQueueAttributes
               - sqs:ChangeMessageVisibility
               - sqs:ReceiveMessage
-              - sqs:SendMessage
             Resource:
-              - !GetAtt IPVCoreOutboundSQSQueue.Arn
+              - !GetAtt IPVCoreOutboundSQS.Arn
             Principal:
               AWS:
                 - !FindInMap
                   - IPVCore
                   - !Ref Environment
                   - AccountId
+    Condition: isNotDevOrBuild
 
-  IPVCoreOutboundSQSQueueDeadLetterQueue:
+  IPVCoreOutboundSQSDeadLetterQueue:
     Type: AWS::SQS::Queue
     Properties:
       MessageRetentionPeriod: 345600 # 4 days in seconds
@@ -45,7 +44,7 @@ Resources:
   IPVCoreOutboundKMSEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
-      Description: A KMS Key for encrypting the SQS Queue for IPVCore outbound messages
+      Description: A KMS Key for encrypting the SQS for IPVCore outbound messages
       Enabled: true
       KeyPolicy:
         Version: "2012-10-17"
