@@ -4243,6 +4243,18 @@ Resources:
               - redirectUri
               - clientState
             ProjectionType: INCLUDE
+        - IndexName: subjectIdentifier-createdAt-index
+          KeySchema:
+            - AttributeName: subjectIdentifier
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            NonKeyAttributes:
+              - sessionState
+              - redirectUri
+              - clientState
+            ProjectionType: INCLUDE
       KeySchema:
         - AttributeName: sessionId
           KeyType: HASH
