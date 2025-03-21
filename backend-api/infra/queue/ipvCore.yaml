@@ -8,7 +8,7 @@ Resources:
       DelaySeconds: 0
       KmsMasterKeyId: !Ref IPVCoreKeyAlias
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt IPVCoreSQSDeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt IPVCoreDLQ.Arn
         maxReceiveCount: 60
 
   IPVCoreSQSPolicy:
@@ -35,7 +35,7 @@ Resources:
                   - AccountId
     Condition: isNotDevOrBuild
 
-  IPVCoreSQSDeadLetterQueue:
+  IPVCoreDLQ:
     Type: AWS::SQS::Queue
     Properties:
       MessageRetentionPeriod: 345600 # 4 days in seconds

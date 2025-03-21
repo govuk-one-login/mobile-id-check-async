@@ -168,10 +168,6 @@ Mappings:
       AccountId: arn:aws:iam::991138514218:root
     production:
       AccountId: arn:aws:iam::075701497069:root
-    dev:
-      AccountId: ""
-    build:
-      AccountId: ""
 
   KMS:
     dev:

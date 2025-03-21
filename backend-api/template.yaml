@@ -138,10 +138,6 @@ Mappings:
       STSBASEURL: https://token.staging.account.gov.uk
 
   IPVCore:
-    build:
-      AccountId: ""
-    dev:
-      AccountId: ""
     integration:
       AccountId: arn:aws:iam::991138514218:root
     production:
@@ -3383,6 +3379,12 @@ Resources:
         - !Ref AWS::NoValue
       RoleName: !Sub ${AWS::StackName}-code-deploy-service-role
 
+  IPVCoreDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      KmsMasterKeyId: !Ref IPVCoreKMSEncryptionKey
+      MessageRetentionPeriod: 345600
+
   IPVCoreKMSEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
@@ -3431,15 +3433,9 @@ Resources:
       KmsMasterKeyId: !Ref IPVCoreKeyAlias
       MessageRetentionPeriod: 345600
       RedrivePolicy:
-        deadLetterTargetArn: !GetAtt IPVCoreSQSDeadLetterQueue.Arn
+        deadLetterTargetArn: !GetAtt IPVCoreDLQ.Arn
         maxReceiveCount: 60
       VisibilityTimeout: 60
-
-  IPVCoreSQSDeadLetterQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      KmsMasterKeyId: !Ref IPVCoreKMSEncryptionKey
-      MessageRetentionPeriod: 345600
 
   IPVCoreSQSPolicy:
     Type: AWS::SQS::QueuePolicy
