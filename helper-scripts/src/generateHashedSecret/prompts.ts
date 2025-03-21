@@ -37,11 +37,6 @@ export const askForSalt = async (): Promise<{
   ]);
 };
 
-export const generatingHashedSecretMessage = (): void => {
-  echo("");
-  echo(chalk.italic("Generating hashed secret..."));
-};
-
 export const echoSuccessfullyHashedSecret = (hashedSecret: string): void => {
   echo("");
   echo(chalk.green(hashedSecret));

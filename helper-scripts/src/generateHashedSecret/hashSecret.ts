@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { generatingHashedSecretMessage } from "./prompts.js";
+import { chalk, echo } from "zx";
 
 interface HashSecret {
   secret: string;
@@ -12,4 +12,9 @@ export const hashSecret = (options: HashSecret): string => {
   return createHash("sha256")
     .update(secret + salt)
     .digest("hex");
+};
+
+const generatingHashedSecretMessage = (): void => {
+  echo("");
+  echo(chalk.italic("Generating hashed secret..."));
 };
