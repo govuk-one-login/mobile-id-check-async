@@ -1,0 +1,44 @@
+name: Pull request
+
+on:
+  workflow_call:
+    inputs:
+      INCLUDES_LAMBDA_CODE:
+        description: Whether this component includes lambda code
+        type: string
+        default: true
+      WORKING_DIRECTORY:
+        description: Path to working directory in repo
+        required: true
+        type: string
+    secrets:
+      SONAR_TOKEN:
+        description: The token used for secure access to the SonarQube platform
+        required: false
+
+jobs:
+  ci-checks:
+    name: CI checks
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_ci-checks.yml@DCMAW-12118
+    with:
+      INCLUDES_LAMBDA_CODE: ${{ inputs.INCLUDES_LAMBDA_CODE }}
+      WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
+
+  run-test-suite:
+    name: Run test suite
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_test-suite.yml@DCMAW-12118
+    with:
+      INCLUDES_LAMBDA_CODE: ${{ inputs.INCLUDES_LAMBDA_CODE }}
+      WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
+
+  sonarqube-scan:
+    name: SonarQube scan
+    if: inputs.INCLUDES_LAMBDA_CODE == 'true'
+    needs: run-test-suite
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_sonarqube.yml@main
+    with:
+      WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
+    secrets: inherit
