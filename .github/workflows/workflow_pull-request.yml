@@ -7,6 +7,10 @@ on:
         description: Whether to run SonarQube checks
         type: string
         default: true
+      RUN_UNIT_TESTS:
+        description: Whether to run unit tests
+        type: string
+        default: true
       WORKING_DIRECTORY:
         description: Path to working directory in repo
         required: true
@@ -30,6 +34,7 @@ jobs:
       govuk-one-login/mobile-id-check-async/.github/workflows/job_test-suite.yml@DCMAW-12118
     with:
       RUN_SONARQUBE: ${{ inputs.RUN_SONARQUBE }}
+      RUN_UNIT_TESTS: ${{ inputs.RUN_UNIT_TESTS }}
       WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
 
   sonarqube-scan:

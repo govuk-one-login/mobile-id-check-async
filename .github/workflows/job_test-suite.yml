@@ -7,6 +7,10 @@ on:
         description: Whether to run SonarQube checks
         type: string
         default: true
+      RUN_UNIT_TESTS:
+        description: Whether to run unit tests
+        type: string
+        default: true
       WORKING_DIRECTORY:
         description: Path to working directory in repo
         required: true
@@ -37,7 +41,8 @@ jobs:
         run: npm clean-install
 
       - name: Run unit tests
-        run: npm run test:unit --if-present
+        if: inputs.RUN_UNIT_TESTS == 'true'
+        run: npm run test:unit
 
       - name: Upload unit test coverage artifact for SonarQube scan
         if: inputs.RUN_SONARQUBE == 'true'
@@ -48,4 +53,4 @@ jobs:
           retention-days: 1
 
       - name: Run infra tests
-        run: npm run test:infra --if-present
+        run: npm run test:infra
