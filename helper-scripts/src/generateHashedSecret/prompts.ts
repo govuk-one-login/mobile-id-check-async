@@ -1,5 +1,4 @@
 import inquirer from "inquirer";
-import { chalk, echo } from "zx";
 
 export const askForSecret = async (): Promise<{
   secret: string;
