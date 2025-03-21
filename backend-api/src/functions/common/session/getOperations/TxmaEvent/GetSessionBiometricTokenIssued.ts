@@ -1,11 +1,7 @@
 import { AttributeValue, GetItemCommandInput } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { emptySuccess, errorResult, Result } from "../../../../utils/result";
-import {
-  isOlderThan60minutes,
-  SessionAttributes,
-  SessionState,
-} from "../../session";
+import { SessionAttributes, SessionState } from "../../session";
 import { getTxmaEventBiometricTokenIssuedSessionAttributes } from "../../sessionAttributes/sessionAttributes";
 import {
   ValidateSessionAttributes,
@@ -14,6 +10,7 @@ import {
   ValidateSessionInvalidAttributes,
 } from "../../SessionRegistry";
 import { GetSessionOperation } from "../GetSessionOperation";
+import { isOlderThan60Minutes } from "../../../../utils/utils";
 
 export class GetSessionBiometricTokenIssued implements GetSessionOperation {
   getDynamoDbGetCommandInput({
@@ -45,7 +42,7 @@ export class GetSessionBiometricTokenIssued implements GetSessionOperation {
       invalidAttributes.sessionState = sessionState;
     }
 
-    if (!createdAt || isOlderThan60minutes(createdAt)) {
+    if (!createdAt || isOlderThan60Minutes(createdAt)) {
       invalidAttributes.createdAt = createdAt;
     }
 
