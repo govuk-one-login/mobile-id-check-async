@@ -34,3 +34,43 @@ The deployed stacks will be named as follows:
 - `<your-stack-name>-async-backend-cf-dist`
 
 Note: This script generates individual `.env` files your `backend-api` stack and `test-resources` directories. This completes all setup needed to run API tests against your deployed backend application.
+
+## `generateHashedSecret.ts`
+
+### What it does
+
+Takes in secret and salt values, and uses them to return a hashed secret as a hexadecimal string. This is then used as the client secret in the client registry.
+
+### How to use it
+
+```
+# From /helper-scripts
+npm run generateHashedSecret
+```
+
+## Formatting
+
+This helper-script directory uses Prettier as an opinionated formatter to ensure code style is consistent.
+
+### Format your code
+
+```
+# From /helper-scripts
+npm run format
+```
+
+### Validate your code adheres to the formatting rules
+
+```
+# From /helper-scripts
+npm run format:check
+```
+
+## Linting
+
+### Lint your code
+
+```
+# From /helper-scripts
+npm run lint
+```
