@@ -53,7 +53,7 @@ describe("BiometricTokenIssued", () => {
         ":biometricTokenIssued": { S: SessionState.BIOMETRIC_TOKEN_ISSUED },
         ":authSessionCreated": { S: SessionState.AUTH_SESSION_CREATED },
         ":oneHourAgoInMilliseconds": {
-          N: String(ONE_HOUR_AGO_IN_MILLISECONDS),
+          N: ONE_HOUR_AGO_IN_MILLISECONDS.toString(),
         },
       });
     });
