@@ -26,6 +26,7 @@ describe("POST /async/txmaEvent", () => {
 
     it("Returns an error and 400 status code", async () => {
       expect(response.status).toBe(400);
+      expect(response.statusText).toBe("Bad Request");
       expect(response.data).toStrictEqual({
         error: "invalid_request",
         error_description:
@@ -56,6 +57,7 @@ describe("POST /async/txmaEvent", () => {
 
     it("Returns an error and 401 status code", async () => {
       expect(response.status).toBe(401);
+      expect(response.statusText).toBe("Unauthorized");
       expect(response.data).toStrictEqual({
         error: "invalid_session",
         error_description: "Session does not exist or in incorrect state",

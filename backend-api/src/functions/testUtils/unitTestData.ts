@@ -43,8 +43,6 @@ export const invalidBaseSessionAttributeTypes = {
   timeToLive: "12345", // Invalid type
 };
 
-// Biometric token issued
-
 export const validBiometricTokenIssuedSessionAttributes = {
   ...validBaseSessionAttributes,
   sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,
@@ -68,8 +66,6 @@ export const invalidBiometricTokenIssuedSessionAttributeTypes = {
   timeToLive: invalidBaseSessionAttributeTypes.timeToLive,
 };
 
-// Biometric session finished
-
 export const validBiometricSessionFinishedAttributes = {
   ...validBiometricTokenIssuedSessionAttributes,
   sessionState: SessionState.BIOMETRIC_SESSION_FINISHED,
@@ -81,8 +77,6 @@ export const validBiometricSessionFinishedAttributesMobileApp = {
   redirectUri: "https://www.mockRedirectUri.com",
 };
 
-// Session registry
-
 export const mockInertSessionRegistry: SessionRegistry = {
   updateSession: jest.fn(() => {
     throw new Error("Not implemented");
@@ -92,8 +86,6 @@ export const mockInertSessionRegistry: SessionRegistry = {
     throw new Error("Not implemented");
   }),
 };
-
-// Event service
 
 export const mockInertEventService: IEventService = {
   writeGenericEvent: jest.fn(() => {
