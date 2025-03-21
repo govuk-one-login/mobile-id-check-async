@@ -14,8 +14,7 @@ import {
   mockSessionId,
   mockSuccessfulEventService,
   NOW_IN_MILLISECONDS,
-  validBiometricTokenIssuedSessionAttributes,
-  validBiometricTokenIssuedSessionAttributesMobileApp,
+  validBiometricTokenIssuedSessionAttributes
 } from "../testUtils/unitTestData";
 import { errorResult, successResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncTxmaEventHandler";
@@ -272,12 +271,7 @@ const validRequest = buildRequest({
 });
 
 export const mockTxmaEventSessionRegistrySuccess: SessionRegistry = {
-  updateSession: jest.fn().mockResolvedValue(
-    successResult({
-      attributes: validBiometricTokenIssuedSessionAttributesMobileApp,
-    }),
-  ),
-
+  ...mockInertSessionRegistry,
   getSession: jest.fn().mockResolvedValue(
     successResult({
       attributes: validBiometricTokenIssuedSessionAttributes,
