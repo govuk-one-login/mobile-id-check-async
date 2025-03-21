@@ -34,8 +34,6 @@ describe("Async TxMA Event", () => {
     dependencies = {
       env: {
         SESSION_TABLE_NAME: "mockTableName",
-        TXMA_SQS: "mockTxmaSqs",
-        ISSUER: "mockIssuer",
       },
       getSessionRegistry: () => mockTxmaEventSessionRegistrySuccess,
       getEventService: () => mockSuccessfulEventService,
