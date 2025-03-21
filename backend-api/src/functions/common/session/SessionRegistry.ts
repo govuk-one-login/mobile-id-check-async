@@ -84,11 +84,16 @@ export enum GetSessionError {
 
 export type GetSessionFailed =
   | GetSessionInternalServerError
-  | GetSessionErrorSessionNotFound
-  | GetSessionSessionInvalidErrorData;
+  | GetSessionCientError;
 
 export interface GetSessionInternalServerError {
   errorType: GetSessionError.INTERNAL_SERVER_ERROR;
+}
+
+export interface GetSessionCientError {
+  errorType:
+    | GetSessionError.SESSION_NOT_FOUND
+    | GetSessionError.SESSION_INVALID;
 }
 
 export interface GetSessionErrorSessionNotFound {

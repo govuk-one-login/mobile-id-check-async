@@ -24,6 +24,13 @@ export const getBaseSessionAttributes = (
   return successResult(sessionAttributes);
 };
 
+const isBaseSessionAttributes = (
+  item: Record<string, NativeAttributeValue>,
+): item is BaseSessionAttributes => {
+  if (!isCommonSessionAttributes(item)) return false;
+  return true;
+};
+
 const isCommonSessionAttributes = (
   item: Record<string, NativeAttributeValue>,
 ): boolean => {
@@ -39,13 +46,6 @@ const isCommonSessionAttributes = (
   if ("redirectUri" in item && typeof item.redirectUri !== "string") {
     return false;
   }
-  return true;
-};
-
-const isBaseSessionAttributes = (
-  item: Record<string, NativeAttributeValue>,
-): item is BaseSessionAttributes => {
-  if (!isCommonSessionAttributes(item)) return false;
   return true;
 };
 

@@ -32,13 +32,13 @@ import {
   GetSessionInternalServerError,
   GetSessionSessionInvalidErrorData,
   GetSessionValidateSessionErrorData,
+  InvalidSessionAttributeTypes,
   SessionRegistry,
   SessionUpdateFailed,
   SessionUpdateFailedInternalServerError,
   SessionUpdated,
   UpdateOperationDataToLog,
   UpdateSessionError,
-  InvalidSessionAttributeTypes,
 } from "../../../common/session/SessionRegistry";
 import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
 import { CreateSessionAttributes } from "../../../services/session/sessionService";
@@ -285,20 +285,6 @@ export class DynamoDbAdapter implements SessionRegistry {
       return this.handleUpdateSessionInternalServerError(
         "Could not parse valid session attributes after successful update command",
         updateExpressionDataToLog,
-      );
-    }
-
-    const { sessionState, createdAt } = getAttributesResult.value;
-    const validateSessionResult = updateOperation.validateSession({
-      sessionState,
-      createdAt,
-    });
-
-    if (validateSessionResult.isError) {
-      const { invalidAttribute } = validateSessionResult.value;
-      return this.handleUpdateSessionInternalServerError(
-        `Session validation failed`,
-        { invalidAttribute },
       );
     }
 

@@ -1,17 +1,11 @@
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { DocumentType } from "../../../../types/document";
-import { emptySuccess, errorResult, Result } from "../../../../utils/result";
 import { SessionState } from "../../session";
 import {
   getBaseSessionAttributes,
   getBiometricTokenIssuedSessionAttributes,
 } from "../../sessionAttributes/sessionAttributes";
-import {
-  UpdateSessionValidateSessionErrorData,
-  ValidateSessionAttributes,
-} from "../../SessionRegistry";
 import { UpdateSessionOperation } from "../UpdateSessionOperation";
-import { isOlderThan60Minutes } from "../../../../utils/utils";
 
 export class BiometricTokenIssued implements UpdateSessionOperation {
   constructor(
@@ -47,25 +41,5 @@ export class BiometricTokenIssued implements UpdateSessionOperation {
     } else {
       return getBiometricTokenIssuedSessionAttributes(item);
     }
-  }
-
-  validateSession(
-    attributes: ValidateSessionAttributes,
-  ): Result<void, UpdateSessionValidateSessionErrorData> {
-    const { sessionState, createdAt } = attributes;
-
-    if (!sessionState || sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) {
-      return errorResult({
-        invalidAttribute: { sessionState },
-      });
-    }
-
-    if (!createdAt || isOlderThan60Minutes(createdAt)) {
-      return errorResult({
-        invalidAttribute: { createdAt },
-      });
-    }
-
-    return emptySuccess();
   }
 }
