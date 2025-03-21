@@ -32,7 +32,7 @@ Resources:
             Principal:
               AWS:
                 - !FindInMap
-                  - IPVCoreOutbound
+                  - IPVCore
                   - !Ref Environment
                   - AccountId
 
@@ -60,7 +60,7 @@ Resources:
           - Effect: Allow
             Principal:
               AWS: !FindInMap
-                - IPVCoreOutbound
+                - IPVCore
                 - !Ref Environment
                 - AccountId
             Action:

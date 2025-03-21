@@ -161,7 +161,7 @@ Mappings:
     production:
       TxmaAccount: arn:aws:iam::451773080033:root
 
-  IPVCoreOutbound:
+  IPVCore:
     staging:
       AccountId: arn:aws:iam::335257547869:root
     integration:
@@ -451,18 +451,4 @@ Outputs:
     Description: TxMA KMS Encryption Key ARN
     Export:
       Name: !Sub ${AWS::StackName}-txma-kms-encryption-key-arn
-    Value: !GetAtt TxMAKMSEncryptionKey.Arn
-
-  IPVCoreOutboundSqsQueueArn:
-    Condition: IsDevOrBuild
-    Description: TxMA SQS Queue ARN
-    Export:
-      Name: !Sub ${AWS::StackName}-ipvcore-outbound-sqs-queue-arn
-    Value: !GetAtt TxMASQSQueue.Arn
-
-  IPVCoreOutboundKmsEncryptionKeyArn:
-    Condition: IsDevOrBuild
-    Description: TxMA KMS Encryption Key ARN
-    Export:
-      Name: !Sub ${AWS::StackName}-ipvcore-outbound-kms-encryption-key-arn
     Value: !GetAtt TxMAKMSEncryptionKey.Arn

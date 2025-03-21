@@ -137,7 +137,7 @@ Mappings:
       ReadIdBaseUrl: https://readid-proxy.review-b-async.staging.account.gov.uk
       STSBASEURL: https://token.staging.account.gov.uk
 
-  IPVCoreOutbound:
+  IPVCore:
     build:
       AccountId: ""
     dev:
@@ -504,19 +504,6 @@ Resources:
                 Resource: '*'
             Version: "2012-10-17"
           PolicyName: VpcPolicy
-        - PolicyDocument:
-            Statement:
-              - Action:
-                  - sqs:SendMessage
-                Effect: Allow
-                Resource: !GetAtt IPVCoreOutboundSQSQueue.Arn
-              - Action:
-                  - kms:Decrypt
-                  - kms:GenerateDataKey
-                Effect: Allow
-                Resource: !GetAtt IPVCoreOutboundKMSEncryptionKey.Arn
-            Version: "2012-10-17"
-          PolicyName: AsyncAbortSessionFunctionIPVCoreOutboundSQSPolicy
       RoleName: !Sub ${AWS::StackName}-abort-session-lambda
 
   AsyncAbortSessionLogGroup:
@@ -3417,7 +3404,7 @@ Resources:
             Effect: Allow
             Principal:
               AWS: !FindInMap
-                - IPVCoreOutbound
+                - IPVCore
                 - !Ref Environment
                 - AccountId
             Resource:
@@ -3469,7 +3456,7 @@ Resources:
             Principal:
               AWS:
                 - !FindInMap
-                  - IPVCoreOutbound
+                  - IPVCore
                   - !Ref Environment
                   - AccountId
             Resource:
@@ -4637,20 +4624,6 @@ Outputs:
         - EnvironmentVariables
         - !Ref Environment
         - EventsBaseUrl
-    Condition: IsDevOrBuild
-
-  IPVCoreOutboundKmsEncryptionKeyArn:
-    Description: TxMA KMS Encryption Key ARN
-    Value: !GetAtt TxMAKMSEncryptionKey.Arn
-    Export:
-      Name: !Sub ${AWS::StackName}-ipvcore-outbound-kms-encryption-key-arn
-    Condition: IsDevOrBuild
-
-  IPVCoreOutboundSqsQueueArn:
-    Description: TxMA SQS Queue ARN
-    Value: !GetAtt TxMASQSQueue.Arn
-    Export:
-      Name: !Sub ${AWS::StackName}-ipvcore-outbound-sqs-queue-arn
     Condition: IsDevOrBuild
 
   PrivateApiUrl:
