@@ -6,7 +6,7 @@ import {
   getBiometricTokenIssuedSessionAttributes,
 } from "../../sessionAttributes/sessionAttributes";
 import { UpdateSessionOperation } from "../UpdateSessionOperation";
-import { oneHourAgoInMillisecondsAsString } from "../../../../utils/utils";
+import { oneHourAgoInMilliseconds } from "../../../../utils/utils";
 
 export class BiometricTokenIssued implements UpdateSessionOperation {
   constructor(
@@ -28,7 +28,7 @@ export class BiometricTokenIssued implements UpdateSessionOperation {
       ":opaqueId": { S: this.opaqueId },
       ":biometricTokenIssued": { S: SessionState.BIOMETRIC_TOKEN_ISSUED },
       ":authSessionCreated": { S: SessionState.AUTH_SESSION_CREATED },
-      ":oneHourAgoInMilliseconds": { N: oneHourAgoInMillisecondsAsString() }, // Store as number
+      ":oneHourAgoInMilliseconds": { N: oneHourAgoInMilliseconds().toString() }, // Store as number
     };
   }
 
