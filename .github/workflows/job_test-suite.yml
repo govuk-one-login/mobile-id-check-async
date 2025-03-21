@@ -3,12 +3,8 @@ name: Run Test Suite
 on:
   workflow_call:
     inputs:
-      RUN_SONARQUBE:
-        description: Whether to run SonarQube checks
-        type: string
-        default: true
-      RUN_UNIT_TESTS:
-        description: Whether to run unit tests
+      INCLUDES_LAMBDA_CODE:
+        description: Whether this component includes lambda code
         type: string
         default: true
       WORKING_DIRECTORY:
@@ -41,11 +37,11 @@ jobs:
         run: npm clean-install
 
       - name: Run unit tests
-        if: inputs.RUN_UNIT_TESTS == 'true'
+        if: inputs.INCLUDES_LAMBDA_CODE == 'true'
         run: npm run test:unit
 
       - name: Upload unit test coverage artifact for SonarQube scan
-        if: inputs.RUN_SONARQUBE == 'true'
+        if: inputs.INCLUDES_LAMBDA_CODE == 'true'
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
           name: test-coverage

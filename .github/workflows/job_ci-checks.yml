@@ -3,6 +3,10 @@ name: CI Checks
 on:
   workflow_call:
     inputs:
+      INCLUDES_LAMBDA_CODE:
+        description: Whether this component includes lambda code
+        type: string
+        default: true
       WORKING_DIRECTORY:
         description: Path to working directory in repo
         required: true
@@ -38,6 +42,7 @@ jobs:
         run: npm run format:check
 
       - name: Check linting
+        if: inputs.INCLUDES_LAMBDA_CODE == 'true'
         run: npm run lint
 
       - name: Validate SAM template
