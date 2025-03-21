@@ -175,7 +175,6 @@ export class DynamoDbAdapter implements SessionRegistry {
       });
     }
 
-    // Attribute type validation
     const getSessionAttributesResult =
       getOperation.getSessionAttributesFromDynamoDbItem(responseItem);
     if (getSessionAttributesResult.isError) {
@@ -184,7 +183,6 @@ export class DynamoDbAdapter implements SessionRegistry {
     }
     const sessionAttributes = getSessionAttributesResult.value;
 
-    // Session validation
     const { sessionState, createdAt } = sessionAttributes;
     const validateSessionResult = getOperation.validateSession({
       sessionState,

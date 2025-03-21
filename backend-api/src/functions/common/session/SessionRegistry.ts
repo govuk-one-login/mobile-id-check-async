@@ -1,9 +1,6 @@
 import { Result } from "../../utils/result";
 import { GetSessionOperation } from "./getOperations/GetSessionOperation";
-import {
-  SessionAttributes,
-  SessionState
-} from "./session";
+import { SessionAttributes, SessionState } from "./session";
 import { UpdateSessionOperation } from "./updateOperations/UpdateSessionOperation";
 
 export interface SessionRegistry {
@@ -108,10 +105,6 @@ export interface GetSessionValidateSessionErrorData {
   invalidAttributes?: ValidateSessionInvalidAttributes;
   sessionAttributes?: Partial<SessionAttributes>;
 }
-
-// export interface ValidateSessionErrorInvalidAttributeData {
-//   invalidAttribute: ValidateSessionInvalidAttributes;
-// }
 
 export interface ValidateSessionErrorInvalidAttributesData {
   invalidAttributes: ValidateSessionInvalidAttributes;

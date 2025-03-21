@@ -12,7 +12,7 @@ import {
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
-import { TxMAEventGetSessionOperation } from "../common/session/getOperations/TxmaEvent/TxmaEventGetSessionOperation";
+import { GetSessionBiometricTokenIssued } from "../common/session/getOperations/TxmaEvent/GetSessionBiometricTokenIssued";
 import {
   GetSessionError,
   GetSessionFailed,
@@ -53,7 +53,7 @@ export async function lambdaHandlerConstructor(
   );
   const getSessionResult = await sessionRegistry.getSession(
     sessionId,
-    new TxMAEventGetSessionOperation(),
+    new GetSessionBiometricTokenIssued(),
   );
   if (getSessionResult.isError) {
     return handleGetSessionError({

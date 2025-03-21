@@ -15,7 +15,7 @@ import {
 } from "../../SessionRegistry";
 import { GetSessionOperation } from "../GetSessionOperation";
 
-export class TxMAEventGetSessionOperation implements GetSessionOperation {
+export class GetSessionBiometricTokenIssued implements GetSessionOperation {
   getDynamoDbGetCommandInput({
     tableName,
     keyValue,
@@ -39,20 +39,16 @@ export class TxMAEventGetSessionOperation implements GetSessionOperation {
     attributes: ValidateSessionAttributes,
   ): Result<void, ValidateSessionErrorInvalidAttributesData> {
     const { sessionState, createdAt } = attributes;
-    // const invalidAttributes: ValidateSessionInvalidAttributes[] = []
     const invalidAttributes: ValidateSessionInvalidAttributes = {};
 
     if (!sessionState || sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) {
-      // invalidAttributes.push({ sessionState })
       invalidAttributes.sessionState = sessionState;
     }
 
     if (!createdAt || isOlderThan60minutes(createdAt)) {
-      // invalidAttributes.push({ createdAt })
       invalidAttributes.createdAt = createdAt;
     }
 
-    // if (invalidAttributes) return errorResult({ invalidAttributes })
     if (Object.entries(invalidAttributes).length > 0)
       return errorResult({ invalidAttributes });
 

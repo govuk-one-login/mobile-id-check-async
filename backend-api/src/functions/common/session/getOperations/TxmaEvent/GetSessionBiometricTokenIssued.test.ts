@@ -12,15 +12,15 @@ import {
   successResult,
 } from "../../../../utils/result";
 import { SessionState } from "../../session";
-import { TxMAEventGetSessionOperation } from "./TxmaEventGetSessionOperation";
+import { GetSessionBiometricTokenIssued } from "./GetSessionBiometricTokenIssued";
 
 describe("TxMA event get session operation", () => {
-  let getSessionOperation: TxMAEventGetSessionOperation;
+  let getSessionOperation: GetSessionBiometricTokenIssued;
 
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(NOW_IN_MILLISECONDS);
-    getSessionOperation = new TxMAEventGetSessionOperation();
+    getSessionOperation = new GetSessionBiometricTokenIssued();
   });
 
   describe("When I request the DynamoDB command input", () => {

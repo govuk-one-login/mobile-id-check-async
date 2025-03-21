@@ -11,7 +11,7 @@ import { expect } from "@jest/globals";
 import { mockClient } from "aws-sdk-client-mock";
 import "../../../../../tests/testUtils/matchers";
 import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
-import { TxMAEventGetSessionOperation } from "../../../common/session/getOperations/TxmaEvent/TxmaEventGetSessionOperation";
+import { GetSessionBiometricTokenIssued } from "../../../common/session/getOperations/TxmaEvent/GetSessionBiometricTokenIssued";
 import { SessionState } from "../../../common/session/session";
 import {
   GetSessionError,
@@ -29,7 +29,7 @@ import {
   mockSessionId,
   NOW_IN_MILLISECONDS,
   validBaseSessionAttributes,
-  validBiometricTokenIssuedSessionAttributes
+  validBiometricTokenIssuedSessionAttributes,
 } from "../../../testUtils/unitTestData";
 import { errorResult, Result, successResult } from "../../../utils/result";
 import { DynamoDbAdapter } from "./dynamoDbAdapter";
@@ -427,7 +427,7 @@ describe("DynamoDbAdapter", () => {
 
   describe("getSession", () => {
     const getOperation: GetSessionOperation =
-      new TxMAEventGetSessionOperation();
+      new GetSessionBiometricTokenIssued();
     let result: Result<void, GetSessionFailed>;
 
     describe("On every attempt", () => {

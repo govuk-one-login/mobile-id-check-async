@@ -4,16 +4,14 @@ import {
   emptyFailure,
   errorResult,
   Result,
-  successResult
+  successResult,
 } from "../../../utils/result";
 import {
   BaseSessionAttributes,
   BiometricSessionFinishedAttributes,
-  BiometricTokenIssuedSessionAttributes
+  BiometricTokenIssuedSessionAttributes,
 } from "../session";
-import {
-  ValidateSessionErrorInvalidAttributeTypeData
-} from "../SessionRegistry";
+import { ValidateSessionErrorInvalidAttributeTypeData } from "../SessionRegistry";
 
 export const getBaseSessionAttributes = (
   item: Record<string, AttributeValue> | undefined,
