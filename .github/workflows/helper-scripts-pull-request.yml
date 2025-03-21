@@ -1,0 +1,44 @@
+name: helper-scripts pull request
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - ready_for_review
+      - synchronize
+    paths:
+      - "helper-scripts/**"
+      - ".github/workflows/helper-scripts-pull-request.yml"
+  workflow_dispatch:
+
+jobs:
+  ci-checks:
+    name: Run CI checks
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash
+        working-directory: helper-scripts
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          submodules: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+        with:
+          cache: npm
+          cache-dependency-path: helper-scripts/package-lock.json
+          node-version-file: helper-scripts/.nvmrc
+
+      - name: Install dependencies
+        run: npm clean-install
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Check linting
+        run: npm run lint
