@@ -1,6 +1,7 @@
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import {
   NOW_IN_MILLISECONDS,
+  ONE_HOUR_AGO_IN_MILLISECONDS,
   validBiometricSessionFinishedAttributes,
   validBiometricTokenIssuedSessionAttributes,
 } from "../../../../testUtils/unitTestData";
@@ -37,7 +38,7 @@ describe("BiometricSessionFinished", () => {
     it("Returns the appropriate ConditionExpression string", () => {
       const result = biometricSessionFinished.getDynamoDbConditionExpression();
       expect(result).toEqual(
-        "attribute_exists(sessionId) AND sessionState = :requiredState AND createdAt > :timeLimit",
+        "attribute_exists(sessionId) AND sessionState = :biometricTokenIssued AND createdAt > :oneHourAgoInMilliseconds",
       );
     });
   });
@@ -51,13 +52,11 @@ describe("BiometricSessionFinished", () => {
         ":biometricSessionFinished": {
           S: SessionState.BIOMETRIC_SESSION_FINISHED,
         },
-        ":requiredState": { S: SessionState.BIOMETRIC_TOKEN_ISSUED },
-        ":timeLimit": { N: expect.any(String) }, // Changed from S to N type
+        ":biometricTokenIssued": { S: SessionState.BIOMETRIC_TOKEN_ISSUED },
+        ":oneHourAgoInMilliseconds": {
+          N: ONE_HOUR_AGO_IN_MILLISECONDS.toString(),
+        }, // Changed from S to N type
       });
-
-      // Additional check to verify the timeLimit value
-      const timeLimitValue = Number(result[":timeLimit"].N);
-      expect(timeLimitValue).toBe(Date.now() - 60 * 60 * 1000);
     });
   });
 
