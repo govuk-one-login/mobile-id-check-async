@@ -16,7 +16,7 @@ jobs:
   ci-checks:
     name: CI checks
     uses:
-      govuk-one-login/mobile-id-check-async/.github/workflows/job_ci-checks.yml@main
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_ci-checks.yml@DCMAW-12118
     with:
       WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
 
