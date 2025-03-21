@@ -36,15 +36,3 @@ export const askForSalt = async (): Promise<{
     },
   ]);
 };
-
-export const echoSuccessfullyHashedSecret = (hashedSecret: string): void => {
-  echo("");
-  echo(chalk.green(hashedSecret));
-};
-
-export const unexpectedErrorMessage = (error: unknown): void => {
-  echo("");
-  echo("This script has stopped unexpectedly. Error:");
-  echo("");
-  echo(chalk.red.italic(error));
-};
