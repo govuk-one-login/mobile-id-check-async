@@ -332,7 +332,7 @@ export class DynamoDbAdapter implements SessionRegistry {
     logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND);
 
     return errorResult({
-      errorType: GetSessionError.SESSION_NOT_FOUND,
+      errorType: GetSessionError.CLIENT_ERROR,
     });
   }
 
@@ -346,7 +346,7 @@ export class DynamoDbAdapter implements SessionRegistry {
     });
 
     return errorResult({
-      errorType: GetSessionError.SESSION_INVALID,
+      errorType: GetSessionError.CLIENT_ERROR,
       data: {
         invalidAttributes,
         sessionAttributes,

@@ -185,7 +185,7 @@ describe("Async TxMA Event", () => {
             ...mockInertSessionRegistry,
             getSession: jest.fn().mockResolvedValue(
               errorResult({
-                errorType: GetSessionError.SESSION_NOT_FOUND,
+                errorType: GetSessionError.CLIENT_ERROR,
               }),
             ),
           });
@@ -214,7 +214,7 @@ describe("Async TxMA Event", () => {
             ...mockInertSessionRegistry,
             getSession: jest.fn().mockResolvedValue(
               errorResult({
-                errorType: GetSessionError.SESSION_INVALID,
+                errorType: GetSessionError.CLIENT_ERROR,
               }),
             ),
           });

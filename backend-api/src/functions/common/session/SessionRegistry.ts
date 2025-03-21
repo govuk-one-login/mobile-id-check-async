@@ -78,8 +78,7 @@ interface BiometricSessionFinishedInvalidSessionAttribute {
 
 export enum GetSessionError {
   INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR",
-  SESSION_NOT_FOUND = "SESSION_NOT_FOUND",
-  SESSION_INVALID = "SESSION_INVALID",
+  CLIENT_ERROR = "CLIENT_ERROR",
 }
 
 export type GetSessionFailed =
@@ -91,17 +90,15 @@ export interface GetSessionInternalServerError {
 }
 
 export interface GetSessionCientError {
-  errorType:
-    | GetSessionError.SESSION_NOT_FOUND
-    | GetSessionError.SESSION_INVALID;
+  errorType: GetSessionError.CLIENT_ERROR;
 }
 
 export interface GetSessionErrorSessionNotFound {
-  errorType: GetSessionError.SESSION_NOT_FOUND;
+  errorType: GetSessionError.CLIENT_ERROR;
 }
 
 export interface GetSessionSessionInvalidErrorData {
-  errorType: GetSessionError.SESSION_INVALID;
+  errorType: GetSessionError.CLIENT_ERROR;
   data: GetSessionValidateSessionErrorData;
 }
 

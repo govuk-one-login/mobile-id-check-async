@@ -387,7 +387,7 @@ describe("DynamoDbAdapter", () => {
       it("Returns failure with an invalid session error", () => {
         expect(result).toEqual(
           errorResult({
-            errorType: GetSessionError.SESSION_NOT_FOUND,
+            errorType: GetSessionError.CLIENT_ERROR,
           }),
         );
       });
@@ -461,7 +461,7 @@ describe("DynamoDbAdapter", () => {
         it("Returns failure with an invalid session error", () => {
           expect(result).toStrictEqual(
             errorResult({
-              errorType: GetSessionError.SESSION_INVALID,
+              errorType: GetSessionError.CLIENT_ERROR,
               data: {
                 invalidAttributes: {
                   sessionState: SessionState.AUTH_SESSION_CREATED,
