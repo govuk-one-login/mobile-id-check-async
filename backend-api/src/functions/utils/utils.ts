@@ -14,7 +14,7 @@ export function isOlderThan60Minutes(createdAtInMilliseconds: number) {
   return createdAtInMilliseconds < validFrom;
 }
 
-export function oneHourAgoInMillisecondsAsString() {
+export function oneHourAgoInMilliseconds() {
   const oneHourinMilliseconds = 60 * 60 * 1000;
-  return (Date.now() - oneHourinMilliseconds).toString();
+  return Date.now() - oneHourinMilliseconds;
 }
