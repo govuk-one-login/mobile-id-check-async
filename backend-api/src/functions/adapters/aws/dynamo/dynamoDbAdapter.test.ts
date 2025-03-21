@@ -352,7 +352,7 @@ describe("DynamoDbAdapter", () => {
           messageCode: "MOBILE_ASYNC_GET_SESSION_UNEXPECTED_FAILURE",
           getItemCommandInput: {
             TableName: "mock_table_name",
-            Key: { sessionId: marshall(mockSessionId) },
+            Key: { sessionId: { S: mockSessionId } },
           },
         });
 

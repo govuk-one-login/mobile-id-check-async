@@ -31,7 +31,7 @@ describe("TxMA event get session operation", () => {
       });
       expect(result).toEqual({
         TableName: "mock_table_name",
-        Key: { sessionId: marshall(mockSessionId) },
+        Key: { sessionId: { S: mockSessionId } },
       });
     });
   });

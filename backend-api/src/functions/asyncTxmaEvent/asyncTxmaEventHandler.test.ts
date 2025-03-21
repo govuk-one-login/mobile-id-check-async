@@ -14,7 +14,7 @@ import {
   mockSessionId,
   mockSuccessfulEventService,
   NOW_IN_MILLISECONDS,
-  validBiometricTokenIssuedSessionAttributes
+  validBiometricTokenIssuedSessionAttributes,
 } from "../testUtils/unitTestData";
 import { errorResult, successResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncTxmaEventHandler";
