@@ -37,6 +37,31 @@ export class LogMessage implements LogAttributes {
     "Error occurred while attempting to retrieve active session by subject ID.",
   );
 
+  static readonly GET_SESSION_ATTEMPT = new LogMessage(
+    "MOBILE_ASYNC_GET_SESSION_ATTEMPT",
+    "Attempting to retrieve session by session ID from DynamoDB.",
+  );
+
+  static readonly GET_SESSION_UNEXPECTED_FAILURE = new LogMessage(
+    "MOBILE_ASYNC_GET_SESSION_UNEXPECTED_FAILURE",
+    "An unexpected failure occurred while trying to retrieve the user session from DynamoDB.",
+  );
+
+  static readonly GET_SESSION_SESSION_NOT_FOUND = new LogMessage(
+    "MOBILE_ASYNC_GET_SESSION_SESSION_NOT_FOUND",
+    "No session found when attempting to get the user session from DynamoDB.",
+  );
+
+  static readonly GET_SESSION_SESSION_INVALID = new LogMessage(
+    "MOBILE_ASYNC_GET_SESSION_SESSION_INVALID",
+    "The session retrieved from DynamoDB is not valid.",
+  );
+
+  static readonly GET_SESSION_SUCCESS = new LogMessage(
+    "MOBILE_ASYNC_GET_SESSION_SUCCESS",
+    "Successfully retrieved user session from DynamoDB.",
+  );
+
   static readonly UPDATE_SESSION_ATTEMPT = new LogMessage(
     "MOBILE_ASYNC_UPDATE_SESSION_ATTEMPT",
     "Attempting to update user session in DynamoDB.",
@@ -256,9 +281,17 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_TXMA_EVENT_STARTED",
     "Lambda handler processing has started.",
   );
+  static readonly TXMA_EVENT_INVALID_CONFIG = new LogMessage(
+    "MOBILE_ASYNC_TXMA_EVENT_INVALID_CONFIG",
+    "One or more required environment variables were missing or invalid.",
+  );
   static readonly TXMA_EVENT_REQUEST_BODY_INVALID = new LogMessage(
     "MOBILE_ASYNC_TXMA_EVENT_REQUEST_BODY_INVALID",
     "The incoming request body was missing or invalid.",
+  );
+  static readonly TXMA_EVENT_SESSION_INVALID = new LogMessage(
+    "MOBILE_ASYNC_TXMA_EVENT_SESSION_INVALID",
+    "The retrieved session is not valid",
   );
   static readonly TXMA_EVENT_COMPLETED = new LogMessage(
     "MOBILE_ASYNC_TXMA_EVENT_COMPLETED",

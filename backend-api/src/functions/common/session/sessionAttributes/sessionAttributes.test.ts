@@ -1,19 +1,25 @@
+import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
+import {
+  NOW_IN_MILLISECONDS,
+  validBaseSessionAttributes,
+  validBiometricSessionFinishedAttributes,
+  validBiometricTokenIssuedSessionAttributes,
+} from "../../../testUtils/unitTestData";
+import { emptyFailure, successResult } from "../../../utils/result";
+import { SessionAttributes } from "../session";
 import {
   getBaseSessionAttributes,
   getBiometricSessionFinishedSessionAttributes,
   getBiometricTokenIssuedSessionAttributes,
 } from "./sessionAttributes";
-import { emptyFailure, successResult } from "../../../../utils/result";
-import { SessionAttributes, SessionState } from "../../session";
-import { AttributeValue } from "@aws-sdk/client-dynamodb";
-import {
-  validBaseSessionAttributes,
-  validBiometricSessionFinishedAttributes,
-  validBiometricTokenIssuedSessionAttributes,
-} from "../../../../testUtils/unitTestData";
 
 describe("Session attributes", () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(NOW_IN_MILLISECONDS);
+  });
+
   interface TestScenario {
     scenario: string;
     attributes: Record<string, AttributeValue> | undefined;
@@ -201,15 +207,6 @@ describe("Session attributes", () => {
           validBiometricTokenIssuedSessionAttributes,
         ),
         {
-          scenario: "Given sessionState is not ASYNC_BIOMETRIC_TOKEN_ISSUED",
-          attributes: buildSessionAttributes(
-            validBiometricTokenIssuedSessionAttributes,
-            {
-              sessionState: SessionState.AUTH_SESSION_CREATED,
-            },
-          ),
-        },
-        {
           scenario: "Given documentType is missing",
           attributes: buildSessionAttributes(
             validBiometricTokenIssuedSessionAttributes,
@@ -288,15 +285,6 @@ describe("Session attributes", () => {
         ...givenAnyCommonSessionAttributeIsInvalid(
           validBiometricSessionFinishedAttributes,
         ),
-        {
-          scenario: "Given sessionState is not BIOMETRIC_SESSION_FINISHED",
-          attributes: buildSessionAttributes(
-            validBiometricSessionFinishedAttributes,
-            {
-              sessionState: SessionState.AUTH_SESSION_CREATED,
-            },
-          ),
-        },
         {
           scenario: "Given documentType is missing",
           attributes: buildSessionAttributes(
