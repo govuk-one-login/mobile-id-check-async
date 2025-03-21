@@ -2,7 +2,6 @@ import {
   ConditionalCheckFailedException,
   DynamoDBClient,
   GetItemCommand,
-  GetItemCommandInput,
   PutItemCommand,
   PutItemCommandInput,
   QueryCommand,
@@ -165,7 +164,6 @@ export class DynamoDbAdapter implements SessionRegistry {
     } catch (error: unknown) {
       return this.handleGetSessionInternalServerError({
         error,
-        getItemCommandInput,
       });
     }
 
@@ -180,7 +178,6 @@ export class DynamoDbAdapter implements SessionRegistry {
       const { sessionAttributes } = getSessionAttributesResult.value;
       return this.handleGetSessionInternalServerError({
         error: "Session attributes missing or contains invalid attribute types",
-        getItemCommandInput,
         sessionAttributes,
       });
     }
@@ -311,16 +308,13 @@ export class DynamoDbAdapter implements SessionRegistry {
 
   private handleGetSessionInternalServerError({
     error,
-    getItemCommandInput,
     sessionAttributes,
   }: {
     error: unknown;
-    getItemCommandInput: GetItemCommandInput;
     sessionAttributes?: InvalidSessionAttributeTypes;
   }): FailureWithValue<GetSessionInternalServerError> {
     logger.error(LogMessage.GET_SESSION_UNEXPECTED_FAILURE, {
       error,
-      getItemCommandInput,
       sessionAttributes,
     });
     return errorResult({

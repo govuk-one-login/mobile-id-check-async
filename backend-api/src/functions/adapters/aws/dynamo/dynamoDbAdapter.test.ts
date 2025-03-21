@@ -350,10 +350,6 @@ describe("DynamoDbAdapter", () => {
       it("Logs the failure", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_GET_SESSION_UNEXPECTED_FAILURE",
-          getItemCommandInput: {
-            TableName: "mock_table_name",
-            Key: { sessionId: { S: mockSessionId } },
-          },
         });
 
         const { name, message } = JSON.parse(
@@ -410,10 +406,6 @@ describe("DynamoDbAdapter", () => {
             messageCode: "MOBILE_ASYNC_GET_SESSION_UNEXPECTED_FAILURE",
             error:
               "Session attributes missing or contains invalid attribute types",
-            getItemCommandInput: {
-              TableName: "mock_table_name",
-              Key: { sessionId: { S: mockSessionId } },
-            },
             sessionAttributes: invalidBiometricTokenIssuedSessionAttributeTypes,
           });
         });
