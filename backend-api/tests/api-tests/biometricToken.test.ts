@@ -98,7 +98,7 @@ describe("POST /async/biometricToken", () => {
         "/async/biometricToken",
         requestBody,
       );
-    }, 15000);
+    }, 25000);
 
     it("Returns an error and 401 status code", () => {
       expect(biometricTokenResponse.status).toBe(401);

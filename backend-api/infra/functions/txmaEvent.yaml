@@ -39,10 +39,10 @@ Resources:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-txma-event
 
-  AsyncTxmaEventSubscriptionFilter:    
+  AsyncTxmaEventSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
-      DestinationArn: 
+      DestinationArn:
         !FindInMap [CslsConfiguration, !Ref Environment, CSLSEGRESS]
       FilterPattern: ""
       LogGroupName: !Ref AsyncTxmaEventLogGroup
@@ -93,3 +93,10 @@ Resources:
                   - ec2:CreateNetworkInterface
                   - ec2:DeleteNetworkInterface
                 Resource: '*'
+        - PolicyName: AsyncTxmaEventFunctionDynamodbPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "dynamodb:GetItem"
+                Resource: !GetAtt SessionsTable.Arn
