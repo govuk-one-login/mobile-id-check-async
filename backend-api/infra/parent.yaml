@@ -162,6 +162,10 @@ Mappings:
       TxmaAccount: arn:aws:iam::451773080033:root
 
   IPVCore:
+    dev:
+      AccountId: not-used
+    build:
+      AccountId: not-used
     staging:
       AccountId: arn:aws:iam::335257547869:root
     integration:

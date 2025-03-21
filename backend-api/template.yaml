@@ -138,6 +138,10 @@ Mappings:
       STSBASEURL: https://token.staging.account.gov.uk
 
   IPVCore:
+    build:
+      AccountId: not-used
+    dev:
+      AccountId: not-used
     integration:
       AccountId: arn:aws:iam::991138514218:root
     production:
@@ -3388,30 +3392,40 @@ Resources:
   IPVCoreKMSEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
-      Description: A KMS Key for encrypting the SQS for IPVCore  messages
+      Description: A KMS Key for encrypting the SQS for IPVCore messages
       Enabled: true
-      KeyPolicy:
-        Statement:
-          - Action:
-              - kms:*
-            Effect: Allow
-            Principal:
-              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
-            Resource:
-              - '*'
-          - Action:
-              - kms:Encrypt
-              - kms:Decrypt
-              - kms:GenerateDataKey
-            Effect: Allow
-            Principal:
-              AWS: !FindInMap
-                - IPVCore
-                - !Ref Environment
-                - AccountId
-            Resource:
-              - '*'
-        Version: "2012-10-17"
+      KeyPolicy: !If
+        - isNotDevOrBuild
+        - Statement:
+            - Action:
+                - kms:*
+              Effect: Allow
+              Principal:
+                AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+              Resource:
+                - '*'
+            - Action:
+                - kms:Encrypt
+                - kms:Decrypt
+                - kms:GenerateDataKey
+              Effect: Allow
+              Principal:
+                AWS: !FindInMap
+                  - IPVCore
+                  - !Ref Environment
+                  - AccountId
+              Resource:
+                - '*'
+          Version: "2012-10-17"
+        - Statement:
+            - Action:
+                - kms:*
+              Effect: Allow
+              Principal:
+                AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+              Resource:
+                - '*'
+          Version: "2012-10-17"
       KeySpec: SYMMETRIC_DEFAULT
       KeyUsage: ENCRYPT_DECRYPT
       MultiRegion: false

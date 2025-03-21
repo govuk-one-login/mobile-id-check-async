@@ -44,30 +44,40 @@ Resources:
   IPVCoreKMSEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
-      Description: A KMS Key for encrypting the SQS for IPVCore  messages
+      Description: A KMS Key for encrypting the SQS for IPVCore messages
       Enabled: true
-      KeyPolicy:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
-            Action:
-              - kms:*
-            Resource:
-              - "*"
-          - Effect: Allow
-            Principal:
-              AWS: !FindInMap
-                - IPVCore
-                - !Ref Environment
-                - AccountId
-            Action:
-              - kms:Encrypt
-              - kms:Decrypt
-              - kms:GenerateDataKey
-            Resource:
-              - "*"
+      KeyPolicy: !If
+        - isNotDevOrBuild
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+              Action:
+                - kms:*
+              Resource:
+                - "*"
+            - Effect: Allow
+              Principal:
+                AWS: !FindInMap
+                  - IPVCore
+                  - !Ref Environment
+                  - AccountId
+              Action:
+                - kms:Encrypt
+                - kms:Decrypt
+                - kms:GenerateDataKey
+              Resource:
+                - "*"
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+              Action:
+                - kms:*
+              Resource:
+                - "*"
       KeySpec: SYMMETRIC_DEFAULT
       KeyUsage: ENCRYPT_DECRYPT
       MultiRegion: false
