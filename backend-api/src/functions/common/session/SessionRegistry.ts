@@ -93,7 +93,6 @@ export interface GetSessionInternalServerError {
 
 export interface GetSessionErrorSessionNotFound {
   errorType: GetSessionError.SESSION_NOT_FOUND;
-  errorMessage: string;
 }
 
 export interface GetSessionSessionInvalidErrorData {
@@ -103,7 +102,7 @@ export interface GetSessionSessionInvalidErrorData {
 
 export interface GetSessionValidateSessionErrorData {
   invalidAttributes?: ValidateSessionInvalidAttributes;
-  sessionAttributes?: Partial<SessionAttributes>;
+  sessionAttributes?: InvalidSessionAttributeTypes;
 }
 
 export interface ValidateSessionErrorInvalidAttributesData {
@@ -111,13 +110,15 @@ export interface ValidateSessionErrorInvalidAttributesData {
 }
 
 export interface ValidateSessionErrorInvalidAttributeTypeData {
-  sessionAttributes: Partial<SessionAttributes>;
+  sessionAttributes: InvalidSessionAttributeTypes;
 }
 
 export interface ValidateSessionInvalidAttributes {
   sessionState?: Exclude<SessionState, SessionState.BIOMETRIC_TOKEN_ISSUED>;
   createdAt?: number;
 }
+
+export type InvalidSessionAttributeTypes = Partial<SessionAttributes>;
 
 // Shared
 

@@ -38,6 +38,7 @@ import {
   SessionUpdated,
   UpdateOperationDataToLog,
   UpdateSessionError,
+  InvalidSessionAttributeTypes,
 } from "../../../common/session/SessionRegistry";
 import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
 import { CreateSessionAttributes } from "../../../services/session/sessionService";
@@ -170,16 +171,18 @@ export class DynamoDbAdapter implements SessionRegistry {
 
     const responseItem = response.Item;
     if (responseItem == null) {
-      return this.handleGetSessionNotFoundError({
-        errorMessage: sessionNotFound,
-      });
+      return this.handleGetSessionNotFoundError();
     }
 
     const getSessionAttributesResult =
       getOperation.getSessionAttributesFromDynamoDbItem(responseItem);
     if (getSessionAttributesResult.isError) {
-      const sessionAttributes = getSessionAttributesResult.value;
-      return this.handleGetSessionInvalidError(sessionAttributes);
+      const { sessionAttributes } = getSessionAttributesResult.value;
+      return this.handleGetSessionInternalServerError({
+        error: "Session attributes missing or contains invalid attribute types",
+        getItemCommandInput,
+        sessionAttributes,
+      });
     }
     const sessionAttributes = getSessionAttributesResult.value;
 
@@ -323,31 +326,27 @@ export class DynamoDbAdapter implements SessionRegistry {
   private handleGetSessionInternalServerError({
     error,
     getItemCommandInput,
+    sessionAttributes,
   }: {
     error: unknown;
     getItemCommandInput: GetItemCommandInput;
+    sessionAttributes?: InvalidSessionAttributeTypes;
   }): FailureWithValue<GetSessionInternalServerError> {
     logger.error(LogMessage.GET_SESSION_UNEXPECTED_FAILURE, {
       error,
       getItemCommandInput,
+      sessionAttributes,
     });
     return errorResult({
       errorType: GetSessionError.INTERNAL_SERVER_ERROR,
     });
   }
 
-  private handleGetSessionNotFoundError({
-    errorMessage,
-  }: {
-    errorMessage: string;
-  }): FailureWithValue<GetSessionErrorSessionNotFound> {
-    logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND, {
-      errorMessage,
-    });
+  private handleGetSessionNotFoundError(): FailureWithValue<GetSessionErrorSessionNotFound> {
+    logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND);
 
     return errorResult({
       errorType: GetSessionError.SESSION_NOT_FOUND,
-      errorMessage,
     });
   }
 
@@ -369,5 +368,3 @@ export class DynamoDbAdapter implements SessionRegistry {
     });
   }
 }
-
-const sessionNotFound = "Session not found";

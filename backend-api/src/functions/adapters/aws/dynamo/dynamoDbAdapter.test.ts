@@ -490,7 +490,6 @@ describe("DynamoDbAdapter", () => {
       it("Logs the failure", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_NOT_FOUND",
-          errorMessage: "Session not found",
         });
       });
 
@@ -498,7 +497,6 @@ describe("DynamoDbAdapter", () => {
         expect(result).toEqual(
           errorResult({
             errorType: GetSessionError.SESSION_NOT_FOUND,
-            errorMessage: "Session not found",
           }),
         );
       });
@@ -518,19 +516,21 @@ describe("DynamoDbAdapter", () => {
 
         it("Logs the failure", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_INVALID",
+            messageCode: "MOBILE_ASYNC_GET_SESSION_UNEXPECTED_FAILURE",
+            error:
+              "Session attributes missing or contains invalid attribute types",
+            getItemCommandInput: {
+              TableName: "mock_table_name",
+              Key: { sessionId: { S: mockSessionId } },
+            },
             sessionAttributes: invalidBiometricTokenIssuedSessionAttributeTypes,
           });
         });
 
-        it("Returns failure with an invalid session error", () => {
+        it("Returns failure with a server error", () => {
           expect(result).toEqual(
             errorResult({
-              errorType: GetSessionError.SESSION_INVALID,
-              data: {
-                sessionAttributes:
-                  invalidBiometricTokenIssuedSessionAttributeTypes,
-              },
+              errorType: GetSessionError.INTERNAL_SERVER_ERROR,
             }),
           );
         });
