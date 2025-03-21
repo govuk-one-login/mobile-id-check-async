@@ -33,7 +33,10 @@ describe("Session Service", () => {
     jest.useFakeTimers().setSystemTime(NOW_IN_MILLISECONDS);
   });
 
-  beforeAll(() => {});
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.useRealTimers();
+  });
 
   describe("Get active session ID", () => {
     describe("Given an error happens when fetching an active session from the table", () => {
