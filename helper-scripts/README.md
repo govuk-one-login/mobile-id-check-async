@@ -39,7 +39,7 @@ Note: This script generates individual `.env` files your `backend-api` stack and
 
 ### What it does
 
-Takes in secret and salt values, and uses them to return a hashed secret as a hexadecimal string.
+Takes in secret and salt values, and uses them to return a hashed secret as a hexadecimal string. This is then used as the client secret in the client registry.
 
 ### How to use it
 
