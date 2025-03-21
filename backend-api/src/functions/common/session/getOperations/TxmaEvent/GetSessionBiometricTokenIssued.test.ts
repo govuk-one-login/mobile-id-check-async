@@ -88,11 +88,11 @@ describe("TxMA event get session operation", () => {
           invalidSessionAttributesWrongSessionState,
         );
 
-        expect(result).toEqual(
+        expect(result).toStrictEqual(
           errorResult({
-            invalidAttributes: {
-              sessionState: SessionState.AUTH_SESSION_CREATED,
-            },
+            invalidAttributes: [
+              { sessionState: SessionState.AUTH_SESSION_CREATED },
+            ],
           }),
         );
       });
@@ -109,9 +109,9 @@ describe("TxMA event get session operation", () => {
           invalidSessionAttributesSessionTooOld,
         );
 
-        expect(result).toEqual(
+        expect(result).toStrictEqual(
           errorResult({
-            invalidAttributes: { createdAt: invalidCreatedAt },
+            invalidAttributes: [{ createdAt: invalidCreatedAt }],
           }),
         );
       });
@@ -128,12 +128,12 @@ describe("TxMA event get session operation", () => {
           invalidSessionAttributesSessionTooOld,
         );
 
-        expect(result).toEqual(
+        expect(result).toStrictEqual(
           errorResult({
-            invalidAttributes: {
-              sessionState: SessionState.AUTH_SESSION_CREATED,
-              createdAt: invalidCreatedAt,
-            },
+            invalidAttributes: [
+              { sessionState: SessionState.AUTH_SESSION_CREATED },
+              { createdAt: invalidCreatedAt },
+            ],
           }),
         );
       });

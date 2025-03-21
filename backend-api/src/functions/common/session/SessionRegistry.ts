@@ -83,13 +83,13 @@ export enum GetSessionError {
 
 export type GetSessionFailed =
   | GetSessionInternalServerError
-  | GetSessionCientError;
+  | GetSessionClientError;
 
 export interface GetSessionInternalServerError {
   errorType: GetSessionError.INTERNAL_SERVER_ERROR;
 }
 
-export interface GetSessionCientError {
+export interface GetSessionClientError {
   errorType: GetSessionError.CLIENT_ERROR;
 }
 
@@ -103,12 +103,12 @@ export interface GetSessionSessionInvalidErrorData {
 }
 
 export interface GetSessionValidateSessionErrorData {
-  invalidAttributes?: ValidateSessionInvalidAttributes;
+  invalidAttributes?: ValidateSessionInvalidAttributes[];
   sessionAttributes?: InvalidSessionAttributeTypes;
 }
 
 export interface ValidateSessionErrorInvalidAttributesData {
-  invalidAttributes: ValidateSessionInvalidAttributes;
+  invalidAttributes: ValidateSessionInvalidAttributes[];
 }
 
 export interface ValidateSessionErrorInvalidAttributeTypeData {

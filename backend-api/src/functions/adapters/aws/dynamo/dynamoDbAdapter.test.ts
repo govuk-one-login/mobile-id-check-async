@@ -442,9 +442,9 @@ describe("DynamoDbAdapter", () => {
         it("Logs the failure", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_GET_SESSION_SESSION_INVALID",
-            invalidAttributes: {
-              sessionState: SessionState.AUTH_SESSION_CREATED,
-            },
+            invalidAttributes: [
+              { sessionState: SessionState.AUTH_SESSION_CREATED },
+            ],
             sessionAttributes:
               invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
           });
@@ -455,9 +455,9 @@ describe("DynamoDbAdapter", () => {
             errorResult({
               errorType: GetSessionError.CLIENT_ERROR,
               data: {
-                invalidAttributes: {
-                  sessionState: SessionState.AUTH_SESSION_CREATED,
-                },
+                invalidAttributes: [
+                  { sessionState: SessionState.AUTH_SESSION_CREATED },
+                ],
                 sessionAttributes:
                   invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
               },

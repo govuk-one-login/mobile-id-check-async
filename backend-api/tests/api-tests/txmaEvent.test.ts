@@ -4,6 +4,7 @@ import { expectedSecurityHeaders, mockSessionId } from "./utils/apiTestData";
 import {
   createSessionForSub,
   getActiveSessionIdFromSub,
+  issueBiometricToken,
   pollForEvents,
 } from "./utils/apiTestHelpers";
 import { randomUUID } from "crypto";
@@ -90,14 +91,8 @@ describe("POST /async/txmaEvent", () => {
       const sub = randomUUID();
       await createSessionForSub(sub);
       sessionId = await getActiveSessionIdFromSub(sub);
-      const biometricTokenRequestBody = {
-        sessionId,
-        documentType: "NFC_PASSPORT",
-      };
-      await SESSIONS_API_INSTANCE.post(
-        "/async/biometricToken",
-        biometricTokenRequestBody,
-      );
+      await issueBiometricToken(sessionId);
+
       const requestBody = {
         sessionId,
         eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
