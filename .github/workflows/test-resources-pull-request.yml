@@ -17,8 +17,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  pull-request:
-    name: Pull request checks
+  test-resources-pull-request:
+    name: Test resources pull request checks
     if: github.event.pull_request.draft == false
     uses:
       govuk-one-login/mobile-id-check-async/.github/workflows/workflow_pull-request.yml@DCMAW-12118
