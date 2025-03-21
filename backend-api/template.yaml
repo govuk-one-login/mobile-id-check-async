@@ -380,7 +380,12 @@ Globals:
               - EnvironmentConfiguration
               - !Ref Environment
               - dynatraceSecretArn
-        ISSUER: mockIssuer
+        ISSUER: !Sub
+          - https://${BaseDns}
+          - BaseDns: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
         POWERTOOLS_SERVICE_NAME: mobile-id-check-async-backend
         SESSION_TABLE_NAME: !Ref SessionsTable
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
