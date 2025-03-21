@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  IPVCoreOutboundSQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 345600 # 4 days in seconds
+      VisibilityTimeout: 60
+      DelaySeconds: 0
+      KmsMasterKeyId: !Ref IPVCoreOutboundKeyAlias
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt IPVCoreOutboundSQSQueueDeadLetterQueue.Arn
+        maxReceiveCount: 60
+
+  IPVCoreOutboundSQSQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Condition: isNotDevOrBuild
+    Properties:
+      Queues:
+        - !Ref IPVCoreOutboundSQSQueue
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+              - sqs:ChangeMessageVisibility
+              - sqs:ReceiveMessage
+              - sqs:SendMessage
+            Resource:
+              - !GetAtt IPVCoreOutboundSQSQueue.Arn
+            Principal:
+              AWS:
+                - !FindInMap
+                  - IPVCoreOutbound
+                  - !Ref Environment
+                  - AccountId
+
+  IPVCoreOutboundDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 345600 # 4 days in seconds
+      KmsMasterKeyId: !Ref IPVCoreOutboundKMSEncryptionKey
+
+  IPVCoreOutboundKMSEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A KMS Key for encrypting the SQS Queue for IPVCore outbound messages
+      Enabled: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action:
+              - kms:*
+            Resource:
+              - "*"
+          - Effect: Allow
+            Principal:
+              AWS: !FindInMap
+                - IPVCoreOutbound
+                - !Ref Environment
+                - AccountId
+            Action:
+              - kms:Encrypt
+              - kms:Decrypt
+              - kms:GenerateDataKey
+            Resource:
+              - "*"
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyUsage: ENCRYPT_DECRYPT
+      MultiRegion: false
+      PendingWindowInDays: !FindInMap
+        - KMS
+        - !Ref Environment
+        - PendingDeletionInDays
+
+  IPVCoreOutboundKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}-IPVCoreOutboundKMSEncryptionKey
+      TargetKeyId: !Ref IPVCoreOutboundKMSEncryptionKey

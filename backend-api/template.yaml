@@ -137,6 +137,18 @@ Mappings:
       ReadIdBaseUrl: https://readid-proxy.review-b-async.staging.account.gov.uk
       STSBASEURL: https://token.staging.account.gov.uk
 
+  IPVCoreOutbound:
+    build:
+      AccountId: ""
+    dev:
+      AccountId: ""
+    integration:
+      AccountId: arn:aws:iam::991138514218:root
+    production:
+      AccountId: arn:aws:iam::075701497069:root
+    staging:
+      AccountId: arn:aws:iam::335257547869:root
+
   KMS:
     build:
       PendingDeletionInDays: 30
@@ -380,6 +392,7 @@ Globals:
               - EnvironmentConfiguration
               - !Ref Environment
               - dynatraceSecretArn
+        IPVCORE_OUTBOUND_SQS: !GetAtt IPVCoreOutboundSQSQueue.QueueUrl
         ISSUER: mockIssuer
         POWERTOOLS_SERVICE_NAME: mobile-id-check-async-backend
         SESSION_TABLE_NAME: !Ref SessionsTable
@@ -491,6 +504,19 @@ Resources:
                 Resource: '*'
             Version: "2012-10-17"
           PolicyName: VpcPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - sqs:SendMessage
+                Effect: Allow
+                Resource: !GetAtt VendorProcessingSQS.Arn
+              - Action:
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Effect: Allow
+                Resource: !GetAtt VendorProcessingKMSEncryptionKey.Arn
+            Version: "2012-10-17"
+          PolicyName: AsyncAbortSessionFunctionVendorProcessingSQSPolicy
       RoleName: !Sub ${AWS::StackName}-abort-session-lambda
 
   AsyncAbortSessionLogGroup:
@@ -3370,6 +3396,89 @@ Resources:
         - !Ref AWS::NoValue
       RoleName: !Sub ${AWS::StackName}-code-deploy-service-role
 
+  IPVCoreOutboundDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      KmsMasterKeyId: !Ref IPVCoreOutboundKMSEncryptionKey
+      MessageRetentionPeriod: 345600
+
+  IPVCoreOutboundKMSEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A KMS Key for encrypting the SQS Queue for IPVCore outbound messages
+      Enabled: true
+      KeyPolicy:
+        Statement:
+          - Action:
+              - kms:*
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Resource:
+              - '*'
+          - Action:
+              - kms:Encrypt
+              - kms:Decrypt
+              - kms:GenerateDataKey
+            Effect: Allow
+            Principal:
+              AWS: !FindInMap
+                - IPVCoreOutbound
+                - !Ref Environment
+                - AccountId
+            Resource:
+              - '*'
+        Version: "2012-10-17"
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyUsage: ENCRYPT_DECRYPT
+      MultiRegion: false
+      PendingWindowInDays: !FindInMap
+        - KMS
+        - !Ref Environment
+        - PendingDeletionInDays
+
+  IPVCoreOutboundKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}-IPVCoreOutboundKMSEncryptionKey
+      TargetKeyId: !Ref IPVCoreOutboundKMSEncryptionKey
+
+  IPVCoreOutboundSQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      DelaySeconds: 0
+      KmsMasterKeyId: !Ref IPVCoreOutboundKeyAlias
+      MessageRetentionPeriod: 345600
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt IPVCoreOutboundSQSQueueDeadLetterQueue.Arn
+        maxReceiveCount: 60
+      VisibilityTimeout: 60
+
+  IPVCoreOutboundSQSQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+              - sqs:ChangeMessageVisibility
+              - sqs:ReceiveMessage
+              - sqs:SendMessage
+            Effect: Allow
+            Principal:
+              AWS:
+                - !FindInMap
+                  - IPVCoreOutbound
+                  - !Ref Environment
+                  - AccountId
+            Resource:
+              - !GetAtt IPVCoreOutboundSQSQueue.Arn
+        Version: "2012-10-17"
+      Queues:
+        - !Ref IPVCoreOutboundSQSQueue
+    Condition: isNotDevOrBuild
+
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -4528,6 +4637,20 @@ Outputs:
         - EnvironmentVariables
         - !Ref Environment
         - EventsBaseUrl
+    Condition: IsDevOrBuild
+
+  IPVCoreOutboundKmsEncryptionKeyArn:
+    Description: TxMA KMS Encryption Key ARN
+    Value: !GetAtt TxMAKMSEncryptionKey.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-ipvcore-outbound-kms-encryption-key-arn
+    Condition: IsDevOrBuild
+
+  IPVCoreOutboundSqsQueueArn:
+    Description: TxMA SQS Queue ARN
+    Value: !GetAtt TxMASQSQueue.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-ipvcore-outbound-sqs-queue-arn
     Condition: IsDevOrBuild
 
   PrivateApiUrl:

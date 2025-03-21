@@ -161,6 +161,18 @@ Mappings:
     production:
       TxmaAccount: arn:aws:iam::451773080033:root
 
+  IPVCoreOutbound:
+    staging:
+      AccountId: arn:aws:iam::335257547869:root
+    integration:
+      AccountId: arn:aws:iam::991138514218:root
+    production:
+      AccountId: arn:aws:iam::075701497069:root
+    dev:
+      AccountId: ""
+    build:
+      AccountId: ""
+
   KMS:
     dev:
       PendingDeletionInDays: 7
@@ -363,6 +375,7 @@ Globals:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
         TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
         VENDOR_PROCESSING_SQS: !GetAtt VendorProcessingSQS.QueueUrl
+        IPVCORE_OUTBOUND_SQS: !GetAtt IPVCoreOutboundSQSQueue.QueueUrl
         # ISSUER should be updated with DNS once available
         ISSUER: mockIssuer
         SESSION_TABLE_NAME: !Ref SessionsTable
@@ -438,4 +451,18 @@ Outputs:
     Description: TxMA KMS Encryption Key ARN
     Export:
       Name: !Sub ${AWS::StackName}-txma-kms-encryption-key-arn
+    Value: !GetAtt TxMAKMSEncryptionKey.Arn
+
+  IPVCoreOutboundSqsQueueArn:
+    Condition: IsDevOrBuild
+    Description: TxMA SQS Queue ARN
+    Export:
+      Name: !Sub ${AWS::StackName}-ipvcore-outbound-sqs-queue-arn
+    Value: !GetAtt TxMASQSQueue.Arn
+
+  IPVCoreOutboundKmsEncryptionKeyArn:
+    Condition: IsDevOrBuild
+    Description: TxMA KMS Encryption Key ARN
+    Export:
+      Name: !Sub ${AWS::StackName}-ipvcore-outbound-kms-encryption-key-arn
     Value: !GetAtt TxMAKMSEncryptionKey.Arn
