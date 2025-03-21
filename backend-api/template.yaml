@@ -3396,12 +3396,6 @@ Resources:
         - !Ref AWS::NoValue
       RoleName: !Sub ${AWS::StackName}-code-deploy-service-role
 
-  IPVCoreOutboundDeadLetterQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      KmsMasterKeyId: !Ref IPVCoreOutboundKMSEncryptionKey
-      MessageRetentionPeriod: 345600
-
   IPVCoreOutboundKMSEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
@@ -3453,6 +3447,12 @@ Resources:
         deadLetterTargetArn: !GetAtt IPVCoreOutboundSQSQueueDeadLetterQueue.Arn
         maxReceiveCount: 60
       VisibilityTimeout: 60
+
+  IPVCoreOutboundSQSQueueDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      KmsMasterKeyId: !Ref IPVCoreOutboundKMSEncryptionKey
+      MessageRetentionPeriod: 345600
 
   IPVCoreOutboundSQSQueuePolicy:
     Type: AWS::SQS::QueuePolicy
