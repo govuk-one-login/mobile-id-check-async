@@ -1,6 +1,7 @@
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import {
   NOW_IN_MILLISECONDS,
+  ONE_HOUR_AGO_IN_MILLISECONDS,
   validBaseSessionAttributes,
   validBiometricTokenIssuedSessionAttributes,
 } from "../../../../testUtils/unitTestData";
@@ -37,7 +38,7 @@ describe("BiometricTokenIssued", () => {
     it("Returns the appropriate ConditionExpression string", () => {
       const result = biometricTokenIssued.getDynamoDbConditionExpression();
       expect(result).toEqual(
-        "attribute_exists(sessionId) AND sessionState in (:authSessionCreated)",
+        "attribute_exists(sessionId) AND sessionState = :authSessionCreated AND createdAt > :oneHourAgoInMilliseconds",
       );
     });
   });
@@ -51,6 +52,9 @@ describe("BiometricTokenIssued", () => {
         ":opaqueId": { S: "mockOpaqueId" },
         ":biometricTokenIssued": { S: SessionState.BIOMETRIC_TOKEN_ISSUED },
         ":authSessionCreated": { S: SessionState.AUTH_SESSION_CREATED },
+        ":oneHourAgoInMilliseconds": {
+          N: String(ONE_HOUR_AGO_IN_MILLISECONDS),
+        },
       });
     });
   });
