@@ -75,11 +75,12 @@ async function handleGetSessionError({
 }: {
   errorData: GetSessionFailed;
 }): Promise<APIGatewayProxyResult> {
-  if (errorData.errorType === GetSessionError.INTERNAL_SERVER_ERROR)
-    return serverErrorResponse;
+  if (errorData.errorType === GetSessionError.CLIENT_ERROR) {
+    return unauthorizedResponse(
+      "invalid_session",
+      "Session does not exist or in incorrect state",
+    );
+  }
 
-  return unauthorizedResponse(
-    "invalid_session",
-    "Session does not exist or in incorrect state",
-  );
+  return serverErrorResponse;
 }
