@@ -11,6 +11,8 @@ Resources:
           AttributeType: S
         - AttributeName: timeToLive
           AttributeType: N
+        - AttributeName: createdAt
+          AttributeType: N
       KeySchema:
         - AttributeName: sessionId
           KeyType: HASH

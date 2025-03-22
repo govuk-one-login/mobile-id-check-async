@@ -103,7 +103,7 @@ describe("Session Service", () => {
         const expectedCommandInput: QueryCommandInput = {
           ExpressionAttributeValues: {
             ":oneHourAgoInMilliseconds": {
-              S: ONE_HOUR_AGO_IN_MILLISECONDS.toString(),
+              N: ONE_HOUR_AGO_IN_MILLISECONDS.toString(),
             },
             ":authSessionCreated": { S: "ASYNC_AUTH_SESSION_CREATED" },
             ":subjectIdentifier": { S: "mockSub" },
@@ -231,7 +231,7 @@ describe("Session Service", () => {
         const expectedCommandInput: QueryCommandInput = {
           ExpressionAttributeValues: {
             ":oneHourAgoInMilliseconds": {
-              S: ONE_HOUR_AGO_IN_MILLISECONDS.toString(),
+              N: ONE_HOUR_AGO_IN_MILLISECONDS.toString(),
             },
             ":authSessionCreated": { S: "ASYNC_AUTH_SESSION_CREATED" },
             ":subjectIdentifier": { S: "mockSub" },

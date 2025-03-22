@@ -79,9 +79,7 @@ export class DynamoDbAdapter implements SessionRegistry {
       ExpressionAttributeValues: {
         ":subjectIdentifier": marshall(subjectIdentifier),
         ":authSessionCreated": marshall(SessionState.AUTH_SESSION_CREATED),
-        ":oneHourAgoInMilliseconds": marshall(
-          oneHourAgoInMilliseconds().toString(),
-        ),
+        ":oneHourAgoInMilliseconds": marshall(oneHourAgoInMilliseconds()),
       },
       ProjectionExpression: this.formatAsProjectionExpression(attributesToGet),
       Limit: 1,
