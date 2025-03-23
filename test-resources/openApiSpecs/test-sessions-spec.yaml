@@ -1,0 +1,218 @@
+openapi: 3.0.0
+info:
+  title: GOV.UK One Login mobile app - Test Sessions API
+  version: 1.0.0
+  description: GOV.UK One Login mobile app - API for interacting with the Sessions Table for backend API tests
+x-amazon-apigateway-request-validators:
+  body-only:
+    validateRequestBody: true
+    validateRequestParameters: false
+x-amazon-apigateway-gateway-responses:
+  BAD_REQUEST_BODY:
+    statusCode: 400
+    responseTemplates:
+      application/json: |
+        { "message": "$context.error.message",
+          "error": "$context.error.validationErrorString"
+        }
+paths:
+  /session:
+    put:
+      security:
+        - sigv4Reference: [ ]
+      operationId: putSession
+      summary: Puts a record into the Sessions table
+      description: >-
+        This endpoint is implemented as an APIGW service
+        proxy - consumers should be aware that the underlying service may generate 5XX errors due to
+        the distributed nature of AWS therefore occasional 5XX responses are safe to retry - see
+        [AWS documentation on retries](https://docs.aws.amazon.com/general/latest/gr/api-retries.html)
+      x-amazon-apigateway-request-validator: body-only
+      requestBody:
+        content:  
+          application/json:
+            schema:
+              $ref: '#/components/schemas/testSessionsPutBody'
+      responses:
+        "201":
+          description: Created
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+            Strict-Transport-Security:
+              schema:
+                type: string
+            X-Content-Type-Options:
+              schema:
+                type: string
+            X-Frame-Options:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
+          content:
+            text/plain:
+              schema:
+                type: string
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+            Strict-Transport-Security:
+              schema:
+                type: string
+            X-Content-Type-Options:
+              schema:
+                type: string
+            X-Frame-Options:
+              schema:
+                type: string
+        "403":
+          description: Access Denied
+          content:
+            text/plain:
+              schema:
+                type: string
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+            Strict-Transport-Security:
+              schema:
+                type: string
+            X-Content-Type-Options:
+              schema:
+                type: string
+            X-Frame-Options:
+              schema:
+                type: string
+        "500":
+          description: >-
+            Internal server error - NB: This endpoint is implemented as an APIGW service proxy - consumers should be aware
+            that the underlying service may generate 5XX errors due to the distributed nature of AWS therefore
+            occasional 5XX responses are safe to retry - see
+            [AWS documentation on retries](https://docs.aws.amazon.com/general/latest/gr/api-retries.html)
+          content:
+            text/plain:
+              schema:
+                type: string
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+            Strict-Transport-Security:
+              schema:
+                type: string
+            X-Content-Type-Options:
+              schema:
+                type: string
+            X-Frame-Options:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        type: "aws"
+        passthroughBehavior: "never"
+        httpMethod: "POST"
+        uri: "arn:aws:apigateway:eu-west-2:dynamodb:action/PutItem"
+        credentials:
+          Fn::GetAtt: ["TestSessionsApiRole", "Arn"]
+        requestTemplates:
+          application/json:
+            Fn::Sub:
+              - >
+                {
+                  "TableName": "${tableName}",
+                  "Item": {
+                    "sessionId": {
+                      "S": "$input.path('$.sessionId')"
+                    },
+                    "createdAt": {
+                      "N": "$input.path('$.createdAt')"
+                    },
+                    "timeToLive": {
+                      "N": "$input.path('$.timeToLive')"
+                    },
+                    "sessionState": {
+                      "S": "$input.path('$.sessionState')"
+                    }
+                  }
+                }
+              - tableName:
+                  Fn::ImportValue:
+                    Fn::Sub: ${BackendStackName}-sessions-table-arn
+        responses:
+          "200":
+            statusCode: "201"
+            responseParameters:
+              method.response.header.Cache-Control: "'no-store'"
+              method.response.header.Content-Type: "'application/json'"
+              method.response.header.Strict-Transport-Security: "'max-age=31536000'"
+              method.response.header.X-Content-Type-Options: "'nosniff'"
+              method.response.header.X-Frame-Options: "'DENY'"
+          "400":
+            statusCode: "400"
+            responseParameters:
+              method.response.header.Cache-Control: "'no-store'"
+              method.response.header.Content-Type: "'application/json'"
+              method.response.header.Strict-Transport-Security: "'max-age=31536000'"
+              method.response.header.X-Content-Type-Options: "'nosniff'"
+              method.response.header.X-Frame-Options: "'DENY'"
+            responseTemplates:
+              text/plain: Bad Request
+          "403":
+            statusCode: "403"
+            responseParameters:
+              method.response.header.Cache-Control: "'no-store'"
+              method.response.header.Content-Type: "'application/json'"
+              method.response.header.Strict-Transport-Security: "'max-age=31536000'"
+              method.response.header.X-Content-Type-Options: "'nosniff'"
+              method.response.header.X-Frame-Options: "'DENY'"
+            responseTemplates:
+              text/plain: Access Denied
+          default:
+            statusCode: "500"
+            responseParameters:
+              method.response.header.Cache-Control: "'no-store'"
+              method.response.header.Content-Type: "'application/json'"
+              method.response.header.Strict-Transport-Security: "'max-age=31536000'"
+              method.response.header.X-Content-Type-Options: "'nosniff'"
+              method.response.header.X-Frame-Options: "'DENY'"
+            responseTemplates:
+              text/plain: Internal server error
+components:
+  schemas:
+    testSessionsPutBody: {
+      "required": [ "sessionId", "sessionState", "createdAt", "timeToLive"],
+      "type": "object",
+      "properties": {
+        sessionId: {
+          type: string
+        },
+        createdAt: {
+          type: number
+        },
+        sessionState: {
+          type: string,
+          enum: ["ASYNC_AUTH_SESSION_CREATED"]
+        }
+      }
+    }
+  securitySchemes:
+    sigv4Reference:
+      type: apiKey
+      name: Authorization
+      in: header
+      x-amazon-apigateway-authtype: awsSigv4
