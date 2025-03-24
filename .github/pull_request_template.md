@@ -30,7 +30,7 @@ DCMAW-XXXXX
 - **Readability**: Is the code easy to understand for all team members, with clear naming and appropriate documentation?
 - **Maintainability**: Is the code easy to change, reuse, and extend?
 - **Code Style**: Does it follow our coding conventions and best practices?
-- **Code Quality**: Is the code maintainable and following best practices? See [Values, Principles & Practives](https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4955865126/ID+Check+Web+-+Values+Principles+and+Practices)
+- **Code Quality**: Is the code maintainable and following best practices? See [Values, Principles & Practices](https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4955865126/ID+Check+Web+-+Values+Principles+and+Practices)
 
 ### Observability & Operations
 - **Observability**: Are there appropriate logs/metrics that would help debug and monitor the service?
