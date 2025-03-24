@@ -67,8 +67,16 @@ function getEventsApiInstance() {
   return getInstance(apiUrl, true);
 }
 
+function getTestSessionsApiInstance() {
+  return getInstance(
+    "https://test-sessions-sandy-test-resources.review-b-async.dev.account.gov.uk",
+    true,
+  );
+}
+
 export const SESSIONS_API_INSTANCE = getSessionsApiInstance();
 export const PROXY_API_INSTANCE = getProxyApiInstance();
 export const PRIVATE_API_INSTANCE = getPrivateApiInstance();
 export const STS_MOCK_API_INSTANCE = getStsMockInstance();
 export const EVENTS_API_INSTANCE = getEventsApiInstance();
+export const TEST_SESSIONS_INSTANCE = getTestSessionsApiInstance();

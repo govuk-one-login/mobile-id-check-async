@@ -1,8 +1,15 @@
 import { expect } from "@jest/globals";
 import { AxiosResponse } from "axios";
 import "../../tests/testUtils/matchers";
-import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
-import { expectedSecurityHeaders, mockSessionId } from "./utils/apiTestData";
+import {
+  SESSIONS_API_INSTANCE,
+  TEST_SESSIONS_INSTANCE,
+} from "./utils/apiInstance";
+import {
+  expectedSecurityHeaders,
+  mockSessionId,
+  validAuthSessionCreatedSession,
+} from "./utils/apiTestData";
 import {
   createSessionForSub,
   getActiveSessionIdFromSub,
@@ -115,6 +122,61 @@ describe("POST /async/biometricToken", () => {
     it("Writes an event with the correct event_name", async () => {
       const eventsResponse = await pollForEvents({
         partitionKey: `SESSION#${sessionId}`,
+        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_4XXERROR`,
+        numberOfEvents: 1,
+      });
+
+      expect(eventsResponse[0].event).toEqual(
+        expect.objectContaining({
+          event_name: "DCMAW_ASYNC_CRI_4XXERROR",
+        }),
+      );
+    }, 40000);
+  });
+
+  describe("Given the session has expired", () => {
+    let biometricTokenResponse: AxiosResponse;
+    let expiredAuthSessionCreatedSession: Record<string, string | number>;
+    beforeAll(async () => {
+      expiredAuthSessionCreatedSession = {
+        ...validAuthSessionCreatedSession,
+        ...{ createdAt: Date.now() - 120 * 60 * 1000 },
+      };
+
+      console.log(expiredAuthSessionCreatedSession.sessionId);
+
+      const testSessionResponse = await TEST_SESSIONS_INSTANCE.put(
+        "/session",
+        expiredAuthSessionCreatedSession,
+      );
+      console.log(testSessionResponse.status);
+
+      const requestBody = {
+        sessionId: expiredAuthSessionCreatedSession.sessionId,
+        documentType: "NFC_PASSPORT",
+      };
+
+      biometricTokenResponse = await SESSIONS_API_INSTANCE.post(
+        "/async/biometricToken",
+        requestBody,
+      );
+    }, 25000);
+
+    it("Returns an error and 401 status code", () => {
+      expect(biometricTokenResponse.status).toBe(401);
+      expect(biometricTokenResponse.data).toStrictEqual({
+        error: "invalid_session",
+        error_description:
+          "User session is not in a valid state for this operation.",
+      });
+      expect(biometricTokenResponse.headers).toEqual(
+        expect.objectContaining(expectedSecurityHeaders),
+      );
+    });
+
+    it("Writes an event with the correct event_name", async () => {
+      const eventsResponse = await pollForEvents({
+        partitionKey: `SESSION#${expiredAuthSessionCreatedSession.sessionId}`,
         sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_4XXERROR`,
         numberOfEvents: 1,
       });

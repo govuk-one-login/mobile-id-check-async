@@ -7,10 +7,14 @@ import { aws4Interceptor } from "aws4-axios";
 import axios, { AxiosInstance } from "axios";
 import axiosRetry from "axios-retry";
 
+import dotenv from "dotenv";
+dotenv.config();
+
 export const STS_MOCK_API_INSTANCE = getStsMockInstance();
 export const SESSIONS_API_INSTANCE = getSessionsApiInstance();
 export const PROXY_API_INSTANCE = getProxyApiInstance();
 export const EVENTS_API_INSTANCE = getEventsApiInstance();
+export const TEST_SESSIONS_API_INSTANCE = getTestSessionApiInstance();
 
 console.log("STS_MOCK_API_INSTANCE", STS_MOCK_API_INSTANCE.getUri());
 console.log("SESSIONS_API_INSTANCE", SESSIONS_API_INSTANCE.getUri());
@@ -42,6 +46,12 @@ function getEventsApiInstance() {
   const apiUrl = process.env.EVENTS_API_URL;
   if (!apiUrl)
     throw new Error("EVENTS_API_URL needs to be defined for API tests");
+  return getInstance(apiUrl, true);
+}
+
+function getTestSessionApiInstance() {
+  const apiUrl =
+    "https://test-sessions-sandy-test-resources.review-b-async.dev.account.gov.uk";
   return getInstance(apiUrl, true);
 }
 
