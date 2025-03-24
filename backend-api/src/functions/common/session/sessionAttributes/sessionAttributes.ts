@@ -1,12 +1,17 @@
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { NativeAttributeValue, unmarshall } from "@aws-sdk/util-dynamodb";
-import { Result, emptyFailure, successResult } from "../../../../utils/result";
+import {
+  emptyFailure,
+  errorResult,
+  Result,
+  successResult,
+} from "../../../utils/result";
 import {
   BaseSessionAttributes,
   BiometricSessionFinishedAttributes,
   BiometricTokenIssuedSessionAttributes,
-  SessionState,
-} from "../../session";
+} from "../session";
+import { ValidateSessionErrorInvalidAttributeTypeData } from "../SessionRegistry";
 
 export const getBaseSessionAttributes = (
   item: Record<string, AttributeValue> | undefined,
@@ -19,16 +24,23 @@ export const getBaseSessionAttributes = (
   return successResult(sessionAttributes);
 };
 
-export const isBaseSessionAttributes = (
+const isBaseSessionAttributes = (
   item: Record<string, NativeAttributeValue>,
 ): item is BaseSessionAttributes => {
+  if (!isCommonSessionAttributes(item)) return false;
+  return true;
+};
+
+const isCommonSessionAttributes = (
+  item: Record<string, NativeAttributeValue>,
+): boolean => {
   if (typeof item.clientId !== "string") return false;
-  if (typeof item.govukSigninJourneyId !== "string") return false;
+  if (typeof item.clientState !== "string") return false;
   if (typeof item.createdAt !== "number") return false;
+  if (typeof item.govukSigninJourneyId !== "string") return false;
   if (typeof item.issuer !== "string") return false;
   if (typeof item.sessionId !== "string") return false;
   if (typeof item.sessionState !== "string") return false;
-  if (typeof item.clientState !== "string") return false;
   if (typeof item.subjectIdentifier !== "string") return false;
   if (typeof item.timeToLive !== "number") return false;
   if ("redirectUri" in item && typeof item.redirectUri !== "string") {
@@ -49,6 +61,31 @@ export const getBiometricTokenIssuedSessionAttributes = (
   return successResult(sessionAttributes);
 };
 
+export const getTxmaEventBiometricTokenIssuedSessionAttributes = (
+  item: Record<string, AttributeValue>,
+): Result<
+  BiometricTokenIssuedSessionAttributes,
+  ValidateSessionErrorInvalidAttributeTypeData
+> => {
+  const sessionAttributes: Record<string, unknown> = unmarshall(item);
+  if (!isBiometricTokenIssuedSessionAttributes(sessionAttributes)) {
+    return errorResult({
+      sessionAttributes,
+    });
+  }
+
+  return successResult(sessionAttributes);
+};
+
+const isBiometricTokenIssuedSessionAttributes = (
+  item: Record<string, NativeAttributeValue>,
+): item is BiometricTokenIssuedSessionAttributes => {
+  if (!isCommonSessionAttributes(item)) return false;
+  if (typeof item.documentType !== "string") return false;
+  if (typeof item.opaqueId !== "string") return false;
+  return true;
+};
+
 export const getBiometricSessionFinishedSessionAttributes = (
   item: Record<string, AttributeValue> | undefined,
 ): Result<BiometricSessionFinishedAttributes, void> => {
@@ -61,44 +98,12 @@ export const getBiometricSessionFinishedSessionAttributes = (
   return successResult(sessionAttributes);
 };
 
-export const isBiometricTokenIssuedSessionAttributes = (
-  item: Record<string, NativeAttributeValue>,
-): item is BiometricTokenIssuedSessionAttributes => {
-  if (typeof item.clientId !== "string") return false;
-  if (typeof item.govukSigninJourneyId !== "string") return false;
-  if (typeof item.createdAt !== "number") return false;
-  if (typeof item.issuer !== "string") return false;
-  if (typeof item.sessionId !== "string") return false;
-  if (item.sessionState !== SessionState.BIOMETRIC_TOKEN_ISSUED) return false;
-  if (typeof item.clientState !== "string") return false;
-  if (typeof item.subjectIdentifier !== "string") return false;
-  if (typeof item.timeToLive !== "number") return false;
-  if (typeof item.documentType !== "string") return false;
-  if (typeof item.opaqueId !== "string") return false;
-  if ("redirectUri" in item && typeof item.redirectUri !== "string") {
-    return false;
-  }
-  return true;
-};
-
-export const isBiometricSessionFinishedSessionAttributes = (
+const isBiometricSessionFinishedSessionAttributes = (
   item: Record<string, NativeAttributeValue>,
 ): item is BiometricSessionFinishedAttributes => {
-  if (typeof item.clientId !== "string") return false;
-  if (typeof item.govukSigninJourneyId !== "string") return false;
-  if (typeof item.createdAt !== "number") return false;
-  if (typeof item.issuer !== "string") return false;
-  if (typeof item.sessionId !== "string") return false;
-  if (item.sessionState !== SessionState.BIOMETRIC_SESSION_FINISHED)
-    return false;
-  if (typeof item.clientState !== "string") return false;
-  if (typeof item.subjectIdentifier !== "string") return false;
-  if (typeof item.timeToLive !== "number") return false;
+  if (!isCommonSessionAttributes(item)) return false;
   if (typeof item.documentType !== "string") return false;
   if (typeof item.opaqueId !== "string") return false;
   if (typeof item.biometricSessionId !== "string") return false;
-  if ("redirectUri" in item && typeof item.redirectUri !== "string") {
-    return false;
-  }
   return true;
 };

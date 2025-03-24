@@ -161,6 +161,18 @@ Mappings:
     production:
       TxmaAccount: arn:aws:iam::451773080033:root
 
+  IPVCore:
+    dev:
+      AccountId: not-used
+    build:
+      AccountId: not-used
+    staging:
+      AccountId: arn:aws:iam::335257547869:root
+    integration:
+      AccountId: arn:aws:iam::991138514218:root
+    production:
+      AccountId: arn:aws:iam::075701497069:root
+
   KMS:
     dev:
       PendingDeletionInDays: 7
@@ -363,8 +375,13 @@ Globals:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
         TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
         VENDOR_PROCESSING_SQS: !GetAtt VendorProcessingSQS.QueueUrl
-        # ISSUER should be updated with DNS once available
-        ISSUER: mockIssuer
+        ISSUER: !Sub
+          - https://${BaseDns}
+          - BaseDns: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        IPVCORE_OUTBOUND_SQS: !GetAtt IPVCoreSQS.QueueUrl
         SESSION_TABLE_NAME: !Ref SessionsTable
         POWERTOOLS_SERVICE_NAME: mobile-id-check-async-backend
         AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace

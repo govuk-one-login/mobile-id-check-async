@@ -1,6 +1,7 @@
 import {
   ConditionalCheckFailedException,
   DynamoDBClient,
+  GetItemCommand,
   PutItemCommand,
   PutItemCommandInput,
   QueryCommand,
@@ -10,31 +11,42 @@ import {
   ReturnValuesOnConditionCheckFailure,
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
-import { CreateSessionAttributes } from "../../../services/session/sessionService";
-import { NodeHttpHandler } from "@smithy/node-http-handler";
+import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
 import {
-  marshall,
   NativeAttributeValue,
+  marshall,
   unmarshall,
 } from "@aws-sdk/util-dynamodb";
-import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
-import {
-  errorResult,
-  FailureWithValue,
-  Result,
-  successResult,
-} from "../../../utils/result";
-import {
-  SessionRegistry,
-  SessionUpdated,
-  SessionUpdateFailed,
-  SessionUpdateFailedInternalServerError,
-  UpdateExpressionDataToLog,
-  UpdateSessionError,
-} from "../../../common/session/SessionRegistry";
 import { logger } from "../../../common/logging/logger";
 import { LogMessage } from "../../../common/logging/LogMessage";
-import { SessionState } from "../../../common/session/session";
+import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
+import {
+  SessionAttributes,
+  SessionState,
+} from "../../../common/session/session";
+import {
+  GetSessionError,
+  GetSessionErrorSessionNotFound,
+  GetSessionFailed,
+  GetSessionInternalServerError,
+  GetSessionSessionInvalidErrorData,
+  GetSessionValidateSessionErrorData,
+  InvalidSessionAttributeTypes,
+  SessionRegistry,
+  SessionUpdateFailed,
+  SessionUpdateFailedInternalServerError,
+  SessionUpdated,
+  UpdateOperationDataToLog,
+  UpdateSessionError,
+} from "../../../common/session/SessionRegistry";
+import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
+import { CreateSessionAttributes } from "../../../services/session/sessionService";
+import {
+  FailureWithValue,
+  Result,
+  errorResult,
+  successResult,
+} from "../../../utils/result";
 
 export type DatabaseRecord = Record<string, NativeAttributeValue>;
 
@@ -131,6 +143,64 @@ export class DynamoDbAdapter implements SessionRegistry {
     }
   }
 
+  async getSession(
+    sessionId: string,
+    getOperation: GetSessionOperation,
+  ): Promise<Result<SessionAttributes, GetSessionFailed>> {
+    const getItemCommandInput = getOperation.getDynamoDbGetCommandInput({
+      tableName: this.tableName,
+      keyValue: sessionId,
+    });
+
+    let response;
+    try {
+      logger.debug(LogMessage.GET_SESSION_ATTEMPT, {
+        data: { sessionId, getItemCommandInput },
+      });
+
+      response = await this.dynamoDbClient.send(
+        new GetItemCommand(getItemCommandInput),
+      );
+    } catch (error: unknown) {
+      return this.handleGetSessionInternalServerError({
+        error,
+      });
+    }
+
+    const responseItem = response.Item;
+    if (responseItem == null) {
+      return this.handleGetSessionNotFoundError();
+    }
+
+    const getSessionAttributesResult =
+      getOperation.getSessionAttributesFromDynamoDbItem(responseItem);
+    if (getSessionAttributesResult.isError) {
+      const { sessionAttributes } = getSessionAttributesResult.value;
+      return this.handleGetSessionInternalServerError({
+        error: "Session attributes missing or contains invalid attribute types",
+        sessionAttributes,
+      });
+    }
+    const sessionAttributes = getSessionAttributesResult.value;
+
+    const { sessionState, createdAt } = sessionAttributes;
+    const validateSessionResult = getOperation.validateSession({
+      sessionState,
+      createdAt,
+    });
+
+    if (validateSessionResult.isError) {
+      const { invalidAttributes } = validateSessionResult.value;
+      return this.handleGetSessionInvalidError({
+        invalidAttributes,
+        sessionAttributes,
+      });
+    }
+
+    logger.debug(LogMessage.GET_SESSION_SUCCESS);
+    return successResult(sessionAttributes);
+  }
+
   async updateSession(
     sessionId: string,
     updateOperation: UpdateSessionOperation,
@@ -225,14 +295,56 @@ export class DynamoDbAdapter implements SessionRegistry {
 
   private handleUpdateSessionInternalServerError(
     error: unknown,
-    updateExpressionDataToLog: UpdateExpressionDataToLog,
+    data: UpdateOperationDataToLog,
   ): FailureWithValue<SessionUpdateFailedInternalServerError> {
     logger.error(LogMessage.UPDATE_SESSION_UNEXPECTED_FAILURE, {
-      error: error,
-      data: updateExpressionDataToLog,
+      error,
+      data,
     });
     return errorResult({
       errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
+    });
+  }
+
+  private handleGetSessionInternalServerError({
+    error,
+    sessionAttributes,
+  }: {
+    error: unknown;
+    sessionAttributes?: InvalidSessionAttributeTypes;
+  }): FailureWithValue<GetSessionInternalServerError> {
+    logger.error(LogMessage.GET_SESSION_UNEXPECTED_FAILURE, {
+      error,
+      sessionAttributes,
+    });
+    return errorResult({
+      errorType: GetSessionError.INTERNAL_SERVER_ERROR,
+    });
+  }
+
+  private handleGetSessionNotFoundError(): FailureWithValue<GetSessionErrorSessionNotFound> {
+    logger.error(LogMessage.GET_SESSION_SESSION_NOT_FOUND);
+
+    return errorResult({
+      errorType: GetSessionError.CLIENT_ERROR,
+    });
+  }
+
+  private handleGetSessionInvalidError({
+    invalidAttributes,
+    sessionAttributes,
+  }: GetSessionValidateSessionErrorData): FailureWithValue<GetSessionSessionInvalidErrorData> {
+    logger.error(LogMessage.GET_SESSION_SESSION_INVALID, {
+      invalidAttributes,
+      sessionAttributes,
+    });
+
+    return errorResult({
+      errorType: GetSessionError.CLIENT_ERROR,
+      data: {
+        invalidAttributes,
+        sessionAttributes,
+      },
     });
   }
 }

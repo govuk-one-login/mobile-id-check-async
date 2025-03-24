@@ -1,22 +1,23 @@
-import { BiometricSessionFinished } from "./BiometricSessionFinished";
-import { SessionState } from "../../session";
-import { emptyFailure, successResult } from "../../../../utils/result";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import {
+  NOW_IN_MILLISECONDS,
   validBiometricSessionFinishedAttributes,
   validBiometricTokenIssuedSessionAttributes,
 } from "../../../../testUtils/unitTestData";
+import { emptyFailure, successResult } from "../../../../utils/result";
+import { SessionState } from "../../session";
+import { BiometricSessionFinished } from "./BiometricSessionFinished";
 
 describe("BiometricSessionFinished", () => {
   let biometricSessionFinished: BiometricSessionFinished;
   const mockBiometricSessionId = "mock-biometric-session-id";
 
   beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(NOW_IN_MILLISECONDS);
     biometricSessionFinished = new BiometricSessionFinished(
       mockBiometricSessionId,
     );
-    jest.useFakeTimers();
-    jest.setSystemTime(new Date(2025, 1, 19));
   });
 
   afterEach(() => {
