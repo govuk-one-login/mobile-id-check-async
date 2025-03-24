@@ -19,6 +19,6 @@ jobs:
   helper-script-ci-checks:
     name: Helper script CI checks
     uses:
-      govuk-one-login/mobile-id-check-async/.github/workflows/job_ci-checks.yml@DCMAW-12118
+      ./.github/workflows/job_ci-checks.yml
     with:
       WORKING_DIRECTORY: helper-scripts
