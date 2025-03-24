@@ -546,6 +546,7 @@ describe("Backend application infrastructure", () => {
           "ISSUER",
           "TXMA_SQS",
           "VENDOR_PROCESSING_SQS",
+          "IPVCORE_OUTBOUND_SQS",
           "SESSION_TABLE_NAME",
           "POWERTOOLS_SERVICE_NAME",
           "AWS_LAMBDA_EXEC_WRAPPER",
@@ -936,6 +937,7 @@ describe("Backend application infrastructure", () => {
       const deadLetterQueueNames = [
         "TxMASQSQueueDeadLetterQueue",
         "VendorProcessingDLQ",
+        "IPVCoreDLQ",
       ];
       const queueList = Object.keys(queues).filter(
         (queueName: string) => !deadLetterQueueNames.includes(queueName),

@@ -137,6 +137,18 @@ Mappings:
       ReadIdBaseUrl: https://readid-proxy.review-b-async.staging.account.gov.uk
       STSBASEURL: https://token.staging.account.gov.uk
 
+  IPVCore:
+    build:
+      AccountId: not-used
+    dev:
+      AccountId: not-used
+    integration:
+      AccountId: arn:aws:iam::991138514218:root
+    production:
+      AccountId: arn:aws:iam::075701497069:root
+    staging:
+      AccountId: arn:aws:iam::335257547869:root
+
   KMS:
     build:
       PendingDeletionInDays: 30
@@ -380,6 +392,7 @@ Globals:
               - EnvironmentConfiguration
               - !Ref Environment
               - dynatraceSecretArn
+        IPVCORE_OUTBOUND_SQS: !GetAtt IPVCoreSQS.QueueUrl
         ISSUER: !Sub
           - https://${BaseDns}
           - BaseDns: !FindInMap
@@ -3381,6 +3394,98 @@ Resources:
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
       RoleName: !Sub ${AWS::StackName}-code-deploy-service-role
+
+  IPVCoreDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      KmsMasterKeyId: !Ref IPVCoreKMSEncryptionKey
+      MessageRetentionPeriod: 345600
+
+  IPVCoreKMSEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A KMS Key for encrypting the SQS for IPVCore messages
+      Enabled: true
+      KeyPolicy: !If
+        - isNotDevOrBuild
+        - Statement:
+            - Action:
+                - kms:*
+              Effect: Allow
+              Principal:
+                AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+              Resource:
+                - '*'
+            - Action:
+                - kms:Encrypt
+                - kms:Decrypt
+                - kms:GenerateDataKey
+              Effect: Allow
+              Principal:
+                AWS: !FindInMap
+                  - IPVCore
+                  - !Ref Environment
+                  - AccountId
+              Resource:
+                - '*'
+          Version: "2012-10-17"
+        - Statement:
+            - Action:
+                - kms:*
+              Effect: Allow
+              Principal:
+                AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+              Resource:
+                - '*'
+          Version: "2012-10-17"
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyUsage: ENCRYPT_DECRYPT
+      MultiRegion: false
+      PendingWindowInDays: !FindInMap
+        - KMS
+        - !Ref Environment
+        - PendingDeletionInDays
+
+  IPVCoreKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}-IPVCoreKMSEncryptionKey
+      TargetKeyId: !Ref IPVCoreKMSEncryptionKey
+
+  IPVCoreSQS:
+    Type: AWS::SQS::Queue
+    Properties:
+      DelaySeconds: 0
+      KmsMasterKeyId: !Ref IPVCoreKeyAlias
+      MessageRetentionPeriod: 345600
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt IPVCoreDLQ.Arn
+        maxReceiveCount: 60
+      VisibilityTimeout: 60
+
+  IPVCoreSQSPolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+              - sqs:ChangeMessageVisibility
+              - sqs:ReceiveMessage
+            Effect: Allow
+            Principal:
+              AWS:
+                - !FindInMap
+                  - IPVCore
+                  - !Ref Environment
+                  - AccountId
+            Resource:
+              - !GetAtt IPVCoreSQS.Arn
+        Version: "2012-10-17"
+      Queues:
+        - !Ref IPVCoreSQS
+    Condition: isNotDevOrBuild
 
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket
