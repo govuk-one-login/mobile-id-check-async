@@ -1,6 +1,7 @@
 import { SessionState } from "../common/session/session";
 import { SessionRegistry } from "../common/session/SessionRegistry";
 import { IEventService } from "../services/events/types";
+import { emptySuccess } from "../utils/result";
 
 export const mockSessionId = "58f4281d-d988-49ce-9586-6ef70a2be0b4";
 export const mockBiometricSessionId = "f32432a9-0965-4da9-8a2c-a98a79349d4a";
@@ -15,9 +16,73 @@ export const expectedSecurityHeaders = {
 };
 
 export const NOW_IN_MILLISECONDS: number = 1704110400000; // 2024-01-01 12:00:00.000
+export const validCreatedAt: number = 1704106860000; // 2024-01-01 11:01:00.000
+export const invalidCreatedAt: number = 1704106740000; // 2024-01-01 10:59:00.000
+
+export const validBaseSessionAttributes = {
+  clientId: "mockClientId",
+  govukSigninJourneyId: "mockGovukSigninJourneyId",
+  createdAt: validCreatedAt,
+  issuer: "mockIssuer",
+  sessionId: mockSessionId,
+  sessionState: SessionState.AUTH_SESSION_CREATED,
+  clientState: "mockClientState",
+  subjectIdentifier: "mockSubjectIdentifier",
+  timeToLive: 12345,
+};
+
+export const invalidBaseSessionAttributeTypes = {
+  clientId: "mockClientId",
+  govukSigninJourneyId: "mockGovukSigninJourneyId",
+  createdAt: validCreatedAt,
+  issuer: 12345, // Invalid type
+  sessionId: mockSessionId,
+  sessionState: SessionState.AUTH_SESSION_CREATED,
+  clientState: "mockClientState",
+  subjectIdentifier: "mockSubjectIdentifier",
+  timeToLive: "12345", // Invalid type
+};
+
+export const validBiometricTokenIssuedSessionAttributes = {
+  ...validBaseSessionAttributes,
+  sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,
+  documentType: "NFC_PASSPORT",
+  opaqueId: "mockOpaqueId",
+};
+
+export const validBiometricTokenIssuedSessionAttributesMobileApp = {
+  ...validBiometricTokenIssuedSessionAttributes,
+  redirectUri: "https://www.mockRedirectUri.com",
+};
+
+export const invalidBiometricTokenIssuedSessionAttributesWrongSessionState = {
+  ...validBiometricTokenIssuedSessionAttributes,
+  sessionState: SessionState.AUTH_SESSION_CREATED,
+};
+
+export const invalidBiometricTokenIssuedSessionAttributeTypes = {
+  ...validBiometricTokenIssuedSessionAttributes,
+  issuer: invalidBaseSessionAttributeTypes.issuer,
+  timeToLive: invalidBaseSessionAttributeTypes.timeToLive,
+};
+
+export const validBiometricSessionFinishedAttributes = {
+  ...validBiometricTokenIssuedSessionAttributes,
+  sessionState: SessionState.BIOMETRIC_SESSION_FINISHED,
+  biometricSessionId: mockBiometricSessionId,
+};
+
+export const validBiometricSessionFinishedAttributesMobileApp = {
+  ...validBiometricSessionFinishedAttributes,
+  redirectUri: "https://www.mockRedirectUri.com",
+};
 
 export const mockInertSessionRegistry: SessionRegistry = {
   updateSession: jest.fn(() => {
+    throw new Error("Not implemented");
+  }),
+
+  getSession: jest.fn(() => {
     throw new Error("Not implemented");
   }),
 };
@@ -34,27 +99,17 @@ export const mockInertEventService: IEventService = {
   }),
 };
 
-export const validBaseSessionAttributes = {
-  clientId: "mockClientId",
-  govukSigninJourneyId: "mockGovukSigninJourneyId",
-  createdAt: 12345,
-  issuer: "mockIssuer",
-  sessionId: mockSessionId,
-  sessionState: SessionState.AUTH_SESSION_CREATED,
-  clientState: "mockClientState",
-  subjectIdentifier: "mockSubjectIdentifier",
-  timeToLive: 12345,
-};
+export const mockWriteGenericEventSuccessResult = jest
+  .fn()
+  .mockResolvedValue(emptySuccess());
 
-export const validBiometricTokenIssuedSessionAttributes = {
-  ...validBaseSessionAttributes,
-  sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,
-  documentType: "NFC_PASSPORT",
-  opaqueId: "mockOpaqueId",
-};
+export const mockWriteBiometricTokenIssuedEventSuccessResult = jest
+  .fn()
+  .mockResolvedValue(emptySuccess());
 
-export const validBiometricSessionFinishedAttributes = {
-  ...validBiometricTokenIssuedSessionAttributes,
-  sessionState: SessionState.BIOMETRIC_SESSION_FINISHED,
-  biometricSessionId: mockBiometricSessionId,
+export const mockSuccessfulEventService = {
+  ...mockInertEventService,
+  writeGenericEvent: mockWriteGenericEventSuccessResult,
+  writeBiometricTokenIssuedEvent:
+    mockWriteBiometricTokenIssuedEventSuccessResult,
 };
