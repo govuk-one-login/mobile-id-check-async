@@ -375,9 +375,13 @@ Globals:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
         TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
         VENDOR_PROCESSING_SQS: !GetAtt VendorProcessingSQS.QueueUrl
+        ISSUER: !Sub
+          - https://${BaseDns}
+          - BaseDns: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
         IPVCORE_OUTBOUND_SQS: !GetAtt IPVCoreSQS.QueueUrl
-        # ISSUER should be updated with DNS once available
-        ISSUER: mockIssuer
         SESSION_TABLE_NAME: !Ref SessionsTable
         POWERTOOLS_SERVICE_NAME: mobile-id-check-async-backend
         AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
