@@ -1,0 +1,58 @@
+name: Pull request
+
+on:
+  workflow_call:
+    inputs:
+      RUN_FORMATTING:
+        description: Whether to run the `format:check` npm script
+        type: string
+        default: true
+      RUN_LINTER:
+        description: Whether to run the `lint` npm script
+        type: string
+        default: true
+      RUN_SONARQUBE:
+        description: Whether to run SonarQube checks. Needs RUN_UNIT_TESTS to be true.
+        type: string
+        default: true
+      RUN_UNIT_TESTS:
+        description: Whether to run unit tests using `test:unit` npm script
+        type: string
+        default: true
+      WORKING_DIRECTORY:
+        description: Path to working directory in repo
+        required: true
+        type: string
+    secrets:
+      SONAR_TOKEN:
+        description: The token used for secure access to the SonarQube platform
+        required: false
+
+jobs:
+  ci-checks:
+    name: CI checks
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_ci-checks.yml@main
+    with:
+      RUN_FORMATTING: ${{ inputs.RUN_FORMATTING }}
+      RUN_LINTER: ${{ inputs.RUN_LINTER }}
+      WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
+
+  run-test-suite:
+    name: Run test suite
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_test-suite.yml@main
+    with:
+      RUN_UNIT_TESTS: ${{ inputs.RUN_UNIT_TESTS }}
+      RUN_SONARQUBE: ${{ inputs.RUN_SONARQUBE }}
+      WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
+
+  sonarqube-scan:
+    name: SonarQube scan
+    if: inputs.RUN_SONARQUBE == 'true'
+    needs: run-test-suite
+    uses:
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_sonarqube.yml@main
+    with:
+      WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
+    secrets: inherit
