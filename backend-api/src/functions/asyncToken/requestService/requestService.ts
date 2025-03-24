@@ -6,6 +6,7 @@ import {
 } from "../../utils/result";
 import { APIGatewayProxyEventHeaders } from "aws-lambda";
 import { IDecodedClientSecrets } from "../../services/clientRegistryService/clientRegistryService";
+import { logger } from "../../common/logging/logger";
 
 export interface IDecodedAuthorizationHeader {
   clientId: string;
@@ -30,6 +31,9 @@ export class RequestService implements IRequestService {
         errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
+
+    // Temporary log for IPVCore testing in Staging
+    logger.debug("Authorization header", { authorizationHeader });
 
     if (!authorizationHeader.startsWith("Basic ")) {
       return errorResult({

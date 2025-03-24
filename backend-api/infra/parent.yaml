@@ -330,6 +330,11 @@ Conditions:
       - !Ref Environment
       - staging
 
+# This is a temporary measure and should be removed following testing.
+  LogIPVCoreRequestHeader: !Equals
+      - !Ref Environment
+      - staging
+
   DeployProxyCsls: !And
     - Condition: ProxyApiDeployment
     - Condition: isNotDev
