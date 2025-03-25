@@ -6,7 +6,7 @@ import {
 
 export type IValidateServiceTokenRequest = (
   requestBody: string | null,
-) => Result<ValidServiceTokenRequestParams>;
+) => Result<ValidServiceTokenRequestParams, void>;
 
 export type ValidServiceTokenRequestParams = {
   subjectId: string;
