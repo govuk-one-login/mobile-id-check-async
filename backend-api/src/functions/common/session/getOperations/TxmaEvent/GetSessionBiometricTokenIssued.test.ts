@@ -23,19 +23,6 @@ describe("TxMA event get session operation", () => {
     getSessionOperation = new GetSessionBiometricTokenIssued();
   });
 
-  describe("When I request the DynamoDB command input", () => {
-    it("Returns the appropriate GetItemCommand input", () => {
-      const result = getSessionOperation.getDynamoDbGetCommandInput({
-        tableName: "mock_table_name",
-        keyValue: mockSessionId,
-      });
-      expect(result).toEqual({
-        TableName: "mock_table_name",
-        Key: { sessionId: { S: mockSessionId } },
-      });
-    });
-  });
-
   describe("When I request the getSessionAttributesFromDynamoDbItem", () => {
     describe("Given a session attributes item was provided that does not include all BiometricTokenIssuedSessionAttributes properties", () => {
       it("Returns an emptyFailure", () => {

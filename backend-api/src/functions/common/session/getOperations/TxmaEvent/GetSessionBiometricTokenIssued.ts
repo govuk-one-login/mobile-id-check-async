@@ -1,5 +1,4 @@
-import { AttributeValue, GetItemCommandInput } from "@aws-sdk/client-dynamodb";
-import { marshall } from "@aws-sdk/util-dynamodb";
+import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { emptySuccess, errorResult, Result } from "../../../../utils/result";
 import { isOlderThan60Minutes } from "../../../../utils/utils";
 import {
@@ -16,19 +15,6 @@ import {
 import { GetSessionOperation } from "../GetSessionOperation";
 
 export class GetSessionBiometricTokenIssued implements GetSessionOperation {
-  getDynamoDbGetCommandInput({
-    tableName,
-    keyValue,
-  }: {
-    tableName: string;
-    keyValue: string;
-  }): GetItemCommandInput {
-    return {
-      TableName: tableName,
-      Key: { sessionId: marshall(keyValue) },
-    };
-  }
-
   getSessionAttributesFromDynamoDbItem(
     item: Record<string, AttributeValue>,
   ): Result<
