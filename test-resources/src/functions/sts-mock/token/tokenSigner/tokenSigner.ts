@@ -13,7 +13,7 @@ export interface ITokenSigner {
     keyId: string,
     payload: JWTPayload,
     signingKey: KeyObject,
-  ) => Promise<Result<JWT>>;
+  ) => Promise<Result<JWT, void>>;
 }
 
 export class TokenSigner implements ITokenSigner {
@@ -21,7 +21,7 @@ export class TokenSigner implements ITokenSigner {
     keyId: string,
     payload: JWTPayload,
     signingKey: KeyObject,
-  ): Promise<Result<JWT>> {
+  ): Promise<Result<JWT, void>> {
     try {
       const jwt = (await new SignJWT(payload)
         .setProtectedHeader({ alg: "ES256", typ: "JWT", kid: keyId })
