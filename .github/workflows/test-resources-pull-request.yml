@@ -15,6 +15,8 @@ on:
       - ".github/workflows/job_ci-checks.yml"
       - ".github/workflows/job_test-suite.yml"
       - ".github/workflows/job_sonarqube.yml"
+      - "!test-resources/**/*.md"
+      - "!test-resources/**/*.png"
 
   workflow_dispatch:
 

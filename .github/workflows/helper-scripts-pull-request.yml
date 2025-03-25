@@ -12,6 +12,8 @@ on:
       - "helper-scripts/**"
       - ".github/workflows/helper-scripts-pull-request.yml"
       - ".github/workflows/job_ci-checks.yml"
+      - "!helper-scripts/**/*.md"
+      - "!helper-scripts/**/*.png"
 
   workflow_dispatch:
 
