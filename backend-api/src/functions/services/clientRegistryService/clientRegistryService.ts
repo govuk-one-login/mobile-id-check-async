@@ -32,8 +32,9 @@ export class ClientRegistryService
     secrets: IDecodedClientSecrets,
   ): Promise<Result<string>> => {
     const clientRegistryResult = await this.getClientRegistry();
-    if (clientRegistryResult.isError)
-      return errorResult(clientRegistryResult.value);
+    if (clientRegistryResult.isError) {
+      return clientRegistryResult;
+    }
     const clientRegistry = clientRegistryResult.value;
 
     const registeredClient = this.getRegisteredClientByClientId(
