@@ -2,6 +2,7 @@ import {
   successResult,
   Result,
   errorResult,
+  ErrorCategory,
 } from "../../../../common/utils/result";
 import { IKeyRetriever, SigningKey } from "../keyRetriever";
 import { getMockSigningKey } from "../../../../testUtils/getMockSigningKey";
@@ -17,7 +18,7 @@ export class MockKeyRetrieverErrorResult implements IKeyRetriever {
     return Promise.resolve(
       errorResult({
         errorMessage: "Some S3 error",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       }),
     );
   }

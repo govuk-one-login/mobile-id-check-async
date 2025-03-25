@@ -1,4 +1,5 @@
 import {
+  ErrorCategory,
   errorResult,
   Result,
   successResult,
@@ -6,7 +7,7 @@ import {
 
 export type IValidateServiceTokenRequest = (
   requestBody: string | null,
-) => Result<ValidServiceTokenRequestParams, void>;
+) => Result<ValidServiceTokenRequestParams>;
 
 export type ValidServiceTokenRequestParams = {
   subjectId: string;
@@ -30,7 +31,7 @@ export const validateServiceTokenRequest: IValidateServiceTokenRequest = (
   if (!requestBody) {
     return errorResult({
       errorMessage: "Missing request body",
-      errorCategory: "CLIENT_ERROR",
+      errorCategory: ErrorCategory.CLIENT_ERROR,
     });
   }
   const searchParams = new URLSearchParams(requestBody);
@@ -40,7 +41,7 @@ export const validateServiceTokenRequest: IValidateServiceTokenRequest = (
     if (!param) {
       return errorResult({
         errorMessage: `Missing ${requiredParam}`,
-        errorCategory: "CLIENT_ERROR",
+        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
   }
@@ -51,7 +52,7 @@ export const validateServiceTokenRequest: IValidateServiceTokenRequest = (
   if (scope !== SUPPORTED_SERVICE_SCOPE) {
     return errorResult({
       errorMessage: "Unsupported scope",
-      errorCategory: "CLIENT_ERROR",
+      errorCategory: ErrorCategory.CLIENT_ERROR,
     });
   }
 
@@ -59,7 +60,7 @@ export const validateServiceTokenRequest: IValidateServiceTokenRequest = (
   if (subjectTokenType !== SUPPORTED_SUBJECT_TOKEN_TYPE) {
     return errorResult({
       errorMessage: "Unsupported subject_token_type",
-      errorCategory: "CLIENT_ERROR",
+      errorCategory: ErrorCategory.CLIENT_ERROR,
     });
   }
 
@@ -67,7 +68,7 @@ export const validateServiceTokenRequest: IValidateServiceTokenRequest = (
   if (grantType !== SUPPORTED_GRANT_TYPE) {
     return errorResult({
       errorMessage: "Unsupported grant_type",
-      errorCategory: "CLIENT_ERROR",
+      errorCategory: ErrorCategory.CLIENT_ERROR,
     });
   }
 

@@ -1,4 +1,5 @@
 import {
+  ErrorCategory,
   errorResult,
   Result,
   successResult,
@@ -47,14 +48,14 @@ export class KeyRetriever implements IKeyRetriever {
     } catch {
       return errorResult({
         errorMessage: "Error getting object from S3",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
     if (!response.Body) {
       return errorResult({
         errorMessage: "Empty object retrieved from S3",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
@@ -75,7 +76,7 @@ export class KeyRetriever implements IKeyRetriever {
     } catch {
       return errorResult({
         errorMessage: "Error formatting key",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
   }

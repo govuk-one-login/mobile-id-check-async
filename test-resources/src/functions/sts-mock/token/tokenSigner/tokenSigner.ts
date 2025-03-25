@@ -1,4 +1,5 @@
 import {
+  ErrorCategory,
   errorResult,
   Result,
   successResult,
@@ -13,7 +14,7 @@ export interface ITokenSigner {
     keyId: string,
     payload: JWTPayload,
     signingKey: KeyObject,
-  ) => Promise<Result<JWT, void>>;
+  ) => Promise<Result<JWT>>;
 }
 
 export class TokenSigner implements ITokenSigner {
@@ -21,7 +22,7 @@ export class TokenSigner implements ITokenSigner {
     keyId: string,
     payload: JWTPayload,
     signingKey: KeyObject,
-  ): Promise<Result<JWT, void>> {
+  ): Promise<Result<JWT>> {
     try {
       const jwt = (await new SignJWT(payload)
         .setProtectedHeader({ alg: "ES256", typ: "JWT", kid: keyId })
@@ -30,7 +31,7 @@ export class TokenSigner implements ITokenSigner {
     } catch {
       return errorResult({
         errorMessage: "Error signing token",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
   }

@@ -2,6 +2,7 @@ import {
   successResult,
   Result,
   errorResult,
+  ErrorCategory,
 } from "../../../../common/utils/result";
 import { ITokenSigner, JWT } from "../tokenSigner";
 
@@ -16,7 +17,7 @@ export class MockTokenSignerErrorResult implements ITokenSigner {
     return Promise.resolve(
       errorResult({
         errorMessage: "Some signing error",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       }),
     );
   }

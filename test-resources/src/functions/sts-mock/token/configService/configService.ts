@@ -1,4 +1,5 @@
 import {
+  ErrorCategory,
   errorResult,
   Result,
   successResult,
@@ -19,17 +20,17 @@ export class ConfigService implements IGetConfig<Config> {
     if (!env.STS_MOCK_BASE_URL)
       return errorResult({
         errorMessage: "No STS_MOCK_BASE_URL",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     if (!env.ASYNC_BACKEND_BASE_URL)
       return errorResult({
         errorMessage: "No ASYNC_BACKEND_BASE_URL",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     if (!env.KEY_STORAGE_BUCKET_NAME)
       return errorResult({
         errorMessage: "No KEY_STORAGE_BUCKET_NAME",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
 
     return successResult({
