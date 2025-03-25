@@ -41,7 +41,7 @@ describe.each(apis)(
 
     beforeAll(async () => {
       const clientDetails = await getFirstRegisteredClient();
-      clientIdAndSecret = `${clientDetails.client_id}:${clientDetails.client_secret}`;
+      clientIdAndSecret = `${encodeURIComponent(clientDetails.client_id)}:${encodeURIComponent(clientDetails.client_secret)}`;
     });
 
     describe("Given there is no grant_type in the request body", () => {
@@ -97,14 +97,16 @@ describe.each(apis)(
 
     describe("Given the client in the Authorization header is not a registered client", () => {
       it("Returns a 400 Bad Request response", async () => {
-        const invalidClientIdAndSecret = "invalidClient:invalidClientSecret";
         const response = await axiosInstance.post(
           `/async/token`,
           "grant_type=client_credentials",
           {
             headers: {
               [authorizationHeader]:
-                "Basic " + toBase64(invalidClientIdAndSecret),
+                "Basic " +
+                toBase64(
+                  `${encodeURIComponent("invalidClientId")}:${encodeURIComponent("invalidClientSecret")}`,
+                ),
             },
           },
         );

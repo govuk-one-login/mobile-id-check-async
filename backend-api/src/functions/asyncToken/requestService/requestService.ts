@@ -47,7 +47,18 @@ export class RequestService implements IRequestService {
       base64EncodedCredential,
       "base64",
     ).toString("utf-8");
-    const [clientId, clientSecret] = base64DecodedCredential.split(":");
+
+    let decodedCredential: string;
+    try {
+      decodedCredential = decodeURIComponent(base64DecodedCredential);
+    } catch (error: unknown) {
+      return errorResult({
+        errorMessage: `Unable to decode uri encoded client credentials , error: ${error}`,
+        errorCategory: ErrorCategory.CLIENT_ERROR,
+      });
+    }
+
+    const [clientId, clientSecret] = decodedCredential.split(":");
 
     if (!clientId || !clientSecret) {
       return errorResult({
