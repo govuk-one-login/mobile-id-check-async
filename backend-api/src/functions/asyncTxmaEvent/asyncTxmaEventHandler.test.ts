@@ -297,6 +297,7 @@ describe("Async TxMA Event", () => {
           getNowInMilliseconds: Date.now,
           govukSigninJourneyId: "mockGovukSigninJourneyId",
           sessionId: mockSessionId,
+          sub: "mockSubjectIdentifier",
           ipAddress: "1.1.1.1",
           txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
           redirect_uri: undefined,
@@ -329,9 +330,9 @@ const validRequest = buildRequest({
 
 export const mockTxmaEventSessionRegistrySuccess: SessionRegistry = {
   ...mockInertSessionRegistry,
-  getSession: jest.fn().mockResolvedValue(
-    successResult({
-      attributes: validBiometricTokenIssuedSessionAttributes,
-    }),
-  ),
+  getSession: jest
+    .fn()
+    .mockResolvedValue(
+      successResult(validBiometricTokenIssuedSessionAttributes),
+    ),
 };

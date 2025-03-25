@@ -510,4 +510,153 @@ describe("Event Service", () => {
       });
     });
   });
+
+  describe("Writing TxMA billing event to SQS", () => {
+    describe(`Given writing "DCMAW_ASYNC_HYBRID_BILLING_STARTED" event to SQS fails`, () => {
+      beforeEach(async () => {
+        sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
+
+        result = await eventWriter.writeTxmaBillingEvent({
+          event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+          sub: "mockSub",
+          sessionId: "mockSessionId",
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
+          getNowInMilliseconds: () => 1609462861000,
+          componentId: "mockComponentId",
+          ipAddress: "mockIpAddress",
+          txmaAuditEncoded: "mockTxmaAuditEncoded",
+          redirect_uri: undefined,
+        });
+      });
+
+      it(`Attempts to send "DCMAW_ASYNC_HYBRID_BILLING_STARTED" TxMA event to SQS`, () => {
+        const expectedCommandInput = {
+          MessageBody: JSON.stringify({
+            event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+            user: {
+              user_id: "mockSub",
+              session_id: "mockSessionId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              ip_address: "mockIpAddress",
+            },
+            timestamp: 1609462861,
+            event_timestamp_ms: 1609462861000,
+            component_id: "mockComponentId",
+            restricted: {
+              device_information: {
+                encoded: "mockTxmaAuditEncoded",
+              },
+            },
+          }),
+          QueueUrl: "mockSqsQueue",
+        };
+
+        expect(sqsMock).toHaveReceivedCommandWith(
+          SendMessageCommand,
+          expectedCommandInput,
+        );
+      });
+
+      it("Returns an emptyFailure", () => {
+        expect(result).toEqual(emptyFailure());
+      });
+    });
+
+    describe(`Given writing "DCMAW_ASYNC_HYBRID_BILLING_STARTED" to SQS is successful`, () => {
+      describe("Given txmaAuditEncoded is undefined", () => {
+        beforeEach(async () => {
+          sqsMock.on(SendMessageCommand).resolves({});
+
+          result = await eventWriter.writeTxmaBillingEvent({
+            event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+            sub: "mockSub",
+            sessionId: "mockSessionId",
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            getNowInMilliseconds: () => 1609462861000,
+            componentId: "mockComponentId",
+            ipAddress: "mockIpAddress",
+            txmaAuditEncoded: undefined,
+            redirect_uri: undefined,
+          });
+        });
+
+        it(`Attempts to send "DCMAW_ASYNC_HYBRID_BILLING_STARTED" event to SQS without restricted data`, () => {
+          const expectedCommandInput = {
+            MessageBody: JSON.stringify({
+              event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+              user: {
+                user_id: "mockSub",
+                session_id: "mockSessionId",
+                govuk_signin_journey_id: "mockGovukSigninJourneyId",
+                ip_address: "mockIpAddress",
+              },
+              timestamp: 1609462861,
+              event_timestamp_ms: 1609462861000,
+              component_id: "mockComponentId",
+            }),
+            QueueUrl: "mockSqsQueue",
+          };
+
+          expect(sqsMock).toHaveReceivedCommandWith(
+            SendMessageCommand,
+            expectedCommandInput,
+          );
+        });
+
+        it("Returns an emptySuccess", () => {
+          expect(result).toEqual(emptySuccess());
+        });
+      });
+
+      describe("Given txmaAuditEncoded is defined", () => {
+        beforeEach(async () => {
+          sqsMock.on(SendMessageCommand).resolves({});
+
+          result = await eventWriter.writeTxmaBillingEvent({
+            event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+            sub: "mockSub",
+            sessionId: "mockSessionId",
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            getNowInMilliseconds: () => 1609462861000,
+            componentId: "mockComponentId",
+            ipAddress: "mockIpAddress",
+            txmaAuditEncoded: "mockTxmaAuditEncoded",
+            redirect_uri: undefined,
+          });
+        });
+
+        it(`Attempts to send "DCMAW_ASYNC_HYBRID_BILLING_STARTED" event to SQS with restricted data`, () => {
+          const expectedCommandInput = {
+            MessageBody: JSON.stringify({
+              event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+              user: {
+                user_id: "mockSub",
+                session_id: "mockSessionId",
+                govuk_signin_journey_id: "mockGovukSigninJourneyId",
+                ip_address: "mockIpAddress",
+              },
+              timestamp: 1609462861,
+              event_timestamp_ms: 1609462861000,
+              component_id: "mockComponentId",
+              restricted: {
+                device_information: {
+                  encoded: "mockTxmaAuditEncoded",
+                },
+              },
+            }),
+            QueueUrl: "mockSqsQueue",
+          };
+
+          expect(sqsMock).toHaveReceivedCommandWith(
+            SendMessageCommand,
+            expectedCommandInput,
+          );
+        });
+
+        it("Returns an emptySuccess", () => {
+          expect(result).toEqual(emptySuccess());
+        });
+      });
+    });
+  });
 });

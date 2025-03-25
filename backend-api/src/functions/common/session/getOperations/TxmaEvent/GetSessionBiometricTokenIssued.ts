@@ -2,7 +2,10 @@ import { AttributeValue, GetItemCommandInput } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { emptySuccess, errorResult, Result } from "../../../../utils/result";
 import { isOlderThan60Minutes } from "../../../../utils/utils";
-import { SessionAttributes, SessionState } from "../../session";
+import {
+  BiometricTokenIssuedSessionAttributes,
+  SessionState,
+} from "../../session";
 import { getTxmaEventBiometricTokenIssuedSessionAttributes } from "../../sessionAttributes/sessionAttributes";
 import {
   ValidateSessionAttributes,
@@ -28,7 +31,10 @@ export class GetSessionBiometricTokenIssued implements GetSessionOperation {
 
   getSessionAttributesFromDynamoDbItem(
     item: Record<string, AttributeValue>,
-  ): Result<SessionAttributes, ValidateSessionErrorInvalidAttributeTypeData> {
+  ): Result<
+    BiometricTokenIssuedSessionAttributes,
+    ValidateSessionErrorInvalidAttributeTypeData
+  > {
     return getTxmaEventBiometricTokenIssuedSessionAttributes(item);
   }
 

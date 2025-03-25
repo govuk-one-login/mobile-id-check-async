@@ -66,17 +66,6 @@ export async function lambdaHandlerConstructor(
 
   const eventService = dependencies.getEventService(config.TXMA_SQS);
   const { ipAddress, txmaAuditEncoded } = getAuditData(event);
-  console.log("SESSION >>>>>", sessionAttributes);
-  console.log(
-    "govukSigninJourneyId >>>>>",
-    sessionAttributes.subjectIdentifier,
-  );
-  console.log(
-    "govukSigninJourneyId >>>>>",
-    sessionAttributes.govukSigninJourneyId,
-  );
-  console.log("SESSION >>>>>", sessionAttributes);
-
   const writeEventResult = await eventService.writeTxmaBillingEvent({
     event_name: eventName,
     sub: sessionAttributes.subjectIdentifier,
