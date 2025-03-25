@@ -14,7 +14,7 @@ export function validateRequestBody(
 
   let parsedBody;
   try {
-    parsedBody = JSON.parse(body)
+    parsedBody = JSON.parse(body);
   } catch (error: unknown) {
     return errorResult({
       errorMessage: `Request body could not be parsed as JSON. ${error}`,
@@ -32,7 +32,6 @@ export function validateRequestBody(
       errorMessage: `documentType in request body is either null or undefined.`,
     });
   }
-
 
   if (!isString(documentType)) {
     return errorResult({

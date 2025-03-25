@@ -252,7 +252,7 @@ export class DynamoDbAdapter implements SessionRegistry {
           data: updateExpressionDataToLog,
         });
         return errorResult({
-          errorType: UpdateSessionError.SESSION_NOT_FOUND as const
+          errorType: UpdateSessionError.SESSION_NOT_FOUND as const,
         });
       }
       if (error instanceof ConditionalCheckFailedException) {

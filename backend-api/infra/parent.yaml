@@ -217,6 +217,7 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
+      SessionDurationInSeconds: 86400
 
     build:
       STSBASEURL: 'https://sts-mock.review-b-async.build.account.gov.uk'
@@ -227,6 +228,7 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
+      SessionDurationInSeconds: 86400
 
     staging:
       STSBASEURL: 'https://token.staging.account.gov.uk'
@@ -236,6 +238,7 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
+      SessionDurationInSeconds: 86400
 
     integration:
       STSBASEURL: 'https://token.integration.account.gov.uk'
@@ -245,6 +248,7 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
+      SessionDurationInSeconds: 86400
 
     production:
       STSBASEURL: 'https://token.account.gov.uk'
@@ -254,6 +258,7 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
+      SessionDurationInSeconds: 86400
 
 Conditions:
   UseCodeSigning: !Not
@@ -330,6 +335,11 @@ Conditions:
       - !Ref Environment
       - staging
 
+# This is a temporary measure and should be removed following testing.
+  LogIPVCoreRequestHeader: !Equals
+      - !Ref Environment
+      - staging
+
   DeployProxyCsls: !And
     - Condition: ProxyApiDeployment
     - Condition: isNotDev
@@ -375,9 +385,13 @@ Globals:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
         TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
         VENDOR_PROCESSING_SQS: !GetAtt VendorProcessingSQS.QueueUrl
+        ISSUER: !Sub
+          - https://${BaseDns}
+          - BaseDns: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
         IPVCORE_OUTBOUND_SQS: !GetAtt IPVCoreSQS.QueueUrl
-        # ISSUER should be updated with DNS once available
-        ISSUER: mockIssuer
         SESSION_TABLE_NAME: !Ref SessionsTable
         POWERTOOLS_SERVICE_NAME: mobile-id-check-async-backend
         AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace

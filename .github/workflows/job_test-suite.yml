@@ -3,6 +3,14 @@ name: Run Test Suite
 on:
   workflow_call:
     inputs:
+      RUN_SONARQUBE:
+        description: Whether to run SonarQube checks. Needs RUN_UNIT_TESTS to be true.
+        type: string
+        default: true
+      RUN_UNIT_TESTS:
+        description: Whether to run unit tests using `test:unit` npm script
+        type: string
+        default: true
       WORKING_DIRECTORY:
         description: Path to working directory in repo
         required: true
@@ -33,10 +41,12 @@ jobs:
         run: npm clean-install
 
       - name: Run unit tests
+        if: inputs.RUN_UNIT_TESTS == 'true'
         run: npm run test:unit
 
       - name: Upload unit test coverage artifact for SonarQube scan
-        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        if: inputs.RUN_SONARQUBE == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: test-coverage
           path: ${{ inputs.WORKING_DIRECTORY }}/coverage/

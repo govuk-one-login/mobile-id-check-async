@@ -34,7 +34,6 @@ describe("Session Service", () => {
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
     jest.useRealTimers();
   });
 
@@ -264,7 +263,7 @@ describe("Session Service", () => {
           govuk_signin_journey_id: "mockJourneyId",
           redirect_uri: "https://mockRedirectUri.com",
           issuer: "mockIssuer",
-          sessionDurationInSeconds: 3600,
+          sessionDurationInSeconds: 12345,
         });
 
         expect(result.isError).toBe(true);

@@ -103,6 +103,7 @@ Mappings:
       EventsBaseUrl: https://events.review-b-async.build.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.build.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.build.account.gov.uk
+      SessionDurationInSeconds: 86400
     dev:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
@@ -112,6 +113,7 @@ Mappings:
       EventsBaseUrl: https://events.review-b-async.dev.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.dev.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.dev.account.gov.uk
+      SessionDurationInSeconds: 86400
     integration:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
@@ -120,6 +122,7 @@ Mappings:
       ClientRegistrySecretPath: integration/clientRegistry
       ReadIdBaseUrl: https://readid-proxy.review-b-async.integration.account.gov.uk
       STSBASEURL: https://token.integration.account.gov.uk
+      SessionDurationInSeconds: 86400
     production:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
@@ -128,6 +131,7 @@ Mappings:
       ClientRegistrySecretPath: production/clientRegistry
       ReadIdBaseUrl: https://readid-proxy.review-b-async.account.gov.uk
       STSBASEURL: https://token.account.gov.uk
+      SessionDurationInSeconds: 86400
     staging:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
@@ -136,6 +140,7 @@ Mappings:
       ClientRegistrySecretPath: staging/clientRegistry
       ReadIdBaseUrl: https://readid-proxy.review-b-async.staging.account.gov.uk
       STSBASEURL: https://token.staging.account.gov.uk
+      SessionDurationInSeconds: 86400
 
   IPVCore:
     build:
@@ -286,6 +291,10 @@ Conditions:
       - !Ref Environment
       - build
 
+  LogIPVCoreRequestHeader: !Equals
+    - !Ref Environment
+    - staging
+
   NeverDeploy: !Equals
     - !Ref SamValidateLintWorkaround
     - Should always equal false
@@ -393,7 +402,12 @@ Globals:
               - !Ref Environment
               - dynatraceSecretArn
         IPVCORE_OUTBOUND_SQS: !GetAtt IPVCoreSQS.QueueUrl
-        ISSUER: mockIssuer
+        ISSUER: !Sub
+          - https://${BaseDns}
+          - BaseDns: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
         POWERTOOLS_SERVICE_NAME: mobile-id-check-async-backend
         SESSION_TABLE_NAME: !Ref SessionsTable
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
@@ -1995,7 +2009,10 @@ Resources:
             - EnvironmentVariables
             - !Ref Environment
             - ClientRegistrySecretPath
-          SESSION_DURATION_IN_SECONDS: 3600
+          SESSION_DURATION_IN_SECONDS: !FindInMap
+            - EnvironmentVariables
+            - !Ref Environment
+            - SessionDurationInSeconds
       FunctionName: !Sub ${AWS::StackName}-credential
       Handler: asyncCredentialHandler.lambdaHandler
       Role: !GetAtt AsyncCredentialLambdaRole.Arn
@@ -3102,6 +3119,13 @@ Resources:
             - ClientRegistrySecretPath
       FunctionName: !Sub ${AWS::StackName}-token
       Handler: asyncTokenHandler.lambdaHandler
+      LoggingConfig:
+        ApplicationLogLevel: !If
+          - LogIPVCoreRequestHeader
+          - DEBUG
+          - INFO
+        LogFormat: JSON
+        SystemLogLevel: INFO
       Role: !GetAtt AsyncTokenLambdaRole.Arn
       Runtime: nodejs20.x
       VpcConfig:
