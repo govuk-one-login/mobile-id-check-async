@@ -217,6 +217,7 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
+      SessionDurationInSeconds: 86400
 
     build:
       STSBASEURL: 'https://sts-mock.review-b-async.build.account.gov.uk'
@@ -227,6 +228,7 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
+      SessionDurationInSeconds: 86400
 
     staging:
       STSBASEURL: 'https://token.staging.account.gov.uk'
@@ -236,6 +238,7 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
+      SessionDurationInSeconds: 86400
 
     integration:
       STSBASEURL: 'https://token.integration.account.gov.uk'
@@ -245,6 +248,7 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
+      SessionDurationInSeconds: 86400
 
     production:
       STSBASEURL: 'https://token.account.gov.uk'
@@ -254,6 +258,7 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
+      SessionDurationInSeconds: 86400
 
 Conditions:
   UseCodeSigning: !Not
