@@ -34,7 +34,6 @@ describe("Session Service", () => {
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
     jest.useRealTimers();
   });
 
