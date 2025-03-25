@@ -12,18 +12,24 @@ import {
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
+import { getAuditData } from "../common/request/getAuditData/getAuditData";
 import { GetSessionBiometricTokenIssued } from "../common/session/getOperations/TxmaEvent/GetSessionBiometricTokenIssued";
+import { SessionAttributes } from "../common/session/session";
 import {
   GetSessionError,
   GetSessionFailed,
 } from "../common/session/SessionRegistry";
+import { IEventService } from "../services/events/types";
+import { emptySuccess, errorResult, Result } from "../utils/result";
 import {
   IAsyncTxmaEventDependencies,
   runtimeDependencies,
 } from "./handlerDependencies";
 import { getTxmaEventConfig } from "./txmaEventConfig";
-import { validateRequestBody } from "./validateRequestBody/validateRequestBody";
-import { getAuditData } from "../common/request/getAuditData/getAuditData";
+import {
+  IAsyncTxmaEventRequestBody,
+  validateRequestBody,
+} from "./validateRequestBody/validateRequestBody";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTxmaEventDependencies,
@@ -47,13 +53,13 @@ export async function lambdaHandlerConstructor(
     });
     return badRequestResponse("invalid_request", errorMessage);
   }
-  const { sessionId, eventName } = validateRequestBodyResult.value;
+  const requestBody = validateRequestBodyResult.value;
 
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
   );
   const getSessionResult = await sessionRegistry.getSession(
-    sessionId,
+    requestBody.sessionId,
     new GetSessionBiometricTokenIssued(),
   );
 
@@ -65,26 +71,14 @@ export async function lambdaHandlerConstructor(
   const sessionAttributes = getSessionResult.value;
 
   const eventService = dependencies.getEventService(config.TXMA_SQS);
-  const { ipAddress, txmaAuditEncoded } = getAuditData(event);
-  const writeEventResult = await eventService.writeTxmaBillingEvent({
-    event_name: eventName,
-    sub: sessionAttributes.subjectIdentifier,
-    sessionId,
-    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
-    getNowInMilliseconds: Date.now,
-    componentId: config.ISSUER,
-    ipAddress,
-    txmaAuditEncoded,
-    redirect_uri: sessionAttributes.redirectUri,
+  const eventData = { requestBody, sessionAttributes, issuer: config.ISSUER };
+  const handleWritingEventResult = await handleWritingEvent({
+    eventService,
+    event,
+    eventData,
   });
-
-  if (writeEventResult.isError) {
-    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-      data: {
-        auditEventName: eventName,
-      },
-    });
-    return serverErrorResponse;
+  if (handleWritingEventResult.isError) {
+    return handleWritingEventResult.value;
   }
 
   logger.info(LogMessage.TXMA_EVENT_COMPLETED);
@@ -109,4 +103,48 @@ async function handleGetSessionError({
   }
 
   return serverErrorResponse;
+}
+
+interface HandleWriringEventInput {
+  eventService: IEventService;
+  event: APIGatewayProxyEvent;
+  eventData: {
+    requestBody: IAsyncTxmaEventRequestBody;
+    sessionAttributes: SessionAttributes;
+    issuer: string;
+  };
+}
+
+async function handleWritingEvent({
+  eventService,
+  event,
+  eventData,
+}: HandleWriringEventInput): Promise<Result<void, APIGatewayProxyResult>> {
+  const { ipAddress, txmaAuditEncoded } = getAuditData(event);
+  const { requestBody, sessionAttributes, issuer } = eventData;
+  const { sessionId, eventName } = requestBody;
+  const { subjectIdentifier, govukSigninJourneyId, redirectUri } =
+    sessionAttributes;
+  const writeEventResult = await eventService.writeTxmaBillingEvent({
+    event_name: eventName,
+    sub: subjectIdentifier,
+    sessionId,
+    govukSigninJourneyId,
+    getNowInMilliseconds: Date.now,
+    componentId: issuer,
+    ipAddress,
+    txmaAuditEncoded,
+    redirect_uri: redirectUri,
+  });
+
+  if (writeEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: eventName,
+      },
+    });
+    return errorResult(serverErrorResponse);
+  }
+
+  return emptySuccess();
 }

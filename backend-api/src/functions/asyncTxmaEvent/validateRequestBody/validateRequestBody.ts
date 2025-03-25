@@ -64,7 +64,7 @@ function isEventName(eventName: string): eventName is TxmaBillingEventName {
   return txmaBillingEventNames.includes(eventName);
 }
 
-interface IAsyncTxmaEventRequestBody {
+export interface IAsyncTxmaEventRequestBody {
   sessionId: string;
   eventName: TxmaBillingEventName;
 }
