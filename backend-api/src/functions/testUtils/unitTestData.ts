@@ -97,6 +97,9 @@ export const mockInertEventService: IEventService = {
   writeBiometricTokenIssuedEvent: jest.fn(() => {
     throw new Error("Not implemented");
   }),
+  writeTxmaBillingEvent: jest.fn(() => {
+    throw new Error("Not implemented");
+  }),
 };
 
 export const mockWriteGenericEventSuccessResult = jest
@@ -107,9 +110,14 @@ export const mockWriteBiometricTokenIssuedEventSuccessResult = jest
   .fn()
   .mockResolvedValue(emptySuccess());
 
+export const mockWriteTxmaBillingEventSuccessResult = jest
+  .fn()
+  .mockResolvedValue(emptySuccess());
+
 export const mockSuccessfulEventService = {
   ...mockInertEventService,
   writeGenericEvent: mockWriteGenericEventSuccessResult,
   writeBiometricTokenIssuedEvent:
     mockWriteBiometricTokenIssuedEventSuccessResult,
+  writeTxmaBillingEvent: mockWriteTxmaBillingEventSuccessResult,
 };

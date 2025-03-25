@@ -10,6 +10,8 @@ import {
   GenericTxmaEvent,
   IEventService,
   RestrictedData,
+  TxmaBillingEvent,
+  TxmaBillingEventConfig,
   TxmaEvents,
 } from "./types";
 
@@ -38,6 +40,13 @@ export class EventService implements IEventService {
     eventConfig: BiometricTokenIssuedEventConfig,
   ): Promise<Result<void, void>> {
     const txmaEvent = this.buildBiometricTokenEvent(eventConfig);
+    return await this.writeToSqs(txmaEvent);
+  }
+
+  async writeTxmaBillingEvent(
+    eventConfig: TxmaBillingEventConfig,
+  ): Promise<Result<void, void>> {
+    const txmaEvent = this.buildTxmaBillingEvent(eventConfig);
     return await this.writeToSqs(txmaEvent);
   }
 
@@ -128,6 +137,37 @@ export class EventService implements IEventService {
         documentType: eventConfig.documentType,
       },
       restricted: this.getRestrictedData(eventConfig.txmaAuditEncoded),
+    };
+  };
+
+  private readonly buildTxmaBillingEvent = (
+    eventConfig: TxmaBillingEventConfig,
+  ): TxmaBillingEvent => {
+    const timestampInMillis = eventConfig.getNowInMilliseconds();
+    const redirect_uri = eventConfig.extensions?.redirect_uri;
+    const extensions = this.getExtensionsObject(redirect_uri);
+    const {
+      event_name,
+      sub,
+      sessionId,
+      govukSigninJourneyId,
+      ipAddress,
+      componentId,
+      txmaAuditEncoded,
+    } = eventConfig;
+    return {
+      event_name,
+      user: {
+        user_id: sub,
+        session_id: sessionId,
+        govuk_signin_journey_id: govukSigninJourneyId,
+        ip_address: ipAddress,
+      },
+      timestamp: Math.floor(timestampInMillis / 1000),
+      event_timestamp_ms: timestampInMillis,
+      component_id: componentId,
+      extensions,
+      restricted: this.getRestrictedData(txmaAuditEncoded),
     };
   };
 

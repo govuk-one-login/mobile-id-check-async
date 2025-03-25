@@ -53,8 +53,17 @@ export type GenericEventNames =
 
 export type EventNames =
   | GenericEventNames
+  | TxmaBillingEventName
   | "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED"
   | "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED";
+
+export const txmaBillingEventNames = [
+  "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+  "DCMAW_ASYNC_IPROOV_BILLING_STARTED",
+  "DCMAW_ASYNC_READID_NFC_BILLING_STARTED",
+];
+
+export type TxmaBillingEventName = (typeof txmaBillingEventNames)[number];
 
 export interface GenericEventConfig extends BaseUserEventConfig {
   eventName: GenericEventNames;
@@ -69,6 +78,12 @@ export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
 export interface BiometricTokenIssuedEventConfig extends BaseUserEventConfig {
   documentType: DocumentType;
   redirect_uri: string | undefined;
+}
+
+export interface TxmaBillingEventConfig extends BaseUserEventConfig {
+  event_name: TxmaBillingEventName;
+  extensions?: Extensions;
+  redirect_uri?: string;
 }
 
 export interface GenericTxmaEvent extends BaseUserTxmaEvent {
@@ -87,10 +102,18 @@ export interface BiometricTokenIssuedEvent extends BaseUserTxmaEvent {
   };
 }
 
+export interface TxmaBillingEvent extends BaseUserTxmaEvent {
+  event_name: TxmaBillingEventName;
+  extensions?: {
+    redirect_uri?: string;
+  };
+}
+
 export type TxmaEvents =
   | GenericTxmaEvent
   | CredentialTokenIssuedEvent
-  | BiometricTokenIssuedEvent;
+  | BiometricTokenIssuedEvent
+  | TxmaBillingEvent;
 
 export interface IEventService {
   writeCredentialTokenIssuedEvent: (
@@ -101,5 +124,8 @@ export interface IEventService {
   ) => Promise<Result<void, void>>;
   writeBiometricTokenIssuedEvent: (
     eventConfig: BiometricTokenIssuedEventConfig,
+  ) => Promise<Result<void, void>>;
+  writeTxmaBillingEvent: (
+    eventConfig: TxmaBillingEventConfig,
   ) => Promise<Result<void, void>>;
 }

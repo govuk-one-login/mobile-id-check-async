@@ -7,7 +7,11 @@ import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { Result } from "../utils/result";
 
-const REQUIRED_ENVIRONMENT_VARIABLES = ["SESSION_TABLE_NAME"] as const;
+const REQUIRED_ENVIRONMENT_VARIABLES = [
+  "SESSION_TABLE_NAME",
+  "TXMA_SQS",
+  "ISSUER",
+] as const;
 
 export type TxmaEventConfig = Config<
   (typeof REQUIRED_ENVIRONMENT_VARIABLES)[number]

@@ -67,20 +67,6 @@ describe("POST /async/txmaEvent", () => {
         expect.objectContaining(expectedSecurityHeaders),
       );
     });
-
-    it("Writes an event with the correct event_name", async () => {
-      const eventsResponse = await pollForEvents({
-        partitionKey: `SESSION#${sessionId}`,
-        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_4XXERROR`,
-        numberOfEvents: 1,
-      });
-
-      expect(eventsResponse[0].event).toEqual(
-        expect.objectContaining({
-          event_name: "DCMAW_ASYNC_CRI_4XXERROR",
-        }),
-      );
-    }, 40000);
   });
 
   describe("Given the request is valid", () => {
@@ -112,5 +98,19 @@ describe("POST /async/txmaEvent", () => {
         expect.objectContaining(expectedSecurityHeaders),
       );
     });
+
+    it("Writes an event with the correct event_name", async () => {
+      const eventsResponse = await pollForEvents({
+        partitionKey: `SESSION#${sessionId}`,
+        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_HYBRID_BILLING_STARTED`,
+        numberOfEvents: 1,
+      });
+
+      expect(eventsResponse[0].event).toEqual(
+        expect.objectContaining({
+          event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+        }),
+      );
+    }, 40000);
   });
 });

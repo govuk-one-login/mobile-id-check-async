@@ -1,4 +1,8 @@
 import { validateSessionId } from "../../common/request/validateSessionId/validateSessionId";
+import {
+  TxmaBillingEventName,
+  txmaBillingEventNames,
+} from "../../services/events/types";
 import { errorResult, Result, successResult } from "../../utils/result";
 import { isString } from "../../utils/utils";
 
@@ -56,19 +60,11 @@ export function validateRequestBody(
   });
 }
 
-function isEventName(eventName: string): eventName is EventName {
-  return eventNames.includes(eventName);
+function isEventName(eventName: string): eventName is TxmaBillingEventName {
+  return txmaBillingEventNames.includes(eventName);
 }
 
 interface IAsyncTxmaEventRequestBody {
   sessionId: string;
-  eventName: EventName;
+  eventName: TxmaBillingEventName;
 }
-
-type EventName = (typeof eventNames)[number];
-
-const eventNames = [
-  "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
-  "DCMAW_ASYNC_IPROOV_BILLING_STARTED",
-  "DCMAW_ASYNC_READID_NFC_BILLING_STARTED",
-];

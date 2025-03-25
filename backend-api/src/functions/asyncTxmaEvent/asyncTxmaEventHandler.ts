@@ -23,6 +23,7 @@ import {
 } from "./handlerDependencies";
 import { getTxmaEventConfig } from "./txmaEventConfig";
 import { validateRequestBody } from "./validateRequestBody/validateRequestBody";
+import { getAuditData } from "../common/request/getAuditData/getAuditData";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTxmaEventDependencies,
@@ -46,7 +47,7 @@ export async function lambdaHandlerConstructor(
     });
     return badRequestResponse("invalid_request", errorMessage);
   }
-  const { sessionId } = validateRequestBodyResult.value;
+  const { sessionId, eventName } = validateRequestBodyResult.value;
 
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
@@ -55,10 +56,46 @@ export async function lambdaHandlerConstructor(
     sessionId,
     new GetSessionBiometricTokenIssued(),
   );
+
   if (getSessionResult.isError) {
     return handleGetSessionError({
       errorData: getSessionResult.value,
     });
+  }
+  const sessionAttributes = getSessionResult.value;
+
+  const eventService = dependencies.getEventService(config.TXMA_SQS);
+  const { ipAddress, txmaAuditEncoded } = getAuditData(event);
+  console.log("SESSION >>>>>", sessionAttributes);
+  console.log(
+    "govukSigninJourneyId >>>>>",
+    sessionAttributes.subjectIdentifier,
+  );
+  console.log(
+    "govukSigninJourneyId >>>>>",
+    sessionAttributes.govukSigninJourneyId,
+  );
+  console.log("SESSION >>>>>", sessionAttributes);
+
+  const writeEventResult = await eventService.writeTxmaBillingEvent({
+    event_name: eventName,
+    sub: sessionAttributes.subjectIdentifier,
+    sessionId,
+    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+    getNowInMilliseconds: Date.now,
+    componentId: config.ISSUER,
+    ipAddress,
+    txmaAuditEncoded,
+    redirect_uri: sessionAttributes.redirectUri,
+  });
+
+  if (writeEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: eventName,
+      },
+    });
+    return serverErrorResponse;
   }
 
   logger.info(LogMessage.TXMA_EVENT_COMPLETED);
