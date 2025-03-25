@@ -105,7 +105,7 @@ async function handleGetSessionError({
   return serverErrorResponse;
 }
 
-interface HandleWriringEventInput {
+interface HandleWritingEventInput {
   eventService: IEventService;
   event: APIGatewayProxyEvent;
   sessionData: {
@@ -119,7 +119,7 @@ async function handleWritingEvent({
   eventService,
   event,
   sessionData,
-}: HandleWriringEventInput): Promise<Result<void, APIGatewayProxyResult>> {
+}: HandleWritingEventInput): Promise<Result<void, APIGatewayProxyResult>> {
   const { ipAddress, txmaAuditEncoded } = getAuditData(event);
   const { requestBody, sessionAttributes, issuer } = sessionData;
   const { sessionId, eventName } = requestBody;
