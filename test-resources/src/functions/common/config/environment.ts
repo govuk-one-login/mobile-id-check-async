@@ -1,5 +1,9 @@
-import { errorResult, Result, successResult, SuccessWithValue } from "../utils/result";
-
+import {
+  errorResult,
+  Result,
+  successResult,
+  SuccessWithValue,
+} from "../utils/result";
 
 export type MissingEnvVarError = {
   missingEnvVars: string[];

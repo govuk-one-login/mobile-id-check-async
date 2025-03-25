@@ -89,39 +89,37 @@ describe("Test sessions handler", () => {
     });
   });
 
-  // describe("Config validation", () => {
-  //   describe.each([
-  //     ["SESSION_TABLE_NAME"],
-  //     ["TXMA_SQS"],
-  //     ["ISSUER"],
-  //     ["VENDOR_PROCESSING_SQS"],
-  //   ])("Given %s environment variable is missing", (envVar: string) => {
-  //     beforeEach(async () => {
-  //       delete dependencies.env[envVar];
-  //       result = await lambdaHandlerConstructor(
-  //         dependencies,
-  //         validRequest,
-  //         context,
-  //       );
-  //     });
-  //     it("returns 500 Internal server error", async () => {
-  //       expect(result).toStrictEqual({
-  //         statusCode: 500,
-  //         body: JSON.stringify({
-  //           error: "server_error",
-  //           error_description: "Internal Server Error",
-  //         }),
-  //         headers: expectedSecurityHeaders,
-  //       });
-  //     });
-  //     it("logs INVALID_CONFIG", async () => {
-  //       expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-  //         messageCode: "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_INVALID_CONFIG",
-  //         data: {
-  //           missingEnvironmentVariables: [envVar],
-  //         },
-  //       });
-  //     });
-  //   });
-  // });
+  describe("Config validation", () => {
+    describe.each([["SESSION_TABLE_NAME"]])(
+      "Given %s environment variable is missing",
+      (envVar: string) => {
+        beforeEach(async () => {
+          delete dependencies.env[envVar];
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+        it("returns 500 Internal server error", async () => {
+          expect(result).toStrictEqual({
+            statusCode: 500,
+            body: JSON.stringify({
+              error: "server_error",
+              error_description: "Internal Server Error",
+            }),
+            headers: expectedSecurityHeaders,
+          });
+        });
+        it("logs INVALID_CONFIG", async () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_TEST_SESSIONS_INVALID_CONFIG",
+            data: {
+              missingEnvironmentVariables: [envVar],
+            },
+          });
+        });
+      },
+    );
+  });
 });

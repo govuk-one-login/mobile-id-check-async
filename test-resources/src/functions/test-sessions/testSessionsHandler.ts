@@ -12,10 +12,10 @@ import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { getTestSessionsConfig } from "./testSessionsHandlerConfig";
 import {
-  badRequestResponse,
-  okResponse,
+  notImplementedResponse,
   serverErrorResponse,
 } from "../common/lambdaResponses";
+import { dependencies } from "../sts-mock/token/handlerDependencies";
 
 export async function lambdaHandlerConstructor(
   _dependencies: ITestSessionsDependencies,
@@ -24,7 +24,13 @@ export async function lambdaHandlerConstructor(
 ): Promise<APIGatewayProxyResult> {
   setupLogger(context);
   logger.info(LogMessage.TEST_SESSIONS_STARTED);
-  return serverErrorResponse;
+
+  const configResult = getTestSessionsConfig(dependencies.env);
+  if (configResult.isError) {
+    logger.error(LogMessage.TEST_SESSIONS_INVALID_CONFIG, configResult.value);
+    return serverErrorResponse;
+  }
+  return notImplementedResponse;
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(
