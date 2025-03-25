@@ -39,7 +39,7 @@ describe("Async Token", () => {
   };
 
   const validAuthorizationHeader =
-    "Basic bW9ja0NsaWVudElkOm1vY2tDbGllbnRTZWNyZXQ="; // Header decodes to base64encoded mockClientId:mockClientSecret
+    "Basic bW9ja0NsaWVudElkJTNBbW9ja0NsaWVudFNlY3JldA=="; // Header decodes to mockClientId:mockClientSecret
 
   beforeEach(() => {
     consoleInfoSpy = jest.spyOn(console, "info");
@@ -284,7 +284,32 @@ describe("Async Token", () => {
     });
 
     describe("Decoding Authorization header", () => {
-      describe("Given Authorization header is not formatted correctly", () => {
+      describe("Given decoding client credentials fails", () => {
+        it("Logs and returns 401 invalid_client error", async () => {
+          const result = await lambdaHandlerConstructor(
+            dependencies,
+            buildTokenHandlerRequest({
+              body: "grant_type=client_credentials",
+              authorizationHeader: "Basic bW9ja0NsaWVudElkOiVFMCVBNCVB", // base 64 decodes to Basic mockClientId:%E0%A4%A
+            }),
+            buildLambdaContext(),
+          );
+
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_TOKEN_REQUEST_HEADERS_INVALID",
+            errorMessage:
+              "Unable to decode uri encoded client credentials , error: URIError: URI malformed",
+          });
+
+          expect(result.statusCode).toBe(401);
+          expect(JSON.parse(result.body).error).toEqual("invalid_client");
+          expect(JSON.parse(result.body).error_description).toEqual(
+            "Invalid or missing authorization header",
+          );
+        });
+      });
+
+      describe("Given decoded Authorization header is not formatted correctly", () => {
         it("Logs with invalid Authorization header format", async () => {
           const result = await lambdaHandlerConstructor(
             dependencies,
