@@ -1,6 +1,10 @@
 import { LogAttributes } from "@aws-lambda-powertools/logger/types";
 
 export class LogMessage implements LogAttributes {
+  static readonly TEST_SESSIONS_INVALID_CONFIG = new LogMessage(
+    "MOBILE_ASYNC_TEST_SESSIONS_INVALID_CONFIG",
+    "Test sessions lambda started.",
+  );
   static readonly TEST_SESSIONS_STARTED = new LogMessage(
     "MOBILE_ASYNC_TEST_SESSIONS_STARTED",
     "Test sessions lambda started.",

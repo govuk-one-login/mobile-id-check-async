@@ -15,9 +15,7 @@ export interface SessionAttributes {
   subjectIdentifier: string;
   timeToLive: number;
   redirectUri?: string;
-  documentType?: string
-  opaqueId?: string
-  biometricSessionId?: string
-}
-
+  documentType?: string;
+  opaqueId?: string;
+  biometricSessionId?: string;
 }
