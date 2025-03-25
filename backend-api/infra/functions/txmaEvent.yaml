@@ -100,3 +100,15 @@ Resources:
                 Action:
                   - "dynamodb:GetItem"
                 Resource: !GetAtt SessionsTable.Arn
+        - PolicyName: AsyncTxmaEventFunctionTxmaSQSPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                Resource: !GetAtt TxMASQSQueue.Arn
+              - Effect: Allow
+                Action:
+                  - kms:GenerateDataKey
+                Resource: !GetAtt TxMAKMSEncryptionKey.Arn
