@@ -3,7 +3,7 @@ import {
   errorResult,
   Result,
   successResult,
-} from "../../../../../utils/result";
+} from "../../../../common/utils/result";
 
 export class MockTokenEncrypterSuccessResult implements ITokenEncrypter {
   async encrypt(): Promise<Result<JWE>> {

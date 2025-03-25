@@ -29,8 +29,8 @@ describe("Test Sessions api tests", () => {
       "/session",
       validSession,
     );
+    expect(response.data).toEqual({});
     expect(response.status).toBe(201);
     expect(response.statusText).toBe("Created");
-    expect(response.data).toEqual({});
   });
 });

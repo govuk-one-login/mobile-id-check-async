@@ -2,7 +2,7 @@ import {
   successResult,
   Result,
   errorResult,
-} from "../../../../../utils/result";
+} from "../../../../common/utils/result";
 import { IKeyRetriever, SigningKey } from "../keyRetriever";
 import { getMockSigningKey } from "../../../../testUtils/getMockSigningKey";
 

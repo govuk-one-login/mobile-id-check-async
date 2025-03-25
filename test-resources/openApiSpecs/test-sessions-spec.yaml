@@ -133,12 +133,10 @@ paths:
           application/json:
             Fn::Sub:
               - >
-                {
+                #set($item = {})
+                
                   "TableName": "${tableName}",
                   "Item": {
-                    "sessionId": {
-                      "S": "$input.path('$.sessionId')"
-                    },
                     "createdAt": {
                       "N": "$input.path('$.createdAt')"
                     },
@@ -164,6 +162,16 @@ paths:
                       "S": "$input.path('$.clientId')"
                     }
                   }
+                })
+                #if($input.path.opaqueId)
+                  #set($request_body.Item.opaqueId =  {
+                  "S": "$input.path.opaqueId"
+                  })
+                #end
+
+                {
+                  "TableName": "${tableName}",
+                  "Item": $request_body
                 }
               - tableName:
                   Fn::ImportValue:

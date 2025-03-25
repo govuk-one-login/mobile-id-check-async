@@ -1,4 +1,8 @@
-import { errorResult, Result, successResult } from "../../../../utils/result";
+import {
+  errorResult,
+  Result,
+  successResult,
+} from "../../../common/utils/result";
 
 export type IValidateServiceTokenRequest = (
   requestBody: string | null,

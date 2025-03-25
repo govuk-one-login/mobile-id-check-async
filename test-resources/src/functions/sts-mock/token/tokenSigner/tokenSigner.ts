@@ -1,4 +1,8 @@
-import { errorResult, Result, successResult } from "../../../../utils/result";
+import {
+  errorResult,
+  Result,
+  successResult,
+} from "../../../common/utils/result";
 import { JWTPayload, SignJWT } from "jose";
 import { KeyObject } from "node:crypto";
 
