@@ -6,6 +6,7 @@ import {
   getBiometricTokenIssuedSessionAttributes,
 } from "../../sessionAttributes/sessionAttributes";
 import { UpdateSessionOperation } from "../UpdateSessionOperation";
+import { oneHourAgoInMilliseconds } from "../../../../utils/utils";
 
 export class BiometricTokenIssued implements UpdateSessionOperation {
   constructor(
@@ -18,7 +19,7 @@ export class BiometricTokenIssued implements UpdateSessionOperation {
   }
 
   getDynamoDbConditionExpression(): string {
-    return `attribute_exists(sessionId) AND sessionState in (:authSessionCreated)`;
+    return `attribute_exists(sessionId) AND sessionState = :authSessionCreated AND createdAt > :oneHourAgoInMilliseconds`;
   }
 
   getDynamoDbExpressionAttributeValues() {
@@ -27,6 +28,7 @@ export class BiometricTokenIssued implements UpdateSessionOperation {
       ":opaqueId": { S: this.opaqueId },
       ":biometricTokenIssued": { S: SessionState.BIOMETRIC_TOKEN_ISSUED },
       ":authSessionCreated": { S: SessionState.AUTH_SESSION_CREATED },
+      ":oneHourAgoInMilliseconds": { N: oneHourAgoInMilliseconds().toString() }, // Store as number
     };
   }
 
