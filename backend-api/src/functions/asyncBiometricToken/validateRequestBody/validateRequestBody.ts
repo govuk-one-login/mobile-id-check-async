@@ -27,7 +27,7 @@ export function validateRequestBody(
     return validateSessionIdResult;
   }
 
-  if (parsedBody.documentType == null) {
+  if (documentType == null) {
     return errorResult({
       errorMessage: `documentType in request body is either null or undefined.`,
     });
