@@ -56,7 +56,7 @@ export class ClientRegistryService
     );
     if (!isClientSecretsValid)
       return errorResult({
-        errorMessage: "Client credentials are invalid",
+        errorMessage: "Client secret is invalid",
         errorCategory: ErrorCategory.CLIENT_ERROR,
       });
 
