@@ -237,6 +237,7 @@ describe("Backend application infrastructure", () => {
         "high-threshold-async-finish-biometric-session-5xx-api-gw": false,
         "high-threshold-async-finish-biometric-session-4xx-api-gw": false,
         "high-threshold-vendor-processing-dlq-old-message": false,
+        "high-threshold-ipv-core-dlq-old-message": false,
       };
 
       const alarms = template.findResources("AWS::CloudWatch::Alarm");
@@ -308,7 +309,9 @@ describe("Backend application infrastructure", () => {
         ["low-threshold-vendor-processing-sqs-old-message"],
         ["low-threshold-vendor-processing-dlq-new-message"],
         ["low-threshold-vendor-processing-dlq-old-message"],
-        ["high-threshold-vendor-processing-dlq-old-message"],
+        ["ipv-core-sqs-age-of-oldest-message"],
+        ["ipv-core-dlq-message-visible"],
+        ["low-threshold-ipv-core-dlq-age-of-oldest-message"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {

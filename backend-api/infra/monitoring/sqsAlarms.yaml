@@ -103,3 +103,107 @@ Resources:
       Dimensions:
         - Name: QueueName
           Value: !GetAtt VendorProcessingDLQ.QueueName
+
+  IPVCoreSqsAgeOfOldestMessageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: DeployAlarms
+    Properties:
+      ActionsEnabled: true
+      AlarmDescription: !Sub
+        - "Trigger an alarm when the age of the oldest message in IPV Core SQS queue is 30 minutes or older. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+      AlarmName: !Sub "${AWS::StackName}-ipv-core-sqs-age-of-oldest-message"
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      TreatMissingData: notBreaching
+      Threshold: 1800
+      MetricName: ApproximateAgeOfOldestMessage
+      Namespace: AWS/SQS
+      Period: 60
+      Statistic: Maximum
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt IPVCoreSQS.QueueName
+
+  IPVCoreDlqMessageVisibleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: DeployAlarms
+    Properties:
+      ActionsEnabled: true
+      AlarmDescription: !Sub
+        - "Trigger an alarm when new message gets added to IPV Core SQS DLQ. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+      AlarmName: !Sub "${AWS::StackName}-ipv-core-dlq-message-visible"
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      TreatMissingData: notBreaching
+      Threshold: 1
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Period: 60
+      Statistic: Maximum
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt IPVCoreDLQ.QueueName
+
+  IPVCoreDlqAgeOfOldestMessageLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: DeployAlarms
+    Properties:
+      ActionsEnabled: true
+      AlarmDescription: !Sub
+        - "Trigger an alarm when the age of the oldest message in IPV Core SQS DLQ is 3 days or older. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+      AlarmName: !Sub "${AWS::StackName}-low-threshold-ipv-core-dlq-age-of-oldest-message"
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      TreatMissingData: notBreaching
+      Threshold: 259200
+      MetricName: ApproximateAgeOfOldestMessage
+      Namespace: AWS/SQS
+      Period: 60
+      Statistic: Maximum
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt IPVCoreDLQ.QueueName
+
+  IPVCoreDlqAgeOfOldestMessageHighThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: DeployAlarms
+    Properties:
+      ActionsEnabled: true
+      AlarmDescription: !Sub
+        - "Trigger an alarm when the age of the oldest message in IPV Core SQS DLQ is 10 days or older. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+      AlarmName: !Sub "${AWS::StackName}-high-threshold-ipv-core-dlq-age-of-oldest-message"
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      TreatMissingData: notBreaching
+      Threshold: 864000
+      MetricName: ApproximateAgeOfOldestMessage
+      Namespace: AWS/SQS
+      Period: 60
+      Statistic: Maximum
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt IPVCoreDLQ.QueueName
