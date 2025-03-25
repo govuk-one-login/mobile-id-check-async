@@ -39,7 +39,7 @@ describe("Async Token", () => {
   };
 
   const validAuthorizationHeader =
-    "Basic bW9ja0NsaWVudElkJTNBbW9ja0NsaWVudFNlY3JldA=="; // Header decodes to mockClientId:mockClientSecret
+    "Basic bW9ja0NsaWVudElkOm1vY2tDbGllbnRTZWNyZXQ="; // Header decodes to mockClientId:mockClientSecret
 
   beforeEach(() => {
     consoleInfoSpy = jest.spyOn(console, "info");
