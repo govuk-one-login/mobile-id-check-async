@@ -71,11 +71,11 @@ export async function lambdaHandlerConstructor(
   const sessionAttributes = getSessionResult.value;
 
   const eventService = dependencies.getEventService(config.TXMA_SQS);
-  const eventData = { requestBody, sessionAttributes, issuer: config.ISSUER };
+  const sessionData = { requestBody, sessionAttributes, issuer: config.ISSUER };
   const handleWritingEventResult = await handleWritingEvent({
     eventService,
     event,
-    eventData,
+    sessionData,
   });
   if (handleWritingEventResult.isError) {
     return handleWritingEventResult.value;
@@ -108,7 +108,7 @@ async function handleGetSessionError({
 interface HandleWriringEventInput {
   eventService: IEventService;
   event: APIGatewayProxyEvent;
-  eventData: {
+  sessionData: {
     requestBody: IAsyncTxmaEventRequestBody;
     sessionAttributes: SessionAttributes;
     issuer: string;
@@ -118,10 +118,10 @@ interface HandleWriringEventInput {
 async function handleWritingEvent({
   eventService,
   event,
-  eventData,
+  sessionData,
 }: HandleWriringEventInput): Promise<Result<void, APIGatewayProxyResult>> {
   const { ipAddress, txmaAuditEncoded } = getAuditData(event);
-  const { requestBody, sessionAttributes, issuer } = eventData;
+  const { requestBody, sessionAttributes, issuer } = sessionData;
   const { sessionId, eventName } = requestBody;
   const { subjectIdentifier, govukSigninJourneyId, redirectUri } =
     sessionAttributes;
