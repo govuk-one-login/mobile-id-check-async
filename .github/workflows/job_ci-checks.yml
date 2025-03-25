@@ -11,7 +11,7 @@ on:
         description: Whether to run the `lint` npm script
         type: string
         default: true
-      VERIFY_RAIN_FORMAT:
+      RUN_RAIN_FORMAT_VERIFY:
         description: Whether to verify template format by running the `infra:format:verify` npm script
         type: string
         default: false
@@ -55,9 +55,10 @@ jobs:
         run: npm run lint
 
       - name: Set up Homebrew
-        if: inputs.VERIFY_RAIN_FORMAT == 'true'
+        if: inputs.RUN_RAIN_FORMAT_VERIFY == 'true'
         id: set-up-homebrew
         run: |
+          # Suggestion found in Ubuntu-24.02 runner image README; https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md
           # The suggested command doesn't persist across steps: eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
           # The following commands mimics the output from the suggested command. It may break for future runners.
           echo "HOMEBREW_CELLAR=/home/linuxbrew/.linuxbrew/Cellar" >> $GITHUB_ENV
@@ -66,11 +67,11 @@ jobs:
           echo "/home/linuxbrew/.linuxbrew/bin" >> $GITHUB_PATH
 
       - name: Install rain
-        if: inputs.VERIFY_RAIN_FORMAT == 'true'
+        if: inputs.RUN_RAIN_FORMAT_VERIFY == 'true'
         run: brew install rain
 
       - name: Verify template format using rain
-        if: inputs.VERIFY_RAIN_FORMAT == 'true'
+        if: inputs.RUN_RAIN_FORMAT_VERIFY == 'true'
         run: npm run infra:format:verify
 
       - name: Validate SAM template
@@ -78,11 +79,4 @@ jobs:
           TEMPLATES="$(find . -name template.yaml)"
           for template in $TEMPLATES ; do
             sam validate --lint --template-file $template
-          done
-
-      - name: Build SAM template
-        run: |
-          TEMPLATES="$(find . -name template.yaml)"
-          for template in $TEMPLATES ; do
-            sam build --template-file $template --parallel
           done
