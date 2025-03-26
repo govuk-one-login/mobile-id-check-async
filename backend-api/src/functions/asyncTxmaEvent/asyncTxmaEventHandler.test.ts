@@ -251,7 +251,7 @@ describe("Async TxMA Event", () => {
       );
     });
 
-    describe("Given DCMAW_ASYNC_HYBRID_BILLING_STARTED event fails to write to TxMA", () => {
+    describe("Given a TxMA billing event fails to write to TxMA (e.g. DCMAW_ASYNC_HYBRID_BILLING_STARTED)", () => {
       beforeEach(async () => {
         dependencies.getEventService = () => ({
           ...mockInertEventService,
@@ -289,7 +289,7 @@ describe("Async TxMA Event", () => {
       });
     });
 
-    describe("Given DCMAW_ASYNC_HYBRID_BILLING_STARTED event successfully writes to TxMA", () => {
+    describe("Given a TxMA billing event successfully writes to TxMA (e.g. DCMAW_ASYNC_HYBRID_BILLING_STARTED)", () => {
       it("Writes DCMAW_ASYNC_HYBRID_BILLING_STARTED event to TxMA", () => {
         expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
           eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
