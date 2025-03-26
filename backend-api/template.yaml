@@ -2731,6 +2731,101 @@ Resources:
       LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
     Condition: isNotDev
 
+  AsyncIssueBiometricCredentialFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - AsyncIssueBiometricCredentialLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - src/functions/asyncIssueBiometricCredential/asyncIssueBiometricCredentialHandler.ts
+        Minify: true
+        Sourcemap: false
+        Target: es2022
+    Properties:
+      Events:
+        AsyncIssueBiometricCredential:
+          Properties:
+            Method: post
+            Path: /async/issueBiometricCredential
+            RestApiId: !Ref SessionsApi
+          Type: Api
+      FunctionName: !Sub ${AWS::StackName}-issue-biometric-credential
+      Handler: asyncIssueBiometricCredentialHandler.lambdaHandler
+      Role: !GetAtt AsyncIssueBiometricCredentialLambdaRole.Arn
+      Runtime: nodejs20.x
+      VpcConfig:
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+
+  AsyncIssueBiometricCredentialFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt AsyncIssueBiometricCredentialFunction.Arn
+      Principal: events.amazonaws.com
+      SourceAccount: !Sub ${AWS::AccountId}
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SessionsApi}/*/*/*
+
+  AsyncIssueBiometricCredentialLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: arn:aws:logs:*:*:*
+            Version: "2012-10-17"
+          PolicyName: AsyncIssueBiometricCredentialLoggingPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Effect: Allow
+                Resource: '*'
+            Version: "2012-10-17"
+          PolicyName: VpcPolicy
+      RoleName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda
+
+  AsyncIssueBiometricCredentialLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-issue-biometric-credential
+      RetentionInDays: 30
+
+  AsyncIssueBiometricCredentialSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
+    Condition: isNotDev
+
   AsyncPrivateApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
