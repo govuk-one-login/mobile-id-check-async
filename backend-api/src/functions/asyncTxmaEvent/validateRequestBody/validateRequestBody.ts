@@ -61,7 +61,7 @@ export function validateRequestBody(
 }
 
 function isEventName(eventName: string): eventName is TxmaBillingEventName {
-  return txmaBillingEventNames.includes(eventName);
+  return (txmaBillingEventNames as unknown as string[]).includes(eventName);
 }
 
 export interface IAsyncTxmaEventRequestBody {
