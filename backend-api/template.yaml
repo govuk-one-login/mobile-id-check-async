@@ -3590,6 +3590,16 @@ Resources:
         - !Ref IPVCoreSQS
     Condition: isNotDevOrBuild
 
+  IssueBiometricCredentialEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 1
+      Enabled: true
+      EventSourceArn: !GetAtt VendorProcessingSQS.Arn
+      FunctionName: !GetAtt AsyncIssueBiometricCredentialFunction.Arn
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
+
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket
     Properties:
