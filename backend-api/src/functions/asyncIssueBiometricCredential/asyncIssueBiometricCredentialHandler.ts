@@ -1,8 +1,4 @@
-import {
-  APIGatewayProxyResult,
-  Context,
-  SQSEvent,
-} from "aws-lambda";
+import { APIGatewayProxyResult, Context, SQSEvent } from "aws-lambda";
 import { notImplementedResponse } from "../common/lambdaResponses";
 import {
   IssueBiometricCredentialDependencies,

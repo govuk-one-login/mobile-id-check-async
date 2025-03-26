@@ -4,7 +4,7 @@ import "../../../tests/testUtils/matchers";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { logger } from "../common/logging/logger";
 import { expectedSecurityHeaders } from "../testUtils/unitTestData";
-import { lambdaHandlerConstructor } from "./issueBiometricCredentialHandler";
+import { lambdaHandlerConstructor } from "./asyncIssueBiometricCredentialHandler";
 import { IssueBiometricCredentialDependencies } from "./handlerDependencies";
 
 describe("Async Issue Biometric Credential", () => {
@@ -50,11 +50,7 @@ describe("Async Issue Biometric Credential", () => {
 
   describe("Given a request is made", () => {
     beforeEach(async () => {
-      result = await lambdaHandlerConstructor(
-        dependencies,
-        sqsEvent,
-        context,
-      );
+      result = await lambdaHandlerConstructor(dependencies, sqsEvent, context);
     });
 
     it("Logs COMPLETED", async () => {
