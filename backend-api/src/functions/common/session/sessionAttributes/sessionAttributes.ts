@@ -116,14 +116,17 @@ export const getAuthSessionAbortedAttributes = (
   if (item == null) return emptyFailure();
 
   const sessionAttributes = unmarshall(item);
-  if (!isAuthSessionAbortedAttributes(sessionAttributes)) return emptyFailure();
-
+  if (!isAuthSessionAbortedAttributes(sessionAttributes)) {
+    return emptyFailure();
+  }
   return successResult(sessionAttributes);
 };
 
 const isAuthSessionAbortedAttributes = (
   item: Record<string, NativeAttributeValue>,
 ): item is AuthSessionAbortedAttributes => {
-  if (!isCommonSessionAttributes(item)) return false;
+  if (!isCommonSessionAttributes(item)) {
+    return false;
+  }
   return item.sessionState === SessionState.AUTH_SESSION_ABORTED;
 };

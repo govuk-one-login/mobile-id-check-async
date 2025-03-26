@@ -84,8 +84,7 @@ export const validBiometricSessionFinishedAttributesMobileApp = {
 
 export const validAbortSessionAttributes = {
   ...validBiometricTokenIssuedSessionAttributes,
-  sessionState: SessionState.BIOMETRIC_SESSION_FINISHED,
-  biometricSessionId: mockBiometricSessionId,
+  sessionState: SessionState.AUTH_SESSION_ABORTED,
 };
 
 export const validAbortSessionAttributesMobileApp = {

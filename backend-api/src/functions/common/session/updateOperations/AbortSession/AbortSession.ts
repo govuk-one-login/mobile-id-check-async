@@ -39,7 +39,6 @@ export class AbortSession implements UpdateSessionOperation {
     },
   ): Result<SessionAttributes, void> {
     if (item == null) return emptyFailure();
-
     if (options?.operationFailed) {
       // Return the original session state based on the item
       if (item?.sessionState?.S === SessionState.BIOMETRIC_TOKEN_ISSUED) {
