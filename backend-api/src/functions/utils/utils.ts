@@ -18,7 +18,3 @@ export function oneHourAgoInMilliseconds() {
   const oneHourinMilliseconds = 60 * 60 * 1000;
   return Date.now() - oneHourinMilliseconds;
 }
-
-export function isSessionExpired(createdAtInMilliseconds: number) {
-  return isOlderThan60Minutes(createdAtInMilliseconds);
-}

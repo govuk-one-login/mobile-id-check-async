@@ -31,7 +31,7 @@ import {
 } from "../common/session/session";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
-import { isSessionExpired } from "../utils/utils";
+import { isOlderThan60Minutes } from "../utils/utils";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncAbortSessionDependencies,
@@ -112,10 +112,10 @@ async function handleConditionalCheckFailure(
   sessionAttributes: SessionAttributes,
   issuer: string,
 ): Promise<APIGatewayProxyResult> {
-  const sessionExpired = isSessionExpired(sessionAttributes.createdAt);
+  const isSessionExpired = isOlderThan60Minutes(sessionAttributes.createdAt);
 
   function getFraudSignal(): string | undefined {
-    if (sessionExpired) return "AUTH_SESSION_TOO_OLD";
+    if (isSessionExpired) return "AUTH_SESSION_TOO_OLD";
     return undefined;
   }
 
@@ -139,7 +139,7 @@ async function handleConditionalCheckFailure(
     return serverErrorResponse;
   }
 
-  if (sessionExpired) {
+  if (isSessionExpired) {
     return forbiddenResponse("expired_session", "Session has expired");
   }
 
