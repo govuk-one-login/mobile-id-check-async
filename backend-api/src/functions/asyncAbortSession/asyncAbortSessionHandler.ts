@@ -115,11 +115,11 @@ async function handleConditionalCheckFailure(
   const isSessionExpired = sessionAge > 60 * 60 * 1000;
 
   function getFraudSignal(expired: boolean): string | undefined {
-    if (!expired) {
-      return undefined;
+    if (expired) {
+      return "AUTH_SESSION_TOO_OLD";
     }
 
-    return "AUTH_SESSION_TOO_OLD";
+    return undefined;
   }
 
   const writeEventResult = await eventService.writeGenericEvent({
