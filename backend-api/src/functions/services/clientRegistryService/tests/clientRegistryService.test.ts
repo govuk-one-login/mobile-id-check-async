@@ -565,7 +565,7 @@ describe("Client Credentials Service", () => {
 
             expect(result.isError).toBe(true);
             expect(result.value).toStrictEqual({
-              errorMessage: "Client credentials are invalid",
+              errorMessage: "Client secret is invalid",
               errorCategory: ErrorCategory.CLIENT_ERROR,
             });
           });
