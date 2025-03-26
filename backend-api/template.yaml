@@ -103,6 +103,7 @@ Mappings:
       EventsBaseUrl: https://events.review-b-async.build.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.build.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.build.account.gov.uk
+      SessionDurationInSeconds: 86400
     dev:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
@@ -112,6 +113,7 @@ Mappings:
       EventsBaseUrl: https://events.review-b-async.dev.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.dev.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.dev.account.gov.uk
+      SessionDurationInSeconds: 86400
     integration:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
@@ -120,6 +122,7 @@ Mappings:
       ClientRegistrySecretPath: integration/clientRegistry
       ReadIdBaseUrl: https://readid-proxy.review-b-async.integration.account.gov.uk
       STSBASEURL: https://token.integration.account.gov.uk
+      SessionDurationInSeconds: 86400
     production:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
@@ -128,6 +131,7 @@ Mappings:
       ClientRegistrySecretPath: production/clientRegistry
       ReadIdBaseUrl: https://readid-proxy.review-b-async.account.gov.uk
       STSBASEURL: https://token.account.gov.uk
+      SessionDurationInSeconds: 86400
     staging:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
@@ -136,6 +140,7 @@ Mappings:
       ClientRegistrySecretPath: staging/clientRegistry
       ReadIdBaseUrl: https://readid-proxy.review-b-async.staging.account.gov.uk
       STSBASEURL: https://token.staging.account.gov.uk
+      SessionDurationInSeconds: 86400
 
   IPVCore:
     build:
@@ -971,7 +976,7 @@ Resources:
                       - sessionId
                       - sessionState
                       - subjectIdentifier
-                      - timeToLive
+                      - createdAt
                       - redirectUri
                       - clientState
                   StringEquals:
@@ -979,7 +984,7 @@ Resources:
                 Effect: Allow
                 Resource:
                   - !GetAtt SessionsTable.Arn
-                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-timeToLive-index
+                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-createdAt-index
             Version: "2012-10-17"
           PolicyName: DynamoReadSessionsTable
         - PolicyDocument:
@@ -2020,7 +2025,10 @@ Resources:
             - EnvironmentVariables
             - !Ref Environment
             - ClientRegistrySecretPath
-          SESSION_DURATION_IN_SECONDS: 3600
+          SESSION_DURATION_IN_SECONDS: !FindInMap
+            - EnvironmentVariables
+            - !Ref Environment
+            - SessionDurationInSeconds
       FunctionName: !Sub ${AWS::StackName}-credential
       Handler: asyncCredentialHandler.lambdaHandler
       Role: !GetAtt AsyncCredentialLambdaRole.Arn
@@ -2067,13 +2075,13 @@ Resources:
                       - sessionId
                       - sessionState
                       - subjectIdentifier
-                      - timeToLive
+                      - createdAt
                   StringEquals:
                     dynamodb:Select: SPECIFIC_ATTRIBUTES
                 Effect: Allow
                 Resource:
                   - !GetAtt SessionsTable.Arn
-                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-timeToLive-index
+                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-createdAt-index
               - Action:
                   - dynamodb:PutItem
                 Effect: Allow
@@ -4254,6 +4262,8 @@ Resources:
           AttributeType: S
         - AttributeName: timeToLive
           AttributeType: N
+        - AttributeName: createdAt
+          AttributeType: N
       BillingMode: PAY_PER_REQUEST
       GlobalSecondaryIndexes:
         - IndexName: subjectIdentifier-timeToLive-index
@@ -4261,6 +4271,18 @@ Resources:
             - AttributeName: subjectIdentifier
               KeyType: HASH
             - AttributeName: timeToLive
+              KeyType: RANGE
+          Projection:
+            NonKeyAttributes:
+              - sessionState
+              - redirectUri
+              - clientState
+            ProjectionType: INCLUDE
+        - IndexName: subjectIdentifier-createdAt-index
+          KeySchema:
+            - AttributeName: subjectIdentifier
+              KeyType: HASH
+            - AttributeName: createdAt
               KeyType: RANGE
           Projection:
             NonKeyAttributes:

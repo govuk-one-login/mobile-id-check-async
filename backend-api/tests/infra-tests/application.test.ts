@@ -68,6 +68,22 @@ describe("Backend application infrastructure", () => {
         mappingBottomLevelKey: "ReadIdBaseUrl",
       });
     });
+
+    test("Session duration is set", () => {
+      const expectedEnvironmentVariablesValues = {
+        dev: 86400,
+        build: 86400,
+        staging: 86400,
+        integration: 86400,
+        production: 86400,
+      };
+
+      const mappingHelper = new Mappings(template);
+      mappingHelper.validateEnvironmentVariablesMapping({
+        environmentFlags: expectedEnvironmentVariablesValues,
+        mappingBottomLevelKey: "SessionDurationInSeconds",
+      });
+    });
   });
 
   describe("Private APIgw", () => {
@@ -736,6 +752,23 @@ describe("Backend application infrastructure", () => {
             },
           },
         });
+      });
+    });
+
+    test("Credential lambda has the session duration environment variable set", () => {
+      template.hasResourceProperties("AWS::Serverless::Function", {
+        Handler: "asyncCredentialHandler.lambdaHandler",
+        Environment: {
+          Variables: {
+            SESSION_DURATION_IN_SECONDS: {
+              "Fn::FindInMap": [
+                "EnvironmentVariables",
+                { Ref: "Environment" },
+                "SessionDurationInSeconds",
+              ],
+            },
+          },
+        },
       });
     });
 

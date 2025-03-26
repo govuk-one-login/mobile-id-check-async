@@ -32,8 +32,9 @@ export class ClientRegistryService
     secrets: IDecodedClientSecrets,
   ): Promise<Result<string>> => {
     const clientRegistryResult = await this.getClientRegistry();
-    if (clientRegistryResult.isError)
-      return errorResult(clientRegistryResult.value);
+    if (clientRegistryResult.isError) {
+      return clientRegistryResult;
+    }
     const clientRegistry = clientRegistryResult.value;
 
     const registeredClient = this.getRegisteredClientByClientId(
@@ -56,7 +57,7 @@ export class ClientRegistryService
     );
     if (!isClientSecretsValid)
       return errorResult({
-        errorMessage: "Client credentials are invalid",
+        errorMessage: "Client secret is invalid",
         errorCategory: ErrorCategory.CLIENT_ERROR,
       });
 
