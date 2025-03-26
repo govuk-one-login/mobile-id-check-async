@@ -1,5 +1,4 @@
-import { APIGatewayProxyResult, Context, SQSEvent } from "aws-lambda";
-import { notImplementedResponse } from "../common/lambdaResponses";
+import { Context, SQSEvent } from "aws-lambda";
 import {
   IssueBiometricCredentialDependencies,
   runtimeDependencies,
@@ -12,12 +11,11 @@ export async function lambdaHandlerConstructor(
   _dependencies: IssueBiometricCredentialDependencies,
   _event: SQSEvent,
   context: Context,
-): Promise<APIGatewayProxyResult> {
+): Promise<void> {
   setupLogger(context);
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_STARTED);
 
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
-  return notImplementedResponse;
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(
