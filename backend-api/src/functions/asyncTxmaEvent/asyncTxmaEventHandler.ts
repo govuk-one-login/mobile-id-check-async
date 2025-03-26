@@ -19,8 +19,8 @@ import {
   GetSessionError,
   GetSessionFailed,
 } from "../common/session/SessionRegistry";
-import { IEventService } from "../services/events/types";
-import { emptySuccess, errorResult, Result } from "../utils/result";
+import { IEventService, TxmaBillingEventName } from "../services/events/types";
+import { emptyFailure, emptySuccess, Result } from "../utils/result";
 import {
   IAsyncTxmaEventDependencies,
   runtimeDependencies,
@@ -72,14 +72,12 @@ export async function lambdaHandlerConstructor(
 
   const eventService = dependencies.getEventService(config.TXMA_SQS);
   const sessionData = { requestBody, sessionAttributes, issuer: config.ISSUER };
-  const handleWritingEventResult = await handleWritingEvent({
+  const billingEventData = getBillingEventData({ event, sessionData });
+  const writeBillingEventResult = await writeBillingEventToTxma({
     eventService,
-    event,
-    sessionData,
+    billingEventData,
   });
-  if (handleWritingEventResult.isError) {
-    return handleWritingEventResult.value;
-  }
+  if (writeBillingEventResult.isError) return serverErrorResponse;
 
   logger.info(LogMessage.TXMA_EVENT_COMPLETED);
   return notImplementedResponse;
@@ -105,36 +103,51 @@ async function handleGetSessionError({
   return serverErrorResponse;
 }
 
-interface HandleWritingEventInput {
-  eventService: IEventService;
-  event: APIGatewayProxyEvent;
-  sessionData: {
-    requestBody: IAsyncTxmaEventRequestBody;
-    sessionAttributes: SessionAttributes;
-    issuer: string;
-  };
-}
-
-async function handleWritingEvent({
-  eventService,
+function getBillingEventData({
   event,
   sessionData,
-}: HandleWritingEventInput): Promise<Result<void, APIGatewayProxyResult>> {
+}: GetBillingEventDataInput): BillingEventData {
   const { ipAddress, txmaAuditEncoded } = getAuditData(event);
   const { requestBody, sessionAttributes, issuer } = sessionData;
   const { sessionId, eventName } = requestBody;
   const { subjectIdentifier, govukSigninJourneyId, redirectUri } =
     sessionAttributes;
+  return {
+    ipAddress,
+    txmaAuditEncoded,
+    sessionId,
+    eventName,
+    componentId: issuer,
+    sub: subjectIdentifier,
+    govukSigninJourneyId,
+    redirect_uri: redirectUri,
+  };
+}
+
+async function writeBillingEventToTxma({
+  eventService,
+  billingEventData,
+}: WriteBillingEventInput): Promise<Result<void, void>> {
+  const {
+    eventName,
+    sub,
+    sessionId,
+    govukSigninJourneyId,
+    componentId,
+    ipAddress,
+    txmaAuditEncoded,
+    redirect_uri,
+  } = billingEventData;
   const writeEventResult = await eventService.writeTxmaBillingEvent({
     eventName,
-    sub: subjectIdentifier,
+    sub,
     sessionId,
     govukSigninJourneyId,
     getNowInMilliseconds: Date.now,
-    componentId: issuer,
+    componentId,
     ipAddress,
     txmaAuditEncoded,
-    redirect_uri: redirectUri,
+    redirect_uri,
   });
 
   if (writeEventResult.isError) {
@@ -143,8 +156,33 @@ async function handleWritingEvent({
         auditEventName: eventName,
       },
     });
-    return errorResult(serverErrorResponse);
+    return emptyFailure();
   }
 
   return emptySuccess();
+}
+
+interface GetBillingEventDataInput {
+  event: APIGatewayProxyEvent;
+  sessionData: {
+    requestBody: IAsyncTxmaEventRequestBody;
+    sessionAttributes: SessionAttributes;
+    issuer: string;
+  };
+}
+
+interface BillingEventData {
+  eventName: TxmaBillingEventName;
+  sub: string;
+  sessionId: string;
+  govukSigninJourneyId: string;
+  componentId: string;
+  ipAddress: string;
+  txmaAuditEncoded?: string;
+  redirect_uri?: string;
+}
+
+interface WriteBillingEventInput {
+  eventService: IEventService;
+  billingEventData: BillingEventData;
 }
