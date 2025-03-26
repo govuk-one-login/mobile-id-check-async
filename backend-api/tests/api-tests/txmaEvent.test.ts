@@ -113,6 +113,6 @@ describe("POST /async/txmaEvent", () => {
           event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
         }),
       );
-    }, 40000);
+    });
   });
 });
