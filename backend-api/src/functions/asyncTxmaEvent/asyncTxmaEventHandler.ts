@@ -73,11 +73,12 @@ export async function lambdaHandlerConstructor(
   const eventService = dependencies.getEventService(config.TXMA_SQS);
   const sessionData = { requestBody, sessionAttributes, issuer: config.ISSUER };
   const billingEventData = getBillingEventData({ event, sessionData });
-  const writeBillingEventResult = await writeBillingEventToTxma({
-    eventService,
-    billingEventData,
-  });
-  if (writeBillingEventResult.isError) return serverErrorResponse;
+  const handleWritingBillingEventToTxmaResult =
+    await handleWritingBillingEventToTxma({
+      eventService,
+      billingEventData,
+    });
+  if (handleWritingBillingEventToTxmaResult.isError) return serverErrorResponse;
 
   logger.info(LogMessage.TXMA_EVENT_COMPLETED);
   return notImplementedResponse;
@@ -124,7 +125,7 @@ function getBillingEventData({
   };
 }
 
-async function writeBillingEventToTxma({
+async function handleWritingBillingEventToTxma({
   eventService,
   billingEventData,
 }: WriteBillingEventInput): Promise<Result<void, void>> {
