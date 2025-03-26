@@ -2818,6 +2818,14 @@ Resources:
                 Resource: !GetAtt VendorProcessingSQS.Arn
             Version: "2012-10-17"
           PolicyName: SQSPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - kms:Decrypt
+                Effect: Allow
+                Resource: !GetAtt VendorProcessingKMSEncryptionKey.Arn
+            Version: "2012-10-17"
+          PolicyName: KMSPolicy
       RoleName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda
 
   AsyncIssueBiometricCredentialLogGroup:
