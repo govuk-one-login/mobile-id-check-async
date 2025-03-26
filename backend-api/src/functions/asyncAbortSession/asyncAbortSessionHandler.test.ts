@@ -10,7 +10,12 @@ import {
   expectedSecurityHeaders,
   mockInvalidUUID,
   mockSessionId,
+  mockInertSessionRegistry,
+  mockInertEventService,
+  validAbortSessionAttributes,
 } from "../testUtils/unitTestData";
+import { emptySuccess, successResult, errorResult } from "../utils/result";
+import { UpdateSessionError } from "../common/session/SessionRegistry";
 
 describe("Async Abort Session", () => {
   let dependencies: IAsyncAbortSessionDependencies;
@@ -19,24 +24,76 @@ describe("Async Abort Session", () => {
   let consoleErrorSpy: jest.SpyInstance;
   let result: APIGatewayProxyResult;
 
+  // Constants for epoch timestamps
+  const MOCK_CURRENT_TIME = 1708531200000; // 2024-02-21T12:00:00.000Z
+  const MOCK_VALID_TIME = MOCK_CURRENT_TIME - 30 * 60 * 1000; // 30 minutes old
+  const MOCK_EXPIRED_TIME = MOCK_CURRENT_TIME - 61 * 60 * 1000; // Over 1 hour old
+
   const validRequest = buildRequest({
     body: JSON.stringify({
       sessionId: mockSessionId,
     }),
   });
 
+  const mockWriteGenericEventSuccess = jest
+    .fn()
+    .mockResolvedValue(emptySuccess());
+
+  const mockWriteGenericEventFaiilure = jest
+    .fn()
+    .mockResolvedValue(errorResult(new Error("Failed to write event")));
+
+  const mockSuccessfulEventService = {
+    ...mockInertEventService,
+    writeGenericEvent: mockWriteGenericEventSuccess,
+  };
+
+  const mockFailingEventService = {
+    ...mockInertEventService,
+    writeGenericEvent: mockWriteGenericEventFaiilure,
+  };
+
+  const mockSessionUpdateSuccess = jest.fn().mockResolvedValue(
+    successResult({
+      attributes: validAbortSessionAttributes,
+    }),
+  );
+
+  const mockSuccessfulSessionRegistry = {
+    ...mockInertSessionRegistry,
+    updateSession: mockSessionUpdateSuccess,
+  };
+
   beforeEach(() => {
     dependencies = {
-      env: {},
+      env: {
+        SESSION_TABLE_NAME: "mockTableName",
+        TXMA_SQS: "mockTxmaSqs",
+        ISSUER: "mockIssuer",
+      },
+      getSessionRegistry: () => mockSuccessfulSessionRegistry,
+      getEventService: () => mockSuccessfulEventService,
     };
+
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
     consoleErrorSpy = jest.spyOn(console, "error");
+    jest.useFakeTimers();
+    jest.setSystemTime(MOCK_CURRENT_TIME);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.clearAllMocks();
   });
 
   describe("On every invocation", () => {
     beforeEach(async () => {
-      await lambdaHandlerConstructor(dependencies, validRequest, context);
+      result = await lambdaHandlerConstructor(
+        dependencies,
+        validRequest,
+        context,
+      );
     });
 
     it("Adds context and version to log attributes and logs STARTED message", () => {
@@ -49,12 +106,50 @@ describe("Async Abort Session", () => {
 
     it("Clears pre-existing log attributes", async () => {
       logger.appendKeys({ testKey: "testValue" });
-      await lambdaHandlerConstructor(dependencies, validRequest, context);
+      result = await lambdaHandlerConstructor(
+        dependencies,
+        validRequest,
+        context,
+      );
 
       expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
         testKey: "testValue",
       });
     });
+  });
+
+  describe("Config validation", () => {
+    describe.each([["SESSION_TABLE_NAME"], ["TXMA_SQS"], ["ISSUER"]])(
+      "Given %s environment variable is missing",
+      (envVar: string) => {
+        beforeEach(async () => {
+          delete dependencies.env[envVar];
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+        it("returns 500 Internal server error", async () => {
+          expect(result).toStrictEqual({
+            statusCode: 500,
+            body: JSON.stringify({
+              error: "server_error",
+              error_description: "Internal Server Error",
+            }),
+            headers: expectedSecurityHeaders,
+          });
+        });
+        it("logs INVALID_CONFIG", async () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ABORT_SESSION_INVALID_CONFIG",
+            data: {
+              missingEnvironmentVariables: [envVar],
+            },
+          });
+        });
+      },
+    );
   });
 
   describe("Request body validation", () => {
@@ -88,6 +183,243 @@ describe("Async Abort Session", () => {
     });
   });
 
+  describe("Session update scenarios", () => {
+    describe("When session not found", () => {
+      describe("and audit event write fails", () => {
+        beforeEach(async () => {
+          dependencies = {
+            ...dependencies,
+            getEventService: () => mockFailingEventService,
+            getSessionRegistry: () => ({
+              ...mockInertSessionRegistry,
+              updateSession: jest.fn().mockResolvedValue(
+                errorResult({
+                  errorType: UpdateSessionError.SESSION_NOT_FOUND,
+                }),
+              ),
+            }),
+          };
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+
+        it("Logs audit event error and returns 500", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+            data: { auditEventName: "DCMAW_ASYNC_CRI_4XXERROR" },
+          });
+          expect(result.statusCode).toBe(500);
+        });
+      });
+      describe("and audit event succeeds", () => {
+        beforeEach(async () => {
+          dependencies.getSessionRegistry = () => ({
+            ...mockInertSessionRegistry,
+            updateSession: jest.fn().mockResolvedValue(
+              errorResult({
+                errorType: UpdateSessionError.SESSION_NOT_FOUND,
+              }),
+            ),
+          });
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+
+        it("Writes error event to TxMA and returns 401", () => {
+          expect(mockWriteGenericEventSuccess).toBeCalledWith({
+            eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+            componentId: "mockIssuer",
+            getNowInMilliseconds: Date.now,
+            govukSigninJourneyId: undefined,
+            sessionId: mockSessionId,
+            sub: undefined,
+          });
+          expect(result.statusCode).toBe(401);
+        });
+      });
+    });
+
+    describe("When session fails conditional check", () => {
+      describe("and session is expired", () => {
+        const expiredSessionAttributes = {
+          ...validAbortSessionAttributes,
+          createdAt: MOCK_EXPIRED_TIME,
+        };
+
+        beforeEach(async () => {
+          dependencies.getSessionRegistry = () => ({
+            ...mockInertSessionRegistry,
+            updateSession: jest.fn().mockResolvedValue(
+              errorResult({
+                errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
+                attributes: expiredSessionAttributes,
+              }),
+            ),
+          });
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+
+        it("Writes fraud signal and returns 403", () => {
+          expect(mockWriteGenericEventSuccess).toBeCalledWith({
+            eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+            componentId: "mockIssuer",
+            getNowInMilliseconds: Date.now,
+            govukSigninJourneyId: expiredSessionAttributes.govukSigninJourneyId,
+            sessionId: expiredSessionAttributes.sessionId,
+            sub: expiredSessionAttributes.subjectIdentifier,
+            suspected_fraud_signal: "AUTH_SESSION_TOO_OLD",
+          });
+          expect(result.statusCode).toBe(403);
+        });
+      });
+
+      describe("and session is not expired", () => {
+        const validSessionAttributes = {
+          ...validAbortSessionAttributes,
+          createdAt: MOCK_VALID_TIME,
+        };
+
+        beforeEach(async () => {
+          dependencies.getSessionRegistry = () => ({
+            ...mockInertSessionRegistry,
+            updateSession: jest.fn().mockResolvedValue(
+              errorResult({
+                errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
+                attributes: validSessionAttributes,
+              }),
+            ),
+          });
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+
+        it("Writes event without fraud signal and returns 401", () => {
+          expect(mockWriteGenericEventSuccess).toBeCalledWith({
+            eventName: "DCMAW_ASYNC_CRI_4XXERROR",
+            componentId: "mockIssuer",
+            getNowInMilliseconds: Date.now,
+            govukSigninJourneyId: validSessionAttributes.govukSigninJourneyId,
+            sessionId: validSessionAttributes.sessionId,
+            sub: validSessionAttributes.subjectIdentifier,
+            extensions: undefined,
+          });
+          expect(result.statusCode).toBe(401);
+        });
+      });
+
+      describe("and audit event write fails", () => {
+        const validSessionAttributes = {
+          ...validAbortSessionAttributes,
+          createdAt: MOCK_EXPIRED_TIME,
+        };
+
+        beforeEach(async () => {
+          dependencies = {
+            ...dependencies,
+            getEventService: () => mockFailingEventService,
+            getSessionRegistry: () => ({
+              ...mockInertSessionRegistry,
+              updateSession: jest.fn().mockResolvedValue(
+                errorResult({
+                  errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
+                  attributes: validSessionAttributes,
+                }),
+              ),
+            }),
+          };
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+
+        it("Logs audit event error and returns 500", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+            data: { auditEventName: "DCMAW_ASYNC_CRI_4XXERROR" },
+          });
+          expect(result.statusCode).toBe(500);
+        });
+      });
+    });
+
+    describe("When there is an internal server error", () => {
+      describe("and audit event write fails", () => {
+        beforeEach(async () => {
+          dependencies = {
+            ...dependencies,
+            getEventService: () => mockFailingEventService,
+            getSessionRegistry: () => ({
+              ...mockInertSessionRegistry,
+              updateSession: jest.fn().mockResolvedValue(
+                errorResult({
+                  errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
+                }),
+              ),
+            }),
+          };
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+
+        it("Logs audit event error and returns 500", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+            data: { auditEventName: "DCMAW_ASYNC_CRI_5XXERROR" },
+          });
+          expect(result.statusCode).toBe(500);
+        });
+      });
+
+      describe("and audit event succeeds", () => {
+        beforeEach(async () => {
+          dependencies.getSessionRegistry = () => ({
+            ...mockInertSessionRegistry,
+            updateSession: jest.fn().mockResolvedValue(
+              errorResult({
+                errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
+              }),
+            ),
+          });
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+
+        it("Writes error event and returns 500", () => {
+          expect(mockWriteGenericEventSuccess).toBeCalledWith({
+            eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+            componentId: "mockIssuer",
+            getNowInMilliseconds: Date.now,
+            govukSigninJourneyId: undefined,
+            sessionId: mockSessionId,
+            sub: undefined,
+          });
+          expect(result.statusCode).toBe(500);
+        });
+      });
+    });
+  });
+
   describe("Given a request containing a valid sessionId is made", () => {
     beforeEach(async () => {
       result = await lambdaHandlerConstructor(
@@ -97,17 +429,69 @@ describe("Async Abort Session", () => {
       );
     });
 
+    describe("Given sending DCMAW_ASYNC_APP_END event fails", () => {
+      beforeEach(async () => {
+        dependencies = {
+          ...dependencies,
+          getEventService: () => mockFailingEventService,
+        };
+
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+
+      it("Logs the DCMAW_ASYNC_APP_END event failure", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+          data: {
+            auditEventName: "DCMAW_ASYNC_APP_END",
+          },
+        });
+      });
+
+      it("Returns 500 Internal server error", () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
+        });
+      });
+    });
+
+    it("Writes DCMAW_ASYNC_APP_END event to TxMA", () => {
+      expect(mockWriteGenericEventSuccess).toBeCalledWith({
+        eventName: "DCMAW_ASYNC_APP_END",
+        sub: "mockSubjectIdentifier",
+        sessionId: mockSessionId,
+        govukSigninJourneyId: "mockGovukSigninJourneyId",
+        componentId: "mockIssuer",
+        redirect_uri: undefined,
+        suspected_fraud_signal: undefined,
+        getNowInMilliseconds: Date.now,
+        ipAddress: "1.1.1.1",
+        txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
+      });
+    });
+
     it("Logs COMPLETED", async () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_ABORT_SESSION_COMPLETED",
       });
     });
 
-    it("Returns 501 Not Implemented response", async () => {
+    it("Returns 501 OK response", async () => {
       expect(result).toStrictEqual({
         headers: expectedSecurityHeaders,
         statusCode: 501,
-        body: JSON.stringify({ error: "Not Implemented" }),
+        body: JSON.stringify({
+          error: "Not Implemented",
+        }),
       });
     });
   });

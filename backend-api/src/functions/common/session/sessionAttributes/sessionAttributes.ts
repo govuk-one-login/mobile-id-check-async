@@ -10,6 +10,8 @@ import {
   BaseSessionAttributes,
   BiometricSessionFinishedAttributes,
   BiometricTokenIssuedSessionAttributes,
+  AuthSessionAbortedAttributes,
+  SessionState,
 } from "../session";
 import { ValidateSessionErrorInvalidAttributeTypeData } from "../SessionRegistry";
 
@@ -106,4 +108,22 @@ const isBiometricSessionFinishedSessionAttributes = (
   if (typeof item.opaqueId !== "string") return false;
   if (typeof item.biometricSessionId !== "string") return false;
   return true;
+};
+
+export const getAuthSessionAbortedAttributes = (
+  item: Record<string, AttributeValue> | undefined,
+): Result<AuthSessionAbortedAttributes, void> => {
+  if (item == null) return emptyFailure();
+
+  const sessionAttributes = unmarshall(item);
+  if (!isAuthSessionAbortedAttributes(sessionAttributes)) return emptyFailure();
+
+  return successResult(sessionAttributes);
+};
+
+const isAuthSessionAbortedAttributes = (
+  item: Record<string, NativeAttributeValue>,
+): item is AuthSessionAbortedAttributes => {
+  if (!isCommonSessionAttributes(item)) return false;
+  return item.sessionState === SessionState.AUTH_SESSION_ABORTED;
 };

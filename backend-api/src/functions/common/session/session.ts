@@ -4,12 +4,14 @@ export enum SessionState {
   AUTH_SESSION_CREATED = "ASYNC_AUTH_SESSION_CREATED",
   BIOMETRIC_TOKEN_ISSUED = "ASYNC_BIOMETRIC_TOKEN_ISSUED",
   BIOMETRIC_SESSION_FINISHED = "ASYNC_BIOMETRIC_SESSION_FINISHED",
+  AUTH_SESSION_ABORTED = "ASYNC_AUTH_SESSION_ABORTED",
 }
 
 export type SessionAttributes =
   | BaseSessionAttributes
   | BiometricTokenIssuedSessionAttributes
-  | BiometricSessionFinishedAttributes;
+  | BiometricSessionFinishedAttributes
+  | AuthSessionAbortedAttributes;
 
 export interface BaseSessionAttributes {
   clientId: string;
@@ -37,4 +39,7 @@ export interface BiometricSessionFinishedAttributes
   opaqueId: string;
   sessionState: SessionState.BIOMETRIC_SESSION_FINISHED;
   biometricSessionId: string;
+}
+export interface AuthSessionAbortedAttributes extends BaseSessionAttributes {
+  sessionState: SessionState.AUTH_SESSION_ABORTED;
 }
