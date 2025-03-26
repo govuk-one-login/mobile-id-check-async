@@ -31,6 +31,7 @@ import {
 } from "../common/session/session";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
+import { isSessionExpired } from "../utils/utils";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncAbortSessionDependencies,
@@ -111,14 +112,10 @@ async function handleConditionalCheckFailure(
   sessionAttributes: SessionAttributes,
   issuer: string,
 ): Promise<APIGatewayProxyResult> {
-  const sessionAge = Date.now() - sessionAttributes.createdAt;
-  const isSessionExpired = sessionAge > 60 * 60 * 1000;
+  const sessionExpired = isSessionExpired(sessionAttributes.createdAt);
 
-  function getFraudSignal(expired: boolean): string | undefined {
-    if (expired) {
-      return "AUTH_SESSION_TOO_OLD";
-    }
-
+  function getFraudSignal(): string | undefined {
+    if (sessionExpired) return "AUTH_SESSION_TOO_OLD";
     return undefined;
   }
 
@@ -130,7 +127,7 @@ async function handleConditionalCheckFailure(
     componentId: issuer,
     getNowInMilliseconds: Date.now,
     redirect_uri: sessionAttributes.redirectUri,
-    suspected_fraud_signal: getFraudSignal(isSessionExpired),
+    suspected_fraud_signal: getFraudSignal(),
     ipAddress: undefined,
     txmaAuditEncoded: undefined,
   });
@@ -142,7 +139,7 @@ async function handleConditionalCheckFailure(
     return serverErrorResponse;
   }
 
-  if (isSessionExpired) {
+  if (sessionExpired) {
     return forbiddenResponse("expired_session", "Session has expired");
   }
 
