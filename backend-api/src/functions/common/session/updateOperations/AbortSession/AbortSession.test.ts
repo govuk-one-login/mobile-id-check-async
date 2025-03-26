@@ -4,6 +4,8 @@ import {
   NOW_IN_MILLISECONDS,
   validAbortSessionAttributes,
   validBiometricTokenIssuedSessionAttributes,
+  validBaseSessionAttributes,
+  ONE_HOUR_AGO_IN_MILLISECONDS,
 } from "../../../../testUtils/unitTestData";
 import { emptyFailure, successResult } from "../../../../utils/result";
 import { SessionState } from "../../session";
@@ -35,7 +37,7 @@ describe("AbortSession", () => {
       expect(result).toEqual(
         `attribute_exists(sessionId) AND 
             (sessionState = :authCreatedState OR sessionState = :biometricTokenIssuedState) AND 
-            createdAt > :timeLimit`,
+            createdAt > :oneHourAgoInMilliseconds`,
       );
     });
   });
@@ -51,12 +53,18 @@ describe("AbortSession", () => {
         ":biometricTokenIssuedState": {
           S: SessionState.BIOMETRIC_TOKEN_ISSUED,
         },
-        ":timeLimit": { N: expect.any(String) },
+        ":oneHourAgoInMilliseconds": {
+          N: ONE_HOUR_AGO_IN_MILLISECONDS.toString(),
+        }, // Changed from S to N type
       });
 
-      // Additional check to verify the timeLimit value
-      const timeLimitValue = Number(result[":timeLimit"].N);
-      expect(timeLimitValue).toBe(Date.now() - 60 * 60 * 1000);
+      console.log("result", result);
+
+      // Additional check to verify the oneHourAgoInMilliseconds value
+      const oneHourAgoInMillisecondsValue = Number(
+        result[":oneHourAgoInMilliseconds"].N,
+      );
+      expect(oneHourAgoInMillisecondsValue).toBe(Date.now() - 60 * 60 * 1000);
     });
   });
 
@@ -76,7 +84,7 @@ describe("AbortSession", () => {
         expect(result).toEqual(emptyFailure());
       });
 
-      it("Returns successResult with BaseSessionAttributes for valid base attributes", () => {
+      it("Returns successResult with BiometricTokenIssuedSessionAttributes for valid base attributes with BIOMETRIC_TOKEN_ISSUED state", () => {
         const result = abortSession.getSessionAttributesFromDynamoDbItem(
           validBiometricTokenIssuedSessionAttributesItem,
           getSessionAttributesOptions,
@@ -87,10 +95,48 @@ describe("AbortSession", () => {
           ),
         );
       });
+
+      it("Returns successResult with BaseSessionAttributes for valid base attributes with AUTH_SESSION_CREATED state", () => {
+        const baseSessionWithAuthCreatedState = {
+          ...validBaseSessionAttributes,
+          sessionState: SessionState.AUTH_SESSION_CREATED,
+        };
+        const baseSessionWithAuthCreatedStateItem = marshall(
+          baseSessionWithAuthCreatedState,
+        );
+
+        const result = abortSession.getSessionAttributesFromDynamoDbItem(
+          baseSessionWithAuthCreatedStateItem,
+          getSessionAttributesOptions,
+        );
+
+        expect(result).toEqual(
+          successResult(unmarshall(baseSessionWithAuthCreatedStateItem)),
+        );
+      });
+
+      it("Returns successResult with BaseSessionAttributes for valid base attributes with another state", () => {
+        const baseSessionWithRandomState = {
+          ...validBaseSessionAttributes,
+          sessionState: "SOME_OTHER_STATE",
+        };
+        const baseSessionWithRandomStateItem = marshall(
+          baseSessionWithRandomState,
+        );
+
+        const result = abortSession.getSessionAttributesFromDynamoDbItem(
+          baseSessionWithRandomStateItem,
+          getSessionAttributesOptions,
+        );
+
+        expect(result).toEqual(
+          successResult(unmarshall(baseSessionWithRandomStateItem)),
+        );
+      });
     });
 
     describe("Given operationFailed in options is falsy", () => {
-      it("Returns emptyFailure for invalid finished session attributes", () => {
+      it("Returns emptyFailure for invalid abort session attributes", () => {
         const result = abortSession.getSessionAttributesFromDynamoDbItem(
           validBiometricTokenIssuedSessionAttributesItem,
         );

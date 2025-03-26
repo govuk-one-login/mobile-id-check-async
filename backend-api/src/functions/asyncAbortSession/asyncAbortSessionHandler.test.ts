@@ -429,56 +429,6 @@ describe("Async Abort Session", () => {
       );
     });
 
-    describe("Given sending DCMAW_ASYNC_APP_END event fails", () => {
-      beforeEach(async () => {
-        dependencies = {
-          ...dependencies,
-          getEventService: () => mockFailingEventService,
-        };
-
-        result = await lambdaHandlerConstructor(
-          dependencies,
-          validRequest,
-          context,
-        );
-      });
-
-      it("Logs the DCMAW_ASYNC_APP_END event failure", () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-          data: {
-            auditEventName: "DCMAW_ASYNC_APP_END",
-          },
-        });
-      });
-
-      it("Returns 500 Internal server error", () => {
-        expect(result).toStrictEqual({
-          statusCode: 500,
-          body: JSON.stringify({
-            error: "server_error",
-            error_description: "Internal Server Error",
-          }),
-          headers: expectedSecurityHeaders,
-        });
-      });
-    });
-
-    it("Writes DCMAW_ASYNC_APP_END event to TxMA", () => {
-      expect(mockWriteGenericEventSuccess).toBeCalledWith({
-        eventName: "DCMAW_ASYNC_APP_END",
-        sub: "mockSubjectIdentifier",
-        sessionId: mockSessionId,
-        govukSigninJourneyId: "mockGovukSigninJourneyId",
-        componentId: "mockIssuer",
-        redirect_uri: undefined,
-        suspected_fraud_signal: undefined,
-        getNowInMilliseconds: Date.now,
-        ipAddress: "1.1.1.1",
-        txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
-      });
-    });
-
     it("Logs COMPLETED", async () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_ABORT_SESSION_COMPLETED",

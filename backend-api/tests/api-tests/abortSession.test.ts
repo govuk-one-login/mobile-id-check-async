@@ -67,7 +67,6 @@ describe("POST /async/abortSession", () => {
       const sub = randomUUID();
       await createSessionForSub(sub);
       sessionId = await getActiveSessionIdFromSub(sub);
-      await issueBiometricToken(sessionId);
 
       response = await SESSIONS_API_INSTANCE.post("/async/abortSession", {
         sessionId,

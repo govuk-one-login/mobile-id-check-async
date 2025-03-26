@@ -2,6 +2,7 @@ import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import {
   NOW_IN_MILLISECONDS,
+  validAbortSessionAttributes,
   validBaseSessionAttributes,
   validBiometricSessionFinishedAttributes,
   validBiometricTokenIssuedSessionAttributes,
@@ -12,6 +13,7 @@ import {
   getBaseSessionAttributes,
   getBiometricSessionFinishedSessionAttributes,
   getBiometricTokenIssuedSessionAttributes,
+  getAuthSessionAbortedAttributes,
 } from "./sessionAttributes";
 
 describe("Session attributes", () => {
@@ -368,6 +370,50 @@ describe("Session attributes", () => {
 
           expect(result).toEqual(
             successResult(unmarshall(validBiometricSessionFinished.attributes)),
+          );
+        });
+      });
+    });
+  });
+
+  describe("getAuthSessionAbortedAttributes", () => {
+    describe("Given an invalid auth session aborted attribute record", () => {
+      describe.each([
+        ...givenAnyCommonSessionAttributeIsInvalid(validAbortSessionAttributes),
+        {
+          scenario: "Given sessionState is not AUTH_SESSION_ABORTED",
+          attributes: buildSessionAttributes(validAbortSessionAttributes, {
+            sessionState: undefined,
+          }),
+        },
+      ])("$scenario", ({ attributes }) => {
+        it("Returns an emptyFailure", () => {
+          const result = getAuthSessionAbortedAttributes(attributes);
+          expect(result).toEqual(emptyFailure());
+        });
+      });
+    });
+
+    describe("Given a valid auth session aborted attribute record", () => {
+      describe.each([
+        {
+          scenario: "Given redirectUri attribute is undefined",
+          attributes: buildSessionAttributes(validAbortSessionAttributes),
+        },
+        {
+          scenario: "Given redirectUri attribute is defined",
+          attributes: buildSessionAttributes(validAbortSessionAttributes, {
+            redirectUri: "https://www.mockRedirectUri.com",
+          }),
+        },
+      ])("$scenario", (validAuthSessionAborted) => {
+        it("Returns successResult with AuthSessionAbortedAttributes", () => {
+          const result = getAuthSessionAbortedAttributes(
+            validAuthSessionAborted.attributes,
+          );
+
+          expect(result).toEqual(
+            successResult(unmarshall(validAuthSessionAborted.attributes)),
           );
         });
       });

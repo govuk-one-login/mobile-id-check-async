@@ -25,12 +25,8 @@ import { AbortSession } from "../common/session/updateOperations/AbortSession/Ab
 import { getAbortSessionConfig } from "./abortSessionConfig";
 import { IEventService } from "../services/events/types";
 import { FailureWithValue } from "../utils/result";
-import {
-  AuthSessionAbortedAttributes,
-  SessionAttributes,
-} from "../common/session/session";
+import { SessionAttributes } from "../common/session/session";
 import { setupLogger } from "../common/logging/setupLogger";
-import { getAuditData } from "../common/request/getAuditData/getAuditData";
 import { isOlderThan60Minutes } from "../utils/utils";
 
 export async function lambdaHandlerConstructor(
@@ -63,7 +59,6 @@ export async function lambdaHandlerConstructor(
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
   );
-  const { ipAddress, txmaAuditEncoded } = getAuditData(event);
 
   const updateResult = await sessionRegistry.updateSession(
     sessionId,
@@ -76,31 +71,6 @@ export async function lambdaHandlerConstructor(
       sessionId,
       config.ISSUER,
     );
-  }
-
-  const sessionAttributes = updateResult.value
-    .attributes as AuthSessionAbortedAttributes;
-
-  const writeAppEndEventResult = await eventService.writeGenericEvent({
-    eventName: "DCMAW_ASYNC_APP_END",
-    sub: sessionAttributes.subjectIdentifier,
-    sessionId: sessionAttributes.sessionId,
-    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
-    componentId: config.ISSUER,
-    getNowInMilliseconds: Date.now,
-    redirect_uri: sessionAttributes.redirectUri,
-    suspected_fraud_signal: undefined,
-    ipAddress,
-    txmaAuditEncoded,
-  });
-
-  if (writeAppEndEventResult.isError) {
-    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-      data: {
-        auditEventName: "DCMAW_ASYNC_APP_END",
-      },
-    });
-    return serverErrorResponse;
   }
 
   logger.info(LogMessage.ABORT_SESSION_COMPLETED);
