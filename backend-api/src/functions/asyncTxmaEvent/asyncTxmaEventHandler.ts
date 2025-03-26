@@ -126,7 +126,7 @@ async function handleWritingEvent({
   const { subjectIdentifier, govukSigninJourneyId, redirectUri } =
     sessionAttributes;
   const writeEventResult = await eventService.writeTxmaBillingEvent({
-    event_name: eventName,
+    eventName,
     sub: subjectIdentifier,
     sessionId,
     govukSigninJourneyId,

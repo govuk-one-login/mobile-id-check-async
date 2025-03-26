@@ -292,7 +292,7 @@ describe("Async TxMA Event", () => {
     describe("Given DCMAW_ASYNC_HYBRID_BILLING_STARTED event successfully writes to TxMA", () => {
       it("Writes DCMAW_ASYNC_HYBRID_BILLING_STARTED event to TxMA", () => {
         expect(mockWriteTxmaBillingEventSuccessResult).toBeCalledWith({
-          event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+          eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
           componentId: "mockIssuer",
           getNowInMilliseconds: Date.now,
           govukSigninJourneyId: "mockGovukSigninJourneyId",

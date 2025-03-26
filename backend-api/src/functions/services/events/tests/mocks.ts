@@ -42,7 +42,7 @@ export class MockEventWriterSuccess implements IEventService {
   writeTxmaBillingEvent = async (
     eventConfig: TxmaBillingEventConfig,
   ): Promise<Result<null>> => {
-    this.auditEvents.push(eventConfig.event_name);
+    this.auditEvents.push(eventConfig.eventName);
     return successResult(null);
   };
 }

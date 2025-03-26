@@ -81,7 +81,7 @@ export interface BiometricTokenIssuedEventConfig extends BaseUserEventConfig {
 }
 
 export interface TxmaBillingEventConfig extends BaseUserEventConfig {
-  event_name: TxmaBillingEventName;
+  eventName: TxmaBillingEventName;
   extensions?: Extensions;
   redirect_uri?: string;
 }

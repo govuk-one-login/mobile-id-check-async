@@ -147,7 +147,7 @@ export class EventService implements IEventService {
     const redirect_uri = eventConfig.extensions?.redirect_uri;
     const extensions = this.getExtensionsObject(redirect_uri);
     const {
-      event_name,
+      eventName,
       sub,
       sessionId,
       govukSigninJourneyId,
@@ -156,7 +156,7 @@ export class EventService implements IEventService {
       txmaAuditEncoded,
     } = eventConfig;
     return {
-      event_name,
+      event_name: eventName,
       user: {
         user_id: sub,
         session_id: sessionId,

@@ -517,7 +517,7 @@ describe("Event Service", () => {
         sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
 
         result = await eventWriter.writeTxmaBillingEvent({
-          event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+          eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
           sub: "mockSub",
           sessionId: "mockSessionId",
           govukSigninJourneyId: "mockGovukSigninJourneyId",
@@ -568,7 +568,7 @@ describe("Event Service", () => {
           sqsMock.on(SendMessageCommand).resolves({});
 
           result = await eventWriter.writeTxmaBillingEvent({
-            event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+            eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
             sub: "mockSub",
             sessionId: "mockSessionId",
             govukSigninJourneyId: "mockGovukSigninJourneyId",
@@ -613,7 +613,7 @@ describe("Event Service", () => {
           sqsMock.on(SendMessageCommand).resolves({});
 
           result = await eventWriter.writeTxmaBillingEvent({
-            event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+            eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
             sub: "mockSub",
             sessionId: "mockSessionId",
             govukSigninJourneyId: "mockGovukSigninJourneyId",
