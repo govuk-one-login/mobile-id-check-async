@@ -97,6 +97,14 @@ describe("POST /async/txmaEvent", () => {
       });
     }, 70000);
 
+    it("Writes an event with the correct event_name", async () => {
+      expect(eventsResponse[0].event).toEqual(
+        expect.objectContaining({
+          event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+        }),
+      );
+    });
+
     it("Returns 501 Not Implemented response", () => {
       expect(response.status).toBe(501);
       expect(response.data).toStrictEqual({
@@ -104,14 +112,6 @@ describe("POST /async/txmaEvent", () => {
       });
       expect(response.headers).toEqual(
         expect.objectContaining(expectedSecurityHeaders),
-      );
-    });
-
-    it("Writes an event with the correct event_name", async () => {
-      expect(eventsResponse[0].event).toEqual(
-        expect.objectContaining({
-          event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
-        }),
       );
     });
   });
