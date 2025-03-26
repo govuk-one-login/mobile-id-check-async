@@ -813,7 +813,7 @@ describe("Backend application infrastructure", () => {
       const lambdaHandlers = [
         "asyncActiveSessionHandler.lambdaHandler",
         "asyncBiometricTokenHandler.lambdaHandler",
-        "asyncIssueBiometricHandler.lambdaHandler",
+        "asyncIssueBiometricCredentialHandler.lambdaHandler",
       ];
       lambdaHandlers.forEach((lambdaHandler) => {
         template.hasResourceProperties("AWS::Serverless::Function", {
