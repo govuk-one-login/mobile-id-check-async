@@ -516,7 +516,7 @@ describe("Event Service", () => {
       beforeEach(async () => {
         sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
 
-        result = await eventWriter.writeTxmaBillingEvent({
+        result = await eventWriter.writeGenericEvent({
           eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
           sub: "mockSub",
           sessionId: "mockSessionId",
@@ -526,13 +526,13 @@ describe("Event Service", () => {
           ipAddress: "mockIpAddress",
           txmaAuditEncoded: "mockTxmaAuditEncoded",
           redirect_uri: undefined,
+          suspected_fraud_signal: undefined,
         });
       });
 
       it(`Attempts to send "DCMAW_ASYNC_HYBRID_BILLING_STARTED" TxMA event to SQS`, () => {
         const expectedCommandInput = {
           MessageBody: JSON.stringify({
-            event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
             user: {
               user_id: "mockSub",
               session_id: "mockSessionId",
@@ -541,6 +541,7 @@ describe("Event Service", () => {
             },
             timestamp: 1609462861,
             event_timestamp_ms: 1609462861000,
+            event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
             component_id: "mockComponentId",
             restricted: {
               device_information: {
@@ -567,7 +568,7 @@ describe("Event Service", () => {
         beforeEach(async () => {
           sqsMock.on(SendMessageCommand).resolves({});
 
-          result = await eventWriter.writeTxmaBillingEvent({
+          result = await eventWriter.writeGenericEvent({
             eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
             sub: "mockSub",
             sessionId: "mockSessionId",
@@ -577,13 +578,13 @@ describe("Event Service", () => {
             ipAddress: "mockIpAddress",
             txmaAuditEncoded: undefined,
             redirect_uri: undefined,
+            suspected_fraud_signal: undefined,
           });
         });
 
         it(`Attempts to send "DCMAW_ASYNC_HYBRID_BILLING_STARTED" event to SQS without restricted data`, () => {
           const expectedCommandInput = {
             MessageBody: JSON.stringify({
-              event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
               user: {
                 user_id: "mockSub",
                 session_id: "mockSessionId",
@@ -592,6 +593,7 @@ describe("Event Service", () => {
               },
               timestamp: 1609462861,
               event_timestamp_ms: 1609462861000,
+              event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
               component_id: "mockComponentId",
             }),
             QueueUrl: "mockSqsQueue",
@@ -612,7 +614,7 @@ describe("Event Service", () => {
         beforeEach(async () => {
           sqsMock.on(SendMessageCommand).resolves({});
 
-          result = await eventWriter.writeTxmaBillingEvent({
+          result = await eventWriter.writeGenericEvent({
             eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
             sub: "mockSub",
             sessionId: "mockSessionId",
@@ -622,13 +624,13 @@ describe("Event Service", () => {
             ipAddress: "mockIpAddress",
             txmaAuditEncoded: "mockTxmaAuditEncoded",
             redirect_uri: undefined,
+            suspected_fraud_signal: undefined,
           });
         });
 
         it(`Attempts to send "DCMAW_ASYNC_HYBRID_BILLING_STARTED" event to SQS with restricted data`, () => {
           const expectedCommandInput = {
             MessageBody: JSON.stringify({
-              event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
               user: {
                 user_id: "mockSub",
                 session_id: "mockSessionId",
@@ -637,6 +639,7 @@ describe("Event Service", () => {
               },
               timestamp: 1609462861,
               event_timestamp_ms: 1609462861000,
+              event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
               component_id: "mockComponentId",
               restricted: {
                 device_information: {

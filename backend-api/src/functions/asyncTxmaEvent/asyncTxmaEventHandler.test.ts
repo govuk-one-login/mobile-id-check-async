@@ -14,7 +14,7 @@ import {
   mockInertSessionRegistry,
   mockSessionId,
   mockSuccessfulEventService,
-  mockWriteTxmaBillingEventSuccessResult,
+  mockWriteGenericEventSuccessResult,
   NOW_IN_MILLISECONDS,
   validBiometricTokenIssuedSessionAttributes,
 } from "../testUtils/unitTestData";
@@ -255,7 +255,7 @@ describe("Async TxMA Event", () => {
       beforeEach(async () => {
         dependencies.getEventService = () => ({
           ...mockInertEventService,
-          writeTxmaBillingEvent: jest.fn().mockResolvedValue(
+          writeGenericEvent: jest.fn().mockResolvedValue(
             errorResult({
               errorMessage: "mockError",
             }),
@@ -291,7 +291,7 @@ describe("Async TxMA Event", () => {
 
     describe("Given DCMAW_ASYNC_HYBRID_BILLING_STARTED event successfully writes to TxMA", () => {
       it("Writes DCMAW_ASYNC_HYBRID_BILLING_STARTED event to TxMA", () => {
-        expect(mockWriteTxmaBillingEventSuccessResult).toBeCalledWith({
+        expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
           eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
           componentId: "mockIssuer",
           getNowInMilliseconds: Date.now,
@@ -301,6 +301,7 @@ describe("Async TxMA Event", () => {
           ipAddress: "1.1.1.1",
           txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
           redirect_uri: undefined,
+          suspected_fraud_signal: undefined,
         });
       });
     });

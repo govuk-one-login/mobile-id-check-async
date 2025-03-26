@@ -66,7 +66,7 @@ export const txmaBillingEventNames = [
 export type TxmaBillingEventName = (typeof txmaBillingEventNames)[number];
 
 export interface GenericEventConfig extends BaseUserEventConfig {
-  eventName: GenericEventNames;
+  eventName: GenericEventNames | TxmaBillingEventName;
   redirect_uri: string | undefined;
   suspected_fraud_signal: string | undefined;
 }
@@ -80,14 +80,8 @@ export interface BiometricTokenIssuedEventConfig extends BaseUserEventConfig {
   redirect_uri: string | undefined;
 }
 
-export interface TxmaBillingEventConfig extends BaseUserEventConfig {
-  eventName: TxmaBillingEventName;
-  extensions?: Extensions;
-  redirect_uri?: string;
-}
-
 export interface GenericTxmaEvent extends BaseUserTxmaEvent {
-  event_name: GenericEventNames;
+  event_name: GenericEventNames | TxmaBillingEventName;
   extensions: Extensions | undefined;
 }
 
@@ -102,18 +96,10 @@ export interface BiometricTokenIssuedEvent extends BaseUserTxmaEvent {
   };
 }
 
-export interface TxmaBillingEvent extends BaseUserTxmaEvent {
-  event_name: TxmaBillingEventName;
-  extensions?: {
-    redirect_uri?: string;
-  };
-}
-
 export type TxmaEvents =
   | GenericTxmaEvent
   | CredentialTokenIssuedEvent
-  | BiometricTokenIssuedEvent
-  | TxmaBillingEvent;
+  | BiometricTokenIssuedEvent;
 
 export interface IEventService {
   writeCredentialTokenIssuedEvent: (
@@ -124,8 +110,5 @@ export interface IEventService {
   ) => Promise<Result<void, void>>;
   writeBiometricTokenIssuedEvent: (
     eventConfig: BiometricTokenIssuedEventConfig,
-  ) => Promise<Result<void, void>>;
-  writeTxmaBillingEvent: (
-    eventConfig: TxmaBillingEventConfig,
   ) => Promise<Result<void, void>>;
 }

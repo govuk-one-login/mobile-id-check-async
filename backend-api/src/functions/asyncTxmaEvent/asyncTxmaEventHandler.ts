@@ -138,7 +138,7 @@ async function writeBillingEventToTxma({
     txmaAuditEncoded,
     redirect_uri,
   } = billingEventData;
-  const writeEventResult = await eventService.writeTxmaBillingEvent({
+  const writeEventResult = await eventService.writeGenericEvent({
     eventName,
     sub,
     sessionId,
@@ -148,6 +148,7 @@ async function writeBillingEventToTxma({
     ipAddress,
     txmaAuditEncoded,
     redirect_uri,
+    suspected_fraud_signal: undefined,
   });
 
   if (writeEventResult.isError) {
