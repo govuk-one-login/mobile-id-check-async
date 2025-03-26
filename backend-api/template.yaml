@@ -2753,6 +2753,7 @@ Resources:
           Type: Api
       FunctionName: !Sub ${AWS::StackName}-issue-biometric-credential
       Handler: asyncIssueBiometricCredentialHandler.lambdaHandler
+      ReservedConcurrentExecutions: 34
       Role: !GetAtt AsyncIssueBiometricCredentialLambdaRole.Arn
       Runtime: nodejs20.x
       VpcConfig:
@@ -3599,6 +3600,8 @@ Resources:
       FunctionName: !GetAtt AsyncIssueBiometricCredentialFunction.Arn
       FunctionResponseTypes:
         - ReportBatchItemFailures
+      ScalingConfig:
+        MaximumConcurrency: 34
 
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket
