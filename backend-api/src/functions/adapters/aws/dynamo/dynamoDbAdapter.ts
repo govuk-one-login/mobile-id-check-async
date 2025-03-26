@@ -21,7 +21,7 @@ import { logger } from "../../../common/logging/logger";
 import { LogMessage } from "../../../common/logging/LogMessage";
 import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
 import {
-  BiometricTokenIssuedSessionAttributes,
+  SessionAttributes,
   SessionState,
 } from "../../../common/session/session";
 import {
@@ -158,7 +158,7 @@ export class DynamoDbAdapter implements SessionRegistry {
   async getSession(
     sessionId: string,
     getOperation: GetSessionOperation,
-  ): Promise<Result<BiometricTokenIssuedSessionAttributes, GetSessionFailed>> {
+  ): Promise<Result<SessionAttributes, GetSessionFailed>> {
     let response;
     try {
       logger.debug(LogMessage.GET_SESSION_ATTEMPT, {
