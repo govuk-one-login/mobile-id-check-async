@@ -1020,6 +1020,7 @@ describe("Backend application infrastructure", () => {
       "JsonWebKeysFunction",
       "ProxyLambda",
       "AsyncAbortSessionFunction",
+      "AsyncIssueBiometricCredentialFunction",
     ];
 
     const canaryFunctions = Object.entries(allFunctions).filter(
