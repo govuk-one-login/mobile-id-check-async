@@ -1,9 +1,8 @@
-import { APIGatewayProxyResult, Context } from "aws-lambda";
+import { Context } from "aws-lambda";
 import { expect } from "@jest/globals";
 import "../../../tests/testUtils/matchers";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { logger } from "../common/logging/logger";
-import { expectedSecurityHeaders } from "../testUtils/unitTestData";
 import { lambdaHandlerConstructor } from "./asyncIssueBiometricCredentialHandler";
 import { IssueBiometricCredentialDependencies } from "./handlerDependencies";
 
@@ -11,7 +10,6 @@ describe("Async Issue Biometric Credential", () => {
   let dependencies: IssueBiometricCredentialDependencies;
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
-  let result: APIGatewayProxyResult;
 
   const sqsEvent = {
     Records: [],
@@ -50,20 +48,12 @@ describe("Async Issue Biometric Credential", () => {
 
   describe("Given a request is made", () => {
     beforeEach(async () => {
-      result = await lambdaHandlerConstructor(dependencies, sqsEvent, context);
+      await lambdaHandlerConstructor(dependencies, sqsEvent, context);
     });
 
     it("Logs COMPLETED", async () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-      });
-    });
-
-    it("Returns 501 Not Implemented response", async () => {
-      expect(result).toStrictEqual({
-        headers: expectedSecurityHeaders,
-        statusCode: 501,
-        body: JSON.stringify({ error: "Not Implemented" }),
       });
     });
   });
