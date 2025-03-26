@@ -61,7 +61,7 @@ export const txmaBillingEventNames = [
   "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
   "DCMAW_ASYNC_IPROOV_BILLING_STARTED",
   "DCMAW_ASYNC_READID_NFC_BILLING_STARTED",
-];
+] as const;
 
 export type TxmaBillingEventName = (typeof txmaBillingEventNames)[number];
 
