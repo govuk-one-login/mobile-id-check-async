@@ -461,10 +461,3 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-txma-kms-encryption-key-arn
     Value: !GetAtt TxMAKMSEncryptionKey.Arn
-
-  SessionsTable:
-    Condition: IsDevOrBuild
-    Description: Sessions table arn
-    Export:
-      Name: !Sub ${AWS::StackName}-sessions-table-arn
-    Value: !GetAtt SessionsTable.Arn

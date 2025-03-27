@@ -10,14 +10,3 @@ export const expectedSecurityHeaders = {
   "x-content-type-options": "nosniff",
   "x-frame-options": "DENY",
 };
-
-export const validAuthSessionCreatedSession = {
-  sessionId: crypto.randomUUID(),
-  sessionState: "ASYNC_AUTH_SESSION_CREATED",
-  clientState: "mockClientState",
-  govukSigninJourneyId: "mockGovukSigninJourneyId",
-  clientId: "mockClientId",
-  subjectIdentifier: crypto.randomUUID(),
-  createdAt: Date.now() - 30 * 60 * 1000, // 30 minutes ago
-  timeToLive: Date.now() + 30 * 60 * 1000, // 30 minutes in the future
-};

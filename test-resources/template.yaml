@@ -69,14 +69,6 @@ Mappings:
       ApiBurstLimit: 10
       ApiRateLimit: 10
 
-  TestSessionsApiGateway:
-    build:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
-    dev:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
-
 Conditions:
   DevelopmentStack: !And
     - !Equals
@@ -878,7 +870,3 @@ Outputs:
   StsMockApiUrl:
     Description: STS Mock API Gateway DNS
     Value: !Sub https://${StsMockApiDomainName}
-
-  TestSessionsApiUrl:
-    Description: Test Sessions API url
-    Value: !Sub https://${TestSessionsApiDomainName}

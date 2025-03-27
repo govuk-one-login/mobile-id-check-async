@@ -76,14 +76,6 @@ Mappings:
       ApiBurstLimit: 10
       ApiRateLimit: 10
 
-  TestSessionsApiGateway:
-    dev:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
-    build:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
-
   DNS:
     dev:
       BaseDns: review-b-async.dev.account.gov.uk
@@ -140,10 +132,6 @@ Outputs:
   EventsApiUrl:
     Description: Events API URL
     Value: !Sub https://${EventsApiDomainName}
-
-  TestSessionsApiUrl:
-    Description: Test Sessions API url
-    Value: !Sub https://${TestSessionsApiDomainName}
 
   ProxyApiUrl:
     Description: Proxy API URL used in the Events API tests
