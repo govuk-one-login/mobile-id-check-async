@@ -11,6 +11,8 @@ Resources:
           AttributeType: S
         - AttributeName: timeToLive
           AttributeType: N
+        - AttributeName: createdAt
+          AttributeType: N
       KeySchema:
         - AttributeName: sessionId
           KeyType: HASH
@@ -20,6 +22,18 @@ Resources:
             - AttributeName: subjectIdentifier
               KeyType: HASH
             - AttributeName: timeToLive
+              KeyType: RANGE
+          Projection:
+            NonKeyAttributes:
+              - sessionState
+              - redirectUri
+              - clientState
+            ProjectionType: INCLUDE
+        - IndexName: subjectIdentifier-createdAt-index
+          KeySchema:
+            - AttributeName: subjectIdentifier
+              KeyType: HASH
+            - AttributeName: createdAt
               KeyType: RANGE
           Projection:
             NonKeyAttributes:

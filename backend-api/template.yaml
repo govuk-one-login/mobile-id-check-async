@@ -103,6 +103,7 @@ Mappings:
       EventsBaseUrl: https://events.review-b-async.build.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.build.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.build.account.gov.uk
+      SessionDurationInSeconds: 86400
     dev:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
@@ -112,6 +113,7 @@ Mappings:
       EventsBaseUrl: https://events.review-b-async.dev.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.dev.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.dev.account.gov.uk
+      SessionDurationInSeconds: 86400
     integration:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
@@ -120,6 +122,7 @@ Mappings:
       ClientRegistrySecretPath: integration/clientRegistry
       ReadIdBaseUrl: https://readid-proxy.review-b-async.integration.account.gov.uk
       STSBASEURL: https://token.integration.account.gov.uk
+      SessionDurationInSeconds: 86400
     production:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
@@ -128,6 +131,7 @@ Mappings:
       ClientRegistrySecretPath: production/clientRegistry
       ReadIdBaseUrl: https://readid-proxy.review-b-async.account.gov.uk
       STSBASEURL: https://token.account.gov.uk
+      SessionDurationInSeconds: 86400
     staging:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
@@ -136,6 +140,7 @@ Mappings:
       ClientRegistrySecretPath: staging/clientRegistry
       ReadIdBaseUrl: https://readid-proxy.review-b-async.staging.account.gov.uk
       STSBASEURL: https://token.staging.account.gov.uk
+      SessionDurationInSeconds: 86400
 
   IPVCore:
     build:
@@ -163,18 +168,23 @@ Mappings:
 
   Lambda:
     build:
+      IssueBiometricCredentialReservedConcurrentExecutions: 34
       LogLevel: INFO
       ReservedConcurrentExecutions: 15
     dev:
+      IssueBiometricCredentialReservedConcurrentExecutions: 0
       LogLevel: DEBUG
       ReservedConcurrentExecutions: 0
     integration:
+      IssueBiometricCredentialReservedConcurrentExecutions: 0
       LogLevel: INFO
       ReservedConcurrentExecutions: 0
     production:
+      IssueBiometricCredentialReservedConcurrentExecutions: 0
       LogLevel: INFO
       ReservedConcurrentExecutions: 0
     staging:
+      IssueBiometricCredentialReservedConcurrentExecutions: 34
       LogLevel: INFO
       ReservedConcurrentExecutions: 15
 
@@ -951,7 +961,7 @@ Resources:
                       - sessionId
                       - sessionState
                       - subjectIdentifier
-                      - timeToLive
+                      - createdAt
                       - redirectUri
                       - clientState
                   StringEquals:
@@ -959,7 +969,7 @@ Resources:
                 Effect: Allow
                 Resource:
                   - !GetAtt SessionsTable.Arn
-                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-timeToLive-index
+                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-createdAt-index
             Version: "2012-10-17"
           PolicyName: DynamoReadSessionsTable
         - PolicyDocument:
@@ -2000,7 +2010,10 @@ Resources:
             - EnvironmentVariables
             - !Ref Environment
             - ClientRegistrySecretPath
-          SESSION_DURATION_IN_SECONDS: 3600
+          SESSION_DURATION_IN_SECONDS: !FindInMap
+            - EnvironmentVariables
+            - !Ref Environment
+            - SessionDurationInSeconds
       FunctionName: !Sub ${AWS::StackName}-credential
       Handler: asyncCredentialHandler.lambdaHandler
       Role: !GetAtt AsyncCredentialLambdaRole.Arn
@@ -2047,13 +2060,13 @@ Resources:
                       - sessionId
                       - sessionState
                       - subjectIdentifier
-                      - timeToLive
+                      - createdAt
                   StringEquals:
                     dynamodb:Select: SPECIFIC_ATTRIBUTES
                 Effect: Allow
                 Resource:
                   - !GetAtt SessionsTable.Arn
-                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-timeToLive-index
+                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-createdAt-index
               - Action:
                   - dynamodb:PutItem
                 Effect: Allow
@@ -2723,6 +2736,111 @@ Resources:
       LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
     Condition: isNotDev
 
+  AsyncIssueBiometricCredentialFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - AsyncIssueBiometricCredentialLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - src/functions/asyncIssueBiometricCredential/asyncIssueBiometricCredentialHandler.ts
+        Minify: true
+        Sourcemap: false
+        Target: es2022
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-issue-biometric-credential
+      Handler: asyncIssueBiometricCredentialHandler.lambdaHandler
+      ReservedConcurrentExecutions: !If
+        - isDev
+        - !Ref AWS::NoValue
+        - !FindInMap
+          - Lambda
+          - !Ref Environment
+          - IssueBiometricCredentialReservedConcurrentExecutions
+      Role: !GetAtt AsyncIssueBiometricCredentialLambdaRole.Arn
+      Runtime: nodejs20.x
+      VpcConfig:
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+
+  AsyncIssueBiometricCredentialLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: arn:aws:logs:*:*:*
+            Version: "2012-10-17"
+          PolicyName: AsyncIssueBiometricCredentialLoggingPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Effect: Allow
+                Resource: '*'
+            Version: "2012-10-17"
+          PolicyName: VpcPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                  - sqs:ChangeMessageVisibility
+                Effect: Allow
+                Resource: !GetAtt VendorProcessingSQS.Arn
+            Version: "2012-10-17"
+          PolicyName: SQSPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - kms:Decrypt
+                Effect: Allow
+                Resource: !GetAtt VendorProcessingKMSEncryptionKey.Arn
+            Version: "2012-10-17"
+          PolicyName: KMSPolicy
+      RoleName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda
+
+  AsyncIssueBiometricCredentialLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-issue-biometric-credential
+      RetentionInDays: 30
+
+  AsyncIssueBiometricCredentialSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
+    Condition: isNotDev
+
   AsyncPrivateApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -3356,6 +3474,18 @@ Resources:
                 Effect: Allow
                 Resource: !GetAtt SessionsTable.Arn
           PolicyName: AsyncTxmaEventFunctionDynamodbPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - sqs:SendMessage
+                Effect: Allow
+                Resource: !GetAtt TxMASQSQueue.Arn
+              - Action:
+                  - kms:GenerateDataKey
+                Effect: Allow
+                Resource: !GetAtt TxMAKMSEncryptionKey.Arn
+            Version: "2012-10-17"
+          PolicyName: AsyncTxmaEventFunctionTxmaSQSPolicy
       RoleName: !Sub ${AWS::StackName}-txma-event-lambda
 
   AsyncTxmaEventLogGroup:
@@ -3486,6 +3616,16 @@ Resources:
       Queues:
         - !Ref IPVCoreSQS
     Condition: isNotDevOrBuild
+
+  IssueBiometricCredentialEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 1
+      Enabled: true
+      EventSourceArn: !GetAtt VendorProcessingSQS.Arn
+      FunctionName: !GetAtt AsyncIssueBiometricCredentialFunction.Arn
+      ScalingConfig:
+        MaximumConcurrency: 34
 
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket
@@ -4234,6 +4374,8 @@ Resources:
           AttributeType: S
         - AttributeName: timeToLive
           AttributeType: N
+        - AttributeName: createdAt
+          AttributeType: N
       BillingMode: PAY_PER_REQUEST
       GlobalSecondaryIndexes:
         - IndexName: subjectIdentifier-timeToLive-index
@@ -4241,6 +4383,18 @@ Resources:
             - AttributeName: subjectIdentifier
               KeyType: HASH
             - AttributeName: timeToLive
+              KeyType: RANGE
+          Projection:
+            NonKeyAttributes:
+              - sessionState
+              - redirectUri
+              - clientState
+            ProjectionType: INCLUDE
+        - IndexName: subjectIdentifier-createdAt-index
+          KeySchema:
+            - AttributeName: subjectIdentifier
+              KeyType: HASH
+            - AttributeName: createdAt
               KeyType: RANGE
           Projection:
             NonKeyAttributes:

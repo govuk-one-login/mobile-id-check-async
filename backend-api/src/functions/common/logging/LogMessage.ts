@@ -9,7 +9,7 @@ export class LogMessage implements LogAttributes {
 
   static readonly CLIENT_NOT_FOUND_IN_REGISTRY = new LogMessage(
     "MOBILE_ASYNC_CLIENT_NOT_FOUND_IN_REGISTRY",
-    "Supplied client ID could not be found in client registry.",
+    "Supplied client credentials were not be found in client registry.",
   );
 
   static readonly GET_SECRETS_FROM_PARAMETER_STORE_ATTEMPT = new LogMessage(
@@ -296,6 +296,16 @@ export class LogMessage implements LogAttributes {
   static readonly TXMA_EVENT_COMPLETED = new LogMessage(
     "MOBILE_ASYNC_TXMA_EVENT_COMPLETED",
     "Lambda handler processing has completed successfully.",
+  );
+
+  // Issue Biometric Credential
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_STARTED = new LogMessage(
+    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_STARTED",
+    "Lambda handler processing has started.",
+  );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED = new LogMessage(
+    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+    "Lambda handler processing has completed without issue.",
   );
 
   private constructor(

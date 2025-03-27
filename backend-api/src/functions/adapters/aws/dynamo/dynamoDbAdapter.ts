@@ -47,6 +47,7 @@ import {
   errorResult,
   successResult,
 } from "../../../utils/result";
+import { oneHourAgoInMilliseconds } from "../../../utils/utils";
 
 export type DatabaseRecord = Record<string, NativeAttributeValue>;
 
@@ -71,14 +72,14 @@ export class DynamoDbAdapter implements SessionRegistry {
   ): Promise<DatabaseRecord | null> {
     const input: QueryCommandInput = {
       TableName: this.tableName,
-      IndexName: "subjectIdentifier-timeToLive-index",
+      IndexName: "subjectIdentifier-createdAt-index",
       KeyConditionExpression:
-        "subjectIdentifier = :subjectIdentifier and :currentTimeInSeconds < timeToLive",
-      FilterExpression: "sessionState = :sessionState",
+        "subjectIdentifier = :subjectIdentifier AND createdAt > :oneHourAgoInMilliseconds",
+      FilterExpression: "sessionState = :authSessionCreated",
       ExpressionAttributeValues: {
         ":subjectIdentifier": marshall(subjectIdentifier),
-        ":sessionState": marshall(SessionState.AUTH_SESSION_CREATED),
-        ":currentTimeInSeconds": marshall(this.getTimeNowInSeconds()),
+        ":authSessionCreated": marshall(SessionState.AUTH_SESSION_CREATED),
+        ":oneHourAgoInMilliseconds": marshall(oneHourAgoInMilliseconds()),
       },
       ProjectionExpression: this.formatAsProjectionExpression(attributesToGet),
       Limit: 1,
@@ -113,14 +114,18 @@ export class DynamoDbAdapter implements SessionRegistry {
       state,
       sub,
     } = attributes;
-    const timeToLive = this.getTimeNowInSeconds() + sessionDurationInSeconds;
+    const nowInMilliseconds = Date.now();
+    const timeToLive = this.getTimeToLive(
+      nowInMilliseconds,
+      sessionDurationInSeconds,
+    );
 
     const input: PutItemCommandInput = {
       TableName: this.tableName,
       Item: marshall({
         clientId: client_id,
         govukSigninJourneyId: govuk_signin_journey_id,
-        createdAt: Date.now(),
+        createdAt: nowInMilliseconds,
         issuer: issuer,
         sessionId: sessionId,
         sessionState: SessionState.AUTH_SESSION_CREATED,
@@ -143,23 +148,28 @@ export class DynamoDbAdapter implements SessionRegistry {
     }
   }
 
+  private getTimeToLive(
+    nowInMilliseconds: number,
+    sessionDurationInSeconds: number,
+  ) {
+    return Math.floor(nowInMilliseconds / 1000) + sessionDurationInSeconds;
+  }
+
   async getSession(
     sessionId: string,
     getOperation: GetSessionOperation,
   ): Promise<Result<SessionAttributes, GetSessionFailed>> {
-    const getItemCommandInput = getOperation.getDynamoDbGetCommandInput({
-      tableName: this.tableName,
-      keyValue: sessionId,
-    });
-
     let response;
     try {
       logger.debug(LogMessage.GET_SESSION_ATTEMPT, {
-        data: { sessionId, getItemCommandInput },
+        data: { sessionId },
       });
 
       response = await this.dynamoDbClient.send(
-        new GetItemCommand(getItemCommandInput),
+        new GetItemCommand({
+          TableName: this.tableName,
+          Key: { sessionId: marshall(sessionId) },
+        }),
       );
     } catch (error: unknown) {
       return this.handleGetSessionInternalServerError({
@@ -287,10 +297,6 @@ export class DynamoDbAdapter implements SessionRegistry {
 
     logger.debug(LogMessage.UPDATE_SESSION_SUCCESS);
     return successResult({ attributes: getAttributesResult.value });
-  }
-
-  private getTimeNowInSeconds() {
-    return Math.floor(Date.now() / 1000);
   }
 
   private handleUpdateSessionInternalServerError(

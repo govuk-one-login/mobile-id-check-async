@@ -68,6 +68,22 @@ describe("Backend application infrastructure", () => {
         mappingBottomLevelKey: "ReadIdBaseUrl",
       });
     });
+
+    test("Session duration is set", () => {
+      const expectedEnvironmentVariablesValues = {
+        dev: 86400,
+        build: 86400,
+        staging: 86400,
+        integration: 86400,
+        production: 86400,
+      };
+
+      const mappingHelper = new Mappings(template);
+      mappingHelper.validateEnvironmentVariablesMapping({
+        environmentFlags: expectedEnvironmentVariablesValues,
+        mappingBottomLevelKey: "SessionDurationInSeconds",
+      });
+    });
   });
 
   describe("Private APIgw", () => {
@@ -739,6 +755,23 @@ describe("Backend application infrastructure", () => {
       });
     });
 
+    test("Credential lambda has the session duration environment variable set", () => {
+      template.hasResourceProperties("AWS::Serverless::Function", {
+        Handler: "asyncCredentialHandler.lambdaHandler",
+        Environment: {
+          Variables: {
+            SESSION_DURATION_IN_SECONDS: {
+              "Fn::FindInMap": [
+                "EnvironmentVariables",
+                { Ref: "Environment" },
+                "SessionDurationInSeconds",
+              ],
+            },
+          },
+        },
+      });
+    });
+
     test("All lambdas are attached to a VPC ", () => {
       const lambdas = template.findResources("AWS::Serverless::Function");
       const lambda_list = Object.keys(lambdas);
@@ -776,10 +809,11 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("ActiveSession and BiometricToken lambdas are attached to a VPC and subnets are protected", () => {
+    test("ActiveSession, BiometricToken and IssueBiometricCredential lambdas are attached to a VPC and subnets are protected", () => {
       const lambdaHandlers = [
         "asyncActiveSessionHandler.lambdaHandler",
         "asyncBiometricTokenHandler.lambdaHandler",
+        "asyncIssueBiometricCredentialHandler.lambdaHandler",
       ];
       lambdaHandlers.forEach((lambdaHandler) => {
         template.hasResourceProperties("AWS::Serverless::Function", {
@@ -798,6 +832,51 @@ describe("Backend application infrastructure", () => {
             ],
           },
         });
+      });
+    });
+
+    test("IssueBiometricCredential lambda reserved concurrency is set", () => {
+      const lambaMappings = template.findMappings("Lambda");
+
+      expect(lambaMappings).toStrictEqual({
+        Lambda: {
+          dev: expect.objectContaining({
+            IssueBiometricCredentialReservedConcurrentExecutions: 0, // Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
+          }),
+          build: expect.objectContaining({
+            IssueBiometricCredentialReservedConcurrentExecutions: 34,
+          }),
+          staging: expect.objectContaining({
+            IssueBiometricCredentialReservedConcurrentExecutions: 34,
+          }),
+          integration: expect.objectContaining({
+            IssueBiometricCredentialReservedConcurrentExecutions: 0,
+          }),
+          production: expect.objectContaining({
+            IssueBiometricCredentialReservedConcurrentExecutions: 0,
+          }),
+        },
+      });
+
+      template.hasResourceProperties("AWS::Serverless::Function", {
+        Handler: "asyncIssueBiometricCredentialHandler.lambdaHandler",
+        ReservedConcurrentExecutions: {
+          "Fn::If": [
+            "isDev",
+            {
+              Ref: "AWS::NoValue",
+            },
+            {
+              "Fn::FindInMap": [
+                "Lambda",
+                {
+                  Ref: "Environment",
+                },
+                "IssueBiometricCredentialReservedConcurrentExecutions",
+              ],
+            },
+          ],
+        },
       });
     });
   });
@@ -986,6 +1065,7 @@ describe("Backend application infrastructure", () => {
       "JsonWebKeysFunction",
       "ProxyLambda",
       "AsyncAbortSessionFunction",
+      "AsyncIssueBiometricCredentialFunction",
     ];
 
     const canaryFunctions = Object.entries(allFunctions).filter(
