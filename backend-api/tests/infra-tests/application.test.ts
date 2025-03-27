@@ -809,10 +809,11 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("ActiveSession and BiometricToken lambdas are attached to a VPC and subnets are protected", () => {
+    test("ActiveSession, BiometricToken and IssueBiometricCredential lambdas are attached to a VPC and subnets are protected", () => {
       const lambdaHandlers = [
         "asyncActiveSessionHandler.lambdaHandler",
         "asyncBiometricTokenHandler.lambdaHandler",
+        "asyncIssueBiometricCredentialHandler.lambdaHandler",
       ];
       lambdaHandlers.forEach((lambdaHandler) => {
         template.hasResourceProperties("AWS::Serverless::Function", {
@@ -831,6 +832,51 @@ describe("Backend application infrastructure", () => {
             ],
           },
         });
+      });
+    });
+
+    test("IssueBiometricCredential lambda reserved concurrency is set", () => {
+      const lambaMappings = template.findMappings("Lambda");
+
+      expect(lambaMappings).toStrictEqual({
+        Lambda: {
+          dev: expect.objectContaining({
+            IssueBiometricCredentialReservedConcurrentExecutions: 0, // Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
+          }),
+          build: expect.objectContaining({
+            IssueBiometricCredentialReservedConcurrentExecutions: 34,
+          }),
+          staging: expect.objectContaining({
+            IssueBiometricCredentialReservedConcurrentExecutions: 34,
+          }),
+          integration: expect.objectContaining({
+            IssueBiometricCredentialReservedConcurrentExecutions: 0,
+          }),
+          production: expect.objectContaining({
+            IssueBiometricCredentialReservedConcurrentExecutions: 0,
+          }),
+        },
+      });
+
+      template.hasResourceProperties("AWS::Serverless::Function", {
+        Handler: "asyncIssueBiometricCredentialHandler.lambdaHandler",
+        ReservedConcurrentExecutions: {
+          "Fn::If": [
+            "isDev",
+            {
+              Ref: "AWS::NoValue",
+            },
+            {
+              "Fn::FindInMap": [
+                "Lambda",
+                {
+                  Ref: "Environment",
+                },
+                "IssueBiometricCredentialReservedConcurrentExecutions",
+              ],
+            },
+          ],
+        },
       });
     });
   });
@@ -1019,6 +1065,7 @@ describe("Backend application infrastructure", () => {
       "JsonWebKeysFunction",
       "ProxyLambda",
       "AsyncAbortSessionFunction",
+      "AsyncIssueBiometricCredentialFunction",
     ];
 
     const canaryFunctions = Object.entries(allFunctions).filter(
