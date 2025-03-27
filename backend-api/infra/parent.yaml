@@ -331,6 +331,10 @@ Conditions:
         - dev
     - !Equals [!Ref DeployAlarmsInDev, true]
 
+  DeployCanaryAlarms: !And
+    - !Condition DeployAlarms
+    - !Not [!Equals [!Ref LambdaDeploymentPreference, "AllAtOnce"]]
+
   IntegrateIpvCore: !Equals
       - !Ref Environment
       - staging

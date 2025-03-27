@@ -266,6 +266,13 @@ Conditions:
       - !Ref DeployAlarmsInDev
       - true
 
+  DeployCanaryAlarms: !And
+    - !Condition DeployAlarms
+    - !Not
+      - !Equals
+        - !Ref LambdaDeploymentPreference
+        - AllAtOnce
+
   DeployProxyCsls: !And
     - !Condition ProxyApiDeployment
     - !Condition isNotDev
@@ -811,7 +818,7 @@ Resources:
           MetricName: AsyncActiveSessionMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
-    Condition: DeployAlarms
+    Condition: DeployCanaryAlarms
 
   AsyncActiveSessionErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -869,7 +876,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 10
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
+    Condition: DeployCanaryAlarms
 
   AsyncActiveSessionFunction:
     Type: AWS::Serverless::Function
@@ -886,7 +893,7 @@ Resources:
     Properties:
       DeploymentPreference:
         Alarms: !If
-          - DeployAlarms
+          - DeployCanaryAlarms
           - - !Ref AsyncActiveSessionErrorRateAlarm
             - !Ref AsyncActiveSessionLowCompletionAlarm
           - - !Ref AWS::NoValue
@@ -1058,7 +1065,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 60
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
+    Condition: DeployCanaryAlarms
 
   AsyncActiveSessionSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
@@ -1349,7 +1356,7 @@ Resources:
           MetricName: AsyncBiometricTokenMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
-    Condition: DeployAlarms
+    Condition: DeployCanaryAlarms
 
   AsyncBiometricTokenErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -1407,7 +1414,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 10
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
+    Condition: DeployCanaryAlarms
 
   AsyncBiometricTokenFunction:
     Type: AWS::Serverless::Function
@@ -1424,7 +1431,7 @@ Resources:
     Properties:
       DeploymentPreference:
         Alarms: !If
-          - DeployAlarms
+          - DeployCanaryAlarms
           - - !Ref AsyncBiometricTokenErrorRateAlarm
             - !Ref AsyncBiometricTokenLowCompletionAlarm
           - - !Ref AWS::NoValue
@@ -1627,7 +1634,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 60
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
+    Condition: DeployCanaryAlarms
 
   AsyncBiometricTokenSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
@@ -1918,7 +1925,7 @@ Resources:
           MetricName: AsyncCredentialMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
-    Condition: DeployAlarms
+    Condition: DeployCanaryAlarms
 
   AsyncCredentialErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -1976,7 +1983,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 10
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
+    Condition: DeployCanaryAlarms
 
   AsyncCredentialFunction:
     Type: AWS::Serverless::Function
@@ -1993,7 +2000,7 @@ Resources:
     Properties:
       DeploymentPreference:
         Alarms: !If
-          - DeployAlarms
+          - DeployCanaryAlarms
           - - !Ref AsyncCredentialErrorRateAlarm
             - !Ref AsyncCredentialLowCompletionAlarm
           - - !Ref AWS::NoValue
@@ -2187,7 +2194,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 60
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
+    Condition: DeployCanaryAlarms
 
   AsyncCredentialSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
@@ -2478,7 +2485,7 @@ Resources:
           MetricName: AsyncFinishBiometricSessionMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
-    Condition: DeployAlarms
+    Condition: DeployCanaryAlarms
 
   AsyncFinishBiometricSessionErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2536,7 +2543,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 10
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
+    Condition: DeployCanaryAlarms
 
   AsyncFinishBiometricSessionFunction:
     Type: AWS::Serverless::Function
@@ -2553,7 +2560,7 @@ Resources:
     Properties:
       DeploymentPreference:
         Alarms: !If
-          - DeployAlarms
+          - DeployCanaryAlarms
           - - !Ref AsyncFinishBiometricSessionErrorRateAlarm
             - !Ref AsyncFinishBiometricSessionLowCompletionAlarm
           - - !Ref AWS::NoValue
@@ -2718,7 +2725,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 60
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
+    Condition: DeployCanaryAlarms
 
   AsyncFinishBiometricSessionSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
@@ -3026,7 +3033,7 @@ Resources:
           MetricName: AsyncTokenMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
-    Condition: DeployAlarms
+    Condition: DeployCanaryAlarms
 
   AsyncTokenErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -3084,7 +3091,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 10
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
+    Condition: DeployCanaryAlarms
 
   AsyncTokenFunction:
     Type: AWS::Serverless::Function
@@ -3101,7 +3108,7 @@ Resources:
     Properties:
       DeploymentPreference:
         Alarms: !If
-          - DeployAlarms
+          - DeployCanaryAlarms
           - - !Ref AsyncTokenErrorRateAlarm
             - !Ref AsyncTokenLowCompletionAlarm
           - - !Ref AWS::NoValue
@@ -3268,7 +3275,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 60
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
+    Condition: DeployCanaryAlarms
 
   AsyncTokenSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
