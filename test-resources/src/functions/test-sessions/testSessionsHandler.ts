@@ -15,20 +15,22 @@ import {
   notImplementedResponse,
   serverErrorResponse,
 } from "../common/lambdaResponses";
-import { dependencies } from "../sts-mock/token/handlerDependencies";
 
 export async function lambdaHandlerConstructor(
-  _dependencies: ITestSessionsDependencies,
-  _event: APIGatewayProxyEvent,
+  dependencies: ITestSessionsDependencies,
+  event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
   setupLogger(context);
   logger.info(LogMessage.TEST_SESSIONS_STARTED);
-
   const configResult = getTestSessionsConfig(dependencies.env);
   if (configResult.isError) {
     logger.error(LogMessage.TEST_SESSIONS_INVALID_CONFIG, configResult.value);
     return serverErrorResponse;
+  }
+
+  if (!event.pathParameters) {
+    logger.error(LogMessage.TEST_SESSIONS_REQUEST_PATH_PARAM_INVALID);
   }
   return notImplementedResponse;
 }

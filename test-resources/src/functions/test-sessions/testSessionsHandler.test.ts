@@ -2,26 +2,23 @@ import { APIGatewayProxyResult, Context } from "aws-lambda";
 import { ITestSessionsDependencies } from "./handlerDependencies";
 import { buildRequest } from "../testUtils/mockRequest";
 import { SessionRegistry } from "../common/session/SessionRegistry";
-import { emptySuccess, successResult } from "../common/utils/result";
+import { emptySuccess } from "../common/utils/result";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { lambdaHandlerConstructor } from "./testSessionsHandler";
 import { logger } from "../common/logging/logger";
 import {
   expectedSecurityHeaders,
   NOW_IN_MILLISECONDS,
+  validBaseSessionAttributes,
 } from "../testUtils/unitTestData";
-import "../testUtils/matchers";
 import { expect } from "@jest/globals";
+import "../testUtils/matchers";
 
 export const mockInertSessionRegistry: SessionRegistry = {
   createSession: jest.fn(() => {
     throw new Error("Not implemented");
   }),
 };
-
-const mockWriteGenericEventSuccess = jest
-  .fn()
-  .mockResolvedValue(emptySuccess());
 
 const mockSessionUpdateSuccess = jest.fn().mockResolvedValue(emptySuccess());
 
@@ -37,7 +34,7 @@ describe("Test sessions handler", () => {
   let consoleErrorSpy: jest.SpyInstance;
   let result: APIGatewayProxyResult;
 
-  const validRequest = buildRequest();
+  const validRequest = buildRequest({ body: validBaseSessionAttributes });
 
   beforeEach(() => {
     dependencies = {
@@ -90,7 +87,7 @@ describe("Test sessions handler", () => {
   });
 
   describe("Config validation", () => {
-    describe.each([["SESSION_TABLE_NAME"]])(
+    describe.each([["SESSIONS_TABLE_NAME"]])(
       "Given %s environment variable is missing",
       (envVar: string) => {
         beforeEach(async () => {
@@ -121,5 +118,25 @@ describe("Test sessions handler", () => {
         });
       },
     );
+  });
+
+  describe("Request validation", () => {
+    beforeEach(async () => {
+      result = await lambdaHandlerConstructor(
+        dependencies,
+        validRequest,
+        context,
+      );
+    });
+    describe("Given there is no sessionId in the path", () => {
+      {
+        it("Logs an error", async () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode:
+              "MOBILE_ASYNC_TEST_SESSIONS_REQUEST_PATH_PARAM_INVALID",
+          });
+        });
+      }
+    });
   });
 });
