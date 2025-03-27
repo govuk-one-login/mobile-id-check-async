@@ -10,9 +10,11 @@ import { buildLambdaContext } from "../testUtils/mockContext";
 import { buildRequest } from "../testUtils/mockRequest";
 import {
   expectedSecurityHeaders,
+  mockInertEventService,
   mockInertSessionRegistry,
   mockSessionId,
   mockSuccessfulEventService,
+  mockWriteGenericEventSuccessResult,
   NOW_IN_MILLISECONDS,
   validBiometricTokenIssuedSessionAttributes,
 } from "../testUtils/unitTestData";
@@ -33,6 +35,8 @@ describe("Async TxMA Event", () => {
     dependencies = {
       env: {
         SESSION_TABLE_NAME: "mockTableName",
+        TXMA_SQS: "mockTxmaSqsUrl",
+        ISSUER: "mockIssuer",
       },
       getSessionRegistry: () => mockTxmaEventSessionRegistrySuccess,
       getEventService: () => mockSuccessfulEventService,
@@ -78,7 +82,7 @@ describe("Async TxMA Event", () => {
   });
 
   describe("Config validation", () => {
-    describe.each(["SESSION_TABLE_NAME"])(
+    describe.each(["SESSION_TABLE_NAME", "TXMA_SQS", "ISSUER"])(
       "Given %s environment variable is missing",
       (envVar: string) => {
         beforeEach(async () => {
@@ -247,6 +251,61 @@ describe("Async TxMA Event", () => {
       );
     });
 
+    describe("Given a TxMA billing event fails to write to TxMA (e.g. DCMAW_ASYNC_HYBRID_BILLING_STARTED)", () => {
+      beforeEach(async () => {
+        dependencies.getEventService = () => ({
+          ...mockInertEventService,
+          writeGenericEvent: jest.fn().mockResolvedValue(
+            errorResult({
+              errorMessage: "mockError",
+            }),
+          ),
+        });
+
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+      it("Logs the error", async () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+          data: {
+            auditEventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+          },
+        });
+      });
+
+      it("Returns 500 Internal Server Error ", async () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
+        });
+      });
+    });
+
+    describe("Given a TxMA billing event successfully writes to TxMA (e.g. DCMAW_ASYNC_HYBRID_BILLING_STARTED)", () => {
+      it("Writes DCMAW_ASYNC_HYBRID_BILLING_STARTED event to TxMA", () => {
+        expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+          eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+          componentId: "mockIssuer",
+          getNowInMilliseconds: Date.now,
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
+          sessionId: mockSessionId,
+          sub: "mockSubjectIdentifier",
+          ipAddress: "1.1.1.1",
+          txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
+          redirect_uri: undefined,
+          suspected_fraud_signal: undefined,
+        });
+      });
+    });
+
     it("Logs COMPLETED", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_TXMA_EVENT_COMPLETED",
@@ -272,9 +331,9 @@ const validRequest = buildRequest({
 
 export const mockTxmaEventSessionRegistrySuccess: SessionRegistry = {
   ...mockInertSessionRegistry,
-  getSession: jest.fn().mockResolvedValue(
-    successResult({
-      attributes: validBiometricTokenIssuedSessionAttributes,
-    }),
-  ),
+  getSession: jest
+    .fn()
+    .mockResolvedValue(
+      successResult(validBiometricTokenIssuedSessionAttributes),
+    ),
 };

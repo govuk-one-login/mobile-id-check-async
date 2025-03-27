@@ -649,9 +649,9 @@ const mockBiometricTokenSessionRegistrySuccess: SessionRegistry = {
     }),
   ),
 
-  getSession: jest.fn().mockResolvedValue(
-    successResult({
-      attributes: validBiometricTokenIssuedSessionAttributes,
-    }),
-  ),
+  getSession: jest
+    .fn()
+    .mockResolvedValue(
+      successResult(validBiometricTokenIssuedSessionAttributes),
+    ),
 };
