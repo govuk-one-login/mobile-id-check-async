@@ -67,9 +67,6 @@ components:
             - DCMAW_HYBRID_BILLING_STARTED
             - DCMAW_IPROOV_BILLING_STARTED
             - DCMAW_READID_NFC_BILLING_STARTED
-    WriteTxmaEventResponse:
-      type: string
-      description: Confirms the TxMA event has been written.
     AbortSessionRequest:
       type: object
       required:
@@ -325,8 +322,7 @@ paths:
               examples:
                 internalServerError:
                   description: |
-                    The server has encountered an unexpected condition or configuration problem that prevents 
-                    it from fulfilling the request made by the browser or client.
+                    The server has encountered an unexpected condition or configuration problem that prevents it from fulfilling the request made by the browser or client.
                   value:
                     {
                       "error": "server_error",
@@ -411,8 +407,7 @@ paths:
               examples:
                 internalServerError:
                   description: |
-                    The server has encountered an unexpected condition or configuration problem that prevents 
-                    it from fulfilling the request made by the browser or client.
+                    The server has encountered an unexpected condition or configuration problem that prevents it from fulfilling the request made by the browser or client.
                   value:
                     {
                       "error": "server_error",
@@ -549,7 +544,7 @@ paths:
     post:
       operationId: postTxmaEvent
       summary: Writes an event to TxMA by `POST /txmaEvent`.
-      description: Write an event to TxMA.
+      description: Writes an event to TxMA.
       requestBody:
         description: A JSON object containing a sessionId and an event name
         required: true
@@ -562,106 +557,51 @@ paths:
       responses:
         '200':
           description: OK
-          headers:
-            Access-Control-Allow-Origin:
-              schema:
-                type: string
-            Cache-Control:
-              schema:
-                type: string
-            Content-Type:
-              schema:
-                type: string
-            Strict-Transport-Security:
-              schema:
-                type: string
-            X-Content-Type-Options:
-              schema:
-                type: string
-            X-Frame-Options:
-              schema:
-                type: string
-            Content-Security-Policy:
-              schema:
-                type: string
-            Feature-Policy:
-              schema:
-                type: string
-            Referrer-Policy:
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WriteTxmaEventResponse'
         '400':
           description: Bad Request
-          headers:
-            Access-Control-Allow-Origin:
-              schema:
-                type: string
-            Cache-Control:
-              schema:
-                type: string
-            Content-Type:
-              schema:
-                type: string
-            Strict-Transport-Security:
-              schema:
-                type: string
-            X-Content-Type-Options:
-              schema:
-                type: string
-            X-Frame-Options:
-              schema:
-                type: string
-            Content-Security-Policy:
-              schema:
-                type: string
-            Feature-Policy:
-              schema:
-                type: string
-            Referrer-Policy:
-              schema:
-                type: string
           content:
             application/json:
+              examples:
+                errorInvalidRequest:
+                  description: |
+                    Invalid request body
+                  value:
+                    {
+                      "error": "invalid_request",
+                      "error_description": "Invalid request body"
+                    }
               schema:
-                $ref: '#/components/schemas/WriteTxmaEventResponse'
+                $ref: "#/components/schemas/Error"
         '401':
           description: Unauthorized
-          headers:
-            Access-Control-Allow-Origin:
-              schema:
-                type: string
-            Cache-Control:
-              schema:
-                type: string
-            Content-Type:
-              schema:
-                type: string
-            Strict-Transport-Security:
-              schema:
-                type: string
-            X-Content-Type-Options:
-              schema:
-                type: string
-            X-Frame-Options:
-              schema:
-                type: string
-            Content-Security-Policy:
-              schema:
-                type: string
-            Feature-Policy:
-              schema:
-                type: string
-            Referrer-Policy:
-              schema:
-                type: string
           content:
             application/json:
+              examples:
+                errorInvalidSession:
+                  description: |
+                    Invalid session
+                  value:
+                    {
+                      "error": "invalid_session",
+                      "error_description": "sessionId not recognised or not in a valid state"
+                    }
               schema:
-                $ref: '#/components/schemas/WriteTxmaEventResponse'
+                $ref: "#/components/schemas/Error"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              examples:
+                internalServerError:
+                  description: |
+                    The server has encountered an unexpected condition or configuration problem that prevents it from fulfilling the request made by the browser or client.
+                  value:
+                    {
+                      "error": "server_error",
+                      "error_description": "Internal server error"
+                    }
+              schema:
+                $ref: "#/components/schemas/ServerError"
       x-amazon-apigateway-integration:
         type: "aws_proxy"
         httpMethod: "POST"
@@ -671,47 +611,6 @@ paths:
         requestTemplates:
           application/json:
             statusCode: 200
-        responses:
-          "200":
-            statusCode: "200"
-            responseParameters:
-              method.response.header.Cache-Control: "'no-store'"
-              method.response.header.Content-Type: "'application/json'"
-              method.response.header.Strict-Transport-Security: "'max-age=31536000'"
-              method.response.header.X-Content-Type-Options: "'nosniff'"
-              method.response.header.X-Frame-Options: "'DENY'"
-            responseTemplates:
-              text/plain: OK
-          "400":
-            statusCode: "400"
-            responseParameters:
-              method.response.header.Cache-Control: "'no-store'"
-              method.response.header.Content-Type: "'application/json'"
-              method.response.header.Strict-Transport-Security: "'max-age=31536000'"
-              method.response.header.X-Content-Type-Options: "'nosniff'"
-              method.response.header.X-Frame-Options: "'DENY'"
-            responseTemplates:
-              text/plain: Bad Request
-          "401":
-            statusCode: "401"
-            responseParameters:
-              method.response.header.Cache-Control: "'no-store'"
-              method.response.header.Content-Type: "'application/json'"
-              method.response.header.Strict-Transport-Security: "'max-age=31536000'"
-              method.response.header.X-Content-Type-Options: "'nosniff'"
-              method.response.header.X-Frame-Options: "'DENY'"
-            responseTemplates:
-              text/plain: Unauthorized
-          default:
-            statusCode: "500"
-            responseParameters:
-              method.response.header.Cache-Control: "'no-store'"
-              method.response.header.Content-Type: "'application/json'"
-              method.response.header.Strict-Transport-Security: "'max-age=31536000'"
-              method.response.header.X-Content-Type-Options: "'nosniff'"
-              method.response.header.X-Frame-Options: "'DENY'"
-            responseTemplates:
-              text/plain: Internal Server Error
 
   /async/abortSession:
     post:
@@ -770,8 +669,7 @@ paths:
               examples:
                 internalServerError:
                   description: |
-                    The server has encountered an unexpected condition or configuration problem that prevents 
-                    it from fulfilling the request made by the browser or client.
+                    The server has encountered an unexpected condition or configuration problem that prevents it from fulfilling the request made by the browser or client.
                   value:
                     {
                       "error": "server_error",
