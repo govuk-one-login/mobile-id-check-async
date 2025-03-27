@@ -305,7 +305,7 @@ export class LogMessage implements LogAttributes {
   );
   static readonly ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED = new LogMessage(
     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-    "Lambda handler processing has completed successfully.",
+    "Lambda handler processing has completed without issue.",
   );
 
   private constructor(
