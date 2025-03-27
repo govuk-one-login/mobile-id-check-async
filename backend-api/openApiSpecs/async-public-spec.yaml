@@ -82,7 +82,6 @@ components:
       type: string
       description: Confirms the session has been aborted.
 
-
 paths:
   /async/activeSession:
     get:
@@ -561,6 +560,40 @@ paths:
       tags:
         - TxMA
       responses:
+        '200':
+          description: OK
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+            Cache-Control:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+            Strict-Transport-Security:
+              schema:
+                type: string
+            X-Content-Type-Options:
+              schema:
+                type: string
+            X-Frame-Options:
+              schema:
+                type: string
+            Content-Security-Policy:
+              schema:
+                type: string
+            Feature-Policy:
+              schema:
+                type: string
+            Referrer-Policy:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WriteTxmaEventResponse'
         '400':
           description: Bad Request
           headers:
@@ -629,40 +662,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/WriteTxmaEventResponse'
-        '501':
-          description: Not Implemented
-          headers:
-            Access-Control-Allow-Origin:
-              schema:
-                type: string
-            Cache-Control:
-              schema:
-                type: string
-            Content-Type:
-              schema:
-                type: string
-            Strict-Transport-Security:
-              schema:
-                type: string
-            X-Content-Type-Options:
-              schema:
-                type: string
-            X-Frame-Options:
-              schema:
-                type: string
-            Content-Security-Policy:
-              schema:
-                type: string
-            Feature-Policy:
-              schema:
-                type: string
-            Referrer-Policy:
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WriteTxmaEventResponse'
       x-amazon-apigateway-integration:
         type: "aws_proxy"
         httpMethod: "POST"
@@ -673,6 +672,16 @@ paths:
           application/json:
             statusCode: 200
         responses:
+          "200":
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Cache-Control: "'no-store'"
+              method.response.header.Content-Type: "'application/json'"
+              method.response.header.Strict-Transport-Security: "'max-age=31536000'"
+              method.response.header.X-Content-Type-Options: "'nosniff'"
+              method.response.header.X-Frame-Options: "'DENY'"
+            responseTemplates:
+              text/plain: OK
           "400":
             statusCode: "400"
             responseParameters:
@@ -693,16 +702,6 @@ paths:
               method.response.header.X-Frame-Options: "'DENY'"
             responseTemplates:
               text/plain: Unauthorized
-          "501":
-            statusCode: "501"
-            responseParameters:
-              method.response.header.Cache-Control: "'no-store'"
-              method.response.header.Content-Type: "'application/json'"
-              method.response.header.Strict-Transport-Security: "'max-age=31536000'"
-              method.response.header.X-Content-Type-Options: "'nosniff'"
-              method.response.header.X-Frame-Options: "'DENY'"
-            responseTemplates:
-              text/plain: Not Implemented
           default:
             statusCode: "500"
             responseParameters:
@@ -713,6 +712,7 @@ paths:
               method.response.header.X-Frame-Options: "'DENY'"
             responseTemplates:
               text/plain: Internal Server Error
+
   /async/abortSession:
     post:
       summary: Mark an Auth Session as Aborted
