@@ -62,8 +62,6 @@ components:
           type: string
           description: The name of the txma event being written to SQS
           enum:
-            - DCMAW_APP_HANDOFF_START
-            - DCMAW_APP_HANDOFF_FAILURE
             - DCMAW_HYBRID_BILLING_STARTED
             - DCMAW_IPROOV_BILLING_STARTED
             - DCMAW_READID_NFC_BILLING_STARTED
