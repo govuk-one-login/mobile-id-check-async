@@ -834,6 +834,51 @@ describe("Backend application infrastructure", () => {
         });
       });
     });
+
+    test("IssueBiometricCredential lambda reserved concurrency is set", () => {
+      const lambaMappings = template.findMappings("Lambda");
+
+      expect(lambaMappings).toStrictEqual({
+        Lambda: {
+          dev: expect.objectContaining({
+            IssueBiometricCredentialReservedConcurrentExecutions: 0, // Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
+          }),
+          build: expect.objectContaining({
+            IssueBiometricCredentialReservedConcurrentExecutions: 34,
+          }),
+          staging: expect.objectContaining({
+            IssueBiometricCredentialReservedConcurrentExecutions: 34,
+          }),
+          integration: expect.objectContaining({
+            IssueBiometricCredentialReservedConcurrentExecutions: 0,
+          }),
+          production: expect.objectContaining({
+            IssueBiometricCredentialReservedConcurrentExecutions: 0,
+          }),
+        },
+      });
+
+      template.hasResourceProperties("AWS::Serverless::Function", {
+        Handler: "asyncIssueBiometricCredentialHandler.lambdaHandler",
+        ReservedConcurrentExecutions: {
+          "Fn::If": [
+            "isDev",
+            {
+              Ref: "AWS::NoValue",
+            },
+            {
+              "Fn::FindInMap": [
+                "Lambda",
+                {
+                  Ref: "Environment",
+                },
+                "IssueBiometricCredentialReservedConcurrentExecutions",
+              ],
+            },
+          ],
+        },
+      });
+    });
   });
 
   describe("KMS", () => {
