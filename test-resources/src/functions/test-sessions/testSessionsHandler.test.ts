@@ -34,7 +34,9 @@ describe("Test sessions handler", () => {
   let consoleErrorSpy: jest.SpyInstance;
   let result: APIGatewayProxyResult;
 
-  const validRequest = buildRequest({ body: validBaseSessionAttributes });
+  const validRequest = buildRequest({
+    body: JSON.stringify(validBaseSessionAttributes),
+  });
 
   beforeEach(() => {
     dependencies = {
@@ -121,14 +123,14 @@ describe("Test sessions handler", () => {
   });
 
   describe("Request validation", () => {
-    beforeEach(async () => {
-      result = await lambdaHandlerConstructor(
-        dependencies,
-        validRequest,
-        context,
-      );
-    });
-    describe("Given there is no sessionId in the path", () => {
+    describe("Given there are no path parameters", () => {
+      beforeEach(async () => {
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
       {
         it("Logs an error", async () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
@@ -137,6 +139,22 @@ describe("Test sessions handler", () => {
           });
         });
       }
+    });
+    describe("Given there is no sessionId path parameter", () => {
+      beforeEach(async () => {
+        const request = {
+          ...validRequest,
+          ...{ pathParameters: { mockPathParameter: "mockPathParameter" } },
+        };
+
+        result = await lambdaHandlerConstructor(dependencies, request, context);
+      });
+      it("Logs an error", async () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_TEST_SESSIONS_REQUEST_PATH_PARAM_INVALID",
+          pathParameters: { mockPathParameter: "mockPathParameter" },
+        });
+      });
     });
   });
 });

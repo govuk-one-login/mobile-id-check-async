@@ -29,8 +29,10 @@ export async function lambdaHandlerConstructor(
     return serverErrorResponse;
   }
 
-  if (!event.pathParameters) {
-    logger.error(LogMessage.TEST_SESSIONS_REQUEST_PATH_PARAM_INVALID);
+  if (!event.pathParameters?.sessionId) {
+    logger.error(LogMessage.TEST_SESSIONS_REQUEST_PATH_PARAM_INVALID, {
+      pathParameters: event.pathParameters,
+    });
   }
   return notImplementedResponse;
 }

@@ -1,6 +1,8 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 
-export function buildRequest(overrides?: any): APIGatewayProxyEvent {
+export function buildRequest(
+  overrides?: Partial<APIGatewayProxyEvent>,
+): APIGatewayProxyEvent {
   const defaultRequest: APIGatewayProxyEvent = {
     httpMethod: "get",
     body: "",
