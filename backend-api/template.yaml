@@ -2749,13 +2749,6 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
-      Events:
-        AsyncIssueBiometricCredential:
-          Properties:
-            Method: post
-            Path: /async/issueBiometricCredential
-            RestApiId: !Ref SessionsApi
-          Type: Api
       FunctionName: !Sub ${AWS::StackName}-issue-biometric-credential
       Handler: asyncIssueBiometricCredentialHandler.lambdaHandler
       ReservedConcurrentExecutions: !If
@@ -2774,15 +2767,6 @@ Resources:
           - !ImportValue devplatform-vpc-ProtectedSubnetIdA
           - !ImportValue devplatform-vpc-ProtectedSubnetIdB
           - !ImportValue devplatform-vpc-ProtectedSubnetIdC
-
-  AsyncIssueBiometricCredentialFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt AsyncIssueBiometricCredentialFunction.Arn
-      Principal: events.amazonaws.com
-      SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${SessionsApi}/*/*/*
 
   AsyncIssueBiometricCredentialLambdaRole:
     Type: AWS::IAM::Role
@@ -2825,6 +2809,7 @@ Resources:
                   - sqs:ReceiveMessage
                   - sqs:DeleteMessage
                   - sqs:GetQueueAttributes
+                  - sqs:ChangeMessageVisibility
                 Effect: Allow
                 Resource: !GetAtt VendorProcessingSQS.Arn
             Version: "2012-10-17"
