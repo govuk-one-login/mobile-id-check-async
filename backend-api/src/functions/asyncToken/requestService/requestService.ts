@@ -6,7 +6,6 @@ import {
 } from "../../utils/result";
 import { APIGatewayProxyEventHeaders } from "aws-lambda";
 import { IDecodedClientSecrets } from "../../services/clientRegistryService/clientRegistryService";
-import { logger } from "../../common/logging/logger";
 
 export interface IDecodedAuthorizationHeader {
   clientId: string;
@@ -28,17 +27,12 @@ export class RequestService implements IRequestService {
     if (!authorizationHeader) {
       return errorResult({
         errorMessage: "Missing authorization header",
-        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
-
-    // Temporary log for IPVCore testing in Staging
-    logger.debug("Authorization header", { authorizationHeader });
 
     if (!authorizationHeader.startsWith("Basic ")) {
       return errorResult({
         errorMessage: "Invalid authorization header",
-        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
 
@@ -54,7 +48,6 @@ export class RequestService implements IRequestService {
     } catch (error: unknown) {
       return errorResult({
         errorMessage: `Unable to decode uri encoded client credentials , error: ${error}`,
-        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
 
@@ -63,12 +56,12 @@ export class RequestService implements IRequestService {
     if (!clientId || !clientSecret) {
       return errorResult({
         errorMessage: "Client secret incorrectly formatted",
-        errorCategory: ErrorCategory.CLIENT_ERROR,
       });
     }
 
     return successResult({ clientId, clientSecret });
   };
+
   validateBody = (body: string | null): Result<null> => {
     if (body == null) {
       return errorResult({

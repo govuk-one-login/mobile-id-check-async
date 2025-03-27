@@ -291,10 +291,6 @@ Conditions:
       - !Ref Environment
       - build
 
-  LogIPVCoreRequestHeader: !Equals
-    - !Ref Environment
-    - staging
-
   NeverDeploy: !Equals
     - !Ref SamValidateLintWorkaround
     - Should always equal false
@@ -3119,13 +3115,6 @@ Resources:
             - ClientRegistrySecretPath
       FunctionName: !Sub ${AWS::StackName}-token
       Handler: asyncTokenHandler.lambdaHandler
-      LoggingConfig:
-        ApplicationLogLevel: !If
-          - LogIPVCoreRequestHeader
-          - DEBUG
-          - INFO
-        LogFormat: JSON
-        SystemLogLevel: INFO
       Role: !GetAtt AsyncTokenLambdaRole.Arn
       Runtime: nodejs20.x
       VpcConfig:
@@ -3375,6 +3364,18 @@ Resources:
                 Effect: Allow
                 Resource: !GetAtt SessionsTable.Arn
           PolicyName: AsyncTxmaEventFunctionDynamodbPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - sqs:SendMessage
+                Effect: Allow
+                Resource: !GetAtt TxMASQSQueue.Arn
+              - Action:
+                  - kms:GenerateDataKey
+                Effect: Allow
+                Resource: !GetAtt TxMAKMSEncryptionKey.Arn
+            Version: "2012-10-17"
+          PolicyName: AsyncTxmaEventFunctionTxmaSQSPolicy
       RoleName: !Sub ${AWS::StackName}-txma-event-lambda
 
   AsyncTxmaEventLogGroup:

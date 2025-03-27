@@ -9,7 +9,7 @@ export class LogMessage implements LogAttributes {
 
   static readonly CLIENT_NOT_FOUND_IN_REGISTRY = new LogMessage(
     "MOBILE_ASYNC_CLIENT_NOT_FOUND_IN_REGISTRY",
-    "Supplied client ID could not be found in client registry.",
+    "Supplied client credentials were not be found in client registry.",
   );
 
   static readonly GET_SECRETS_FROM_PARAMETER_STORE_ATTEMPT = new LogMessage(
