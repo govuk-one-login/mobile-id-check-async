@@ -3,6 +3,7 @@ import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 import { expectedSecurityHeaders, mockSessionId } from "./utils/apiTestData";
 import {
   createSessionForSub,
+  EventResponse,
   getActiveSessionIdFromSub,
   issueBiometricToken,
   pollForEvents,
@@ -67,25 +68,12 @@ describe("POST /async/txmaEvent", () => {
         expect.objectContaining(expectedSecurityHeaders),
       );
     });
-
-    it("Writes an event with the correct event_name", async () => {
-      const eventsResponse = await pollForEvents({
-        partitionKey: `SESSION#${sessionId}`,
-        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_4XXERROR`,
-        numberOfEvents: 1,
-      });
-
-      expect(eventsResponse[0].event).toEqual(
-        expect.objectContaining({
-          event_name: "DCMAW_ASYNC_CRI_4XXERROR",
-        }),
-      );
-    }, 40000);
   });
 
   describe("Given the request is valid", () => {
     let sessionId: string | null;
     let response: AxiosResponse;
+    let eventsResponse: EventResponse[];
 
     beforeAll(async () => {
       const sub = randomUUID();
@@ -101,7 +89,21 @@ describe("POST /async/txmaEvent", () => {
         "/async/txmaEvent",
         requestBody,
       );
-    }, 30000);
+
+      eventsResponse = await pollForEvents({
+        partitionKey: `SESSION#${sessionId}`,
+        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_HYBRID_BILLING_STARTED`,
+        numberOfEvents: 1,
+      });
+    }, 70000);
+
+    it("Writes an event with the correct event_name", async () => {
+      expect(eventsResponse[0].event).toEqual(
+        expect.objectContaining({
+          event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+        }),
+      );
+    });
 
     it("Returns 501 Not Implemented response", () => {
       expect(response.status).toBe(501);

@@ -1,6 +1,6 @@
+import { SendMessageCommand } from "@aws-sdk/client-sqs";
 import { Result, emptyFailure, emptySuccess } from "../../utils/result";
 import { sqsClient } from "./sqsClient";
-import { SendMessageCommand } from "@aws-sdk/client-sqs";
 import {
   BiometricTokenIssuedEvent,
   BiometricTokenIssuedEventConfig,
