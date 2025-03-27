@@ -1,3 +1,5 @@
+import { expect } from "@jest/globals";
+
 const toHaveBeenCalledWithLogFields = (
   consoleSpy: jest.SpyInstance,
   logFields: Record<string, unknown>,
