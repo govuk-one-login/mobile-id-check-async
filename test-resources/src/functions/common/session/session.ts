@@ -4,6 +4,12 @@ export enum SessionState {
   BIOMETRIC_SESSION_FINISHED = "ASYNC_BIOMETRIC_SESSION_FINISHED",
 }
 
+enum DocumentType {
+  NFC_PASSPORT = "NFC_PASSPORT",
+  UK_DRIVING_LICENCE = "UK_DRIVING_LICENCE",
+  UK_NFC_BRP = "UK_NFC_BRP"
+}
+
 export interface SessionAttributes {
   clientId: string;
   clientState: string;
@@ -15,7 +21,7 @@ export interface SessionAttributes {
   subjectIdentifier: string;
   timeToLive: number;
   redirectUri?: string;
-  documentType?: string;
+  documentType?: DocumentType;
   opaqueId?: string;
   biometricSessionId?: string;
 }
