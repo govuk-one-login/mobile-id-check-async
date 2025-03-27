@@ -69,6 +69,14 @@ Mappings:
       ApiBurstLimit: 10
       ApiRateLimit: 10
 
+  TestResourcesApiGateway:
+    build:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+    dev:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+
 Conditions:
   DevelopmentStack: !And
     - !Equals
@@ -621,81 +629,73 @@ Resources:
               - BaseDns
       Type: A
 
-  TestSessionsApi:
+  TestResourcesApi:
     Type: AWS::Serverless::Api
     Properties:
       AccessLogSetting:
-        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${TestSessionsApiAccessLogs}
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${TestResources}
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
-      Auth:
-        ApiKeyRequired: false
-        DefaultAuthorizer: AWS_IAM
-        ResourcePolicy:
-          AwsAccountWhitelist: !Sub ${AWS::AccountId}
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: ./openApiSpecs/test-sessions-spec.yaml
-      Description: Functionality to interact with the Sessions database for API tests
+            Location: ./openApiSpecs/test-resources-spec.yaml
+      Description: API for test assets
       EndpointConfiguration: REGIONAL
       MethodSettings:
-        - DataTraceEnabled: true
+        - DataTraceEnabled: false
           HttpMethod: '*'
           LoggingLevel: INFO
           MetricsEnabled: true
           ResourcePath: /*
           ThrottlingBurstLimit: !FindInMap
-            - TestSessionsApiGateway
+            - TestResourcesApiGateway
             - !Ref Environment
             - ApiBurstLimit
           ThrottlingRateLimit: !FindInMap
-            - TestSessionsApiGateway
+            - TestResourcesApiGateway
             - !Ref Environment
             - ApiRateLimit
-      Name: !Sub ${AWS::StackName}-test-sessions
+      Name: !Sub ${AWS::StackName}-test-resources-api
       OpenApiVersion: 3.0.1
       StageName: !Ref Environment
+      Tags:
+        FMSRegionalPolicy: false
 
-  TestSessionsApiAccessLogs:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-test-sessions-api-access-logs-${Environment}
-      RetentionInDays: 30
-
-  TestSessionsApiBasePathMapping:
+  TestResourcesApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
+    DependsOn: TestResourcesApiDomainName
     Properties:
       DomainName: !If
         - DevelopmentStack
         - !Sub
-          - test-sessions-${AWS::StackName}.${DNS_RECORD}
+          - test-resources-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
               - DNS
               - !Ref Environment
               - BaseDns
         - !Sub
-          - test-sessions.${DNS_RECORD}
+          - test-resources.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
               - DNS
               - !Ref Environment
               - BaseDns
-      RestApiId: !Ref TestSessionsApi
-      Stage: !Ref TestSessionsApi.Stage
+      RestApiId: !Ref TestResourcesApi
+      Stage: !Ref TestResourcesApi.Stage
 
-  TestSessionsApiDomainName:
+  TestResourcesApiDomainName:
     Type: AWS::ApiGateway::DomainName
     Properties:
       DomainName: !If
         - DevelopmentStack
         - !Sub
-          - test-sessions-${AWS::StackName}.${DNS_RECORD}
+          - test-resources-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
               - DNS
               - !Ref Environment
               - BaseDns
         - !Sub
-          - test-sessions.${DNS_RECORD}
+          - test-resources.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
               - DNS
               - !Ref Environment
@@ -706,59 +706,37 @@ Resources:
       RegionalCertificateArn: !If
         - DevelopmentStack
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
-        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneTestSessionsCertificateV1ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneSessionsCertificateV2ARN}}'
       SecurityPolicy: TLS_1_2
 
-  TestSessionsApiRecordSet:
+  TestResourcesApiRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
       AliasTarget:
-        DNSName: !GetAtt TestSessionsApiDomainName.RegionalDomainName
-        HostedZoneId: !GetAtt TestSessionsApiDomainName.RegionalHostedZoneId
+        DNSName: !GetAtt TestResourcesApiDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt TestResourcesApiDomainName.RegionalHostedZoneId
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
       Name: !If
         - DevelopmentStack
         - !Sub
-          - test-sessions-${AWS::StackName}.${DNS_RECORD}
+          - test-resources-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
               - DNS
               - !Ref Environment
               - BaseDns
         - !Sub
-          - test-sessions.${DNS_RECORD}
+          - test-resources.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
               - DNS
               - !Ref Environment
               - BaseDns
       Type: A
 
-  TestSessionsApiRole:
-    Type: AWS::IAM::Role
+  TestResourcesLogGroup:
+    Type: AWS::Logs::LogGroup
     Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action:
-              - sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service:
-                - apigateway.amazonaws.com
-        Version: "2012-10-17"
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-      Policies:
-        - PolicyDocument:
-            Statement:
-              - Action:
-                  - dynamodb:PutItem
-                Effect: Allow
-                Resource: !ImportValue
-                  Fn::Sub: ${BackendStackName}-sessions-table-arn
-            Version: "2012-10-17"
-          PolicyName: TestSessionsApiSessionsTable
-      RoleName: !Sub ${AWS::StackName}-test-sessions-api
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-test-resources-api-access-logs
+      RetentionInDays: 30
 
   TokenFunction:
     Type: AWS::Serverless::Function

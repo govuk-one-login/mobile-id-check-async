@@ -1,0 +1,58 @@
+openapi: 3.1.0
+info:
+  title: Test resources api
+  description: API for mock assets used in test environments. This includes the test-sessions functionality, which interacts with the sessions table.
+
+paths:
+  /test-sessions/{sessionId}:
+    put:
+      security:
+        - sigv4Reference: [ ]
+      summary: Create or update a session
+      description: >-
+        The endpoint creates or updates a session in the backend-api Sessions table.
+        This enables more difficult-to-test backend-api API test scenarios.
+      parameters:
+        - name: sessionId
+          in: path
+          description: Session Id
+          required: true
+          schema:
+            type: string
+      responses:
+        "501":
+          description: Not Implemented
+          content:
+            text/plain:
+              schema:
+                type: string
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+            Strict-Transport-Security:
+              schema:
+                type: string
+            X-Content-Type-Options:
+              schema:
+                type: string
+            X-Frame-Options:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${TestSessionsFunction}:live/invocations"
+        passthroughBehavior: "when_no_match"
+        type: "aws_proxy"
+
+components:
+  securitySchemes:
+    sigv4Reference:
+      type: apiKey
+      name: Authorization
+      in: header
+      x-amazon-apigateway-authtype: awsSigv4

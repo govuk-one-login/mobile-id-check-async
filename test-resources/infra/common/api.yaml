@@ -1,0 +1,110 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  TestResourcesApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${AWS::StackName}-test-resources-api
+      Description: API for test assets
+      EndpointConfiguration: REGIONAL
+      StageName: !Ref Environment
+      OpenApiVersion: 3.0.1
+      AccessLogSetting:
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${TestResources}
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      MethodSettings:
+        - LoggingLevel: INFO
+          ResourcePath: /*
+          HttpMethod: '*'
+          DataTraceEnabled: false
+          MetricsEnabled: true
+          ThrottlingBurstLimit: !FindInMap
+            - TestResourcesApiGateway
+            - !Ref Environment
+            - ApiBurstLimit
+          ThrottlingRateLimit: !FindInMap
+            - TestResourcesApiGateway
+            - !Ref Environment
+            - ApiRateLimit
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./openApiSpecs/test-resources-spec.yaml
+      Tags:
+        FMSRegionalPolicy: false
+
+  TestResourcesLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-test-resources-api-access-logs
+      RetentionInDays: 30
+
+  TestResourcesApiDomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - test-resources-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - test-resources.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      RegionalCertificateArn: !If
+        - DevelopmentStack
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneSessionsCertificateV2ARN}}'
+      SecurityPolicy: TLS_1_2
+
+  TestResourcesApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    DependsOn: TestResourcesApiDomainName
+    Properties:
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - test-resources-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - test-resources.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      RestApiId: !Ref TestResourcesApi
+      Stage: !Ref TestResourcesApi.Stage
+
+  TestResourcesApiRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !If
+        - DevelopmentStack
+        - !Sub
+          - test-resources-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+        - !Sub
+          - test-resources.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+            - DNS
+            - !Ref Environment
+            - BaseDns
+      Type: A
+      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
+      AliasTarget:
+        DNSName: !GetAtt TestResourcesApiDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt TestResourcesApiDomainName.RegionalHostedZoneId
