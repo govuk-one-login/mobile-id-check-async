@@ -47,7 +47,7 @@ export const unauthorizedResponse = (
 export const notImplementedResponse: APIGatewayProxyResult = {
   headers: securityHeaders,
   statusCode: 501,
-  body: JSON.stringify({ error: "Not Implemented" }),
+  body: "Not Implemented",
 };
 
 export const serverErrorResponse: APIGatewayProxyResult = {

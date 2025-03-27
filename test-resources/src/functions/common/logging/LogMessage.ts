@@ -6,6 +6,11 @@ export class LogMessage implements LogAttributes {
     "Test sessions lambda started.",
   );
 
+  static readonly TEST_SESSIONS_COMPLETED = new LogMessage(
+    "MOBILE_ASYNC_TEST_SESSIONS_COMPLETED",
+    "Test sessions lambda completed.",
+  );
+
   static readonly TEST_SESSIONS_INVALID_CONFIG = new LogMessage(
     "MOBILE_ASYNC_TEST_SESSIONS_INVALID_CONFIG",
     "Test sessions lambda has missing environment variables.",

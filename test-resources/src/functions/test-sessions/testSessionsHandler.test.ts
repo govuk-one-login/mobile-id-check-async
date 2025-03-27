@@ -8,6 +8,7 @@ import { lambdaHandlerConstructor } from "./testSessionsHandler";
 import { logger } from "../common/logging/logger";
 import {
   expectedSecurityHeaders,
+  mockSessionId,
   NOW_IN_MILLISECONDS,
   validBaseSessionAttributes,
 } from "../testUtils/unitTestData";
@@ -36,6 +37,7 @@ describe("Test sessions handler", () => {
 
   const validRequest = buildRequest({
     body: JSON.stringify(validBaseSessionAttributes),
+    pathParameters: { sessionId: mockSessionId },
   });
 
   beforeEach(() => {
@@ -154,6 +156,27 @@ describe("Test sessions handler", () => {
           messageCode: "MOBILE_ASYNC_TEST_SESSIONS_REQUEST_PATH_PARAM_INVALID",
           pathParameters: { mockPathParameter: "mockPathParameter" },
         });
+      });
+    });
+  });
+
+  describe("Happy path", () => {
+    describe("Given the session is written to Dynamo", () => {
+      beforeEach(async () => {
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+      it("Logs", async () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_TEST_SESSIONS_COMPLETED",
+        });
+      });
+      it("Returns a 501 Not Implemented", async () => {
+        expect(result.statusCode).toBe(501);
+        expect(result.body).toBe("Not Implemented");
       });
     });
   });

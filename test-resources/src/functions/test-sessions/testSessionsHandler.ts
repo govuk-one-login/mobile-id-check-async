@@ -34,6 +34,8 @@ export async function lambdaHandlerConstructor(
       pathParameters: event.pathParameters,
     });
   }
+
+  logger.info(LogMessage.TEST_SESSIONS_COMPLETED);
   return notImplementedResponse;
 }
 
