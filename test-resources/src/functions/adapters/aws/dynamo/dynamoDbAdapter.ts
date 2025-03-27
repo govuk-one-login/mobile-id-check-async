@@ -1,18 +1,14 @@
 import {
-  ConditionalCheckFailedException,
   DynamoDBClient,
   PutItemCommand,
   PutItemCommandInput,
 } from "@aws-sdk/client-dynamodb";
 import {
-  SessionCreateFailed,
   SessionRegistry,
-  UpdateSessionError,
 } from "../../../common/session/SessionRegistry";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 import {
   emptySuccess,
-  errorResult,
   Result,
 } from "../../../common/utils/result";
 import { marshall } from "@aws-sdk/util-dynamodb";
@@ -37,7 +33,7 @@ export class DynamoDbAdapter implements SessionRegistry {
 
   async createSession(
     sessionAttributes: SessionAttributes,
-  ): Promise<Result<void, SessionCreateFailed>> {
+  ): Promise<Result<void, void>> {
     const input: PutItemCommandInput = {
       TableName: this.tableName,
       Item: marshall(sessionAttributes),
@@ -47,24 +43,11 @@ export class DynamoDbAdapter implements SessionRegistry {
     try {
       await this.dynamoDbClient.send(new PutItemCommand(input));
     } catch (error: unknown) {
-      if (error instanceof ConditionalCheckFailedException) {
-        logger.error(LogMessage.CREATE_SESSION_CONDITIONAL_CHECK_FAILURE, {
+        logger.error(LogMessage.TEST_SESSIONS_CREATE_SESSION_FAILURE, {
           error,
           sessionAttributes,
-        });
-        return errorResult({
-          errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
-        });
-      } else {
-        logger.error(LogMessage.CREATE_SESSION_UNEXPECTED_FAILURE, {
-          error,
-          sessionAttributes,
-        });
-        return errorResult({
-          errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
         });
       }
-    }
     return emptySuccess();
   }
 }
