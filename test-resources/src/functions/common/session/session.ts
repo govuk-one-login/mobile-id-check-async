@@ -7,7 +7,7 @@ export enum SessionState {
 enum DocumentType {
   NFC_PASSPORT = "NFC_PASSPORT",
   UK_DRIVING_LICENCE = "UK_DRIVING_LICENCE",
-  UK_NFC_BRP = "UK_NFC_BRP"
+  UK_NFC_BRP = "UK_NFC_BRP",
 }
 
 export interface SessionAttributes {

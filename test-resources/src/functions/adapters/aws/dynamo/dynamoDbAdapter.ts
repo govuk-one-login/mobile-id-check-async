@@ -3,14 +3,9 @@ import {
   PutItemCommand,
   PutItemCommandInput,
 } from "@aws-sdk/client-dynamodb";
-import {
-  SessionRegistry,
-} from "../../../common/session/SessionRegistry";
+import { SessionRegistry } from "../../../common/session/SessionRegistry";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
-import {
-  emptySuccess,
-  Result,
-} from "../../../common/utils/result";
+import { emptySuccess, Result } from "../../../common/utils/result";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { logger } from "../../../common/logging/logger";
 import { LogMessage } from "../../../common/logging/LogMessage";
@@ -43,11 +38,11 @@ export class DynamoDbAdapter implements SessionRegistry {
     try {
       await this.dynamoDbClient.send(new PutItemCommand(input));
     } catch (error: unknown) {
-        logger.error(LogMessage.TEST_SESSIONS_CREATE_SESSION_FAILURE, {
-          error,
-          sessionAttributes,
-        });
-      }
+      logger.error(LogMessage.TEST_SESSIONS_CREATE_SESSION_FAILURE, {
+        error,
+        sessionAttributes,
+      });
+    }
     return emptySuccess();
   }
 }
