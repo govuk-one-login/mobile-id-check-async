@@ -168,18 +168,23 @@ Mappings:
 
   Lambda:
     build:
+      IssueBiometricCredentialReservedConcurrentExecutions: 34
       LogLevel: INFO
       ReservedConcurrentExecutions: 15
     dev:
+      IssueBiometricCredentialReservedConcurrentExecutions: 0
       LogLevel: DEBUG
       ReservedConcurrentExecutions: 0
     integration:
+      IssueBiometricCredentialReservedConcurrentExecutions: 0
       LogLevel: INFO
       ReservedConcurrentExecutions: 0
     production:
+      IssueBiometricCredentialReservedConcurrentExecutions: 0
       LogLevel: INFO
       ReservedConcurrentExecutions: 0
     staging:
+      IssueBiometricCredentialReservedConcurrentExecutions: 34
       LogLevel: INFO
       ReservedConcurrentExecutions: 15
 
@@ -2754,9 +2759,12 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-issue-biometric-credential
       Handler: asyncIssueBiometricCredentialHandler.lambdaHandler
       ReservedConcurrentExecutions: !If
-        - isNotDev
-        - 34
-        - 0
+        - isDev
+        - !Ref AWS::NoValue
+        - !FindInMap
+          - Lambda
+          - !Ref Environment
+          - IssueBiometricCredentialReservedConcurrentExecutions
       Role: !GetAtt AsyncIssueBiometricCredentialLambdaRole.Arn
       Runtime: nodejs20.x
       VpcConfig:
