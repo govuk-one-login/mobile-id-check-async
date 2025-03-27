@@ -105,11 +105,9 @@ describe("POST /async/txmaEvent", () => {
       );
     });
 
-    it("Returns 501 Not Implemented response", () => {
-      expect(response.status).toBe(501);
-      expect(response.data).toStrictEqual({
-        error: "Not Implemented",
-      });
+    it("Returns 200 OK response", () => {
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual("");
       expect(response.headers).toEqual(
         expect.objectContaining(expectedSecurityHeaders),
       );
