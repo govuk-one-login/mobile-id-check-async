@@ -2,6 +2,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 Resources:
   TestResourcesApi:
     Type: AWS::Serverless::Api
+    AlwaysDeploy: true
     Properties:
       Name: !Sub ${AWS::StackName}-test-resources-api
       Description: API for test assets
@@ -108,3 +109,28 @@ Resources:
       AliasTarget:
         DNSName: !GetAtt TestResourcesApiDomainName.RegionalDomainName
         HostedZoneId: !GetAtt TestResourcesApiDomainName.RegionalHostedZoneId
+
+
+  TestResourcesApiRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-test-resources-api
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: Lambda
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !GetAtt TestSessionsFunction.Arn

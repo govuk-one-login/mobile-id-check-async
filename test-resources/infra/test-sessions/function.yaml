@@ -15,20 +15,27 @@ Resources:
           - src/functions/test-sessions/testSessionsHandler.ts
     Properties:
       Description: Test sessions lambda for putting items into the Sessions table
-      FunctionName: !Sub ${AWS::StackName}-test-resources
+      FunctionName: !Sub ${AWS::StackName}-test-sessions
       Runtime: nodejs20.x
       Handler: testSessionsHandler.lambdaHandler
       Timeout: 5
       Role: !GetAtt TestSessionsFunctionRole.Arn
+      Events:
+        TestSessions:
+          Properties:
+            Method: put
+            Path: /test-sessions
+            RestApiId: !Ref TestResourcesApi
+          Type: Api
       Environment:
         Variables:
           SESSIONS_TABLE_ARN:
             Fn::ImportValue: !Sub ${BackendStackName}-sessions-table-arn
       VpcConfig:
         SubnetIds:
-          - !ImportValue devplatform-vpc-PrivateSubnetIdA
-          - !ImportValue devplatform-vpc-PrivateSubnetIdB
-          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
 
@@ -37,9 +44,8 @@ Resources:
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt TestSessionsFunction.Arn
-      Principal: events.amazonaws.com
+      Principal: apigateway.amazonaws.com
       SourceAccount: !Sub ${AWS::AccountId}
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${TestResourcesApi}/*/*/*
 
   TestSessionsFunctionLogGroup:
     Type: AWS::Logs::LogGroup

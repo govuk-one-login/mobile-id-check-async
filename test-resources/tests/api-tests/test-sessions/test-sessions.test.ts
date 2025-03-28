@@ -2,14 +2,14 @@ import { TEST_SESSIONS_API_INSTANCE } from "../dequeue/utils/apiTestHelpers";
 
 describe("Test Sessions api tests", () => {
   it("Returns a 400 with validation reason if request fails api validation", async () => {
-    const response = await TEST_SESSIONS_API_INSTANCE.put("/session", {});
-    console.log(response);
-    expect(response.status).toBe(400);
+    const response = await TEST_SESSIONS_API_INSTANCE.put("/test-sessions/asdf", {});
+    console.log(response.data);
     expect(response.data).toEqual({
       error:
         '[object has missing required properties (["clientId","clientState","createdAt","govukSigninJourneyId","issuer","sessionId","sessionState","subjectIdentifier","timeToLive"])]',
       message: "Invalid request body",
     });
+    expect(response.status).toBe(400);
   });
 
   it("Returns a 201 Created if validation passes", async () => {

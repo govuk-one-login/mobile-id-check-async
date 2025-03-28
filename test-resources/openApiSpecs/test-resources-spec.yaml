@@ -4,21 +4,12 @@ info:
   description: API for mock assets used in test environments. This includes the test-sessions functionality, which interacts with the sessions table.
   version: 1.0.0
 paths:
-  /test-sessions/{sessionId}:
+  /test-sessions:
     put:
-      security:
-        - sigv4Reference: [ ]
       summary: Create or update a session
       description: >-
         The endpoint creates or updates a session in the backend-api Sessions table.
         This enables more difficult-to-test backend-api API test scenarios.
-      parameters:
-        - name: sessionId
-          in: path
-          description: Session Id
-          required: true
-          schema:
-            type: string
       responses:
         '500':
           description: Internal server error
@@ -58,19 +49,19 @@ paths:
               schema:
                 type: string
       x-amazon-apigateway-integration:
+        requestTemplates:
+          application/json:
+            statusCode: 200
         httpMethod: "POST"
+        passthroughBehavior: "when_no_match"
+        credentials:
+          Fn::GetAtt: ["TestResourcesApiRole", "Arn"]
         uri:
           Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${TestSessionsFunction}:live/invocations"
-        passthroughBehavior: "when_no_match"
         type: "aws_proxy"
 
+
 components:
-  securitySchemes:
-    sigv4Reference:
-      type: apiKey
-      name: Authorization
-      in: header
-      x-amazon-apigateway-authtype: awsSigv4
   schemas:
     ServerError:
       type: object
