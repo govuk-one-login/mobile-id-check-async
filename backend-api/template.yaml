@@ -3531,6 +3531,93 @@ Resources:
       KmsMasterKeyId: !Ref IPVCoreKMSEncryptionKey
       MessageRetentionPeriod: 345600
 
+  IPVCoreDlqAgeOfOldestMessageHighThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm when the age of the oldest message in IPV Core SQS DLQ is 10 days or older. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-high-threshold-ipv-core-dlq-age-of-oldest-message
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt IPVCoreDLQ.QueueName
+      EvaluationPeriods: 1
+      MetricName: ApproximateAgeOfOldestMessage
+      Namespace: AWS/SQS
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 864000
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  IPVCoreDlqAgeOfOldestMessageLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm when the age of the oldest message in IPV Core SQS DLQ is 3 days or older. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-low-threshold-ipv-core-dlq-age-of-oldest-message
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt IPVCoreDLQ.QueueName
+      EvaluationPeriods: 1
+      MetricName: ApproximateAgeOfOldestMessage
+      Namespace: AWS/SQS
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 259200
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  IPVCoreDlqMessageVisibleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm when new message gets added to IPV Core SQS DLQ. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-ipv-core-dlq-message-visible
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt IPVCoreDLQ.QueueName
+      EvaluationPeriods: 1
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   IPVCoreKMSEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
@@ -3616,6 +3703,35 @@ Resources:
       Queues:
         - !Ref IPVCoreSQS
     Condition: isNotDevOrBuild
+
+  IPVCoreSqsAgeOfOldestMessageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm when the age of the oldest message in IPV Core SQS queue is 30 minutes or older. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-ipv-core-sqs-age-of-oldest-message
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt IPVCoreSQS.QueueName
+      EvaluationPeriods: 1
+      MetricName: ApproximateAgeOfOldestMessage
+      Namespace: AWS/SQS
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 1800
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
 
   IssueBiometricCredentialEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
@@ -4499,36 +4615,7 @@ Resources:
       KmsMasterKeyId: !Ref VendorProcessingKeyAlias
       MessageRetentionPeriod: 1209600
 
-  VendorProcessingDlqNewMessageLowThresholdAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      ActionsEnabled: true
-      AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      AlarmDescription: !Sub
-        - 'Trigger an alarm when new message gets added to Vendor Processing SQS DLQ. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
-            - StaticVariables
-            - urls
-            - WarningAlarmsRunbook
-      AlarmName: !Sub ${AWS::StackName}-low-threshold-vendor-processing-dlq-new-message
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 1
-      Dimensions:
-        - Name: QueueName
-          Value: !GetAtt VendorProcessingDLQ.QueueName
-      EvaluationPeriods: 1
-      MetricName: ApproximateNumberOfMessagesVisible
-      Namespace: AWS/SQS
-      OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      Period: 60
-      Statistic: Maximum
-      Threshold: 1
-      TreatMissingData: notBreaching
-    Condition: DeployAlarms
-
-  VendorProcessingDlqOldMessageHighThresholdAlarm:
+  VendorProcessingDlqAgeOfOldestMessageHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
@@ -4540,7 +4627,7 @@ Resources:
             - StaticVariables
             - urls
             - WarningAlarmsRunbook
-      AlarmName: !Sub ${AWS::StackName}-high-threshold-vendor-processing-dlq-old-message
+      AlarmName: !Sub ${AWS::StackName}-high-threshold-vendor-processing-dlq-age-of-oldest-message
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
       Dimensions:
@@ -4557,7 +4644,7 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
-  VendorProcessingDlqOldMessageLowThresholdAlarm:
+  VendorProcessingDlqAgeOfOldestMessageLowThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
@@ -4569,7 +4656,7 @@ Resources:
             - StaticVariables
             - urls
             - WarningAlarmsRunbook
-      AlarmName: !Sub ${AWS::StackName}-low-threshold-vendor-processing-dlq-old-message
+      AlarmName: !Sub ${AWS::StackName}-low-threshold-vendor-processing-dlq-age-of-oldest-message
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
       Dimensions:
@@ -4583,6 +4670,35 @@ Resources:
       Period: 60
       Statistic: Maximum
       Threshold: 259200
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  VendorProcessingDlqMessageVisibleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm when new message gets added to Vendor Processing SQS DLQ. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-vendor-processing-dlq-message-visible
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt VendorProcessingDLQ.QueueName
+      EvaluationPeriods: 1
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 1
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
@@ -4628,7 +4744,7 @@ Resources:
         maxReceiveCount: 360
       VisibilityTimeout: 10
 
-  VendorProcessingSqsOldMessageLowThresholdAlarm:
+  VendorProcessingSqsAgeOfOldestMessageAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
@@ -4640,7 +4756,7 @@ Resources:
             - StaticVariables
             - urls
             - WarningAlarmsRunbook
-      AlarmName: !Sub ${AWS::StackName}-low-threshold-vendor-processing-sqs-old-message
+      AlarmName: !Sub ${AWS::StackName}-vendor-processing-sqs-age-of-oldest-message
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
       Dimensions:
