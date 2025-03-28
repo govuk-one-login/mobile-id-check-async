@@ -1,15 +1,15 @@
-import { AwsStub, mockClient } from "aws-sdk-client-mock";
 import {
   SendMessageCommand,
   ServiceInputTypes,
   ServiceOutputTypes,
   SQSClientResolvedConfig,
 } from "@aws-sdk/client-sqs";
+import { AwsStub, mockClient } from "aws-sdk-client-mock";
+import "aws-sdk-client-mock-jest";
+import { emptyFailure, emptySuccess, Result } from "../../../utils/result";
 import { EventService } from "../eventService";
 import { sqsClient } from "../sqsClient";
-import { GenericEventNames } from "../types";
-import { emptyFailure, emptySuccess, Result } from "../../../utils/result";
-import "aws-sdk-client-mock-jest";
+import { GenericEventNames, TxmaBillingEventName } from "../types";
 
 describe("Event Service", () => {
   const eventWriter = new EventService("mockSqsQueue");
@@ -24,11 +24,14 @@ describe("Event Service", () => {
     sqsMock = mockClient(sqsClient);
   });
 
-  describe.each<GenericEventNames>([
+  describe.each<GenericEventNames | TxmaBillingEventName>([
     "DCMAW_ASYNC_CRI_START",
     "DCMAW_ASYNC_CRI_4XXERROR",
     "DCMAW_ASYNC_CRI_5XXERROR",
     "DCMAW_ASYNC_APP_END",
+    "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+    "DCMAW_ASYNC_IPROOV_BILLING_STARTED",
+    "DCMAW_ASYNC_READID_NFC_BILLING_STARTED",
   ])("Writing generic TxMA events to SQS", (genericEventName) => {
     describe(`Given writing ${genericEventName} event to SQS fails`, () => {
       beforeEach(async () => {

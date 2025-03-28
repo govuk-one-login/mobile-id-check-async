@@ -298,6 +298,16 @@ export class LogMessage implements LogAttributes {
     "Lambda handler processing has completed successfully.",
   );
 
+  // Issue Biometric Credential
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_STARTED = new LogMessage(
+    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_STARTED",
+    "Lambda handler processing has started.",
+  );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED = new LogMessage(
+    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+    "Lambda handler processing has completed without issue.",
+  );
+
   private constructor(
     public readonly messageCode: string,
     public readonly message: string,
