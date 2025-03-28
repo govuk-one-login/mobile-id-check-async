@@ -236,8 +236,8 @@ describe("Backend application infrastructure", () => {
         "high-threshold-async-biometric-token-4xx-api-gw": false,
         "high-threshold-async-finish-biometric-session-5xx-api-gw": false,
         "high-threshold-async-finish-biometric-session-4xx-api-gw": false,
-        "high-threshold-vendor-processing-dlq-old-message": false,
-        "high-threshold-ipv-core-dlq-old-message": false,
+        "high-threshold-vendor-processing-dlq-age-of-oldest-message": false,
+        "high-threshold-ipv-core-dlq-age-of-oldest-message": false,
       };
 
       const alarms = template.findResources("AWS::CloudWatch::Alarm");
@@ -306,9 +306,9 @@ describe("Backend application infrastructure", () => {
         ["credential-lambda-low-completion"],
         ["active-session-lambda-error-rate"],
         ["active-session-lambda-low-completion"],
-        ["low-threshold-vendor-processing-sqs-old-message"],
-        ["low-threshold-vendor-processing-dlq-new-message"],
-        ["low-threshold-vendor-processing-dlq-old-message"],
+        ["vendor-processing-sqs-age-of-oldest-message"],
+        ["vendor-processing-dlq-message-visible"],
+        ["low-threshold-vendor-processing-dlq-age-of-oldest-message"],
         ["ipv-core-sqs-age-of-oldest-message"],
         ["ipv-core-dlq-message-visible"],
         ["low-threshold-ipv-core-dlq-age-of-oldest-message"],

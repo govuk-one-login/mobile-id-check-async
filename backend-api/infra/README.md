@@ -36,8 +36,6 @@ All CloudWatch Alarms must have a runbook linked in the alarm description. The a
 - Possible causes
 - Details about what to do next
 
-Canary alarms are designed to rollback lambdas if deployments fail. They do not require developers to take any further steps, therefore they do not need runbooks.
-
 ### Infrastructure tests
 Infrastructure tests target the `backend-api/template.yaml` given this is the template that is deployed to AWS. 
 
