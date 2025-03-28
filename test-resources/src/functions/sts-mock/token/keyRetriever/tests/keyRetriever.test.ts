@@ -5,6 +5,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { mockClient } from "aws-sdk-client-mock";
 import { KeyRetriever, SigningKey } from "../keyRetriever";
+import { ErrorCategory } from "../../../../common/utils/result";
 
 const mockS3Client = mockClient(S3Client);
 const mockS3Response = (content: string) => {
@@ -38,7 +39,7 @@ describe("Key Retriever", () => {
       expect(result.isError).toStrictEqual(true);
       expect(result.value).toStrictEqual({
         errorMessage: "Error getting object from S3",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });
@@ -54,7 +55,7 @@ describe("Key Retriever", () => {
       expect(result.isError).toStrictEqual(true);
       expect(result.value).toStrictEqual({
         errorMessage: "Empty object retrieved from S3",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });
@@ -70,7 +71,7 @@ describe("Key Retriever", () => {
       expect(result.isError).toStrictEqual(true);
       expect(result.value).toStrictEqual({
         errorMessage: "Error formatting key",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });

@@ -1,4 +1,4 @@
-import { errorResult, Result, successResult } from "../../utils/result";
+import { errorResult, Result, successResult } from "../common/utils/result";
 
 export function getConfig(env: NodeJS.ProcessEnv): Result<Config> {
   if (!env.EVENTS_TABLE_NAME) {

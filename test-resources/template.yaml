@@ -69,6 +69,14 @@ Mappings:
       ApiBurstLimit: 10
       ApiRateLimit: 10
 
+  TestResourcesApiGateway:
+    build:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+    dev:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+
 Conditions:
   DevelopmentStack: !And
     - !Equals
@@ -620,6 +628,230 @@ Resources:
               - !Ref Environment
               - BaseDns
       Type: A
+
+  TestResourcesApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      AccessLogSetting:
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${TestResourcesApi}
+        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: ./openApiSpecs/test-resources-spec.yaml
+      Description: API for test assets
+      EndpointConfiguration: REGIONAL
+      MethodSettings:
+        - DataTraceEnabled: false
+          HttpMethod: '*'
+          LoggingLevel: INFO
+          MetricsEnabled: true
+          ResourcePath: /*
+          ThrottlingBurstLimit: !FindInMap
+            - TestResourcesApiGateway
+            - !Ref Environment
+            - ApiBurstLimit
+          ThrottlingRateLimit: !FindInMap
+            - TestResourcesApiGateway
+            - !Ref Environment
+            - ApiRateLimit
+      Name: !Sub ${AWS::StackName}-test-resources-api
+      OpenApiVersion: 3.0.1
+      StageName: !Ref Environment
+      Tags:
+        FMSRegionalPolicy: false
+    AlwaysDeploy: true
+
+  TestResourcesApiBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    DependsOn: TestResourcesApiDomainName
+    Properties:
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - test-resources-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+        - !Sub
+          - test-resources.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+      RestApiId: !Ref TestResourcesApi
+      Stage: !Ref TestResourcesApi.Stage
+
+  TestResourcesApiDomainName:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !If
+        - DevelopmentStack
+        - !Sub
+          - test-resources-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+        - !Sub
+          - test-resources.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      RegionalCertificateArn: !If
+        - DevelopmentStack
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneSessionsCertificateV2ARN}}'
+      SecurityPolicy: TLS_1_2
+
+  TestResourcesApiRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      AliasTarget:
+        DNSName: !GetAtt TestResourcesApiDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt TestResourcesApiDomainName.RegionalHostedZoneId
+      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
+      Name: !If
+        - DevelopmentStack
+        - !Sub
+          - test-resources-${AWS::StackName}.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+        - !Sub
+          - test-resources.${DNS_RECORD}
+          - DNS_RECORD: !FindInMap
+              - DNS
+              - !Ref Environment
+              - BaseDns
+      Type: A
+
+  TestResourcesApiRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+        Version: "2012-10-17"
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action: lambda:InvokeFunction
+                Effect: Allow
+                Resource: !GetAtt TestSessionsFunction.Arn
+            Version: "2012-10-17"
+          PolicyName: Lambda
+      RoleName: !Sub ${AWS::StackName}-test-resources-api
+
+  TestResourcesLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-test-resources-api-access-logs
+      RetentionInDays: 30
+
+  TestSessionsFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - TestSessionsFunctionLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - src/functions/test-sessions/testSessionsHandler.ts
+        Minify: true
+        Sourcemap: false
+        Target: es2022
+    Properties:
+      Description: Test sessions lambda for putting items into the Sessions table
+      Environment:
+        Variables:
+          SESSIONS_TABLE_ARN: !ImportValue
+            Fn::Sub: ${BackendStackName}-sessions-table-arn
+      Events:
+        TestSessions:
+          Properties:
+            Method: put
+            Path: /test-sessions
+            RestApiId: !Ref TestResourcesApi
+          Type: Api
+      FunctionName: !Sub ${AWS::StackName}-test-sessions
+      Handler: testSessionsHandler.lambdaHandler
+      Role: !GetAtt TestSessionsFunctionRole.Arn
+      Runtime: nodejs20.x
+      Timeout: 5
+      VpcConfig:
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+
+  TestSessionsFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-test-sessions
+      RetentionInDays: 30
+
+  TestSessionsFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt TestSessionsFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceAccount: !Sub ${AWS::AccountId}
+
+  TestSessionsFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      Description: Execution role for the test sessions handler
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Effect: Allow
+                Resource: '*'
+            Version: "2012-10-17"
+          PolicyName: VpcPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: arn:aws:logs:*:*:*
+            Version: "2012-10-17"
+          PolicyName: LoggingPolicy
+      RoleName: !Sub ${AWS::StackName}-test-sessions
 
   TokenFunction:
     Type: AWS::Serverless::Function

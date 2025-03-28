@@ -5,7 +5,7 @@ import "aws-sdk-client-mock-jest";
 import { Logger } from "../../services/logging/logger";
 import { buildLambdaContext } from "../../testUtils/mockContext";
 import { MockLoggingAdapter } from "../../services/logging/tests/mockLoggingAdapter";
-import { errorResult, Result, successResult } from "../../../utils/result";
+import { errorResult, Result, successResult } from "../../common/utils/result";
 import {
   IDequeueDependencies,
   lambdaHandlerConstructor,

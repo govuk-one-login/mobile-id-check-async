@@ -207,9 +207,8 @@ if [[ $deploy_backend_api_stack == true ]]; then
       --stack-name "$BACKEND_STACK_NAME" \
       --parameter-overrides "$parameter_overrides" \
       --capabilities CAPABILITY_NAMED_IAM \
-      --resolve-s3
-
-  aws cloudformation wait stack-create-complete --stack-name "${BACKEND_STACK_NAME}" || aws cloudformation wait stack-update-complete --stack-name "${BACKEND_STACK_NAME}"
+      --resolve-s3 \
+      --no-confirm-changeset
 
   ./generate_env_file.sh "$STACK_IDENTIFIER"
   cd ../helper-scripts || exit
@@ -230,9 +229,8 @@ if [[ $deploy_test_resources == true ]]; then
       ${DEV_OVERRIDE_PROXY_BASE_URL}=${PROXY_URL} \
       ${DEV_OVERRIDE_SESSIONS_BASE_URL}=${SESSIONS_URL}" \
     --capabilities CAPABILITY_NAMED_IAM \
-    --resolve-s3
-
-  aws cloudformation wait stack-create-complete --stack-name "${TEST_RESOURCES_STACK_NAME}" || aws cloudformation wait stack-update-complete --stack-name "${TEST_RESOURCES_STACK_NAME}"
+    --resolve-s3 \
+    --no-confirm-changeset
 
   npm run build:env $STACK_IDENTIFIER
   cd ../helper-scripts || exit

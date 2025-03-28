@@ -1,4 +1,9 @@
-import { errorResult, Result, successResult } from "../../../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../../common/utils/result";
 import { createPublicKey, JsonWebKey, KeyObject } from "node:crypto";
 import { CompactEncrypt } from "jose";
 import { JWT } from "../tokenSigner/tokenSigner";
@@ -42,7 +47,7 @@ export class TokenEncrypter implements ITokenEncrypter {
     } catch {
       return errorResult({
         errorMessage: "Error encrypting token",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
   }
@@ -54,13 +59,13 @@ export class TokenEncrypter implements ITokenEncrypter {
       if (!response.ok) {
         return errorResult({
           errorMessage: "Error fetching JWKS",
-          errorCategory: "SERVER_ERROR",
+          errorCategory: ErrorCategory.SERVER_ERROR,
         });
       }
     } catch {
       return errorResult({
         errorMessage: "Unexpected network error fetching JWKS",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
@@ -71,7 +76,7 @@ export class TokenEncrypter implements ITokenEncrypter {
     } catch {
       return errorResult({
         errorMessage: "Response body cannot be parsed as JSON",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
   }
@@ -80,7 +85,7 @@ export class TokenEncrypter implements ITokenEncrypter {
     if (!("keys" in responseBody) || !Array.isArray(responseBody.keys)) {
       return errorResult({
         errorMessage: "Not a valid JWKS",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
@@ -88,7 +93,7 @@ export class TokenEncrypter implements ITokenEncrypter {
     if (!jwk) {
       return errorResult({
         errorMessage: "No encryption key in JWKS",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
@@ -98,7 +103,7 @@ export class TokenEncrypter implements ITokenEncrypter {
     } catch {
       return errorResult({
         errorMessage: "Error creating public encryption key",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
   }

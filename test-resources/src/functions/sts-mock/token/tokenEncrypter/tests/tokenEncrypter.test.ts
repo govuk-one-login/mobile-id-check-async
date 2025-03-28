@@ -1,3 +1,4 @@
+import { ErrorCategory } from "../../../../common/utils/result";
 import { TokenEncrypter } from "../tokenEncrypter";
 
 describe("Token Encrypter", () => {
@@ -49,7 +50,7 @@ describe("Token Encrypter", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage: "Error fetching JWKS",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });
@@ -65,7 +66,7 @@ describe("Token Encrypter", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage: "Unexpected network error fetching JWKS",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });
@@ -85,7 +86,7 @@ describe("Token Encrypter", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage: "Response body cannot be parsed as JSON",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });
@@ -105,7 +106,7 @@ describe("Token Encrypter", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage: "Not a valid JWKS",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });
@@ -125,7 +126,7 @@ describe("Token Encrypter", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage: "Not a valid JWKS",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });
@@ -145,7 +146,7 @@ describe("Token Encrypter", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage: "No encryption key in JWKS",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });
@@ -165,7 +166,7 @@ describe("Token Encrypter", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage: "Error creating public encryption key",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });
@@ -203,7 +204,7 @@ describe("Token Encrypter", () => {
       expect(result.isError).toBe(true);
       expect(result.value).toStrictEqual({
         errorMessage: "Error encrypting token",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });

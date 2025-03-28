@@ -1,4 +1,9 @@
-import { errorResult, Result, successResult } from "../../../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../../common/utils/result";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { createPrivateKey, KeyObject, JsonWebKey } from "node:crypto";
 
@@ -43,14 +48,14 @@ export class KeyRetriever implements IKeyRetriever {
     } catch {
       return errorResult({
         errorMessage: "Error getting object from S3",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
     if (!response.Body) {
       return errorResult({
         errorMessage: "Empty object retrieved from S3",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
@@ -71,7 +76,7 @@ export class KeyRetriever implements IKeyRetriever {
     } catch {
       return errorResult({
         errorMessage: "Error formatting key",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
   }
