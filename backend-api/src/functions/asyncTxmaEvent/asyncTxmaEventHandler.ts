@@ -5,7 +5,7 @@ import {
 } from "aws-lambda";
 import {
   badRequestResponse,
-  notImplementedResponse,
+  okResponse,
   serverErrorResponse,
   unauthorizedResponse,
 } from "../common/lambdaResponses";
@@ -81,7 +81,7 @@ export async function lambdaHandlerConstructor(
   if (handleWritingBillingEventToTxmaResult.isError) return serverErrorResponse;
 
   logger.info(LogMessage.TXMA_EVENT_COMPLETED);
-  return notImplementedResponse;
+  return okResponse();
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(

@@ -312,11 +312,11 @@ describe("Async TxMA Event", () => {
       });
     });
 
-    it("Returns 501 Not Implemented response", () => {
+    it("Returns 200 OK response", () => {
       expect(result).toStrictEqual({
         headers: expectedSecurityHeaders,
-        statusCode: 501,
-        body: JSON.stringify({ error: "Not Implemented" }),
+        statusCode: 200,
+        body: "",
       });
     });
   });

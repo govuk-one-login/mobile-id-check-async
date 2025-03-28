@@ -236,7 +236,8 @@ describe("Backend application infrastructure", () => {
         "high-threshold-async-biometric-token-4xx-api-gw": false,
         "high-threshold-async-finish-biometric-session-5xx-api-gw": false,
         "high-threshold-async-finish-biometric-session-4xx-api-gw": false,
-        "high-threshold-vendor-processing-dlq-old-message": false,
+        "high-threshold-vendor-processing-dlq-age-of-oldest-message": false,
+        "high-threshold-ipv-core-dlq-age-of-oldest-message": false,
       };
 
       const alarms = template.findResources("AWS::CloudWatch::Alarm");
@@ -305,10 +306,12 @@ describe("Backend application infrastructure", () => {
         ["credential-lambda-low-completion"],
         ["active-session-lambda-error-rate"],
         ["active-session-lambda-low-completion"],
-        ["low-threshold-vendor-processing-sqs-old-message"],
-        ["low-threshold-vendor-processing-dlq-new-message"],
-        ["low-threshold-vendor-processing-dlq-old-message"],
-        ["high-threshold-vendor-processing-dlq-old-message"],
+        ["vendor-processing-sqs-age-of-oldest-message"],
+        ["vendor-processing-dlq-message-visible"],
+        ["low-threshold-vendor-processing-dlq-age-of-oldest-message"],
+        ["ipv-core-sqs-age-of-oldest-message"],
+        ["ipv-core-dlq-message-visible"],
+        ["low-threshold-ipv-core-dlq-age-of-oldest-message"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
@@ -809,10 +812,11 @@ describe("Backend application infrastructure", () => {
       });
     });
 
-    test("ActiveSession and BiometricToken lambdas are attached to a VPC and subnets are protected", () => {
+    test("ActiveSession, BiometricToken and IssueBiometricCredential lambdas are attached to a VPC and subnets are protected", () => {
       const lambdaHandlers = [
         "asyncActiveSessionHandler.lambdaHandler",
         "asyncBiometricTokenHandler.lambdaHandler",
+        "asyncIssueBiometricCredentialHandler.lambdaHandler",
       ];
       lambdaHandlers.forEach((lambdaHandler) => {
         template.hasResourceProperties("AWS::Serverless::Function", {
@@ -831,6 +835,51 @@ describe("Backend application infrastructure", () => {
             ],
           },
         });
+      });
+    });
+
+    test("IssueBiometricCredential lambda reserved concurrency is set", () => {
+      const lambaMappings = template.findMappings("Lambda");
+
+      expect(lambaMappings).toStrictEqual({
+        Lambda: {
+          dev: expect.objectContaining({
+            IssueBiometricCredentialReservedConcurrentExecutions: 0, // Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
+          }),
+          build: expect.objectContaining({
+            IssueBiometricCredentialReservedConcurrentExecutions: 34,
+          }),
+          staging: expect.objectContaining({
+            IssueBiometricCredentialReservedConcurrentExecutions: 34,
+          }),
+          integration: expect.objectContaining({
+            IssueBiometricCredentialReservedConcurrentExecutions: 0,
+          }),
+          production: expect.objectContaining({
+            IssueBiometricCredentialReservedConcurrentExecutions: 0,
+          }),
+        },
+      });
+
+      template.hasResourceProperties("AWS::Serverless::Function", {
+        Handler: "asyncIssueBiometricCredentialHandler.lambdaHandler",
+        ReservedConcurrentExecutions: {
+          "Fn::If": [
+            "isDev",
+            {
+              Ref: "AWS::NoValue",
+            },
+            {
+              "Fn::FindInMap": [
+                "Lambda",
+                {
+                  Ref: "Environment",
+                },
+                "IssueBiometricCredentialReservedConcurrentExecutions",
+              ],
+            },
+          ],
+        },
       });
     });
   });
@@ -1019,6 +1068,7 @@ describe("Backend application infrastructure", () => {
       "JsonWebKeysFunction",
       "ProxyLambda",
       "AsyncAbortSessionFunction",
+      "AsyncIssueBiometricCredentialFunction",
     ];
 
     const canaryFunctions = Object.entries(allFunctions).filter(
