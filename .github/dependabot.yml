@@ -37,6 +37,9 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      - dependency-name: "jose"
+        versions: ["5.x"]
   - package-ecosystem: "npm"
     directory: "test-resources"
     schedule:
@@ -62,6 +65,8 @@ updates:
     ignore:
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+      - dependency-name: "jose"
+        versions: ["5.x"]
   - package-ecosystem: "npm"
     directory: "helper-scripts"
     schedule:
