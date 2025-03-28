@@ -29,6 +29,13 @@ Merging templates requires rain to be installed. See https://github.com/aws-clou
 3) Delete the `infra/*.yaml` file if empty
 4) Generate the `template.yaml`
 
+### CloudWatch Alarms
+All CloudWatch Alarms must have a runbook linked in the alarm description. The alarm must be listed in the runbook with the following details;
+- What triggers the alarm
+- The impact on the end user
+- Possible causes
+- Details about what to do next
+
 ### Infrastructure tests
 Infrastructure tests target the `backend-api/template.yaml` given this is the template that is deployed to AWS. 
 

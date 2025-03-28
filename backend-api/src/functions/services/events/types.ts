@@ -53,11 +53,20 @@ export type GenericEventNames =
 
 export type EventNames =
   | GenericEventNames
+  | TxmaBillingEventName
   | "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED"
   | "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED";
 
+export const txmaBillingEventNames = [
+  "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+  "DCMAW_ASYNC_IPROOV_BILLING_STARTED",
+  "DCMAW_ASYNC_READID_NFC_BILLING_STARTED",
+] as const;
+
+export type TxmaBillingEventName = (typeof txmaBillingEventNames)[number];
+
 export interface GenericEventConfig extends BaseUserEventConfig {
-  eventName: GenericEventNames;
+  eventName: GenericEventNames | TxmaBillingEventName;
   redirect_uri: string | undefined;
   suspected_fraud_signal: string | undefined;
 }
@@ -72,7 +81,7 @@ export interface BiometricTokenIssuedEventConfig extends BaseUserEventConfig {
 }
 
 export interface GenericTxmaEvent extends BaseUserTxmaEvent {
-  event_name: GenericEventNames;
+  event_name: GenericEventNames | TxmaBillingEventName;
   extensions: Extensions | undefined;
 }
 
