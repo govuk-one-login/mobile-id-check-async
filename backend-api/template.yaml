@@ -4694,6 +4694,13 @@ Outputs:
     Description: Sessions API Gateway base URL
     Value: !Sub https://${SessionsApiDomainName}
 
+  SessionsTableArn:
+    Description: Sessions Table Arn
+    Value: !GetAtt SessionsTable.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-sessions-table-arn
+    Condition: IsDevOrBuild
+
   StsMockApiUrl:
     Description: STS Mock API Gateway base URL
     Value: !If
