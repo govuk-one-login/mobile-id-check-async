@@ -102,10 +102,10 @@ async function handleConditionalCheckFailure(
     govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
     componentId: issuer,
     getNowInMilliseconds: Date.now,
-    redirect_uri: sessionAttributes.redirectUri,
-    suspected_fraud_signal: getFraudSignal(),
     ipAddress: ipAddress,
     txmaAuditEncoded: txmaAuditEncoded,
+    redirect_uri: sessionAttributes.redirectUri,
+    suspected_fraud_signal: getFraudSignal(),
   });
 
   if (writeEventResult.isError) {
@@ -136,10 +136,10 @@ async function handleSessionNotFound(
     govukSigninJourneyId: undefined,
     componentId: issuer,
     getNowInMilliseconds: Date.now,
-    ipAddress: ipAddress,
-    txmaAuditEncoded: txmaAuditEncoded,
     redirect_uri: undefined,
     suspected_fraud_signal: undefined,
+    ipAddress: ipAddress,
+    txmaAuditEncoded: txmaAuditEncoded,
   });
 
   if (writeEventResult.isError) {
@@ -166,10 +166,10 @@ async function handleInternalServerError(
     govukSigninJourneyId: undefined,
     componentId: issuer,
     getNowInMilliseconds: Date.now,
-    ipAddress: ipAddress,
-    txmaAuditEncoded: txmaAuditEncoded,
     redirect_uri: undefined,
     suspected_fraud_signal: undefined,
+    ipAddress: ipAddress,
+    txmaAuditEncoded: txmaAuditEncoded,
   });
 
   if (writeEventResult.isError) {
