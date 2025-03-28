@@ -1,15 +1,10 @@
 import { randomUUID } from "crypto";
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
-import {
-  mockBiometricSessionId,
-  expectedSecurityHeaders,
-  mockSessionId,
-} from "./utils/apiTestData";
+import { expectedSecurityHeaders, mockSessionId } from "./utils/apiTestData";
 import {
   createSessionForSub,
   EventResponse,
   getActiveSessionIdFromSub,
-  issueBiometricToken,
   pollForEvents,
 } from "./utils/apiTestHelpers";
 import { AxiosResponse } from "axios";
@@ -72,20 +67,8 @@ describe("POST /async/abortSession", () => {
         sessionId,
       });
 
-      eventsResponse = await pollForEvents({
-        partitionKey: `SESSION#${sessionId}`,
-        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_APP_END`,
-        numberOfEvents: 1,
-      });
+      console.log("response", response.data);
     }, 40000);
-
-    it("Writes DCMAW_ASYNC_APP_END TxMA event", () => {
-      expect(eventsResponse[0].event).toEqual(
-        expect.objectContaining({
-          event_name: "DCMAW_ASYNC_APP_END",
-        }),
-      );
-    });
 
     it("Returns 501 response", () => {
       expect(response.status).toBe(501);

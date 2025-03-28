@@ -5,7 +5,6 @@ import {
 } from "aws-lambda";
 import {
   badRequestResponse,
-  forbiddenResponse,
   notImplementedResponse,
   serverErrorResponse,
   unauthorizedResponse,
@@ -28,6 +27,7 @@ import { FailureWithValue } from "../utils/result";
 import { SessionAttributes } from "../common/session/session";
 import { setupLogger } from "../common/logging/setupLogger";
 import { isOlderThan60Minutes } from "../utils/utils";
+import { getAuditData } from "../common/request/getAuditData/getAuditData";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncAbortSessionDependencies,
@@ -60,6 +60,8 @@ export async function lambdaHandlerConstructor(
     config.SESSION_TABLE_NAME,
   );
 
+  const { ipAddress, txmaAuditEncoded } = getAuditData(event);
+
   const updateResult = await sessionRegistry.updateSession(
     sessionId,
     new AbortSession(sessionId),
@@ -70,6 +72,8 @@ export async function lambdaHandlerConstructor(
       eventService,
       sessionId,
       config.ISSUER,
+      ipAddress,
+      txmaAuditEncoded,
     );
   }
 
@@ -81,6 +85,8 @@ async function handleConditionalCheckFailure(
   eventService: IEventService,
   sessionAttributes: SessionAttributes,
   issuer: string,
+  ipAddress: string,
+  txmaAuditEncoded: string | undefined,
 ): Promise<APIGatewayProxyResult> {
   const isSessionExpired = isOlderThan60Minutes(sessionAttributes.createdAt);
 
@@ -98,8 +104,8 @@ async function handleConditionalCheckFailure(
     getNowInMilliseconds: Date.now,
     redirect_uri: sessionAttributes.redirectUri,
     suspected_fraud_signal: getFraudSignal(),
-    ipAddress: undefined,
-    txmaAuditEncoded: undefined,
+    ipAddress: ipAddress,
+    txmaAuditEncoded: txmaAuditEncoded,
   });
 
   if (writeEventResult.isError) {
@@ -110,7 +116,7 @@ async function handleConditionalCheckFailure(
   }
 
   if (isSessionExpired) {
-    return forbiddenResponse("expired_session", "Session has expired");
+    return unauthorizedResponse("expired_session", "Session has expired");
   }
 
   return unauthorizedResponse("invalid_session", "Session in invalid state");
@@ -120,6 +126,8 @@ async function handleSessionNotFound(
   eventService: IEventService,
   sessionId: string,
   issuer: string,
+  ipAddress: string,
+  txmaAuditEncoded: string | undefined,
 ): Promise<APIGatewayProxyResult> {
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_4XXERROR",
@@ -128,8 +136,8 @@ async function handleSessionNotFound(
     govukSigninJourneyId: undefined,
     componentId: issuer,
     getNowInMilliseconds: Date.now,
-    ipAddress: undefined,
-    txmaAuditEncoded: undefined,
+    ipAddress: ipAddress,
+    txmaAuditEncoded: txmaAuditEncoded,
     redirect_uri: undefined,
     suspected_fraud_signal: undefined,
   });
@@ -148,6 +156,8 @@ async function handleInternalServerError(
   eventService: IEventService,
   sessionId: string,
   issuer: string,
+  ipAddress: string,
+  txmaAuditEncoded: string | undefined,
 ): Promise<APIGatewayProxyResult> {
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_5XXERROR",
@@ -156,8 +166,8 @@ async function handleInternalServerError(
     govukSigninJourneyId: undefined,
     componentId: issuer,
     getNowInMilliseconds: Date.now,
-    ipAddress: undefined,
-    txmaAuditEncoded: undefined,
+    ipAddress: ipAddress,
+    txmaAuditEncoded: txmaAuditEncoded,
     redirect_uri: undefined,
     suspected_fraud_signal: undefined,
   });
@@ -176,6 +186,8 @@ async function handleUpdateSessionError(
   eventService: IEventService,
   sessionId: string,
   issuer: string,
+  ipAddress: string,
+  txmaAuditEncoded: string | undefined,
 ): Promise<APIGatewayProxyResult> {
   switch (updateSessionResult.value.errorType) {
     case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
@@ -183,11 +195,25 @@ async function handleUpdateSessionError(
         eventService,
         updateSessionResult.value.attributes,
         issuer,
+        ipAddress,
+        txmaAuditEncoded,
       );
     case UpdateSessionError.SESSION_NOT_FOUND:
-      return handleSessionNotFound(eventService, sessionId, issuer);
+      return handleSessionNotFound(
+        eventService,
+        sessionId,
+        issuer,
+        ipAddress,
+        txmaAuditEncoded,
+      );
     case UpdateSessionError.INTERNAL_SERVER_ERROR:
-      return handleInternalServerError(eventService, sessionId, issuer);
+      return handleInternalServerError(
+        eventService,
+        sessionId,
+        issuer,
+        ipAddress,
+        txmaAuditEncoded,
+      );
   }
 }
 

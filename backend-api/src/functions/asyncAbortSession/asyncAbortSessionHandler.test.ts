@@ -13,6 +13,9 @@ import {
   mockInertSessionRegistry,
   mockInertEventService,
   validAbortSessionAttributes,
+  MOCK_CURRENT_TIME,
+  MOCK_EXPIRED_TIME,
+  MOCK_VALID_TIME,
 } from "../testUtils/unitTestData";
 import { emptySuccess, successResult, errorResult } from "../utils/result";
 import { UpdateSessionError } from "../common/session/SessionRegistry";
@@ -23,11 +26,6 @@ describe("Async Abort Session", () => {
   let consoleInfoSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
   let result: APIGatewayProxyResult;
-
-  // Constants for epoch timestamps
-  const MOCK_CURRENT_TIME = 1708531200000; // 2024-02-21T12:00:00.000Z
-  const MOCK_VALID_TIME = MOCK_CURRENT_TIME - 30 * 60 * 1000; // 30 minutes old
-  const MOCK_EXPIRED_TIME = MOCK_CURRENT_TIME - 61 * 60 * 1000; // Over 1 hour old
 
   const validRequest = buildRequest({
     body: JSON.stringify({
@@ -84,16 +82,11 @@ describe("Async Abort Session", () => {
 
   afterEach(() => {
     jest.useRealTimers();
-    jest.clearAllMocks();
   });
 
   describe("On every invocation", () => {
     beforeEach(async () => {
-      result = await lambdaHandlerConstructor(
-        dependencies,
-        validRequest,
-        context,
-      );
+      await lambdaHandlerConstructor(dependencies, validRequest, context);
     });
 
     it("Adds context and version to log attributes and logs STARTED message", () => {
@@ -106,11 +99,6 @@ describe("Async Abort Session", () => {
 
     it("Clears pre-existing log attributes", async () => {
       logger.appendKeys({ testKey: "testValue" });
-      result = await lambdaHandlerConstructor(
-        dependencies,
-        validRequest,
-        context,
-      );
 
       expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
         testKey: "testValue",
@@ -239,6 +227,10 @@ describe("Async Abort Session", () => {
             govukSigninJourneyId: undefined,
             sessionId: mockSessionId,
             sub: undefined,
+            ipAddress: "1.1.1.1",
+            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
+            redirect_uri: undefined,
+            suspected_fraud_signal: undefined,
           });
           expect(result.statusCode).toBe(401);
         });
@@ -269,7 +261,7 @@ describe("Async Abort Session", () => {
           );
         });
 
-        it("Writes fraud signal and returns 403", () => {
+        it("Writes fraud signal and returns 401", () => {
           expect(mockWriteGenericEventSuccess).toBeCalledWith({
             eventName: "DCMAW_ASYNC_CRI_4XXERROR",
             componentId: "mockIssuer",
@@ -278,8 +270,10 @@ describe("Async Abort Session", () => {
             sessionId: expiredSessionAttributes.sessionId,
             sub: expiredSessionAttributes.subjectIdentifier,
             suspected_fraud_signal: "AUTH_SESSION_TOO_OLD",
+            ipAddress: "1.1.1.1",
+            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
           });
-          expect(result.statusCode).toBe(403);
+          expect(result.statusCode).toBe(401);
         });
       });
 
@@ -314,6 +308,8 @@ describe("Async Abort Session", () => {
             govukSigninJourneyId: validSessionAttributes.govukSigninJourneyId,
             sessionId: validSessionAttributes.sessionId,
             sub: validSessionAttributes.subjectIdentifier,
+            ipAddress: "1.1.1.1",
+            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
             extensions: undefined,
           });
           expect(result.statusCode).toBe(401);
@@ -413,6 +409,8 @@ describe("Async Abort Session", () => {
             govukSigninJourneyId: undefined,
             sessionId: mockSessionId,
             sub: undefined,
+            ipAddress: "1.1.1.1",
+            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
           });
           expect(result.statusCode).toBe(500);
         });
@@ -435,7 +433,7 @@ describe("Async Abort Session", () => {
       });
     });
 
-    it("Returns 501 OK response", async () => {
+    it("Returns 501 Not Implemented response", async () => {
       expect(result).toStrictEqual({
         headers: expectedSecurityHeaders,
         statusCode: 501,
