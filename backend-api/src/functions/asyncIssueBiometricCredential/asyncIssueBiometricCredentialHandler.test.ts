@@ -120,14 +120,35 @@ describe("Async Issue Biometric Credential", () => {
     describe("Given event body is invalid", () => {
       describe.each([
         {
-          scenario: "Given event body is undefined",
+          scenario: "Given body is undefined",
           body: undefined,
           errorMessage: "Event body either null or undefined.",
         },
         {
-          scenario: "Given event body cannot be parsed",
+          scenario: "Given body cannot be parsed",
           body: "invalidJson",
           errorMessage: "Failed to parse event body. Body: invalidJson",
+        },
+        {
+          scenario: "Given parsed body is null",
+          body: JSON.stringify(null),
+          errorMessage: `Parsed body not in expected shape: null`,
+        },
+        {
+          scenario: "Given parsed body is an array",
+          body: JSON.stringify([]),
+          errorMessage: `Parsed body not in expected shape: []`,
+        },
+        {
+          scenario: "Given parsed body is an empty object",
+          body: JSON.stringify({}),
+          errorMessage: `Parsed body not in expected shape: {}`,
+        },
+        {
+          scenario:
+            "Given parsed body does not contain a key of sessionId with a value of type string",
+          body: JSON.stringify({ foo: "bar" }),
+          errorMessage: `Parsed body not in expected shape: {"foo":"bar"}`,
         },
       ])("$scenario", ({ body, errorMessage }) => {
         const invalidSqsEvent = {
@@ -151,59 +172,6 @@ describe("Async Issue Biometric Credential", () => {
             messageCode:
               "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
             errorMessage,
-          });
-        });
-
-        it("Does not log COMPLETED", () => {
-          expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-          });
-        });
-      });
-    });
-
-    describe("Given parsed body is not in a valid shape", () => {
-      describe.each([
-        {
-          scenario: "Given parsed body is null",
-          parsedBody: JSON.stringify(null),
-        },
-        {
-          scenario: "Given parsed body is an array",
-          parsedBody: JSON.stringify([]),
-        },
-        {
-          scenario: "Given parsed body is an empty object",
-          parsedBody: JSON.stringify({}),
-        },
-        {
-          scenario:
-            "Given parsed body does not contain a key of sessionId with a value of type string",
-          parsedBody: JSON.stringify({ foo: "bar" }),
-        },
-      ])("$scenario", ({ parsedBody }) => {
-        const invalidSqsEvent = {
-          Records: [
-            {
-              ...validVendorProcessingQueueSqsEventRecord,
-              body: parsedBody,
-            },
-          ],
-        };
-
-        beforeEach(async () => {
-          await lambdaHandlerConstructor(
-            dependencies,
-            invalidSqsEvent,
-            context,
-          );
-        });
-
-        it("Logs INVALID_SQS_EVENT", () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode:
-              "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
-            errorMessage: `Parsed body not in expected shape: ${parsedBody}`,
           });
         });
 
