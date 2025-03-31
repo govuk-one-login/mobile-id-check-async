@@ -24,6 +24,7 @@ export async function lambdaHandlerConstructor(
 ): Promise<APIGatewayProxyResult> {
   setupLogger(context);
   logger.info(LogMessage.TEST_SESSIONS_STARTED);
+
   const configResult = getTestSessionsConfig(dependencies.env);
   if (configResult.isError) {
     logger.error(LogMessage.TEST_SESSIONS_INVALID_CONFIG, configResult.value);
@@ -34,7 +35,6 @@ export async function lambdaHandlerConstructor(
     logger.error(LogMessage.TEST_SESSIONS_REQUEST_PATH_PARAM_INVALID, {
       pathParameters: event.pathParameters,
     });
-
     return badRequestResponse(
       "invalid_request",
       "missing sessionId path parameter",
