@@ -16,7 +16,7 @@ describe("Async Issue Biometric Credential", () => {
   let consoleInfoSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
 
-  const sqsEvent: SQSEvent = {
+  const validVendorProcessingQueueSqsEvent: SQSEvent = {
     Records: [
       {
         messageId: "mockMessageId",
@@ -52,7 +52,11 @@ describe("Async Issue Biometric Credential", () => {
 
   describe("On every invocation", () => {
     beforeEach(async () => {
-      await lambdaHandlerConstructor(dependencies, sqsEvent, context);
+      await lambdaHandlerConstructor(
+        dependencies,
+        validVendorProcessingQueueSqsEvent,
+        context,
+      );
     });
 
     it("Adds context and version to log attributes and logs STARTED message", () => {
@@ -65,7 +69,11 @@ describe("Async Issue Biometric Credential", () => {
 
     it("Clears pre-existing log attributes", async () => {
       logger.appendKeys({ testKey: "testValue" });
-      await lambdaHandlerConstructor(dependencies, sqsEvent, context);
+      await lambdaHandlerConstructor(
+        dependencies,
+        validVendorProcessingQueueSqsEvent,
+        context,
+      );
 
       expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
         testKey: "testValue",
@@ -133,7 +141,7 @@ describe("Async Issue Biometric Credential", () => {
       });
     });
 
-    describe("Given event body cannot be parsed", () => {
+    describe("Given event body is undefined", () => {
       const invalidSqsEvent = {
         Records: [
           {
@@ -260,7 +268,11 @@ describe("Async Issue Biometric Credential", () => {
 
   describe("Given the lambda handler receives an SQSEvent", () => {
     beforeEach(async () => {
-      await lambdaHandlerConstructor(dependencies, sqsEvent, context);
+      await lambdaHandlerConstructor(
+        dependencies,
+        validVendorProcessingQueueSqsEvent,
+        context,
+      );
     });
 
     it("Logs COMPLETED", async () => {
