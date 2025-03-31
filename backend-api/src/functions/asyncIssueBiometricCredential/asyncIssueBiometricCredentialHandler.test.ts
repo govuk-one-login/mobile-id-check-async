@@ -117,23 +117,23 @@ describe("Async Issue Biometric Credential", () => {
         {
           scenario: "Given parsed body is null",
           body: JSON.stringify(null),
-          errorMessage: `Parsed body not in expected shape: null`,
+          errorMessage: `Parsed event body not in expected shape. Parsed event body: null`,
         },
         {
           scenario: "Given parsed body is an array",
           body: JSON.stringify([]),
-          errorMessage: `Parsed body not in expected shape: []`,
+          errorMessage: `Parsed event body not in expected shape. Parsed event body: []`,
         },
         {
           scenario: "Given parsed body is an empty object",
           body: JSON.stringify({}),
-          errorMessage: `Parsed body not in expected shape: {}`,
+          errorMessage: `Parsed event body not in expected shape. Parsed event body: {}`,
         },
         {
           scenario:
             "Given parsed body does not contain a key of sessionId with a value of type string",
           body: JSON.stringify({ foo: "bar" }),
-          errorMessage: `Parsed body not in expected shape: {"foo":"bar"}`,
+          errorMessage: `Parsed event body not in expected shape. Parsed event body: {"foo":"bar"}`,
         },
         {
           scenario: "Given sessionId in event body is invalid",

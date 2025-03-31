@@ -25,7 +25,7 @@ export const validateSqsEvent = (event: SQSEvent): Result<string, void> => {
 
   if (!isParsedBody(parsedBody)) {
     logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT, {
-      errorMessage: `Parsed body not in expected shape: ${JSON.stringify(parsedBody)}`,
+      errorMessage: `Parsed event body not in expected shape. Parsed event body: ${JSON.stringify(parsedBody)}`,
     });
     return emptyFailure();
   }
