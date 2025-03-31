@@ -168,18 +168,23 @@ Mappings:
 
   Lambda:
     build:
+      IssueBiometricCredentialReservedConcurrentExecutions: 34
       LogLevel: INFO
       ReservedConcurrentExecutions: 15
     dev:
+      IssueBiometricCredentialReservedConcurrentExecutions: 0
       LogLevel: DEBUG
       ReservedConcurrentExecutions: 0
     integration:
+      IssueBiometricCredentialReservedConcurrentExecutions: 0
       LogLevel: INFO
       ReservedConcurrentExecutions: 0
     production:
+      IssueBiometricCredentialReservedConcurrentExecutions: 0
       LogLevel: INFO
       ReservedConcurrentExecutions: 0
     staging:
+      IssueBiometricCredentialReservedConcurrentExecutions: 34
       LogLevel: INFO
       ReservedConcurrentExecutions: 15
 
@@ -302,6 +307,13 @@ Conditions:
     - !Equals
       - !Ref Environment
       - build
+
+  UseCanaryDeployment: !And
+    - !Condition DeployAlarms
+    - !Not
+      - !Equals
+        - !Ref LambdaDeploymentPreference
+        - AllAtOnce
 
   UseCodeSigning: !Not
     - !Equals
@@ -811,7 +823,7 @@ Resources:
           MetricName: AsyncActiveSessionMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
-    Condition: DeployAlarms
+    Condition: UseCanaryDeployment
 
   AsyncActiveSessionErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -861,7 +873,7 @@ Resources:
           Id: lambdaErrorPercentage
           Label: Percentage of invocations that result in a function error
           ReturnData: false
-        - Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage, 0)
+        - Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage)
           Id: lambdaErrorRate
           Label: Error threshold calculation
           ReturnData: true
@@ -869,7 +881,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 10
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
+    Condition: UseCanaryDeployment
 
   AsyncActiveSessionFunction:
     Type: AWS::Serverless::Function
@@ -886,7 +898,7 @@ Resources:
     Properties:
       DeploymentPreference:
         Alarms: !If
-          - DeployAlarms
+          - UseCanaryDeployment
           - - !Ref AsyncActiveSessionErrorRateAlarm
             - !Ref AsyncActiveSessionLowCompletionAlarm
           - - !Ref AWS::NoValue
@@ -1058,7 +1070,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 60
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
+    Condition: UseCanaryDeployment
 
   AsyncActiveSessionSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
@@ -1349,7 +1361,7 @@ Resources:
           MetricName: AsyncBiometricTokenMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
-    Condition: DeployAlarms
+    Condition: UseCanaryDeployment
 
   AsyncBiometricTokenErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -1399,7 +1411,7 @@ Resources:
           Id: lambdaErrorPercentage
           Label: Percentage of invocations that result in a function error
           ReturnData: false
-        - Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage, 0)
+        - Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage)
           Id: lambdaErrorRate
           Label: Error threshold calculation
           ReturnData: true
@@ -1407,7 +1419,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 10
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
+    Condition: UseCanaryDeployment
 
   AsyncBiometricTokenFunction:
     Type: AWS::Serverless::Function
@@ -1424,7 +1436,7 @@ Resources:
     Properties:
       DeploymentPreference:
         Alarms: !If
-          - DeployAlarms
+          - UseCanaryDeployment
           - - !Ref AsyncBiometricTokenErrorRateAlarm
             - !Ref AsyncBiometricTokenLowCompletionAlarm
           - - !Ref AWS::NoValue
@@ -1627,7 +1639,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 60
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
+    Condition: UseCanaryDeployment
 
   AsyncBiometricTokenSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
@@ -1918,7 +1930,7 @@ Resources:
           MetricName: AsyncCredentialMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
-    Condition: DeployAlarms
+    Condition: UseCanaryDeployment
 
   AsyncCredentialErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -1968,7 +1980,7 @@ Resources:
           Id: lambdaErrorPercentage
           Label: Percentage of invocations that result in a function error
           ReturnData: false
-        - Expression: IF(lambdaErrors >= 5,lambdaErrorPercentage, 0)
+        - Expression: IF(lambdaErrors >= 5,lambdaErrorPercentage)
           Id: lambdaErrorRateThreshold
           Label: Error threshold calculation
           ReturnData: true
@@ -1976,7 +1988,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 10
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
+    Condition: UseCanaryDeployment
 
   AsyncCredentialFunction:
     Type: AWS::Serverless::Function
@@ -1993,7 +2005,7 @@ Resources:
     Properties:
       DeploymentPreference:
         Alarms: !If
-          - DeployAlarms
+          - UseCanaryDeployment
           - - !Ref AsyncCredentialErrorRateAlarm
             - !Ref AsyncCredentialLowCompletionAlarm
           - - !Ref AWS::NoValue
@@ -2187,7 +2199,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 60
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
+    Condition: UseCanaryDeployment
 
   AsyncCredentialSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
@@ -2478,7 +2490,7 @@ Resources:
           MetricName: AsyncFinishBiometricSessionMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
-    Condition: DeployAlarms
+    Condition: UseCanaryDeployment
 
   AsyncFinishBiometricSessionErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2528,7 +2540,7 @@ Resources:
           Id: lambdaErrorPercentage
           Label: Percentage of invocations that result in a function error
           ReturnData: false
-        - Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage, 0)
+        - Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage)
           Id: lambdaErrorRate
           Label: Error threshold calculation
           ReturnData: true
@@ -2536,7 +2548,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 10
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
+    Condition: UseCanaryDeployment
 
   AsyncFinishBiometricSessionFunction:
     Type: AWS::Serverless::Function
@@ -2553,7 +2565,7 @@ Resources:
     Properties:
       DeploymentPreference:
         Alarms: !If
-          - DeployAlarms
+          - UseCanaryDeployment
           - - !Ref AsyncFinishBiometricSessionErrorRateAlarm
             - !Ref AsyncFinishBiometricSessionLowCompletionAlarm
           - - !Ref AWS::NoValue
@@ -2718,7 +2730,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 60
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
+    Condition: UseCanaryDeployment
 
   AsyncFinishBiometricSessionSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
@@ -2729,6 +2741,111 @@ Resources:
         - CSLSEGRESS
       FilterPattern: ""
       LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
+    Condition: isNotDev
+
+  AsyncIssueBiometricCredentialFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - AsyncIssueBiometricCredentialLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - src/functions/asyncIssueBiometricCredential/asyncIssueBiometricCredentialHandler.ts
+        Minify: true
+        Sourcemap: false
+        Target: es2022
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-issue-biometric-credential
+      Handler: asyncIssueBiometricCredentialHandler.lambdaHandler
+      ReservedConcurrentExecutions: !If
+        - isDev
+        - !Ref AWS::NoValue
+        - !FindInMap
+          - Lambda
+          - !Ref Environment
+          - IssueBiometricCredentialReservedConcurrentExecutions
+      Role: !GetAtt AsyncIssueBiometricCredentialLambdaRole.Arn
+      Runtime: nodejs20.x
+      VpcConfig:
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
+          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+
+  AsyncIssueBiometricCredentialLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: arn:aws:logs:*:*:*
+            Version: "2012-10-17"
+          PolicyName: AsyncIssueBiometricCredentialLoggingPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Effect: Allow
+                Resource: '*'
+            Version: "2012-10-17"
+          PolicyName: VpcPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                  - sqs:ChangeMessageVisibility
+                Effect: Allow
+                Resource: !GetAtt VendorProcessingSQS.Arn
+            Version: "2012-10-17"
+          PolicyName: SQSPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - kms:Decrypt
+                Effect: Allow
+                Resource: !GetAtt VendorProcessingKMSEncryptionKey.Arn
+            Version: "2012-10-17"
+          PolicyName: KMSPolicy
+      RoleName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda
+
+  AsyncIssueBiometricCredentialLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-issue-biometric-credential
+      RetentionInDays: 30
+
+  AsyncIssueBiometricCredentialSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !FindInMap
+        - CslsConfiguration
+        - !Ref Environment
+        - CSLSEGRESS
+      FilterPattern: ""
+      LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
     Condition: isNotDev
 
   AsyncPrivateApiAccessLogs:
@@ -3026,7 +3143,7 @@ Resources:
           MetricName: AsyncTokenMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
-    Condition: DeployAlarms
+    Condition: UseCanaryDeployment
 
   AsyncTokenErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -3076,7 +3193,7 @@ Resources:
           Id: lambdaErrorPercentage
           Label: Percentage of invocations that result in a function error
           ReturnData: false
-        - Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage, 0)
+        - Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage)
           Id: lambdaErrorRate
           Label: Error threshold calculation
           ReturnData: true
@@ -3084,7 +3201,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 10
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
+    Condition: UseCanaryDeployment
 
   AsyncTokenFunction:
     Type: AWS::Serverless::Function
@@ -3101,7 +3218,7 @@ Resources:
     Properties:
       DeploymentPreference:
         Alarms: !If
-          - DeployAlarms
+          - UseCanaryDeployment
           - - !Ref AsyncTokenErrorRateAlarm
             - !Ref AsyncTokenLowCompletionAlarm
           - - !Ref AWS::NoValue
@@ -3268,7 +3385,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 60
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
+    Condition: UseCanaryDeployment
 
   AsyncTokenSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
@@ -3421,6 +3538,93 @@ Resources:
       KmsMasterKeyId: !Ref IPVCoreKMSEncryptionKey
       MessageRetentionPeriod: 345600
 
+  IPVCoreDlqAgeOfOldestMessageHighThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm when the age of the oldest message in IPV Core SQS DLQ is 10 days or older. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-high-threshold-ipv-core-dlq-age-of-oldest-message
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt IPVCoreDLQ.QueueName
+      EvaluationPeriods: 1
+      MetricName: ApproximateAgeOfOldestMessage
+      Namespace: AWS/SQS
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 864000
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  IPVCoreDlqAgeOfOldestMessageLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm when the age of the oldest message in IPV Core SQS DLQ is 3 days or older. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-low-threshold-ipv-core-dlq-age-of-oldest-message
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt IPVCoreDLQ.QueueName
+      EvaluationPeriods: 1
+      MetricName: ApproximateAgeOfOldestMessage
+      Namespace: AWS/SQS
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 259200
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  IPVCoreDlqMessageVisibleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm when new message gets added to IPV Core SQS DLQ. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-ipv-core-dlq-message-visible
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt IPVCoreDLQ.QueueName
+      EvaluationPeriods: 1
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   IPVCoreKMSEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
@@ -3506,6 +3710,45 @@ Resources:
       Queues:
         - !Ref IPVCoreSQS
     Condition: isNotDevOrBuild
+
+  IPVCoreSqsAgeOfOldestMessageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm when the age of the oldest message in IPV Core SQS queue is 30 minutes or older. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-ipv-core-sqs-age-of-oldest-message
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt IPVCoreSQS.QueueName
+      EvaluationPeriods: 1
+      MetricName: ApproximateAgeOfOldestMessage
+      Namespace: AWS/SQS
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 1800
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  IssueBiometricCredentialEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 1
+      Enabled: true
+      EventSourceArn: !GetAtt VendorProcessingSQS.Arn
+      FunctionName: !GetAtt AsyncIssueBiometricCredentialFunction.Arn
+      ScalingConfig:
+        MaximumConcurrency: 34
 
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket
@@ -4379,36 +4622,7 @@ Resources:
       KmsMasterKeyId: !Ref VendorProcessingKeyAlias
       MessageRetentionPeriod: 1209600
 
-  VendorProcessingDlqNewMessageLowThresholdAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      ActionsEnabled: true
-      AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      AlarmDescription: !Sub
-        - 'Trigger an alarm when new message gets added to Vendor Processing SQS DLQ. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
-            - StaticVariables
-            - urls
-            - WarningAlarmsRunbook
-      AlarmName: !Sub ${AWS::StackName}-low-threshold-vendor-processing-dlq-new-message
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 1
-      Dimensions:
-        - Name: QueueName
-          Value: !GetAtt VendorProcessingDLQ.QueueName
-      EvaluationPeriods: 1
-      MetricName: ApproximateNumberOfMessagesVisible
-      Namespace: AWS/SQS
-      OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      Period: 60
-      Statistic: Maximum
-      Threshold: 1
-      TreatMissingData: notBreaching
-    Condition: DeployAlarms
-
-  VendorProcessingDlqOldMessageHighThresholdAlarm:
+  VendorProcessingDlqAgeOfOldestMessageHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
@@ -4420,7 +4634,7 @@ Resources:
             - StaticVariables
             - urls
             - WarningAlarmsRunbook
-      AlarmName: !Sub ${AWS::StackName}-high-threshold-vendor-processing-dlq-old-message
+      AlarmName: !Sub ${AWS::StackName}-high-threshold-vendor-processing-dlq-age-of-oldest-message
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
       Dimensions:
@@ -4437,7 +4651,7 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
-  VendorProcessingDlqOldMessageLowThresholdAlarm:
+  VendorProcessingDlqAgeOfOldestMessageLowThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
@@ -4449,7 +4663,7 @@ Resources:
             - StaticVariables
             - urls
             - WarningAlarmsRunbook
-      AlarmName: !Sub ${AWS::StackName}-low-threshold-vendor-processing-dlq-old-message
+      AlarmName: !Sub ${AWS::StackName}-low-threshold-vendor-processing-dlq-age-of-oldest-message
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
       Dimensions:
@@ -4463,6 +4677,35 @@ Resources:
       Period: 60
       Statistic: Maximum
       Threshold: 259200
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  VendorProcessingDlqMessageVisibleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm when new message gets added to Vendor Processing SQS DLQ. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-vendor-processing-dlq-message-visible
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt VendorProcessingDLQ.QueueName
+      EvaluationPeriods: 1
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 1
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
@@ -4508,7 +4751,7 @@ Resources:
         maxReceiveCount: 360
       VisibilityTimeout: 10
 
-  VendorProcessingSqsOldMessageLowThresholdAlarm:
+  VendorProcessingSqsAgeOfOldestMessageAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
@@ -4520,7 +4763,7 @@ Resources:
             - StaticVariables
             - urls
             - WarningAlarmsRunbook
-      AlarmName: !Sub ${AWS::StackName}-low-threshold-vendor-processing-sqs-old-message
+      AlarmName: !Sub ${AWS::StackName}-vendor-processing-sqs-age-of-oldest-message
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
       Dimensions:

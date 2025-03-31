@@ -20,7 +20,7 @@ Resources:
       DeploymentPreference:
         Enabled: true
         Alarms: !If
-          - DeployAlarms
+          - UseCanaryDeployment
           - - !Ref AsyncTokenErrorRateAlarm      
             - !Ref AsyncTokenLowCompletionAlarm
           - - !Ref AWS::NoValue

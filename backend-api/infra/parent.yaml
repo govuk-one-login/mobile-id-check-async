@@ -135,18 +135,23 @@ Mappings:
   Lambda:
     dev:
       ReservedConcurrentExecutions: 0 # Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
+      IssueBiometricCredentialReservedConcurrentExecutions: 0 # Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
       LogLevel: DEBUG
     build:
       ReservedConcurrentExecutions: 15
+      IssueBiometricCredentialReservedConcurrentExecutions: 34
       LogLevel: INFO
     staging:
       ReservedConcurrentExecutions: 15
+      IssueBiometricCredentialReservedConcurrentExecutions: 34
       LogLevel: INFO
     integration:
       ReservedConcurrentExecutions: 0
+      IssueBiometricCredentialReservedConcurrentExecutions: 0
       LogLevel: INFO
     production:
       ReservedConcurrentExecutions: 0
+      IssueBiometricCredentialReservedConcurrentExecutions: 0
       LogLevel: INFO
 
   TxMA:
@@ -330,6 +335,10 @@ Conditions:
         - !Ref Environment
         - dev
     - !Equals [!Ref DeployAlarmsInDev, true]
+
+  UseCanaryDeployment: !And
+    - !Condition DeployAlarms
+    - !Not [!Equals [!Ref LambdaDeploymentPreference, "AllAtOnce"]]
 
   IntegrateIpvCore: !Equals
       - !Ref Environment
