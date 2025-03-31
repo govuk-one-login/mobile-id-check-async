@@ -33,12 +33,6 @@ describe("Test sessions handler", () => {
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
     consoleErrorSpy = jest.spyOn(console, "error");
-    jest.useFakeTimers();
-    jest.setSystemTime(NOW_IN_MILLISECONDS);
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
   });
 
   describe("On every invocation", () => {
@@ -84,6 +78,7 @@ describe("Test sessions handler", () => {
             context,
           );
         });
+
         it("logs INVALID_CONFIG", async () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_TEST_SESSIONS_INVALID_CONFIG",
@@ -143,6 +138,7 @@ describe("Test sessions handler", () => {
 
         result = await lambdaHandlerConstructor(dependencies, request, context);
       });
+
       it("Logs an error", async () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_TEST_SESSIONS_REQUEST_PATH_PARAM_INVALID",
@@ -172,11 +168,13 @@ describe("Test sessions handler", () => {
           context,
         );
       });
+
       it("Logs", async () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_TEST_SESSIONS_COMPLETED",
         });
       });
+
       it("Returns a 501 Not Implemented response", async () => {
         expect(result).toStrictEqual({
           headers: expectedSecurityHeaders,
