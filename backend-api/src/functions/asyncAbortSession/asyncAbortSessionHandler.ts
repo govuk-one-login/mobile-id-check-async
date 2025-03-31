@@ -19,7 +19,7 @@ import { AbortSession } from "../common/session/updateOperations/AbortSession/Ab
 import { getAbortSessionConfig } from "./abortSessionConfig";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
-import { handleUpdateSessionError } from "../common/handlers/errorHandlers";
+import { handleUpdateSessionError } from "../common/errors/errorHandlers";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncAbortSessionDependencies,
