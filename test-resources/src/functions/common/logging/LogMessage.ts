@@ -21,10 +21,6 @@ export class LogMessage implements LogAttributes {
     "The sessionId in the path parameter is missing or invalid",
   );
 
-  static readonly TEST_SESSIONS_CREATE_SESSION_FAILURE = new LogMessage(
-    "MOBILE_ASYNC_CREATE_SESSION_CONDITION_CHECK_FAILURE",
-    "Failed to create session in Sessions table due to a conditional check failure.",
-  );
   private constructor(
     public readonly messageCode: string,
     public readonly message: string,
