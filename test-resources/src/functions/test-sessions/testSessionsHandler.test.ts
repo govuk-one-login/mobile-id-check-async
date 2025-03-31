@@ -1,5 +1,4 @@
 import { APIGatewayProxyResult, Context } from "aws-lambda";
-import { ITestSessionsDependencies } from "./handlerDependencies";
 import { buildRequest } from "../testUtils/mockRequest";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { lambdaHandlerConstructor } from "./testSessionsHandler";
@@ -12,7 +11,6 @@ import { expect } from "@jest/globals";
 import "../testUtils/matchers";
 
 describe("Test sessions handler", () => {
-  let dependencies: ITestSessionsDependencies;
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
@@ -23,12 +21,6 @@ describe("Test sessions handler", () => {
   });
 
   beforeEach(() => {
-    dependencies = {
-      env: {
-        SESSIONS_TABLE_NAME: "mockTableName",
-      },
-    };
-
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
     consoleErrorSpy = jest.spyOn(console, "error");
@@ -36,11 +28,7 @@ describe("Test sessions handler", () => {
 
   describe("On every invocation", () => {
     beforeEach(async () => {
-      result = await lambdaHandlerConstructor(
-        dependencies,
-        validRequest,
-        context,
-      );
+      result = await lambdaHandlerConstructor(validRequest, context);
     });
 
     it("Adds context and version to log attributes and logs STARTED message", () => {
@@ -53,11 +41,7 @@ describe("Test sessions handler", () => {
 
     it("Clears pre-existing log attributes", async () => {
       logger.appendKeys({ testKey: "testValue" });
-      result = await lambdaHandlerConstructor(
-        dependencies,
-        validRequest,
-        context,
-      );
+      result = await lambdaHandlerConstructor(validRequest, context);
 
       expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
         testKey: "testValue",
@@ -68,11 +52,7 @@ describe("Test sessions handler", () => {
   describe("Request validation", () => {
     describe("Given there are no path parameters", () => {
       beforeEach(async () => {
-        result = await lambdaHandlerConstructor(
-          dependencies,
-          buildRequest(),
-          context,
-        );
+        result = await lambdaHandlerConstructor(buildRequest(), context);
       });
 
       it("Logs an error", async () => {
@@ -99,7 +79,7 @@ describe("Test sessions handler", () => {
           ...{ pathParameters: { mockPathParameter: "mockPathParameter" } },
         };
 
-        result = await lambdaHandlerConstructor(dependencies, request, context);
+        result = await lambdaHandlerConstructor(request, context);
       });
 
       it("Logs an error", async () => {
@@ -125,11 +105,7 @@ describe("Test sessions handler", () => {
   describe("Happy path", () => {
     describe("Given there is a valid request", () => {
       beforeEach(async () => {
-        result = await lambdaHandlerConstructor(
-          dependencies,
-          validRequest,
-          context,
-        );
+        result = await lambdaHandlerConstructor(validRequest, context);
       });
 
       it("Logs", async () => {

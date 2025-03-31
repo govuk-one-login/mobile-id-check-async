@@ -3,10 +3,7 @@ import {
   APIGatewayProxyResult,
   Context,
 } from "aws-lambda";
-import {
-  ITestSessionsDependencies,
-  runtimeDependencies,
-} from "./handlerDependencies";
+
 import { setupLogger } from "../common/logging/setupLogger";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
@@ -16,7 +13,6 @@ import {
 } from "../common/lambdaResponses";
 
 export async function lambdaHandlerConstructor(
-  _dependencies: ITestSessionsDependencies,
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
@@ -37,7 +33,4 @@ export async function lambdaHandlerConstructor(
   return notImplementedResponse;
 }
 
-export const lambdaHandler = lambdaHandlerConstructor.bind(
-  null,
-  runtimeDependencies,
-);
+export const lambdaHandler = lambdaHandlerConstructor.bind(null);
