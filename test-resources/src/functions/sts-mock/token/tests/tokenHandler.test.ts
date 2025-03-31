@@ -75,7 +75,7 @@ describe("Token Handler", () => {
   describe("Validate Service Token Request", () => {
     describe("Given the request body is falsy", () => {
       it("Logs INVALID_REQUEST and returns 400 Bad Request", async () => {
-        event = buildRequest(undefined);
+        event = buildRequest({ body: undefined });
 
         const result = await lambdaHandlerConstructor(
           dependencies,
