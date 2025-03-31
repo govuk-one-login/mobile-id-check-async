@@ -9,7 +9,7 @@ import {
   mockSessionId,
   NOW_IN_MILLISECONDS,
 } from "../testUtils/unitTestData";
-import {expect} from "@jest/globals"
+import { expect } from "@jest/globals";
 import "../testUtils/matchers";
 
 describe("Test sessions handler", () => {
@@ -128,13 +128,11 @@ describe("Test sessions handler", () => {
           statusCode: 400,
           body: JSON.stringify({
             error: "invalid_request",
-            error_description: "missing sessionId path parameter"
+            error_description: "missing sessionId path parameter",
           }),
           headers: expectedSecurityHeaders,
         });
       });
-
-      
     });
     describe("Given there is no sessionId path parameter", () => {
       beforeEach(async () => {

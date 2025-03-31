@@ -35,7 +35,10 @@ export async function lambdaHandlerConstructor(
       pathParameters: event.pathParameters,
     });
 
-    return badRequestResponse("invalid_request", "missing sessionId path parameter")
+    return badRequestResponse(
+      "invalid_request",
+      "missing sessionId path parameter",
+    );
   }
 
   logger.info(LogMessage.TEST_SESSIONS_COMPLETED);
