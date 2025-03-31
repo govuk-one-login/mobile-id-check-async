@@ -1,7 +1,7 @@
 export const expectedSecurityHeaders = {
-  "Cache-Control": "no-store",
-  "Content-Type": "application/json",
-  "Strict-Transport-Security": "max-age=31536000",
-  "X-Content-Type-Options": "nosniff",
-  "X-Frame-Options": "DENY",
+  "cache-control": "no-store",
+  "content-type": "application/json",
+  "strict-transport-security": "max-age=31536000",
+  "x-content-type-options": "nosniff",
+  "x-frame-options": "DENY",
 };
