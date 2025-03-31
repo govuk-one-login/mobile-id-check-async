@@ -1,4 +1,4 @@
-import { TEST_SESSIONS_API_INSTANCE } from "../dequeue/utils/apiTestHelpers";
+import { TEST_SESSIONS_API_INSTANCE } from "../../testUtils/apiTestHelpers";
 
 describe("Test Sessions api tests", () => {
   it("Returns a 400 with validation reason if request fails api validation", async () => {

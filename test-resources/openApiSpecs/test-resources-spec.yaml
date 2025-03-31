@@ -16,6 +16,8 @@ paths:
       description: >-
         The endpoint creates or updates a session in the backend-api Sessions table.
         This enables more difficult-to-test backend-api API test scenarios.
+      security:
+        - sigv4Reference: []
       responses:
         '500':
           description: Internal server error
@@ -31,7 +33,7 @@ paths:
                       "error_description": "Server Error"
                     }
               schema:
-                $ref: "#/components/schemas/ServerError"
+                $ref: "#/components/schemas/serverError"
         "501":
           description: Not Implemented
           content:
@@ -63,8 +65,14 @@ paths:
 
 
 components:
+  securitySchemes:
+    sigv4Reference:
+      in: header
+      name: Authorization
+      type: apiKey
+      x-amazon-apigateway-authtype: awsSigv4
   schemas:
-    ServerError:
+    serverError:
       type: object
       properties:
         error:

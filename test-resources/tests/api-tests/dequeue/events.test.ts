@@ -5,7 +5,7 @@ import {
   EVENTS_API_INSTANCE,
   getActiveSessionId,
   pollForEvents,
-} from "./utils/apiTestHelpers";
+} from "../../testUtils/apiTestHelpers";
 
 const ONE_SECOND = 1000;
 jest.setTimeout(45 * ONE_SECOND);

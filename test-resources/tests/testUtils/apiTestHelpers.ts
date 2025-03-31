@@ -52,7 +52,7 @@ function getEventsApiInstance() {
 function getTestSessionApiInstance() {
   const apiUrl =
     "https://test-resources-sandytr-test-resources.review-b-async.dev.account.gov.uk";
-  return getInstance(apiUrl, false);
+  return getInstance(apiUrl, true);
 }
 
 function getInstance(baseUrl: string, useAwsSigv4Signing: boolean = false) {
