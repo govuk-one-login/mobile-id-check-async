@@ -150,6 +150,15 @@ describe("Async Issue Biometric Credential", () => {
           body: JSON.stringify({ foo: "bar" }),
           errorMessage: `Parsed body not in expected shape: {"foo":"bar"}`,
         },
+        {
+          scenario: "Given sessionId in event body is invalid",
+          body: JSON.stringify({
+            sessionId: "mockInvalidSessionId",
+            biometricSessionId: "mockBiometricSessionId",
+          }),
+          errorMessage:
+            "sessionId in request body is not a valid v4 UUID. sessionId: mockInvalidSessionId",
+        },
       ])("$scenario", ({ body, errorMessage }) => {
         const invalidSqsEvent = {
           Records: [
@@ -179,39 +188,6 @@ describe("Async Issue Biometric Credential", () => {
           expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
           });
-        });
-      });
-    });
-
-    describe("Given sessionId in event body is invalid", () => {
-      const invalidSqsEvent = {
-        Records: [
-          {
-            ...validVendorProcessingQueueSqsEventRecord,
-            body: JSON.stringify({
-              sessionId: "mockInvalidSessionId",
-              biometricSessionId: "mockBiometricSessionId",
-            }),
-          },
-        ],
-      };
-
-      beforeEach(async () => {
-        await lambdaHandlerConstructor(dependencies, invalidSqsEvent, context);
-      });
-
-      it("Logs INVALID_SQS_EVENT", () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode:
-            "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
-          errorMessage:
-            "sessionId in request body is not a valid v4 UUID. sessionId: mockInvalidSessionId",
-        });
-      });
-
-      it("Does not log COMPLETED", () => {
-        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
         });
       });
     });
