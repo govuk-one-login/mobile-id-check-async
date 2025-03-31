@@ -193,7 +193,7 @@ describe("Async Issue Biometric Credential", () => {
     });
   });
 
-  describe("Given the lambda handler receives a valid SQSEvent", () => {
+  describe("Given the lambda handler reads a valid SQSEvent", () => {
     beforeEach(async () => {
       await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
     });
