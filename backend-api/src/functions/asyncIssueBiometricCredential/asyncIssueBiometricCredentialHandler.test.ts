@@ -16,29 +16,28 @@ describe("Async Issue Biometric Credential", () => {
   let consoleInfoSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
 
-  const validVendorProcessingQueueSqsEvent: SQSEvent = {
-    Records: [
-      {
-        messageId: "mockMessageId",
-        receiptHandle: "mockReceiptHandle",
-        body: JSON.stringify({
-          biometricSessionId: mockBiometricSessionId,
-          sessionId: mockSessionId,
-        }),
-        attributes: {
-          ApproximateReceiveCount: "mockApproximateReceiveCount",
-          SentTimestamp: "mockSentTimestamp",
-          SenderId: "mockSenderId",
-          ApproximateFirstReceiveTimestamp:
-            "mockApproximateFirstReceiveTimestamp",
-        },
-        messageAttributes: {},
-        md5OfBody: "mockMd5OfBody",
-        eventSource: "mockEventSource",
-        eventSourceARN: "mockEventSourceArn",
-        awsRegion: "mockAwsRegion",
-      },
-    ],
+  const validVendorProcessingQueueSqsEventRecord = {
+    messageId: "mockMessageId",
+    receiptHandle: "mockReceiptHandle",
+    body: JSON.stringify({
+      biometricSessionId: mockBiometricSessionId,
+      sessionId: mockSessionId,
+    }),
+    attributes: {
+      ApproximateReceiveCount: "mockApproximateReceiveCount",
+      SentTimestamp: "mockSentTimestamp",
+      SenderId: "mockSenderId",
+      ApproximateFirstReceiveTimestamp: "mockApproximateFirstReceiveTimestamp",
+    },
+    messageAttributes: {},
+    md5OfBody: "mockMd5OfBody",
+    eventSource: "mockEventSource",
+    eventSourceARN: "mockEventSourceArn",
+    awsRegion: "mockAwsRegion",
+  };
+
+  const validSqsEvent: SQSEvent = {
+    Records: [validVendorProcessingQueueSqsEventRecord],
   };
 
   beforeEach(() => {
@@ -52,11 +51,7 @@ describe("Async Issue Biometric Credential", () => {
 
   describe("On every invocation", () => {
     beforeEach(async () => {
-      await lambdaHandlerConstructor(
-        dependencies,
-        validVendorProcessingQueueSqsEvent,
-        context,
-      );
+      await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
     });
 
     it("Adds context and version to log attributes and logs STARTED message", () => {
@@ -69,11 +64,7 @@ describe("Async Issue Biometric Credential", () => {
 
     it("Clears pre-existing log attributes", async () => {
       logger.appendKeys({ testKey: "testValue" });
-      await lambdaHandlerConstructor(
-        dependencies,
-        validVendorProcessingQueueSqsEvent,
-        context,
-      );
+      await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
 
       expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
         testKey: "testValue",
@@ -145,21 +136,8 @@ describe("Async Issue Biometric Credential", () => {
       const invalidSqsEvent = {
         Records: [
           {
-            messageId: "mockMessageId",
-            receiptHandle: "mockReceiptHandle",
+            ...validVendorProcessingQueueSqsEventRecord,
             body: undefined,
-            attributes: {
-              ApproximateReceiveCount: "mockApproximateReceiveCount",
-              SentTimestamp: "mockSentTimestamp",
-              SenderId: "mockSenderId",
-              ApproximateFirstReceiveTimestamp:
-                "mockApproximateFirstReceiveTimestamp",
-            },
-            messageAttributes: {},
-            md5OfBody: "mockMd5OfBody",
-            eventSource: "mockEventSource",
-            eventSourceARN: "mockEventSourceArn",
-            awsRegion: "mockAwsRegion",
           },
         ],
       } as unknown as SQSEvent;
@@ -185,21 +163,8 @@ describe("Async Issue Biometric Credential", () => {
       const invalidSqsEvent = {
         Records: [
           {
-            messageId: "mockMessageId",
-            receiptHandle: "mockReceiptHandle",
+            ...validVendorProcessingQueueSqsEventRecord,
             body: "invalidJson",
-            attributes: {
-              ApproximateReceiveCount: "mockApproximateReceiveCount",
-              SentTimestamp: "mockSentTimestamp",
-              SenderId: "mockSenderId",
-              ApproximateFirstReceiveTimestamp:
-                "mockApproximateFirstReceiveTimestamp",
-            },
-            messageAttributes: {},
-            md5OfBody: "mockMd5OfBody",
-            eventSource: "mockEventSource",
-            eventSourceARN: "mockEventSourceArn",
-            awsRegion: "mockAwsRegion",
           },
         ],
       };
@@ -225,24 +190,11 @@ describe("Async Issue Biometric Credential", () => {
       const invalidSqsEvent = {
         Records: [
           {
-            messageId: "mockMessageId",
-            receiptHandle: "mockReceiptHandle",
+            ...validVendorProcessingQueueSqsEventRecord,
             body: JSON.stringify({
-              biometricSessionId: "mockBiometricSessionId",
               sessionId: "mockInvalidSessionId",
+              biometricSessionId: "mockBiometricSessionId",
             }),
-            attributes: {
-              ApproximateReceiveCount: "mockApproximateReceiveCount",
-              SentTimestamp: "mockSentTimestamp",
-              SenderId: "mockSenderId",
-              ApproximateFirstReceiveTimestamp:
-                "mockApproximateFirstReceiveTimestamp",
-            },
-            messageAttributes: {},
-            md5OfBody: "mockMd5OfBody",
-            eventSource: "mockEventSource",
-            eventSourceARN: "mockEventSourceArn",
-            awsRegion: "mockAwsRegion",
           },
         ],
       };
@@ -268,11 +220,7 @@ describe("Async Issue Biometric Credential", () => {
 
   describe("Given the lambda handler receives an SQSEvent", () => {
     beforeEach(async () => {
-      await lambdaHandlerConstructor(
-        dependencies,
-        validVendorProcessingQueueSqsEvent,
-        context,
-      );
+      await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
     });
 
     it("Logs COMPLETED", async () => {
