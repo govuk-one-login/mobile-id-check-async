@@ -8,14 +8,6 @@ const securityHeaders = {
   "X-Frame-Options": "DENY",
 };
 
-export const okResponse = (body?: object): APIGatewayProxyResult => {
-  return {
-    headers: securityHeaders,
-    statusCode: 200,
-    body: body ? JSON.stringify(body) : "",
-  };
-};
-
 export const badRequestResponse = (
   error: string,
   errorDescription: string,
@@ -30,26 +22,6 @@ export const badRequestResponse = (
   };
 };
 
-export const unauthorizedResponse = (
-  error: string,
-  errorDescription: string,
-): APIGatewayProxyResult => {
-  return {
-    headers: securityHeaders,
-    statusCode: 401,
-    body: JSON.stringify({
-      error,
-      error_description: errorDescription,
-    }),
-  };
-};
-
-export const notImplementedResponse: APIGatewayProxyResult = {
-  headers: securityHeaders,
-  statusCode: 501,
-  body: "Not Implemented",
-};
-
 export const serverErrorResponse: APIGatewayProxyResult = {
   headers: securityHeaders,
   statusCode: 500,
@@ -59,16 +31,8 @@ export const serverErrorResponse: APIGatewayProxyResult = {
   }),
 };
 
-export const forbiddenResponse = (
-  error: string,
-  errorDescription: string,
-): APIGatewayProxyResult => {
-  return {
-    headers: securityHeaders,
-    statusCode: 403,
-    body: JSON.stringify({
-      error,
-      error_description: errorDescription,
-    }),
-  };
+export const notImplementedResponse: APIGatewayProxyResult = {
+  headers: securityHeaders,
+  statusCode: 501,
+  body: "Not Implemented",
 };
