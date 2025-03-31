@@ -110,7 +110,8 @@ describe("STS mock infrastructure", () => {
       template.hasResourceProperties("AWS::Logs::LogGroup", {
         RetentionInDays: 30,
         LogGroupName: {
-          "Fn::Sub": "/aws/apigateway/${AWS::StackName}-sts-mock-api-access-logs",
+          "Fn::Sub":
+            "/aws/apigateway/${AWS::StackName}-sts-mock-api-access-logs",
         },
       });
     });
