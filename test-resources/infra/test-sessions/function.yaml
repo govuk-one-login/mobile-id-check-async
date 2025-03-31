@@ -33,9 +33,9 @@ Resources:
             Fn::ImportValue: !Sub ${BackendStackName}-sessions-table-arn
       VpcConfig:
         SubnetIds:
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdA
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdB
-          - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
 
