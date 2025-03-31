@@ -6,7 +6,7 @@ import {
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
-import { emptySuccess, errorResult, Result } from "../utils/result";
+import { errorResult, Result, successResult } from "../utils/result";
 import { validateSessionId } from "../common/request/validateSessionId/validateSessionId";
 
 export async function lambdaHandlerConstructor(
@@ -17,7 +17,12 @@ export async function lambdaHandlerConstructor(
   setupLogger(context);
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_STARTED);
 
-  validateSqsEvent(event);
+  const validateSqsEventResult = validateSqsEvent(event);
+  if (validateSqsEventResult.isError) {
+    throw new Error(
+      `Invalid SQS event. ${validateSqsEventResult.value.errorMessage}`,
+    );
+  }
 
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
 }
@@ -27,7 +32,7 @@ export const lambdaHandler = lambdaHandlerConstructor.bind(
   runtimeDependencies,
 );
 
-function validateSqsEvent(event: SQSEvent): Result<void> {
+const validateSqsEvent = (event: SQSEvent): Result<{ sessionId: string }> => {
   if (event == null) {
     const errorMessage = "Event is either null or undefined.";
     logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT, {
@@ -91,5 +96,5 @@ function validateSqsEvent(event: SQSEvent): Result<void> {
     return validateSessionIdResult;
   }
 
-  return emptySuccess();
-}
+  return successResult(sessionId);
+};
