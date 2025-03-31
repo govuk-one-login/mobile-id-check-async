@@ -52,6 +52,6 @@ const isParsedBody = (
   ) {
     return false;
   }
-  const record = parsedBody as Record<string, unknown>;
-  return "sessionId" in record && typeof record.sessionId === "string";
+
+  return "sessionId" in parsedBody && typeof parsedBody.sessionId === "string";
 };
