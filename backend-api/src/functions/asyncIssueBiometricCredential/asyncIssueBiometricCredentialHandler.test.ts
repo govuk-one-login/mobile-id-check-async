@@ -96,7 +96,7 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
 
-      it("Throws error with message", () => {
+      it("Throws error with 'Invalid SQS event' message", () => {
         expect(lambdaError.message).toEqual(
           "Invalid SQS event. Event is either null or undefined.",
         );
@@ -125,7 +125,7 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
 
-      it("Throws error with message", () => {
+      it("Throws error with 'Invalid SQS event' message", () => {
         expect(lambdaError.message).toEqual(
           "Invalid SQS event. Invalid event structure: Missing 'Records' array.",
         );
@@ -156,7 +156,7 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
 
-      it("Throws error with message", () => {
+      it("Throws error with 'Invalid SQS event' message", () => {
         expect(lambdaError.message).toEqual(
           "Invalid SQS event. Expected exactly one record, got 0.",
         );
@@ -193,7 +193,7 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
 
-      it("Throws error with message", () => {
+      it("Throws error with 'Invalid SQS event' message", () => {
         expect(lambdaError.message).toEqual(
           "Invalid SQS event. Event body either null or undefined.",
         );
@@ -230,7 +230,7 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
 
-      it("Throws error with message", () => {
+      it("Throws error with 'Invalid SQS event' message", () => {
         expect(lambdaError.message).toEqual(
           "Invalid SQS event. Failed to parse event body. Body: invalidJson",
         );
@@ -271,7 +271,7 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
 
-      it("Throws error with message", () => {
+      it("Throws error with 'Invalid SQS event' message", () => {
         expect(lambdaError.message).toEqual(
           "Invalid SQS event. sessionId in request body is not a valid v4 UUID. sessionId: mockInvalidSessionId",
         );
