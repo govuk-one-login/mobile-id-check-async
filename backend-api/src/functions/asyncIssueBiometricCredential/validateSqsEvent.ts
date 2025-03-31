@@ -63,11 +63,9 @@ export const validateSqsEvent = (event: SQSEvent): Result<string, void> => {
   return successResult(sessionId);
 };
 
-interface ParsedBody {
-  sessionId: string;
-}
-
-const isParsedBody = (parsedBody: unknown): parsedBody is ParsedBody => {
+const isParsedBody = (
+  parsedBody: unknown,
+): parsedBody is { sessionId: string } => {
   if (
     typeof parsedBody !== "object" ||
     parsedBody == null ||
