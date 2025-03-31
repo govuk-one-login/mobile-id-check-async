@@ -288,9 +288,10 @@ describe("Async Issue Biometric Credential", () => {
       await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
     });
 
-    it("Logs COMPLETED", async () => {
+    it("Logs COMPLETED with sessionId", async () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        sessionId: mockSessionId,
       });
     });
   });
