@@ -73,67 +73,46 @@ describe("Async Issue Biometric Credential", () => {
   });
 
   describe("SQS Event validation", () => {
-    describe("Given event is null or undefined", () => {
-      const invalidSqsEvent = null as unknown as SQSEvent;
-      beforeEach(async () => {
-        await lambdaHandlerConstructor(dependencies, invalidSqsEvent, context);
-      });
-
-      it("logs INVALID_SQS_EVENT", () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode:
-            "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
+    describe("Given SQSEvent is invalid", () => {
+      describe.each([
+        {
+          scenario: "Given event is null or undefined",
+          invalidSqsEvent: null as unknown as SQSEvent,
           errorMessage: "Event is either null or undefined.",
-        });
-      });
-
-      it("Does not log COMPLETED", () => {
-        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-        });
-      });
-    });
-
-    describe("Given event is missing Records array", () => {
-      const invalidSqsEvent = {} as unknown as SQSEvent;
-      beforeEach(async () => {
-        await lambdaHandlerConstructor(dependencies, invalidSqsEvent, context);
-      });
-
-      it("logs INVALID_SQS_EVENT", () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode:
-            "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
+        },
+        {
+          scenario: "Given event is missing Records array",
+          invalidSqsEvent: {} as unknown as SQSEvent,
           errorMessage: "Invalid event structure: Missing 'Records' array.",
-        });
-      });
-
-      it("Does not log COMPLETED", () => {
-        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-        });
-      });
-    });
-
-    describe("Given there is not exactly one record", () => {
-      const invalidSqsEvent = {
-        Records: [],
-      };
-      beforeEach(async () => {
-        await lambdaHandlerConstructor(dependencies, invalidSqsEvent, context);
-      });
-
-      it("Logs INVALID_SQS_EVENT", () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode:
-            "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
+        },
+        {
+          scenario: "Given there is not exactly one record",
+          invalidSqsEvent: {
+            Records: [],
+          },
           errorMessage: "Expected exactly one record, got 0.",
+        },
+      ])("$scenario", ({ invalidSqsEvent, errorMessage }) => {
+        beforeEach(async () => {
+          await lambdaHandlerConstructor(
+            dependencies,
+            invalidSqsEvent,
+            context,
+          );
         });
-      });
 
-      it("Does not log COMPLETED", () => {
-        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        it("Logs INVALID_SQS_EVENT", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode:
+              "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
+            errorMessage,
+          });
+        });
+
+        it("Does not log COMPLETED", () => {
+          expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+          });
         });
       });
     });
