@@ -18,7 +18,7 @@ describe("STS mock infrastructure", () => {
   describe("API Gateway", () => {
     test("the endpoints are REGIONAL", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: { "Fn::Sub": "${AWS::StackName}-api" },
+        Name: { "Fn::Sub": "${AWS::StackName}-sts-mock-api" },
         EndpointConfiguration: "REGIONAL",
       });
     });
@@ -31,7 +31,7 @@ describe("STS mock infrastructure", () => {
 
     test("it uses the STS mock OpenAPI Spec", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: { "Fn::Sub": "${AWS::StackName}-api" },
+        Name: { "Fn::Sub": "${AWS::StackName}-sts-mock-api" },
         DefinitionBody: {
           "Fn::Transform": {
             Name: "AWS::Include",
@@ -45,7 +45,7 @@ describe("STS mock infrastructure", () => {
       test("metrics are enabled", () => {
         const methodSettings = new Capture();
         template.hasResourceProperties("AWS::Serverless::Api", {
-          Name: { "Fn::Sub": "${AWS::StackName}-api" },
+          Name: { "Fn::Sub": "${AWS::StackName}-sts-mock-api" },
           MethodSettings: methodSettings,
         });
         expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
@@ -74,7 +74,7 @@ describe("STS mock infrastructure", () => {
       test("rate limit and burst mappings are applied to the API gateway", () => {
         const methodSettings = new Capture();
         template.hasResourceProperties("AWS::Serverless::Api", {
-          Name: { "Fn::Sub": "${AWS::StackName}-api" },
+          Name: { "Fn::Sub": "${AWS::StackName}-sts-mock-api" },
           MethodSettings: methodSettings,
         });
         expect(methodSettings.asArray()[0].ThrottlingBurstLimit).toStrictEqual({
@@ -96,7 +96,7 @@ describe("STS mock infrastructure", () => {
 
     test("access log group is attached to the API gateway", () => {
       template.hasResourceProperties("AWS::Serverless::Api", {
-        Name: { "Fn::Sub": "${AWS::StackName}-api" },
+        Name: { "Fn::Sub": "${AWS::StackName}-sts-mock-api" },
         AccessLogSetting: {
           DestinationArn: {
             "Fn::Sub":
@@ -110,7 +110,7 @@ describe("STS mock infrastructure", () => {
       template.hasResourceProperties("AWS::Logs::LogGroup", {
         RetentionInDays: 30,
         LogGroupName: {
-          "Fn::Sub": "/aws/apigateway/${AWS::StackName}-api-access-logs",
+          "Fn::Sub": "/aws/apigateway/${AWS::StackName}-sts-mock-api-access-logs",
         },
       });
     });
