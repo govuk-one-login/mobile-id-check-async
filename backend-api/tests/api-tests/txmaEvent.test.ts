@@ -73,7 +73,7 @@ describe("POST /async/txmaEvent", () => {
   describe("Given the request is valid", () => {
     let sessionId: string | null;
     let response: AxiosResponse;
-    // let eventsResponse: EventResponse[];
+    let eventsResponse: EventResponse[];
 
     beforeAll(async () => {
       const sub = randomUUID();
@@ -81,10 +81,7 @@ describe("POST /async/txmaEvent", () => {
       sessionId = await getActiveSessionIdFromSub(sub);
       await issueBiometricToken(sessionId);
 
-      console.log("SESSION ID >>>>>", sessionId);
-
       const requestBody = {
-        // sessionId: 'ec9ad1f8-124b-4a19-b209-c1b27f9466da',
         sessionId,
         eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
       };
@@ -93,35 +90,27 @@ describe("POST /async/txmaEvent", () => {
         requestBody,
       );
 
-      await testCalls(requestBody, 5);
+      eventsResponse = await pollForEvents({
+        partitionKey: `SESSION#${sessionId}`,
+        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_HYBRID_BILLING_STARTED`,
+        numberOfEvents: 1,
+      });
+    }, 70000);
 
-      // eventsResponse = await pollForEvents({
-      //   partitionKey: `SESSION#${sessionId}`,
-      //   sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_HYBRID_BILLING_STARTED`,
-      //   numberOfEvents: 1,
-      // });
-    }, 30000);
+    it("Writes an event with the correct event_name", async () => {
+      expect(eventsResponse[0].event).toEqual(
+        expect.objectContaining({
+          event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+        }),
+      );
+    });
 
-    // it("Writes an event with the correct event_name", async () => {
-    //   expect(eventsResponse[0].event).toEqual(
-    //     expect.objectContaining({
-    //       event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
-    //     }),
-    //   );
-    // });
-
-    it("Returns 200 OK response", async () => {
+    it("Returns 200 OK response", () => {
       expect(response.status).toBe(200);
       expect(response.data).toStrictEqual("");
       expect(response.headers).toEqual(
         expect.objectContaining(expectedSecurityHeaders),
       );
-    }, 25000);
+    });
   });
 });
-
-async function testCalls(requestBody: object, numberOfCalls: number = 1) {
-  for (let i = 0; i < numberOfCalls; i++) {
-    await SESSIONS_API_INSTANCE.post("/async/txmaEvent", requestBody);
-  }
-}
