@@ -37,21 +37,12 @@ export async function createSession(sub: string): Promise<void> {
       },
     },
   );
-
-  console.log("/async/credential response", {
-    data: response.data,
-    status: response.status,
-  });
 }
 
 export async function getActiveSessionId(sub: string): Promise<string> {
   const accessToken = await getServiceToken(sub);
   const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
     headers: { Authorization: `Bearer ${accessToken}` },
-  });
-  console.log("/async/activeSession response", {
-    data: response.data,
-    status: response.status,
   });
 
   return response.data.sessionId;
@@ -88,11 +79,6 @@ async function getCredentialAccessToken(
     },
   );
 
-  console.log("/async/token response", {
-    data: response.data,
-    status: response.status,
-  });
-
   return response.data.access_token as string;
 }
 
@@ -124,11 +110,6 @@ async function getServiceToken(sub: string): Promise<string> {
     "/token",
     requestBody,
   );
-
-  console.log("sts /token response", {
-    data: stsMockResponse.data,
-    status: stsMockResponse.status,
-  });
 
   return stsMockResponse.data.access_token;
 }
@@ -217,3 +198,5 @@ async function getEvents(
   const events = response.data;
   return Array.isArray(events) ? events : []; // If response is malformed, return empty array so polling can be retried
 }
+export { STS_MOCK_API_INSTANCE };
+
