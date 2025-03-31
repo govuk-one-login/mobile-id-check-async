@@ -236,6 +236,8 @@ describe("Backend application infrastructure", () => {
         "high-threshold-async-biometric-token-4xx-api-gw": false,
         "high-threshold-async-finish-biometric-session-5xx-api-gw": false,
         "high-threshold-async-finish-biometric-session-4xx-api-gw": false,
+        "high-threshold-async-abort-session-5xx-api-gw": false,
+        "high-threshold-async-abort-session-4xx-api-gw": false,
         "high-threshold-vendor-processing-dlq-age-of-oldest-message": false,
         "high-threshold-ipv-core-dlq-age-of-oldest-message": false,
       };
@@ -296,6 +298,8 @@ describe("Backend application infrastructure", () => {
         ["low-threshold-async-finish-biometric-session-4xx-api-gw"],
         ["high-threshold-async-finish-biometric-session-5xx-api-gw"],
         ["low-threshold-async-finish-biometric-session-5xx-api-gw"],
+        ["low-threshold-async-abort-session-4xx-api-gw"],
+        ["low-threshold-async-abort-session-5xx-api-gw"],
         ["finish-biometric-session-lambda-error-rate"],
         ["finish-biometric-session-lambda-low-completion"],
         ["biometric-token-lambda-low-completion"],
