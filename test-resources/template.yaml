@@ -635,6 +635,7 @@ Resources:
       AccessLogSetting:
         DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${TestResourcesApi}
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      AlwaysDeploy: true
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
@@ -659,9 +660,6 @@ Resources:
       Name: !Sub ${AWS::StackName}-test-resources-api
       OpenApiVersion: 3.0.1
       StageName: !Ref Environment
-      Tags:
-        FMSRegionalPolicy: false
-    AlwaysDeploy: true
 
   TestResourcesApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
@@ -707,7 +705,7 @@ Resources:
       RegionalCertificateArn: !If
         - DevelopmentStack
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
-        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneSessionsCertificateV2ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneTestResourcesCertificateV1ARN}}'
       SecurityPolicy: TLS_1_2
 
   TestResourcesApiRecordSet:
@@ -733,30 +731,6 @@ Resources:
               - BaseDns
       Type: A
 
-  TestResourcesApiRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action: sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service: apigateway.amazonaws.com
-        Version: "2012-10-17"
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-      Policies:
-        - PolicyDocument:
-            Statement:
-              - Action: lambda:InvokeFunction
-                Effect: Allow
-                Resource: !GetAtt TestSessionsFunction.Arn
-            Version: "2012-10-17"
-          PolicyName: Lambda
-      RoleName: !Sub ${AWS::StackName}-test-resources-api
-
   TestResourcesLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -779,13 +753,13 @@ Resources:
       Description: Test sessions lambda for putting items into the Sessions table
       Environment:
         Variables:
-          SESSIONS_TABLE_ARN: !ImportValue
+          SESSIONS_TABLE_NAME: !ImportValue
             Fn::Sub: ${BackendStackName}-sessions-table-arn
       Events:
         TestSessions:
           Properties:
             Method: put
-            Path: /test-sessions
+            Path: /test-sessions/{sessionId}
             RestApiId: !Ref TestResourcesApi
           Type: Api
       FunctionName: !Sub ${AWS::StackName}-test-sessions
@@ -806,14 +780,6 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-test-sessions
       RetentionInDays: 30
-
-  TestSessionsFunctionPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt TestSessionsFunction.Arn
-      Principal: apigateway.amazonaws.com
-      SourceAccount: !Sub ${AWS::AccountId}
 
   TestSessionsFunctionRole:
     Type: AWS::IAM::Role

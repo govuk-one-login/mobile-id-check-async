@@ -51,8 +51,8 @@ function getEventsApiInstance() {
 
 function getTestSessionApiInstance() {
   const apiUrl =
-    "https://test-resources-sandy-test-resources.review-b-async.dev.account.gov.uk";
-  return getInstance(apiUrl, true);
+    "https://test-resources-sandytr-test-resources.review-b-async.dev.account.gov.uk";
+  return getInstance(apiUrl, false);
 }
 
 function getInstance(baseUrl: string, useAwsSigv4Signing: boolean = false) {

@@ -2,7 +2,7 @@ import { TEST_SESSIONS_API_INSTANCE } from "../dequeue/utils/apiTestHelpers";
 
 describe("Test Sessions api tests", () => {
   it("Returns a 400 with validation reason if request fails api validation", async () => {
-    const response = await TEST_SESSIONS_API_INSTANCE.put("/test-sessions/asdf", {});
+  const response = await TEST_SESSIONS_API_INSTANCE.put("/test-sessions/1", {});
     console.log(response.data);
     expect(response.data).toEqual({
       error:

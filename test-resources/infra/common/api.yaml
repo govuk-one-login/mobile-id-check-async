@@ -2,8 +2,8 @@ AWSTemplateFormatVersion: "2010-09-09"
 Resources:
   TestResourcesApi:
     Type: AWS::Serverless::Api
-    AlwaysDeploy: true
     Properties:
+      AlwaysDeploy: true
       Name: !Sub ${AWS::StackName}-test-resources-api
       Description: API for test assets
       EndpointConfiguration: REGIONAL
@@ -31,8 +31,6 @@ Resources:
           Name: AWS::Include
           Parameters:
             Location: ./openApiSpecs/test-resources-spec.yaml
-      Tags:
-        FMSRegionalPolicy: false
 
   TestResourcesLogGroup:
     Type: AWS::Logs::LogGroup
@@ -63,7 +61,7 @@ Resources:
       RegionalCertificateArn: !If
         - DevelopmentStack
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
-        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneSessionsCertificateV2ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneTestResourcesCertificateV1ARN}}'
       SecurityPolicy: TLS_1_2
 
   TestResourcesApiBasePathMapping:
@@ -109,28 +107,3 @@ Resources:
       AliasTarget:
         DNSName: !GetAtt TestResourcesApiDomainName.RegionalDomainName
         HostedZoneId: !GetAtt TestResourcesApiDomainName.RegionalHostedZoneId
-
-
-  TestResourcesApiRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub ${AWS::StackName}-test-resources-api
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: apigateway.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: Lambda
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action: lambda:InvokeFunction
-                Resource: !GetAtt TestSessionsFunction.Arn
