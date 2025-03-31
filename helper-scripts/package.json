@@ -19,7 +19,7 @@
     "zx": "^8.4.1"
   },
   "devDependencies": {
-    "@types/node": "^22.13.13",
+    "@types/node": "^22.13.14",
     "eslint": "^9.23.0",
     "eslint-config-prettier": "^10.0.1",
     "prettier": "^3.4.2",
