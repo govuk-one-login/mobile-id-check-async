@@ -134,24 +134,6 @@ Resources:
     Condition: NeverDeploy
 
 Outputs:
-  StsMockApiUrl:
-    Description: STS Mock API Gateway DNS
-    Value: !Sub https://${StsMockApiDomainName}
-
-  EventsApiUrl:
-    Description: Events API URL
-    Value: !Sub https://${EventsApiDomainName}
-
-  ProxyApiUrl:
-    Description: Proxy API URL used in the Events API tests
-    Value: !If
-      - UseDevOverrideProxyBaseUrl
-      - !Ref DevOverrideProxyBaseUrl
-      - !Sub https://proxy.review-b-async.${Environment}.account.gov.uk
-
-  SessionsApiUrl:
-    Description: Sessions API URL used in the Events API tests
-    Value: !If
-      - UseDevOverrideSessionsBaseUrl
-      - !Ref DevOverrideSessionsBaseUrl
-      - !Sub https://sessions.review-b-async.${Environment}.account.gov.uk
+  TestResourcesApiUrl:
+    Description: Test Resources API Gateway Url
+    Value: !Sub https://${TestResourcesApiDomainName}
