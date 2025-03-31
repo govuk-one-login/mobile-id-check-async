@@ -1,9 +1,9 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-  TestSessionsFunction:
+  PutSessionFunction:
     DependsOn:
-      - TestSessionsFunctionLogGroup
+      - PutSessionFunctionLogGroup
     Type: AWS::Serverless::Function
     Metadata:
       BuildMethod: esbuild
@@ -12,21 +12,21 @@ Resources:
         Target: es2022
         Sourcemap: false
         EntryPoints:
-          - src/functions/test-sessions/testSessionsHandler.ts
+          - src/functions/sessions/putSessionHandler.ts
     Properties:
-      Description: Test sessions lambda for putting items into the Sessions table
+      Description: Lambda for putting items into the Sessions table
       Events:
-        TestSessions:
+        PutSession:
           Type: Api
           Properties:
-            Path: /test-sessions/{sessionId}
+            Path: /sessions/{sessionId}
             Method: put
             RestApiId: !Ref TestResourcesApi
-      FunctionName: !Sub ${AWS::StackName}-test-sessions
+      FunctionName: !Sub ${AWS::StackName}-sessions
       Runtime: nodejs20.x
-      Handler: testSessionsHandler.lambdaHandler
+      Handler: putSessionHandler.lambdaHandler
       Timeout: 5
-      Role: !GetAtt TestSessionsFunctionRole.Arn
+      Role: !GetAtt PutSessionFunctionRole.Arn
       VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-PrivateSubnetIdA
@@ -35,17 +35,17 @@ Resources:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
 
-  TestSessionsFunctionLogGroup:
+  PutSessionFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 30
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-test-sessions
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-sessions
 
-  TestSessionsFunctionRole:
+  PutSessionFunctionRole:
     Type: AWS::IAM::Role
     Properties:
       Description: Execution role for the test sessions handler
-      RoleName: !Sub ${AWS::StackName}-test-sessions
+      RoleName: !Sub ${AWS::StackName}-sessions
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary

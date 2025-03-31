@@ -1,7 +1,7 @@
 import { APIGatewayProxyResult, Context } from "aws-lambda";
 import { buildRequest } from "../testUtils/mockRequest";
 import { buildLambdaContext } from "../testUtils/mockContext";
-import { lambdaHandlerConstructor } from "./testSessionsHandler";
+import { lambdaHandlerConstructor } from "./putSessionHandler";
 import { logger } from "../common/logging/logger";
 import {
   expectedSecurityHeaders,
@@ -10,7 +10,7 @@ import {
 import { expect } from "@jest/globals";
 import "../testUtils/matchers";
 
-describe("Test sessions handler", () => {
+describe("Put session handler", () => {
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;

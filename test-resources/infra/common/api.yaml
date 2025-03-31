@@ -4,13 +4,13 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       AlwaysDeploy: true
-      Name: !Sub ${AWS::StackName}-test-resources-api
+      Name: !Sub ${AWS::StackName}-api
       Description: API for test assets
       EndpointConfiguration: REGIONAL
       StageName: !Ref Environment
       OpenApiVersion: 3.0.1
       AccessLogSetting:
-        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${TestResourcesApi}
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${TestResourcesApiAccessLogs}
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
       MethodSettings:
         - LoggingLevel: INFO
@@ -32,10 +32,10 @@ Resources:
           Parameters:
             Location: ./openApiSpecs/test-resources-spec.yaml
 
-  TestResourcesLogGroup:
+  TestResourcesApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-test-resources-api-access-logs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-api-access-logs
       RetentionInDays: 30
 
   TestResourcesApiDomainName:

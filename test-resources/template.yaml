@@ -413,10 +413,10 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-      BucketName: !Sub ${AWS::StackName}-jwks-${Environment}
+      BucketName: !Sub ${AWS::StackName}-sts-mock-jwks-${Environment}
       LoggingConfiguration:
         DestinationBucketName: !Ref JwksBucketAccessLogs
-        LogFilePrefix: !Sub ${AWS::StackName}-jwks
+        LogFilePrefix: !Sub ${AWS::StackName}-sts-mock-jwks
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -432,7 +432,7 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-      BucketName: !Sub ${AWS::StackName}-jwks-access-logs-${Environment}
+      BucketName: !Sub ${AWS::StackName}-sts-mock-jwks-access-logs-${Environment}
       OwnershipControls:
         Rules:
           - ObjectOwnership: ObjectWriter
@@ -499,7 +499,7 @@ Resources:
                   - !Sub ${JwksBucket.Arn}/.well-known/jwks.json
             Version: "2012-10-17"
           PolicyName: JwksBucketPolicy
-      RoleName: !Sub ${AWS::StackName}-jwks-bucket-api
+      RoleName: !Sub ${AWS::StackName}-sts-mock-jwks-bucket-api
 
   JwksBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -522,6 +522,84 @@ Resources:
   NullResource:
     Type: AWS::CloudFormation::WaitConditionHandle
     Condition: NeverDeploy
+
+  PutSessionFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - PutSessionFunctionLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - src/functions/sessions/putSessionHandler.ts
+        Minify: true
+        Sourcemap: false
+        Target: es2022
+    Properties:
+      Description: Lambda for putting items into the Sessions table
+      Events:
+        PutSession:
+          Properties:
+            Method: put
+            Path: /sessions/{sessionId}
+            RestApiId: !Ref TestResourcesApi
+          Type: Api
+      FunctionName: !Sub ${AWS::StackName}-sessions
+      Handler: putSession.lambdaHandler
+      Role: !GetAtt PutSessionFunctionRole.Arn
+      Runtime: nodejs20.x
+      Timeout: 5
+      VpcConfig:
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+
+  PutSessionFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-sessions
+      RetentionInDays: 30
+
+  PutSessionFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      Description: Execution role for the test sessions handler
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Effect: Allow
+                Resource: '*'
+            Version: "2012-10-17"
+          PolicyName: VpcPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: arn:aws:logs:*:*:*
+            Version: "2012-10-17"
+          PolicyName: LoggingPolicy
+      RoleName: !Sub ${AWS::StackName}-sessions
 
   StsMockApi:
     Type: AWS::Serverless::Api
@@ -550,14 +628,14 @@ Resources:
             - StsMockApiGateway
             - !Ref Environment
             - ApiRateLimit
-      Name: !Sub ${AWS::StackName}-api
+      Name: !Sub ${AWS::StackName}-sts-mock-api
       OpenApiVersion: 3.0.1
       StageName: !Ref Environment
 
   StsMockApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-api-access-logs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sts-mock-api-access-logs
       RetentionInDays: 30
 
   StsMockApiBasePathMapping:
@@ -633,7 +711,7 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       AccessLogSetting:
-        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${TestResourcesApi}
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${TestResourcesApiAccessLogs}
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
       AlwaysDeploy: true
       DefinitionBody:
@@ -657,9 +735,15 @@ Resources:
             - TestResourcesApiGateway
             - !Ref Environment
             - ApiRateLimit
-      Name: !Sub ${AWS::StackName}-test-resources-api
+      Name: !Sub ${AWS::StackName}-api
       OpenApiVersion: 3.0.1
       StageName: !Ref Environment
+
+  TestResourcesApiAccessLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-api-access-logs
+      RetentionInDays: 30
 
   TestResourcesApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
@@ -731,90 +815,6 @@ Resources:
               - BaseDns
       Type: A
 
-  TestResourcesLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-test-resources-api-access-logs
-      RetentionInDays: 30
-
-  TestSessionsFunction:
-    Type: AWS::Serverless::Function
-    DependsOn:
-      - TestSessionsFunctionLogGroup
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        EntryPoints:
-          - src/functions/test-sessions/testSessionsHandler.ts
-        Minify: true
-        Sourcemap: false
-        Target: es2022
-    Properties:
-      Description: Test sessions lambda for putting items into the Sessions table
-      Events:
-        TestSessions:
-          Properties:
-            Method: put
-            Path: /test-sessions/{sessionId}
-            RestApiId: !Ref TestResourcesApi
-          Type: Api
-      FunctionName: !Sub ${AWS::StackName}-test-sessions
-      Handler: testSessionsHandler.lambdaHandler
-      Role: !GetAtt TestSessionsFunctionRole.Arn
-      Runtime: nodejs20.x
-      Timeout: 5
-      VpcConfig:
-        SecurityGroupIds:
-          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
-        SubnetIds:
-          - !ImportValue devplatform-vpc-PrivateSubnetIdA
-          - !ImportValue devplatform-vpc-PrivateSubnetIdB
-          - !ImportValue devplatform-vpc-PrivateSubnetIdC
-
-  TestSessionsFunctionLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-test-sessions
-      RetentionInDays: 30
-
-  TestSessionsFunctionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action: sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-        Version: "2012-10-17"
-      Description: Execution role for the test sessions handler
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-      Policies:
-        - PolicyDocument:
-            Statement:
-              - Action:
-                  - ec2:DescribeNetworkInterfaces
-                  - ec2:CreateNetworkInterface
-                  - ec2:DeleteNetworkInterface
-                Effect: Allow
-                Resource: '*'
-            Version: "2012-10-17"
-          PolicyName: VpcPolicy
-        - PolicyDocument:
-            Statement:
-              - Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                Effect: Allow
-                Resource: arn:aws:logs:*:*:*
-            Version: "2012-10-17"
-          PolicyName: LoggingPolicy
-      RoleName: !Sub ${AWS::StackName}-test-sessions
-
   TokenFunction:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -844,7 +844,7 @@ Resources:
             Path: /token
             RestApiId: !Ref StsMockApi
           Type: Api
-      FunctionName: !Sub ${AWS::StackName}-token
+      FunctionName: !Sub ${AWS::StackName}-sts-mock-token
       Handler: tokenHandler.lambdaHandler
       Role: !GetAtt TokenFunctionRole.Arn
       Runtime: nodejs20.x
@@ -860,7 +860,7 @@ Resources:
   TokenFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-token
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-sts-mock-token
       RetentionInDays: 30
 
   TokenFunctionPermission:
@@ -901,7 +901,7 @@ Resources:
                     - TargetBucket: !Ref JwksBucket
             Version: "2012-10-17"
           PolicyName: S3ReadPolicy
-      RoleName: !Sub ${AWS::StackName}-token
+      RoleName: !Sub ${AWS::StackName}-sts-mocktoken
 
 Outputs:
   EventsApiUrl:

@@ -4,7 +4,7 @@ Resources:
   StsMockApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub ${AWS::StackName}-api
+      Name: !Sub ${AWS::StackName}-sts-mock-api
       Description: Public API gateway for STS Mock
       EndpointConfiguration: REGIONAL
       StageName:
@@ -30,7 +30,7 @@ Resources:
   StsMockApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-api-access-logs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sts-mock-api-access-logs
       RetentionInDays: 30
 
   StsMockApiDomainName:
@@ -106,7 +106,7 @@ Resources:
   JwksBucketApiRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-jwks-bucket-api
+      RoleName: !Sub ${AWS::StackName}-sts-mock-jwks-bucket-api
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary

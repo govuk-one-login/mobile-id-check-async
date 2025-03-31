@@ -4,7 +4,7 @@ info:
   description: API for mock assets used in test environments. This includes the test-sessions functionality, which interacts with the sessions table.
   version: 1.0.0
 paths:
-  /test-sessions/{sessionId}:
+  /sessions/{sessionId}:
     put:
       summary: Create or update a session
       parameters:
@@ -60,7 +60,7 @@ paths:
         httpMethod: "POST"
         passthroughBehavior: "when_no_match"
         uri:
-          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${TestSessionsFunction}:live/invocations"
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${PutSessionFunction}:live/invocations"
         type: "aws_proxy"
 
 
