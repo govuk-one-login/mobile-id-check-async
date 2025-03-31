@@ -7,7 +7,6 @@ import { logger } from "../common/logging/logger";
 import {
   expectedSecurityHeaders,
   mockSessionId,
-  NOW_IN_MILLISECONDS,
 } from "../testUtils/unitTestData";
 import { expect } from "@jest/globals";
 import "../testUtils/matchers";
