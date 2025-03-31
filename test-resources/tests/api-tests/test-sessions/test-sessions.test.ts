@@ -1,7 +1,7 @@
 import { AxiosResponse } from "axios";
 import { TEST_SESSIONS_API_INSTANCE } from "../utils/apiInstances";
 
-describe("Test Sessions api tests", () => {
+describe("PUT /testSessions/{sessionId}", () => {
   describe("Given there is no sessionId path parameter", () => {
     let response: AxiosResponse;
     beforeEach(async() => {
