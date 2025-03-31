@@ -30,9 +30,7 @@ export const lambdaHandler = lambdaHandlerConstructor.bind(
   runtimeDependencies,
 );
 
-const validateSqsEvent = (
-  event: SQSEvent,
-): Result<{ sessionId: string }, void> => {
+const validateSqsEvent = (event: SQSEvent): Result<string, void> => {
   if (event == null) {
     logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT, {
       errorMessage: "Event is either null or undefined.",
@@ -62,12 +60,19 @@ const validateSqsEvent = (
     return emptyFailure();
   }
 
-  let parsedBody;
+  let parsedBody: unknown;
   try {
     parsedBody = JSON.parse(record.body);
   } catch {
     logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT, {
       errorMessage: `Failed to parse event body. Body: ${record.body}`,
+    });
+    return emptyFailure();
+  }
+
+  if (!isParsedBody(parsedBody)) {
+    logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT, {
+      errorMessage: `Parsed body not in expected shape: ${JSON.stringify(parsedBody)}`,
     });
     return emptyFailure();
   }
@@ -82,4 +87,20 @@ const validateSqsEvent = (
   }
 
   return successResult(sessionId);
+};
+
+interface ParsedBody {
+  sessionId: string;
+}
+
+const isParsedBody = (parsedBody: unknown): parsedBody is ParsedBody => {
+  if (
+    typeof parsedBody !== "object" ||
+    parsedBody == null ||
+    Array.isArray(parsedBody)
+  ) {
+    return false;
+  }
+  const record = parsedBody as Record<string, unknown>;
+  return "sessionId" in record && typeof record.sessionId === "string";
 };
