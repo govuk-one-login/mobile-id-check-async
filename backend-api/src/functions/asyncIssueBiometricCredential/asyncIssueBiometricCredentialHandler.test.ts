@@ -121,7 +121,7 @@ describe("Async Issue Biometric Credential", () => {
       describe.each([
         {
           scenario: "Given body is undefined",
-          body: undefined,
+          body: undefined as unknown as string,
           errorMessage: "Event body either null or undefined.",
         },
         {
@@ -167,7 +167,8 @@ describe("Async Issue Biometric Credential", () => {
               body,
             },
           ],
-        } as unknown as SQSEvent;
+        };
+
         beforeEach(async () => {
           await lambdaHandlerConstructor(
             dependencies,
