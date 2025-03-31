@@ -73,7 +73,7 @@ describe("Async Issue Biometric Credential", () => {
   });
 
   describe("SQS Event validation", () => {
-    describe("Given SQSEvent is invalid", () => {
+    describe("Given event is invalid", () => {
       describe.each([
         {
           scenario: "Given event is null or undefined",
@@ -117,60 +117,47 @@ describe("Async Issue Biometric Credential", () => {
       });
     });
 
-    describe("Given event body is undefined", () => {
-      const invalidSqsEvent = {
-        Records: [
-          {
-            ...validVendorProcessingQueueSqsEventRecord,
-            body: undefined,
-          },
-        ],
-      } as unknown as SQSEvent;
-
-      beforeEach(async () => {
-        await lambdaHandlerConstructor(dependencies, invalidSqsEvent, context);
-      });
-
-      it("Logs INVALID_SQS_EVENT", () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode:
-            "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
+    describe("Given event body is invalid", () => {
+      describe.each([
+        {
+          scenario: "Given event body is undefined",
+          body: undefined,
           errorMessage: "Event body either null or undefined.",
-        });
-      });
-
-      it("Does not log COMPLETED", () => {
-        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-        });
-      });
-    });
-
-    describe("Given event body cannot be parsed", () => {
-      const invalidSqsEvent = {
-        Records: [
-          {
-            ...validVendorProcessingQueueSqsEventRecord,
-            body: "invalidJson",
-          },
-        ],
-      };
-
-      beforeEach(async () => {
-        await lambdaHandlerConstructor(dependencies, invalidSqsEvent, context);
-      });
-
-      it("Logs INVALID_SQS_EVENT", () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode:
-            "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
+        },
+        {
+          scenario: "Given event body cannot be parsed",
+          body: "invalidJson",
           errorMessage: "Failed to parse event body. Body: invalidJson",
+        },
+      ])("$scenario", ({ body, errorMessage }) => {
+        const invalidSqsEvent = {
+          Records: [
+            {
+              ...validVendorProcessingQueueSqsEventRecord,
+              body,
+            },
+          ],
+        } as unknown as SQSEvent;
+        beforeEach(async () => {
+          await lambdaHandlerConstructor(
+            dependencies,
+            invalidSqsEvent,
+            context,
+          );
         });
-      });
 
-      it("Does not log COMPLETED", () => {
-        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        it("Logs INVALID_SQS_EVENT", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode:
+              "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
+            errorMessage,
+          });
+        });
+
+        it("Does not log COMPLETED", () => {
+          expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+          });
         });
       });
     });
