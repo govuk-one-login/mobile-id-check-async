@@ -236,6 +236,8 @@ describe("Backend application infrastructure", () => {
         "high-threshold-async-biometric-token-4xx-api-gw": false,
         "high-threshold-async-finish-biometric-session-5xx-api-gw": false,
         "high-threshold-async-finish-biometric-session-4xx-api-gw": false,
+        "high-threshold-async-txma-event-5xx-api-gw": false,
+        "high-threshold-async-txma-event-4xx-api-gw": false,
         "high-threshold-vendor-processing-dlq-age-of-oldest-message": false,
         "high-threshold-ipv-core-dlq-age-of-oldest-message": false,
       };
