@@ -262,7 +262,7 @@ describe("Backend application infrastructure", () => {
     });
 
     test("All alarms are configured with a Condition", () => {
-      const conditionalNames = ["DeployAlarms"];
+      const conditionalNames = ["DeployAlarms", "UseCanaryDeployment"];
       const alarms = Object.values(
         template.findResources("AWS::CloudWatch::Alarm"),
       );
@@ -1088,7 +1088,7 @@ describe("Backend application infrastructure", () => {
                 Enabled: true,
                 Alarms: {
                   "Fn::If": [
-                    "DeployAlarms",
+                    "UseCanaryDeployment",
                     expect.any(Array),
                     [{ Ref: "AWS::NoValue" }],
                   ],
