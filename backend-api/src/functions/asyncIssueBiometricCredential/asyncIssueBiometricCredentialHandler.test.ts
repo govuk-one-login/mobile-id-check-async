@@ -15,6 +15,7 @@ describe("Async Issue Biometric Credential", () => {
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
+  let lambdaError: Error | undefined;
 
   const validVendorProcessingQueueSqsEventRecord = {
     messageId: "mockMessageId",
@@ -76,11 +77,15 @@ describe("Async Issue Biometric Credential", () => {
     describe("Given event is null or undefined", () => {
       const invalidSqsEvent = null as unknown as SQSEvent;
       beforeEach(async () => {
-        await expect(
-          lambdaHandlerConstructor(dependencies, invalidSqsEvent, context),
-        ).rejects.toThrow(
-          "Invalid SQS event. Event is either null or undefined.",
-        );
+        try {
+          await lambdaHandlerConstructor(
+            dependencies,
+            invalidSqsEvent,
+            context,
+          );
+        } catch (error: unknown) {
+          lambdaError = error as Error;
+        }
       });
 
       it("logs INVALID_SQS_EVENT", () => {
@@ -90,16 +95,26 @@ describe("Async Issue Biometric Credential", () => {
           errorMessage: "Event is either null or undefined.",
         });
       });
+
+      it("Throws error with message", () => {
+        expect(lambdaError?.message).toEqual(
+          "Invalid SQS event. Event is either null or undefined.",
+        );
+      });
     });
 
     describe("Given event is missing Records array", () => {
       const invalidSqsEvent = {} as unknown as SQSEvent;
       beforeEach(async () => {
-        await expect(
-          lambdaHandlerConstructor(dependencies, invalidSqsEvent, context),
-        ).rejects.toThrow(
-          "Invalid SQS event. Invalid event structure: Missing 'Records' array.",
-        );
+        try {
+          await lambdaHandlerConstructor(
+            dependencies,
+            invalidSqsEvent,
+            context,
+          );
+        } catch (error: unknown) {
+          lambdaError = error as Error;
+        }
       });
 
       it("logs INVALID_SQS_EVENT", () => {
@@ -109,6 +124,12 @@ describe("Async Issue Biometric Credential", () => {
           errorMessage: "Invalid event structure: Missing 'Records' array.",
         });
       });
+
+      it("Throws error with message", () => {
+        expect(lambdaError?.message).toEqual(
+          "Invalid SQS event. Invalid event structure: Missing 'Records' array.",
+        );
+      });
     });
 
     describe("Given there is not exactly one record", () => {
@@ -116,11 +137,15 @@ describe("Async Issue Biometric Credential", () => {
         Records: [],
       };
       beforeEach(async () => {
-        await expect(
-          lambdaHandlerConstructor(dependencies, invalidSqsEvent, context),
-        ).rejects.toThrow(
-          "Invalid SQS event. Expected exactly one record, got 0.",
-        );
+        try {
+          await lambdaHandlerConstructor(
+            dependencies,
+            invalidSqsEvent,
+            context,
+          );
+        } catch (error: unknown) {
+          lambdaError = error as Error;
+        }
       });
 
       it("Logs INVALID_SQS_EVENT", () => {
@@ -129,6 +154,12 @@ describe("Async Issue Biometric Credential", () => {
             "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
           errorMessage: "Expected exactly one record, got 0.",
         });
+      });
+
+      it("Throws error with message", () => {
+        expect(lambdaError?.message).toEqual(
+          "Invalid SQS event. Expected exactly one record, got 0.",
+        );
       });
     });
 
@@ -143,11 +174,15 @@ describe("Async Issue Biometric Credential", () => {
       } as unknown as SQSEvent;
 
       beforeEach(async () => {
-        await expect(
-          lambdaHandlerConstructor(dependencies, invalidSqsEvent, context),
-        ).rejects.toThrow(
-          "Invalid SQS event. Event body either null or undefined.",
-        );
+        try {
+          await lambdaHandlerConstructor(
+            dependencies,
+            invalidSqsEvent,
+            context,
+          );
+        } catch (error: unknown) {
+          lambdaError = error as Error;
+        }
       });
 
       it("Logs INVALID_SQS_EVENT", () => {
@@ -156,6 +191,12 @@ describe("Async Issue Biometric Credential", () => {
             "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
           errorMessage: "Event body either null or undefined.",
         });
+      });
+
+      it("Throws error with message", () => {
+        expect(lambdaError?.message).toEqual(
+          "Invalid SQS event. Event body either null or undefined.",
+        );
       });
     });
 
@@ -170,11 +211,15 @@ describe("Async Issue Biometric Credential", () => {
       };
 
       beforeEach(async () => {
-        await expect(
-          lambdaHandlerConstructor(dependencies, invalidSqsEvent, context),
-        ).rejects.toThrow(
-          "Invalid SQS event. Failed to parse event body. Body: invalidJson",
-        );
+        try {
+          await lambdaHandlerConstructor(
+            dependencies,
+            invalidSqsEvent,
+            context,
+          );
+        } catch (error: unknown) {
+          lambdaError = error as Error;
+        }
       });
 
       it("Logs INVALID_SQS_EVENT", () => {
@@ -183,6 +228,12 @@ describe("Async Issue Biometric Credential", () => {
             "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
           errorMessage: "Failed to parse event body. Body: invalidJson",
         });
+      });
+
+      it("Throws error with message", () => {
+        expect(lambdaError?.message).toEqual(
+          "Invalid SQS event. Failed to parse event body. Body: invalidJson",
+        );
       });
     });
 
@@ -200,11 +251,15 @@ describe("Async Issue Biometric Credential", () => {
       };
 
       beforeEach(async () => {
-        await expect(
-          lambdaHandlerConstructor(dependencies, invalidSqsEvent, context),
-        ).rejects.toThrow(
-          "Invalid SQS event. sessionId in request body is not a valid v4 UUID. sessionId: mockInvalidSessionId",
-        );
+        try {
+          await lambdaHandlerConstructor(
+            dependencies,
+            invalidSqsEvent,
+            context,
+          );
+        } catch (error: unknown) {
+          lambdaError = error as Error;
+        }
       });
 
       it("Logs INVALID_SQS_EVENT", () => {
@@ -214,6 +269,12 @@ describe("Async Issue Biometric Credential", () => {
           errorMessage:
             "sessionId in request body is not a valid v4 UUID. sessionId: mockInvalidSessionId",
         });
+      });
+
+      it("Throws error with message", () => {
+        expect(lambdaError?.message).toEqual(
+          "Invalid SQS event. sessionId in request body is not a valid v4 UUID. sessionId: mockInvalidSessionId",
+        );
       });
     });
   });
