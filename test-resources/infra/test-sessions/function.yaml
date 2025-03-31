@@ -27,10 +27,6 @@ Resources:
       Handler: testSessionsHandler.lambdaHandler
       Timeout: 5
       Role: !GetAtt TestSessionsFunctionRole.Arn
-      Environment:
-        Variables:
-          SESSIONS_TABLE_NAME:
-            Fn::ImportValue: !Sub ${BackendStackName}-sessions-table-arn
       VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-PrivateSubnetIdA

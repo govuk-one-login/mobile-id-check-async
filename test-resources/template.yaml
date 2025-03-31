@@ -751,10 +751,6 @@ Resources:
         Target: es2022
     Properties:
       Description: Test sessions lambda for putting items into the Sessions table
-      Environment:
-        Variables:
-          SESSIONS_TABLE_NAME: !ImportValue
-            Fn::Sub: ${BackendStackName}-sessions-table-arn
       Events:
         TestSessions:
           Properties:
