@@ -20,11 +20,8 @@ export async function lambdaHandlerConstructor(
   if (validateSqsEventResult.isError) {
     return;
   }
-  const sessionId = validateSqsEventResult.value;
 
-  logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED, {
-    sessionId,
-  });
+  logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(
