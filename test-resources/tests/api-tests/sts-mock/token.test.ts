@@ -1,4 +1,4 @@
-import { STS_MOCK_API_INSTANCE } from "../utils/testFunctions";
+import { STS_MOCK_API_INSTANCE } from "../utils/apiInstances";
 
 describe("POST /token", () => {
   describe("Given there is no request body", () => {

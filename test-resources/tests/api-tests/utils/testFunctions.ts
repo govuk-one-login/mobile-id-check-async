@@ -203,4 +203,3 @@ async function getEvents(
   const events = response.data;
   return Array.isArray(events) ? events : []; // If response is malformed, return empty array so polling can be retried
 }
-export { STS_MOCK_API_INSTANCE };
