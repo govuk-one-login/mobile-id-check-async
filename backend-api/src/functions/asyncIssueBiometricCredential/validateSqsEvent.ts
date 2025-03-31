@@ -5,34 +5,13 @@ import { LogMessage } from "../common/logging/LogMessage";
 import { validateSessionId } from "../common/request/validateSessionId/validateSessionId";
 
 export const validateSqsEvent = (event: SQSEvent): Result<string, void> => {
-  if (event == null) {
-    logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT, {
-      errorMessage: "Event is either null or undefined.",
-    });
-    return emptyFailure();
-  }
-
-  if (event.Records == null) {
-    logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT, {
-      errorMessage: "Invalid event structure: Missing 'Records' array.",
-    });
-    return emptyFailure();
-  }
-
   if (event.Records.length !== 1) {
     logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT, {
       errorMessage: `Expected exactly one record, got ${event.Records.length}.`,
     });
     return emptyFailure();
   }
-
   const record = event.Records[0];
-  if (record.body == null) {
-    logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT, {
-      errorMessage: "Event body either null or undefined.",
-    });
-    return emptyFailure();
-  }
 
   let parsedBody: unknown;
   try {

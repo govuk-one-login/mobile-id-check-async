@@ -76,16 +76,6 @@ describe("Async Issue Biometric Credential", () => {
     describe("Given event is invalid", () => {
       describe.each([
         {
-          scenario: "Given event is null or undefined",
-          invalidSqsEvent: null as unknown as SQSEvent,
-          errorMessage: "Event is either null or undefined.",
-        },
-        {
-          scenario: "Given event is missing Records array",
-          invalidSqsEvent: {} as unknown as SQSEvent,
-          errorMessage: "Invalid event structure: Missing 'Records' array.",
-        },
-        {
           scenario: "Given there is not exactly one record",
           invalidSqsEvent: {
             Records: [],
@@ -119,11 +109,6 @@ describe("Async Issue Biometric Credential", () => {
 
     describe("Given event body is invalid", () => {
       describe.each([
-        {
-          scenario: "Given body is undefined",
-          body: undefined as unknown as string,
-          errorMessage: "Event body either null or undefined.",
-        },
         {
           scenario: "Given body cannot be parsed",
           body: "invalidJson",
