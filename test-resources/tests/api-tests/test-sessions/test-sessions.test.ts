@@ -16,12 +16,6 @@ describe("PUT /testSessions/{sessionId}", () => {
       });
       expect(response.status).toBe(404);
     });
-
-    it("Contains security headers", async () => {
-      expect(response.headers).toEqual(
-        expect.objectContaining(expectedSecurityHeaders),
-      );
-    });
   });
 
   describe("Given there is a valid sessionId parameter", () => {
@@ -32,6 +26,9 @@ describe("PUT /testSessions/{sessionId}", () => {
     it("Returns a 501 Not Implemented response", async () => {
       expect(response.data).toEqual("Not Implemented");
       expect(response.status).toBe(501);
+      expect(response.headers).toEqual(
+        expect.objectContaining(expectedSecurityHeaders),
+      );
     });
   });
 });
