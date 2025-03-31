@@ -2,86 +2,9 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
-import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
-import { aws4Interceptor } from "aws4-axios";
-import axios, { AxiosInstance } from "axios";
-import axiosRetry from "axios-retry";
 
-import dotenv from "dotenv";
-dotenv.config();
-
-export const STS_MOCK_API_INSTANCE = getStsMockInstance();
-export const SESSIONS_API_INSTANCE = getSessionsApiInstance();
-export const PROXY_API_INSTANCE = getProxyApiInstance();
-export const EVENTS_API_INSTANCE = getEventsApiInstance();
-export const TEST_SESSIONS_API_INSTANCE = getTestSessionApiInstance();
-
-console.log("STS_MOCK_API_INSTANCE", STS_MOCK_API_INSTANCE.getUri());
-console.log("SESSIONS_API_INSTANCE", SESSIONS_API_INSTANCE.getUri());
-console.log("PROXY_API_INSTANCE", PROXY_API_INSTANCE.getUri());
-console.log("EVENTS_API_INSTANCE", EVENTS_API_INSTANCE.getUri());
-
-function getStsMockInstance() {
-  const apiUrl = process.env.STS_MOCK_API_URL;
-  if (!apiUrl)
-    throw new Error("STS_MOCK_API_URL needs to be defined for API tests");
-  return getInstance(apiUrl);
-}
-
-function getSessionsApiInstance() {
-  const apiUrl = process.env.SESSIONS_API_URL;
-  if (!apiUrl)
-    throw new Error("SESSIONS_API_URL needs to be defined for API tests");
-  return getInstance(apiUrl);
-}
-
-function getProxyApiInstance() {
-  const apiUrl = process.env.PROXY_API_URL;
-  if (!apiUrl)
-    throw new Error("PROXY_API_URL needs to be defined for API tests");
-  return getInstance(apiUrl, true);
-}
-
-function getEventsApiInstance() {
-  const apiUrl = process.env.EVENTS_API_URL;
-  if (!apiUrl)
-    throw new Error("EVENTS_API_URL needs to be defined for API tests");
-  return getInstance(apiUrl, true);
-}
-
-function getTestSessionApiInstance() {
-  const apiUrl =
-    "https://test-resources-sandytr-test-resources.review-b-async.dev.account.gov.uk";
-  return getInstance(apiUrl, true);
-}
-
-function getInstance(baseUrl: string, useAwsSigv4Signing: boolean = false) {
-  const apiInstance = axios.create({ baseURL: baseUrl });
-  axiosRetry(apiInstance, {
-    retries: 2,
-    retryDelay: (retryCount) => retryCount * 200,
-  });
-  apiInstance.defaults.validateStatus = () => true;
-
-  if (useAwsSigv4Signing) {
-    const interceptor = aws4Interceptor({
-      options: {
-        region: "eu-west-2",
-        service: "execute-api",
-      },
-      credentials: {
-        getCredentials: fromNodeProviderChain({
-          timeout: 1000,
-          maxRetries: 1,
-          profile: process.env.AWS_PROFILE,
-        }),
-      },
-    });
-    apiInstance.interceptors.request.use(interceptor);
-  }
-
-  return apiInstance;
-}
+import { EVENTS_API_INSTANCE, PROXY_API_INSTANCE, SESSIONS_API_INSTANCE, STS_MOCK_API_INSTANCE } from "./apiInstances";
+import { AxiosInstance } from "axios";
 
 interface CredentialRequestBody {
   sub: string;
