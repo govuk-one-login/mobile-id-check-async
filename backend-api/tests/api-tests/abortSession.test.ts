@@ -57,7 +57,6 @@ describe("POST /async/abortSession", () => {
   describe("Given there is a valid request", () => {
     let sessionId: string;
     let response: AxiosResponse;
-    let eventsResponse: EventResponse[];
     beforeAll(async () => {
       const sub = randomUUID();
       await createSessionForSub(sub);

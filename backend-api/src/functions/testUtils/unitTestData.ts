@@ -15,10 +15,6 @@ export const expectedSecurityHeaders = {
   "X-Frame-Options": "DENY",
 };
 
-export const MOCK_CURRENT_TIME = 1708531200000; // 2024-02-21T12:00:00.000Z
-export const MOCK_VALID_TIME = MOCK_CURRENT_TIME - 30 * 60 * 1000; // 30 minutes old
-export const MOCK_EXPIRED_TIME = MOCK_CURRENT_TIME - 61 * 60 * 1000; // Over 1 hour old
-
 export const NOW_IN_MILLISECONDS: number = 1704110400000; // 2024-01-01 12:00:00.000
 export const NOW_IN_SECONDS: number = 1704110400; // 2024-01-01 12:00:00
 export const ONE_HOUR_IN_FUTURE_IN_MILLISECONDS = 1704114000000; // 2024-01-01 13:00:00.000

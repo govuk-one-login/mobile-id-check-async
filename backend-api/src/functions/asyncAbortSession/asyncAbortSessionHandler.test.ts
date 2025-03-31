@@ -13,9 +13,9 @@ import {
   mockInertSessionRegistry,
   mockInertEventService,
   validAbortSessionAttributes,
-  MOCK_CURRENT_TIME,
-  MOCK_EXPIRED_TIME,
-  MOCK_VALID_TIME,
+  NOW_IN_MILLISECONDS,
+  invalidCreatedAt,
+  validCreatedAt,
 } from "../testUtils/unitTestData";
 import { emptySuccess, successResult, errorResult } from "../utils/result";
 import { UpdateSessionError } from "../common/session/SessionRegistry";
@@ -77,7 +77,7 @@ describe("Async Abort Session", () => {
     consoleInfoSpy = jest.spyOn(console, "info");
     consoleErrorSpy = jest.spyOn(console, "error");
     jest.useFakeTimers();
-    jest.setSystemTime(MOCK_CURRENT_TIME);
+    jest.setSystemTime(NOW_IN_MILLISECONDS);
   });
 
   afterEach(() => {
@@ -99,7 +99,7 @@ describe("Async Abort Session", () => {
 
     it("Clears pre-existing log attributes", async () => {
       logger.appendKeys({ testKey: "testValue" });
-
+      await lambdaHandlerConstructor(dependencies, validRequest, context);
       expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
         testKey: "testValue",
       });
@@ -241,7 +241,7 @@ describe("Async Abort Session", () => {
       describe("and session is expired", () => {
         const expiredSessionAttributes = {
           ...validAbortSessionAttributes,
-          createdAt: MOCK_EXPIRED_TIME,
+          createdAt: invalidCreatedAt,
         };
 
         beforeEach(async () => {
@@ -280,7 +280,7 @@ describe("Async Abort Session", () => {
       describe("and session is not expired", () => {
         const validSessionAttributes = {
           ...validAbortSessionAttributes,
-          createdAt: MOCK_VALID_TIME,
+          createdAt: validCreatedAt,
         };
 
         beforeEach(async () => {
@@ -319,7 +319,7 @@ describe("Async Abort Session", () => {
       describe("and audit event write fails", () => {
         const validSessionAttributes = {
           ...validAbortSessionAttributes,
-          createdAt: MOCK_EXPIRED_TIME,
+          createdAt: invalidCreatedAt,
         };
 
         beforeEach(async () => {

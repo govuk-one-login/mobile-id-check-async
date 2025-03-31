@@ -21,7 +21,6 @@ export interface ConditionalCheckFailureOptions {
   ipAddress?: string;
   txmaAuditEncoded?: string;
   biometricSessionId?: string;
-  useForbidenForExpired?: boolean;
 }
 
 /**
@@ -191,7 +190,6 @@ export interface UpdateSessionErrorOptions {
   ipAddress?: string;
   txmaAuditEncoded?: string;
   biometricSessionId?: string;
-  useForbidenForExpired?: boolean;
 }
 
 /**
@@ -208,7 +206,6 @@ export async function handleUpdateSessionError(
     ipAddress = "",
     txmaAuditEncoded,
     biometricSessionId,
-    useForbidenForExpired = false,
   } = options;
 
   switch (updateSessionResult.value.errorType) {
@@ -220,7 +217,6 @@ export async function handleUpdateSessionError(
         ipAddress,
         txmaAuditEncoded,
         biometricSessionId,
-        useForbidenForExpired,
       });
     case UpdateSessionError.SESSION_NOT_FOUND:
       return handleSessionNotFound({
