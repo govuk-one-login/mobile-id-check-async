@@ -526,6 +526,26 @@ Resources:
                 Resource: '*'
             Version: "2012-10-17"
           PolicyName: VpcPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - dynamodb:UpdateItem
+                Effect: Allow
+                Resource: !GetAtt SessionsTable.Arn
+          PolicyName: AsyncAbortSessionFunctionDynamodbPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - sqs:SendMessage
+                Effect: Allow
+                Resource: !GetAtt TxMASQSQueue.Arn
+              - Action:
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Effect: Allow
+                Resource: !GetAtt TxMAKMSEncryptionKey.Arn
+            Version: "2012-10-17"
+          PolicyName: AsyncAbortSessionFunctionTxmaSQSPolicy
       RoleName: !Sub ${AWS::StackName}-abort-session-lambda
 
   AsyncAbortSessionLogGroup:
