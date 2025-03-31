@@ -18,7 +18,7 @@ export class LogMessage implements LogAttributes {
 
   static readonly TEST_SESSIONS_REQUEST_PATH_PARAM_INVALID = new LogMessage(
     "MOBILE_ASYNC_TEST_SESSIONS_REQUEST_PATH_PARAM_INVALID",
-    "The sessionId in the path parameter is missing or invalid",
+    "The sessionId path parameter is missing or invalid",
   );
 
   private constructor(
