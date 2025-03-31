@@ -27,7 +27,7 @@ Resources:
       DeploymentPreference:
         Enabled: true
         Alarms: !If
-          - DeployAlarms
+          - UseCanaryDeployment
           - - !Ref AsyncActiveSessionErrorRateAlarm        
             - !Ref AsyncActiveSessionLowCompletionAlarm
           - - !Ref AWS::NoValue

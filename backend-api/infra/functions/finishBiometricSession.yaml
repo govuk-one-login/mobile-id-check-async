@@ -19,7 +19,7 @@ Resources:
       DeploymentPreference:
         Enabled: true
         Alarms: !If
-          - DeployAlarms
+          - UseCanaryDeployment
           - - !Ref AsyncFinishBiometricSessionErrorRateAlarm            
             - !Ref AsyncFinishBiometricSessionLowCompletionAlarm
           - - !Ref AWS::NoValue
