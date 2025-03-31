@@ -15,7 +15,6 @@ describe("Async Issue Biometric Credential", () => {
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
-  let lambdaError: Error;
 
   const validVendorProcessingQueueSqsEventRecord = {
     messageId: "mockMessageId",
@@ -77,15 +76,7 @@ describe("Async Issue Biometric Credential", () => {
     describe("Given event is null or undefined", () => {
       const invalidSqsEvent = null as unknown as SQSEvent;
       beforeEach(async () => {
-        try {
-          await lambdaHandlerConstructor(
-            dependencies,
-            invalidSqsEvent,
-            context,
-          );
-        } catch (error: unknown) {
-          lambdaError = error as Error;
-        }
+        await lambdaHandlerConstructor(dependencies, invalidSqsEvent, context);
       });
 
       it("logs INVALID_SQS_EVENT", () => {
@@ -96,25 +87,17 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
 
-      it("Throws error with 'Invalid SQS event' message", () => {
-        expect(lambdaError.message).toEqual(
-          "Invalid SQS event. Event is either null or undefined.",
-        );
+      it("Does not log COMPLETED", () => {
+        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        });
       });
     });
 
     describe("Given event is missing Records array", () => {
       const invalidSqsEvent = {} as unknown as SQSEvent;
       beforeEach(async () => {
-        try {
-          await lambdaHandlerConstructor(
-            dependencies,
-            invalidSqsEvent,
-            context,
-          );
-        } catch (error: unknown) {
-          lambdaError = error as Error;
-        }
+        await lambdaHandlerConstructor(dependencies, invalidSqsEvent, context);
       });
 
       it("logs INVALID_SQS_EVENT", () => {
@@ -125,10 +108,10 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
 
-      it("Throws error with 'Invalid SQS event' message", () => {
-        expect(lambdaError.message).toEqual(
-          "Invalid SQS event. Invalid event structure: Missing 'Records' array.",
-        );
+      it("Does not log COMPLETED", () => {
+        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        });
       });
     });
 
@@ -137,15 +120,7 @@ describe("Async Issue Biometric Credential", () => {
         Records: [],
       };
       beforeEach(async () => {
-        try {
-          await lambdaHandlerConstructor(
-            dependencies,
-            invalidSqsEvent,
-            context,
-          );
-        } catch (error: unknown) {
-          lambdaError = error as Error;
-        }
+        await lambdaHandlerConstructor(dependencies, invalidSqsEvent, context);
       });
 
       it("Logs INVALID_SQS_EVENT", () => {
@@ -156,10 +131,10 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
 
-      it("Throws error with 'Invalid SQS event' message", () => {
-        expect(lambdaError.message).toEqual(
-          "Invalid SQS event. Expected exactly one record, got 0.",
-        );
+      it("Does not log COMPLETED", () => {
+        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        });
       });
     });
 
@@ -174,15 +149,7 @@ describe("Async Issue Biometric Credential", () => {
       } as unknown as SQSEvent;
 
       beforeEach(async () => {
-        try {
-          await lambdaHandlerConstructor(
-            dependencies,
-            invalidSqsEvent,
-            context,
-          );
-        } catch (error: unknown) {
-          lambdaError = error as Error;
-        }
+        await lambdaHandlerConstructor(dependencies, invalidSqsEvent, context);
       });
 
       it("Logs INVALID_SQS_EVENT", () => {
@@ -193,10 +160,10 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
 
-      it("Throws error with 'Invalid SQS event' message", () => {
-        expect(lambdaError.message).toEqual(
-          "Invalid SQS event. Event body either null or undefined.",
-        );
+      it("Does not log COMPLETED", () => {
+        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        });
       });
     });
 
@@ -211,15 +178,7 @@ describe("Async Issue Biometric Credential", () => {
       };
 
       beforeEach(async () => {
-        try {
-          await lambdaHandlerConstructor(
-            dependencies,
-            invalidSqsEvent,
-            context,
-          );
-        } catch (error: unknown) {
-          lambdaError = error as Error;
-        }
+        await lambdaHandlerConstructor(dependencies, invalidSqsEvent, context);
       });
 
       it("Logs INVALID_SQS_EVENT", () => {
@@ -230,10 +189,10 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
 
-      it("Throws error with 'Invalid SQS event' message", () => {
-        expect(lambdaError.message).toEqual(
-          "Invalid SQS event. Failed to parse event body. Body: invalidJson",
-        );
+      it("Does not log COMPLETED", () => {
+        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        });
       });
     });
 
@@ -251,15 +210,7 @@ describe("Async Issue Biometric Credential", () => {
       };
 
       beforeEach(async () => {
-        try {
-          await lambdaHandlerConstructor(
-            dependencies,
-            invalidSqsEvent,
-            context,
-          );
-        } catch (error: unknown) {
-          lambdaError = error as Error;
-        }
+        await lambdaHandlerConstructor(dependencies, invalidSqsEvent, context);
       });
 
       it("Logs INVALID_SQS_EVENT", () => {
@@ -271,10 +222,10 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
 
-      it("Throws error with 'Invalid SQS event' message", () => {
-        expect(lambdaError.message).toEqual(
-          "Invalid SQS event. sessionId in request body is not a valid v4 UUID. sessionId: mockInvalidSessionId",
-        );
+      it("Does not log COMPLETED", () => {
+        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        });
       });
     });
   });

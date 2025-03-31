@@ -6,7 +6,7 @@ import {
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
-import { errorResult, Result, successResult } from "../utils/result";
+import { emptyFailure, Result, successResult } from "../utils/result";
 import { validateSessionId } from "../common/request/validateSessionId/validateSessionId";
 
 export async function lambdaHandlerConstructor(
@@ -19,9 +19,7 @@ export async function lambdaHandlerConstructor(
 
   const validateSqsEventResult = validateSqsEvent(event);
   if (validateSqsEventResult.isError) {
-    throw new Error(
-      `Invalid SQS event. ${validateSqsEventResult.value.errorMessage}`,
-    );
+    return;
   }
 
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
@@ -32,59 +30,46 @@ export const lambdaHandler = lambdaHandlerConstructor.bind(
   runtimeDependencies,
 );
 
-const validateSqsEvent = (event: SQSEvent): Result<{ sessionId: string }> => {
+const validateSqsEvent = (
+  event: SQSEvent,
+): Result<{ sessionId: string }, void> => {
   if (event == null) {
-    const errorMessage = "Event is either null or undefined.";
     logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT, {
-      errorMessage,
+      errorMessage: "Event is either null or undefined.",
     });
-    return errorResult({
-      errorMessage,
-    });
+    return emptyFailure();
   }
 
   if (event.Records == null) {
-    const errorMessage = "Invalid event structure: Missing 'Records' array.";
     logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT, {
-      errorMessage,
+      errorMessage: "Invalid event structure: Missing 'Records' array.",
     });
-    return errorResult({
-      errorMessage,
-    });
+    return emptyFailure();
   }
 
   if (event.Records.length !== 1) {
-    const errorMessage = `Expected exactly one record, got ${event.Records.length}.`;
     logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT, {
-      errorMessage,
+      errorMessage: `Expected exactly one record, got ${event.Records.length}.`,
     });
-    return errorResult({
-      errorMessage,
-    });
+    return emptyFailure();
   }
 
   const record = event.Records[0];
   if (record.body == null) {
-    const errorMessage = "Event body either null or undefined.";
     logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT, {
-      errorMessage,
+      errorMessage: "Event body either null or undefined.",
     });
-    return errorResult({
-      errorMessage,
-    });
+    return emptyFailure();
   }
 
   let parsedBody;
   try {
     parsedBody = JSON.parse(record.body);
   } catch {
-    const errorMessage = `Failed to parse event body. Body: ${record.body}`;
     logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT, {
-      errorMessage,
+      errorMessage: `Failed to parse event body. Body: ${record.body}`,
     });
-    return errorResult({
-      errorMessage,
-    });
+    return emptyFailure();
   }
 
   const { sessionId } = parsedBody;
@@ -93,7 +78,7 @@ const validateSqsEvent = (event: SQSEvent): Result<{ sessionId: string }> => {
     logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT, {
       errorMessage: validateSessionIdResult.value.errorMessage,
     });
-    return validateSessionIdResult;
+    return emptyFailure();
   }
 
   return successResult(sessionId);
