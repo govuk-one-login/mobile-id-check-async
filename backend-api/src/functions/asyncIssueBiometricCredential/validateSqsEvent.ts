@@ -50,8 +50,8 @@ export const validateSqsEvent = (event: SQSEvent): Result<string, void> => {
     });
     return emptyFailure();
   }
-
   const { sessionId } = parsedBody;
+
   const validateSessionIdResult = validateSessionId(sessionId);
   if (validateSessionIdResult.isError) {
     logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT, {

@@ -21,6 +21,7 @@ export async function lambdaHandlerConstructor(
     return;
   }
   const sessionId = validateSqsEventResult.value;
+
   logger.appendKeys({ sessionId });
 
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
