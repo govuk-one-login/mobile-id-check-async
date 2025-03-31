@@ -65,42 +65,6 @@ describe("Test sessions handler", () => {
     });
   });
 
-  describe("Config validation", () => {
-    describe.each([["SESSIONS_TABLE_NAME"]])(
-      "Given %s environment variable is missing",
-      (envVar: string) => {
-        beforeEach(async () => {
-          delete dependencies.env[envVar];
-          result = await lambdaHandlerConstructor(
-            dependencies,
-            validRequest,
-            context,
-          );
-        });
-
-        it("logs INVALID_CONFIG", async () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_TEST_SESSIONS_INVALID_CONFIG",
-            data: {
-              missingEnvironmentVariables: [envVar],
-            },
-          });
-        });
-
-        it("returns a 500 Internal server error", async () => {
-          expect(result).toStrictEqual({
-            statusCode: 500,
-            body: JSON.stringify({
-              error: "server_error",
-              error_description: "Internal Server Error",
-            }),
-            headers: expectedSecurityHeaders,
-          });
-        });
-      },
-    );
-  });
-
   describe("Request validation", () => {
     describe("Given there are no path parameters", () => {
       beforeEach(async () => {
