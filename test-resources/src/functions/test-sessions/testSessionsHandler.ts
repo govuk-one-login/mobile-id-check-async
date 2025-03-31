@@ -12,6 +12,7 @@ import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { getTestSessionsConfig } from "./testSessionsHandlerConfig";
 import {
+  badRequestResponse,
   notImplementedResponse,
   serverErrorResponse,
 } from "../common/lambdaResponses";
@@ -33,6 +34,8 @@ export async function lambdaHandlerConstructor(
     logger.error(LogMessage.TEST_SESSIONS_REQUEST_PATH_PARAM_INVALID, {
       pathParameters: event.pathParameters,
     });
+
+    return badRequestResponse("invalid_request", "missing sessionId path parameter")
   }
 
   logger.info(LogMessage.TEST_SESSIONS_COMPLETED);

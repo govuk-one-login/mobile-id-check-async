@@ -3,7 +3,12 @@ import {
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
 
-import { EVENTS_API_INSTANCE, PROXY_API_INSTANCE, SESSIONS_API_INSTANCE, STS_MOCK_API_INSTANCE } from "./apiInstances";
+import {
+  EVENTS_API_INSTANCE,
+  PROXY_API_INSTANCE,
+  SESSIONS_API_INSTANCE,
+  STS_MOCK_API_INSTANCE,
+} from "./apiInstances";
 import { AxiosInstance } from "axios";
 
 interface CredentialRequestBody {
@@ -199,4 +204,3 @@ async function getEvents(
   return Array.isArray(events) ? events : []; // If response is malformed, return empty array so polling can be retried
 }
 export { STS_MOCK_API_INSTANCE };
-

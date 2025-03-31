@@ -33,7 +33,7 @@ describe("Token Handler", () => {
 
   beforeEach(() => {
     event = buildRequest(
-      "subject_token=testSub&scope=idCheck.activeSession.read&subject_token_type=urn:ietf:params:oauth:token-type:access_token&grant_type=urn:ietf:params:oauth:grant-type:token-exchange",
+      {body:"subject_token=testSub&scope=idCheck.activeSession.read&subject_token_type=urn:ietf:params:oauth:token-type:access_token&grant_type=urn:ietf:params:oauth:grant-type:token-exchange"},
     );
     mockLoggingAdapter = new MockLoggingAdapter();
     dependencies = {
@@ -120,7 +120,7 @@ describe("Token Handler", () => {
       "Given the request body is missing the param '%s'",
       (param: string, body: string) => {
         it("Logs INVALID_REQUEST and returns 400 Bad Request", async () => {
-          event = buildRequest(body);
+          event = buildRequest({body});
 
           const result = await lambdaHandlerConstructor(
             dependencies,
@@ -162,7 +162,7 @@ describe("Token Handler", () => {
       "Given the value of the '%s' param is invalid/not supported",
       (param: string, body: string) => {
         it("Logs INVALID_REQUEST and returns 400 Bad Request", async () => {
-          event = buildRequest(body);
+          event = buildRequest({body});
 
           const result = await lambdaHandlerConstructor(
             dependencies,
