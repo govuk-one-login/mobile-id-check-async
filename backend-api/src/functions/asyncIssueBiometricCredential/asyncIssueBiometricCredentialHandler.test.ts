@@ -73,14 +73,24 @@ describe("Async Issue Biometric Credential", () => {
   });
 
   describe("SQS Event validation", () => {
-    describe("Given event is invalid", () => {
+    describe("Given event does not contain exactly 1 record", () => {
       describe.each([
         {
-          scenario: "Given there is not exactly one record",
+          scenario: "Given there less than 1 record",
           invalidSqsEvent: {
             Records: [],
           },
           errorMessage: "Expected exactly one record, got 0.",
+        },
+        {
+          scenario: "Given there more than 1 record",
+          invalidSqsEvent: {
+            Records: [
+              validVendorProcessingQueueSqsEventRecord,
+              validVendorProcessingQueueSqsEventRecord,
+            ],
+          },
+          errorMessage: "Expected exactly one record, got 2.",
         },
       ])("$scenario", ({ invalidSqsEvent, errorMessage }) => {
         beforeEach(async () => {
