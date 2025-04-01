@@ -1908,8 +1908,8 @@ Resources:
       Dimensions:
           - Name: MessageCode
             Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT
-          - Name: Version
-            Value: $LATEST
+          - Name: FunctionName
+            Value: !Ref AsyncIssueBiometricCredentialFunction
       Statistic: Sum
       Period: 60
       EvaluationPeriods: 1
@@ -1922,7 +1922,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
-      FilterPattern: "{ ($.messageCode = *) && ($.functionVersion = *) }"
+      FilterPattern: "{ ($.messageCode = *) && ($.function_name = *) }"
       MetricTransformations:
         - MetricValue: "1"
           MetricNamespace: !Sub "${AWS::StackName}/LogMessages"
@@ -1930,5 +1930,5 @@ Resources:
           Dimensions:
             - Key: MessageCode
               Value: $.messageCode
-            - Key: Version
-              Value: $.functionVersion
+            - Key: FunctionName
+              Value: $.function_name
