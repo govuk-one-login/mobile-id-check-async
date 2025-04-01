@@ -1,4 +1,9 @@
-import { errorResult, Result, successResult } from "../../../../utils/result";
+import {
+  ErrorCategory,
+  errorResult,
+  Result,
+  successResult,
+} from "../../../common/utils/result";
 import { JWTPayload, SignJWT } from "jose";
 import { KeyObject } from "node:crypto";
 
@@ -26,7 +31,7 @@ export class TokenSigner implements ITokenSigner {
     } catch {
       return errorResult({
         errorMessage: "Error signing token",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
   }

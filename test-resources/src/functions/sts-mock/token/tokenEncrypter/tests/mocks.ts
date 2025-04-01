@@ -1,9 +1,10 @@
 import { ITokenEncrypter, JWE } from "../tokenEncrypter";
 import {
+  ErrorCategory,
   errorResult,
   Result,
   successResult,
-} from "../../../../../utils/result";
+} from "../../../../common/utils/result";
 
 export class MockTokenEncrypterSuccessResult implements ITokenEncrypter {
   async encrypt(): Promise<Result<JWE>> {
@@ -17,7 +18,7 @@ export class MockTokenEncrypterErrorResult implements ITokenEncrypter {
   async encrypt(): Promise<Result<JWE>> {
     return errorResult({
       errorMessage: "Some error encrypting token",
-      errorCategory: "SERVER_ERROR",
+      errorCategory: ErrorCategory.SERVER_ERROR,
     });
   }
 }

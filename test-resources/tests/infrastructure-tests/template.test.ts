@@ -2,7 +2,7 @@ import { Template } from "aws-cdk-lib/assertions";
 import { readFileSync } from "fs";
 import { load } from "js-yaml";
 import { schema } from "yaml-cfn";
-import { deepMerge, walkSync } from "../testUtils/testFunctions";
+import { deepMerge, walkSync } from "./utils/testFunctions";
 import path from "path";
 
 const aggregatedTemplate = loadTemplateFromFile("./template.yaml");

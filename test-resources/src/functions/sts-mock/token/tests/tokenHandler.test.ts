@@ -5,7 +5,7 @@ import { MessageName, registeredLogs } from "../registeredLogs";
 import { lambdaHandlerConstructor } from "../tokenHandler";
 import { APIGatewayProxyEvent } from "aws-lambda";
 import { TokenDependencies } from "../handlerDependencies";
-import { buildTokenRequest } from "../../../testUtils/mockRequest";
+import { buildRequest } from "../../../testUtils/mockRequest";
 import {
   MockTokenSignerErrorResult,
   MockTokenSignerSuccessResult,
@@ -32,9 +32,9 @@ describe("Token Handler", () => {
   };
 
   beforeEach(() => {
-    event = buildTokenRequest(
-      "subject_token=testSub&scope=idCheck.activeSession.read&subject_token_type=urn:ietf:params:oauth:token-type:access_token&grant_type=urn:ietf:params:oauth:grant-type:token-exchange",
-    );
+    event = buildRequest({
+      body: "subject_token=testSub&scope=idCheck.activeSession.read&subject_token_type=urn:ietf:params:oauth:token-type:access_token&grant_type=urn:ietf:params:oauth:grant-type:token-exchange",
+    });
     mockLoggingAdapter = new MockLoggingAdapter();
     dependencies = {
       env,
@@ -75,7 +75,7 @@ describe("Token Handler", () => {
   describe("Validate Service Token Request", () => {
     describe("Given the request body is falsy", () => {
       it("Logs INVALID_REQUEST and returns 400 Bad Request", async () => {
-        event = buildTokenRequest(undefined);
+        event = buildRequest({ body: undefined });
 
         const result = await lambdaHandlerConstructor(
           dependencies,
@@ -120,7 +120,7 @@ describe("Token Handler", () => {
       "Given the request body is missing the param '%s'",
       (param: string, body: string) => {
         it("Logs INVALID_REQUEST and returns 400 Bad Request", async () => {
-          event = buildTokenRequest(body);
+          event = buildRequest({ body });
 
           const result = await lambdaHandlerConstructor(
             dependencies,
@@ -162,7 +162,7 @@ describe("Token Handler", () => {
       "Given the value of the '%s' param is invalid/not supported",
       (param: string, body: string) => {
         it("Logs INVALID_REQUEST and returns 400 Bad Request", async () => {
-          event = buildTokenRequest(body);
+          event = buildRequest({ body });
 
           const result = await lambdaHandlerConstructor(
             dependencies,
