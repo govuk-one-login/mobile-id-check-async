@@ -1890,10 +1890,10 @@ Resources:
           ReturnData: false
           Expression: (errorSum5XX/invocations) * 100
 
-  AsyncIssueBiometricCredentialInvalidSQSEventAlarm:
+  AsyncIssueBiometricCredentialInvalidSqsEventAlarm:
     Type: AWS::CloudWatch::Alarm
     DependsOn:
-      - "AsyncIssueBiometricCredentialCompletionMetricFilter"
+      - "AsyncIssueBiometricCredentialInvalidSqsEventMetricFilter"
     Properties:
       ActionsEnabled: true
       AlarmActions:
@@ -1902,17 +1902,55 @@ Resources:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       InsufficientDataActions: []
       AlarmDescription: "An Issue Biometric Credential invocation did not process a message from the vendor processing queue successfully."
-      AlarmName: !Sub "${AWS::StackName}-issue-biometric-credential-lambda-invalid-sqs-event-alarm"
+      AlarmName: !Sub "${AWS::StackName}-issue-biometric-credential-lambda-invalid-sqs-event"
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      Metrics:
+        - Id: lambdaLogInvalidSqsEvent
+          Label: "Sum of MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT messageCodes for latest Lambda version"
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/LogMessages"
+              MetricName: AsyncIssueBiometricCredentialMessageCode
+              Dimensions:
+                - Name: Resource
+                  Value: !Sub "${AsyncIssueBiometricCredentialFunction}:live"
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT
+                - Name: Version
+                  Value: !GetAtt AsyncIssueBiometricCredentialFunction.Version.Version
+            Period: 60
+            Stat: Sum
+        - Id: invalidSqsEventRateThreshold
+          Label: "Error threshold calculation"
+          ReturnData: true
+          Expression: IF(lambdaLogInvalidSqsEvent > 0, lambdaLogInvalidSqsEvent, 0)
+
+  AsyncIssueBiometricCredentialLInvalidSqsEventAlarmTwo:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - "AsyncIssueBiometricCredentialInvalidSqsEventMetricFilter"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      InsufficientDataActions: []
+      AlarmDescription: "Fires when a log event with messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT is detected."
+      AlarmName: !Sub "${AWS::StackName}-issue-biometric-credential-lambda-invalid-sqs-event"
       Namespace: !Sub "${AWS::StackName}/LogMessages"
       MetricName: AsyncIssueBiometricCredentialMessageCode
       Dimensions:
-        - Name: MessageCode
-          Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT
         - Name: Resource
           Value: !Sub "${AsyncIssueBiometricCredentialFunction}:live"
-        - Name: FunctionName
-          Value: !Ref AsyncIssueBiometricCredentialFunction
-        - Name: ExecutedVersion
+        - Name: MessageCode
+          Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT
+        - Name: Version
           Value: !GetAtt AsyncIssueBiometricCredentialFunction.Version.Version
       Statistic: Sum
       Period: 60
@@ -1921,7 +1959,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
 
-  AsyncIssueBiometricCredentialCompletionMetricFilter:
+  AsyncIssueBiometricCredentialInvalidSqsEventMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
