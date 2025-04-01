@@ -1892,6 +1892,7 @@ Resources:
 
   AsyncIssueBiometricCredentialInvalidSqsEventAlarm:
     Type: AWS::CloudWatch::Alarm
+    Condition: DeployAlarms
     DependsOn:
       - "AsyncIssueBiometricCredentialInvalidSqsEventMetricFilter"
     Properties:

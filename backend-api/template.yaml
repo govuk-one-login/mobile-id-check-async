@@ -3084,6 +3084,7 @@ Resources:
       Statistic: Sum
       Threshold: 0
       TreatMissingData: notBreaching
+    Condition: DeployAlarms
 
   AsyncIssueBiometricCredentialInvalidSqsEventMetricFilter:
     Type: AWS::Logs::MetricFilter
