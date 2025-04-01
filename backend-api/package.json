@@ -31,7 +31,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.17.25",
     "@types/node-jose": "^1.1.13",
-    "aws-cdk-lib": "^2.185.0",
+    "aws-cdk-lib": "^2.186.0",
     "aws-sdk-client-mock": "4.1.0",
     "aws-sdk-client-mock-jest": "^4.1.0",
     "aws4-axios": "^3.4.0",
