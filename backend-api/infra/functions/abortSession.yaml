@@ -109,6 +109,19 @@ Resources:
                   - kms:Decrypt
                   - kms:GenerateDataKey
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
+        - PolicyName: AsyncAbortSessionFunctionIPVCoreSQSPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                Resource: !GetAtt IPVCoreSQS.Arn
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Resource: !GetAtt IPVCoreKMSEncryptionKey.Arn
                 
       PermissionsBoundary: !If
         - UsePermissionsBoundary

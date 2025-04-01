@@ -3,9 +3,7 @@ import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 import { expectedSecurityHeaders, mockSessionId } from "./utils/apiTestData";
 import {
   createSessionForSub,
-  EventResponse,
   getActiveSessionIdFromSub,
-  pollForEvents,
 } from "./utils/apiTestHelpers";
 import { AxiosResponse } from "axios";
 

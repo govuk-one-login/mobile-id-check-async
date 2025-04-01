@@ -17,7 +17,12 @@ import {
   invalidCreatedAt,
   validCreatedAt,
 } from "../testUtils/unitTestData";
-import { emptySuccess, successResult, errorResult } from "../utils/result";
+import {
+  emptySuccess,
+  successResult,
+  errorResult,
+  emptyFailure,
+} from "../utils/result";
 import { UpdateSessionError } from "../common/session/SessionRegistry";
 
 describe("Async Abort Session", () => {
@@ -62,15 +67,25 @@ describe("Async Abort Session", () => {
     updateSession: mockSessionUpdateSuccess,
   };
 
+  const mockSuccessfulSendMessageToSqs = jest
+    .fn()
+    .mockResolvedValue(emptySuccess());
+
+  const mockFailingSendMessageToSqs = jest
+    .fn()
+    .mockResolvedValue(emptyFailure());
+
   beforeEach(() => {
     dependencies = {
       env: {
         SESSION_TABLE_NAME: "mockTableName",
         TXMA_SQS: "mockTxmaSqs",
         ISSUER: "mockIssuer",
+        IPVCORE_OUTBOUND_SQS: "mockIpvcoreOutboundSqs",
       },
       getSessionRegistry: () => mockSuccessfulSessionRegistry,
       getEventService: () => mockSuccessfulEventService,
+      getSendMessageToSqs: () => mockSuccessfulSendMessageToSqs,
     };
 
     context = buildLambdaContext();
@@ -413,6 +428,96 @@ describe("Async Abort Session", () => {
             txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
           });
           expect(result.statusCode).toBe(500);
+        });
+      });
+    });
+  });
+
+  describe("Given sending message to IPVCore Outbound queue fails", () => {
+    describe("Given sending DCMAW_ASYNC_CRI_5XXERROR event also fails", () => {
+      beforeEach(async () => {
+        dependencies = {
+          ...dependencies,
+          getSendMessageToSqs: () => mockFailingSendMessageToSqs,
+          getEventService: () => mockFailingEventService,
+        };
+
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+
+      it("Logs the send message to vendor processing queue failure", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "MOBILE_ASYNC_ABORT_SESSION_SEND_MESSAGE_TO_IPV_OUTBOUND_SQS_QUEUE_FAILURE",
+        });
+      });
+
+      it("Logs the DCMAW_ASYNC_CRI_5XXERROR event failure", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+          data: {
+            auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+          },
+        });
+      });
+
+      it("Returns 500 Internal server error", () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
+        });
+      });
+    });
+
+    describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully writes to TxMA", () => {
+      beforeEach(async () => {
+        dependencies = {
+          ...dependencies,
+          getSendMessageToSqs: () => mockFailingSendMessageToSqs,
+        };
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+
+      it("Logs the send message to vendor processing queue failure", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "MOBILE_ASYNC_ABORT_SESSION_SEND_MESSAGE_TO_IPV_OUTBOUND_SQS_QUEUE_FAILURE",
+        });
+      });
+
+      it("Writes DCMAW_ASYNC_CRI_5XXERROR event", () => {
+        expect(mockWriteGenericEventSuccess).toBeCalledWith({
+          eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+          componentId: "mockIssuer",
+          getNowInMilliseconds: Date.now,
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
+          sessionId: mockSessionId,
+          sub: "mockSubjectIdentifier",
+          ipAddress: "1.1.1.1",
+          txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
+        });
+      });
+
+      it("Returns 500 Internal server error", () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
         });
       });
     });
