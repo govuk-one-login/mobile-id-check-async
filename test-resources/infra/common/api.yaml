@@ -44,7 +44,7 @@ Resources:
       DomainName: !If
         - DevelopmentStack
         - !Sub
-          - test-resources-${AWS::StackName}.${DNS_RECORD}
+          - api-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
@@ -71,7 +71,7 @@ Resources:
       DomainName: !If
         - DevelopmentStack
         - !Sub
-          - test-resources-${AWS::StackName}.${DNS_RECORD}
+          - api-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
@@ -91,7 +91,7 @@ Resources:
       Name: !If
         - DevelopmentStack
         - !Sub
-          - test-resources-${AWS::StackName}.${DNS_RECORD}
+          - api-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
