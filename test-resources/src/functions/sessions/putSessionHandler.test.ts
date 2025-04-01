@@ -33,7 +33,7 @@ describe("Put session handler", () => {
 
     it("Adds context and version to log attributes and logs STARTED message", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-        messageCode: "MOBILE_ASYNC_TEST_SESSIONS_STARTED",
+        messageCode: "MOBILE_ASYNC_PUT_SESSION_STARTED",
         functionVersion: "1",
         function_arn: "arn:12345",
       });
@@ -57,7 +57,7 @@ describe("Put session handler", () => {
 
       it("Logs an error", async () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_TEST_SESSIONS_REQUEST_PATH_PARAM_INVALID",
+          messageCode: "MOBILE_ASYNC_PUT_SESSION_REQUEST_PATH_PARAM_INVALID",
         });
       });
 
@@ -84,7 +84,7 @@ describe("Put session handler", () => {
 
       it("Logs an error", async () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_TEST_SESSIONS_REQUEST_PATH_PARAM_INVALID",
+          messageCode: "MOBILE_ASYNC_PUT_SESSION_REQUEST_PATH_PARAM_INVALID",
           pathParameters: { mockPathParameter: "mockPathParameter" },
         });
       });
@@ -110,7 +110,7 @@ describe("Put session handler", () => {
 
       it("Logs", async () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_TEST_SESSIONS_COMPLETED",
+          messageCode: "MOBILE_ASYNC_PUT_SESSION_COMPLETED",
         });
       });
 

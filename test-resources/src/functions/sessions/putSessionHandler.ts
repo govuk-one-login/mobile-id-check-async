@@ -17,10 +17,10 @@ export async function lambdaHandlerConstructor(
   context: Context,
 ): Promise<APIGatewayProxyResult> {
   setupLogger(context);
-  logger.info(LogMessage.TEST_SESSIONS_STARTED);
+  logger.info(LogMessage.PUT_SESSION_STARTED);
 
   if (!event.pathParameters?.sessionId) {
-    logger.error(LogMessage.TEST_SESSIONS_REQUEST_PATH_PARAM_INVALID, {
+    logger.error(LogMessage.PUT_SESSION_REQUEST_PATH_PARAM_INVALID, {
       pathParameters: event.pathParameters,
     });
     return badRequestResponse(
@@ -29,7 +29,7 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  logger.info(LogMessage.TEST_SESSIONS_COMPLETED);
+  logger.info(LogMessage.PUT_SESSION_COMPLETED);
   return notImplementedResponse;
 }
 

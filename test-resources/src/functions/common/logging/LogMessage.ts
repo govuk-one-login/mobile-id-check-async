@@ -1,23 +1,23 @@
 import { LogAttributes } from "@aws-lambda-powertools/logger/types";
 
 export class LogMessage implements LogAttributes {
-  static readonly TEST_SESSIONS_STARTED = new LogMessage(
-    "MOBILE_ASYNC_TEST_SESSIONS_STARTED",
+  static readonly PUT_SESSION_STARTED = new LogMessage(
+    "MOBILE_ASYNC_PUT_SESSION_STARTED",
     "Test sessions lambda started.",
   );
 
-  static readonly TEST_SESSIONS_COMPLETED = new LogMessage(
-    "MOBILE_ASYNC_TEST_SESSIONS_COMPLETED",
+  static readonly PUT_SESSION_COMPLETED = new LogMessage(
+    "MOBILE_ASYNC_PUT_SESSION_COMPLETED",
     "Test sessions lambda completed.",
   );
 
-  static readonly TEST_SESSIONS_INVALID_CONFIG = new LogMessage(
-    "MOBILE_ASYNC_TEST_SESSIONS_INVALID_CONFIG",
+  static readonly PUT_SESSION_INVALID_CONFIG = new LogMessage(
+    "MOBILE_ASYNC_PUT_SESSION_INVALID_CONFIG",
     "Test sessions lambda has missing environment variables.",
   );
 
-  static readonly TEST_SESSIONS_REQUEST_PATH_PARAM_INVALID = new LogMessage(
-    "MOBILE_ASYNC_TEST_SESSIONS_REQUEST_PATH_PARAM_INVALID",
+  static readonly PUT_SESSION_REQUEST_PATH_PARAM_INVALID = new LogMessage(
+    "MOBILE_ASYNC_PUT_SESSION_REQUEST_PATH_PARAM_INVALID",
     "The sessionId path parameter is missing or invalid",
   );
 
