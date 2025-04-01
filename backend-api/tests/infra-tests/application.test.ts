@@ -240,6 +240,7 @@ describe("Backend application infrastructure", () => {
         "high-threshold-async-abort-session-4xx-api-gw": false,
         "high-threshold-vendor-processing-dlq-age-of-oldest-message": false,
         "high-threshold-ipv-core-dlq-age-of-oldest-message": false,
+        "issue-biometric-credential-lambda-invalid-sqs-event": false,
       };
 
       const alarms = template.findResources("AWS::CloudWatch::Alarm");
