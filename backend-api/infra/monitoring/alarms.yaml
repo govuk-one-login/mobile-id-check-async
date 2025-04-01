@@ -1908,6 +1908,12 @@ Resources:
       Dimensions:
         - Name: MessageCode
           Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT
+        - Name: Resource
+          Value: !Sub "${AsyncIssueBiometricCredentialFunction}:live"
+        - Name: FunctionName
+          Value: !Ref AsyncIssueBiometricCredentialFunction
+        - Name: ExecutedVersion
+          Value: !GetAtt AsyncIssueBiometricCredentialFunction.Version.Version
       Statistic: Sum
       Period: 60
       EvaluationPeriods: 1

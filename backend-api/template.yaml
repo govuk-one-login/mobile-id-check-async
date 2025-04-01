@@ -3082,12 +3082,18 @@ Resources:
       ActionsEnabled: true
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      AlarmDescription: Fires when any log is recorded with messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT.
+      AlarmDescription: An Issue Biometric Credential invocation did not process a message from the vendor processing queue successfully.
       AlarmName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda-invalid-sqs-event-alarm
       ComparisonOperator: GreaterThanThreshold
       Dimensions:
         - Name: MessageCode
           Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT
+        - Name: Resource
+          Value: !Sub ${AsyncIssueBiometricCredentialFunction}:live
+        - Name: FunctionName
+          Value: !Ref AsyncIssueBiometricCredentialFunction
+        - Name: ExecutedVersion
+          Value: !GetAtt AsyncIssueBiometricCredentialFunction.Version.Version
       EvaluationPeriods: 1
       InsufficientDataActions: []
       MetricName: AsyncIssueBiometricCredentialMessageCode
