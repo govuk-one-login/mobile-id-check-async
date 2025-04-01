@@ -1904,12 +1904,10 @@ Resources:
       AlarmDescription: "Fires when a log event with messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT is detected."
       AlarmName: !Sub "${AWS::StackName}-issue-biometric-credential-lambda-invalid-sqs-event"
       Namespace: !Sub "${AWS::StackName}/LogMessages"
-      MetricName: AsyncIssueBiometricCredentialMessageCode
+      MetricName: AsyncIssueBiometricCredentialInvalidSqsEvent
       Dimensions:
-          - Name: MessageCode
-            Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT
-          - Name: FunctionName
-            Value: !Ref AsyncIssueBiometricCredentialFunction
+        - Name: MessageCode
+          Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT
       Statistic: Sum
       Period: 60
       EvaluationPeriods: 1
@@ -1922,13 +1920,11 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
-      FilterPattern: "{ ($.messageCode = *) && ($.function_name = *) }"
+      FilterPattern: '{ $.messageCode = "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT" }'
       MetricTransformations:
         - MetricValue: "1"
           MetricNamespace: !Sub "${AWS::StackName}/LogMessages"
-          MetricName: "AsyncIssueBiometricCredentialMessageCode"
+          MetricName: "AsyncIssueBiometricCredentialInvalidSqsEvent"
           Dimensions:
             - Key: MessageCode
               Value: $.messageCode
-            - Key: FunctionName
-              Value: $.function_name

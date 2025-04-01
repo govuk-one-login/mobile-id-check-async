@@ -3074,11 +3074,9 @@ Resources:
       Dimensions:
         - Name: MessageCode
           Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT
-        - Name: FunctionName
-          Value: !Ref AsyncIssueBiometricCredentialFunction
       EvaluationPeriods: 1
       InsufficientDataActions: []
-      MetricName: AsyncIssueBiometricCredentialMessageCode
+      MetricName: AsyncIssueBiometricCredentialInvalidSqsEvent
       Namespace: !Sub ${AWS::StackName}/LogMessages
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
@@ -3090,15 +3088,13 @@ Resources:
   AsyncIssueBiometricCredentialInvalidSqsEventMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
-      FilterPattern: '{ ($.messageCode = *) && ($.function_name = *) }'
+      FilterPattern: '{ $.messageCode = "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT" }'
       LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
       MetricTransformations:
         - Dimensions:
             - Key: MessageCode
               Value: $.messageCode
-            - Key: FunctionName
-              Value: $.function_name
-          MetricName: AsyncIssueBiometricCredentialMessageCode
+          MetricName: AsyncIssueBiometricCredentialInvalidSqsEvent
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
 
