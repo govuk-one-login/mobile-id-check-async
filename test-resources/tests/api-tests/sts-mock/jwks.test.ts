@@ -1,4 +1,4 @@
-import { STS_MOCK_API_INSTANCE } from "./utils/apiInstance";
+import { STS_MOCK_API_INSTANCE } from "../utils/apiInstances";
 
 describe("GET /.well-known/jwks.json", () => {
   it("returns 200 status code and the Json Web Key Set", async () => {

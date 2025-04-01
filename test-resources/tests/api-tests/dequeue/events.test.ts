@@ -2,10 +2,10 @@ import { randomUUID } from "crypto";
 import "dotenv/config";
 import {
   createSession,
-  EVENTS_API_INSTANCE,
   getActiveSessionId,
   pollForEvents,
-} from "./utils/apiTestHelpers";
+} from "../utils/testFunctions";
+import { EVENTS_API_INSTANCE } from "../utils/apiInstances";
 
 const ONE_SECOND = 1000;
 jest.setTimeout(45 * ONE_SECOND);
