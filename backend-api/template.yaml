@@ -3070,13 +3070,12 @@ Resources:
       AlarmDescription: Fires when a log event with messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT is detected.
       AlarmName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda-invalid-sqs-event
       ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 1
       Dimensions:
-        - Name: Resource
-          Value: !Sub ${AsyncIssueBiometricCredentialFunction}:live
         - Name: MessageCode
           Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT
         - Name: Version
-          Value: !GetAtt AsyncIssueBiometricCredentialFunction.Version.Version
+          Value: $LATEST
       EvaluationPeriods: 1
       InsufficientDataActions: []
       MetricName: AsyncIssueBiometricCredentialMessageCode

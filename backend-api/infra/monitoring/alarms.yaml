@@ -1906,15 +1906,14 @@ Resources:
       Namespace: !Sub "${AWS::StackName}/LogMessages"
       MetricName: AsyncIssueBiometricCredentialMessageCode
       Dimensions:
-        - Name: Resource
-          Value: !Sub "${AsyncIssueBiometricCredentialFunction}:live"
-        - Name: MessageCode
-          Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT
-        - Name: Version
-          Value: !GetAtt AsyncIssueBiometricCredentialFunction.Version.Version
+          - Name: MessageCode
+            Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT
+          - Name: Version
+            Value: $LATEST
       Statistic: Sum
       Period: 60
       EvaluationPeriods: 1
+      DatapointsToAlarm: 1
       Threshold: 0
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
