@@ -1456,7 +1456,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "80% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+        - RunbookUrl: !FindInMap [StaticVariables, urls, CriticalAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-abort-session-4xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -1582,7 +1582,7 @@ Resources:
       ActionsEnabled: true
       AlarmDescription: !Sub
         - "80% or more of requests are failing on the /async/abortSession endpoint with a 5XX error. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+        - RunbookUrl: !FindInMap [StaticVariables, urls, CriticalAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-abort-session-5xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
