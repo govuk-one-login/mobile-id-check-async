@@ -1,6 +1,9 @@
-import { randomUUID } from "crypto";
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
-import { expectedSecurityHeaders, mockSessionId } from "./utils/apiTestData";
+import {
+  expectedSecurityHeaders,
+  mockInvalidUUID,
+  mockSessionId,
+} from "./utils/apiTestData";
 import {
   createSessionForSub,
   getActiveSessionIdFromSub,
@@ -10,10 +13,9 @@ import { AxiosResponse } from "axios";
 describe("POST /async/abortSession", () => {
   describe("Given the request body is invalid", () => {
     let response: AxiosResponse;
-    const mockInvalidSessionId = "invalidSessionId";
     beforeAll(async () => {
       response = await SESSIONS_API_INSTANCE.post("/async/abortSession", {
-        sessionId: mockInvalidSessionId,
+        sessionId: mockInvalidUUID,
       });
     });
 
@@ -22,7 +24,7 @@ describe("POST /async/abortSession", () => {
       expect(response.statusText).toBe("Bad Request");
       expect(response.data).toStrictEqual({
         error: "invalid_request",
-        error_description: `sessionId in request body is not a valid v4 UUID. sessionId: ${mockInvalidSessionId}`,
+        error_description: `sessionId in request body is not a valid v4 UUID. sessionId: ${mockInvalidUUID}`,
       });
       expect(response.headers).toEqual(
         expect.objectContaining(expectedSecurityHeaders),
@@ -56,7 +58,7 @@ describe("POST /async/abortSession", () => {
     let sessionId: string;
     let response: AxiosResponse;
     beforeAll(async () => {
-      const sub = randomUUID();
+      const sub = mockInvalidUUID;
       await createSessionForSub(sub);
       sessionId = await getActiveSessionIdFromSub(sub);
 
