@@ -450,6 +450,270 @@ Globals:
     Timeout: 5
 
 Resources:
+  AsyncAbortSession4XXHighThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - '80% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - CriticalAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-high-threshold-async-abort-session-4xx-api-gw
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      Metrics:
+        - Expression: IF(invocations>=10,errorPercentage4XX)
+          Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+        - Id: invocations
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/abortSession
+              MetricName: Count
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: errorSum4XX
+          Label: Number of 4XX errors
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/abortSession
+              MetricName: 4XXError
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (errorSum4XX/invocations) * 100
+          Id: errorPercentage4XX
+          Label: Number of 4XX errors returned as a percentage
+          ReturnData: false
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 80
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  AsyncAbortSession4XXLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - '1% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-low-threshold-async-abort-session-4xx-api-gw
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      Metrics:
+        - Expression: IF((invocations>=4) && (errorSum4XX>=2),errorPercentage4XX)
+          Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+        - Id: invocations
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/abortSession
+              MetricName: Count
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: errorSum4XX
+          Label: Number of 4XX errors
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/abortSession
+              MetricName: 4XXError
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (errorSum4XX/invocations) * 100
+          Id: errorPercentage4XX
+          Label: Number of 4XX errors returned as a percentage
+          ReturnData: false
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  AsyncAbortSession5XXHighThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - '80% or more of requests are failing on the /async/abortSession endpoint with a 5XX error. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - CriticalAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-high-threshold-async-abort-session-5xx-api-gw
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      Metrics:
+        - Expression: IF(invocations>=10,errorPercentage5XX)
+          Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+        - Id: invocations
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/abortSession
+              MetricName: Count
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: errorSum5XX
+          Label: Number of 5XX errors
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/abortSession
+              MetricName: 5XXError
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (errorSum5XX/invocations) * 100
+          Id: errorPercentage5XX
+          Label: Number of 5XX errors returned as a percentage
+          ReturnData: false
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 80
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  AsyncAbortSession5XXLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - '1% or more of requests are failing on the /async/abortSession endpoint with a 5XX error. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-low-threshold-async-abort-session-5xx-api-gw
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      Metrics:
+        - Expression: IF((invocations>=4) && (errorSum5XX>=2),errorPercentage5XX)
+          Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+        - Id: invocations
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/abortSession
+              MetricName: Count
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: errorSum5XX
+          Label: Number of 5XX errors
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/abortSession
+              MetricName: 5XXError
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (errorSum5XX/invocations) * 100
+          Id: errorPercentage5XX
+          Label: Number of 5XX errors returned as a percentage
+          ReturnData: false
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   AsyncAbortSessionFunction:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -526,6 +790,26 @@ Resources:
                 Resource: '*'
             Version: "2012-10-17"
           PolicyName: VpcPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - dynamodb:UpdateItem
+                Effect: Allow
+                Resource: !GetAtt SessionsTable.Arn
+          PolicyName: AsyncAbortSessionFunctionDynamodbPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - sqs:SendMessage
+                Effect: Allow
+                Resource: !GetAtt TxMASQSQueue.Arn
+              - Action:
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Effect: Allow
+                Resource: !GetAtt TxMAKMSEncryptionKey.Arn
+            Version: "2012-10-17"
+          PolicyName: AsyncAbortSessionFunctionTxmaSQSPolicy
       RoleName: !Sub ${AWS::StackName}-abort-session-lambda
 
   AsyncAbortSessionLogGroup:
@@ -3397,6 +3681,270 @@ Resources:
       FilterPattern: ""
       LogGroupName: !Ref AsyncTokenLogGroup
     Condition: isNotDev
+
+  AsyncTxmaEvent4XXHighThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - '80% or more of requests are failing on the /async/txmaEvent endpoint with a 4XX error. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-high-threshold-async-txma-event-4xx-api-gw
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      Metrics:
+        - Expression: IF(invocations>=10,errorPercentage4XX,0)
+          Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+        - Id: invocations
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/txmaEvent
+              MetricName: Count
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: errorSum4XX
+          Label: Number of 4XX errors
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/txmaEvent
+              MetricName: 4XXError
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (errorSum4XX/invocations) * 100
+          Id: errorPercentage4XX
+          Label: Number of 4XX errors returned as a percentage
+          ReturnData: false
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 80
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  AsyncTxmaEvent4XXLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - '1% or more of requests are failing on the /async/txmaEvent endpoint with a 4XX error. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-low-threshold-async-txma-event-4xx-api-gw
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      Metrics:
+        - Expression: IF((invocations>=4) && (errorSum4XX>=2),errorPercentage4XX,0)
+          Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+        - Id: invocations
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/txmaEvent
+              MetricName: Count
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: errorSum4XX
+          Label: Number of 4XX errors
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/txmaEvent
+              MetricName: 4XXError
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (errorSum4XX/invocations) * 100
+          Id: errorPercentage4XX
+          Label: Number of 4XX errors returned as a percentage
+          ReturnData: false
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  AsyncTxmaEvent5XXHighThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - '80% or more of requests are failing on the /async/txmaEvent endpoint with a 5XX error. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-high-threshold-async-txma-event-5xx-api-gw
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      Metrics:
+        - Expression: IF(invocations>=10,errorPercentage5XX,0)
+          Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+        - Id: invocations
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/txmaEvent
+              MetricName: Count
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: errorSum5XX
+          Label: Number of 5XX errors
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/txmaEvent
+              MetricName: 5XXError
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (errorSum5XX/invocations) * 100
+          Id: errorPercentage5XX
+          Label: Number of 5XX errors returned as a percentage
+          ReturnData: false
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 80
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  AsyncTxmaEvent5XXLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - '1% or more of requests are failing on the /async/txmaEvent endpoint with a 5XX error. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-low-threshold-async-txma-event-5xx-api-gw
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
+      Metrics:
+        - Expression: IF((invocations>=4) && (errorSum5XX>=2),errorPercentage5XX,0)
+          Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+        - Id: invocations
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/txmaEvent
+              MetricName: Count
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: errorSum5XX
+          Label: Number of 5XX errors
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Method
+                  Value: POST
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+                - Name: Stage
+                  Value: !Ref Environment
+                - Name: Resource
+                  Value: /async/txmaEvent
+              MetricName: 5XXError
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (errorSum5XX/invocations) * 100
+          Id: errorPercentage5XX
+          Label: Number of 5XX errors returned as a percentage
+          ReturnData: false
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
 
   AsyncTxmaEventFunction:
     Type: AWS::Serverless::Function

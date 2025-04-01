@@ -901,7 +901,7 @@ Resources:
                     - TargetBucket: !Ref JwksBucket
             Version: "2012-10-17"
           PolicyName: S3ReadPolicy
-      RoleName: !Sub ${AWS::StackName}-sts-mocktoken
+      RoleName: !Sub ${AWS::StackName}-sts-mock-token
 
 Outputs:
   EventsApiUrl:

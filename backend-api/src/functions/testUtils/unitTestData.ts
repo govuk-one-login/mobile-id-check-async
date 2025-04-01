@@ -82,6 +82,16 @@ export const validBiometricSessionFinishedAttributesMobileApp = {
   redirectUri: "https://www.mockRedirectUri.com",
 };
 
+export const validAbortSessionAttributes = {
+  ...validBiometricTokenIssuedSessionAttributes,
+  sessionState: SessionState.AUTH_SESSION_ABORTED,
+};
+
+export const validAbortSessionAttributesMobileApp = {
+  ...validBiometricSessionFinishedAttributes,
+  redirectUri: "https://www.mockRedirectUri.com",
+};
+
 export const mockInertSessionRegistry: SessionRegistry = {
   updateSession: jest.fn(() => {
     throw new Error("Not implemented");

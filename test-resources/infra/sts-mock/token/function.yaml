@@ -62,7 +62,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       Description: Execution role for the token function
-      RoleName: !Sub ${AWS::StackName}-sts-mocktoken
+      RoleName: !Sub ${AWS::StackName}-sts-mock-token
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary

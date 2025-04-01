@@ -45,7 +45,7 @@ describe("STS mock infrastructure", () => {
       test("metrics are enabled", () => {
         const methodSettings = new Capture();
         template.hasResourceProperties("AWS::Serverless::Api", {
-          Name: { "Fn::Sub": "${AWS::StackName}-api" },
+          Name: { "Fn::Sub": "${AWS::StackName}-sts-mock-api" },
           MethodSettings: methodSettings,
         });
         expect(methodSettings.asArray()[0].MetricsEnabled).toBe(true);
