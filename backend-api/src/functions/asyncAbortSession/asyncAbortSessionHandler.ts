@@ -71,8 +71,6 @@ export async function lambdaHandlerConstructor(
     });
   }
 
-  console.log("updateSessionResult", updateSessionResult);
-
   const { subjectIdentifier, sessionState } =
     updateSessionResult.value.attributes;
 
