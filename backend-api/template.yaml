@@ -3027,6 +3027,21 @@ Resources:
       LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
     Condition: isNotDev
 
+  AsyncIssueBiometricCredentialCompletionMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '{ ($.messageCode = *) && ($.functionVersion = *) }'
+      LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
+      MetricTransformations:
+        - Dimensions:
+            - Key: MessageCode
+              Value: $.messageCode
+            - Key: Version
+              Value: $.functionVersion
+          MetricName: AsyncIssueBiometricCredentialMessageCode
+          MetricNamespace: !Sub ${AWS::StackName}/LogMessages
+          MetricValue: "1"
+
   AsyncIssueBiometricCredentialFunction:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -3058,6 +3073,58 @@ Resources:
           - !ImportValue devplatform-vpc-ProtectedSubnetIdA
           - !ImportValue devplatform-vpc-ProtectedSubnetIdB
           - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+
+  AsyncIssueBiometricCredentialLNoCompletionAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncIssueBiometricCredentialCompletionMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: An Issue Biometric Credential invocation did not process a message from the vendor processing queue successfully.
+      AlarmName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda-no-completion
+      ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      Metrics:
+        - Id: lambdaLogStarted
+          Label: Sum of MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_STARTED messageCodes for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_STARTED
+                - Name: Version
+                  Value: !GetAtt AsyncIssueBiometricCredentialFunction.Version.Version
+              MetricName: AsyncIssueBiometricCredentialMessageCode
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: lambdaLogCompleted
+          Label: Sum of MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED messageCodes for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED
+                - Name: Version
+                  Value: !GetAtt AsyncIssueBiometricCredentialFunction.Version.Version
+              MetricName: AsyncIssueBiometricCredentialMessageCode
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: IF(lambdaLogStarted-lambdaLogCompleted > 0, lambdaLogStarted-lambdaLogCompleted, 0)
+          Id: noCompletionRateThreshold
+          Label: Error threshold calculation
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 0
+      TreatMissingData: notBreaching
 
   AsyncIssueBiometricCredentialLambdaRole:
     Type: AWS::IAM::Role
