@@ -76,7 +76,7 @@ describe("Async Issue Biometric Credential", () => {
     describe("Given event does not contain exactly 1 record", () => {
       describe.each([
         {
-          scenario: "Given there less than 1 record",
+          scenario: "Given there are 0 records",
           invalidSqsEvent: {
             Records: [],
           },
