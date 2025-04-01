@@ -4,7 +4,9 @@ import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { validateSessionId } from "../common/request/validateSessionId/validateSessionId";
 
-export const validateSqsEvent = (event: SQSEvent): Result<string, void> => {
+export const validateVendorProcessingQueueSqsEvent = (
+  event: SQSEvent,
+): Result<string, void> => {
   if (event.Records.length !== 1) {
     logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT, {
       errorMessage: `Expected exactly one record, got ${event.Records.length}.`,

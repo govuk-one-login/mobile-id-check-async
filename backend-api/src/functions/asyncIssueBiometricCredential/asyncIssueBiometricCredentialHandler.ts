@@ -6,7 +6,7 @@ import {
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
-import { validateSqsEvent } from "./validateSqsEvent";
+import { validateVendorProcessingQueueSqsEvent } from "./validateSqsEvent";
 
 export async function lambdaHandlerConstructor(
   _dependencies: IssueBiometricCredentialDependencies,
@@ -16,7 +16,7 @@ export async function lambdaHandlerConstructor(
   setupLogger(context);
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_STARTED);
 
-  const validateSqsEventResult = validateSqsEvent(event);
+  const validateSqsEventResult = validateVendorProcessingQueueSqsEvent(event);
   if (validateSqsEventResult.isError) {
     return;
   }
