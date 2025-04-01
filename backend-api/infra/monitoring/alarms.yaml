@@ -1902,7 +1902,12 @@ Resources:
       OKActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       InsufficientDataActions: []
-      AlarmDescription: "Fires when a log event with messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT is detected."
+      AlarmDescription: !Sub
+        - "Fires when a log event with messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT is detected."
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - CriticalAlarmsRunbook
       AlarmName: !Sub "${AWS::StackName}-issue-biometric-credential-lambda-invalid-sqs-event"
       Namespace: !Sub "${AWS::StackName}/LogMessages"
       MetricName: AsyncIssueBiometricCredentialInvalidSqsEvent
