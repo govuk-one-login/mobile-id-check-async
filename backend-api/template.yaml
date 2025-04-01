@@ -3693,7 +3693,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - WarningAlarmsRunbook
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-txma-event-4xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -3825,7 +3825,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - WarningAlarmsRunbook
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-txma-event-5xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
