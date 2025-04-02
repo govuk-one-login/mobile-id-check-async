@@ -321,6 +321,7 @@ describe("Backend application infrastructure", () => {
         ["ipv-core-sqs-age-of-oldest-message"],
         ["ipv-core-dlq-message-visible"],
         ["low-threshold-ipv-core-dlq-age-of-oldest-message"],
+        ["issue-biometric-credential-lambda-invalid-sqs-event"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
