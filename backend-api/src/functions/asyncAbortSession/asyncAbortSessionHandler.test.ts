@@ -85,7 +85,7 @@ describe("Async Abort Session", () => {
       },
       getSessionRegistry: () => mockSuccessfulSessionRegistry,
       getEventService: () => mockSuccessfulEventService,
-      getSendMessageToSqs: () => mockSuccessfulSendMessageToSqs,
+      sendMessageToSqs: mockSuccessfulSendMessageToSqs,
     };
 
     context = buildLambdaContext();
@@ -122,37 +122,39 @@ describe("Async Abort Session", () => {
   });
 
   describe("Config validation", () => {
-    describe.each([["SESSION_TABLE_NAME"], ["TXMA_SQS"], ["ISSUER"]])(
-      "Given %s environment variable is missing",
-      (envVar: string) => {
-        beforeEach(async () => {
-          delete dependencies.env[envVar];
-          result = await lambdaHandlerConstructor(
-            dependencies,
-            validRequest,
-            context,
-          );
+    describe.each([
+      ["SESSION_TABLE_NAME"],
+      ["TXMA_SQS"],
+      ["ISSUER"],
+      ["IPVCORE_OUTBOUND_SQS"],
+    ])("Given %s environment variable is missing", (envVar: string) => {
+      beforeEach(async () => {
+        delete dependencies.env[envVar];
+        result = await lambdaHandlerConstructor(
+          dependencies,
+          validRequest,
+          context,
+        );
+      });
+      it("returns 500 Internal server error", async () => {
+        expect(result).toStrictEqual({
+          statusCode: 500,
+          body: JSON.stringify({
+            error: "server_error",
+            error_description: "Internal Server Error",
+          }),
+          headers: expectedSecurityHeaders,
         });
-        it("returns 500 Internal server error", async () => {
-          expect(result).toStrictEqual({
-            statusCode: 500,
-            body: JSON.stringify({
-              error: "server_error",
-              error_description: "Internal Server Error",
-            }),
-            headers: expectedSecurityHeaders,
-          });
+      });
+      it("logs INVALID_CONFIG", async () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ABORT_SESSION_INVALID_CONFIG",
+          data: {
+            missingEnvironmentVariables: [envVar],
+          },
         });
-        it("logs INVALID_CONFIG", async () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_ABORT_SESSION_INVALID_CONFIG",
-            data: {
-              missingEnvironmentVariables: [envVar],
-            },
-          });
-        });
-      },
-    );
+      });
+    });
   });
 
   describe("Request body validation", () => {
@@ -438,7 +440,7 @@ describe("Async Abort Session", () => {
       beforeEach(async () => {
         dependencies = {
           ...dependencies,
-          getSendMessageToSqs: () => mockFailingSendMessageToSqs,
+          sendMessageToSqs: mockFailingSendMessageToSqs,
           getEventService: () => mockFailingEventService,
         };
 
@@ -447,13 +449,6 @@ describe("Async Abort Session", () => {
           validRequest,
           context,
         );
-      });
-
-      it("Logs the send message to vendor processing queue failure", () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode:
-            "MOBILE_ASYNC_ABORT_SESSION_SEND_MESSAGE_TO_IPV_OUTBOUND_SQS_QUEUE_FAILURE",
-        });
       });
 
       it("Logs the DCMAW_ASYNC_CRI_5XXERROR event failure", () => {
@@ -481,20 +476,13 @@ describe("Async Abort Session", () => {
       beforeEach(async () => {
         dependencies = {
           ...dependencies,
-          getSendMessageToSqs: () => mockFailingSendMessageToSqs,
+          sendMessageToSqs: mockFailingSendMessageToSqs,
         };
         result = await lambdaHandlerConstructor(
           dependencies,
           validRequest,
           context,
         );
-      });
-
-      it("Logs the send message to vendor processing queue failure", () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode:
-            "MOBILE_ASYNC_ABORT_SESSION_SEND_MESSAGE_TO_IPV_OUTBOUND_SQS_QUEUE_FAILURE",
-        });
       });
 
       it("Writes DCMAW_ASYNC_CRI_5XXERROR event", () => {

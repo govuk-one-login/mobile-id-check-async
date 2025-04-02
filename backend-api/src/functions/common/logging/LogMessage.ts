@@ -275,11 +275,6 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_ABORT_SESSION_REQUEST_BODY_INVALID",
     "The incoming request body was missing or invalid.",
   );
-  static readonly ABORT_SESSION_SEND_MESSAGE_TO_IPV_OUTBOUND_SQS_QUEUE_FAILURE =
-    new LogMessage(
-      "MOBILE_ASYNC_ABORT_SESSION_SEND_MESSAGE_TO_IPV_OUTBOUND_SQS_QUEUE_FAILURE",
-      "Failed to send message to vendor processing queue.",
-    );
 
   // TxMA Event
   static readonly TXMA_EVENT_STARTED = new LogMessage(

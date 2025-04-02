@@ -71,23 +71,21 @@ export async function lambdaHandlerConstructor(
     });
   }
 
-  const { subjectIdentifier, sessionState } =
-    updateSessionResult.value.attributes;
-
-  const sendMessageToSqs = dependencies.getSendMessageToSqs();
-  const vendorProcessingMessage = {
-    sub: subjectIdentifier,
-    state: sessionState,
-    error: "access_denied",
-    error_description: "User aborted the session",
-  };
   const sessionAttributes = updateSessionResult.value
     .attributes as AuthSessionAbortedAttributes;
 
-  const sendMessageToIPVCoreOutboundQueueResult = await sendMessageToSqs(
-    config.IPVCORE_OUTBOUND_SQS,
-    vendorProcessingMessage,
-  );
+  const IPVCoreOutboundMessage = {
+    sub: sessionAttributes.subjectIdentifier,
+    state: sessionAttributes.clientState,
+    error: "access_denied",
+    error_description: "User aborted the session",
+  };
+
+  const sendMessageToIPVCoreOutboundQueueResult =
+    await dependencies.sendMessageToSqs(
+      config.IPVCORE_OUTBOUND_SQS,
+      IPVCoreOutboundMessage,
+    );
   if (sendMessageToIPVCoreOutboundQueueResult.isError) {
     return await handleSendMessageToIPVCoreOutboundQueueFailure({
       eventService,
@@ -110,16 +108,9 @@ interface HandleSendMessageToIPVCoreOutboundQueueFailureData {
   txmaAuditEncoded: string | undefined;
 }
 
-/**
- * Handles send message to vendor processing queue failures
- */
 const handleSendMessageToIPVCoreOutboundQueueFailure = async (
   options: HandleSendMessageToIPVCoreOutboundQueueFailureData,
 ): Promise<APIGatewayProxyResult> => {
-  logger.error(
-    LogMessage.ABORT_SESSION_SEND_MESSAGE_TO_IPV_OUTBOUND_SQS_QUEUE_FAILURE,
-  );
-
   const {
     eventService,
     issuer,

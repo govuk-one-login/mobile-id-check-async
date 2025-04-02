@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 import {
   expectedSecurityHeaders,
@@ -58,7 +59,7 @@ describe("POST /async/abortSession", () => {
     let sessionId: string;
     let response: AxiosResponse;
     beforeAll(async () => {
-      const sub = mockInvalidUUID;
+      const sub = randomUUID();
       await createSessionForSub(sub);
       sessionId = await getActiveSessionIdFromSub(sub);
 

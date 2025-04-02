@@ -10,7 +10,7 @@ export type IAsyncAbortSessionDependencies = {
   env: NodeJS.ProcessEnv;
   getSessionRegistry: (tableName: string) => SessionRegistry;
   getEventService: (sqsQueue: string) => IEventService;
-  getSendMessageToSqs: () => (
+  sendMessageToSqs: (
     sqsArn: string,
     messageBody: AbortSessionMessage,
   ) => Promise<Result<void, void>>;
@@ -20,7 +20,5 @@ export const runtimeDependencies: IAsyncAbortSessionDependencies = {
   env: process.env,
   getSessionRegistry: (tableName: string) => new DynamoDbAdapter(tableName),
   getEventService: (sqsQueue: string) => new EventService(sqsQueue),
-  getSendMessageToSqs:
-    () => (sqsArn: string, messageBody: AbortSessionMessage) =>
-      sendMessageToSqs(sqsArn, messageBody),
+  sendMessageToSqs,
 };
