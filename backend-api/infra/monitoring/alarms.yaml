@@ -1889,3 +1889,49 @@ Resources:
           Label: "Number of 5XX errors returned as a percentage"
           ReturnData: false
           Expression: (errorSum5XX/invocations) * 100
+
+  AsyncIssueBiometricCredentialMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Condition: DeployAlarms
+    Properties:
+      LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
+      FilterPattern: '{ $.messageCode = * }'
+      MetricTransformations:
+        - MetricValue: "1"
+          MetricNamespace: !Sub "${AWS::StackName}/LogMessages"
+          MetricName: "AsyncIssueBiometricCredentialMessageCode"
+          Dimensions:
+            - Key: MessageCode
+              Value: $.messageCode
+
+  AsyncIssueBiometricCredentialInvalidSqsEventAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: DeployAlarms
+    DependsOn:
+      - "AsyncIssueBiometricCredentialMetricFilter"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      InsufficientDataActions: []
+      AlarmDescription: !Sub
+        - "Fires when a log event with messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT is detected. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - CriticalAlarmsRunbook
+      AlarmName: !Sub "${AWS::StackName}-issue-biometric-credential-lambda-invalid-sqs-event"
+      Namespace: !Sub "${AWS::StackName}/LogMessages"
+      MetricName: AsyncIssueBiometricCredentialMessageCode
+      Dimensions:
+        - Name: MessageCode
+          Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching

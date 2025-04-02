@@ -3211,6 +3211,38 @@ Resources:
           - !ImportValue devplatform-vpc-ProtectedSubnetIdB
           - !ImportValue devplatform-vpc-ProtectedSubnetIdC
 
+  AsyncIssueBiometricCredentialInvalidSqsEventAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncIssueBiometricCredentialMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Fires when a log event with messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT is detected. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - CriticalAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda-invalid-sqs-event
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: MessageCode
+          Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: AsyncIssueBiometricCredentialMessageCode
+      Namespace: !Sub ${AWS::StackName}/LogMessages
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Sum
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   AsyncIssueBiometricCredentialLambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -3272,6 +3304,20 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-issue-biometric-credential
       RetentionInDays: 30
+
+  AsyncIssueBiometricCredentialMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '{ $.messageCode = * }'
+      LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
+      MetricTransformations:
+        - Dimensions:
+            - Key: MessageCode
+              Value: $.messageCode
+          MetricName: AsyncIssueBiometricCredentialMessageCode
+          MetricNamespace: !Sub ${AWS::StackName}/LogMessages
+          MetricValue: "1"
+    Condition: DeployAlarms
 
   AsyncIssueBiometricCredentialSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
