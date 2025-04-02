@@ -1,6 +1,4 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { SQSEvent } from "aws-lambda";
-import { mockClient } from "aws-sdk-client-mock";
 import "aws-sdk-client-mock-jest";
 import { NOW_IN_MILLISECONDS } from "../../../../tests/utils/unitTestData";
 import { Logger } from "../../services/logging/logger";
@@ -13,11 +11,10 @@ import {
 import { MessageName, registeredLogs } from "../registeredLogs";
 import { passingSQSRecord } from "./testData";
 
-describe("Dequeue TxMA events", () => {
+describe("Dequeue credential result", () => {
   let dependencies: IDequeueCredentialResultDependencies;
   let mockLogger: MockLoggingAdapter<MessageName>;
   const env = {};
-  const mockDbClient = mockClient(DynamoDBClient);
 
   beforeEach(() => {
     jest.useFakeTimers();
@@ -32,7 +29,6 @@ describe("Dequeue TxMA events", () => {
   afterEach(() => {
     jest.useRealTimers();
     jest.restoreAllMocks();
-    mockDbClient.reset();
   });
 
   describe("Happy path", () => {
