@@ -447,6 +447,7 @@ Globals:
         - Lambda
         - !Ref Environment
         - ReservedConcurrentExecutions
+    Runtime: nodejs22.x
     Timeout: 5
 
 Resources:
@@ -818,8 +819,7 @@ Resources:
           Type: Api
       FunctionName: !Sub ${AWS::StackName}-abort-session
       Handler: asyncAbortSessionHandler.lambdaHandler
-      Role: !GetAtt AsyncAbortSessionLambdaRole.Arn
-      Runtime: nodejs20.x
+      Role: !GetAtt AsyncAbortSessionLambdaRole.Arn      
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -1347,8 +1347,7 @@ Resources:
           Type: Api
       FunctionName: !Sub ${AWS::StackName}-active-session
       Handler: asyncActiveSessionHandler.lambdaHandler
-      Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
-      Runtime: nodejs20.x
+      Role: !GetAtt AsyncActiveSessionLambdaRole.Arn      
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -1899,8 +1898,7 @@ Resources:
           Type: Api
       FunctionName: !Sub ${AWS::StackName}-biometric-token
       Handler: asyncBiometricTokenHandler.lambdaHandler
-      Role: !GetAtt AsyncBiometricTokenLambdaRole.Arn
-      Runtime: nodejs20.x
+      Role: !GetAtt AsyncBiometricTokenLambdaRole.Arn      
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -2446,8 +2444,7 @@ Resources:
             - SessionDurationInSeconds
       FunctionName: !Sub ${AWS::StackName}-credential
       Handler: asyncCredentialHandler.lambdaHandler
-      Role: !GetAtt AsyncCredentialLambdaRole.Arn
-      Runtime: nodejs20.x
+      Role: !GetAtt AsyncCredentialLambdaRole.Arn      
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -3003,8 +3000,7 @@ Resources:
           Type: Api
       FunctionName: !Sub ${AWS::StackName}-finish-biometric-session
       Handler: asyncFinishBiometricSessionHandler.lambdaHandler
-      Role: !GetAtt AsyncFinishBiometricSessionLambdaRole.Arn
-      Runtime: nodejs20.x
+      Role: !GetAtt AsyncFinishBiometricSessionLambdaRole.Arn     
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -3188,8 +3184,7 @@ Resources:
           - Lambda
           - !Ref Environment
           - IssueBiometricCredentialReservedConcurrentExecutions
-      Role: !GetAtt AsyncIssueBiometricCredentialLambdaRole.Arn
-      Runtime: nodejs20.x
+      Role: !GetAtt AsyncIssueBiometricCredentialLambdaRole.Arn      
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -3701,8 +3696,7 @@ Resources:
             - ClientRegistrySecretPath
       FunctionName: !Sub ${AWS::StackName}-token
       Handler: asyncTokenHandler.lambdaHandler
-      Role: !GetAtt AsyncTokenLambdaRole.Arn
-      Runtime: nodejs20.x
+      Role: !GetAtt AsyncTokenLambdaRole.Arn      
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -4153,8 +4147,7 @@ Resources:
           Type: Api
       FunctionName: !Sub ${AWS::StackName}-txma-event
       Handler: asyncTxmaEventHandler.lambdaHandler
-      Role: !GetAtt AsyncTxmaEventLambdaRole.Arn
-      Runtime: nodejs20.x
+      Role: !GetAtt AsyncTxmaEventLambdaRole.Arn      
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -4624,8 +4617,7 @@ Resources:
           JWKS_FILE_NAME: .well-known/jwks.json
       FunctionName: !Sub ${AWS::StackName}-jwks
       Handler: jwksHandler.lambdaHandler
-      Role: !GetAtt JsonWebKeysFunctionLambdaRole.Arn
-      Runtime: nodejs20.x
+      Role: !GetAtt JsonWebKeysFunctionLambdaRole.Arn      
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -4976,8 +4968,7 @@ Resources:
           PRIVATE_API_URL: !Sub https://${PrivateApi.RestApiId}.execute-api.eu-west-2.amazonaws.com/${Environment}
       FunctionName: !Sub ${AWS::StackName}-proxy-lambda
       Handler: proxyHandler.lambdaHandler
-      Role: !GetAtt ProxyLambdaRole.Arn
-      Runtime: nodejs20.x
+      Role: !GetAtt ProxyLambdaRole.Arn      
       VpcConfig:
         SecurityGroupIds:
           - !Ref ProxyLambdaSecurityGroup
