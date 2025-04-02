@@ -16,8 +16,7 @@ Resources:
       Environment:
         Variables:
           PRIVATE_API_URL: !Sub https://${PrivateApi.RestApiId}.execute-api.eu-west-2.amazonaws.com/${Environment}
-      FunctionName: !Sub ${AWS::StackName}-proxy-lambda
-      Runtime: nodejs20.x
+      FunctionName: !Sub ${AWS::StackName}-proxy-lambda      
       Handler: proxyHandler.lambdaHandler
       Role: !GetAtt ProxyLambdaRole.Arn
       VpcConfig:

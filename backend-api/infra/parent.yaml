@@ -359,6 +359,7 @@ Globals:
     AutoPublishAliasAllProperties: true
     Timeout: 5
     MemorySize: 512
+    Runtime: nodejs22.x
     ReservedConcurrentExecutions: !If
       - isDev
       - !Ref AWS::NoValue

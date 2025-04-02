@@ -14,8 +14,7 @@ Resources:
         EntryPoints:
           - src/functions/asyncAbortSession/asyncAbortSessionHandler.ts
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-abort-session
-      Runtime: nodejs20.x
+      FunctionName: !Sub ${AWS::StackName}-abort-session      
       Handler: asyncAbortSessionHandler.lambdaHandler
       Events:
         AsyncAbortSession:

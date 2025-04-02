@@ -14,8 +14,7 @@ Resources:
         EntryPoints:
           - src/functions/dequeue/dequeueHandler.ts
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-dequeue
-      Runtime: nodejs20.x
+      FunctionName: !Sub ${AWS::StackName}-dequeue      
       Handler: dequeueHandler.lambdaHandler
       Role: !GetAtt DequeueRole.Arn
       Environment:

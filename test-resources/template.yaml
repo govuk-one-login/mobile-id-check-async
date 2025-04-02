@@ -158,7 +158,7 @@ Resources:
           TXMA_EVENT_TTL_DURATION_IN_SECONDS: 900
       FunctionName: !Sub ${AWS::StackName}-dequeue
       Handler: dequeueHandler.lambdaHandler
-      Role: !GetAtt DequeueRole.Arn      
+      Role: !GetAtt DequeueRole.Arn
       Timeout: 10
       VpcConfig:
         SecurityGroupIds:
@@ -846,7 +846,7 @@ Resources:
           Type: Api
       FunctionName: !Sub ${AWS::StackName}-sts-mock-token
       Handler: tokenHandler.lambdaHandler
-      Role: !GetAtt TokenFunctionRole.Arn      
+      Role: !GetAtt TokenFunctionRole.Arn
       Timeout: 5
       VpcConfig:
         SecurityGroupIds:

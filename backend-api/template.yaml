@@ -819,7 +819,7 @@ Resources:
           Type: Api
       FunctionName: !Sub ${AWS::StackName}-abort-session
       Handler: asyncAbortSessionHandler.lambdaHandler
-      Role: !GetAtt AsyncAbortSessionLambdaRole.Arn      
+      Role: !GetAtt AsyncAbortSessionLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -1347,7 +1347,7 @@ Resources:
           Type: Api
       FunctionName: !Sub ${AWS::StackName}-active-session
       Handler: asyncActiveSessionHandler.lambdaHandler
-      Role: !GetAtt AsyncActiveSessionLambdaRole.Arn      
+      Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -1898,7 +1898,7 @@ Resources:
           Type: Api
       FunctionName: !Sub ${AWS::StackName}-biometric-token
       Handler: asyncBiometricTokenHandler.lambdaHandler
-      Role: !GetAtt AsyncBiometricTokenLambdaRole.Arn      
+      Role: !GetAtt AsyncBiometricTokenLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -2444,7 +2444,7 @@ Resources:
             - SessionDurationInSeconds
       FunctionName: !Sub ${AWS::StackName}-credential
       Handler: asyncCredentialHandler.lambdaHandler
-      Role: !GetAtt AsyncCredentialLambdaRole.Arn      
+      Role: !GetAtt AsyncCredentialLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -3000,7 +3000,7 @@ Resources:
           Type: Api
       FunctionName: !Sub ${AWS::StackName}-finish-biometric-session
       Handler: asyncFinishBiometricSessionHandler.lambdaHandler
-      Role: !GetAtt AsyncFinishBiometricSessionLambdaRole.Arn     
+      Role: !GetAtt AsyncFinishBiometricSessionLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -3184,7 +3184,7 @@ Resources:
           - Lambda
           - !Ref Environment
           - IssueBiometricCredentialReservedConcurrentExecutions
-      Role: !GetAtt AsyncIssueBiometricCredentialLambdaRole.Arn      
+      Role: !GetAtt AsyncIssueBiometricCredentialLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -3696,7 +3696,7 @@ Resources:
             - ClientRegistrySecretPath
       FunctionName: !Sub ${AWS::StackName}-token
       Handler: asyncTokenHandler.lambdaHandler
-      Role: !GetAtt AsyncTokenLambdaRole.Arn      
+      Role: !GetAtt AsyncTokenLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -4147,7 +4147,7 @@ Resources:
           Type: Api
       FunctionName: !Sub ${AWS::StackName}-txma-event
       Handler: asyncTxmaEventHandler.lambdaHandler
-      Role: !GetAtt AsyncTxmaEventLambdaRole.Arn      
+      Role: !GetAtt AsyncTxmaEventLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -4617,7 +4617,7 @@ Resources:
           JWKS_FILE_NAME: .well-known/jwks.json
       FunctionName: !Sub ${AWS::StackName}-jwks
       Handler: jwksHandler.lambdaHandler
-      Role: !GetAtt JsonWebKeysFunctionLambdaRole.Arn      
+      Role: !GetAtt JsonWebKeysFunctionLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -4968,7 +4968,7 @@ Resources:
           PRIVATE_API_URL: !Sub https://${PrivateApi.RestApiId}.execute-api.eu-west-2.amazonaws.com/${Environment}
       FunctionName: !Sub ${AWS::StackName}-proxy-lambda
       Handler: proxyHandler.lambdaHandler
-      Role: !GetAtt ProxyLambdaRole.Arn      
+      Role: !GetAtt ProxyLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
           - !Ref ProxyLambdaSecurityGroup
