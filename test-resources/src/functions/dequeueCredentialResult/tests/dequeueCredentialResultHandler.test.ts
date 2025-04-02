@@ -1,14 +1,13 @@
 import { expect } from "@jest/globals";
-import "../../../../tests/utils/matchers";
 import { SQSEvent } from "aws-lambda";
 import "aws-sdk-client-mock-jest";
+import "../../../../tests/utils/matchers";
 import { NOW_IN_MILLISECONDS } from "../../../../tests/utils/unitTestData";
 import { buildLambdaContext } from "../../testUtils/mockContext";
 import {
   IDequeueCredentialResultDependencies,
   lambdaHandlerConstructor,
 } from "../dequeueCredentialResultHandler";
-import { passingSQSRecord } from "./testData";
 
 describe("Dequeue credential result", () => {
   let dependencies: IDequeueCredentialResultDependencies;
@@ -56,3 +55,20 @@ describe("Dequeue credential result", () => {
     });
   });
 });
+
+const passingSQSRecord = {
+  messageId: "c2098377-619a-449f-b2b4-254b6c41aff4",
+  receiptHandle: "mockReceiptHandle",
+  body: "",
+  attributes: {
+    ApproximateReceiveCount: "mockApproximateReceiveCount",
+    SentTimestamp: "mockSentTimestamp",
+    SenderId: "mockSenderId",
+    ApproximateFirstReceiveTimestamp: "mockApproximateFirstReceiveTimestamp",
+  },
+  messageAttributes: {},
+  md5OfBody: "mockMd5OfBody",
+  eventSource: "mockEventSource",
+  eventSourceARN: "mockEventSourceARN",
+  awsRegion: "mockAwsRegion",
+};
