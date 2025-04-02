@@ -18,10 +18,6 @@ Resources:
       Runtime: nodejs20.x
       Handler: dequeueCredentialResultHandler.lambdaHandler
       Role: !GetAtt DequeueCredentialResultRole.Arn
-      Environment:
-        Variables:
-          TXMA_EVENT_TTL_DURATION_IN_SECONDS: 900
-          EVENTS_TABLE_NAME: !Ref EventsTable
       Timeout: 10
       VpcConfig:
         SubnetIds:
