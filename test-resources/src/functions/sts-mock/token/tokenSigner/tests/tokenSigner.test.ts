@@ -2,6 +2,7 @@ import { TokenSigner } from "../tokenSigner";
 import { decodeJwt, decodeProtectedHeader } from "jose";
 import { generateKeyPairSync } from "node:crypto";
 import { getMockSigningKey } from "../../../../testUtils/getMockSigningKey";
+import { ErrorCategory } from "../../../../common/utils/result";
 
 describe("Token Signer", () => {
   const payload = {
@@ -30,7 +31,7 @@ describe("Token Signer", () => {
       expect(result.isError).toStrictEqual(true);
       expect(result.value).toStrictEqual({
         errorMessage: "Error signing token",
-        errorCategory: "SERVER_ERROR",
+        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     });
   });

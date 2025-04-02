@@ -1,0 +1,90 @@
+openapi: 3.0.1
+info:
+  title: Test resources api
+  description: API for mock assets used in test environments. This includes the test-sessions functionality, which interacts with the sessions table.
+  version: 1.0.0
+paths:
+  /sessions/{sessionId}:
+    put:
+      summary: Create or update a session
+      parameters:
+        - in: path
+          name: sessionId
+          schema:
+            type: string
+          required: true
+      description: >-
+        The endpoint creates or updates a session in the backend-api Sessions table.
+        This enables more difficult-to-test backend-api API test scenarios.
+      security:
+        - sigv4Reference: []
+      responses:
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              examples:
+                serverError:
+                  description: |
+                    The service encountered an unrecoverable error when trying to access its internal resources.
+                  value:
+                    {
+                      "error": "server_error",
+                      "error_description": "Server Error"
+                    }
+              schema:
+                $ref: "#/components/schemas/serverError"
+        "501":
+          description: Not Implemented
+          content:
+            text/plain:
+              schema:
+                type: string
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+            Strict-Transport-Security:
+              schema:
+                type: string
+            X-Content-Type-Options:
+              schema:
+                type: string
+            X-Frame-Options:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        httpMethod: "POST"
+        passthroughBehavior: "when_no_match"
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${PutSessionFunction}:live/invocations"
+        type: "aws_proxy"
+
+
+components:
+  securitySchemes:
+    sigv4Reference:
+      in: header
+      name: Authorization
+      type: apiKey
+      x-amazon-apigateway-authtype: awsSigv4
+  schemas:
+    serverError:
+      type: object
+      properties:
+        error:
+          type: string
+          enum:
+            - server_error
+          description: |
+            The error code.
+        error_description:
+          type: string
+          description: |
+            A description of the error.
+      required:
+        - error
+        - error_description
