@@ -1890,15 +1890,15 @@ Resources:
           ReturnData: false
           Expression: (errorSum5XX/invocations) * 100
 
-  AsyncIssueBiometricCredentialInvalidSqsEventMetricFilter:
+  AsyncIssueBiometricCredentialMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
-      FilterPattern: '{ $.messageCode = "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT" }'
+      FilterPattern: '{ $.messageCode = * }'
       MetricTransformations:
         - MetricValue: "1"
           MetricNamespace: !Sub "${AWS::StackName}/LogMessages"
-          MetricName: "AsyncIssueBiometricCredentialInvalidSqsEvent"
+          MetricName: "AsyncIssueBiometricCredentialMessageCode"
           Dimensions:
             - Key: MessageCode
               Value: $.messageCode
@@ -1907,7 +1907,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Condition: DeployAlarms
     DependsOn:
-      - "AsyncIssueBiometricCredentialInvalidSqsEventMetricFilter"
+      - "AsyncIssueBiometricCredentialMetricFilter"
     Properties:
       ActionsEnabled: true
       AlarmActions:
@@ -1923,7 +1923,7 @@ Resources:
             - CriticalAlarmsRunbook
       AlarmName: !Sub "${AWS::StackName}-issue-biometric-credential-lambda-invalid-sqs-event"
       Namespace: !Sub "${AWS::StackName}/LogMessages"
-      MetricName: AsyncIssueBiometricCredentialInvalidSqsEvent
+      MetricName: AsyncIssueBiometricCredentialMessageCode
       Dimensions:
         - Name: MessageCode
           Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT
