@@ -25,6 +25,14 @@ Resources:
             Method: post
             RestApiId: !Ref SessionsApi
       Role: !GetAtt AsyncAbortSessionLambdaRole.Arn
+      DeploymentPreference:
+        Enabled: true
+        Alarms: !If
+          - UseCanaryDeployment
+          - - !Ref AsyncAbortSessionErrorRateAlarm        
+            - !Ref AsyncAbortSessionLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Type: !Ref LambdaDeploymentPreference
       VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-PrivateSubnetIdA
