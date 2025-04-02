@@ -16,13 +16,14 @@ import {
   NOW_IN_MILLISECONDS,
   invalidCreatedAt,
   validCreatedAt,
+  mockSuccessfulEventService,
+  mockWriteGenericEventSuccessResult,
+  mockWriteGenericEventFailureResult,
+  mockSuccessfulSendMessageToSqs,
+  mockFailingSendMessageToSqs,
+  mockFailingEventService,
 } from "../testUtils/unitTestData";
-import {
-  emptySuccess,
-  successResult,
-  errorResult,
-  emptyFailure,
-} from "../utils/result";
+import { successResult, errorResult } from "../utils/result";
 import { UpdateSessionError } from "../common/session/SessionRegistry";
 
 describe("Async Abort Session", () => {
@@ -38,23 +39,7 @@ describe("Async Abort Session", () => {
     }),
   });
 
-  const mockWriteGenericEventSuccess = jest
-    .fn()
-    .mockResolvedValue(emptySuccess());
-
-  const mockWriteGenericEventFaiilure = jest
-    .fn()
-    .mockResolvedValue(errorResult(new Error("Failed to write event")));
-
-  const mockSuccessfulEventService = {
-    ...mockInertEventService,
-    writeGenericEvent: mockWriteGenericEventSuccess,
-  };
-
-  const mockFailingEventService = {
-    ...mockInertEventService,
-    writeGenericEvent: mockWriteGenericEventFaiilure,
-  };
+  
 
   const mockSessionUpdateSuccess = jest.fn().mockResolvedValue(
     successResult({
@@ -66,14 +51,6 @@ describe("Async Abort Session", () => {
     ...mockInertSessionRegistry,
     updateSession: mockSessionUpdateSuccess,
   };
-
-  const mockSuccessfulSendMessageToSqs = jest
-    .fn()
-    .mockResolvedValue(emptySuccess());
-
-  const mockFailingSendMessageToSqs = jest
-    .fn()
-    .mockResolvedValue(emptyFailure());
 
   beforeEach(() => {
     dependencies = {
@@ -237,7 +214,7 @@ describe("Async Abort Session", () => {
         });
 
         it("Writes error event to TxMA and returns 401", () => {
-          expect(mockWriteGenericEventSuccess).toBeCalledWith({
+          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
             eventName: "DCMAW_ASYNC_CRI_4XXERROR",
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
@@ -279,7 +256,7 @@ describe("Async Abort Session", () => {
         });
 
         it("Writes fraud signal and returns 401", () => {
-          expect(mockWriteGenericEventSuccess).toBeCalledWith({
+          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
             eventName: "DCMAW_ASYNC_CRI_4XXERROR",
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
@@ -318,7 +295,7 @@ describe("Async Abort Session", () => {
         });
 
         it("Writes event without fraud signal and returns 401", () => {
-          expect(mockWriteGenericEventSuccess).toBeCalledWith({
+          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
             eventName: "DCMAW_ASYNC_CRI_4XXERROR",
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
@@ -419,7 +396,7 @@ describe("Async Abort Session", () => {
         });
 
         it("Writes error event and returns 500", () => {
-          expect(mockWriteGenericEventSuccess).toBeCalledWith({
+          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
             eventName: "DCMAW_ASYNC_CRI_5XXERROR",
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
@@ -508,7 +485,7 @@ describe("Async Abort Session", () => {
         });
 
         it("Writes DCMAW_ASYNC_CRI_5XXERROR event", () => {
-          expect(mockWriteGenericEventSuccess).toBeCalledWith({
+          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
             eventName: "DCMAW_ASYNC_CRI_5XXERROR",
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
