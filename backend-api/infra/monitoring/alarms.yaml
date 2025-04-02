@@ -1890,6 +1890,19 @@ Resources:
           ReturnData: false
           Expression: (errorSum5XX/invocations) * 100
 
+  AsyncIssueBiometricCredentialInvalidSqsEventMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
+      FilterPattern: '{ $.messageCode = "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT" }'
+      MetricTransformations:
+        - MetricValue: "1"
+          MetricNamespace: !Sub "${AWS::StackName}/LogMessages"
+          MetricName: "AsyncIssueBiometricCredentialInvalidSqsEvent"
+          Dimensions:
+            - Key: MessageCode
+              Value: $.messageCode
+
   AsyncIssueBiometricCredentialInvalidSqsEventAlarm:
     Type: AWS::CloudWatch::Alarm
     Condition: DeployAlarms
@@ -1921,16 +1934,3 @@ Resources:
       Threshold: 0
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
-
-  AsyncIssueBiometricCredentialInvalidSqsEventMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
-      FilterPattern: '{ $.messageCode = "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT" }'
-      MetricTransformations:
-        - MetricValue: "1"
-          MetricNamespace: !Sub "${AWS::StackName}/LogMessages"
-          MetricName: "AsyncIssueBiometricCredentialInvalidSqsEvent"
-          Dimensions:
-            - Key: MessageCode
-              Value: $.messageCode
