@@ -27,8 +27,11 @@ DEV_OVERRIDE_STS_BASE_URL="DevOverrideStsBaseUrl"
 DEV_OVERRIDE_EVENTS_BASE_URL="DevOverrideEventsBaseUrl"
 DEV_OVERRIDE_READID_PROXY_BASE_URL="DevOverrideReadIdBaseUrl"
 DEPLOY_ALARMS_IN_DEV="DeployAlarmsInDev"
+LAMBDA_DEPLOYMENT_PREFERENCE="LambdaDeploymentPreference"
 
 ASYNC_DOMAIN="review-b-async.dev.account.gov.uk"
+
+DEPLOYMENT_CONFIG_NAME="${BACKEND_STACK_NAME}-Linear20PercentEvery1Minute"
 
 PROXY_URL="https://proxy-${BACKEND_STACK_NAME}.${ASYNC_DOMAIN}"
 SESSIONS_URL="https://sessions-${BACKEND_STACK_NAME}.${ASYNC_DOMAIN}"
@@ -38,6 +41,7 @@ EVENTS_URL="https://events-${TEST_RESOURCES_STACK_NAME}.${ASYNC_DOMAIN}"
 deploy_cf_dist=false
 deploy_backend_api_stack=false
 enable_alarms=false
+enable_canary_deployments=false
 deploy_test_resources=false
 publish_sts_mock_keys_to_s3=false
 overrideReadIdBaseUrl=false
@@ -121,6 +125,22 @@ while true; do
       case "$yn" in
       [yY])
         enable_alarms=true
+          while true; do
+            echo
+            read -r -p "Do you want to enable canary deployments for your backend-api stack? [y/N]: " yn
+          case "$yn" in
+          [yY])
+            enable_canary_deployments=true
+            break
+            ;;
+          [nN] | "")
+            break
+            ;;
+          *)
+            echo "Invalid input. Please enter 'y' or 'n'."
+            ;;
+          esac
+        done
         break
         ;;
       [nN] | "")
@@ -189,6 +209,10 @@ if [[ $deploy_backend_api_stack == true ]]; then
 
   if [[ $enable_alarms == true ]]; then
       parameter_overrides+=" $DEPLOY_ALARMS_IN_DEV=true"
+
+      if [[ $enable_canary_deployments == true ]]; then
+          parameter_overrides+=" $LAMBDA_DEPLOYMENT_PREFERENCE=${DEPLOYMENT_CONFIG_NAME}"
+      fi
   fi
 
   if [[ $overrideReadIdBaseUrl == true ]]; then

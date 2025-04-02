@@ -1075,7 +1075,6 @@ describe("Backend application infrastructure", () => {
       "AsyncTxmaEventFunction",
       "JsonWebKeysFunction",
       "ProxyLambda",
-      "AsyncAbortSessionFunction",
       "AsyncIssueBiometricCredentialFunction",
     ];
 
