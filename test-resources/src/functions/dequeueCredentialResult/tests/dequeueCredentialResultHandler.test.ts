@@ -1,8 +1,8 @@
 import { expect } from "@jest/globals";
 import { SQSEvent } from "aws-lambda";
 import "aws-sdk-client-mock-jest";
-import "../../../../tests/utils/matchers";
 import { NOW_IN_MILLISECONDS } from "../../../../tests/utils/unitTestData";
+import "../../testUtils/matchers";
 import { buildLambdaContext } from "../../testUtils/mockContext";
 import {
   IDequeueCredentialResultDependencies,
