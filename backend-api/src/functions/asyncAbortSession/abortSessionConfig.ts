@@ -11,6 +11,7 @@ const REQUIRED_ENVIRONMENT_VARIABLES = [
   "SESSION_TABLE_NAME",
   "ISSUER",
   "TXMA_SQS",
+  "IPVCORE_OUTBOUND_SQS",
 ] as const;
 
 export type AbortSessionConfig = Config<

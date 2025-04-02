@@ -58,8 +58,6 @@ describe("AbortSession", () => {
         }, // Changed from S to N type
       });
 
-      console.log("result", result);
-
       // Additional check to verify the oneHourAgoInMilliseconds value
       const oneHourAgoInMillisecondsValue = Number(
         result[":oneHourAgoInMilliseconds"].N,
