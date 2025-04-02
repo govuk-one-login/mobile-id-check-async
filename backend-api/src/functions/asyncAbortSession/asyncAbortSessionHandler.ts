@@ -74,7 +74,7 @@ export async function lambdaHandlerConstructor(
   const sessionAttributes = updateSessionResult.value
     .attributes as AuthSessionAbortedAttributes;
 
-  const IPVCoreOutboundMessage = {
+  const ipvCoreOutboundMessage = {
     sub: sessionAttributes.subjectIdentifier,
     state: sessionAttributes.clientState,
     error: "access_denied",
@@ -84,7 +84,7 @@ export async function lambdaHandlerConstructor(
   const sendMessageToIPVCoreOutboundQueueResult =
     await dependencies.sendMessageToSqs(
       config.IPVCORE_OUTBOUND_SQS,
-      IPVCoreOutboundMessage,
+      ipvCoreOutboundMessage,
     );
   if (sendMessageToIPVCoreOutboundQueueResult.isError) {
     return await handleSendMessageToIPVCoreOutboundQueueFailure({

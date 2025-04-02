@@ -11,14 +11,12 @@ import {
   mockInvalidUUID,
   mockSessionId,
   mockInertSessionRegistry,
-  mockInertEventService,
   validAbortSessionAttributes,
   NOW_IN_MILLISECONDS,
   invalidCreatedAt,
   validCreatedAt,
   mockSuccessfulEventService,
   mockWriteGenericEventSuccessResult,
-  mockWriteGenericEventFailureResult,
   mockSuccessfulSendMessageToSqs,
   mockFailingSendMessageToSqs,
   mockFailingEventService,
@@ -38,8 +36,6 @@ describe("Async Abort Session", () => {
       sessionId: mockSessionId,
     }),
   });
-
-  
 
   const mockSessionUpdateSuccess = jest.fn().mockResolvedValue(
     successResult({
