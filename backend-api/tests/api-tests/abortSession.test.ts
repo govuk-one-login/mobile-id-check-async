@@ -66,8 +66,6 @@ describe("POST /async/abortSession", () => {
       response = await SESSIONS_API_INSTANCE.post("/async/abortSession", {
         sessionId,
       });
-
-      console.log("response", response.data);
     }, 40000);
 
     it("Returns 501 response", () => {
