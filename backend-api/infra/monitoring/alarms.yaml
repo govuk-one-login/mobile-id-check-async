@@ -1892,6 +1892,7 @@ Resources:
 
   AsyncIssueBiometricCredentialMetricFilter:
     Type: AWS::Logs::MetricFilter
+    Condition: DeployAlarms
     Properties:
       LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
       FilterPattern: '{ $.messageCode = * }'

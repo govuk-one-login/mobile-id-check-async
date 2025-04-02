@@ -3165,6 +3165,7 @@ Resources:
           MetricName: AsyncIssueBiometricCredentialMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
+    Condition: DeployAlarms
 
   AsyncIssueBiometricCredentialSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
