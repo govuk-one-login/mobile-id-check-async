@@ -4,7 +4,7 @@ Resources:
   JwksBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-jwks-${Environment}
+      BucketName: !Sub ${AWS::StackName}-sts-mock-jwks-${Environment}
       VersioningConfiguration:
         Status: Enabled
       PublicAccessBlockConfiguration:
@@ -18,7 +18,7 @@ Resources:
               SSEAlgorithm: AES256
       LoggingConfiguration:
         DestinationBucketName: !Ref JwksBucketAccessLogs
-        LogFilePrefix: !Sub ${AWS::StackName}-jwks
+        LogFilePrefix: !Sub ${AWS::StackName}-sts-mock-jwks
 
   JwksBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -41,7 +41,7 @@ Resources:
   JwksBucketAccessLogs:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub ${AWS::StackName}-jwks-access-logs-${Environment}
+      BucketName: !Sub ${AWS::StackName}-sts-mock-jwks-access-logs-${Environment}
       VersioningConfiguration:
         Status: Enabled
       PublicAccessBlockConfiguration:

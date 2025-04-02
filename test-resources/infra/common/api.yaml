@@ -1,51 +1,56 @@
 AWSTemplateFormatVersion: "2010-09-09"
-
 Resources:
-  StsMockApi:
+  TestResourcesApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: !Sub ${AWS::StackName}-sts-mock-api
-      Description: Public API gateway for STS Mock
+      AlwaysDeploy: true
+      Name: !Sub ${AWS::StackName}-api
+      Description: API for test assets
       EndpointConfiguration: REGIONAL
-      StageName:
-        Ref: Environment
+      StageName: !Ref Environment
       OpenApiVersion: 3.0.1
       AccessLogSetting:
-        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${StsMockApiAccessLogs}
+        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${TestResourcesApiAccessLogs}
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
       MethodSettings:
         - LoggingLevel: INFO
-          ResourcePath: "/*"
-          HttpMethod: "*"
-          DataTraceEnabled: true
+          ResourcePath: /*
+          HttpMethod: '*'
+          DataTraceEnabled: false
           MetricsEnabled: true
-          ThrottlingBurstLimit: !FindInMap [ StsMockApiGateway, !Ref Environment, ApiBurstLimit ]
-          ThrottlingRateLimit: !FindInMap [ StsMockApiGateway, !Ref Environment, ApiRateLimit ]
+          ThrottlingBurstLimit: !FindInMap
+            - TestResourcesApiGateway
+            - !Ref Environment
+            - ApiBurstLimit
+          ThrottlingRateLimit: !FindInMap
+            - TestResourcesApiGateway
+            - !Ref Environment
+            - ApiRateLimit
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
           Parameters:
-            Location: "./openApiSpecs/sts-mock-spec.yaml"
+            Location: ./openApiSpecs/test-resources-spec.yaml
 
-  StsMockApiAccessLogs:
+  TestResourcesApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-sts-mock-api-access-logs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-api-access-logs
       RetentionInDays: 30
 
-  StsMockApiDomainName:
+  TestResourcesApiDomainName:
     Type: AWS::ApiGateway::DomainName
     Properties:
       DomainName: !If
         - DevelopmentStack
         - !Sub
-          - sts-${AWS::StackName}.${DNS_RECORD}
+          - api-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
             - BaseDns
         - !Sub
-          - sts-mock.${DNS_RECORD}
+          - test-resources.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
@@ -56,42 +61,43 @@ Resources:
       RegionalCertificateArn: !If
         - DevelopmentStack
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
-        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneStsMockCertificateV2ARN}}'
+        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneTestResourcesCertificateV1ARN}}'
       SecurityPolicy: TLS_1_2
 
-  StsMockApiBasePathMapping:
+  TestResourcesApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
+    DependsOn: TestResourcesApiDomainName
     Properties:
       DomainName: !If
         - DevelopmentStack
         - !Sub
-          - sts-${AWS::StackName}.${DNS_RECORD}
+          - api-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
             - BaseDns
         - !Sub
-          - sts-mock.${DNS_RECORD}
+          - test-resources.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
             - BaseDns
-      RestApiId: !Ref StsMockApi
-      Stage: !Ref StsMockApi.Stage
+      RestApiId: !Ref TestResourcesApi
+      Stage: !Ref TestResourcesApi.Stage
 
-  StsMockApiRecordSet:
+  TestResourcesApiRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
       Name: !If
         - DevelopmentStack
         - !Sub
-          - sts-${AWS::StackName}.${DNS_RECORD}
+          - api-${AWS::StackName}.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
             - BaseDns
         - !Sub
-          - sts-mock.${DNS_RECORD}
+          - test-resources.${DNS_RECORD}
           - DNS_RECORD: !FindInMap
             - DNS
             - !Ref Environment
@@ -99,32 +105,5 @@ Resources:
       Type: A
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
       AliasTarget:
-        DNSName: !GetAtt StsMockApiDomainName.RegionalDomainName
-        HostedZoneId: !GetAtt StsMockApiDomainName.RegionalHostedZoneId
-
-  # Role to allow API Gateway to retrieve JWKS from S3
-  JwksBucketApiRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub ${AWS::StackName}-sts-mock-jwks-bucket-api
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action: sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service: apigateway.amazonaws.com
-        Version: 2012-10-17
-      Policies:
-        - PolicyName: JwksBucketPolicy
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
-                Resource:
-                  - !Sub ${JwksBucket.Arn}/.well-known/jwks.json
+        DNSName: !GetAtt TestResourcesApiDomainName.RegionalDomainName
+        HostedZoneId: !GetAtt TestResourcesApiDomainName.RegionalHostedZoneId

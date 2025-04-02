@@ -170,7 +170,7 @@ if [[ $deploy_cf_dist == true ]]; then
 
   sh ./generate_cf_dist_parameters.sh "${BACKEND_STACK_NAME}"
 
-  TEMPLATE_URL=$(sh get_template_versionid.sh cloudfront-distribution v2.1.0)
+  TEMPLATE_URL=$(sh get_template_versionid.sh cloudfront-distribution v2.2.0)
 
   CF_DIST_ARGS="--region eu-west-2"
   CF_DIST_ARGS="${CF_DIST_ARGS} --stack-name ${BACKEND_CF_DIST_STACK_NAME}"

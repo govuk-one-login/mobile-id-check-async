@@ -43,6 +43,9 @@ jq --null-input \
     "ParameterKey": "CloudFrontCertArn",
     "ParameterValue": $certificateArn
   },
+  { "ParameterKey": "EnableCustomErrorPages",
+    "ParameterValue": "false"
+  },
   {
     "ParameterKey": "FraudHeaderEnabled",
     "ParameterValue": "true"
