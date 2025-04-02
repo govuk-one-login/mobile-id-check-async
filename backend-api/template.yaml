@@ -714,6 +714,80 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
+  AsyncAbortSessionCompletionMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '{ ($.messageCode = *) && ($.functionVersion = *) }'
+      LogGroupName: !Ref AsyncAbortSessionLogGroup
+      MetricTransformations:
+        - Dimensions:
+            - Key: MessageCode
+              Value: $.messageCode
+            - Key: Version
+              Value: $.functionVersion
+          MetricName: AsyncAbortSessionMessageCode
+          MetricNamespace: !Sub ${AWS::StackName}/LogMessages
+          MetricValue: "1"
+    Condition: DeployAlarms
+
+  AsyncAbortSessionErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: The number of Async Abort Session Lambda errors is greater than or equal to 10% for the latest function version
+      AlarmName: !Sub ${AWS::StackName}-abort-session-lambda-error-rate
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      Metrics:
+        - Id: lambdaInvocations
+          Label: Sum of invocations for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Resource
+                  Value: !Sub ${AsyncAbortSessionFunction}:live
+                - Name: FunctionName
+                  Value: !Ref AsyncAbortSessionFunction
+                - Name: ExecutedVersion
+                  Value: !GetAtt AsyncAbortSessionFunction.Version.Version
+              MetricName: Invocations
+              Namespace: AWS/Lambda
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: lambdaErrors
+          Label: Sum of function errors for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: Resource
+                  Value: !Sub ${AsyncAbortSessionFunction}:live
+                - Name: FunctionName
+                  Value: !Ref AsyncAbortSessionFunction
+                - Name: ExecutedVersion
+                  Value: !GetAtt AsyncAbortSessionFunction.Version.Version
+              MetricName: Errors
+              Namespace: AWS/Lambda
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (lambdaErrors/lambdaInvocations)*100
+          Id: lambdaErrorPercentage
+          Label: Percentage of invocations that result in a function error
+          ReturnData: false
+        - Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage)
+          Id: lambdaErrorRate
+          Label: Error threshold calculation
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 10
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   AsyncAbortSessionFunction:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -727,6 +801,14 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
+      DeploymentPreference:
+        Alarms: !If
+          - UseCanaryDeployment
+          - - !Ref AsyncAbortSessionErrorRateAlarm
+            - !Ref AsyncAbortSessionLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Enabled: true
+        Type: !Ref LambdaDeploymentPreference
       Events:
         AsyncAbortSession:
           Properties:
@@ -810,6 +892,19 @@ Resources:
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
             Version: "2012-10-17"
           PolicyName: AsyncAbortSessionFunctionTxmaSQSPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - sqs:SendMessage
+                Effect: Allow
+                Resource: !GetAtt IPVCoreSQS.Arn
+              - Action:
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Effect: Allow
+                Resource: !GetAtt IPVCoreKMSEncryptionKey.Arn
+            Version: "2012-10-17"
+          PolicyName: AsyncAbortSessionFunctionIPVCoreSQSPolicy
       RoleName: !Sub ${AWS::StackName}-abort-session-lambda
 
   AsyncAbortSessionLogGroup:
@@ -817,6 +912,63 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-abort-session
       RetentionInDays: 30
+
+  AsyncAbortSessionLowCompletionAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncAbortSessionCompletionMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: A large proportion of Async Abort Session requests have not completed successfully.
+      AlarmName: !Sub ${AWS::StackName}-abort-session-lambda-low-completion
+      ComparisonOperator: LessThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      Metrics:
+        - Id: lambdaLogStarted
+          Label: Sum of MOBILE_ASYNC_ABORT_SESSION_STARTED messageCodes for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_ABORT_SESSION_STARTED
+                - Name: Version
+                  Value: !GetAtt AsyncAbortSessionFunction.Version.Version
+              MetricName: AsyncAbortSessionMessageCode
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: lambdaLogCompleted
+          Label: Sum of MOBILE_ASYNC_ABORT_SESSION_COMPLETED messageCodes for latest Lambda version
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_ABORT_SESSION_COMPLETED
+                - Name: Version
+                  Value: !GetAtt AsyncAbortSessionFunction.Version.Version
+              MetricName: AsyncAbortSessionMessageCode
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Expression: (lambdaLogCompleted/lambdaLogStarted)*100
+          Id: lambdaLogCompletePercentage
+          Label: Percentage of invocations that complete successfully
+          ReturnData: false
+        - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage)
+          Id: lowCompletionRateThreshold
+          Label: Error threshold calculation
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 60
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
 
   AsyncAbortSessionSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
@@ -1107,7 +1259,7 @@ Resources:
           MetricName: AsyncActiveSessionMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
-    Condition: UseCanaryDeployment
+    Condition: DeployAlarms
 
   AsyncActiveSessionErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -1165,7 +1317,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 10
       TreatMissingData: notBreaching
-    Condition: UseCanaryDeployment
+    Condition: DeployAlarms
 
   AsyncActiveSessionFunction:
     Type: AWS::Serverless::Function
@@ -1354,7 +1506,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 60
       TreatMissingData: notBreaching
-    Condition: UseCanaryDeployment
+    Condition: DeployAlarms
 
   AsyncActiveSessionSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
@@ -1645,7 +1797,7 @@ Resources:
           MetricName: AsyncBiometricTokenMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
-    Condition: UseCanaryDeployment
+    Condition: DeployAlarms
 
   AsyncBiometricTokenErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -1703,7 +1855,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 10
       TreatMissingData: notBreaching
-    Condition: UseCanaryDeployment
+    Condition: DeployAlarms
 
   AsyncBiometricTokenFunction:
     Type: AWS::Serverless::Function
@@ -1923,7 +2075,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 60
       TreatMissingData: notBreaching
-    Condition: UseCanaryDeployment
+    Condition: DeployAlarms
 
   AsyncBiometricTokenSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
@@ -2214,7 +2366,7 @@ Resources:
           MetricName: AsyncCredentialMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
-    Condition: UseCanaryDeployment
+    Condition: DeployAlarms
 
   AsyncCredentialErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2272,7 +2424,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 10
       TreatMissingData: notBreaching
-    Condition: UseCanaryDeployment
+    Condition: DeployAlarms
 
   AsyncCredentialFunction:
     Type: AWS::Serverless::Function
@@ -2483,7 +2635,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 60
       TreatMissingData: notBreaching
-    Condition: UseCanaryDeployment
+    Condition: DeployAlarms
 
   AsyncCredentialSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
@@ -2774,7 +2926,7 @@ Resources:
           MetricName: AsyncFinishBiometricSessionMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
-    Condition: UseCanaryDeployment
+    Condition: DeployAlarms
 
   AsyncFinishBiometricSessionErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2832,7 +2984,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 10
       TreatMissingData: notBreaching
-    Condition: UseCanaryDeployment
+    Condition: DeployAlarms
 
   AsyncFinishBiometricSessionFunction:
     Type: AWS::Serverless::Function
@@ -3014,7 +3166,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 60
       TreatMissingData: notBreaching
-    Condition: UseCanaryDeployment
+    Condition: DeployAlarms
 
   AsyncFinishBiometricSessionSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
@@ -3058,6 +3210,38 @@ Resources:
           - !ImportValue devplatform-vpc-ProtectedSubnetIdA
           - !ImportValue devplatform-vpc-ProtectedSubnetIdB
           - !ImportValue devplatform-vpc-ProtectedSubnetIdC
+
+  AsyncIssueBiometricCredentialInvalidSqsEventAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncIssueBiometricCredentialMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Fires when a log event with messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT is detected. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - CriticalAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda-invalid-sqs-event
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: MessageCode
+          Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: AsyncIssueBiometricCredentialMessageCode
+      Namespace: !Sub ${AWS::StackName}/LogMessages
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Sum
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
 
   AsyncIssueBiometricCredentialLambdaRole:
     Type: AWS::IAM::Role
@@ -3120,6 +3304,20 @@ Resources:
     Properties:
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-issue-biometric-credential
       RetentionInDays: 30
+
+  AsyncIssueBiometricCredentialMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '{ $.messageCode = * }'
+      LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
+      MetricTransformations:
+        - Dimensions:
+            - Key: MessageCode
+              Value: $.messageCode
+          MetricName: AsyncIssueBiometricCredentialMessageCode
+          MetricNamespace: !Sub ${AWS::StackName}/LogMessages
+          MetricValue: "1"
+    Condition: DeployAlarms
 
   AsyncIssueBiometricCredentialSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter
@@ -3427,7 +3625,7 @@ Resources:
           MetricName: AsyncTokenMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
-    Condition: UseCanaryDeployment
+    Condition: DeployAlarms
 
   AsyncTokenErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -3485,7 +3683,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 10
       TreatMissingData: notBreaching
-    Condition: UseCanaryDeployment
+    Condition: DeployAlarms
 
   AsyncTokenFunction:
     Type: AWS::Serverless::Function
@@ -3669,7 +3867,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 60
       TreatMissingData: notBreaching
-    Condition: UseCanaryDeployment
+    Condition: DeployAlarms
 
   AsyncTokenSubscriptionFilter:
     Type: AWS::Logs::SubscriptionFilter

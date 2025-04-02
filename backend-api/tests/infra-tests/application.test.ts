@@ -240,6 +240,7 @@ describe("Backend application infrastructure", () => {
         "high-threshold-async-abort-session-4xx-api-gw": false,
         "high-threshold-vendor-processing-dlq-age-of-oldest-message": false,
         "high-threshold-ipv-core-dlq-age-of-oldest-message": false,
+        "issue-biometric-credential-lambda-invalid-sqs-event": false,
       };
 
       const alarms = template.findResources("AWS::CloudWatch::Alarm");
@@ -320,6 +321,7 @@ describe("Backend application infrastructure", () => {
         ["ipv-core-sqs-age-of-oldest-message"],
         ["ipv-core-dlq-message-visible"],
         ["low-threshold-ipv-core-dlq-age-of-oldest-message"],
+        ["issue-biometric-credential-lambda-invalid-sqs-event"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
@@ -1075,7 +1077,6 @@ describe("Backend application infrastructure", () => {
       "AsyncTxmaEventFunction",
       "JsonWebKeysFunction",
       "ProxyLambda",
-      "AsyncAbortSessionFunction",
       "AsyncIssueBiometricCredentialFunction",
     ];
 

@@ -25,6 +25,14 @@ Resources:
             Method: post
             RestApiId: !Ref SessionsApi
       Role: !GetAtt AsyncAbortSessionLambdaRole.Arn
+      DeploymentPreference:
+        Enabled: true
+        Alarms: !If
+          - UseCanaryDeployment
+          - - !Ref AsyncAbortSessionErrorRateAlarm        
+            - !Ref AsyncAbortSessionLowCompletionAlarm
+          - - !Ref AWS::NoValue
+        Type: !Ref LambdaDeploymentPreference
       VpcConfig:
         SubnetIds:
           - !ImportValue devplatform-vpc-PrivateSubnetIdA
@@ -109,6 +117,19 @@ Resources:
                   - kms:Decrypt
                   - kms:GenerateDataKey
                 Resource: !GetAtt TxMAKMSEncryptionKey.Arn
+        - PolicyName: AsyncAbortSessionFunctionIPVCoreSQSPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                Resource: !GetAtt IPVCoreSQS.Arn
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Resource: !GetAtt IPVCoreKMSEncryptionKey.Arn
                 
       PermissionsBoundary: !If
         - UsePermissionsBoundary

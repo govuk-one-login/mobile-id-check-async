@@ -1,7 +1,7 @@
 import { SessionState } from "../common/session/session";
 import { SessionRegistry } from "../common/session/SessionRegistry";
 import { IEventService } from "../services/events/types";
-import { emptySuccess } from "../utils/result";
+import { emptyFailure, emptySuccess, errorResult } from "../utils/result";
 
 export const mockSessionId = "58f4281d-d988-49ce-9586-6ef70a2be0b4";
 export const mockBiometricSessionId = "f32432a9-0965-4da9-8a2c-a98a79349d4a";
@@ -118,6 +118,10 @@ export const mockWriteGenericEventSuccessResult = jest
   .fn()
   .mockResolvedValue(emptySuccess());
 
+export const mockWriteGenericEventFailureResult = jest
+  .fn()
+  .mockResolvedValue(errorResult(new Error("Failed to write event")));
+
 export const mockWriteBiometricTokenIssuedEventSuccessResult = jest
   .fn()
   .mockResolvedValue(emptySuccess());
@@ -128,3 +132,16 @@ export const mockSuccessfulEventService = {
   writeBiometricTokenIssuedEvent:
     mockWriteBiometricTokenIssuedEventSuccessResult,
 };
+
+export const mockFailingEventService = {
+  ...mockInertEventService,
+  writeGenericEvent: mockWriteGenericEventFailureResult,
+};
+
+export const mockSuccessfulSendMessageToSqs = jest
+  .fn()
+  .mockResolvedValue(emptySuccess());
+
+export const mockFailingSendMessageToSqs = jest
+  .fn()
+  .mockResolvedValue(emptyFailure());
