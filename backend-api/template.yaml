@@ -3074,7 +3074,7 @@ Resources:
             - urls
             - CriticalAlarmsRunbook
       AlarmName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda-invalid-sqs-event
-      ComparisonOperator: GreaterThanThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
       Dimensions:
         - Name: MessageCode
@@ -3087,7 +3087,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Period: 60
       Statistic: Sum
-      Threshold: 0
+      Threshold: 1
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
