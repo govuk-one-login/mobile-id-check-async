@@ -435,15 +435,9 @@ describe("Async Abort Session", () => {
     });
   });
 
-  describe("Given sending message to IPVCore Outbound queue fails", () => {
-    describe("Given sending DCMAW_ASYNC_CRI_5XXERROR event also fails", () => {
+  describe("Sending message to IPVCore Outbound queue", () => {
+    describe("Given sending message to IPVCore Outbound queue succeeds", () => {
       beforeEach(async () => {
-        dependencies = {
-          ...dependencies,
-          sendMessageToSqs: mockFailingSendMessageToSqs,
-          getEventService: () => mockFailingEventService,
-        };
-
         result = await lambdaHandlerConstructor(
           dependencies,
           validRequest,
@@ -451,61 +445,92 @@ describe("Async Abort Session", () => {
         );
       });
 
-      it("Logs the DCMAW_ASYNC_CRI_5XXERROR event failure", () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-          data: {
-            auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+      it("Sends the correct message format to the IPVCore Outbound queue", () => {
+        expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
+          "mockIpvcoreOutboundSqs",
+          {
+            sub: "mockSubjectIdentifier",
+            state: "mockClientState",
+            error: "access_denied",
+            error_description: "User aborted the session",
           },
-        });
-      });
-
-      it("Returns 500 Internal server error", () => {
-        expect(result).toStrictEqual({
-          statusCode: 500,
-          body: JSON.stringify({
-            error: "server_error",
-            error_description: "Internal Server Error",
-          }),
-          headers: expectedSecurityHeaders,
-        });
+        );
       });
     });
 
-    describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully writes to TxMA", () => {
-      beforeEach(async () => {
-        dependencies = {
-          ...dependencies,
-          sendMessageToSqs: mockFailingSendMessageToSqs,
-        };
-        result = await lambdaHandlerConstructor(
-          dependencies,
-          validRequest,
-          context,
-        );
-      });
+    describe("Given sending message to IPVCore Outbound queue fails", () => {
+      describe("Given sending DCMAW_ASYNC_CRI_5XXERROR event also fails", () => {
+        beforeEach(async () => {
+          dependencies = {
+            ...dependencies,
+            sendMessageToSqs: mockFailingSendMessageToSqs,
+            getEventService: () => mockFailingEventService,
+          };
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
 
-      it("Writes DCMAW_ASYNC_CRI_5XXERROR event", () => {
-        expect(mockWriteGenericEventSuccess).toBeCalledWith({
-          eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-          componentId: "mockIssuer",
-          getNowInMilliseconds: Date.now,
-          govukSigninJourneyId: "mockGovukSigninJourneyId",
-          sessionId: mockSessionId,
-          sub: "mockSubjectIdentifier",
-          ipAddress: "1.1.1.1",
-          txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
+        it("Logs the DCMAW_ASYNC_CRI_5XXERROR event failure", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+            data: {
+              auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+            },
+          });
+        });
+
+        it("Returns 500 Internal server error", () => {
+          expect(result).toStrictEqual({
+            statusCode: 500,
+            body: JSON.stringify({
+              error: "server_error",
+              error_description: "Internal Server Error",
+            }),
+            headers: expectedSecurityHeaders,
+          });
         });
       });
 
-      it("Returns 500 Internal server error", () => {
-        expect(result).toStrictEqual({
-          statusCode: 500,
-          body: JSON.stringify({
-            error: "server_error",
-            error_description: "Internal Server Error",
-          }),
-          headers: expectedSecurityHeaders,
+      describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully writes to TxMA", () => {
+        beforeEach(async () => {
+          dependencies = {
+            ...dependencies,
+            sendMessageToSqs: mockFailingSendMessageToSqs,
+          };
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+
+        it("Writes DCMAW_ASYNC_CRI_5XXERROR event", () => {
+          expect(mockWriteGenericEventSuccess).toBeCalledWith({
+            eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+            componentId: "mockIssuer",
+            getNowInMilliseconds: Date.now,
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            sessionId: mockSessionId,
+            sub: "mockSubjectIdentifier",
+            ipAddress: "1.1.1.1",
+            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
+            redirect_uri: undefined,
+            suspected_fraud_signal: undefined,
+          });
+        });
+
+        it("Returns 500 Internal server error", () => {
+          expect(result).toStrictEqual({
+            statusCode: 500,
+            body: JSON.stringify({
+              error: "server_error",
+              error_description: "Internal Server Error",
+            }),
+            headers: expectedSecurityHeaders,
+          });
         });
       });
     });
