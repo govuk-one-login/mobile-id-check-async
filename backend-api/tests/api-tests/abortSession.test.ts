@@ -70,20 +70,20 @@ describe("POST /async/abortSession", () => {
         sessionId,
       });
 
-      // eventsResponse = await pollForEvents({
-      //   partitionKey: `SESSION#${sessionId}`,
-      //   sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_ABORT_APP`,
-      //   numberOfEvents: 1,
-      // });
+      eventsResponse = await pollForEvents({
+        partitionKey: `SESSION#${sessionId}`,
+        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_ABORT_APP`,
+        numberOfEvents: 1,
+      });
     }, 40000);
 
     it("Writes DCMAW_ASYNC_ABORT_APP TxMA event", () => {
-      //console.log("eventsResponse", eventsResponse);
-      // expect(eventsResponse[0].event).toEqual(
-      //   expect.objectContaining({
-      //     event_name: "DCMAW_ASYNC_ABORT_APP",
-      //   })
-      // );
+      console.log("eventsResponse", eventsResponse);
+      expect(eventsResponse[0].event).toEqual(
+        expect.objectContaining({
+          event_name: "DCMAW_ASYNC_ABORT_APP",
+        }),
+      );
     });
 
     it("Returns 501 response", () => {
