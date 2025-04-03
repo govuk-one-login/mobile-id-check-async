@@ -58,6 +58,14 @@ export class LogMessage implements LogAttributes {
   );
 
   // Dequeue credential result
+  static readonly DEQUEUE_CREDENTIAL_RESULT_STARTED = new LogMessage(
+    "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_STARTED",
+    "Lambda handler processing has started.",
+  );
+  static readonly DEQUEUE_CREDENTIAL_RESULT_COMPLETED = new LogMessage(
+    "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
+    "Lambda handler processing has completed successfully.",
+  );
 
   // Put session
   static readonly PUT_SESSION_STARTED = new LogMessage(

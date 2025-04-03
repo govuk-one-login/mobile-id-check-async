@@ -1,15 +1,17 @@
 import { Context, SQSEvent } from "aws-lambda";
 import { logger } from "../common/logging/logger";
+import { setupLogger } from "../common/logging/setupLogger";
+import { LogMessage } from "../common/logging/LogMessage";
 
 export const lambdaHandlerConstructor = async (
   _dependencies: IDequeueCredentialResultDependencies,
   _event: SQSEvent,
   context: Context,
 ): Promise<void> => {
-  logger.addContext(context);
-  logger.info("STARTED");
+  setupLogger(context);
+  logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_STARTED);
 
-  logger.info("COMPLETED");
+  logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_COMPLETED);
 };
 
 export interface IDequeueCredentialResultDependencies {

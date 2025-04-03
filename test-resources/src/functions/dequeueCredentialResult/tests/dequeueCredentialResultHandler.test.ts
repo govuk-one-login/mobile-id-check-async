@@ -1,7 +1,7 @@
 import { expect } from "@jest/globals";
 import { SQSEvent } from "aws-lambda";
 import "aws-sdk-client-mock-jest";
-import { NOW_IN_MILLISECONDS } from "../../../../tests/utils/unitTestData";
+import { NOW_IN_MILLISECONDS } from "../../dequeue/tests/testData";
 import "../../testUtils/matchers";
 import { buildLambdaContext } from "../../testUtils/mockContext";
 import {
@@ -43,13 +43,13 @@ describe("Dequeue credential result", () => {
 
       it("Logs STARTED", async () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-          message: "STARTED",
+          messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_STARTED",
         });
       });
 
       it("Logs COMPLETED", async () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-          message: "COMPLETED",
+          messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
         });
       });
     });
