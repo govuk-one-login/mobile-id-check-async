@@ -22,8 +22,7 @@ Resources:
             Path: /sessions/{sessionId}
             Method: put
             RestApiId: !Ref TestResourcesApi
-      FunctionName: !Sub ${AWS::StackName}-sessions
-      Runtime: nodejs20.x
+      FunctionName: !Sub ${AWS::StackName}-sessions      
       Handler: putSessionHandler.lambdaHandler
       Timeout: 5
       Role: !GetAtt PutSessionFunctionRole.Arn
