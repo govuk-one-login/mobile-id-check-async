@@ -75,7 +75,7 @@ describe("POST /async/abortSession", () => {
       //   sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_ABORT_APP`,
       //   numberOfEvents: 1,
       // });
-    }, 400000);
+    }, 40000);
 
     it("Writes DCMAW_ASYNC_ABORT_APP TxMA event", () => {
       //console.log("eventsResponse", eventsResponse);

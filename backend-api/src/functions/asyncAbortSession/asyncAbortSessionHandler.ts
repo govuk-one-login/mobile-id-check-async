@@ -104,23 +104,14 @@ export async function lambdaHandlerConstructor(
     govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
     componentId: config.ISSUER,
     getNowInMilliseconds: Date.now,
-    transactionId: "biometricSessionId",
     redirect_uri: sessionAttributes.redirectUri,
     suspected_fraud_signal: undefined,
     ipAddress,
     txmaAuditEncoded,
   };
 
-  logger.debug("Writing DCMAW_ASYNC_ABORT_APP TxMA event", {
-    data: eventMessage,
-  });
-
   const writeAbortAppEventResult =
     await eventService.writeGenericEvent(eventMessage);
-  logger.debug(
-    "DCMAW_ASYNC_ABORT_APP TxMA event written: writeAbortAppEventResult",
-    { data: writeAbortAppEventResult },
-  );
   if (writeAbortAppEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: {
@@ -129,8 +120,6 @@ export async function lambdaHandlerConstructor(
     });
     return serverErrorResponse;
   }
-
-  logger.debug("Abort app event successfully written");
 
   logger.info(LogMessage.ABORT_SESSION_COMPLETED);
   return notImplementedResponse;
