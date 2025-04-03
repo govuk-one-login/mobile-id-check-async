@@ -26,6 +26,13 @@ Resources:
                 - !Ref Environment
                 - IpvCoreVpceId
               - Ref: "AWS::NoValue"
+            - !If
+              - IntegratePerfTesters
+              - !FindInMap
+                - PrivateApigw
+                - !Ref Environment
+                - PerfTestersVpceId
+              - Ref: "AWS::NoValue"
       StageName: !Ref Environment
       OpenApiVersion: 3.0.1
       AccessLogSetting:

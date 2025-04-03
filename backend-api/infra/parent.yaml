@@ -81,22 +81,27 @@ Mappings:
       ApiBurstLimit: 10
       ApiRateLimit: 10
       IpvCoreVpceId: ""
+      PerfTestersVpceId: ""
     build:
       ApiBurstLimit: 10
       ApiRateLimit: 10
       IpvCoreVpceId: ""
+      PerfTestersVpceId: "vpce-020200542ce4b4773"
     staging:
       ApiBurstLimit: 10
       ApiRateLimit: 10
       IpvCoreVpceId: "vpce-0cc0de10742b83b8a"
+      PerfTestersVpceId: ""
     integration:
       ApiBurstLimit: 0
       ApiRateLimit: 0
       IpvCoreVpceId: ""
+      PerfTestersVpceId: ""
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
       IpvCoreVpceId: ""
+      PerfTestersVpceId: ""
 
   SessionsApigw:
     dev:
@@ -343,6 +348,10 @@ Conditions:
   IntegrateIpvCore: !Equals
       - !Ref Environment
       - staging
+
+  IntegratePerfTesters: !Equals
+      - !Ref Environment
+      - build
 
   DeployProxyCsls: !And
     - Condition: ProxyApiDeployment
