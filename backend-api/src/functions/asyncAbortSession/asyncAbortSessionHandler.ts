@@ -21,7 +21,6 @@ import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
 import { handleUpdateSessionError } from "../common/errors/errorHandlers";
 import { AuthSessionAbortedAttributes } from "../common/session/session";
-import { GenericEventConfig, IEventService } from "../services/events/types";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncAbortSessionDependencies,
@@ -97,7 +96,7 @@ export async function lambdaHandlerConstructor(
     });
   }
 
-  const eventMessage: GenericEventConfig = {
+  const writeAbortAppEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_ABORT_APP",
     sub: sessionAttributes.subjectIdentifier,
     sessionId: sessionAttributes.sessionId,
@@ -108,10 +107,7 @@ export async function lambdaHandlerConstructor(
     suspected_fraud_signal: undefined,
     ipAddress,
     txmaAuditEncoded,
-  };
-
-  const writeAbortAppEventResult =
-    await eventService.writeGenericEvent(eventMessage);
+  });
   if (writeAbortAppEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: {
