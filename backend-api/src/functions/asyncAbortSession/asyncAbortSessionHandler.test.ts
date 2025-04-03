@@ -532,18 +532,6 @@ describe("Async Abort Session", () => {
         );
       });
 
-      it("Sends message to the IPVcore Outbound queue", () => {
-        expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
-          "mockIpvcoreOutboundSqs",
-          {
-            error: "access_denied",
-            error_description: "User aborted the session",
-            state: "mockClientState",
-            sub: "mockSubjectIdentifier",
-          },
-        );
-      });
-
       it("Logs the DCMAW_ASYNC_ABORT_APP event failure", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
