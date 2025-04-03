@@ -205,22 +205,27 @@ Mappings:
       ApiBurstLimit: 10
       ApiRateLimit: 10
       IpvCoreVpceId: ""
+      PerfTestersVpceId: vpce-020200542ce4b4773
     dev:
       ApiBurstLimit: 10
       ApiRateLimit: 10
       IpvCoreVpceId: ""
+      PerfTestersVpceId: ""
     integration:
       ApiBurstLimit: 0
       ApiRateLimit: 0
       IpvCoreVpceId: ""
+      PerfTestersVpceId: ""
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
       IpvCoreVpceId: ""
+      PerfTestersVpceId: ""
     staging:
       ApiBurstLimit: 10
       ApiRateLimit: 10
       IpvCoreVpceId: vpce-0cc0de10742b83b8a
+      PerfTestersVpceId: ""
 
   ProxyApigw:
     build:
@@ -299,6 +304,10 @@ Conditions:
   IntegrateIpvCore: !Equals
     - !Ref Environment
     - staging
+
+  IntegratePerfTesters: !Equals
+    - !Ref Environment
+    - build
 
   IsDevOrBuild: !Or
     - !Equals
@@ -5007,6 +5016,13 @@ Resources:
                 - PrivateApigw
                 - !Ref Environment
                 - IpvCoreVpceId
+              - !Ref AWS::NoValue
+            - !If
+              - IntegratePerfTesters
+              - !FindInMap
+                - PrivateApigw
+                - !Ref Environment
+                - PerfTestersVpceId
               - !Ref AWS::NoValue
       DefinitionBody:
         Fn::Transform:
