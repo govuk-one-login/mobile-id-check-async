@@ -547,7 +547,6 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-sessions
       Handler: putSessionHandler.lambdaHandler
       Role: !GetAtt PutSessionFunctionRole.Arn
-      Runtime: nodejs20.x
       Timeout: 5
       VpcConfig:
         SecurityGroupIds:
