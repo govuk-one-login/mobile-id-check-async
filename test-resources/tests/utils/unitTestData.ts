@@ -1,1 +1,0 @@
-export const NOW_IN_MILLISECONDS: number = 1704110400000; // 2025-01-01 12:00:00.000
