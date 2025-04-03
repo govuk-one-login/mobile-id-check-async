@@ -12,7 +12,6 @@ import {
   RestrictedData,
   TxmaEvents,
 } from "./types";
-import { logger } from "../../common/logging/logger";
 
 export class EventService implements IEventService {
   private sqsQueue: string;
