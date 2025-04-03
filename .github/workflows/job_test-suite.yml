@@ -3,6 +3,10 @@ name: Run Test Suite
 on:
   workflow_call:
     inputs:
+      RUN_INFRA_TESTS:
+        description: Whether to run infra tests using `test:infra` npm script
+        type: string
+        default: true
       RUN_SONARQUBE:
         description: Whether to run SonarQube checks. Needs RUN_UNIT_TESTS to be true.
         type: string
@@ -53,4 +57,5 @@ jobs:
           retention-days: 1
 
       - name: Run infra tests
+        if: inputs.RUN_INFRA_TESTS == 'true'
         run: npm run test:infra
