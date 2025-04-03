@@ -262,6 +262,8 @@ describe("Async Finish Biometric Session", () => {
             sessionId: mockSessionId,
             sub: undefined,
             transactionId: mockBiometricSessionId,
+            ipAddress: "1.1.1.1",
+            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
           });
           expect(result.statusCode).toBe(401);
         });
@@ -302,6 +304,8 @@ describe("Async Finish Biometric Session", () => {
             sub: expiredSessionAttributes.subjectIdentifier,
             transactionId: mockBiometricSessionId,
             suspected_fraud_signal: "AUTH_SESSION_TOO_OLD",
+            ipAddress: "1.1.1.1",
+            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
           });
           expect(result.statusCode).toBe(403);
         });
@@ -340,6 +344,8 @@ describe("Async Finish Biometric Session", () => {
             sub: validSessionAttributes.subjectIdentifier,
             transactionId: mockBiometricSessionId,
             extensions: undefined,
+            ipAddress: "1.1.1.1",
+            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
           });
           expect(result.statusCode).toBe(401);
         });
@@ -439,6 +445,8 @@ describe("Async Finish Biometric Session", () => {
             sessionId: mockSessionId,
             sub: undefined,
             transactionId: mockBiometricSessionId,
+            ipAddress: "1.1.1.1",
+            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
           });
           expect(result.statusCode).toBe(500);
         });
