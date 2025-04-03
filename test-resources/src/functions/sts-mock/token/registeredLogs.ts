@@ -1,8 +1,8 @@
 import {
   CommonMessageNames,
   commonMessages,
-} from "../../services/logging/commonRegisteredLogs";
-import { RegisteredLogMessages } from "../../services/logging/types";
+} from "../../services/logging-OLD/commonRegisteredLogs";
+import { RegisteredLogMessages } from "../../services/logging-OLD/types";
 
 export type MessageName =
   | CommonMessageNames

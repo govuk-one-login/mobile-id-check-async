@@ -1,29 +1,35 @@
-import { Logger } from "../../../services/logging/logger";
-import { MockLoggingAdapter } from "../../../services/logging/tests/mockLoggingAdapter";
+import { expect } from "@jest/globals";
+import { APIGatewayProxyEvent, Context } from "aws-lambda";
+import { logger } from "../../../common/logging/logger";
+import { Logger } from "../../../services/logging-OLD/logger";
+import { MockLoggingAdapter } from "../../../services/logging-OLD/tests/mockLoggingAdapter";
+import "../../../testUtils/matchers";
 import { buildLambdaContext } from "../../../testUtils/mockContext";
-import { MessageName, registeredLogs } from "../registeredLogs";
-import { lambdaHandlerConstructor } from "../tokenHandler";
-import { APIGatewayProxyEvent } from "aws-lambda";
-import { TokenDependencies } from "../handlerDependencies";
 import { buildRequest } from "../../../testUtils/mockRequest";
-import {
-  MockTokenSignerErrorResult,
-  MockTokenSignerSuccessResult,
-} from "../tokenSigner/tests/mocks";
+import { TokenDependencies } from "../handlerDependencies";
 import {
   MockKeyRetrieverErrorResult,
   MockKeyRetrieverSuccessResult,
 } from "../keyRetriever/tests/mocks";
-import { validateServiceTokenRequest } from "../validateServiceTokenRequest/validateServiceTokenRequest";
+import { MessageName, registeredLogs } from "../registeredLogs";
 import {
   MockTokenEncrypterErrorResult,
   MockTokenEncrypterSuccessResult,
 } from "../tokenEncrypter/tests/mocks";
+import { lambdaHandlerConstructor } from "../tokenHandler";
+import {
+  MockTokenSignerErrorResult,
+  MockTokenSignerSuccessResult,
+} from "../tokenSigner/tests/mocks";
+import { validateServiceTokenRequest } from "../validateServiceTokenRequest/validateServiceTokenRequest";
 
 describe("Token Handler", () => {
   let mockLoggingAdapter: MockLoggingAdapter<MessageName>;
   let event: APIGatewayProxyEvent;
   let dependencies: TokenDependencies;
+  let context: Context;
+  let consoleInfoSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpyInstance;
 
   const env = {
     STS_MOCK_BASE_URL: "dummyStsMocksBaseUrl",
@@ -44,11 +50,34 @@ describe("Token Handler", () => {
       keyRetriever: () => new MockKeyRetrieverSuccessResult(),
       tokenEncrypter: () => new MockTokenEncrypterSuccessResult(),
     };
+    context = buildLambdaContext();
+    consoleInfoSpy = jest.spyOn(console, "info");
+    consoleErrorSpy = jest.spyOn(console, "error");
+  });
+
+  describe("On every invocation", () => {
+    beforeEach(async () => {
+      await lambdaHandlerConstructor(dependencies, event, context);
+    });
+    it("Adds context and version to log attributes and logs STARTED message", () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "TEST_RESOURCES_STS_MOCK_STARTED",
+        functionVersion: "1",
+        function_arn: "arn:12345", // example field to verify that context has been added
+      });
+    });
+    it("Clears pre-existing log attributes", async () => {
+      logger.appendKeys({ testKey: "testValue" });
+      await lambdaHandlerConstructor(dependencies, event, context);
+      expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+        testKey: "testValue",
+      });
+    });
   });
 
   describe("Environment variable validation", () => {
     describe.each(Object.keys(env))("Given %s is missing", (envVar: string) => {
-      it("Logs ENVIRONMENT_VARIABLE_MISSING and returns 500 Server Error", async () => {
+      it("Logs INVALID_CONFIG and returns 500 Server Error", async () => {
         dependencies.env = JSON.parse(JSON.stringify(env));
         delete dependencies.env[envVar];
 
@@ -58,10 +87,10 @@ describe("Token Handler", () => {
           buildLambdaContext(),
         );
 
-        expect(
-          mockLoggingAdapter.getLogMessages()[1].logMessage.message,
-        ).toStrictEqual("ENVIRONMENT_VARIABLE_MISSING");
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "TEST_RESOURCES_STS_MOCK_INVALID_CONFIG",
+        });
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           errorMessage: `No ${envVar}`,
         });
         expect(result.statusCode).toStrictEqual(500);
@@ -83,13 +112,10 @@ describe("Token Handler", () => {
           buildLambdaContext(),
         );
 
-        expect(
-          mockLoggingAdapter.getLogMessages()[0].logMessage.message,
-        ).toStrictEqual("STARTED");
-        expect(
-          mockLoggingAdapter.getLogMessages()[1].logMessage.message,
-        ).toStrictEqual("INVALID_REQUEST");
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "TEST_RESOURCES_STS_MOCK_REQUEST_BODY_INVALID",
+        });
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           errorMessage: "Missing request body",
         });
         expect(result.statusCode).toStrictEqual(400);
@@ -119,7 +145,7 @@ describe("Token Handler", () => {
     ])(
       "Given the request body is missing the param '%s'",
       (param: string, body: string) => {
-        it("Logs INVALID_REQUEST and returns 400 Bad Request", async () => {
+        it("Logs REQUEST_BODY_INVALID and returns 400 Bad Request", async () => {
           event = buildRequest({ body });
 
           const result = await lambdaHandlerConstructor(
@@ -128,13 +154,10 @@ describe("Token Handler", () => {
             buildLambdaContext(),
           );
 
-          expect(
-            mockLoggingAdapter.getLogMessages()[0].logMessage.message,
-          ).toStrictEqual("STARTED");
-          expect(
-            mockLoggingAdapter.getLogMessages()[1].logMessage.message,
-          ).toStrictEqual("INVALID_REQUEST");
-          expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "TEST_RESOURCES_STS_MOCK_REQUEST_BODY_INVALID",
+          });
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             errorMessage: `Missing ${param}`,
           });
           expect(result.statusCode).toStrictEqual(400);
@@ -161,7 +184,7 @@ describe("Token Handler", () => {
     ])(
       "Given the value of the '%s' param is invalid/not supported",
       (param: string, body: string) => {
-        it("Logs INVALID_REQUEST and returns 400 Bad Request", async () => {
+        it("Logs REQUEST_BODY_INVALID and returns 400 Bad Request", async () => {
           event = buildRequest({ body });
 
           const result = await lambdaHandlerConstructor(
@@ -170,13 +193,10 @@ describe("Token Handler", () => {
             buildLambdaContext(),
           );
 
-          expect(
-            mockLoggingAdapter.getLogMessages()[0].logMessage.message,
-          ).toStrictEqual("STARTED");
-          expect(
-            mockLoggingAdapter.getLogMessages()[1].logMessage.message,
-          ).toStrictEqual("INVALID_REQUEST");
-          expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "TEST_RESOURCES_STS_MOCK_REQUEST_BODY_INVALID",
+          });
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             errorMessage: `Unsupported ${param}`,
           });
           expect(result.statusCode).toStrictEqual(400);
@@ -199,13 +219,10 @@ describe("Token Handler", () => {
           buildLambdaContext(),
         );
 
-        expect(
-          mockLoggingAdapter.getLogMessages()[0].logMessage.message,
-        ).toStrictEqual("STARTED");
-        expect(
-          mockLoggingAdapter.getLogMessages()[1].logMessage.message,
-        ).toStrictEqual("INTERNAL_SERVER_ERROR");
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "TEST_RESOURCES_STS_MOCK_FAILURE_RETRIEVING_SIGNING_KEY",
+        });
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           errorMessage: "Some S3 error",
         });
         expect(result.statusCode).toStrictEqual(500);
@@ -227,13 +244,10 @@ describe("Token Handler", () => {
           buildLambdaContext(),
         );
 
-        expect(
-          mockLoggingAdapter.getLogMessages()[0].logMessage.message,
-        ).toStrictEqual("STARTED");
-        expect(
-          mockLoggingAdapter.getLogMessages()[1].logMessage.message,
-        ).toStrictEqual("INTERNAL_SERVER_ERROR");
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "TEST_RESOURCES_STS_MOCK_FAILURE_SIGNING_TOKEN",
+        });
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           errorMessage: "Some signing error",
         });
         expect(result.statusCode).toStrictEqual(500);
@@ -255,13 +269,10 @@ describe("Token Handler", () => {
           buildLambdaContext(),
         );
 
-        expect(
-          mockLoggingAdapter.getLogMessages()[0].logMessage.message,
-        ).toStrictEqual("STARTED");
-        expect(
-          mockLoggingAdapter.getLogMessages()[1].logMessage.message,
-        ).toStrictEqual("INTERNAL_SERVER_ERROR");
-        expect(mockLoggingAdapter.getLogMessages()[1].data).toStrictEqual({
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "TEST_RESOURCES_STS_MOCK_FAILURE_ENCRYPTING_TOKEN",
+        });
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           errorMessage: "Some error encrypting token",
         });
         expect(result.statusCode).toStrictEqual(500);
@@ -281,12 +292,9 @@ describe("Token Handler", () => {
           buildLambdaContext(),
         );
 
-        expect(
-          mockLoggingAdapter.getLogMessages()[0].logMessage.message,
-        ).toStrictEqual("STARTED");
-        expect(
-          mockLoggingAdapter.getLogMessages()[1].logMessage.message,
-        ).toStrictEqual("COMPLETED");
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "TEST_RESOURCES_STS_MOCK_COMPLETED",
+        });
         expect(result).toStrictEqual({
           headers: {
             "Content-Type": "application/json",

@@ -1,6 +1,41 @@
 import { LogAttributes } from "@aws-lambda-powertools/logger/types";
 
 export class LogMessage implements LogAttributes {
+  // STS mock
+  static readonly STS_MOCK_STARTED = new LogMessage(
+    "TEST_RESOURCES_STS_MOCK_STARTED",
+    "Lambda handler processing has started.",
+  );
+  static readonly STS_MOCK_INVALID_CONFIG = new LogMessage(
+    "TEST_RESOURCES_STS_MOCK_INVALID_CONFIG",
+    "One or more required environment variables were missing or invalid.",
+  );
+  static readonly STS_MOCK_REQUEST_BODY_INVALID = new LogMessage(
+    "TEST_RESOURCES_STS_MOCK_REQUEST_BODY_INVALID",
+    "The incoming request body was missing or invalid.",
+  );
+  static readonly STS_MOCK_FAILURE_RETRIEVING_SIGNING_KEY = new LogMessage(
+    "TEST_RESOURCES_STS_MOCK_FAILURE_RETRIEVING_SIGNING_KEY",
+    "An unexpected failure occurred while trying to retrieve the signing key from S3.",
+  );
+  static readonly STS_MOCK_FAILURE_SIGNING_TOKEN = new LogMessage(
+    "TEST_RESOURCES_STS_MOCK_FAILURE_SIGNING_TOKEN",
+    "An unexpected failure occurred while trying to sign the token.",
+  );
+  static readonly STS_MOCK_FAILURE_ENCRYPTING_TOKEN = new LogMessage(
+    "TEST_RESOURCES_STS_MOCK_FAILURE_ENCRYPTING_TOKEN",
+    "An unexpected failure occurred while trying encrypt the token.",
+  );
+  static readonly STS_MOCK_COMPLETED = new LogMessage(
+    "TEST_RESOURCES_STS_MOCK_COMPLETED",
+    "Lambda handler processing has completed successfully.",
+  );
+
+  // Dequeue Events
+
+  // Dequeue credential result
+
+  // Put session
   static readonly PUT_SESSION_STARTED = new LogMessage(
     "MOBILE_ASYNC_PUT_SESSION_STARTED",
     "Test sessions lambda started.",

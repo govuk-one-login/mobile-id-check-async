@@ -13,7 +13,7 @@ import {
   SQSEvent,
   SQSRecord,
 } from "aws-lambda";
-import { Logger } from "../services/logging/logger";
+import { Logger } from "../services/logging-OLD/logger";
 import { getConfig } from "./getConfig";
 import { allowedTxmaEventNames, getEvent, TxmaEvent } from "./getEvent";
 import { MessageName, registeredLogs } from "./registeredLogs";

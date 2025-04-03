@@ -2,9 +2,9 @@ import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
 import { mockClient } from "aws-sdk-client-mock";
 import "aws-sdk-client-mock-jest";
-import { Logger } from "../../services/logging/logger";
+import { Logger } from "../../services/logging-OLD/logger";
 import { buildLambdaContext } from "../../testUtils/mockContext";
-import { MockLoggingAdapter } from "../../services/logging/tests/mockLoggingAdapter";
+import { MockLoggingAdapter } from "../../services/logging-OLD/tests/mockLoggingAdapter";
 import { errorResult, Result, successResult } from "../../common/utils/result";
 import {
   IDequeueDependencies,
