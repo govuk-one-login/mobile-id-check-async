@@ -86,7 +86,6 @@ jobs:
       uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
       with:
         use-installer: true
-        version: 1.123.0
 
     - name: Install dependencies
       run: npm install
@@ -166,7 +165,7 @@ jobs:
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
         with:
-          use-installer: true          
+          use-installer: true
 
       - name: Install dependencies
         run: npm install
