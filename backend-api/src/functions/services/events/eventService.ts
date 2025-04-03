@@ -12,6 +12,7 @@ import {
   RestrictedData,
   TxmaEvents,
 } from "./types";
+import { logger } from "../../common/logging/logger";
 
 export class EventService implements IEventService {
   private sqsQueue: string;
@@ -24,6 +25,7 @@ export class EventService implements IEventService {
     eventConfig: GenericEventConfig,
   ): Promise<Result<void, void>> {
     const txmaEvent = this.buildGenericEvent(eventConfig);
+    logger.debug("Writing TxMA event", { data: txmaEvent });
     return await this.writeToSqs(txmaEvent);
   }
 
@@ -49,6 +51,7 @@ export class EventService implements IEventService {
           MessageBody: JSON.stringify(txmaEvent),
         }),
       );
+
       return emptySuccess();
     } catch {
       return emptyFailure();

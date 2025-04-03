@@ -49,7 +49,8 @@ export type GenericEventNames =
   | "DCMAW_ASYNC_CRI_START"
   | "DCMAW_ASYNC_CRI_4XXERROR"
   | "DCMAW_ASYNC_CRI_5XXERROR"
-  | "DCMAW_ASYNC_APP_END";
+  | "DCMAW_ASYNC_APP_END"
+  | "DCMAW_ASYNC_ABORT_APP";
 
 export type EventNames =
   | GenericEventNames

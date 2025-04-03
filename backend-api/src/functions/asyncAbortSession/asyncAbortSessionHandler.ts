@@ -21,7 +21,7 @@ import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
 import { handleUpdateSessionError } from "../common/errors/errorHandlers";
 import { AuthSessionAbortedAttributes } from "../common/session/session";
-import { IEventService } from "../services/events/types";
+import { GenericEventConfig, IEventService } from "../services/events/types";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncAbortSessionDependencies,
@@ -47,6 +47,7 @@ export async function lambdaHandlerConstructor(
       validateResult.value.errorMessage,
     );
   }
+
   const sessionId = validateResult.value;
 
   const eventService = dependencies.getEventService(config.TXMA_SQS);
@@ -95,6 +96,41 @@ export async function lambdaHandlerConstructor(
       txmaAuditEncoded,
     });
   }
+
+  const eventMessage: GenericEventConfig = {
+    eventName: "DCMAW_ASYNC_ABORT_APP",
+    sub: sessionAttributes.subjectIdentifier,
+    sessionId: sessionAttributes.sessionId,
+    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+    componentId: config.ISSUER,
+    getNowInMilliseconds: Date.now,
+    transactionId: "biometricSessionId",
+    redirect_uri: sessionAttributes.redirectUri,
+    suspected_fraud_signal: undefined,
+    ipAddress,
+    txmaAuditEncoded,
+  };
+
+  logger.debug("Writing DCMAW_ASYNC_ABORT_APP TxMA event", {
+    data: eventMessage,
+  });
+
+  const writeAbortAppEventResult =
+    await eventService.writeGenericEvent(eventMessage);
+  logger.debug(
+    "DCMAW_ASYNC_ABORT_APP TxMA event written: writeAbortAppEventResult",
+    { data: writeAbortAppEventResult },
+  );
+  if (writeAbortAppEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_ABORT_APP",
+      },
+    });
+    return serverErrorResponse;
+  }
+
+  logger.debug("Abort app event successfully written");
 
   logger.info(LogMessage.ABORT_SESSION_COMPLETED);
   return notImplementedResponse;
