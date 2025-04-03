@@ -85,7 +85,7 @@ jobs:
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
         with:
-          use-installer: true         
+          use-installer: true
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@97834a484a5ab3c40fa9e2eb40fcf8041105a573 #main
@@ -141,7 +141,7 @@ jobs:
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
         with:
-          use-installer: true         
+          use-installer: true
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@97834a484a5ab3c40fa9e2eb40fcf8041105a573 #main
