@@ -1,8 +1,6 @@
 import { expect } from "@jest/globals";
 import { APIGatewayProxyEvent, Context } from "aws-lambda";
 import { logger } from "../../../common/logging/logger";
-import { Logger } from "../../../services/logging-OLD/logger";
-import { MockLoggingAdapter } from "../../../services/logging-OLD/tests/mockLoggingAdapter";
 import "../../../testUtils/matchers";
 import { buildLambdaContext } from "../../../testUtils/mockContext";
 import { buildRequest } from "../../../testUtils/mockRequest";
@@ -11,7 +9,6 @@ import {
   MockKeyRetrieverErrorResult,
   MockKeyRetrieverSuccessResult,
 } from "../keyRetriever/tests/mocks";
-import { MessageName, registeredLogs } from "../registeredLogs";
 import {
   MockTokenEncrypterErrorResult,
   MockTokenEncrypterSuccessResult,
@@ -24,7 +21,6 @@ import {
 import { validateServiceTokenRequest } from "../validateServiceTokenRequest/validateServiceTokenRequest";
 
 describe("Token Handler", () => {
-  let mockLoggingAdapter: MockLoggingAdapter<MessageName>;
   let event: APIGatewayProxyEvent;
   let dependencies: TokenDependencies;
   let context: Context;
@@ -41,10 +37,8 @@ describe("Token Handler", () => {
     event = buildRequest({
       body: "subject_token=testSub&scope=idCheck.activeSession.read&subject_token_type=urn:ietf:params:oauth:token-type:access_token&grant_type=urn:ietf:params:oauth:grant-type:token-exchange",
     });
-    mockLoggingAdapter = new MockLoggingAdapter();
     dependencies = {
       env,
-      logger: () => new Logger(mockLoggingAdapter, registeredLogs),
       validateServiceTokenRequest: validateServiceTokenRequest,
       tokenSigner: () => new MockTokenSignerSuccessResult(),
       keyRetriever: () => new MockKeyRetrieverSuccessResult(),

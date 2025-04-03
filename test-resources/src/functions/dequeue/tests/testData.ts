@@ -1,3 +1,5 @@
+export const NOW_IN_MILLISECONDS: number = 1704110400000; // 2024-01-01 12:00:00.000
+
 const passingEventNameWithSessionId = "DCMAW_ASYNC_CRI_START";
 const passingEventNameWithoutSessionId =
   "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
@@ -66,7 +68,7 @@ export const putItemInputForPassingSQSRecord = {
         timestamp: "mockTimestamp",
       }),
     },
-    timeToLiveInSeconds: { N: "1736298000" },
+    timeToLiveInSeconds: { N: "1704114000" }, // 2024-01-01 13:00:00.000
   },
 };
 
@@ -85,7 +87,7 @@ export const putItemInputForPassingSQSRecordUnknownSessionId = {
         timestamp: "mockTimestamp",
       }),
     },
-    timeToLiveInSeconds: { N: "1736298000" },
+    timeToLiveInSeconds: { N: "1704114000" }, // 2024-01-01 13:00:00.000
   },
 };
 
