@@ -125,6 +125,7 @@ Globals:
       - UsePermissionsBoundary
       - !Ref PermissionsBoundary
       - !Ref AWS::NoValue
+    Runtime: nodejs22.x
 
 Resources:
   DequeueEventSourceMapping:
@@ -158,7 +159,6 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-dequeue
       Handler: dequeueHandler.lambdaHandler
       Role: !GetAtt DequeueRole.Arn
-      Runtime: nodejs20.x
       Timeout: 10
       VpcConfig:
         SecurityGroupIds:
@@ -547,7 +547,6 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-sessions
       Handler: putSessionHandler.lambdaHandler
       Role: !GetAtt PutSessionFunctionRole.Arn
-      Runtime: nodejs20.x
       Timeout: 5
       VpcConfig:
         SecurityGroupIds:
@@ -847,7 +846,6 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-sts-mock-token
       Handler: tokenHandler.lambdaHandler
       Role: !GetAtt TokenFunctionRole.Arn
-      Runtime: nodejs20.x
       Timeout: 5
       VpcConfig:
         SecurityGroupIds:

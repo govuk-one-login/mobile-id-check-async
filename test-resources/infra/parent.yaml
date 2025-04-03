@@ -14,6 +14,7 @@ Globals:
       - UsePermissionsBoundary
       - !Ref PermissionsBoundary
       - !Ref AWS::NoValue
+    Runtime: nodejs22.x
 
 Parameters:
   Environment:
