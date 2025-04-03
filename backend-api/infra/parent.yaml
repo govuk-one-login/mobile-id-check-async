@@ -15,7 +15,7 @@ Parameters:
 
   CodeSigningConfigArn:
     Description: |
-      The ARN of the Code Signing Config to use, provided by the deployment pipeline
+      The ARN of the Code Signing Config to use, provied by the deployment pipeline
     Type: String
     Default: none
 
