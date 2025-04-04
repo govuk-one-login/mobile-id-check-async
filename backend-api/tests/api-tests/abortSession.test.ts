@@ -85,12 +85,11 @@ describe("POST /async/abortSession", () => {
       );
     });
 
-    it("Returns 501 response", () => {
-      expect(response.status).toBe(501);
+    it("Returns 200 Ok response", () => {
+      expect(response.status).toBe(200);
       expect(response.headers).toEqual(
         expect.objectContaining(expectedSecurityHeaders),
       );
-      expect(response.data).toEqual({ error: "Not Implemented" });
     });
   });
 });
