@@ -7,6 +7,10 @@ on:
         description: Whether to run the `format:check` npm script
         type: string
         default: true
+      RUN_INFRA_TESTS:
+        description: Whether to run infra tests using `test:infra` npm script
+        type: string
+        default: true
       RUN_LINTER:
         description: Whether to run the `lint` npm script
         type: string
@@ -15,6 +19,10 @@ on:
         description: Whether to verify template format by running the `infra:format:verify` npm script
         type: string
         default: false
+      RUN_SAM_VALIDATE:
+        description: Whether to run SAM validate lint on templates
+        type: string
+        default: true
       RUN_SONARQUBE:
         description: Whether to run SonarQube checks. Needs RUN_UNIT_TESTS to be true.
         type: string
@@ -41,14 +49,18 @@ jobs:
         shell: bash
     env:
       RUN_FORMATTING: ${{ inputs.RUN_FORMATTING }}
+      RUN_INFRA_TESTS: ${{ inputs.RUN_INFRA_TESTS }}
       RUN_LINTER: ${{ inputs.RUN_LINTER }}
+      RUN_SAM_VALIDATE: ${{ inputs.RUN_SAM_VALIDATE }}
       RUN_SONARQUBE: ${{ inputs.RUN_SONARQUBE }}
       RUN_UNIT_TESTS: ${{ inputs.RUN_UNIT_TESTS }}
     steps:
       - name: Print inputs
         run: |
           echo "RUN_FORMATTING=$RUN_FORMATTING"
+          echo "RUN_INFRA_TESTS=$RUN_INFRA_TESTS"
           echo "RUN_LINTER=$RUN_LINTER"
+          echo "RUN_SAM_VALIDATE=$RUN_SAM_VALIDATE"
           echo "RUN_SONARQUBE=$RUN_SONARQUBE"
           echo "RUN_UNIT_TESTS=$RUN_UNIT_TESTS"
 
@@ -69,6 +81,7 @@ jobs:
       RUN_FORMATTING: ${{ inputs.RUN_FORMATTING }}
       RUN_LINTER: ${{ inputs.RUN_LINTER }}
       RUN_RAIN_FORMAT_VERIFY: ${{ inputs.RUN_RAIN_FORMAT_VERIFY }}
+      RUN_SAM_VALIDATE: ${{ inputs.RUN_SAM_VALIDATE }}
       WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
 
   run-test-suite:
@@ -77,6 +90,7 @@ jobs:
     uses:
       ./.github/workflows/job_test-suite.yml
     with:
+      RUN_INFRA_TESTS: ${{ inputs.RUN_INFRA_TESTS }}
       RUN_UNIT_TESTS: ${{ inputs.RUN_UNIT_TESTS }}
       RUN_SONARQUBE: ${{ inputs.RUN_SONARQUBE }}
       WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}

@@ -1,4 +1,4 @@
-FROM node:iron-alpine
+FROM node:22-alpine
 
 WORKDIR /backend-api
 

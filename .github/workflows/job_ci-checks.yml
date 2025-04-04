@@ -15,6 +15,10 @@ on:
         description: Whether to verify template format by running the `infra:format:verify` npm script
         type: string
         default: false
+      RUN_SAM_VALIDATE:
+        description: Whether to run SAM validate lint on templates
+        type: string
+        default: true
       WORKING_DIRECTORY:
         description: Path to working directory in repo
         required: true
@@ -75,6 +79,7 @@ jobs:
         run: npm run infra:format:verify
 
       - name: Validate SAM template
+        if: inputs.RUN_SAM_VALIDATE == 'true'
         run: |
           TEMPLATES="$(find . -name template.yaml)"
           for template in $TEMPLATES ; do

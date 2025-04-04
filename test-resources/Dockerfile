@@ -1,4 +1,4 @@
-FROM node:iron-alpine
+FROM node:22-alpine
 
 RUN adduser --disabled-password test
 RUN chown test .

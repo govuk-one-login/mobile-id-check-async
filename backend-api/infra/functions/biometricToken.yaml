@@ -13,8 +13,7 @@ Resources:
         EntryPoints:
           - src/functions/asyncBiometricToken/asyncBiometricTokenHandler.ts
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-biometric-token
-      Runtime: nodejs20.x
+      FunctionName: !Sub ${AWS::StackName}-biometric-token      
       Handler: asyncBiometricTokenHandler.lambdaHandler
       Events:
         AsyncBiometricToken:

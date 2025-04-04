@@ -29,10 +29,10 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - name: Setup nodeJS v20
-        uses: actions/setup-node@26961cf329f22f6837d5f54c3efd76b480300ace #main
+      - name: Setup nodeJS
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
-          node-version: 20
+          node-version-file: ./backend-api/.nvmrc
           cache: npm
           cache-dependency-path: backend-api/package-lock.json
 
@@ -70,10 +70,10 @@ jobs:
         submodules: true
         fetch-depth: 0
 
-    - name: Setup nodeJS v20
-      uses: actions/setup-node@v4
+    - name: Setup nodeJS 
+      uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
       with:
-        node-version: 20
+        node-version-file: ./backend-api/.nvmrc
         cache: npm
         cache-dependency-path: backend-api/package-lock.json
 
@@ -86,7 +86,6 @@ jobs:
       uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
       with:
         use-installer: true
-        version: 1.123.0
 
     - name: Install dependencies
       run: npm install
@@ -151,10 +150,10 @@ jobs:
         with:
           submodules: true
 
-      - name: Setup nodeJS v20
-        uses: actions/setup-node@v4
+      - name: Setup nodeJS
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
-          node-version: 20
+          node-version-file: ./backend-api/.nvmrc
           cache: npm
           cache-dependency-path: backend-api/package-lock.json
 
@@ -167,7 +166,6 @@ jobs:
         uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
         with:
           use-installer: true
-          version: 1.123.0
 
       - name: Install dependencies
         run: npm install
