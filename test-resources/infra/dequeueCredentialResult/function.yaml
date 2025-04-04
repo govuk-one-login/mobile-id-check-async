@@ -80,3 +80,14 @@ Resources:
                   - sqs:GetQueueAttributes
                 Resource:
                   Fn::ImportValue: !Sub ${BackendStackName}-vendor-processing-queue-arn
+
+  DequeueCredentialResultEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 10
+      Enabled: true
+      EventSourceArn:
+        Fn::ImportValue: !Sub ${BackendStackName}-vendor-processing-queue-arn
+      FunctionName: !GetAtt DequeueCredentialResultFunction.Arn
+      FunctionResponseTypes:
+        - ReportBatchItemFailures

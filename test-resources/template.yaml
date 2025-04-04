@@ -128,6 +128,17 @@ Globals:
     Runtime: nodejs22.x
 
 Resources:
+  DequeueCredentialResultEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 10
+      Enabled: true
+      EventSourceArn: !ImportValue
+        Fn::Sub: ${BackendStackName}-vendor-processing-queue-arn
+      FunctionName: !GetAtt DequeueCredentialResultFunction.Arn
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
+
   DequeueCredentialResultFunction:
     Type: AWS::Serverless::Function
     DependsOn:
