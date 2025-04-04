@@ -1,13 +1,17 @@
 import { expect } from "@jest/globals";
-import { Context, SQSEvent } from "aws-lambda";
+import {
+  Context,
+  SQSBatchResponse,
+  SQSEvent
+} from "aws-lambda";
 import "aws-sdk-client-mock-jest";
+import { logger } from "../../common/logging/logger";
 import "../../testUtils/matchers";
 import { buildLambdaContext } from "../../testUtils/mockContext";
 import {
   IDequeueCredentialResultDependencies,
   lambdaHandlerConstructor,
 } from "../dequeueCredentialResultHandler";
-import { logger } from "../../common/logging/logger";
 
 describe("Dequeue credential result", () => {
   const env = {};
@@ -45,6 +49,40 @@ describe("Dequeue credential result", () => {
       expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
         testKey: "testValue",
       });
+    });
+  });
+
+  describe("Given there are no messages to be processed", () => {
+    let event: SQSEvent;
+    let result: SQSBatchResponse;
+
+    beforeEach(async () => {
+      event = {
+        Records: [],
+      };
+
+      result = await lambdaHandlerConstructor(dependencies, event, context);
+    });
+
+    it("Logs an empty array", async () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode:
+          "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_PROCESSED_MESSAGES",
+      });
+
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        processedMessages: [],
+      });
+    });
+
+    it("Logs COMPLETED", () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
+      });
+    });
+
+    it("Returns an empty array for batchItemFailures", () => {
+      expect(result).toStrictEqual({ batchItemFailures: [] });
     });
   });
 

@@ -66,14 +66,15 @@ export const allowedTxmaEventNames = [
   "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
   "DCMAW_ASYNC_APP_END",
   "DCMAW_ASYNC_ABORT_APP",
-] as const
+] as const;
 
-type AllowedTxmaEventName = (typeof allowedTxmaEventNames)[number]
+type AllowedTxmaEventName = (typeof allowedTxmaEventNames)[number];
 
 const allowedTxmaEventNamesWithoutSessionId = [
   "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED",
   "DCMAW_ASYNC_CRI_4XXERROR",
   "DCMAW_ASYNC_CRI_5XXERROR",
-] as const
+] as const;
 
-type AllowedTxmaEventNameWithoutSessionId = (typeof allowedTxmaEventNamesWithoutSessionId)[number]
+type AllowedTxmaEventNameWithoutSessionId =
+  (typeof allowedTxmaEventNamesWithoutSessionId)[number];
