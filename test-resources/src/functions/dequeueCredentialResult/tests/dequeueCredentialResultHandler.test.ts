@@ -51,11 +51,10 @@ describe("Dequeue credential result", () => {
   });
 
   describe("Given there are no messages to be processed", () => {
-    let event: SQSEvent;
     let result: SQSBatchResponse;
 
     beforeEach(async () => {
-      event = {
+      const event: SQSEvent = {
         Records: [],
       };
 
@@ -86,11 +85,10 @@ describe("Dequeue credential result", () => {
 
   describe("Given credential result validation fails", () => {
     describe("Given credential result is not valid JSON", () => {
-      let event: SQSEvent;
       let result: SQSBatchResponse;
 
       beforeEach(async () => {
-        event = {
+        const event: SQSEvent = {
           Records: [failingSQSRecordBodyInvalidJSON],
         };
         result = await lambdaHandlerConstructor(dependencies, event, context);
@@ -114,11 +112,10 @@ describe("Dequeue credential result", () => {
     });
 
     describe("Given credential result is missing a subjectIdentifier", () => {
-      let event: SQSEvent;
       let result: SQSBatchResponse;
 
       beforeEach(async () => {
-        event = {
+        const event: SQSEvent = {
           Records: [failingSQSRecordBodyMissingSub],
         };
         result = await lambdaHandlerConstructor(dependencies, event, context);

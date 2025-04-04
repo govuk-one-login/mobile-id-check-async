@@ -24,11 +24,11 @@ export const lambdaHandlerConstructor = async (
 
   const eventRecords = event.Records;
   for (const record of eventRecords) {
-    let { body: recordBody } = record
-    let credentialResult
+    const { body: recordBody } = record;
+    let credentialResult;
     try {
-      credentialResult = JSON.parse(recordBody)
-    } catch (error) {
+      credentialResult = JSON.parse(recordBody);
+    } catch {
       logger.error(LogMessage.DEQUEUE_CREDENTIAL_RESULT_INVALID_JSON, {
         recordBody,
       });
@@ -39,7 +39,7 @@ export const lambdaHandlerConstructor = async (
       logger.error(LogMessage.DEQUEUE_CREDENTIAL_RESULT_MISSING_SUB, {
         credentialResult,
       });
-      continue
+      continue;
     }
   }
 
@@ -61,12 +61,3 @@ const dependencies: IDequeueCredentialResultDependencies = {
 };
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
-
-function isValidJSON(data: unknown): data is JSON {
-  try {
-    JSON.parse(data as string);
-  } catch {
-    return false;
-  }
-  return true;
-}
