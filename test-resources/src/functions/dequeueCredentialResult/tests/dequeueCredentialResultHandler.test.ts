@@ -1,7 +1,6 @@
 import { expect } from "@jest/globals";
 import { SQSEvent } from "aws-lambda";
 import "aws-sdk-client-mock-jest";
-import { NOW_IN_MILLISECONDS } from "../../dequeue/tests/testData";
 import "../../testUtils/matchers";
 import { buildLambdaContext } from "../../testUtils/mockContext";
 import {
@@ -15,17 +14,10 @@ describe("Dequeue credential result", () => {
   let consoleInfoSpy: jest.SpyInstance;
 
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(NOW_IN_MILLISECONDS);
     dependencies = {
       env,
     };
     consoleInfoSpy = jest.spyOn(console, "info");
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
-    jest.restoreAllMocks();
   });
 
   describe("Happy path", () => {
