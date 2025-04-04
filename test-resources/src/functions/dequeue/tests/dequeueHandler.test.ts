@@ -1,25 +1,27 @@
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
-import { SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
+import { expect } from "@jest/globals";
+import { Context, SQSBatchResponse, SQSEvent, SQSRecord } from "aws-lambda";
 import { mockClient } from "aws-sdk-client-mock";
 import "aws-sdk-client-mock-jest";
-import { Logger } from "../../services/logging/logger";
-import { buildLambdaContext } from "../../testUtils/mockContext";
-import { MockLoggingAdapter } from "../../services/logging/tests/mockLoggingAdapter";
 import { errorResult, Result, successResult } from "../../common/utils/result";
+import "../../testUtils/matchers";
+import { buildLambdaContext } from "../../testUtils/mockContext";
 import {
   IDequeueDependencies,
   lambdaHandlerConstructor,
 } from "../dequeueHandler";
 import { TxmaEvent } from "../getEvent";
-import { MessageName, registeredLogs } from "../registeredLogs";
 import {
   eventNameMissingSQSRecord,
   invalidBodySQSRecord,
+  NOW_IN_MILLISECONDS,
   passingSQSRecordKnownSessionId,
   passingSQSRecordUnknownSessionId,
   putItemInputForPassingSQSRecord,
   putItemInputForPassingSQSRecordUnknownSessionId,
 } from "./testData";
+
+import { logger } from "../../common/logging/logger";
 
 const env = {
   EVENTS_TABLE_NAME: "mock-table-name",
@@ -28,24 +30,52 @@ const env = {
 
 describe("Dequeue TxMA events", () => {
   let dependencies: IDequeueDependencies;
-  let mockLogger: MockLoggingAdapter<MessageName>;
+  let context: Context;
   const mockDbClient = mockClient(DynamoDBClient);
+  let consoleInfoSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpyInstance;
 
   beforeEach(() => {
-    jest.useFakeTimers().setSystemTime(new Date("2025-01-08"));
-    mockLogger = new MockLoggingAdapter();
+    jest.useFakeTimers();
+    jest.setSystemTime(NOW_IN_MILLISECONDS);
     mockDbClient.on(PutItemCommand).rejects({});
     dependencies = {
       env,
-      logger: () => new Logger(mockLogger, registeredLogs),
       getEvent: mockGetEvent,
     };
+    context = buildLambdaContext();
+    consoleInfoSpy = jest.spyOn(console, "info");
+    consoleErrorSpy = jest.spyOn(console, "error");
   });
 
   afterEach(() => {
-    jest.useFakeTimers().clearAllTimers();
-    jest.restoreAllMocks();
+    jest.useRealTimers();
     mockDbClient.reset();
+  });
+
+  describe("On every invocation", () => {
+    let event: SQSEvent;
+
+    beforeEach(async () => {
+      event = {
+        Records: [passingSQSRecordKnownSessionId],
+      };
+      await lambdaHandlerConstructor(dependencies, event, context);
+    });
+    it("Adds context and version to log attributes and logs STARTED message", () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "TEST_RESOURCES_DEQUEUE_EVENTS_STARTED",
+        functionVersion: "1",
+        function_arn: "arn:12345", // example field to verify that context has been added
+      });
+    });
+    it("Clears pre-existing log attributes", async () => {
+      logger.appendKeys({ testKey: "testValue" });
+      await lambdaHandlerConstructor(dependencies, event, context);
+      expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+        testKey: "testValue",
+      });
+    });
   });
 
   describe("Environment variable validation", () => {
@@ -63,10 +93,10 @@ describe("Dequeue TxMA events", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages()[1].logMessage.message).toBe(
-          "ENVIRONMENT_VARIABLE_MISSING",
-        );
-        expect(mockLogger.getLogMessages()[1].data).toStrictEqual({
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "TEST_RESOURCES_DEQUEUE_EVENTS_INVALID_CONFIG",
+        });
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           errorMessage: `Missing environment variable: ${envVar}`,
         });
       });
@@ -85,19 +115,15 @@ describe("Dequeue TxMA events", () => {
         buildLambdaContext(),
       );
 
-      expect(mockLogger.getLogMessages().length).toEqual(3);
-      expect(mockLogger.getLogMessages()[0].logMessage.message).toEqual(
-        "STARTED",
-      );
-      expect(mockLogger.getLogMessages()[1].logMessage.message).toEqual(
-        "PROCESSED_MESSAGES",
-      );
-      expect(mockLogger.getLogMessages()[1].data).toEqual({
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "TEST_RESOURCES_DEQUEUE_EVENTS_PROCESSED_MESSAGES",
+      });
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         processedMessages: [],
       });
-      expect(mockLogger.getLogMessages()[2].logMessage.message).toEqual(
-        "COMPLETED",
-      );
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "TEST_RESOURCES_DEQUEUE_EVENTS_COMPLETED",
+      });
       expect(result).toStrictEqual({ batchItemFailures: [] });
     });
   });
@@ -118,15 +144,14 @@ describe("Dequeue TxMA events", () => {
     });
 
     it("Returns an error message", () => {
-      expect(mockLogger.getLogMessages()[1]).toEqual({
-        logMessage: expect.objectContaining({
-          messageCode: "TEST_RESOURCES_FAILED_TO_PROCESS_MESSAGES",
-          message: "FAILED_TO_PROCESS_MESSAGES",
-        }),
-        data: {
-          errorMessage: "Mock validation error",
-          body: "Invalid body",
-        },
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "TEST_RESOURCES_DEQUEUE_EVENTS_FAILURE_PROCESSING_MESSAGE",
+      });
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        errorMessage: "Mock validation error",
+      });
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        body: "Invalid body",
       });
     });
 
@@ -148,20 +173,21 @@ describe("Dequeue TxMA events", () => {
         buildLambdaContext(),
       );
 
-      expect(mockLogger.getLogMessages().length).toEqual(4);
-      expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
-        "ERROR_WRITING_EVENT_TO_EVENTS_TABLE",
-      );
-      expect(mockLogger.getLogMessages()[1].data.eventName).toStrictEqual(
-        JSON.parse(passingSQSRecordKnownSessionId.body).event_name,
-      );
-      expect(mockLogger.getLogMessages()[1].data.sessionId).toStrictEqual(
-        JSON.parse(passingSQSRecordKnownSessionId.body).user.session_id,
-      );
-      expect(mockLogger.getLogMessages()[2].logMessage.message).toStrictEqual(
-        "PROCESSED_MESSAGES",
-      );
-      expect(mockLogger.getLogMessages()[2].data).toStrictEqual({
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        messageCode:
+          "TEST_RESOURCES_DEQUEUE_EVENTS_FAILURE_WRITING_TO_DATABASE",
+      });
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        eventName: JSON.parse(passingSQSRecordKnownSessionId.body).event_name,
+      });
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        sessionId: JSON.parse(passingSQSRecordKnownSessionId.body).user
+          .session_id,
+      });
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "TEST_RESOURCES_DEQUEUE_EVENTS_PROCESSED_MESSAGES",
+      });
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         processedMessages: [],
       });
       expect(result).toStrictEqual({
@@ -193,13 +219,12 @@ describe("Dequeue TxMA events", () => {
     });
 
     it("Logs the messageId of messages that failed to be processed", async () => {
-      expect(mockLogger.getLogMessages().length).toEqual(4);
-      expect(mockLogger.getLogMessages()[1].logMessage.message).toStrictEqual(
-        "FAILED_TO_PROCESS_MESSAGES",
-      );
-      expect(mockLogger.getLogMessages()[1].data.errorMessage).toEqual(
-        `Mock validation error`,
-      );
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "TEST_RESOURCES_DEQUEUE_EVENTS_FAILURE_PROCESSING_MESSAGE",
+      });
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        errorMessage: `Mock validation error`,
+      });
     });
 
     it("Makes a call to the database client", async () => {
@@ -217,19 +242,37 @@ describe("Dequeue TxMA events", () => {
     });
 
     it("Logs successfully processed messages", async () => {
-      expect(mockLogger.getLogMessages()[2].data.processedMessages).toEqual([
-        {
-          eventName: JSON.parse(passingSQSRecordKnownSessionId.body).event_name,
-          sessionId: JSON.parse(passingSQSRecordKnownSessionId.body).user
-            .session_id,
-        },
-        {
-          eventName: JSON.parse(passingSQSRecordUnknownSessionId.body)
-            .event_name,
-          sessionId: JSON.parse(passingSQSRecordUnknownSessionId.body).user
-            .session_id,
-        },
-      ]);
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        processedMessages: [
+          {
+            eventName: JSON.parse(passingSQSRecordKnownSessionId.body)
+              .event_name,
+            sessionId: JSON.parse(passingSQSRecordKnownSessionId.body).user
+              .session_id,
+          },
+          {
+            eventName: JSON.parse(passingSQSRecordUnknownSessionId.body)
+              .event_name,
+            sessionId: JSON.parse(passingSQSRecordUnknownSessionId.body).user
+              .session_id,
+          },
+        ],
+      });
+      // expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+      //   eventName: JSON.parse(passingSQSRecordKnownSessionId.body).event_name
+      // })
+      // expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+      //   sessionId: JSON.parse(passingSQSRecordKnownSessionId.body).user
+      //     .session_id,
+      // })
+      // expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+      //   eventName: JSON.parse(passingSQSRecordUnknownSessionId.body)
+      //     .event_name,
+      // })
+      // expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+      //   sessionId: JSON.parse(passingSQSRecordUnknownSessionId.body).user
+      //     .session_id,
+      // });
     });
 
     it("Returns no batchItemFailures to be reprocessed", () => {
@@ -251,15 +294,16 @@ describe("Dequeue TxMA events", () => {
           buildLambdaContext(),
         );
 
-        expect(mockLogger.getLogMessages().length).toEqual(3);
-        expect(mockLogger.getLogMessages()[1].data.processedMessages).toEqual([
-          {
-            eventName: JSON.parse(passingSQSRecordKnownSessionId.body)
-              .event_name,
-            sessionId: JSON.parse(passingSQSRecordKnownSessionId.body).user
-              .session_id,
-          },
-        ]);
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          processedMessages: [
+            {
+              eventName: JSON.parse(passingSQSRecordKnownSessionId.body)
+                .event_name,
+              sessionId: JSON.parse(passingSQSRecordKnownSessionId.body).user
+                .session_id,
+            },
+          ],
+        });
         expect(result).toEqual({ batchItemFailures: [] });
       });
     });
@@ -291,17 +335,18 @@ describe("Dequeue TxMA events", () => {
         const sessionIdUnknown = JSON.parse(
           passingSQSRecordUnknownSessionId.body,
         ).user.session_id;
-        expect(mockLogger.getLogMessages().length).toEqual(3);
-        expect(mockLogger.getLogMessages()[1].data.processedMessages).toEqual([
-          {
-            eventName,
-            sessionId,
-          },
-          {
-            eventName: eventNameSessionIdUnknown,
-            sessionId: sessionIdUnknown,
-          },
-        ]);
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          processedMessages: [
+            {
+              eventName,
+              sessionId,
+            },
+            {
+              eventName: eventNameSessionIdUnknown,
+              sessionId: sessionIdUnknown,
+            },
+          ],
+        });
         expect(result).toEqual({ batchItemFailures: [] });
       });
     });

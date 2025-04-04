@@ -6,6 +6,9 @@ import {
 import { TokenDependencies, dependencies } from "./handlerDependencies";
 import { ConfigService } from "./configService/configService";
 import { JWTPayload } from "jose";
+import { LogMessage } from "../../common/logging/LogMessage";
+import { logger } from "../../common/logging/logger";
+import { setupLogger } from "../../common/logging/setupLogger";
 
 const SERVICE_TOKEN_TTL_IN_SECS = 180;
 const PRIVATE_KEY_JWK_FILE_NAME = "private-key.json";
@@ -15,14 +18,12 @@ export async function lambdaHandlerConstructor(
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> {
-  const logger = dependencies.logger();
-  logger.addContext(context);
-
-  logger.log("STARTED");
+  setupLogger(context);
+  logger.info(LogMessage.STS_MOCK_STARTED);
 
   const getConfigResult = new ConfigService().getConfig(dependencies.env);
   if (getConfigResult.isError) {
-    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
+    logger.error(LogMessage.STS_MOCK_INVALID_CONFIG, {
       errorMessage: getConfigResult.value.errorMessage,
     });
     return serverError();
@@ -33,7 +34,7 @@ export async function lambdaHandlerConstructor(
     dependencies.validateServiceTokenRequest(event.body);
   if (validateServiceTokenRequestResult.isError) {
     const { errorMessage } = validateServiceTokenRequestResult.value;
-    logger.log("INVALID_REQUEST", {
+    logger.error(LogMessage.STS_MOCK_REQUEST_BODY_INVALID, {
       errorMessage,
     });
     return badRequestError(errorMessage);
@@ -43,7 +44,7 @@ export async function lambdaHandlerConstructor(
     .keyRetriever()
     .getKey(config.KEY_STORAGE_BUCKET_NAME, PRIVATE_KEY_JWK_FILE_NAME);
   if (getKeyResult.isError) {
-    logger.log("INTERNAL_SERVER_ERROR", {
+    logger.error(LogMessage.STS_MOCK_FAILURE_RETRIEVING_SIGNING_KEY, {
       errorMessage: getKeyResult.value.errorMessage,
     });
     return serverError();
@@ -64,7 +65,7 @@ export async function lambdaHandlerConstructor(
     .tokenSigner()
     .sign(keyId, payload, signingKey);
   if (signTokenResult.isError) {
-    logger.log("INTERNAL_SERVER_ERROR", {
+    logger.error(LogMessage.STS_MOCK_FAILURE_SIGNING_TOKEN, {
       errorMessage: signTokenResult.value.errorMessage,
     });
     return serverError();
@@ -77,7 +78,7 @@ export async function lambdaHandlerConstructor(
     .tokenEncrypter(protectedServiceJwksUri)
     .encrypt(jwt);
   if (tokenEncrypterResult.isError) {
-    logger.log("INTERNAL_SERVER_ERROR", {
+    logger.error(LogMessage.STS_MOCK_FAILURE_ENCRYPTING_TOKEN, {
       errorMessage: tokenEncrypterResult.value.errorMessage,
     });
     return serverError();
@@ -85,7 +86,7 @@ export async function lambdaHandlerConstructor(
 
   const serviceToken = tokenEncrypterResult.value;
 
-  logger.log("COMPLETED");
+  logger.info(LogMessage.STS_MOCK_COMPLETED);
 
   return {
     headers: {

@@ -1,4 +1,3 @@
-import { Logger as PowertoolsLogger } from "@aws-lambda-powertools/logger";
 import {
   DynamoDBClient,
   PutItemCommand,
@@ -13,20 +12,20 @@ import {
   SQSEvent,
   SQSRecord,
 } from "aws-lambda";
-import { Logger } from "../services/logging/logger";
+import { logger } from "../common/logging/logger";
+import { LogMessage } from "../common/logging/LogMessage";
+import { setupLogger } from "../common/logging/setupLogger";
+import { Result } from "../common/utils/result";
 import { getConfig } from "./getConfig";
 import { allowedTxmaEventNames, getEvent, TxmaEvent } from "./getEvent";
-import { MessageName, registeredLogs } from "./registeredLogs";
-import { Result } from "../common/utils/result";
 
 export const lambdaHandlerConstructor = async (
   dependencies: IDequeueDependencies,
   event: SQSEvent,
   context: Context,
 ): Promise<SQSBatchResponse> => {
-  const logger = dependencies.logger();
-  logger.addContext(context);
-  logger.log("STARTED");
+  setupLogger(context);
+  logger.info(LogMessage.DEQUEUE_EVENTS_STARTED);
   const { getEvent } = dependencies;
 
   const records = event.Records;
@@ -37,7 +36,7 @@ export const lambdaHandlerConstructor = async (
   if (getConfigResult.isError) {
     const { errorMessage } = getConfigResult.value;
 
-    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
+    logger.error(LogMessage.DEQUEUE_EVENTS_INVALID_CONFIG, {
       errorMessage,
     });
 
@@ -50,7 +49,10 @@ export const lambdaHandlerConstructor = async (
 
     const getEventResult = getEvent(record);
     if (getEventResult.isError) {
-      logger.log("FAILED_TO_PROCESS_MESSAGES", getEventResult.value);
+      logger.error(
+        LogMessage.DEQUEUE_EVENTS_FAILURE_PROCESSING_MESSAGE,
+        getEventResult.value,
+      );
       continue;
     }
     const eventName = getEventResult.value.event_name;
@@ -74,7 +76,7 @@ export const lambdaHandlerConstructor = async (
     try {
       await dbClient.send(command);
     } catch (error) {
-      logger.log("ERROR_WRITING_EVENT_TO_EVENTS_TABLE", {
+      logger.error(LogMessage.DEQUEUE_EVENTS_FAILURE_WRITING_TO_DATABASE, {
         eventName,
         sessionId,
         error,
@@ -90,8 +92,10 @@ export const lambdaHandlerConstructor = async (
     });
   }
 
-  logger.log("PROCESSED_MESSAGES", { processedMessages });
-  logger.log("COMPLETED");
+  logger.info(LogMessage.DEQUEUE_EVENTS_PROCESSED_MESSAGES, {
+    processedMessages,
+  });
+  logger.info(LogMessage.DEQUEUE_EVENTS_COMPLETED);
 
   return { batchItemFailures };
 };
@@ -116,17 +120,11 @@ interface IProcessedMessage {
 
 export interface IDequeueDependencies {
   env: NodeJS.ProcessEnv;
-  logger: () => Logger<MessageName>;
   getEvent: (record: SQSRecord) => Result<TxmaEvent>;
 }
 
 const dependencies: IDequeueDependencies = {
   env: process.env,
-  logger: () =>
-    new Logger<MessageName>(
-      new PowertoolsLogger({ serviceName: "Dequeue Function" }),
-      registeredLogs,
-    ),
   getEvent,
 };
 
