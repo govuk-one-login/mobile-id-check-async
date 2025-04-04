@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  DequeueCredentialResultFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - DequeueCredentialResultLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: es2022
+        Sourcemap: false
+        EntryPoints:
+          - src/functions/dequeueCredentialResult/dequeueCredentialResultHandler.ts
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-dequeue-credential-result
+      Runtime: nodejs20.x
+      Handler: dequeueCredentialResultHandler.lambdaHandler
+      Role: !GetAtt DequeueCredentialResultRole.Arn
+      Timeout: 10
+      VpcConfig:
+        SubnetIds:
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+
+  DequeueCredentialResultLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue-credential-result
+
+  DequeueCredentialResultRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-dequeue-credential-result
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: VpcPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Resource: '*'
+        - PolicyName: LoggingPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*

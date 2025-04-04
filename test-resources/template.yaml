@@ -128,6 +128,75 @@ Globals:
     Runtime: nodejs22.x
 
 Resources:
+  DequeueCredentialResultFunction:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - DequeueCredentialResultLogGroup
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - src/functions/dequeueCredentialResult/dequeueCredentialResultHandler.ts
+        Minify: true
+        Sourcemap: false
+        Target: es2022
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-dequeue-credential-result
+      Handler: dequeueCredentialResultHandler.lambdaHandler
+      Role: !GetAtt DequeueCredentialResultRole.Arn
+      Runtime: nodejs20.x
+      Timeout: 10
+      VpcConfig:
+        SecurityGroupIds:
+          - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+        SubnetIds:
+          - !ImportValue devplatform-vpc-PrivateSubnetIdA
+          - !ImportValue devplatform-vpc-PrivateSubnetIdB
+          - !ImportValue devplatform-vpc-PrivateSubnetIdC
+
+  DequeueCredentialResultLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue-credential-result
+      RetentionInDays: 30
+
+  DequeueCredentialResultRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                Effect: Allow
+                Resource: '*'
+            Version: "2012-10-17"
+          PolicyName: VpcPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: arn:aws:logs:*:*:*
+            Version: "2012-10-17"
+          PolicyName: LoggingPolicy
+      RoleName: !Sub ${AWS::StackName}-dequeue-credential-result
+
   DequeueEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
