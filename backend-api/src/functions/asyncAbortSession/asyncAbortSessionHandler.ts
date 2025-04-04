@@ -5,7 +5,7 @@ import {
 } from "aws-lambda";
 import {
   badRequestResponse,
-  notImplementedResponse,
+  okResponse,
   serverErrorResponse,
 } from "../common/lambdaResponses";
 import {
@@ -119,7 +119,7 @@ export async function lambdaHandlerConstructor(
   }
 
   logger.info(LogMessage.ABORT_SESSION_COMPLETED);
-  return notImplementedResponse;
+  return okResponse();
 }
 
 interface HandleSendMessageToIPVCoreOutboundQueueFailureData {
