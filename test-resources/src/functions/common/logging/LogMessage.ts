@@ -70,6 +70,10 @@ export class LogMessage implements LogAttributes {
     "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_MISSING_SUB",
     "Credential result is missing a subjectIdentifier",
   );
+  static readonly DEQUEUE_CREDENTIAL_RESULT_MISSING_TIMESTAMP = new LogMessage(
+    "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_MISSING_TIMESTAMP",
+    "Credential result is missing a timestamp",
+  );
   static readonly DEQUEUE_CREDENTIAL_RESULT_PROCESSED_MESSAGES = new LogMessage(
     "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_PROCESSED_MESSAGES",
     "Lambda handler processing has started.",

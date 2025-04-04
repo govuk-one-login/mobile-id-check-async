@@ -41,6 +41,13 @@ export const lambdaHandlerConstructor = async (
       });
       continue;
     }
+
+    if (!credentialResult.timestamp) {
+      logger.error(LogMessage.DEQUEUE_CREDENTIAL_RESULT_MISSING_TIMESTAMP, {
+        credentialResult,
+      });
+      continue;
+    }
   }
 
   logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_COMPLETED);
