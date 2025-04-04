@@ -11,7 +11,7 @@
 
 - AWS CLI
 - AWS SAM
-- Node.js v20
+- Node.js v22
 - npm
 - rain v1.15
 

@@ -13,8 +13,7 @@ Resources:
         EntryPoints:
           - src/functions/asyncActiveSession/asyncActiveSessionHandler.ts
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-active-session
-      Runtime: nodejs20.x
+      FunctionName: !Sub ${AWS::StackName}-active-session      
       Handler: asyncActiveSessionHandler.lambdaHandler
       Events:
         AsyncActiveSession:

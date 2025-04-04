@@ -32,10 +32,10 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - name: Setup nodeJS v20
-        uses: actions/setup-node@26961cf329f22f6837d5f54c3efd76b480300ace #main
+      - name: Setup nodeJS
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
-          node-version: 20
+          node-version-file: test-resources/.nvmrc
           cache: npm
           cache-dependency-path: test-resources/package-lock.json
 
@@ -76,7 +76,7 @@ jobs:
           submodules: true
 
       - name: Setup Node
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af #v4.1.0
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version-file: 'test-resources/.nvmrc'
           cache: npm
@@ -86,7 +86,6 @@ jobs:
         uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
         with:
           use-installer: true
-          version: 1.123.0
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@97834a484a5ab3c40fa9e2eb40fcf8041105a573 #main
@@ -133,9 +132,9 @@ jobs:
           submodules: true
 
       - name: Setup Node
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af #v4.1.0
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
-          node-version-file: 'test-resources/.nvmrc'
+          node-version-file: test-resources/.nvmrc
           cache: npm
           cache-dependency-path: test-resources/package-lock.json
 
@@ -143,7 +142,6 @@ jobs:
         uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
         with:
           use-installer: true
-          version: 1.123.0
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@97834a484a5ab3c40fa9e2eb40fcf8041105a573 #main

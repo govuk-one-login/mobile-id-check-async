@@ -75,6 +75,8 @@ export async function lambdaHandlerConstructor(
       sessionId,
       biometricSessionId,
       config.ISSUER,
+      ipAddress,
+      txmaAuditEncoded,
     );
   }
 
@@ -131,6 +133,8 @@ async function handleConditionalCheckFailure(
   sessionAttributes: SessionAttributes,
   biometricSessionId: string,
   issuer: string,
+  ipAddress: string,
+  txmaAuditEncoded: string | undefined,
 ): Promise<APIGatewayProxyResult> {
   const sessionAge = Date.now() - sessionAttributes.createdAt;
   const isSessionExpired = sessionAge > 60 * 60 * 1000;
@@ -153,8 +157,8 @@ async function handleConditionalCheckFailure(
     transactionId: biometricSessionId,
     redirect_uri: sessionAttributes.redirectUri,
     suspected_fraud_signal: getFraudSignal(isSessionExpired),
-    ipAddress: undefined,
-    txmaAuditEncoded: undefined,
+    ipAddress,
+    txmaAuditEncoded,
   });
 
   if (writeEventResult.isError) {
@@ -176,6 +180,8 @@ async function handleSessionNotFound(
   sessionId: string,
   biometricSessionId: string,
   issuer: string,
+  ipAddress: string,
+  txmaAuditEncoded: string | undefined,
 ): Promise<APIGatewayProxyResult> {
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_4XXERROR",
@@ -185,8 +191,8 @@ async function handleSessionNotFound(
     componentId: issuer,
     getNowInMilliseconds: Date.now,
     transactionId: biometricSessionId,
-    ipAddress: undefined,
-    txmaAuditEncoded: undefined,
+    ipAddress,
+    txmaAuditEncoded,
     redirect_uri: undefined,
     suspected_fraud_signal: undefined,
   });
@@ -206,6 +212,8 @@ async function handleInternalServerError(
   sessionId: string,
   biometricSessionId: string,
   issuer: string,
+  ipAddress: string,
+  txmaAuditEncoded: string | undefined,
 ): Promise<APIGatewayProxyResult> {
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_5XXERROR",
@@ -215,8 +223,8 @@ async function handleInternalServerError(
     componentId: issuer,
     getNowInMilliseconds: Date.now,
     transactionId: biometricSessionId,
-    ipAddress: undefined,
-    txmaAuditEncoded: undefined,
+    ipAddress,
+    txmaAuditEncoded,
     redirect_uri: undefined,
     suspected_fraud_signal: undefined,
   });
@@ -236,6 +244,8 @@ async function handleUpdateSessionError(
   sessionId: string,
   biometricSessionId: string,
   issuer: string,
+  ipAddress: string,
+  txmaAuditEncoded: string | undefined,
 ): Promise<APIGatewayProxyResult> {
   switch (updateSessionResult.value.errorType) {
     case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
@@ -244,6 +254,8 @@ async function handleUpdateSessionError(
         updateSessionResult.value.attributes,
         biometricSessionId,
         issuer,
+        ipAddress,
+        txmaAuditEncoded,
       );
     case UpdateSessionError.SESSION_NOT_FOUND:
       return handleSessionNotFound(
@@ -251,6 +263,8 @@ async function handleUpdateSessionError(
         sessionId,
         biometricSessionId,
         issuer,
+        ipAddress,
+        txmaAuditEncoded,
       );
     case UpdateSessionError.INTERNAL_SERVER_ERROR:
       return handleInternalServerError(
@@ -258,6 +272,8 @@ async function handleUpdateSessionError(
         sessionId,
         biometricSessionId,
         issuer,
+        ipAddress,
+        txmaAuditEncoded,
       );
   }
 }

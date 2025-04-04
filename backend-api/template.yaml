@@ -447,6 +447,7 @@ Globals:
         - Lambda
         - !Ref Environment
         - ReservedConcurrentExecutions
+    Runtime: nodejs22.x
     Timeout: 5
 
 Resources:
@@ -819,7 +820,6 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-abort-session
       Handler: asyncAbortSessionHandler.lambdaHandler
       Role: !GetAtt AsyncAbortSessionLambdaRole.Arn
-      Runtime: nodejs20.x
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -1361,7 +1361,6 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-active-session
       Handler: asyncActiveSessionHandler.lambdaHandler
       Role: !GetAtt AsyncActiveSessionLambdaRole.Arn
-      Runtime: nodejs20.x
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -1913,7 +1912,6 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-biometric-token
       Handler: asyncBiometricTokenHandler.lambdaHandler
       Role: !GetAtt AsyncBiometricTokenLambdaRole.Arn
-      Runtime: nodejs20.x
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -2460,7 +2458,6 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-credential
       Handler: asyncCredentialHandler.lambdaHandler
       Role: !GetAtt AsyncCredentialLambdaRole.Arn
-      Runtime: nodejs20.x
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -3017,7 +3014,6 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-finish-biometric-session
       Handler: asyncFinishBiometricSessionHandler.lambdaHandler
       Role: !GetAtt AsyncFinishBiometricSessionLambdaRole.Arn
-      Runtime: nodejs20.x
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -3202,7 +3198,6 @@ Resources:
           - !Ref Environment
           - IssueBiometricCredentialReservedConcurrentExecutions
       Role: !GetAtt AsyncIssueBiometricCredentialLambdaRole.Arn
-      Runtime: nodejs20.x
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -3715,7 +3710,6 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-token
       Handler: asyncTokenHandler.lambdaHandler
       Role: !GetAtt AsyncTokenLambdaRole.Arn
-      Runtime: nodejs20.x
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -4167,7 +4161,6 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-txma-event
       Handler: asyncTxmaEventHandler.lambdaHandler
       Role: !GetAtt AsyncTxmaEventLambdaRole.Arn
-      Runtime: nodejs20.x
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -4638,7 +4631,6 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-jwks
       Handler: jwksHandler.lambdaHandler
       Role: !GetAtt JsonWebKeysFunctionLambdaRole.Arn
-      Runtime: nodejs20.x
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -4990,7 +4982,6 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-proxy-lambda
       Handler: proxyHandler.lambdaHandler
       Role: !GetAtt ProxyLambdaRole.Arn
-      Runtime: nodejs20.x
       VpcConfig:
         SecurityGroupIds:
           - !Ref ProxyLambdaSecurityGroup

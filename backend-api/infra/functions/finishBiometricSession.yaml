@@ -13,8 +13,7 @@ Resources:
         EntryPoints:
           - src/functions/asyncFinishBiometricSession/asyncFinishBiometricSessionHandler.ts
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-finish-biometric-session
-      Runtime: nodejs20.x
+      FunctionName: !Sub ${AWS::StackName}-finish-biometric-session      
       Handler: asyncFinishBiometricSessionHandler.lambdaHandler
       DeploymentPreference:
         Enabled: true

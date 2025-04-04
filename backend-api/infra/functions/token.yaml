@@ -13,8 +13,7 @@ Resources:
         EntryPoints:
           - src/functions/asyncToken/asyncTokenHandler.ts
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-token
-      Runtime: nodejs20.x
+      FunctionName: !Sub ${AWS::StackName}-token      
       Handler: asyncTokenHandler.lambdaHandler
       Role: !GetAtt AsyncTokenLambdaRole.Arn
       DeploymentPreference:
