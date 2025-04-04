@@ -65,6 +65,7 @@ export const allowedTxmaEventNames = [
   "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED",
   "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
   "DCMAW_ASYNC_APP_END",
+  "DCMAW_ASYNC_ABORT_APP",
 ];
 
 const allowedTxmaEventNamesWithoutSessionId = [

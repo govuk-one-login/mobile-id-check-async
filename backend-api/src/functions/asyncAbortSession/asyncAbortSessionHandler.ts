@@ -47,6 +47,7 @@ export async function lambdaHandlerConstructor(
       validateResult.value.errorMessage,
     );
   }
+
   const sessionId = validateResult.value;
 
   const eventService = dependencies.getEventService(config.TXMA_SQS);
@@ -94,6 +95,27 @@ export async function lambdaHandlerConstructor(
       ipAddress,
       txmaAuditEncoded,
     });
+  }
+
+  const writeAbortAppEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_ABORT_APP",
+    sub: sessionAttributes.subjectIdentifier,
+    sessionId: sessionAttributes.sessionId,
+    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+    componentId: config.ISSUER,
+    getNowInMilliseconds: Date.now,
+    redirect_uri: sessionAttributes.redirectUri,
+    suspected_fraud_signal: undefined,
+    ipAddress,
+    txmaAuditEncoded,
+  });
+  if (writeAbortAppEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_ABORT_APP",
+      },
+    });
+    return serverErrorResponse;
   }
 
   logger.info(LogMessage.ABORT_SESSION_COMPLETED);

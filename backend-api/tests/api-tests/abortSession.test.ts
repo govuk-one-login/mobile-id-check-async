@@ -7,7 +7,9 @@ import {
 } from "./utils/apiTestData";
 import {
   createSessionForSub,
+  EventResponse,
   getActiveSessionIdFromSub,
+  pollForEvents,
 } from "./utils/apiTestHelpers";
 import { AxiosResponse } from "axios";
 
@@ -58,6 +60,7 @@ describe("POST /async/abortSession", () => {
   describe("Given there is a valid request", () => {
     let sessionId: string;
     let response: AxiosResponse;
+    let eventsResponse: EventResponse[];
     beforeAll(async () => {
       const sub = randomUUID();
       await createSessionForSub(sub);
@@ -66,7 +69,21 @@ describe("POST /async/abortSession", () => {
       response = await SESSIONS_API_INSTANCE.post("/async/abortSession", {
         sessionId,
       });
+
+      eventsResponse = await pollForEvents({
+        partitionKey: `SESSION#${sessionId}`,
+        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_ABORT_APP`,
+        numberOfEvents: 1,
+      });
     }, 40000);
+
+    it("Writes DCMAW_ASYNC_ABORT_APP TxMA event", () => {
+      expect(eventsResponse[0].event).toEqual(
+        expect.objectContaining({
+          event_name: "DCMAW_ASYNC_ABORT_APP",
+        }),
+      );
+    });
 
     it("Returns 501 response", () => {
       expect(response.status).toBe(501);
