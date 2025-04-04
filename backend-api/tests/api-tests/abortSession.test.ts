@@ -78,7 +78,6 @@ describe("POST /async/abortSession", () => {
     }, 40000);
 
     it("Writes DCMAW_ASYNC_ABORT_APP TxMA event", () => {
-      console.log("eventsResponse", eventsResponse);
       expect(eventsResponse[0].event).toEqual(
         expect.objectContaining({
           event_name: "DCMAW_ASYNC_ABORT_APP",
@@ -87,7 +86,6 @@ describe("POST /async/abortSession", () => {
     });
 
     it("Returns 501 response", () => {
-      console.log("response", response.data);
       expect(response.status).toBe(501);
       expect(response.headers).toEqual(
         expect.objectContaining(expectedSecurityHeaders),
