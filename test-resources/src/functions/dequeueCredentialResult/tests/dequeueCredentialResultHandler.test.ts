@@ -203,52 +203,19 @@ const passingSQSRecord = {
 };
 
 const failingSQSRecordBodyInvalidJSON = {
+  ...passingSQSRecord,
   messageId: "8e30d89a-de80-47e4-88e7-681b415a2549",
-  receiptHandle: "mockReceiptHandle",
   body: "{ mockInvalidJSON",
-  attributes: {
-    ApproximateReceiveCount: "mockApproximateReceiveCount",
-    SentTimestamp: "mockSentTimestamp",
-    SenderId: "mockSenderId",
-    ApproximateFirstReceiveTimestamp: "mockApproximateFirstReceiveTimestamp",
-  },
-  messageAttributes: {},
-  md5OfBody: "mockMd5OfBody",
-  eventSource: "mockEventSource",
-  eventSourceARN: "mockEventSourceARN",
-  awsRegion: "mockAwsRegion",
 };
 
 const failingSQSRecordBodyMissingSub = {
+  ...passingSQSRecord,
   messageId: "6f50c504-818f-4e9f-9a7f-785f532b45f2",
-  receiptHandle: "mockReceiptHandle",
   body: JSON.stringify({ timestamp: "mockTimestamp" }),
-  attributes: {
-    ApproximateReceiveCount: "mockApproximateReceiveCount",
-    SentTimestamp: "mockSentTimestamp",
-    SenderId: "mockSenderId",
-    ApproximateFirstReceiveTimestamp: "mockApproximateFirstReceiveTimestamp",
-  },
-  messageAttributes: {},
-  md5OfBody: "mockMd5OfBody",
-  eventSource: "mockEventSource",
-  eventSourceARN: "mockEventSourceARN",
-  awsRegion: "mockAwsRegion",
 };
 
 const failingSQSRecordBodyMissingTimestamp = {
-  messageId: "6f50c504-818f-4e9f-9a7f-785f532b45f2",
-  receiptHandle: "mockReceiptHandle",
+  ...passingSQSRecord,
+  messageId: "6e7f7694-96ce-4248-9ee0-203c0c39d864",
   body: JSON.stringify({ subjectIdentifier: "mockSubjectIdentifier" }),
-  attributes: {
-    ApproximateReceiveCount: "mockApproximateReceiveCount",
-    SentTimestamp: "mockSentTimestamp",
-    SenderId: "mockSenderId",
-    ApproximateFirstReceiveTimestamp: "mockApproximateFirstReceiveTimestamp",
-  },
-  messageAttributes: {},
-  md5OfBody: "mockMd5OfBody",
-  eventSource: "mockEventSource",
-  eventSourceARN: "mockEventSourceARN",
-  awsRegion: "mockAwsRegion",
 };
