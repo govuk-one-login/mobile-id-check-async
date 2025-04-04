@@ -1,5 +1,5 @@
 import { expect } from "@jest/globals";
-import { SQSEvent } from "aws-lambda";
+import { Context, SQSEvent } from "aws-lambda";
 import "aws-sdk-client-mock-jest";
 import "../../testUtils/matchers";
 import { buildLambdaContext } from "../../testUtils/mockContext";
@@ -7,17 +7,45 @@ import {
   IDequeueCredentialResultDependencies,
   lambdaHandlerConstructor,
 } from "../dequeueCredentialResultHandler";
+import { logger } from "../../common/logging/logger";
 
 describe("Dequeue credential result", () => {
-  let dependencies: IDequeueCredentialResultDependencies;
   const env = {};
+  let dependencies: IDequeueCredentialResultDependencies;
+  let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
 
   beforeEach(() => {
     dependencies = {
       env,
     };
+    context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
+  });
+
+  describe("On every invocation", () => {
+    let event: SQSEvent;
+
+    beforeEach(async () => {
+      event = {
+        Records: [passingSQSRecord],
+      };
+      await lambdaHandlerConstructor(dependencies, event, context);
+    });
+    it("Adds context and version to log attributes and logs STARTED message", () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_STARTED",
+        functionVersion: "1",
+        function_arn: "arn:12345", // example field to verify that context has been added
+      });
+    });
+    it("Clears pre-existing log attributes", async () => {
+      logger.appendKeys({ testKey: "testValue" });
+      await lambdaHandlerConstructor(dependencies, event, context);
+      expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+        testKey: "testValue",
+      });
+    });
   });
 
   describe("Happy path", () => {
@@ -26,17 +54,7 @@ describe("Dequeue credential result", () => {
         const event: SQSEvent = {
           Records: [passingSQSRecord],
         };
-        await lambdaHandlerConstructor(
-          dependencies,
-          event,
-          buildLambdaContext(),
-        );
-      });
-
-      it("Logs STARTED", async () => {
-        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_STARTED",
-        });
+        await lambdaHandlerConstructor(dependencies, event, context);
       });
 
       it("Logs COMPLETED", async () => {
