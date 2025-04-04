@@ -112,6 +112,34 @@ describe("Dequeue credential result", () => {
         expect(result).toStrictEqual({ batchItemFailures: [] });
       });
     });
+
+    describe("Given credential result is missing a subjectIdentifier", () => {
+      let event: SQSEvent;
+      let result: SQSBatchResponse;
+
+      beforeEach(async () => {
+        event = {
+          Records: [failingSQSRecordBodyMissingSub],
+        };
+        result = await lambdaHandlerConstructor(dependencies, event, context);
+      });
+
+      it("Returns an error message", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_MISSING_SUB",
+        });
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          message: "Credential result is missing a subjectIdentifier",
+        });
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          credentialResult: { timestamp: "mockTimestamp" },
+        });
+      });
+
+      it("Returns no batchItemFailures to be reprocessed", () => {
+        expect(result).toStrictEqual({ batchItemFailures: [] });
+      });
+    });
   });
 
   describe("Happy path", () => {
@@ -153,6 +181,23 @@ const failingSQSRecordBodyInvalidJSON = {
   messageId: "8e30d89a-de80-47e4-88e7-681b415a2549",
   receiptHandle: "mockReceiptHandle",
   body: "{ mockInvalidJSON",
+  attributes: {
+    ApproximateReceiveCount: "mockApproximateReceiveCount",
+    SentTimestamp: "mockSentTimestamp",
+    SenderId: "mockSenderId",
+    ApproximateFirstReceiveTimestamp: "mockApproximateFirstReceiveTimestamp",
+  },
+  messageAttributes: {},
+  md5OfBody: "mockMd5OfBody",
+  eventSource: "mockEventSource",
+  eventSourceARN: "mockEventSourceARN",
+  awsRegion: "mockAwsRegion",
+};
+
+const failingSQSRecordBodyMissingSub = {
+  messageId: "6f50c504-818f-4e9f-9a7f-785f532b45f2",
+  receiptHandle: "mockReceiptHandle",
+  body: JSON.stringify({ timestamp: "mockTimestamp" }),
   attributes: {
     ApproximateReceiveCount: "mockApproximateReceiveCount",
     SentTimestamp: "mockSentTimestamp",

@@ -24,12 +24,22 @@ export const lambdaHandlerConstructor = async (
 
   const eventRecords = event.Records;
   for (const record of eventRecords) {
-    const recordBody = record.body;
-    if (!isValidJSON(recordBody)) {
+    let { body: recordBody } = record
+    let credentialResult
+    try {
+      credentialResult = JSON.parse(recordBody)
+    } catch (error) {
       logger.error(LogMessage.DEQUEUE_CREDENTIAL_RESULT_INVALID_JSON, {
         recordBody,
       });
       continue;
+    }
+
+    if (!credentialResult.subjectIdentifier) {
+      logger.error(LogMessage.DEQUEUE_CREDENTIAL_RESULT_MISSING_SUB, {
+        credentialResult,
+      });
+      continue
     }
   }
 
