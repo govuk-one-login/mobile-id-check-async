@@ -48,7 +48,13 @@ export const lambdaHandlerConstructor = async (
       });
       continue;
     }
+
+    processedMessages.push(credentialResult);
   }
+
+  logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_PROCESSED_MESSAGES, {
+    processedMessages,
+  });
 
   logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_COMPLETED);
   return { batchItemFailures };

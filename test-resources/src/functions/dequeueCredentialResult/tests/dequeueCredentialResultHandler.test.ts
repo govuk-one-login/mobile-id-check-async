@@ -30,7 +30,7 @@ describe("Dequeue credential result", () => {
 
     beforeEach(async () => {
       event = {
-        Records: [passingSQSRecord],
+        Records: [validSQSRecord],
       };
       await lambdaHandlerConstructor(dependencies, event, context);
     });
@@ -171,7 +171,7 @@ describe("Dequeue credential result", () => {
     describe("Given the Lambda is triggered", () => {
       beforeEach(async () => {
         const event: SQSEvent = {
-          Records: [passingSQSRecord],
+          Records: [validSQSRecord],
         };
         await lambdaHandlerConstructor(dependencies, event, context);
       });
@@ -181,14 +181,28 @@ describe("Dequeue credential result", () => {
           messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
         });
       });
+
+      it("Logs processed messages", () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          processedMessages: [
+            {
+              subjectIdentifier: "mockSubjectIdentifier",
+              timestamp: "mockTimestamp",
+            },
+          ],
+        });
+      });
     });
   });
 });
 
-const passingSQSRecord = {
+const validSQSRecord = {
   messageId: "c2098377-619a-449f-b2b4-254b6c41aff4",
   receiptHandle: "mockReceiptHandle",
-  body: "",
+  body: JSON.stringify({
+    subjectIdentifier: "mockSubjectIdentifier",
+    timestamp: "mockTimestamp",
+  }),
   attributes: {
     ApproximateReceiveCount: "mockApproximateReceiveCount",
     SentTimestamp: "mockSentTimestamp",
@@ -203,19 +217,19 @@ const passingSQSRecord = {
 };
 
 const failingSQSRecordBodyInvalidJSON = {
-  ...passingSQSRecord,
+  ...validSQSRecord,
   messageId: "8e30d89a-de80-47e4-88e7-681b415a2549",
   body: "{ mockInvalidJSON",
 };
 
 const failingSQSRecordBodyMissingSub = {
-  ...passingSQSRecord,
+  ...validSQSRecord,
   messageId: "6f50c504-818f-4e9f-9a7f-785f532b45f2",
   body: JSON.stringify({ timestamp: "mockTimestamp" }),
 };
 
 const failingSQSRecordBodyMissingTimestamp = {
-  ...passingSQSRecord,
+  ...validSQSRecord,
   messageId: "6e7f7694-96ce-4248-9ee0-203c0c39d864",
   body: JSON.stringify({ subjectIdentifier: "mockSubjectIdentifier" }),
 };

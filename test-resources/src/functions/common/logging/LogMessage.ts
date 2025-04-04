@@ -76,7 +76,7 @@ export class LogMessage implements LogAttributes {
   );
   static readonly DEQUEUE_CREDENTIAL_RESULT_PROCESSED_MESSAGES = new LogMessage(
     "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_PROCESSED_MESSAGES",
-    "Lambda handler processing has started.",
+    "Successfully processed messages",
   );
   static readonly DEQUEUE_CREDENTIAL_RESULT_COMPLETED = new LogMessage(
     "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
