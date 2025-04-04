@@ -62,6 +62,14 @@ export class LogMessage implements LogAttributes {
     "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_STARTED",
     "Lambda handler processing has started.",
   );
+  // static readonly DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_FAILURE = new LogMessage(
+  //   "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_FAILURE",
+  //   "Failed to process message.",
+  // );
+  static readonly DEQUEUE_CREDENTIAL_RESULT_INVALID_JSON = new LogMessage(
+    "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_INVALID_JSON",
+    "Failed to parse credential result. Invalid JSON.",
+  );
   static readonly DEQUEUE_CREDENTIAL_RESULT_PROCESSED_MESSAGES = new LogMessage(
     "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_PROCESSED_MESSAGES",
     "Lambda handler processing has started.",

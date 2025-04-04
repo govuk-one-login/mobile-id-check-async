@@ -1,9 +1,5 @@
 import { expect } from "@jest/globals";
-import {
-  Context,
-  SQSBatchResponse,
-  SQSEvent
-} from "aws-lambda";
+import { Context, SQSBatchResponse, SQSEvent } from "aws-lambda";
 import "aws-sdk-client-mock-jest";
 import { logger } from "../../common/logging/logger";
 import "../../testUtils/matchers";
@@ -18,6 +14,7 @@ describe("Dequeue credential result", () => {
   let dependencies: IDequeueCredentialResultDependencies;
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpyInstance;
 
   beforeEach(() => {
     dependencies = {
@@ -25,6 +22,7 @@ describe("Dequeue credential result", () => {
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
+    consoleErrorSpy = jest.spyOn(console, "error");
   });
 
   describe("On every invocation", () => {
@@ -86,6 +84,36 @@ describe("Dequeue credential result", () => {
     });
   });
 
+  describe("Given credential result validation fails", () => {
+    describe("Given credential result is not valid JSON", () => {
+      let event: SQSEvent;
+      let result: SQSBatchResponse;
+
+      beforeEach(async () => {
+        event = {
+          Records: [failingSQSRecordBodyInvalidJSON],
+        };
+        result = await lambdaHandlerConstructor(dependencies, event, context);
+      });
+
+      it("Returns an error message", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_INVALID_JSON",
+        });
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          message: "Failed to parse credential result. Invalid JSON.",
+        });
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          recordBody: "{ mockInvalidJSON",
+        });
+      });
+
+      it("Returns no batchItemFailures to be reprocessed", () => {
+        expect(result).toStrictEqual({ batchItemFailures: [] });
+      });
+    });
+  });
+
   describe("Happy path", () => {
     describe("Given the Lambda is triggered", () => {
       beforeEach(async () => {
@@ -108,6 +136,23 @@ const passingSQSRecord = {
   messageId: "c2098377-619a-449f-b2b4-254b6c41aff4",
   receiptHandle: "mockReceiptHandle",
   body: "",
+  attributes: {
+    ApproximateReceiveCount: "mockApproximateReceiveCount",
+    SentTimestamp: "mockSentTimestamp",
+    SenderId: "mockSenderId",
+    ApproximateFirstReceiveTimestamp: "mockApproximateFirstReceiveTimestamp",
+  },
+  messageAttributes: {},
+  md5OfBody: "mockMd5OfBody",
+  eventSource: "mockEventSource",
+  eventSourceARN: "mockEventSourceARN",
+  awsRegion: "mockAwsRegion",
+};
+
+const failingSQSRecordBodyInvalidJSON = {
+  messageId: "8e30d89a-de80-47e4-88e7-681b415a2549",
+  receiptHandle: "mockReceiptHandle",
+  body: "{ mockInvalidJSON",
   attributes: {
     ApproximateReceiveCount: "mockApproximateReceiveCount",
     SentTimestamp: "mockSentTimestamp",
