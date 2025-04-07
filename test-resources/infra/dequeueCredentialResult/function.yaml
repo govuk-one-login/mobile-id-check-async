@@ -87,7 +87,7 @@ Resources:
       BatchSize: 10
       Enabled: true
       EventSourceArn:
-        Fn::ImportValue: !Sub ${BackendStackName}-vendor-processing-queue-arn
+        Fn::ImportValue: !Sub ${BackendStackName}-ipv-core-queue-arn
       FunctionName: !GetAtt DequeueCredentialResultFunction.Arn
       FunctionResponseTypes:
         - ReportBatchItemFailures
