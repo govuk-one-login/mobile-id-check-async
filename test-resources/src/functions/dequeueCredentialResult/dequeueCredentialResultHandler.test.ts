@@ -1,13 +1,14 @@
 import { expect } from "@jest/globals";
 import { Context, SQSBatchResponse, SQSEvent } from "aws-lambda";
 import "aws-sdk-client-mock-jest";
-import { logger } from "../../common/logging/logger";
-import "../../testUtils/matchers";
-import { buildLambdaContext } from "../../testUtils/mockContext";
+import { logger } from "../common/logging/logger";
+import "../testUtils/matchers";
+import { buildLambdaContext } from "../testUtils/mockContext";
 import {
   IDequeueCredentialResultDependencies,
   lambdaHandlerConstructor,
-} from "../dequeueCredentialResultHandler";
+} from "./dequeueCredentialResultHandler";
+import { failingSQSRecordBodyMissingSub, validSQSRecord } from "./unitTestData";
 
 describe("Dequeue credential result", () => {
   const env = {};
@@ -84,33 +85,6 @@ describe("Dequeue credential result", () => {
   });
 
   describe("Given credential result validation fails", () => {
-    describe("Given credential result is not valid JSON", () => {
-      let result: SQSBatchResponse;
-
-      beforeEach(async () => {
-        const event: SQSEvent = {
-          Records: [failingSQSRecordBodyInvalidJSON],
-        };
-        result = await lambdaHandlerConstructor(dependencies, event, context);
-      });
-
-      it("Returns an error message", () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_INVALID_JSON",
-        });
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          message: "Failed to parse credential result. Invalid JSON.",
-        });
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          recordBody: "{ mockInvalidJSON",
-        });
-      });
-
-      it("Returns no batchItemFailures to be reprocessed", () => {
-        expect(result).toStrictEqual({ batchItemFailures: [] });
-      });
-    });
-
     describe("Given credential result is missing a subjectIdentifier", () => {
       let result: SQSBatchResponse;
 
@@ -119,46 +93,6 @@ describe("Dequeue credential result", () => {
           Records: [failingSQSRecordBodyMissingSub],
         };
         result = await lambdaHandlerConstructor(dependencies, event, context);
-      });
-
-      it("Returns an error message", () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_MISSING_SUB",
-        });
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          message: "Credential result is missing a subjectIdentifier",
-        });
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          credentialResult: { timestamp: "mockTimestamp" },
-        });
-      });
-
-      it("Returns no batchItemFailures to be reprocessed", () => {
-        expect(result).toStrictEqual({ batchItemFailures: [] });
-      });
-    });
-
-    describe("Given credential result is missing a timestamp", () => {
-      let result: SQSBatchResponse;
-
-      beforeEach(async () => {
-        const event: SQSEvent = {
-          Records: [failingSQSRecordBodyMissingTimestamp],
-        };
-        result = await lambdaHandlerConstructor(dependencies, event, context);
-      });
-
-      it("Returns an error message", () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode:
-            "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_MISSING_TIMESTAMP",
-        });
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          message: "Credential result is missing a timestamp",
-        });
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          credentialResult: { subjectIdentifier: "mockSubjectIdentifier" },
-        });
       });
 
       it("Returns no batchItemFailures to be reprocessed", () => {
@@ -195,41 +129,3 @@ describe("Dequeue credential result", () => {
     });
   });
 });
-
-const validSQSRecord = {
-  messageId: "c2098377-619a-449f-b2b4-254b6c41aff4",
-  receiptHandle: "mockReceiptHandle",
-  body: JSON.stringify({
-    subjectIdentifier: "mockSubjectIdentifier",
-    timestamp: "mockTimestamp",
-  }),
-  attributes: {
-    ApproximateReceiveCount: "mockApproximateReceiveCount",
-    SentTimestamp: "mockSentTimestamp",
-    SenderId: "mockSenderId",
-    ApproximateFirstReceiveTimestamp: "mockApproximateFirstReceiveTimestamp",
-  },
-  messageAttributes: {},
-  md5OfBody: "mockMd5OfBody",
-  eventSource: "mockEventSource",
-  eventSourceARN: "mockEventSourceARN",
-  awsRegion: "mockAwsRegion",
-};
-
-const failingSQSRecordBodyInvalidJSON = {
-  ...validSQSRecord,
-  messageId: "8e30d89a-de80-47e4-88e7-681b415a2549",
-  body: "{ mockInvalidJSON",
-};
-
-const failingSQSRecordBodyMissingSub = {
-  ...validSQSRecord,
-  messageId: "6f50c504-818f-4e9f-9a7f-785f532b45f2",
-  body: JSON.stringify({ timestamp: "mockTimestamp" }),
-};
-
-const failingSQSRecordBodyMissingTimestamp = {
-  ...validSQSRecord,
-  messageId: "6e7f7694-96ce-4248-9ee0-203c0c39d864",
-  body: JSON.stringify({ subjectIdentifier: "mockSubjectIdentifier" }),
-};

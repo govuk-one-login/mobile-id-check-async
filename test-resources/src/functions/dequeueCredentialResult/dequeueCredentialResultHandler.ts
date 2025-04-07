@@ -7,6 +7,7 @@ import {
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
+import { validateCredentialResult } from "./validateCredentialResult/validateCredentialResult";
 
 export const lambdaHandlerConstructor = async (
   _dependencies: IDequeueCredentialResultDependencies,
@@ -18,36 +19,10 @@ export const lambdaHandlerConstructor = async (
   const batchItemFailures: SQSBatchItemFailure[] = [];
   const processedMessages: IProcessedMessage[] = [];
 
-  logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_PROCESSED_MESSAGES, {
-    processedMessages,
-  });
-
-  const eventRecords = event.Records;
-  for (const record of eventRecords) {
-    const { body: recordBody } = record;
-    let credentialResult;
-    try {
-      credentialResult = JSON.parse(recordBody);
-    } catch {
-      logger.error(LogMessage.DEQUEUE_CREDENTIAL_RESULT_INVALID_JSON, {
-        recordBody,
-      });
-      continue;
-    }
-
-    if (!credentialResult.subjectIdentifier) {
-      logger.error(LogMessage.DEQUEUE_CREDENTIAL_RESULT_MISSING_SUB, {
-        credentialResult,
-      });
-      continue;
-    }
-
-    if (!credentialResult.timestamp) {
-      logger.error(LogMessage.DEQUEUE_CREDENTIAL_RESULT_MISSING_TIMESTAMP, {
-        credentialResult,
-      });
-      continue;
-    }
+  for (const record of event.Records) {
+    const validCredentialResultResponse = validateCredentialResult(record);
+    if (validCredentialResultResponse.isError) continue;
+    const credentialResult = validCredentialResultResponse.value;
 
     processedMessages.push(credentialResult);
   }
@@ -64,7 +39,7 @@ export interface IDequeueCredentialResultDependencies {
   env: NodeJS.ProcessEnv;
 }
 
-interface IProcessedMessage {
+export interface IProcessedMessage {
   sub: string;
   timestamp: number;
 }
