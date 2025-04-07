@@ -24,19 +24,18 @@ describe("Template", () => {
   });
 
   it("compare parameters of parent and sub templates", () => {
-    const parent = readTemplate(templateFilePath);
-    const composed = readAllTemplates(infraFolder, parent);
+    const main = readTemplate(templateFilePath);
+    const parent = readTemplate(parentFilePath);
 
-    const parentKeys = Object.keys(parent.Parameters).sort();
-    const composedKeys = Object.keys(composed.Parameters).sort();
-
-    expect(parentKeys).toEqual(composedKeys);
-
-    parentKeys.forEach((key) => {
-      expect(
-        isDeepStrictEqual(parent.Parameters[key], composed.Parameters[key]),
-      ).toBe(true);
-    });
+    const paramDifferences = findDifferences(
+      "Parameters",
+      main.Parameters,
+      parent.Parameters,
+    );
+    if (paramDifferences.length > 0) {
+      console.log("Parameter differences:", paramDifferences);
+      expect(paramDifferences.length).toBe(0);
+    }
   });
 
   it("compare mappings of parent and sub templates", () => {
