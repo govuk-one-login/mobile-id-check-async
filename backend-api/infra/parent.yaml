@@ -478,3 +478,10 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-ipv-core-queue-arn
     Value: !GetAtt IPVCoreSQS.Arn
+
+  IPVCoreKmsEncryptionKeyArn:
+    Condition: IsDevOrBuild
+    Description: IPV Core KMS Encryption Key ARN
+    Export:
+      Name: !Sub ${AWS::StackName}-ipv-core-kms-encryption-key-arn
+    Value: !GetAtt IPVCoreKMSEncryptionKey.Arn

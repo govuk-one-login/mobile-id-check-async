@@ -15,7 +15,6 @@ describe("Dequeue credential result", () => {
   let dependencies: IDequeueCredentialResultDependencies;
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
-  let consoleErrorSpy: jest.SpyInstance;
 
   beforeEach(() => {
     dependencies = {
@@ -23,7 +22,6 @@ describe("Dequeue credential result", () => {
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
-    consoleErrorSpy = jest.spyOn(console, "error");
   });
 
   describe("On every invocation", () => {

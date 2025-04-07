@@ -3,23 +3,27 @@ import { SQSRecord } from "aws-lambda";
 import "../../testUtils/matchers";
 import { Result } from "../../common/utils/result";
 import { IProcessedMessage } from "../dequeueCredentialResultHandler";
-import { failingSQSRecordBodyInvalidJSON, failingSQSRecordBodyMissingSub, failingSQSRecordBodyMissingTimestamp } from "../unitTestData";
+import {
+  failingSQSRecordBodyInvalidJSON,
+  failingSQSRecordBodyMissingSub,
+  failingSQSRecordBodyMissingTimestamp,
+} from "../unitTestData";
 import { validateCredentialResult } from "./validateCredentialResult";
 
 describe("Validate credential result", () => {
   let consoleErrorSpy: jest.SpyInstance;
 
   describe("Given credential result is not valid JSON", () => {
-    let result: Result<IProcessedMessage, void>
+    let result: Result<IProcessedMessage, void>;
 
     beforeEach(() => {
-      const sqsRecord: SQSRecord = failingSQSRecordBodyInvalidJSON
+      const sqsRecord: SQSRecord = failingSQSRecordBodyInvalidJSON;
       consoleErrorSpy = jest.spyOn(console, "error");
       result = validateCredentialResult(sqsRecord);
     });
 
     it("Returns an error result", () => {
-      expect(result.isError).toBe(true)
+      expect(result.isError).toBe(true);
     });
     it("Returns an error message", () => {
       expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
@@ -35,15 +39,15 @@ describe("Validate credential result", () => {
   });
 
   describe("Given credential result is missing a subjectIdentifier", () => {
-    let result: Result<IProcessedMessage, void>
+    let result: Result<IProcessedMessage, void>;
 
     beforeEach(() => {
-      const sqsRecord: SQSRecord = failingSQSRecordBodyMissingSub
+      const sqsRecord: SQSRecord = failingSQSRecordBodyMissingSub;
       result = validateCredentialResult(sqsRecord);
     });
 
     it("Returns an error result", () => {
-      expect(result.isError).toBe(true)
+      expect(result.isError).toBe(true);
     });
     it("Returns an error message", () => {
       expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
@@ -59,15 +63,15 @@ describe("Validate credential result", () => {
   });
 
   describe("Given credential result is missing a timestamp", () => {
-    let result: Result<IProcessedMessage, void>
+    let result: Result<IProcessedMessage, void>;
 
     beforeEach(() => {
-      const sqsRecord: SQSRecord = failingSQSRecordBodyMissingTimestamp
+      const sqsRecord: SQSRecord = failingSQSRecordBodyMissingTimestamp;
       result = validateCredentialResult(sqsRecord);
     });
 
     it("Returns an error result", () => {
-      expect(result.isError).toBe(true)
+      expect(result.isError).toBe(true);
     });
     it("Returns an error message", () => {
       expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
@@ -82,4 +86,4 @@ describe("Validate credential result", () => {
       });
     });
   });
-})
+});

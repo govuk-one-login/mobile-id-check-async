@@ -69,6 +69,15 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
+        - PolicyName: KMSPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:Decrypt
+                Resource:
+                  Fn::ImportValue: !Sub ${BackendStackName}-ipv-core-kms-encryption-key-arn
         - PolicyName: SQSPolicy
           PolicyDocument:
             Version: "2012-10-17"
