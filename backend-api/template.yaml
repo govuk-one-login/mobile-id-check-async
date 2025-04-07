@@ -5661,6 +5661,13 @@ Outputs:
         - EventsBaseUrl
     Condition: IsDevOrBuild
 
+  IPVCoreQueueArn:
+    Description: IPV Core Queue ARN
+    Value: !GetAtt IPVCoreSQS.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-ipv-core-queue-arn
+    Condition: IsDevOrBuild
+
   PrivateApiUrl:
     Description: Private API Gateway base URL
     Value: !Sub https://${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
@@ -5697,11 +5704,4 @@ Outputs:
     Value: !GetAtt TxMASQSQueue.Arn
     Export:
       Name: !Sub ${AWS::StackName}-txma-sqs-queue-arn
-    Condition: IsDevOrBuild
-
-  VendorProcessingQueueArn:
-    Description: Vendor Processing Queue ARN
-    Value: !GetAtt VendorProcessingSQS.Arn
-    Export:
-      Name: !Sub ${AWS::StackName}-vendor-processing-queue-arn
     Condition: IsDevOrBuild

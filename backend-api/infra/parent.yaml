@@ -472,9 +472,9 @@ Outputs:
       Name: !Sub ${AWS::StackName}-txma-kms-encryption-key-arn
     Value: !GetAtt TxMAKMSEncryptionKey.Arn
 
-  VendorProcessingQueueArn:
+  IPVCoreQueueArn:
     Condition: IsDevOrBuild
-    Description: Vendor Processing Queue ARN
+    Description: IPV Core Queue ARN
     Export:
-      Name: !Sub ${AWS::StackName}-vendor-processing-queue-arn
-    Value: !GetAtt VendorProcessingSQS.Arn
+      Name: !Sub ${AWS::StackName}-ipv-core-queue-arn
+    Value: !GetAtt IPVCoreSQS.Arn
