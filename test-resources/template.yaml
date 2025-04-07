@@ -214,7 +214,7 @@ Resources:
                   - sqs:GetQueueAttributes
                 Effect: Allow
                 Resource: !ImportValue
-                  Fn::Sub: ${BackendStackName}-vendor-processing-queue-arn
+                  Fn::Sub: ${BackendStackName}-ipv-core-queue-arn
             Version: "2012-10-17"
           PolicyName: SQSPolicy
       RoleName: !Sub ${AWS::StackName}-dequeue-credential-result

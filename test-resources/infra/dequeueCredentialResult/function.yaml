@@ -79,7 +79,7 @@ Resources:
                   - sqs:DeleteMessage
                   - sqs:GetQueueAttributes
                 Resource:
-                  Fn::ImportValue: !Sub ${BackendStackName}-vendor-processing-queue-arn
+                  Fn::ImportValue: !Sub ${BackendStackName}-ipv-core-queue-arn
 
   DequeueCredentialResultEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
