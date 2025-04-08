@@ -96,7 +96,7 @@ describe("Validate credential result", () => {
 
     it("Returns an error message", () => {
       expect(result.value).toStrictEqual({
-        errorMessage: "sub type is incorrect. sub type: number.",
+        errorMessage: "sub is an incorrect type: number - should be a string.",
       });
     });
   });
