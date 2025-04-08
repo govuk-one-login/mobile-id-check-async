@@ -23,15 +23,13 @@ export const lambdaHandlerConstructor = async (
     const validateCredentialResultResponse = validateCredentialResult(record);
     if (validateCredentialResultResponse.isError) {
       const { errorMessage } = validateCredentialResultResponse.value;
-      logger.error(LogMessage.DEQUEUE_CREDENTIAL_RESULT_INVALID_RESULT, {
+      logger.error(LogMessage.DEQUEUE_CREDENTIAL_RESULT_MESSAGE_INVALID, {
         errorMessage,
       });
-
-      continue;
+    } else {
+      const { sub, sentTimestamp } = validateCredentialResultResponse.value;
+      processedMessages.push({ sub, sentTimestamp });
     }
-
-    const { sub, sentTimestamp } = validateCredentialResultResponse.value;
-    processedMessages.push({ sub, sentTimestamp });
   }
 
   logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_PROCESSED_MESSAGES, {

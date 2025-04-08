@@ -89,8 +89,8 @@ describe("Dequeue credential result", () => {
 
     it("Logs an error message", () => {
       expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-        messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_INVALID_RESULT",
-        message: "Credential result is missing or invalid",
+        messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_MESSAGE_INVALID",
+        message: "Credential result message is missing or invalid",
         errorMessage: "sub is missing from credential result.",
       });
     });
@@ -109,7 +109,7 @@ describe("Dequeue credential result", () => {
         result = await lambdaHandlerConstructor(dependencies, event, context);
       });
 
-      it("Logs COMPLETED", async () => {
+      it("Logs COMPLETED", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
         });
@@ -142,13 +142,13 @@ describe("Dequeue credential result", () => {
 
     it("Logs an error message", () => {
       expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-        messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_INVALID_RESULT",
-        message: "Credential result is missing or invalid",
+        messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_MESSAGE_INVALID",
+        message: "Credential result message is missing or invalid",
         errorMessage: "sub is missing from credential result.",
       });
     });
 
-    it("Logs COMPLETED", async () => {
+    it("Logs COMPLETED", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
       });
