@@ -79,7 +79,7 @@ describe("Validate credential result", () => {
 
     it("Returns an error message", () => {
       expect(result.value).toStrictEqual({
-        errorMessage: `sub is missing from credential result.`,
+        errorMessage: `sub is missing from record body.`,
       });
     });
   });

@@ -31,7 +31,7 @@ export function validateCredentialResult(
   const { sub } = credentialResult;
   if (!sub) {
     return errorResult({
-      errorMessage: "sub is missing from credential result.",
+      errorMessage: "sub is missing from record body.",
     });
   }
 
