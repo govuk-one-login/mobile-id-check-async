@@ -55,7 +55,9 @@ describe("Async Issue Biometric Credential", () => {
 
   beforeEach(() => {
     dependencies = {
-      env: {},
+      env: {
+        SESSION_TABLE_NAME: "mockTableName",
+      },
       getSessionRegistry: () => mockSessionRegistrySuccess,
     };
     context = buildLambdaContext();
@@ -84,6 +86,34 @@ describe("Async Issue Biometric Credential", () => {
         testKey: "testValue",
       });
     });
+  });
+
+  describe("Config validation", () => {
+    describe.each(["SESSION_TABLE_NAME"])(
+      "Given %s environment variable is missing",
+      (envVar: string) => {
+        beforeEach(async () => {
+          delete dependencies.env[envVar];
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        });
+
+        it("Logs INVALID_CONFIG", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode:
+              "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG",
+            data: {
+              missingEnvironmentVariables: [envVar],
+            },
+          });
+        });
+
+        it("Does not log COMPLETED", () => {
+          expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+          });
+        });
+      },
+    );
   });
 
   describe("SQS Event validation", () => {

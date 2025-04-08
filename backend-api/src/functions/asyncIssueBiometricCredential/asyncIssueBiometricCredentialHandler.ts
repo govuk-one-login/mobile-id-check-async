@@ -7,14 +7,20 @@ import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
 import { validateVendorProcessingQueueSqsEvent } from "./validateSqsEvent";
+import { getIssueBiometricCredentialConfig } from "./issueBiometricCredentialConfig";
 
 export async function lambdaHandlerConstructor(
-  _dependencies: IssueBiometricCredentialDependencies,
+  dependencies: IssueBiometricCredentialDependencies,
   event: SQSEvent,
   context: Context,
 ): Promise<void> {
   setupLogger(context);
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_STARTED);
+
+  const configResult = getIssueBiometricCredentialConfig(dependencies.env);
+  if (configResult.isError) {
+    return;
+  }
 
   const validateSqsEventResult = validateVendorProcessingQueueSqsEvent(event);
   if (validateSqsEventResult.isError) {
@@ -23,7 +29,6 @@ export async function lambdaHandlerConstructor(
   const sessionId = validateSqsEventResult.value;
 
   logger.appendKeys({ sessionId });
-
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
 }
 
