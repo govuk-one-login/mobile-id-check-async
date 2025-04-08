@@ -967,7 +967,7 @@ Resources:
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       TreatMissingData: notBreaching
-      threshold: 80
+      Threshold: 80
     Condition: DeployAlarms
 
   AsyncAbortSessionSubscriptionFilter:
@@ -1504,7 +1504,7 @@ Resources:
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       TreatMissingData: notBreaching
-      threshold: 80
+      Threshold: 80
     Condition: DeployAlarms
 
   AsyncActiveSessionSubscriptionFilter:
@@ -2072,7 +2072,7 @@ Resources:
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       TreatMissingData: notBreaching
-      threshold: 80
+      Threshold: 80
     Condition: DeployAlarms
 
   AsyncBiometricTokenSubscriptionFilter:
@@ -2631,7 +2631,7 @@ Resources:
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       TreatMissingData: notBreaching
-      threshold: 80
+      Threshold: 80
     Condition: DeployAlarms
 
   AsyncCredentialSubscriptionFilter:
@@ -3161,7 +3161,7 @@ Resources:
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       TreatMissingData: notBreaching
-      threshold: 80
+      Threshold: 80
     Condition: DeployAlarms
 
   AsyncFinishBiometricSessionSubscriptionFilter:
@@ -3436,7 +3436,7 @@ Resources:
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       TreatMissingData: notBreaching
-      threshold: 80
+      Threshold: 80
     Condition: DeployAlarms
 
   AsyncIssueBiometricCredentialMetricFilter:
@@ -3999,7 +3999,7 @@ Resources:
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       TreatMissingData: notBreaching
-      threshold: 80
+      Threshold: 80
     Condition: DeployAlarms
 
   AsyncTokenSubscriptionFilter:

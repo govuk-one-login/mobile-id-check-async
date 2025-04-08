@@ -90,7 +90,7 @@ Resources:
       AlarmName: !Sub "${AWS::StackName}-token-lambda-low-completion"
       EvaluationPeriods: 1
       DatapointsToAlarm: 1
-      threshold: 80
+      Threshold: 80
       ComparisonOperator: LessThanOrEqualToThreshold
       TreatMissingData: notBreaching
       Metrics:
@@ -221,7 +221,7 @@ Resources:
       AlarmName: !Sub "${AWS::StackName}-credential-lambda-low-completion"
       EvaluationPeriods: 1
       DatapointsToAlarm: 1
-      threshold: 80
+      Threshold: 80
       ComparisonOperator: LessThanOrEqualToThreshold
       TreatMissingData: notBreaching
       Metrics:
@@ -352,7 +352,7 @@ Resources:
       AlarmName: !Sub "${AWS::StackName}-active-session-lambda-low-completion"
       EvaluationPeriods: 1
       DatapointsToAlarm: 1
-      threshold: 80
+      Threshold: 80
       ComparisonOperator: LessThanOrEqualToThreshold
       TreatMissingData: notBreaching
       Metrics:
@@ -483,7 +483,7 @@ Resources:
       AlarmName: !Sub "${AWS::StackName}-biometric-token-lambda-low-completion"
       EvaluationPeriods: 1
       DatapointsToAlarm: 1
-      threshold: 80
+      Threshold: 80
       ComparisonOperator: LessThanOrEqualToThreshold
       TreatMissingData: notBreaching
       Metrics:
@@ -614,7 +614,7 @@ Resources:
       AlarmName: !Sub "${AWS::StackName}-finish-biometric-session-lambda-low-completion"
       EvaluationPeriods: 1
       DatapointsToAlarm: 1
-      threshold: 80
+      Threshold: 80
       ComparisonOperator: LessThanOrEqualToThreshold
       TreatMissingData: notBreaching
       Metrics:
@@ -745,7 +745,7 @@ Resources:
       AlarmName: !Sub "${AWS::StackName}-abort-session-lambda-low-completion"
       EvaluationPeriods: 1
       DatapointsToAlarm: 1
-      threshold: 80
+      Threshold: 80
       ComparisonOperator: LessThanOrEqualToThreshold
       TreatMissingData: notBreaching
       Metrics:
@@ -876,7 +876,7 @@ Resources:
       AlarmName: !Sub "${AWS::StackName}-issue-biometric-credential-lambda-low-completion"
       EvaluationPeriods: 1
       DatapointsToAlarm: 1
-      threshold: 80
+      Threshold: 80
       ComparisonOperator: LessThanOrEqualToThreshold
       TreatMissingData: notBreaching
       Metrics:
