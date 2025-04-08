@@ -61,8 +61,7 @@ describe("Validate credential result", () => {
 
     it("Returns an error message", () => {
       expect(result.value).toStrictEqual({
-        errorMessage:
-          "Record body could not be parsed as JSON. SyntaxError: Expected property name or '}' in JSON at position 2",
+        errorMessage: "Record body could not be parsed as JSON. SyntaxError: Expected property name or '}' in JSON at position 2 (line 1 column 3)"
       });
     });
   });
