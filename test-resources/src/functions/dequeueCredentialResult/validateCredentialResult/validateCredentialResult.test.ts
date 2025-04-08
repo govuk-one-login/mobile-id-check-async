@@ -1,44 +1,23 @@
 import { expect } from "@jest/globals";
 import { SQSRecord } from "aws-lambda";
-import "../../testUtils/matchers";
 import { Result } from "../../common/utils/result";
+import "../../testUtils/matchers";
 import { IProcessedMessage } from "../dequeueCredentialResultHandler";
 import {
   failingSQSRecordBodyInvalidJSON,
   failingSQSRecordBodyMissingSub,
   failingSQSRecordBodyMissingTimestamp,
+  failingSQSRecordBodySubTypeInvalid,
 } from "../unitTestData";
-import { validateCredentialResults } from "./validateCredentialResult";
+import { validateCredentialResult } from "./validateCredentialResult";
 
 describe("Validate credential result", () => {
-  let consoleErrorSpy: jest.SpyInstance;
-
-  describe("Given there are no records in the records array", () => {
-    let result: Result<IProcessedMessage[]>;
-
-    beforeEach(() => {
-      const sqsRecords: SQSRecord[] = [];
-      consoleErrorSpy = jest.spyOn(console, "error");
-      result = validateCredentialResults(sqsRecords);
-    });
-
-    it("Returns an error result", () => {
-      expect(result.isError).toBe(true);
-    });
-
-    it("Logs an error", () => {
-      expect(result.value).toStrictEqual({
-        errorMessage: "Records array is empty.",
-      });
-    });
-  });
-
   describe("Given credential result is missing a timestamp", () => {
-    let result: Result<IProcessedMessage[]>;
+    let result: Result<IProcessedMessage>;
 
     beforeEach(() => {
-      const sqsRecords: SQSRecord[] = [failingSQSRecordBodyMissingTimestamp];
-      result = validateCredentialResults(sqsRecords);
+      const sqsRecord: SQSRecord = failingSQSRecordBodyMissingTimestamp;
+      result = validateCredentialResult(sqsRecord);
     });
 
     it("Returns an error result", () => {
@@ -55,12 +34,11 @@ describe("Validate credential result", () => {
   describe("Given the SQS record body is missing", () => {});
 
   describe("Given credential result is not valid JSON", () => {
-    let result: Result<IProcessedMessage[]>;
+    let result: Result<IProcessedMessage>;
 
     beforeEach(() => {
-      const sqsRecords: SQSRecord[] = [failingSQSRecordBodyInvalidJSON];
-      consoleErrorSpy = jest.spyOn(console, "error");
-      result = validateCredentialResults(sqsRecords);
+      const sqsRecord: SQSRecord = failingSQSRecordBodyInvalidJSON;
+      result = validateCredentialResult(sqsRecord);
     });
 
     it("Returns an error result", () => {
@@ -75,11 +53,11 @@ describe("Validate credential result", () => {
   });
 
   describe("Given credential result is missing a sub", () => {
-    let result: Result<IProcessedMessage[]>;
+    let result: Result<IProcessedMessage>;
 
     beforeEach(() => {
-      const sqsRecords: SQSRecord[] = [failingSQSRecordBodyMissingSub];
-      result = validateCredentialResults(sqsRecords);
+      const sqsRecord: SQSRecord = failingSQSRecordBodyMissingSub;
+      result = validateCredentialResult(sqsRecord);
     });
 
     it("Returns an error result", () => {
@@ -88,7 +66,26 @@ describe("Validate credential result", () => {
 
     it("Returns an error message", () => {
       expect(result.value).toStrictEqual({
-        errorMessage: `sub is missing from credential result. Credential result: { timestamp: \"mockTimestamp\" }`,
+        errorMessage: `sub is missing from credential result.`,
+      });
+    });
+  });
+
+  describe("Given sub type is invalid", () => {
+    let result: Result<IProcessedMessage>;
+
+    beforeEach(() => {
+      const sqsRecord: SQSRecord = failingSQSRecordBodySubTypeInvalid;
+      result = validateCredentialResult(sqsRecord);
+    });
+
+    it("Returns an error result", () => {
+      expect(result.isError).toBe(true);
+    });
+
+    it("Returns an error message", () => {
+      expect(result.value).toStrictEqual({
+        errorMessage: "sub type is incorrect. sub type: number.",
       });
     });
   });

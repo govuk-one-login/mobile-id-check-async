@@ -3,11 +3,10 @@ export const validSQSRecord = {
   receiptHandle: "mockReceiptHandle",
   body: JSON.stringify({
     sub: "mockSub",
-    timestamp: "mockTimestamp",
   }),
   attributes: {
     ApproximateReceiveCount: "mockApproximateReceiveCount",
-    SentTimestamp: "mockSentTimestamp",
+    SentTimestamp: "mockTimestamp",
     SenderId: "mockSenderId",
     ApproximateFirstReceiveTimestamp: "mockApproximateFirstReceiveTimestamp",
   },
@@ -27,7 +26,13 @@ export const failingSQSRecordBodyInvalidJSON = {
 export const failingSQSRecordBodyMissingSub = {
   ...validSQSRecord,
   messageId: "6f50c504-818f-4e9f-9a7f-785f532b45f2",
-  body: JSON.stringify({ timestamp: "mockTimestamp" }),
+  body: JSON.stringify({}),
+};
+
+export const failingSQSRecordBodySubTypeInvalid = {
+  ...validSQSRecord,
+  messageId: "6f50c504-818f-4e9f-9a7f-785f532b45f2",
+  body: JSON.stringify({ sub: 12345 }),
 };
 
 export const failingSQSRecordBodyMissingTimestamp = {

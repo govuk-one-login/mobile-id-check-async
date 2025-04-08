@@ -7,7 +7,7 @@ import {
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
-import { validateCredentialResults } from "./validateCredentialResult/validateCredentialResult";
+import { validateCredentialResult } from "./validateCredentialResult/validateCredentialResult";
 
 export const lambdaHandlerConstructor = async (
   _dependencies: IDequeueCredentialResultDependencies,
@@ -16,21 +16,25 @@ export const lambdaHandlerConstructor = async (
 ): Promise<SQSBatchResponse> => {
   setupLogger(context);
   logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_STARTED);
+  const processedMessages: IProcessedMessage[] = [];
   const batchItemFailures: SQSBatchItemFailure[] = [];
 
-  const validateCredentialResultResponse = validateCredentialResults(
-    event.Records,
-  );
-  if (validateCredentialResultResponse.isError) {
-    const { errorMessage } = validateCredentialResultResponse.value;
-    logger.error(LogMessage.DEQUEUE_CREDENTIAL_RESULT_INVALID_RESULT, {
-      errorMessage,
-    });
+  for (const record of event.Records) {
+    const validateCredentialResultResponse = validateCredentialResult(record);
+    if (validateCredentialResultResponse.isError) {
+      const { errorMessage } = validateCredentialResultResponse.value;
+      logger.error(LogMessage.DEQUEUE_CREDENTIAL_RESULT_INVALID_RESULT, {
+        errorMessage,
+      });
 
-    return { batchItemFailures };
+      continue;
+    }
+
+    const { sub, timestamp } = validateCredentialResultResponse.value;
+    processedMessages.push({ sub, timestamp });
   }
 
-  const processedMessages = validateCredentialResultResponse.value;
+  // const processedMessages = validateCredentialResultResponse.value;
   logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_PROCESSED_MESSAGES, {
     processedMessages,
   });
@@ -45,7 +49,7 @@ export interface IDequeueCredentialResultDependencies {
 
 export interface IProcessedMessage {
   sub: string;
-  timestamp: number;
+  timestamp: string;
 }
 
 const dependencies: IDequeueCredentialResultDependencies = {

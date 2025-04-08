@@ -51,6 +51,31 @@ describe("Dequeue credential result", () => {
     });
   });
 
+  describe("Given the records array is empty", () => {
+    let result: SQSBatchResponse;
+
+    beforeEach(async () => {
+      const event: SQSEvent = {
+        Records: [],
+      };
+      result = await lambdaHandlerConstructor(dependencies, event, context);
+    });
+
+    it("Returns an error message", () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        processedMessages: [],
+      });
+
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
+      });
+    });
+
+    it("Returns no batchItemFailures to be reprocessed", () => {
+      expect(result).toStrictEqual({ batchItemFailures: [] });
+    });
+  });
+
   describe("Given credential result validation fails", () => {
     let result: SQSBatchResponse;
 
@@ -71,8 +96,7 @@ describe("Dequeue credential result", () => {
       });
 
       expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-        errorMessage:
-          'sub is missing from credential result. Credential result: { timestamp: "mockTimestamp" }',
+        errorMessage: "sub is missing from credential result.",
       });
     });
 
