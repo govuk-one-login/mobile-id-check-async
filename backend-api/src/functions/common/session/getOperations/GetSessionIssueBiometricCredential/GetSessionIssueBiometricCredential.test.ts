@@ -149,20 +149,6 @@ describe("Get Session - Issue Biometric Credential operation", () => {
     });
 
     describe("Given the session is valid", () => {
-      const validSessionAttributes = {
-        sessionState: SessionState.BIOMETRIC_SESSION_FINISHED,
-        createdAt: validBiometricSessionFinishedAttributes.createdAt,
-      };
-      beforeEach(() => {
-        result = getSessionOperation.validateSession(validSessionAttributes);
-      });
-
-      it("Returns an empty success result", () => {
-        expect(result).toEqual(emptySuccess());
-      });
-    });
-
-    describe("Given the session is valid", () => {
       describe.each([
         [SessionState.BIOMETRIC_SESSION_FINISHED],
         [SessionState.RESULT_SENT],
