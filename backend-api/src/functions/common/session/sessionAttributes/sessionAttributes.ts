@@ -79,6 +79,22 @@ export const getTxmaEventBiometricTokenIssuedSessionAttributes = (
   return successResult(sessionAttributes);
 };
 
+export const myFuncTempName = (
+  item: Record<string, AttributeValue>,
+): Result<
+  BiometricSessionFinishedAttributes,
+  ValidateSessionErrorInvalidAttributeTypeData
+> => {
+  const sessionAttributes: Record<string, unknown> = unmarshall(item);
+  if (!isBiometricSessionFinishedSessionAttributes(sessionAttributes)) {
+    return errorResult({
+      sessionAttributes,
+    });
+  }
+
+  return successResult(sessionAttributes);
+};
+
 const isBiometricTokenIssuedSessionAttributes = (
   item: Record<string, NativeAttributeValue>,
 ): item is BiometricTokenIssuedSessionAttributes => {

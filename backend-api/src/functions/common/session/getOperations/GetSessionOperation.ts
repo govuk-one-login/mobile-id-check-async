@@ -10,10 +10,7 @@ import {
 export interface GetSessionOperation {
   getSessionAttributesFromDynamoDbItem(
     item: Record<string, AttributeValue> | undefined,
-  ): Result<
-    SessionAttributes,
-    ValidateSessionErrorInvalidAttributeTypeData
-  >;
+  ): Result<SessionAttributes, ValidateSessionErrorInvalidAttributeTypeData>;
 
   validateSession(
     attributes: ValidateSessionAttributes,
