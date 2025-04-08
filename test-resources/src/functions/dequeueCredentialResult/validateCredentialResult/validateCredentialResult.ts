@@ -36,9 +36,8 @@ export function validateCredentialResult(
   }
 
   if (!isString(sub)) {
-    const subType = typeof sub;
     return errorResult({
-      errorMessage: `sub type is incorrect. sub type: ${subType}.`,
+      errorMessage: `sub is an incorrect type: ${typeof sub} - should be a string.`,
     });
   }
 
