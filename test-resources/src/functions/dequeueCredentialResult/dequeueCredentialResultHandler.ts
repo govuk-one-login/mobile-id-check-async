@@ -7,7 +7,7 @@ import {
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
-import { validateCredentialResult } from "./validateCredentialResult/validateCredentialResult";
+import { validateCredentialResults } from "./validateCredentialResult/validateCredentialResult";
 
 export const lambdaHandlerConstructor = async (
   _dependencies: IDequeueCredentialResultDependencies,
@@ -17,16 +17,20 @@ export const lambdaHandlerConstructor = async (
   setupLogger(context);
   logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_STARTED);
   const batchItemFailures: SQSBatchItemFailure[] = [];
-  const processedMessages: IProcessedMessage[] = [];
 
-  for (const record of event.Records) {
-    const validCredentialResultResponse = validateCredentialResult(record);
-    if (validCredentialResultResponse.isError) continue;
-    const credentialResult = validCredentialResultResponse.value;
+  const validateCredentialResultResponse = validateCredentialResults(
+    event.Records,
+  );
+  if (validateCredentialResultResponse.isError) {
+    const { errorMessage } = validateCredentialResultResponse.value;
+    logger.error(LogMessage.DEQUEUE_CREDENTIAL_RESULT_INVALID_RESULT, {
+      errorMessage,
+    });
 
-    processedMessages.push(credentialResult);
+    return { batchItemFailures };
   }
 
+  const processedMessages = validateCredentialResultResponse.value;
   logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_PROCESSED_MESSAGES, {
     processedMessages,
   });

@@ -15,6 +15,7 @@ describe("Dequeue credential result", () => {
   let dependencies: IDequeueCredentialResultDependencies;
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpyInstance;
 
   beforeEach(() => {
     dependencies = {
@@ -22,6 +23,7 @@ describe("Dequeue credential result", () => {
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
+    consoleErrorSpy = jest.spyOn(console, "error");
   });
 
   describe("On every invocation", () => {
@@ -49,53 +51,33 @@ describe("Dequeue credential result", () => {
     });
   });
 
-  describe("Given there are no messages to be processed", () => {
+  describe("Given credential result validation fails", () => {
     let result: SQSBatchResponse;
 
     beforeEach(async () => {
       const event: SQSEvent = {
-        Records: [],
+        Records: [failingSQSRecordBodyMissingSub],
       };
-
       result = await lambdaHandlerConstructor(dependencies, event, context);
     });
 
-    it("Logs an empty array", async () => {
-      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-        messageCode:
-          "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_PROCESSED_MESSAGES",
+    it("Returns an error message", () => {
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_INVALID_RESULT",
       });
 
-      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-        processedMessages: [],
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        message: "Credential result is missing or invalid",
       });
-    });
 
-    it("Logs COMPLETED", () => {
-      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-        messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        errorMessage:
+          'sub is missing from credential result. Credential result: { timestamp: "mockTimestamp" }',
       });
     });
 
-    it("Returns an empty array for batchItemFailures", () => {
+    it("Returns no batchItemFailures to be reprocessed", () => {
       expect(result).toStrictEqual({ batchItemFailures: [] });
-    });
-  });
-
-  describe("Given credential result validation fails", () => {
-    describe("Given credential result is missing a subjectIdentifier", () => {
-      let result: SQSBatchResponse;
-
-      beforeEach(async () => {
-        const event: SQSEvent = {
-          Records: [failingSQSRecordBodyMissingSub],
-        };
-        result = await lambdaHandlerConstructor(dependencies, event, context);
-      });
-
-      it("Returns no batchItemFailures to be reprocessed", () => {
-        expect(result).toStrictEqual({ batchItemFailures: [] });
-      });
     });
   });
 
@@ -118,7 +100,7 @@ describe("Dequeue credential result", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           processedMessages: [
             {
-              subjectIdentifier: "mockSubjectIdentifier",
+              sub: "mockSub",
               timestamp: "mockTimestamp",
             },
           ],
