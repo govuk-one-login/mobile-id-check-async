@@ -7,8 +7,12 @@ import { lambdaHandlerConstructor } from "./asyncIssueBiometricCredentialHandler
 import { IssueBiometricCredentialDependencies } from "./handlerDependencies";
 import {
   mockBiometricSessionId,
+  mockInertSessionRegistry,
   mockSessionId,
+  validBiometricSessionFinishedAttributes,
 } from "../testUtils/unitTestData";
+import { SessionRegistry } from "../common/session/SessionRegistry";
+import { successResult } from "../utils/result";
 
 describe("Async Issue Biometric Credential", () => {
   let dependencies: IssueBiometricCredentialDependencies;
@@ -40,9 +44,19 @@ describe("Async Issue Biometric Credential", () => {
     Records: [validVendorProcessingQueueSqsEventRecord],
   };
 
+  const mockSessionRegistrySuccess: SessionRegistry = {
+    ...mockInertSessionRegistry,
+    getSession: jest
+      .fn()
+      .mockResolvedValue(
+        successResult(validBiometricSessionFinishedAttributes),
+      ),
+  };
+
   beforeEach(() => {
     dependencies = {
       env: {},
+      getSessionRegistry: () => mockSessionRegistrySuccess,
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
