@@ -116,7 +116,7 @@ export interface ValidateSessionErrorInvalidAttributeTypeData {
 }
 
 export interface ValidateSessionInvalidAttributes {
-  sessionState?: Exclude<SessionState, SessionState.BIOMETRIC_TOKEN_ISSUED>;
+  sessionState?: SessionState;
   createdAt?: number;
 }
 
