@@ -3292,6 +3292,13 @@ Resources:
                 Resource: !GetAtt VendorProcessingKMSEncryptionKey.Arn
             Version: "2012-10-17"
           PolicyName: KMSPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - dynamodb:GetItem
+                Effect: Allow
+                Resource: !GetAtt SessionsTable.Arn
+          PolicyName: DynamoDBPolicy
       RoleName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda
 
   AsyncIssueBiometricCredentialLogGroup:
