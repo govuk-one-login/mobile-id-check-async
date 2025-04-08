@@ -62,6 +62,7 @@ describe("Validate credential result", () => {
     it("Returns an error result", () => {
       expect(result.isError).toBe(true);
     });
+
     it("Returns an error message", () => {
       expect(result.value).toStrictEqual({
         errorMessage:

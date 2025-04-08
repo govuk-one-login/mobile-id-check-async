@@ -35,6 +35,7 @@ describe("Dequeue credential result", () => {
       };
       await lambdaHandlerConstructor(dependencies, event, context);
     });
+
     it("Adds context and version to log attributes and logs STARTED message", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_STARTED",
@@ -42,6 +43,7 @@ describe("Dequeue credential result", () => {
         function_arn: "arn:12345", // example field to verify that context has been added
       });
     });
+
     it("Clears pre-existing log attributes", async () => {
       logger.appendKeys({ testKey: "testValue" });
       await lambdaHandlerConstructor(dependencies, event, context);
