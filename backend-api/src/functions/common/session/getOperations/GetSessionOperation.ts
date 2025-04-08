@@ -1,6 +1,6 @@
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { Result } from "../../../utils/result";
-import { BiometricTokenIssuedSessionAttributes } from "../session";
+import { SessionAttributes } from "../session";
 import {
   ValidateSessionAttributes,
   ValidateSessionErrorInvalidAttributesData,
@@ -11,7 +11,7 @@ export interface GetSessionOperation {
   getSessionAttributesFromDynamoDbItem(
     item: Record<string, AttributeValue> | undefined,
   ): Result<
-    BiometricTokenIssuedSessionAttributes,
+    SessionAttributes,
     ValidateSessionErrorInvalidAttributeTypeData
   >;
 
