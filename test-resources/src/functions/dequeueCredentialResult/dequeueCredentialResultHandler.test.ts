@@ -107,7 +107,7 @@ describe("Dequeue credential result", () => {
     });
   });
 
-  describe("Happy path", () => {
+  describe("Given the Lambda receives at least one valid credential result", () => {
     describe("Given the Lambda receives one message to be processed", () => {
       let result: SQSBatchResponse;
 
@@ -138,6 +138,52 @@ describe("Dequeue credential result", () => {
       it("Returns no batchItemFailures", () => {
         expect(result).toStrictEqual({ batchItemFailures: [] });
       });
+    });
+  });
+
+  describe("Given the Lambda receives multiple messages to be processed", () => {
+    let result: SQSBatchResponse;
+
+    beforeEach(async () => {
+      const event: SQSEvent = {
+        Records: [failingSQSRecordBodyMissingSub, validSQSRecord],
+      };
+      result = await lambdaHandlerConstructor(dependencies, event, context);
+    });
+
+    it("Logs an error message", () => {
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_INVALID_RESULT",
+      });
+
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        message: "Credential result is missing or invalid",
+      });
+
+      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+        errorMessage: "sub is missing from credential result.",
+      });
+    });
+
+    it("Logs COMPLETED", async () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
+      });
+    });
+
+    it("Logs processed messages", () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        processedMessages: [
+          {
+            sub: "mockSub",
+            timestamp: "mockTimestamp",
+          },
+        ],
+      });
+    });
+
+    it("Returns no batchItemFailures", () => {
+      expect(result).toStrictEqual({ batchItemFailures: [] });
     });
   });
 });
