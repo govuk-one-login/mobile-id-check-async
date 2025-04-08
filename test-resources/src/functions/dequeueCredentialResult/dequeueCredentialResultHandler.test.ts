@@ -61,17 +61,19 @@ describe("Dequeue credential result", () => {
       result = await lambdaHandlerConstructor(dependencies, event, context);
     });
 
-    it("Returns an error message", () => {
+    it("Logs an empty array", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         processedMessages: [],
       });
+    });
 
+    it("Logs COMPLETED", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
       });
     });
 
-    it("Returns no batchItemFailures to be reprocessed", () => {
+    it("Returns no batchItemFailures", () => {
       expect(result).toStrictEqual({ batchItemFailures: [] });
     });
   });
@@ -86,7 +88,7 @@ describe("Dequeue credential result", () => {
       result = await lambdaHandlerConstructor(dependencies, event, context);
     });
 
-    it("Returns an error message", () => {
+    it("Logs an error message", () => {
       expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
         messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_INVALID_RESULT",
       });
@@ -100,18 +102,20 @@ describe("Dequeue credential result", () => {
       });
     });
 
-    it("Returns no batchItemFailures to be reprocessed", () => {
+    it("Returns no batchItemFailures", () => {
       expect(result).toStrictEqual({ batchItemFailures: [] });
     });
   });
 
   describe("Happy path", () => {
-    describe("Given the Lambda is triggered", () => {
+    describe("Given the Lambda receives one message to be processed", () => {
+      let result: SQSBatchResponse;
+
       beforeEach(async () => {
         const event: SQSEvent = {
           Records: [validSQSRecord],
         };
-        await lambdaHandlerConstructor(dependencies, event, context);
+        result = await lambdaHandlerConstructor(dependencies, event, context);
       });
 
       it("Logs COMPLETED", async () => {
@@ -129,6 +133,10 @@ describe("Dequeue credential result", () => {
             },
           ],
         });
+      });
+
+      it("Returns no batchItemFailures", () => {
+        expect(result).toStrictEqual({ batchItemFailures: [] });
       });
     });
   });
