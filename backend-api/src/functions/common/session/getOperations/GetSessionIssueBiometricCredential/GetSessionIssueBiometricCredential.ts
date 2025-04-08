@@ -11,8 +11,8 @@ import {
   ValidateSessionInvalidAttributes,
 } from "../../SessionRegistry";
 import { GetSessionOperation } from "../GetSessionOperation";
-import { myFuncTempName } from "../../sessionAttributes/sessionAttributes";
 import { isOlderThan60Minutes } from "../../../../utils/utils";
+import { getBiometricSessionFinishedSessionAttributes } from "../../sessionAttributes/sessionAttributes";
 
 export class GetSessionIssueBiometricCredential implements GetSessionOperation {
   getSessionAttributesFromDynamoDbItem(
@@ -21,7 +21,7 @@ export class GetSessionIssueBiometricCredential implements GetSessionOperation {
     BiometricSessionFinishedAttributes,
     ValidateSessionErrorInvalidAttributeTypeData
   > {
-    return myFuncTempName(item);
+    return getBiometricSessionFinishedSessionAttributes(item);
   }
 
   validateSession(

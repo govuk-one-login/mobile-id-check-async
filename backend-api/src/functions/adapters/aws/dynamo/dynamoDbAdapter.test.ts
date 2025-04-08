@@ -122,7 +122,9 @@ describe("DynamoDbAdapter", () => {
               new ConditionalCheckFailedException({
                 $metadata: {},
                 message: "Conditional check failed",
-                Item: {},
+                Item: marshall({
+                  clientId: "mockClientId",
+                }),
               }),
             );
             result = await sessionRegistry.updateSession(
@@ -138,6 +140,9 @@ describe("DynamoDbAdapter", () => {
                 updateExpression: updateOperation.getDynamoDbUpdateExpression(),
                 conditionExpression:
                   updateOperation.getDynamoDbConditionExpression(),
+              },
+              sessionAttributes: {
+                clientId: "mockClientId",
               },
             });
           });
@@ -221,6 +226,51 @@ describe("DynamoDbAdapter", () => {
     });
 
     describe("Given the session is successfully updated", () => {
+      describe("Given no session attributes were returned in response", () => {
+        beforeEach(async () => {
+          const expectedUpdateItemCommandInput = {
+            TableName: "mock_table_name",
+            Key: {
+              sessionId: { S: "mock_session_id" },
+            },
+            UpdateExpression: updateOperation.getDynamoDbUpdateExpression(),
+            ConditionExpression:
+              updateOperation.getDynamoDbConditionExpression(),
+            ExpressionAttributeValues:
+              updateOperation.getDynamoDbExpressionAttributeValues(),
+          };
+          mockDynamoDbClient
+            .on(UpdateItemCommand, expectedUpdateItemCommandInput) // match to expected input
+            .resolves({
+              Attributes: undefined,
+            });
+
+          result = await sessionRegistry.updateSession(
+            "mock_session_id",
+            updateOperation,
+          );
+        });
+
+        it("Logs the failure", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_UPDATE_SESSION_UNEXPECTED_FAILURE",
+            error: "No attributes returned after successful update command",
+            data: {
+              updateExpression: updateOperation.getDynamoDbUpdateExpression(),
+              conditionExpression:
+                updateOperation.getDynamoDbConditionExpression(),
+            },
+          });
+        });
+
+        it("Returns failure with server error", () => {
+          expect(result).toEqual(
+            errorResult({
+              errorType: UpdateSessionError.INTERNAL_SERVER_ERROR,
+            }),
+          );
+        });
+      });
       describe("Given invalid session attributes were returned in response", () => {
         beforeEach(async () => {
           const expectedUpdateItemCommandInput = {
@@ -258,6 +308,7 @@ describe("DynamoDbAdapter", () => {
               conditionExpression:
                 updateOperation.getDynamoDbConditionExpression(),
             },
+            sessionAttributes: invalidBiometricTokenIssuedSessionAttributeTypes,
           });
         });
 

@@ -1,5 +1,5 @@
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
-import { Result, emptyFailure } from "../../../../utils/result";
+import { Result } from "../../../../utils/result";
 import { SessionAttributes, SessionState } from "../../session";
 import {
   getAuthSessionAbortedAttributes,
@@ -8,6 +8,7 @@ import {
 } from "../../sessionAttributes/sessionAttributes";
 import { UpdateSessionOperation } from "../UpdateSessionOperation";
 import { oneHourAgoInMilliseconds } from "../../../../utils/utils";
+import { ValidateSessionErrorInvalidAttributeTypeData } from "../../SessionRegistry";
 
 export class AbortSession implements UpdateSessionOperation {
   constructor(private readonly sessionId: string) {}
@@ -34,15 +35,14 @@ export class AbortSession implements UpdateSessionOperation {
   }
 
   getSessionAttributesFromDynamoDbItem(
-    item: Record<string, AttributeValue> | undefined,
+    item: Record<string, AttributeValue>,
     options?: {
       operationFailed?: boolean;
     },
-  ): Result<SessionAttributes, void> {
-    if (item == null) return emptyFailure();
+  ): Result<SessionAttributes, ValidateSessionErrorInvalidAttributeTypeData> {
     if (options?.operationFailed) {
       // Return the original session state based on the item
-      if (item?.sessionState?.S === SessionState.BIOMETRIC_TOKEN_ISSUED) {
+      if (item.sessionState?.S === SessionState.BIOMETRIC_TOKEN_ISSUED) {
         return getBiometricTokenIssuedSessionAttributes(item);
       }
       // If it's in AUTH_SESSION_CREATED state or any other state, use base attributes
