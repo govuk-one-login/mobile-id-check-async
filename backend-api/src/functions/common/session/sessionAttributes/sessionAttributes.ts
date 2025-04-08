@@ -8,13 +8,13 @@ import {
   AuthSessionAbortedAttributes,
   SessionState,
 } from "../session";
-import { ValidateSessionErrorInvalidAttributeTypeData } from "../SessionRegistry";
+import { GetSessionAttributesInvalidAttributesError } from "../SessionRegistry";
 
 export const getBaseSessionAttributes = (
   item: Record<string, AttributeValue>,
 ): Result<
   BaseSessionAttributes,
-  ValidateSessionErrorInvalidAttributeTypeData
+  GetSessionAttributesInvalidAttributesError
 > => {
   const sessionAttributes = unmarshall(item);
   if (!isBaseSessionAttributes(sessionAttributes))
@@ -52,7 +52,7 @@ export const getBiometricTokenIssuedSessionAttributes = (
   item: Record<string, AttributeValue>,
 ): Result<
   BiometricTokenIssuedSessionAttributes,
-  ValidateSessionErrorInvalidAttributeTypeData
+  GetSessionAttributesInvalidAttributesError
 > => {
   const sessionAttributes = unmarshall(item);
   if (!isBiometricTokenIssuedSessionAttributes(sessionAttributes))
@@ -65,7 +65,7 @@ export const getTxmaEventBiometricTokenIssuedSessionAttributes = (
   item: Record<string, AttributeValue>,
 ): Result<
   BiometricTokenIssuedSessionAttributes,
-  ValidateSessionErrorInvalidAttributeTypeData
+  GetSessionAttributesInvalidAttributesError
 > => {
   const sessionAttributes: Record<string, unknown> = unmarshall(item);
   if (!isBiometricTokenIssuedSessionAttributes(sessionAttributes)) {
@@ -90,7 +90,7 @@ export const getBiometricSessionFinishedSessionAttributes = (
   item: Record<string, AttributeValue>,
 ): Result<
   BiometricSessionFinishedAttributes,
-  ValidateSessionErrorInvalidAttributeTypeData
+  GetSessionAttributesInvalidAttributesError
 > => {
   const sessionAttributes = unmarshall(item);
   if (!isBiometricSessionFinishedSessionAttributes(sessionAttributes))
@@ -113,7 +113,7 @@ export const getAuthSessionAbortedAttributes = (
   item: Record<string, AttributeValue>,
 ): Result<
   AuthSessionAbortedAttributes,
-  ValidateSessionErrorInvalidAttributeTypeData
+  GetSessionAttributesInvalidAttributesError
 > => {
   const sessionAttributes = unmarshall(item);
   if (!isAuthSessionAbortedAttributes(sessionAttributes)) {

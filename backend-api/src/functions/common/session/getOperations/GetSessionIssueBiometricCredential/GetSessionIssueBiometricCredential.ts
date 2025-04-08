@@ -7,7 +7,7 @@ import {
 import {
   ValidateSessionAttributes,
   ValidateSessionErrorInvalidAttributesData,
-  ValidateSessionErrorInvalidAttributeTypeData,
+  GetSessionAttributesInvalidAttributesError,
   ValidateSessionInvalidAttributes,
 } from "../../SessionRegistry";
 import { GetSessionOperation } from "../GetSessionOperation";
@@ -19,7 +19,7 @@ export class GetSessionIssueBiometricCredential implements GetSessionOperation {
     item: Record<string, AttributeValue>,
   ): Result<
     BiometricSessionFinishedAttributes,
-    ValidateSessionErrorInvalidAttributeTypeData
+    GetSessionAttributesInvalidAttributesError
   > {
     return getBiometricSessionFinishedSessionAttributes(item);
   }

@@ -8,7 +8,7 @@ import {
 } from "../../sessionAttributes/sessionAttributes";
 import { UpdateSessionOperation } from "../UpdateSessionOperation";
 import { oneHourAgoInMilliseconds } from "../../../../utils/utils";
-import { ValidateSessionErrorInvalidAttributeTypeData } from "../../SessionRegistry";
+import { GetSessionAttributesInvalidAttributesError } from "../../SessionRegistry";
 
 export class AbortSession implements UpdateSessionOperation {
   constructor(private readonly sessionId: string) {}
@@ -39,7 +39,7 @@ export class AbortSession implements UpdateSessionOperation {
     options?: {
       operationFailed?: boolean;
     },
-  ): Result<SessionAttributes, ValidateSessionErrorInvalidAttributeTypeData> {
+  ): Result<SessionAttributes, GetSessionAttributesInvalidAttributesError> {
     if (options?.operationFailed) {
       // Return the original session state based on the item
       if (item.sessionState?.S === SessionState.BIOMETRIC_TOKEN_ISSUED) {

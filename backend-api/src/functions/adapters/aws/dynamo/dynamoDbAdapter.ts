@@ -31,7 +31,7 @@ import {
   GetSessionInternalServerError,
   GetSessionSessionInvalidErrorData,
   GetSessionValidateSessionErrorData,
-  InvalidSessionAttributeTypes,
+  InvalidSessionAttributes,
   SessionRegistry,
   SessionUpdateFailed,
   SessionUpdateFailedInternalServerError,
@@ -316,7 +316,7 @@ export class DynamoDbAdapter implements SessionRegistry {
   private handleUpdateSessionInternalServerError(
     error: unknown,
     data: UpdateOperationDataToLog,
-    sessionAttributes?: InvalidSessionAttributeTypes,
+    sessionAttributes?: InvalidSessionAttributes,
   ): FailureWithValue<SessionUpdateFailedInternalServerError> {
     logger.error(LogMessage.UPDATE_SESSION_UNEXPECTED_FAILURE, {
       error,
@@ -333,7 +333,7 @@ export class DynamoDbAdapter implements SessionRegistry {
     sessionAttributes,
   }: {
     error: unknown;
-    sessionAttributes?: InvalidSessionAttributeTypes;
+    sessionAttributes?: InvalidSessionAttributes;
   }): FailureWithValue<GetSessionInternalServerError> {
     logger.error(LogMessage.GET_SESSION_UNEXPECTED_FAILURE, {
       error,

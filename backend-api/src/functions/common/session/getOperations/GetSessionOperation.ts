@@ -4,13 +4,13 @@ import { SessionAttributes } from "../session";
 import {
   ValidateSessionAttributes,
   ValidateSessionErrorInvalidAttributesData,
-  ValidateSessionErrorInvalidAttributeTypeData,
+  GetSessionAttributesInvalidAttributesError,
 } from "../SessionRegistry";
 
 export interface GetSessionOperation {
   getSessionAttributesFromDynamoDbItem(
     item: Record<string, AttributeValue>,
-  ): Result<SessionAttributes, ValidateSessionErrorInvalidAttributeTypeData>;
+  ): Result<SessionAttributes, GetSessionAttributesInvalidAttributesError>;
 
   validateSession(
     attributes: ValidateSessionAttributes,

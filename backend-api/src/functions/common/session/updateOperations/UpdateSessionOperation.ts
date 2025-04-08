@@ -1,7 +1,7 @@
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { Result } from "../../../utils/result";
 import { SessionAttributes } from "../session";
-import { ValidateSessionErrorInvalidAttributeTypeData } from "../SessionRegistry";
+import { GetSessionAttributesInvalidAttributesError } from "../SessionRegistry";
 
 export interface UpdateSessionOperation {
   getDynamoDbUpdateExpression(): string;
@@ -12,5 +12,5 @@ export interface UpdateSessionOperation {
     options?: {
       operationFailed: boolean;
     },
-  ): Result<SessionAttributes, ValidateSessionErrorInvalidAttributeTypeData>;
+  ): Result<SessionAttributes, GetSessionAttributesInvalidAttributesError>;
 }

@@ -19,7 +19,7 @@ import {
 } from "../../../../utils/result";
 import {
   ValidateSessionErrorInvalidAttributesData,
-  ValidateSessionErrorInvalidAttributeTypeData,
+  GetSessionAttributesInvalidAttributesError,
 } from "../../SessionRegistry";
 
 describe("Get Session - Issue Biometric Credential operation", () => {
@@ -34,7 +34,7 @@ describe("Get Session - Issue Biometric Credential operation", () => {
   describe("When I request the getSessionAttributesFromDynamoDbItem", () => {
     let result: Result<
       BiometricSessionFinishedAttributes,
-      ValidateSessionErrorInvalidAttributeTypeData
+      GetSessionAttributesInvalidAttributesError
     >;
     describe("Given a session attributes item was provided that does not include all BiometricSessionFinishedSessionAttributes properties", () => {
       beforeEach(() => {
