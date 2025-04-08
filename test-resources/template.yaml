@@ -128,6 +128,17 @@ Globals:
     Runtime: nodejs22.x
 
 Resources:
+  DequeueCredentialResultEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 10
+      Enabled: true
+      EventSourceArn: !ImportValue
+        Fn::Sub: ${BackendStackName}-ipv-core-queue-arn
+      FunctionName: !GetAtt DequeueCredentialResultFunction.Arn
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
+
   DequeueCredentialResultFunction:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -195,6 +206,26 @@ Resources:
                 Resource: arn:aws:logs:*:*:*
             Version: "2012-10-17"
           PolicyName: LoggingPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - kms:Decrypt
+                Effect: Allow
+                Resource: !ImportValue
+                  Fn::Sub: ${BackendStackName}-ipv-core-kms-encryption-key-arn
+            Version: "2012-10-17"
+          PolicyName: KMSPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Effect: Allow
+                Resource: !ImportValue
+                  Fn::Sub: ${BackendStackName}-ipv-core-queue-arn
+            Version: "2012-10-17"
+          PolicyName: SQSPolicy
       RoleName: !Sub ${AWS::StackName}-dequeue-credential-result
 
   DequeueEventSourceMapping:

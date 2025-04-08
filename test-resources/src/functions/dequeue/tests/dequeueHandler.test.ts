@@ -258,21 +258,6 @@ describe("Dequeue TxMA events", () => {
           },
         ],
       });
-      // expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-      //   eventName: JSON.parse(passingSQSRecordKnownSessionId.body).event_name
-      // })
-      // expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-      //   sessionId: JSON.parse(passingSQSRecordKnownSessionId.body).user
-      //     .session_id,
-      // })
-      // expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-      //   eventName: JSON.parse(passingSQSRecordUnknownSessionId.body)
-      //     .event_name,
-      // })
-      // expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-      //   sessionId: JSON.parse(passingSQSRecordUnknownSessionId.body).user
-      //     .session_id,
-      // });
     });
 
     it("Returns no batchItemFailures to be reprocessed", () => {
