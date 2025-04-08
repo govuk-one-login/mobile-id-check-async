@@ -94,8 +94,8 @@ describe("Dequeue credential result", () => {
     });
   });
 
-  describe("Given the Lambda receives at least one valid credential result", () => {
-    describe("Given the Lambda receives one message to be processed", () => {
+  describe("Given the lambda receives at least one valid credential result", () => {
+    describe("Given the lambda receives one message to be processed", () => {
       beforeEach(async () => {
         const event: SQSEvent = {
           Records: [validSQSRecord],
@@ -124,7 +124,7 @@ describe("Dequeue credential result", () => {
     });
   });
 
-  describe("Given the Lambda receives multiple messages to be processed", () => {
+  describe("Given the lambda receives multiple messages to be processed", () => {
     beforeEach(async () => {
       const event: SQSEvent = {
         Records: [failingSQSRecordBodyMissingSub, validSQSRecord],
