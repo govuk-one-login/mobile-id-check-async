@@ -6,7 +6,7 @@ export const validSQSRecord = {
   }),
   attributes: {
     ApproximateReceiveCount: "mockApproximateReceiveCount",
-    SentTimestamp: "mockTimestamp",
+    SentTimestamp: "mockSentTimestamp",
     SenderId: "mockSenderId",
     ApproximateFirstReceiveTimestamp: "mockApproximateFirstReceiveTimestamp",
   },

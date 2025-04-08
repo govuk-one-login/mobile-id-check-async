@@ -30,8 +30,8 @@ export const lambdaHandlerConstructor = async (
       continue;
     }
 
-    const { sub, timestamp } = validateCredentialResultResponse.value;
-    processedMessages.push({ sub, timestamp });
+    const { sub, sentTimestamp } = validateCredentialResultResponse.value;
+    processedMessages.push({ sub, sentTimestamp });
   }
 
   logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_PROCESSED_MESSAGES, {
@@ -48,7 +48,7 @@ export interface IDequeueCredentialResultDependencies {
 
 export interface IProcessedMessage {
   sub: string;
-  timestamp: string;
+  sentTimestamp: string;
 }
 
 const dependencies: IDequeueCredentialResultDependencies = {

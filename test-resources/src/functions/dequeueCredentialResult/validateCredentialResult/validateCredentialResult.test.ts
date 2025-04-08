@@ -13,9 +13,9 @@ import {
 import { validateCredentialResult } from "./validateCredentialResult";
 
 describe("Validate credential result", () => {
-  describe("Given credential result is missing a timestamp", () => {
-    let result: Result<IProcessedMessage>;
+  let result: Result<IProcessedMessage>;
 
+  describe("Given credential result is missing a timestamp", () => {
     beforeEach(() => {
       const sqsRecord: SQSRecord = failingSQSRecordBodyMissingTimestamp;
       result = validateCredentialResult(sqsRecord);
@@ -33,8 +33,6 @@ describe("Validate credential result", () => {
   });
 
   describe("Given the SQS record body is empty", () => {
-    let result: Result<IProcessedMessage>;
-
     beforeEach(() => {
       const sqsRecord: SQSRecord = failingSQSRecordBodyMissing;
       result = validateCredentialResult(sqsRecord);
@@ -52,8 +50,6 @@ describe("Validate credential result", () => {
   });
 
   describe("Given credential result is not valid JSON", () => {
-    let result: Result<IProcessedMessage>;
-
     beforeEach(() => {
       const sqsRecord: SQSRecord = failingSQSRecordBodyInvalidJSON;
       result = validateCredentialResult(sqsRecord);
@@ -66,14 +62,12 @@ describe("Validate credential result", () => {
     it("Returns an error message", () => {
       expect(result.value).toStrictEqual({
         errorMessage:
-          "Record body could not be parsed as JSON. SyntaxError: Expected property name or '}' in JSON at position 2 (line 1 column 3)",
+          "Record body could not be parsed as JSON. SyntaxError: Expected property name or '}' in JSON at position 2",
       });
     });
   });
 
   describe("Given credential result is missing a sub", () => {
-    let result: Result<IProcessedMessage>;
-
     beforeEach(() => {
       const sqsRecord: SQSRecord = failingSQSRecordBodyMissingSub;
       result = validateCredentialResult(sqsRecord);
@@ -91,8 +85,6 @@ describe("Validate credential result", () => {
   });
 
   describe("Given sub type is invalid", () => {
-    let result: Result<IProcessedMessage>;
-
     beforeEach(() => {
       const sqsRecord: SQSRecord = failingSQSRecordBodySubTypeInvalid;
       result = validateCredentialResult(sqsRecord);

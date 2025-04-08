@@ -16,6 +16,7 @@ describe("Dequeue credential result", () => {
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
+  let result: SQSBatchResponse;
 
   beforeEach(() => {
     dependencies = {
@@ -54,8 +55,6 @@ describe("Dequeue credential result", () => {
   });
 
   describe("Given the records array is empty", () => {
-    let result: SQSBatchResponse;
-
     beforeEach(async () => {
       const event: SQSEvent = {
         Records: [],
@@ -81,8 +80,6 @@ describe("Dequeue credential result", () => {
   });
 
   describe("Given credential result validation fails", () => {
-    let result: SQSBatchResponse;
-
     beforeEach(async () => {
       const event: SQSEvent = {
         Records: [failingSQSRecordBodyMissingSub],
@@ -93,13 +90,7 @@ describe("Dequeue credential result", () => {
     it("Logs an error message", () => {
       expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
         messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_INVALID_RESULT",
-      });
-
-      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
         message: "Credential result is missing or invalid",
-      });
-
-      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
         errorMessage: "sub is missing from credential result.",
       });
     });
@@ -111,8 +102,6 @@ describe("Dequeue credential result", () => {
 
   describe("Given the Lambda receives at least one valid credential result", () => {
     describe("Given the Lambda receives one message to be processed", () => {
-      let result: SQSBatchResponse;
-
       beforeEach(async () => {
         const event: SQSEvent = {
           Records: [validSQSRecord],
@@ -131,7 +120,7 @@ describe("Dequeue credential result", () => {
           processedMessages: [
             {
               sub: "mockSub",
-              timestamp: "mockTimestamp",
+              sentTimestamp: "mockSentTimestamp",
             },
           ],
         });
@@ -144,8 +133,6 @@ describe("Dequeue credential result", () => {
   });
 
   describe("Given the Lambda receives multiple messages to be processed", () => {
-    let result: SQSBatchResponse;
-
     beforeEach(async () => {
       const event: SQSEvent = {
         Records: [failingSQSRecordBodyMissingSub, validSQSRecord],
@@ -156,13 +143,7 @@ describe("Dequeue credential result", () => {
     it("Logs an error message", () => {
       expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
         messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_INVALID_RESULT",
-      });
-
-      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
         message: "Credential result is missing or invalid",
-      });
-
-      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
         errorMessage: "sub is missing from credential result.",
       });
     });
@@ -178,7 +159,7 @@ describe("Dequeue credential result", () => {
         processedMessages: [
           {
             sub: "mockSub",
-            timestamp: "mockTimestamp",
+            sentTimestamp: "mockSentTimestamp",
           },
         ],
       });

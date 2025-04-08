@@ -5,15 +5,15 @@ import { IProcessedMessage } from "../dequeueCredentialResultHandler";
 export function validateCredentialResult(
   record: SQSRecord,
 ): Result<IProcessedMessage> {
-  const timestamp = record.attributes.SentTimestamp;
-  if (!timestamp) {
+  const sentTimestamp = record.attributes.SentTimestamp;
+  if (!sentTimestamp) {
     return errorResult({
       errorMessage: "SentTimestamp is missing from record",
     });
   }
 
-  const { body: recordBody } = record;
-  if (!recordBody) {
+  const { body } = record;
+  if (!body) {
     return errorResult({
       errorMessage: "Record body is empty.",
     });
@@ -21,7 +21,7 @@ export function validateCredentialResult(
 
   let credentialResult;
   try {
-    credentialResult = JSON.parse(recordBody);
+    credentialResult = JSON.parse(body);
   } catch (error) {
     return errorResult({
       errorMessage: `Record body could not be parsed as JSON. ${error}`,
@@ -35,14 +35,14 @@ export function validateCredentialResult(
     });
   }
 
-  const subType = typeof sub;
   if (!isString(sub)) {
+    const subType = typeof sub;
     return errorResult({
       errorMessage: `sub type is incorrect. sub type: ${subType}.`,
     });
   }
 
-  return successResult({ sub, timestamp });
+  return successResult({ sub, sentTimestamp });
 }
 
 function isString(value: unknown): value is string {
