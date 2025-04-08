@@ -2,10 +2,12 @@ import { expect } from "@jest/globals";
 import { Context, SQSBatchResponse, SQSEvent } from "aws-lambda";
 import "aws-sdk-client-mock-jest";
 import { logger } from "../common/logging/logger";
+import { emptySuccess } from "../common/utils/result";
 import "../testUtils/matchers";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import {
   IDequeueCredentialResultDependencies,
+  IDynamoDBAdapter,
   lambdaHandlerConstructor,
 } from "./dequeueCredentialResultHandler";
 import { failingSQSRecordBodyMissingSub, validSQSRecord } from "./unitTestData";
@@ -21,6 +23,7 @@ describe("Dequeue credential result", () => {
   beforeEach(() => {
     dependencies = {
       env,
+      getDynamoDBAdapter: () => mockDynamoDBAdapterSuccess,
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
@@ -167,3 +170,14 @@ describe("Dequeue credential result", () => {
     });
   });
 });
+
+const mockInertDynamoDBAdapter: IDynamoDBAdapter = {
+  putItem: jest.fn(() => {
+    throw new Error("Not implemented");
+  }),
+};
+
+export const mockDynamoDBAdapterSuccess: IDynamoDBAdapter = {
+  ...mockInertDynamoDBAdapter,
+  putItem: jest.fn().mockResolvedValue(emptySuccess()),
+};
