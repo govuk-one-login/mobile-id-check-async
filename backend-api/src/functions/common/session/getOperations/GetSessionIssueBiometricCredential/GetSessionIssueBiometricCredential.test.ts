@@ -7,12 +7,20 @@ import {
   validCreatedAt,
 } from "../../../../testUtils/unitTestData";
 import { GetSessionIssueBiometricCredential } from "./GetSessionIssueBiometricCredential";
-import { SessionState } from "../../session";
+import {
+  BiometricSessionFinishedAttributes,
+  SessionState,
+} from "../../session";
 import {
   emptySuccess,
   errorResult,
+  Result,
   successResult,
 } from "../../../../utils/result";
+import {
+  ValidateSessionErrorInvalidAttributesData,
+  ValidateSessionErrorInvalidAttributeTypeData,
+} from "../../SessionRegistry";
 
 describe("Get Session - Issue Biometric Credential operation", () => {
   let getSessionOperation: GetSessionIssueBiometricCredential;
@@ -24,15 +32,20 @@ describe("Get Session - Issue Biometric Credential operation", () => {
   });
 
   describe("When I request the getSessionAttributesFromDynamoDbItem", () => {
+    let result: Result<
+      BiometricSessionFinishedAttributes,
+      ValidateSessionErrorInvalidAttributeTypeData
+    >;
     describe("Given a session attributes item was provided that does not include all BiometricSessionFinishedSessionAttributes properties", () => {
-      it("Returns an emptyFailure", () => {
-        const result = getSessionOperation.getSessionAttributesFromDynamoDbItem(
+      beforeEach(() => {
+        result = getSessionOperation.getSessionAttributesFromDynamoDbItem(
           marshall({
             sessionId: mockSessionId,
             sessionState: SessionState.BIOMETRIC_SESSION_FINISHED,
           }),
         );
-
+      });
+      it("Returns an errorResult", () => {
         expect(result).toEqual(
           errorResult({
             sessionAttributes: {
@@ -48,12 +61,13 @@ describe("Get Session - Issue Biometric Credential operation", () => {
       const validBiometricSessionFinishedAttributesItem = marshall(
         validBiometricSessionFinishedAttributes,
       );
-
-      it("Returns successResult with BiometricSessionFinishedSessionAttributes session attributes", () => {
-        const result = getSessionOperation.getSessionAttributesFromDynamoDbItem(
+      beforeEach(() => {
+        result = getSessionOperation.getSessionAttributesFromDynamoDbItem(
           marshall(validBiometricSessionFinishedAttributes),
         );
+      });
 
+      it("Returns successResult with BiometricSessionFinishedSessionAttributes session attributes", () => {
         expect(result).toEqual(
           successResult(
             unmarshall(validBiometricSessionFinishedAttributesItem),
@@ -64,6 +78,7 @@ describe("Get Session - Issue Biometric Credential operation", () => {
   });
 
   describe("Session attribute validation", () => {
+    let result: Result<void, ValidateSessionErrorInvalidAttributesData>;
     describe("Given the session is in the wrong state", () => {
       describe.each([
         [SessionState.AUTH_SESSION_CREATED],
@@ -74,10 +89,13 @@ describe("Get Session - Issue Biometric Credential operation", () => {
           createdAt: validCreatedAt,
           sessionState,
         };
-        it("Returns an error result with the invalid attribute", () => {
-          const result = getSessionOperation.validateSession(
+        beforeEach(() => {
+          result = getSessionOperation.validateSession(
             invalidSessionAttributesWrongSessionState,
           );
+        });
+
+        it("Returns an error result with the invalid attribute", () => {
           expect(result).toStrictEqual(
             errorResult({
               invalidAttributes: [{ sessionState }],
@@ -92,12 +110,13 @@ describe("Get Session - Issue Biometric Credential operation", () => {
         sessionState: SessionState.BIOMETRIC_SESSION_FINISHED,
         createdAt: invalidCreatedAt,
       };
-
-      it("Returns an error result with the invalid attribute", () => {
-        const result = getSessionOperation.validateSession(
+      beforeEach(() => {
+        result = getSessionOperation.validateSession(
           invalidSessionAttributesSessionTooOld,
         );
+      });
 
+      it("Returns an error result with the invalid attribute", () => {
         expect(result).toStrictEqual(
           errorResult({
             invalidAttributes: [{ createdAt: invalidCreatedAt }],
@@ -111,12 +130,13 @@ describe("Get Session - Issue Biometric Credential operation", () => {
         sessionState: SessionState.AUTH_SESSION_CREATED,
         createdAt: invalidCreatedAt,
       };
-
-      it("Returns an error result with all invalid attributes", () => {
-        const result = getSessionOperation.validateSession(
+      beforeEach(() => {
+        result = getSessionOperation.validateSession(
           invalidSessionAttributesSessionTooOld,
         );
+      });
 
+      it("Returns an error result with all invalid attributes", () => {
         expect(result).toStrictEqual(
           errorResult({
             invalidAttributes: [
@@ -133,12 +153,11 @@ describe("Get Session - Issue Biometric Credential operation", () => {
         sessionState: SessionState.BIOMETRIC_SESSION_FINISHED,
         createdAt: validBiometricSessionFinishedAttributes.createdAt,
       };
+      beforeEach(() => {
+        result = getSessionOperation.validateSession(validSessionAttributes);
+      });
 
       it("Returns an empty success result", () => {
-        const result = getSessionOperation.validateSession(
-          validSessionAttributes,
-        );
-
         expect(result).toEqual(emptySuccess());
       });
     });
@@ -153,11 +172,11 @@ describe("Get Session - Issue Biometric Credential operation", () => {
           createdAt: validBiometricSessionFinishedAttributes.createdAt,
         };
 
-        it("Returns an empty success result", () => {
-          const result = getSessionOperation.validateSession(
-            validSessionAttributes,
-          );
+        beforeEach(() => {
+          result = getSessionOperation.validateSession(validSessionAttributes);
+        });
 
+        it("Returns an empty success result", () => {
           expect(result).toEqual(emptySuccess());
         });
       });
