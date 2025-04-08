@@ -28,12 +28,13 @@ export class GetSessionIssueBiometricCredential implements GetSessionOperation {
     attributes: ValidateSessionAttributes,
   ): Result<void, ValidateSessionErrorInvalidAttributesData> {
     const { sessionState, createdAt } = attributes;
+    const validStates = [
+      SessionState.BIOMETRIC_SESSION_FINISHED,
+      SessionState.RESULT_SENT,
+    ];
     const invalidAttributes: ValidateSessionInvalidAttributes[] = [];
 
-    if (
-      !sessionState ||
-      sessionState !== SessionState.BIOMETRIC_SESSION_FINISHED
-    ) {
+    if (!sessionState || !validStates.includes(sessionState)) {
       invalidAttributes.push({ sessionState });
     }
 

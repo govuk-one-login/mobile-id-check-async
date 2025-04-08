@@ -64,24 +64,26 @@ describe("Get Session - Issue Biometric Credential operation", () => {
   });
 
   describe("Session attribute validation", () => {
-    describe("Given the session is in the wrong state - sessionState = AUTH_SESSION_CREATED", () => {
-      const invalidSessionAttributesWrongSessionState = {
-        createdAt: validCreatedAt,
-        sessionState: SessionState.AUTH_SESSION_CREATED,
-      };
-
-      it("Returns an error result with the invalid attribute", () => {
-        const result = getSessionOperation.validateSession(
-          invalidSessionAttributesWrongSessionState,
-        );
-
-        expect(result).toStrictEqual(
-          errorResult({
-            invalidAttributes: [
-              { sessionState: SessionState.AUTH_SESSION_CREATED },
-            ],
-          }),
-        );
+    describe("Given the session is in the wrong state", () => {
+      describe.each([
+        [SessionState.AUTH_SESSION_CREATED],
+        [SessionState.AUTH_SESSION_ABORTED],
+        [SessionState.BIOMETRIC_TOKEN_ISSUED],
+      ])("Given session state is %s", (sessionState: SessionState) => {
+        const invalidSessionAttributesWrongSessionState = {
+          createdAt: validCreatedAt,
+          sessionState,
+        };
+        it("Returns an error result with the invalid attribute", () => {
+          const result = getSessionOperation.validateSession(
+            invalidSessionAttributesWrongSessionState,
+          );
+          expect(result).toStrictEqual(
+            errorResult({
+              invalidAttributes: [{ sessionState }],
+            }),
+          );
+        });
       });
     });
 
@@ -138,6 +140,26 @@ describe("Get Session - Issue Biometric Credential operation", () => {
         );
 
         expect(result).toEqual(emptySuccess());
+      });
+    });
+
+    describe("Given the session is valid", () => {
+      describe.each([
+        [SessionState.BIOMETRIC_SESSION_FINISHED],
+        [SessionState.RESULT_SENT],
+      ])("Given session state is %s", (sessionState: SessionState) => {
+        const validSessionAttributes = {
+          sessionState,
+          createdAt: validBiometricSessionFinishedAttributes.createdAt,
+        };
+
+        it("Returns an empty success result", () => {
+          const result = getSessionOperation.validateSession(
+            validSessionAttributes,
+          );
+
+          expect(result).toEqual(emptySuccess());
+        });
       });
     });
   });
