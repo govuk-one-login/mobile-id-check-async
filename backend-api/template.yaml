@@ -3390,7 +3390,7 @@ Resources:
       ActionsEnabled: true
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      AlarmDescription: A large proportion of Async Finish Biometric Session requests have not completed successfully.
+      AlarmDescription: A large proportion of Async Issue Biometric Credential requests have not completed successfully.
       AlarmName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda-low-completion
       ComparisonOperator: LessThanOrEqualToThreshold
       DatapointsToAlarm: 1
