@@ -17,6 +17,12 @@ export const validSQSRecord = {
   awsRegion: "mockAwsRegion",
 };
 
+export const failingSQSRecordBodyMissing = {
+  ...validSQSRecord,
+  messageId: "6e00b4d2-bceb-4cf6-a447-d1d36ec8dd35",
+  body: "",
+};
+
 export const failingSQSRecordBodyInvalidJSON = {
   ...validSQSRecord,
   messageId: "8e30d89a-de80-47e4-88e7-681b415a2549",
@@ -31,7 +37,7 @@ export const failingSQSRecordBodyMissingSub = {
 
 export const failingSQSRecordBodySubTypeInvalid = {
   ...validSQSRecord,
-  messageId: "6f50c504-818f-4e9f-9a7f-785f532b45f2",
+  messageId: "3142bffa-8323-4d27-80ff-89f7979d79f0",
   body: JSON.stringify({ sub: 12345 }),
 };
 

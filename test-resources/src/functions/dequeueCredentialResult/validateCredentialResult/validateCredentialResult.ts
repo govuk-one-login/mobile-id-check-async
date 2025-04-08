@@ -12,16 +12,10 @@ export function validateCredentialResult(
     });
   }
 
-  if (!timestamp) {
-    return errorResult({
-      errorMessage: "SentTimestamp is missing from record",
-    });
-  }
-
   const { body: recordBody } = record;
-  if (recordBody == null) {
+  if (!recordBody) {
     return errorResult({
-      errorMessage: "Record body is either null or undefined.",
+      errorMessage: "Record body is empty.",
     });
   }
 

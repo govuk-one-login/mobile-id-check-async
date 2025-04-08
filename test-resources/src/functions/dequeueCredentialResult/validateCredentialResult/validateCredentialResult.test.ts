@@ -5,6 +5,7 @@ import "../../testUtils/matchers";
 import { IProcessedMessage } from "../dequeueCredentialResultHandler";
 import {
   failingSQSRecordBodyInvalidJSON,
+  failingSQSRecordBodyMissing,
   failingSQSRecordBodyMissingSub,
   failingSQSRecordBodyMissingTimestamp,
   failingSQSRecordBodySubTypeInvalid,
@@ -24,14 +25,31 @@ describe("Validate credential result", () => {
       expect(result.isError).toBe(true);
     });
 
-    it("Logs an error", () => {
+    it("Returns an error message", () => {
       expect(result.value).toStrictEqual({
         errorMessage: `SentTimestamp is missing from record`,
       });
     });
   });
 
-  describe("Given the SQS record body is missing", () => {});
+  describe("Given the SQS record body is empty", () => {
+    let result: Result<IProcessedMessage>;
+
+    beforeEach(() => {
+      const sqsRecord: SQSRecord = failingSQSRecordBodyMissing;
+      result = validateCredentialResult(sqsRecord);
+    });
+
+    it("Returns an error result", () => {
+      expect(result.isError).toBe(true);
+    });
+
+    it("Returns an error message", () => {
+      expect(result.value).toStrictEqual({
+        errorMessage: "Record body is empty.",
+      });
+    });
+  });
 
   describe("Given credential result is not valid JSON", () => {
     let result: Result<IProcessedMessage>;
@@ -44,7 +62,7 @@ describe("Validate credential result", () => {
     it("Returns an error result", () => {
       expect(result.isError).toBe(true);
     });
-    it("Logs an error", () => {
+    it("Returns an error message", () => {
       expect(result.value).toStrictEqual({
         errorMessage:
           "Record body could not be parsed as JSON. SyntaxError: Expected property name or '}' in JSON at position 2 (line 1 column 3)",
