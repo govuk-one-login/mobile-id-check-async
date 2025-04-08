@@ -8,6 +8,8 @@ import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
 import { validateVendorProcessingQueueSqsEvent } from "./validateSqsEvent";
 import { getIssueBiometricCredentialConfig } from "./issueBiometricCredentialConfig";
+import { GetSessionBiometricTokenIssued } from "../common/session/getOperations/TxmaEvent/GetSessionBiometricTokenIssued";
+import { GetSessionError } from "../common/session/SessionRegistry";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -21,6 +23,7 @@ export async function lambdaHandlerConstructor(
   if (configResult.isError) {
     return;
   }
+  const config = configResult.value;
 
   const validateSqsEventResult = validateVendorProcessingQueueSqsEvent(event);
   if (validateSqsEventResult.isError) {
@@ -29,6 +32,21 @@ export async function lambdaHandlerConstructor(
   const sessionId = validateSqsEventResult.value;
 
   logger.appendKeys({ sessionId });
+
+  const sessionRegistry = dependencies.getSessionRegistry(
+    config.SESSION_TABLE_NAME,
+  );
+  const getSessionResult = await sessionRegistry.getSession(
+    sessionId,
+    new GetSessionBiometricTokenIssued(),
+  );
+  if (getSessionResult.isError) {
+    const errorData = getSessionResult.value;
+    if (errorData.errorType === GetSessionError.INTERNAL_SERVER_ERROR) {
+      return;
+    }
+  }
+
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
 }
 
