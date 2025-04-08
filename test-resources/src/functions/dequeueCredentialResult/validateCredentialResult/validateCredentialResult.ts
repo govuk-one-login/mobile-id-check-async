@@ -37,7 +37,7 @@ export function validateCredentialResult(
 
   if (!isString(sub)) {
     return errorResult({
-      errorMessage: `sub is an incorrect type: ${typeof sub} - should be a string.`,
+      errorMessage: `sub is not a string. Incoming sub is type: ${typeof sub}`,
     });
   }
 

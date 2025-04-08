@@ -84,7 +84,7 @@ describe("Validate credential result", () => {
     });
   });
 
-  describe("Given sub type is invalid", () => {
+  describe("Given sub is not a string", () => {
     beforeEach(() => {
       const sqsRecord: SQSRecord = failingSQSRecordBodySubTypeInvalid;
       result = validateCredentialResult(sqsRecord);
@@ -96,7 +96,7 @@ describe("Validate credential result", () => {
 
     it("Returns an error message", () => {
       expect(result.value).toStrictEqual({
-        errorMessage: "sub is an incorrect type: number - should be a string.",
+        errorMessage: "sub is not a string. Incoming sub is type: number",
       });
     });
   });

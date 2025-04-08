@@ -94,8 +94,8 @@ describe("Dequeue credential result", () => {
     });
   });
 
-  describe("Given the lambda receives one valid message", () => {
-    describe("Given the lambda receives one message to be processed", () => {
+  describe("Given the lambda receives one message", () => {
+    describe("Given the message is valid", () => {
       beforeEach(async () => {
         const event: SQSEvent = {
           Records: [validSQSRecord],
@@ -111,6 +111,8 @@ describe("Dequeue credential result", () => {
 
       it("Logs processed messages", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS",
           processedMessage: {
             sub: "mockSub",
             sentTimestamp: "mockSentTimestamp",
@@ -125,7 +127,7 @@ describe("Dequeue credential result", () => {
   });
 
   describe("Given the lambda receives more than one message in a batch", () => {
-    describe("Given the lambda receives one invalid message and one valid message", () => {
+    describe("Given one message is valid and one message is invalid", () => {
       beforeEach(async () => {
         const event: SQSEvent = {
           Records: [failingSQSRecordBodyMissingSub, validSQSRecord],
@@ -150,6 +152,8 @@ describe("Dequeue credential result", () => {
 
       it("Logs processed messages", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS",
           processedMessage: {
             sub: "mockSub",
             sentTimestamp: "mockSentTimestamp",
