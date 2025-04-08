@@ -8,8 +8,8 @@ import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
 import { validateVendorProcessingQueueSqsEvent } from "./validateSqsEvent";
 import { getIssueBiometricCredentialConfig } from "./issueBiometricCredentialConfig";
-import { GetSessionBiometricTokenIssued } from "../common/session/getOperations/TxmaEvent/GetSessionBiometricTokenIssued";
 import { GetSessionError } from "../common/session/SessionRegistry";
+import { GetSessionIssueBiometricCredential } from "../common/session/getOperations/GetSessionIssueBiometricCredential/GetSessionIssueBiometricCredential";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -38,7 +38,7 @@ export async function lambdaHandlerConstructor(
   );
   const getSessionResult = await sessionRegistry.getSession(
     sessionId,
-    new GetSessionBiometricTokenIssued(),
+    new GetSessionIssueBiometricCredential(),
   );
   if (getSessionResult.isError) {
     const errorData = getSessionResult.value;
