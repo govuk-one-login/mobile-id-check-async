@@ -34,7 +34,6 @@ export const lambdaHandlerConstructor = async (
     processedMessages.push({ sub, timestamp });
   }
 
-  // const processedMessages = validateCredentialResultResponse.value;
   logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_PROCESSED_MESSAGES, {
     processedMessages,
   });
