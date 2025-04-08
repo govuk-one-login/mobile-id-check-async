@@ -16,7 +16,6 @@ export const lambdaHandlerConstructor = async (
 ): Promise<SQSBatchResponse> => {
   setupLogger(context);
   logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_STARTED);
-  const processedMessages: IProcessedMessage[] = [];
   const batchItemFailures: SQSBatchItemFailure[] = [];
 
   for (const record of event.Records) {
@@ -28,13 +27,14 @@ export const lambdaHandlerConstructor = async (
       });
     } else {
       const { sub, sentTimestamp } = validateCredentialResultResponse.value;
-      processedMessages.push({ sub, sentTimestamp });
+      logger.info(
+        LogMessage.DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS,
+        {
+          processedMessage: { sub, sentTimestamp },
+        },
+      );
     }
   }
-
-  logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_PROCESSED_MESSAGES, {
-    processedMessages,
-  });
 
   logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_COMPLETED);
   return { batchItemFailures };
