@@ -55,7 +55,9 @@ describe("Async Issue Biometric Credential", () => {
 
   beforeEach(() => {
     dependencies = {
-      env: {},
+      env: {
+        SESSION_TABLE_NAME: "mockTableName",
+      },
       getSessionRegistry: () => mockSessionRegistrySuccess,
     };
     context = buildLambdaContext();
