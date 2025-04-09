@@ -13,7 +13,7 @@ import {
   AuthSessionAbortedAttributes,
   SessionState,
 } from "../session";
-import { ValidateSessionErrorInvalidAttributeTypeData } from "../SessionRegistry";
+import { GetSessionAttributesInvalidAttributesError } from "../SessionRegistry";
 
 export const getBaseSessionAttributes = (
   item: Record<string, AttributeValue> | undefined,
@@ -67,7 +67,7 @@ export const getTxmaEventBiometricTokenIssuedSessionAttributes = (
   item: Record<string, AttributeValue>,
 ): Result<
   BiometricTokenIssuedSessionAttributes,
-  ValidateSessionErrorInvalidAttributeTypeData
+  GetSessionAttributesInvalidAttributesError
 > => {
   const sessionAttributes: Record<string, unknown> = unmarshall(item);
   if (!isBiometricTokenIssuedSessionAttributes(sessionAttributes)) {

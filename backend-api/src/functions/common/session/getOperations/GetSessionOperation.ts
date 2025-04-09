@@ -4,7 +4,7 @@ import { BiometricTokenIssuedSessionAttributes } from "../session";
 import {
   ValidateSessionAttributes,
   ValidateSessionErrorInvalidAttributesData,
-  ValidateSessionErrorInvalidAttributeTypeData,
+  GetSessionAttributesInvalidAttributesError,
 } from "../SessionRegistry";
 
 export interface GetSessionOperation {
@@ -12,7 +12,7 @@ export interface GetSessionOperation {
     item: Record<string, AttributeValue> | undefined,
   ): Result<
     BiometricTokenIssuedSessionAttributes,
-    ValidateSessionErrorInvalidAttributeTypeData
+    GetSessionAttributesInvalidAttributesError
   >;
 
   validateSession(

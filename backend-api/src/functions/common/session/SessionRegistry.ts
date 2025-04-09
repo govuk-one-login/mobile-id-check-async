@@ -104,23 +104,23 @@ export interface GetSessionSessionInvalidErrorData {
 
 export interface GetSessionValidateSessionErrorData {
   invalidAttributes?: ValidateSessionInvalidAttributes[];
-  sessionAttributes?: InvalidSessionAttributeTypes;
+  sessionAttributes?: InvalidSessionAttributes;
 }
 
 export interface ValidateSessionErrorInvalidAttributesData {
   invalidAttributes: ValidateSessionInvalidAttributes[];
 }
 
-export interface ValidateSessionErrorInvalidAttributeTypeData {
-  sessionAttributes: InvalidSessionAttributeTypes;
+export interface GetSessionAttributesInvalidAttributesError {
+  sessionAttributes: InvalidSessionAttributes;
 }
 
 export interface ValidateSessionInvalidAttributes {
-  sessionState?: Exclude<SessionState, SessionState.BIOMETRIC_TOKEN_ISSUED>;
+  sessionState?: SessionState;
   createdAt?: number;
 }
 
-export type InvalidSessionAttributeTypes = Partial<SessionAttributes>;
+export type InvalidSessionAttributes = Partial<SessionAttributes>;
 
 // Shared
 
