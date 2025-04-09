@@ -234,7 +234,7 @@ describe("Async Issue Biometric Credential", () => {
     });
   });
 
-  describe("Retrieving session failures", () => {
+  describe("Get session failures", () => {
     describe("Given the error type is internal server error", () => {
       beforeEach(async () => {
         dependencies.getSessionRegistry = () => ({
