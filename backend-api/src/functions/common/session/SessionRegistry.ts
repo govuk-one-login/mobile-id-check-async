@@ -120,7 +120,7 @@ export interface ValidateSessionInvalidAttributes {
   createdAt?: number;
 }
 
-export type InvalidSessionAttributes = Partial<SessionAttributes>;
+export type InvalidSessionAttributes = unknown;
 
 // Shared
 
