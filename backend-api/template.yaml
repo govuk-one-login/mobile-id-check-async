@@ -3280,6 +3280,16 @@ Resources:
           - - !Ref AWS::NoValue
         Enabled: true
         Type: !Ref LambdaDeploymentPreference
+      Environment:
+        Variables:
+          BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS: !FindInMap
+            - EnvironmentVariables
+            - !Ref Environment
+            - BiometricViewerAccessKeySecretCacheDurationInSeconds
+          BIOMETRIC_VIEWER_ACCESS_PATH: !FindInMap
+            - EnvironmentVariables
+            - !Ref Environment
+            - BiometricViewerAccessPath
       FunctionName: !Sub ${AWS::StackName}-issue-biometric-credential
       Handler: asyncIssueBiometricCredentialHandler.lambdaHandler
       ReservedConcurrentExecutions: !If
