@@ -89,6 +89,14 @@ Resources:
                   - sqs:GetQueueAttributes
                 Resource:
                   Fn::ImportValue: !Sub ${BackendStackName}-ipv-core-queue-arn
+        - PolicyName: DynamoDBPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                Resource: !GetAtt CredentialResultsTable.Arn
 
   DequeueCredentialResultEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
