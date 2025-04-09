@@ -99,58 +99,58 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
       BiometricSubmitterKeySecretPathDl: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+      BiometricViewerAccessKey: /build/BIOMETRIC_VIEWER_ACCESS_PATH
+      BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       ClientRegistrySecretPath: build/clientRegistry
       EventsBaseUrl: https://events.review-b-async.build.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.build.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.build.account.gov.uk
       SessionDurationInSeconds: 86400
-      biometricViewerAccessKey: /build/BIOMETRIC_VIEWER_ACCESS_PATH
-      biometricViewerAccessKeySecretCacheDurationInSeconds: 900
     dev:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
       BiometricSubmitterKeySecretPathDl: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+      BiometricViewerAccessKey: /dev/BIOMETRIC_VIEWER_ACCESS_PATH
+      BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       ClientRegistrySecretPath: dev/clientRegistry
       EventsBaseUrl: https://events.review-b-async.dev.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.dev.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.dev.account.gov.uk
       SessionDurationInSeconds: 86400
-      biometricViewerAccessKey: /dev/BIOMETRIC_VIEWER_ACCESS_PATH
-      biometricViewerAccessKeySecretCacheDurationInSeconds: 900
     integration:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
       BiometricSubmitterKeySecretPathDl: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+      BiometricViewerAccessKey: /integration/BIOMETRIC_VIEWER_ACCESS_PATH
+      BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       ClientRegistrySecretPath: integration/clientRegistry
       ReadIdBaseUrl: https://readid-proxy.review-b-async.integration.account.gov.uk
       STSBASEURL: https://token.integration.account.gov.uk
       SessionDurationInSeconds: 86400
-      biometricViewerAccessKey: /integration/BIOMETRIC_VIEWER_ACCESS_PATH
-      biometricViewerAccessKeySecretCacheDurationInSeconds: 900
     production:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
       BiometricSubmitterKeySecretPathDl: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+      BiometricViewerAccessKey: /production/BIOMETRIC_VIEWER_ACCESS_PATH
+      BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       ClientRegistrySecretPath: production/clientRegistry
       ReadIdBaseUrl: https://readid-proxy.review-b-async.account.gov.uk
       STSBASEURL: https://token.account.gov.uk
       SessionDurationInSeconds: 86400
-      biometricViewerAccessKey: /production/BIOMETRIC_VIEWER_ACCESS_PATH
-      biometricViewerAccessKeySecretCacheDurationInSeconds: 900
     staging:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
       BiometricSubmitterKeySecretPathDl: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+      BiometricViewerAccessKey: /staging/BIOMETRIC_VIEWER_ACCESS_PATH
+      BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       ClientRegistrySecretPath: staging/clientRegistry
       ReadIdBaseUrl: https://readid-proxy.review-b-async.staging.account.gov.uk
       STSBASEURL: https://token.staging.account.gov.uk
       SessionDurationInSeconds: 86400
-      biometricViewerAccessKey: /staging/BIOMETRIC_VIEWER_ACCESS_PATH
-      biometricViewerAccessKeySecretCacheDurationInSeconds: 900
 
   IPVCore:
     build:
