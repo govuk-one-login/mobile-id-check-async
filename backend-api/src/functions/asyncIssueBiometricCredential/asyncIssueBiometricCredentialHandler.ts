@@ -11,6 +11,13 @@ import { getIssueBiometricCredentialConfig } from "./issueBiometricCredentialCon
 import { Result, emptyFailure, successResult } from "../utils/result";
 import { GetSecrets } from "../common/config/secrets";
 
+class RetainMessageOnQueue extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "RetainMessageOnQueue";
+  }
+}
+
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
   event: SQSEvent,
@@ -22,7 +29,7 @@ export async function lambdaHandlerConstructor(
   const configResult = getIssueBiometricCredentialConfig(dependencies.env);
   if (configResult.isError) {
     logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG);
-    throw new Error("Invalid config");
+    return;
   }
   const config = configResult.value;
 
@@ -42,7 +49,7 @@ export async function lambdaHandlerConstructor(
     logger.error(
       LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_ERROR_RETRIEVING_BIOMETRIC_VIEWER_KEY,
     );
-    throw new Error("Failed to retrieve biometric viewer key");
+    throw new RetainMessageOnQueue("Failed to retrieve biometric viewer key");
   }
 
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
