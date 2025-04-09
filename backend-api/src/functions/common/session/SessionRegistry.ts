@@ -104,7 +104,7 @@ export interface GetSessionSessionInvalidErrorData {
 
 export interface GetSessionValidateSessionErrorData {
   invalidAttributes?: ValidateSessionInvalidAttributes[];
-  sessionAttributes?: InvalidSessionAttributes;
+  sessionAttributes?: unknown;
 }
 
 export interface ValidateSessionErrorInvalidAttributesData {
@@ -112,15 +112,13 @@ export interface ValidateSessionErrorInvalidAttributesData {
 }
 
 export interface GetSessionAttributesInvalidAttributesError {
-  sessionAttributes: InvalidSessionAttributes;
+  sessionAttributes: unknown;
 }
 
 export interface ValidateSessionInvalidAttributes {
   sessionState?: SessionState;
   createdAt?: number;
 }
-
-export type InvalidSessionAttributes = unknown;
 
 // Shared
 
