@@ -1,4 +1,4 @@
-import { APIGatewayProxyResult, Context, SQSEvent } from "aws-lambda";
+import { Context, SQSEvent } from "aws-lambda";
 import { expect } from "@jest/globals";
 import "../../../tests/testUtils/matchers";
 import { buildLambdaContext } from "../testUtils/mockContext";
@@ -9,11 +9,9 @@ import {
   mockBiometricSessionId,
   mockSessionId,
 } from "../testUtils/unitTestData";
-import { successResult, errorResult, emptyFailure } from "../utils/result";
-import { LogMessage } from "../common/logging/LogMessage";
+import { successResult, emptyFailure } from "../utils/result";
 
 describe("Async Issue Biometric Credential", () => {
-  let result: Promise<void>;
   let dependencies: IssueBiometricCredentialDependencies;
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
