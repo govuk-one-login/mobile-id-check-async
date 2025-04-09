@@ -8,7 +8,7 @@ import {
   AuthSessionAbortedAttributes,
   SessionState,
 } from "../session";
-import { GetSessionAttributesInvalidAttributesError } from "../SessionRegistry";
+import { GetSessionAttributesInvalidAttributesError } from "../SessionRegistry/types";
 
 export const getBaseSessionAttributes = (
   item: Record<string, AttributeValue>,

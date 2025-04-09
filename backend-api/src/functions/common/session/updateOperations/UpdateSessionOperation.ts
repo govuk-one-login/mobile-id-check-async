@@ -1,7 +1,7 @@
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { Result } from "../../../utils/result";
 import { SessionAttributes } from "../session";
-import { GetSessionAttributesInvalidAttributesError } from "../SessionRegistry";
+import { GetSessionAttributesInvalidAttributesError } from "../SessionRegistry/types";
 
 export interface UpdateSessionOperation {
   getDynamoDbUpdateExpression(): string;

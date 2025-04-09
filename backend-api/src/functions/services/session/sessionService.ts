@@ -9,8 +9,7 @@ import {
   DynamoDbAdapter,
   DatabaseRecord,
 } from "../../adapters/aws/dynamo/dynamoDbAdapter";
-import { CreateSessionAttributes } from "./types";
-import { Session } from "./types";
+import { CreateSessionAttributes, Session } from "./types";
 
 export interface ISessionService {
   createSession: (

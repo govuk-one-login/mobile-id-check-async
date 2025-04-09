@@ -2,10 +2,7 @@ import { expect } from "@jest/globals";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
 import "../../../tests/testUtils/matchers";
 import { logger } from "../common/logging/logger";
-import {
-  SessionRegistry,
-  UpdateSessionError,
-} from "../common/session/SessionRegistry";
+import { UpdateSessionError } from "../common/session/SessionRegistry/types";
 import { BiometricTokenIssued } from "../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { buildRequest } from "../testUtils/mockRequest";
@@ -23,6 +20,7 @@ import {
 import { emptyFailure, errorResult, successResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncBiometricTokenHandler";
 import { IAsyncBiometricTokenDependencies } from "./handlerDependencies";
+import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 
 jest.mock("crypto", () => ({
   ...jest.requireActual("crypto"),

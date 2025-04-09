@@ -20,7 +20,7 @@ import { validateRequestBody } from "./validateRequestBody/validateRequestBody";
 import {
   SessionUpdateFailed,
   UpdateSessionError,
-} from "../common/session/SessionRegistry";
+} from "../common/session/SessionRegistry/types";
 import { BiometricSessionFinished } from "../common/session/updateOperations/BiometricSessionFinished/BiometricSessionFinished";
 import { getFinishBiometricSessionConfig } from "./finishBiometricSessionConfig";
 import { IEventService } from "../services/events/types";

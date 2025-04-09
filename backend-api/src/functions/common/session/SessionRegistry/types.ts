@@ -1,19 +1,4 @@
-import { Result } from "../../utils/result";
-import { GetSessionOperation } from "./getOperations/GetSessionOperation";
-import { SessionAttributes, SessionState } from "./session";
-import { UpdateSessionOperation } from "./updateOperations/UpdateSessionOperation";
-
-export interface SessionRegistry {
-  updateSession(
-    sessionId: string,
-    updateOperation: UpdateSessionOperation,
-  ): Promise<Result<SessionUpdated, SessionUpdateFailed>>;
-
-  getSession(
-    sessionId: string,
-    getOperation: GetSessionOperation,
-  ): Promise<Result<SessionAttributes, GetSessionFailed>>;
-}
+import { SessionAttributes, SessionState } from "../session";
 
 // Update session
 

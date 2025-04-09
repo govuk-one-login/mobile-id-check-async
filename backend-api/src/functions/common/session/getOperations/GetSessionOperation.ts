@@ -2,10 +2,10 @@ import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { Result } from "../../../utils/result";
 import { SessionAttributes } from "../session";
 import {
+  GetSessionAttributesInvalidAttributesError,
   ValidateSessionAttributes,
   ValidateSessionErrorInvalidAttributesData,
-  GetSessionAttributesInvalidAttributesError,
-} from "../SessionRegistry";
+} from "../SessionRegistry/types";
 
 export interface GetSessionOperation {
   getSessionAttributesFromDynamoDbItem(

@@ -22,7 +22,7 @@ import {
   errorResult,
   emptyFailure,
 } from "../utils/result";
-import { UpdateSessionError } from "../common/session/SessionRegistry";
+import { UpdateSessionError } from "../common/session/SessionRegistry/types";
 
 describe("Async Finish Biometric Session", () => {
   let dependencies: IAsyncFinishBiometricSessionDependencies;

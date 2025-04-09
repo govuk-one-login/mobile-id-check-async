@@ -7,7 +7,7 @@ import {
 } from "../../sessionAttributes/sessionAttributes";
 import { UpdateSessionOperation } from "../UpdateSessionOperation";
 import { oneHourAgoInMilliseconds } from "../../../../utils/utils";
-import { GetSessionAttributesInvalidAttributesError } from "../../SessionRegistry";
+import { GetSessionAttributesInvalidAttributesError } from "../../SessionRegistry/types";
 
 export class BiometricSessionFinished implements UpdateSessionOperation {
   constructor(private readonly biometricSessionId: string) {}

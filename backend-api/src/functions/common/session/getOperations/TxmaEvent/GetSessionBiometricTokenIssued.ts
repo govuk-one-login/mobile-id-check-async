@@ -7,11 +7,11 @@ import {
 } from "../../session";
 import { getTxmaEventBiometricTokenIssuedSessionAttributes } from "../../sessionAttributes/sessionAttributes";
 import {
+  GetSessionAttributesInvalidAttributesError,
   ValidateSessionAttributes,
   ValidateSessionErrorInvalidAttributesData,
-  GetSessionAttributesInvalidAttributesError,
   ValidateSessionInvalidAttributes,
-} from "../../SessionRegistry";
+} from "../../SessionRegistry/types";
 import { GetSessionOperation } from "../GetSessionOperation";
 
 export class GetSessionBiometricTokenIssued implements GetSessionOperation {

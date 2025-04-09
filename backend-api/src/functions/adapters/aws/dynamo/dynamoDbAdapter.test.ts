@@ -16,11 +16,10 @@ import { SessionState } from "../../../common/session/session";
 import {
   GetSessionError,
   GetSessionFailed,
-  SessionRegistry,
   SessionUpdated,
   SessionUpdateFailed,
   UpdateSessionError,
-} from "../../../common/session/SessionRegistry";
+} from "../../../common/session/SessionRegistry/types";
 import { BiometricTokenIssued } from "../../../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
 import {
@@ -33,6 +32,7 @@ import {
 } from "../../../testUtils/unitTestData";
 import { errorResult, Result, successResult } from "../../../utils/result";
 import { DynamoDbAdapter } from "./dynamoDbAdapter";
+import { SessionRegistry } from "../../../common/session/SessionRegistry/SessionRegistry";
 
 const mockDynamoDbClient = mockClient(DynamoDBClient);
 

@@ -8,7 +8,7 @@ import {
 } from "../../sessionAttributes/sessionAttributes";
 import { UpdateSessionOperation } from "../UpdateSessionOperation";
 import { oneHourAgoInMilliseconds } from "../../../../utils/utils";
-import { GetSessionAttributesInvalidAttributesError } from "../../SessionRegistry";
+import { GetSessionAttributesInvalidAttributesError } from "../../SessionRegistry/types";
 
 export class AbortSession implements UpdateSessionOperation {
   constructor(private readonly sessionId: string) {}

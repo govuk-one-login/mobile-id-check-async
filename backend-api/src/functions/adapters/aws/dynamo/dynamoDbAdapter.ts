@@ -32,13 +32,12 @@ import {
   GetSessionInternalServerError,
   GetSessionSessionInvalidErrorData,
   GetSessionValidateSessionErrorData,
-  SessionRegistry,
   SessionUpdateFailed,
   SessionUpdateFailedInternalServerError,
   SessionUpdated,
   UpdateOperationDataToLog,
   UpdateSessionError,
-} from "../../../common/session/SessionRegistry";
+} from "../../../common/session/SessionRegistry/types";
 import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
 import {
   FailureWithValue,
@@ -47,6 +46,7 @@ import {
   successResult,
 } from "../../../utils/result";
 import { oneHourAgoInMilliseconds } from "../../../utils/utils";
+import { SessionRegistry } from "../../../common/session/SessionRegistry/SessionRegistry";
 
 export type DatabaseRecord = Record<string, NativeAttributeValue>;
 
