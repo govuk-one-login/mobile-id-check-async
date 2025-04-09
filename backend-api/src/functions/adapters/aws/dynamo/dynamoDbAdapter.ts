@@ -23,8 +23,8 @@ import { GetSessionOperation } from "../../../common/session/getOperations/GetSe
 import {
   SessionAttributes,
   SessionState,
-  CreateSessionAttributes,
 } from "../../../common/session/session";
+import { CreateSessionAttributes } from "../../../services/session/types";
 import {
   GetSessionError,
   GetSessionErrorSessionNotFound,

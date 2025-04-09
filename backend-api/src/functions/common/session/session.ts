@@ -43,12 +43,3 @@ export interface BiometricSessionFinishedAttributes
 export interface AuthSessionAbortedAttributes extends BaseSessionAttributes {
   sessionState: SessionState.AUTH_SESSION_ABORTED;
 }
-export type CreateSessionAttributes = {
-  client_id: string;
-  govuk_signin_journey_id: string;
-  issuer: string;
-  redirect_uri?: string;
-  sessionDurationInSeconds: number;
-  state: string;
-  sub: string;
-};
