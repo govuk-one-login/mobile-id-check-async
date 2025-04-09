@@ -50,7 +50,7 @@ describe("Async Issue Biometric Credential", () => {
   beforeEach(() => {
     dependencies = {
       env: {
-        BIOMETRIC_VIEWER_ACCESS_KEY: "mock_biometric_viewer_access_key",
+        BIOMETRIC_VIEWER_ACCESS_KEY: "mockBiometricViewerAccessKey",
         BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS: "900",
       },
       getSecrets: mockGetSecretsSuccess,
