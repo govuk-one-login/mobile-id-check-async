@@ -39,7 +39,7 @@ import {
   UpdateSessionError,
 } from "../../../common/session/SessionRegistry";
 import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
-import { CreateSessionAttributes } from "../../../services/session/sessionService";
+import { CreateSessionAttributes } from "../../../common/session/session";
 import {
   FailureWithValue,
   Result,
