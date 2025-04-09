@@ -3,6 +3,7 @@ import {
   SQSBatchItemFailure,
   SQSBatchResponse,
   SQSEvent,
+  SQSRecord,
 } from "aws-lambda";
 import { DynamoDBAdapter } from "../common/dynamoDBAdapter/dynamoDBAdapter";
 import { logger } from "../common/logging/logger";
@@ -11,6 +12,7 @@ import { setupLogger } from "../common/logging/setupLogger";
 import { ICredentialResultRegistry } from "./credentialResultRegistry/credentialResultRegistry";
 import { PutItemCredentialResult } from "./credentialResultRegistry/putItemOperation/putItemCredentialResult";
 import { validateCredentialResult } from "./validateCredentialResult/validateCredentialResult";
+import { getDequeueCredentialResultConfig } from "./dequeueCredentialResultConfig";
 
 export const lambdaHandlerConstructor = async (
   dependencies: IDequeueCredentialResultDependencies,
@@ -20,8 +22,13 @@ export const lambdaHandlerConstructor = async (
   setupLogger(context);
   logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_STARTED);
   const batchItemFailures: SQSBatchItemFailure[] = [];
-  const credentialResultRegistry =
-    dependencies.getCredentialResultRegistry("mock-table-name");
+
+  const configResult = getDequeueCredentialResultConfig(dependencies.env);
+  if (configResult.isError) {
+    batchItemFailures.push(...getBatchItemFailures(event.Records));
+    return { batchItemFailures };
+  }
+  const config = configResult.value;
 
   for (const record of event.Records) {
     const validateCredentialResultResponse = validateCredentialResult(record);
@@ -40,6 +47,9 @@ export const lambdaHandlerConstructor = async (
         },
       );
 
+      const credentialResultRegistry = dependencies.getCredentialResultRegistry(
+        config.CREDENTIAL_RESULTS_TABLE_NAME,
+      );
       const putItemResult = await credentialResultRegistry.putItem(
         credentialResult,
         new PutItemCredentialResult(),
@@ -54,6 +64,10 @@ export const lambdaHandlerConstructor = async (
   logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_COMPLETED);
   return { batchItemFailures };
 };
+
+function getBatchItemFailures(eventRecords: SQSRecord[]) {
+  return eventRecords.map((record) => ({ itemIdentifier: record.messageId }));
+}
 
 export interface IDequeueCredentialResultDependencies {
   env: NodeJS.ProcessEnv;

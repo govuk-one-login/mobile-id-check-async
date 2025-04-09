@@ -13,7 +13,11 @@ import {
 import { failingSQSRecordBodyMissingSub, validSQSRecord } from "./unitTestData";
 
 describe("Dequeue credential result", () => {
-  const env = {};
+  const env = {
+    CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS:
+      "mockCredentialResultTTLDurationInSeconds",
+    CREDENTIAL_RESULTS_TABLE_NAME: "mockCredentialResultsTableName",
+  };
   let dependencies: IDequeueCredentialResultDependencies;
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
@@ -22,7 +26,7 @@ describe("Dequeue credential result", () => {
 
   beforeEach(() => {
     dependencies = {
-      env,
+      env: { ...env },
       getCredentialResultRegistry: () => mockCredentialResultRegistrySuccess,
     };
     context = buildLambdaContext();
@@ -53,6 +57,41 @@ describe("Dequeue credential result", () => {
       await lambdaHandlerConstructor(dependencies, event, context);
       expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
         testKey: "testValue",
+      });
+    });
+  });
+
+  describe("Config validation", () => {
+    describe.each([
+      ["CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS"],
+      ["CREDENTIAL_RESULTS_TABLE_NAME"],
+    ])("Given %s environment variable is missing", (envVar: string) => {
+      beforeEach(async () => {
+        delete dependencies.env[envVar];
+        const event: SQSEvent = {
+          Records: [validSQSRecord],
+        };
+        result = await lambdaHandlerConstructor(dependencies, event, context);
+      });
+
+      it("returns 500 Internal server error", async () => {
+        expect(result).toStrictEqual({
+          batchItemFailures: [
+            {
+              itemIdentifier: "c2098377-619a-449f-b2b4-254b6c41aff4",
+            },
+          ],
+        });
+      });
+
+      it("logs INVALID_CONFIG", async () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_INVALID_CONFIG",
+          data: {
+            missingEnvironmentVariables: [envVar],
+          },
+        });
       });
     });
   });

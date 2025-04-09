@@ -62,6 +62,10 @@ export class LogMessage implements LogAttributes {
     "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_STARTED",
     "Lambda handler processing has started.",
   );
+  static readonly DEQUEUE_CREDENTIAL_RESULT_INVALID_CONFIG = new LogMessage(
+    "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_INVALID_CONFIG",
+    "One or more required environment variables were missing or invalid.",
+  );
   static readonly DEQUEUE_CREDENTIAL_RESULT_MESSAGE_INVALID = new LogMessage(
     "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_MESSAGE_INVALID",
     "Credential result message is missing or invalid",

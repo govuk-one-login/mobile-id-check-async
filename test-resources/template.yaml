@@ -173,6 +173,10 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
+      Environment:
+        Variables:
+          CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS: 900
+          CREDENTIAL_RESULTS_TABLE_NAME: !Ref CredentialResultsTable
       FunctionName: !Sub ${AWS::StackName}-dequeue-credential-result
       Handler: dequeueCredentialResultHandler.lambdaHandler
       Role: !GetAtt DequeueCredentialResultRole.Arn
