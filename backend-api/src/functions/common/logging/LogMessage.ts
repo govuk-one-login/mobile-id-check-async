@@ -112,11 +112,6 @@ export class LogMessage implements LogAttributes {
     "Successfully writen message to SQS.",
   );
 
-  static readonly ERROR_RETRIEVING_BIOMETRIC_VIEWER_KEY = new LogMessage(
-    "MOBILE_ASYNC_ERROR_RETRIEVING_BIOMETRIC_VIEWER_KEY",
-    "An unexpected error occurred while trying to retrieve the biometric viewer key.",
-  );
-
   // Token
   static readonly TOKEN_STARTED = new LogMessage(
     "MOBILE_ASYNC_TOKEN_STARTED",
@@ -320,6 +315,11 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG",
     "One or more required environment variables were missing or invalid.",
   );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_ERROR_RETRIEVING_BIOMETRIC_VIEWER_KEY =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_ERROR_RETRIEVING_BIOMETRIC_VIEWER_KEY",
+      "An unexpected error occurred while trying to retrieve the biometric viewer key.",
+    );
 
   private constructor(
     public readonly messageCode: string,

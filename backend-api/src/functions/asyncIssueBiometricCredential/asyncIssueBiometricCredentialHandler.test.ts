@@ -224,13 +224,14 @@ describe("Async Issue Biometric Credential", () => {
       dependencies.getSecrets = jest.fn().mockResolvedValue(emptyFailure());
     });
 
-    it("Logs ERROR_RETRIEVING_BIOMETRIC_VIEWER_KEY and throws an error", async () => {
+    it("Logs ISSUE_BIOMETRIC_CREDENTIAL_ERROR_RETRIEVING_BIOMETRIC_VIEWER_KEY and throws an error", async () => {
       await expect(
         lambdaHandlerConstructor(dependencies, validSqsEvent, context),
       ).rejects.toThrow("Failed to retrieve biometric viewer key");
 
       expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-        messageCode: "MOBILE_ASYNC_ERROR_RETRIEVING_BIOMETRIC_VIEWER_KEY",
+        messageCode:
+          "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_ERROR_RETRIEVING_BIOMETRIC_VIEWER_KEY",
       });
     });
   });
@@ -240,17 +241,17 @@ describe("Async Issue Biometric Credential", () => {
       await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
     });
 
-    it("Logs COMPLETED with sessionId", async () => {
-      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-        messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-        sessionId: mockSessionId,
-      });
-    });
-
     it("Passes correct arguments to get secrets", () => {
       expect(mockGetSecretsSuccess).toHaveBeenCalledWith({
         secretNames: ["mock_biometric_viewer_access_key"],
         cacheDurationInSeconds: 900,
+      });
+    });
+
+    it("Logs COMPLETED with sessionId", async () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        sessionId: mockSessionId,
       });
     });
   });

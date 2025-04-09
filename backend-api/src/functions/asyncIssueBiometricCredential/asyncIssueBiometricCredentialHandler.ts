@@ -38,9 +38,10 @@ export async function lambdaHandlerConstructor(
     Number(config.BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS),
     dependencies.getSecrets,
   );
-
   if (viewerKeyResult.isError) {
-    logger.error(LogMessage.ERROR_RETRIEVING_BIOMETRIC_VIEWER_KEY);
+    logger.error(
+      LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_ERROR_RETRIEVING_BIOMETRIC_VIEWER_KEY,
+    );
     throw new Error("Failed to retrieve biometric viewer key");
   }
 
@@ -56,7 +57,6 @@ async function getBiometricViewerAccessKey(
     secretNames: [path],
     cacheDurationInSeconds,
   });
-
   if (getViewerKeyResult.isError) {
     return emptyFailure();
   }
