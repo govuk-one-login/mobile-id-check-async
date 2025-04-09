@@ -966,8 +966,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncAbortSessionSubscriptionFilter:
@@ -1503,8 +1503,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncActiveSessionSubscriptionFilter:
@@ -2071,8 +2071,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncBiometricTokenSubscriptionFilter:
@@ -2630,8 +2630,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncCredentialSubscriptionFilter:
@@ -3160,8 +3160,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncFinishBiometricSessionSubscriptionFilter:
@@ -3374,6 +3374,13 @@ Resources:
                 Resource: !GetAtt VendorProcessingKMSEncryptionKey.Arn
             Version: "2012-10-17"
           PolicyName: KMSPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - dynamodb:GetItem
+                Effect: Allow
+                Resource: !GetAtt SessionsTable.Arn
+          PolicyName: DynamoDBPolicy
       RoleName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda
 
   AsyncIssueBiometricCredentialLogGroup:
@@ -3435,8 +3442,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncIssueBiometricCredentialMetricFilter:
@@ -3998,8 +4005,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncTokenSubscriptionFilter:
