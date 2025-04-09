@@ -23,6 +23,7 @@ import { GetSessionOperation } from "../../../common/session/getOperations/GetSe
 import {
   SessionAttributes,
   SessionState,
+  CreateSessionAttributes
 } from "../../../common/session/session";
 import {
   GetSessionError,
@@ -39,7 +40,6 @@ import {
   UpdateSessionError,
 } from "../../../common/session/SessionRegistry";
 import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
-import { CreateSessionAttributes } from "../../../common/session/session";
 import {
   FailureWithValue,
   Result,
