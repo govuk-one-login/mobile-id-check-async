@@ -2,12 +2,12 @@ import { expect } from "@jest/globals";
 import { Context, SQSBatchResponse, SQSEvent } from "aws-lambda";
 import "aws-sdk-client-mock-jest";
 import { logger } from "../common/logging/logger";
-import { emptySuccess } from "../common/utils/result";
+import { emptyFailure, emptySuccess } from "../common/utils/result";
 import "../testUtils/matchers";
 import { buildLambdaContext } from "../testUtils/mockContext";
+import { ICredentialResultRegistry } from "./credentialResultRegistry/credentialResultRegistry";
 import {
   IDequeueCredentialResultDependencies,
-  IDynamoDBAdapter,
   lambdaHandlerConstructor,
 } from "./dequeueCredentialResultHandler";
 import { failingSQSRecordBodyMissingSub, validSQSRecord } from "./unitTestData";
@@ -23,7 +23,7 @@ describe("Dequeue credential result", () => {
   beforeEach(() => {
     dependencies = {
       env,
-      getDynamoDBAdapter: () => mockDynamoDBAdapterSuccess,
+      getCredentialResultRegistry: () => mockCredentialResultRegistrySuccess,
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
@@ -99,32 +99,70 @@ describe("Dequeue credential result", () => {
 
   describe("Given the lambda receives one message", () => {
     describe("Given the message is valid", () => {
-      beforeEach(async () => {
-        const event: SQSEvent = {
-          Records: [validSQSRecord],
-        };
-        result = await lambdaHandlerConstructor(dependencies, event, context);
-      });
+      describe("Given writing to dynamoDB fails", () => {
+        beforeEach(async () => {
+          dependencies.getCredentialResultRegistry = () =>
+            mockCredentialResultRegistryPutItemFailure;
+          const event: SQSEvent = {
+            Records: [validSQSRecord],
+          };
+          result = await lambdaHandlerConstructor(dependencies, event, context);
+        });
 
-      it("Logs COMPLETED", () => {
-        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
+        it("Logs COMPLETED", () => {
+          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
+          });
+        });
+
+        it("Logs processed messages", () => {
+          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+            messageCode:
+              "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS",
+            processedMessage: {
+              sub: "mockSub",
+              sentTimestamp: "mockSentTimestamp",
+            },
+          });
+        });
+
+        it("Returns an item in the batchItemFailures array", () => {
+          expect(result).toStrictEqual({
+            batchItemFailures: [
+              { itemIdentifier: "c2098377-619a-449f-b2b4-254b6c41aff4" },
+            ],
+          });
         });
       });
 
-      it("Logs processed messages", () => {
-        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-          messageCode:
-            "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS",
-          processedMessage: {
-            sub: "mockSub",
-            sentTimestamp: "mockSentTimestamp",
-          },
+      describe("Given writing to dynamoDB is successful", () => {
+        beforeEach(async () => {
+          const event: SQSEvent = {
+            Records: [validSQSRecord],
+          };
+          result = await lambdaHandlerConstructor(dependencies, event, context);
         });
-      });
 
-      it("Returns no batchItemFailures", () => {
-        expect(result).toStrictEqual({ batchItemFailures: [] });
+        it("Logs COMPLETED", () => {
+          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
+          });
+        });
+
+        it("Logs processed messages", () => {
+          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+            messageCode:
+              "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS",
+            processedMessage: {
+              sub: "mockSub",
+              sentTimestamp: "mockSentTimestamp",
+            },
+          });
+        });
+
+        it("Returns no batchItemFailures", () => {
+          expect(result).toStrictEqual({ batchItemFailures: [] });
+        });
       });
     });
   });
@@ -171,13 +209,18 @@ describe("Dequeue credential result", () => {
   });
 });
 
-const mockInertDynamoDBAdapter: IDynamoDBAdapter = {
+const mockInertCredentialResultRegistry: ICredentialResultRegistry = {
   putItem: jest.fn(() => {
     throw new Error("Not implemented");
   }),
 };
 
-export const mockDynamoDBAdapterSuccess: IDynamoDBAdapter = {
-  ...mockInertDynamoDBAdapter,
+const mockCredentialResultRegistrySuccess: ICredentialResultRegistry = {
+  ...mockInertCredentialResultRegistry,
   putItem: jest.fn().mockResolvedValue(emptySuccess()),
+};
+
+const mockCredentialResultRegistryPutItemFailure: ICredentialResultRegistry = {
+  ...mockInertCredentialResultRegistry,
+  putItem: jest.fn().mockResolvedValue(emptyFailure()),
 };

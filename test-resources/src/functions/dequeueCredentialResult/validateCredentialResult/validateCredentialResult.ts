@@ -1,10 +1,10 @@
 import { SQSRecord } from "aws-lambda";
 import { errorResult, Result, successResult } from "../../common/utils/result";
-import { IProcessedMessage } from "../dequeueCredentialResultHandler";
+import { ICredentialResult } from "../credentialResult";
 
 export function validateCredentialResult(
   record: SQSRecord,
-): Result<IProcessedMessage> {
+): Result<ICredentialResult> {
   const sentTimestamp = record.attributes.SentTimestamp;
   if (!sentTimestamp) {
     return errorResult({

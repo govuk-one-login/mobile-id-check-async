@@ -2,7 +2,6 @@ import { expect } from "@jest/globals";
 import { SQSRecord } from "aws-lambda";
 import { Result } from "../../common/utils/result";
 import "../../testUtils/matchers";
-import { IProcessedMessage } from "../dequeueCredentialResultHandler";
 import {
   failingSQSRecordBodyInvalidJSON,
   failingSQSRecordBodyMissing,
@@ -11,9 +10,10 @@ import {
   failingSQSRecordBodySubTypeInvalid,
 } from "../unitTestData";
 import { validateCredentialResult } from "./validateCredentialResult";
+import { ICredentialResult } from "../credentialResult";
 
 describe("Validate credential result", () => {
-  let result: Result<IProcessedMessage>;
+  let result: Result<ICredentialResult>;
 
   describe("Given credential result is missing a timestamp", () => {
     beforeEach(() => {
