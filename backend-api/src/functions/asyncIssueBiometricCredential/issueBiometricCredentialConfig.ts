@@ -8,7 +8,7 @@ import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 
 const REQUIRED_ENVIRONMENT_VARIABLES = [
-  "BIOMETRIC_VIEWER_ACCESS_KEY",
+  "BIOMETRIC_VIEWER_ACCESS_PATH",
   "BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS",
 ] as const;
 

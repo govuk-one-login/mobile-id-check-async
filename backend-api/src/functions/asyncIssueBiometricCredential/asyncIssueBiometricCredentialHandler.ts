@@ -11,7 +11,7 @@ import { getIssueBiometricCredentialConfig } from "./issueBiometricCredentialCon
 import { Result, emptyFailure, successResult } from "../utils/result";
 import { GetSecrets } from "../common/config/secrets";
 
-class RetainMessageOnQueue extends Error {
+export class RetainMessageOnQueue extends Error {
   constructor(message: string) {
     super(message);
     this.name = "RetainMessageOnQueue";
@@ -41,7 +41,7 @@ export async function lambdaHandlerConstructor(
   logger.appendKeys({ sessionId });
 
   const viewerKeyResult = await getBiometricViewerAccessKey(
-    config.BIOMETRIC_VIEWER_ACCESS_KEY,
+    config.BIOMETRIC_VIEWER_ACCESS_PATH,
     Number(config.BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS),
     dependencies.getSecrets,
   );

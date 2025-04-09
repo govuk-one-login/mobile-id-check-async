@@ -104,7 +104,7 @@ Mappings:
       ReadIdBaseUrl: https://readid-proxy.review-b-async.build.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.build.account.gov.uk
       SessionDurationInSeconds: 86400
-      biometricViewerAccessKey: /build/BIOMETRIC_VIEWER_ACCESS_KEY
+      biometricViewerAccessKey: /build/BIOMETRIC_VIEWER_ACCESS_PATH
       biometricViewerAccessKeySecretCacheDurationInSeconds: 900
     dev:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
@@ -116,7 +116,7 @@ Mappings:
       ReadIdBaseUrl: https://readid-proxy.review-b-async.dev.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.dev.account.gov.uk
       SessionDurationInSeconds: 86400
-      biometricViewerAccessKey: /dev/BIOMETRIC_VIEWER_ACCESS_KEY
+      biometricViewerAccessKey: /dev/BIOMETRIC_VIEWER_ACCESS_PATH
       biometricViewerAccessKeySecretCacheDurationInSeconds: 900
     integration:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
@@ -127,7 +127,7 @@ Mappings:
       ReadIdBaseUrl: https://readid-proxy.review-b-async.integration.account.gov.uk
       STSBASEURL: https://token.integration.account.gov.uk
       SessionDurationInSeconds: 86400
-      biometricViewerAccessKey: /integration/BIOMETRIC_VIEWER_ACCESS_KEY
+      biometricViewerAccessKey: /integration/BIOMETRIC_VIEWER_ACCESS_PATH
       biometricViewerAccessKeySecretCacheDurationInSeconds: 900
     production:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
@@ -138,7 +138,7 @@ Mappings:
       ReadIdBaseUrl: https://readid-proxy.review-b-async.account.gov.uk
       STSBASEURL: https://token.account.gov.uk
       SessionDurationInSeconds: 86400
-      biometricViewerAccessKey: /production/BIOMETRIC_VIEWER_ACCESS_KEY
+      biometricViewerAccessKey: /production/BIOMETRIC_VIEWER_ACCESS_PATH
       biometricViewerAccessKeySecretCacheDurationInSeconds: 900
     staging:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
@@ -149,7 +149,7 @@ Mappings:
       ReadIdBaseUrl: https://readid-proxy.review-b-async.staging.account.gov.uk
       STSBASEURL: https://token.staging.account.gov.uk
       SessionDurationInSeconds: 86400
-      biometricViewerAccessKey: /staging/BIOMETRIC_VIEWER_ACCESS_KEY
+      biometricViewerAccessKey: /staging/BIOMETRIC_VIEWER_ACCESS_PATH
       biometricViewerAccessKeySecretCacheDurationInSeconds: 900
 
   IPVCore:
@@ -976,8 +976,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncAbortSessionSubscriptionFilter:
@@ -1513,8 +1513,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncActiveSessionSubscriptionFilter:
@@ -2081,8 +2081,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncBiometricTokenSubscriptionFilter:
@@ -2640,8 +2640,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncCredentialSubscriptionFilter:
@@ -3170,8 +3170,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncFinishBiometricSessionSubscriptionFilter:
@@ -3445,8 +3445,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncIssueBiometricCredentialMetricFilter:
@@ -4008,8 +4008,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncTokenSubscriptionFilter:
