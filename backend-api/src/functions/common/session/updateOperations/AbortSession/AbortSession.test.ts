@@ -7,7 +7,7 @@ import {
   validBaseSessionAttributes,
   ONE_HOUR_AGO_IN_MILLISECONDS,
 } from "../../../../testUtils/unitTestData";
-import { emptyFailure, successResult } from "../../../../utils/result";
+import { errorResult, successResult } from "../../../../utils/result";
 import { SessionState } from "../../session";
 import { AbortSession } from "./AbortSession";
 
@@ -74,12 +74,18 @@ describe("AbortSession", () => {
     describe("Given operationFailed in options is true", () => {
       const getSessionAttributesOptions = { operationFailed: true };
 
-      it("Returns an emptyFailure for invalid base attributes", () => {
+      it("Returns an error result with invalid session attributes", () => {
         const result = abortSession.getSessionAttributesFromDynamoDbItem(
           marshall({ clientId: "mockClientId" }),
           getSessionAttributesOptions,
         );
-        expect(result).toEqual(emptyFailure());
+        expect(result).toEqual(
+          errorResult({
+            sessionAttributes: {
+              clientId: "mockClientId",
+            },
+          }),
+        );
       });
 
       it("Returns successResult with BiometricTokenIssuedSessionAttributes for valid base attributes with BIOMETRIC_TOKEN_ISSUED state", () => {
@@ -134,11 +140,17 @@ describe("AbortSession", () => {
     });
 
     describe("Given operationFailed in options is falsy", () => {
-      it("Returns emptyFailure for invalid abort session attributes", () => {
+      it("Returns error result with invalid session attributes", () => {
         const result = abortSession.getSessionAttributesFromDynamoDbItem(
           validBiometricTokenIssuedSessionAttributesItem,
         );
-        expect(result).toEqual(emptyFailure());
+        expect(result).toEqual(
+          errorResult({
+            sessionAttributes: unmarshall(
+              validBiometricTokenIssuedSessionAttributesItem,
+            ),
+          }),
+        );
       });
 
       it("Returns successResult with AbortSessionAttributes for valid attributes", () => {
@@ -151,14 +163,6 @@ describe("AbortSession", () => {
         expect(result).toEqual(
           successResult(unmarshall(validAbortSessionAttributesItem)),
         );
-      });
-    });
-
-    describe("Given undefined item", () => {
-      it("Returns emptyFailure", () => {
-        const result =
-          abortSession.getSessionAttributesFromDynamoDbItem(undefined);
-        expect(result).toEqual(emptyFailure());
       });
     });
   });

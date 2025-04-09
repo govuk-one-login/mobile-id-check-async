@@ -9,6 +9,7 @@ import {
   DynamoDbAdapter,
   DatabaseRecord,
 } from "../../adapters/aws/dynamo/dynamoDbAdapter";
+import { CreateSessionAttributes, Session } from "./types";
 
 export interface ISessionService {
   createSession: (
@@ -21,22 +22,6 @@ export interface ISessionService {
     subjectIdentifier: string,
   ) => Promise<Result<Session | null>>;
 }
-
-export type CreateSessionAttributes = {
-  client_id: string;
-  govuk_signin_journey_id: string;
-  issuer: string;
-  redirect_uri?: string;
-  sessionDurationInSeconds: number;
-  state: string;
-  sub: string;
-};
-
-export type Session = {
-  sessionId: string;
-  redirectUri?: string;
-  state: string;
-};
 
 export class SessionService implements ISessionService {
   readonly dynamoDbAdapter: DynamoDbAdapter;

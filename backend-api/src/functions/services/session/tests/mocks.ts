@@ -4,7 +4,8 @@ import {
   Result,
   successResult,
 } from "../../../utils/result";
-import { ISessionService, Session } from "../sessionService";
+import { ISessionService } from "../sessionService";
+import { Session } from "../types";
 
 export class MockSessionServiceGetErrorResult implements ISessionService {
   getActiveSessionId = async (): Promise<Result<string | null>> => {

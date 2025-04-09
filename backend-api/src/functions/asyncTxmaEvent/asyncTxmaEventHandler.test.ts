@@ -2,10 +2,7 @@ import { expect } from "@jest/globals";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
 import "../../../tests/testUtils/matchers";
 import { logger } from "../common/logging/logger";
-import {
-  GetSessionError,
-  SessionRegistry,
-} from "../common/session/SessionRegistry";
+import { GetSessionError } from "../common/session/SessionRegistry/types";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { buildRequest } from "../testUtils/mockRequest";
 import {
@@ -21,6 +18,7 @@ import {
 import { errorResult, successResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncTxmaEventHandler";
 import { IAsyncTxmaEventDependencies } from "./handlerDependencies";
+import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 
 describe("Async TxMA Event", () => {
   let dependencies: IAsyncTxmaEventDependencies;

@@ -32,7 +32,7 @@ import { BiometricTokenIssued } from "../common/session/updateOperations/Biometr
 import {
   UpdateSessionError,
   SessionUpdateFailed,
-} from "../common/session/SessionRegistry";
+} from "../common/session/SessionRegistry/types";
 import { randomUUID } from "crypto";
 import { IEventService } from "../services/events/types";
 import {

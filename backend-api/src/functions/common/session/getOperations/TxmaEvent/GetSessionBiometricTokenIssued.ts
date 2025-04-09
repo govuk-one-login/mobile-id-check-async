@@ -7,11 +7,11 @@ import {
 } from "../../session";
 import { getTxmaEventBiometricTokenIssuedSessionAttributes } from "../../sessionAttributes/sessionAttributes";
 import {
+  GetSessionAttributesInvalidAttributesError,
   ValidateSessionAttributes,
   ValidateSessionErrorInvalidAttributesData,
-  ValidateSessionErrorInvalidAttributeTypeData,
   ValidateSessionInvalidAttributes,
-} from "../../SessionRegistry";
+} from "../../SessionRegistry/types";
 import { GetSessionOperation } from "../GetSessionOperation";
 
 export class GetSessionBiometricTokenIssued implements GetSessionOperation {
@@ -19,7 +19,7 @@ export class GetSessionBiometricTokenIssued implements GetSessionOperation {
     item: Record<string, AttributeValue>,
   ): Result<
     BiometricTokenIssuedSessionAttributes,
-    ValidateSessionErrorInvalidAttributeTypeData
+    GetSessionAttributesInvalidAttributesError
   > {
     return getTxmaEventBiometricTokenIssuedSessionAttributes(item);
   }
