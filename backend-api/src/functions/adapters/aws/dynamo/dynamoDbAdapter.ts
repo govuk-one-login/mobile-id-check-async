@@ -23,7 +23,7 @@ import { GetSessionOperation } from "../../../common/session/getOperations/GetSe
 import {
   SessionAttributes,
   SessionState,
-  CreateSessionAttributes
+  CreateSessionAttributes,
 } from "../../../common/session/session";
 import {
   GetSessionError,
