@@ -7,7 +7,7 @@ import {
   validBiometricSessionFinishedAttributes,
   validBiometricTokenIssuedSessionAttributes,
 } from "../../../testUtils/unitTestData";
-import { emptyFailure, successResult } from "../../../utils/result";
+import { errorResult, successResult } from "../../../utils/result";
 import { SessionAttributes } from "../session";
 import {
   getBaseSessionAttributes,
@@ -24,17 +24,13 @@ describe("Session attributes", () => {
 
   interface TestScenario {
     scenario: string;
-    attributes: Record<string, AttributeValue> | undefined;
+    attributes: Record<string, AttributeValue>;
   }
 
   const givenAnyCommonSessionAttributeIsInvalid = (
     sessionAttributes: SessionAttributes,
   ): TestScenario[] => {
     return [
-      {
-        scenario: "Given attributes is undefined",
-        attributes: undefined,
-      },
       {
         scenario: "Given attributes is an empty object",
         attributes: {},
@@ -171,9 +167,11 @@ describe("Session attributes", () => {
           }),
         },
       ])("$scenario", ({ attributes }) => {
-        it("Returns an emptyFailure", () => {
+        it("Returns an error result with invalid session attributes", () => {
           const result = getBaseSessionAttributes(attributes);
-          expect(result).toEqual(emptyFailure());
+          expect(result).toEqual(
+            errorResult({ sessionAttributes: unmarshall(attributes) }),
+          );
         });
       });
     });
@@ -241,9 +239,13 @@ describe("Session attributes", () => {
           }),
         },
       ])("$scenario", ({ attributes }) => {
-        it("Returns an emptyFailure", () => {
+        it("Returns an error result with invalid session attributes", () => {
           const result = getBiometricTokenIssuedSessionAttributes(attributes);
-          expect(result).toEqual(emptyFailure());
+          expect(result).toEqual(
+            errorResult({
+              sessionAttributes: unmarshall(attributes),
+            }),
+          );
         });
       });
     });
@@ -337,10 +339,12 @@ describe("Session attributes", () => {
           }),
         },
       ])("$scenario", ({ attributes }) => {
-        it("Returns an emptyFailure", () => {
+        it("Returns an error result with invalid session attributes", () => {
           const result =
             getBiometricSessionFinishedSessionAttributes(attributes);
-          expect(result).toEqual(emptyFailure());
+          expect(result).toEqual(
+            errorResult({ sessionAttributes: unmarshall(attributes) }),
+          );
         });
       });
     });
@@ -387,9 +391,13 @@ describe("Session attributes", () => {
           }),
         },
       ])("$scenario", ({ attributes }) => {
-        it("Returns an emptyFailure", () => {
+        it("Returns an error result with invalid session attributes", () => {
           const result = getAuthSessionAbortedAttributes(attributes);
-          expect(result).toEqual(emptyFailure());
+          expect(result).toEqual(
+            errorResult({
+              sessionAttributes: unmarshall(attributes),
+            }),
+          );
         });
       });
     });

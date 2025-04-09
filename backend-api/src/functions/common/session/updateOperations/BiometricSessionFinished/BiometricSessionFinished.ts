@@ -7,6 +7,7 @@ import {
 } from "../../sessionAttributes/sessionAttributes";
 import { UpdateSessionOperation } from "../UpdateSessionOperation";
 import { oneHourAgoInMilliseconds } from "../../../../utils/utils";
+import { GetSessionAttributesInvalidAttributesError } from "../../SessionRegistry/types";
 
 export class BiometricSessionFinished implements UpdateSessionOperation {
   constructor(private readonly biometricSessionId: string) {}
@@ -32,11 +33,11 @@ export class BiometricSessionFinished implements UpdateSessionOperation {
   }
 
   getSessionAttributesFromDynamoDbItem(
-    item: Record<string, AttributeValue> | undefined,
+    item: Record<string, AttributeValue>,
     options?: {
       operationFailed?: boolean;
     },
-  ): Result<SessionAttributes, void> {
+  ): Result<SessionAttributes, GetSessionAttributesInvalidAttributesError> {
     if (options?.operationFailed) {
       return getBiometricTokenIssuedSessionAttributes(item);
     } else {

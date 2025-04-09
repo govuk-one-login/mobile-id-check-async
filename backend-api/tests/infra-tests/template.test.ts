@@ -84,8 +84,6 @@ describe("Template", () => {
     expect(mainKeys).toEqual(parentKeys);
 
     parentKeys.forEach((key) => {
-      console.log("main " + key, main.Globals[key]);
-      console.log("parent " + key, parent.Globals[key]);
       expect(isDeepStrictEqual(main.Globals[key], parent.Globals[key])).toBe(
         true,
       );

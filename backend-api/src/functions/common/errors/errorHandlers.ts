@@ -9,7 +9,7 @@ import { isOlderThan60Minutes } from "../../utils/utils";
 import {
   SessionUpdateFailed,
   UpdateSessionError,
-} from "../session/SessionRegistry";
+} from "../session/SessionRegistry/types";
 
 /**
  * Options for handling conditional check failures

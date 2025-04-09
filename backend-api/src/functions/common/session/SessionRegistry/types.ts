@@ -1,19 +1,4 @@
-import { Result } from "../../utils/result";
-import { GetSessionOperation } from "./getOperations/GetSessionOperation";
-import { SessionAttributes, SessionState } from "./session";
-import { UpdateSessionOperation } from "./updateOperations/UpdateSessionOperation";
-
-export interface SessionRegistry {
-  updateSession(
-    sessionId: string,
-    updateOperation: UpdateSessionOperation,
-  ): Promise<Result<SessionUpdated, SessionUpdateFailed>>;
-
-  getSession(
-    sessionId: string,
-    getOperation: GetSessionOperation,
-  ): Promise<Result<SessionAttributes, GetSessionFailed>>;
-}
+import { SessionAttributes, SessionState } from "../session";
 
 // Update session
 
@@ -104,23 +89,21 @@ export interface GetSessionSessionInvalidErrorData {
 
 export interface GetSessionValidateSessionErrorData {
   invalidAttributes?: ValidateSessionInvalidAttributes[];
-  sessionAttributes?: InvalidSessionAttributeTypes;
+  sessionAttributes?: unknown;
 }
 
 export interface ValidateSessionErrorInvalidAttributesData {
   invalidAttributes: ValidateSessionInvalidAttributes[];
 }
 
-export interface ValidateSessionErrorInvalidAttributeTypeData {
-  sessionAttributes: InvalidSessionAttributeTypes;
+export interface GetSessionAttributesInvalidAttributesError {
+  sessionAttributes: unknown;
 }
 
 export interface ValidateSessionInvalidAttributes {
-  sessionState?: Exclude<SessionState, SessionState.BIOMETRIC_TOKEN_ISSUED>;
+  sessionState?: SessionState;
   createdAt?: number;
 }
-
-export type InvalidSessionAttributeTypes = Partial<SessionAttributes>;
 
 // Shared
 

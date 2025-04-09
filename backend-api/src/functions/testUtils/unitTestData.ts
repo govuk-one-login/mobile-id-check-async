@@ -1,5 +1,5 @@
 import { SessionState } from "../common/session/session";
-import { SessionRegistry } from "../common/session/SessionRegistry";
+import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { IEventService } from "../services/events/types";
 import { emptyFailure, emptySuccess, errorResult } from "../utils/result";
 

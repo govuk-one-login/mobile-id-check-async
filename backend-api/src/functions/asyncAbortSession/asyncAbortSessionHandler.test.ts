@@ -22,7 +22,7 @@ import {
   mockFailingEventService,
 } from "../testUtils/unitTestData";
 import { successResult, errorResult } from "../utils/result";
-import { UpdateSessionError } from "../common/session/SessionRegistry";
+import { UpdateSessionError } from "../common/session/SessionRegistry/types";
 
 describe("Async Abort Session", () => {
   let dependencies: IAsyncAbortSessionDependencies;
