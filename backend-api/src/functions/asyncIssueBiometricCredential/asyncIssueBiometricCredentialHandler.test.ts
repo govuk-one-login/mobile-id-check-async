@@ -12,7 +12,8 @@ import {
   validBiometricSessionFinishedAttributes,
 } from "../testUtils/unitTestData";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
-import { successResult } from "../utils/result";
+import { errorResult, successResult } from "../utils/result";
+import { GetSessionError } from "../common/session/SessionRegistry/types";
 
 describe("Async Issue Biometric Credential", () => {
   let dependencies: IssueBiometricCredentialDependencies;
@@ -228,6 +229,28 @@ describe("Async Issue Biometric Credential", () => {
           expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
           });
+        });
+      });
+    });
+  });
+
+  describe("Retrieving session failures", () => {
+    describe("Given the error type is internal server error", () => {
+      beforeEach(async () => {
+        dependencies.getSessionRegistry = () => ({
+          ...mockInertSessionRegistry,
+          getSession: jest.fn().mockResolvedValue(
+            errorResult({
+              errorType: GetSessionError.INTERNAL_SERVER_ERROR,
+            }),
+          ),
+        });
+        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+      });
+
+      it("Does not log COMPLETED", () => {
+        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
         });
       });
     });
