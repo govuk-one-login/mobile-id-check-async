@@ -307,14 +307,16 @@ describe("Backend application infrastructure", () => {
         ["low-threshold-async-txma-event-5xx-api-gw"],
         ["finish-biometric-session-lambda-error-rate"],
         ["finish-biometric-session-lambda-low-completion"],
-        ["biometric-token-lambda-low-completion"],
         ["biometric-token-lambda-error-rate"],
+        ["biometric-token-lambda-low-completion"],
         ["token-lambda-error-rate"],
         ["token-lambda-low-completion"],
         ["credential-lambda-error-rate"],
         ["credential-lambda-low-completion"],
         ["active-session-lambda-error-rate"],
         ["active-session-lambda-low-completion"],
+        ["issue-biometric-credential-lambda-error-rate"],
+        ["issue-biometric-credential-lambda-low-completion"],
         ["vendor-processing-sqs-age-of-oldest-message"],
         ["vendor-processing-dlq-message-visible"],
         ["low-threshold-vendor-processing-dlq-age-of-oldest-message"],
@@ -722,7 +724,6 @@ describe("Backend application infrastructure", () => {
     test("All log groups have a CSLS subscription filter", () => {
       const log_groups = template.findResources("AWS::Logs::LogGroup");
       const logs_list = Object.keys(log_groups);
-      console.log(logs_list);
       logs_list.forEach((log_name) => {
         template.hasResourceProperties("AWS::Logs::SubscriptionFilter", {
           LogGroupName: Match.objectLike({ Ref: log_name }),
@@ -1077,7 +1078,6 @@ describe("Backend application infrastructure", () => {
       "AsyncTxmaEventFunction",
       "JsonWebKeysFunction",
       "ProxyLambda",
-      "AsyncIssueBiometricCredentialFunction",
     ];
 
     const canaryFunctions = Object.entries(allFunctions).filter(
