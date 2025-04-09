@@ -19,7 +19,7 @@ describe("Async Issue Biometric Credential", () => {
 
   const mockGetSecretsSuccess = jest.fn().mockResolvedValue(
     successResult({
-      mock_biometric_viewer_access_key: "mock_viewer_key",
+      mock_biometric_viewer_access_key: "mockViewerKey",
     }),
   );
 
