@@ -252,6 +252,7 @@ export class DynamoDbAdapter implements SessionRegistry {
           errorType: UpdateSessionError.SESSION_NOT_FOUND as const,
         });
       }
+
       if (
         error instanceof ConditionalCheckFailedException &&
         error.Item != null
@@ -281,12 +282,12 @@ export class DynamoDbAdapter implements SessionRegistry {
           errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
           attributes: getAttributesResult.value,
         });
-      } else {
-        return this.handleUpdateSessionInternalServerError(
-          error,
-          updateExpressionDataToLog,
-        );
       }
+
+      return this.handleUpdateSessionInternalServerError(
+        error,
+        updateExpressionDataToLog,
+      );
     }
 
     if (response.Attributes == null) {
