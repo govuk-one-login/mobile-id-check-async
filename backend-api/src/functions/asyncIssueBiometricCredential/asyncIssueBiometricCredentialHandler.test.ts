@@ -86,6 +86,34 @@ describe("Async Issue Biometric Credential", () => {
     });
   });
 
+  describe("Config validation", () => {
+    describe.each(["SESSION_TABLE_NAME"])(
+      "Given %s environment variable is missing",
+      (envVar: string) => {
+        beforeEach(async () => {
+          delete dependencies.env[envVar];
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        });
+
+        it("Logs INVALID_CONFIG", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode:
+              "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG",
+            data: {
+              missingEnvironmentVariables: [envVar],
+            },
+          });
+        });
+
+        it("Does not log COMPLETED", () => {
+          expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+          });
+        });
+      },
+    );
+  });
+
   describe("SQS Event validation", () => {
     describe("Given event does not contain exactly 1 record", () => {
       describe.each([
