@@ -39,8 +39,6 @@ export async function lambdaHandlerConstructor(
     dependencies.getSecrets,
   );
 
-  console.log("viewerKeyResult", viewerKeyResult);
-
   if (viewerKeyResult.isError) {
     logger.error(LogMessage.ERROR_RETRIEVING_BIOMETRIC_VIEWER_KEY);
     throw new Error("Failed to retrieve biometric viewer key");
