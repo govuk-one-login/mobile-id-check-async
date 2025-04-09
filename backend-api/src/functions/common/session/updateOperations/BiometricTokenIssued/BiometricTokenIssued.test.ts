@@ -5,7 +5,7 @@ import {
   validBaseSessionAttributes,
   validBiometricTokenIssuedSessionAttributes,
 } from "../../../../testUtils/unitTestData";
-import { emptyFailure, successResult } from "../../../../utils/result";
+import { errorResult, successResult } from "../../../../utils/result";
 import { SessionState } from "../../session";
 import { BiometricTokenIssued } from "./BiometricTokenIssued";
 
@@ -67,7 +67,7 @@ describe("BiometricTokenIssued", () => {
         operationFailed: true,
       };
       describe("Given a session attributes item was provided that does not include all BaseSessionAttributes properties", () => {
-        it("Returns an emptyFailure", () => {
+        it("Returns an error result with invalid session attributes", () => {
           const result =
             biometricTokenIssued.getSessionAttributesFromDynamoDbItem(
               marshall({
@@ -76,7 +76,13 @@ describe("BiometricTokenIssued", () => {
               getSessionAttributesOptions,
             );
 
-          expect(result).toEqual(emptyFailure());
+          expect(result).toEqual(
+            errorResult({
+              sessionAttributes: {
+                clientId: "mockClientId",
+              },
+            }),
+          );
         });
       });
 
@@ -97,13 +103,17 @@ describe("BiometricTokenIssued", () => {
 
     describe("Given operationFailed in options is falsy", () => {
       describe("Given a session attributes item was provided that does not include all BiometricTokenIssuedSessionAttributes properties", () => {
-        it("Returns an emptyFailure", () => {
+        it("Returns an error result with invalid session attributes", () => {
           const result =
             biometricTokenIssued.getSessionAttributesFromDynamoDbItem(
               validBaseSessionAttributesItem,
             );
 
-          expect(result).toEqual(emptyFailure());
+          expect(result).toEqual(
+            errorResult({
+              sessionAttributes: unmarshall(validBaseSessionAttributesItem),
+            }),
+          );
         });
       });
 

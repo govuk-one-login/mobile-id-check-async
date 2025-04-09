@@ -33,7 +33,7 @@ export class BiometricTokenIssued implements UpdateSessionOperation {
   }
 
   getSessionAttributesFromDynamoDbItem(
-    item: Record<string, AttributeValue> | undefined,
+    item: Record<string, AttributeValue>,
     options?: {
       operationFailed: boolean;
     },

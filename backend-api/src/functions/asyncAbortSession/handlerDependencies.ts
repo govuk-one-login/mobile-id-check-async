@@ -1,7 +1,7 @@
 import { DynamoDbAdapter } from "../adapters/aws/dynamo/dynamoDbAdapter";
 import { sendMessageToSqs } from "../adapters/aws/sqs/sendMessageToSqs";
 import { AbortSessionMessage } from "../adapters/aws/sqs/types";
-import { SessionRegistry } from "../common/session/SessionRegistry";
+import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { EventService } from "../services/events/eventService";
 import { IEventService } from "../services/events/types";
 import { Result } from "../utils/result";

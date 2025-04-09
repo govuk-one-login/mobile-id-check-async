@@ -5,7 +5,7 @@ import {
   validBiometricSessionFinishedAttributes,
   validBiometricTokenIssuedSessionAttributes,
 } from "../../../../testUtils/unitTestData";
-import { emptyFailure, successResult } from "../../../../utils/result";
+import { errorResult, successResult } from "../../../../utils/result";
 import { SessionState } from "../../session";
 import { BiometricSessionFinished } from "./BiometricSessionFinished";
 
@@ -68,13 +68,19 @@ describe("BiometricSessionFinished", () => {
     describe("Given operationFailed in options is true", () => {
       const getSessionAttributesOptions = { operationFailed: true };
 
-      it("Returns an emptyFailure for invalid base attributes", () => {
+      it("Returns an error result with invalid session attributes", () => {
         const result =
           biometricSessionFinished.getSessionAttributesFromDynamoDbItem(
             marshall({ clientId: "mockClientId" }),
             getSessionAttributesOptions,
           );
-        expect(result).toEqual(emptyFailure());
+        expect(result).toEqual(
+          errorResult({
+            sessionAttributes: {
+              clientId: "mockClientId",
+            },
+          }),
+        );
       });
 
       it("Returns successResult with BaseSessionAttributes for valid base attributes", () => {
@@ -92,12 +98,18 @@ describe("BiometricSessionFinished", () => {
     });
 
     describe("Given operationFailed in options is falsy", () => {
-      it("Returns emptyFailure for invalid finished session attributes", () => {
+      it("Returns error result with with invalid session attributes", () => {
         const result =
           biometricSessionFinished.getSessionAttributesFromDynamoDbItem(
             validBiometricTokenIssuedSessionAttributesItem,
           );
-        expect(result).toEqual(emptyFailure());
+        expect(result).toEqual(
+          errorResult({
+            sessionAttributes: unmarshall(
+              validBiometricTokenIssuedSessionAttributesItem,
+            ),
+          }),
+        );
       });
 
       it("Returns successResult with BiometricSessionFinishedAttributes for valid attributes", () => {
@@ -111,16 +123,6 @@ describe("BiometricSessionFinished", () => {
         expect(result).toEqual(
           successResult(unmarshall(validFinishedSessionAttributesItem)),
         );
-      });
-    });
-
-    describe("Given undefined item", () => {
-      it("Returns emptyFailure", () => {
-        const result =
-          biometricSessionFinished.getSessionAttributesFromDynamoDbItem(
-            undefined,
-          );
-        expect(result).toEqual(emptyFailure());
       });
     });
   });

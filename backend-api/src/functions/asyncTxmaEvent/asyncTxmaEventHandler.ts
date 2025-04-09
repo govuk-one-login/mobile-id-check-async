@@ -18,7 +18,7 @@ import { SessionAttributes } from "../common/session/session";
 import {
   GetSessionError,
   GetSessionFailed,
-} from "../common/session/SessionRegistry";
+} from "../common/session/SessionRegistry/types";
 import { IEventService, TxmaBillingEventName } from "../services/events/types";
 import { emptyFailure, emptySuccess, Result } from "../utils/result";
 import {
