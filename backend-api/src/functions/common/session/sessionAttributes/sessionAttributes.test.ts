@@ -169,7 +169,9 @@ describe("Session attributes", () => {
       ])("$scenario", ({ attributes }) => {
         it("Returns an error result with invalid session attributes", () => {
           const result = getBaseSessionAttributes(attributes);
-          expect(result).toEqual(errorResult({ sessionAttributes: unmarshall(attributes) }));
+          expect(result).toEqual(
+            errorResult({ sessionAttributes: unmarshall(attributes) }),
+          );
         });
       });
     });
@@ -239,9 +241,11 @@ describe("Session attributes", () => {
       ])("$scenario", ({ attributes }) => {
         it("Returns an error result with invalid session attributes", () => {
           const result = getBiometricTokenIssuedSessionAttributes(attributes);
-          expect(result).toEqual(errorResult({
-            sessionAttributes: unmarshall(attributes)
-          }));
+          expect(result).toEqual(
+            errorResult({
+              sessionAttributes: unmarshall(attributes),
+            }),
+          );
         });
       });
     });
@@ -338,7 +342,9 @@ describe("Session attributes", () => {
         it("Returns an error result with invalid session attributes", () => {
           const result =
             getBiometricSessionFinishedSessionAttributes(attributes);
-          expect(result).toEqual(errorResult({ sessionAttributes: unmarshall(attributes)}));
+          expect(result).toEqual(
+            errorResult({ sessionAttributes: unmarshall(attributes) }),
+          );
         });
       });
     });
@@ -387,9 +393,11 @@ describe("Session attributes", () => {
       ])("$scenario", ({ attributes }) => {
         it("Returns an error result with invalid session attributes", () => {
           const result = getAuthSessionAbortedAttributes(attributes);
-          expect(result).toEqual(errorResult({
-            sessionAttributes: unmarshall(attributes)
-          }));
+          expect(result).toEqual(
+            errorResult({
+              sessionAttributes: unmarshall(attributes),
+            }),
+          );
         });
       });
     });

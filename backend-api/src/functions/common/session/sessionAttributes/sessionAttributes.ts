@@ -1,10 +1,6 @@
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { NativeAttributeValue, unmarshall } from "@aws-sdk/util-dynamodb";
-import {
-  errorResult,
-  Result,
-  successResult,
-} from "../../../utils/result";
+import { errorResult, Result, successResult } from "../../../utils/result";
 import {
   BaseSessionAttributes,
   BiometricSessionFinishedAttributes,
@@ -16,9 +12,13 @@ import { GetSessionAttributesInvalidAttributesError } from "../SessionRegistry";
 
 export const getBaseSessionAttributes = (
   item: Record<string, AttributeValue>,
-): Result<BaseSessionAttributes, GetSessionAttributesInvalidAttributesError> => {
+): Result<
+  BaseSessionAttributes,
+  GetSessionAttributesInvalidAttributesError
+> => {
   const sessionAttributes = unmarshall(item);
-  if (!isBaseSessionAttributes(sessionAttributes)) return errorResult({ sessionAttributes });
+  if (!isBaseSessionAttributes(sessionAttributes))
+    return errorResult({ sessionAttributes });
 
   return successResult(sessionAttributes);
 };
@@ -50,7 +50,10 @@ const isCommonSessionAttributes = (
 
 export const getBiometricTokenIssuedSessionAttributes = (
   item: Record<string, AttributeValue>,
-): Result<BiometricTokenIssuedSessionAttributes, GetSessionAttributesInvalidAttributesError> => {
+): Result<
+  BiometricTokenIssuedSessionAttributes,
+  GetSessionAttributesInvalidAttributesError
+> => {
   const sessionAttributes = unmarshall(item);
   if (!isBiometricTokenIssuedSessionAttributes(sessionAttributes))
     return errorResult({ sessionAttributes });
@@ -85,7 +88,10 @@ const isBiometricTokenIssuedSessionAttributes = (
 
 export const getBiometricSessionFinishedSessionAttributes = (
   item: Record<string, AttributeValue>,
-): Result<BiometricSessionFinishedAttributes, GetSessionAttributesInvalidAttributesError> => {
+): Result<
+  BiometricSessionFinishedAttributes,
+  GetSessionAttributesInvalidAttributesError
+> => {
   const sessionAttributes = unmarshall(item);
   if (!isBiometricSessionFinishedSessionAttributes(sessionAttributes))
     return errorResult({ sessionAttributes });
@@ -105,11 +111,14 @@ const isBiometricSessionFinishedSessionAttributes = (
 
 export const getAuthSessionAbortedAttributes = (
   item: Record<string, AttributeValue>,
-): Result<AuthSessionAbortedAttributes, GetSessionAttributesInvalidAttributesError> => {
+): Result<
+  AuthSessionAbortedAttributes,
+  GetSessionAttributesInvalidAttributesError
+> => {
   const sessionAttributes = unmarshall(item);
   if (!isAuthSessionAbortedAttributes(sessionAttributes)) {
     return errorResult({
-      sessionAttributes
+      sessionAttributes,
     });
   }
   return successResult(sessionAttributes);
