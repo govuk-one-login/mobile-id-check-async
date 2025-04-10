@@ -94,7 +94,7 @@ async function getBiometricViewerAccessKey(
 }
 
 const handleGetSessionError = async (
-  options: HandleGetSessionErrorOptions,
+  options: HandleGetSessionErrorParameters,
 ): Promise<void> => {
   const { errorData, eventService, issuer, sessionId } = options;
 
@@ -124,7 +124,7 @@ const handleGetSessionError = async (
   }
 };
 
-interface HandleGetSessionErrorOptions {
+interface HandleGetSessionErrorParameters {
   errorData: GetSessionFailed;
   eventService: IEventService;
   issuer: string;
