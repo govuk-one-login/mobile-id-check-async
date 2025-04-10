@@ -9,12 +9,19 @@ import {
   mockBiometricSessionId,
   mockSessionId,
 } from "../testUtils/unitTestData";
+import { successResult, emptyFailure } from "../utils/result";
 
 describe("Async Issue Biometric Credential", () => {
   let dependencies: IssueBiometricCredentialDependencies;
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
+
+  const mockGetSecretsSuccess = jest.fn().mockResolvedValue(
+    successResult({
+      mockBiometricViewerAccessKey: "mockViewerKey",
+    }),
+  );
 
   const validVendorProcessingQueueSqsEventRecord = {
     messageId: "mockMessageId",
@@ -42,7 +49,11 @@ describe("Async Issue Biometric Credential", () => {
 
   beforeEach(() => {
     dependencies = {
-      env: {},
+      env: {
+        BIOMETRIC_VIEWER_KEY_SECRET_PATH: "mockBiometricViewerAccessKey",
+        BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS: "900",
+      },
+      getSecrets: mockGetSecretsSuccess,
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
@@ -68,6 +79,30 @@ describe("Async Issue Biometric Credential", () => {
 
       expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
         testKey: "testValue",
+      });
+    });
+  });
+
+  describe("Config validation", () => {
+    describe.each([
+      ["BIOMETRIC_VIEWER_KEY_SECRET_PATH"],
+      ["BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS"],
+    ])("Given %s environment variable is missing", (envVar: string) => {
+      beforeEach(() => {
+        delete dependencies.env[envVar];
+      });
+
+      it("logs INVALID_CONFIG and throws error", async () => {
+        await expect(
+          lambdaHandlerConstructor(dependencies, validSqsEvent, context),
+        ).rejects.toThrow("Invalid config");
+
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG",
+          data: {
+            missingEnvironmentVariables: [envVar],
+          },
+        });
       });
     });
   });
@@ -189,9 +224,28 @@ describe("Async Issue Biometric Credential", () => {
     });
   });
 
+  describe("When there is an error getting secrets", () => {
+    beforeEach(async () => {
+      dependencies.getSecrets = jest.fn().mockResolvedValue(emptyFailure());
+    });
+
+    it("Throws RetainMessageOnQueue", async () => {
+      await expect(
+        lambdaHandlerConstructor(dependencies, validSqsEvent, context),
+      ).rejects.toThrow("Failed to retrieve biometric viewer key");
+    });
+  });
+
   describe("Given the lambda handler reads a valid SQSEvent", () => {
     beforeEach(async () => {
       await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+    });
+
+    it("Passes correct arguments to get secrets", () => {
+      expect(mockGetSecretsSuccess).toHaveBeenCalledWith({
+        secretNames: ["mockBiometricViewerAccessKey"],
+        cacheDurationInSeconds: 900,
+      });
     });
 
     it("Logs COMPLETED with sessionId", async () => {

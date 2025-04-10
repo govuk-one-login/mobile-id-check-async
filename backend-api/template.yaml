@@ -99,6 +99,8 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
       BiometricSubmitterKeySecretPathDl: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+      BiometricViewerAccessKey: /build/BIOMETRIC_VIEWER_ACCESS_KEY
+      BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       ClientRegistrySecretPath: build/clientRegistry
       EventsBaseUrl: https://events.review-b-async.build.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.build.account.gov.uk/v2
@@ -109,6 +111,8 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
       BiometricSubmitterKeySecretPathDl: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+      BiometricViewerAccessKey: /dev/BIOMETRIC_VIEWER_ACCESS_KEY
+      BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       ClientRegistrySecretPath: dev/clientRegistry
       EventsBaseUrl: https://events.review-b-async.dev.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.dev.account.gov.uk/v2
@@ -119,6 +123,8 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
       BiometricSubmitterKeySecretPathDl: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+      BiometricViewerAccessKey: /integration/BIOMETRIC_VIEWER_ACCESS_KEY
+      BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       ClientRegistrySecretPath: integration/clientRegistry
       ReadIdBaseUrl: https://readid-proxy.review-b-async.integration.account.gov.uk
       STSBASEURL: https://token.integration.account.gov.uk
@@ -128,6 +134,8 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
       BiometricSubmitterKeySecretPathDl: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+      BiometricViewerAccessKey: /production/BIOMETRIC_VIEWER_ACCESS_KEY
+      BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       ClientRegistrySecretPath: production/clientRegistry
       ReadIdBaseUrl: https://readid-proxy.review-b-async.account.gov.uk
       STSBASEURL: https://token.account.gov.uk
@@ -137,6 +145,8 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
       BiometricSubmitterKeySecretPathDl: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
+      BiometricViewerAccessKey: /staging/BIOMETRIC_VIEWER_ACCESS_KEY
+      BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       ClientRegistrySecretPath: staging/clientRegistry
       ReadIdBaseUrl: https://readid-proxy.review-b-async.staging.account.gov.uk
       STSBASEURL: https://token.staging.account.gov.uk
@@ -966,8 +976,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncAbortSessionSubscriptionFilter:
@@ -1503,8 +1513,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncActiveSessionSubscriptionFilter:
@@ -2071,8 +2081,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncBiometricTokenSubscriptionFilter:
@@ -2630,8 +2640,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncCredentialSubscriptionFilter:
@@ -3160,8 +3170,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncFinishBiometricSessionSubscriptionFilter:
@@ -3270,6 +3280,16 @@ Resources:
           - - !Ref AWS::NoValue
         Enabled: true
         Type: !Ref LambdaDeploymentPreference
+      Environment:
+        Variables:
+          BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS: !FindInMap
+            - EnvironmentVariables
+            - !Ref Environment
+            - BiometricViewerAccessKeySecretCacheDurationInSeconds
+          BIOMETRIC_VIEWER_KEY_SECRET_PATH: !FindInMap
+            - EnvironmentVariables
+            - !Ref Environment
+            - BiometricViewerAccessKey
       FunctionName: !Sub ${AWS::StackName}-issue-biometric-credential
       Handler: asyncIssueBiometricCredentialHandler.lambdaHandler
       ReservedConcurrentExecutions: !If
@@ -3374,6 +3394,20 @@ Resources:
                 Resource: !GetAtt VendorProcessingKMSEncryptionKey.Arn
             Version: "2012-10-17"
           PolicyName: KMSPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ssm:GetParameters
+                Effect: Allow
+                Resource:
+                  - !Sub
+                    - arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${biometricViewerAccessKey}
+                    - biometricViewerAccessKey: !FindInMap
+                        - EnvironmentVariables
+                        - !Ref Environment
+                        - BiometricViewerAccessKey
+            Version: "2012-10-17"
+          PolicyName: AsyncIssueBiometricCredentialParameterStorePolicy
       RoleName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda
 
   AsyncIssueBiometricCredentialLogGroup:
@@ -3435,8 +3469,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncIssueBiometricCredentialMetricFilter:
@@ -3998,8 +4032,8 @@ Resources:
           ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      TreatMissingData: notBreaching
       Threshold: 80
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncTokenSubscriptionFilter:

@@ -311,6 +311,10 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
     "SQS Event from vendor processing queue is invalid",
   );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG = new LogMessage(
+    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG",
+    "One or more required environment variables were missing or invalid.",
+  );
 
   private constructor(
     public readonly messageCode: string,
