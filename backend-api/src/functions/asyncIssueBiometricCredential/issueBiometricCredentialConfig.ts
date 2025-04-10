@@ -10,7 +10,7 @@ import { LogMessage } from "../common/logging/LogMessage";
 const REQUIRED_ENVIRONMENT_VARIABLES = [
   "BIOMETRIC_VIEWER_KEY_SECRET_PATH",
   "BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS",
-  "SESSION_TABLE_NAME"
+  "SESSION_TABLE_NAME",
 ] as const;
 
 export type IssueBiometricCredentialConfig = Config<
