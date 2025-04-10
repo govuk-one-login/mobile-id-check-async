@@ -276,7 +276,7 @@ describe("Async Issue Biometric Credential", () => {
     });
 
     describe("Given the error type is not internal server error", () => {
-      describe("Given TxMA event fails to write", () => {
+      describe("Given writing TxMA event fails", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () => ({
             ...mockInertSessionRegistry,
@@ -298,7 +298,7 @@ describe("Async Issue Biometric Credential", () => {
           await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
         });
 
-        it("Logs audit event error", () => {
+        it("Logs DCMAW_ASYNC_CRI_5XXERROR audit event error", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
             data: { auditEventName: "DCMAW_ASYNC_CRI_5XXERROR" },
@@ -312,31 +312,33 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
 
-      beforeEach(async () => {
-        dependencies.getSessionRegistry = () => ({
-          ...mockInertSessionRegistry,
-          getSession: jest.fn().mockResolvedValue(
-            errorResult({
-              errorType: GetSessionError.CLIENT_ERROR,
-            }),
-          ),
+      describe("Given writing TxMA event succeeds", () => {
+        beforeEach(async () => {
+          dependencies.getSessionRegistry = () => ({
+            ...mockInertSessionRegistry,
+            getSession: jest.fn().mockResolvedValue(
+              errorResult({
+                errorType: GetSessionError.CLIENT_ERROR,
+              }),
+            ),
+          });
+
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
         });
 
-        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
-      });
-
-      it("Writes DCMAW_ASYNC_CRI_5XXERROR to TxMA", () => {
-        expect(mockSuccessfulEventService.writeGenericEvent).toBeCalledWith({
-          eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-          componentId: "mockIssuer",
-          getNowInMilliseconds: Date.now,
-          sessionId: mockSessionId,
+        it("Writes DCMAW_ASYNC_CRI_5XXERROR to TxMA", () => {
+          expect(mockSuccessfulEventService.writeGenericEvent).toBeCalledWith({
+            eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+            componentId: "mockIssuer",
+            getNowInMilliseconds: Date.now,
+            sessionId: mockSessionId,
+          });
         });
-      });
 
-      it("Does not log COMPLETED", () => {
-        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        it("Does not log COMPLETED", () => {
+          expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+          });
         });
       });
     });
