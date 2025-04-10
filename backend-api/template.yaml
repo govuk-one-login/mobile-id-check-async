@@ -123,7 +123,7 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
       BiometricSubmitterKeySecretPathDl: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
-      BiometricViewerAccessKey: /integration/BIOMETRIC_VIEWER_ACCESS_PATH
+      BiometricViewerAccessKey: /integration/BIOMETRIC_VIEWER_ACCESS_KEY
       BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       ClientRegistrySecretPath: integration/clientRegistry
       ReadIdBaseUrl: https://readid-proxy.review-b-async.integration.account.gov.uk
@@ -134,7 +134,7 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
       BiometricSubmitterKeySecretPathDl: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
-      BiometricViewerAccessKey: /production/BIOMETRIC_VIEWER_ACCESS_PATH
+      BiometricViewerAccessKey: /production/BIOMETRIC_VIEWER_ACCESS_KEY
       BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       ClientRegistrySecretPath: production/clientRegistry
       ReadIdBaseUrl: https://readid-proxy.review-b-async.account.gov.uk
@@ -145,7 +145,7 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
       BiometricSubmitterKeySecretPathDl: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
-      BiometricViewerAccessKey: /staging/BIOMETRIC_VIEWER_ACCESS_PATH
+      BiometricViewerAccessKey: /staging/BIOMETRIC_VIEWER_ACCESS_KEY
       BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       ClientRegistrySecretPath: staging/clientRegistry
       ReadIdBaseUrl: https://readid-proxy.review-b-async.staging.account.gov.uk
