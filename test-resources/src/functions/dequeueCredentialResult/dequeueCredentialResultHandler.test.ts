@@ -6,12 +6,10 @@ import { emptyFailure, emptySuccess } from "../common/utils/result";
 import "../testUtils/matchers";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { ICredentialResultRegistry } from "./credentialResultRegistry/credentialResultRegistry";
-import {
-  IDequeueCredentialResultDependencies,
-  lambdaHandlerConstructor,
-} from "./dequeueCredentialResultHandler";
+import { lambdaHandlerConstructor } from "./dequeueCredentialResultHandler";
 import { failingSQSRecordBodyMissingSub, validSQSRecord } from "./unitTestData";
 import { NOW_IN_MILLISECONDS } from "../dequeue/tests/testData";
+import { IDequeueCredentialResultDependencies } from "./handlerDependencies";
 
 describe("Dequeue credential result", () => {
   const env = {

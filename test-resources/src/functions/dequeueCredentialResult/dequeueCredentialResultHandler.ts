@@ -5,18 +5,17 @@ import {
   SQSEvent,
   SQSRecord,
 } from "aws-lambda";
-import {
-  DynamoDBAdapter,
-  IDynamoDBConfig,
-} from "../common/dynamoDBAdapter/dynamoDBAdapter";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
-import { ICredentialResultRegistry } from "./credentialResultRegistry/credentialResultRegistry";
-import { PutItemCredentialResult } from "./credentialResultRegistry/putItemOperation/putItemCredentialResult";
-import { validateCredentialResult } from "./validateCredentialResult/validateCredentialResult";
-import { getDequeueCredentialResultConfig } from "./dequeueCredentialResultConfig";
 import { getTimeToLiveInSeconds } from "../common/utils/utils";
+import { PutItemCredentialResult } from "./credentialResultRegistry/putItemOperation/putItemCredentialResult";
+import { getDequeueCredentialResultConfig } from "./dequeueCredentialResultConfig";
+import { validateCredentialResult } from "./validateCredentialResult/validateCredentialResult";
+import {
+  IDequeueCredentialResultDependencies,
+  handlerDependencies,
+} from "./handlerDependencies";
 
 export const lambdaHandlerConstructor = async (
   dependencies: IDequeueCredentialResultDependencies,
@@ -79,18 +78,7 @@ function getBatchItemFailures(eventRecords: SQSRecord[]) {
   return eventRecords.map((record) => ({ itemIdentifier: record.messageId }));
 }
 
-export interface IDequeueCredentialResultDependencies {
-  env: NodeJS.ProcessEnv;
-  getCredentialResultRegistry: ({
-    tableName,
-    ttlInSeconds,
-  }: IDynamoDBConfig) => ICredentialResultRegistry;
-}
-
-const dependencies: IDequeueCredentialResultDependencies = {
-  env: process.env,
-  getCredentialResultRegistry: ({ tableName, ttlInSeconds }: IDynamoDBConfig) =>
-    new DynamoDBAdapter({ tableName, ttlInSeconds }),
-};
-
-export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
+export const lambdaHandler = lambdaHandlerConstructor.bind(
+  null,
+  handlerDependencies,
+);
