@@ -3394,6 +3394,20 @@ Resources:
                 Resource: !GetAtt VendorProcessingKMSEncryptionKey.Arn
             Version: "2012-10-17"
           PolicyName: KMSPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - ssm:GetParameters
+                Effect: Allow
+                Resource:
+                  - !Sub
+                    - arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${biometricViewerAccessKey}
+                    - biometricViewerAccessKey: !FindInMap
+                        - EnvironmentVariables
+                        - !Ref Environment
+                        - BiometricViewerAccessKey
+            Version: "2012-10-17"
+          PolicyName: AsyncIssueBiometricCredentialParameterStorePolicy
       RoleName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda
 
   AsyncIssueBiometricCredentialLogGroup:
