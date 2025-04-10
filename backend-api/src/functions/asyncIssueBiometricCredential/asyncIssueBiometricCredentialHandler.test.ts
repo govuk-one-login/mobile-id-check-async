@@ -333,8 +333,8 @@ describe("Async Issue Biometric Credential", () => {
       });
 
       it("Throws RetainMessageOnQueue", async () => {
-        expect(lambdaError).toEqual(
-          new RetainMessageOnQueue("Failed to retrieve session from database"),
+        expect(lambdaError.message).toEqual(
+          "Failed to retrieve session from database",
         );
       });
     });
