@@ -17,6 +17,7 @@ import { Result, emptyFailure, successResult } from "../utils/result";
 import { GetSecrets } from "../common/config/secrets";
 import { IEventService } from "../services/events/types";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
+import { SessionState } from "../common/session/session";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -57,6 +58,21 @@ export async function lambdaHandlerConstructor(
       issuer: config.ISSUER,
       sessionId,
     });
+  }
+  const sessionAttributes = getSessionResult.value;
+  console.log("sessionAttributes in lambda => ", sessionAttributes);
+
+  const comparison =
+    sessionAttributes.sessionState === SessionState.RESULT_SENT;
+
+  console.log(
+    "sessionAttributes.sessionState === SessionState.RESULT_SENT =>",
+    comparison,
+  );
+
+  if (sessionAttributes.sessionState === SessionState.RESULT_SENT) {
+    logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
+    return;
   }
 
   const viewerKeyResult = await getBiometricViewerAccessKey(

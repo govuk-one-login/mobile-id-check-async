@@ -13,6 +13,7 @@ import {
   mockSessionId,
   mockSuccessfulEventService,
   validBiometricSessionFinishedAttributes,
+  validResultSentAttributes,
 } from "../testUtils/unitTestData";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { emptyFailure, errorResult, successResult } from "../utils/result";
@@ -354,21 +355,46 @@ describe("Async Issue Biometric Credential", () => {
   });
 
   describe("Given the lambda handler reads a valid SQSEvent", () => {
-    beforeEach(async () => {
-      await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
-    });
+    describe("Given sessionState is ASYNC_RESULT_SENT", () => {
+      beforeEach(async () => {
+        dependencies.getSessionRegistry = () => ({
+          ...mockInertSessionRegistry,
+          getSession: jest
+            .fn()
+            .mockResolvedValue(successResult(validResultSentAttributes)),
+        });
+        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+      });
 
-    it("Passes correct arguments to get secrets", () => {
-      expect(mockGetSecretsSuccess).toHaveBeenCalledWith({
-        secretNames: ["mockBiometricViewerAccessKey"],
-        cacheDurationInSeconds: 900,
+      it("Does not make a call to get secrets", () => {
+        expect(mockGetSecretsSuccess).not.toHaveBeenCalled();
+      });
+
+      it("Logs COMPLETED with sessionId", async () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+          sessionId: mockSessionId,
+        });
       });
     });
 
-    it("Logs COMPLETED with sessionId", async () => {
-      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-        messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-        sessionId: mockSessionId,
+    describe("Given sessionState is ASYNC_BIOMETRIC_SESSION_FINISHED", () => {
+      beforeEach(async () => {
+        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+      });
+
+      it("Passes correct arguments to get secrets", () => {
+        expect(mockGetSecretsSuccess).toHaveBeenCalledWith({
+          secretNames: ["mockBiometricViewerAccessKey"],
+          cacheDurationInSeconds: 900,
+        });
+      });
+
+      it("Logs COMPLETED with sessionId", async () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+          sessionId: mockSessionId,
+        });
       });
     });
   });
