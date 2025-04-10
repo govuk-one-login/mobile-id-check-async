@@ -320,11 +320,8 @@ describe("Async Issue Biometric Credential", () => {
             }),
           ),
         });
-        try {
-          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
-        } catch (error: unknown) {
-          lambdaError = error as RetainMessageOnQueue;
-        }
+
+        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
       });
 
       it("Writes DCMAW_ASYNC_CRI_5XXERROR to TxMA", () => {
