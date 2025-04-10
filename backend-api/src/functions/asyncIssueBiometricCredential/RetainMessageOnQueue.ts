@@ -8,4 +8,4 @@ export class RetainMessageOnQueue extends Error {
 type RetainMessageOnQueueMessages =
   | "Invalid config"
   | "Failed to retrieve biometric viewer key"
-  | "Failed to retrieve session from database";
+  | "Unexpected failure retrieving session from database";

@@ -106,7 +106,9 @@ const handleGetSessionError = async (
   const { errorData, eventService, issuer, sessionId } = options;
 
   if (errorData.errorType === GetSessionError.INTERNAL_SERVER_ERROR) {
-    throw new RetainMessageOnQueue("Failed to retrieve session from database");
+    throw new RetainMessageOnQueue(
+      "Unexpected failure retrieving session from database",
+    );
   }
 
   const eventName = "DCMAW_ASYNC_CRI_5XXERROR";
