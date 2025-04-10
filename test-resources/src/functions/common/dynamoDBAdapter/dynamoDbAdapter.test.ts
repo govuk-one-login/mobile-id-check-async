@@ -1,10 +1,10 @@
-import { expect } from "@jest/globals";
-import "../../testUtils/matchers";
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
+import { expect } from "@jest/globals";
 import { mockClient } from "aws-sdk-client-mock";
 import { NOW_IN_MILLISECONDS } from "../../dequeue/tests/testData";
 import { ICredentialResult } from "../../dequeueCredentialResult/credentialResult";
 import { ICredentialResultRegistry } from "../../dequeueCredentialResult/credentialResultRegistry/credentialResultRegistry";
+import "../../testUtils/matchers";
 import { Result, emptyFailure } from "../utils/result";
 import { DynamoDBAdapter } from "./dynamoDBAdapter";
 import { PutItemOperation } from "./putItemOperation";
@@ -31,6 +31,7 @@ describe("DynamoDB adapter", () => {
     const mockItem: ICredentialResult = {
       sub: "mockSub",
       sentTimestamp: "mockSentTimestamp",
+      timeToLiveInSeconds: 12345,
     };
 
     describe("On every attempt", () => {
@@ -46,6 +47,7 @@ describe("DynamoDB adapter", () => {
             tableName: "mock-table-name",
             pk: "mockPk",
             sk: "mockSk",
+            timeToLiveInSeconds: 12345,
           },
         });
       });

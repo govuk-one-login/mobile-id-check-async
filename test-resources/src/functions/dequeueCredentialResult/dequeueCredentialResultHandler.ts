@@ -13,6 +13,7 @@ import { ICredentialResultRegistry } from "./credentialResultRegistry/credential
 import { PutItemCredentialResult } from "./credentialResultRegistry/putItemOperation/putItemCredentialResult";
 import { validateCredentialResult } from "./validateCredentialResult/validateCredentialResult";
 import { getDequeueCredentialResultConfig } from "./dequeueCredentialResultConfig";
+import { getTimeToLiveInSeconds } from "../common/utils/utils";
 
 export const lambdaHandlerConstructor = async (
   dependencies: IDequeueCredentialResultDependencies,
@@ -39,7 +40,10 @@ export const lambdaHandlerConstructor = async (
       });
     } else {
       const { sub, sentTimestamp } = validateCredentialResultResponse.value;
-      const credentialResult = { sub, sentTimestamp };
+      const timeToLiveInSeconds = getTimeToLiveInSeconds(
+        config.CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS,
+      );
+      const credentialResult = { sub, sentTimestamp, timeToLiveInSeconds };
       logger.info(
         LogMessage.DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS,
         {

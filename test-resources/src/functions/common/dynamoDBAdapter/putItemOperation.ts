@@ -1,15 +1,18 @@
-import { TxmaEvent } from "../../dequeue/getEvent";
-import { ICredentialResult } from "../../dequeueCredentialResult/credentialResult";
 import { EmptyFailure } from "../utils/result";
 
 export interface PutItemOperation {
-  getDynamoDbPutItemCompositeKey(item: TestResourceItem): CompositeKey;
+  getDynamoDbPutItemCompositeKey(item: TestResourceItem): ICompositeKey;
   handlePutItemError(error: unknown): EmptyFailure;
 }
 
-export type TestResourceItem = TxmaEvent & ICredentialResult;
+export type TestResourceItem = ICompositeKeyData;
 
-export interface CompositeKey {
+export interface ICompositeKeyData {
+  sub: string;
+  sentTimestamp: string;
+}
+
+export interface ICompositeKey {
   pk: string;
   sk: string;
 }

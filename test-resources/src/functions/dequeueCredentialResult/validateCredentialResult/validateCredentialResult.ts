@@ -1,10 +1,10 @@
 import { SQSRecord } from "aws-lambda";
 import { errorResult, Result, successResult } from "../../common/utils/result";
-import { ICredentialResult } from "../credentialResult";
+import { ICompositeKeyData } from "../../common/dynamoDBAdapter/putItemOperation";
 
 export function validateCredentialResult(
   record: SQSRecord,
-): Result<ICredentialResult> {
+): Result<ICompositeKeyData> {
   const sentTimestamp = record.attributes.SentTimestamp;
   if (!sentTimestamp) {
     return errorResult({

@@ -1,5 +1,5 @@
 import { expect } from "@jest/globals";
-import { CompositeKey } from "../../../common/dynamoDBAdapter/putItemOperation";
+import { ICompositeKey } from "../../../common/dynamoDBAdapter/putItemOperation";
 import "../../../testUtils/matchers";
 import { PutItemCredentialResult } from "./putItemCredentialResult";
 
@@ -13,7 +13,7 @@ describe("Credential result put item operation", () => {
   });
 
   describe("Get DynamoDB put item composite key", () => {
-    let result: CompositeKey;
+    let result: ICompositeKey;
 
     beforeEach(() => {
       const credentialResult = {

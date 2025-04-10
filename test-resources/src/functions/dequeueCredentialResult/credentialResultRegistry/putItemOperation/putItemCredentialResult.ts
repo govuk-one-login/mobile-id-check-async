@@ -1,11 +1,13 @@
-import { PutItemOperation } from "../../../common/dynamoDBAdapter/putItemOperation";
+import {
+  ICompositeKeyData,
+  PutItemOperation,
+} from "../../../common/dynamoDBAdapter/putItemOperation";
 import { logger } from "../../../common/logging/logger";
 import { LogMessage } from "../../../common/logging/LogMessage";
 import { emptyFailure } from "../../../common/utils/result";
-import { ICredentialResult } from "../../credentialResult";
 
 export class PutItemCredentialResult implements PutItemOperation {
-  getDynamoDbPutItemCompositeKey(item: ICredentialResult) {
+  getDynamoDbPutItemCompositeKey(item: ICompositeKeyData) {
     const { sub, sentTimestamp } = item;
 
     return {

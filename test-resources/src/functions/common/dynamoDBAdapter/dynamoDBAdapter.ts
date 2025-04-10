@@ -1,11 +1,9 @@
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
-import {
-  PutItemOperation,
-  TestResourceItem,
-} from "../../common/dynamoDBAdapter/putItemOperation";
+import { PutItemOperation } from "../../common/dynamoDBAdapter/putItemOperation";
 import { emptySuccess, Result } from "../../common/utils/result";
+import { ICredentialResult } from "../../dequeueCredentialResult/credentialResult";
 import { LogMessage } from "../logging/LogMessage";
 import { logger } from "../logging/logger";
 
@@ -24,16 +22,20 @@ export class DynamoDBAdapter {
   }
 
   async putItem(
-    item: TestResourceItem,
+    item: ICredentialResult,
     putItemOperation: PutItemOperation,
   ): Promise<Result<void, void>> {
-    const { pk, sk } = putItemOperation.getDynamoDbPutItemCompositeKey(item);
+    const { pk, sk } = putItemOperation.getDynamoDbPutItemCompositeKey({
+      sub: item.sub,
+      sentTimestamp: item.sentTimestamp,
+    });
+    const { timeToLiveInSeconds } = item;
     const putItemCommand = new PutItemCommand({
       TableName: this.tableName,
       Item: marshall({
         pk,
         sk,
-        // timeToLiveInSeconds,
+        timeToLiveInSeconds,
       }),
     });
 
@@ -43,6 +45,7 @@ export class DynamoDBAdapter {
           tableName: this.tableName,
           pk,
           sk,
+          timeToLiveInSeconds,
         },
       });
 

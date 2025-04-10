@@ -11,11 +11,11 @@ import {
   lambdaHandlerConstructor,
 } from "./dequeueCredentialResultHandler";
 import { failingSQSRecordBodyMissingSub, validSQSRecord } from "./unitTestData";
+import { NOW_IN_MILLISECONDS } from "../dequeue/tests/testData";
 
 describe("Dequeue credential result", () => {
   const env = {
-    CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS:
-      "mockCredentialResultTTLDurationInSeconds",
+    CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS: "3600",
     CREDENTIAL_RESULTS_TABLE_NAME: "mockCredentialResultsTableName",
   };
   let dependencies: IDequeueCredentialResultDependencies;
@@ -25,6 +25,8 @@ describe("Dequeue credential result", () => {
   let result: SQSBatchResponse;
 
   beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(NOW_IN_MILLISECONDS);
     dependencies = {
       env: { ...env },
       getCredentialResultRegistry: () => mockCredentialResultRegistrySuccess,
@@ -32,6 +34,10 @@ describe("Dequeue credential result", () => {
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
     consoleErrorSpy = jest.spyOn(console, "error");
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   describe("On every invocation", () => {
@@ -161,6 +167,7 @@ describe("Dequeue credential result", () => {
             processedMessage: {
               sub: "mockSub",
               sentTimestamp: "mockSentTimestamp",
+              timeToLiveInSeconds: 1704114000, // 2024-01-01 13:00:00.000
             },
           });
         });
@@ -195,6 +202,7 @@ describe("Dequeue credential result", () => {
             processedMessage: {
               sub: "mockSub",
               sentTimestamp: "mockSentTimestamp",
+              timeToLiveInSeconds: 1704114000, // 2024-01-01 13:00:00.000
             },
           });
         });
@@ -237,6 +245,7 @@ describe("Dequeue credential result", () => {
           processedMessage: {
             sub: "mockSub",
             sentTimestamp: "mockSentTimestamp",
+            timeToLiveInSeconds: 1704114000, // 2024-01-01 13:00:00.000
           },
         });
       });
