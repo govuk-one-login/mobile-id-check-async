@@ -186,9 +186,9 @@ Mappings:
       LogLevel: DEBUG
       ReservedConcurrentExecutions: 0
     integration:
-      IssueBiometricCredentialReservedConcurrentExecutions: 0
+      IssueBiometricCredentialReservedConcurrentExecutions: 34
       LogLevel: INFO
-      ReservedConcurrentExecutions: 0
+      ReservedConcurrentExecutions: 15
     production:
       IssueBiometricCredentialReservedConcurrentExecutions: 0
       LogLevel: INFO
@@ -208,8 +208,8 @@ Mappings:
       ApiRateLimit: 10
       IpvCoreVpceId: ""
     integration:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
       IpvCoreVpceId: ""
     production:
       ApiBurstLimit: 0
@@ -245,8 +245,8 @@ Mappings:
       ApiBurstLimit: 10
       ApiRateLimit: 10
     integration:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0

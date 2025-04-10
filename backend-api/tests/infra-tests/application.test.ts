@@ -153,14 +153,14 @@ describe("Backend application infrastructure", () => {
           dev: 10,
           build: 10,
           staging: 10,
-          integration: 0,
+          integration: 10,
           production: 0,
         };
         const expectedRateLimits = {
           dev: 10,
           build: 10,
           staging: 10,
-          integration: 0,
+          integration: 10,
           production: 0,
         };
         const mappingHelper = new Mappings(template);
@@ -394,7 +394,7 @@ describe("Backend application infrastructure", () => {
           dev: 10,
           build: 10,
           staging: 10,
-          integration: 0,
+          integration: 10,
           production: 0,
         };
 
@@ -402,7 +402,7 @@ describe("Backend application infrastructure", () => {
           dev: 10,
           build: 10,
           staging: 10,
-          integration: 0,
+          integration: 10,
           production: 0,
         };
         const mappingHelper = new Mappings(template);
@@ -612,7 +612,7 @@ describe("Backend application infrastructure", () => {
               ReservedConcurrentExecutions: 15,
             }),
             integration: expect.objectContaining({
-              ReservedConcurrentExecutions: 0,
+              ReservedConcurrentExecutions: 15,
             }),
             production: expect.objectContaining({
               ReservedConcurrentExecutions: 0,
@@ -864,7 +864,7 @@ describe("Backend application infrastructure", () => {
             IssueBiometricCredentialReservedConcurrentExecutions: 34,
           }),
           integration: expect.objectContaining({
-            IssueBiometricCredentialReservedConcurrentExecutions: 0,
+            IssueBiometricCredentialReservedConcurrentExecutions: 34,
           }),
           production: expect.objectContaining({
             IssueBiometricCredentialReservedConcurrentExecutions: 0,
