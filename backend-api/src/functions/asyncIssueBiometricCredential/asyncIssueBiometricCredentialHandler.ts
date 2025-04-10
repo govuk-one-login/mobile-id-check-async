@@ -93,7 +93,9 @@ async function getBiometricViewerAccessKey(
   return successResult(secretsByName[path]);
 }
 
-const handleGetSessionError = async (options: HandleGetSessionErrorOptions) => {
+const handleGetSessionError = async (
+  options: HandleGetSessionErrorOptions,
+): Promise<void> => {
   const { errorData, eventService, issuer, sessionId } = options;
 
   if (errorData.errorType === GetSessionError.INTERNAL_SERVER_ERROR) {
@@ -120,8 +122,6 @@ const handleGetSessionError = async (options: HandleGetSessionErrorOptions) => {
       },
     });
   }
-
-  return;
 };
 
 interface HandleGetSessionErrorOptions {
