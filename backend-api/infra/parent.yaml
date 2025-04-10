@@ -247,7 +247,7 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
-      BiometricViewerAccessKey: '/staging/BIOMETRIC_VIEWER_ACCESS_PATH'
+      BiometricViewerAccessKey: '/staging/BIOMETRIC_VIEWER_ACCESS_KEY'
       BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       SessionDurationInSeconds: 86400
 
@@ -259,7 +259,7 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
-      BiometricViewerAccessKey: '/integration/BIOMETRIC_VIEWER_ACCESS_PATH'
+      BiometricViewerAccessKey: '/integration/BIOMETRIC_VIEWER_ACCESS_KEY'
       BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       SessionDurationInSeconds: 86400
 
@@ -271,7 +271,7 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
-      BiometricViewerAccessKey: '/production/BIOMETRIC_VIEWER_ACCESS_PATH'
+      BiometricViewerAccessKey: '/production/BIOMETRIC_VIEWER_ACCESS_KEY'
       BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       SessionDurationInSeconds: 86400
 
