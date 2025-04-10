@@ -48,6 +48,8 @@ export async function lambdaHandlerConstructor(
     if (errorData.errorType === GetSessionError.INTERNAL_SERVER_ERROR) {
       return;
     }
+
+    throw new RetainMessageOnQueue("Failed to retrieve session from database");
   }
 
   const viewerKeyResult = await getBiometricViewerAccessKey(

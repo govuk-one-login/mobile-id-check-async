@@ -260,6 +260,25 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
     });
+
+    describe("Given the error type is not internal server error", () => {
+      beforeEach(() => {
+        dependencies.getSessionRegistry = () => ({
+          ...mockInertSessionRegistry,
+          getSession: jest.fn().mockResolvedValue(
+            errorResult({
+              errorType: GetSessionError.CLIENT_ERROR,
+            }),
+          ),
+        });
+      });
+
+      it("Throws RetainMessageOnQueue", async () => {
+        await expect(
+          lambdaHandlerConstructor(dependencies, validSqsEvent, context),
+        ).rejects.toThrow("Failed to retrieve session from database");
+      });
+    });
   });
 
   describe("When there is an error getting secrets", () => {
