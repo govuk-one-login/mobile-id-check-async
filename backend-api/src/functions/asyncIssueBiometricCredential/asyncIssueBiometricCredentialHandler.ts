@@ -22,7 +22,7 @@ export async function lambdaHandlerConstructor(
   const configResult = getIssueBiometricCredentialConfig(dependencies.env);
   if (configResult.isError) {
     logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG);
-    return;
+    throw new Error("Invalid config");
   }
   const config = configResult.value;
 

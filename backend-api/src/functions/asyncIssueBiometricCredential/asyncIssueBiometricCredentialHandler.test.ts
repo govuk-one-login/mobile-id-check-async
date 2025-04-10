@@ -88,12 +88,15 @@ describe("Async Issue Biometric Credential", () => {
       ["BIOMETRIC_VIEWER_KEY_SECRET_PATH"],
       ["BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS"],
     ])("Given %s environment variable is missing", (envVar: string) => {
-      beforeEach(async () => {
+      beforeEach(() => {
         delete dependencies.env[envVar];
-        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
       });
 
-      it("logs INVALID_CONFIG", async () => {
+      it("logs INVALID_CONFIG and throws error", async () => {
+        await expect(
+          lambdaHandlerConstructor(dependencies, validSqsEvent, context),
+        ).rejects.toThrow("Invalid config");
+
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG",
           data: {
