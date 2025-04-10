@@ -23,6 +23,7 @@ describe("Async Issue Biometric Credential", () => {
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
+  let lambdaError: RetainMessageOnQueue;
 
   const mockGetSecretsSuccess = jest.fn().mockResolvedValue(
     successResult({
@@ -306,7 +307,6 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
 
-      let lambdaError: RetainMessageOnQueue;
       beforeEach(async () => {
         dependencies.getSessionRegistry = () => ({
           ...mockInertSessionRegistry,
