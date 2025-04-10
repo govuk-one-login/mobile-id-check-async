@@ -167,7 +167,6 @@ describe("Dequeue credential result", () => {
             processedMessage: {
               sub: "mockSub",
               sentTimestamp: "mockSentTimestamp",
-              timeToLiveInSeconds: 1704114000, // 2024-01-01 13:00:00.000
             },
           });
         });
@@ -202,7 +201,6 @@ describe("Dequeue credential result", () => {
             processedMessage: {
               sub: "mockSub",
               sentTimestamp: "mockSentTimestamp",
-              timeToLiveInSeconds: 1704114000, // 2024-01-01 13:00:00.000
             },
           });
         });
@@ -245,7 +243,6 @@ describe("Dequeue credential result", () => {
           processedMessage: {
             sub: "mockSub",
             sentTimestamp: "mockSentTimestamp",
-            timeToLiveInSeconds: 1704114000, // 2024-01-01 13:00:00.000
           },
         });
       });

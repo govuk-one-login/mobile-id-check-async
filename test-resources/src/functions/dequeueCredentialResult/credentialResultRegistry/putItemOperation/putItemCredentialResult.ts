@@ -7,8 +7,10 @@ import { LogMessage } from "../../../common/logging/LogMessage";
 import { emptyFailure } from "../../../common/utils/result";
 
 export class PutItemCredentialResult implements PutItemOperation {
-  getDynamoDbPutItemCompositeKey(item: ICompositeKeyData) {
-    const { sub, sentTimestamp } = item;
+  constructor(private readonly compositeKeyData: ICompositeKeyData) {}
+
+  getDynamoDbPutItemCompositeKey() {
+    const { sub, sentTimestamp } = this.compositeKeyData;
 
     return {
       pk: `SUB#${sub}`,

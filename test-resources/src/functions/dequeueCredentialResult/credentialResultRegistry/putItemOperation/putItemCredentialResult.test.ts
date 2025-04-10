@@ -9,19 +9,18 @@ describe("Credential result put item operation", () => {
 
   beforeEach(() => {
     consoleErrorSpy = jest.spyOn(console, "error");
-    putItemOperation = new PutItemCredentialResult();
+    const compositeKeyData = {
+      sub: "mockSub",
+      sentTimestamp: "mockSentTimestamp",
+    };
+    putItemOperation = new PutItemCredentialResult(compositeKeyData);
   });
 
   describe("Get DynamoDB put item composite key", () => {
     let result: ICompositeKey;
 
     beforeEach(() => {
-      const credentialResult = {
-        sub: "mockSub",
-        sentTimestamp: "mockSentTimestamp",
-      };
-      result =
-        putItemOperation.getDynamoDbPutItemCompositeKey(credentialResult);
+      result = putItemOperation.getDynamoDbPutItemCompositeKey();
     });
 
     it("Returns an object with a pk and sk value", () => {

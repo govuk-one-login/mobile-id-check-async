@@ -1,11 +1,9 @@
 import { EmptyFailure } from "../utils/result";
 
 export interface PutItemOperation {
-  getDynamoDbPutItemCompositeKey(item: TestResourceItem): ICompositeKey;
+  getDynamoDbPutItemCompositeKey(): ICompositeKey;
   handlePutItemError(error: unknown): EmptyFailure;
 }
-
-export type TestResourceItem = ICompositeKeyData;
 
 export interface ICompositeKeyData {
   sub: string;

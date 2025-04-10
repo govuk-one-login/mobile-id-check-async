@@ -3,15 +3,16 @@ import { marshall } from "@aws-sdk/util-dynamodb";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { PutItemOperation } from "../../common/dynamoDBAdapter/putItemOperation";
 import { emptySuccess, Result } from "../../common/utils/result";
-import { ICredentialResult } from "../../dequeueCredentialResult/credentialResult";
 import { LogMessage } from "../logging/LogMessage";
 import { logger } from "../logging/logger";
 
 export class DynamoDBAdapter {
-  private readonly dynamoDbClient: DynamoDBClient;
+  private readonly dynamoDBClient: DynamoDBClient;
+  private readonly tableName: string;
+  private readonly ttlInSeconds: number;
 
-  constructor(private readonly tableName: string) {
-    this.dynamoDbClient = new DynamoDBClient({
+  constructor({ tableName, ttlInSeconds }: IDynamoDBConfig) {
+    this.dynamoDBClient = new DynamoDBClient({
       region: process.env.REGION,
       maxAttempts: 2,
       requestHandler: new NodeHttpHandler({
@@ -19,23 +20,20 @@ export class DynamoDBAdapter {
         requestTimeout: 5000,
       }),
     });
+    this.tableName = tableName;
+    this.ttlInSeconds = ttlInSeconds;
   }
 
   async putItem(
-    item: ICredentialResult,
     putItemOperation: PutItemOperation,
   ): Promise<Result<void, void>> {
-    const { pk, sk } = putItemOperation.getDynamoDbPutItemCompositeKey({
-      sub: item.sub,
-      sentTimestamp: item.sentTimestamp,
-    });
-    const { timeToLiveInSeconds } = item;
+    const { pk, sk } = putItemOperation.getDynamoDbPutItemCompositeKey();
     const putItemCommand = new PutItemCommand({
       TableName: this.tableName,
       Item: marshall({
         pk,
         sk,
-        timeToLiveInSeconds,
+        timeToLiveInSeconds: this.ttlInSeconds,
       }),
     });
 
@@ -45,15 +43,20 @@ export class DynamoDBAdapter {
           tableName: this.tableName,
           pk,
           sk,
-          timeToLiveInSeconds,
+          timeToLiveInSeconds: this.ttlInSeconds,
         },
       });
 
-      await this.dynamoDbClient.send(putItemCommand);
+      await this.dynamoDBClient.send(putItemCommand);
     } catch (error) {
       return putItemOperation.handlePutItemError(error);
     }
 
     return emptySuccess();
   }
+}
+
+export interface IDynamoDBConfig {
+  tableName: string;
+  ttlInSeconds: number;
 }

@@ -5,7 +5,10 @@ import {
   SQSEvent,
   SQSRecord,
 } from "aws-lambda";
-import { DynamoDBAdapter } from "../common/dynamoDBAdapter/dynamoDBAdapter";
+import {
+  DynamoDBAdapter,
+  IDynamoDBConfig,
+} from "../common/dynamoDBAdapter/dynamoDBAdapter";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
@@ -39,29 +42,31 @@ export const lambdaHandlerConstructor = async (
         errorMessage,
       });
     } else {
-      const { sub, sentTimestamp } = validateCredentialResultResponse.value;
       const timeToLiveInSeconds = getTimeToLiveInSeconds(
         config.CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS,
       );
-      const credentialResult = { sub, sentTimestamp, timeToLiveInSeconds };
-      logger.info(
-        LogMessage.DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS,
+      const credentialResultRegistry = dependencies.getCredentialResultRegistry(
         {
-          processedMessage: credentialResult,
+          tableName: config.CREDENTIAL_RESULTS_TABLE_NAME,
+          ttlInSeconds: timeToLiveInSeconds,
         },
       );
-
-      const credentialResultRegistry = dependencies.getCredentialResultRegistry(
-        config.CREDENTIAL_RESULTS_TABLE_NAME,
-      );
+      const { sub, sentTimestamp } = validateCredentialResultResponse.value;
+      const compositeKeyData = { sub, sentTimestamp };
       const putItemResult = await credentialResultRegistry.putItem(
-        credentialResult,
-        new PutItemCredentialResult(),
+        new PutItemCredentialResult(compositeKeyData),
       );
 
       if (putItemResult.isError) {
         batchItemFailures.push({ itemIdentifier: record.messageId });
       }
+
+      logger.info(
+        LogMessage.DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS,
+        {
+          processedMessage: compositeKeyData,
+        },
+      );
     }
   }
 
@@ -75,13 +80,16 @@ function getBatchItemFailures(eventRecords: SQSRecord[]) {
 
 export interface IDequeueCredentialResultDependencies {
   env: NodeJS.ProcessEnv;
-  getCredentialResultRegistry: (tableName: string) => ICredentialResultRegistry;
+  getCredentialResultRegistry: ({
+    tableName,
+    ttlInSeconds,
+  }: IDynamoDBConfig) => ICredentialResultRegistry;
 }
 
 const dependencies: IDequeueCredentialResultDependencies = {
   env: process.env,
-  getCredentialResultRegistry: (tableName: string) =>
-    new DynamoDBAdapter(tableName),
+  getCredentialResultRegistry: ({ tableName, ttlInSeconds }: IDynamoDBConfig) =>
+    new DynamoDBAdapter({ tableName, ttlInSeconds }),
 };
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
