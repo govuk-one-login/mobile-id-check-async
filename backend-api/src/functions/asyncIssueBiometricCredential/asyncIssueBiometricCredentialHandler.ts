@@ -39,6 +39,8 @@ export async function lambdaHandlerConstructor(
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
   );
+  const eventService = dependencies.getEventService(config.TXMA_SQS);
+
   const getSessionResult = await sessionRegistry.getSession(
     sessionId,
     new GetSessionIssueBiometricCredential(),
@@ -46,6 +48,28 @@ export async function lambdaHandlerConstructor(
   if (getSessionResult.isError) {
     const errorData = getSessionResult.value;
     if (errorData.errorType === GetSessionError.INTERNAL_SERVER_ERROR) {
+      return;
+    }
+
+    const eventName = "DCMAW_ASYNC_CRI_5XXERROR";
+    const writeEventResult = await eventService.writeGenericEvent({
+      componentId: config.ISSUER,
+      eventName,
+      getNowInMilliseconds: Date.now,
+      govukSigninJourneyId: undefined,
+      ipAddress: undefined,
+      redirect_uri: undefined,
+      sessionId,
+      sub: undefined,
+      suspected_fraud_signal: undefined,
+      txmaAuditEncoded: undefined,
+    });
+    if (writeEventResult.isError) {
+      logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+        data: {
+          auditEventName: eventName,
+        },
+      });
       return;
     }
 

@@ -3,10 +3,14 @@ import { expect } from "@jest/globals";
 import "../../../tests/testUtils/matchers";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { logger } from "../common/logging/logger";
-import { lambdaHandlerConstructor } from "./asyncIssueBiometricCredentialHandler";
+import {
+  lambdaHandlerConstructor,
+  RetainMessageOnQueue,
+} from "./asyncIssueBiometricCredentialHandler";
 import { IssueBiometricCredentialDependencies } from "./handlerDependencies";
 import {
   mockBiometricSessionId,
+  mockInertEventService,
   mockInertSessionRegistry,
   mockSessionId,
   mockSuccessfulEventService,
@@ -268,7 +272,44 @@ describe("Async Issue Biometric Credential", () => {
     });
 
     describe("Given the error type is not internal server error", () => {
-      beforeEach(() => {
+      describe("Given TxMA event fails to write", () => {
+        beforeEach(async () => {
+          dependencies.getSessionRegistry = () => ({
+            ...mockInertSessionRegistry,
+            getSession: jest.fn().mockResolvedValue(
+              errorResult({
+                errorType: GetSessionError.CLIENT_ERROR,
+              }),
+            ),
+          });
+          dependencies.getEventService = () => ({
+            ...mockInertEventService,
+            writeGenericEvent: jest.fn().mockResolvedValue(
+              errorResult({
+                errorMessage: "mockError",
+              }),
+            ),
+          });
+
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        });
+
+        it("Logs audit event error", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+            data: { auditEventName: "DCMAW_ASYNC_CRI_5XXERROR" },
+          });
+        });
+
+        it("Does not log COMPLETED", () => {
+          expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+          });
+        });
+      });
+
+      let lambdaError: RetainMessageOnQueue;
+      beforeEach(async () => {
         dependencies.getSessionRegistry = () => ({
           ...mockInertSessionRegistry,
           getSession: jest.fn().mockResolvedValue(
@@ -277,12 +318,26 @@ describe("Async Issue Biometric Credential", () => {
             }),
           ),
         });
+        try {
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        } catch (error: unknown) {
+          lambdaError = error as RetainMessageOnQueue;
+        }
+      });
+
+      it("Writes DCMAW_ASYNC_CRI_5XXERROR to TxMA", () => {
+        expect(mockSuccessfulEventService.writeGenericEvent).toBeCalledWith({
+          eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+          componentId: "mockIssuer",
+          getNowInMilliseconds: Date.now,
+          sessionId: mockSessionId,
+        });
       });
 
       it("Throws RetainMessageOnQueue", async () => {
-        await expect(
-          lambdaHandlerConstructor(dependencies, validSqsEvent, context),
-        ).rejects.toThrow("Failed to retrieve session from database");
+        expect(lambdaError).toEqual(
+          new RetainMessageOnQueue("Failed to retrieve session from database"),
+        );
       });
     });
   });
