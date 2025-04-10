@@ -68,6 +68,7 @@ describe("Async Issue Biometric Credential", () => {
         BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS: "900",
         SESSION_TABLE_NAME: "mockTableName",
         TXMA_SQS: "mockTxmaSqs",
+        ISSUER: "mockIssuer",
       },
       getSessionRegistry: () => mockSessionRegistrySuccess,
       getSecrets: mockGetSecretsSuccess,
@@ -107,6 +108,7 @@ describe("Async Issue Biometric Credential", () => {
       ["BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS"],
       ["SESSION_TABLE_NAME"],
       ["TXMA_SQS"],
+      ["ISSUER"],
     ])("Given %s environment variable is missing", (envVar: string) => {
       beforeEach(() => {
         delete dependencies.env[envVar];

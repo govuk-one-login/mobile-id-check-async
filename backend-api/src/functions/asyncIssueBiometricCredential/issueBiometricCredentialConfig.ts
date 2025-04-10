@@ -12,6 +12,7 @@ const REQUIRED_ENVIRONMENT_VARIABLES = [
   "BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS",
   "SESSION_TABLE_NAME",
   "TXMA_SQS",
+  "ISSUER",
 ] as const;
 
 export type IssueBiometricCredentialConfig = Config<
