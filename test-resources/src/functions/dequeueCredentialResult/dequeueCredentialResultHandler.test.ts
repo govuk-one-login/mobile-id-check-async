@@ -75,7 +75,7 @@ describe("Dequeue credential result", () => {
       beforeEach(async () => {
         delete dependencies.env[envVar];
         const event: SQSEvent = {
-          Records: [validSQSRecord],
+          Records: [validSQSRecord, failingSQSRecordBodyMissingSub],
         };
         result = await lambdaHandlerConstructor(dependencies, event, context);
       });
@@ -85,6 +85,9 @@ describe("Dequeue credential result", () => {
           batchItemFailures: [
             {
               itemIdentifier: "c2098377-619a-449f-b2b4-254b6c41aff4",
+            },
+            {
+              itemIdentifier: "6f50c504-818f-4e9f-9a7f-785f532b45f2",
             },
           ],
         });
