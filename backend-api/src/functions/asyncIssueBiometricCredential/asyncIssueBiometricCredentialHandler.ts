@@ -71,6 +71,11 @@ export async function lambdaHandlerConstructor(
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
 }
 
+export const lambdaHandler = lambdaHandlerConstructor.bind(
+  null,
+  runtimeDependencies,
+);
+
 async function getBiometricViewerAccessKey(
   path: string,
   cacheDurationInSeconds: number,
@@ -87,11 +92,6 @@ async function getBiometricViewerAccessKey(
   const secretsByName = getViewerKeyResult.value;
   return successResult(secretsByName[path]);
 }
-
-export const lambdaHandler = lambdaHandlerConstructor.bind(
-  null,
-  runtimeDependencies,
-);
 
 const handleGetSessionError = async (options: HandleGetSessionErrorOptions) => {
   const { errorData, eventService, issuer, sessionId } = options;
