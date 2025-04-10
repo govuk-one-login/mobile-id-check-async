@@ -75,11 +75,6 @@ export class LogMessage implements LogAttributes {
       "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS",
       "Successfully processed the message from the IPV Core outbound queue",
     );
-  static readonly DEQUEUE_CREDENTIAL_RESULT_WRITE_TO_DATABASE_FAILURE =
-    new LogMessage(
-      "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_WRITE_TO_DATABASE_FAILURE",
-      "Failed to put item into DynamoDB table",
-    );
   static readonly DEQUEUE_CREDENTIAL_RESULT_COMPLETED = new LogMessage(
     "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
     "Lambda handler processing has completed successfully.",
@@ -110,6 +105,10 @@ export class LogMessage implements LogAttributes {
   static readonly DYNAMO_DB_ADAPTER_PUT_ITEM_ATTEMPT = new LogMessage(
     "TEST_RESOURCES_DYNAMO_DB_ADAPTER_PUT_ITEM_ATTEMPT",
     "Attempting to put an item into DynamoDB",
+  );
+  static readonly DYNAMO_DB_ADAPTER_SEND_ITEM_COMMAND_FAILURE = new LogMessage(
+    "TEST_RESOURCES_DYNAMO_DB_ADAPTER_SEND_ITEM_COMMAND_FAILURE",
+    "Failure occurred while sending item command to DynamoDB",
   );
 
   private constructor(

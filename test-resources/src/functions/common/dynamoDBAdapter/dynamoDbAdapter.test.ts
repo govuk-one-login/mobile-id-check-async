@@ -4,13 +4,14 @@ import { mockClient } from "aws-sdk-client-mock";
 import { NOW_IN_MILLISECONDS } from "../../dequeue/tests/testData";
 import { ICredentialResultRegistry } from "../../dequeueCredentialResult/credentialResultRegistry/credentialResultRegistry";
 import "../../testUtils/matchers";
-import { Result, emptyFailure } from "../utils/result";
+import { Result } from "../utils/result";
 import { DynamoDBAdapter } from "./dynamoDBAdapter";
 import { PutItemOperation } from "./putItemOperation";
 
 const mockDynamoDbClient = mockClient(DynamoDBClient);
 let credentialResultRegistry: ICredentialResultRegistry;
 let consoleDebugSpy: jest.SpyInstance;
+let consoleErrorSpy: jest.SpyInstance;
 
 describe("DynamoDB adapter", () => {
   beforeEach(() => {
@@ -21,6 +22,7 @@ describe("DynamoDB adapter", () => {
       ttlInSeconds: 12345,
     });
     consoleDebugSpy = jest.spyOn(console, "debug");
+    consoleErrorSpy = jest.spyOn(console, "error");
   });
 
   afterEach(() => {
@@ -56,6 +58,13 @@ describe("DynamoDB adapter", () => {
         result = await credentialResultRegistry.putItem(mockPutItemOperation);
       });
 
+      it("Logs an error message", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "TEST_RESOURCES_DYNAMO_DB_ADAPTER_SEND_ITEM_COMMAND_FAILURE",
+        });
+      });
+
       it("Returns an empty success result", () => {
         expect(result.isError).toBe(true);
       });
@@ -76,5 +85,4 @@ describe("DynamoDB adapter", () => {
 
 const mockPutItemOperation: PutItemOperation = {
   getDynamoDbPutItemCompositeKey: () => ({ pk: "mockPk", sk: "mockSk" }),
-  handlePutItemError: () => emptyFailure(),
 };

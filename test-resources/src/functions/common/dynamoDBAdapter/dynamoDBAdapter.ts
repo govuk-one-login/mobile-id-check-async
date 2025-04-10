@@ -2,7 +2,7 @@ import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { PutItemOperation } from "../../common/dynamoDBAdapter/putItemOperation";
-import { emptySuccess, Result } from "../../common/utils/result";
+import { emptyFailure, emptySuccess, Result } from "../../common/utils/result";
 import { LogMessage } from "../logging/LogMessage";
 import { logger } from "../logging/logger";
 
@@ -49,7 +49,10 @@ export class DynamoDBAdapter {
 
       await this.dynamoDBClient.send(putItemCommand);
     } catch (error) {
-      return putItemOperation.handlePutItemError(error);
+      logger.error(LogMessage.DYNAMO_DB_ADAPTER_SEND_ITEM_COMMAND_FAILURE, {
+        error,
+      });
+      return emptyFailure();
     }
 
     return emptySuccess();
