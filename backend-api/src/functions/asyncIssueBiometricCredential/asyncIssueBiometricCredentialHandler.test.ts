@@ -106,6 +106,7 @@ describe("Async Issue Biometric Credential", () => {
       ["BIOMETRIC_VIEWER_KEY_SECRET_PATH"],
       ["BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS"],
       ["SESSION_TABLE_NAME"],
+      ["TXMA_SQS"],
     ])("Given %s environment variable is missing", (envVar: string) => {
       beforeEach(() => {
         delete dependencies.env[envVar];
