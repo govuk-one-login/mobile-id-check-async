@@ -114,21 +114,30 @@ describe("Async Issue Biometric Credential", () => {
       ["TXMA_SQS"],
       ["ISSUER"],
     ])("Given %s environment variable is missing", (envVar: string) => {
-      beforeEach(() => {
+      beforeEach(async () => {
         delete dependencies.env[envVar];
+        try {
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        } catch (error: unknown) {
+          lambdaError = error;
+        }
       });
 
-      it("logs INVALID_CONFIG and throws error", async () => {
-        await expect(
-          lambdaHandlerConstructor(dependencies, validSqsEvent, context),
-        ).rejects.toThrow("Invalid config");
-
+      it("Logs INVALID_CONFIG", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG",
           data: {
             missingEnvironmentVariables: [envVar],
           },
         });
+      });
+
+      it("Throws RetainMessageOnQueue", async () => {
+        expect(lambdaError).toStrictEqual(
+          new RetainMessageOnQueue({
+            message: "Invalid config",
+          }),
+        );
       });
     });
   });
@@ -270,9 +279,10 @@ describe("Async Issue Biometric Credential", () => {
 
       it("Throws RetainMessageOnQueue", async () => {
         expect(lambdaError).toEqual(
-          new RetainMessageOnQueue(
-            "Unexpected failure retrieving session from database",
-          ),
+          new RetainMessageOnQueue({
+            message: "Unexpected failure retrieving session from database",
+            sessionId: mockSessionId,
+          }),
         );
       });
     });
@@ -349,12 +359,20 @@ describe("Async Issue Biometric Credential", () => {
   describe("When there is an error getting secrets", () => {
     beforeEach(async () => {
       dependencies.getSecrets = jest.fn().mockResolvedValue(emptyFailure());
+      try {
+        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+      } catch (error: unknown) {
+        lambdaError = error;
+      }
     });
 
     it("Throws RetainMessageOnQueue", async () => {
-      await expect(
-        lambdaHandlerConstructor(dependencies, validSqsEvent, context),
-      ).rejects.toThrow("Failed to retrieve biometric viewer key");
+      expect(lambdaError).toStrictEqual(
+        new RetainMessageOnQueue({
+          message: "Failed to retrieve biometric viewer key",
+          sessionId: mockSessionId,
+        }),
+      );
     });
   });
 
