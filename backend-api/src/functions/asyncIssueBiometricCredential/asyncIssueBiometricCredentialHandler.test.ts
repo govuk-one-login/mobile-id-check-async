@@ -3,10 +3,7 @@ import { expect } from "@jest/globals";
 import "../../../tests/testUtils/matchers";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { logger } from "../common/logging/logger";
-import {
-  lambdaHandlerConstructor,
-  RetainMessageOnQueue,
-} from "./asyncIssueBiometricCredentialHandler";
+import { lambdaHandlerConstructor } from "./asyncIssueBiometricCredentialHandler";
 import { IssueBiometricCredentialDependencies } from "./handlerDependencies";
 import {
   mockBiometricSessionId,
@@ -53,7 +50,7 @@ describe("Async Issue Biometric Credential", () => {
   beforeEach(() => {
     dependencies = {
       env: {
-        BIOMETRIC_VIEWER_ACCESS_PATH: "mockBiometricViewerAccessKey",
+        BIOMETRIC_VIEWER_KEY_SECRET_PATH: "mockBiometricViewerAccessKey",
         BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS: "900",
       },
       getSecrets: mockGetSecretsSuccess,
@@ -88,7 +85,7 @@ describe("Async Issue Biometric Credential", () => {
 
   describe("Config validation", () => {
     describe.each([
-      ["BIOMETRIC_VIEWER_ACCESS_PATH"],
+      ["BIOMETRIC_VIEWER_KEY_SECRET_PATH"],
       ["BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS"],
     ])("Given %s environment variable is missing", (envVar: string) => {
       beforeEach(async () => {
@@ -225,26 +222,14 @@ describe("Async Issue Biometric Credential", () => {
   });
 
   describe("When there is an error getting secrets", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       dependencies.getSecrets = jest.fn().mockResolvedValue(emptyFailure());
     });
 
-    it("Logs ISSUE_BIOMETRIC_CREDENTIAL_ERROR_RETRIEVING_BIOMETRIC_VIEWER_KEY and throws RetainMessageOnQueue", async () => {
+    it("Throws RetainMessageOnQueue", async () => {
       await expect(
         lambdaHandlerConstructor(dependencies, validSqsEvent, context),
-      ).rejects.toThrowError(RetainMessageOnQueue);
-
-      await expect(
-        lambdaHandlerConstructor(dependencies, validSqsEvent, context),
-      ).rejects.toMatchObject({
-        message: "Failed to retrieve biometric viewer key",
-        name: "RetainMessageOnQueue",
-      });
-
-      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-        messageCode:
-          "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_ERROR_RETRIEVING_BIOMETRIC_VIEWER_KEY",
-      });
+      ).rejects.toThrow("Failed to retrieve biometric viewer key");
     });
   });
 

@@ -99,7 +99,7 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
       BiometricSubmitterKeySecretPathDl: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
-      BiometricViewerAccessKey: /build/BIOMETRIC_VIEWER_ACCESS_PATH
+      BiometricViewerAccessKey: /build/BIOMETRIC_VIEWER_ACCESS_KEY
       BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       ClientRegistrySecretPath: build/clientRegistry
       EventsBaseUrl: https://events.review-b-async.build.account.gov.uk
@@ -111,7 +111,7 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
       BiometricSubmitterKeySecretPathDl: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL
       BiometricSubmitterKeySecretPathPassport: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT
-      BiometricViewerAccessKey: /dev/BIOMETRIC_VIEWER_ACCESS_PATH
+      BiometricViewerAccessKey: /dev/BIOMETRIC_VIEWER_ACCESS_KEY
       BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       ClientRegistrySecretPath: dev/clientRegistry
       EventsBaseUrl: https://events.review-b-async.dev.account.gov.uk
@@ -3286,10 +3286,10 @@ Resources:
             - EnvironmentVariables
             - !Ref Environment
             - BiometricViewerAccessKeySecretCacheDurationInSeconds
-          BIOMETRIC_VIEWER_ACCESS_PATH: !FindInMap
+          BIOMETRIC_VIEWER_KEY_SECRET_PATH: !FindInMap
             - EnvironmentVariables
             - !Ref Environment
-            - BiometricViewerAccessPath
+            - BiometricViewerAccessKey
       FunctionName: !Sub ${AWS::StackName}-issue-biometric-credential
       Handler: asyncIssueBiometricCredentialHandler.lambdaHandler
       ReservedConcurrentExecutions: !If

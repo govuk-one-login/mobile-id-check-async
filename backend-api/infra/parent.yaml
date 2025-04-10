@@ -222,7 +222,7 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
-      BiometricViewerAccessKey: '/dev/BIOMETRIC_VIEWER_ACCESS_PATH'
+      BiometricViewerAccessKey: '/dev/BIOMETRIC_VIEWER_ACCESS_KEY'
       BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       SessionDurationInSeconds: 86400
 
@@ -235,7 +235,7 @@ Mappings:
       BiometricSubmitterKeySecretPathBrp: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
       BiometricSubmitterKeySecretPathDl: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
-      BiometricViewerAccessKey: '/build/BIOMETRIC_VIEWER_ACCESS_PATH'
+      BiometricViewerAccessKey: '/build/BIOMETRIC_VIEWER_ACCESS_KEY'
       BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       SessionDurationInSeconds: 86400
 
