@@ -60,15 +60,6 @@ export async function lambdaHandlerConstructor(
     });
   }
   const sessionAttributes = getSessionResult.value;
-  console.log("sessionAttributes in lambda => ", sessionAttributes);
-
-  const comparison =
-    sessionAttributes.sessionState === SessionState.RESULT_SENT;
-
-  console.log(
-    "sessionAttributes.sessionState === SessionState.RESULT_SENT =>",
-    comparison,
-  );
 
   if (sessionAttributes.sessionState === SessionState.RESULT_SENT) {
     logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
