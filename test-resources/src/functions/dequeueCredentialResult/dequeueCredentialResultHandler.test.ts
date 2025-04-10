@@ -136,7 +136,7 @@ describe("Dequeue credential result", () => {
       expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
         messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_MESSAGE_INVALID",
         message: "Credential result message is missing or invalid",
-        errorMessage: "sub is missing from record body.",
+        errorMessage: "sub is missing from record body",
       });
     });
 
@@ -170,7 +170,7 @@ describe("Dequeue credential result", () => {
             processedMessage: {
               sub: "mockSub",
               sentTimestamp: "mockSentTimestamp",
-              event: "mockEvent",
+              event: { mockKey: "mockValue" },
             },
           });
         });
@@ -205,7 +205,7 @@ describe("Dequeue credential result", () => {
             processedMessage: {
               sub: "mockSub",
               sentTimestamp: "mockSentTimestamp",
-              event: "mockEvent",
+              event: { mockKey: "mockValue" },
             },
           });
         });
@@ -231,7 +231,7 @@ describe("Dequeue credential result", () => {
           messageCode:
             "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_MESSAGE_INVALID",
           message: "Credential result message is missing or invalid",
-          errorMessage: "sub is missing from record body.",
+          errorMessage: "sub is missing from record body",
         });
       });
 
@@ -248,7 +248,7 @@ describe("Dequeue credential result", () => {
           processedMessage: {
             sub: "mockSub",
             sentTimestamp: "mockSentTimestamp",
-            event: "mockEvent",
+            event: { mockKey: "mockValue" },
           },
         });
       });

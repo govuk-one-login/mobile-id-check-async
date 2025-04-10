@@ -3,7 +3,9 @@ export const validSQSRecord = {
   receiptHandle: "mockReceiptHandle",
   body: JSON.stringify({
     sub: "mockSub",
-    event: "mockEvent",
+    event: {
+      mockKey: "mockValue",
+    },
   }),
   attributes: {
     ApproximateReceiveCount: "mockApproximateReceiveCount",
@@ -16,6 +18,13 @@ export const validSQSRecord = {
   eventSource: "mockEventSource",
   eventSourceARN: "mockEventSourceARN",
   awsRegion: "mockAwsRegion",
+};
+
+export const failingSQSRecordBodyMissingTimestamp = {
+  ...validSQSRecord,
+  messageId: "6e7f7694-96ce-4248-9ee0-203c0c39d864",
+  body: JSON.stringify({ sub: "mockSub", event: { mockKey: "mockValue" } }),
+  attributes: { ...validSQSRecord.attributes, SentTimestamp: "" },
 };
 
 export const failingSQSRecordBodyMissing = {
@@ -42,9 +51,8 @@ export const failingSQSRecordBodySubTypeInvalid = {
   body: JSON.stringify({ sub: 12345 }),
 };
 
-export const failingSQSRecordBodyMissingTimestamp = {
+export const failingSQSRecordBodyMissingEvent = {
   ...validSQSRecord,
-  messageId: "6e7f7694-96ce-4248-9ee0-203c0c39d864",
+  messageId: "6f50c504-818f-4e9f-9a7f-785f532b45f2",
   body: JSON.stringify({ sub: "mockSub" }),
-  attributes: { ...validSQSRecord.attributes, SentTimestamp: "" },
 };

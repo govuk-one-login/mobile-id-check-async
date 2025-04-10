@@ -6,6 +6,7 @@ import "../../testUtils/matchers";
 import {
   failingSQSRecordBodyInvalidJSON,
   failingSQSRecordBodyMissing,
+  failingSQSRecordBodyMissingEvent,
   failingSQSRecordBodyMissingSub,
   failingSQSRecordBodyMissingTimestamp,
   failingSQSRecordBodySubTypeInvalid,
@@ -44,7 +45,7 @@ describe("Validate credential result", () => {
 
     it("Returns an error message", () => {
       expect(result.value).toStrictEqual({
-        errorMessage: "Record body is empty.",
+        errorMessage: "Record body is empty",
       });
     });
   });
@@ -80,7 +81,7 @@ describe("Validate credential result", () => {
 
     it("Returns an error message", () => {
       expect(result.value).toStrictEqual({
-        errorMessage: `sub is missing from record body.`,
+        errorMessage: "sub is missing from record body",
       });
     });
   });
@@ -98,6 +99,23 @@ describe("Validate credential result", () => {
     it("Returns an error message", () => {
       expect(result.value).toStrictEqual({
         errorMessage: "sub is not a string. Incoming sub is type: number",
+      });
+    });
+  });
+
+  describe("Given event is missing", () => {
+    beforeEach(() => {
+      const sqsRecord: SQSRecord = failingSQSRecordBodyMissingEvent;
+      result = validateCredentialResult(sqsRecord);
+    });
+
+    it("Returns an error result", () => {
+      expect(result.isError).toBe(true);
+    });
+
+    it("Returns an error message", () => {
+      expect(result.value).toStrictEqual({
+        errorMessage: "event is missing from record body",
       });
     });
   });

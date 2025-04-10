@@ -15,7 +15,7 @@ export function validateCredentialResult(
   const { body } = record;
   if (!body) {
     return errorResult({
-      errorMessage: "Record body is empty.",
+      errorMessage: "Record body is empty",
     });
   }
 
@@ -31,7 +31,7 @@ export function validateCredentialResult(
   const { sub } = credentialResult;
   if (!sub) {
     return errorResult({
-      errorMessage: "sub is missing from record body.",
+      errorMessage: "sub is missing from record body",
     });
   }
 
@@ -44,7 +44,7 @@ export function validateCredentialResult(
   const { event } = credentialResult;
   if (!event) {
     return errorResult({
-      errorMessage: `event is missing`,
+      errorMessage: `event is missing from record body`,
     });
   }
 
