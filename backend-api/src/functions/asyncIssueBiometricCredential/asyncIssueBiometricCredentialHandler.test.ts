@@ -9,6 +9,7 @@ import {
   mockBiometricSessionId,
   mockInertSessionRegistry,
   mockSessionId,
+  mockSuccessfulEventService,
   validBiometricSessionFinishedAttributes,
 } from "../testUtils/unitTestData";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
@@ -66,9 +67,11 @@ describe("Async Issue Biometric Credential", () => {
         BIOMETRIC_VIEWER_KEY_SECRET_PATH: "mockBiometricViewerAccessKey",
         BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS: "900",
         SESSION_TABLE_NAME: "mockTableName",
+        TXMA_SQS: "mockTxmaSqs",
       },
       getSessionRegistry: () => mockSessionRegistrySuccess,
       getSecrets: mockGetSecretsSuccess,
+      getEventService: () => mockSuccessfulEventService,
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
