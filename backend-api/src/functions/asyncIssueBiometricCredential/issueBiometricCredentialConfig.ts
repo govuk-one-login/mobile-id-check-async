@@ -3,11 +3,15 @@ import {
   getRequiredEnvironmentVariables,
   MissingEnvVarError,
 } from "../common/config/environment";
+import { Result } from "../utils/result";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
-import { Result } from "../utils/result";
 
-const REQUIRED_ENVIRONMENT_VARIABLES = ["SESSION_TABLE_NAME"] as const;
+const REQUIRED_ENVIRONMENT_VARIABLES = [
+  "BIOMETRIC_VIEWER_KEY_SECRET_PATH",
+  "BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS",
+  "SESSION_TABLE_NAME"
+] as const;
 
 export type IssueBiometricCredentialConfig = Config<
   (typeof REQUIRED_ENVIRONMENT_VARIABLES)[number]

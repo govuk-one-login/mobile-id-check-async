@@ -12,7 +12,7 @@ import {
   validBiometricSessionFinishedAttributes,
 } from "../testUtils/unitTestData";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
-import { errorResult, successResult } from "../utils/result";
+import { emptyFailure, errorResult, successResult } from "../utils/result";
 import { GetSessionError } from "../common/session/SessionRegistry/types";
 
 describe("Async Issue Biometric Credential", () => {
@@ -20,6 +20,12 @@ describe("Async Issue Biometric Credential", () => {
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
+
+  const mockGetSecretsSuccess = jest.fn().mockResolvedValue(
+    successResult({
+      mockBiometricViewerAccessKey: "mockViewerKey",
+    }),
+  );
 
   const validVendorProcessingQueueSqsEventRecord = {
     messageId: "mockMessageId",
@@ -57,9 +63,12 @@ describe("Async Issue Biometric Credential", () => {
   beforeEach(() => {
     dependencies = {
       env: {
+        BIOMETRIC_VIEWER_KEY_SECRET_PATH: "mockBiometricViewerAccessKey",
+        BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS: "900",
         SESSION_TABLE_NAME: "mockTableName",
       },
       getSessionRegistry: () => mockSessionRegistrySuccess,
+      getSecrets: mockGetSecretsSuccess,
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
@@ -90,31 +99,28 @@ describe("Async Issue Biometric Credential", () => {
   });
 
   describe("Config validation", () => {
-    describe.each(["SESSION_TABLE_NAME"])(
-      "Given %s environment variable is missing",
-      (envVar: string) => {
-        beforeEach(async () => {
-          delete dependencies.env[envVar];
-          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
-        });
+    describe.each([
+      ["BIOMETRIC_VIEWER_KEY_SECRET_PATH"],
+      ["BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS"],
+      ["SESSION_TABLE_NAME"],
+    ])("Given %s environment variable is missing", (envVar: string) => {
+      beforeEach(() => {
+        delete dependencies.env[envVar];
+      });
 
-        it("Logs INVALID_CONFIG", () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode:
-              "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG",
-            data: {
-              missingEnvironmentVariables: [envVar],
-            },
-          });
-        });
+      it("logs INVALID_CONFIG and throws error", async () => {
+        await expect(
+          lambdaHandlerConstructor(dependencies, validSqsEvent, context),
+        ).rejects.toThrow("Invalid config");
 
-        it("Does not log COMPLETED", () => {
-          expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-          });
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG",
+          data: {
+            missingEnvironmentVariables: [envVar],
+          },
         });
-      },
-    );
+      });
+    });
   });
 
   describe("SQS Event validation", () => {
@@ -256,9 +262,28 @@ describe("Async Issue Biometric Credential", () => {
     });
   });
 
+  describe("When there is an error getting secrets", () => {
+    beforeEach(async () => {
+      dependencies.getSecrets = jest.fn().mockResolvedValue(emptyFailure());
+    });
+
+    it("Throws RetainMessageOnQueue", async () => {
+      await expect(
+        lambdaHandlerConstructor(dependencies, validSqsEvent, context),
+      ).rejects.toThrow("Failed to retrieve biometric viewer key");
+    });
+  });
+
   describe("Given the lambda handler reads a valid SQSEvent", () => {
     beforeEach(async () => {
       await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+    });
+
+    it("Passes correct arguments to get secrets", () => {
+      expect(mockGetSecretsSuccess).toHaveBeenCalledWith({
+        secretNames: ["mockBiometricViewerAccessKey"],
+        cacheDurationInSeconds: 900,
+      });
     });
 
     it("Logs COMPLETED with sessionId", async () => {
