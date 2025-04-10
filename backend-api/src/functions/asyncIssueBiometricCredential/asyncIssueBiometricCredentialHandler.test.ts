@@ -24,7 +24,7 @@ describe("Async Issue Biometric Credential", () => {
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
-  let lambdaError: RetainMessageOnQueue;
+  let lambdaError: unknown;
 
   const mockGetSecretsSuccess = jest.fn().mockResolvedValue(
     successResult({
@@ -264,13 +264,13 @@ describe("Async Issue Biometric Credential", () => {
         try {
           await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
         } catch (error: unknown) {
-          lambdaError = error as RetainMessageOnQueue;
+          lambdaError = error;
         }
       });
 
       it("Throws RetainMessageOnQueue", async () => {
-        expect(lambdaError.message).toEqual(
-          "Failed to retrieve session from database",
+        expect(lambdaError).toEqual(
+          new RetainMessageOnQueue("Failed to retrieve session from database"),
         );
       });
     });
