@@ -1,5 +1,8 @@
-export interface ICredentialResult {
+export interface ICredentialResultData {
   sub: string;
   sentTimestamp: string;
+  event: Event;
   timeToLiveInSeconds: number;
 }
+
+export type Event = string;

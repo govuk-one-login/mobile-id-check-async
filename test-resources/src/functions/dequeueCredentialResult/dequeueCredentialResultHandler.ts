@@ -51,7 +51,8 @@ export const lambdaHandlerConstructor = async (
           ttlInSeconds: timeToLiveInSeconds,
         },
       );
-      const { sub, sentTimestamp } = validateCredentialResultResponse.value;
+      const credentResultData = validateCredentialResultResponse.value;
+      const { sub, sentTimestamp } = credentResultData;
       const compositeKeyData = { sub, sentTimestamp };
       const putItemResult = await credentialResultRegistry.putItem(
         new PutItemCredentialResult(compositeKeyData),
@@ -64,7 +65,7 @@ export const lambdaHandlerConstructor = async (
       logger.info(
         LogMessage.DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS,
         {
-          processedMessage: compositeKeyData,
+          processedMessage: credentResultData,
         },
       );
     }

@@ -3,6 +3,7 @@ export const validSQSRecord = {
   receiptHandle: "mockReceiptHandle",
   body: JSON.stringify({
     sub: "mockSub",
+    event: "mockEvent",
   }),
   attributes: {
     ApproximateReceiveCount: "mockApproximateReceiveCount",

@@ -170,6 +170,7 @@ describe("Dequeue credential result", () => {
             processedMessage: {
               sub: "mockSub",
               sentTimestamp: "mockSentTimestamp",
+              event: "mockEvent",
             },
           });
         });
@@ -204,6 +205,7 @@ describe("Dequeue credential result", () => {
             processedMessage: {
               sub: "mockSub",
               sentTimestamp: "mockSentTimestamp",
+              event: "mockEvent",
             },
           });
         });
@@ -246,6 +248,7 @@ describe("Dequeue credential result", () => {
           processedMessage: {
             sub: "mockSub",
             sentTimestamp: "mockSentTimestamp",
+            event: "mockEvent",
           },
         });
       });
