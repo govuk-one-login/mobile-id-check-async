@@ -3,10 +3,8 @@ import { expect } from "@jest/globals";
 import "../../../tests/testUtils/matchers";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { logger } from "../common/logging/logger";
-import {
-  lambdaHandlerConstructor,
-  RetainMessageOnQueue,
-} from "./asyncIssueBiometricCredentialHandler";
+import { lambdaHandlerConstructor } from "./asyncIssueBiometricCredentialHandler";
+import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 import { IssueBiometricCredentialDependencies } from "./handlerDependencies";
 import {
   mockBiometricSessionId,

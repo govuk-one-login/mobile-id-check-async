@@ -16,6 +16,7 @@ import {
 import { Result, emptyFailure, successResult } from "../utils/result";
 import { GetSecrets } from "../common/config/secrets";
 import { IEventService } from "../services/events/types";
+import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -85,13 +86,6 @@ async function getBiometricViewerAccessKey(
 
   const secretsByName = getViewerKeyResult.value;
   return successResult(secretsByName[path]);
-}
-
-export class RetainMessageOnQueue extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "RetainMessageOnQueue";
-  }
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(
