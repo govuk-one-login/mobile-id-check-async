@@ -260,13 +260,17 @@ describe("Async Issue Biometric Credential", () => {
             }),
           ),
         });
-        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        try {
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        } catch (error: unknown) {
+          lambdaError = error as RetainMessageOnQueue;
+        }
       });
 
-      it("Does not log COMPLETED", () => {
-        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-        });
+      it("Throws RetainMessageOnQueue", async () => {
+        expect(lambdaError.message).toEqual(
+          "Failed to retrieve session from database",
+        );
       });
     });
 
@@ -332,10 +336,10 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
 
-      it("Throws RetainMessageOnQueue", async () => {
-        expect(lambdaError.message).toEqual(
-          "Failed to retrieve session from database",
-        );
+      it("Does not log COMPLETED", () => {
+        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        });
       });
     });
   });

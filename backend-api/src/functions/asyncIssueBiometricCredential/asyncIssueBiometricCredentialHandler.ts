@@ -97,7 +97,7 @@ const handleGetSessionError = async (options: HandleGetSessionErrorOptions) => {
   const { errorData, eventService, issuer, sessionId } = options;
 
   if (errorData.errorType === GetSessionError.INTERNAL_SERVER_ERROR) {
-    return;
+    throw new RetainMessageOnQueue("Failed to retrieve session from database");
   }
 
   const eventName = "DCMAW_ASYNC_CRI_5XXERROR";
@@ -119,10 +119,9 @@ const handleGetSessionError = async (options: HandleGetSessionErrorOptions) => {
         auditEventName: eventName,
       },
     });
-    return;
   }
 
-  throw new RetainMessageOnQueue("Failed to retrieve session from database");
+  return;
 };
 
 interface HandleGetSessionErrorOptions {
