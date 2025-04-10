@@ -9,9 +9,13 @@ import { setupLogger } from "../common/logging/setupLogger";
 import { validateVendorProcessingQueueSqsEvent } from "./validateSqsEvent";
 import { getIssueBiometricCredentialConfig } from "./issueBiometricCredentialConfig";
 import { GetSessionIssueBiometricCredential } from "../common/session/getOperations/IssueBiometricCredential/GetSessionIssueBiometricCredential";
-import { GetSessionError } from "../common/session/SessionRegistry/types";
+import {
+  GetSessionError,
+  GetSessionFailed,
+} from "../common/session/SessionRegistry/types";
 import { Result, emptyFailure, successResult } from "../utils/result";
 import { GetSecrets } from "../common/config/secrets";
+import { IEventService } from "../services/events/types";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -46,34 +50,12 @@ export async function lambdaHandlerConstructor(
     new GetSessionIssueBiometricCredential(),
   );
   if (getSessionResult.isError) {
-    const errorData = getSessionResult.value;
-    if (errorData.errorType === GetSessionError.INTERNAL_SERVER_ERROR) {
-      return;
-    }
-
-    const eventName = "DCMAW_ASYNC_CRI_5XXERROR";
-    const writeEventResult = await eventService.writeGenericEvent({
-      componentId: config.ISSUER,
-      eventName,
-      getNowInMilliseconds: Date.now,
-      govukSigninJourneyId: undefined,
-      ipAddress: undefined,
-      redirect_uri: undefined,
+    return handleGetSessionError({
+      errorData: getSessionResult.value,
+      eventService,
+      issuer: config.ISSUER,
       sessionId,
-      sub: undefined,
-      suspected_fraud_signal: undefined,
-      txmaAuditEncoded: undefined,
     });
-    if (writeEventResult.isError) {
-      logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-        data: {
-          auditEventName: eventName,
-        },
-      });
-      return;
-    }
-
-    throw new RetainMessageOnQueue("Failed to retrieve session from database");
   }
 
   const viewerKeyResult = await getBiometricViewerAccessKey(
@@ -116,3 +98,42 @@ export const lambdaHandler = lambdaHandlerConstructor.bind(
   null,
   runtimeDependencies,
 );
+
+const handleGetSessionError = async (options: HandleGetSessionErrorOptions) => {
+  const { errorData, eventService, issuer, sessionId } = options;
+
+  if (errorData.errorType === GetSessionError.INTERNAL_SERVER_ERROR) {
+    return;
+  }
+
+  const eventName = "DCMAW_ASYNC_CRI_5XXERROR";
+  const writeEventResult = await eventService.writeGenericEvent({
+    componentId: issuer,
+    eventName,
+    getNowInMilliseconds: Date.now,
+    govukSigninJourneyId: undefined,
+    ipAddress: undefined,
+    redirect_uri: undefined,
+    sessionId,
+    sub: undefined,
+    suspected_fraud_signal: undefined,
+    txmaAuditEncoded: undefined,
+  });
+  if (writeEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: eventName,
+      },
+    });
+    return;
+  }
+
+  throw new RetainMessageOnQueue("Failed to retrieve session from database");
+};
+
+interface HandleGetSessionErrorOptions {
+  errorData: GetSessionFailed;
+  eventService: IEventService;
+  issuer: string;
+  sessionId: string;
+}
