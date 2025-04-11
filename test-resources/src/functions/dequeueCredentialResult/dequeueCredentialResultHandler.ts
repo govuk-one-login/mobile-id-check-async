@@ -41,18 +41,20 @@ export const lambdaHandlerConstructor = async (
         errorMessage,
       });
     } else {
-      const timeToLiveInSeconds = getTimeToLiveInSeconds(
-        config.CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS,
-      );
       const credentialResultRegistry = dependencies.getCredentialResultRegistry(
         {
           tableName: config.CREDENTIAL_RESULTS_TABLE_NAME,
-          ttlInSeconds: timeToLiveInSeconds,
         },
       );
       const credentResultData = validateCredentialResultResponse.value;
+      const timeToLiveInSeconds = getTimeToLiveInSeconds(
+        config.CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS,
+      );
       const putItemResult = await credentialResultRegistry.putItem(
-        new PutItemCredentialResult(credentResultData),
+        new PutItemCredentialResult({
+          ...credentResultData,
+          timeToLiveInSeconds,
+        }),
       );
       if (putItemResult.isError) {
         batchItemFailures.push({ itemIdentifier: record.messageId });

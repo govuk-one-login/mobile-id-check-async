@@ -9,9 +9,8 @@ import { logger } from "../logging/logger";
 export class DynamoDbAdapter implements IDynamoDbAdapter {
   private readonly dynamoDBClient: DynamoDBClient;
   private readonly tableName: string;
-  private readonly ttlInSeconds: number;
 
-  constructor({ tableName, ttlInSeconds }: IDynamoDBConfig) {
+  constructor({ tableName }: IDynamoDBConfig) {
     this.dynamoDBClient = new DynamoDBClient({
       region: process.env.REGION,
       maxAttempts: 2,
@@ -21,7 +20,6 @@ export class DynamoDbAdapter implements IDynamoDbAdapter {
       }),
     });
     this.tableName = tableName;
-    this.ttlInSeconds = ttlInSeconds;
   }
 
   async putItem(
@@ -29,7 +27,7 @@ export class DynamoDbAdapter implements IDynamoDbAdapter {
   ): Promise<Result<void, void>> {
     const putItemCommandData = {
       ...putItemOperation.getDynamoDbPutItemCompositeKey(),
-      timeToLiveInSeconds: this.ttlInSeconds,
+      timeToLiveInSeconds: putItemOperation.getDynamoDbPutItemTimeToLive(),
     };
     const event = putItemOperation.getDynamoDbPutItemEventPayload();
     const putItemCommand = new PutItemCommand({
@@ -66,5 +64,4 @@ export interface IDynamoDbAdapter {
 
 export interface IDynamoDBConfig {
   tableName: string;
-  ttlInSeconds: number;
 }

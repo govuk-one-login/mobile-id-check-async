@@ -10,11 +10,13 @@ import {
   failingSQSRecordBodyMissingTimestamp,
   failingSQSRecordBodySubTypeInvalid,
 } from "../unitTestData";
-import { validateCredentialResult } from "./validateCredentialResult";
-import { IPutItemOperationData } from "../../common/dynamoDbAdapter/putItemOperation";
+import {
+  IValidCredentialResultData,
+  validateCredentialResult,
+} from "./validateCredentialResult";
 
 describe("Validate credential result", () => {
-  let result: Result<IPutItemOperationData>;
+  let result: Result<IValidCredentialResultData>;
 
   describe("Given credential result is missing a timestamp", () => {
     beforeEach(() => {

@@ -1,6 +1,7 @@
 export interface PutItemOperation {
   getDynamoDbPutItemCompositeKey(): ICompositeKey;
   getDynamoDbPutItemEventPayload(): string;
+  getDynamoDbPutItemTimeToLive(): number;
 }
 
 export interface ICompositeKeyData {
@@ -16,4 +17,5 @@ export interface ICompositeKey {
 export interface IPutItemOperationData {
   compositeKeyData: ICompositeKeyData;
   event: string;
+  timeToLiveInSeconds: number;
 }

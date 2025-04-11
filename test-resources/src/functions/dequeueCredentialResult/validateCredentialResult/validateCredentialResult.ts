@@ -1,10 +1,10 @@
 import { SQSRecord } from "aws-lambda";
-import { IPutItemOperationData } from "../../common/dynamoDbAdapter/putItemOperation";
+import { ICompositeKeyData } from "../../common/dynamoDbAdapter/putItemOperation";
 import { errorResult, Result, successResult } from "../../common/utils/result";
 
 export function validateCredentialResult(
   record: SQSRecord,
-): Result<IPutItemOperationData> {
+): Result<IValidCredentialResultData> {
   const sentTimestamp = record.attributes.SentTimestamp;
   if (!sentTimestamp) {
     return errorResult({
@@ -52,6 +52,11 @@ export function validateCredentialResult(
     compositeKeyData: { sub, sentTimestamp },
     event: JSON.stringify(event),
   });
+}
+
+export interface IValidCredentialResultData {
+  compositeKeyData: ICompositeKeyData;
+  event: string;
 }
 
 function isString(value: unknown): value is string {

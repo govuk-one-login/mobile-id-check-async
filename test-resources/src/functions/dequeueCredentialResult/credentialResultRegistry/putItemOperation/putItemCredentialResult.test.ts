@@ -13,6 +13,7 @@ describe("Credential result put item operation", () => {
         sentTimestamp: "mockSentTimestamp",
       },
       event: "mockEvent",
+      timeToLiveInSeconds: 12345,
     };
     putItemOperation = new PutItemCredentialResult(putItemOperationData);
   });
@@ -39,8 +40,20 @@ describe("Credential result put item operation", () => {
       result = putItemOperation.getDynamoDbPutItemEventPayload();
     });
 
-    it("Returns an object with a pk and sk value", () => {
+    it("Returns an event payload", () => {
       expect(result).toStrictEqual(JSON.stringify("mockEvent"));
+    });
+  });
+
+  describe("Get DynamoDB put item time to live", () => {
+    let result: number;
+
+    beforeEach(() => {
+      result = putItemOperation.getDynamoDbPutItemTimeToLive();
+    });
+
+    it("Returns a time to live", () => {
+      expect(result).toStrictEqual(12345);
     });
   });
 });

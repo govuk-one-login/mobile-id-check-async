@@ -18,7 +18,6 @@ describe("DynamoDB adapter", () => {
     jest.setSystemTime(NOW_IN_MILLISECONDS);
     dynamoDbAdapter = new DynamoDbAdapter({
       tableName: "mock-table-name",
-      ttlInSeconds: 12345,
     });
     consoleDebugSpy = jest.spyOn(console, "debug");
     consoleErrorSpy = jest.spyOn(console, "error");
@@ -88,4 +87,5 @@ describe("DynamoDB adapter", () => {
 const mockPutItemOperation: PutItemOperation = {
   getDynamoDbPutItemCompositeKey: () => ({ pk: "mockPk", sk: "mockSk" }),
   getDynamoDbPutItemEventPayload: () => JSON.stringify("mockEvent"),
+  getDynamoDbPutItemTimeToLive: () => 12345,
 };

@@ -1,4 +1,5 @@
 import {
+  ICompositeKey,
   ICompositeKeyData,
   IPutItemOperationData,
   PutItemOperation,
@@ -7,13 +8,19 @@ import {
 export class PutItemCredentialResult implements PutItemOperation {
   private readonly compositeKeyData: ICompositeKeyData;
   private readonly event: string;
+  private readonly timeToLiveInSeconds: number;
 
-  constructor({ compositeKeyData, event }: IPutItemOperationData) {
+  constructor({
+    compositeKeyData,
+    event,
+    timeToLiveInSeconds,
+  }: IPutItemOperationData) {
     this.compositeKeyData = compositeKeyData;
     this.event = event;
+    this.timeToLiveInSeconds = timeToLiveInSeconds;
   }
 
-  getDynamoDbPutItemCompositeKey() {
+  getDynamoDbPutItemCompositeKey(): ICompositeKey {
     const { sub, sentTimestamp } = this.compositeKeyData;
 
     return {
@@ -24,5 +31,9 @@ export class PutItemCredentialResult implements PutItemOperation {
 
   getDynamoDbPutItemEventPayload(): string {
     return JSON.stringify(this.event);
+  }
+
+  getDynamoDbPutItemTimeToLive(): number {
+    return this.timeToLiveInSeconds;
   }
 }
