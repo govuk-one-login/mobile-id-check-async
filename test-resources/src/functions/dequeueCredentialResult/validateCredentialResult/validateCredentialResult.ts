@@ -54,12 +54,6 @@ export function validateCredentialResult(
   });
 }
 
-// interface IValidCredentialResultData {
-//   sub: string;
-//   sentTimestamp: string;
-//   event: string;
-// }
-
 function isString(value: unknown): value is string {
   return typeof value === "string";
 }
