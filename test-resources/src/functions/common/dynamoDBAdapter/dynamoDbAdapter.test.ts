@@ -66,8 +66,9 @@ describe("DynamoDB adapter", () => {
         });
       });
 
-      it("Returns an empty success result", () => {
+      it("Returns an empty failure result", () => {
         expect(result.isError).toBe(true);
+        expect(result).not.toHaveProperty("value");
       });
     });
 
@@ -79,6 +80,7 @@ describe("DynamoDB adapter", () => {
 
       it("Returns an empty success result", () => {
         expect(result.isError).toBe(false);
+        expect(result).not.toHaveProperty("value");
       });
     });
   });
