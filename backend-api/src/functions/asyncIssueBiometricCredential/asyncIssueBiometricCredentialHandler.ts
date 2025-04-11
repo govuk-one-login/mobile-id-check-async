@@ -30,7 +30,7 @@ export async function lambdaHandlerConstructor(
   const configResult = getIssueBiometricCredentialConfig(dependencies.env);
   if (configResult.isError) {
     logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG);
-    throw new RetainMessageOnQueue({ message: "Invalid config" });
+    throw new RetainMessageOnQueue("Invalid config");
   }
   const config = configResult.value;
 
@@ -72,10 +72,7 @@ export async function lambdaHandlerConstructor(
     dependencies.getSecrets,
   );
   if (viewerKeyResult.isError) {
-    throw new RetainMessageOnQueue({
-      message: "Failed to retrieve biometric viewer key",
-      sessionId,
-    });
+    throw new RetainMessageOnQueue("Failed to retrieve biometric viewer key");
   }
 
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
@@ -109,10 +106,9 @@ const handleGetSessionError = async (
   const { errorData, eventService, issuer, sessionId } = options;
 
   if (errorData.errorType === GetSessionError.INTERNAL_SERVER_ERROR) {
-    throw new RetainMessageOnQueue({
-      message: "Unexpected failure retrieving session from database",
-      sessionId,
-    });
+    throw new RetainMessageOnQueue(
+      "Unexpected failure retrieving session from database",
+    );
   }
 
   const eventName = "DCMAW_ASYNC_CRI_5XXERROR";

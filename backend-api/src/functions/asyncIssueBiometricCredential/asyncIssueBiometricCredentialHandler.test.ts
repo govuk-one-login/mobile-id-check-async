@@ -134,9 +134,7 @@ describe("Async Issue Biometric Credential", () => {
 
       it("Throws RetainMessageOnQueue", async () => {
         expect(lambdaError).toStrictEqual(
-          new RetainMessageOnQueue({
-            message: "Invalid config",
-          }),
+          new RetainMessageOnQueue("Invalid config"),
         );
       });
     });
@@ -279,10 +277,9 @@ describe("Async Issue Biometric Credential", () => {
 
       it("Throws RetainMessageOnQueue", async () => {
         expect(lambdaError).toEqual(
-          new RetainMessageOnQueue({
-            message: "Unexpected failure retrieving session from database",
-            sessionId: mockSessionId,
-          }),
+          new RetainMessageOnQueue(
+            "Unexpected failure retrieving session from database",
+          ),
         );
       });
     });
@@ -368,10 +365,7 @@ describe("Async Issue Biometric Credential", () => {
 
     it("Throws RetainMessageOnQueue", async () => {
       expect(lambdaError).toStrictEqual(
-        new RetainMessageOnQueue({
-          message: "Failed to retrieve biometric viewer key",
-          sessionId: mockSessionId,
-        }),
+        new RetainMessageOnQueue("Failed to retrieve biometric viewer key"),
       );
     });
   });
