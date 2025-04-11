@@ -80,14 +80,7 @@ describe("Dequeue credential result", () => {
 
       it("returns 500 Internal server error", async () => {
         expect(result).toStrictEqual({
-          batchItemFailures: [
-            {
-              itemIdentifier: "c2098377-619a-449f-b2b4-254b6c41aff4",
-            },
-            {
-              itemIdentifier: "6f50c504-818f-4e9f-9a7f-785f532b45f2",
-            },
-          ],
+          batchItemFailures: [],
         });
       });
 

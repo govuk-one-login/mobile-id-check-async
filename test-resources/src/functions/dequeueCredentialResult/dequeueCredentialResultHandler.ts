@@ -3,7 +3,6 @@ import {
   SQSBatchItemFailure,
   SQSBatchResponse,
   SQSEvent,
-  SQSRecord,
 } from "aws-lambda";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
@@ -27,7 +26,6 @@ export const lambdaHandlerConstructor = async (
 
   const configResult = getDequeueCredentialResultConfig(dependencies.env);
   if (configResult.isError) {
-    batchItemFailures.push(...getBatchItemFailures(event.Records));
     return { batchItemFailures };
   }
   const config = configResult.value;
@@ -70,10 +68,6 @@ export const lambdaHandlerConstructor = async (
   logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_COMPLETED);
   return { batchItemFailures };
 };
-
-function getBatchItemFailures(eventRecords: SQSRecord[]) {
-  return eventRecords.map((record) => ({ itemIdentifier: record.messageId }));
-}
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(
   null,
