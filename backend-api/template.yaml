@@ -39,6 +39,7 @@ Parameters:
       - dev
       - build
       - staging
+      - integration
     Default: dev
 
   LambdaDeploymentPreference:
