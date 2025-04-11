@@ -102,8 +102,8 @@ export class LogMessage implements LogAttributes {
   );
 
   // DynamoDB adapter
-  static readonly DYNAMO_DB_ADAPTER_PUT_ITEM_ATTEMPT = new LogMessage(
-    "TEST_RESOURCES_DYNAMO_DB_ADAPTER_PUT_ITEM_ATTEMPT",
+  static readonly PUT_ITEM_ATTEMPT = new LogMessage(
+    "TEST_RESOURCES_PUT_ITEM_ATTEMPT",
     "Attempting to put an item into DynamoDB",
   );
   static readonly PUT_ITEM_UNEXPECTED_FAILURE = new LogMessage(

@@ -39,7 +39,7 @@ describe("DynamoDB adapter", () => {
 
       it("Logs the attempt", () => {
         expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "TEST_RESOURCES_DYNAMO_DB_ADAPTER_PUT_ITEM_ATTEMPT",
+          messageCode: "TEST_RESOURCES_PUT_ITEM_ATTEMPT",
           putItemData: {
             tableName: "mock-table-name",
             pk: "mockPk",

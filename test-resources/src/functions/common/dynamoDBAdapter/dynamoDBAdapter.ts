@@ -39,7 +39,7 @@ export class DynamoDbAdapter implements IDynamoDbAdapter {
     });
 
     try {
-      logger.debug(LogMessage.DYNAMO_DB_ADAPTER_PUT_ITEM_ATTEMPT, {
+      logger.debug(LogMessage.PUT_ITEM_ATTEMPT, {
         putItemData: {
           tableName: this.tableName,
           ...putItemCommandData,
