@@ -3,7 +3,7 @@ import {
   ICompositeKeyData,
   IPutItemOperationData,
   PutItemOperation,
-} from "../../../common/dynamoDbAdapter/putItemOperation";
+} from "../../../common/dynamoDBAdapter/putItemOperation";
 import { getTimeToLiveInSeconds } from "../../../common/utils/utils";
 
 export class PutItemCredentialResult implements PutItemOperation {

@@ -1,8 +1,8 @@
 import {
   DynamoDbAdapter,
-  IDynamoDbAdapter,
   IDynamoDBConfig,
-} from "../common/dynamoDbAdapter/dynamoDbAdapter";
+  IDynamoDbAdapter,
+} from "../common/dynamoDBAdapter/dynamoDbAdapter";
 
 export interface IDequeueCredentialResultDependencies {
   env: NodeJS.ProcessEnv;

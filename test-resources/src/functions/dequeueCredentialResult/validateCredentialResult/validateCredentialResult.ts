@@ -1,6 +1,6 @@
 import { SQSRecord } from "aws-lambda";
-import { ICompositeKeyData } from "../../common/dynamoDbAdapter/putItemOperation";
 import { errorResult, Result, successResult } from "../../common/utils/result";
+import { ICompositeKeyData } from "../../common/dynamoDBAdapter/putItemOperation";
 
 export function validateCredentialResult(
   record: SQSRecord,

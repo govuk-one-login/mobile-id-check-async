@@ -1,8 +1,8 @@
 import { expect } from "@jest/globals";
-import { ICompositeKey } from "../../../common/dynamoDbAdapter/putItemOperation";
 import "../../../testUtils/matchers";
 import { PutItemCredentialResult } from "./putItemCredentialResult";
 import { NOW_IN_MILLISECONDS } from "../../../dequeue/tests/testData";
+import { ICompositeKey } from "../../../common/dynamoDBAdapter/putItemOperation";
 
 describe("Credential result put item operation", () => {
   let putItemOperation: PutItemCredentialResult;
