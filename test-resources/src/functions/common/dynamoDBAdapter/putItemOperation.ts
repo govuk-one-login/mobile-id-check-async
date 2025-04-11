@@ -17,5 +17,5 @@ export interface ICompositeKey {
 export interface IPutItemOperationData {
   compositeKeyData: ICompositeKeyData;
   event: string;
-  timeToLiveInSeconds: number;
+  ttlDurationInSeconds: string;
 }

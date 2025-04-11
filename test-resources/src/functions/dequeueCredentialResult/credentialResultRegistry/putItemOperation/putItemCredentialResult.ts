@@ -4,20 +4,21 @@ import {
   IPutItemOperationData,
   PutItemOperation,
 } from "../../../common/dynamoDbAdapter/putItemOperation";
+import { getTimeToLiveInSeconds } from "../../../common/utils/utils";
 
 export class PutItemCredentialResult implements PutItemOperation {
   private readonly compositeKeyData: ICompositeKeyData;
   private readonly event: string;
-  private readonly timeToLiveInSeconds: number;
+  private readonly ttlDurationInSeconds: string;
 
   constructor({
     compositeKeyData,
     event,
-    timeToLiveInSeconds,
+    ttlDurationInSeconds,
   }: IPutItemOperationData) {
     this.compositeKeyData = compositeKeyData;
     this.event = event;
-    this.timeToLiveInSeconds = timeToLiveInSeconds;
+    this.ttlDurationInSeconds = ttlDurationInSeconds;
   }
 
   getDynamoDbPutItemCompositeKey(): ICompositeKey {
@@ -34,6 +35,6 @@ export class PutItemCredentialResult implements PutItemOperation {
   }
 
   getDynamoDbPutItemTimeToLive(): number {
-    return this.timeToLiveInSeconds;
+    return getTimeToLiveInSeconds(this.ttlDurationInSeconds);
   }
 }

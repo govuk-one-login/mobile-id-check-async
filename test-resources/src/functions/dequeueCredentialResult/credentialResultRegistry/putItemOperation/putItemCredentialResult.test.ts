@@ -2,20 +2,27 @@ import { expect } from "@jest/globals";
 import { ICompositeKey } from "../../../common/dynamoDbAdapter/putItemOperation";
 import "../../../testUtils/matchers";
 import { PutItemCredentialResult } from "./putItemCredentialResult";
+import { NOW_IN_MILLISECONDS } from "../../../dequeue/tests/testData";
 
 describe("Credential result put item operation", () => {
   let putItemOperation: PutItemCredentialResult;
 
   beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(NOW_IN_MILLISECONDS);
     const putItemOperationData = {
       compositeKeyData: {
         sub: "mockSub",
         sentTimestamp: "mockSentTimestamp",
       },
       event: "mockEvent",
-      timeToLiveInSeconds: 12345,
+      ttlDurationInSeconds: "3600",
     };
     putItemOperation = new PutItemCredentialResult(putItemOperationData);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   describe("Get DynamoDB put item composite key", () => {
@@ -53,7 +60,7 @@ describe("Credential result put item operation", () => {
     });
 
     it("Returns a time to live", () => {
-      expect(result).toStrictEqual(12345);
+      expect(result).toStrictEqual(1704114000);
     });
   });
 });

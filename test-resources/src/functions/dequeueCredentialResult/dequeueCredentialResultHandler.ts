@@ -8,14 +8,13 @@ import {
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
-import { getTimeToLiveInSeconds } from "../common/utils/utils";
 import { PutItemCredentialResult } from "./credentialResultRegistry/putItemOperation/putItemCredentialResult";
 import { getDequeueCredentialResultConfig } from "./dequeueCredentialResultConfig";
-import { validateCredentialResult } from "./validateCredentialResult/validateCredentialResult";
 import {
   IDequeueCredentialResultDependencies,
   handlerDependencies,
 } from "./handlerDependencies";
+import { validateCredentialResult } from "./validateCredentialResult/validateCredentialResult";
 
 export const lambdaHandlerConstructor = async (
   dependencies: IDequeueCredentialResultDependencies,
@@ -47,13 +46,11 @@ export const lambdaHandlerConstructor = async (
         },
       );
       const credentResultData = validateCredentialResultResponse.value;
-      const timeToLiveInSeconds = getTimeToLiveInSeconds(
-        config.CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS,
-      );
       const putItemResult = await credentialResultRegistry.putItem(
         new PutItemCredentialResult({
           ...credentResultData,
-          timeToLiveInSeconds,
+          ttlDurationInSeconds:
+            config.CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS,
         }),
       );
       if (putItemResult.isError) {
