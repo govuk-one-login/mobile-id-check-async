@@ -52,12 +52,16 @@ describe("DynamoDB adapter", () => {
     });
 
     describe("Given there is a failure attempting to put an item into DynamoDB", () => {
+      let error: unknown;
+
       beforeEach(async () => {
         mockDynamoDbClient.on(PutItemCommand).rejects("mockError");
         result = await dynamoDbAdapter.putItem(mockPutItemOperation);
+        error = consoleErrorSpy.mock.calls[0][0].error;
       });
 
       it("Logs an error message", () => {
+        expect(error).not.toBeNull();
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode:
             "TEST_RESOURCES_DYNAMO_DB_ADAPTER_SEND_ITEM_COMMAND_FAILURE",
