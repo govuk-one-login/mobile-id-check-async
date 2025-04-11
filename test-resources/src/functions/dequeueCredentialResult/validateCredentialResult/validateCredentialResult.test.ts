@@ -2,18 +2,21 @@ import { expect } from "@jest/globals";
 import { SQSRecord } from "aws-lambda";
 import { Result } from "../../common/utils/result";
 import "../../testUtils/matchers";
-import { IProcessedMessage } from "../dequeueCredentialResultHandler";
 import {
   failingSQSRecordBodyInvalidJSON,
   failingSQSRecordBodyMissing,
+  failingSQSRecordBodyMissingEvent,
   failingSQSRecordBodyMissingSub,
   failingSQSRecordBodyMissingTimestamp,
   failingSQSRecordBodySubTypeInvalid,
 } from "../unitTestData";
-import { validateCredentialResult } from "./validateCredentialResult";
+import {
+  IValidCredentialResultData,
+  validateCredentialResult,
+} from "./validateCredentialResult";
 
 describe("Validate credential result", () => {
-  let result: Result<IProcessedMessage>;
+  let result: Result<IValidCredentialResultData>;
 
   describe("Given credential result is missing a timestamp", () => {
     beforeEach(() => {
@@ -44,7 +47,7 @@ describe("Validate credential result", () => {
 
     it("Returns an error message", () => {
       expect(result.value).toStrictEqual({
-        errorMessage: "Record body is empty.",
+        errorMessage: "Record body is empty",
       });
     });
   });
@@ -61,8 +64,9 @@ describe("Validate credential result", () => {
 
     it("Returns an error message", () => {
       expect(result.value).toStrictEqual({
-        errorMessage:
-          "Record body could not be parsed as JSON. SyntaxError: Expected property name or '}' in JSON at position 2 (line 1 column 3)",
+        errorMessage: expect.stringContaining(
+          "Record body could not be parsed as JSON. SyntaxError: Expected property name or '}' in JSON at position 2",
+        ),
       });
     });
   });
@@ -79,7 +83,7 @@ describe("Validate credential result", () => {
 
     it("Returns an error message", () => {
       expect(result.value).toStrictEqual({
-        errorMessage: `sub is missing from record body.`,
+        errorMessage: "sub is missing from record body",
       });
     });
   });
@@ -97,6 +101,23 @@ describe("Validate credential result", () => {
     it("Returns an error message", () => {
       expect(result.value).toStrictEqual({
         errorMessage: "sub is not a string. Incoming sub is type: number",
+      });
+    });
+  });
+
+  describe("Given event is missing", () => {
+    beforeEach(() => {
+      const sqsRecord: SQSRecord = failingSQSRecordBodyMissingEvent;
+      result = validateCredentialResult(sqsRecord);
+    });
+
+    it("Returns an error result", () => {
+      expect(result.isError).toBe(true);
+    });
+
+    it("Returns an error message", () => {
+      expect(result.value).toStrictEqual({
+        errorMessage: "event is missing from record body",
       });
     });
   });

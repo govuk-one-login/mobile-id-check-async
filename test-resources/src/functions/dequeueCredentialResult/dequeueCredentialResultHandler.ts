@@ -7,16 +7,28 @@ import {
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
+import { PutItemCredentialResult } from "./credentialResultRegistry/putItemOperation/putItemCredentialResult";
+import { getDequeueCredentialResultConfig } from "./dequeueCredentialResultConfig";
+import {
+  IDequeueCredentialResultDependencies,
+  handlerDependencies,
+} from "./handlerDependencies";
 import { validateCredentialResult } from "./validateCredentialResult/validateCredentialResult";
 
 export const lambdaHandlerConstructor = async (
-  _dependencies: IDequeueCredentialResultDependencies,
+  dependencies: IDequeueCredentialResultDependencies,
   event: SQSEvent,
   context: Context,
 ): Promise<SQSBatchResponse> => {
   setupLogger(context);
   logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_STARTED);
   const batchItemFailures: SQSBatchItemFailure[] = [];
+
+  const configResult = getDequeueCredentialResultConfig(dependencies.env);
+  if (configResult.isError) {
+    return { batchItemFailures };
+  }
+  const config = configResult.value;
 
   for (const record of event.Records) {
     const validateCredentialResultResponse = validateCredentialResult(record);
@@ -26,11 +38,28 @@ export const lambdaHandlerConstructor = async (
         errorMessage,
       });
     } else {
-      const { sub, sentTimestamp } = validateCredentialResultResponse.value;
+      const credentialResultRegistry = dependencies.getCredentialResultRegistry(
+        {
+          tableName: config.CREDENTIAL_RESULT_TABLE_NAME,
+        },
+      );
+      const credentialResultData = validateCredentialResultResponse.value;
+      const putItemResult = await credentialResultRegistry.putItem(
+        new PutItemCredentialResult({
+          ...credentialResultData,
+          ttlDurationInSeconds:
+            config.CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS,
+        }),
+      );
+      if (putItemResult.isError) {
+        batchItemFailures.push({ itemIdentifier: record.messageId });
+      }
+
+      const { compositeKeyData } = credentialResultData;
       logger.info(
         LogMessage.DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS,
         {
-          processedMessage: { sub, sentTimestamp },
+          processedMessage: compositeKeyData,
         },
       );
     }
@@ -40,17 +69,7 @@ export const lambdaHandlerConstructor = async (
   return { batchItemFailures };
 };
 
-export interface IDequeueCredentialResultDependencies {
-  env: NodeJS.ProcessEnv;
-}
-
-export interface IProcessedMessage {
-  sub: string;
-  sentTimestamp: string;
-}
-
-const dependencies: IDequeueCredentialResultDependencies = {
-  env: process.env,
-};
-
-export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
+export const lambdaHandler = lambdaHandlerConstructor.bind(
+  null,
+  handlerDependencies,
+);

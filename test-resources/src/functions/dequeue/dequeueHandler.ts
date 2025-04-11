@@ -18,6 +18,7 @@ import { setupLogger } from "../common/logging/setupLogger";
 import { Result } from "../common/utils/result";
 import { getConfig } from "./getConfig";
 import { allowedTxmaEventNames, getEvent, TxmaEvent } from "./getEvent";
+import { getTimeToLiveInSeconds } from "../common/utils/utils";
 
 export const lambdaHandlerConstructor = async (
   dependencies: IDequeueDependencies,
@@ -108,10 +109,6 @@ const dbClient = new DynamoDBClient({
     requestTimeout: 5000,
   }),
 });
-
-function getTimeToLiveInSeconds(ttlDuration: string) {
-  return Math.floor(Date.now() / 1000) + Number(ttlDuration);
-}
 
 interface IProcessedMessage {
   eventName: (typeof allowedTxmaEventNames)[number];

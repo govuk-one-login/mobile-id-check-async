@@ -62,6 +62,10 @@ export class LogMessage implements LogAttributes {
     "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_STARTED",
     "Lambda handler processing has started.",
   );
+  static readonly DEQUEUE_CREDENTIAL_RESULT_INVALID_CONFIG = new LogMessage(
+    "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_INVALID_CONFIG",
+    "One or more required environment variables were missing or invalid.",
+  );
   static readonly DEQUEUE_CREDENTIAL_RESULT_MESSAGE_INVALID = new LogMessage(
     "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_MESSAGE_INVALID",
     "Credential result message is missing or invalid",
@@ -95,6 +99,16 @@ export class LogMessage implements LogAttributes {
   static readonly PUT_SESSION_REQUEST_PATH_PARAM_INVALID = new LogMessage(
     "MOBILE_ASYNC_PUT_SESSION_REQUEST_PATH_PARAM_INVALID",
     "The sessionId path parameter is missing or invalid",
+  );
+
+  // DynamoDB adapter
+  static readonly PUT_ITEM_ATTEMPT = new LogMessage(
+    "TEST_RESOURCES_PUT_ITEM_ATTEMPT",
+    "Attempting to put an item into DynamoDB",
+  );
+  static readonly PUT_ITEM_UNEXPECTED_FAILURE = new LogMessage(
+    "TEST_RESOURCES_PUT_ITEM_UNEXPECTED_FAILURE",
+    "Failure occurred while sending item command to DynamoDB",
   );
 
   private constructor(
