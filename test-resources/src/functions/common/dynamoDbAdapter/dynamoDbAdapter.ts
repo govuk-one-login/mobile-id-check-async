@@ -25,24 +25,21 @@ export class DynamoDbAdapter implements IDynamoDbAdapter {
   async putItem(
     putItemOperation: PutItemOperation,
   ): Promise<Result<void, void>> {
-    const putItemCommandData = {
-      ...putItemOperation.getDynamoDbPutItemCompositeKey(),
-      timeToLiveInSeconds: putItemOperation.getDynamoDbPutItemTimeToLive(),
-    };
-    const event = putItemOperation.getDynamoDbPutItemEventPayload();
     const putItemCommand = new PutItemCommand({
       TableName: this.tableName,
       Item: marshall({
-        ...putItemCommandData,
-        event,
+        ...putItemOperation.getDynamoDbPutItemCommandInput(),
       }),
     });
 
     try {
+      const { pk, sk, timeToLiveInSeconds } =
+        putItemOperation.getDynamoDbPutItemCommandInput();
+      const logData = { pk, sk, timeToLiveInSeconds };
       logger.debug(LogMessage.PUT_ITEM_ATTEMPT, {
         putItemData: {
           tableName: this.tableName,
-          ...putItemCommandData,
+          ...logData,
         },
       });
 

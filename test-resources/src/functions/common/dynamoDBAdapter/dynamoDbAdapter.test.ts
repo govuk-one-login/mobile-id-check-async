@@ -87,7 +87,10 @@ describe("DynamoDB adapter", () => {
 });
 
 const mockPutItemOperation: PutItemOperation = {
-  getDynamoDbPutItemCompositeKey: () => ({ pk: "mockPk", sk: "mockSk" }),
-  getDynamoDbPutItemEventPayload: () => JSON.stringify("mockEvent"),
-  getDynamoDbPutItemTimeToLive: () => 12345,
+  getDynamoDbPutItemCommandInput: () => ({
+    pk: "mockPk",
+    sk: "mockSk",
+    event: JSON.stringify("mockEvent"),
+    timeToLiveInSeconds: 12345,
+  }),
 };

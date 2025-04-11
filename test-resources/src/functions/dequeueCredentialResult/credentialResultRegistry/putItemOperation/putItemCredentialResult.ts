@@ -1,6 +1,6 @@
 import {
-  ICompositeKey,
   ICompositeKeyData,
+  IPutItemCommandInput,
   IPutItemOperationData,
   PutItemOperation,
 } from "../../../common/dynamoDBAdapter/putItemOperation";
@@ -21,20 +21,14 @@ export class PutItemCredentialResult implements PutItemOperation {
     this.ttlDurationInSeconds = ttlDurationInSeconds;
   }
 
-  getDynamoDbPutItemCompositeKey(): ICompositeKey {
+  getDynamoDbPutItemCommandInput(): IPutItemCommandInput {
     const { sub, sentTimestamp } = this.compositeKeyData;
 
     return {
       pk: `SUB#${sub}`,
       sk: `SENT_TIMESTAMP#${sentTimestamp}`,
+      event: JSON.stringify(this.event),
+      timeToLiveInSeconds: getTimeToLiveInSeconds(this.ttlDurationInSeconds),
     };
-  }
-
-  getDynamoDbPutItemEventPayload(): string {
-    return JSON.stringify(this.event);
-  }
-
-  getDynamoDbPutItemTimeToLive(): number {
-    return getTimeToLiveInSeconds(this.ttlDurationInSeconds);
   }
 }
