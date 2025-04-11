@@ -43,10 +43,10 @@ export const lambdaHandlerConstructor = async (
           tableName: config.CREDENTIAL_RESULT_TABLE_NAME,
         },
       );
-      const credentResultData = validateCredentialResultResponse.value;
+      const credentialResultData = validateCredentialResultResponse.value;
       const putItemResult = await credentialResultRegistry.putItem(
         new PutItemCredentialResult({
-          ...credentResultData,
+          ...credentialResultData,
           ttlDurationInSeconds:
             config.CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS,
         }),
@@ -55,7 +55,7 @@ export const lambdaHandlerConstructor = async (
         batchItemFailures.push({ itemIdentifier: record.messageId });
       }
 
-      const { compositeKeyData } = credentResultData;
+      const { compositeKeyData } = credentialResultData;
       logger.info(
         LogMessage.DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS,
         {
