@@ -2,7 +2,7 @@ import {
   DynamoDbAdapter,
   IDynamoDbAdapter,
   IDynamoDBConfig,
-} from "../common/dynamoDBAdapter/dynamoDBAdapter";
+} from "../common/dynamoDbAdapter/dynamoDbAdapter";
 
 export interface IDequeueCredentialResultDependencies {
   env: NodeJS.ProcessEnv;

@@ -2,7 +2,7 @@ import {
   ICompositeKeyData,
   IPutItemOperationData,
   PutItemOperation,
-} from "../../../common/dynamoDBAdapter/putItemOperation";
+} from "../../../common/dynamoDbAdapter/putItemOperation";
 
 export class PutItemCredentialResult implements PutItemOperation {
   private readonly compositeKeyData: ICompositeKeyData;

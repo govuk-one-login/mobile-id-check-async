@@ -1,4 +1,4 @@
-import { PutItemOperation } from "../../common/dynamoDBAdapter/putItemOperation";
+import { PutItemOperation } from "../../common/dynamoDbAdapter/putItemOperation";
 import { Result } from "../../common/utils/result";
 
 export interface ICredentialResultRegistry {

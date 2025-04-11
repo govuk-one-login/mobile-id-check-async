@@ -1,5 +1,5 @@
 import { SQSRecord } from "aws-lambda";
-import { IPutItemOperationData } from "../../common/dynamoDBAdapter/putItemOperation";
+import { IPutItemOperationData } from "../../common/dynamoDbAdapter/putItemOperation";
 import { errorResult, Result, successResult } from "../../common/utils/result";
 
 export function validateCredentialResult(

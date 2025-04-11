@@ -1,5 +1,5 @@
 import { expect } from "@jest/globals";
-import { ICompositeKey } from "../../../common/dynamoDBAdapter/putItemOperation";
+import { ICompositeKey } from "../../../common/dynamoDbAdapter/putItemOperation";
 import "../../../testUtils/matchers";
 import { PutItemCredentialResult } from "./putItemCredentialResult";
 

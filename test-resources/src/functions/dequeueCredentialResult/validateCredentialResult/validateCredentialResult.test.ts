@@ -1,6 +1,5 @@
 import { expect } from "@jest/globals";
 import { SQSRecord } from "aws-lambda";
-import { IPutItemOperationData } from "../../common/dynamoDBAdapter/putItemOperation";
 import { Result } from "../../common/utils/result";
 import "../../testUtils/matchers";
 import {
@@ -12,6 +11,7 @@ import {
   failingSQSRecordBodySubTypeInvalid,
 } from "../unitTestData";
 import { validateCredentialResult } from "./validateCredentialResult";
+import { IPutItemOperationData } from "../../common/dynamoDbAdapter/putItemOperation";
 
 describe("Validate credential result", () => {
   let result: Result<IPutItemOperationData>;

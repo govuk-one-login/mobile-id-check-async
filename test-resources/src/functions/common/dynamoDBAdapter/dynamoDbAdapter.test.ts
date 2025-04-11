@@ -4,7 +4,7 @@ import { mockClient } from "aws-sdk-client-mock";
 import { NOW_IN_MILLISECONDS } from "../../dequeue/tests/testData";
 import "../../testUtils/matchers";
 import { Result } from "../utils/result";
-import { DynamoDbAdapter, IDynamoDbAdapter } from "./dynamoDBAdapter";
+import { DynamoDbAdapter, IDynamoDbAdapter } from "./dynamoDbAdapter";
 import { PutItemOperation } from "./putItemOperation";
 
 const mockDynamoDbClient = mockClient(DynamoDBClient);
