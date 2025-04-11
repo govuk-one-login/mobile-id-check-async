@@ -284,7 +284,7 @@ describe("Async Issue Biometric Credential", () => {
       });
     });
 
-    describe("Given the error type is not internal server error", () => {
+    describe("Given the error type is a client error", () => {
       describe("Given writing TxMA event fails", () => {
         beforeEach(async () => {
           dependencies.getSessionRegistry = () => ({
