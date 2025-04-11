@@ -307,13 +307,13 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
     "Lambda handler processing has completed without issue.",
   );
-  static readonly ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT = new LogMessage(
-    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
-    "SQS Event from vendor processing queue is invalid",
-  );
   static readonly ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG = new LogMessage(
     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG",
     "One or more required environment variables were missing or invalid.",
+  );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT = new LogMessage(
+    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
+    "SQS Event from vendor processing queue is invalid",
   );
 
   private constructor(
