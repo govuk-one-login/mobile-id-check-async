@@ -50,7 +50,7 @@ export class DynamoDbAdapter implements IDynamoDbAdapter {
 
       await this.dynamoDBClient.send(putItemCommand);
     } catch (error) {
-      logger.error(LogMessage.DYNAMO_DB_ADAPTER_SEND_ITEM_COMMAND_FAILURE, {
+      logger.error(LogMessage.PUT_ITEM_UNEXPECTED_FAILURE, {
         error,
       });
       return emptyFailure();

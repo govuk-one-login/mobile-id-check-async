@@ -63,8 +63,7 @@ describe("DynamoDB adapter", () => {
       it("Logs an error message", () => {
         expect(error).not.toBeNull();
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode:
-            "TEST_RESOURCES_DYNAMO_DB_ADAPTER_SEND_ITEM_COMMAND_FAILURE",
+          messageCode: "TEST_RESOURCES_PUT_ITEM_UNEXPECTED_FAILURE",
         });
       });
 
