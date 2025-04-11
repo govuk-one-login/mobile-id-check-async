@@ -5,6 +5,4 @@ export interface ICredentialResultData {
   timeToLiveInSeconds: number;
 }
 
-export interface Event {
-  [key: string]: string;
-}
+export type Event = Record<string, string>;

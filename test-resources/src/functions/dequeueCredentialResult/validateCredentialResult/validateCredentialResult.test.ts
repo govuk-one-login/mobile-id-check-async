@@ -1,6 +1,6 @@
 import { expect } from "@jest/globals";
 import { SQSRecord } from "aws-lambda";
-import { ICompositeKeyData } from "../../common/dynamoDBAdapter/putItemOperation";
+import { IPutItemOperationData } from "../../common/dynamoDBAdapter/putItemOperation";
 import { Result } from "../../common/utils/result";
 import "../../testUtils/matchers";
 import {
@@ -14,7 +14,7 @@ import {
 import { validateCredentialResult } from "./validateCredentialResult";
 
 describe("Validate credential result", () => {
-  let result: Result<ICompositeKeyData>;
+  let result: Result<IPutItemOperationData>;
 
   describe("Given credential result is missing a timestamp", () => {
     beforeEach(() => {

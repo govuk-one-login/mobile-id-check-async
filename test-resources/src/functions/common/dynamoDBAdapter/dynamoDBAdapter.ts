@@ -6,7 +6,7 @@ import { emptyFailure, emptySuccess, Result } from "../../common/utils/result";
 import { LogMessage } from "../logging/LogMessage";
 import { logger } from "../logging/logger";
 
-export class DynamoDBAdapter {
+export class DynamoDbAdapter implements IDynamoDbAdapter {
   private readonly dynamoDBClient: DynamoDBClient;
   private readonly tableName: string;
   private readonly ttlInSeconds: number;
@@ -27,13 +27,16 @@ export class DynamoDBAdapter {
   async putItem(
     putItemOperation: PutItemOperation,
   ): Promise<Result<void, void>> {
-    const { pk, sk } = putItemOperation.getDynamoDbPutItemCompositeKey();
+    const putItemCommandData = {
+      ...putItemOperation.getDynamoDbPutItemCompositeKey(),
+      timeToLiveInSeconds: this.ttlInSeconds,
+    };
+    const event = putItemOperation.getDynamoDbPutItemEventPayload();
     const putItemCommand = new PutItemCommand({
       TableName: this.tableName,
       Item: marshall({
-        pk,
-        sk,
-        timeToLiveInSeconds: this.ttlInSeconds,
+        ...putItemCommandData,
+        event,
       }),
     });
 
@@ -41,9 +44,7 @@ export class DynamoDBAdapter {
       logger.debug(LogMessage.DYNAMO_DB_ADAPTER_PUT_ITEM_ATTEMPT, {
         putItemData: {
           tableName: this.tableName,
-          pk,
-          sk,
-          timeToLiveInSeconds: this.ttlInSeconds,
+          ...putItemCommandData,
         },
       });
 
@@ -57,6 +58,10 @@ export class DynamoDBAdapter {
 
     return emptySuccess();
   }
+}
+
+export interface IDynamoDbAdapter {
+  putItem(putItemOperation: PutItemOperation): Promise<Result<void, void>>;
 }
 
 export interface IDynamoDBConfig {

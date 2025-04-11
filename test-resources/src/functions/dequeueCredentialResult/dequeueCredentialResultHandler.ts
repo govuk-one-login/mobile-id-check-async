@@ -51,20 +51,18 @@ export const lambdaHandlerConstructor = async (
         },
       );
       const credentResultData = validateCredentialResultResponse.value;
-      const { sub, sentTimestamp } = credentResultData;
-      const compositeKeyData = { sub, sentTimestamp };
       const putItemResult = await credentialResultRegistry.putItem(
-        new PutItemCredentialResult(compositeKeyData),
+        new PutItemCredentialResult(credentResultData),
       );
-
       if (putItemResult.isError) {
         batchItemFailures.push({ itemIdentifier: record.messageId });
       }
 
+      const { compositeKeyData } = credentResultData;
       logger.info(
         LogMessage.DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS,
         {
-          processedMessage: credentResultData,
+          processedMessage: compositeKeyData,
         },
       );
     }

@@ -5,11 +5,11 @@ import { logger } from "../common/logging/logger";
 import { emptyFailure, emptySuccess } from "../common/utils/result";
 import "../testUtils/matchers";
 import { buildLambdaContext } from "../testUtils/mockContext";
-import { ICredentialResultRegistry } from "./credentialResultRegistry/credentialResultRegistry";
 import { lambdaHandlerConstructor } from "./dequeueCredentialResultHandler";
 import { failingSQSRecordBodyMissingSub, validSQSRecord } from "./unitTestData";
 import { NOW_IN_MILLISECONDS } from "../dequeue/tests/testData";
 import { IDequeueCredentialResultDependencies } from "./handlerDependencies";
+import { IDynamoDbAdapter } from "../common/dynamoDBAdapter/dynamoDBAdapter";
 
 describe("Dequeue credential result", () => {
   const env = {
@@ -168,7 +168,6 @@ describe("Dequeue credential result", () => {
             processedMessage: {
               sub: "mockSub",
               sentTimestamp: "mockSentTimestamp",
-              event: { mockKey: "mockValue" },
             },
           });
         });
@@ -203,7 +202,6 @@ describe("Dequeue credential result", () => {
             processedMessage: {
               sub: "mockSub",
               sentTimestamp: "mockSentTimestamp",
-              event: { mockKey: "mockValue" },
             },
           });
         });
@@ -246,7 +244,6 @@ describe("Dequeue credential result", () => {
           processedMessage: {
             sub: "mockSub",
             sentTimestamp: "mockSentTimestamp",
-            event: { mockKey: "mockValue" },
           },
         });
       });
@@ -258,18 +255,18 @@ describe("Dequeue credential result", () => {
   });
 });
 
-const mockInertCredentialResultRegistry: ICredentialResultRegistry = {
+const mockInertCredentialResultRegistry: IDynamoDbAdapter = {
   putItem: jest.fn(() => {
     throw new Error("Not implemented");
   }),
 };
 
-const mockCredentialResultRegistrySuccess: ICredentialResultRegistry = {
+const mockCredentialResultRegistrySuccess: IDynamoDbAdapter = {
   ...mockInertCredentialResultRegistry,
   putItem: jest.fn().mockResolvedValue(emptySuccess()),
 };
 
-const mockCredentialResultRegistryPutItemFailure: ICredentialResultRegistry = {
+const mockCredentialResultRegistryPutItemFailure: IDynamoDbAdapter = {
   ...mockInertCredentialResultRegistry,
   putItem: jest.fn().mockResolvedValue(emptyFailure()),
 };

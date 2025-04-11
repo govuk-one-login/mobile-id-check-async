@@ -2,14 +2,13 @@ import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { expect } from "@jest/globals";
 import { mockClient } from "aws-sdk-client-mock";
 import { NOW_IN_MILLISECONDS } from "../../dequeue/tests/testData";
-import { ICredentialResultRegistry } from "../../dequeueCredentialResult/credentialResultRegistry/credentialResultRegistry";
 import "../../testUtils/matchers";
 import { Result } from "../utils/result";
-import { DynamoDBAdapter } from "./dynamoDBAdapter";
+import { DynamoDbAdapter, IDynamoDbAdapter } from "./dynamoDBAdapter";
 import { PutItemOperation } from "./putItemOperation";
 
 const mockDynamoDbClient = mockClient(DynamoDBClient);
-let credentialResultRegistry: ICredentialResultRegistry;
+let dynamoDbAdapter: IDynamoDbAdapter;
 let consoleDebugSpy: jest.SpyInstance;
 let consoleErrorSpy: jest.SpyInstance;
 
@@ -17,7 +16,7 @@ describe("DynamoDB adapter", () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(NOW_IN_MILLISECONDS);
-    credentialResultRegistry = new DynamoDBAdapter({
+    dynamoDbAdapter = new DynamoDbAdapter({
       tableName: "mock-table-name",
       ttlInSeconds: 12345,
     });
@@ -36,7 +35,7 @@ describe("DynamoDB adapter", () => {
     describe("On every attempt", () => {
       beforeEach(async () => {
         mockDynamoDbClient.on(PutItemCommand).resolves({});
-        await credentialResultRegistry.putItem(mockPutItemOperation);
+        await dynamoDbAdapter.putItem(mockPutItemOperation);
       });
 
       it("Logs the attempt", () => {
@@ -55,7 +54,7 @@ describe("DynamoDB adapter", () => {
     describe("Given there is a failure attempting to put an item into DynamoDB", () => {
       beforeEach(async () => {
         mockDynamoDbClient.on(PutItemCommand).rejects("mockError");
-        result = await credentialResultRegistry.putItem(mockPutItemOperation);
+        result = await dynamoDbAdapter.putItem(mockPutItemOperation);
       });
 
       it("Logs an error message", () => {
@@ -73,7 +72,7 @@ describe("DynamoDB adapter", () => {
     describe("Given an item is successfully put into DynamoDB", () => {
       beforeEach(async () => {
         mockDynamoDbClient.on(PutItemCommand).resolves({});
-        result = await credentialResultRegistry.putItem(mockPutItemOperation);
+        result = await dynamoDbAdapter.putItem(mockPutItemOperation);
       });
 
       it("Returns an empty success result", () => {
@@ -85,4 +84,5 @@ describe("DynamoDB adapter", () => {
 
 const mockPutItemOperation: PutItemOperation = {
   getDynamoDbPutItemCompositeKey: () => ({ pk: "mockPk", sk: "mockSk" }),
+  getDynamoDbPutItemEventPayload: () => JSON.stringify("mockEvent"),
 };
