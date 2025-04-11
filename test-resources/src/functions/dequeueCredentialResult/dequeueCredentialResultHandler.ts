@@ -43,7 +43,7 @@ export const lambdaHandlerConstructor = async (
     } else {
       const credentialResultRegistry = dependencies.getCredentialResultRegistry(
         {
-          tableName: config.CREDENTIAL_RESULTS_TABLE_NAME,
+          tableName: config.CREDENTIAL_RESULT_TABLE_NAME,
         },
       );
       const credentResultData = validateCredentialResultResponse.value;

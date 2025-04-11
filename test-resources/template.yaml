@@ -128,7 +128,7 @@ Globals:
     Runtime: nodejs22.x
 
 Resources:
-  CredentialResultsTable:
+  CredentialResultTable:
     Type: AWS::DynamoDB::Table
     Properties:
       AttributeDefinitions:
@@ -144,7 +144,7 @@ Resources:
           KeyType: RANGE
       SSESpecification:
         SSEEnabled: true
-      TableName: !Sub ${AWS::StackName}-credential-results-table-${Environment}
+      TableName: !Sub ${AWS::StackName}-credential-result-table-${Environment}
       TimeToLiveSpecification:
         AttributeName: timeToLiveInSeconds
         Enabled: true
@@ -176,7 +176,7 @@ Resources:
       Environment:
         Variables:
           CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS: 900
-          CREDENTIAL_RESULTS_TABLE_NAME: !Ref CredentialResultsTable
+          CREDENTIAL_RESULT_TABLE_NAME: !Ref CredentialResultTable
       FunctionName: !Sub ${AWS::StackName}-dequeue-credential-result
       Handler: dequeueCredentialResultHandler.lambdaHandler
       Role: !GetAtt DequeueCredentialResultRole.Arn
@@ -256,7 +256,7 @@ Resources:
               - Action:
                   - dynamodb:PutItem
                 Effect: Allow
-                Resource: !GetAtt CredentialResultsTable.Arn
+                Resource: !GetAtt CredentialResultTable.Arn
             Version: "2012-10-17"
           PolicyName: DynamoDBPolicy
       RoleName: !Sub ${AWS::StackName}-dequeue-credential-result

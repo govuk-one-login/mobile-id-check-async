@@ -9,7 +9,7 @@ import { Result } from "../common/utils/result";
 
 const REQUIRED_ENVIRONMENT_VARIABLES = [
   "CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS",
-  "CREDENTIAL_RESULTS_TABLE_NAME",
+  "CREDENTIAL_RESULT_TABLE_NAME",
 ] as const;
 
 export type BiometricTokenConfig = Config<

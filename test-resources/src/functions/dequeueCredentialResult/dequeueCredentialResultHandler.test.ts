@@ -14,7 +14,7 @@ import { IDynamoDbAdapter } from "../common/dynamoDbAdapter/dynamoDbAdapter";
 describe("Dequeue credential result", () => {
   const env = {
     CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS: "3600",
-    CREDENTIAL_RESULTS_TABLE_NAME: "mockCredentialResultsTableName",
+    CREDENTIAL_RESULT_TABLE_NAME: "mockCredentialResultTableName",
   };
   let dependencies: IDequeueCredentialResultDependencies;
   let context: Context;
@@ -68,7 +68,7 @@ describe("Dequeue credential result", () => {
   describe("Config validation", () => {
     describe.each([
       ["CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS"],
-      ["CREDENTIAL_RESULTS_TABLE_NAME"],
+      ["CREDENTIAL_RESULT_TABLE_NAME"],
     ])("Given %s environment variable is missing", (envVar: string) => {
       beforeEach(async () => {
         delete dependencies.env[envVar];
