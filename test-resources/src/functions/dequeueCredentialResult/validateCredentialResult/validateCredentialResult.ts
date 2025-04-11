@@ -44,7 +44,7 @@ export function validateCredentialResult(
   const { event } = credentialResult;
   if (!event) {
     return errorResult({
-      errorMessage: `event is missing from record body`,
+      errorMessage: "event is missing from record body",
     });
   }
 
