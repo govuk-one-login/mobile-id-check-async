@@ -4,11 +4,14 @@ import { mockClient } from "aws-sdk-client-mock";
 import { NOW_IN_MILLISECONDS } from "../../dequeue/tests/testData";
 import "../../testUtils/matchers";
 import { Result } from "../utils/result";
-import { DynamoDbAdapter, IDynamoDbAdapter } from "./dynamoDbAdapter";
-import { PutItemOperation } from "./putItemOperation";
+import {
+  DequeueDynamoDbAdapter,
+  DequeueDynamoDbPutItemInput,
+  IDequeueDynamoDbAdapter,
+} from "./dequeueDynamoDbAdapter";
 
 const mockDynamoDbClient = mockClient(DynamoDBClient);
-let dynamoDbAdapter: IDynamoDbAdapter;
+let dynamoDbAdapter: IDequeueDynamoDbAdapter;
 let consoleDebugSpy: jest.SpyInstance;
 let consoleErrorSpy: jest.SpyInstance;
 
@@ -16,7 +19,7 @@ describe("DynamoDB adapter", () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(NOW_IN_MILLISECONDS);
-    dynamoDbAdapter = new DynamoDbAdapter({
+    dynamoDbAdapter = new DequeueDynamoDbAdapter({
       tableName: "mock-table-name",
     });
     consoleDebugSpy = jest.spyOn(console, "debug");
@@ -34,7 +37,7 @@ describe("DynamoDB adapter", () => {
     describe("On every attempt", () => {
       beforeEach(async () => {
         mockDynamoDbClient.on(PutItemCommand).resolves({});
-        await dynamoDbAdapter.putItem(mockPutItemOperation);
+        await dynamoDbAdapter.putItem(mockPutItemInput);
       });
 
       it("Logs the attempt", () => {
@@ -55,7 +58,7 @@ describe("DynamoDB adapter", () => {
 
       beforeEach(async () => {
         mockDynamoDbClient.on(PutItemCommand).rejects("mockError");
-        result = await dynamoDbAdapter.putItem(mockPutItemOperation);
+        result = await dynamoDbAdapter.putItem(mockPutItemInput);
         error = consoleErrorSpy.mock.calls[0][0].error;
       });
 
@@ -75,7 +78,7 @@ describe("DynamoDB adapter", () => {
     describe("Given an item is successfully put into DynamoDB", () => {
       beforeEach(async () => {
         mockDynamoDbClient.on(PutItemCommand).resolves({});
-        result = await dynamoDbAdapter.putItem(mockPutItemOperation);
+        result = await dynamoDbAdapter.putItem(mockPutItemInput);
       });
 
       it("Returns an empty success result", () => {
@@ -86,11 +89,9 @@ describe("DynamoDB adapter", () => {
   });
 });
 
-const mockPutItemOperation: PutItemOperation = {
-  getDynamoDbPutItemCommandInput: () => ({
-    pk: "mockPk",
-    sk: "mockSk",
-    event: JSON.stringify("mockEvent"),
-    timeToLiveInSeconds: 12345,
-  }),
+const mockPutItemInput: DequeueDynamoDbPutItemInput = {
+  pk: "mockPk",
+  sk: "mockSk",
+  event: JSON.stringify("mockEvent"),
+  timeToLiveInSeconds: 12345,
 };

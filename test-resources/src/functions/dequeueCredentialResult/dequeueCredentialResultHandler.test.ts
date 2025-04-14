@@ -9,7 +9,7 @@ import { lambdaHandlerConstructor } from "./dequeueCredentialResultHandler";
 import { failingSQSRecordBodyMissingSub, validSQSRecord } from "./unitTestData";
 import { NOW_IN_MILLISECONDS } from "../dequeue/tests/testData";
 import { IDequeueCredentialResultDependencies } from "./handlerDependencies";
-import { IDynamoDbAdapter } from "../common/dynamoDBAdapter/dynamoDbAdapter";
+import { IDequeueDynamoDbAdapter } from "../common/dequeueDynamoDBAdapter/dequeueDynamoDbAdapter";
 
 describe("Dequeue credential result", () => {
   const env = {
@@ -248,18 +248,18 @@ describe("Dequeue credential result", () => {
   });
 });
 
-const mockInertCredentialResultRegistry: IDynamoDbAdapter = {
+const mockInertCredentialResultRegistry: IDequeueDynamoDbAdapter = {
   putItem: jest.fn(() => {
     throw new Error("Not implemented");
   }),
 };
 
-const mockCredentialResultRegistrySuccess: IDynamoDbAdapter = {
+const mockCredentialResultRegistrySuccess: IDequeueDynamoDbAdapter = {
   ...mockInertCredentialResultRegistry,
   putItem: jest.fn().mockResolvedValue(emptySuccess()),
 };
 
-const mockCredentialResultRegistryPutItemFailure: IDynamoDbAdapter = {
+const mockCredentialResultRegistryPutItemFailure: IDequeueDynamoDbAdapter = {
   ...mockInertCredentialResultRegistry,
   putItem: jest.fn().mockResolvedValue(emptyFailure()),
 };

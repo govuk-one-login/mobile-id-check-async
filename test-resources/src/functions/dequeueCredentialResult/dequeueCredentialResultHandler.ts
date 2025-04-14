@@ -7,7 +7,7 @@ import {
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
-import { PutItemCredentialResult } from "./credentialResultRegistry/putItemOperation/putItemCredentialResult";
+import { getTimeToLiveInSeconds } from "../common/utils/utils";
 import { getDequeueCredentialResultConfig } from "./dequeueCredentialResultConfig";
 import {
   IDequeueCredentialResultDependencies,
@@ -43,19 +43,21 @@ export const lambdaHandlerConstructor = async (
           tableName: config.CREDENTIAL_RESULT_TABLE_NAME,
         },
       );
-      const credentialResultData = validateCredentialResultResponse.value;
-      const putItemResult = await credentialResultRegistry.putItem(
-        new PutItemCredentialResult({
-          ...credentialResultData,
-          ttlDurationInSeconds:
-            config.CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS,
-        }),
-      );
+      const { compositeKeyData, event } =
+        validateCredentialResultResponse.value;
+      const { sub, sentTimestamp } = compositeKeyData;
+      const putItemResult = await credentialResultRegistry.putItem({
+        pk: `SUB#${sub}`,
+        sk: `SENT_TIMESTAMP#${sentTimestamp}`,
+        event,
+        timeToLiveInSeconds: getTimeToLiveInSeconds(
+          config.CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS,
+        ),
+      });
       if (putItemResult.isError) {
         batchItemFailures.push({ itemIdentifier: record.messageId });
       }
 
-      const { compositeKeyData } = credentialResultData;
       logger.info(
         LogMessage.DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS,
         {

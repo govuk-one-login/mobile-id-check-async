@@ -1,18 +1,18 @@
 import {
-  DynamoDbAdapter,
+  DequeueDynamoDbAdapter,
   IDynamoDBConfig,
-  IDynamoDbAdapter,
-} from "../common/dynamoDBAdapter/dynamoDbAdapter";
+  IDequeueDynamoDbAdapter,
+} from "../common/dequeueDynamoDBAdapter/dequeueDynamoDbAdapter";
 
 export interface IDequeueCredentialResultDependencies {
   env: NodeJS.ProcessEnv;
   getCredentialResultRegistry: ({
     tableName,
-  }: IDynamoDBConfig) => IDynamoDbAdapter;
+  }: IDynamoDBConfig) => IDequeueDynamoDbAdapter;
 }
 
 export const handlerDependencies: IDequeueCredentialResultDependencies = {
   env: process.env,
   getCredentialResultRegistry: ({ tableName }: IDynamoDBConfig) =>
-    new DynamoDbAdapter({ tableName }),
+    new DequeueDynamoDbAdapter({ tableName }),
 };

@@ -1,12 +1,11 @@
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
-import { PutItemOperation } from "./putItemOperation";
 import { emptyFailure, emptySuccess, Result } from "../utils/result";
 import { LogMessage } from "../logging/LogMessage";
 import { logger } from "../logging/logger";
 
-export class DynamoDbAdapter implements IDynamoDbAdapter {
+export class DequeueDynamoDbAdapter implements IDequeueDynamoDbAdapter {
   private readonly dynamoDBClient: DynamoDBClient;
   private readonly tableName: string;
 
@@ -23,18 +22,15 @@ export class DynamoDbAdapter implements IDynamoDbAdapter {
   }
 
   async putItem(
-    putItemOperation: PutItemOperation,
+    putItemInput: DequeueDynamoDbPutItemInput,
   ): Promise<Result<void, void>> {
     const putItemCommand = new PutItemCommand({
       TableName: this.tableName,
-      Item: marshall({
-        ...putItemOperation.getDynamoDbPutItemCommandInput(),
-      }),
+      Item: marshall(putItemInput),
     });
 
     try {
-      const { pk, sk, timeToLiveInSeconds } =
-        putItemOperation.getDynamoDbPutItemCommandInput();
+      const { pk, sk, timeToLiveInSeconds } = putItemInput;
       const logData = { pk, sk, timeToLiveInSeconds };
       logger.debug(LogMessage.PUT_ITEM_ATTEMPT, {
         putItemData: {
@@ -55,10 +51,19 @@ export class DynamoDbAdapter implements IDynamoDbAdapter {
   }
 }
 
-export interface IDynamoDbAdapter {
-  putItem(putItemOperation: PutItemOperation): Promise<Result<void, void>>;
+export interface IDequeueDynamoDbAdapter {
+  putItem(
+    putItemInput: DequeueDynamoDbPutItemInput,
+  ): Promise<Result<void, void>>;
 }
 
 export interface IDynamoDBConfig {
   tableName: string;
+}
+
+export interface DequeueDynamoDbPutItemInput {
+  pk: string;
+  sk: string;
+  event: string;
+  timeToLiveInSeconds: number;
 }

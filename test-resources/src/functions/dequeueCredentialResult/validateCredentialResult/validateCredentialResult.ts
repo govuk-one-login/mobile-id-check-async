@@ -1,6 +1,5 @@
 import { SQSRecord } from "aws-lambda";
 import { errorResult, Result, successResult } from "../../common/utils/result";
-import { ICredentialResultCompositeKeyData } from "../credentialResultRegistry/putItemOperation/putItemCredentialResult";
 
 export function validateCredentialResult(
   record: SQSRecord,
@@ -52,6 +51,11 @@ export function validateCredentialResult(
     compositeKeyData: { sub, sentTimestamp },
     event: JSON.stringify(event),
   });
+}
+
+interface ICredentialResultCompositeKeyData {
+  sub: string;
+  sentTimestamp: string;
 }
 
 export interface IValidCredentialResultData {
