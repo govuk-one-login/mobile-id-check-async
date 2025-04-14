@@ -1,6 +1,16 @@
 import { SQSRecord } from "aws-lambda";
 import { errorResult, Result, successResult } from "../../common/utils/result";
 
+interface ICredentialResultCompositeKeyData {
+  sub: string;
+  sentTimestamp: string;
+}
+
+export interface IValidCredentialResultData {
+  compositeKeyData: ICredentialResultCompositeKeyData;
+  event: string;
+}
+
 export function validateCredentialResult(
   record: SQSRecord,
 ): Result<IValidCredentialResultData> {
@@ -51,16 +61,6 @@ export function validateCredentialResult(
     compositeKeyData: { sub, sentTimestamp },
     event: JSON.stringify(event),
   });
-}
-
-interface ICredentialResultCompositeKeyData {
-  sub: string;
-  sentTimestamp: string;
-}
-
-export interface IValidCredentialResultData {
-  compositeKeyData: ICredentialResultCompositeKeyData;
-  event: string;
 }
 
 function isString(value: unknown): value is string {

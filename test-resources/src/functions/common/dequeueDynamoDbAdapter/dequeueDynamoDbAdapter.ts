@@ -5,6 +5,23 @@ import { emptyFailure, emptySuccess, Result } from "../utils/result";
 import { LogMessage } from "../logging/LogMessage";
 import { logger } from "../logging/logger";
 
+export interface IDequeueDynamoDbAdapter {
+  putItem(
+    putItemInput: DequeueDynamoDbPutItemInput,
+  ): Promise<Result<void, void>>;
+}
+
+export interface IDynamoDBConfig {
+  tableName: string;
+}
+
+export interface DequeueDynamoDbPutItemInput {
+  pk: string;
+  sk: string;
+  event: string;
+  timeToLiveInSeconds: number;
+}
+
 export class DequeueDynamoDbAdapter implements IDequeueDynamoDbAdapter {
   private readonly tableName: string;
   private readonly dynamoDBClient: DynamoDBClient = new DynamoDBClient({
@@ -49,21 +66,4 @@ export class DequeueDynamoDbAdapter implements IDequeueDynamoDbAdapter {
     logger.debug(LogMessage.PUT_ITEM_SUCCESS);
     return emptySuccess();
   }
-}
-
-export interface IDequeueDynamoDbAdapter {
-  putItem(
-    putItemInput: DequeueDynamoDbPutItemInput,
-  ): Promise<Result<void, void>>;
-}
-
-export interface IDynamoDBConfig {
-  tableName: string;
-}
-
-export interface DequeueDynamoDbPutItemInput {
-  pk: string;
-  sk: string;
-  event: string;
-  timeToLiveInSeconds: number;
 }
