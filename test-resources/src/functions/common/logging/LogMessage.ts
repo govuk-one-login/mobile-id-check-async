@@ -101,16 +101,16 @@ export class LogMessage implements LogAttributes {
     "The sessionId path parameter is missing or invalid",
   );
 
-  // DynamoDB adapter
-  static readonly PUT_ITEM_ATTEMPT = new LogMessage(
+  // Dequeue DynamoDB adapter
+  static readonly DEQUEUE_PUT_ITEM_ATTEMPT = new LogMessage(
     "TEST_RESOURCES_PUT_ITEM_ATTEMPT",
     "Attempting to put an item into DynamoDB",
   );
-  static readonly PUT_ITEM_UNEXPECTED_FAILURE = new LogMessage(
+  static readonly DEQUEUE_PUT_ITEM_UNEXPECTED_FAILURE = new LogMessage(
     "TEST_RESOURCES_PUT_ITEM_UNEXPECTED_FAILURE",
-    "Failure occurred while sending item command to DynamoDB",
+    "Failure occurred while putting item into DynamoDB",
   );
-  static readonly PUT_ITEM_SUCCESS = new LogMessage(
+  static readonly DEQUEUE_PUT_ITEM_SUCCESS = new LogMessage(
     "TEST_RESOURCES_PUT_ITEM_SUCCESS",
     "Successfully put item into DynamoDB table",
   );

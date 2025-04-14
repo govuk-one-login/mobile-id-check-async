@@ -12,13 +12,13 @@ const REQUIRED_ENVIRONMENT_VARIABLES = [
   "CREDENTIAL_RESULT_TABLE_NAME",
 ] as const;
 
-export type BiometricTokenConfig = Config<
+export type DequeueCredentialResultConfig = Config<
   (typeof REQUIRED_ENVIRONMENT_VARIABLES)[number]
 >;
 
 export function getDequeueCredentialResultConfig(
   env: NodeJS.ProcessEnv,
-): Result<BiometricTokenConfig, MissingEnvVarError> {
+): Result<DequeueCredentialResultConfig, MissingEnvVarError> {
   const envVarsResult = getRequiredEnvironmentVariables(
     env,
     REQUIRED_ENVIRONMENT_VARIABLES,

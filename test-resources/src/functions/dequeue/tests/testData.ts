@@ -260,3 +260,10 @@ export const missingTimestampSQSRecord = {
   eventSourceARN: "arn:aws:sqs:eu-west-2:111122223333:my-queue",
   awsRegion: "eu-west-2",
 };
+
+export const mockPutItemInput = {
+  pk: "mockPk",
+  sk: "mockSk",
+  event: JSON.stringify("mockEvent"),
+  timeToLiveInSeconds: 12345,
+};

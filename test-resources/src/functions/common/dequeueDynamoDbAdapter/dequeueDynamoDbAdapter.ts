@@ -48,7 +48,7 @@ export class DequeueDynamoDbAdapter implements IDequeueDynamoDbAdapter {
     try {
       const { pk, sk, timeToLiveInSeconds } = putItemInput;
       const logData = { pk, sk, timeToLiveInSeconds };
-      logger.debug(LogMessage.PUT_ITEM_ATTEMPT, {
+      logger.debug(LogMessage.DEQUEUE_PUT_ITEM_ATTEMPT, {
         putItemData: {
           tableName: this.tableName,
           ...logData,
@@ -58,13 +58,13 @@ export class DequeueDynamoDbAdapter implements IDequeueDynamoDbAdapter {
       await this.dynamoDBClient.send(putItemCommand);
     } catch (error: unknown) {
       const errorMessage = getErrorMessage(error);
-      logger.error(LogMessage.PUT_ITEM_UNEXPECTED_FAILURE, {
+      logger.error(LogMessage.DEQUEUE_PUT_ITEM_UNEXPECTED_FAILURE, {
         errorMessage,
       });
       return emptyFailure();
     }
 
-    logger.debug(LogMessage.PUT_ITEM_SUCCESS);
+    logger.debug(LogMessage.DEQUEUE_PUT_ITEM_SUCCESS);
     return emptySuccess();
   }
 }

@@ -1,12 +1,14 @@
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 import { expect } from "@jest/globals";
 import { mockClient } from "aws-sdk-client-mock";
-import { NOW_IN_MILLISECONDS } from "../../dequeue/tests/testData";
+import {
+  mockPutItemInput,
+  NOW_IN_MILLISECONDS,
+} from "../../dequeue/tests/testData";
 import "../../testUtils/matchers";
-import { Result } from "../utils/result";
+import { emptyFailure, emptySuccess, Result } from "../utils/result";
 import {
   DequeueDynamoDbAdapter,
-  IDequeueDynamoDbPutItemInput,
   IDequeueDynamoDbAdapter,
 } from "./dequeueDynamoDbAdapter";
 
@@ -15,7 +17,7 @@ let dynamoDbAdapter: IDequeueDynamoDbAdapter;
 let consoleDebugSpy: jest.SpyInstance;
 let consoleErrorSpy: jest.SpyInstance;
 
-describe("DynamoDB adapter", () => {
+describe("Dequeue DynamoDB adapter", () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(NOW_IN_MILLISECONDS);
@@ -88,8 +90,7 @@ describe("DynamoDB adapter", () => {
       });
 
       it("Returns an empty failure result", () => {
-        expect(result.isError).toBe(true);
-        expect(result).not.toHaveProperty("value");
+        expect(result).toEqual(emptyFailure());
       });
     });
 
@@ -106,16 +107,8 @@ describe("DynamoDB adapter", () => {
       });
 
       it("Returns an empty success result", () => {
-        expect(result.isError).toBe(false);
-        expect(result).not.toHaveProperty("value");
+        expect(result).toEqual(emptySuccess());
       });
     });
   });
 });
-
-const mockPutItemInput: IDequeueDynamoDbPutItemInput = {
-  pk: "mockPk",
-  sk: "mockSk",
-  event: JSON.stringify("mockEvent"),
-  timeToLiveInSeconds: 12345,
-};
