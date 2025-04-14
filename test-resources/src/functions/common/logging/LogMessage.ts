@@ -110,6 +110,10 @@ export class LogMessage implements LogAttributes {
     "TEST_RESOURCES_PUT_ITEM_UNEXPECTED_FAILURE",
     "Failure occurred while sending item command to DynamoDB",
   );
+  static readonly PUT_ITEM_SUCCESS = new LogMessage(
+    "TEST_RESOURCES_PUT_ITEM_SUCCESS",
+    "Successfully put item into DynamoDB table",
+  );
 
   private constructor(
     public readonly messageCode: string,

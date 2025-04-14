@@ -9,7 +9,7 @@ import { lambdaHandlerConstructor } from "./dequeueCredentialResultHandler";
 import { failingSQSRecordBodyMissingSub, validSQSRecord } from "./unitTestData";
 import { NOW_IN_MILLISECONDS } from "../dequeue/tests/testData";
 import { IDequeueCredentialResultDependencies } from "./handlerDependencies";
-import { IDequeueDynamoDbAdapter } from "../common/dequeueDynamoDBAdapter/dequeueDynamoDbAdapter";
+import { IDequeueDynamoDbAdapter } from "../common/dequeueDynamoDbAdapter/dequeueDynamoDbAdapter";
 
 describe("Dequeue credential result", () => {
   const env = {

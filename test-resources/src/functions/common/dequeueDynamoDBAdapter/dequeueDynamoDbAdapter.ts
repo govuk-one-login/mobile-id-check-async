@@ -6,18 +6,17 @@ import { LogMessage } from "../logging/LogMessage";
 import { logger } from "../logging/logger";
 
 export class DequeueDynamoDbAdapter implements IDequeueDynamoDbAdapter {
-  private readonly dynamoDBClient: DynamoDBClient;
   private readonly tableName: string;
+  private readonly dynamoDBClient: DynamoDBClient = new DynamoDBClient({
+    region: process.env.REGION,
+    maxAttempts: 2,
+    requestHandler: new NodeHttpHandler({
+      connectionTimeout: 5000,
+      requestTimeout: 5000,
+    }),
+  });
 
   constructor({ tableName }: IDynamoDBConfig) {
-    this.dynamoDBClient = new DynamoDBClient({
-      region: process.env.REGION,
-      maxAttempts: 2,
-      requestHandler: new NodeHttpHandler({
-        connectionTimeout: 5000,
-        requestTimeout: 5000,
-      }),
-    });
     this.tableName = tableName;
   }
 
@@ -47,6 +46,7 @@ export class DequeueDynamoDbAdapter implements IDequeueDynamoDbAdapter {
       return emptyFailure();
     }
 
+    logger.debug(LogMessage.PUT_ITEM_SUCCESS);
     return emptySuccess();
   }
 }

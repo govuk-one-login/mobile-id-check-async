@@ -81,6 +81,12 @@ describe("DynamoDB adapter", () => {
         result = await dynamoDbAdapter.putItem(mockPutItemInput);
       });
 
+      it("Logs success at debug level", () => {
+        expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "TEST_RESOURCES_PUT_ITEM_SUCCESS",
+        });
+      });
+
       it("Returns an empty success result", () => {
         expect(result.isError).toBe(false);
         expect(result).not.toHaveProperty("value");
