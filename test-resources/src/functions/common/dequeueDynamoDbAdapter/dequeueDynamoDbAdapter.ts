@@ -56,9 +56,10 @@ export class DequeueDynamoDbAdapter implements IDequeueDynamoDbAdapter {
       });
 
       await this.dynamoDBClient.send(putItemCommand);
-    } catch (error) {
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
       logger.error(LogMessage.PUT_ITEM_UNEXPECTED_FAILURE, {
-        error,
+        errorMessage,
       });
       return emptyFailure();
     }
@@ -66,4 +67,18 @@ export class DequeueDynamoDbAdapter implements IDequeueDynamoDbAdapter {
     logger.debug(LogMessage.PUT_ITEM_SUCCESS);
     return emptySuccess();
   }
+}
+
+function getErrorMessage(error: unknown): string {
+  if (
+    error &&
+    typeof error === "object" &&
+    "message" in error &&
+    error.message &&
+    typeof error.message === "string"
+  ) {
+    return error.message;
+  }
+
+  return "Unknown error";
 }

@@ -54,18 +54,36 @@ describe("DynamoDB adapter", () => {
     });
 
     describe("Given there is a failure attempting to put an item into DynamoDB", () => {
-      let error: unknown;
-
       beforeEach(async () => {
         mockDynamoDbClient.on(PutItemCommand).rejects("mockError");
         result = await dynamoDbAdapter.putItem(mockPutItemInput);
-        error = consoleErrorSpy.mock.calls[0][0].error;
       });
 
-      it("Logs an error message", () => {
-        expect(error).not.toBeNull();
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "TEST_RESOURCES_PUT_ITEM_UNEXPECTED_FAILURE",
+      describe("Given there is no error message", () => {
+        beforeEach(async () => {
+          mockDynamoDbClient.on(PutItemCommand).rejects("");
+          result = await dynamoDbAdapter.putItem(mockPutItemInput);
+        });
+
+        it("Logs an error message", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "TEST_RESOURCES_PUT_ITEM_UNEXPECTED_FAILURE",
+            errorMessage: "Unknown error",
+          });
+        });
+      });
+
+      describe("Given an error message exists", () => {
+        beforeEach(async () => {
+          mockDynamoDbClient.on(PutItemCommand).rejects("mockError");
+          result = await dynamoDbAdapter.putItem(mockPutItemInput);
+        });
+
+        it("Logs an error message", () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "TEST_RESOURCES_PUT_ITEM_UNEXPECTED_FAILURE",
+            errorMessage: "mockError",
+          });
         });
       });
 
