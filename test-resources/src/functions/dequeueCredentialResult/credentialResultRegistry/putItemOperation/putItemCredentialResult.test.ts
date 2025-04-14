@@ -1,5 +1,5 @@
 import { expect } from "@jest/globals";
-import { ICompositeKey } from "../../../common/dynamoDBAdapter/putItemOperation";
+import { IDynamoDbTableKey } from "../../../common/dynamoDBAdapter/putItemOperation";
 import { NOW_IN_MILLISECONDS } from "../../../dequeue/tests/testData";
 import "../../../testUtils/matchers";
 import { PutItemCredentialResult } from "./putItemCredentialResult";
@@ -26,7 +26,7 @@ describe("Credential result put item operation", () => {
   });
 
   describe("Get DynamoDB put item composite key", () => {
-    let result: ICompositeKey;
+    let result: IDynamoDbTableKey;
 
     beforeEach(() => {
       result = putItemOperation.getDynamoDbPutItemCommandInput();

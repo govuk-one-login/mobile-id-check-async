@@ -1,24 +1,10 @@
+import { IPutItemCommandInputData } from "../../dequeueCredentialResult/credentialResultRegistry/putItemOperation/putItemCredentialResult";
+
 export interface PutItemOperation {
-  getDynamoDbPutItemCommandInput(): IPutItemCommandInput;
+  getDynamoDbPutItemCommandInput(): IPutItemCommandInputData;
 }
 
-export interface ICompositeKeyData {
-  sub: string;
-  sentTimestamp: string;
-}
-
-export interface ICompositeKey {
+export interface IDynamoDbTableKey {
   pk: string;
-  sk: string;
-}
-
-export interface IPutItemOperationData {
-  compositeKeyData: ICompositeKeyData;
-  event: string;
-  ttlDurationInSeconds: string;
-}
-
-export interface IPutItemCommandInput extends ICompositeKey {
-  event: string;
-  timeToLiveInSeconds: number;
+  sk?: string;
 }

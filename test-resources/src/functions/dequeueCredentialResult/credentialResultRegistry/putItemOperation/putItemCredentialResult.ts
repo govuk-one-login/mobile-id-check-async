@@ -1,13 +1,11 @@
 import {
-  ICompositeKeyData,
-  IPutItemCommandInput,
-  IPutItemOperationData,
+  IDynamoDbTableKey,
   PutItemOperation,
 } from "../../../common/dynamoDBAdapter/putItemOperation";
 import { getTimeToLiveInSeconds } from "../../../common/utils/utils";
 
 export class PutItemCredentialResult implements PutItemOperation {
-  private readonly compositeKeyData: ICompositeKeyData;
+  private readonly compositeKeyData: ICredentialResultCompositeKeyData;
   private readonly event: string;
   private readonly ttlDurationInSeconds: string;
 
@@ -15,13 +13,13 @@ export class PutItemCredentialResult implements PutItemOperation {
     compositeKeyData,
     event,
     ttlDurationInSeconds,
-  }: IPutItemOperationData) {
+  }: IPutItemCredentialResultData) {
     this.compositeKeyData = compositeKeyData;
     this.event = event;
     this.ttlDurationInSeconds = ttlDurationInSeconds;
   }
 
-  getDynamoDbPutItemCommandInput(): IPutItemCommandInput {
+  getDynamoDbPutItemCommandInput(): IPutItemCommandInputData {
     const { sub, sentTimestamp } = this.compositeKeyData;
 
     return {
@@ -31,4 +29,20 @@ export class PutItemCredentialResult implements PutItemOperation {
       timeToLiveInSeconds: getTimeToLiveInSeconds(this.ttlDurationInSeconds),
     };
   }
+}
+
+export interface IPutItemCredentialResultData {
+  compositeKeyData: ICredentialResultCompositeKeyData;
+  event: string;
+  ttlDurationInSeconds: string;
+}
+
+export interface ICredentialResultCompositeKeyData {
+  sub: string;
+  sentTimestamp: string;
+}
+
+export interface IPutItemCommandInputData extends IDynamoDbTableKey {
+  event: string;
+  timeToLiveInSeconds: number;
 }
