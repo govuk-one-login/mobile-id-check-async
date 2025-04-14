@@ -8,7 +8,7 @@ interface ICredentialResultCompositeKeyData {
 
 export interface IValidCredentialResultData {
   compositeKeyData: ICredentialResultCompositeKeyData;
-  event: string;
+  event: object;
 }
 
 export function validateCredentialResult(
@@ -59,7 +59,7 @@ export function validateCredentialResult(
 
   return successResult({
     compositeKeyData: { sub, sentTimestamp },
-    event: JSON.stringify(event),
+    event,
   });
 }
 

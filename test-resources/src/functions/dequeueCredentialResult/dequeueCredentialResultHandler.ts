@@ -4,6 +4,7 @@ import {
   SQSBatchResponse,
   SQSEvent,
 } from "aws-lambda";
+import { IDequeueDynamoDbPutItemInput } from "../common/dequeueDynamoDbAdapter/dequeueDynamoDbAdapter";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
@@ -45,14 +46,13 @@ export const lambdaHandlerConstructor = async (
       );
       const { compositeKeyData, event } =
         validateCredentialResultResponse.value;
-      const { sub, sentTimestamp } = compositeKeyData;
-      const putItemResult = await credentialResultRegistry.putItem({
-        pk: `SUB#${sub}`,
-        sk: `SENT_TIMESTAMP#${sentTimestamp}`,
+      const putItemInput = getPutItemInput({
+        compositeKeyData,
         event,
-        timeToLiveInSeconds: getTimeToLiveInSeconds(
-          config.CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS,
-        ),
+        ttlDurationInSeconds: config.CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS,
+      });
+      const putItemResult = await credentialResultRegistry.putItem({
+        ...putItemInput,
       });
       if (putItemResult.isError) {
         batchItemFailures.push({ itemIdentifier: record.messageId });
@@ -75,3 +75,26 @@ export const lambdaHandler = lambdaHandlerConstructor.bind(
   null,
   handlerDependencies,
 );
+
+interface IDequeueDynamoDbPutItemData {
+  compositeKeyData: {
+    sub: string;
+    sentTimestamp: string;
+  };
+  event: object;
+  ttlDurationInSeconds: string;
+}
+
+function getPutItemInput({
+  compositeKeyData,
+  event,
+  ttlDurationInSeconds,
+}: IDequeueDynamoDbPutItemData): IDequeueDynamoDbPutItemInput {
+  const { sub, sentTimestamp } = compositeKeyData;
+  return {
+    pk: `SUB#${sub}`,
+    sk: `SENT_TIMESTAMP#${sentTimestamp}`,
+    event: JSON.stringify(event),
+    timeToLiveInSeconds: getTimeToLiveInSeconds(ttlDurationInSeconds),
+  };
+}

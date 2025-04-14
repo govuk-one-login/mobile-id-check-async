@@ -5,21 +5,21 @@ import { emptyFailure, emptySuccess, Result } from "../utils/result";
 import { LogMessage } from "../logging/LogMessage";
 import { logger } from "../logging/logger";
 
-export interface IDequeueDynamoDbAdapter {
-  putItem(
-    putItemInput: DequeueDynamoDbPutItemInput,
-  ): Promise<Result<void, void>>;
-}
-
 export interface IDynamoDBConfig {
   tableName: string;
 }
 
-export interface DequeueDynamoDbPutItemInput {
+export interface IDequeueDynamoDbPutItemInput {
   pk: string;
   sk: string;
   event: string;
   timeToLiveInSeconds: number;
+}
+
+export interface IDequeueDynamoDbAdapter {
+  putItem(
+    putItemInput: IDequeueDynamoDbPutItemInput,
+  ): Promise<Result<void, void>>;
 }
 
 export class DequeueDynamoDbAdapter implements IDequeueDynamoDbAdapter {
@@ -38,7 +38,7 @@ export class DequeueDynamoDbAdapter implements IDequeueDynamoDbAdapter {
   }
 
   async putItem(
-    putItemInput: DequeueDynamoDbPutItemInput,
+    putItemInput: IDequeueDynamoDbPutItemInput,
   ): Promise<Result<void, void>> {
     const putItemCommand = new PutItemCommand({
       TableName: this.tableName,

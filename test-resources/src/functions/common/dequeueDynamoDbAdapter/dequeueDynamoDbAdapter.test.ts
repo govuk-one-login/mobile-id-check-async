@@ -6,7 +6,7 @@ import "../../testUtils/matchers";
 import { Result } from "../utils/result";
 import {
   DequeueDynamoDbAdapter,
-  DequeueDynamoDbPutItemInput,
+  IDequeueDynamoDbPutItemInput,
   IDequeueDynamoDbAdapter,
 } from "./dequeueDynamoDbAdapter";
 
@@ -113,7 +113,7 @@ describe("DynamoDB adapter", () => {
   });
 });
 
-const mockPutItemInput: DequeueDynamoDbPutItemInput = {
+const mockPutItemInput: IDequeueDynamoDbPutItemInput = {
   pk: "mockPk",
   sk: "mockSk",
   event: JSON.stringify("mockEvent"),
