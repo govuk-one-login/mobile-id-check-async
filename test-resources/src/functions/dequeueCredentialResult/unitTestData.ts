@@ -18,13 +18,6 @@ export const validSQSRecord = {
   awsRegion: "mockAwsRegion",
 };
 
-export const failingSQSRecordBodyMissingTimestamp = {
-  ...validSQSRecord,
-  messageId: "6e7f7694-96ce-4248-9ee0-203c0c39d864",
-  body: JSON.stringify({ sub: "mockSub", mockKey: "mockValue" }),
-  attributes: { ...validSQSRecord.attributes, SentTimestamp: "" },
-};
-
 export const failingSQSRecordBodyMissing = {
   ...validSQSRecord,
   messageId: "6e00b4d2-bceb-4cf6-a447-d1d36ec8dd35",
@@ -47,10 +40,4 @@ export const failingSQSRecordBodySubTypeInvalid = {
   ...validSQSRecord,
   messageId: "3142bffa-8323-4d27-80ff-89f7979d79f0",
   body: JSON.stringify({ sub: 12345 }),
-};
-
-export const failingSQSRecordBodyMissingCredentialResultBody = {
-  ...validSQSRecord,
-  messageId: "6f50c504-818f-4e9f-9a7f-785f532b45f2",
-  body: JSON.stringify({ sub: "mockSub" }),
 };
