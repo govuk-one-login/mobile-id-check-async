@@ -30,10 +30,28 @@ export const failingSQSRecordBodyInvalidJSON = {
   body: "{ mockInvalidJSON",
 };
 
+export const failingSQSRecordBodyIsNull = {
+  ...validSQSRecord,
+  messageId: "6f50c504-818f-4e9f-9a7f-785f532b45f2",
+  body: JSON.stringify(null),
+};
+
+export const failingSQSRecordBodyNotAnObject = {
+  ...validSQSRecord,
+  messageId: "6f50c504-818f-4e9f-9a7f-785f532b45f2",
+  body: JSON.stringify("notAnObject"),
+};
+
 export const failingSQSRecordBodyMissingSub = {
   ...validSQSRecord,
   messageId: "6f50c504-818f-4e9f-9a7f-785f532b45f2",
   body: JSON.stringify({}),
+};
+
+export const failingSQSRecordBodyInvalidSub = {
+  ...validSQSRecord,
+  messageId: "6f50c504-818f-4e9f-9a7f-785f532b45f2",
+  body: JSON.stringify({ sub: "" }),
 };
 
 export const failingSQSRecordBodySubTypeInvalid = {

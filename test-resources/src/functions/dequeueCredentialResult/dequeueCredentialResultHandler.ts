@@ -43,8 +43,7 @@ export const lambdaHandlerConstructor = async (
       const credentialResultRegistry = dependencies.getCredentialResultRegistry(
         config.CREDENTIAL_RESULT_TABLE_NAME,
       );
-      const credentialResult = validateCredentialResultResponse.value;
-      const { sub } = credentialResult;
+      const { sub, credentialResult } = validateCredentialResultResponse.value;
       const sentTimestamp = record.attributes.SentTimestamp;
       const putItemInput = getPutItemInput({
         sub,
@@ -79,7 +78,7 @@ export const lambdaHandler = lambdaHandlerConstructor.bind(
 interface IDequeueDynamoDbPutItemData {
   sub: string;
   sentTimestamp: string;
-  credentialResult: object;
+  credentialResult: string;
   ttlDurationInSeconds: string;
 }
 
