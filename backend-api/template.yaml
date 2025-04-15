@@ -3291,15 +3291,6 @@ Resources:
             - EnvironmentVariables
             - !Ref Environment
             - BiometricViewerAccessKey
-      Events:
-        VendorProcessingEvent:
-          Properties:
-            BatchSize: 1
-            Enabled: true
-            Queue: !GetAtt VendorProcessingSQS.Arn
-            ScalingConfig:
-              MaximumConcurrency: 34
-          Type: SQS
       FunctionName: !Sub ${AWS::StackName}-issue-biometric-credential
       Handler: asyncIssueBiometricCredentialHandler.lambdaHandler
       ReservedConcurrentExecutions: !If
@@ -4668,6 +4659,16 @@ Resources:
       Threshold: 1800
       TreatMissingData: notBreaching
     Condition: DeployAlarms
+
+  IssueBiometricCredentialEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 1
+      Enabled: true
+      EventSourceArn: !GetAtt VendorProcessingSQS.Arn
+      FunctionName: !Sub ${AsyncIssueBiometricCredentialFunction}:live
+      ScalingConfig:
+        MaximumConcurrency: 34
 
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket
