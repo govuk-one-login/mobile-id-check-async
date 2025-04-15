@@ -3,15 +3,20 @@ import {
   SQSBatchItemFailure,
   SQSBatchResponse,
   SQSEvent,
+  SQSRecord,
 } from "aws-lambda";
-import { IDequeueDynamoDbPutItemInput } from "../common/dequeueDynamoDbAdapter/dequeueDynamoDbAdapter";
+import {
+  IDequeueDynamoDbAdapter,
+  IDequeueDynamoDbPutItemInput,
+} from "../common/dequeueDynamoDbAdapter/dequeueDynamoDbAdapter";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
+import { emptySuccess, errorResult, Result } from "../common/utils/result";
 import { getDequeueCredentialResultConfig } from "./dequeueCredentialResultConfig";
 import {
-  IDequeueCredentialResultDependencies,
   handlerDependencies,
+  IDequeueCredentialResultDependencies,
 } from "./handlerDependencies";
 import { validateCredentialResult } from "./validateCredentialResult/validateCredentialResult";
 
@@ -22,44 +27,28 @@ export const lambdaHandlerConstructor = async (
 ): Promise<SQSBatchResponse> => {
   setupLogger(context);
   logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_STARTED);
+  const { getCredentialResultRegistry } = dependencies;
   const batchItemFailures: SQSBatchItemFailure[] = [];
 
   const configResult = getDequeueCredentialResultConfig(dependencies.env);
   if (configResult.isError) {
     return { batchItemFailures };
   }
+
   const config = configResult.value;
+  const credentialResultRegistry = getCredentialResultRegistry(
+    config.CREDENTIAL_RESULT_TABLE_NAME,
+  );
 
   for (const record of event.Records) {
-    const validateCredentialResultResponse = validateCredentialResult(
-      record.body,
-    );
-    if (validateCredentialResultResponse.isError) {
-      const { errorMessage } = validateCredentialResultResponse.value;
-      logger.error(LogMessage.DEQUEUE_CREDENTIAL_RESULT_MESSAGE_INVALID, {
-        errorMessage,
-      });
-    } else {
-      const credentialResultRegistry = dependencies.getCredentialResultRegistry(
-        config.CREDENTIAL_RESULT_TABLE_NAME,
-      );
-      const { sub, credentialResult } = validateCredentialResultResponse.value;
-      const sentTimestamp = record.attributes.SentTimestamp;
-      const putItemInput = getPutItemInput({
-        sub,
-        sentTimestamp,
-        credentialResult,
-        ttlDurationInSeconds: config.CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS,
-      });
-      const putItemResult =
-        await credentialResultRegistry.putItem(putItemInput);
-      if (putItemResult.isError) {
-        batchItemFailures.push({ itemIdentifier: record.messageId });
-      } else {
-        logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_SUCCESS, {
-          processedMessage: { sub, sentTimestamp },
-        });
-      }
+    const handleCredentialResultResponse = await handleCredentialResult({
+      credentialResultRegistry,
+      record,
+      ttlDurationInSeconds: config.CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS,
+    });
+
+    if (handleCredentialResultResponse.isError) {
+      batchItemFailures.push(handleCredentialResultResponse.value);
     }
   }
 
@@ -91,4 +80,43 @@ function getPutItemInput({
     body: JSON.stringify(credentialResult),
     ttlDurationInSeconds,
   };
+}
+
+async function handleCredentialResult({
+  credentialResultRegistry,
+  record,
+  ttlDurationInSeconds,
+}: {
+  credentialResultRegistry: IDequeueDynamoDbAdapter;
+  record: SQSRecord;
+  ttlDurationInSeconds: string;
+}): Promise<Result<void, SQSBatchItemFailure>> {
+  const validateCredentialResultResponse = validateCredentialResult(
+    record.body,
+  );
+  if (validateCredentialResultResponse.isError) {
+    const { errorMessage } = validateCredentialResultResponse.value;
+    logger.error(LogMessage.DEQUEUE_CREDENTIAL_RESULT_MESSAGE_INVALID, {
+      errorMessage,
+    });
+  } else {
+    const { sub, credentialResult } = validateCredentialResultResponse.value;
+    const sentTimestamp = record.attributes.SentTimestamp;
+    const putItemInput = getPutItemInput({
+      sub,
+      sentTimestamp,
+      credentialResult,
+      ttlDurationInSeconds,
+    });
+    const putItemResult = await credentialResultRegistry.putItem(putItemInput);
+    if (putItemResult.isError) {
+      return errorResult({ itemIdentifier: record.messageId });
+    } else {
+      logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_SUCCESS, {
+        processedMessage: { sub, sentTimestamp },
+      });
+    }
+  }
+
+  return emptySuccess();
 }
