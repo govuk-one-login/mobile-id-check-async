@@ -144,7 +144,7 @@ Resources:
           KeyType: RANGE
       SSESpecification:
         SSEEnabled: true
-      TableName: !Sub ${AWS::StackName}-credential-result-table-${Environment}
+      TableName: !Sub ${AWS::StackName}-credential-result-${Environment}
       TimeToLiveSpecification:
         AttributeName: timeToLiveInSeconds
         Enabled: true
@@ -175,8 +175,8 @@ Resources:
     Properties:
       Environment:
         Variables:
-          CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS: 900
           CREDENTIAL_RESULT_TABLE_NAME: !Ref CredentialResultTable
+          CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS: 900
       FunctionName: !Sub ${AWS::StackName}-dequeue-credential-result
       Handler: dequeueCredentialResultHandler.lambdaHandler
       Role: !GetAtt DequeueCredentialResultRole.Arn

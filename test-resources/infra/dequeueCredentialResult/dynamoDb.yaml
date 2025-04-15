@@ -4,7 +4,7 @@ Resources:
   CredentialResultTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub ${AWS::StackName}-credential-result-table-${Environment}
+      TableName: !Sub ${AWS::StackName}-credential-result-${Environment}
       KeySchema:
         - AttributeName: pk
           KeyType: HASH
