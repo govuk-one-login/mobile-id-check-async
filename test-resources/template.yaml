@@ -144,7 +144,7 @@ Resources:
           KeyType: RANGE
       SSESpecification:
         SSEEnabled: true
-      TableName: !Sub ${AWS::StackName}-credential-result-${Environment}
+      TableName: !Sub ${AWS::StackName}-credential-results-${Environment}
       TimeToLiveSpecification:
         AttributeName: timeToLiveInSeconds
         Enabled: true
