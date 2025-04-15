@@ -50,7 +50,6 @@ export class DequeueDynamoDbAdapter implements IDequeueDynamoDbAdapter {
     });
 
     try {
-      const { pk, sk } = putItemInput;
       const logData = { pk, sk, timeToLiveInSeconds };
       logger.debug(LogMessage.DEQUEUE_PUT_ITEM_ATTEMPT, {
         putItemData: {
