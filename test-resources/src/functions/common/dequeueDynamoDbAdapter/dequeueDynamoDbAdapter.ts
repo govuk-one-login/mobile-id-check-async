@@ -4,12 +4,13 @@ import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { emptyFailure, emptySuccess, Result } from "../utils/result";
 import { LogMessage } from "../logging/LogMessage";
 import { logger } from "../logging/logger";
+import { getTimeToLiveInSeconds } from "../utils/utils";
 
 export interface IDequeueDynamoDbPutItemInput {
   pk: string;
   sk: string;
-  credentialResultBody: string;
-  timeToLiveInSeconds: number;
+  body: string;
+  ttlDurationInSeconds: string;
 }
 
 export interface IDequeueDynamoDbAdapter {
@@ -36,13 +37,20 @@ export class DequeueDynamoDbAdapter implements IDequeueDynamoDbAdapter {
   async putItem(
     putItemInput: IDequeueDynamoDbPutItemInput,
   ): Promise<Result<void, void>> {
+    const { pk, sk, body, ttlDurationInSeconds } = putItemInput;
+    const timeToLiveInSeconds = getTimeToLiveInSeconds(ttlDurationInSeconds);
     const putItemCommand = new PutItemCommand({
       TableName: this.tableName,
-      Item: marshall(putItemInput),
+      Item: marshall({
+        pk,
+        sk,
+        body,
+        timeToLiveInSeconds,
+      }),
     });
 
     try {
-      const { pk, sk, timeToLiveInSeconds } = putItemInput;
+      const { pk, sk } = putItemInput;
       const logData = { pk, sk, timeToLiveInSeconds };
       logger.debug(LogMessage.DEQUEUE_PUT_ITEM_ATTEMPT, {
         putItemData: {

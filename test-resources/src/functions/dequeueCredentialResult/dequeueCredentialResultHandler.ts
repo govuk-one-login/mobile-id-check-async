@@ -8,7 +8,6 @@ import { IDequeueDynamoDbPutItemInput } from "../common/dequeueDynamoDbAdapter/d
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
-import { getTimeToLiveInSeconds } from "../common/utils/utils";
 import { getDequeueCredentialResultConfig } from "./dequeueCredentialResultConfig";
 import {
   IDequeueCredentialResultDependencies,
@@ -94,7 +93,7 @@ function getPutItemInput({
   return {
     pk: `SUB#${sub}`,
     sk: `SENT_TIMESTAMP#${sentTimestamp}`,
-    credentialResultBody: JSON.stringify(credentialResultBody),
-    timeToLiveInSeconds: getTimeToLiveInSeconds(ttlDurationInSeconds),
+    body: JSON.stringify(credentialResultBody),
+    ttlDurationInSeconds,
   };
 }

@@ -46,7 +46,7 @@ describe("Dequeue DynamoDB adapter", () => {
             tableName: "mock-table-name",
             pk: "mockPk",
             sk: "mockSk",
-            timeToLiveInSeconds: 12345,
+            timeToLiveInSeconds: 1704122745,
           },
         });
       });
