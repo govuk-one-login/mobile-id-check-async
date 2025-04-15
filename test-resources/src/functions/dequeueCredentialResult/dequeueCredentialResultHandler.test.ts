@@ -247,18 +247,10 @@ describe("Dequeue credential result", () => {
   });
 });
 
-const mockInertCredentialResultRegistry: IDequeueDynamoDbAdapter = {
-  putItem: jest.fn(() => {
-    throw new Error("Not implemented");
-  }),
-};
-
 const mockCredentialResultRegistrySuccess: IDequeueDynamoDbAdapter = {
-  ...mockInertCredentialResultRegistry,
   putItem: jest.fn().mockResolvedValue(emptySuccess()),
 };
 
 const mockCredentialResultRegistryPutItemFailure: IDequeueDynamoDbAdapter = {
-  ...mockInertCredentialResultRegistry,
   putItem: jest.fn().mockResolvedValue(emptyFailure()),
 };
