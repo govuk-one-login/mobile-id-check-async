@@ -48,7 +48,7 @@ export const lambdaHandlerConstructor = async (
       const putItemInput = getPutItemInput({
         sub,
         sentTimestamp,
-        credentialResultBody: credentialResult,
+        credentialResult,
         ttlDurationInSeconds: config.CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS,
       });
       const putItemResult = await credentialResultRegistry.putItem({
@@ -79,20 +79,20 @@ export const lambdaHandler = lambdaHandlerConstructor.bind(
 interface IDequeueDynamoDbPutItemData {
   sub: string;
   sentTimestamp: string;
-  credentialResultBody: object;
+  credentialResult: object;
   ttlDurationInSeconds: string;
 }
 
 function getPutItemInput({
   sub,
   sentTimestamp,
-  credentialResultBody,
+  credentialResult,
   ttlDurationInSeconds,
 }: IDequeueDynamoDbPutItemData): IDequeueDynamoDbPutItemInput {
   return {
     pk: `SUB#${sub}`,
     sk: `SENT_TIMESTAMP#${sentTimestamp}`,
-    body: JSON.stringify(credentialResultBody),
+    body: JSON.stringify(credentialResult),
     ttlDurationInSeconds,
   };
 }
