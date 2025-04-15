@@ -55,14 +55,14 @@ export const lambdaHandlerConstructor = async (
         await credentialResultRegistry.putItem(putItemInput);
       if (putItemResult.isError) {
         batchItemFailures.push({ itemIdentifier: record.messageId });
+      } else {
+        logger.info(
+          LogMessage.DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS,
+          {
+            processedMessage: { sub, sentTimestamp },
+          },
+        );
       }
-
-      logger.info(
-        LogMessage.DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS,
-        {
-          processedMessage: { sub, sentTimestamp },
-        },
-      );
     }
   }
 
