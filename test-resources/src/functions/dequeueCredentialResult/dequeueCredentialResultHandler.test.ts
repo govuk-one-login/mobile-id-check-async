@@ -78,12 +78,6 @@ describe("Dequeue credential result", () => {
         result = await lambdaHandlerConstructor(dependencies, event, context);
       });
 
-      it("returns 500 Internal server error", async () => {
-        expect(result).toStrictEqual({
-          batchItemFailures: [],
-        });
-      });
-
       it("logs INVALID_CONFIG", async () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode:
@@ -91,6 +85,12 @@ describe("Dequeue credential result", () => {
           data: {
             missingEnvironmentVariables: [envVar],
           },
+        });
+      });
+
+      it("returns 500 Internal server error", async () => {
+        expect(result).toStrictEqual({
+          batchItemFailures: [],
         });
       });
     });
