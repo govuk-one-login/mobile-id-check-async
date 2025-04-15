@@ -170,7 +170,7 @@ describe("Dequeue credential result", () => {
           result = await lambdaHandlerConstructor(dependencies, event, context);
         });
 
-        it("Logs processed messages", () => {
+        it("Logs processed message", () => {
           expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
             messageCode:
               "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS",
@@ -212,7 +212,7 @@ describe("Dequeue credential result", () => {
         });
       });
 
-      it("Logs processed messages", () => {
+      it("Logs processed message", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode:
             "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS",
