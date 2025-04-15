@@ -5,10 +5,6 @@ import { emptyFailure, emptySuccess, Result } from "../utils/result";
 import { LogMessage } from "../logging/LogMessage";
 import { logger } from "../logging/logger";
 
-export interface IDynamoDBConfig {
-  tableName: string;
-}
-
 export interface IDequeueDynamoDbPutItemInput {
   pk: string;
   sk: string;
@@ -33,7 +29,7 @@ export class DequeueDynamoDbAdapter implements IDequeueDynamoDbAdapter {
     }),
   });
 
-  constructor({ tableName }: IDynamoDBConfig) {
+  constructor(tableName: string) {
     this.tableName = tableName;
   }
 

@@ -21,9 +21,7 @@ describe("Dequeue DynamoDB adapter", () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(NOW_IN_MILLISECONDS);
-    dequeueDynamoDbAdapter = new DequeueDynamoDbAdapter({
-      tableName: "mock-table-name",
-    });
+    dequeueDynamoDbAdapter = new DequeueDynamoDbAdapter("mock-table-name");
     consoleDebugSpy = jest.spyOn(console, "debug");
     consoleErrorSpy = jest.spyOn(console, "error");
   });
