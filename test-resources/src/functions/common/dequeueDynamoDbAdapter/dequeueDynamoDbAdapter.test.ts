@@ -29,7 +29,6 @@ describe("Dequeue DynamoDB adapter", () => {
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
     jest.useRealTimers();
   });
 
