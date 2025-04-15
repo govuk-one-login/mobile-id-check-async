@@ -112,7 +112,7 @@ export class LogMessage implements LogAttributes {
   );
   static readonly DEQUEUE_PUT_ITEM_SUCCESS = new LogMessage(
     "TEST_RESOURCES_PUT_ITEM_SUCCESS",
-    "Successfully put item into DynamoDB table",
+    "Successfully put item into DynamoDB",
   );
 
   private constructor(
