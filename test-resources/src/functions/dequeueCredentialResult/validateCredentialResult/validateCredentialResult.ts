@@ -2,7 +2,7 @@ import { errorResult, Result, successResult } from "../../common/utils/result";
 
 export interface IValidCredentialResultData {
   sub: string;
-  credentialResult: object;
+  [key: string]: string;
 }
 
 export function validateCredentialResult(
@@ -30,10 +30,7 @@ export function validateCredentialResult(
     });
   }
 
-  return successResult({
-    sub,
-    credentialResult,
-  });
+  return successResult(credentialResult);
 }
 
 function isString(value: unknown): value is string {

@@ -3,9 +3,7 @@ export const validSQSRecord = {
   receiptHandle: "mockReceiptHandle",
   body: JSON.stringify({
     sub: "mockSub",
-    credentialResultBody: {
-      mockKey: "mockValue",
-    },
+    mockKey: "mockValue",
   }),
   attributes: {
     ApproximateReceiveCount: "mockApproximateReceiveCount",
@@ -23,7 +21,7 @@ export const validSQSRecord = {
 export const failingSQSRecordBodyMissingTimestamp = {
   ...validSQSRecord,
   messageId: "6e7f7694-96ce-4248-9ee0-203c0c39d864",
-  body: JSON.stringify({ sub: "mockSub", event: { mockKey: "mockValue" } }),
+  body: JSON.stringify({ sub: "mockSub", mockKey: "mockValue" }),
   attributes: { ...validSQSRecord.attributes, SentTimestamp: "" },
 };
 

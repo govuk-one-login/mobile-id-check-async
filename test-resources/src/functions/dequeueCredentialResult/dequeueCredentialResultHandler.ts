@@ -43,7 +43,8 @@ export const lambdaHandlerConstructor = async (
       const credentialResultRegistry = dependencies.getCredentialResultRegistry(
         config.CREDENTIAL_RESULT_TABLE_NAME,
       );
-      const { sub, credentialResult } = validateCredentialResultResponse.value;
+      const credentialResult = validateCredentialResultResponse.value;
+      const { sub } = credentialResult;
       const sentTimestamp = record.attributes.SentTimestamp;
       const putItemInput = getPutItemInput({
         sub,
