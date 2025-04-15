@@ -13,7 +13,7 @@ import {
 } from "./dequeueDynamoDbAdapter";
 
 const mockDynamoDbClient = mockClient(DynamoDBClient);
-let dynamoDbAdapter: IDequeueDynamoDbAdapter;
+let dequeueDynamoDbAdapter: IDequeueDynamoDbAdapter;
 let consoleDebugSpy: jest.SpyInstance;
 let consoleErrorSpy: jest.SpyInstance;
 
@@ -21,7 +21,7 @@ describe("Dequeue DynamoDB adapter", () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(NOW_IN_MILLISECONDS);
-    dynamoDbAdapter = new DequeueDynamoDbAdapter({
+    dequeueDynamoDbAdapter = new DequeueDynamoDbAdapter({
       tableName: "mock-table-name",
     });
     consoleDebugSpy = jest.spyOn(console, "debug");
@@ -39,7 +39,7 @@ describe("Dequeue DynamoDB adapter", () => {
     describe("On every attempt", () => {
       beforeEach(async () => {
         mockDynamoDbClient.on(PutItemCommand).resolves({});
-        await dynamoDbAdapter.putItem(mockPutItemInput);
+        await dequeueDynamoDbAdapter.putItem(mockPutItemInput);
       });
 
       it("Logs the attempt", () => {
@@ -58,13 +58,13 @@ describe("Dequeue DynamoDB adapter", () => {
     describe("Given there is a failure attempting to put an item into DynamoDB", () => {
       beforeEach(async () => {
         mockDynamoDbClient.on(PutItemCommand).rejects("mockError");
-        result = await dynamoDbAdapter.putItem(mockPutItemInput);
+        result = await dequeueDynamoDbAdapter.putItem(mockPutItemInput);
       });
 
       describe("Given there is no error message", () => {
         beforeEach(async () => {
           mockDynamoDbClient.on(PutItemCommand).rejects("");
-          result = await dynamoDbAdapter.putItem(mockPutItemInput);
+          result = await dequeueDynamoDbAdapter.putItem(mockPutItemInput);
         });
 
         it("Logs an error message", () => {
@@ -78,7 +78,7 @@ describe("Dequeue DynamoDB adapter", () => {
       describe("Given an error message exists", () => {
         beforeEach(async () => {
           mockDynamoDbClient.on(PutItemCommand).rejects("mockError");
-          result = await dynamoDbAdapter.putItem(mockPutItemInput);
+          result = await dequeueDynamoDbAdapter.putItem(mockPutItemInput);
         });
 
         it("Logs an error message", () => {
@@ -97,7 +97,7 @@ describe("Dequeue DynamoDB adapter", () => {
     describe("Given an item is successfully put into DynamoDB", () => {
       beforeEach(async () => {
         mockDynamoDbClient.on(PutItemCommand).resolves({});
-        result = await dynamoDbAdapter.putItem(mockPutItemInput);
+        result = await dequeueDynamoDbAdapter.putItem(mockPutItemInput);
       });
 
       it("Logs success at debug level", () => {
