@@ -1,14 +1,10 @@
 import { SQSRecord } from "aws-lambda";
 import { errorResult, Result, successResult } from "../../common/utils/result";
 
-interface ICredentialResultCompositeKeyData {
+export interface IValidCredentialResultData {
   sub: string;
   sentTimestamp: string;
-}
-
-export interface IValidCredentialResultData {
-  compositeKeyData: ICredentialResultCompositeKeyData;
-  event: object;
+  credentialResultBody: object;
 }
 
 export function validateCredentialResult(
@@ -21,23 +17,23 @@ export function validateCredentialResult(
     });
   }
 
-  const { body } = record;
-  if (!body) {
+  const { body: recordBody } = record;
+  if (!recordBody) {
     return errorResult({
       errorMessage: "Record body is empty",
     });
   }
 
-  let credentialResult;
+  let parsedRecordBody;
   try {
-    credentialResult = JSON.parse(body);
+    parsedRecordBody = JSON.parse(recordBody);
   } catch (error) {
     return errorResult({
       errorMessage: `Record body could not be parsed as JSON. ${error}`,
     });
   }
 
-  const { sub } = credentialResult;
+  const { sub } = parsedRecordBody;
   if (!sub) {
     return errorResult({
       errorMessage: "sub is missing from record body",
@@ -50,16 +46,17 @@ export function validateCredentialResult(
     });
   }
 
-  const { event } = credentialResult;
-  if (!event) {
+  const { credentialResultBody } = parsedRecordBody;
+  if (!credentialResultBody) {
     return errorResult({
       errorMessage: "event is missing from record body",
     });
   }
 
   return successResult({
-    compositeKeyData: { sub, sentTimestamp },
-    event,
+    sub,
+    sentTimestamp,
+    credentialResultBody,
   });
 }
 

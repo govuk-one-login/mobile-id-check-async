@@ -3,7 +3,7 @@ export const validSQSRecord = {
   receiptHandle: "mockReceiptHandle",
   body: JSON.stringify({
     sub: "mockSub",
-    event: {
+    credentialResultBody: {
       mockKey: "mockValue",
     },
   }),

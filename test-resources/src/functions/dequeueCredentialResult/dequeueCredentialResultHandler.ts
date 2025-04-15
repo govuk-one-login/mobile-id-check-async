@@ -42,11 +42,12 @@ export const lambdaHandlerConstructor = async (
       const credentialResultRegistry = dependencies.getCredentialResultRegistry(
         config.CREDENTIAL_RESULT_TABLE_NAME,
       );
-      const { compositeKeyData, event } =
+      const { sub, sentTimestamp, credentialResultBody } =
         validateCredentialResultResponse.value;
       const putItemInput = getPutItemInput({
-        compositeKeyData,
-        event,
+        sub,
+        sentTimestamp,
+        credentialResultBody,
         ttlDurationInSeconds: config.CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS,
       });
       const putItemResult = await credentialResultRegistry.putItem({
@@ -59,7 +60,7 @@ export const lambdaHandlerConstructor = async (
       logger.info(
         LogMessage.DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS,
         {
-          processedMessage: compositeKeyData,
+          processedMessage: { sub, sentTimestamp },
         },
       );
     }
@@ -75,24 +76,22 @@ export const lambdaHandler = lambdaHandlerConstructor.bind(
 );
 
 interface IDequeueDynamoDbPutItemData {
-  compositeKeyData: {
-    sub: string;
-    sentTimestamp: string;
-  };
-  event: object;
+  sub: string;
+  sentTimestamp: string;
+  credentialResultBody: object;
   ttlDurationInSeconds: string;
 }
 
 function getPutItemInput({
-  compositeKeyData,
-  event,
+  sub,
+  sentTimestamp,
+  credentialResultBody,
   ttlDurationInSeconds,
 }: IDequeueDynamoDbPutItemData): IDequeueDynamoDbPutItemInput {
-  const { sub, sentTimestamp } = compositeKeyData;
   return {
     pk: `SUB#${sub}`,
     sk: `SENT_TIMESTAMP#${sentTimestamp}`,
-    event: JSON.stringify(event),
+    credentialResultBody: JSON.stringify(credentialResultBody),
     timeToLiveInSeconds: getTimeToLiveInSeconds(ttlDurationInSeconds),
   };
 }

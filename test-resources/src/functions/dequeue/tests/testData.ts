@@ -264,6 +264,6 @@ export const missingTimestampSQSRecord = {
 export const mockPutItemInput = {
   pk: "mockPk",
   sk: "mockSk",
-  event: JSON.stringify("mockEvent"),
+  credentialResultBody: JSON.stringify("mockCredentialResultBody"),
   timeToLiveInSeconds: 12345,
 };

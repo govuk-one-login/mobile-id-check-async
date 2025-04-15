@@ -8,7 +8,7 @@ import { logger } from "../logging/logger";
 export interface IDequeueDynamoDbPutItemInput {
   pk: string;
   sk: string;
-  event: string;
+  credentialResultBody: string;
   timeToLiveInSeconds: number;
 }
 
