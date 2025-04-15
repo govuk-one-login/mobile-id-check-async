@@ -21,7 +21,7 @@ Resources:
       Environment:
         Variables:
           CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS: 900
-          CREDENTIAL_RESULT_TABLE_NAME: !Ref CredentialResultTable
+          CREDENTIAL_RESULT_TABLE_NAME: !Ref CredentialResultsTable
       Timeout: 10
       VpcConfig:
         SubnetIds:
@@ -100,7 +100,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - dynamodb:PutItem
-                Resource: !GetAtt CredentialResultTable.Arn
+                Resource: !GetAtt CredentialResultsTable.Arn
 
   DequeueCredentialResultEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping

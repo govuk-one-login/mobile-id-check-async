@@ -12,10 +12,6 @@ import { IDequeueCredentialResultDependencies } from "./handlerDependencies";
 import { IDequeueDynamoDbAdapter } from "../common/dequeueDynamoDbAdapter/dequeueDynamoDbAdapter";
 
 describe("Dequeue credential result", () => {
-  const env = {
-    CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS: "3600",
-    CREDENTIAL_RESULT_TABLE_NAME: "mockCredentialResultTableName",
-  };
   let dependencies: IDequeueCredentialResultDependencies;
   let context: Context;
   let consoleInfoSpy: jest.SpyInstance;
@@ -26,7 +22,10 @@ describe("Dequeue credential result", () => {
     jest.useFakeTimers();
     jest.setSystemTime(NOW_IN_MILLISECONDS);
     dependencies = {
-      env: { ...env },
+      env: {
+        CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS: "3600",
+        CREDENTIAL_RESULT_TABLE_NAME: "mockCredentialResultsTableName",
+      },
       getCredentialResultRegistry: () => mockCredentialResultRegistrySuccess,
     };
     context = buildLambdaContext();

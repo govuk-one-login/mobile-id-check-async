@@ -1,10 +1,10 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-  CredentialResultTable:
+  CredentialResultsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub ${AWS::StackName}-credential-result-${Environment}
+      TableName: !Sub ${AWS::StackName}-credential-results-${Environment}
       KeySchema:
         - AttributeName: pk
           KeyType: HASH
