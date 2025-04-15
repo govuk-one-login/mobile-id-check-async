@@ -32,7 +32,9 @@ export const lambdaHandlerConstructor = async (
   const config = configResult.value;
 
   for (const record of event.Records) {
-    const validateCredentialResultResponse = validateCredentialResult(record);
+    const validateCredentialResultResponse = validateCredentialResult(
+      record.body,
+    );
     if (validateCredentialResultResponse.isError) {
       const { errorMessage } = validateCredentialResultResponse.value;
       logger.error(LogMessage.DEQUEUE_CREDENTIAL_RESULT_MESSAGE_INVALID, {
@@ -42,8 +44,9 @@ export const lambdaHandlerConstructor = async (
       const credentialResultRegistry = dependencies.getCredentialResultRegistry(
         config.CREDENTIAL_RESULT_TABLE_NAME,
       );
-      const { sub, sentTimestamp, credentialResultBody } =
+      const { sub, credentialResultBody } =
         validateCredentialResultResponse.value;
+      const sentTimestamp = record.attributes.SentTimestamp;
       const putItemInput = getPutItemInput({
         sub,
         sentTimestamp,

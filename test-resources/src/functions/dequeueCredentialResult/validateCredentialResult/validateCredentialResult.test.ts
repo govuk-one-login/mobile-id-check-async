@@ -1,11 +1,9 @@
 import { expect } from "@jest/globals";
-import { SQSRecord } from "aws-lambda";
 import { Result } from "../../common/utils/result";
 import "../../testUtils/matchers";
 import {
   failingSQSRecordBodyInvalidJSON,
   failingSQSRecordBodyMissingSub,
-  failingSQSRecordBodyMissingTimestamp,
   failingSQSRecordBodySubTypeInvalid,
 } from "../unitTestData";
 import {
@@ -16,27 +14,10 @@ import {
 describe("Validate credential result", () => {
   let result: Result<IValidCredentialResultData>;
 
-  describe("Given credential result is missing a timestamp", () => {
-    beforeEach(() => {
-      const sqsRecord: SQSRecord = failingSQSRecordBodyMissingTimestamp;
-      result = validateCredentialResult(sqsRecord);
-    });
-
-    it("Returns an error result", () => {
-      expect(result.isError).toBe(true);
-    });
-
-    it("Returns an error message", () => {
-      expect(result.value).toStrictEqual({
-        errorMessage: `SentTimestamp is missing from record`,
-      });
-    });
-  });
-
   describe("Given credential result is not valid JSON", () => {
     beforeEach(() => {
-      const sqsRecord: SQSRecord = failingSQSRecordBodyInvalidJSON;
-      result = validateCredentialResult(sqsRecord);
+      const recordBody: string = failingSQSRecordBodyInvalidJSON.body;
+      result = validateCredentialResult(recordBody);
     });
 
     it("Returns an error result", () => {
@@ -54,8 +35,8 @@ describe("Validate credential result", () => {
 
   describe("Given credential result is missing a sub", () => {
     beforeEach(() => {
-      const sqsRecord: SQSRecord = failingSQSRecordBodyMissingSub;
-      result = validateCredentialResult(sqsRecord);
+      const recordBody: string = failingSQSRecordBodyMissingSub.body;
+      result = validateCredentialResult(recordBody);
     });
 
     it("Returns an error result", () => {
@@ -71,8 +52,8 @@ describe("Validate credential result", () => {
 
   describe("Given sub is not a string", () => {
     beforeEach(() => {
-      const sqsRecord: SQSRecord = failingSQSRecordBodySubTypeInvalid;
-      result = validateCredentialResult(sqsRecord);
+      const recordBody: string = failingSQSRecordBodySubTypeInvalid.body;
+      result = validateCredentialResult(recordBody);
     });
 
     it("Returns an error result", () => {

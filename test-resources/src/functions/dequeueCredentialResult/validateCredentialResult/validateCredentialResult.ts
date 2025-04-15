@@ -1,25 +1,16 @@
-import { SQSRecord } from "aws-lambda";
 import { errorResult, Result, successResult } from "../../common/utils/result";
 
 export interface IValidCredentialResultData {
   sub: string;
-  sentTimestamp: string;
   credentialResultBody: object;
 }
 
 export function validateCredentialResult(
-  record: SQSRecord,
+  recordBody: string,
 ): Result<IValidCredentialResultData> {
-  const sentTimestamp = record.attributes.SentTimestamp;
-  if (!sentTimestamp) {
-    return errorResult({
-      errorMessage: "SentTimestamp is missing from record",
-    });
-  }
-
   let credentialResultBody;
   try {
-    credentialResultBody = JSON.parse(record.body);
+    credentialResultBody = JSON.parse(recordBody);
   } catch (error) {
     return errorResult({
       errorMessage: `Record body could not be parsed as JSON. ${error}`,
@@ -41,7 +32,6 @@ export function validateCredentialResult(
 
   return successResult({
     sub,
-    sentTimestamp,
     credentialResultBody,
   });
 }
