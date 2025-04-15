@@ -8,8 +8,13 @@ import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 
 const REQUIRED_ENVIRONMENT_VARIABLES = [
+  "READID_BASE_URL",
   "BIOMETRIC_VIEWER_KEY_SECRET_PATH",
   "BIOMETRIC_VIEWER_ACCESS_KEY_SECRET_CACHE_DURATION_IN_SECONDS",
+  "IPVCORE_OUTBOUND_SQS",
+  "SESSION_TABLE_NAME",
+  "TXMA_SQS",
+  "ISSUER",
 ] as const;
 
 export type IssueBiometricCredentialConfig = Config<

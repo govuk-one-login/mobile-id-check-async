@@ -315,6 +315,43 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG",
     "One or more required environment variables were missing or invalid.",
   );
+  static readonly BIOMETRIC_SESSION_GET_FROM_READID_FAILURE = new LogMessage(
+    "MOBILE_ASYNC_BIOMETRIC_SESSION_GET_FROM_READID_FAILURE",
+    "Failed to retrieve biometric session from ReadID",
+  );
+  static readonly BIOMETRIC_SESSION_GET_FROM_READID_SUCCESS = new LogMessage(
+    "MOBILE_ASYNC_BIOMETRIC_SESSION_GET_FROM_READID_SUCCESS",
+    "Successfully retrieved biometric session from ReadID",
+  );
+  static readonly BIOMETRIC_SESSION_GET_FROM_READID_ATTEMPT = new LogMessage(
+    "MOBILE_ASYNC_BIOMETRIC_SESSION_GET_FROM_READID_ATTEMPT",
+    "Retrieving biometric session from ReadID",
+  );
+  static readonly BIOMETRIC_SESSION_NOT_READY = new LogMessage(
+    "MOBILE_ASYNC_BIOMETRIC_SESSION_NOT_READY",
+    "Biometric session not ready (finish status not DONE)",
+  );
+
+  static readonly BIOMETRIC_SESSION_IPV_CORE_MESSAGE_ERROR = new LogMessage(
+    "MOBILE_ASYNC_BIOMETRIC_SESSION_IPV_CORE_MESSAGE_ERROR",
+    "Error sending message to IPV Core",
+  );
+  static readonly BIOMETRIC_SESSION_TXMA_EVENT_ERROR = new LogMessage(
+    "MOBILE_ASYNC_BIOMETRIC_SESSION_TXMA_EVENT_ERROR",
+    "Error sending event to TxMA",
+  );
+  static readonly SESSION_NOT_FOUND = new LogMessage(
+    "MOBILE_ASYNC_SESSION_NOT_FOUND",
+    "Session not found in session registry",
+  );
+  static readonly BIOMETRIC_SESSION_RETRYABLE_ERROR = new LogMessage(
+    "MOBILE_ASYNC_BIOMETRIC_SESSION_RETRYABLE_ERROR",
+    "Encountered retryable error retrieving biometric session after maximum retries",
+  );
+  static readonly BIOMETRIC_SESSION_NON_RETRYABLE_ERROR = new LogMessage(
+    "MOBILE_ASYNC_BIOMETRIC_SESSION_NON_RETRYABLE_ERROR",
+    "Encountered non-retryable error retrieving biometric session",
+  );
 
   private constructor(
     public readonly messageCode: string,

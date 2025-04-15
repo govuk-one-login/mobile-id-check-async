@@ -10,4 +10,14 @@ export interface AbortSessionMessage {
   error_description: string;
 }
 
-export type SQSMessageBody = VendorProcessingMessage | AbortSessionMessage;
+export interface IssueBiometricCredentialMessage {
+  sub: string;
+  state: string;
+  error: string;
+  error_description: string;
+}
+
+export type SQSMessageBody =
+  | VendorProcessingMessage
+  | AbortSessionMessage
+  | IssueBiometricCredentialMessage;
