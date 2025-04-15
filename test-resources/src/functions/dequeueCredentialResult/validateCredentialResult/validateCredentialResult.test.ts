@@ -7,12 +7,12 @@ import {
   failingSQSRecordBodySubTypeInvalid,
 } from "../unitTestData";
 import {
-  IValidCredentialResultData,
+  IValidCredentialResult,
   validateCredentialResult,
 } from "./validateCredentialResult";
 
 describe("Validate credential result", () => {
-  let result: Result<IValidCredentialResultData>;
+  let result: Result<IValidCredentialResult>;
 
   describe("Given credential result is not valid JSON", () => {
     beforeEach(() => {

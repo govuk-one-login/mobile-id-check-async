@@ -1,13 +1,13 @@
 import { errorResult, Result, successResult } from "../../common/utils/result";
 
-export interface IValidCredentialResultData {
+export interface IValidCredentialResult {
   sub: string;
   [key: string]: string;
 }
 
 export function validateCredentialResult(
   recordBody: string,
-): Result<IValidCredentialResultData> {
+): Result<IValidCredentialResult> {
   let credentialResult;
   try {
     credentialResult = JSON.parse(recordBody);
