@@ -17,23 +17,16 @@ export function validateCredentialResult(
     });
   }
 
-  const { body: recordBody } = record;
-  if (!recordBody) {
-    return errorResult({
-      errorMessage: "Record body is empty",
-    });
-  }
-
-  let parsedRecordBody;
+  let credentialResultBody;
   try {
-    parsedRecordBody = JSON.parse(recordBody);
+    credentialResultBody = JSON.parse(record.body);
   } catch (error) {
     return errorResult({
       errorMessage: `Record body could not be parsed as JSON. ${error}`,
     });
   }
 
-  const { sub } = parsedRecordBody;
+  const { sub } = credentialResultBody;
   if (!sub) {
     return errorResult({
       errorMessage: "sub is missing from record body",
@@ -43,13 +36,6 @@ export function validateCredentialResult(
   if (!isString(sub)) {
     return errorResult({
       errorMessage: `sub is not a string. Incoming sub is type: ${typeof sub}`,
-    });
-  }
-
-  const { credentialResultBody } = parsedRecordBody;
-  if (!credentialResultBody) {
-    return errorResult({
-      errorMessage: "event is missing from record body",
     });
   }
 

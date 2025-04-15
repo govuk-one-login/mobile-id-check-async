@@ -51,7 +51,7 @@ export const failingSQSRecordBodySubTypeInvalid = {
   body: JSON.stringify({ sub: 12345 }),
 };
 
-export const failingSQSRecordBodyMissingEvent = {
+export const failingSQSRecordBodyMissingCredentialResultBody = {
   ...validSQSRecord,
   messageId: "6f50c504-818f-4e9f-9a7f-785f532b45f2",
   body: JSON.stringify({ sub: "mockSub" }),
