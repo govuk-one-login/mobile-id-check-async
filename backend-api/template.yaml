@@ -4660,16 +4660,6 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
-  IssueBiometricCredentialEventSourceMapping:
-    Type: AWS::Lambda::EventSourceMapping
-    Properties:
-      BatchSize: 1
-      Enabled: true
-      EventSourceArn: !GetAtt VendorProcessingSQS.Arn
-      FunctionName: !Sub ${AsyncIssueBiometricCredentialFunction}:live
-      ScalingConfig:
-        MaximumConcurrency: 34
-
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket
     Properties:
