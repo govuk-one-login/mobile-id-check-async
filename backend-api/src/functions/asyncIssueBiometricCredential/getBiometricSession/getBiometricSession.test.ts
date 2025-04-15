@@ -240,7 +240,6 @@ describe("getBiometricSession", () => {
   describe("Utility functions", () => {
     describe("isRetryableError", () => {
       it("Returns true for retryable status codes", () => {
-        // Setup a mock error
         mockSendHttpRequest = jest.fn().mockResolvedValue(
           errorResult({
             statusCode: 503,
@@ -248,7 +247,6 @@ describe("getBiometricSession", () => {
           }),
         );
 
-        // Trigger the error
         getBiometricSession(
           "https://mockUrl.com",
           mockSessionId,
@@ -260,7 +258,6 @@ describe("getBiometricSession", () => {
       });
 
       it("Returns false for non-retryable status codes", () => {
-        // Setup a mock error
         mockSendHttpRequest = jest.fn().mockResolvedValue(
           errorResult({
             statusCode: 404,
@@ -268,7 +265,6 @@ describe("getBiometricSession", () => {
           }),
         );
 
-        // Trigger the error
         getBiometricSession(
           "https://mockUrl.com",
           mockSessionId,
@@ -280,7 +276,6 @@ describe("getBiometricSession", () => {
       });
 
       it("Returns false when no error is present", () => {
-        // Clear any previous errors
         mockSendHttpRequest = jest.fn().mockResolvedValue(
           successResult({
             statusCode: 200,
@@ -289,7 +284,6 @@ describe("getBiometricSession", () => {
           }),
         );
 
-        // Trigger successful request
         getBiometricSession(
           "https://mockUrl.com",
           mockSessionId,

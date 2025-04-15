@@ -22,7 +22,6 @@ import { emptyFailure, errorResult, successResult } from "../utils/result";
 import { GetSessionError } from "../common/session/SessionRegistry/types";
 import { BiometricSession } from "./getBiometricSession/getBiometricSession";
 
-// Mock the isRetryableError and getLastError functions
 jest.mock("./getBiometricSession/getBiometricSession", () => {
   return {
     ...jest.requireActual("./getBiometricSession/getBiometricSession"),
@@ -43,7 +42,6 @@ describe("Async Issue Biometric Credential", () => {
   let consoleErrorSpy: jest.SpyInstance;
   let lambdaError: unknown;
 
-  // Mock sessions for testing
   const mockReadyBiometricSession: BiometricSession = {
     id: "mockBiometricSessionId",
     finish: "DONE",
@@ -54,7 +52,6 @@ describe("Async Issue Biometric Credential", () => {
     finish: "PROCESSING",
   };
 
-  // Mock functions for biometric session retrieval
   const mockGetBiometricSessionSuccess = jest
     .fn()
     .mockResolvedValue(successResult(mockReadyBiometricSession));
@@ -127,7 +124,6 @@ describe("Async Issue Biometric Credential", () => {
     consoleInfoSpy = jest.spyOn(console, "info");
     consoleErrorSpy = jest.spyOn(console, "error");
 
-    // Reset mocks
     (isRetryableError as jest.Mock).mockReset();
     (getLastError as jest.Mock).mockReset();
   });
@@ -521,22 +517,6 @@ describe("Async Issue Biometric Credential", () => {
           });
         });
       });
-
-      // describe("When sending event to TxMA fails", () => {
-      //   beforeEach(() => {
-      //     dependencies.getEventService = () => ({
-      //       writeGenericEvent: jest.fn().mockResolvedValue(emptyFailure()),
-      //     });
-      //   });
-
-      //   it("Logs the error", async () => {
-      //     await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
-
-      //     expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-      //       messageCode: "MOBILE_ASYNC_BIOMETRIC_SESSION_TXMA_EVENT_ERROR",
-      //     });
-      //   });
-      // });
     });
   });
 
@@ -556,7 +536,6 @@ describe("Async Issue Biometric Credential", () => {
         data: { sessionId: mockSessionId },
       });
 
-      // Should still continue to call getBiometricSession
       expect(mockGetBiometricSessionSuccess).toHaveBeenCalled();
     });
 
@@ -569,7 +548,6 @@ describe("Async Issue Biometric Credential", () => {
       it("Handles error without session attributes", async () => {
         await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
 
-        // Should still send event to TxMA, but without subject identifier
         expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
           expect.objectContaining({
             eventName: "DCMAW_ASYNC_CRI_5XXERROR",
