@@ -2,22 +2,22 @@ import { errorResult, Result, successResult } from "../../common/utils/result";
 
 export interface IValidCredentialResultData {
   sub: string;
-  credentialResultBody: object;
+  credentialResult: object;
 }
 
 export function validateCredentialResult(
   recordBody: string,
 ): Result<IValidCredentialResultData> {
-  let credentialResultBody;
+  let credentialResult;
   try {
-    credentialResultBody = JSON.parse(recordBody);
+    credentialResult = JSON.parse(recordBody);
   } catch (error) {
     return errorResult({
       errorMessage: `Record body could not be parsed as JSON. ${error}`,
     });
   }
 
-  const { sub } = credentialResultBody;
+  const { sub } = credentialResult;
   if (!sub) {
     return errorResult({
       errorMessage: "sub is missing from record body",
@@ -32,7 +32,7 @@ export function validateCredentialResult(
 
   return successResult({
     sub,
-    credentialResultBody,
+    credentialResult,
   });
 }
 
