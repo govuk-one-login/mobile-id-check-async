@@ -148,12 +148,6 @@ describe("Dequeue credential result", () => {
           result = await lambdaHandlerConstructor(dependencies, event, context);
         });
 
-        it("Logs COMPLETED", () => {
-          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
-          });
-        });
-
         it("Logs processed messages", () => {
           expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
             messageCode:
@@ -162,6 +156,12 @@ describe("Dequeue credential result", () => {
               sub: "mockSub",
               sentTimestamp: "mockSentTimestamp",
             },
+          });
+        });
+
+        it("Logs COMPLETED", () => {
+          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
           });
         });
 
@@ -182,12 +182,6 @@ describe("Dequeue credential result", () => {
           result = await lambdaHandlerConstructor(dependencies, event, context);
         });
 
-        it("Logs COMPLETED", () => {
-          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
-          });
-        });
-
         it("Logs processed messages", () => {
           expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
             messageCode:
@@ -196,6 +190,12 @@ describe("Dequeue credential result", () => {
               sub: "mockSub",
               sentTimestamp: "mockSentTimestamp",
             },
+          });
+        });
+
+        it("Logs COMPLETED", () => {
+          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
           });
         });
 
