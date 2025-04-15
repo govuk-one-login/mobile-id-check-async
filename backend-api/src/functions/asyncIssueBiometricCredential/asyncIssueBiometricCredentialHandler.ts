@@ -8,7 +8,6 @@ import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
 import { validateVendorProcessingQueueSqsEvent } from "./validateSqsEvent";
 import { getIssueBiometricCredentialConfig } from "./issueBiometricCredentialConfig";
-import { GetSessionIssueBiometricCredential } from "../common/session/getOperations/IssueBiometricCredential/GetSessionIssueBiometricCredential";
 import {
   GetSessionError,
   GetSessionFailed,
@@ -26,7 +25,6 @@ import {
 import { IEventService } from "../services/events/types";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 import { SessionState } from "../common/session/session";
-
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -56,7 +54,6 @@ export async function lambdaHandlerConstructor(
     config.SESSION_TABLE_NAME,
   );
 
-
   const getSessionResult = await sessionRegistry.getSession(
     sessionId,
     new GetSessionBiometricTokenIssued(),
@@ -68,16 +65,8 @@ export async function lambdaHandlerConstructor(
     });
   }
 
-  const sessionAttributes = getSessionResult.isError
-    ? undefined
-    : getSessionResult.value;
-=======
   const eventService = dependencies.getEventService(config.TXMA_SQS);
 
-  const getSessionResult = await sessionRegistry.getSession(
-    sessionId,
-    new GetSessionIssueBiometricCredential(),
-  );
   if (getSessionResult.isError) {
     return handleGetSessionError({
       errorData: getSessionResult.value,
@@ -92,7 +81,6 @@ export async function lambdaHandlerConstructor(
     logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
     return;
   }
-
 
   const viewerKeyResult = await getBiometricViewerAccessKey(
     config.BIOMETRIC_VIEWER_KEY_SECRET_PATH,
@@ -118,7 +106,7 @@ export async function lambdaHandlerConstructor(
       const error = getLastError();
       logger.error(LogMessage.BIOMETRIC_SESSION_RETRYABLE_ERROR);
       throw new RetainMessageOnQueue(
-        `Retryable error (${error?.statusCode}) retrieving biometric session`,
+        `Retryable error (${Number(error?.statusCode)}) retrieving biometric session`,
       );
     }
 
@@ -174,7 +162,6 @@ export async function lambdaHandlerConstructor(
 
   const session = sessionResult.value;
 
-  // Check if the session is ready
   if (session.finish !== "DONE") {
     logger.info(LogMessage.BIOMETRIC_SESSION_NOT_READY, {
       data: { finish: session.finish },

@@ -10,9 +10,6 @@ import {
 import { Result } from "../utils/result";
 import { sendMessageToSqs } from "../adapters/aws/sqs/sendMessageToSqs";
 import { IssueBiometricCredentialMessage } from "../adapters/aws/sqs/types";
-import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
-import { DynamoDbAdapter } from "../adapters/aws/dynamo/dynamoDbAdapter";
-
 
 import { IEventService } from "../services/events/types";
 import { EventService } from "../services/events/eventService";
@@ -25,14 +22,10 @@ export type IssueBiometricCredentialDependencies = {
   getBiometricSession: GetBiometricSession;
 
   getEventService: (sqsQueue: string) => IEventService;
-  getSessionRegistry: (tableName: string) => SessionRegistry;
   sendMessageToSqs: (
     sqsArn: string,
     messageBody: IssueBiometricCredentialMessage,
   ) => Promise<Result<void, void>>;
-
-  getEventService: (sqsQueue: string) => IEventService;
-
 };
 
 export const runtimeDependencies: IssueBiometricCredentialDependencies = {
@@ -43,9 +36,5 @@ export const runtimeDependencies: IssueBiometricCredentialDependencies = {
   getBiometricSession,
   getEventService: (sqsQueue: string) => new EventService(sqsQueue),
 
-  getSessionRegistry: (tableName: string) => new DynamoDbAdapter(tableName),
   sendMessageToSqs,
-
-  getEventService: (sqsQueue: string) => new EventService(sqsQueue),
-
 };

@@ -348,11 +348,11 @@ export class LogMessage implements LogAttributes {
   static readonly BIOMETRIC_SESSION_NON_RETRYABLE_ERROR = new LogMessage(
     "MOBILE_ASYNC_BIOMETRIC_SESSION_NON_RETRYABLE_ERROR",
     "Encountered non-retryable error retrieving biometric session",
+  );
 
   static readonly ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT = new LogMessage(
     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
     "SQS Event from vendor processing queue is invalid",
-
   );
 
   private constructor(
