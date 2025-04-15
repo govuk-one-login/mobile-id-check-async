@@ -52,9 +52,8 @@ export const lambdaHandlerConstructor = async (
         credentialResult,
         ttlDurationInSeconds: config.CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS,
       });
-      const putItemResult = await credentialResultRegistry.putItem({
-        ...putItemInput,
-      });
+      const putItemResult =
+        await credentialResultRegistry.putItem(putItemInput);
       if (putItemResult.isError) {
         batchItemFailures.push({ itemIdentifier: record.messageId });
       }
