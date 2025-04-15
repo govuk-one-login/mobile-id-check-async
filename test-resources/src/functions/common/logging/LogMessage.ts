@@ -70,11 +70,10 @@ export class LogMessage implements LogAttributes {
     "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_MESSAGE_INVALID",
     "Credential result message is missing or invalid",
   );
-  static readonly DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS =
-    new LogMessage(
-      "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_PROCESS_MESSAGE_SUCCESS",
-      "Successfully processed the message from the IPV Core outbound queue",
-    );
+  static readonly DEQUEUE_CREDENTIAL_RESULT_SUCCESS = new LogMessage(
+    "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_SUCCESS",
+    "Successfully processed the message from the IPV Core outbound queue",
+  );
   static readonly DEQUEUE_CREDENTIAL_RESULT_COMPLETED = new LogMessage(
     "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
     "Lambda handler processing has completed successfully.",
