@@ -224,12 +224,6 @@ describe("Dequeue credential result", () => {
         });
       });
 
-      it("Logs COMPLETED", () => {
-        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
-        });
-      });
-
       it("Logs processed messages", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode:
@@ -238,6 +232,12 @@ describe("Dequeue credential result", () => {
             sub: "mockSub",
             sentTimestamp: "mockSentTimestamp",
           },
+        });
+      });
+
+      it("Logs COMPLETED", () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
         });
       });
 
