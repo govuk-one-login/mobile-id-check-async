@@ -54,6 +54,8 @@ export async function lambdaHandlerConstructor(
     config.SESSION_TABLE_NAME,
   );
 
+  const eventService = dependencies.getEventService(config.TXMA_SQS);
+
   const getSessionResult = await sessionRegistry.getSession(
     sessionId,
     new GetSessionBiometricTokenIssued(),
@@ -64,8 +66,6 @@ export async function lambdaHandlerConstructor(
       data: { sessionId },
     });
   }
-
-  const eventService = dependencies.getEventService(config.TXMA_SQS);
 
   if (getSessionResult.isError) {
     return handleGetSessionError({
