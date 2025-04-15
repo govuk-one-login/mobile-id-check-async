@@ -1,8 +1,7 @@
 type StaticRetainMessages =
   | "Invalid config"
   | "Failed to retrieve biometric viewer key"
-  | "Unexpected failure retrieving session from database"
-  | "Retryable error (${error?.statusCode}) retrieving biometric session";
+  | "Unexpected failure retrieving session from database";
 
 type RetryableErrorMessage =
   | `Retryable error (${number}) retrieving biometric session`
