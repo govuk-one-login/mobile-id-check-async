@@ -371,6 +371,10 @@ Conditions:
       - !Ref Environment
       - production
 
+  isTemporaryTest: !Equals
+    - true
+    - false
+
 Transform: AWS::Serverless-2016-10-31
 
 Globals:
@@ -3294,7 +3298,7 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-issue-biometric-credential
       Handler: asyncIssueBiometricCredentialHandler.lambdaHandler
       ReservedConcurrentExecutions: !If
-        - isDev
+        - isTemporaryTest
         - !Ref AWS::NoValue
         - !FindInMap
           - Lambda
@@ -4668,7 +4672,13 @@ Resources:
       EventSourceArn: !GetAtt VendorProcessingSQS.Arn
       FunctionName: !Ref AsyncIssueBiometricCredentialFunction.Alias
       ScalingConfig:
-        MaximumConcurrency: 34
+        MaximumConcurrency: !If
+          - isTemporaryTest
+          - !Ref AWS::NoValue
+          - !FindInMap
+            - Lambda
+            - !Ref Environment
+            - IssueBiometricCredentialReservedConcurrentExecutions
 
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket
