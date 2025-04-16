@@ -290,9 +290,6 @@ Conditions:
   isDev: !Equals
       - !Ref Environment
       - dev
-  isTemporaryTest: !Equals
-      - true
-      - false
 
   isNotDev: 
     !Not [!Equals [!Ref Environment, dev]]

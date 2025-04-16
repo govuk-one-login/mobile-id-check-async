@@ -371,10 +371,6 @@ Conditions:
       - !Ref Environment
       - production
 
-  isTemporaryTest: !Equals
-    - true
-    - false
-
 Transform: AWS::Serverless-2016-10-31
 
 Globals:
@@ -4673,7 +4669,7 @@ Resources:
       FunctionName: !Ref AsyncIssueBiometricCredentialFunction.Alias
       ScalingConfig:
         MaximumConcurrency: !If
-          - isTemporaryTest
+          - isDev
           - !Ref AWS::NoValue
           - !FindInMap
             - Lambda
