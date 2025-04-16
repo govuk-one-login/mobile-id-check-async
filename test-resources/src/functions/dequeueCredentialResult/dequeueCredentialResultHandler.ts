@@ -48,9 +48,12 @@ export const lambdaHandlerConstructor = async (
     });
 
     if (handleCredentialResultResponse.isError) {
-      if (handleCredentialResultResponse.value.isRetryable) {
+      if (
+        handleCredentialResultResponse.value.isRetryable &&
+        handleCredentialResultResponse.value.messageId
+      ) {
         const { messageId } = handleCredentialResultResponse.value;
-        if (messageId) batchItemFailures.push({ itemIdentifier: messageId });
+        batchItemFailures.push({ itemIdentifier: messageId });
       }
     }
   }
