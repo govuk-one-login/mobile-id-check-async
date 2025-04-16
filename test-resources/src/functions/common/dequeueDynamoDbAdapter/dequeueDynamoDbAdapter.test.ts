@@ -11,6 +11,7 @@ import {
   DequeueDynamoDbAdapter,
   IDequeueDynamoDbAdapter,
 } from "./dequeueDynamoDbAdapter";
+import { marshall } from "@aws-sdk/util-dynamodb";
 
 const mockDynamoDbClient = mockClient(DynamoDBClient);
 let dequeueDynamoDbAdapter: IDequeueDynamoDbAdapter;
@@ -73,7 +74,20 @@ describe("Dequeue DynamoDB adapter", () => {
 
     describe("Given an item is successfully put into DynamoDB", () => {
       beforeEach(async () => {
-        mockDynamoDbClient.on(PutItemCommand).resolves({});
+        const expectedPutItemCommandInput = {
+          TableName: "mock-table-name",
+          Item: marshall({
+            pk: "mockPk",
+            sk: "mockSk",
+            body: JSON.stringify("mockBody"),
+            timeToLiveInSeconds: 1704122745,
+          }),
+        };
+        mockDynamoDbClient
+          .onAnyCommand() // default
+          .rejects("Did not receive expected input")
+          .on(PutItemCommand, expectedPutItemCommandInput, true) // match to expected input
+          .resolves({});
         result = await dequeueDynamoDbAdapter.putItem(mockPutItemInput);
       });
 

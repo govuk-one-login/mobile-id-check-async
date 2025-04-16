@@ -63,27 +63,6 @@ export const lambdaHandler = lambdaHandlerConstructor.bind(
   handlerDependencies,
 );
 
-interface IDequeueDynamoDbPutItemData {
-  sub: string;
-  sentTimestamp: string;
-  credentialResult: string;
-  ttlDurationInSeconds: string;
-}
-
-function getPutItemInput({
-  sub,
-  sentTimestamp,
-  credentialResult,
-  ttlDurationInSeconds,
-}: IDequeueDynamoDbPutItemData): IDequeueDynamoDbPutItemInput {
-  return {
-    pk: `SUB#${sub}`,
-    sk: `SENT_TIMESTAMP#${sentTimestamp}`,
-    body: JSON.stringify(credentialResult),
-    ttlDurationInSeconds,
-  };
-}
-
 async function handleCredentialResult({
   credentialResultRegistry,
   record,
@@ -124,4 +103,25 @@ async function handleCredentialResult({
   }
 
   return emptySuccess();
+}
+
+interface IDequeueDynamoDbPutItemData {
+  sub: string;
+  sentTimestamp: string;
+  credentialResult: string;
+  ttlDurationInSeconds: string;
+}
+
+function getPutItemInput({
+  sub,
+  sentTimestamp,
+  credentialResult,
+  ttlDurationInSeconds,
+}: IDequeueDynamoDbPutItemData): IDequeueDynamoDbPutItemInput {
+  return {
+    pk: `SUB#${sub}`,
+    sk: `SENT_TIMESTAMP#${sentTimestamp}`,
+    body: JSON.stringify(credentialResult),
+    ttlDurationInSeconds,
+  };
 }
