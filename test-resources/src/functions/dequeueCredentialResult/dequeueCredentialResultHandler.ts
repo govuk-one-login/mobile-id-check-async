@@ -112,9 +112,12 @@ async function handleCredentialResult({
     if (putItemResult.isError) {
       return errorResult({ itemIdentifier: record.messageId });
     } else {
-      logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_SUCCESS, {
-        processedMessage: { sub, sentTimestamp },
-      });
+      logger.info(
+        LogMessage.DEQUEUE_CREDENTIAL_RESULT_DEQUEUE_MESSAGE_SUCCESS,
+        {
+          processedMessage: { sub, sentTimestamp },
+        },
+      );
     }
   }
 
