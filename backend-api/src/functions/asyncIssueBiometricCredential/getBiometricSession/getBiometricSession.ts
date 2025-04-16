@@ -6,55 +6,44 @@ import {
   sendHttpRequest as sendHttpRequestDefault,
   SuccessfulHttpResponse,
 } from "../../adapters/http/sendHttpRequest";
-import { emptyFailure, Result, successResult } from "../../utils/result";
+import { Result, successResult, errorResult } from "../../utils/result";
 
 export interface BiometricSession {
   id: string;
   finish: string;
 }
 
-let lastError: HttpError | null = null;
-
-export function getLastError(): HttpError | null {
-  return lastError;
-}
-
-export function isRetryableError(): boolean {
-  if (!lastError || lastError.statusCode === undefined) {
-    return false;
-  }
-
-  const retryableStatusCodes = [
-    429, 500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511,
-  ];
-
-  return retryableStatusCodes.includes(lastError.statusCode);
+export interface BiometricSessionError {
+  statusCode?: number;
+  message: string;
+  isRetryable: boolean;
 }
 
 export type GetBiometricSession = (
   baseUrl: string,
-  sessionId: string,
-  submitterKey: string,
+  biometricSessionId: string,
+  viewerKey: string,
   sendHttpRequest?: ISendHttpRequest,
-) => Promise<Result<BiometricSession, void>>;
+) => Promise<Result<BiometricSession, BiometricSessionError>>;
 
 export const getBiometricSession: GetBiometricSession = async (
   baseUrl: string,
-  sessionId: string,
-  submitterKey: string,
+  biometricSessionId: string,
+  viewerKey: string,
   sendHttpRequest: ISendHttpRequest = sendHttpRequestDefault,
 ) => {
   const httpRequest = {
-    url: `${baseUrl}/odata/v1/ODataServlet/Sessions('${sessionId}')`,
+    url: `${baseUrl}/odata/v1/ODataServlet/Sessions('${biometricSessionId}')`,
     method: "GET" as const,
     headers: {
-      "X-Innovalor-Authorization": submitterKey,
+      "X-Innovalor-Authorization": viewerKey,
       Accept: "application/json;odata.metadata=minimal",
       "Content-Type": "application/json;odata.metadata=minimal",
       "OData-MaxVersion": "4.0",
       "OData-Version": "4.0",
     },
   };
+
   const httpRequestLogData = {
     ...httpRequest,
     headers: {
@@ -62,6 +51,7 @@ export const getBiometricSession: GetBiometricSession = async (
       "X-Innovalor-Authorization": "Secret value and cannot be logged",
     },
   };
+
   const retryConfig = {
     retryableStatusCodes: [
       429, 500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511,
@@ -72,10 +62,10 @@ export const getBiometricSession: GetBiometricSession = async (
     useJitter: true,
   };
 
-  logger.debug(LogMessage.BIOMETRIC_SESSION_GET_FROM_READID_ATTEMPT, {
+  logger.debug(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_ATTEMPT, {
     data: {
       httpRequest: httpRequestLogData,
-      sessionId,
+      biometricSessionId,
     },
   });
 
@@ -83,51 +73,96 @@ export const getBiometricSession: GetBiometricSession = async (
     await sendHttpRequest(httpRequest, retryConfig);
 
   if (getBiometricSessionResult.isError) {
-    lastError = getBiometricSessionResult.value;
+    const error = getBiometricSessionResult.value;
+    const statusCode = error.statusCode ? Number(error.statusCode) : undefined;
 
-    logger.error(LogMessage.BIOMETRIC_SESSION_GET_FROM_READID_FAILURE, {
-      data: {
-        error: lastError,
-        httpRequest: httpRequestLogData,
-        sessionId,
+    const isRetryable =
+      !statusCode ||
+      statusCode === 429 ||
+      (statusCode >= 500 && statusCode < 600);
+
+    logger.error(
+      LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE,
+      {
+        data: {
+          error,
+          isRetryable,
+          httpRequest: httpRequestLogData,
+          biometricSessionId,
+        },
       },
+    );
+
+    return errorResult({
+      statusCode,
+      message: "Failed to retrieve biometric session",
+      isRetryable,
     });
-
-    return emptyFailure();
   }
-
-  lastError = null;
 
   const getBiometricSessionResponse = getBiometricSessionResult.value;
 
   if (getBiometricSessionResponse?.body == null) {
-    logger.error(LogMessage.BIOMETRIC_SESSION_GET_FROM_READID_FAILURE, {
-      data: {
-        getBiometricSessionResponse,
-        httpRequest: httpRequestLogData,
-        sessionId,
+    logger.error(
+      LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE,
+      {
+        data: {
+          getBiometricSessionResponse,
+          httpRequest: httpRequestLogData,
+          biometricSessionId,
+        },
       },
+    );
+
+    return errorResult({
+      message: "Empty response body from ReadID",
+      isRetryable: true,
     });
-    return emptyFailure();
   }
 
   let parsedBody;
   try {
     parsedBody = JSON.parse(getBiometricSessionResponse.body);
   } catch (error) {
-    logger.error(LogMessage.BIOMETRIC_SESSION_GET_FROM_READID_FAILURE, {
-      data: {
-        error,
-        httpRequest: httpRequestLogData,
-        sessionId,
+    logger.error(
+      LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE,
+      {
+        data: {
+          error,
+          httpRequest: httpRequestLogData,
+          biometricSessionId,
+        },
       },
+    );
+
+    return errorResult({
+      message: "Failed to parse response JSON",
+      isRetryable: true,
     });
-    return emptyFailure();
   }
 
-  logger.debug(LogMessage.BIOMETRIC_SESSION_GET_FROM_READID_SUCCESS, {
+  // Check if the response has the expected structure
+  if (!parsedBody || typeof parsedBody.finish !== "string") {
+    logger.error(
+      LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE,
+      {
+        data: {
+          parsedBody,
+          httpRequest: httpRequestLogData,
+          biometricSessionId,
+        },
+      },
+    );
+
+    return errorResult({
+      message: "Invalid response structure from ReadID",
+      isRetryable: false,
+    });
+  }
+
+  logger.debug(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_SUCCESS, {
     data: {
-      sessionId,
+      biometricSessionId,
       finish: parsedBody.finish,
     },
   });

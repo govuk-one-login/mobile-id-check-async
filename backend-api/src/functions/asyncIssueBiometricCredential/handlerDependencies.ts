@@ -18,9 +18,7 @@ export type IssueBiometricCredentialDependencies = {
   env: NodeJS.ProcessEnv;
   getSessionRegistry: (tableName: string) => SessionRegistry;
   getSecrets: GetSecrets;
-
   getBiometricSession: GetBiometricSession;
-
   getEventService: (sqsQueue: string) => IEventService;
   sendMessageToSqs: (
     sqsArn: string,
@@ -32,9 +30,7 @@ export const runtimeDependencies: IssueBiometricCredentialDependencies = {
   env: process.env,
   getSessionRegistry: (tableName: string) => new DynamoDbAdapter(tableName),
   getSecrets: getSecretsFromParameterStore,
-
   getBiometricSession,
   getEventService: (sqsQueue: string) => new EventService(sqsQueue),
-
   sendMessageToSqs,
 };

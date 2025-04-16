@@ -235,26 +235,27 @@ export class LogMessage implements LogAttributes {
     );
 
   // Finish Biometric Session
-  static readonly FINISH_BIOMETRIC_SESSION_STARTED = new LogMessage(
-    "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_STARTED",
+  static readonly FINISH_ISSUE_BIOMETRIC_CREDENTIAL_STARTED = new LogMessage(
+    "MOBILE_ASYNC_FINISH_ISSUE_BIOMETRIC_CREDENTIAL_STARTED",
     "Lambda handler processing has started.",
   );
-  static readonly FINISH_BIOMETRIC_SESSION_COMPLETED = new LogMessage(
-    "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_COMPLETED",
+  static readonly FINISH_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED = new LogMessage(
+    "MOBILE_ASYNC_FINISH_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
     "Lambda handler processing has completed successfully.",
   );
-  static readonly FINISH_BIOMETRIC_SESSION_REQUEST_BODY_INVALID =
+  static readonly FINISH_ISSUE_BIOMETRIC_CREDENTIAL_REQUEST_BODY_INVALID =
     new LogMessage(
-      "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_REQUEST_BODY_INVALID",
+      "MOBILE_ASYNC_FINISH_ISSUE_BIOMETRIC_CREDENTIAL_REQUEST_BODY_INVALID",
       "The incoming request body was missing or invalid.",
     );
-  static readonly FINISH_BIOMETRIC_SESSION_INVALID_CONFIG = new LogMessage(
-    "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_INVALID_CONFIG",
-    "One or more required environment variables were missing or invalid.",
-  );
-  static readonly FINISH_BIOMETRIC_SESSION_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE =
+  static readonly FINISH_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG =
     new LogMessage(
-      "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE",
+      "MOBILE_ASYNC_FINISH_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG",
+      "One or more required environment variables were missing or invalid.",
+    );
+  static readonly FINISH_ISSUE_BIOMETRIC_CREDENTIAL_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE =
+    new LogMessage(
+      "MOBILE_ASYNC_FINISH_ISSUE_BIOMETRIC_CREDENTIAL_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE",
       "Failed to send message to vendor processing queue.",
     );
 
@@ -312,43 +313,48 @@ export class LogMessage implements LogAttributes {
     "One or more required environment variables were missing or invalid.",
   );
 
-  static readonly BIOMETRIC_SESSION_GET_FROM_READID_FAILURE = new LogMessage(
-    "MOBILE_ASYNC_BIOMETRIC_SESSION_GET_FROM_READID_FAILURE",
-    "Failed to retrieve biometric session from ReadID",
-  );
-  static readonly BIOMETRIC_SESSION_GET_FROM_READID_SUCCESS = new LogMessage(
-    "MOBILE_ASYNC_BIOMETRIC_SESSION_GET_FROM_READID_SUCCESS",
-    "Successfully retrieved biometric session from ReadID",
-  );
-  static readonly BIOMETRIC_SESSION_GET_FROM_READID_ATTEMPT = new LogMessage(
-    "MOBILE_ASYNC_BIOMETRIC_SESSION_GET_FROM_READID_ATTEMPT",
-    "Retrieving biometric session from ReadID",
-  );
-  static readonly BIOMETRIC_SESSION_NOT_READY = new LogMessage(
-    "MOBILE_ASYNC_BIOMETRIC_SESSION_NOT_READY",
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE",
+      "Failed to retrieve biometric session from ReadID",
+    );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_SUCCESS =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_SUCCESS",
+      "Successfully retrieved biometric session from ReadID",
+    );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_ATTEMPT =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_ATTEMPT",
+      "Retrieving biometric session from ReadID",
+    );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY = new LogMessage(
+    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY",
     "Biometric session not ready (finish status not DONE)",
   );
 
-  static readonly BIOMETRIC_SESSION_IPV_CORE_MESSAGE_ERROR = new LogMessage(
-    "MOBILE_ASYNC_BIOMETRIC_SESSION_IPV_CORE_MESSAGE_ERROR",
-    "Error sending message to IPV Core",
-  );
-  static readonly BIOMETRIC_SESSION_TXMA_EVENT_ERROR = new LogMessage(
-    "MOBILE_ASYNC_BIOMETRIC_SESSION_TXMA_EVENT_ERROR",
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR",
+      "Error sending message to IPV Core",
+    );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_TXMA_EVENT_ERROR = new LogMessage(
+    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_TXMA_EVENT_ERROR",
     "Error sending event to TxMA",
   );
   static readonly SESSION_NOT_FOUND = new LogMessage(
     "MOBILE_ASYNC_SESSION_NOT_FOUND",
     "Session not found in session registry",
   );
-  static readonly BIOMETRIC_SESSION_RETRYABLE_ERROR = new LogMessage(
-    "MOBILE_ASYNC_BIOMETRIC_SESSION_RETRYABLE_ERROR",
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_RETRYABLE_ERROR = new LogMessage(
+    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_RETRYABLE_ERROR",
     "Encountered retryable error retrieving biometric session after maximum retries",
   );
-  static readonly BIOMETRIC_SESSION_NON_RETRYABLE_ERROR = new LogMessage(
-    "MOBILE_ASYNC_BIOMETRIC_SESSION_NON_RETRYABLE_ERROR",
-    "Encountered non-retryable error retrieving biometric session",
-  );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_NON_RETRYABLE_ERROR =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NON_RETRYABLE_ERROR",
+      "Encountered non-retryable error retrieving biometric session",
+    );
 
   static readonly ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT = new LogMessage(
     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",

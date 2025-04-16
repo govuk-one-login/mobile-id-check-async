@@ -17,14 +17,11 @@ import { GetSecrets } from "../common/config/secrets";
 
 import { IssueBiometricCredentialMessage } from "../adapters/aws/sqs/types";
 import { GetSessionBiometricTokenIssued } from "../common/session/getOperations/TxmaEvent/GetSessionBiometricTokenIssued";
-import {
-  isRetryableError,
-  getLastError,
-} from "./getBiometricSession/getBiometricSession";
 
 import { IEventService } from "../services/events/types";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 import { SessionState } from "../common/session/session";
+import { BiometricSessionError } from "./getBiometricSession/getBiometricSession";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -48,8 +45,6 @@ export async function lambdaHandlerConstructor(
 
   const sessionId = validateSqsEventResult.value;
 
-  logger.appendKeys({ sessionId });
-
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
   );
@@ -60,12 +55,6 @@ export async function lambdaHandlerConstructor(
     sessionId,
     new GetSessionBiometricTokenIssued(),
   );
-
-  if (getSessionResult.isError) {
-    logger.warn(LogMessage.SESSION_NOT_FOUND, {
-      data: { sessionId },
-    });
-  }
 
   if (getSessionResult.isError) {
     return handleGetSessionError({
@@ -92,29 +81,29 @@ export async function lambdaHandlerConstructor(
   }
   const submitterKey = viewerKeyResult.value;
 
-  const sessionResult = await dependencies.getBiometricSession(
+  const biometricSessionResult = await dependencies.getBiometricSession(
     config.READID_BASE_URL,
     sessionId,
     submitterKey,
   );
 
-  if (sessionResult.isError) {
+  if (biometricSessionResult.isError) {
     const eventService = dependencies.getEventService(config.TXMA_SQS);
+    const error: BiometricSessionError = biometricSessionResult.value;
 
-    // Check if the error was retryable based on HTTP status code
-    if (isRetryableError()) {
-      const error = getLastError();
-      logger.error(LogMessage.BIOMETRIC_SESSION_RETRYABLE_ERROR);
+    // Check if the error was retryable based on error info
+    if (error.isRetryable) {
+      logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_RETRYABLE_ERROR);
       throw new RetainMessageOnQueue(
-        `Retryable error (${Number(error?.statusCode)}) retrieving biometric session`,
+        `Retryable error (${error.statusCode || "unknown"}) retrieving biometric session`,
       );
     }
 
     // Non-retryable error - send error to IPV Core
-    logger.error(LogMessage.BIOMETRIC_SESSION_NON_RETRYABLE_ERROR, {
+    logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_NON_RETRYABLE_ERROR, {
       data: {
         sessionId,
-        error: getLastError(),
+        error,
       },
     });
 
@@ -136,7 +125,9 @@ export async function lambdaHandlerConstructor(
         );
 
       if (sendMessageToIPVCoreOutboundQueueResult.isError) {
-        logger.error(LogMessage.BIOMETRIC_SESSION_IPV_CORE_MESSAGE_ERROR);
+        logger.error(
+          LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR,
+        );
       }
     }
 
@@ -154,18 +145,19 @@ export async function lambdaHandlerConstructor(
     });
 
     if (writeEventResult.isError) {
-      logger.error(LogMessage.BIOMETRIC_SESSION_TXMA_EVENT_ERROR);
+      logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_TXMA_EVENT_ERROR);
     }
 
     return;
   }
 
-  const session = sessionResult.value;
+  const session = biometricSessionResult.value;
 
   if (session.finish !== "DONE") {
-    logger.info(LogMessage.BIOMETRIC_SESSION_NOT_READY, {
+    logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY, {
       data: { finish: session.finish },
     });
+    logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
     throw new RetainMessageOnQueue(
       `Biometric session not ready: ${session.finish}`,
     );

@@ -1,21 +1,15 @@
-import {
-  emptyFailure,
-  errorResult,
-  Result,
-  successResult,
-} from "../../utils/result";
+import { errorResult, Result, successResult } from "../../utils/result";
 import {
   getBiometricSession,
   BiometricSession,
-  isRetryableError,
-  getLastError,
+  BiometricSessionError,
 } from "./getBiometricSession";
 import { expect } from "@jest/globals";
 import "../../../../tests/testUtils/matchers";
 import { ISendHttpRequest } from "../../adapters/http/sendHttpRequest";
 
 describe("getBiometricSession", () => {
-  let result: Result<BiometricSession, void>;
+  let result: Result<BiometricSession, BiometricSessionError>;
   let consoleDebugSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
   let mockSendHttpRequest: ISendHttpRequest;
@@ -75,48 +69,110 @@ describe("getBiometricSession", () => {
 
     it("Logs network call attempt at debug level", () => {
       expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
-        messageCode: "MOBILE_ASYNC_BIOMETRIC_SESSION_GET_FROM_READID_ATTEMPT",
+        messageCode:
+          "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_ATTEMPT",
       });
     });
   });
 
-  describe("Given an errorResult is returned when requesting session", () => {
-    beforeEach(async () => {
-      mockSendHttpRequest = jest.fn().mockResolvedValue(
-        errorResult({
+  describe("Given an error is returned when requesting session", () => {
+    describe("Given a retryable error (5XX)", () => {
+      beforeEach(async () => {
+        mockSendHttpRequest = jest.fn().mockResolvedValue(
+          errorResult({
+            statusCode: 503,
+            message: "Service Unavailable",
+          }),
+        );
+        result = await getBiometricSession(
+          "https://mockUrl.com",
+          mockSessionId,
+          "mockSubmitterKey",
+          mockSendHttpRequest,
+        );
+      });
+
+      it("Logs error", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE",
+        });
+      });
+
+      it("Returns an error result with retryable flag", () => {
+        expect(result.isError).toBe(true);
+        expect(result.value).toEqual({
           statusCode: 503,
-          message: "Service Unavailable",
-        }),
-      );
-      result = await getBiometricSession(
-        "https://mockUrl.com",
-        mockSessionId,
-        "mockSubmitterKey",
-        mockSendHttpRequest,
-      );
-    });
-
-    it("Logs error", () => {
-      expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-        messageCode: "MOBILE_ASYNC_BIOMETRIC_SESSION_GET_FROM_READID_FAILURE",
+          message: "Failed to retrieve biometric session",
+          isRetryable: true,
+        });
+        expect(mockSendHttpRequest).toBeCalledWith(
+          expectedHttpRequest,
+          expectedRetryConfig,
+        );
       });
     });
 
-    it("Returns an empty failure", () => {
-      expect(result).toEqual(emptyFailure());
-      expect(mockSendHttpRequest).toBeCalledWith(
-        expectedHttpRequest,
-        expectedRetryConfig,
-      );
+    describe("Given a non-retryable error (4XX)", () => {
+      beforeEach(async () => {
+        mockSendHttpRequest = jest.fn().mockResolvedValue(
+          errorResult({
+            statusCode: 404,
+            message: "Not Found",
+          }),
+        );
+        result = await getBiometricSession(
+          "https://mockUrl.com",
+          mockSessionId,
+          "mockSubmitterKey",
+          mockSendHttpRequest,
+        );
+      });
+
+      it("Logs error", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE",
+        });
+      });
+
+      it("Returns an error result with non-retryable flag", () => {
+        expect(result.isError).toBe(true);
+        expect(result.value).toEqual({
+          statusCode: 404,
+          message: "Failed to retrieve biometric session",
+          isRetryable: false,
+        });
+        expect(mockSendHttpRequest).toBeCalledWith(
+          expectedHttpRequest,
+          expectedRetryConfig,
+        );
+      });
     });
 
-    it("Tracks the error for later use", () => {
-      const error = getLastError();
-      expect(error).toEqual({
-        statusCode: 503,
-        message: "Service Unavailable",
+    describe("Given a network error (no status code)", () => {
+      beforeEach(async () => {
+        mockSendHttpRequest = jest.fn().mockResolvedValue(
+          errorResult({
+            message: "Network Error",
+          }),
+        );
+        result = await getBiometricSession(
+          "https://mockUrl.com",
+          mockSessionId,
+          "mockSubmitterKey",
+          mockSendHttpRequest,
+        );
       });
-      expect(isRetryableError()).toBe(true);
+
+      it("Treats it as retryable", () => {
+        expect(result.isError).toBe(true);
+        expect(result.value).toEqual({
+          statusCode: undefined,
+          message: "Failed to retrieve biometric session",
+          isRetryable: true,
+        });
+      });
     });
   });
 
@@ -143,12 +199,17 @@ describe("getBiometricSession", () => {
 
       it("Logs error", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_BIOMETRIC_SESSION_GET_FROM_READID_FAILURE",
+          messageCode:
+            "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE",
         });
       });
 
-      it("Returns an empty failure", () => {
-        expect(result).toEqual(emptyFailure());
+      it("Returns an error result with retryable flag", () => {
+        expect(result.isError).toBe(true);
+        expect(result.value).toEqual({
+          message: "Empty response body from ReadID",
+          isRetryable: true,
+        });
         expect(mockSendHttpRequest).toBeCalledWith(
           expectedHttpRequest,
           expectedRetryConfig,
@@ -178,16 +239,57 @@ describe("getBiometricSession", () => {
 
       it("Logs error", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_BIOMETRIC_SESSION_GET_FROM_READID_FAILURE",
+          messageCode:
+            "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE",
         });
       });
 
-      it("Returns an empty failure", () => {
-        expect(result).toEqual(emptyFailure());
+      it("Returns an error result with retryable flag", () => {
+        expect(result.isError).toBe(true);
+        expect(result.value).toEqual({
+          message: "Failed to parse response JSON",
+          isRetryable: true,
+        });
         expect(mockSendHttpRequest).toBeCalledWith(
           expectedHttpRequest,
           expectedRetryConfig,
         );
+      });
+    });
+
+    describe("Given response has invalid structure", () => {
+      beforeEach(async () => {
+        mockSendHttpRequest = jest.fn().mockResolvedValue(
+          successResult({
+            statusCode: 200,
+            body: JSON.stringify({ id: mockSessionId, status: "COMPLETE" }), // Missing 'finish' field
+            headers: {
+              mockHeaderKey: "mockHeaderValue",
+            },
+          }),
+        );
+
+        result = await getBiometricSession(
+          "https://mockUrl.com",
+          mockSessionId,
+          "mockSubmitterKey",
+          mockSendHttpRequest,
+        );
+      });
+
+      it("Logs error", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE",
+        });
+      });
+
+      it("Returns an error result with non-retryable flag", () => {
+        expect(result.isError).toBe(true);
+        expect(result.value).toEqual({
+          message: "Invalid response structure from ReadID",
+          isRetryable: false,
+        });
       });
     });
   });
@@ -219,7 +321,8 @@ describe("getBiometricSession", () => {
 
     it("Logs success at debug level", () => {
       expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
-        messageCode: "MOBILE_ASYNC_BIOMETRIC_SESSION_GET_FROM_READID_SUCCESS",
+        messageCode:
+          "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_SUCCESS",
       });
     });
 
@@ -229,70 +332,6 @@ describe("getBiometricSession", () => {
         expectedHttpRequest,
         expectedRetryConfig,
       );
-    });
-
-    it("Clears any previous error", () => {
-      expect(getLastError()).toBeNull();
-      expect(isRetryableError()).toBe(false);
-    });
-  });
-
-  describe("Utility functions", () => {
-    describe("isRetryableError", () => {
-      it("Returns true for retryable status codes", () => {
-        mockSendHttpRequest = jest.fn().mockResolvedValue(
-          errorResult({
-            statusCode: 503,
-            message: "Service Unavailable",
-          }),
-        );
-
-        getBiometricSession(
-          "https://mockUrl.com",
-          mockSessionId,
-          "mockSubmitterKey",
-          mockSendHttpRequest,
-        );
-
-        expect(isRetryableError()).toBe(true);
-      });
-
-      it("Returns false for non-retryable status codes", () => {
-        mockSendHttpRequest = jest.fn().mockResolvedValue(
-          errorResult({
-            statusCode: 404,
-            message: "Not Found",
-          }),
-        );
-
-        getBiometricSession(
-          "https://mockUrl.com",
-          mockSessionId,
-          "mockSubmitterKey",
-          mockSendHttpRequest,
-        );
-
-        expect(isRetryableError()).toBe(false);
-      });
-
-      it("Returns false when no error is present", () => {
-        mockSendHttpRequest = jest.fn().mockResolvedValue(
-          successResult({
-            statusCode: 200,
-            body: JSON.stringify({ id: mockSessionId, finish: "DONE" }),
-            headers: {},
-          }),
-        );
-
-        getBiometricSession(
-          "https://mockUrl.com",
-          mockSessionId,
-          "mockSubmitterKey",
-          mockSendHttpRequest,
-        );
-
-        expect(isRetryableError()).toBe(false);
-      });
     });
   });
 });

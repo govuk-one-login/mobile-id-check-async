@@ -3,13 +3,14 @@ type StaticRetainMessages =
   | "Failed to retrieve biometric viewer key"
   | "Unexpected failure retrieving session from database";
 
-type RetryableErrorMessage =
-  | `Retryable error (${number}) retrieving biometric session`
-  | `Biometric session not ready: ${string}`;
+type RetryableErrorMessages =
+  `Retryable error (${number | string}) retrieving biometric session`;
+type NonErrorMessages = `Biometric session not ready: ${string}`;
 
 type RetainMessageOnQueueMessages =
   | StaticRetainMessages
-  | RetryableErrorMessage;
+  | RetryableErrorMessages
+  | NonErrorMessages;
 
 export class RetainMessageOnQueue extends Error {
   constructor(message: RetainMessageOnQueueMessages) {
