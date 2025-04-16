@@ -15,6 +15,7 @@ import {
 const mockDynamoDbClient = mockClient(DynamoDBClient);
 let dequeueDynamoDbAdapter: IDequeueDynamoDbAdapter;
 let consoleDebugSpy: jest.SpyInstance;
+let consoleErrorSpy: jest.SpyInstance;
 
 describe("Dequeue DynamoDB adapter", () => {
   beforeEach(() => {
@@ -22,6 +23,7 @@ describe("Dequeue DynamoDB adapter", () => {
     jest.setSystemTime(NOW_IN_MILLISECONDS);
     dequeueDynamoDbAdapter = new DequeueDynamoDbAdapter("mock-table-name");
     consoleDebugSpy = jest.spyOn(console, "debug");
+    consoleErrorSpy = jest.spyOn(console, "error");
   });
 
   afterEach(() => {
@@ -54,6 +56,12 @@ describe("Dequeue DynamoDB adapter", () => {
       beforeEach(async () => {
         mockDynamoDbClient.on(PutItemCommand).rejects("mockError");
         result = await dequeueDynamoDbAdapter.putItem(mockPutItemInput);
+      });
+
+      it("Logs an error message", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "TEST_RESOURCES_PUT_ITEM_UNEXPECTED_FAILURE",
+        });
       });
 
       it("Returns an empty failure result", () => {
