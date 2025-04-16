@@ -1,58 +1,26 @@
 import { expect } from "@jest/globals";
-import { SQSRecord } from "aws-lambda";
 import { Result } from "../../common/utils/result";
 import "../../testUtils/matchers";
-import { IProcessedMessage } from "../dequeueCredentialResultHandler";
 import {
   failingSQSRecordBodyInvalidJSON,
-  failingSQSRecordBodyMissing,
+  failingSQSRecordBodyInvalidSub,
+  failingSQSRecordBodyIsNull,
   failingSQSRecordBodyMissingSub,
-  failingSQSRecordBodyMissingTimestamp,
+  failingSQSRecordBodyNotAnObject,
   failingSQSRecordBodySubTypeInvalid,
 } from "../unitTestData";
-import { validateCredentialResult } from "./validateCredentialResult";
+import {
+  IValidCredentialResultData,
+  validateCredentialResult,
+} from "./validateCredentialResult";
 
 describe("Validate credential result", () => {
-  let result: Result<IProcessedMessage>;
-
-  describe("Given credential result is missing a timestamp", () => {
-    beforeEach(() => {
-      const sqsRecord: SQSRecord = failingSQSRecordBodyMissingTimestamp;
-      result = validateCredentialResult(sqsRecord);
-    });
-
-    it("Returns an error result", () => {
-      expect(result.isError).toBe(true);
-    });
-
-    it("Returns an error message", () => {
-      expect(result.value).toStrictEqual({
-        errorMessage: `SentTimestamp is missing from record`,
-      });
-    });
-  });
-
-  describe("Given the SQS record body is empty", () => {
-    beforeEach(() => {
-      const sqsRecord: SQSRecord = failingSQSRecordBodyMissing;
-      result = validateCredentialResult(sqsRecord);
-    });
-
-    it("Returns an error result", () => {
-      expect(result.isError).toBe(true);
-    });
-
-    it("Returns an error message", () => {
-      expect(result.value).toStrictEqual({
-        errorMessage: "Record body is empty.",
-      });
-    });
-  });
+  let result: Result<IValidCredentialResultData>;
 
   describe("Given credential result is not valid JSON", () => {
     beforeEach(() => {
-      const sqsRecord: SQSRecord = failingSQSRecordBodyInvalidJSON;
-      result = validateCredentialResult(sqsRecord);
+      const recordBody: string = failingSQSRecordBodyInvalidJSON.body;
+      result = validateCredentialResult(recordBody);
     });
 
     it("Returns an error result", () => {
@@ -61,16 +29,51 @@ describe("Validate credential result", () => {
 
     it("Returns an error message", () => {
       expect(result.value).toStrictEqual({
-        errorMessage:
-          "Record body could not be parsed as JSON. SyntaxError: Expected property name or '}' in JSON at position 2 (line 1 column 3)",
+        errorMessage: expect.stringContaining(
+          "Record body could not be parsed as JSON. SyntaxError: Expected property name or '}' in JSON at position 2",
+        ),
+      });
+    });
+  });
+
+  describe("Given credential result is not null", () => {
+    beforeEach(() => {
+      const recordBody: string = failingSQSRecordBodyIsNull.body;
+      result = validateCredentialResult(recordBody);
+    });
+
+    it("Returns an error result", () => {
+      expect(result.isError).toBe(true);
+    });
+
+    it("Returns an error message", () => {
+      expect(result.value).toStrictEqual({
+        errorMessage: "credential result is null",
+      });
+    });
+  });
+
+  describe("Given credential result is not an object", () => {
+    beforeEach(() => {
+      const recordBody: string = failingSQSRecordBodyNotAnObject.body;
+      result = validateCredentialResult(recordBody);
+    });
+
+    it("Returns an error result", () => {
+      expect(result.isError).toBe(true);
+    });
+
+    it("Returns an error message", () => {
+      expect(result.value).toStrictEqual({
+        errorMessage: "credentialResult is not an object",
       });
     });
   });
 
   describe("Given credential result is missing a sub", () => {
     beforeEach(() => {
-      const sqsRecord: SQSRecord = failingSQSRecordBodyMissingSub;
-      result = validateCredentialResult(sqsRecord);
+      const recordBody: string = failingSQSRecordBodyMissingSub.body;
+      result = validateCredentialResult(recordBody);
     });
 
     it("Returns an error result", () => {
@@ -79,15 +82,32 @@ describe("Validate credential result", () => {
 
     it("Returns an error message", () => {
       expect(result.value).toStrictEqual({
-        errorMessage: `sub is missing from record body.`,
+        errorMessage: "sub is missing from record body",
+      });
+    });
+  });
+
+  describe("Given sub is invalid", () => {
+    beforeEach(() => {
+      const recordBody: string = failingSQSRecordBodyInvalidSub.body;
+      result = validateCredentialResult(recordBody);
+    });
+
+    it("Returns an error result", () => {
+      expect(result.isError).toBe(true);
+    });
+
+    it("Returns an error message", () => {
+      expect(result.value).toStrictEqual({
+        errorMessage: "sub is invalid",
       });
     });
   });
 
   describe("Given sub is not a string", () => {
     beforeEach(() => {
-      const sqsRecord: SQSRecord = failingSQSRecordBodySubTypeInvalid;
-      result = validateCredentialResult(sqsRecord);
+      const recordBody: string = failingSQSRecordBodySubTypeInvalid.body;
+      result = validateCredentialResult(recordBody);
     });
 
     it("Returns an error result", () => {

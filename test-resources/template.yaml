@@ -128,6 +128,27 @@ Globals:
     Runtime: nodejs22.x
 
 Resources:
+  CredentialResultsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      SSESpecification:
+        SSEEnabled: true
+      TableName: !Sub ${AWS::StackName}-credential-results-${Environment}
+      TimeToLiveSpecification:
+        AttributeName: timeToLiveInSeconds
+        Enabled: true
+
   DequeueCredentialResultEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
@@ -152,6 +173,10 @@ Resources:
         Sourcemap: false
         Target: es2022
     Properties:
+      Environment:
+        Variables:
+          CREDENTIAL_RESULT_TABLE_NAME: !Ref CredentialResultsTable
+          CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS: 900
       FunctionName: !Sub ${AWS::StackName}-dequeue-credential-result
       Handler: dequeueCredentialResultHandler.lambdaHandler
       Role: !GetAtt DequeueCredentialResultRole.Arn
@@ -226,6 +251,14 @@ Resources:
                   Fn::Sub: ${BackendStackName}-ipv-core-queue-arn
             Version: "2012-10-17"
           PolicyName: SQSPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - dynamodb:PutItem
+                Effect: Allow
+                Resource: !GetAtt CredentialResultsTable.Arn
+            Version: "2012-10-17"
+          PolicyName: DynamoDBPolicy
       RoleName: !Sub ${AWS::StackName}-dequeue-credential-result
 
   DequeueEventSourceMapping:

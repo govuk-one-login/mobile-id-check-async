@@ -1,37 +1,44 @@
-import { SQSRecord } from "aws-lambda";
 import { errorResult, Result, successResult } from "../../common/utils/result";
-import { IProcessedMessage } from "../dequeueCredentialResultHandler";
+
+export interface IValidCredentialResultData {
+  sub: string;
+  credentialResult: string;
+}
 
 export function validateCredentialResult(
-  record: SQSRecord,
-): Result<IProcessedMessage> {
-  const sentTimestamp = record.attributes.SentTimestamp;
-  if (!sentTimestamp) {
-    return errorResult({
-      errorMessage: "SentTimestamp is missing from record",
-    });
-  }
-
-  const { body } = record;
-  if (!body) {
-    return errorResult({
-      errorMessage: "Record body is empty.",
-    });
-  }
-
+  recordBody: string,
+): Result<IValidCredentialResultData> {
   let credentialResult;
   try {
-    credentialResult = JSON.parse(body);
+    credentialResult = JSON.parse(recordBody) as unknown;
   } catch (error) {
     return errorResult({
       errorMessage: `Record body could not be parsed as JSON. ${error}`,
     });
   }
 
+  if (credentialResult == null) {
+    return errorResult({
+      errorMessage: "credential result is null",
+    });
+  }
+
+  if (typeof credentialResult !== "object") {
+    return errorResult({
+      errorMessage: "credentialResult is not an object",
+    });
+  }
+
+  if (!("sub" in credentialResult)) {
+    return errorResult({
+      errorMessage: "sub is missing from record body",
+    });
+  }
+
   const { sub } = credentialResult;
   if (!sub) {
     return errorResult({
-      errorMessage: "sub is missing from record body.",
+      errorMessage: "sub is invalid",
     });
   }
 
@@ -41,7 +48,7 @@ export function validateCredentialResult(
     });
   }
 
-  return successResult({ sub, sentTimestamp });
+  return successResult({ sub, credentialResult: recordBody });
 }
 
 function isString(value: unknown): value is string {
