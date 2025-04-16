@@ -52,7 +52,9 @@ export const lambdaHandlerConstructor = async (
     }
   }
 
-  logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_COMPLETED);
+  logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_COMPLETED, {
+    batchItemFailures,
+  });
   return { batchItemFailures };
 };
 

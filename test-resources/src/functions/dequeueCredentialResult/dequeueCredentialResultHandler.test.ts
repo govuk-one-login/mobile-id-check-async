@@ -106,6 +106,7 @@ describe("Dequeue credential result", () => {
     it("Logs COMPLETED", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
+        batchItemFailures: [],
       });
     });
 
@@ -150,6 +151,9 @@ describe("Dequeue credential result", () => {
         it("Logs COMPLETED", () => {
           expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
             messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
+            batchItemFailures: [
+              { itemIdentifier: "c2098377-619a-449f-b2b4-254b6c41aff4" },
+            ],
           });
         });
 
@@ -170,7 +174,7 @@ describe("Dequeue credential result", () => {
           result = await lambdaHandlerConstructor(dependencies, event, context);
         });
 
-        it("Logs processed message", () => {
+        it("Logs dequeue message success", () => {
           expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
             messageCode:
               "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_DEQUEUE_MESSAGE_SUCCESS",
@@ -184,6 +188,7 @@ describe("Dequeue credential result", () => {
         it("Logs COMPLETED", () => {
           expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
             messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
+            batchItemFailures: [],
           });
         });
 
@@ -212,7 +217,7 @@ describe("Dequeue credential result", () => {
         });
       });
 
-      it("Logs processed message", () => {
+      it("Logs dequeue message success", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode:
             "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_DEQUEUE_MESSAGE_SUCCESS",
@@ -226,6 +231,7 @@ describe("Dequeue credential result", () => {
       it("Logs COMPLETED", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
+          batchItemFailures: [],
         });
       });
 
