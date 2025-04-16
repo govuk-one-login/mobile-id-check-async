@@ -48,10 +48,7 @@ export const lambdaHandlerConstructor = async (
     });
 
     if (handleCredentialResultResponse.isError) {
-      if (
-        handleCredentialResultResponse.value.isRetryable &&
-        handleCredentialResultResponse.value.messageId
-      ) {
+      if (handleCredentialResultResponse.value.isRetryable) {
         const { messageId } = handleCredentialResultResponse.value;
         batchItemFailures.push({ itemIdentifier: messageId });
       }
@@ -71,7 +68,7 @@ export const lambdaHandler = lambdaHandlerConstructor.bind(
 
 interface HandleCredentialResultFailure {
   isRetryable: boolean;
-  messageId?: string;
+  messageId: string;
 }
 
 async function handleCredentialResult({
@@ -92,7 +89,7 @@ async function handleCredentialResult({
       errorMessage,
     });
 
-    return errorResult({ isRetryable: false });
+    return errorResult({ isRetryable: false, messageId: record.messageId });
   }
 
   const { sub, credentialResult } = validateCredentialResultResponse.value;
