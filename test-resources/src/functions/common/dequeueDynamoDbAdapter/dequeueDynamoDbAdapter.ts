@@ -50,11 +50,12 @@ export class DequeueDynamoDbAdapter implements IDequeueDynamoDbAdapter {
     });
 
     try {
-      const logData = { pk, sk, timeToLiveInSeconds };
       logger.debug(LogMessage.DEQUEUE_PUT_ITEM_ATTEMPT, {
         putItemData: {
           tableName: this.tableName,
-          ...logData,
+          pk,
+          sk,
+          timeToLiveInSeconds,
         },
       });
 
