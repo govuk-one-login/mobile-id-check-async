@@ -235,27 +235,26 @@ export class LogMessage implements LogAttributes {
     );
 
   // Finish Biometric Session
-  static readonly FINISH_ISSUE_BIOMETRIC_CREDENTIAL_STARTED = new LogMessage(
-    "MOBILE_ASYNC_FINISH_ISSUE_BIOMETRIC_CREDENTIAL_STARTED",
+  static readonly FINISH_BIOMETRIC_SESSION_STARTED = new LogMessage(
+    "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_STARTED",
     "Lambda handler processing has started.",
   );
-  static readonly FINISH_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED = new LogMessage(
-    "MOBILE_ASYNC_FINISH_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+  static readonly FINISH_BIOMETRIC_SESSION_COMPLETED = new LogMessage(
+    "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_COMPLETED",
     "Lambda handler processing has completed successfully.",
   );
-  static readonly FINISH_ISSUE_BIOMETRIC_CREDENTIAL_REQUEST_BODY_INVALID =
+  static readonly FINISH_BIOMETRIC_SESSION_REQUEST_BODY_INVALID =
     new LogMessage(
-      "MOBILE_ASYNC_FINISH_ISSUE_BIOMETRIC_CREDENTIAL_REQUEST_BODY_INVALID",
+      "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_REQUEST_BODY_INVALID",
       "The incoming request body was missing or invalid.",
     );
-  static readonly FINISH_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG =
+  static readonly FINISH_BIOMETRIC_SESSION_INVALID_CONFIG = new LogMessage(
+    "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_INVALID_CONFIG",
+    "One or more required environment variables were missing or invalid.",
+  );
+  static readonly FINISH_BIOMETRIC_SESSION_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE =
     new LogMessage(
-      "MOBILE_ASYNC_FINISH_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG",
-      "One or more required environment variables were missing or invalid.",
-    );
-  static readonly FINISH_ISSUE_BIOMETRIC_CREDENTIAL_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE =
-    new LogMessage(
-      "MOBILE_ASYNC_FINISH_ISSUE_BIOMETRIC_CREDENTIAL_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE",
+      "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_SEND_MESSAGE_TO_VENDOR_PROCESSING_QUEUE_FAILURE",
       "Failed to send message to vendor processing queue.",
     );
 

@@ -421,21 +421,29 @@ describe("Async Issue Biometric Credential", () => {
   });
 
   describe("When biometric session is not ready", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       dependencies.getBiometricSession = mockGetBiometricSessionNotReady;
+      try {
+        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+      } catch (error: unknown) {
+        lambdaError = error;
+      }
     });
 
-    it("Throws RetainMessageOnQueue with appropriate message", async () => {
-      await expect(
-        lambdaHandlerConstructor(dependencies, validSqsEvent, context),
-      ).rejects.toThrow(/Biometric session not ready: PROCESSING/);
-
+    it("Logs the appropriate message", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY",
         data: {
           finish: "PROCESSING",
         },
       });
+    });
+
+    it("Throws RetainMessageOnQueue with appropriate message", () => {
+      expect(lambdaError).toBeInstanceOf(RetainMessageOnQueue);
+      expect((lambdaError as RetainMessageOnQueue).message).toMatch(
+        /Biometric session not ready: PROCESSING/,
+      );
     });
   });
 
@@ -451,16 +459,18 @@ describe("Async Issue Biometric Credential", () => {
         }
       });
 
-      it("Throws RetainMessageOnQueue with appropriate message", async () => {
-        expect(lambdaError).toBeInstanceOf(RetainMessageOnQueue);
-        expect((lambdaError as RetainMessageOnQueue).message).toMatch(
-          /Retryable error/,
-        );
-
+      it("Logs retryable error", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode:
             "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_RETRYABLE_ERROR",
         });
+      });
+
+      it("Throws RetainMessageOnQueue with appropriate message", () => {
+        expect(lambdaError).toBeInstanceOf(RetainMessageOnQueue);
+        expect((lambdaError as RetainMessageOnQueue).message).toMatch(
+          /Retryable error/,
+        );
       });
     });
 
@@ -471,12 +481,14 @@ describe("Async Issue Biometric Credential", () => {
         await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
       });
 
-      it("Logs error and sends error to IPV Core", async () => {
+      it("Logs non-retryable error", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode:
             "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NON_RETRYABLE_ERROR",
         });
+      });
 
+      it("Sends error to IPV Core", () => {
         expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
           "mockIpvcoreOutboundSqs",
           {
@@ -489,7 +501,7 @@ describe("Async Issue Biometric Credential", () => {
         );
       });
 
-      it("Sends event to TxMA", async () => {
+      it("Sends event to TxMA", () => {
         expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
           expect.objectContaining({
             eventName: "DCMAW_ASYNC_CRI_5XXERROR",
@@ -503,24 +515,24 @@ describe("Async Issue Biometric Credential", () => {
           dependencies.sendMessageToSqs = jest
             .fn()
             .mockResolvedValue(emptyFailure());
-
           dependencies.getBiometricSession =
             mockGetBiometricSessionNonRetryableFailure;
           await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
         });
 
-        it("Still sends event to TxMA", async () => {
-          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalled();
+        it("Logs IPV Core message error", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode:
               "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR",
           });
         });
+
+        it("Still sends event to TxMA", () => {
+          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalled();
+        });
       });
     });
   });
-
-  // Removed empty describe block "When Biometric session is ready"
   describe("Given the lambda handler reads a valid SQSEvent", () => {
     describe("Given sessionState is ASYNC_RESULT_SENT", () => {
       beforeEach(async () => {
@@ -565,7 +577,6 @@ describe("Async Issue Biometric Credential", () => {
         await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
       });
 
-      // Tests remain in place but need to run each test case individually since we have resetting beforeEach
       it("Passes correct arguments to get secrets", async () => {
         await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
         expect(mockGetSecretsSuccess).toHaveBeenCalledWith({

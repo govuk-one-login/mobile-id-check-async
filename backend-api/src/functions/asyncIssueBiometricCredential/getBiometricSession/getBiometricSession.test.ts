@@ -262,7 +262,7 @@ describe("getBiometricSession", () => {
         mockSendHttpRequest = jest.fn().mockResolvedValue(
           successResult({
             statusCode: 200,
-            body: JSON.stringify({ id: mockSessionId, status: "COMPLETE" }), // Missing 'finish' field
+            body: JSON.stringify({ id: mockSessionId, status: "COMPLETE" }),
             headers: {
               mockHeaderKey: "mockHeaderValue",
             },
