@@ -3294,7 +3294,7 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-issue-biometric-credential
       Handler: asyncIssueBiometricCredentialHandler.lambdaHandler
       ReservedConcurrentExecutions: !If
-        - isTemporaryTest
+        - isDev
         - !Ref AWS::NoValue
         - !FindInMap
           - Lambda
