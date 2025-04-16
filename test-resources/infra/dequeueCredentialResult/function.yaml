@@ -18,6 +18,10 @@ Resources:
       Runtime: nodejs20.x
       Handler: dequeueCredentialResultHandler.lambdaHandler
       Role: !GetAtt DequeueCredentialResultRole.Arn
+      Environment:
+        Variables:
+          CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS: 900
+          CREDENTIAL_RESULT_TABLE_NAME: !Ref CredentialResultsTable
       Timeout: 10
       VpcConfig:
         SubnetIds:
@@ -89,6 +93,14 @@ Resources:
                   - sqs:GetQueueAttributes
                 Resource:
                   Fn::ImportValue: !Sub ${BackendStackName}-ipv-core-queue-arn
+        - PolicyName: DynamoDBPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                Resource: !GetAtt CredentialResultsTable.Arn
 
   DequeueCredentialResultEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping

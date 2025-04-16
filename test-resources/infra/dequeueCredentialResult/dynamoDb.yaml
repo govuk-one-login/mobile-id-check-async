@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  CredentialResultsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${AWS::StackName}-credential-results-${Environment}
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+      TimeToLiveSpecification:
+        AttributeName: timeToLiveInSeconds
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+      SSESpecification:
+        SSEEnabled: true
