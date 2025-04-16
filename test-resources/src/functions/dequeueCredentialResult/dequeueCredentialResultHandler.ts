@@ -48,7 +48,10 @@ export const lambdaHandlerConstructor = async (
     });
 
     if (handleCredentialResultResponse.isError) {
-      batchItemFailures.push(handleCredentialResultResponse.value);
+      if (handleCredentialResultResponse.value.isRetryable) {
+        const { messageId } = handleCredentialResultResponse.value;
+        if (messageId) batchItemFailures.push({ itemIdentifier: messageId });
+      }
     }
   }
 
@@ -63,6 +66,11 @@ export const lambdaHandler = lambdaHandlerConstructor.bind(
   handlerDependencies,
 );
 
+interface HandleCredentialResultFailure {
+  isRetryable: boolean;
+  messageId?: string;
+}
+
 async function handleCredentialResult({
   credentialResultRegistry,
   record,
@@ -71,7 +79,7 @@ async function handleCredentialResult({
   credentialResultRegistry: IDequeueDynamoDbAdapter;
   record: SQSRecord;
   ttlDurationInSeconds: string;
-}): Promise<Result<void, SQSBatchItemFailure>> {
+}): Promise<Result<void, HandleCredentialResultFailure>> {
   const validateCredentialResultResponse = validateCredentialResult(
     record.body,
   );
@@ -80,27 +88,26 @@ async function handleCredentialResult({
     logger.error(LogMessage.DEQUEUE_CREDENTIAL_RESULT_MESSAGE_INVALID, {
       errorMessage,
     });
-  } else {
-    const { sub, credentialResult } = validateCredentialResultResponse.value;
-    const sentTimestamp = record.attributes.SentTimestamp;
-    const putItemInput = getPutItemInput({
-      sub,
-      sentTimestamp,
-      credentialResult,
-      ttlDurationInSeconds,
-    });
-    const putItemResult = await credentialResultRegistry.putItem(putItemInput);
-    if (putItemResult.isError) {
-      return errorResult({ itemIdentifier: record.messageId });
-    } else {
-      logger.info(
-        LogMessage.DEQUEUE_CREDENTIAL_RESULT_DEQUEUE_MESSAGE_SUCCESS,
-        {
-          processedMessage: { sub, sentTimestamp },
-        },
-      );
-    }
+
+    return errorResult({ isRetryable: false });
   }
+
+  const { sub, credentialResult } = validateCredentialResultResponse.value;
+  const sentTimestamp = record.attributes.SentTimestamp;
+  const putItemInput = getPutItemInput({
+    sub,
+    sentTimestamp,
+    credentialResult,
+    ttlDurationInSeconds,
+  });
+  const putItemResult = await credentialResultRegistry.putItem(putItemInput);
+  if (putItemResult.isError) {
+    return errorResult({ isRetryable: true, messageId: record.messageId });
+  }
+
+  logger.info(LogMessage.DEQUEUE_CREDENTIAL_RESULT_DEQUEUE_MESSAGE_SUCCESS, {
+    processedMessage: { sub, sentTimestamp },
+  });
 
   return emptySuccess();
 }
