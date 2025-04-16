@@ -61,6 +61,8 @@ export class DequeueDynamoDbAdapter implements IDequeueDynamoDbAdapter {
       await this.dynamoDBClient.send(putItemCommand);
     } catch (error: unknown) {
       logger.error(LogMessage.DEQUEUE_PUT_ITEM_UNEXPECTED_FAILURE, {
+        pk,
+        sk,
         error,
       });
       return emptyFailure();

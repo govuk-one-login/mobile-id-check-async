@@ -61,6 +61,8 @@ describe("Dequeue DynamoDB adapter", () => {
       it("Logs an error message", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "TEST_RESOURCES_PUT_ITEM_UNEXPECTED_FAILURE",
+          pk: "mockPk",
+          sk: "mockSk",
         });
       });
 
