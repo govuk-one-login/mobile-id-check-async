@@ -77,7 +77,7 @@ describe("Dequeue credential result", () => {
         result = await lambdaHandlerConstructor(dependencies, event, context);
       });
 
-      it("logs INVALID_CONFIG", async () => {
+      it("Logs INVALID_CONFIG", async () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode:
             "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_INVALID_CONFIG",
@@ -87,7 +87,7 @@ describe("Dequeue credential result", () => {
         });
       });
 
-      it("returns 500 Internal server error", async () => {
+      it("Returns empty batchItemFailures", async () => {
         expect(result).toStrictEqual({
           batchItemFailures: [],
         });
@@ -110,7 +110,7 @@ describe("Dequeue credential result", () => {
       });
     });
 
-    it("Returns no batchItemFailures", () => {
+    it("Returns empty batchItemFailures", () => {
       expect(result).toStrictEqual({ batchItemFailures: [] });
     });
   });
@@ -131,7 +131,7 @@ describe("Dequeue credential result", () => {
       });
     });
 
-    it("Returns no batchItemFailures", () => {
+    it("Returns empty batchItemFailures", () => {
       expect(result).toStrictEqual({ batchItemFailures: [] });
     });
   });
@@ -192,7 +192,7 @@ describe("Dequeue credential result", () => {
           });
         });
 
-        it("Returns no batchItemFailures", () => {
+        it("Returns empty batchItemFailures", () => {
           expect(result).toStrictEqual({ batchItemFailures: [] });
         });
       });
@@ -235,7 +235,7 @@ describe("Dequeue credential result", () => {
         });
       });
 
-      it("Returns no batchItemFailures", () => {
+      it("Returns empty batchItemFailures", () => {
         expect(result).toStrictEqual({ batchItemFailures: [] });
       });
     });
