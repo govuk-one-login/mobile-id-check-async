@@ -311,6 +311,34 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG",
     "One or more required environment variables were missing or invalid.",
   );
+
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE",
+      "Failed to retrieve biometric session from ReadID",
+    );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_SUCCESS =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_SUCCESS",
+      "Successfully retrieved biometric session from ReadID",
+    );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_ATTEMPT =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_ATTEMPT",
+      "Retrieving biometric session from ReadID",
+    );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_READY =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY",
+      "Biometric session not ready (finish status not DONE)",
+    );
+
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR",
+      "Error sending message to IPV Core",
+    );
+
   static readonly ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT = new LogMessage(
     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
     "SQS Event from vendor processing queue is invalid",
