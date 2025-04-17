@@ -128,7 +128,7 @@ function getPutItemInput({
   return {
     pk: `SUB#${sub}`,
     sk: `SENT_TIMESTAMP#${sentTimestamp}`,
-    body: JSON.stringify(credentialResult),
+    body: credentialResult,
     ttlDurationInSeconds,
   };
 }

@@ -32,6 +32,41 @@ Resources:
           Parameters:
             Location: ./openApiSpecs/test-resources-spec.yaml
 
+  TestResourcesApiRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-api
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: CredentialResultPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "dynamodb:Query"
+                Resource: !GetAtt CredentialResultsTable.Arn
+                Condition:
+                  ForAllValues:StringEquals:
+                    dynamodb:Attributes:
+                      - pk
+                      - sk
+                      - body
+                  StringEquals:
+                    dynamodb:Select: SPECIFIC_ATTRIBUTES
+
   TestResourcesApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
