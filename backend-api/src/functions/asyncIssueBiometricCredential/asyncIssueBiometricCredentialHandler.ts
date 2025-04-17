@@ -79,12 +79,12 @@ export async function lambdaHandlerConstructor(
   if (viewerKeyResult.isError) {
     throw new RetainMessageOnQueue("Failed to retrieve biometric viewer key");
   }
-  const submitterKey = viewerKeyResult.value;
+  const viewerKey = viewerKeyResult.value;
 
   const biometricSessionResult = await dependencies.getBiometricSession(
     config.READID_BASE_URL,
     sessionId,
-    submitterKey,
+    viewerKey,
   );
 
   if (biometricSessionResult.isError) {
