@@ -337,14 +337,6 @@ export class LogMessage implements LogAttributes {
       "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR",
       "Error sending message to IPV Core",
     );
-  static readonly ISSUE_BIOMETRIC_CREDENTIAL_TXMA_EVENT_ERROR = new LogMessage(
-    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_TXMA_EVENT_ERROR",
-    "Error sending event to TxMA",
-  );
-  static readonly SESSION_NOT_FOUND = new LogMessage(
-    "MOBILE_ASYNC_SESSION_NOT_FOUND",
-    "Session not found in session registry",
-  );
   static readonly ISSUE_BIOMETRIC_CREDENTIAL_RETRYABLE_ERROR = new LogMessage(
     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_RETRYABLE_ERROR",
     "Encountered retryable error retrieving biometric session after maximum retries",

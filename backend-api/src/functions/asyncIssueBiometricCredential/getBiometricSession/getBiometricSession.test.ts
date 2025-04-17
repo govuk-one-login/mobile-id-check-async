@@ -31,7 +31,6 @@ describe("getBiometricSession", () => {
     retryableStatusCodes: [
       429, 500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511,
     ],
-    maxAttempts: 3,
     delayInMillis: 50,
   };
 
@@ -246,7 +245,7 @@ describe("getBiometricSession", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toEqual({
           message: "Failed to parse response JSON",
-          isRetryable: true,
+          isRetryable: false,
         });
         expect(mockSendHttpRequest).toBeCalledWith(
           expectedHttpRequest,

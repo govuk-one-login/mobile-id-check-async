@@ -144,7 +144,7 @@ export async function lambdaHandlerConstructor(
     });
 
     if (writeEventResult.isError) {
-      logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_TXMA_EVENT_ERROR);
+      logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT);
     }
 
     return;

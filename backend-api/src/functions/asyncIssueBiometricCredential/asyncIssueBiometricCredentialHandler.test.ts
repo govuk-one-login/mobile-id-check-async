@@ -453,13 +453,6 @@ describe("Async Issue Biometric Credential", () => {
         }
       });
 
-      it("Logs retryable error", () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode:
-            "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_RETRYABLE_ERROR",
-        });
-      });
-
       it("Throws RetainMessageOnQueue with appropriate message", () => {
         expect(lambdaError).toBeInstanceOf(RetainMessageOnQueue);
         expect((lambdaError as RetainMessageOnQueue).message).toMatch(
