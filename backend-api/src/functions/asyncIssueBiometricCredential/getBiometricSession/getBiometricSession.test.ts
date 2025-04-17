@@ -13,10 +13,10 @@ describe("getBiometricSession", () => {
   let consoleDebugSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
   let mockSendHttpRequest: ISendHttpRequest;
-  const mockSessionId = "mockSessionId";
+  const mockBiometricSessionId = "mockBiometricSessionId";
 
   const expectedHttpRequest = {
-    url: "https://mockUrl.com/odata/v1/ODataServlet/Sessions('mockSessionId')",
+    url: "https://mockUrl.com/odata/v1/ODataServlet/Sessions('mockBiometricSessionId')",
     method: "GET",
     headers: {
       "X-Innovalor-Authorization": "mockSubmitterKey",
@@ -47,7 +47,6 @@ describe("getBiometricSession", () => {
         successResult({
           statusCode: 200,
           body: JSON.stringify({
-            id: mockSessionId,
             finish: "DONE",
           }),
           headers: {
@@ -58,7 +57,7 @@ describe("getBiometricSession", () => {
 
       result = await getBiometricSession(
         "https://mockUrl.com",
-        mockSessionId,
+        mockBiometricSessionId,
         "mockSubmitterKey",
         mockSendHttpRequest,
       );
@@ -83,7 +82,7 @@ describe("getBiometricSession", () => {
         );
         result = await getBiometricSession(
           "https://mockUrl.com",
-          mockSessionId,
+          mockBiometricSessionId,
           "mockSubmitterKey",
           mockSendHttpRequest,
         );
@@ -120,7 +119,7 @@ describe("getBiometricSession", () => {
         );
         result = await getBiometricSession(
           "https://mockUrl.com",
-          mockSessionId,
+          mockBiometricSessionId,
           "mockSubmitterKey",
           mockSendHttpRequest,
         );
@@ -156,7 +155,7 @@ describe("getBiometricSession", () => {
         );
         result = await getBiometricSession(
           "https://mockUrl.com",
-          mockSessionId,
+          mockBiometricSessionId,
           "mockSubmitterKey",
           mockSendHttpRequest,
         );
@@ -188,7 +187,7 @@ describe("getBiometricSession", () => {
 
         result = await getBiometricSession(
           "https://mockUrl.com",
-          mockSessionId,
+          mockBiometricSessionId,
           "mockSubmitterKey",
           mockSendHttpRequest,
         );
@@ -228,7 +227,7 @@ describe("getBiometricSession", () => {
 
         result = await getBiometricSession(
           "https://mockUrl.com",
-          mockSessionId,
+          mockBiometricSessionId,
           "mockSubmitterKey",
           mockSendHttpRequest,
         );
@@ -259,7 +258,10 @@ describe("getBiometricSession", () => {
         mockSendHttpRequest = jest.fn().mockResolvedValue(
           successResult({
             statusCode: 200,
-            body: JSON.stringify({ id: mockSessionId, status: "COMPLETE" }),
+            body: JSON.stringify({
+              id: mockBiometricSessionId,
+              status: "COMPLETE",
+            }),
             headers: {
               mockHeaderKey: "mockHeaderValue",
             },
@@ -268,7 +270,7 @@ describe("getBiometricSession", () => {
 
         result = await getBiometricSession(
           "https://mockUrl.com",
-          mockSessionId,
+          mockBiometricSessionId,
           "mockSubmitterKey",
           mockSendHttpRequest,
         );
@@ -293,7 +295,7 @@ describe("getBiometricSession", () => {
 
   describe("Given valid request is made", () => {
     const mockSession = {
-      id: mockSessionId,
+      id: mockBiometricSessionId,
       finish: "DONE",
     };
 
@@ -310,7 +312,7 @@ describe("getBiometricSession", () => {
 
       result = await getBiometricSession(
         "https://mockUrl.com",
-        mockSessionId,
+        mockBiometricSessionId,
         "mockSubmitterKey",
         mockSendHttpRequest,
       );

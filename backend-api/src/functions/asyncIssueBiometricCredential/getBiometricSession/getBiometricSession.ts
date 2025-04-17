@@ -78,7 +78,6 @@ export const getBiometricSession: GetBiometricSession = async (
 
     return errorResult({
       statusCode,
-      message: "Failed to retrieve biometric session",
       isRetryable,
     });
   }
@@ -97,7 +96,6 @@ export const getBiometricSession: GetBiometricSession = async (
     );
 
     return errorResult({
-      message: "Empty response body from ReadID",
       isRetryable: false,
     });
   }
@@ -117,7 +115,6 @@ export const getBiometricSession: GetBiometricSession = async (
     );
 
     return errorResult({
-      message: "Failed to parse response JSON",
       isRetryable: false,
     });
   }
@@ -135,7 +132,6 @@ export const getBiometricSession: GetBiometricSession = async (
     );
 
     return errorResult({
-      message: "Invalid response structure from ReadID",
       isRetryable: false,
     });
   }
