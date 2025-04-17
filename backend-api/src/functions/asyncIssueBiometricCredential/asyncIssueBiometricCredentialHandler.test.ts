@@ -444,8 +444,7 @@ describe("Async Issue Biometric Credential", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
       });
-    }
-    );
+    });
   });
 
   describe("When biometric session retrieval fails", () => {
