@@ -99,35 +99,23 @@ export async function lambdaHandlerConstructor(
       );
     }
 
-    // Non-retryable error - send error to IPV Core
-    logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_NON_RETRYABLE_ERROR, {
-      data: {
-        error,
-      },
-    });
+    const ipvCoreOutboundMessage: IssueBiometricCredentialMessage = {
+      sub: sessionAttributes.subjectIdentifier,
+      state: sessionAttributes.clientState,
+      error: "server_error",
+      error_description: "Internal server error",
+    };
 
-    if (
-      sessionAttributes?.subjectIdentifier &&
-      sessionAttributes?.clientState
-    ) {
-      const ipvCoreOutboundMessage: IssueBiometricCredentialMessage = {
-        sub: sessionAttributes.subjectIdentifier,
-        state: sessionAttributes.clientState,
-        error: "server_error",
-        error_description: "Failed to retrieve biometric session from ReadID",
-      };
+    const sendMessageToIPVCoreOutboundQueueResult =
+      await dependencies.sendMessageToSqs(
+        config.IPVCORE_OUTBOUND_SQS,
+        ipvCoreOutboundMessage,
+      );
 
-      const sendMessageToIPVCoreOutboundQueueResult =
-        await dependencies.sendMessageToSqs(
-          config.IPVCORE_OUTBOUND_SQS,
-          ipvCoreOutboundMessage,
-        );
-
-      if (sendMessageToIPVCoreOutboundQueueResult.isError) {
-        logger.error(
-          LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR,
-        );
-      }
+    if (sendMessageToIPVCoreOutboundQueueResult.isError) {
+      logger.error(
+        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR,
+      );
     }
 
     const writeEventResult = await eventService.writeGenericEvent({
@@ -150,19 +138,19 @@ export async function lambdaHandlerConstructor(
     return;
   }
 
-  const session = biometricSessionResult.value;
+  const biometricSession = biometricSessionResult.value;
 
-  if (session.finish !== "DONE") {
+  if (biometricSession.finish !== "DONE") {
     logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY, {
-      data: { finish: session.finish },
+      data: { finish: biometricSession.finish },
     });
     logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
     throw new RetainMessageOnQueue(
-      `Biometric session not ready: ${session.finish}`,
+      `Biometric session not ready: ${biometricSession.finish}`,
     );
   }
 
-  // Session is ready, continue processing
+  // Biometric session is ready, continue processing
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
 }
 
