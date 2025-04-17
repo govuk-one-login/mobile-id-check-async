@@ -68,7 +68,7 @@ paths:
       security:
         - sigv4Reference: [ ]
       operationId: getCredentialResults
-      summary: Retrieves credential results that have been dequeued from IPV Core outbound SQS
+      summary: Dequeues credential results from the IPV Core Outbound SQS into Dynamo
       description: >-
         This endpoint is implemented as an APIGW service proxy - consumers should be aware that the underlying service may generate 5XX errors due to the distributed nature of AWS therefore occasional 5XX responses are safe to retry - see
         [AWS documentation on retries](https://docs.aws.amazon.com/general/latest/gr/api-retries.html)
