@@ -636,6 +636,12 @@ describe("Async Issue Biometric Credential", () => {
       beforeEach(async () => {
         await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
       });
+      it("Passes correct arguments to get secrets", async () => {
+        expect(mockGetSecretsSuccess).toHaveBeenCalledWith({
+          secretNames: ["mockBiometricViewerAccessKey"],
+          cacheDurationInSeconds: 900,
+        });
+      });
 
       it("Logs COMPLETED", async () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
