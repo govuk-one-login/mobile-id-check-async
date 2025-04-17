@@ -93,7 +93,6 @@ export async function lambdaHandlerConstructor(
 
     // Check if the error was retryable based on error info
     if (error.isRetryable) {
-      logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_RETRYABLE_ERROR);
       throw new RetainMessageOnQueue(
         `Retryable error (status code: ${error.statusCode || "N/A"}) retrieving biometric session`,
       );
