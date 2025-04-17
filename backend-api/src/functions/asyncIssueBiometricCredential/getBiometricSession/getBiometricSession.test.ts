@@ -31,10 +31,8 @@ describe("getBiometricSession", () => {
     retryableStatusCodes: [
       429, 500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511,
     ],
-    maxRetries: 3,
-    initialDelayMs: 50,
-    useExponentialBackoff: true,
-    useJitter: true,
+    maxAttempts: 3,
+    delayInMillis: 50,
   };
 
   beforeEach(() => {
