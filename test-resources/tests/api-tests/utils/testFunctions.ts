@@ -228,7 +228,7 @@ function isValidCredentialResultResponse(
 
 export async function pollForCredentialResults(
   partitionKey: string,
-  numberOfEvents: number,
+  numberOfResults: number,
 ): Promise<CredentialResultResponse[]> {
   async function wait(delayMillis: number): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, delayMillis));
@@ -253,7 +253,7 @@ export async function pollForCredentialResults(
   let waitTime = 0;
 
   while (
-    credentialResults.length < numberOfEvents &&
+    credentialResults.length < numberOfResults &&
     currentTime() + waitTime < pollEndTime
   ) {
     await wait(waitTime);
@@ -262,9 +262,9 @@ export async function pollForCredentialResults(
     waitTime = calculateExponentialBackoff(attempts++);
   }
 
-  if (credentialResults.length < numberOfEvents)
+  if (credentialResults.length < numberOfResults)
     throw new Error(
-      `Only found ${credentialResults.length} events for pk=${partitionKey}. Expected to find at least ${numberOfEvents} events.`,
+      `Only found ${credentialResults.length} results for pk=${partitionKey}. Expected to find at least ${numberOfResults} result(s).`,
     );
 
   console.log("credentialResults >>>>>", credentialResults);
@@ -287,6 +287,6 @@ async function getCredentialResult(partitionKey: string): Promise<unknown[]> {
     },
   });
 
-  const events = response.data;
-  return Array.isArray(events) ? events : []; // If response is malformed, return empty array so polling can be retried
+  const credentialResults = response.data;
+  return Array.isArray(credentialResults) ? credentialResults : []; // If response is malformed, return empty array so polling can be retried
 }

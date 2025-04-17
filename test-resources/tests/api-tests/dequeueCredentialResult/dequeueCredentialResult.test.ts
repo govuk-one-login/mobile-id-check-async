@@ -15,7 +15,7 @@ const ONE_SECOND = 1000;
 jest.setTimeout(45 * ONE_SECOND);
 
 describe("GET /credentialResult", () => {
-  describe("Given there are no events to dequeue", () => {
+  describe("Given there are no credential results to dequeue", () => {
     it("Returns a 404 Not Found response", async () => {
       const params = {
         pk: "SUB%23mockSub",
