@@ -3391,7 +3391,9 @@ Resources:
                   - sqs:GetQueueAttributes
                   - sqs:ChangeMessageVisibility
                 Effect: Allow
-                Resource: !GetAtt VendorProcessingSQS.Arn
+                Resource:
+                  - !GetAtt VendorProcessingSQS.Arn
+                  - !GetAtt IPVCoreSQS.Arn
             Version: "2012-10-17"
           PolicyName: SQSPolicy
         - PolicyDocument:
