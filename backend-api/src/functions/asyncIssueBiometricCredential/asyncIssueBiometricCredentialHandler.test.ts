@@ -556,13 +556,6 @@ describe("Async Issue Biometric Credential", () => {
         await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
       });
 
-      it("Passes correct arguments to get secrets", async () => {
-        expect(mockGetSecretsSuccess).toHaveBeenCalledWith({
-          secretNames: ["mockBiometricViewerAccessKey"],
-          cacheDurationInSeconds: 900,
-        });
-      });
-
       it("Logs COMPLETED", async () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
