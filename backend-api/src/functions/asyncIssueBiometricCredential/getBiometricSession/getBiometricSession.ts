@@ -77,7 +77,6 @@ export const getBiometricSession: GetBiometricSession = async (
     );
 
     return errorResult({
-      statusCode,
       isRetryable,
     });
   }
