@@ -315,7 +315,7 @@ describe("getBiometricSession", () => {
       });
     });
 
-    it("Returns successResult containing biometric session", () => {
+    it("it returns successResult containing biometric session", () => {
       expect(result).toEqual(successResult(mockSession));
       expect(mockSendHttpRequest).toBeCalledWith(
         expectedHttpRequest,
