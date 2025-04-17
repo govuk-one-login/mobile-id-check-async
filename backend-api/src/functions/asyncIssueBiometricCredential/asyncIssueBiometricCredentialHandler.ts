@@ -7,7 +7,10 @@ import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
 import { validateVendorProcessingQueueSqsEvent } from "./validateSqsEvent";
-import { getIssueBiometricCredentialConfig } from "./issueBiometricCredentialConfig";
+import {
+  getIssueBiometricCredentialConfig,
+  IssueBiometricCredentialConfig,
+} from "./issueBiometricCredentialConfig";
 import {
   GetSessionError,
   GetSessionFailed,
@@ -20,7 +23,7 @@ import { GetSessionBiometricTokenIssued } from "../common/session/getOperations/
 
 import { IEventService } from "../services/events/types";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
-import { SessionState } from "../common/session/session";
+import { SessionAttributes, SessionState } from "../common/session/session";
 import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
 
 export async function lambdaHandlerConstructor(
@@ -99,24 +102,7 @@ export async function lambdaHandlerConstructor(
       );
     }
 
-    const ipvCoreOutboundMessage: OutboundQueueErrorMessage = {
-      sub: sessionAttributes.subjectIdentifier,
-      state: sessionAttributes.clientState,
-      error: "server_error",
-      error_description: "Internal server error",
-    };
-
-    const sendMessageToIPVCoreOutboundQueueResult =
-      await dependencies.sendMessageToSqs(
-        config.IPVCORE_OUTBOUND_SQS,
-        ipvCoreOutboundMessage,
-      );
-
-    if (sendMessageToIPVCoreOutboundQueueResult.isError) {
-      logger.error(
-        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR,
-      );
-    }
+    handleSendMessageToOutboundQueue(dependencies, sessionAttributes, config);
 
     const writeEventResult = await eventService.writeGenericEvent({
       eventName: "DCMAW_ASYNC_CRI_5XXERROR",
@@ -207,6 +193,30 @@ const handleGetSessionError = async (
       },
     });
   }
+};
+
+const handleSendMessageToOutboundQueue = async (
+  dependencies: IssueBiometricCredentialDependencies,
+  sessionAttributes: SessionAttributes,
+  config: IssueBiometricCredentialConfig,
+): Promise<Result<void, void>> => {
+  const ipvCoreOutboundMessage: OutboundQueueErrorMessage = {
+    sub: sessionAttributes.subjectIdentifier,
+    state: sessionAttributes.clientState,
+    error: "server_error",
+    error_description: "Internal server error",
+  };
+
+  const sendMessageToIPVCoreOutboundQueueResult =
+    await dependencies.sendMessageToSqs(
+      config.IPVCORE_OUTBOUND_SQS,
+      ipvCoreOutboundMessage,
+    );
+
+  if (sendMessageToIPVCoreOutboundQueueResult.isError) {
+    logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR);
+  }
+  return sendMessageToIPVCoreOutboundQueueResult;
 };
 
 interface HandleGetSessionErrorParameters {
