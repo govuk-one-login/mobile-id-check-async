@@ -44,6 +44,7 @@ export async function lambdaHandlerConstructor(
   }
 
   const sessionId = validateSqsEventResult.value;
+  logger.appendKeys({ sessionId });
 
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
@@ -94,14 +95,13 @@ export async function lambdaHandlerConstructor(
     // Check if the error was retryable based on error info
     if (error.isRetryable) {
       throw new RetainMessageOnQueue(
-        `Retryable error (status code: ${error.statusCode || "N/A"}) retrieving biometric session`,
+        `Retryable error retrieving biometric session`,
       );
     }
 
     // Non-retryable error - send error to IPV Core
     logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_NON_RETRYABLE_ERROR, {
       data: {
-        sessionId,
         error,
       },
     });

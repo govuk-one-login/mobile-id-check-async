@@ -49,12 +49,10 @@ describe("Async Issue Biometric Credential", () => {
     .mockResolvedValue(successResult(mockNotReadyBiometricSession));
 
   const mockRetryableError: GetBiometricSessionError = {
-    statusCode: 503,
     isRetryable: true,
   };
 
   const mockNonRetryableError: GetBiometricSessionError = {
-    statusCode: 404,
     isRetryable: false,
   };
 

@@ -14,7 +14,6 @@ export interface BiometricSession {
 }
 
 export interface GetBiometricSessionError {
-  statusCode?: number;
   isRetryable: boolean;
 }
 
@@ -130,7 +129,7 @@ export const getBiometricSession: GetBiometricSession = async (
       LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE,
       {
         data: {
-          parsedBody,
+          validFinishProperty: parsedBody?.finish,
           biometricSessionId,
         },
       },
