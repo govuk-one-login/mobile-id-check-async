@@ -3,14 +3,7 @@ export interface VendorProcessingMessage {
   sessionId: string;
 }
 
-export interface AbortSessionMessage {
-  sub: string;
-  state: string;
-  error: string;
-  error_description: string;
-}
-
-export interface IssueBiometricCredentialMessage {
+export interface OutboundQueueErrorMessage {
   sub: string;
   state: string;
   error: string;
@@ -19,5 +12,4 @@ export interface IssueBiometricCredentialMessage {
 
 export type SQSMessageBody =
   | VendorProcessingMessage
-  | AbortSessionMessage
-  | IssueBiometricCredentialMessage;
+  | OutboundQueueErrorMessage;

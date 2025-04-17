@@ -99,7 +99,7 @@ export const getBiometricSession: GetBiometricSession = async (
 
     return errorResult({
       message: "Empty response body from ReadID",
-      isRetryable: true,
+      isRetryable: false,
     });
   }
 

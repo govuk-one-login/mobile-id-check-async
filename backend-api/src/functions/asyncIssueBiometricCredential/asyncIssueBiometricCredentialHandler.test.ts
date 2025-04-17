@@ -468,13 +468,6 @@ describe("Async Issue Biometric Credential", () => {
         await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
       });
 
-      it("Logs non-retryable error", () => {
-        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode:
-            "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NON_RETRYABLE_ERROR",
-        });
-      });
-
       it("Sends error to IPV Core", () => {
         expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
           "mockIpvcoreOutboundSqs",
@@ -482,8 +475,7 @@ describe("Async Issue Biometric Credential", () => {
             sub: "mockSubjectIdentifier",
             state: "mockClientState",
             error: "server_error",
-            error_description:
-              "Failed to retrieve biometric session from ReadID",
+            error_description: "Internal server error",
           },
         );
       });

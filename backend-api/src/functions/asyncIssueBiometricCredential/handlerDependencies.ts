@@ -9,7 +9,7 @@ import {
 } from "./getBiometricSession/getBiometricSession";
 import { Result } from "../utils/result";
 import { sendMessageToSqs } from "../adapters/aws/sqs/sendMessageToSqs";
-import { IssueBiometricCredentialMessage } from "../adapters/aws/sqs/types";
+import { OutboundQueueErrorMessage } from "../adapters/aws/sqs/types";
 
 import { IEventService } from "../services/events/types";
 import { EventService } from "../services/events/eventService";
@@ -22,7 +22,7 @@ export type IssueBiometricCredentialDependencies = {
   getEventService: (sqsQueue: string) => IEventService;
   sendMessageToSqs: (
     sqsArn: string,
-    messageBody: IssueBiometricCredentialMessage,
+    messageBody: OutboundQueueErrorMessage,
   ) => Promise<Result<void, void>>;
 };
 

@@ -15,7 +15,7 @@ import {
 import { Result, emptyFailure, successResult } from "../utils/result";
 import { GetSecrets } from "../common/config/secrets";
 
-import { IssueBiometricCredentialMessage } from "../adapters/aws/sqs/types";
+import { OutboundQueueErrorMessage } from "../adapters/aws/sqs/types";
 import { GetSessionBiometricTokenIssued } from "../common/session/getOperations/TxmaEvent/GetSessionBiometricTokenIssued";
 
 import { IEventService } from "../services/events/types";
@@ -99,7 +99,7 @@ export async function lambdaHandlerConstructor(
       );
     }
 
-    const ipvCoreOutboundMessage: IssueBiometricCredentialMessage = {
+    const ipvCoreOutboundMessage: OutboundQueueErrorMessage = {
       sub: sessionAttributes.subjectIdentifier,
       state: sessionAttributes.clientState,
       error: "server_error",
