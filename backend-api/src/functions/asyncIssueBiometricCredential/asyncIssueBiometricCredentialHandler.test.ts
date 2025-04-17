@@ -439,6 +439,13 @@ describe("Async Issue Biometric Credential", () => {
         /Biometric session not ready: PROCESSING/,
       );
     });
+
+    it("Logs COMPLETED", () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+      });
+    }
+    );
   });
 
   describe("When biometric session retrieval fails", () => {
