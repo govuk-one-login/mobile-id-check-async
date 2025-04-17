@@ -139,9 +139,12 @@ export async function lambdaHandlerConstructor(
   const biometricSession = biometricSessionResult.value;
 
   if (biometricSession.finish !== "DONE") {
-    logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY, {
-      data: { finish: biometricSession.finish },
-    });
+    logger.info(
+      LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_READY,
+      {
+        data: { finish: biometricSession.finish },
+      },
+    );
     logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
     throw new RetainMessageOnQueue(
       `Biometric session not ready: ${biometricSession.finish}`,

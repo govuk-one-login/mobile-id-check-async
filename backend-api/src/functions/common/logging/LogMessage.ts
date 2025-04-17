@@ -327,10 +327,11 @@ export class LogMessage implements LogAttributes {
       "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_ATTEMPT",
       "Retrieving biometric session from ReadID",
     );
-  static readonly ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_READY = new LogMessage(
-    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY",
-    "Biometric session not ready (finish status not DONE)",
-  );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_READY =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY",
+      "Biometric session not ready (finish status not DONE)",
+    );
 
   static readonly ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR =
     new LogMessage(
