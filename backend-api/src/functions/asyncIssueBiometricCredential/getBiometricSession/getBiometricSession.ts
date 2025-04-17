@@ -3,7 +3,6 @@ import { LogMessage } from "../../common/logging/LogMessage";
 import {
   HttpError,
   ISendHttpRequest,
-  RetryConfig,
   sendHttpRequest as sendHttpRequestDefault,
   SuccessfulHttpResponse,
 } from "../../adapters/http/sendHttpRequest";
@@ -42,7 +41,7 @@ export const getBiometricSession: GetBiometricSession = async (
     },
   };
 
-  const retryConfig: RetryConfig = {
+  const retryConfig = {
     retryableStatusCodes: [
       429, 500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511,
     ],
@@ -64,7 +63,7 @@ export const getBiometricSession: GetBiometricSession = async (
     const retryableStatusCodes = retryConfig.retryableStatusCodes;
 
     const isRetryable =
-      !statusCode || (retryableStatusCodes?.includes(statusCode) ?? false);
+      !statusCode || retryableStatusCodes.includes(statusCode);
 
     logger.error(
       LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE,

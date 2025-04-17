@@ -3291,6 +3291,13 @@ Resources:
             - EnvironmentVariables
             - !Ref Environment
             - BiometricViewerAccessKey
+          READID_BASE_URL: !If
+            - UseDevOverrideReadIdBaseUrl
+            - !Ref DevOverrideReadIdBaseUrl
+            - !FindInMap
+              - EnvironmentVariables
+              - !Ref Environment
+              - ReadIdBaseUrl
       FunctionName: !Sub ${AWS::StackName}-issue-biometric-credential
       Handler: asyncIssueBiometricCredentialHandler.lambdaHandler
       ReservedConcurrentExecutions: !If
