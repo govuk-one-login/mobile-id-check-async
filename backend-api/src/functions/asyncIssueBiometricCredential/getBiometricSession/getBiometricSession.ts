@@ -14,7 +14,7 @@ export interface BiometricSession {
   finish: string;
 }
 
-export interface BiometricSessionError {
+export interface GetBiometricSessionError {
   statusCode?: number;
   message: string;
   isRetryable: boolean;
@@ -25,7 +25,7 @@ export type GetBiometricSession = (
   biometricSessionId: string,
   viewerKey: string,
   sendHttpRequest?: ISendHttpRequest,
-) => Promise<Result<BiometricSession, BiometricSessionError>>;
+) => Promise<Result<BiometricSession, GetBiometricSessionError>>;
 
 export const getBiometricSession: GetBiometricSession = async (
   baseUrl: string,
@@ -64,11 +64,10 @@ export const getBiometricSession: GetBiometricSession = async (
   if (getBiometricSessionResult.isError) {
     const error = getBiometricSessionResult.value;
     const statusCode = error.statusCode ? Number(error.statusCode) : undefined;
+    const retryableStatusCodes = retryConfig.retryableStatusCodes;
 
     const isRetryable =
-      !statusCode ||
-      statusCode === 429 ||
-      (statusCode >= 500 && statusCode < 600);
+      !statusCode || (retryableStatusCodes?.includes(statusCode) ?? false);
 
     logger.error(
       LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE,

@@ -21,7 +21,7 @@ import { GetSessionBiometricTokenIssued } from "../common/session/getOperations/
 import { IEventService } from "../services/events/types";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 import { SessionState } from "../common/session/session";
-import { BiometricSessionError } from "./getBiometricSession/getBiometricSession";
+import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -83,13 +83,13 @@ export async function lambdaHandlerConstructor(
 
   const biometricSessionResult = await dependencies.getBiometricSession(
     config.READID_BASE_URL,
-    sessionId,
+    sessionAttributes.biometricSessionId,
     viewerKey,
   );
 
   if (biometricSessionResult.isError) {
     const eventService = dependencies.getEventService(config.TXMA_SQS);
-    const error: BiometricSessionError = biometricSessionResult.value;
+    const error: GetBiometricSessionError = biometricSessionResult.value;
 
     // Check if the error was retryable based on error info
     if (error.isRetryable) {
