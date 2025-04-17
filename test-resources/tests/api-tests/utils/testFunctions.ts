@@ -267,8 +267,6 @@ export async function pollForCredentialResults(
       `Only found ${credentialResults.length} results for pk=${partitionKey}. Expected to find at least ${numberOfResults} result(s).`,
     );
 
-  console.log("credentialResults >>>>>", credentialResults);
-
   if (
     credentialResults.some(
       (credentialResult) => !isValidCredentialResultResponse(credentialResult),
