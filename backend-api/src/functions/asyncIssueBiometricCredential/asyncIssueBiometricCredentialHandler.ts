@@ -19,12 +19,12 @@ import { Result, emptyFailure, successResult } from "../utils/result";
 import { GetSecrets } from "../common/config/secrets";
 
 import { OutboundQueueErrorMessage } from "../adapters/aws/sqs/types";
-import { GetSessionBiometricTokenIssued } from "../common/session/getOperations/TxmaEvent/GetSessionBiometricTokenIssued";
 
 import { IEventService } from "../services/events/types";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 import { SessionAttributes, SessionState } from "../common/session/session";
 import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
+import { GetSessionIssueBiometricCredential } from "../common/session/getOperations/IssueBiometricCredential/GetSessionIssueBiometricCredential";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -57,7 +57,7 @@ export async function lambdaHandlerConstructor(
 
   const getSessionResult = await sessionRegistry.getSession(
     sessionId,
-    new GetSessionBiometricTokenIssued(),
+    new GetSessionIssueBiometricCredential(),
   );
 
   if (getSessionResult.isError) {
