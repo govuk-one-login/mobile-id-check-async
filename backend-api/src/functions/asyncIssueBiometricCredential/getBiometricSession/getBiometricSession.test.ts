@@ -194,7 +194,7 @@ describe("getBiometricSession", () => {
         });
       });
 
-      it("Returns an error result with retryable flag", () => {
+      it("Returns an error result with retryable flag set to false", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toEqual({
           isRetryable: false,
