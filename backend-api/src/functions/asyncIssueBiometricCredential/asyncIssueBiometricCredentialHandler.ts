@@ -102,7 +102,18 @@ export async function lambdaHandlerConstructor(
       );
     }
 
-    handleSendMessageToOutboundQueue(dependencies, sessionAttributes, config);
+    const handleSendErrorMessageToOutboundQueueResponse =
+      await handleSendErrorMessageToOutboundQueue(
+        dependencies,
+        sessionAttributes,
+        config,
+        { error: "server_error", error_description: "Internal server error" },
+      );
+    if (handleSendErrorMessageToOutboundQueueResponse.isError) {
+      logger.error(
+        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR,
+      );
+    }
 
     const writeEventResult = await eventService.writeGenericEvent({
       eventName: "DCMAW_ASYNC_CRI_5XXERROR",
@@ -195,16 +206,16 @@ const handleGetSessionError = async (
   }
 };
 
-const handleSendMessageToOutboundQueue = async (
+const handleSendErrorMessageToOutboundQueue = async (
   dependencies: IssueBiometricCredentialDependencies,
   sessionAttributes: SessionAttributes,
   config: IssueBiometricCredentialConfig,
+  error: { error: string; error_description: string },
 ): Promise<Result<void, void>> => {
   const ipvCoreOutboundMessage: OutboundQueueErrorMessage = {
     sub: sessionAttributes.subjectIdentifier,
     state: sessionAttributes.clientState,
-    error: "server_error",
-    error_description: "Internal server error",
+    ...error,
   };
 
   const sendMessageToIPVCoreOutboundQueueResult =
@@ -212,10 +223,6 @@ const handleSendMessageToOutboundQueue = async (
       config.IPVCORE_OUTBOUND_SQS,
       ipvCoreOutboundMessage,
     );
-
-  if (sendMessageToIPVCoreOutboundQueueResult.isError) {
-    logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR);
-  }
   return sendMessageToIPVCoreOutboundQueueResult;
 };
 

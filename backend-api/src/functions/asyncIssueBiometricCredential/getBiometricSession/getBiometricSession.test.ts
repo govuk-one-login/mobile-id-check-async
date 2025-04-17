@@ -205,7 +205,7 @@ describe("getBiometricSession", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toEqual({
           message: "Empty response body from ReadID",
-          isRetryable: true,
+          isRetryable: false,
         });
         expect(mockSendHttpRequest).toBeCalledWith(
           expectedHttpRequest,
