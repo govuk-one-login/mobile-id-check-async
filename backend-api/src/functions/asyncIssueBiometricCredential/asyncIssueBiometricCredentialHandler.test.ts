@@ -50,13 +50,11 @@ describe("Async Issue Biometric Credential", () => {
 
   const mockRetryableError: GetBiometricSessionError = {
     statusCode: 503,
-    message: "Service Unavailable",
     isRetryable: true,
   };
 
   const mockNonRetryableError: GetBiometricSessionError = {
     statusCode: 404,
-    message: "Not Found",
     isRetryable: false,
   };
 
@@ -490,8 +488,8 @@ describe("Async Issue Biometric Credential", () => {
         expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
           "mockIpvcoreOutboundSqs",
           {
-            sub: expect.any(String),
-            state: expect.any(String),
+            sub: "mockSubjectIdentifier",
+            state: "mockClientState",
             error: "server_error",
             error_description:
               "Failed to retrieve biometric session from ReadID",

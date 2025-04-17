@@ -2,14 +2,14 @@ import { errorResult, Result, successResult } from "../../utils/result";
 import {
   getBiometricSession,
   BiometricSession,
-  BiometricSessionError,
+  GetBiometricSessionError,
 } from "./getBiometricSession";
 import { expect } from "@jest/globals";
 import "../../../../tests/testUtils/matchers";
 import { ISendHttpRequest } from "../../adapters/http/sendHttpRequest";
 
 describe("getBiometricSession", () => {
-  let result: Result<BiometricSession, BiometricSessionError>;
+  let result: Result<BiometricSession, GetBiometricSessionError>;
   let consoleDebugSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
   let mockSendHttpRequest: ISendHttpRequest;

@@ -15,7 +15,6 @@ export interface BiometricSession {
 
 export interface GetBiometricSessionError {
   statusCode?: number;
-  message: string;
   isRetryable: boolean;
 }
 
