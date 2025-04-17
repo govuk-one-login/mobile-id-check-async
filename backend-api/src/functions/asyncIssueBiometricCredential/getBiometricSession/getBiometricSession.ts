@@ -128,7 +128,7 @@ export const getBiometricSession: GetBiometricSession = async (
       LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE,
       {
         data: {
-          validFinishProperty: parsedBody?.finish,
+          invalidFinishProperty: parsedBody?.finish,
           biometricSessionId,
         },
       },
