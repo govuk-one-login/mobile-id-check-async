@@ -98,8 +98,6 @@ describe("getBiometricSession", () => {
       it("Returns an error result with retryable flag", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toEqual({
-          statusCode: 503,
-          message: "Failed to retrieve biometric session",
           isRetryable: true,
         });
         expect(mockSendHttpRequest).toBeCalledWith(
@@ -135,8 +133,6 @@ describe("getBiometricSession", () => {
       it("Returns an error result with non-retryable flag", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toEqual({
-          statusCode: 404,
-          message: "Failed to retrieve biometric session",
           isRetryable: false,
         });
         expect(mockSendHttpRequest).toBeCalledWith(
@@ -164,8 +160,6 @@ describe("getBiometricSession", () => {
       it("Treats it as retryable", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toEqual({
-          statusCode: undefined,
-          message: "Failed to retrieve biometric session",
           isRetryable: true,
         });
       });
@@ -203,7 +197,6 @@ describe("getBiometricSession", () => {
       it("Returns an error result with retryable flag", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toEqual({
-          message: "Empty response body from ReadID",
           isRetryable: false,
         });
         expect(mockSendHttpRequest).toBeCalledWith(
@@ -243,7 +236,6 @@ describe("getBiometricSession", () => {
       it("Returns an error result with retryable flag", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toEqual({
-          message: "Failed to parse response JSON",
           isRetryable: false,
         });
         expect(mockSendHttpRequest).toBeCalledWith(
@@ -259,7 +251,6 @@ describe("getBiometricSession", () => {
           successResult({
             statusCode: 200,
             body: JSON.stringify({
-              id: mockBiometricSessionId,
               status: "COMPLETE",
             }),
             headers: {
@@ -286,7 +277,6 @@ describe("getBiometricSession", () => {
       it("Returns an error result with non-retryable flag", () => {
         expect(result.isError).toBe(true);
         expect(result.value).toEqual({
-          message: "Invalid response structure from ReadID",
           isRetryable: false,
         });
       });
