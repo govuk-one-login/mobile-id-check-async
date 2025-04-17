@@ -22,7 +22,7 @@ import { emptyFailure, errorResult, successResult } from "../utils/result";
 import { GetSessionError } from "../common/session/SessionRegistry/types";
 import {
   BiometricSession,
-  BiometricSessionError,
+  GetBiometricSessionError,
 } from "./getBiometricSession/getBiometricSession";
 
 describe("Async Issue Biometric Credential", () => {
@@ -33,12 +33,10 @@ describe("Async Issue Biometric Credential", () => {
   let lambdaError: unknown;
 
   const mockReadyBiometricSession: BiometricSession = {
-    id: "mockBiometricSessionId",
     finish: "DONE",
   };
 
   const mockNotReadyBiometricSession: BiometricSession = {
-    id: "mockBiometricSessionId",
     finish: "PROCESSING",
   };
 
@@ -50,13 +48,13 @@ describe("Async Issue Biometric Credential", () => {
     .fn()
     .mockResolvedValue(successResult(mockNotReadyBiometricSession));
 
-  const mockRetryableError: BiometricSessionError = {
+  const mockRetryableError: GetBiometricSessionError = {
     statusCode: 503,
     message: "Service Unavailable",
     isRetryable: true,
   };
 
-  const mockNonRetryableError: BiometricSessionError = {
+  const mockNonRetryableError: GetBiometricSessionError = {
     statusCode: 404,
     message: "Not Found",
     isRetryable: false,

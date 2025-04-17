@@ -10,7 +10,6 @@ import {
 import { Result, successResult, errorResult } from "../../utils/result";
 
 export interface BiometricSession {
-  id: string;
   finish: string;
 }
 

@@ -83,7 +83,7 @@ export async function lambdaHandlerConstructor(
 
   const biometricSessionResult = await dependencies.getBiometricSession(
     config.READID_BASE_URL,
-    sessionAttributes.biometricSessionId,
+    sessionAttributes.sessionId,
     viewerKey,
   );
 
