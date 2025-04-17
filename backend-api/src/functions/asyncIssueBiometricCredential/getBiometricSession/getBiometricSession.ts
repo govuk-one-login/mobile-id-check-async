@@ -3,6 +3,7 @@ import { LogMessage } from "../../common/logging/LogMessage";
 import {
   HttpError,
   ISendHttpRequest,
+  RetryConfig,
   sendHttpRequest as sendHttpRequestDefault,
   SuccessfulHttpResponse,
 } from "../../adapters/http/sendHttpRequest";
@@ -44,27 +45,16 @@ export const getBiometricSession: GetBiometricSession = async (
     },
   };
 
-  const httpRequestLogData = {
-    ...httpRequest,
-    headers: {
-      ...httpRequest.headers,
-      "X-Innovalor-Authorization": "Secret value and cannot be logged",
-    },
-  };
-
-  const retryConfig = {
+  const retryConfig: RetryConfig = {
     retryableStatusCodes: [
       429, 500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511,
     ],
-    maxRetries: 3,
-    initialDelayMs: 50,
-    useExponentialBackoff: true,
-    useJitter: true,
+    maxAttempts: 3,
+    delayInMillis: 50,
   };
 
   logger.debug(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_ATTEMPT, {
     data: {
-      httpRequest: httpRequestLogData,
       biometricSessionId,
     },
   });
@@ -87,7 +77,6 @@ export const getBiometricSession: GetBiometricSession = async (
         data: {
           error,
           isRetryable,
-          httpRequest: httpRequestLogData,
           biometricSessionId,
         },
       },
@@ -108,7 +97,6 @@ export const getBiometricSession: GetBiometricSession = async (
       {
         data: {
           getBiometricSessionResponse,
-          httpRequest: httpRequestLogData,
           biometricSessionId,
         },
       },
@@ -129,7 +117,6 @@ export const getBiometricSession: GetBiometricSession = async (
       {
         data: {
           error,
-          httpRequest: httpRequestLogData,
           biometricSessionId,
         },
       },
@@ -148,7 +135,6 @@ export const getBiometricSession: GetBiometricSession = async (
       {
         data: {
           parsedBody,
-          httpRequest: httpRequestLogData,
           biometricSessionId,
         },
       },
