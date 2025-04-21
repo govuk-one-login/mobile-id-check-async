@@ -4811,6 +4811,7 @@ Resources:
           JWKS_FILE_NAME: .well-known/jwks.json
       FunctionName: !Sub ${AWS::StackName}-jwks
       Handler: jwksHandler.lambdaHandler
+      ReservedConcurrentExecutions: 1
       Role: !GetAtt JsonWebKeysFunctionLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
