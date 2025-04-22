@@ -514,7 +514,12 @@ describe("Async Issue Biometric Credential", () => {
         });
 
         it("Still sends event to TxMA", () => {
-          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalled();
+          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
+            expect.objectContaining({
+              eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+              componentId: "mockIssuer",
+            }),
+          );
         });
         describe("Given writing TxMA event fails", () => {
           beforeEach(async () => {
