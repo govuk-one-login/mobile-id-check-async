@@ -47,7 +47,7 @@ describe("GET /credentialResult", () => {
     });
   });
 
-  describe("Given there is a credential result to dequeue", () => {
+  describe("Given there is a credential result", () => {
     let sub: string;
     let sessionId: string;
     let response: CredentialResultResponse;
@@ -75,7 +75,7 @@ describe("GET /credentialResult", () => {
     });
   });
 
-  describe("Given there are multiple credential results for the same sub to dequeue", () => {
+  describe("Given there are multiple credential results for the same sub", () => {
     let sub: string;
     let sessionId: string;
     let response: CredentialResultResponse[];
