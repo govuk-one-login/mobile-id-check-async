@@ -101,30 +101,23 @@ describe("GET /credentialResult", () => {
       response = await pollForCredentialResults(pk, 2);
     });
 
-    it("Returns a credential result", async () => {
-      expect(response[0].pk).toEqual(`SUB#${sub}`);
-      expect(response[0].sk).toEqual(
-        expect.stringContaining("SENT_TIMESTAMP#"),
-      );
-      expect(response[0].body).toEqual({
-        error: "access_denied",
-        error_description: "User aborted the session",
-        state: "testState",
-        sub,
-      });
-    });
-
-    it("Returns a credential result", async () => {
-      expect(response[1].pk).toEqual(`SUB#${sub}`);
-      expect(response[1].sk).toEqual(
-        expect.stringContaining("SENT_TIMESTAMP#"),
-      );
-      expect(response[1].body).toEqual({
-        error: "access_denied",
-        error_description: "User aborted the session",
-        state: "testState",
-        sub,
-      });
-    });
+    it.each([
+      ["first", 0],
+      ["second", 1],
+    ])(
+      "Returns the %s credential result",
+      (position, credentialResultsIndex) => {
+        expect(response[credentialResultsIndex].pk).toEqual(`SUB#${sub}`);
+        expect(response[credentialResultsIndex].sk).toEqual(
+          expect.stringContaining("SENT_TIMESTAMP#"),
+        );
+        expect(response[credentialResultsIndex].body).toEqual({
+          error: "access_denied",
+          error_description: "User aborted the session",
+          state: "testState",
+          sub,
+        });
+      },
+    );
   });
 });
