@@ -22,7 +22,11 @@ import { OutboundQueueErrorMessage } from "../adapters/aws/sqs/types";
 
 import { IEventService } from "../services/events/types";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
-import { SessionAttributes, SessionState } from "../common/session/session";
+import {
+  BiometricSessionFinishedAttributes,
+  SessionAttributes,
+  SessionState,
+} from "../common/session/session";
 import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
 import { GetSessionIssueBiometricCredential } from "../common/session/getOperations/IssueBiometricCredential/GetSessionIssueBiometricCredential";
 
@@ -85,10 +89,13 @@ export async function lambdaHandlerConstructor(
   }
 
   const viewerKey = viewerKeyResult.value;
+  const { biometricSessionId } =
+    sessionAttributes as BiometricSessionFinishedAttributes;
+  logger.appendKeys({ biometricSessionId });
 
   const biometricSessionResult = await dependencies.getBiometricSession(
     config.READID_BASE_URL,
-    sessionAttributes.sessionId,
+    biometricSessionId,
     viewerKey,
   );
 
