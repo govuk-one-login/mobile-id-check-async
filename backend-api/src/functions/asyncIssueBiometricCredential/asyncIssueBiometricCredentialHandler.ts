@@ -130,7 +130,9 @@ export async function lambdaHandlerConstructor(
     });
 
     if (writeEventResult.isError) {
-      logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT);
+      logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+        data: writeEventResult,
+      });
     }
 
     return;
