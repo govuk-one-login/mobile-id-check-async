@@ -633,22 +633,21 @@ describe("Async Issue Biometric Credential", () => {
         messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
       });
     });
-
-    describe("Given sessionState is ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_FINISHED", () => {
-      beforeEach(async () => {
-        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+  });
+  describe("Given sessionState is ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_FINISHED", () => {
+    beforeEach(async () => {
+      await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+    });
+    it("Passes correct arguments to get secrets", async () => {
+      expect(mockGetSecretsSuccess).toHaveBeenCalledWith({
+        secretNames: ["mockBiometricViewerAccessKey"],
+        cacheDurationInSeconds: 900,
       });
-      it("Passes correct arguments to get secrets", async () => {
-        expect(mockGetSecretsSuccess).toHaveBeenCalledWith({
-          secretNames: ["mockBiometricViewerAccessKey"],
-          cacheDurationInSeconds: 900,
-        });
-      });
+    });
 
-      it("Logs COMPLETED", async () => {
-        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-        });
+    it("Logs COMPLETED", async () => {
+      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+        messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
       });
     });
   });
