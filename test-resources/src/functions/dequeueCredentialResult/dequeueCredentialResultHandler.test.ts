@@ -239,6 +239,55 @@ describe("Dequeue credential result", () => {
         expect(result).toStrictEqual({ batchItemFailures: [] });
       });
     });
+
+    describe("Given there are multiple messages for the same sub", () => {
+      beforeEach(async () => {
+        const validSQSRecord2 = {
+          ...validSQSRecord,
+          attributes: {
+            ...validSQSRecord.attributes,
+            SentTimestamp: "mockSentTimestamp2",
+          },
+        };
+        const event: SQSEvent = {
+          Records: [validSQSRecord, validSQSRecord2],
+        };
+        result = await lambdaHandlerConstructor(dependencies, event, context);
+      });
+
+      it("Logs dequeue message success", () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_DEQUEUE_MESSAGE_SUCCESS",
+          processedMessage: {
+            sub: "mockSub",
+            sentTimestamp: "mockSentTimestamp",
+          },
+        });
+      });
+
+      it("Logs dequeue message success after receiving another message for the same sub", () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_DEQUEUE_MESSAGE_SUCCESS",
+          processedMessage: {
+            sub: "mockSub",
+            sentTimestamp: "mockSentTimestamp2",
+          },
+        });
+      });
+
+      it("Logs COMPLETED", () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
+          batchItemFailures: [],
+        });
+      });
+
+      it("Returns empty batchItemFailures", () => {
+        expect(result).toStrictEqual({ batchItemFailures: [] });
+      });
+    });
   });
 });
 
