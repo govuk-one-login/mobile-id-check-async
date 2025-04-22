@@ -40,6 +40,7 @@ Parameters:
       - build
       - staging
       - integration
+      - production
     Default: dev
 
   LambdaDeploymentPreference:

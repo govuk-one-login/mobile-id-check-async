@@ -12,6 +12,7 @@ Parameters:
       - build
       - staging
       - integration
+      - production
     Default: dev
 
   CodeSigningConfigArn:
