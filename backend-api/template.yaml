@@ -40,6 +40,7 @@ Parameters:
       - build
       - staging
       - integration
+      - production
     Default: dev
 
   LambdaDeploymentPreference:
@@ -191,7 +192,7 @@ Mappings:
       LogLevel: INFO
       ReservedConcurrentExecutions: 0
     production:
-      IssueBiometricCredentialReservedConcurrentExecutions: 0
+      IssueBiometricCredentialReservedConcurrentExecutions: 34
       LogLevel: INFO
       ReservedConcurrentExecutions: 0
     staging:
@@ -4811,6 +4812,7 @@ Resources:
           JWKS_FILE_NAME: .well-known/jwks.json
       FunctionName: !Sub ${AWS::StackName}-jwks
       Handler: jwksHandler.lambdaHandler
+      ReservedConcurrentExecutions: 1
       Role: !GetAtt JsonWebKeysFunctionLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:

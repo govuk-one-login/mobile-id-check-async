@@ -17,6 +17,7 @@ Resources:
       Description: Convert ID Check public encryption keys to JWKS format and upload to S3      
       Handler: jwksHandler.lambdaHandler
       Role: !GetAtt JsonWebKeysFunctionLambdaRole.Arn
+      ReservedConcurrentExecutions: 1
       Environment:
         Variables:
           ENCRYPTION_KEY_ID: !Ref KMSEncryptionKey
