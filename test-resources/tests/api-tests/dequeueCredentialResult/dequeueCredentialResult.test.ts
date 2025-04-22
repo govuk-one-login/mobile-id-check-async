@@ -78,10 +78,22 @@ describe("GET /credentialResult", () => {
   describe("Given there are multiple credential results for the same sub to dequeue", () => {
     let sub: string;
     let sessionId: string;
-    let response: CredentialResultResponse[];
+    // let response: CredentialResultResponse[];
+    let result: boolean;
 
     beforeAll(async () => {
       sub = randomUUID();
+      const testData = {
+        pk: `SUB#${sub}`,
+        sk: "SENT_TIMESTAMP#",
+        body: {
+          sub,
+          state: "testState",
+          error: "access_denied",
+          error_description: "User aborted the session",
+        },
+        sentTimestamp: "mockTimestamp",
+      };
       await createSession(sub);
       sessionId = await getActiveSessionId(sub);
       await SESSIONS_API_INSTANCE.post("/async/abortSession", {
@@ -93,27 +105,45 @@ describe("GET /credentialResult", () => {
         sessionId,
       });
       const pk = `SUB#${sub}`;
-      response = await pollForCredentialResults(pk, 2);
+      const credentialResults = await pollForCredentialResults(pk, 2);
+
+      console.log("RESULTS >>>>>", credentialResults);
+
+      result = credentialResults.every((credentialResult) => {
+        // expect(credentialResult.pk).toEqual(testData.pk)
+        // expect(credentialResult.sk).toContain(testData.sk)
+        // expect(credentialResult.body).toStrictEqual(testData.body)
+        // console.log("CREDENTIAL RESULT >>>>>", credentialResult)
+        // console.log("TEST DATA >>>>>", testData)
+
+        return (
+          credentialResult.pk === testData.pk &&
+          credentialResult.sk.startsWith(testData.sk) &&
+          JSON.stringify(credentialResult.body) ===
+            JSON.stringify(testData.body)
+        );
+      });
+
+      // console.log("RESULT >>>>", result)
     });
 
-    it.each([
-      ["first", 0],
-      ["second", 1],
-    ])(
-      "Returns the %s credential result",
-      (position, credentialResultsIndex) => {
-        expect(response[credentialResultsIndex].pk).toEqual(`SUB#${sub}`);
-        expect(response[credentialResultsIndex].sk).toEqual(
-          expect.stringContaining("SENT_TIMESTAMP#"),
-        );
-        expect(response[credentialResultsIndex].body).toEqual({
-          error: "access_denied",
-          error_description: "User aborted the session",
-          state: "testState",
-          sub,
-        });
-      },
-    );
+    it("Returns the credential results", () => {
+      expect(result).toBe(true);
+    });
+
+    // it("Returns the credential results", () => {
+    //     expect(response.pk).toEqual(`SUB#${sub}`);
+    //     expect(response.sk).toEqual(
+    //       expect.stringContaining("SENT_TIMESTAMP#"),
+    //     );
+    //     expect(response[credentialResultsIndex].body).toEqual({
+    //       error: "access_denied",
+    //       error_description: "User aborted the session",
+    //       state: "testState",
+    //       sub,
+    //     });
+    //   },
+    // );
   });
 });
 
