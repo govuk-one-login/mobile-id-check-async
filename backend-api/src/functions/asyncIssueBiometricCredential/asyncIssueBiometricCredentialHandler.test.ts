@@ -609,10 +609,6 @@ describe("Async Issue Biometric Credential", () => {
 
     it("Passes correct arguments to get biometric session", async () => {
       await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
-      console.log(
-        "mockGetBiometricSessionSuccess",
-        mockGetBiometricSessionSuccess.mock.calls,
-      );
       expect(mockGetBiometricSessionSuccess).toHaveBeenCalledWith(
         "mockReadIdBaseUrl",
         mockBiometricSessionId,
