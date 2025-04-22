@@ -47,7 +47,7 @@ describe("GET /credentialResult", () => {
     });
   });
 
-  describe("Given there is a credential results to dequeue", () => {
+  describe("Given there is a credential result to dequeue", () => {
     let sub: string;
     let sessionId: string;
     let response: CredentialResultResponse;
