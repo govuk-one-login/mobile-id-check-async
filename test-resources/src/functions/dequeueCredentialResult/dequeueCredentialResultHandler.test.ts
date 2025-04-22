@@ -7,7 +7,6 @@ import "../testUtils/matchers";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { lambdaHandlerConstructor } from "./dequeueCredentialResultHandler";
 import { failingSQSRecordBodyMissingSub, validSQSRecord } from "./unitTestData";
-import { NOW_IN_MILLISECONDS } from "../dequeue/tests/testData";
 import { IDequeueCredentialResultDependencies } from "./handlerDependencies";
 import { IDequeueDynamoDbAdapter } from "../common/dequeueDynamoDbAdapter/dequeueDynamoDbAdapter";
 
@@ -19,8 +18,6 @@ describe("Dequeue credential result", () => {
   let result: SQSBatchResponse;
 
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(NOW_IN_MILLISECONDS);
     dependencies = {
       env: {
         CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS: "3600",
@@ -224,6 +221,55 @@ describe("Dequeue credential result", () => {
           processedMessage: {
             sub: "mockSub",
             sentTimestamp: "mockSentTimestamp",
+          },
+        });
+      });
+
+      it("Logs COMPLETED", () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_COMPLETED",
+          batchItemFailures: [],
+        });
+      });
+
+      it("Returns empty batchItemFailures", () => {
+        expect(result).toStrictEqual({ batchItemFailures: [] });
+      });
+    });
+
+    describe("Given there are multiple messages for the same sub", () => {
+      beforeEach(async () => {
+        const validSQSRecord2 = {
+          ...validSQSRecord,
+          attributes: {
+            ...validSQSRecord.attributes,
+            SentTimestamp: "mockSentTimestamp2",
+          },
+        };
+        const event: SQSEvent = {
+          Records: [validSQSRecord, validSQSRecord2],
+        };
+        result = await lambdaHandlerConstructor(dependencies, event, context);
+      });
+
+      it("Logs dequeue message success", () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_DEQUEUE_MESSAGE_SUCCESS",
+          processedMessage: {
+            sub: "mockSub",
+            sentTimestamp: "mockSentTimestamp",
+          },
+        });
+      });
+
+      it("Logs dequeue message success after receiving another message for the same sub", () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode:
+            "TEST_RESOURCES_DEQUEUE_CREDENTIAL_RESULT_DEQUEUE_MESSAGE_SUCCESS",
+          processedMessage: {
+            sub: "mockSub",
+            sentTimestamp: "mockSentTimestamp2",
           },
         });
       });
