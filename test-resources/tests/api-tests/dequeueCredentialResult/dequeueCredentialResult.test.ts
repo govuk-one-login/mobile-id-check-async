@@ -63,7 +63,7 @@ describe("GET /credentialResult", () => {
       response = (await pollForCredentialResults(pk, 1))[0];
     });
 
-    it("Returns a 200 OK response", async () => {
+    it("Returns the credential result", async () => {
       expect(response.pk).toEqual(`SUB#${sub}`);
       expect(response.sk).toEqual(expect.stringContaining("SENT_TIMESTAMP#"));
       expect(response.body).toEqual({
