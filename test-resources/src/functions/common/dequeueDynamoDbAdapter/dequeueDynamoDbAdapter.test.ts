@@ -42,7 +42,7 @@ describe("Dequeue DynamoDB adapter", () => {
 
       it("Logs the attempt", () => {
         expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "TEST_RESOURCES_PUT_ITEM_ATTEMPT",
+          messageCode: "TEST_RESOURCES_DEQUEUE_PUT_ITEM_ATTEMPT",
           putItemData: {
             tableName: "mock-table-name",
             pk: "mockPk",
@@ -61,7 +61,7 @@ describe("Dequeue DynamoDB adapter", () => {
 
       it("Logs an error message", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "TEST_RESOURCES_PUT_ITEM_UNEXPECTED_FAILURE",
+          messageCode: "TEST_RESOURCES_DEQUEUE_PUT_ITEM_UNEXPECTED_FAILURE",
           pk: "mockPk",
           sk: "mockSk",
         });
@@ -79,7 +79,7 @@ describe("Dequeue DynamoDB adapter", () => {
           Item: marshall({
             pk: "mockPk",
             sk: "mockSk",
-            body: JSON.stringify("mockBody"),
+            body: "mockBody",
             timeToLiveInSeconds: 1704122745,
           }),
         };
@@ -93,7 +93,7 @@ describe("Dequeue DynamoDB adapter", () => {
 
       it("Logs success at debug level", () => {
         expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "TEST_RESOURCES_PUT_ITEM_SUCCESS",
+          messageCode: "TEST_RESOURCES_DEQUEUE_PUT_ITEM_SUCCESS",
         });
       });
 
