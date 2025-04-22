@@ -6,11 +6,7 @@ import { emptyFailure, emptySuccess } from "../common/utils/result";
 import "../testUtils/matchers";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { lambdaHandlerConstructor } from "./dequeueCredentialResultHandler";
-import {
-  failingSQSRecordBodyMissingSub,
-  NOW_IN_MILLISECONDS,
-  validSQSRecord,
-} from "./unitTestData";
+import { failingSQSRecordBodyMissingSub, validSQSRecord } from "./unitTestData";
 import { IDequeueCredentialResultDependencies } from "./handlerDependencies";
 import { IDequeueDynamoDbAdapter } from "../common/dequeueDynamoDbAdapter/dequeueDynamoDbAdapter";
 
@@ -22,8 +18,6 @@ describe("Dequeue credential result", () => {
   let result: SQSBatchResponse;
 
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(NOW_IN_MILLISECONDS);
     dependencies = {
       env: {
         CREDENTIAL_RESULT_TTL_DURATION_IN_SECONDS: "3600",

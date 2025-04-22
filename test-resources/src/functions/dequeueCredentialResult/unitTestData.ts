@@ -1,5 +1,3 @@
-export const NOW_IN_MILLISECONDS: number = 1704110400000; // 2024-01-01 12:00:00.000
-
 export const validSQSRecord = {
   messageId: "c2098377-619a-449f-b2b4-254b6c41aff4",
   receiptHandle: "mockReceiptHandle",
