@@ -8,7 +8,7 @@ import { createSession, getActiveSessionId } from "../utils/testFunctions";
 import { AxiosResponse } from "axios";
 
 const ONE_SECOND = 1000;
-jest.setTimeout(50 * ONE_SECOND);
+jest.setTimeout(45 * ONE_SECOND);
 
 describe("GET /credentialResult", () => {
   describe("Given the request query is not valid", () => {
