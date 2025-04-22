@@ -191,7 +191,7 @@ Mappings:
       LogLevel: INFO
       ReservedConcurrentExecutions: 0
     production:
-      IssueBiometricCredentialReservedConcurrentExecutions: 0
+      IssueBiometricCredentialReservedConcurrentExecutions: 34
       LogLevel: INFO
       ReservedConcurrentExecutions: 0
     staging:

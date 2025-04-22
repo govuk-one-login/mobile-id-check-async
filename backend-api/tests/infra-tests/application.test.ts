@@ -867,7 +867,7 @@ describe("Backend application infrastructure", () => {
             IssueBiometricCredentialReservedConcurrentExecutions: 34,
           }),
           production: expect.objectContaining({
-            IssueBiometricCredentialReservedConcurrentExecutions: 0,
+            IssueBiometricCredentialReservedConcurrentExecutions: 34,
           }),
         },
       });

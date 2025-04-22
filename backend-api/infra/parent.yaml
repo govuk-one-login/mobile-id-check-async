@@ -152,7 +152,7 @@ Mappings:
       LogLevel: INFO
     production:
       ReservedConcurrentExecutions: 0
-      IssueBiometricCredentialReservedConcurrentExecutions: 0
+      IssueBiometricCredentialReservedConcurrentExecutions: 34
       LogLevel: INFO
 
   TxMA:
