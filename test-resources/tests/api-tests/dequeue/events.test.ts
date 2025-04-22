@@ -87,7 +87,7 @@ function isValidEventResponse(
   );
 }
 
-export async function pollForEvents(
+async function pollForEvents(
   partitionKey: string,
   sortKeyPrefix: string,
   numberOfEvents: number,

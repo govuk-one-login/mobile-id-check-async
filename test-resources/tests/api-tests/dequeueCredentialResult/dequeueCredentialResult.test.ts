@@ -78,22 +78,10 @@ describe("GET /credentialResult", () => {
   describe("Given there are multiple credential results for the same sub to dequeue", () => {
     let sub: string;
     let sessionId: string;
-    // let response: CredentialResultResponse[];
-    let result: boolean;
+    let response: CredentialResultResponse[];
 
     beforeAll(async () => {
       sub = randomUUID();
-      const testData = {
-        pk: `SUB#${sub}`,
-        sk: "SENT_TIMESTAMP#",
-        body: {
-          sub,
-          state: "testState",
-          error: "access_denied",
-          error_description: "User aborted the session",
-        },
-        sentTimestamp: "mockTimestamp",
-      };
       await createSession(sub);
       sessionId = await getActiveSessionId(sub);
       await SESSIONS_API_INSTANCE.post("/async/abortSession", {
@@ -105,49 +93,33 @@ describe("GET /credentialResult", () => {
         sessionId,
       });
       const pk = `SUB#${sub}`;
-      const credentialResults = await pollForCredentialResults(pk, 2);
-
-      console.log("RESULTS >>>>>", credentialResults);
-
-      result = credentialResults.every((credentialResult) => {
-        // expect(credentialResult.pk).toEqual(testData.pk)
-        // expect(credentialResult.sk).toContain(testData.sk)
-        // expect(credentialResult.body).toStrictEqual(testData.body)
-        // console.log("CREDENTIAL RESULT >>>>>", credentialResult)
-        // console.log("TEST DATA >>>>>", testData)
-
-        return (
-          credentialResult.pk === testData.pk &&
-          credentialResult.sk.startsWith(testData.sk) &&
-          JSON.stringify(credentialResult.body) ===
-            JSON.stringify(testData.body)
-        );
-      });
-
-      // console.log("RESULT >>>>", result)
+      response = await pollForCredentialResults(pk, 2);
     });
 
     it("Returns the credential results", () => {
-      expect(result).toBe(true);
-    });
+      const testData = {
+        pk: `SUB#${sub}`,
+        sk: "SENT_TIMESTAMP#",
+        body: {
+          sub,
+          state: "testState",
+          error: "access_denied",
+          error_description: "User aborted the session",
+        },
+      };
 
-    // it("Returns the credential results", () => {
-    //     expect(response.pk).toEqual(`SUB#${sub}`);
-    //     expect(response.sk).toEqual(
-    //       expect.stringContaining("SENT_TIMESTAMP#"),
-    //     );
-    //     expect(response[credentialResultsIndex].body).toEqual({
-    //       error: "access_denied",
-    //       error_description: "User aborted the session",
-    //       state: "testState",
-    //       sub,
-    //     });
-    //   },
-    // );
+      expect(response[0].pk).toEqual(testData.pk);
+      expect(response[0].sk).toContain(testData.sk);
+      expect(response[0].body).toStrictEqual(testData.body);
+
+      expect(response[1].pk).toEqual(testData.pk);
+      expect(response[1].sk).toContain(testData.sk);
+      expect(response[1].body).toStrictEqual(testData.body);
+    });
   });
 });
 
-export type CredentialResultResponse = {
+type CredentialResultResponse = {
   pk: string;
   sk: string;
   body: object;
@@ -168,7 +140,7 @@ function isValidCredentialResultResponse(
   );
 }
 
-export async function pollForCredentialResults(
+async function pollForCredentialResults(
   partitionKey: string,
   numberOfResults: number,
 ): Promise<CredentialResultResponse[]> {
