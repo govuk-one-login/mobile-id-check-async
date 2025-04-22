@@ -4,12 +4,7 @@ import {
   SESSIONS_API_INSTANCE,
   TEST_RESOURCES_API_INSTANCE,
 } from "../utils/apiInstances";
-import {
-  createSession,
-  CredentialResultResponse,
-  getActiveSessionId,
-  pollForCredentialResults,
-} from "../utils/testFunctions";
+import { createSession, getActiveSessionId } from "../utils/testFunctions";
 import { AxiosResponse } from "axios";
 
 const ONE_SECOND = 1000;
@@ -121,3 +116,87 @@ describe("GET /credentialResult", () => {
     );
   });
 });
+
+export type CredentialResultResponse = {
+  pk: string;
+  sk: string;
+  body: object;
+};
+
+function isValidCredentialResultResponse(
+  credentialResultResponse: unknown,
+): credentialResultResponse is CredentialResultResponse {
+  return (
+    typeof credentialResultResponse === "object" &&
+    credentialResultResponse !== null &&
+    "pk" in credentialResultResponse &&
+    typeof credentialResultResponse.pk === "string" &&
+    "sk" in credentialResultResponse &&
+    typeof credentialResultResponse.sk === "string" &&
+    "body" in credentialResultResponse &&
+    typeof credentialResultResponse.body === "object"
+  );
+}
+
+export async function pollForCredentialResults(
+  partitionKey: string,
+  numberOfResults: number,
+): Promise<CredentialResultResponse[]> {
+  async function wait(delayMillis: number): Promise<void> {
+    await new Promise((resolve) => setTimeout(resolve, delayMillis));
+  }
+
+  function currentTime() {
+    return Date.now();
+  }
+
+  function calculateExponentialBackoff(attempts: number) {
+    return Math.min(2 ** attempts * INITIAL_DELAY_MILLIS, MAX_BACKOFF_MILLIS);
+  }
+
+  const POLLING_DURATION_MILLIS = 40000; // maximum time to poll API
+  const MAX_BACKOFF_MILLIS = 10000; // maximum wait time between API calls
+  const INITIAL_DELAY_MILLIS = 500; // initial wait time before calling API
+
+  const pollEndTime = currentTime() + POLLING_DURATION_MILLIS;
+
+  let credentialResults: unknown[] = [];
+  let attempts = 0;
+  let waitTime = 0;
+
+  while (
+    credentialResults.length < numberOfResults &&
+    currentTime() + waitTime < pollEndTime
+  ) {
+    await wait(waitTime);
+    credentialResults = await getCredentialResult(partitionKey);
+
+    waitTime = calculateExponentialBackoff(attempts++);
+  }
+
+  if (credentialResults.length < numberOfResults)
+    throw new Error(
+      `Only found ${credentialResults.length} results for pk=${partitionKey}. Expected to find at least ${numberOfResults} result(s).`,
+    );
+
+  if (
+    credentialResults.some(
+      (credentialResult) => !isValidCredentialResultResponse(credentialResult),
+    )
+  )
+    throw new Error("Response from /credentialResult is malformed");
+
+  return credentialResults as CredentialResultResponse[];
+}
+
+// Calls /credentialResult API
+async function getCredentialResult(partitionKey: string): Promise<unknown[]> {
+  const response = await TEST_RESOURCES_API_INSTANCE.get("credentialResult", {
+    params: {
+      pk: partitionKey,
+    },
+  });
+
+  const credentialResults = response.data;
+  return Array.isArray(credentialResults) ? credentialResults : []; // If response is malformed, return empty array so polling can be retried
+}
