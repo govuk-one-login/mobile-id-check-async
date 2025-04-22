@@ -6,8 +6,11 @@ import { emptyFailure, emptySuccess } from "../common/utils/result";
 import "../testUtils/matchers";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { lambdaHandlerConstructor } from "./dequeueCredentialResultHandler";
-import { failingSQSRecordBodyMissingSub, validSQSRecord } from "./unitTestData";
-import { NOW_IN_MILLISECONDS } from "../dequeue/tests/testData";
+import {
+  failingSQSRecordBodyMissingSub,
+  NOW_IN_MILLISECONDS,
+  validSQSRecord,
+} from "./unitTestData";
 import { IDequeueCredentialResultDependencies } from "./handlerDependencies";
 import { IDequeueDynamoDbAdapter } from "../common/dequeueDynamoDbAdapter/dequeueDynamoDbAdapter";
 
