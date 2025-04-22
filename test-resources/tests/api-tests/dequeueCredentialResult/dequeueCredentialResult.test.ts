@@ -13,7 +13,7 @@ import {
 import { AxiosResponse } from "axios";
 
 const ONE_SECOND = 1000;
-jest.setTimeout(45 * ONE_SECOND);
+jest.setTimeout(50 * ONE_SECOND);
 
 describe("GET /credentialResult", () => {
   describe("Given the request query is not valid", () => {
@@ -52,7 +52,7 @@ describe("GET /credentialResult", () => {
     });
   });
 
-  describe("Given there are credential results to dequeue", () => {
+  describe("Given there is a credential results to dequeue", () => {
     let sub: string;
     let sessionId: string;
     let response: CredentialResultResponse;
@@ -72,6 +72,54 @@ describe("GET /credentialResult", () => {
       expect(response.pk).toEqual(`SUB#${sub}`);
       expect(response.sk).toEqual(expect.stringContaining("SENT_TIMESTAMP#"));
       expect(response.body).toEqual({
+        error: "access_denied",
+        error_description: "User aborted the session",
+        state: "testState",
+        sub,
+      });
+    });
+  });
+
+  describe("Given there are multiple credential results for the same sub to dequeue", () => {
+    let sub: string;
+    let sessionId: string;
+    let response: CredentialResultResponse[];
+
+    beforeAll(async () => {
+      sub = randomUUID();
+      await createSession(sub);
+      sessionId = await getActiveSessionId(sub);
+      await SESSIONS_API_INSTANCE.post("/async/abortSession", {
+        sessionId,
+      });
+      await createSession(sub);
+      sessionId = await getActiveSessionId(sub);
+      await SESSIONS_API_INSTANCE.post("/async/abortSession", {
+        sessionId,
+      });
+      const pk = `SUB#${sub}`;
+      response = await pollForCredentialResults(pk, 2);
+    });
+
+    it("Returns a credential result", async () => {
+      expect(response[0].pk).toEqual(`SUB#${sub}`);
+      expect(response[0].sk).toEqual(
+        expect.stringContaining("SENT_TIMESTAMP#"),
+      );
+      expect(response[0].body).toEqual({
+        error: "access_denied",
+        error_description: "User aborted the session",
+        state: "testState",
+        sub,
+      });
+    });
+
+    it("Returns a credential result", async () => {
+      expect(response[1].pk).toEqual(`SUB#${sub}`);
+      expect(response[1].sk).toEqual(
+        expect.stringContaining("SENT_TIMESTAMP#"),
+      );
+      expect(response[1].body).toEqual({
         error: "access_denied",
         error_description: "User aborted the session",
         state: "testState",
