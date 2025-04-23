@@ -947,6 +947,41 @@ Resources:
               - BaseDns
       Type: A
 
+  TestResourcesApiRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+        Version: "2012-10-17"
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - dynamodb:Query
+                Condition:
+                  ForAllValues:StringEquals:
+                    dynamodb:Attributes:
+                      - pk
+                      - sk
+                      - body
+                  StringEquals:
+                    dynamodb:Select: SPECIFIC_ATTRIBUTES
+                Effect: Allow
+                Resource: !GetAtt CredentialResultsTable.Arn
+            Version: "2012-10-17"
+          PolicyName: CredentialResultPolicy
+      RoleName: !Sub ${AWS::StackName}-api
+
   TokenFunction:
     Type: AWS::Serverless::Function
     DependsOn:
