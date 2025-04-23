@@ -18,6 +18,7 @@ import {
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { emptyFailure, errorResult, successResult } from "../utils/result";
 import { GetSessionError } from "../common/session/SessionRegistry/types";
+import { mockGetCredentialFromBiometricSession } from "./mockGetCredentialFromBiometricSession/mockGetCredentialFromBiometricSession";
 
 describe("Async Issue Biometric Credential", () => {
   let dependencies: IssueBiometricCredentialDependencies;
@@ -77,6 +78,7 @@ describe("Async Issue Biometric Credential", () => {
       getSessionRegistry: () => mockSessionRegistrySuccess,
       getSecrets: mockGetSecretsSuccess,
       getEventService: () => mockSuccessfulEventService,
+      getCredentialFromBiometricSession: mockGetCredentialFromBiometricSession,
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
