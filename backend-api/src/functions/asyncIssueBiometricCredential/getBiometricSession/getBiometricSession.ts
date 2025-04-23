@@ -48,11 +48,7 @@ export const getBiometricSession: GetBiometricSession = async (
     delayInMillis: 50,
   };
 
-  logger.debug(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_ATTEMPT, {
-    data: {
-      biometricSessionId,
-    },
-  });
+  logger.debug(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_ATTEMPT);
 
   const getBiometricSessionResult: Result<SuccessfulHttpResponse, HttpError> =
     await sendHttpRequest(httpRequest, retryConfig);
@@ -71,7 +67,6 @@ export const getBiometricSession: GetBiometricSession = async (
         data: {
           error,
           isRetryable,
-          biometricSessionId,
         },
       },
     );
@@ -89,7 +84,6 @@ export const getBiometricSession: GetBiometricSession = async (
       {
         data: {
           getBiometricSessionResponse,
-          biometricSessionId,
         },
       },
     );
@@ -108,7 +102,6 @@ export const getBiometricSession: GetBiometricSession = async (
       {
         data: {
           error,
-          biometricSessionId,
         },
       },
     );
@@ -125,7 +118,6 @@ export const getBiometricSession: GetBiometricSession = async (
       {
         data: {
           invalidFinishProperty: parsedBody?.finish,
-          biometricSessionId,
         },
       },
     );
@@ -137,7 +129,6 @@ export const getBiometricSession: GetBiometricSession = async (
 
   logger.debug(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_SUCCESS, {
     data: {
-      biometricSessionId,
       finish: parsedBody.finish,
     },
   });
