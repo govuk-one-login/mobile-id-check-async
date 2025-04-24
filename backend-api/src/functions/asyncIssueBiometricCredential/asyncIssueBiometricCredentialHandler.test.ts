@@ -396,7 +396,7 @@ describe("Async Issue Biometric Credential", () => {
     });
   });
 
-  describe("When session state is RESULT_SENT", () => {
+  describe("When biometric session state is RESULT_SENT", () => {
     beforeEach(async () => {
       dependencies.getSessionRegistry = () => ({
         ...mockInertSessionRegistry,
@@ -419,7 +419,7 @@ describe("Async Issue Biometric Credential", () => {
     });
   });
 
-  describe("When session state is ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_FINISHED", () => {
+  describe("When biometric session state is ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_FINISHED", () => {
     beforeEach(async () => {
       // Uses the default mockSessionRegistrySuccess which returns validBiometricSessionFinishedAttributes
       await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
