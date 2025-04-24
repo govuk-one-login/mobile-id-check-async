@@ -332,16 +332,33 @@ export class LogMessage implements LogAttributes {
       "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY",
       "Biometric session not ready (finish status not DONE)",
     );
-
   static readonly ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR =
     new LogMessage(
       "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR",
       "Error sending message to IPV Core",
     );
-
   static readonly ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT = new LogMessage(
     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
     "SQS Event from vendor processing queue is invalid",
+  );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE",
+      "",
+    );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID",
+      "",
+    );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED",
+      "",
+    );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_SUSPECTED_FRAUD = new LogMessage(
+    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_SUSPECTED_FRAUD",
+    "",
   );
 
   private constructor(

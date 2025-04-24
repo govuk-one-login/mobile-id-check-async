@@ -227,6 +227,11 @@ Mappings:
       BiometricViewerAccessKey: '/dev/BIOMETRIC_VIEWER_ACCESS_KEY'
       BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       SessionDurationInSeconds: 86400
+      EnableBiometricResidenceCard: 'true'
+      EnableBiometricResidencePermit: 'true'
+      EnableDrivingLicence: 'true'
+      EnableNfcPassports: 'true'
+      EnableUtopiaTestDocuments: 'true'
 
     build:
       STSBASEURL: 'https://sts-mock.review-b-async.build.account.gov.uk'
@@ -240,6 +245,11 @@ Mappings:
       BiometricViewerAccessKey: '/build/BIOMETRIC_VIEWER_ACCESS_KEY'
       BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       SessionDurationInSeconds: 86400
+      EnableBiometricResidenceCard: 'true'
+      EnableBiometricResidencePermit: 'true'
+      EnableDrivingLicence: 'true'
+      EnableNfcPassports: 'true'
+      EnableUtopiaTestDocuments: 'true'
 
     staging:
       STSBASEURL: 'https://token.staging.account.gov.uk'
@@ -252,6 +262,11 @@ Mappings:
       BiometricViewerAccessKey: '/staging/BIOMETRIC_VIEWER_ACCESS_KEY'
       BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       SessionDurationInSeconds: 86400
+      EnableBiometricResidenceCard: 'true'
+      EnableBiometricResidencePermit: 'true'
+      EnableDrivingLicence: 'true'
+      EnableNfcPassports: 'true'
+      EnableUtopiaTestDocuments: 'true'
 
     integration:
       STSBASEURL: 'https://token.integration.account.gov.uk'
@@ -264,6 +279,11 @@ Mappings:
       BiometricViewerAccessKey: '/integration/BIOMETRIC_VIEWER_ACCESS_KEY'
       BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       SessionDurationInSeconds: 86400
+      EnableBiometricResidenceCard: 'true'
+      EnableBiometricResidencePermit: 'true'
+      EnableDrivingLicence: 'true'
+      EnableNfcPassports: 'true'
+      EnableUtopiaTestDocuments: 'true'
 
     production:
       STSBASEURL: 'https://token.account.gov.uk'
@@ -276,6 +296,11 @@ Mappings:
       BiometricViewerAccessKey: '/production/BIOMETRIC_VIEWER_ACCESS_KEY'
       BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       SessionDurationInSeconds: 86400
+      EnableBiometricResidenceCard: 'true'
+      EnableBiometricResidencePermit: 'true'
+      EnableDrivingLicence: 'true'
+      EnableNfcPassports: 'true'
+      EnableUtopiaTestDocuments: 'false'
 
 Conditions:
   UseCodeSigning: !Not

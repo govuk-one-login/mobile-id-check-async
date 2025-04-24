@@ -104,6 +104,11 @@ Mappings:
       BiometricViewerAccessKey: /build/BIOMETRIC_VIEWER_ACCESS_KEY
       BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       ClientRegistrySecretPath: build/clientRegistry
+      EnableBiometricResidenceCard: "true"
+      EnableBiometricResidencePermit: "true"
+      EnableDrivingLicence: "true"
+      EnableNfcPassports: "true"
+      EnableUtopiaTestDocuments: "true"
       EventsBaseUrl: https://events.review-b-async.build.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.build.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.build.account.gov.uk
@@ -116,6 +121,11 @@ Mappings:
       BiometricViewerAccessKey: /dev/BIOMETRIC_VIEWER_ACCESS_KEY
       BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       ClientRegistrySecretPath: dev/clientRegistry
+      EnableBiometricResidenceCard: "true"
+      EnableBiometricResidencePermit: "true"
+      EnableDrivingLicence: "true"
+      EnableNfcPassports: "true"
+      EnableUtopiaTestDocuments: "true"
       EventsBaseUrl: https://events.review-b-async.dev.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.dev.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.dev.account.gov.uk
@@ -128,6 +138,11 @@ Mappings:
       BiometricViewerAccessKey: /integration/BIOMETRIC_VIEWER_ACCESS_KEY
       BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       ClientRegistrySecretPath: integration/clientRegistry
+      EnableBiometricResidenceCard: "true"
+      EnableBiometricResidencePermit: "true"
+      EnableDrivingLicence: "true"
+      EnableNfcPassports: "true"
+      EnableUtopiaTestDocuments: "true"
       ReadIdBaseUrl: https://readid-proxy.review-b-async.integration.account.gov.uk
       STSBASEURL: https://token.integration.account.gov.uk
       SessionDurationInSeconds: 86400
@@ -139,6 +154,11 @@ Mappings:
       BiometricViewerAccessKey: /production/BIOMETRIC_VIEWER_ACCESS_KEY
       BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       ClientRegistrySecretPath: production/clientRegistry
+      EnableBiometricResidenceCard: "true"
+      EnableBiometricResidencePermit: "true"
+      EnableDrivingLicence: "true"
+      EnableNfcPassports: "true"
+      EnableUtopiaTestDocuments: "false"
       ReadIdBaseUrl: https://readid-proxy.review-b-async.account.gov.uk
       STSBASEURL: https://token.account.gov.uk
       SessionDurationInSeconds: 86400
@@ -150,6 +170,11 @@ Mappings:
       BiometricViewerAccessKey: /staging/BIOMETRIC_VIEWER_ACCESS_KEY
       BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
       ClientRegistrySecretPath: staging/clientRegistry
+      EnableBiometricResidenceCard: "true"
+      EnableBiometricResidencePermit: "true"
+      EnableDrivingLicence: "true"
+      EnableNfcPassports: "true"
+      EnableUtopiaTestDocuments: "true"
       ReadIdBaseUrl: https://readid-proxy.review-b-async.staging.account.gov.uk
       STSBASEURL: https://token.staging.account.gov.uk
       SessionDurationInSeconds: 86400
@@ -3292,6 +3317,26 @@ Resources:
             - EnvironmentVariables
             - !Ref Environment
             - BiometricViewerAccessKey
+          ENABLE_BIOMETRIC_RESIDENCE_CARD: !FindInMap
+            - EnvironmentVariables
+            - !Ref Environment
+            - EnableBiometricResidenceCard
+          ENABLE_BIOMETRIC_RESIDENCE_PERMIT: !FindInMap
+            - EnvironmentVariables
+            - !Ref Environment
+            - EnableBiometricResidencePermit
+          ENABLE_DRIVING_LICENCE: !FindInMap
+            - EnvironmentVariables
+            - !Ref Environment
+            - EnableDrivingLicence
+          ENABLE_NFC_PASSPORTS: !FindInMap
+            - EnvironmentVariables
+            - !Ref Environment
+            - EnableNfcPassports
+          ENABLE_UTOPIA_TEST_DOCUMENTS: !FindInMap
+            - EnvironmentVariables
+            - !Ref Environment
+            - EnableUtopiaTestDocuments
           READID_BASE_URL: !If
             - UseDevOverrideReadIdBaseUrl
             - !Ref DevOverrideReadIdBaseUrl
