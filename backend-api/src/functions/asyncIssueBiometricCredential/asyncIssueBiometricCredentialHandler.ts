@@ -7,17 +7,28 @@ import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
 import { validateVendorProcessingQueueSqsEvent } from "./validateSqsEvent";
-import { getIssueBiometricCredentialConfig } from "./issueBiometricCredentialConfig";
-import { GetSessionIssueBiometricCredential } from "../common/session/getOperations/IssueBiometricCredential/GetSessionIssueBiometricCredential";
+import {
+  getIssueBiometricCredentialConfig,
+  IssueBiometricCredentialConfig,
+} from "./issueBiometricCredentialConfig";
 import {
   GetSessionError,
   GetSessionFailed,
 } from "../common/session/SessionRegistry/types";
 import { Result, emptyFailure, successResult } from "../utils/result";
 import { GetSecrets } from "../common/config/secrets";
+
+import { OutboundQueueErrorMessage } from "../adapters/aws/sqs/types";
+
 import { IEventService } from "../services/events/types";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
-import { SessionState } from "../common/session/session";
+import {
+  BiometricSessionFinishedAttributes,
+  SessionAttributes,
+  SessionState,
+} from "../common/session/session";
+import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
+import { GetSessionIssueBiometricCredential } from "../common/session/getOperations/IssueBiometricCredential/GetSessionIssueBiometricCredential";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -38,19 +49,21 @@ export async function lambdaHandlerConstructor(
   if (validateSqsEventResult.isError) {
     return;
   }
-  const sessionId = validateSqsEventResult.value;
 
+  const sessionId = validateSqsEventResult.value;
   logger.appendKeys({ sessionId });
 
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
   );
+
   const eventService = dependencies.getEventService(config.TXMA_SQS);
 
   const getSessionResult = await sessionRegistry.getSession(
     sessionId,
     new GetSessionIssueBiometricCredential(),
   );
+
   if (getSessionResult.isError) {
     return handleGetSessionError({
       errorData: getSessionResult.value,
@@ -75,6 +88,81 @@ export async function lambdaHandlerConstructor(
     throw new RetainMessageOnQueue("Failed to retrieve biometric viewer key");
   }
 
+  const viewerKey = viewerKeyResult.value;
+  const { biometricSessionId } =
+    sessionAttributes as BiometricSessionFinishedAttributes;
+  logger.appendKeys({ biometricSessionId });
+
+  const biometricSessionResult = await dependencies.getBiometricSession(
+    config.READID_BASE_URL,
+    biometricSessionId,
+    viewerKey,
+  );
+
+  if (biometricSessionResult.isError) {
+    const eventService = dependencies.getEventService(config.TXMA_SQS);
+    const error: GetBiometricSessionError = biometricSessionResult.value;
+
+    // Check if the error was retryable based on error info
+    if (error.isRetryable) {
+      throw new RetainMessageOnQueue(
+        `Retryable error retrieving biometric session`,
+      );
+    }
+
+    const handleSendErrorMessageToOutboundQueueResponse =
+      await handleSendErrorMessageToOutboundQueue(
+        dependencies,
+        sessionAttributes,
+        config,
+        { error: "server_error", error_description: "Internal server error" },
+      );
+    if (handleSendErrorMessageToOutboundQueueResponse.isError) {
+      logger.error(
+        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR,
+      );
+    }
+
+    const writeEventResult = await eventService.writeGenericEvent({
+      eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+      sub: sessionAttributes?.subjectIdentifier,
+      sessionId,
+      govukSigninJourneyId: sessionAttributes?.govukSigninJourneyId,
+      getNowInMilliseconds: Date.now,
+      componentId: config.ISSUER,
+      ipAddress: undefined,
+      txmaAuditEncoded: undefined,
+      redirect_uri: sessionAttributes?.redirectUri,
+      suspected_fraud_signal: undefined,
+    });
+
+    if (writeEventResult.isError) {
+      logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+        data: {
+          auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+        },
+      });
+    }
+
+    return;
+  }
+
+  const biometricSession = biometricSessionResult.value;
+
+  if (biometricSession.finish !== "DONE") {
+    logger.info(
+      LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_READY,
+      {
+        data: { finish: biometricSession.finish },
+      },
+    );
+    logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
+    throw new RetainMessageOnQueue(
+      `Biometric session not ready: ${biometricSession.finish}`,
+    );
+  }
+
+  // Biometric session is ready, continue processing
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
 }
 
@@ -131,6 +219,26 @@ const handleGetSessionError = async (
       },
     });
   }
+};
+
+const handleSendErrorMessageToOutboundQueue = async (
+  dependencies: IssueBiometricCredentialDependencies,
+  sessionAttributes: SessionAttributes,
+  config: IssueBiometricCredentialConfig,
+  error: { error: string; error_description: string },
+): Promise<Result<void, void>> => {
+  const ipvCoreOutboundMessage: OutboundQueueErrorMessage = {
+    sub: sessionAttributes.subjectIdentifier,
+    state: sessionAttributes.clientState,
+    ...error,
+  };
+
+  const sendMessageToIPVCoreOutboundQueueResult =
+    await dependencies.sendMessageToSqs(
+      config.IPVCORE_OUTBOUND_SQS,
+      ipvCoreOutboundMessage,
+    );
+  return sendMessageToIPVCoreOutboundQueueResult;
 };
 
 interface HandleGetSessionErrorParameters {

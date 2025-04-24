@@ -3292,6 +3292,13 @@ Resources:
             - EnvironmentVariables
             - !Ref Environment
             - BiometricViewerAccessKey
+          READID_BASE_URL: !If
+            - UseDevOverrideReadIdBaseUrl
+            - !Ref DevOverrideReadIdBaseUrl
+            - !FindInMap
+              - EnvironmentVariables
+              - !Ref Environment
+              - ReadIdBaseUrl
       FunctionName: !Sub ${AWS::StackName}-issue-biometric-credential
       Handler: asyncIssueBiometricCredentialHandler.lambdaHandler
       ReservedConcurrentExecutions: !If
@@ -3385,9 +3392,23 @@ Resources:
                   - sqs:GetQueueAttributes
                   - sqs:ChangeMessageVisibility
                 Effect: Allow
-                Resource: !GetAtt VendorProcessingSQS.Arn
+                Resource:
+                  - !GetAtt VendorProcessingSQS.Arn
             Version: "2012-10-17"
           PolicyName: SQSPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - sqs:SendMessage
+                Effect: Allow
+                Resource: !GetAtt IPVCoreSQS.Arn
+              - Action:
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Effect: Allow
+                Resource: !GetAtt IPVCoreKMSEncryptionKey.Arn
+            Version: "2012-10-17"
+          PolicyName: AsyncIssueBiometricCredentialFunctionIPVCoreSQSPolicy
         - PolicyDocument:
             Statement:
               - Action:
