@@ -457,40 +457,6 @@ describe("Async Issue Biometric Credential", () => {
       });
     });
 
-    describe("When biometric session is not ready", () => {
-      beforeEach(async () => {
-        dependencies.getBiometricSession = mockGetBiometricSessionNotReady;
-        try {
-          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
-        } catch (error: unknown) {
-          lambdaError = error;
-        }
-      });
-
-      it("Logs the appropriate message", () => {
-        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY",
-          data: {
-            finish: "PROCESSING",
-          },
-        });
-      });
-
-      it("Throws RetainMessageOnQueue with appropriate message", () => {
-        expect(lambdaError).toBeInstanceOf(RetainMessageOnQueue);
-        expect((lambdaError as RetainMessageOnQueue).message).toMatch(
-          /Biometric session not ready: PROCESSING/,
-        );
-      });
-
-      it("Logs COMPLETED with sessionId", () => {
-        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-          sessionId: mockSessionId,
-        });
-      });
-    });
-
     describe("When biometric session retrieval fails", () => {
       describe("With retryable error", () => {
         beforeEach(async () => {
@@ -640,6 +606,40 @@ describe("Async Issue Biometric Credential", () => {
               });
             });
           });
+        });
+      });
+    });
+
+    describe("When biometric session is not ready", () => {
+      beforeEach(async () => {
+        dependencies.getBiometricSession = mockGetBiometricSessionNotReady;
+        try {
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        } catch (error: unknown) {
+          lambdaError = error;
+        }
+      });
+
+      it("Logs the appropriate message", () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY",
+          data: {
+            finish: "PROCESSING",
+          },
+        });
+      });
+
+      it("Throws RetainMessageOnQueue with appropriate message", () => {
+        expect(lambdaError).toBeInstanceOf(RetainMessageOnQueue);
+        expect((lambdaError as RetainMessageOnQueue).message).toMatch(
+          /Biometric session not ready: PROCESSING/,
+        );
+      });
+
+      it("Logs COMPLETED with sessionId", () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+          sessionId: mockSessionId,
         });
       });
     });
