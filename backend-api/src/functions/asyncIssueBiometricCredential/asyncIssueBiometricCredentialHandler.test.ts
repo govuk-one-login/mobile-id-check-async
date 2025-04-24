@@ -621,10 +621,11 @@ describe("Async Issue Biometric Credential", () => {
       );
     });
 
-    it("Logs COMPLETED", async () => {
+    it("Logs COMPLETED with sessionId", async () => {
       await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        sessionId: mockSessionId,
       });
     });
   });
@@ -639,9 +640,10 @@ describe("Async Issue Biometric Credential", () => {
       });
     });
 
-    it("Logs COMPLETED", async () => {
+    it("Logs COMPLETED with sessionId", async () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        sessionId: mockSessionId,
       });
     });
   });
