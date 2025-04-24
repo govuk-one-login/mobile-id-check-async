@@ -396,7 +396,7 @@ describe("Async Issue Biometric Credential", () => {
     });
   });
 
-  describe("When biometric session state is RESULT_SENT", () => {
+  describe("When session state is ASYNC_RESULT_SENT", () => {
     beforeEach(async () => {
       dependencies.getSessionRegistry = () => ({
         ...mockInertSessionRegistry,
