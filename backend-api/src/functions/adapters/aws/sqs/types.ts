@@ -3,11 +3,13 @@ export interface VendorProcessingMessage {
   sessionId: string;
 }
 
-export interface AbortSessionMessage {
+export interface OutboundQueueErrorMessage {
   sub: string;
   state: string;
   error: string;
   error_description: string;
 }
 
-export type SQSMessageBody = VendorProcessingMessage | AbortSessionMessage;
+export type SQSMessageBody =
+  | VendorProcessingMessage
+  | OutboundQueueErrorMessage;
