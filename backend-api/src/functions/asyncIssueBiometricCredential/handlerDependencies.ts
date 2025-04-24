@@ -5,7 +5,7 @@ import { getSecretsFromParameterStore } from "../adapters/aws/parameterStore/get
 import { IEventService } from "../services/events/types";
 import { EventService } from "../services/events/eventService";
 import {
-  IMockGetCredentialFromBiometricSession,
+  IGetCredentialFromBiometricSession,
   mockGetCredentialFromBiometricSession,
 } from "./mockGetCredentialFromBiometricSession/mockGetCredentialFromBiometricSession";
 
@@ -14,7 +14,7 @@ export type IssueBiometricCredentialDependencies = {
   getSessionRegistry: (tableName: string) => SessionRegistry;
   getSecrets: GetSecrets;
   getEventService: (sqsQueue: string) => IEventService;
-  getCredentialFromBiometricSession: IMockGetCredentialFromBiometricSession;
+  getCredentialFromBiometricSession: IGetCredentialFromBiometricSession;
 };
 
 export const runtimeDependencies: IssueBiometricCredentialDependencies = {
