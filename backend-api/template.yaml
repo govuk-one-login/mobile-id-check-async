@@ -5767,7 +5767,7 @@ Resources:
   VerifiableCredentialSigningKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
-      AliasName: !Sub alias/${AWS::StackName}-vc-signing-key
+      AliasName: !Sub alias/${AWS::StackName}-verifiable-credential-signing-key
       TargetKeyId: !Ref VerifiableCredentialSigningKey
 
   WellKnown5XXHighThresholdAlarm:
