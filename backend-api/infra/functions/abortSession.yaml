@@ -129,6 +129,14 @@ Resources:
                   - kms:Decrypt
                   - kms:GenerateDataKey
                 Resource: !GetAtt IPVCoreKMSEncryptionKey.Arn
+        - PolicyName: AsyncAbortSessionFunctionVCSigningPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - kms:Sign
+                Resource: !GetAtt VCSigningKey.Arn
                 
       PermissionsBoundary: !If
         - UsePermissionsBoundary
