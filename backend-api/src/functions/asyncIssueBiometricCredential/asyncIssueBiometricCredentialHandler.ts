@@ -308,9 +308,9 @@ const handleGetCredentialFailure = async (
   let logMessage;
   let eventName;
   let suspectedFraudSignal;
-  let sqsMessage;
+  let sqsMessage: OutboundQueueErrorMessage;
 
-  const ipvOutboundMessageServerError = {
+  const ipvOutboundMessageServerError: OutboundQueueErrorMessage = {
     sub: subjectIdentifier,
     state: clientState,
     error_description: errorCode,
