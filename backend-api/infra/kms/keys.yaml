@@ -58,3 +58,45 @@ Resources:
     Properties:
       AliasName: !Sub alias/${AWS::StackName}-encryption-key
       TargetKeyId: !Ref KMSEncryptionKey
+
+  VCSigningKey:
+  Type: AWS::KMS::Key
+  Properties:
+    Description: KMS Key for signing Verifiable Credentials
+    Enabled: true
+    EnableKeyRotation: false
+    KeyPolicy:
+      Version: "2012-10-17"
+      Statement:
+        - Sid: AdminAccess
+          Effect: Allow
+          Principal:
+            AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+          Action: kms:*
+          Resource: '*'
+        - Sid: LambdaSigningAccess
+          Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action:
+            - kms:Sign
+            - kms:GetPublicKey
+          Resource: '*'
+          Condition:
+            StringEquals:
+              kms:CallerAccount: !Ref AWS::AccountId
+            ArnLike:
+              aws:SourceArn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-issue-biometric-credential
+    KeySpec: ECC_NIST_P256
+    KeyUsage: SIGN_VERIFY
+    MultiRegion: false
+    PendingWindowInDays: !FindInMap
+      - KMS
+      - !Ref Environment
+      - PendingDeletionInDays
+
+  VCSigningKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}-vc-signing-key
+      TargetKeyId: !Ref VCSigningKey
