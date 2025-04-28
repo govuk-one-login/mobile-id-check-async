@@ -648,325 +648,11 @@ describe("Async Issue Biometric Credential", () => {
     });
 
     describe("getCredentialFromBiometricSession errors", () => {
-      describe("Given the errorCode is BIOMETRIC_SESSION_PARSE_FAILURE", () => {
-        beforeEach(async () => {
-          dependencies.getCredentialFromBiometricSession = jest
-            .fn()
-            .mockReturnValue(
-              errorResult({
-                errorCode: "BIOMETRIC_SESSION_PARSE_FAILURE",
-                errorReason: "VENDOR_BROKE_MESSAGE_CONTRACT",
-                data: {
-                  foo: "bar",
-                },
-              }),
-            );
-
-          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
-        });
-
-        it("Logs ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE", () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode:
-              "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE",
-            data: {
-              errorReason: "VENDOR_BROKE_MESSAGE_CONTRACT",
-              foo: "bar",
-            },
-          });
-        });
-
-        it("Sends server_error to IPV Core", () => {
-          expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
-            "mockIpvcoreOutboundSqs",
-            {
-              sub: "mockSubjectIdentifier",
-              state: "mockClientState",
-              error: "server_error",
-              error_description: "BIOMETRIC_SESSION_PARSE_FAILURE",
-            },
-          );
-        });
-
-        describe("Given DCMAW_ASYNC_CRI_5XXERROR fails to write", () => {
-          beforeEach(async () => {
-            dependencies.getCredentialFromBiometricSession = jest
-              .fn()
-              .mockReturnValue(
-                errorResult({
-                  errorCode: "BIOMETRIC_SESSION_PARSE_FAILURE",
-                  errorReason: "VENDOR_BROKE_MESSAGE_CONTRACT",
-                  data: {
-                    foo: "bar",
-                  },
-                }),
-              );
-            dependencies.getEventService = () => ({
-              ...mockInertEventService,
-              writeGenericEvent: jest.fn().mockResolvedValue(
-                errorResult({
-                  errorMessage: "mockError",
-                }),
-              ),
-            });
-
-            await lambdaHandlerConstructor(
-              dependencies,
-              validSqsEvent,
-              context,
-            );
-          });
-
-          it("Logs DCMAW_ASYNC_CRI_5XXERROR audit event error", () => {
-            expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-              messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-              data: { auditEventName: "DCMAW_ASYNC_CRI_5XXERROR" },
-            });
-          });
-
-          it("Does not log COMPLETED", () => {
-            expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-              messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-            });
-          });
-        });
-
-        it("Writes DCMAW_ASYNC_CRI_5XXERROR to TxMA", () => {
-          expect(mockSuccessfulEventService.writeGenericEvent).toBeCalledWith({
-            componentId: "mockIssuer",
-            eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-            getNowInMilliseconds: Date.now,
-            govukSigninJourneyId: "mockGovukSigninJourneyId",
-            ipAddress: undefined,
-            redirect_uri: undefined,
-            sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
-            sub: "mockSubjectIdentifier",
-            suspected_fraud_signal: undefined,
-            txmaAuditEncoded: undefined,
-          });
-        });
-
-        it("Does not log COMPLETED", () => {
-          expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-          });
-        });
-      });
-
-      describe("Given the errorCode is BIOMETRIC_SESSION_NOT_VALID", () => {
-        beforeEach(async () => {
-          dependencies.getCredentialFromBiometricSession = jest
-            .fn()
-            .mockReturnValue(
-              errorResult({
-                errorCode: "BIOMETRIC_SESSION_NOT_VALID",
-                errorReason: "MOBILE_BROKE_MESSAGE_CONTRACT",
-                data: {
-                  foo: "bar",
-                },
-              }),
-            );
-
-          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
-        });
-
-        it("Logs ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID", () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode:
-              "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID",
-            data: {
-              errorReason: "MOBILE_BROKE_MESSAGE_CONTRACT",
-              foo: "bar",
-            },
-          });
-        });
-
-        it("Sends server_error to IPV Core", () => {
-          expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
-            "mockIpvcoreOutboundSqs",
-            {
-              sub: "mockSubjectIdentifier",
-              state: "mockClientState",
-              error: "server_error",
-              error_description: "BIOMETRIC_SESSION_NOT_VALID",
-            },
-          );
-        });
-
-        describe("Given DCMAW_ASYNC_CRI_5XXERROR fails to write", () => {
-          beforeEach(async () => {
-            dependencies.getCredentialFromBiometricSession = jest
-              .fn()
-              .mockReturnValue(
-                errorResult({
-                  errorCode: "BIOMETRIC_SESSION_NOT_VALID",
-                  errorReason: "MOBILE_BROKE_MESSAGE_CONTRACT",
-                  data: {
-                    foo: "bar",
-                  },
-                }),
-              );
-            dependencies.getEventService = () => ({
-              ...mockInertEventService,
-              writeGenericEvent: jest.fn().mockResolvedValue(
-                errorResult({
-                  errorMessage: "mockError",
-                }),
-              ),
-            });
-
-            await lambdaHandlerConstructor(
-              dependencies,
-              validSqsEvent,
-              context,
-            );
-          });
-
-          it("Logs DCMAW_ASYNC_CRI_5XXERROR audit event error", () => {
-            expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-              messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-              data: { auditEventName: "DCMAW_ASYNC_CRI_5XXERROR" },
-            });
-          });
-
-          it("Does not log COMPLETED", () => {
-            expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-              messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-            });
-          });
-        });
-
-        it("Writes DCMAW_ASYNC_CRI_5XXERROR to TxMA", () => {
-          expect(mockSuccessfulEventService.writeGenericEvent).toBeCalledWith({
-            componentId: "mockIssuer",
-            eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-            getNowInMilliseconds: Date.now,
-            govukSigninJourneyId: "mockGovukSigninJourneyId",
-            ipAddress: undefined,
-            redirect_uri: undefined,
-            sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
-            sub: "mockSubjectIdentifier",
-            suspected_fraud_signal: undefined,
-            txmaAuditEncoded: undefined,
-          });
-        });
-
-        it("Does not log COMPLETED", () => {
-          expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-          });
-        });
-      });
-
-      describe("Given the errorCode is VENDOR_LIKENESS_DISABLED", () => {
-        beforeEach(async () => {
-          dependencies.getCredentialFromBiometricSession = jest
-            .fn()
-            .mockReturnValue(
-              errorResult({
-                errorCode: "VENDOR_LIKENESS_DISABLED",
-                errorReason: "VENDOR_BROKE_MESSAGE_CONTRACT",
-                data: {
-                  foo: "bar",
-                },
-              }),
-            );
-
-          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
-        });
-
-        it("Logs ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED", () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode:
-              "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED",
-            data: {
-              errorReason: "VENDOR_BROKE_MESSAGE_CONTRACT",
-              foo: "bar",
-            },
-          });
-        });
-
-        it("Sends server_error to IPV Core", () => {
-          expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
-            "mockIpvcoreOutboundSqs",
-            {
-              sub: "mockSubjectIdentifier",
-              state: "mockClientState",
-              error: "server_error",
-              error_description: "VENDOR_LIKENESS_DISABLED",
-            },
-          );
-        });
-
-        describe("Given DCMAW_ASYNC_CRI_5XXERROR fails to write", () => {
-          beforeEach(async () => {
-            dependencies.getCredentialFromBiometricSession = jest
-              .fn()
-              .mockReturnValue(
-                errorResult({
-                  errorCode: "VENDOR_LIKENESS_DISABLED",
-                  errorReason: "VENDOR_BROKE_MESSAGE_CONTRACT",
-                  data: {
-                    foo: "bar",
-                  },
-                }),
-              );
-            dependencies.getEventService = () => ({
-              ...mockInertEventService,
-              writeGenericEvent: jest.fn().mockResolvedValue(
-                errorResult({
-                  errorMessage: "mockError",
-                }),
-              ),
-            });
-
-            await lambdaHandlerConstructor(
-              dependencies,
-              validSqsEvent,
-              context,
-            );
-          });
-
-          it("Logs DCMAW_ASYNC_CRI_5XXERROR audit event error", () => {
-            expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-              messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-              data: { auditEventName: "DCMAW_ASYNC_CRI_5XXERROR" },
-            });
-          });
-
-          it("Does not log COMPLETED", () => {
-            expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-              messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-            });
-          });
-        });
-        it("Writes DCMAW_ASYNC_CRI_5XXERROR to TxMA", () => {
-          expect(mockSuccessfulEventService.writeGenericEvent).toBeCalledWith({
-            componentId: "mockIssuer",
-            eventName: "DCMAW_ASYNC_CRI_5XXERROR",
-            getNowInMilliseconds: Date.now,
-            govukSigninJourneyId: "mockGovukSigninJourneyId",
-            ipAddress: undefined,
-            redirect_uri: undefined,
-            sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
-            sub: "mockSubjectIdentifier",
-            suspected_fraud_signal: undefined,
-            txmaAuditEncoded: undefined,
-          });
-        });
-
-        it("Does not log COMPLETED", () => {
-          expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-          });
-        });
-      });
-
       describe("Given the errorCode is SUSPECTED_FRAUD", () => {
         describe.each([
           ["BIOMETRIC_SESSION_OLDER_THAN_AUTH_SESSION"],
           ["BIOMETRIC_SESSION_OPAQUEID_MISMATCH"],
-        ])("given the errorReason is %s", (errorReason: string) => {
+        ])("Given the errorReason is %s", (errorReason: string) => {
           beforeEach(async () => {
             dependencies.getCredentialFromBiometricSession = jest
               .fn()
@@ -1077,6 +763,132 @@ describe("Async Issue Biometric Credential", () => {
           });
         });
       });
+
+      describe.each([
+        {
+          errorCode: "BIOMETRIC_SESSION_PARSE_FAILURE",
+          errorReason: "VENDOR_BROKE_MESSAGE_CONTRACT"
+        },
+        {
+          errorCode: "BIOMETRIC_SESSION_NOT_VALID",
+          errorReason: "VENDOR_BROKE_MESSAGE_CONTRACT"
+        },
+        {
+          errorCode: "BIOMETRIC_SESSION_NOT_VALID",
+          errorReason: "MOBILE_BROKE_MESSAGE_CONTRACT"
+        },
+        {
+          errorCode: "BIOMETRIC_SESSION_NOT_VALID",
+          errorReason: "UNEXPECTED_DOCUMENT_TYPE"
+        },
+        {
+          errorCode: "VENDOR_LIKENESS_DISABLED",
+          errorReason: "UNEXPECTED_DOCUMENT_TYPE"
+        },
+      ])("Given the errorCode is $errorCode and the errorReason is $errorReason", ({errorCode, errorReason}) => {
+        beforeEach(async () => {
+          dependencies.getCredentialFromBiometricSession = jest
+            .fn()
+            .mockReturnValue(
+              errorResult({
+                errorCode,
+                errorReason,
+                data: {
+                  foo: "bar",
+                },
+              }),
+            );
+
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        });
+
+        it(`Logs ISSUE_BIOMETRIC_CREDENTIAL_${errorCode}`, () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode:
+              `MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_${errorCode}`,
+            data: {
+              errorReason,
+              foo: "bar",
+            },
+          });
+        });
+
+        it("Sends server_error to IPV Core", () => {
+          expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
+            "mockIpvcoreOutboundSqs",
+            {
+              sub: "mockSubjectIdentifier",
+              state: "mockClientState",
+              error: "server_error",
+              error_description: errorCode,
+            },
+          );
+        });
+
+        describe("Given DCMAW_ASYNC_CRI_5XXERROR fails to write", () => {
+          beforeEach(async () => {
+            dependencies.getCredentialFromBiometricSession = jest
+              .fn()
+              .mockReturnValue(
+                errorResult({
+                  errorCode,
+                  errorReason,
+                  data: {
+                    foo: "bar",
+                  },
+                }),
+              );
+            dependencies.getEventService = () => ({
+              ...mockInertEventService,
+              writeGenericEvent: jest.fn().mockResolvedValue(
+                errorResult({
+                  errorMessage: "mockError",
+                }),
+              ),
+            });
+
+            await lambdaHandlerConstructor(
+              dependencies,
+              validSqsEvent,
+              context,
+            );
+          });
+
+          it("Logs DCMAW_ASYNC_CRI_5XXERROR audit event error", () => {
+            expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+              messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+              data: { auditEventName: "DCMAW_ASYNC_CRI_5XXERROR" },
+            });
+          });
+
+          it("Does not log COMPLETED", () => {
+            expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+              messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+            });
+          });
+        });
+
+        it("Writes DCMAW_ASYNC_CRI_5XXERROR to TxMA", () => {
+          expect(mockSuccessfulEventService.writeGenericEvent).toBeCalledWith({
+            componentId: "mockIssuer",
+            eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+            getNowInMilliseconds: Date.now,
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            ipAddress: undefined,
+            redirect_uri: undefined,
+            sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+            sub: "mockSubjectIdentifier",
+            suspected_fraud_signal: undefined,
+            txmaAuditEncoded: undefined,
+          });
+        });
+
+        it("Does not log COMPLETED", () => {
+          expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+          });
+        });
+      })
     });
 
     describe("Happy path", () => {
