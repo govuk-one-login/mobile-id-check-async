@@ -13,10 +13,8 @@ import { OutboundQueueErrorMessage } from "../adapters/aws/sqs/types";
 
 import { IEventService } from "../services/events/types";
 import { EventService } from "../services/events/eventService";
-import {
-  IGetCredentialFromBiometricSession,
-  mockGetCredentialFromBiometricSession,
-} from "./mockGetCredentialFromBiometricSession/mockGetCredentialFromBiometricSession";
+import { mockGetCredentialFromBiometricSession } from "./mockGetCredentialFromBiometricSession/mockGetCredentialFromBiometricSession";
+import { IGetCredentialFromBiometricSession } from "./mockGetCredentialFromBiometricSession/types";
 
 export type IssueBiometricCredentialDependencies = {
   env: NodeJS.ProcessEnv;

@@ -30,11 +30,11 @@ import {
 import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
 import { GetSessionIssueBiometricCredential } from "../common/session/getOperations/IssueBiometricCredential/GetSessionIssueBiometricCredential";
 import {
-  FraudCheckData,
   GetCredentialError,
   GetCredentialErrorCode,
   GetCredentialOptions,
-} from "./mockGetCredentialFromBiometricSession/mockGetCredentialFromBiometricSession";
+  FraudCheckData,
+} from "./mockGetCredentialFromBiometricSession/types";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
