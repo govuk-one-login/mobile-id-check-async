@@ -917,14 +917,6 @@ Resources:
                 Resource: !GetAtt IPVCoreKMSEncryptionKey.Arn
             Version: "2012-10-17"
           PolicyName: AsyncAbortSessionFunctionIPVCoreSQSPolicy
-        - PolicyDocument:
-            Statement:
-              - Action:
-                  - kms:Sign
-                Effect: Allow
-                Resource: !GetAtt VCSigningKey.Arn
-            Version: "2012-10-17"
-          PolicyName: AsyncAbortSessionFunctionVCSigningPolicy
       RoleName: !Sub ${AWS::StackName}-abort-session-lambda
 
   AsyncAbortSessionLogGroup:
@@ -3430,7 +3422,7 @@ Resources:
               - Action:
                   - kms:Sign
                 Effect: Allow
-                Resource: !GetAtt VCSigningKey.Arn
+                Resource: !GetAtt VerifiableCredentialSigningKey.Arn
             Version: "2012-10-17"
           PolicyName: AsyncIssueBiometricCredentialFunctionVCSigningPolicy
         - PolicyDocument:
