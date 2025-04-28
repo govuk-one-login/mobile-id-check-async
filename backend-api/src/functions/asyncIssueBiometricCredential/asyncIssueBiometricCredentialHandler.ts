@@ -305,84 +305,66 @@ const handleGetCredentialFailure = async (
     issuer,
     redirectUri,
   } = sessionAttributes;
+  let logMessage;
+  let eventName;
+  let suspectedFraudSignal;
+  let sqsMessage;
+
   const ipvOutboundMessageServerError = {
     sub: subjectIdentifier,
     state: clientState,
     error_description: errorCode,
     error: "server_error",
   };
-  const ipvOutboundMessageAccessDenied = {
-    sub: subjectIdentifier,
-    state: clientState,
-    error_description: errorCode,
-    error: "access_denied",
-  };
-  let writeEventResult;
-  let logMessage
-  let eventName
-
-  if (errorCode === GetCredentialErrorCode.SUSPECTED_FRAUD) {
-    logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_SUSPECTED_FRAUD, {
-      data: {
-        errorReason,
-        ...data,
-      },
-    });
-
-    await sendMessageToSqs(outboundQueue, ipvOutboundMessageAccessDenied);
-
-    writeEventResult = await eventService.writeGenericEvent({
-      eventName: "DCMAW_ASYNC_CRI_4XXERROR",
-      sub: subjectIdentifier,
-      sessionId,
-      govukSigninJourneyId,
-      getNowInMilliseconds: Date.now,
-      componentId: issuer,
-      ipAddress: undefined,
-      txmaAuditEncoded: undefined,
-      redirect_uri: redirectUri,
-      suspected_fraud_signal: errorReason,
-    });
-    if (writeEventResult.isError) {
-      logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-        data: {
-          auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
-        },
-      });
-    }
-    return;
-  }
 
   switch (errorCode) {
+    case GetCredentialErrorCode.SUSPECTED_FRAUD:
+      eventName = "DCMAW_ASYNC_CRI_4XXERROR" as const;
+      logMessage = LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_SUSPECTED_FRAUD;
+      sqsMessage = {
+        sub: subjectIdentifier,
+        state: clientState,
+        error_description: errorCode,
+        error: "access_denied",
+      };
+      suspectedFraudSignal = errorReason;
+      break;
+
     case GetCredentialErrorCode.PARSE_FAILURE:
-      logMessage = LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE
-      eventName = "DCMAW_ASYNC_CRI_5XXERROR" as const
+      eventName = "DCMAW_ASYNC_CRI_5XXERROR" as const;
+      logMessage =
+        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE;
+      sqsMessage = ipvOutboundMessageServerError;
+      suspectedFraudSignal = undefined;
       break;
 
     case GetCredentialErrorCode.BIOMETRIC_SESSION_NOT_VALID:
-      logMessage = LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID
-      eventName = "DCMAW_ASYNC_CRI_5XXERROR" as const
+      eventName = "DCMAW_ASYNC_CRI_5XXERROR" as const;
+      logMessage =
+        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID;
+      sqsMessage = ipvOutboundMessageServerError;
+      suspectedFraudSignal = undefined;
       break;
 
     case GetCredentialErrorCode.VENDOR_LIKENESS_DISABLED:
-      logMessage = LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED
-      eventName = "DCMAW_ASYNC_CRI_5XXERROR" as const
+      eventName = "DCMAW_ASYNC_CRI_5XXERROR" as const;
+      logMessage =
+        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED;
+      sqsMessage = ipvOutboundMessageServerError;
+      suspectedFraudSignal = undefined;
       break;
   }
 
-  logger.error(
-    logMessage,
-    {
-      data: {
-        errorReason,
-        ...data,
-      },
+  logger.error(logMessage, {
+    data: {
+      errorReason,
+      ...data,
     },
-  );
+  });
 
-  await sendMessageToSqs(outboundQueue, ipvOutboundMessageServerError);
+  await sendMessageToSqs(outboundQueue, sqsMessage);
 
-  writeEventResult = await eventService.writeGenericEvent({
+  const writeEventResult = await eventService.writeGenericEvent({
     eventName,
     sub: subjectIdentifier,
     sessionId,
@@ -392,12 +374,12 @@ const handleGetCredentialFailure = async (
     ipAddress: undefined,
     txmaAuditEncoded: undefined,
     redirect_uri: redirectUri,
-    suspected_fraud_signal: undefined,
+    suspected_fraud_signal: suspectedFraudSignal,
   });
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: {
-        auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+        auditEventName: eventName,
       },
     });
   }
