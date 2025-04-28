@@ -318,6 +318,8 @@ const handleGetCredentialFailure = async (
     error: "access_denied",
   };
   let writeEventResult;
+  let logMessage
+  let eventName
 
   if (errorCode === GetCredentialErrorCode.SUSPECTED_FRAUD) {
     logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_SUSPECTED_FRAUD, {
@@ -353,46 +355,35 @@ const handleGetCredentialFailure = async (
 
   switch (errorCode) {
     case GetCredentialErrorCode.PARSE_FAILURE:
-      logger.error(
-        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE,
-        {
-          data: {
-            errorReason,
-            ...data,
-          },
-        },
-      );
+      logMessage = LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE
+      eventName = "DCMAW_ASYNC_CRI_5XXERROR" as const
       break;
 
     case GetCredentialErrorCode.BIOMETRIC_SESSION_NOT_VALID:
-      logger.error(
-        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID,
-        {
-          data: {
-            errorReason,
-            ...data,
-          },
-        },
-      );
+      logMessage = LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID
+      eventName = "DCMAW_ASYNC_CRI_5XXERROR" as const
       break;
 
     case GetCredentialErrorCode.VENDOR_LIKENESS_DISABLED:
-      logger.error(
-        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED,
-        {
-          data: {
-            errorReason,
-            ...data,
-          },
-        },
-      );
+      logMessage = LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED
+      eventName = "DCMAW_ASYNC_CRI_5XXERROR" as const
       break;
   }
+
+  logger.error(
+    logMessage,
+    {
+      data: {
+        errorReason,
+        ...data,
+      },
+    },
+  );
 
   await sendMessageToSqs(outboundQueue, ipvOutboundMessageServerError);
 
   writeEventResult = await eventService.writeGenericEvent({
-    eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+    eventName,
     sub: subjectIdentifier,
     sessionId,
     govukSigninJourneyId,
