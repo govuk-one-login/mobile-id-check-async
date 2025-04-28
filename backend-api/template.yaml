@@ -5041,6 +5041,40 @@ Resources:
       OpenApiVersion: 3.0.1
       StageName: !Ref Environment
 
+  Properties:
+    Description: KMS Key for signing Verifiable Credentials
+    EnableKeyRotation: false
+    Enabled: true
+    KeyPolicy:
+      Statement:
+        - Action: kms:*
+          Effect: Allow
+          Principal:
+            AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+          Resource: '*'
+          Sid: AdminAccess
+        - Action:
+            - kms:Sign
+            - kms:GetPublicKey
+          Condition:
+            ArnLike:
+              aws:SourceArn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-issue-biometric-credential
+            StringEquals:
+              kms:CallerAccount: !Ref AWS::AccountId
+          Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Resource: '*'
+          Sid: LambdaSigningAccess
+      Version: "2012-10-17"
+    KeySpec: ECC_NIST_P256
+    KeyUsage: SIGN_VERIFY
+    MultiRegion: false
+    PendingWindowInDays: !FindInMap
+      - KMS
+      - !Ref Environment
+      - PendingDeletionInDays
+
   ProxyApi:
     Type: AWS::Serverless::Api
     Properties:
@@ -5556,6 +5590,16 @@ Resources:
       Queues:
         - !Ref TxMASQSQueue
     Condition: isNotDevOrBuild
+
+  Type: AWS::KMS::Key
+
+  VCSigningKey: null
+
+  VCSigningKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}-vc-signing-key
+      TargetKeyId: !Ref VCSigningKey
 
   VendorProcessingDLQ:
     Type: AWS::SQS::Queue
