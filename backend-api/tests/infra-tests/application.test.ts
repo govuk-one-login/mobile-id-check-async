@@ -100,7 +100,7 @@ describe("Backend application infrastructure", () => {
           environmentFlags: expectedEnvironmentVariablesValues,
           mappingBottomLevelKey: "EnableBiometricResidenceCard",
         });
-      })
+      });
 
       test("EnableBiometricResidencePermit is set", () => {
         const expectedEnvironmentVariablesValues = {
@@ -116,7 +116,7 @@ describe("Backend application infrastructure", () => {
           environmentFlags: expectedEnvironmentVariablesValues,
           mappingBottomLevelKey: "EnableBiometricResidencePermit",
         });
-      })
+      });
 
       test("EnableDrivingLicence is set", () => {
         const expectedEnvironmentVariablesValues = {
@@ -132,7 +132,7 @@ describe("Backend application infrastructure", () => {
           environmentFlags: expectedEnvironmentVariablesValues,
           mappingBottomLevelKey: "EnableDrivingLicence",
         });
-      })
+      });
 
       test("EnableNfcPassports is set", () => {
         const expectedEnvironmentVariablesValues = {
@@ -148,7 +148,7 @@ describe("Backend application infrastructure", () => {
           environmentFlags: expectedEnvironmentVariablesValues,
           mappingBottomLevelKey: "EnableNfcPassports",
         });
-      })
+      });
 
       test("EnableUtopiaTestDocuments is set", () => {
         const expectedEnvironmentVariablesValues = {
@@ -164,8 +164,8 @@ describe("Backend application infrastructure", () => {
           environmentFlags: expectedEnvironmentVariablesValues,
           mappingBottomLevelKey: "EnableUtopiaTestDocuments",
         });
-      })
-    })
+      });
+    });
   });
 
   describe("Private APIgw", () => {
