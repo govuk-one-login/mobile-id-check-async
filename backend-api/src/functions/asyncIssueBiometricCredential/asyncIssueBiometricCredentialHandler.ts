@@ -313,7 +313,7 @@ const handleGetCredentialFailure = async (
   const ipvOutboundMessageServerError: OutboundQueueErrorMessage = {
     sub: subjectIdentifier,
     state: clientState,
-    error_description: errorCode,
+    error_description: "Internal server error",
     error: "server_error",
   };
 

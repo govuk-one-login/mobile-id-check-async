@@ -825,7 +825,7 @@ describe("Async Issue Biometric Credential", () => {
                 sub: "mockSubjectIdentifier",
                 state: "mockClientState",
                 error: "server_error",
-                error_description: errorCode,
+                error_description: "Internal server error",
               },
             );
           });
