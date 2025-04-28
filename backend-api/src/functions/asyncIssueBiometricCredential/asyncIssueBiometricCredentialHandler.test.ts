@@ -691,7 +691,7 @@ describe("Async Issue Biometric Credential", () => {
                 sub: "mockSubjectIdentifier",
                 state: "mockClientState",
                 error: "access_denied",
-                error_description: "SUSPECTED_FRAUD",
+                error_description: "Suspected fraud detected",
               },
             );
           });

@@ -324,7 +324,7 @@ const handleGetCredentialFailure = async (
       sqsMessage = {
         sub: subjectIdentifier,
         state: clientState,
-        error_description: errorCode,
+        error_description: "Suspected fraud detected",
         error: "access_denied",
       };
       suspectedFraudSignal = errorReason;
