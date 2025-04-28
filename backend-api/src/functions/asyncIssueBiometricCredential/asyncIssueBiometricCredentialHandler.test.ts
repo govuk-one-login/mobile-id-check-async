@@ -700,46 +700,109 @@ describe("Async Issue Biometric Credential", () => {
           expectedSuspectedFraudSignal,
           logMessage,
         }) => {
-          beforeEach(async () => {
-            dependencies.getCredentialFromBiometricSession = jest
-              .fn()
-              .mockReturnValue(
-                errorResult({
-                  errorCode,
-                  errorReason: "mockErrorReason",
-                  data: {
-                    mockData: "mockData",
-                  },
-                }),
+          describe("Given writing to txma fails", () => {
+            beforeEach(async () => {
+              dependencies.getCredentialFromBiometricSession = jest
+                .fn()
+                .mockReturnValue(
+                  errorResult({
+                    errorCode,
+                    errorReason: "mockErrorReason",
+                    data: {
+                      mockData: "mockData",
+                    },
+                  }),
+                );
+              dependencies.getEventService = () => ({
+                ...mockInertEventService,
+                writeGenericEvent: jest.fn().mockResolvedValue(
+                  errorResult({
+                    errorMessage: "mockError",
+                  }),
+                ),
+              });
+
+              await lambdaHandlerConstructor(
+                dependencies,
+                validSqsEvent,
+                context,
               );
+            });
 
-            await lambdaHandlerConstructor(
-              dependencies,
-              validSqsEvent,
-              context,
-            );
-          });
+            it(`Logs ${logMessage}`, () => {
+              expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+                messageCode: logMessage,
+                data: {
+                  errorReason: "mockErrorReason",
+                  mockData: "mockData",
+                },
+              });
+            });
 
-          it(`Logs ${logMessage}`, () => {
-            expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-              messageCode: logMessage,
-              data: {
-                errorReason: "mockErrorReason",
-                mockData: "mockData",
-              },
+            it("Sends server_error to IPV Core", () => {
+              expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
+                "mockIpvcoreOutboundSqs",
+                expectedSqsMessage,
+              );
+            });
+
+            it(`Logs ${eventName} audit event error`, () => {
+              expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+                messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+                data: { auditEventName: eventName },
+              });
+            });
+
+            it("Does not log COMPLETED", () => {
+              expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+                messageCode:
+                  "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+              });
             });
           });
 
-          it("Sends server_error to IPV Core", () => {
-            expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
-              "mockIpvcoreOutboundSqs",
-              expectedSqsMessage,
-            );
-          });
+          describe("Given writing to txma succeeds", () => {
+            beforeEach(async () => {
+              dependencies.getCredentialFromBiometricSession = jest
+                .fn()
+                .mockReturnValue(
+                  errorResult({
+                    errorCode,
+                    errorReason: "mockErrorReason",
+                    data: {
+                      mockData: "mockData",
+                    },
+                  }),
+                );
 
-          it(`Writes ${eventName} to TxMA`, () => {
-            expect(mockSuccessfulEventService.writeGenericEvent).toBeCalledWith(
-              {
+              await lambdaHandlerConstructor(
+                dependencies,
+                validSqsEvent,
+                context,
+              );
+            });
+
+            it(`Logs ${logMessage}`, () => {
+              expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+                messageCode: logMessage,
+                data: {
+                  errorReason: "mockErrorReason",
+                  mockData: "mockData",
+                },
+              });
+            });
+
+            it("Sends server_error to IPV Core", () => {
+              expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
+                "mockIpvcoreOutboundSqs",
+                expectedSqsMessage,
+              );
+            });
+
+            it(`Writes ${eventName} to TxMA`, () => {
+              expect(
+                mockSuccessfulEventService.writeGenericEvent,
+              ).toBeCalledWith({
                 componentId: "mockIssuer",
                 eventName: eventName,
                 getNowInMilliseconds: Date.now,
@@ -750,13 +813,14 @@ describe("Async Issue Biometric Credential", () => {
                 sub: "mockSubjectIdentifier",
                 suspected_fraud_signal: expectedSuspectedFraudSignal,
                 txmaAuditEncoded: undefined,
-              },
-            );
-          });
+              });
+            });
 
-          it("Does not log COMPLETED", () => {
-            expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-              messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+            it("Does not log COMPLETED", () => {
+              expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+                messageCode:
+                  "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+              });
             });
           });
         },
