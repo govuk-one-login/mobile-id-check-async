@@ -59,7 +59,7 @@ Resources:
       AliasName: !Sub alias/${AWS::StackName}-encryption-key
       TargetKeyId: !Ref KMSEncryptionKey
 
-  VCSigningKey:
+  VerifiableCredentialSigningKey:
     Type: AWS::KMS::Key
     Properties:
       Description: KMS Key for signing Verifiable Credentials
@@ -68,13 +68,13 @@ Resources:
       KeyPolicy:
         Version: "2012-10-17"
         Statement:
-          - Sid: AdminAccess
+          - Sid: RootAccess
             Effect: Allow
             Principal:
               AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
             Action: kms:*
             Resource: '*'
-          - Sid: LambdaSigningAccess
+          - Sid: IssueBiometricCredentialLambdaSigningAccess
             Effect: Allow
             Principal:
               Service: lambda.amazonaws.com
@@ -85,7 +85,7 @@ Resources:
               StringEquals:
                 kms:CallerAccount: !Ref AWS::AccountId
               ArnLike:
-                aws:SourceArn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-issue-biometric-credential
+                aws:SourceArn: !GetAtt AsyncIssueBiometricCredentialFunction.Arn
       KeySpec: ECC_NIST_P256
       KeyUsage: SIGN_VERIFY
       MultiRegion: false
@@ -94,8 +94,8 @@ Resources:
         - !Ref Environment
         - PendingDeletionInDays
 
-  VCSigningKeyAlias:
+  VerifiableCredentialSigningKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
       AliasName: !Sub alias/${AWS::StackName}-vc-signing-key
-      TargetKeyId: !Ref VCSigningKey
+      TargetKeyId: !Ref VerifiableCredentialSigningKey
