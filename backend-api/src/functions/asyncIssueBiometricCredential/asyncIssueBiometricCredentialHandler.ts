@@ -30,8 +30,10 @@ import {
 import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
 import { GetSessionIssueBiometricCredential } from "../common/session/getOperations/IssueBiometricCredential/GetSessionIssueBiometricCredential";
 import {
+  FraudCheckData,
   GetCredentialError,
   GetCredentialErrorCode,
+  GetCredentialOptions,
 } from "./mockGetCredentialFromBiometricSession/mockGetCredentialFromBiometricSession";
 
 export async function lambdaHandlerConstructor(
@@ -167,11 +169,11 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  const fraudCheckData = {
+  const fraudCheckData: FraudCheckData = {
     userSessionCreatedAt: sessionAttributes.createdAt,
     opaqueId: sessionAttributes.opaqueId,
   };
-  const getCredentialFromBiometricSessionOptions = {
+  const getCredentialFromBiometricSessionOptions: GetCredentialOptions = {
     enableBiometricResidenceCard:
       config.ENABLE_BIOMETRIC_RESIDENCE_CARD === "true",
     enableBiometricResidencePermit:
