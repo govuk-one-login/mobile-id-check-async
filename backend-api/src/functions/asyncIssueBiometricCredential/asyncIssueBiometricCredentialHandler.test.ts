@@ -31,6 +31,7 @@ describe("Async Issue Biometric Credential", () => {
   let consoleInfoSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
   let lambdaError: unknown;
+  const expectedErrorTxmaEventName = "DCMAW_ASYNC_CRI_ERROR";
 
   const mockReadyBiometricSession: BiometricSession = {
     finish: "DONE",
@@ -373,10 +374,10 @@ describe("Async Issue Biometric Credential", () => {
           await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
         });
 
-        it("Logs DCMAW_ASYNC_CRI_5XXERROR audit event error", () => {
+        it("Logs DCMAW_ASYNC_CRI_ERROR audit event error", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-            data: { auditEventName: "DCMAW_ASYNC_CRI_5XXERROR" },
+            data: { auditEventName: expectedErrorTxmaEventName },
           });
         });
 
@@ -401,9 +402,9 @@ describe("Async Issue Biometric Credential", () => {
           await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
         });
 
-        it("Writes DCMAW_ASYNC_CRI_5XXERROR to TxMA", () => {
+        it("Writes DCMAW_ASYNC_CRI_ERROR to TxMA", () => {
           expect(mockSuccessfulEventService.writeGenericEvent).toBeCalledWith({
-            eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+            eventName: expectedErrorTxmaEventName,
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
             sessionId: mockSessionId,
@@ -506,7 +507,7 @@ describe("Async Issue Biometric Credential", () => {
         it("Sends event to TxMA", () => {
           expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
             expect.objectContaining({
-              eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+              eventName: expectedErrorTxmaEventName,
               componentId: "mockIssuer",
             }),
           );
@@ -536,7 +537,7 @@ describe("Async Issue Biometric Credential", () => {
           it("Still sends event to TxMA", () => {
             expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
               expect.objectContaining({
-                eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+                eventName: expectedErrorTxmaEventName,
                 componentId: "mockIssuer",
               }),
             );
@@ -560,9 +561,10 @@ describe("Async Issue Biometric Credential", () => {
               );
             });
 
-            it("Logs DCMAW_ASYNC_CRI_5XXERROR audit event error", () => {
+            it("Logs DCMAW_ASYNC_CRI_ERROR audit event error", () => {
               expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
                 messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+                data: { auditEventName: expectedErrorTxmaEventName },
               });
             });
 
@@ -570,7 +572,6 @@ describe("Async Issue Biometric Credential", () => {
               expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
                 messageCode:
                   "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-                data: { auditEventName: "DCMAW_ASYNC_CRI_5XXERROR" },
               });
             });
           });
@@ -584,11 +585,11 @@ describe("Async Issue Biometric Credential", () => {
               );
             });
 
-            it("Writes DCMAW_ASYNC_CRI_5XXERROR to TxMA", () => {
+            it("Writes DCMAW_ASYNC_CRI_5ERROR to TxMA", () => {
               expect(
                 mockSuccessfulEventService.writeGenericEvent,
               ).toBeCalledWith({
-                eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+                eventName: expectedErrorTxmaEventName,
                 componentId: "mockIssuer",
                 getNowInMilliseconds: Date.now,
                 sessionId: mockSessionId,
@@ -605,7 +606,6 @@ describe("Async Issue Biometric Credential", () => {
               expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
                 messageCode:
                   "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-                sessionId: mockSessionId,
               });
             });
           });
@@ -657,7 +657,6 @@ describe("Async Issue Biometric Credential", () => {
       describe.each([
         {
           errorCode: "SUSPECTED_FRAUD",
-          eventName: "DCMAW_ASYNC_CRI_4XXERROR",
           expectedSqsMessage: {
             sub: "mockSubjectIdentifier",
             state: "mockClientState",
@@ -669,7 +668,6 @@ describe("Async Issue Biometric Credential", () => {
         },
         {
           errorCode: "BIOMETRIC_SESSION_PARSE_FAILURE",
-          eventName: "DCMAW_ASYNC_CRI_5XXERROR",
           expectedSqsMessage: serverErrorMessage,
           expectedSuspectedFraudSignal: undefined,
           logMessage:
@@ -677,7 +675,6 @@ describe("Async Issue Biometric Credential", () => {
         },
         {
           errorCode: "BIOMETRIC_SESSION_NOT_VALID",
-          eventName: "DCMAW_ASYNC_CRI_5XXERROR",
           expectedSqsMessage: serverErrorMessage,
           expectedSuspectedFraudSignal: undefined,
           logMessage:
@@ -685,7 +682,6 @@ describe("Async Issue Biometric Credential", () => {
         },
         {
           errorCode: "VENDOR_LIKENESS_DISABLED",
-          eventName: "DCMAW_ASYNC_CRI_5XXERROR",
           expectedSqsMessage: serverErrorMessage,
           expectedSuspectedFraudSignal: undefined,
           logMessage:
@@ -695,7 +691,6 @@ describe("Async Issue Biometric Credential", () => {
         "Given the error code is $errorCode",
         ({
           errorCode,
-          eventName,
           expectedSqsMessage,
           expectedSuspectedFraudSignal,
           logMessage,
@@ -746,10 +741,10 @@ describe("Async Issue Biometric Credential", () => {
               );
             });
 
-            it(`Logs ${eventName} audit event error`, () => {
+            it(`Logs DCMAW_ASYNC_CRI_ERROR audit event error`, () => {
               expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
                 messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-                data: { auditEventName: eventName },
+                data: { auditEventName: expectedErrorTxmaEventName },
               });
             });
 
@@ -799,12 +794,12 @@ describe("Async Issue Biometric Credential", () => {
               );
             });
 
-            it(`Writes ${eventName} to TxMA`, () => {
+            it("Writes DCMAW_ASYNC_CRI_ERROR event to TxMA", () => {
               expect(
                 mockSuccessfulEventService.writeGenericEvent,
               ).toBeCalledWith({
                 componentId: "mockIssuer",
-                eventName: eventName,
+                eventName: expectedErrorTxmaEventName,
                 getNowInMilliseconds: Date.now,
                 govukSigninJourneyId: "mockGovukSigninJourneyId",
                 ipAddress: undefined,
