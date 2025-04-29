@@ -585,7 +585,7 @@ describe("Async Issue Biometric Credential", () => {
               );
             });
 
-            it("Writes DCMAW_ASYNC_CRI_5ERROR to TxMA", () => {
+            it("Writes DCMAW_ASYNC_CRI_ERROR to TxMA", () => {
               expect(
                 mockSuccessfulEventService.writeGenericEvent,
               ).toBeCalledWith({
