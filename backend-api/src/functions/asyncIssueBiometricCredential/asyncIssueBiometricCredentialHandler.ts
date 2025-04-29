@@ -20,7 +20,7 @@ import { GetSecrets } from "../common/config/secrets";
 
 import { OutboundQueueErrorMessage } from "../adapters/aws/sqs/types";
 
-import { IEventService } from "../services/events/types";
+import { GenericEventNames, IEventService } from "../services/events/types";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 import {
   BiometricSessionFinishedAttributes,
@@ -64,6 +64,7 @@ export async function lambdaHandlerConstructor(
   );
 
   const eventService = dependencies.getEventService(config.TXMA_SQS);
+  const errorTxmaEventName = "DCMAW_ASYNC_CRI_ERROR";
 
   const getSessionResult = await sessionRegistry.getSession(
     sessionId,
@@ -73,6 +74,7 @@ export async function lambdaHandlerConstructor(
   if (getSessionResult.isError) {
     return handleGetSessionError({
       errorData: getSessionResult.value,
+      eventName: errorTxmaEventName,
       eventService,
       issuer: config.ISSUER,
       sessionId,
@@ -107,7 +109,6 @@ export async function lambdaHandlerConstructor(
   );
 
   if (biometricSessionResult.isError) {
-    const eventService = dependencies.getEventService(config.TXMA_SQS);
     const error: GetBiometricSessionError = biometricSessionResult.value;
 
     // Check if the error was retryable based on error info
@@ -131,7 +132,7 @@ export async function lambdaHandlerConstructor(
     }
 
     const writeEventResult = await eventService.writeGenericEvent({
-      eventName: "DCMAW_ASYNC_CRI_5XXERROR",
+      eventName: errorTxmaEventName,
       sub: sessionAttributes?.subjectIdentifier,
       sessionId,
       govukSigninJourneyId: sessionAttributes?.govukSigninJourneyId,
@@ -146,7 +147,7 @@ export async function lambdaHandlerConstructor(
     if (writeEventResult.isError) {
       logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
         data: {
-          auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+          auditEventName: errorTxmaEventName,
         },
       });
     }
@@ -193,6 +194,7 @@ export async function lambdaHandlerConstructor(
   if (getCredentialFromBiometricSessionResult.isError) {
     return await handleGetCredentialFailure(
       getCredentialFromBiometricSessionResult.value,
+      errorTxmaEventName,
       eventService,
       sessionAttributes,
       config.IPVCORE_OUTBOUND_SQS,
@@ -229,7 +231,7 @@ async function getBiometricViewerAccessKey(
 const handleGetSessionError = async (
   options: HandleGetSessionErrorParameters,
 ): Promise<void> => {
-  const { errorData, eventService, issuer, sessionId } = options;
+  const { errorData, eventName, eventService, issuer, sessionId } = options;
 
   if (errorData.errorType === GetSessionError.INTERNAL_SERVER_ERROR) {
     throw new RetainMessageOnQueue(
@@ -237,7 +239,6 @@ const handleGetSessionError = async (
     );
   }
 
-  const eventName = "DCMAW_ASYNC_CRI_5XXERROR";
   const writeEventResult = await eventService.writeGenericEvent({
     componentId: issuer,
     eventName,
@@ -281,6 +282,7 @@ const handleSendErrorMessageToOutboundQueue = async (
 
 interface HandleGetSessionErrorParameters {
   errorData: GetSessionFailed;
+  eventName: GenericEventNames;
   eventService: IEventService;
   issuer: string;
   sessionId: string;
@@ -288,6 +290,7 @@ interface HandleGetSessionErrorParameters {
 
 const handleGetCredentialFailure = async (
   error: GetCredentialError,
+  eventName: GenericEventNames,
   eventService: IEventService,
   sessionAttributes: BiometricSessionFinishedAttributes,
   outboundQueue: string,
@@ -306,7 +309,6 @@ const handleGetCredentialFailure = async (
     redirectUri,
   } = sessionAttributes;
   let logMessage;
-  let eventName;
   let suspectedFraudSignal;
   let sqsMessage: OutboundQueueErrorMessage;
 
@@ -319,7 +321,6 @@ const handleGetCredentialFailure = async (
 
   switch (errorCode) {
     case GetCredentialErrorCode.SUSPECTED_FRAUD:
-      eventName = "DCMAW_ASYNC_CRI_4XXERROR" as const;
       logMessage = LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_SUSPECTED_FRAUD;
       sqsMessage = {
         sub: subjectIdentifier,
@@ -331,7 +332,6 @@ const handleGetCredentialFailure = async (
       break;
 
     case GetCredentialErrorCode.PARSE_FAILURE:
-      eventName = "DCMAW_ASYNC_CRI_5XXERROR" as const;
       logMessage =
         LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE;
       sqsMessage = ipvOutboundMessageServerError;
@@ -339,7 +339,6 @@ const handleGetCredentialFailure = async (
       break;
 
     case GetCredentialErrorCode.BIOMETRIC_SESSION_NOT_VALID:
-      eventName = "DCMAW_ASYNC_CRI_5XXERROR" as const;
       logMessage =
         LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID;
       sqsMessage = ipvOutboundMessageServerError;
@@ -347,7 +346,6 @@ const handleGetCredentialFailure = async (
       break;
 
     case GetCredentialErrorCode.VENDOR_LIKENESS_DISABLED:
-      eventName = "DCMAW_ASYNC_CRI_5XXERROR" as const;
       logMessage =
         LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED;
       sqsMessage = ipvOutboundMessageServerError;
