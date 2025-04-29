@@ -29,6 +29,12 @@ import {
 } from "../common/session/session";
 import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
 import { GetSessionIssueBiometricCredential } from "../common/session/getOperations/IssueBiometricCredential/GetSessionIssueBiometricCredential";
+import {
+  GetCredentialError,
+  GetCredentialErrorCode,
+  GetCredentialOptions,
+  FraudCheckData,
+} from "./mockGetCredentialFromBiometricSession/types";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -72,12 +78,14 @@ export async function lambdaHandlerConstructor(
       sessionId,
     });
   }
-  const sessionAttributes = getSessionResult.value;
 
-  if (sessionAttributes.sessionState === SessionState.RESULT_SENT) {
+  if (getSessionResult.value.sessionState === SessionState.RESULT_SENT) {
     logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
     return;
   }
+
+  const sessionAttributes =
+    getSessionResult.value as BiometricSessionFinishedAttributes;
 
   const viewerKeyResult = await getBiometricViewerAccessKey(
     config.BIOMETRIC_VIEWER_KEY_SECRET_PATH,
@@ -89,8 +97,7 @@ export async function lambdaHandlerConstructor(
   }
 
   const viewerKey = viewerKeyResult.value;
-  const { biometricSessionId } =
-    sessionAttributes as BiometricSessionFinishedAttributes;
+  const { biometricSessionId } = sessionAttributes;
   logger.appendKeys({ biometricSessionId });
 
   const biometricSessionResult = await dependencies.getBiometricSession(
@@ -159,6 +166,37 @@ export async function lambdaHandlerConstructor(
     logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
     throw new RetainMessageOnQueue(
       `Biometric session not ready: ${biometricSession.finish}`,
+    );
+  }
+
+  const fraudCheckData: FraudCheckData = {
+    userSessionCreatedAt: sessionAttributes.createdAt,
+    opaqueId: sessionAttributes.opaqueId,
+  };
+  const getCredentialFromBiometricSessionOptions: GetCredentialOptions = {
+    enableBiometricResidenceCard:
+      config.ENABLE_BIOMETRIC_RESIDENCE_CARD === "true",
+    enableBiometricResidencePermit:
+      config.ENABLE_BIOMETRIC_RESIDENCE_PERMIT === "true",
+    enableDrivingLicence: config.ENABLE_DRIVING_LICENCE === "true",
+    enableNfcPassports: config.ENABLE_NFC_PASSPORTS === "true",
+    enableUtopiaTestDocuments: config.ENABLE_UTOPIA_TEST_DOCUMENTS === "true",
+  };
+
+  const getCredentialFromBiometricSessionResult =
+    dependencies.getCredentialFromBiometricSession(
+      biometricSession,
+      fraudCheckData,
+      getCredentialFromBiometricSessionOptions,
+    );
+
+  if (getCredentialFromBiometricSessionResult.isError) {
+    return await handleGetCredentialFailure(
+      getCredentialFromBiometricSessionResult.value,
+      eventService,
+      sessionAttributes,
+      config.IPVCORE_OUTBOUND_SQS,
+      dependencies.sendMessageToSqs,
     );
   }
 
@@ -247,3 +285,102 @@ interface HandleGetSessionErrorParameters {
   issuer: string;
   sessionId: string;
 }
+
+const handleGetCredentialFailure = async (
+  error: GetCredentialError,
+  eventService: IEventService,
+  sessionAttributes: BiometricSessionFinishedAttributes,
+  outboundQueue: string,
+  sendMessageToSqs: (
+    sqsArn: string,
+    messageBody: OutboundQueueErrorMessage,
+  ) => Promise<Result<void, void>>,
+): Promise<void> => {
+  const { errorCode, errorReason, data } = error;
+  const {
+    clientState,
+    subjectIdentifier,
+    sessionId,
+    govukSigninJourneyId,
+    issuer,
+    redirectUri,
+  } = sessionAttributes;
+  let logMessage;
+  let eventName;
+  let suspectedFraudSignal;
+  let sqsMessage: OutboundQueueErrorMessage;
+
+  const ipvOutboundMessageServerError: OutboundQueueErrorMessage = {
+    sub: subjectIdentifier,
+    state: clientState,
+    error_description: "Internal server error",
+    error: "server_error",
+  };
+
+  switch (errorCode) {
+    case GetCredentialErrorCode.SUSPECTED_FRAUD:
+      eventName = "DCMAW_ASYNC_CRI_4XXERROR" as const;
+      logMessage = LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_SUSPECTED_FRAUD;
+      sqsMessage = {
+        sub: subjectIdentifier,
+        state: clientState,
+        error_description: "Suspected fraud detected",
+        error: "access_denied",
+      };
+      suspectedFraudSignal = errorReason;
+      break;
+
+    case GetCredentialErrorCode.PARSE_FAILURE:
+      eventName = "DCMAW_ASYNC_CRI_5XXERROR" as const;
+      logMessage =
+        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE;
+      sqsMessage = ipvOutboundMessageServerError;
+      suspectedFraudSignal = undefined;
+      break;
+
+    case GetCredentialErrorCode.BIOMETRIC_SESSION_NOT_VALID:
+      eventName = "DCMAW_ASYNC_CRI_5XXERROR" as const;
+      logMessage =
+        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID;
+      sqsMessage = ipvOutboundMessageServerError;
+      suspectedFraudSignal = undefined;
+      break;
+
+    case GetCredentialErrorCode.VENDOR_LIKENESS_DISABLED:
+      eventName = "DCMAW_ASYNC_CRI_5XXERROR" as const;
+      logMessage =
+        LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED;
+      sqsMessage = ipvOutboundMessageServerError;
+      suspectedFraudSignal = undefined;
+      break;
+  }
+
+  logger.error(logMessage, {
+    data: {
+      errorReason,
+      ...data,
+    },
+  });
+
+  await sendMessageToSqs(outboundQueue, sqsMessage);
+
+  const writeEventResult = await eventService.writeGenericEvent({
+    eventName,
+    sub: subjectIdentifier,
+    sessionId,
+    govukSigninJourneyId,
+    getNowInMilliseconds: Date.now,
+    componentId: issuer,
+    ipAddress: undefined,
+    txmaAuditEncoded: undefined,
+    redirect_uri: redirectUri,
+    suspected_fraud_signal: suspectedFraudSignal,
+  });
+  if (writeEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: eventName,
+      },
+    });
+  }
+};

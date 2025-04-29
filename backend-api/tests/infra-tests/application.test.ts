@@ -84,6 +84,88 @@ describe("Backend application infrastructure", () => {
         mappingBottomLevelKey: "SessionDurationInSeconds",
       });
     });
+
+    describe("getBiometricCredential envVars", () => {
+      test("EnableBiometricResidenceCard is set", () => {
+        const expectedEnvironmentVariablesValues = {
+          dev: "true",
+          build: "true",
+          staging: "true",
+          integration: "true",
+          production: "true",
+        };
+
+        const mappingHelper = new Mappings(template);
+        mappingHelper.validateEnvironmentVariablesMapping({
+          environmentFlags: expectedEnvironmentVariablesValues,
+          mappingBottomLevelKey: "EnableBiometricResidenceCard",
+        });
+      });
+
+      test("EnableBiometricResidencePermit is set", () => {
+        const expectedEnvironmentVariablesValues = {
+          dev: "true",
+          build: "true",
+          staging: "true",
+          integration: "true",
+          production: "true",
+        };
+
+        const mappingHelper = new Mappings(template);
+        mappingHelper.validateEnvironmentVariablesMapping({
+          environmentFlags: expectedEnvironmentVariablesValues,
+          mappingBottomLevelKey: "EnableBiometricResidencePermit",
+        });
+      });
+
+      test("EnableDrivingLicence is set", () => {
+        const expectedEnvironmentVariablesValues = {
+          dev: "true",
+          build: "true",
+          staging: "true",
+          integration: "true",
+          production: "true",
+        };
+
+        const mappingHelper = new Mappings(template);
+        mappingHelper.validateEnvironmentVariablesMapping({
+          environmentFlags: expectedEnvironmentVariablesValues,
+          mappingBottomLevelKey: "EnableDrivingLicence",
+        });
+      });
+
+      test("EnableNfcPassports is set", () => {
+        const expectedEnvironmentVariablesValues = {
+          dev: "true",
+          build: "true",
+          staging: "true",
+          integration: "true",
+          production: "true",
+        };
+
+        const mappingHelper = new Mappings(template);
+        mappingHelper.validateEnvironmentVariablesMapping({
+          environmentFlags: expectedEnvironmentVariablesValues,
+          mappingBottomLevelKey: "EnableNfcPassports",
+        });
+      });
+
+      test("EnableUtopiaTestDocuments is set", () => {
+        const expectedEnvironmentVariablesValues = {
+          dev: "true",
+          build: "true",
+          staging: "true",
+          integration: "true",
+          production: "false",
+        };
+
+        const mappingHelper = new Mappings(template);
+        mappingHelper.validateEnvironmentVariablesMapping({
+          environmentFlags: expectedEnvironmentVariablesValues,
+          mappingBottomLevelKey: "EnableUtopiaTestDocuments",
+        });
+      });
+    });
   });
 
   describe("Private APIgw", () => {
