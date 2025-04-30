@@ -211,8 +211,6 @@ describe("JWKS Builder", () => {
 
         const buildJwksResponse = await jwksBuilder.buildJwks();
 
-        console.log("buildJwksResponse", buildJwksResponse.value);
-
         expect(buildJwksResponse.isError).toBe(false);
         if (!buildJwksResponse.isError) {
           expect(buildJwksResponse.value.keys.length).toBe(2);
