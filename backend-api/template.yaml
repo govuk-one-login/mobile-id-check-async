@@ -107,8 +107,8 @@ Mappings:
       EnableBiometricResidenceCard: "true"
       EnableBiometricResidencePermit: "true"
       EnableDrivingLicence: "true"
-      EnableNfcPassports: "true"
-      EnableUtopiaTestDocuments: "true"
+      EnableNfcPassport: "true"
+      EnableUtopiaTestDocument: "true"
       EventsBaseUrl: https://events.review-b-async.build.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.build.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.build.account.gov.uk
@@ -124,8 +124,8 @@ Mappings:
       EnableBiometricResidenceCard: "true"
       EnableBiometricResidencePermit: "true"
       EnableDrivingLicence: "true"
-      EnableNfcPassports: "true"
-      EnableUtopiaTestDocuments: "true"
+      EnableNfcPassport: "true"
+      EnableUtopiaTestDocument: "true"
       EventsBaseUrl: https://events.review-b-async.dev.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.dev.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.dev.account.gov.uk
@@ -141,8 +141,8 @@ Mappings:
       EnableBiometricResidenceCard: "true"
       EnableBiometricResidencePermit: "true"
       EnableDrivingLicence: "true"
-      EnableNfcPassports: "true"
-      EnableUtopiaTestDocuments: "true"
+      EnableNfcPassport: "true"
+      EnableUtopiaTestDocument: "true"
       ReadIdBaseUrl: https://readid-proxy.review-b-async.integration.account.gov.uk
       STSBASEURL: https://token.integration.account.gov.uk
       SessionDurationInSeconds: 86400
@@ -157,8 +157,8 @@ Mappings:
       EnableBiometricResidenceCard: "true"
       EnableBiometricResidencePermit: "true"
       EnableDrivingLicence: "true"
-      EnableNfcPassports: "true"
-      EnableUtopiaTestDocuments: "false"
+      EnableNfcPassport: "true"
+      EnableUtopiaTestDocument: "false"
       ReadIdBaseUrl: https://readid-proxy.review-b-async.account.gov.uk
       STSBASEURL: https://token.account.gov.uk
       SessionDurationInSeconds: 86400
@@ -173,8 +173,8 @@ Mappings:
       EnableBiometricResidenceCard: "true"
       EnableBiometricResidencePermit: "true"
       EnableDrivingLicence: "true"
-      EnableNfcPassports: "true"
-      EnableUtopiaTestDocuments: "true"
+      EnableNfcPassport: "true"
+      EnableUtopiaTestDocument: "true"
       ReadIdBaseUrl: https://readid-proxy.review-b-async.staging.account.gov.uk
       STSBASEURL: https://token.staging.account.gov.uk
       SessionDurationInSeconds: 86400
@@ -3329,14 +3329,14 @@ Resources:
             - EnvironmentVariables
             - !Ref Environment
             - EnableDrivingLicence
-          ENABLE_NFC_PASSPORTS: !FindInMap
+          ENABLE_NFC_PASSPORT: !FindInMap
             - EnvironmentVariables
             - !Ref Environment
-            - EnableNfcPassports
-          ENABLE_UTOPIA_TEST_DOCUMENTS: !FindInMap
+            - EnableNfcPassport
+          ENABLE_UTOPIA_TEST_DOCUMENT: !FindInMap
             - EnvironmentVariables
             - !Ref Environment
-            - EnableUtopiaTestDocuments
+            - EnableUtopiaTestDocument
           READID_BASE_URL: !If
             - UseDevOverrideReadIdBaseUrl
             - !Ref DevOverrideReadIdBaseUrl
