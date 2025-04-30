@@ -13,6 +13,8 @@ import { OutboundQueueErrorMessage } from "../adapters/aws/sqs/types";
 
 import { IEventService } from "../services/events/types";
 import { EventService } from "../services/events/eventService";
+import { mockGetCredentialFromBiometricSession } from "./mockGetCredentialFromBiometricSession/mockGetCredentialFromBiometricSession";
+import { IGetCredentialFromBiometricSession } from "./mockGetCredentialFromBiometricSession/types";
 
 export type IssueBiometricCredentialDependencies = {
   env: NodeJS.ProcessEnv;
@@ -24,6 +26,7 @@ export type IssueBiometricCredentialDependencies = {
     sqsArn: string,
     messageBody: OutboundQueueErrorMessage,
   ) => Promise<Result<void, void>>;
+  getCredentialFromBiometricSession: IGetCredentialFromBiometricSession;
 };
 
 export const runtimeDependencies: IssueBiometricCredentialDependencies = {
@@ -33,4 +36,5 @@ export const runtimeDependencies: IssueBiometricCredentialDependencies = {
   getBiometricSession,
   getEventService: (sqsQueue: string) => new EventService(sqsQueue),
   sendMessageToSqs,
+  getCredentialFromBiometricSession: mockGetCredentialFromBiometricSession,
 };

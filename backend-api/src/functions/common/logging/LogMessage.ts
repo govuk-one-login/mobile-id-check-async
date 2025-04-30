@@ -332,16 +332,33 @@ export class LogMessage implements LogAttributes {
       "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY",
       "Biometric session not ready (finish status not DONE)",
     );
-
   static readonly ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR =
     new LogMessage(
       "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR",
       "Error sending message to IPV Core",
     );
-
   static readonly ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT = new LogMessage(
     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT",
     "SQS Event from vendor processing queue is invalid",
+  );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE",
+      "Failed to get credential - Vendor response was unable to be mapped to the specification",
+    );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID",
+      "Failed to get credential - Vendor session not valid",
+    );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED",
+      "Failed to get credential - Verification succeeded but most recent likeness check failed. This indicates the vendor has disabled likeness checks.",
+    );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_SUSPECTED_FRAUD = new LogMessage(
+    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_SUSPECTED_FRAUD",
+    "Failed to get credential - potential fraud detected when analysing vendor response",
   );
 
   private constructor(
