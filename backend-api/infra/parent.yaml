@@ -230,8 +230,8 @@ Mappings:
       EnableBiometricResidenceCard: 'true'
       EnableBiometricResidencePermit: 'true'
       EnableDrivingLicence: 'true'
-      EnableNfcPassports: 'true'
-      EnableUtopiaTestDocuments: 'true'
+      EnableNfcPassport: 'true'
+      EnableUtopiaTestDocument: 'true'
 
     build:
       STSBASEURL: 'https://sts-mock.review-b-async.build.account.gov.uk'
@@ -248,8 +248,8 @@ Mappings:
       EnableBiometricResidenceCard: 'true'
       EnableBiometricResidencePermit: 'true'
       EnableDrivingLicence: 'true'
-      EnableNfcPassports: 'true'
-      EnableUtopiaTestDocuments: 'true'
+      EnableNfcPassport: 'true'
+      EnableUtopiaTestDocument: 'true'
 
     staging:
       STSBASEURL: 'https://token.staging.account.gov.uk'
@@ -265,8 +265,8 @@ Mappings:
       EnableBiometricResidenceCard: 'true'
       EnableBiometricResidencePermit: 'true'
       EnableDrivingLicence: 'true'
-      EnableNfcPassports: 'true'
-      EnableUtopiaTestDocuments: 'true'
+      EnableNfcPassport: 'true'
+      EnableUtopiaTestDocument: 'true'
 
     integration:
       STSBASEURL: 'https://token.integration.account.gov.uk'
@@ -282,8 +282,8 @@ Mappings:
       EnableBiometricResidenceCard: 'true'
       EnableBiometricResidencePermit: 'true'
       EnableDrivingLicence: 'true'
-      EnableNfcPassports: 'true'
-      EnableUtopiaTestDocuments: 'true'
+      EnableNfcPassport: 'true'
+      EnableUtopiaTestDocument: 'true'
 
     production:
       STSBASEURL: 'https://token.account.gov.uk'
@@ -299,8 +299,8 @@ Mappings:
       EnableBiometricResidenceCard: 'true'
       EnableBiometricResidencePermit: 'true'
       EnableDrivingLicence: 'true'
-      EnableNfcPassports: 'true'
-      EnableUtopiaTestDocuments: 'false'
+      EnableNfcPassport: 'true'
+      EnableUtopiaTestDocument: 'false'
 
 Conditions:
   UseCodeSigning: !Not

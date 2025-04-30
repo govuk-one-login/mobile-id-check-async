@@ -134,7 +134,7 @@ describe("Backend application infrastructure", () => {
         });
       });
 
-      test("EnableNfcPassports is set", () => {
+      test("EnableNfcPassport is set", () => {
         const expectedEnvironmentVariablesValues = {
           dev: "true",
           build: "true",
@@ -146,11 +146,11 @@ describe("Backend application infrastructure", () => {
         const mappingHelper = new Mappings(template);
         mappingHelper.validateEnvironmentVariablesMapping({
           environmentFlags: expectedEnvironmentVariablesValues,
-          mappingBottomLevelKey: "EnableNfcPassports",
+          mappingBottomLevelKey: "EnableNfcPassport",
         });
       });
 
-      test("EnableUtopiaTestDocuments is set", () => {
+      test("EnableUtopiaTestDocument is set", () => {
         const expectedEnvironmentVariablesValues = {
           dev: "true",
           build: "true",
@@ -162,7 +162,7 @@ describe("Backend application infrastructure", () => {
         const mappingHelper = new Mappings(template);
         mappingHelper.validateEnvironmentVariablesMapping({
           environmentFlags: expectedEnvironmentVariablesValues,
-          mappingBottomLevelKey: "EnableUtopiaTestDocuments",
+          mappingBottomLevelKey: "EnableUtopiaTestDocument",
         });
       });
     });

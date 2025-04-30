@@ -127,8 +127,8 @@ describe("Async Issue Biometric Credential", () => {
         ENABLE_BIOMETRIC_RESIDENCE_CARD: "true",
         ENABLE_BIOMETRIC_RESIDENCE_PERMIT: "true",
         ENABLE_DRIVING_LICENCE: "true",
-        ENABLE_NFC_PASSPORTS: "true",
-        ENABLE_UTOPIA_TEST_DOCUMENTS: "true",
+        ENABLE_NFC_PASSPORT: "true",
+        ENABLE_UTOPIA_TEST_DOCUMENT: "true",
       },
       getSessionRegistry: () => mockSessionRegistrySuccess,
       getSecrets: mockGetSecretsSuccess,
@@ -178,8 +178,8 @@ describe("Async Issue Biometric Credential", () => {
       ["ENABLE_BIOMETRIC_RESIDENCE_CARD"],
       ["ENABLE_BIOMETRIC_RESIDENCE_PERMIT"],
       ["ENABLE_DRIVING_LICENCE"],
-      ["ENABLE_NFC_PASSPORTS"],
-      ["ENABLE_UTOPIA_TEST_DOCUMENTS"],
+      ["ENABLE_NFC_PASSPORT"],
+      ["ENABLE_UTOPIA_TEST_DOCUMENT"],
     ])("Given %s environment variable is missing", (envVar: string) => {
       beforeEach(async () => {
         delete dependencies.env[envVar];
@@ -853,9 +853,9 @@ describe("Async Issue Biometric Credential", () => {
             opaqueId: "mockOpaqueId",
           },
           {
-            enableUtopiaTestDocuments: true,
+            enableUtopiaTestDocument: true,
             enableDrivingLicence: true,
-            enableNfcPassports: true,
+            enableNfcPassport: true,
             enableBiometricResidencePermit: true,
             enableBiometricResidenceCard: true,
           },

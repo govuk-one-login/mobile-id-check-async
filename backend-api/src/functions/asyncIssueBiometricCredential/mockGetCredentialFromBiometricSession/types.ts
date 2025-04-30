@@ -12,9 +12,9 @@ export interface FraudCheckData {
 }
 
 export interface GetCredentialOptions {
-  enableUtopiaTestDocuments: boolean;
+  enableUtopiaTestDocument: boolean;
   enableDrivingLicence: boolean;
-  enableNfcPassports: boolean;
+  enableNfcPassport: boolean;
   enableBiometricResidencePermit: boolean;
   enableBiometricResidenceCard: boolean;
 }
