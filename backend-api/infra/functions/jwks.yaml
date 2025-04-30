@@ -21,6 +21,7 @@ Resources:
       Environment:
         Variables:
           ENCRYPTION_KEY_ID: !Ref KMSEncryptionKey
+          VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID: !Ref VerifiableCredentialSigningKey
           JWKS_BUCKET_NAME: !Ref JsonWebKeysBucket
           JWKS_FILE_NAME: .well-known/jwks.json
       VpcConfig:
@@ -61,7 +62,9 @@ Resources:
               - Effect: Allow
                 Action:
                   - kms:GetPublicKey
-                Resource: !GetAtt KMSEncryptionKey.Arn
+                Resource: 
+                  - !GetAtt KMSEncryptionKey.Arn
+                  - !GetAtt VerifiableCredentialSigningKey.Arn
         - PolicyName: LoggingPolicy
           PolicyDocument:
             Version: "2012-10-17"

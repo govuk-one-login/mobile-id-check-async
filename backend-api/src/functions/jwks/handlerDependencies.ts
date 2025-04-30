@@ -12,7 +12,7 @@ import {
 export interface IJwksDependencies {
   env: NodeJS.ProcessEnv;
   logger: () => Logger<MessageName>;
-  jwksBuilder: (keyId: string) => IJwksBuilder;
+  jwksBuilder: (keyIds: string[]) => IJwksBuilder;
   jwksUploader: () => IJwksUploader;
   customResourceResultSender: (
     event: CloudFormationCustomResourceEvent,
@@ -23,7 +23,7 @@ export interface IJwksDependencies {
 export const dependencies: IJwksDependencies = {
   env: process.env,
   logger: () => new Logger<MessageName>(new PowertoolsLogger(), registeredLogs),
-  jwksBuilder: (keyId: string) => new JwksBuilder(keyId),
+  jwksBuilder: (keyIds: string[]) => new JwksBuilder(keyIds),
   jwksUploader: () => new JwksUploader(),
   customResourceResultSender: (
     event: CloudFormationCustomResourceEvent,

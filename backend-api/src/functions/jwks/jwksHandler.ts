@@ -39,9 +39,12 @@ export async function lambdaHandlerConstructor(
 
   const environmentVariables = configResult.value;
 
-  const jwksBuilder = dependencies.jwksBuilder(
+  const keyIds = [
     environmentVariables.ENCRYPTION_KEY_ID,
-  );
+    environmentVariables.VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID,
+  ];
+
+  const jwksBuilder = dependencies.jwksBuilder(keyIds);
   const jwksBuilderResult = await jwksBuilder.buildJwks();
   if (jwksBuilderResult.isError) {
     logger.log("INTERNAL_SERVER_ERROR", {

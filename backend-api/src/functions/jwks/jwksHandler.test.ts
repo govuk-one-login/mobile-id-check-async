@@ -25,6 +25,7 @@ describe("Json Web Keys", () => {
 
   const env = {
     ENCRYPTION_KEY_ID: "mockKeyId",
+    VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID: "mockSigningKeyId",
     JWKS_BUCKET_NAME: "mockJwksBucketName",
     JWKS_FILE_NAME: "mockJwksFileName",
   };

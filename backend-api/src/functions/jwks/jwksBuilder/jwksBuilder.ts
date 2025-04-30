@@ -16,11 +16,14 @@ import {
   EncryptionJwkAlgorithm,
   EncryptionJwkUse,
   Jwks,
+  SigningJwk,
+  SigningJwkAlgorithm,
+  SigningJwkUse,
 } from "../../types/jwks";
 
 export class JwksBuilder implements IJwksBuilder {
   constructor(
-    private readonly keyId: string,
+    private readonly keyIds: string[],
     private readonly kmsClient = new KMSClient({
       region: "eu-west-2",
       maxAttempts: 2,
@@ -32,38 +35,49 @@ export class JwksBuilder implements IJwksBuilder {
   ) {}
 
   async buildJwks(): Promise<Result<Jwks>> {
+    console.log("Building JWKS", this.keyIds);
     const jwks: Jwks = {
       keys: [],
     };
-    const result = await this.getPublicKeyAsJwk();
-    if (result.isError) {
-      return result;
+
+    for (const keyId of this.keyIds) {
+      const result = await this.getPublicKeyAsJwk(keyId);
+      if (result.isError) {
+        return result;
+      }
+      jwks.keys.push(result.value);
     }
 
-    jwks.keys.push(result.value);
     return successResult(jwks);
   }
 
-  async getPublicKeyAsJwk(): Promise<Result<EncryptionJwk>> {
+  async getPublicKeyAsJwk(
+    keyId: string,
+  ): Promise<Result<EncryptionJwk | SigningJwk>> {
+    console.log("Getting public key from KMS", keyId);
     let getPublicKeyOutput: GetPublicKeyCommandOutput;
     try {
       const command = new GetPublicKeyCommand({
-        KeyId: this.keyId,
+        KeyId: keyId,
       });
+      console.log("Sending command to KMS", command);
       getPublicKeyOutput = await this.kmsClient.send(command);
-    } catch {
+      console.log("Received response from KMS", getPublicKeyOutput);
+    } catch (error) {
+      console.error("Error getting public key from KMS", error);
       return errorResult({
         errorMessage: "Error from KMS",
         errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
-    return this.formatAsJwk(getPublicKeyOutput);
+    return this.formatAsJwk(getPublicKeyOutput, keyId);
   }
 
   formatAsJwk(
     getPublicKeyOutput: GetPublicKeyCommandOutput,
-  ): Result<EncryptionJwk> {
+    keyId: string,
+  ): Result<EncryptionJwk | SigningJwk> {
     if (
       !getPublicKeyOutput.KeySpec ||
       !getPublicKeyOutput.KeyUsage ||
@@ -76,23 +90,31 @@ export class JwksBuilder implements IJwksBuilder {
     }
 
     const keyUsage = getPublicKeyOutput.KeyUsage;
-    if (keyUsage !== "ENCRYPT_DECRYPT") {
+    const keySpec = getPublicKeyOutput.KeySpec as string;
+
+    // Validate key specs
+    if (keyUsage === "ENCRYPT_DECRYPT") {
+      if (keySpec !== "RSA_2048") {
+        return errorResult({
+          errorMessage: "KMS key algorithm is not supported",
+          errorCategory: ErrorCategory.SERVER_ERROR,
+        });
+      }
+    } else if (keyUsage === "SIGN_VERIFY") {
+      if (keySpec !== "ECC_NIST_P256") {
+        return errorResult({
+          errorMessage: "KMS key algorithm is not supported",
+          errorCategory: ErrorCategory.SERVER_ERROR,
+        });
+      }
+    } else {
       return errorResult({
         errorMessage: "KMS key usage is not supported",
         errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
-    const encryptionKeyToJoseMap = ENCRYPTION_KEY_TO_JOSE_MAP[keyUsage];
-
-    const keySpec = getPublicKeyOutput.KeySpec as string;
-    if (keySpec !== encryptionKeyToJoseMap.KEY_SPEC) {
-      return errorResult({
-        errorMessage: "KMS key algorithm is not supported",
-        errorCategory: ErrorCategory.SERVER_ERROR,
-      });
-    }
-
+    // Format the public key
     let publicKeyAsJwk: JsonWebKey;
     try {
       publicKeyAsJwk = createPublicKey({
@@ -106,25 +128,42 @@ export class JwksBuilder implements IJwksBuilder {
         errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
-    return successResult({
-      ...publicKeyAsJwk,
-      use: encryptionKeyToJoseMap.USE,
-      alg: encryptionKeyToJoseMap.ALGORITHM,
-      kid: this.keyId,
-    });
+
+    // Return the appropriate key type
+    if (keyUsage === "ENCRYPT_DECRYPT") {
+      const encryptionJwk: EncryptionJwk = {
+        ...publicKeyAsJwk,
+        use: "enc",
+        alg: "RSA-OAEP-256",
+        kid: keyId,
+      };
+      return successResult(encryptionJwk);
+    } else {
+      const signingJwk: SigningJwk = {
+        ...publicKeyAsJwk,
+        use: "sig",
+        alg: "ES256",
+        kid: keyId,
+      };
+      return successResult(signingJwk);
+    }
   }
 }
 
 export interface IJwksBuilder {
   buildJwks: () => Promise<Result<Jwks>>;
-  getPublicKeyAsJwk: () => Promise<Result<EncryptionJwk>>;
+  getPublicKeyAsJwk: (
+    keyId: string,
+  ) => Promise<Result<EncryptionJwk | SigningJwk>>;
   formatAsJwk: (
     getPublicKeyOutput: GetPublicKeyCommandOutput,
-  ) => Result<EncryptionJwk>;
+    keyId: string,
+  ) => Result<EncryptionJwk | SigningJwk>;
 }
 
 export interface EncryptionKeyToJose {
   ENCRYPT_DECRYPT: EncryptDecrypt;
+  SIGN_VERIFY: SignVerify;
 }
 
 export interface EncryptDecrypt {
@@ -133,10 +172,8 @@ export interface EncryptDecrypt {
   ALGORITHM: EncryptionJwkAlgorithm;
 }
 
-const ENCRYPTION_KEY_TO_JOSE_MAP: EncryptionKeyToJose = {
-  ENCRYPT_DECRYPT: {
-    USE: "enc",
-    KEY_SPEC: "RSA_2048",
-    ALGORITHM: "RSA-OAEP-256",
-  },
-};
+export interface SignVerify {
+  USE: SigningJwkUse;
+  KEY_SPEC: string;
+  ALGORITHM: SigningJwkAlgorithm;
+}

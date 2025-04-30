@@ -11,11 +11,11 @@ import { ErrorCategory } from "../../../utils/result";
 const mockKmsClient = mockClient(KMSClient);
 
 describe("JWKS Builder", () => {
-  const keyId = "test-key-id";
+  const keyIds = ["test-key-id", "verifiable-credential-signing-key-id"];
   let jwksBuilder: JwksBuilder;
 
   beforeEach(() => {
-    jwksBuilder = new JwksBuilder(keyId);
+    jwksBuilder = new JwksBuilder(keyIds);
   });
 
   afterEach(() => {
@@ -38,7 +38,7 @@ describe("JWKS Builder", () => {
     });
   });
 
-  describe("Given KMS successfully returns the public key", () => {
+  describe("Given KMS successfully returns the public keys", () => {
     describe.each([
       [
         "PublicKey",
@@ -75,26 +75,8 @@ describe("JWKS Builder", () => {
       });
     });
 
-    describe("When the KeyUsage is not ENCRYPT_DECRYPT", () => {
-      it("Returns an error response", async () => {
-        mockKmsClient.on(GetPublicKeyCommand).resolves({
-          KeyUsage: "SIGN_VERIFY",
-          KeySpec: "RSA_2048",
-          PublicKey: new Uint8Array(),
-        } as GetPublicKeyCommandOutput);
-
-        const buildJwksResponse = await jwksBuilder.buildJwks();
-
-        expect(buildJwksResponse.isError).toBe(true);
-        expect(buildJwksResponse.value).toStrictEqual({
-          errorMessage: "KMS key usage is not supported",
-          errorCategory: ErrorCategory.SERVER_ERROR,
-        });
-      });
-    });
-
-    describe("When the KeySpec is not RSA_2048", () => {
-      it("Returns an error response", async () => {
+    describe("When the KeySpec is not supported", () => {
+      it("Returns an error for unsupported RSA key spec", async () => {
         mockKmsClient.on(GetPublicKeyCommand).resolves({
           KeyUsage: "ENCRYPT_DECRYPT",
           KeySpec: "RSA_4096",
@@ -103,15 +85,35 @@ describe("JWKS Builder", () => {
 
         const buildJwksResponse = await jwksBuilder.buildJwks();
 
-        expect(await buildJwksResponse.isError).toBe(true);
-        expect(await buildJwksResponse.value).toStrictEqual({
-          errorMessage: "KMS key algorithm is not supported",
-          errorCategory: ErrorCategory.SERVER_ERROR,
-        });
+        expect(buildJwksResponse.isError).toBe(true);
+        if (buildJwksResponse.isError) {
+          expect(buildJwksResponse.value).toStrictEqual({
+            errorMessage: "KMS key algorithm is not supported",
+            errorCategory: ErrorCategory.SERVER_ERROR,
+          });
+        }
+      });
+
+      it("Returns an error for unsupported EC key spec", async () => {
+        mockKmsClient.on(GetPublicKeyCommand).resolves({
+          KeyUsage: "SIGN_VERIFY",
+          KeySpec: "ECC_NIST_P384",
+          PublicKey: new Uint8Array(),
+        } as GetPublicKeyCommandOutput);
+
+        const buildJwksResponse = await jwksBuilder.buildJwks();
+
+        expect(buildJwksResponse.isError).toBe(true);
+        if (buildJwksResponse.isError) {
+          expect(buildJwksResponse.value).toStrictEqual({
+            errorMessage: "KMS key algorithm is not supported",
+            errorCategory: ErrorCategory.SERVER_ERROR,
+          });
+        }
       });
     });
 
-    describe("When the public key cannot be formatted as a JWK", () => {
+    describe("When the encrption key cannot be formatted as a JWK", () => {
       it("Returns an error response", async () => {
         mockKmsClient.on(GetPublicKeyCommand).resolves({
           KeyUsage: "ENCRYPT_DECRYPT",
@@ -129,40 +131,109 @@ describe("JWKS Builder", () => {
       });
     });
 
-    describe("Given the KMS public key can be successfully formatted as a JWK", () => {
-      it("Returns the JWKS", async () => {
-        const mockPublicKey: Buffer = createPublicKey({
+    describe("When the signing key cannot be formatted as a JWK", () => {
+      it("Returns an error response", async () => {
+        mockKmsClient.on(GetPublicKeyCommand).resolves({
+          KeyUsage: "SIGN_VERIFY",
+          KeySpec: "ECC_NIST_P256",
+          PublicKey: new Uint8Array(),
+        } as GetPublicKeyCommandOutput);
+
+        const buildJwksResponse = await jwksBuilder.buildJwks();
+
+        expect(buildJwksResponse.isError).toBe(true);
+        expect(buildJwksResponse.value).toStrictEqual({
+          errorMessage: "Error formatting public key as JWK",
+          errorCategory: ErrorCategory.SERVER_ERROR,
+        });
+      });
+    });
+
+    describe("Given the KMS public keys can be successfully formatted as JWKs", () => {
+      it("Returns the JWKS with both encryption and signing keys", async () => {
+        const mockEncryptionKey: Buffer = createPublicKey({
           key: {
             kty: "RSA",
             n: "kOBby1nEUcKc-94zIa2qCyqDSE1-2bLWkVjeF3DWY_0v2j9wlLSaR6asONen_HP40wftLOSPYRcKYv6Cjz3LOY7aQYznX14EXSgJxrDwQ7AleX2VS_HB34LMZEa3xmSSH7pLtw_vmJgCNss0zDQLCz1sQwZxlqphF18FdTTUrXbJ9Qk3xIrEzvL2naO2r6WoLBQ9tSr2Sz9TTcJQptfh6hOAHm66oPA6F9uCmbTDEQeI-wLiMMArtcKrGiPAFluo8f0qNkzLRMFIqyadnZ9OZ5u0-H_urOkmLJ2nbAnyTcO-9QeDlomdEMz3yEaJeUoq-jnPpVEfIbd8-07fl7M27w",
             e: "AQAB",
             use: "enc",
             alg: "RSA-OAEP-256",
-            kid: "da48d440-8e51-4383-9a3a-b91ce5adcf2a",
+            kid: "test-key-id",
           },
           format: "jwk",
         }).export({ format: "der", type: "spki" });
-        mockKmsClient.on(GetPublicKeyCommand).resolves({
-          KeyUsage: "ENCRYPT_DECRYPT",
-          KeySpec: "RSA_2048",
-          PublicKey: new Uint8Array(mockPublicKey),
-        } as GetPublicKeyCommandOutput);
+
+        const mockSigningKey: Buffer = createPublicKey({
+          key: {
+            kty: "EC",
+            x: "ZvtYNUEFSfoivixzC76PPJk-ka7pvAaidUiZpaHznC4",
+            y: "01kuST7C4NRZlIPpBvuSrrRe9jyWfQtclSBNOv20y94",
+            crv: "P-256",
+            use: "sig",
+            alg: "ES256",
+            kid: "verifiable-credential-signing-key-id",
+          },
+          format: "jwk",
+        }).export({ format: "der", type: "spki" });
+
+        mockKmsClient.on(GetPublicKeyCommand).callsFake((command) => {
+          if (command.input.KeyId === keyIds[0]) {
+            return {
+              KeyUsage: "ENCRYPT_DECRYPT",
+              KeySpec: "RSA_2048",
+              PublicKey: new Uint8Array(mockEncryptionKey),
+            } as GetPublicKeyCommandOutput;
+          } else if (command.input.KeyId === keyIds[1]) {
+            return {
+              KeyUsage: "SIGN_VERIFY",
+              KeySpec: "ECC_NIST_P256",
+              PublicKey: new Uint8Array(mockSigningKey),
+            } as GetPublicKeyCommandOutput;
+          }
+          throw new Error("Unexpected KeyId");
+        });
+
+        // mockKmsClient.on(GetPublicKeyCommand).resolves({
+        //   KeyUsage: "ENCRYPT_DECRYPT",
+        //   KeySpec: "RSA_2048",
+        //   PublicKey: new Uint8Array(mockEncryptionKey),
+        // } as GetPublicKeyCommandOutput);
+
+        // mockKmsClient.on(GetPublicKeyCommand).resolves({
+        //   KeyUsage: "SIGN_VERIFY",
+        //   KeySpec: "ECC_NIST_P256",
+        //   PublicKey: new Uint8Array(mockSigningKey),
+        // } as GetPublicKeyCommandOutput);
 
         const buildJwksResponse = await jwksBuilder.buildJwks();
 
+        console.log("buildJwksResponse", buildJwksResponse.value);
+
         expect(buildJwksResponse.isError).toBe(false);
-        expect(buildJwksResponse.value).toStrictEqual({
-          keys: [
-            {
-              alg: "RSA-OAEP-256",
-              e: "AQAB",
-              kid: keyId,
-              kty: "RSA",
-              n: "kOBby1nEUcKc-94zIa2qCyqDSE1-2bLWkVjeF3DWY_0v2j9wlLSaR6asONen_HP40wftLOSPYRcKYv6Cjz3LOY7aQYznX14EXSgJxrDwQ7AleX2VS_HB34LMZEa3xmSSH7pLtw_vmJgCNss0zDQLCz1sQwZxlqphF18FdTTUrXbJ9Qk3xIrEzvL2naO2r6WoLBQ9tSr2Sz9TTcJQptfh6hOAHm66oPA6F9uCmbTDEQeI-wLiMMArtcKrGiPAFluo8f0qNkzLRMFIqyadnZ9OZ5u0-H_urOkmLJ2nbAnyTcO-9QeDlomdEMz3yEaJeUoq-jnPpVEfIbd8-07fl7M27w",
-              use: "enc",
-            },
-          ],
-        });
+        if (!buildJwksResponse.isError) {
+          expect(buildJwksResponse.value.keys.length).toBe(2);
+
+          // Verify encryption key
+          expect(buildJwksResponse.value.keys[0]).toMatchObject({
+            alg: "RSA-OAEP-256",
+            use: "enc",
+            kid: keyIds[0],
+            kty: "RSA",
+          });
+          expect(buildJwksResponse.value.keys[0]).toHaveProperty("n");
+          expect(buildJwksResponse.value.keys[0]).toHaveProperty("e");
+
+          // Verify signing key
+          expect(buildJwksResponse.value.keys[1]).toMatchObject({
+            alg: "ES256",
+            use: "sig",
+            kid: keyIds[1],
+            kty: "EC",
+            crv: "P-256",
+          });
+          expect(buildJwksResponse.value.keys[1]).toHaveProperty("x");
+          expect(buildJwksResponse.value.keys[1]).toHaveProperty("y");
+        }
       });
     });
   });
