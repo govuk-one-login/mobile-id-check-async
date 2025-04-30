@@ -176,30 +176,18 @@ describe("JWKS Builder", () => {
           format: "jwk",
         }).export({ format: "der", type: "spki" });
 
-        mockKmsClient.on(GetPublicKeyCommand).callsFake((command) => {
-          if (command.input.KeyId === keyIds[0]) {
-            return {
-              KeyUsage: "ENCRYPT_DECRYPT",
-              KeySpec: "RSA_2048",
-              PublicKey: new Uint8Array(mockEncryptionKey),
-            } as GetPublicKeyCommandOutput;
-          } else if (command.input.KeyId === keyIds[1]) {
-            return {
-              KeyUsage: "SIGN_VERIFY",
-              KeySpec: "ECC_NIST_P256",
-              PublicKey: new Uint8Array(mockSigningKey),
-            } as GetPublicKeyCommandOutput;
-          }
-          throw new Error("Unexpected KeyId");
-        });
+        mockKmsClient.on(GetPublicKeyCommand).resolvesOnce({
+          KeyUsage: "ENCRYPT_DECRYPT",
+          KeySpec: "RSA_2048",
+          PublicKey: new Uint8Array(mockEncryptionKey),
+        } as GetPublicKeyCommandOutput);
+        mockKmsClient.on(GetPublicKeyCommand).resolvesOnce({
+          KeyUsage: "ENCRYPT_DECRYPT",
+          KeySpec: "RSA_2048",
+          PublicKey: new Uint8Array(mockSigningKey),
+        } as GetPublicKeyCommandOutput);
 
-        // mockKmsClient.on(GetPublicKeyCommand).resolves({
-        //   KeyUsage: "ENCRYPT_DECRYPT",
-        //   KeySpec: "RSA_2048",
-        //   PublicKey: new Uint8Array(mockEncryptionKey),
-        // } as GetPublicKeyCommandOutput);
-
-        // mockKmsClient.on(GetPublicKeyCommand).resolves({
+        // mockKmsClient.on(GetPublicKeyCommand).resolvesOnce({
         //   KeyUsage: "SIGN_VERIFY",
         //   KeySpec: "ECC_NIST_P256",
         //   PublicKey: new Uint8Array(mockSigningKey),
