@@ -3422,7 +3422,7 @@ Resources:
               - Action:
                   - kms:Sign
                 Effect: Allow
-                Resource: '*'
+                Resource: !GetAtt VerifiableCredentialSigningKey.Arn
             Version: "2012-10-17"
           PolicyName: AsyncIssueBiometricCredentialFunctionVCSigningPolicy
         - PolicyDocument:
@@ -4959,7 +4959,7 @@ Resources:
   KMSSigningKey:
     Type: AWS::KMS::Key
     Properties:
-      Description: A KMS Key for signing.
+      Description: A key used in the client credential grant flow for signing the access token.
       EnableKeyRotation: false
       Enabled: true
       KeyPolicy:
@@ -5746,18 +5746,6 @@ Resources:
               AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
             Resource: '*'
             Sid: RootAccess
-          - Action:
-              - kms:Sign
-            Condition:
-              ArnLike:
-                aws:SourceArn: !GetAtt AsyncIssueBiometricCredentialFunction.Arn
-              StringEquals:
-                kms:CallerAccount: !Ref AWS::AccountId
-            Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Resource: '*'
-            Sid: IssueBiometricCredentialLambdaSigningAccess
         Version: "2012-10-17"
       KeySpec: ECC_NIST_P256
       KeyUsage: SIGN_VERIFY
