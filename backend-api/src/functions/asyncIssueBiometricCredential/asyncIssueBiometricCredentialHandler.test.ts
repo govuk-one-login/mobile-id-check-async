@@ -10,12 +10,13 @@ import {
   mockSessionId,
   mockSuccessfulEventService,
   mockWriteGenericEventSuccessResult,
-  mockSuccessfulSendMessageToSqs,
+  mockSendMessageToSqsSuccess,
   mockInertSessionRegistry,
   mockBiometricSessionId,
   mockInertEventService,
   validBiometricSessionFinishedAttributes,
   validResultSentAttributes,
+  mockSendMessageToSqsFailure,
 } from "../testUtils/unitTestData";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { emptyFailure, errorResult, successResult } from "../utils/result";
@@ -134,7 +135,7 @@ describe("Async Issue Biometric Credential", () => {
       getSecrets: mockGetSecretsSuccess,
       getBiometricSession: mockGetBiometricSessionSuccess,
       getEventService: () => mockSuccessfulEventService,
-      sendMessageToSqs: mockSuccessfulSendMessageToSqs,
+      sendMessageToSqs: mockSendMessageToSqsSuccess,
       getCredentialFromBiometricSession:
         mockSuccessfulGetCredentialFromBiometricSession,
     };
@@ -493,7 +494,7 @@ describe("Async Issue Biometric Credential", () => {
         });
 
         it("Sends error to IPV Core", () => {
-          expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
+          expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
             "mockIpvcoreOutboundSqs",
             {
               sub: "mockSubjectIdentifier",
@@ -515,9 +516,7 @@ describe("Async Issue Biometric Credential", () => {
 
         describe("When sending error to IPV Core fails", () => {
           beforeEach(async () => {
-            dependencies.sendMessageToSqs = jest
-              .fn()
-              .mockResolvedValue(emptyFailure());
+            dependencies.sendMessageToSqs = mockSendMessageToSqsFailure;
             dependencies.getBiometricSession =
               mockGetBiometricSessionNonRetryableFailure;
             await lambdaHandlerConstructor(
@@ -735,7 +734,7 @@ describe("Async Issue Biometric Credential", () => {
             });
 
             it("Sends server_error to IPV Core", () => {
-              expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
+              expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
                 "mockIpvcoreOutboundSqs",
                 expectedSqsMessage,
               );
@@ -788,7 +787,7 @@ describe("Async Issue Biometric Credential", () => {
             });
 
             it("Sends server_error to IPV Core", () => {
-              expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
+              expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
                 "mockIpvcoreOutboundSqs",
                 expectedSqsMessage,
               );
@@ -820,6 +819,39 @@ describe("Async Issue Biometric Credential", () => {
           });
         },
       );
+    });
+
+    describe("Write verifiable credential to IPVCore outbound queue errors", () => {
+      describe("Given writing to the outbound queue fails", () => {
+        beforeEach(async () => {
+          dependencies.sendMessageToSqs = mockSendMessageToSqsFailure;
+          try {
+            await lambdaHandlerConstructor(
+              dependencies,
+              validSqsEvent,
+              context,
+            );
+          } catch (error: unknown) {
+            lambdaError = error;
+          }
+        });
+
+        it("Logs IPV_CORE_MESSAGE_ERROR", async () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode:
+              "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR",
+            data: { messageType: "VERIFIABLE_CREDENTIAL" },
+          });
+        });
+
+        it("Throws RetainMessageOnQueue", async () => {
+          expect(lambdaError).toEqual(
+            new RetainMessageOnQueue(
+              "Unexpected failure writing the VC to the IPVCore outbound queue",
+            ),
+          );
+        });
+      });
     });
 
     describe("Happy path", () => {
@@ -858,6 +890,17 @@ describe("Async Issue Biometric Credential", () => {
             enableNfcPassport: true,
             enableBiometricResidencePermit: true,
             enableBiometricResidenceCard: true,
+          },
+        );
+      });
+
+      it("Passes correct arguments to sendMessageToSqs (verifiable credential)", async () => {
+        expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
+          "mockIpvcoreOutboundSqs",
+          {
+            "https://vocab.account.gov.uk/v1/credentialJWT": ["mockSignedJwt"],
+            state: "mockClientState",
+            sub: "mockSubjectIdentifier",
           },
         );
       });

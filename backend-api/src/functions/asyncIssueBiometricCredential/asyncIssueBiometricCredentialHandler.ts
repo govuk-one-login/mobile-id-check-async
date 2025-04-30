@@ -18,7 +18,10 @@ import {
 import { Result, emptyFailure, successResult } from "../utils/result";
 import { GetSecrets } from "../common/config/secrets";
 
-import { OutboundQueueErrorMessage } from "../adapters/aws/sqs/types";
+import {
+  OutboundQueueErrorMessage,
+  VerifiableCredentialMessage,
+} from "../adapters/aws/sqs/types";
 
 import { GenericEventNames, IEventService } from "../services/events/types";
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
@@ -202,7 +205,16 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  // Biometric session is ready, continue processing
+  //temporary variable until the JWT signing is complete
+  const mockSignedJwt = "mockSignedJwt";
+
+  await sendVerifiableCredentialMessageToSqs(
+    mockSignedJwt,
+    sessionAttributes,
+    dependencies.sendMessageToSqs,
+    config.IPVCORE_OUTBOUND_SQS,
+  );
+
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
 }
 
@@ -211,11 +223,11 @@ export const lambdaHandler = lambdaHandlerConstructor.bind(
   runtimeDependencies,
 );
 
-async function getBiometricViewerAccessKey(
+const getBiometricViewerAccessKey = async (
   path: string,
   cacheDurationInSeconds: number,
   getSecrets: GetSecrets,
-): Promise<Result<string, void>> {
+): Promise<Result<string, void>> => {
   const getViewerKeyResult = await getSecrets({
     secretNames: [path],
     cacheDurationInSeconds,
@@ -226,7 +238,7 @@ async function getBiometricViewerAccessKey(
 
   const secretsByName = getViewerKeyResult.value;
   return successResult(secretsByName[path]);
-}
+};
 
 const handleGetSessionError = async (
   options: HandleGetSessionErrorParameters,
@@ -380,5 +392,35 @@ const handleGetCredentialFailure = async (
         auditEventName: eventName,
       },
     });
+  }
+};
+
+const sendVerifiableCredentialMessageToSqs = async (
+  verifiableCredentialJwt: string,
+  sessionAttributes: BiometricSessionFinishedAttributes,
+  sendMessageToSqs: (
+    sqsArn: string,
+    messageBody: VerifiableCredentialMessage,
+  ) => Promise<Result<void, void>>,
+  sqsArn: string,
+): Promise<void> => {
+  const verifiableCredentialMessage: VerifiableCredentialMessage = {
+    sub: sessionAttributes.subjectIdentifier,
+    state: sessionAttributes.clientState,
+    "https://vocab.account.gov.uk/v1/credentialJWT": [verifiableCredentialJwt],
+  };
+
+  const sendMessageToSqsResult = await sendMessageToSqs(
+    sqsArn,
+    verifiableCredentialMessage,
+  );
+
+  if (sendMessageToSqsResult.isError) {
+    logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR, {
+      data: { messageType: "VERIFIABLE_CREDENTIAL" },
+    });
+    throw new RetainMessageOnQueue(
+      "Unexpected failure writing the VC to the IPVCore outbound queue",
+    );
   }
 };

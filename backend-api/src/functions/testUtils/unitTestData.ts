@@ -148,11 +148,11 @@ export const mockFailingEventService = {
   writeGenericEvent: mockWriteGenericEventFailureResult,
 };
 
-export const mockSuccessfulSendMessageToSqs = jest
+export const mockSendMessageToSqsSuccess = jest
   .fn()
   .mockResolvedValue(emptySuccess());
 
-export const mockFailingSendMessageToSqs = jest
+export const mockSendMessageToSqsFailure = jest
   .fn()
   .mockResolvedValue(emptyFailure());
 
