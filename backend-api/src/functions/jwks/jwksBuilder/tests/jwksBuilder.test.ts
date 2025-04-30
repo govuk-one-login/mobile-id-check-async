@@ -215,7 +215,6 @@ describe("JWKS Builder", () => {
         if (!buildJwksResponse.isError) {
           expect(buildJwksResponse.value.keys.length).toBe(2);
 
-          // Verify encryption key
           expect(buildJwksResponse.value.keys[0]).toMatchObject({
             alg: "RSA-OAEP-256",
             use: "enc",
@@ -225,7 +224,6 @@ describe("JWKS Builder", () => {
           expect(buildJwksResponse.value.keys[0]).toHaveProperty("n");
           expect(buildJwksResponse.value.keys[0]).toHaveProperty("e");
 
-          // Verify signing key
           expect(buildJwksResponse.value.keys[1]).toMatchObject({
             alg: "ES256",
             use: "sig",
