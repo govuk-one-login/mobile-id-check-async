@@ -61,6 +61,27 @@ describe("JWKS Builder", () => {
           PublicKey: new Uint8Array(),
         } as GetPublicKeyCommandOutput,
       ],
+      [
+        "PublicKey",
+        {
+          KeySpec: "ECC_NIST_P256",
+          KeyUsage: "SIGN_VERIFY",
+        } as GetPublicKeyCommandOutput,
+      ],
+      [
+        "KeySpec",
+        {
+          PublicKey: new Uint8Array(),
+          KeyUsage: "SIGN_VERIFY",
+        } as GetPublicKeyCommandOutput,
+      ],
+      [
+        "KeyUsage",
+        {
+          KeySpec: "ECC_NIST_P256",
+          PublicKey: new Uint8Array(),
+        } as GetPublicKeyCommandOutput,
+      ],
     ])("When the KMS response does not include the %s key", (key, response) => {
       it("Returns an error response", async () => {
         mockKmsClient.on(GetPublicKeyCommand).resolves(response);
@@ -176,22 +197,17 @@ describe("JWKS Builder", () => {
           format: "jwk",
         }).export({ format: "der", type: "spki" });
 
-        mockKmsClient.on(GetPublicKeyCommand).resolvesOnce({
+        mockKmsClient.on(GetPublicKeyCommand, { KeyId: keyIds[0] }).resolves({
           KeyUsage: "ENCRYPT_DECRYPT",
           KeySpec: "RSA_2048",
           PublicKey: new Uint8Array(mockEncryptionKey),
-        } as GetPublicKeyCommandOutput);
-        mockKmsClient.on(GetPublicKeyCommand).resolvesOnce({
-          KeyUsage: "ENCRYPT_DECRYPT",
-          KeySpec: "RSA_2048",
-          PublicKey: new Uint8Array(mockSigningKey),
-        } as GetPublicKeyCommandOutput);
+        });
 
-        // mockKmsClient.on(GetPublicKeyCommand).resolvesOnce({
-        //   KeyUsage: "SIGN_VERIFY",
-        //   KeySpec: "ECC_NIST_P256",
-        //   PublicKey: new Uint8Array(mockSigningKey),
-        // } as GetPublicKeyCommandOutput);
+        mockKmsClient.on(GetPublicKeyCommand, { KeyId: keyIds[1] }).resolves({
+          KeyUsage: "SIGN_VERIFY",
+          KeySpec: "ECC_NIST_P256",
+          PublicKey: new Uint8Array(mockSigningKey),
+        });
 
         const buildJwksResponse = await jwksBuilder.buildJwks();
 
