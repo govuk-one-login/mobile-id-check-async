@@ -180,8 +180,8 @@ export async function lambdaHandlerConstructor(
     enableBiometricResidencePermit:
       config.ENABLE_BIOMETRIC_RESIDENCE_PERMIT === "true",
     enableDrivingLicence: config.ENABLE_DRIVING_LICENCE === "true",
-    enableNfcPassports: config.ENABLE_NFC_PASSPORTS === "true",
-    enableUtopiaTestDocuments: config.ENABLE_UTOPIA_TEST_DOCUMENTS === "true",
+    enableNfcPassport: config.ENABLE_NFC_PASSPORT === "true",
+    enableUtopiaTestDocument: config.ENABLE_UTOPIA_TEST_DOCUMENT === "true",
   };
 
   const getCredentialFromBiometricSessionResult =
