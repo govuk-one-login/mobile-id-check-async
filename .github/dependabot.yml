@@ -23,14 +23,14 @@ updates:
       time: "03:00"
     open-pull-requests-limit: 5
     groups:
-      backend-version:
+      backend-api-minor-patch:
         applies-to: version-updates
         patterns:
           - "*"
         update-types:
           - "minor"
           - "patch"
-      backend-security:
+      backend-api-security:
         applies-to: security-updates
         patterns:
           - "*"
@@ -48,14 +48,14 @@ updates:
       time: "03:00"
     open-pull-requests-limit: 5
     groups:
-      backend-version:
+      test-resources-minor-patch:
         applies-to: version-updates
         patterns:
           - "*"
         update-types:
           - "minor"
           - "patch"
-      backend-security:
+      test-resources-security:
         applies-to: security-updates
         patterns:
           - "*"
@@ -75,14 +75,14 @@ updates:
       time: "03:00"
     open-pull-requests-limit: 5
     groups:
-      backend-version:
+      helper-scripts-minor-patch:
         applies-to: version-updates
         patterns:
           - "*"
         update-types:
           - "minor"
           - "patch"
-      backend-security:
+      helper-scripts-security:
         applies-to: security-updates
         patterns:
           - "*"
