@@ -202,7 +202,14 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  // Biometric session is ready, continue processing
+  const createSignedJwtResult = await dependencies.createSignedJwt(
+    "mockMessage",
+    "ES256",
+  );
+  if (createSignedJwtResult.isError) {
+    return;
+  }
+
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
 }
 
