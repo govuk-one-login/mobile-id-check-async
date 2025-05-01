@@ -251,18 +251,23 @@ Mappings:
     build:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      perfTesterRoleArn: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
     dev:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      perfTesterRoleArn: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
     integration:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+      perfTesterRoleArn: ""
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+      perfTesterRoleArn: ""
     staging:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      perfTesterRoleArn: ""
 
   SessionsApigw:
     build:
@@ -5107,7 +5112,24 @@ Resources:
         ApiKeyRequired: false
         DefaultAuthorizer: AWS_IAM
         ResourcePolicy:
-          AwsAccountWhitelist: !Sub ${AWS::AccountId}
+          CustomStatements:
+            - Action:
+                - execute-api:Invoke
+              Effect: Allow
+              Principal:
+                AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+              Resource: !Sub execute-api:/*
+              Sid: AllowAccountAccessToAllEndpoints
+            - Action:
+                - execute-api:Invoke
+              Effect: Allow
+              Principal:
+                AWS: !FindInMap
+                  - ProxyApigw
+                  - !Ref Environment
+                  - perfTesterRoleArn
+              Resource: !Sub execute-api:/*
+              Sid: AllowPerfTesterRoleAccess
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include

@@ -32,7 +32,24 @@ Resources:
         DefaultAuthorizer: AWS_IAM
         ApiKeyRequired: false
         ResourcePolicy:
-          AwsAccountWhitelist: !Sub ${AWS::AccountId}
+          CustomStatements:
+            - Sid: AllowAccountAccessToAllEndpoints
+              Effect: Allow
+              Principal:
+                AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+              Action:
+                - "execute-api:Invoke"
+              Resource: !Sub "execute-api:/*"
+            - Sid: AllowPerfTesterRoleAccess
+              Effect: Allow
+              Principal:
+                AWS: !FindInMap
+                  - ProxyApigw
+                  - !Ref Environment
+                  - perfTesterRoleArn
+              Action:
+                - "execute-api:Invoke"
+              Resource: !Sub "execute-api:/*"
     Condition: ProxyApiDeployment
 
   ProxyApiAccessLogs:
