@@ -14,6 +14,7 @@ export const mockInvalidUUID = "invalid-uuid";
 export const mockGovukSigninJourneyId = "mockGovukSigninJourneyId";
 export const mockSubjectIdentifier = "mockSubjectIdentifier";
 export const mockClientState = "mockClientState";
+export const mockIssuer = "mockIssuer";
 
 export const expectedSecurityHeaders = {
   "Cache-Control": "no-store",
@@ -36,7 +37,7 @@ export const validBaseSessionAttributes = {
   clientId: "mockClientId",
   govukSigninJourneyId: mockGovukSigninJourneyId,
   createdAt: validCreatedAt,
-  issuer: "mockIssuer",
+  issuer: mockIssuer,
   sessionId: mockSessionId,
   sessionState: SessionState.AUTH_SESSION_CREATED,
   clientState: mockClientState,

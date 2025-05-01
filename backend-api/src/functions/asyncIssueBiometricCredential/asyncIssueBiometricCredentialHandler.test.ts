@@ -21,6 +21,7 @@ import {
   mockSubjectIdentifier,
   mockFailingEventService,
   mockClientState,
+  mockIssuer,
 } from "../testUtils/unitTestData";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { emptyFailure, errorResult, successResult } from "../utils/result";
@@ -136,7 +137,7 @@ describe("Async Issue Biometric Credential", () => {
         IPVCORE_OUTBOUND_SQS: "mockIpvcoreOutboundSqs",
         SESSION_TABLE_NAME: "mockTableName",
         TXMA_SQS: "mockTxmaSqs",
-        ISSUER: "mockIssuer",
+        ISSUER: mockIssuer,
         ENABLE_BIOMETRIC_RESIDENCE_CARD: "true",
         ENABLE_BIOMETRIC_RESIDENCE_PERMIT: "true",
         ENABLE_DRIVING_LICENCE: "true",
@@ -418,7 +419,7 @@ describe("Async Issue Biometric Credential", () => {
         it("Writes DCMAW_ASYNC_CRI_ERROR to TxMA", () => {
           expect(mockSuccessfulEventService.writeGenericEvent).toBeCalledWith({
             eventName: expectedErrorTxmaEventName,
-            componentId: "mockIssuer",
+            componentId: mockIssuer,
             getNowInMilliseconds: Date.now,
             sessionId: mockSessionId,
           });
@@ -521,7 +522,7 @@ describe("Async Issue Biometric Credential", () => {
           expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
             expect.objectContaining({
               eventName: expectedErrorTxmaEventName,
-              componentId: "mockIssuer",
+              componentId: mockIssuer,
             }),
           );
         });
@@ -549,7 +550,7 @@ describe("Async Issue Biometric Credential", () => {
             expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
               expect.objectContaining({
                 eventName: expectedErrorTxmaEventName,
-                componentId: "mockIssuer",
+                componentId: mockIssuer,
               }),
             );
           });
@@ -601,7 +602,7 @@ describe("Async Issue Biometric Credential", () => {
                 mockSuccessfulEventService.writeGenericEvent,
               ).toBeCalledWith({
                 eventName: expectedErrorTxmaEventName,
-                componentId: "mockIssuer",
+                componentId: mockIssuer,
                 getNowInMilliseconds: Date.now,
                 sessionId: mockSessionId,
                 govukSigninJourneyId: mockGovukSigninJourneyId,
@@ -809,7 +810,7 @@ describe("Async Issue Biometric Credential", () => {
               expect(
                 mockSuccessfulEventService.writeGenericEvent,
               ).toBeCalledWith({
-                componentId: "mockIssuer",
+                componentId: mockIssuer,
                 eventName: expectedErrorTxmaEventName,
                 getNowInMilliseconds: Date.now,
                 govukSigninJourneyId: mockGovukSigninJourneyId,
@@ -900,7 +901,7 @@ describe("Async Issue Biometric Credential", () => {
                   mockFailingEventService.writeGenericEvent,
                 ).toHaveBeenCalledWith(
                   expect.objectContaining({
-                    componentId: "mockIssuer",
+                    componentId: mockIssuer,
                     eventName: expectedErrorTxmaEventName,
                     govukSigninJourneyId: mockGovukSigninJourneyId,
                     ipAddress: undefined,
@@ -952,7 +953,7 @@ describe("Async Issue Biometric Credential", () => {
                   mockSuccessfulEventService.writeGenericEvent,
                 ).toHaveBeenCalledWith(
                   expect.objectContaining({
-                    componentId: "mockIssuer",
+                    componentId: mockIssuer,
                     eventName: expectedErrorTxmaEventName,
                     govukSigninJourneyId: mockGovukSigninJourneyId,
                     ipAddress: undefined,
