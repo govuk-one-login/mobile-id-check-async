@@ -402,8 +402,8 @@ export const buildCredentialJwt = (jwtData: {
   sub: string;
   credential: string;
 }): CredentialJwt => {
-  const nowInSeconds = Math.floor(Date.now() / 1000);
   const { issuer, sub, credential } = jwtData;
+  const nowInSeconds = Math.floor(Date.now() / 1000);
   return {
     iat: nowInSeconds,
     iss: issuer,
