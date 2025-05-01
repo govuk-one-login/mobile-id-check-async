@@ -3470,6 +3470,14 @@ Resources:
         - PolicyDocument:
             Statement:
               - Action:
+                  - kms:Sign
+                Effect: Allow
+                Resource: !GetAtt VerifiableCredentialSigningKey.Arn
+            Version: "2012-10-17"
+          PolicyName: AsyncIssueBiometricCredentialFunctionVCSigningPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
                   - ssm:GetParameters
                 Effect: Allow
                 Resource:
@@ -4881,6 +4889,7 @@ Resources:
           ENCRYPTION_KEY_ID: !Ref KMSEncryptionKey
           JWKS_BUCKET_NAME: !Ref JsonWebKeysBucket
           JWKS_FILE_NAME: .well-known/jwks.json
+          VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID: !Ref VerifiableCredentialSigningKey
       FunctionName: !Sub ${AWS::StackName}-jwks
       Handler: jwksHandler.lambdaHandler
       ReservedConcurrentExecutions: 1
@@ -4925,7 +4934,9 @@ Resources:
               - Action:
                   - kms:GetPublicKey
                 Effect: Allow
-                Resource: !GetAtt KMSEncryptionKey.Arn
+                Resource:
+                  - !GetAtt KMSEncryptionKey.Arn
+                  - !GetAtt VerifiableCredentialSigningKey.Arn
           PolicyName: GetPublicKeyPolicy
         - PolicyDocument:
             Statement:
@@ -4998,7 +5009,7 @@ Resources:
   KMSSigningKey:
     Type: AWS::KMS::Key
     Properties:
-      Description: A KMS Key for signing.
+      Description: A key used in the client credential grant flow for signing the access token.
       EnableKeyRotation: false
       Enabled: true
       KeyPolicy:
@@ -5787,6 +5798,35 @@ Resources:
       Threshold: 1800
       TreatMissingData: notBreaching
     Condition: DeployAlarms
+
+  VerifiableCredentialSigningKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS Key for signing Verifiable Credentials
+      EnableKeyRotation: false
+      Enabled: true
+      KeyPolicy:
+        Statement:
+          - Action: kms:*
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Resource: '*'
+            Sid: RootAccess
+        Version: "2012-10-17"
+      KeySpec: ECC_NIST_P256
+      KeyUsage: SIGN_VERIFY
+      MultiRegion: false
+      PendingWindowInDays: !FindInMap
+        - KMS
+        - !Ref Environment
+        - PendingDeletionInDays
+
+  VerifiableCredentialSigningKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}-verifiable-credential-signing-key
+      TargetKeyId: !Ref VerifiableCredentialSigningKey
 
   WellKnown5XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
