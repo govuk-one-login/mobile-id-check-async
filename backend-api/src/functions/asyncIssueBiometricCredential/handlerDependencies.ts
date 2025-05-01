@@ -15,7 +15,7 @@ import { IEventService } from "../services/events/types";
 import { EventService } from "../services/events/eventService";
 import { mockGetCredentialFromBiometricSession } from "./mockGetCredentialFromBiometricSession/mockGetCredentialFromBiometricSession";
 import { IGetCredentialFromBiometricSession } from "./mockGetCredentialFromBiometricSession/types";
-import { CredentialJwtPayload } from "../types/jwt";
+import { jwtPayload } from "../types/jwt";
 import { createSignedJwt } from "../adapters/aws/kms/createSignedJwt";
 
 export type IssueBiometricCredentialDependencies = {
@@ -29,9 +29,7 @@ export type IssueBiometricCredentialDependencies = {
     messageBody: OutboundQueueErrorMessage,
   ) => Promise<Result<void, void>>;
   getCredentialFromBiometricSession: IGetCredentialFromBiometricSession;
-  createSignedJwt: (
-    message: CredentialJwtPayload,
-  ) => Promise<Result<string, void>>;
+  createSignedJwt: (message: jwtPayload) => Promise<Result<string, void>>;
 };
 
 export const runtimeDependencies: IssueBiometricCredentialDependencies = {
