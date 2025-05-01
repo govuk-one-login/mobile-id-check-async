@@ -40,9 +40,9 @@ export class JwksBuilder implements IJwksBuilder {
     };
 
     for (const keyId of this.keyIds) {
-      const result = await this.getPublicKeyAsJwk(keyId);
-      if (result.isError) {
-        return result;
+      const getPublicKeyAsJwkResult = await this.getPublicKeyAsJwk(keyId);
+      if (getPublicKeyAsJwkResult.isError) {
+        return getPublicKeyAsJwkResult;
       }
       jwks.keys.push(result.value);
     }
