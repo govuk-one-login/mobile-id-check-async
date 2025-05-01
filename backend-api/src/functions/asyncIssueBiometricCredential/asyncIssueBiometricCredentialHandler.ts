@@ -15,7 +15,12 @@ import {
   GetSessionError,
   GetSessionFailed,
 } from "../common/session/SessionRegistry/types";
-import { Result, emptyFailure, successResult } from "../utils/result";
+import {
+  Result,
+  emptyFailure,
+  emptySuccess,
+  successResult,
+} from "../utils/result";
 import { GetSecrets } from "../common/config/secrets";
 
 import {
@@ -212,12 +217,19 @@ export async function lambdaHandlerConstructor(
     return;
   }
 
-  await sendVerifiableCredentialMessageToSqs(
-    createSignedJwtResult.value,
-    sessionAttributes,
-    dependencies.sendMessageToSqs,
-    config.IPVCORE_OUTBOUND_SQS,
-  );
+  const sendVerifiableCredentialMessageToSqsResult =
+    await sendVerifiableCredentialMessageToSqs(
+      createSignedJwtResult.value,
+      sessionAttributes,
+      dependencies.sendMessageToSqs,
+      config.IPVCORE_OUTBOUND_SQS,
+    );
+
+  if (sendVerifiableCredentialMessageToSqsResult.isError) {
+    throw new RetainMessageOnQueue(
+      "Unexpected failure writing the VC to the IPVCore outbound queue",
+    );
+  }
 
   const updateSessionResult = await sessionRegistry.updateSession(
     sessionId,
@@ -416,7 +428,7 @@ const sendVerifiableCredentialMessageToSqs = async (
     messageBody: VerifiableCredentialMessage,
   ) => Promise<Result<void, void>>,
   sqsArn: string,
-): Promise<void> => {
+): Promise<Result<void, void>> => {
   const verifiableCredentialMessage: VerifiableCredentialMessage = {
     sub: sessionAttributes.subjectIdentifier,
     state: sessionAttributes.clientState,
@@ -432,10 +444,11 @@ const sendVerifiableCredentialMessageToSqs = async (
     logger.error(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR, {
       data: { messageType: "VERIFIABLE_CREDENTIAL" },
     });
-    throw new RetainMessageOnQueue(
-      "Unexpected failure writing the VC to the IPVCore outbound queue",
-    );
+
+    return emptyFailure();
   }
+
+  return emptySuccess();
 };
 
 interface HandleUpdateSessionErrorParameters {
