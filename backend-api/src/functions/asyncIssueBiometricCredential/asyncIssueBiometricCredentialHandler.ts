@@ -205,11 +205,11 @@ export async function lambdaHandlerConstructor(
   }
 
   const { credential } = getCredentialFromBiometricSessionResult.value;
-  const credentialJwt = buildCredentialJwt(
-    config.ISSUER,
-    sessionAttributes,
+  const credentialJwt = buildCredentialJwt({
+    issuer: config.ISSUER,
+    sub: sessionAttributes.subjectIdentifier,
     credential,
-  );
+  });
 
   const createSignedJwtResult =
     await dependencies.createSignedJwt(credentialJwt);
@@ -397,18 +397,19 @@ const handleGetCredentialFailure = async (
   }
 };
 
-export const buildCredentialJwt = (
-  issuer: string,
-  sessionAttributes: BiometricSessionFinishedAttributes,
-  credential: string,
-): CredentialJwt => {
+export const buildCredentialJwt = (jwtData: {
+  issuer: string;
+  sub: string;
+  credential: string;
+}): CredentialJwt => {
   const nowInSeconds = Math.floor(Date.now() / 1000);
+  const { issuer, sub, credential } = jwtData;
   return {
     iat: nowInSeconds,
     iss: issuer,
     jti: `urn:uuid:${randomUUID()}`,
     nbf: nowInSeconds,
-    sub: sessionAttributes.subjectIdentifier,
+    sub,
     vc: credential,
   };
 };
