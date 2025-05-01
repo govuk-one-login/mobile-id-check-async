@@ -44,7 +44,7 @@ export class JwksBuilder implements IJwksBuilder {
       if (getPublicKeyAsJwkResult.isError) {
         return getPublicKeyAsJwkResult;
       }
-      jwks.keys.push(result.value);
+      jwks.keys.push(getPublicKeyAsJwkResult.value);
     }
 
     return successResult(jwks);
