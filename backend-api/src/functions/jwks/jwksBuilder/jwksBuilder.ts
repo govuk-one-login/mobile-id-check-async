@@ -5,6 +5,7 @@ import {
 } from "@aws-sdk/client-kms";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 import {
+  emptySuccess,
   ErrorCategory,
   errorResult,
   Result,
@@ -93,9 +94,11 @@ export class JwksBuilder implements IJwksBuilder {
       return jwkResult;
     }
 
-    return keyUsage === "ENCRYPT_DECRYPT"
-      ? this.createEncryptionJwk(jwkResult.value, keyId)
-      : this.createSigningJwk(jwkResult.value, keyId);
+    return successResult(
+      keyUsage === "ENCRYPT_DECRYPT"
+        ? this.createEncryptionJwk(jwkResult.value, keyId)
+        : this.createSigningJwk(jwkResult.value, keyId),
+    );
   }
 
   private validateKmsResponse(
@@ -137,7 +140,7 @@ export class JwksBuilder implements IJwksBuilder {
       });
     }
 
-    return successResult(undefined);
+    return emptySuccess();
   }
 
   private convertToJwk(publicKey: Uint8Array): Result<JsonWebKey> {
@@ -160,7 +163,7 @@ export class JwksBuilder implements IJwksBuilder {
   private createEncryptionJwk(
     publicKeyAsJwk: JsonWebKey,
     keyId: string,
-  ): Result<EncryptionJwk> {
+  ): EncryptionJwk {
     const encryptionJwk: EncryptionJwk = {
       ...publicKeyAsJwk,
       use: "enc" as EncryptionJwkUse,
@@ -168,13 +171,13 @@ export class JwksBuilder implements IJwksBuilder {
       kid: keyId,
     };
 
-    return successResult(encryptionJwk);
+    return encryptionJwk;
   }
 
   private createSigningJwk(
     publicKeyAsJwk: JsonWebKey,
     keyId: string,
-  ): Result<SigningJwk> {
+  ): SigningJwk {
     const signingJwk: SigningJwk = {
       ...publicKeyAsJwk,
       use: "sig" as SigningJwkUse,
@@ -182,7 +185,7 @@ export class JwksBuilder implements IJwksBuilder {
       kid: keyId,
     };
 
-    return successResult(signingJwk);
+    return signingJwk;
   }
 }
 
