@@ -1,5 +1,3 @@
-export type JwtAlg = "ES256";
-
 export interface CredentialJwt {
   sub: string;
   iat: number;

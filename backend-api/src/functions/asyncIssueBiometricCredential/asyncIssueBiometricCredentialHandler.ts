@@ -211,10 +211,8 @@ export async function lambdaHandlerConstructor(
     credential,
   );
 
-  const createSignedJwtResult = await dependencies.createSignedJwt(
-    credentialJwt,
-    "ES256",
-  );
+  const createSignedJwtResult =
+    await dependencies.createSignedJwt(credentialJwt);
   if (createSignedJwtResult.isError) {
     return;
   }

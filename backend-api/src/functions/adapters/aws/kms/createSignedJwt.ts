@@ -1,9 +1,8 @@
 import { Result, successResult } from "../../../utils/result";
-import { CredentialJwt, JwtAlg } from "./types";
+import { CredentialJwt } from "./types";
 
 export const createSignedJwt = (
   _message: CredentialJwt,
-  _alg: JwtAlg,
 ): Promise<Result<string, void>> => {
   return Promise.resolve(successResult("mockSignedJwt"));
 };
