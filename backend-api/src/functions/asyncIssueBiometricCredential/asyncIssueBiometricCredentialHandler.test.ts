@@ -839,6 +839,22 @@ describe("Async Issue Biometric Credential", () => {
       );
     });
 
+    describe("Given signing jwt fails", () => {
+      beforeEach(async () => {
+        dependencies.createSignedJwt = jest
+          .fn()
+          .mockResolvedValue(emptyFailure());
+
+        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+      });
+
+      it("Does not log COMPLETED", () => {
+        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        });
+      });
+    });
+
     describe("Write verifiable credential to IPVCore outbound queue errors", () => {
       describe("Given writing to the outbound queue fails", () => {
         beforeEach(async () => {
@@ -868,21 +884,6 @@ describe("Async Issue Biometric Credential", () => {
               "Unexpected failure writing the VC to the IPVCore outbound queue",
             ),
           );
-        });
-      });
-    });
-    describe("Given signing jwt fails", () => {
-      beforeEach(async () => {
-        dependencies.createSignedJwt = jest
-          .fn()
-          .mockResolvedValue(emptyFailure());
-
-        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
-      });
-
-      it("Does not log COMPLETED", () => {
-        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
         });
       });
     });
