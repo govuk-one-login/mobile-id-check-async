@@ -153,7 +153,7 @@ export async function lambdaHandlerConstructor(
       suspected_fraud_signal: undefined,
     });
 
-    if (writeEventResult.isError) logWritingAuditEventError();
+    if (writeEventResult.isError) logErrorWritingErrorEvent();
 
     return;
   }
@@ -292,12 +292,12 @@ const handleGetSessionError = async (
     suspected_fraud_signal: undefined,
     txmaAuditEncoded: undefined,
   });
-  if (writeEventResult.isError) logWritingAuditEventError();
+  if (writeEventResult.isError) logErrorWritingErrorEvent();
 };
 
 const getErrorEventName = (): GenericEventNames => "DCMAW_ASYNC_CRI_ERROR";
 
-const logWritingAuditEventError = (): void => {
+const logErrorWritingErrorEvent = (): void => {
   logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
     data: {
       auditEventName: getErrorEventName(),
@@ -417,7 +417,7 @@ const handleGetCredentialFailure = async (
     redirect_uri: redirectUri,
     suspected_fraud_signal: suspectedFraudSignal,
   });
-  if (writeEventResult.isError) logWritingAuditEventError();
+  if (writeEventResult.isError) logErrorWritingErrorEvent();
 };
 
 const sendVerifiableCredentialMessageToSqs = async (
@@ -474,7 +474,7 @@ const handleUpdateSessionError = async (
     suspected_fraud_signal: undefined,
     txmaAuditEncoded: undefined,
   });
-  if (writeEventResult.isError) logWritingAuditEventError();
+  if (writeEventResult.isError) logErrorWritingErrorEvent();
 };
 export const buildCredentialJwtPayload = (jwtData: {
   credential: string;
