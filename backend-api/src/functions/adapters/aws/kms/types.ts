@@ -1,5 +1,6 @@
 export type JwtAlg = "ES256";
 
+// TODO - I am updating this, think this should be different that v1 backend
 export interface CredentialJwt {
   iat: number;
   iss: string;
