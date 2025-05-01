@@ -9,7 +9,7 @@ export class ResultSent implements UpdateSessionOperation {
   constructor(private readonly sessionId: string) {}
 
   getDynamoDbUpdateExpression() {
-    return "set sessionId = :sessionId, sessionState = :resultSent";
+    return "set sessionState = :resultSent";
   }
 
   // This prevents trying to accidentally create a session past the ttl (e.g. redriving the DLQ 24 hours later)
@@ -19,8 +19,7 @@ export class ResultSent implements UpdateSessionOperation {
 
   getDynamoDbExpressionAttributeValues() {
     return {
-      ":sessionId": { S: this.sessionId },
-      ":sessionState": {
+      ":resultSent": {
         S: SessionState.RESULT_SENT,
       },
     };

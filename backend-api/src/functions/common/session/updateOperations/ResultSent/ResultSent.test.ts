@@ -25,9 +25,7 @@ describe("ResultSent", () => {
   describe("When I request the DynamoDB UpdateExpression", () => {
     it("Returns the appropriate UpdateExpression string", () => {
       const result = resultSent.getDynamoDbUpdateExpression();
-      expect(result).toEqual(
-        "set sessionId = :sessionId, sessionState = :resultSent",
-      );
+      expect(result).toEqual("set sessionState = :resultSent");
     });
   });
 
@@ -42,8 +40,7 @@ describe("ResultSent", () => {
     it("Returns the ExpressionAttributeValues with the correct values", () => {
       const result = resultSent.getDynamoDbExpressionAttributeValues();
       expect(result).toEqual({
-        ":sessionId": { S: mockSessionId },
-        ":sessionState": {
+        ":resultSent": {
           S: SessionState.RESULT_SENT,
         },
       });
