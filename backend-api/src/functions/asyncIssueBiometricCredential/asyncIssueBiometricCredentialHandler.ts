@@ -38,6 +38,7 @@ import {
   GetCredentialOptions,
   FraudCheckData,
 } from "./mockGetCredentialFromBiometricSession/types";
+import { ResultSent } from "../common/session/updateOperations/ResultSent/ResultSent";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -67,7 +68,6 @@ export async function lambdaHandlerConstructor(
   );
 
   const eventService = dependencies.getEventService(config.TXMA_SQS);
-  const errorTxmaEventName = "DCMAW_ASYNC_CRI_ERROR";
 
   const getSessionResult = await sessionRegistry.getSession(
     sessionId,
@@ -77,7 +77,6 @@ export async function lambdaHandlerConstructor(
   if (getSessionResult.isError) {
     return handleGetSessionError({
       errorData: getSessionResult.value,
-      eventName: errorTxmaEventName,
       eventService,
       issuer: config.ISSUER,
       sessionId,
@@ -135,7 +134,7 @@ export async function lambdaHandlerConstructor(
     }
 
     const writeEventResult = await eventService.writeGenericEvent({
-      eventName: errorTxmaEventName,
+      eventName: getErrorEventName(),
       sub: sessionAttributes?.subjectIdentifier,
       sessionId,
       govukSigninJourneyId: sessionAttributes?.govukSigninJourneyId,
@@ -147,13 +146,7 @@ export async function lambdaHandlerConstructor(
       suspected_fraud_signal: undefined,
     });
 
-    if (writeEventResult.isError) {
-      logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-        data: {
-          auditEventName: errorTxmaEventName,
-        },
-      });
-    }
+    if (writeEventResult.isError) logWritingAuditEventError();
 
     return;
   }
@@ -197,7 +190,6 @@ export async function lambdaHandlerConstructor(
   if (getCredentialFromBiometricSessionResult.isError) {
     return await handleGetCredentialFailure(
       getCredentialFromBiometricSessionResult.value,
-      errorTxmaEventName,
       eventService,
       sessionAttributes,
       config.IPVCORE_OUTBOUND_SQS,
@@ -214,6 +206,20 @@ export async function lambdaHandlerConstructor(
     dependencies.sendMessageToSqs,
     config.IPVCORE_OUTBOUND_SQS,
   );
+
+  const updateSessionResult = await sessionRegistry.updateSession(
+    sessionId,
+    new ResultSent(sessionId),
+  );
+  if (updateSessionResult.isError) {
+    handleUpdateSessionError({
+      sessionId,
+      issuer: config.ISSUER,
+      eventService,
+    });
+
+    return;
+  }
 
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
 }
@@ -243,7 +249,7 @@ const getBiometricViewerAccessKey = async (
 const handleGetSessionError = async (
   options: HandleGetSessionErrorParameters,
 ): Promise<void> => {
-  const { errorData, eventName, eventService, issuer, sessionId } = options;
+  const { errorData, eventService, issuer, sessionId } = options;
 
   if (errorData.errorType === GetSessionError.INTERNAL_SERVER_ERROR) {
     throw new RetainMessageOnQueue(
@@ -253,7 +259,7 @@ const handleGetSessionError = async (
 
   const writeEventResult = await eventService.writeGenericEvent({
     componentId: issuer,
-    eventName,
+    eventName: getErrorEventName(),
     getNowInMilliseconds: Date.now,
     govukSigninJourneyId: undefined,
     ipAddress: undefined,
@@ -263,13 +269,15 @@ const handleGetSessionError = async (
     suspected_fraud_signal: undefined,
     txmaAuditEncoded: undefined,
   });
-  if (writeEventResult.isError) {
-    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-      data: {
-        auditEventName: eventName,
-      },
-    });
-  }
+  if (writeEventResult.isError) logWritingAuditEventError();
+};
+
+const logWritingAuditEventError = (): void => {
+  logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+    data: {
+      auditEventName: getErrorEventName(),
+    },
+  });
 };
 
 const handleSendErrorMessageToOutboundQueue = async (
@@ -294,7 +302,6 @@ const handleSendErrorMessageToOutboundQueue = async (
 
 interface HandleGetSessionErrorParameters {
   errorData: GetSessionFailed;
-  eventName: GenericEventNames;
   eventService: IEventService;
   issuer: string;
   sessionId: string;
@@ -302,7 +309,6 @@ interface HandleGetSessionErrorParameters {
 
 const handleGetCredentialFailure = async (
   error: GetCredentialError,
-  eventName: GenericEventNames,
   eventService: IEventService,
   sessionAttributes: BiometricSessionFinishedAttributes,
   outboundQueue: string,
@@ -375,7 +381,7 @@ const handleGetCredentialFailure = async (
   await sendMessageToSqs(outboundQueue, sqsMessage);
 
   const writeEventResult = await eventService.writeGenericEvent({
-    eventName,
+    eventName: getErrorEventName(),
     sub: subjectIdentifier,
     sessionId,
     govukSigninJourneyId,
@@ -386,13 +392,7 @@ const handleGetCredentialFailure = async (
     redirect_uri: redirectUri,
     suspected_fraud_signal: suspectedFraudSignal,
   });
-  if (writeEventResult.isError) {
-    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-      data: {
-        auditEventName: eventName,
-      },
-    });
-  }
+  if (writeEventResult.isError) logWritingAuditEventError();
 };
 
 const sendVerifiableCredentialMessageToSqs = async (
@@ -424,3 +424,31 @@ const sendVerifiableCredentialMessageToSqs = async (
     );
   }
 };
+
+interface HandleUpdateSessionErrorParameters {
+  eventService: IEventService;
+  issuer: string;
+  sessionId: string;
+}
+
+const handleUpdateSessionError = async (
+  options: HandleUpdateSessionErrorParameters,
+): Promise<void> => {
+  const { eventService, issuer, sessionId } = options;
+
+  const writeEventResult = await eventService.writeGenericEvent({
+    componentId: issuer,
+    eventName: getErrorEventName(),
+    getNowInMilliseconds: Date.now,
+    govukSigninJourneyId: undefined,
+    ipAddress: undefined,
+    redirect_uri: undefined,
+    sessionId,
+    sub: undefined,
+    suspected_fraud_signal: undefined,
+    txmaAuditEncoded: undefined,
+  });
+  if (writeEventResult.isError) logWritingAuditEventError();
+};
+
+const getErrorEventName = (): GenericEventNames => "DCMAW_ASYNC_CRI_ERROR";

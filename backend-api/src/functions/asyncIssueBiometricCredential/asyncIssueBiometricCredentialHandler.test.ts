@@ -20,7 +20,10 @@ import {
 } from "../testUtils/unitTestData";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { emptyFailure, errorResult, successResult } from "../utils/result";
-import { GetSessionError } from "../common/session/SessionRegistry/types";
+import {
+  GetSessionError,
+  UpdateSessionError,
+} from "../common/session/SessionRegistry/types";
 import {
   BiometricSession,
   GetBiometricSessionError,
@@ -41,6 +44,10 @@ describe("Async Issue Biometric Credential", () => {
   const mockNotReadyBiometricSession: BiometricSession = {
     finish: "PROCESSING",
   };
+
+  const mockGetSessionSuccess = jest
+    .fn()
+    .mockResolvedValue(successResult(validBiometricSessionFinishedAttributes));
 
   const mockGetBiometricSessionSuccess = jest
     .fn()
@@ -97,11 +104,12 @@ describe("Async Issue Biometric Credential", () => {
 
   const mockSessionRegistrySuccess: SessionRegistry = {
     ...mockInertSessionRegistry,
-    getSession: jest
-      .fn()
-      .mockResolvedValue(
-        successResult(validBiometricSessionFinishedAttributes),
-      ),
+    getSession: mockGetSessionSuccess,
+    updateSession: jest.fn().mockResolvedValue(
+      successResult({
+        attributes: validBiometricSessionFinishedAttributes,
+      }),
+    ),
   };
 
   const mockSuccessfulGetCredentialFromBiometricSession = jest
@@ -852,6 +860,59 @@ describe("Async Issue Biometric Credential", () => {
           );
         });
       });
+    });
+
+    describe("Update session failures", () => {
+      describe.each([
+        UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
+        UpdateSessionError.INTERNAL_SERVER_ERROR,
+        UpdateSessionError.SESSION_NOT_FOUND,
+      ])(
+        "Given the error type is %s",
+        (updateSessionError: UpdateSessionError) => {
+          describe("Given writing the CRI_ERROR event to TXMA fails", () => {
+            describe("Given writing TxMA event fails", () => {
+              beforeEach(async () => {
+                dependencies.getSessionRegistry = () => ({
+                  ...mockInertSessionRegistry,
+                  getSession: mockGetSessionSuccess,
+                  updateSession: jest.fn().mockResolvedValue(
+                    errorResult({
+                      errorType: updateSessionError,
+                    }),
+                  ),
+                });
+                dependencies.getEventService = () => ({
+                  ...mockInertEventService,
+                  writeGenericEvent: jest
+                    .fn()
+                    .mockResolvedValue(emptyFailure()),
+                });
+
+                await lambdaHandlerConstructor(
+                  dependencies,
+                  validSqsEvent,
+                  context,
+                );
+              });
+
+              it("Logs DCMAW_ASYNC_CRI_ERROR audit event error", () => {
+                expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+                  messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+                  data: { auditEventName: expectedErrorTxmaEventName },
+                });
+              });
+
+              it("Does not log COMPLETED", () => {
+                expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+                  messageCode:
+                    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+                });
+              });
+            });
+          });
+        },
+      );
     });
 
     describe("Happy path", () => {
