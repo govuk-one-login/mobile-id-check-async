@@ -102,17 +102,19 @@ describe("JWKS Builder", () => {
     describe("When the KeySpec is not supported", () => {
       it.each([
         {
+          name: "Encryption",
           keyType: "RSA",
           keyUsage: "ENCRYPT_DECRYPT",
           keySpec: "RSA_4096",
         },
         {
+          name: "Signing",
           keyType: "EC",
           keyUsage: "SIGN_VERIFY",
           keySpec: "ECC_NIST_P384",
         },
       ])(
-        "Returns an error for unsupported $keyType key spec",
+        "Returns an error for unsupported $name key spec",
         async ({ keyUsage, keySpec }) => {
           mockKmsClient.on(GetPublicKeyCommand).resolves({
             KeyUsage: keyUsage,
