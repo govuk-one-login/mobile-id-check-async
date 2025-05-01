@@ -4,7 +4,7 @@ describe("GET /.well-known/jwks.json", () => {
   it("returns 200 status code and the Json Web Key Set", async () => {
     const response = await SESSIONS_API_INSTANCE.get("/.well-known/jwks.json");
     expect(response.status).toBe(200);
-    expect(response.data.keys.length).toBeGreaterThanOrEqual(1);
+    expect(response.data.keys.length).toBeGreaterThanOrEqual(2);
 
     response.data.keys.forEach((key: JsonWebKey) => {
       expect(key).toHaveProperty("kty");
