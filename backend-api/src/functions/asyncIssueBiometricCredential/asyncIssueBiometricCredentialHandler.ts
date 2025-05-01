@@ -272,6 +272,8 @@ const handleGetSessionError = async (
   if (writeEventResult.isError) logWritingAuditEventError();
 };
 
+const getErrorEventName = (): GenericEventNames => "DCMAW_ASYNC_CRI_ERROR";
+
 const logWritingAuditEventError = (): void => {
   logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
     data: {
@@ -450,5 +452,3 @@ const handleUpdateSessionError = async (
   });
   if (writeEventResult.isError) logWritingAuditEventError();
 };
-
-const getErrorEventName = (): GenericEventNames => "DCMAW_ASYNC_CRI_ERROR";
