@@ -1,4 +1,4 @@
-export interface CredentialJwt {
+export interface CredentialJwtPayload {
   sub: string;
   iat: number;
   iss: string;

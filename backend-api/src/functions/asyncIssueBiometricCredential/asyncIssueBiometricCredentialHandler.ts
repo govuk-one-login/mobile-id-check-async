@@ -35,7 +35,7 @@ import {
   GetCredentialOptions,
   FraudCheckData,
 } from "./mockGetCredentialFromBiometricSession/types";
-import { CredentialJwt } from "../adapters/aws/kms/types";
+import { CredentialJwtPayload } from "../adapters/aws/kms/types";
 import { randomUUID } from "crypto";
 
 export async function lambdaHandlerConstructor(
@@ -205,7 +205,7 @@ export async function lambdaHandlerConstructor(
   }
 
   const { credential } = getCredentialFromBiometricSessionResult.value;
-  const credentialJwt = buildCredentialJwt({
+  const credentialJwt = buildCredentialJwtPayload({
     credential,
     issuer: config.ISSUER,
     sub: sessionAttributes.subjectIdentifier,
@@ -397,11 +397,11 @@ const handleGetCredentialFailure = async (
   }
 };
 
-export const buildCredentialJwt = (jwtData: {
+export const buildCredentialJwtPayload = (jwtData: {
   credential: string;
   sub: string;
   issuer: string;
-}): CredentialJwt => {
+}): CredentialJwtPayload => {
   const { credential, issuer, sub } = jwtData;
   const nowInSeconds = Math.floor(Date.now() / 1000);
   return {
