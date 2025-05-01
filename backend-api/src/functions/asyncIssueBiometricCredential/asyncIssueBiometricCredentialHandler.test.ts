@@ -114,6 +114,10 @@ describe("Async Issue Biometric Credential", () => {
       }),
     );
 
+  const mockSuccessfulCreateSignedJwt = jest
+    .fn()
+    .mockReturnValue(successResult("mockSignedJwt"));
+
   beforeEach(() => {
     dependencies = {
       env: {
@@ -137,6 +141,7 @@ describe("Async Issue Biometric Credential", () => {
       sendMessageToSqs: mockSuccessfulSendMessageToSqs,
       getCredentialFromBiometricSession:
         mockSuccessfulGetCredentialFromBiometricSession,
+      createSignedJwt: mockSuccessfulCreateSignedJwt,
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
