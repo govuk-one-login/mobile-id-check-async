@@ -875,102 +875,100 @@ describe("Async Issue Biometric Credential", () => {
       ])(
         "Given the error type is %s",
         (updateSessionError: UpdateSessionError) => {
-          describe("Given writing the CRI_ERROR event to TXMA fails", () => {
-            describe("Given writing TxMA event fails", () => {
-              beforeEach(async () => {
-                dependencies.getSessionRegistry = () => ({
-                  ...mockInertSessionRegistry,
-                  getSession: mockGetSessionSuccess,
-                  updateSession: jest.fn().mockResolvedValue(
-                    errorResult({
-                      errorType: updateSessionError,
-                    }),
-                  ),
-                });
-                dependencies.getEventService = () => mockFailingEventService;
-
-                await lambdaHandlerConstructor(
-                  dependencies,
-                  validSqsEvent,
-                  context,
-                );
-              });
-
-              it("Passes correct arguments to the Event Service", async () => {
-                expect(
-                  mockFailingEventService.writeGenericEvent,
-                ).toHaveBeenCalledWith(
-                  expect.objectContaining({
-                    componentId: mockIssuer,
-                    eventName: expectedErrorTxmaEventName,
-                    govukSigninJourneyId: mockGovukSigninJourneyId,
-                    ipAddress: undefined,
-                    redirect_uri: undefined,
-                    sessionId: mockSessionId,
-                    sub: mockSubjectIdentifier,
-                    suspected_fraud_signal: undefined,
-                    txmaAuditEncoded: undefined,
+          describe("Given writing TxMA event fails", () => {
+            beforeEach(async () => {
+              dependencies.getSessionRegistry = () => ({
+                ...mockInertSessionRegistry,
+                getSession: mockGetSessionSuccess,
+                updateSession: jest.fn().mockResolvedValue(
+                  errorResult({
+                    errorType: updateSessionError,
                   }),
-                );
+                ),
               });
+              dependencies.getEventService = () => mockFailingEventService;
 
-              it("Logs DCMAW_ASYNC_CRI_ERROR audit event error", () => {
-                expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-                  messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-                  data: { auditEventName: expectedErrorTxmaEventName },
-                });
-              });
+              await lambdaHandlerConstructor(
+                dependencies,
+                validSqsEvent,
+                context,
+              );
+            });
 
-              it("Does not log COMPLETED", () => {
-                expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-                  messageCode:
-                    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-                });
+            it("Passes correct arguments to the Event Service", async () => {
+              expect(
+                mockFailingEventService.writeGenericEvent,
+              ).toHaveBeenCalledWith(
+                expect.objectContaining({
+                  componentId: mockIssuer,
+                  eventName: expectedErrorTxmaEventName,
+                  govukSigninJourneyId: mockGovukSigninJourneyId,
+                  ipAddress: undefined,
+                  redirect_uri: undefined,
+                  sessionId: mockSessionId,
+                  sub: mockSubjectIdentifier,
+                  suspected_fraud_signal: undefined,
+                  txmaAuditEncoded: undefined,
+                }),
+              );
+            });
+
+            it("Logs DCMAW_ASYNC_CRI_ERROR audit event error", () => {
+              expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+                messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+                data: { auditEventName: expectedErrorTxmaEventName },
               });
             });
 
-            describe("Given writing the CRI_ERROR event to TXMA succeeds", () => {
-              beforeEach(async () => {
-                dependencies.getSessionRegistry = () => ({
-                  ...mockInertSessionRegistry,
-                  getSession: mockGetSessionSuccess,
-                  updateSession: jest.fn().mockResolvedValue(
-                    errorResult({
-                      errorType: updateSessionError,
-                    }),
-                  ),
-                });
-
-                await lambdaHandlerConstructor(
-                  dependencies,
-                  validSqsEvent,
-                  context,
-                );
+            it("Does not log COMPLETED", () => {
+              expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+                messageCode:
+                  "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
               });
+            });
+          });
 
-              it("Passes correct arguments to the Event Service", () => {
-                expect(
-                  mockSuccessfulEventService.writeGenericEvent,
-                ).toHaveBeenCalledWith(
-                  expect.objectContaining({
-                    componentId: mockIssuer,
-                    eventName: expectedErrorTxmaEventName,
-                    govukSigninJourneyId: mockGovukSigninJourneyId,
-                    ipAddress: undefined,
-                    redirect_uri: undefined,
-                    sessionId: mockSessionId,
-                    sub: mockSubjectIdentifier,
-                    suspected_fraud_signal: undefined,
-                    txmaAuditEncoded: undefined,
+          describe("Given writing the CRI_ERROR event to TXMA succeeds", () => {
+            beforeEach(async () => {
+              dependencies.getSessionRegistry = () => ({
+                ...mockInertSessionRegistry,
+                getSession: mockGetSessionSuccess,
+                updateSession: jest.fn().mockResolvedValue(
+                  errorResult({
+                    errorType: updateSessionError,
                   }),
-                );
+                ),
               });
 
-              it("Does not log COMPLETED", () => {
-                expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-                  messageCode:
-                    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-                });
+              await lambdaHandlerConstructor(
+                dependencies,
+                validSqsEvent,
+                context,
+              );
+            });
+
+            it("Passes correct arguments to the Event Service", () => {
+              expect(
+                mockSuccessfulEventService.writeGenericEvent,
+              ).toHaveBeenCalledWith(
+                expect.objectContaining({
+                  componentId: mockIssuer,
+                  eventName: expectedErrorTxmaEventName,
+                  govukSigninJourneyId: mockGovukSigninJourneyId,
+                  ipAddress: undefined,
+                  redirect_uri: undefined,
+                  sessionId: mockSessionId,
+                  sub: mockSubjectIdentifier,
+                  suspected_fraud_signal: undefined,
+                  txmaAuditEncoded: undefined,
+                }),
+              );
+            });
+
+            it("Does not log COMPLETED", () => {
+              expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+                messageCode:
+                  "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
               });
             });
           });
