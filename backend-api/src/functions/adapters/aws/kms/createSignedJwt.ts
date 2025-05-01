@@ -1,8 +1,8 @@
-import { jwtPayload } from "../../../types/jwt";
+import { JwtPayload } from "../../../types/jwt";
 import { Result, successResult } from "../../../utils/result";
 
 export const createSignedJwt = (
-  _message: jwtPayload,
+  _message: JwtPayload,
 ): Promise<Result<string, void>> => {
   return Promise.resolve(successResult("mockSignedJwt"));
 };

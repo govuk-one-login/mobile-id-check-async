@@ -24,4 +24,4 @@ export interface CredentialJwtPayload {
   vc: string; // To be updated when using the real package
 }
 
-export type jwtPayload = CredentialJwtPayload;
+export type JwtPayload = CredentialJwtPayload;
