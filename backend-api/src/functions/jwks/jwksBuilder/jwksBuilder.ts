@@ -86,7 +86,7 @@ export class JwksBuilder implements IJwksBuilder {
       return keyTypeValidationResult;
     }
 
-    const jwkResult = this.convertToJwk(getPublicKeyOutput.PublicKey!);
+    const jwkResult = this.convertToJwk(getPublicKeyOutput.PublicKey);
     if (jwkResult.isError) {
       return jwkResult;
     }
@@ -138,7 +138,13 @@ export class JwksBuilder implements IJwksBuilder {
     return successResult(undefined);
   }
 
-  private convertToJwk(publicKey: Uint8Array): Result<JsonWebKey> {
+  private convertToJwk(publicKey?: Uint8Array): Result<JsonWebKey> {
+    if (!publicKey) {
+      return errorResult({
+        errorMessage: "Missing public key data",
+        errorCategory: ErrorCategory.SERVER_ERROR,
+      });
+    }
     try {
       const publicKeyAsJwk = createPublicKey({
         key: Buffer.from(publicKey),
