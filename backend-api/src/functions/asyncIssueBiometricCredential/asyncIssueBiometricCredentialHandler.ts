@@ -39,6 +39,8 @@ import {
   FraudCheckData,
 } from "./mockGetCredentialFromBiometricSession/types";
 import { ResultSent } from "../common/session/updateOperations/ResultSent/ResultSent";
+import { CredentialJwtPayload } from "../types/jwt";
+import { randomUUID } from "crypto";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -197,11 +199,21 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  //temporary variable until the JWT signing is complete
-  const mockSignedJwt = "mockSignedJwt";
+  const { credential } = getCredentialFromBiometricSessionResult.value;
+  const credentialJwtPayload = buildCredentialJwtPayload({
+    credential,
+    issuer: config.ISSUER,
+    sub: sessionAttributes.subjectIdentifier,
+  });
+
+  const createSignedJwtResult =
+    await dependencies.createSignedJwt(credentialJwtPayload);
+  if (createSignedJwtResult.isError) {
+    return;
+  }
 
   await sendVerifiableCredentialMessageToSqs(
-    mockSignedJwt,
+    createSignedJwtResult.value,
     sessionAttributes,
     dependencies.sendMessageToSqs,
     config.IPVCORE_OUTBOUND_SQS,
@@ -217,7 +229,6 @@ export async function lambdaHandlerConstructor(
       issuer: config.ISSUER,
       eventService,
     });
-
     return;
   }
 
@@ -451,4 +462,20 @@ const handleUpdateSessionError = async (
     txmaAuditEncoded: undefined,
   });
   if (writeEventResult.isError) logWritingAuditEventError();
+};
+export const buildCredentialJwtPayload = (jwtData: {
+  credential: string;
+  sub: string;
+  issuer: string;
+}): CredentialJwtPayload => {
+  const { credential, issuer, sub } = jwtData;
+  const nowInSeconds = Math.floor(Date.now() / 1000);
+  return {
+    iat: nowInSeconds,
+    iss: issuer,
+    jti: `urn:uuid:${randomUUID()}`,
+    nbf: nowInSeconds,
+    sub,
+    vc: credential,
+  };
 };

@@ -3,7 +3,7 @@ Resources:
   KMSSigningKey:
     Type: AWS::KMS::Key
     Properties:
-      Description: A KMS Key for signing.
+      Description: A key used in the client credential grant flow for signing the access token.
       Enabled: true
       EnableKeyRotation: false
       KeyPolicy:
@@ -58,3 +58,32 @@ Resources:
     Properties:
       AliasName: !Sub alias/${AWS::StackName}-encryption-key
       TargetKeyId: !Ref KMSEncryptionKey
+
+  VerifiableCredentialSigningKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS Key for signing Verifiable Credentials
+      Enabled: true
+      EnableKeyRotation: false
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: RootAccess
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: kms:*
+            Resource: '*'
+      KeySpec: ECC_NIST_P256
+      KeyUsage: SIGN_VERIFY
+      MultiRegion: false
+      PendingWindowInDays: !FindInMap
+        - KMS
+        - !Ref Environment
+        - PendingDeletionInDays
+
+  VerifiableCredentialSigningKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}-verifiable-credential-signing-key
+      TargetKeyId: !Ref VerifiableCredentialSigningKey
