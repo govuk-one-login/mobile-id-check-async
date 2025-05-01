@@ -25,6 +25,9 @@ export class ResultSent implements UpdateSessionOperation {
     };
   }
 
+  // This is exercised in the DynamoDb adapter but it is not needed. The issueBiometricCredentialHandler that uses this operation does not need the output.
+  // This has been implemented to conform to the UpdateOperation interface without refactoring the DynamoDb adapter.
+
   getSessionAttributesFromDynamoDbItem(
     item: Record<string, AttributeValue>,
   ): Result<SessionAttributes, GetSessionAttributesInvalidAttributesError> {
