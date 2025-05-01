@@ -536,6 +536,7 @@ describe("Async Issue Biometric Credential", () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
               messageCode:
                 "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR",
+              data: { messageType: "ERROR_MESSAGE" },
             });
           });
 

@@ -130,6 +130,7 @@ export async function lambdaHandlerConstructor(
     if (handleSendErrorMessageToOutboundQueueResponse.isError) {
       logger.error(
         LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR,
+        { data: { messageType: "ERROR_MESSAGE" } },
       );
     }
 
