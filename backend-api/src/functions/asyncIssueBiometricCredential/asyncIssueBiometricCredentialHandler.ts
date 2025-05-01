@@ -408,10 +408,9 @@ export const buildCredentialJwt = (
   return {
     iat: nowInSeconds,
     iss: issuer,
-    aud: sessionAttributes.issuer,
-    sub: sessionAttributes.subjectIdentifier,
-    nbf: nowInSeconds,
     jti: `urn:uuid:${randomUUID()}`,
+    nbf: nowInSeconds,
+    sub: sessionAttributes.subjectIdentifier,
     vc: credential,
   };
 };
