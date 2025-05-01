@@ -30,8 +30,8 @@ export type IssueBiometricCredentialDependencies = {
   ) => Promise<Result<void, void>>;
   getCredentialFromBiometricSession: IGetCredentialFromBiometricSession;
   createSignedJwt: (
-    _message: string,
-    _alg: JwtAlg,
+    message: string,
+    alg: JwtAlg,
   ) => Promise<Result<string, void>>;
 };
 
