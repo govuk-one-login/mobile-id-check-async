@@ -417,20 +417,7 @@ Resources:
   EventsApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
-      DomainName: !If
-        - DevelopmentStack
-        - !Sub
-          - events-${AWS::StackName}.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
-        - !Sub
-          - events.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
+      DomainName: !Ref EventsApiDomainName
       RestApiId: !Ref EventsApi
       Stage: !Ref EventsApi.Stage
 
@@ -467,20 +454,7 @@ Resources:
         DNSName: !GetAtt EventsApiDomainName.RegionalDomainName
         HostedZoneId: !GetAtt EventsApiDomainName.RegionalHostedZoneId
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
-      Name: !If
-        - DevelopmentStack
-        - !Sub
-          - events-${AWS::StackName}.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
-        - !Sub
-          - events.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
+      Name: !Ref EventsApiDomainName
       Type: A
 
   EventsApiRole:
@@ -773,20 +747,7 @@ Resources:
   StsMockApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
-      DomainName: !If
-        - DevelopmentStack
-        - !Sub
-          - sts-${AWS::StackName}.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
-        - !Sub
-          - sts-mock.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
+      DomainName: !Ref StsMockApiDomainName
       RestApiId: !Ref StsMockApi
       Stage: !Ref StsMockApi.Stage
 
@@ -823,20 +784,7 @@ Resources:
         DNSName: !GetAtt StsMockApiDomainName.RegionalDomainName
         HostedZoneId: !GetAtt StsMockApiDomainName.RegionalHostedZoneId
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
-      Name: !If
-        - DevelopmentStack
-        - !Sub
-          - sts-${AWS::StackName}.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
-        - !Sub
-          - sts-mock.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
+      Name: !Ref StsMockApiDomainName
       Type: A
 
   TestResourcesApi:
@@ -879,22 +827,8 @@ Resources:
 
   TestResourcesApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
-    DependsOn: TestResourcesApiDomainName
     Properties:
-      DomainName: !If
-        - DevelopmentStack
-        - !Sub
-          - api-${AWS::StackName}.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
-        - !Sub
-          - test-resources.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
+      DomainName: !Ref TestResourcesApiDomainName
       RestApiId: !Ref TestResourcesApi
       Stage: !Ref TestResourcesApi.Stage
 
@@ -931,20 +865,7 @@ Resources:
         DNSName: !GetAtt TestResourcesApiDomainName.RegionalDomainName
         HostedZoneId: !GetAtt TestResourcesApiDomainName.RegionalHostedZoneId
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
-      Name: !If
-        - DevelopmentStack
-        - !Sub
-          - api-${AWS::StackName}.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
-        - !Sub
-          - test-resources.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
+      Name: !Ref TestResourcesApiDomainName
       Type: A
 
   TestResourcesApiRole:

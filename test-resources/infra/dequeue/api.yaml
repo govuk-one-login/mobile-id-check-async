@@ -107,40 +107,14 @@ Resources:
   EventsApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
-      DomainName: !If
-        - DevelopmentStack
-        - !Sub
-          - events-${AWS::StackName}.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
-        - !Sub
-          - events.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+      DomainName: !Ref EventsApiDomainName
       RestApiId: !Ref EventsApi
       Stage: !Ref EventsApi.Stage
 
   EventsApiRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
-      Name: !If
-        - DevelopmentStack
-        - !Sub
-          - events-${AWS::StackName}.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
-        - !Sub
-          - events.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+      Name: !Ref EventsApiDomainName
       Type: A
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
       AliasTarget:

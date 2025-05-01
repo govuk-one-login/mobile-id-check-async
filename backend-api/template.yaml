@@ -5165,22 +5165,8 @@ Resources:
 
   ProxyApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
-    DependsOn: ProxyApiDomainName
     Properties:
-      DomainName: !If
-        - DevelopmentStack
-        - !Sub
-          - proxy-${AWS::StackName}.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
-        - !Sub
-          - proxy.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
+      DomainName: !Ref ProxyApiDomainName
       RestApiId: !Ref ProxyApi
       Stage: !Ref ProxyApi.Stage
     Condition: ProxyApiDeployment
@@ -5219,20 +5205,7 @@ Resources:
         DNSName: !GetAtt ProxyApiDomainName.RegionalDomainName
         HostedZoneId: !GetAtt ProxyApiDomainName.RegionalHostedZoneId
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
-      Name: !If
-        - DevelopmentStack
-        - !Sub
-          - proxy-${AWS::StackName}.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
-        - !Sub
-          - proxy.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
+      Name: !Ref ProxyApiDomainName
       Type: A
     Condition: ProxyApiDeployment
 
@@ -5396,22 +5369,8 @@ Resources:
 
   SessionsApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
-    DependsOn: SessionsApiDomainName
     Properties:
-      DomainName: !If
-        - DevelopmentStack
-        - !Sub
-          - sessions-${AWS::StackName}.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
-        - !Sub
-          - sessions.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
+      DomainName: !Ref SessionsApiDomainName
       RestApiId: !Ref SessionsApi
       Stage: !Ref SessionsApi.Stage
 
@@ -5448,20 +5407,7 @@ Resources:
         DNSName: !GetAtt SessionsApiDomainName.RegionalDomainName
         HostedZoneId: !GetAtt SessionsApiDomainName.RegionalHostedZoneId
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
-      Name: !If
-        - DevelopmentStack
-        - !Sub
-          - origin.sessions-${AWS::StackName}.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
-        - !Sub
-          - origin.sessions.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
+      Name: !Sub origin.${SessionsApiDomainName}
       Type: A
 
   SessionsApiRecordSet:
@@ -5472,20 +5418,7 @@ Resources:
           Fn::Sub: ${AWS::StackName}-cf-dist-DistributionDomain
         HostedZoneId: Z2FDTNDATAQYW2
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
-      Name: !If
-        - DevelopmentStack
-        - !Sub
-          - sessions-${AWS::StackName}.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
-        - !Sub
-          - sessions.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
+      Name: !Ref SessionsApiDomainName
       Type: A
 
   SessionsApiSubscriptionFilter:
