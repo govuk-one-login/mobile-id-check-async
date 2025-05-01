@@ -35,6 +35,8 @@ import {
   GetCredentialOptions,
   FraudCheckData,
 } from "./mockGetCredentialFromBiometricSession/types";
+import { CredentialJwt } from "../adapters/aws/kms/types";
+import { randomUUID } from "crypto";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -202,8 +204,15 @@ export async function lambdaHandlerConstructor(
     );
   }
 
+  const { credential } = getCredentialFromBiometricSessionResult.value;
+  const credentialJwt = buildCredentialJwt(
+    config.ISSUER,
+    sessionAttributes,
+    credential,
+  );
+
   const createSignedJwtResult = await dependencies.createSignedJwt(
-    "mockMessage",
+    credentialJwt,
     "ES256",
   );
   if (createSignedJwtResult.isError) {
@@ -388,4 +397,21 @@ const handleGetCredentialFailure = async (
       },
     });
   }
+};
+
+export const buildCredentialJwt = (
+  issuer: string,
+  sessionAttributes: BiometricSessionFinishedAttributes,
+  credential: string,
+): CredentialJwt => {
+  const nowInSeconds = Math.floor(Date.now() / 1000);
+  return {
+    iat: nowInSeconds,
+    iss: issuer,
+    aud: sessionAttributes.issuer,
+    sub: sessionAttributes.subjectIdentifier,
+    nbf: nowInSeconds,
+    jti: `urn:uuid:${randomUUID()}`,
+    vc: credential,
+  };
 };
