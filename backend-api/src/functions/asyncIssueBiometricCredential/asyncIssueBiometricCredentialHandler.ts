@@ -213,7 +213,7 @@ export async function lambdaHandlerConstructor(
   );
   if (updateSessionResult.isError) {
     handleUpdateSessionError({
-      sessionId,
+      sessionAttributes,
       issuer: config.ISSUER,
       eventService,
     });
@@ -428,23 +428,23 @@ const sendVerifiableCredentialMessageToSqs = async (
 interface HandleUpdateSessionErrorParameters {
   eventService: IEventService;
   issuer: string;
-  sessionId: string;
+  sessionAttributes: BiometricSessionFinishedAttributes;
 }
 
 const handleUpdateSessionError = async (
   options: HandleUpdateSessionErrorParameters,
 ): Promise<void> => {
-  const { eventService, issuer, sessionId } = options;
+  const { eventService, issuer, sessionAttributes } = options;
 
   const writeEventResult = await eventService.writeGenericEvent({
     componentId: issuer,
     eventName: getErrorEventName(),
     getNowInMilliseconds: Date.now,
-    govukSigninJourneyId: undefined,
+    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
     ipAddress: undefined,
-    redirect_uri: undefined,
-    sessionId,
-    sub: undefined,
+    redirect_uri: sessionAttributes.redirectUri,
+    sessionId: sessionAttributes.sessionId,
+    sub: sessionAttributes.subjectIdentifier,
     suspected_fraud_signal: undefined,
     txmaAuditEncoded: undefined,
   });

@@ -17,6 +17,9 @@ import {
   validBiometricSessionFinishedAttributes,
   validResultSentAttributes,
   mockSendMessageToSqsFailure,
+  mockGovukSigninJourneyId,
+  mockSubjectIdentifier,
+  mockFailingEventService,
 } from "../testUtils/unitTestData";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { emptyFailure, errorResult, successResult } from "../utils/result";
@@ -600,7 +603,7 @@ describe("Async Issue Biometric Credential", () => {
                 componentId: "mockIssuer",
                 getNowInMilliseconds: Date.now,
                 sessionId: mockSessionId,
-                govukSigninJourneyId: "mockGovukSigninJourneyId",
+                govukSigninJourneyId: mockGovukSigninJourneyId,
                 ipAddress: undefined,
                 redirect_uri: undefined,
                 sub: "mockSubjectIdentifier",
@@ -808,7 +811,7 @@ describe("Async Issue Biometric Credential", () => {
                 componentId: "mockIssuer",
                 eventName: expectedErrorTxmaEventName,
                 getNowInMilliseconds: Date.now,
-                govukSigninJourneyId: "mockGovukSigninJourneyId",
+                govukSigninJourneyId: mockGovukSigninJourneyId,
                 ipAddress: undefined,
                 redirect_uri: undefined,
                 sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
@@ -882,11 +885,58 @@ describe("Async Issue Biometric Credential", () => {
                     }),
                   ),
                 });
-                dependencies.getEventService = () => ({
-                  ...mockInertEventService,
-                  writeGenericEvent: jest
-                    .fn()
-                    .mockResolvedValue(emptyFailure()),
+                dependencies.getEventService = () => mockFailingEventService;
+
+                await lambdaHandlerConstructor(
+                  dependencies,
+                  validSqsEvent,
+                  context,
+                );
+              });
+
+              it("Passes correct arguments to the Event Service", async () => {
+                expect(
+                  mockFailingEventService.writeGenericEvent,
+                ).toHaveBeenCalledWith(
+                  expect.objectContaining({
+                    componentId: "mockIssuer",
+                    eventName: expectedErrorTxmaEventName,
+                    govukSigninJourneyId: mockGovukSigninJourneyId,
+                    ipAddress: undefined,
+                    redirect_uri: undefined,
+                    sessionId: mockSessionId,
+                    sub: mockSubjectIdentifier,
+                    suspected_fraud_signal: undefined,
+                    txmaAuditEncoded: undefined,
+                  }),
+                );
+              });
+
+              it("Logs DCMAW_ASYNC_CRI_ERROR audit event error", () => {
+                expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+                  messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+                  data: { auditEventName: expectedErrorTxmaEventName },
+                });
+              });
+
+              it("Does not log COMPLETED", () => {
+                expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+                  messageCode:
+                    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+                });
+              });
+            });
+
+            describe("Given writing the CRI_ERROR event to TXMA succeeds", () => {
+              beforeEach(async () => {
+                dependencies.getSessionRegistry = () => ({
+                  ...mockInertSessionRegistry,
+                  getSession: mockGetSessionSuccess,
+                  updateSession: jest.fn().mockResolvedValue(
+                    errorResult({
+                      errorType: updateSessionError,
+                    }),
+                  ),
                 });
 
                 await lambdaHandlerConstructor(
@@ -896,11 +946,22 @@ describe("Async Issue Biometric Credential", () => {
                 );
               });
 
-              it("Logs DCMAW_ASYNC_CRI_ERROR audit event error", () => {
-                expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-                  messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-                  data: { auditEventName: expectedErrorTxmaEventName },
-                });
+              it("Passes correct arguments to the Event Service", () => {
+                expect(
+                  mockSuccessfulEventService.writeGenericEvent,
+                ).toHaveBeenCalledWith(
+                  expect.objectContaining({
+                    componentId: "mockIssuer",
+                    eventName: expectedErrorTxmaEventName,
+                    govukSigninJourneyId: mockGovukSigninJourneyId,
+                    ipAddress: undefined,
+                    redirect_uri: undefined,
+                    sessionId: mockSessionId,
+                    sub: mockSubjectIdentifier,
+                    suspected_fraud_signal: undefined,
+                    txmaAuditEncoded: undefined,
+                  }),
+                );
               });
 
               it("Does not log COMPLETED", () => {
