@@ -121,18 +121,25 @@ Mappings:
     dev:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      # Perf test prod account - di-performance-test-prod
+      perfTesterRoleArn: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
     build:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      # Perf test prod account - di-performance-test-prod
+      perfTesterRoleArn: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
     staging:
       ApiBurstLimit: 10
       ApiRateLimit: 10
+      perfTesterRoleArn: ""
     integration:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+      perfTesterRoleArn: ""
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
+      perfTesterRoleArn: ""
 
   Lambda:
     dev:
