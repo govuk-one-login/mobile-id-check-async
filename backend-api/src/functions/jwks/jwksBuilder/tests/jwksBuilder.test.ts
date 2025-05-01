@@ -7,11 +7,15 @@ import { mockClient } from "aws-sdk-client-mock";
 import { JwksBuilder } from "../jwksBuilder";
 import { createPublicKey } from "node:crypto";
 import { ErrorCategory } from "../../../utils/result";
+import { Jwks } from "../../../types/jwks";
 
 const mockKmsClient = mockClient(KMSClient);
 
 describe("JWKS Builder", () => {
-  const keyIds = ["test-key-id", "verifiable-credential-signing-key-id"];
+  const keyIds = [
+    "mockEncryptionKeyId",
+    "mockVerifiableCredentialSigningKeyId",
+  ];
   let jwksBuilder: JwksBuilder;
 
   beforeEach(() => {
@@ -134,7 +138,7 @@ describe("JWKS Builder", () => {
       });
     });
 
-    describe("When the encrption key cannot be formatted as a JWK", () => {
+    describe("When the encryption key cannot be formatted as a JWK", () => {
       it("Returns an error response", async () => {
         mockKmsClient.on(GetPublicKeyCommand).resolves({
           KeyUsage: "ENCRYPT_DECRYPT",
@@ -179,7 +183,7 @@ describe("JWKS Builder", () => {
             e: "AQAB",
             use: "enc",
             alg: "RSA-OAEP-256",
-            kid: "test-key-id",
+            kid: "mock-encryption-key",
           },
           format: "jwk",
         }).export({ format: "der", type: "spki" });
@@ -192,7 +196,7 @@ describe("JWKS Builder", () => {
             crv: "P-256",
             use: "sig",
             alg: "ES256",
-            kid: "verifiable-credential-signing-key-id",
+            kid: "mock-signing-key",
           },
           format: "jwk",
         }).export({ format: "der", type: "spki" });
@@ -209,31 +213,30 @@ describe("JWKS Builder", () => {
           PublicKey: new Uint8Array(mockSigningKey),
         });
 
-        const buildJwksResponse = await jwksBuilder.buildJwks();
+        const buildJwksResult = await jwksBuilder.buildJwks();
+        const jwks = buildJwksResult.value as Jwks;
 
-        expect(buildJwksResponse.isError).toBe(false);
-        if (!buildJwksResponse.isError) {
-          expect(buildJwksResponse.value.keys.length).toBe(2);
+        expect(buildJwksResult.isError).toEqual(false);
+        expect(jwks.keys.length).toBe(2);
 
-          expect(buildJwksResponse.value.keys[0]).toMatchObject({
-            alg: "RSA-OAEP-256",
-            use: "enc",
-            kid: keyIds[0],
-            kty: "RSA",
-          });
-          expect(buildJwksResponse.value.keys[0]).toHaveProperty("n");
-          expect(buildJwksResponse.value.keys[0]).toHaveProperty("e");
+        expect(jwks.keys[0]).toMatchObject({
+          alg: "RSA-OAEP-256",
+          use: "enc",
+          kid: keyIds[0],
+          kty: "RSA",
+        });
+        expect(jwks.keys[0]).toHaveProperty("n");
+        expect(jwks.keys[0]).toHaveProperty("e");
 
-          expect(buildJwksResponse.value.keys[1]).toMatchObject({
-            alg: "ES256",
-            use: "sig",
-            kid: keyIds[1],
-            kty: "EC",
-            crv: "P-256",
-          });
-          expect(buildJwksResponse.value.keys[1]).toHaveProperty("x");
-          expect(buildJwksResponse.value.keys[1]).toHaveProperty("y");
-        }
+        expect(jwks.keys[1]).toMatchObject({
+          alg: "ES256",
+          use: "sig",
+          kid: keyIds[1],
+          kty: "EC",
+          crv: "P-256",
+        });
+        expect(jwks.keys[1]).toHaveProperty("x");
+        expect(jwks.keys[1]).toHaveProperty("y");
       });
     });
   });

@@ -24,8 +24,9 @@ describe("Json Web Keys", () => {
   let mockCustomResourceEventSender: MockCustomResourceEventSenderSuccessResult;
 
   const env = {
-    ENCRYPTION_KEY_ID: "mockKeyId",
-    VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID: "mockSigningKeyId",
+    ENCRYPTION_KEY_ID: "mockEncryptionKeyId",
+    VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID:
+      "mockVerifiableCredentialSigningKeyId",
     JWKS_BUCKET_NAME: "mockJwksBucketName",
     JWKS_FILE_NAME: "mockJwksFileName",
   };

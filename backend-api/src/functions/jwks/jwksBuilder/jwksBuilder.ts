@@ -73,6 +73,32 @@ export class JwksBuilder implements IJwksBuilder {
     getPublicKeyOutput: GetPublicKeyCommandOutput,
     keyId: string,
   ): Result<EncryptionJwk | SigningJwk> {
+    const validationResult = this.validateKmsResponse(getPublicKeyOutput);
+    if (validationResult.isError) {
+      return validationResult;
+    }
+
+    const keyUsage = getPublicKeyOutput.KeyUsage!;
+    const keySpec = getPublicKeyOutput.KeySpec as string;
+
+    const keyTypeValidationResult = this.validateKeyType(keyUsage, keySpec);
+    if (keyTypeValidationResult.isError) {
+      return keyTypeValidationResult;
+    }
+
+    const jwkResult = this.convertToJwk(getPublicKeyOutput.PublicKey!);
+    if (jwkResult.isError) {
+      return jwkResult;
+    }
+
+    return keyUsage === "ENCRYPT_DECRYPT"
+      ? this.createEncryptionJwk(jwkResult.value, keyId)
+      : this.createSigningJwk(jwkResult.value, keyId);
+  }
+
+  private validateKmsResponse(
+    getPublicKeyOutput: GetPublicKeyCommandOutput,
+  ): Result<void> {
     if (
       !getPublicKeyOutput.KeySpec ||
       !getPublicKeyOutput.KeyUsage ||
@@ -84,9 +110,10 @@ export class JwksBuilder implements IJwksBuilder {
       });
     }
 
-    const keyUsage = getPublicKeyOutput.KeyUsage;
-    const keySpec = getPublicKeyOutput.KeySpec as string;
+    return successResult(undefined);
+  }
 
+  private validateKeyType(keyUsage: string, keySpec: string): Result<void> {
     if (keyUsage === "ENCRYPT_DECRYPT") {
       if (keySpec !== "RSA_2048") {
         return errorResult({
@@ -108,37 +135,52 @@ export class JwksBuilder implements IJwksBuilder {
       });
     }
 
-    let publicKeyAsJwk: JsonWebKey;
+    return successResult(undefined);
+  }
+
+  private convertToJwk(publicKey: Uint8Array): Result<JsonWebKey> {
     try {
-      publicKeyAsJwk = createPublicKey({
-        key: Buffer.from(getPublicKeyOutput.PublicKey),
+      const publicKeyAsJwk = createPublicKey({
+        key: Buffer.from(publicKey),
         type: "spki",
         format: "der",
       }).export({ format: "jwk" });
+
+      return successResult(publicKeyAsJwk);
     } catch {
       return errorResult({
         errorMessage: "Error formatting public key as JWK",
         errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
+  }
 
-    if (keyUsage === "ENCRYPT_DECRYPT") {
-      const encryptionJwk: EncryptionJwk = {
-        ...publicKeyAsJwk,
-        use: "enc",
-        alg: "RSA-OAEP-256",
-        kid: keyId,
-      };
-      return successResult(encryptionJwk);
-    } else {
-      const signingJwk: SigningJwk = {
-        ...publicKeyAsJwk,
-        use: "sig",
-        alg: "ES256",
-        kid: keyId,
-      };
-      return successResult(signingJwk);
-    }
+  private createEncryptionJwk(
+    publicKeyAsJwk: JsonWebKey,
+    keyId: string,
+  ): Result<EncryptionJwk> {
+    const encryptionJwk: EncryptionJwk = {
+      ...publicKeyAsJwk,
+      use: "enc" as EncryptionJwkUse,
+      alg: "RSA-OAEP-256" as EncryptionJwkAlgorithm,
+      kid: keyId,
+    };
+
+    return successResult(encryptionJwk);
+  }
+
+  private createSigningJwk(
+    publicKeyAsJwk: JsonWebKey,
+    keyId: string,
+  ): Result<SigningJwk> {
+    const signingJwk: SigningJwk = {
+      ...publicKeyAsJwk,
+      use: "sig" as SigningJwkUse,
+      alg: "ES256" as SigningJwkAlgorithm,
+      kid: keyId,
+    };
+
+    return successResult(signingJwk);
   }
 }
 
@@ -151,21 +193,4 @@ export interface IJwksBuilder {
     getPublicKeyOutput: GetPublicKeyCommandOutput,
     keyId: string,
   ) => Result<EncryptionJwk | SigningJwk>;
-}
-
-export interface EncryptionKeyToJose {
-  ENCRYPT_DECRYPT: EncryptDecrypt;
-  SIGN_VERIFY: SignVerify;
-}
-
-export interface EncryptDecrypt {
-  USE: EncryptionJwkUse;
-  KEY_SPEC: string;
-  ALGORITHM: EncryptionJwkAlgorithm;
-}
-
-export interface SignVerify {
-  USE: SigningJwkUse;
-  KEY_SPEC: string;
-  ALGORITHM: SigningJwkAlgorithm;
 }

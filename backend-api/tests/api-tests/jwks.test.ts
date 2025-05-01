@@ -19,7 +19,7 @@ describe("GET /.well-known/jwks.json", () => {
         expect(key).toHaveProperty("x");
         expect(key).toHaveProperty("y");
         expect(key).toHaveProperty("crv");
-        expect(key.crv).toBe("P-256"); // ECC_NIST_P256
+        expect(key.crv).toBe("P-256");
       }
     });
   });
