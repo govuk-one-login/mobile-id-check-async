@@ -65,27 +65,6 @@ describe("JWKS Builder", () => {
           PublicKey: new Uint8Array(),
         } as GetPublicKeyCommandOutput,
       ],
-      [
-        "PublicKey",
-        {
-          KeySpec: "ECC_NIST_P256",
-          KeyUsage: "SIGN_VERIFY",
-        } as GetPublicKeyCommandOutput,
-      ],
-      [
-        "KeySpec",
-        {
-          PublicKey: new Uint8Array(),
-          KeyUsage: "SIGN_VERIFY",
-        } as GetPublicKeyCommandOutput,
-      ],
-      [
-        "KeyUsage",
-        {
-          KeySpec: "ECC_NIST_P256",
-          PublicKey: new Uint8Array(),
-        } as GetPublicKeyCommandOutput,
-      ],
     ])("When the KMS response does not include the %s key", (key, response) => {
       it("Returns an error response", async () => {
         mockKmsClient.on(GetPublicKeyCommand).resolves(response);
@@ -100,42 +79,58 @@ describe("JWKS Builder", () => {
       });
     });
 
+    describe("When the KeyUsage is not supported", () => {
+      it("Returns an error for unsupported key usage", async () => {
+        mockKmsClient.on(GetPublicKeyCommand).resolves({
+          KeyUsage: "IMPORT_KEY" as unknown,
+          KeySpec: "RSA_2048",
+          PublicKey: new Uint8Array(),
+        } as GetPublicKeyCommandOutput);
+
+        const buildJwksResponse = await jwksBuilder.buildJwks();
+
+        expect(buildJwksResponse.isError).toBe(true);
+        if (buildJwksResponse.isError) {
+          expect(buildJwksResponse.value).toStrictEqual({
+            errorMessage: "KMS key usage is not supported",
+            errorCategory: ErrorCategory.SERVER_ERROR,
+          });
+        }
+      });
+    });
+
     describe("When the KeySpec is not supported", () => {
-      it("Returns an error for unsupported RSA key spec", async () => {
-        mockKmsClient.on(GetPublicKeyCommand).resolves({
-          KeyUsage: "ENCRYPT_DECRYPT",
-          KeySpec: "RSA_4096",
-          PublicKey: new Uint8Array(),
-        } as GetPublicKeyCommandOutput);
+      it.each([
+        {
+          keyType: "RSA",
+          keyUsage: "ENCRYPT_DECRYPT",
+          keySpec: "RSA_4096",
+        },
+        {
+          keyType: "EC",
+          keyUsage: "SIGN_VERIFY",
+          keySpec: "ECC_NIST_P384",
+        },
+      ])(
+        "Returns an error for unsupported $keyType key spec",
+        async ({ keyUsage, keySpec }) => {
+          mockKmsClient.on(GetPublicKeyCommand).resolves({
+            KeyUsage: keyUsage,
+            KeySpec: keySpec,
+            PublicKey: new Uint8Array(),
+          } as GetPublicKeyCommandOutput);
 
-        const buildJwksResponse = await jwksBuilder.buildJwks();
+          const buildJwksResponse = await jwksBuilder.buildJwks();
 
-        expect(buildJwksResponse.isError).toBe(true);
-        if (buildJwksResponse.isError) {
-          expect(buildJwksResponse.value).toStrictEqual({
-            errorMessage: "KMS key algorithm is not supported",
-            errorCategory: ErrorCategory.SERVER_ERROR,
-          });
-        }
-      });
-
-      it("Returns an error for unsupported EC key spec", async () => {
-        mockKmsClient.on(GetPublicKeyCommand).resolves({
-          KeyUsage: "SIGN_VERIFY",
-          KeySpec: "ECC_NIST_P384",
-          PublicKey: new Uint8Array(),
-        } as GetPublicKeyCommandOutput);
-
-        const buildJwksResponse = await jwksBuilder.buildJwks();
-
-        expect(buildJwksResponse.isError).toBe(true);
-        if (buildJwksResponse.isError) {
-          expect(buildJwksResponse.value).toStrictEqual({
-            errorMessage: "KMS key algorithm is not supported",
-            errorCategory: ErrorCategory.SERVER_ERROR,
-          });
-        }
-      });
+          expect(buildJwksResponse.isError).toBe(true);
+          if (buildJwksResponse.isError) {
+            expect(buildJwksResponse.value).toStrictEqual({
+              errorMessage: "KMS key algorithm is not supported",
+              errorCategory: ErrorCategory.SERVER_ERROR,
+            });
+          }
+        },
+      );
     });
 
     describe("When the encryption key cannot be formatted as a JWK", () => {
