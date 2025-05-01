@@ -13,6 +13,7 @@ export const mockBiometricSessionId = "f32432a9-0965-4da9-8a2c-a98a79349d4a";
 export const mockInvalidUUID = "invalid-uuid";
 export const mockGovukSigninJourneyId = "mockGovukSigninJourneyId";
 export const mockSubjectIdentifier = "mockSubjectIdentifier";
+export const mockClientState = "mockClientState";
 
 export const expectedSecurityHeaders = {
   "Cache-Control": "no-store",
@@ -38,7 +39,7 @@ export const validBaseSessionAttributes = {
   issuer: "mockIssuer",
   sessionId: mockSessionId,
   sessionState: SessionState.AUTH_SESSION_CREATED,
-  clientState: "mockClientState",
+  clientState: mockClientState,
   subjectIdentifier: mockSubjectIdentifier,
   timeToLive: 12345,
 };
@@ -50,7 +51,7 @@ export const invalidBaseSessionAttributeTypes = {
   issuer: 12345, // Invalid type
   sessionId: mockSessionId,
   sessionState: SessionState.AUTH_SESSION_CREATED,
-  clientState: "mockClientState",
+  clientState: mockClientState,
   subjectIdentifier: mockSubjectIdentifier,
   timeToLive: "12345", // Invalid type
 };

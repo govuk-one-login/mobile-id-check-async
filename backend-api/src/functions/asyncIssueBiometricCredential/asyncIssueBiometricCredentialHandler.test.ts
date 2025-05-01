@@ -20,6 +20,7 @@ import {
   mockGovukSigninJourneyId,
   mockSubjectIdentifier,
   mockFailingEventService,
+  mockClientState,
 } from "../testUtils/unitTestData";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { emptyFailure, errorResult, successResult } from "../utils/result";
@@ -1021,8 +1022,8 @@ describe("Async Issue Biometric Credential", () => {
           "mockIpvcoreOutboundSqs",
           {
             "https://vocab.account.gov.uk/v1/credentialJWT": ["mockSignedJwt"],
-            state: "mockClientState",
-            sub: "mockSubjectIdentifier",
+            state: mockClientState,
+            sub: mockSubjectIdentifier,
           },
         );
       });
