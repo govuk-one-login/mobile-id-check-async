@@ -15,7 +15,7 @@ import { IEventService } from "../services/events/types";
 import { EventService } from "../services/events/eventService";
 import { mockGetCredentialFromBiometricSession } from "./mockGetCredentialFromBiometricSession/mockGetCredentialFromBiometricSession";
 import { IGetCredentialFromBiometricSession } from "./mockGetCredentialFromBiometricSession/types";
-import { CredentialJwtPayload } from "../adapters/aws/kms/types";
+import { CredentialJwtPayload } from "../types/jwt";
 import { createSignedJwt } from "../adapters/aws/kms/createSignedJwt";
 
 export type IssueBiometricCredentialDependencies = {

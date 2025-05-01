@@ -1,5 +1,5 @@
 import { Result, successResult } from "../../../utils/result";
-import { CredentialJwtPayload } from "./types";
+import { CredentialJwtPayload } from "../../../types/jwt";
 
 export const createSignedJwt = (
   _message: CredentialJwtPayload,

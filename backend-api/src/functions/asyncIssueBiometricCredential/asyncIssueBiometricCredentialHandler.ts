@@ -35,7 +35,7 @@ import {
   GetCredentialOptions,
   FraudCheckData,
 } from "./mockGetCredentialFromBiometricSession/types";
-import { CredentialJwtPayload } from "../adapters/aws/kms/types";
+import { CredentialJwtPayload } from "../types/jwt";
 import { randomUUID } from "crypto";
 
 export async function lambdaHandlerConstructor(
