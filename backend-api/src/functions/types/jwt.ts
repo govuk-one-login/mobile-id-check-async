@@ -14,3 +14,14 @@ export interface JwtHeader {
   typ: string;
   kid?: string;
 }
+
+export interface CredentialJwtPayload {
+  iat: number;
+  iss: string;
+  jti: string;
+  nbf: number;
+  sub: string;
+  vc: string; // To be updated when using the real package
+}
+
+export type JwtPayload = CredentialJwtPayload;

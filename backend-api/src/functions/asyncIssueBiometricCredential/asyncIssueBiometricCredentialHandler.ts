@@ -35,6 +35,8 @@ import {
   GetCredentialOptions,
   FraudCheckData,
 } from "./mockGetCredentialFromBiometricSession/types";
+import { CredentialJwtPayload } from "../types/jwt";
+import { randomUUID } from "crypto";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -202,7 +204,19 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  // Biometric session is ready, continue processing
+  const { credential } = getCredentialFromBiometricSessionResult.value;
+  const credentialJwtPayload = buildCredentialJwtPayload({
+    credential,
+    issuer: config.ISSUER,
+    sub: sessionAttributes.subjectIdentifier,
+  });
+
+  const createSignedJwtResult =
+    await dependencies.createSignedJwt(credentialJwtPayload);
+  if (createSignedJwtResult.isError) {
+    return;
+  }
+
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
 }
 
@@ -381,4 +395,21 @@ const handleGetCredentialFailure = async (
       },
     });
   }
+};
+
+export const buildCredentialJwtPayload = (jwtData: {
+  credential: string;
+  sub: string;
+  issuer: string;
+}): CredentialJwtPayload => {
+  const { credential, issuer, sub } = jwtData;
+  const nowInSeconds = Math.floor(Date.now() / 1000);
+  return {
+    iat: nowInSeconds,
+    iss: issuer,
+    jti: `urn:uuid:${randomUUID()}`,
+    nbf: nowInSeconds,
+    sub,
+    vc: credential,
+  };
 };

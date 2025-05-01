@@ -114,6 +114,10 @@ describe("Async Issue Biometric Credential", () => {
       }),
     );
 
+  const mockSuccessfulCreateSignedJwt = jest
+    .fn()
+    .mockResolvedValue(successResult("mockSignedJwt"));
+
   beforeEach(() => {
     dependencies = {
       env: {
@@ -137,6 +141,7 @@ describe("Async Issue Biometric Credential", () => {
       sendMessageToSqs: mockSuccessfulSendMessageToSqs,
       getCredentialFromBiometricSession:
         mockSuccessfulGetCredentialFromBiometricSession,
+      createSignedJwt: mockSuccessfulCreateSignedJwt,
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
@@ -820,6 +825,22 @@ describe("Async Issue Biometric Credential", () => {
           });
         },
       );
+    });
+
+    describe("Given signing jwt fails", () => {
+      beforeEach(async () => {
+        dependencies.createSignedJwt = jest
+          .fn()
+          .mockResolvedValue(emptyFailure());
+
+        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+      });
+
+      it("Does not log COMPLETED", () => {
+        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        });
+      });
     });
 
     describe("Happy path", () => {
