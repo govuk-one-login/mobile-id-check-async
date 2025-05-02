@@ -16,7 +16,7 @@ import { EventService } from "../services/events/eventService";
 import { mockGetCredentialFromBiometricSession } from "./mockGetCredentialFromBiometricSession/mockGetCredentialFromBiometricSession";
 import { IGetCredentialFromBiometricSession } from "./mockGetCredentialFromBiometricSession/types";
 import { JwtPayload } from "../types/jwt";
-import { createSignedJwt } from "../adapters/aws/kms/createSignedJwt";
+import { createSignedJwt } from "../adapters/aws/kms/createSignedJwt/createSignedJwt";
 
 export type IssueBiometricCredentialDependencies = {
   env: NodeJS.ProcessEnv;

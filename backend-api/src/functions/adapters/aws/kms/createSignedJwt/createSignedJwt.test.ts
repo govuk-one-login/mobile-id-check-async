@@ -8,8 +8,9 @@ import {
 import { AwsStub, mockClient } from "aws-sdk-client-mock";
 import { createSignedJwt } from "./createSignedJwt";
 import { expect } from "@jest/globals";
-import "../../../../../tests/testUtils/matchers";
-import { emptyFailure, Result, successResult } from "../../../utils/result";
+import "../../../../../../tests/testUtils/matchers";
+import { emptyFailure, Result, successResult } from "../../../../utils/result";
+import { mockDerSignature } from "../../../../testUtils/unitTestData";
 
 describe("createSignedJwt", () => {
   let consoleDebugSpy: jest.SpyInstance;
@@ -21,18 +22,6 @@ describe("createSignedJwt", () => {
   >;
   let result: Result<string, void>;
 
-  // This is a simulated, not cryptographically valid, DER-encoded signature
-  const mockDerSignature = Buffer.from([
-    48,
-    69, // SEQUENCE
-    2,
-    33, // INTEGER (R)
-    0x00, // Leading zero for R > 127
-    ...Array(32).fill(0x42), // Mock R value
-    2,
-    32, // INTEGER (S)
-    ...Array(32).fill(0x24), // Mock S value
-  ]);
   const mockKidArn = "mockArn/mockKid";
   const mockPayload = {
     iat: 123,

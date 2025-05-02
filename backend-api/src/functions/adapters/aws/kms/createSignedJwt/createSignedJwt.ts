@@ -1,11 +1,11 @@
 import { base64url } from "jose";
-import { JwtHeader, JwtPayload } from "../../../types/jwt";
-import { emptyFailure, Result, successResult } from "../../../utils/result";
+import { JwtHeader, JwtPayload } from "../../../../types/jwt";
+import { emptyFailure, Result, successResult } from "../../../../utils/result";
 import { SignCommand, SignCommandOutput } from "@aws-sdk/client-kms";
-import { kmsClient } from "./kmsClient";
+import { kmsClient } from "../kmsClient";
 import format from "ecdsa-sig-formatter";
-import { LogMessage } from "../../../common/logging/LogMessage";
-import { logger } from "../../../common/logging/logger";
+import { LogMessage } from "../../../../common/logging/LogMessage";
+import { logger } from "../../../../common/logging/logger";
 
 export const createSignedJwt = async (
   message: JwtPayload,
