@@ -134,10 +134,10 @@ describe("Async Issue Biometric Credential", () => {
       }),
     );
 
-  const mockSignedToken = "mockHeader.mockPayload.mockSignature";
+  const mockSignedJwt = "mockHeader.mockPayload.mockSignature";
   const mockCreateSignedJwtSuccess = jest
     .fn()
-    .mockResolvedValue(successResult(mockSignedToken));
+    .mockResolvedValue(successResult(mockSignedJwt));
 
   beforeEach(() => {
     jest.useFakeTimers();
@@ -1073,7 +1073,7 @@ describe("Async Issue Biometric Credential", () => {
         expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
           "mockIpvcoreOutboundSqs",
           {
-            "https://vocab.account.gov.uk/v1/credentialJWT": [mockSignedToken],
+            "https://vocab.account.gov.uk/v1/credentialJWT": [mockSignedJwt],
             state: mockClientState,
             sub: mockSubjectIdentifier,
           },
