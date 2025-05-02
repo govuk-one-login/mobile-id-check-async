@@ -1,6 +1,6 @@
 import { base64url } from "jose";
 import { JwtHeader, JwtPayload } from "../../../../types/jwt";
-import { emptyFailure, successResult } from "../../../../utils/result";
+import { emptyFailure, Result, successResult } from "../../../../utils/result";
 import { SignCommand, SignCommandOutput } from "@aws-sdk/client-kms";
 import { kmsClient } from "../kmsClient";
 import format from "ecdsa-sig-formatter";
@@ -12,6 +12,36 @@ export const createSignedJwt: CreateSignedJwt = async (kid, message) => {
   const jwtComponents = buildJwtComponents(kid, message);
   const unsignedJwt = `${jwtComponents.header}.${jwtComponents.payload}`;
 
+  const getSignatureResult = await getSignature(kid, unsignedJwt);
+  if (getSignatureResult.isError) {
+    return getSignatureResult;
+  }
+  const encodedSignature = encodeSignature(getSignatureResult.value);
+
+  logger.debug(LogMessage.CREATE_SIGNED_JWT_SUCCESS);
+  return successResult(
+    `${jwtComponents.header}.${jwtComponents.payload}.${encodedSignature}`,
+  );
+};
+
+const buildJwtComponents = (
+  kid: string,
+  message: JwtPayload,
+): {
+  header: string;
+  payload: string;
+} => {
+  const jwtHeader: JwtHeader = { alg: "ES256", kid, typ: "JWT" };
+  return {
+    header: base64url.encode(JSON.stringify(jwtHeader)),
+    payload: base64url.encode(JSON.stringify(message)),
+  };
+};
+
+const getSignature = async (
+  kid: string,
+  unsignedJwt: string,
+): Promise<Result<Uint8Array<ArrayBufferLike>, void>> => {
   let result: SignCommandOutput;
   try {
     logger.debug(LogMessage.CREATE_SIGNED_JWT_ATTEMPT, {
@@ -42,27 +72,9 @@ export const createSignedJwt: CreateSignedJwt = async (kid, message) => {
     return emptyFailure();
   }
 
-  const signatureBuffer = Buffer.from(result.Signature);
-  jwtComponents.signature = format.derToJose(signatureBuffer, "ES256");
-
-  logger.debug(LogMessage.CREATE_SIGNED_JWT_SUCCESS);
-  return successResult(
-    `${jwtComponents.header}.${jwtComponents.payload}.${jwtComponents.signature}`,
-  );
+  return successResult(result.Signature);
 };
 
-const buildJwtComponents = (
-  kid: string,
-  message: JwtPayload,
-): {
-  header: string;
-  payload: string;
-  signature: string;
-} => {
-  const jwtHeader: JwtHeader = { alg: "ES256", kid, typ: "JWT" };
-  return {
-    header: base64url.encode(JSON.stringify(jwtHeader)),
-    payload: base64url.encode(JSON.stringify(message)),
-    signature: "",
-  };
+const encodeSignature = (signature: Uint8Array<ArrayBufferLike>): string => {
+  return format.derToJose(Buffer.from(signature), "ES256");
 };
