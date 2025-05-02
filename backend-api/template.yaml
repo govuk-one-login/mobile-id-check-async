@@ -3349,6 +3349,7 @@ Resources:
               - EnvironmentVariables
               - !Ref Environment
               - ReadIdBaseUrl
+          VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID: !Ref VerifiableCredentialSigningKey
       FunctionName: !Sub ${AWS::StackName}-issue-biometric-credential
       Handler: asyncIssueBiometricCredentialHandler.lambdaHandler
       ReservedConcurrentExecutions: !If

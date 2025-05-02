@@ -148,6 +148,8 @@ describe("Async Issue Biometric Credential", () => {
         ENABLE_DRIVING_LICENCE: "true",
         ENABLE_NFC_PASSPORT: "true",
         ENABLE_UTOPIA_TEST_DOCUMENT: "true",
+        VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID:
+          "mockVerifiableCredentialSigningKeyId",
       },
       getSessionRegistry: () => mockSessionRegistrySuccess,
       getSecrets: mockGetSecretsSuccess,
@@ -200,6 +202,7 @@ describe("Async Issue Biometric Credential", () => {
       ["ENABLE_DRIVING_LICENCE"],
       ["ENABLE_NFC_PASSPORT"],
       ["ENABLE_UTOPIA_TEST_DOCUMENT"],
+      ["VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID"],
     ])("Given %s environment variable is missing", (envVar: string) => {
       beforeEach(async () => {
         delete dependencies.env[envVar];

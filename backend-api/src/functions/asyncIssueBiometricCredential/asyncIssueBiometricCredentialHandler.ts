@@ -212,7 +212,7 @@ export async function lambdaHandlerConstructor(
   });
 
   const createSignedJwtResult = await dependencies.createSignedJwt(
-    "mockKid",
+    config.VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID,
     credentialJwtPayload,
   );
   if (createSignedJwtResult.isError) {
