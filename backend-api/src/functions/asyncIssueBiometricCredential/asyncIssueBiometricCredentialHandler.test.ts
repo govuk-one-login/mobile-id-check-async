@@ -22,6 +22,7 @@ import {
   mockFailingEventService,
   mockClientState,
   mockIssuer,
+  NOW_IN_MILLISECONDS,
 } from "../testUtils/unitTestData";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { emptyFailure, errorResult, successResult } from "../utils/result";
@@ -33,6 +34,11 @@ import {
   BiometricSession,
   GetBiometricSessionError,
 } from "./getBiometricSession/getBiometricSession";
+
+jest.mock("crypto", () => ({
+  ...jest.requireActual("crypto"),
+  randomUUID: () => "mock_random_uuid",
+}));
 
 describe("Async Issue Biometric Credential", () => {
   let dependencies: IssueBiometricCredentialDependencies;
@@ -134,6 +140,8 @@ describe("Async Issue Biometric Credential", () => {
     .mockResolvedValue(successResult(mockSignedToken));
 
   beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(NOW_IN_MILLISECONDS);
     dependencies = {
       env: {
         BIOMETRIC_VIEWER_KEY_SECRET_PATH: "mockBiometricViewerAccessKey",
@@ -1043,6 +1051,20 @@ describe("Async Issue Biometric Credential", () => {
             enableNfcPassport: true,
             enableBiometricResidencePermit: true,
             enableBiometricResidenceCard: true,
+          },
+        );
+      });
+
+      it("Passes correct arguments to createSignedJwt", () => {
+        expect(mockSuccessfulCreateSignedJwt).toHaveBeenCalledWith(
+          "mockVerifiableCredentialSigningKeyId",
+          {
+            iat: 1704110400,
+            iss: "mockIssuer",
+            jti: "urn:uuid:mock_random_uuid",
+            nbf: 1704110400,
+            sub: "mockSubjectIdentifier",
+            vc: "mockCredential",
           },
         );
       });
