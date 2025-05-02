@@ -22,7 +22,7 @@ describe("createSignedJwt", () => {
   >;
   let result: Result<string, void>;
 
-  const mockKidArn = "mockArn/mockKid";
+  const mockKid = "mockKid";
   const mockPayload = {
     iat: 123,
     iss: "mockIss",
@@ -42,14 +42,14 @@ describe("createSignedJwt", () => {
     beforeEach(async () => {
       kmsMock.on(SignCommand).resolves({});
 
-      await createSignedJwt(mockPayload, mockKidArn);
+      await createSignedJwt(mockKid, mockPayload);
     });
 
     it("Logs attempt at debug level", () => {
       expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_CREATE_SIGNED_JWT_ATTEMPT",
         data: {
-          kidArn: mockKidArn,
+          kid: mockKid,
         },
       });
     });
@@ -59,7 +59,7 @@ describe("createSignedJwt", () => {
     beforeEach(async () => {
       kmsMock.on(SignCommand).rejects("mockKmsError");
 
-      result = await createSignedJwt(mockPayload, mockKidArn);
+      result = await createSignedJwt(mockKid, mockPayload);
     });
 
     it("Logs the failed attempt", () => {
@@ -76,9 +76,9 @@ describe("createSignedJwt", () => {
   describe("Given the call to KMS is successful", () => {
     describe("Given response does not include a signature", () => {
       beforeEach(async () => {
-        kmsMock.on(SignCommand).resolves({ KeyId: "mockKid" });
+        kmsMock.on(SignCommand).resolves({ KeyId: mockKid });
 
-        result = await createSignedJwt(mockPayload, mockKidArn);
+        result = await createSignedJwt(mockKid, mockPayload);
       });
 
       it("Logs the error", () => {
@@ -99,7 +99,7 @@ describe("createSignedJwt", () => {
           .on(SignCommand)
           .resolves({ KeyId: "mockKid", Signature: mockDerSignature });
 
-        result = await createSignedJwt(mockPayload, mockKidArn);
+        result = await createSignedJwt(mockKid, mockPayload);
       });
 
       it("Logs success", () => {
@@ -111,7 +111,7 @@ describe("createSignedJwt", () => {
       it("Returns signed JWT", () => {
         expect(result).toEqual(
           successResult(
-            "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Im1vY2tLaWQifQ.eyJpYXQiOjEyMywiaXNzIjoibW9ja0lzcyIsImp0aSI6Im1vY2tKdGkiLCJuYmYiOjEyMywic3ViIjoibW9ja1N1YiIsInZjIjoibW9ja1ZjIn0.QkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkIkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJA",
+            "eyJhbGciOiJFUzI1NiIsImtpZCI6Im1vY2tLaWQiLCJ0eXAiOiJKV1QifQ.eyJpYXQiOjEyMywiaXNzIjoibW9ja0lzcyIsImp0aSI6Im1vY2tKdGkiLCJuYmYiOjEyMywic3ViIjoibW9ja1N1YiIsInZjIjoibW9ja1ZjIn0.QkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkIkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJA",
           ),
         );
       });

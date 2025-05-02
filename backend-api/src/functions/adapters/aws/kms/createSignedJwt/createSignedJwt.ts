@@ -8,22 +8,22 @@ import { LogMessage } from "../../../../common/logging/LogMessage";
 import { logger } from "../../../../common/logging/logger";
 
 export const createSignedJwt = async (
+  kid: string,
   message: JwtPayload,
-  kidArn: string,
 ): Promise<Result<string, void>> => {
-  const tokenComponents = buildTokenComponents(message, kidArn);
+  const tokenComponents = buildTokenComponents(kid, message);
   const unsignedToken = `${tokenComponents.header}.${tokenComponents.payload}`;
 
   let result: SignCommandOutput;
   try {
     logger.debug(LogMessage.CREATE_SIGNED_JWT_ATTEMPT, {
       data: {
-        kidArn,
+        kid,
       },
     });
     const command = new SignCommand({
       Message: Buffer.from(unsignedToken),
-      KeyId: kidArn,
+      KeyId: kid,
       SigningAlgorithm: "ECDSA_SHA_256",
       MessageType: "RAW",
     });
@@ -53,19 +53,14 @@ export const createSignedJwt = async (
 };
 
 const buildTokenComponents = (
+  kid: string,
   message: JwtPayload,
-  kidArn: string,
 ): {
   header: string;
   payload: string;
   signature: string;
 } => {
-  const jwtHeader: JwtHeader = { alg: "ES256", typ: "JWT" };
-  const kid = kidArn.split("/").pop();
-  if (kid != null) {
-    jwtHeader.kid = kid;
-  }
-
+  const jwtHeader: JwtHeader = { alg: "ES256", kid, typ: "JWT" };
   return {
     header: base64url.encode(JSON.stringify(jwtHeader)),
     payload: base64url.encode(JSON.stringify(message)),
