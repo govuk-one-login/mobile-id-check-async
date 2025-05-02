@@ -128,9 +128,10 @@ describe("Async Issue Biometric Credential", () => {
       }),
     );
 
+  const mockSignedToken = "mockHeader.mockPayload.mockSignature";
   const mockSuccessfulCreateSignedJwt = jest
     .fn()
-    .mockResolvedValue(successResult("mockSignedJwt"));
+    .mockResolvedValue(successResult(mockSignedToken));
 
   beforeEach(() => {
     dependencies = {
@@ -1041,7 +1042,7 @@ describe("Async Issue Biometric Credential", () => {
         expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
           "mockIpvcoreOutboundSqs",
           {
-            "https://vocab.account.gov.uk/v1/credentialJWT": ["mockSignedJwt"],
+            "https://vocab.account.gov.uk/v1/credentialJWT": [mockSignedToken],
             state: mockClientState,
             sub: mockSubjectIdentifier,
           },
