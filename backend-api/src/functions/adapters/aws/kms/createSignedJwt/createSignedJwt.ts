@@ -12,7 +12,7 @@ export const createSignedJwt: CreateSignedJwt = async (kid, message) => {
   const encodedJwtComponents = buildEncodedJwtComponents(kid, message);
   const unsignedJwt = `${encodedJwtComponents.header}.${encodedJwtComponents.payload}`;
 
-  const getSignatureResult = await getSignature(kid, unsignedJwt);
+  const getSignatureResult = await getSignature({ kid, unsignedJwt });
   if (getSignatureResult.isError) {
     return getSignatureResult;
   }
@@ -38,10 +38,12 @@ const buildEncodedJwtComponents = (
   };
 };
 
-const getSignature = async (
-  kid: string,
-  unsignedJwt: string,
-): Promise<Result<Uint8Array<ArrayBufferLike>, void>> => {
+const getSignature = async (params: {
+  kid: string;
+  unsignedJwt: string;
+}): Promise<Result<Uint8Array<ArrayBufferLike>, void>> => {
+  const { kid, unsignedJwt } = params;
+
   let result: SignCommandOutput;
   try {
     logger.debug(LogMessage.CREATE_SIGNED_JWT_ATTEMPT, {
