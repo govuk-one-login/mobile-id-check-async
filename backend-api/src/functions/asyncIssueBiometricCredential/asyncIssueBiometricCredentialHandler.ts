@@ -216,7 +216,9 @@ export async function lambdaHandlerConstructor(
     credentialJwtPayload,
   );
   if (createSignedJwtResult.isError) {
-    return;
+    throw new RetainMessageOnQueue(
+      "Unexpected failure signing verified credential jwt",
+    );
   }
 
   const sendVerifiableCredentialMessageToSqsResult =

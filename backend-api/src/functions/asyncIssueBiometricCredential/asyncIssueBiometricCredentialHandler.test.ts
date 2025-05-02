@@ -849,13 +849,19 @@ describe("Async Issue Biometric Credential", () => {
           .fn()
           .mockResolvedValue(emptyFailure());
 
-        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        try {
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        } catch (error: unknown) {
+          lambdaError = error;
+        }
       });
 
-      it("Does not log COMPLETED", () => {
-        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-        });
+      it("Throws RetainMessageOnQueue", async () => {
+        expect(lambdaError).toEqual(
+          new RetainMessageOnQueue(
+            "Unexpected failure signing verified credential jwt",
+          ),
+        );
       });
     });
 
