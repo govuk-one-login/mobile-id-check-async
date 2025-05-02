@@ -211,8 +211,10 @@ export async function lambdaHandlerConstructor(
     sub: sessionAttributes.subjectIdentifier,
   });
 
-  const createSignedJwtResult =
-    await dependencies.createSignedJwt(credentialJwtPayload);
+  const createSignedJwtResult = await dependencies.createSignedJwt(
+    credentialJwtPayload,
+    "mockKidArn/mockKid",
+  );
   if (createSignedJwtResult.isError) {
     return;
   }

@@ -29,7 +29,10 @@ export type IssueBiometricCredentialDependencies = {
     messageBody: SQSMessageBody,
   ) => Promise<Result<void, void>>;
   getCredentialFromBiometricSession: IGetCredentialFromBiometricSession;
-  createSignedJwt: (message: JwtPayload) => Promise<Result<string, void>>;
+  createSignedJwt: (
+    message: JwtPayload,
+    kidArn: string,
+  ) => Promise<Result<string, void>>;
 };
 
 export const runtimeDependencies: IssueBiometricCredentialDependencies = {
