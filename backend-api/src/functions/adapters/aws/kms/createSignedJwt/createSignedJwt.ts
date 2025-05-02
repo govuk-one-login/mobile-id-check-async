@@ -1,16 +1,14 @@
 import { base64url } from "jose";
 import { JwtHeader, JwtPayload } from "../../../../types/jwt";
-import { emptyFailure, Result, successResult } from "../../../../utils/result";
+import { emptyFailure, successResult } from "../../../../utils/result";
 import { SignCommand, SignCommandOutput } from "@aws-sdk/client-kms";
 import { kmsClient } from "../kmsClient";
 import format from "ecdsa-sig-formatter";
 import { LogMessage } from "../../../../common/logging/LogMessage";
 import { logger } from "../../../../common/logging/logger";
+import { CreateSignedJwt } from "./types";
 
-export const createSignedJwt = async (
-  kid: string,
-  message: JwtPayload,
-): Promise<Result<string, void>> => {
+export const createSignedJwt: CreateSignedJwt = async (kid, message) => {
   const tokenComponents = buildTokenComponents(kid, message);
   const unsignedToken = `${tokenComponents.header}.${tokenComponents.payload}`;
 
