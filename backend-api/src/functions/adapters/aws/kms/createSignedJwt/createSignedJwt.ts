@@ -9,8 +9,8 @@ import { logger } from "../../../../common/logging/logger";
 import { CreateSignedJwt } from "./types";
 
 export const createSignedJwt: CreateSignedJwt = async (kid, message) => {
-  const tokenComponents = buildTokenComponents(kid, message);
-  const unsignedToken = `${tokenComponents.header}.${tokenComponents.payload}`;
+  const jwtComponents = buildJwtComponents(kid, message);
+  const unsignedJwt = `${jwtComponents.header}.${jwtComponents.payload}`;
 
   let result: SignCommandOutput;
   try {
@@ -19,14 +19,15 @@ export const createSignedJwt: CreateSignedJwt = async (kid, message) => {
         kid,
       },
     });
-    const command = new SignCommand({
-      Message: Buffer.from(unsignedToken),
-      KeyId: kid,
-      SigningAlgorithm: "ECDSA_SHA_256",
-      MessageType: "RAW",
-    });
 
-    result = await kmsClient.send(command);
+    result = await kmsClient.send(
+      new SignCommand({
+        Message: Buffer.from(unsignedJwt),
+        KeyId: kid,
+        SigningAlgorithm: "ECDSA_SHA_256",
+        MessageType: "RAW",
+      }),
+    );
   } catch (error: unknown) {
     logger.error(LogMessage.CREATE_SIGNED_JWT_FAILURE, {
       error,
@@ -42,15 +43,15 @@ export const createSignedJwt: CreateSignedJwt = async (kid, message) => {
   }
 
   const signatureBuffer = Buffer.from(result.Signature);
-  tokenComponents.signature = format.derToJose(signatureBuffer, "ES256");
+  jwtComponents.signature = format.derToJose(signatureBuffer, "ES256");
 
   logger.debug(LogMessage.CREATE_SIGNED_JWT_SUCCESS);
   return successResult(
-    `${tokenComponents.header}.${tokenComponents.payload}.${tokenComponents.signature}`,
+    `${jwtComponents.header}.${jwtComponents.payload}.${jwtComponents.signature}`,
   );
 };
 
-const buildTokenComponents = (
+const buildJwtComponents = (
   kid: string,
   message: JwtPayload,
 ): {
