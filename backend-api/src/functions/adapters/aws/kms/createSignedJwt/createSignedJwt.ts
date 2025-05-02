@@ -9,8 +9,8 @@ import { logger } from "../../../../common/logging/logger";
 import { CreateSignedJwt } from "./types";
 
 export const createSignedJwt: CreateSignedJwt = async (kid, message) => {
-  const jwtComponents = buildJwtComponents(kid, message);
-  const unsignedJwt = `${jwtComponents.header}.${jwtComponents.payload}`;
+  const encodedJwtComponents = buildEncodedJwtComponents(kid, message);
+  const unsignedJwt = `${encodedJwtComponents.header}.${encodedJwtComponents.payload}`;
 
   const getSignatureResult = await getSignature(kid, unsignedJwt);
   if (getSignatureResult.isError) {
@@ -20,11 +20,11 @@ export const createSignedJwt: CreateSignedJwt = async (kid, message) => {
 
   logger.debug(LogMessage.CREATE_SIGNED_JWT_SUCCESS);
   return successResult(
-    `${jwtComponents.header}.${jwtComponents.payload}.${encodedSignature}`,
+    `${encodedJwtComponents.header}.${encodedJwtComponents.payload}.${encodedSignature}`,
   );
 };
 
-const buildJwtComponents = (
+const buildEncodedJwtComponents = (
   kid: string,
   message: JwtPayload,
 ): {
