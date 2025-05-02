@@ -52,7 +52,14 @@ export const createSignedJwt = async (
   );
 };
 
-const buildTokenComponents = (message: JwtPayload, kidArn: string) => {
+const buildTokenComponents = (
+  message: JwtPayload,
+  kidArn: string,
+): {
+  header: string;
+  payload: string;
+  signature: string;
+} => {
   const jwtHeader: JwtHeader = { alg: "ES256", typ: "JWT" };
   const kid = kidArn.split("/").pop();
   if (kid != null) {
