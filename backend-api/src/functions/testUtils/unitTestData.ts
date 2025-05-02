@@ -11,6 +11,10 @@ import {
 export const mockSessionId = "58f4281d-d988-49ce-9586-6ef70a2be0b4";
 export const mockBiometricSessionId = "f32432a9-0965-4da9-8a2c-a98a79349d4a";
 export const mockInvalidUUID = "invalid-uuid";
+export const mockGovukSigninJourneyId = "mockGovukSigninJourneyId";
+export const mockSubjectIdentifier = "mockSubjectIdentifier";
+export const mockClientState = "mockClientState";
+export const mockIssuer = "mockIssuer";
 
 export const expectedSecurityHeaders = {
   "Cache-Control": "no-store",
@@ -31,25 +35,25 @@ export const invalidCreatedAt: number = 1704106740000; // 2024-01-01 10:59:00.00
 
 export const validBaseSessionAttributes = {
   clientId: "mockClientId",
-  govukSigninJourneyId: "mockGovukSigninJourneyId",
+  govukSigninJourneyId: mockGovukSigninJourneyId,
   createdAt: validCreatedAt,
-  issuer: "mockIssuer",
+  issuer: mockIssuer,
   sessionId: mockSessionId,
   sessionState: SessionState.AUTH_SESSION_CREATED,
-  clientState: "mockClientState",
-  subjectIdentifier: "mockSubjectIdentifier",
+  clientState: mockClientState,
+  subjectIdentifier: mockSubjectIdentifier,
   timeToLive: 12345,
 };
 
 export const invalidBaseSessionAttributeTypes = {
   clientId: "mockClientId",
-  govukSigninJourneyId: "mockGovukSigninJourneyId",
+  govukSigninJourneyId: mockGovukSigninJourneyId,
   createdAt: validCreatedAt,
   issuer: 12345, // Invalid type
   sessionId: mockSessionId,
   sessionState: SessionState.AUTH_SESSION_CREATED,
-  clientState: "mockClientState",
-  subjectIdentifier: "mockSubjectIdentifier",
+  clientState: mockClientState,
+  subjectIdentifier: mockSubjectIdentifier,
   timeToLive: "12345", // Invalid type
 };
 
@@ -148,11 +152,11 @@ export const mockFailingEventService = {
   writeGenericEvent: mockWriteGenericEventFailureResult,
 };
 
-export const mockSuccessfulSendMessageToSqs = jest
+export const mockSendMessageToSqsSuccess = jest
   .fn()
   .mockResolvedValue(emptySuccess());
 
-export const mockFailingSendMessageToSqs = jest
+export const mockSendMessageToSqsFailure = jest
   .fn()
   .mockResolvedValue(emptyFailure());
 

@@ -10,16 +10,25 @@ import {
   mockSessionId,
   mockSuccessfulEventService,
   mockWriteGenericEventSuccessResult,
-  mockSuccessfulSendMessageToSqs,
+  mockSendMessageToSqsSuccess,
   mockInertSessionRegistry,
   mockBiometricSessionId,
   mockInertEventService,
   validBiometricSessionFinishedAttributes,
   validResultSentAttributes,
+  mockSendMessageToSqsFailure,
+  mockGovukSigninJourneyId,
+  mockSubjectIdentifier,
+  mockFailingEventService,
+  mockClientState,
+  mockIssuer,
 } from "../testUtils/unitTestData";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { emptyFailure, errorResult, successResult } from "../utils/result";
-import { GetSessionError } from "../common/session/SessionRegistry/types";
+import {
+  GetSessionError,
+  UpdateSessionError,
+} from "../common/session/SessionRegistry/types";
 import {
   BiometricSession,
   GetBiometricSessionError,
@@ -40,6 +49,10 @@ describe("Async Issue Biometric Credential", () => {
   const mockNotReadyBiometricSession: BiometricSession = {
     finish: "PROCESSING",
   };
+
+  const mockGetSessionSuccess = jest
+    .fn()
+    .mockResolvedValue(successResult(validBiometricSessionFinishedAttributes));
 
   const mockGetBiometricSessionSuccess = jest
     .fn()
@@ -96,11 +109,12 @@ describe("Async Issue Biometric Credential", () => {
 
   const mockSessionRegistrySuccess: SessionRegistry = {
     ...mockInertSessionRegistry,
-    getSession: jest
-      .fn()
-      .mockResolvedValue(
-        successResult(validBiometricSessionFinishedAttributes),
-      ),
+    getSession: mockGetSessionSuccess,
+    updateSession: jest.fn().mockResolvedValue(
+      successResult({
+        attributes: validBiometricSessionFinishedAttributes,
+      }),
+    ),
   };
 
   const mockSuccessfulGetCredentialFromBiometricSession = jest
@@ -127,7 +141,7 @@ describe("Async Issue Biometric Credential", () => {
         IPVCORE_OUTBOUND_SQS: "mockIpvcoreOutboundSqs",
         SESSION_TABLE_NAME: "mockTableName",
         TXMA_SQS: "mockTxmaSqs",
-        ISSUER: "mockIssuer",
+        ISSUER: mockIssuer,
         ENABLE_BIOMETRIC_RESIDENCE_CARD: "true",
         ENABLE_BIOMETRIC_RESIDENCE_PERMIT: "true",
         ENABLE_DRIVING_LICENCE: "true",
@@ -138,7 +152,7 @@ describe("Async Issue Biometric Credential", () => {
       getSecrets: mockGetSecretsSuccess,
       getBiometricSession: mockGetBiometricSessionSuccess,
       getEventService: () => mockSuccessfulEventService,
-      sendMessageToSqs: mockSuccessfulSendMessageToSqs,
+      sendMessageToSqs: mockSendMessageToSqsSuccess,
       getCredentialFromBiometricSession:
         mockSuccessfulGetCredentialFromBiometricSession,
       createSignedJwt: mockSuccessfulCreateSignedJwt,
@@ -410,7 +424,7 @@ describe("Async Issue Biometric Credential", () => {
         it("Writes DCMAW_ASYNC_CRI_ERROR to TxMA", () => {
           expect(mockSuccessfulEventService.writeGenericEvent).toBeCalledWith({
             eventName: expectedErrorTxmaEventName,
-            componentId: "mockIssuer",
+            componentId: mockIssuer,
             getNowInMilliseconds: Date.now,
             sessionId: mockSessionId,
           });
@@ -498,7 +512,7 @@ describe("Async Issue Biometric Credential", () => {
         });
 
         it("Sends error to IPV Core", () => {
-          expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
+          expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
             "mockIpvcoreOutboundSqs",
             {
               sub: "mockSubjectIdentifier",
@@ -513,16 +527,14 @@ describe("Async Issue Biometric Credential", () => {
           expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
             expect.objectContaining({
               eventName: expectedErrorTxmaEventName,
-              componentId: "mockIssuer",
+              componentId: mockIssuer,
             }),
           );
         });
 
         describe("When sending error to IPV Core fails", () => {
           beforeEach(async () => {
-            dependencies.sendMessageToSqs = jest
-              .fn()
-              .mockResolvedValue(emptyFailure());
+            dependencies.sendMessageToSqs = mockSendMessageToSqsFailure;
             dependencies.getBiometricSession =
               mockGetBiometricSessionNonRetryableFailure;
             await lambdaHandlerConstructor(
@@ -543,7 +555,7 @@ describe("Async Issue Biometric Credential", () => {
             expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
               expect.objectContaining({
                 eventName: expectedErrorTxmaEventName,
-                componentId: "mockIssuer",
+                componentId: mockIssuer,
               }),
             );
           });
@@ -595,10 +607,10 @@ describe("Async Issue Biometric Credential", () => {
                 mockSuccessfulEventService.writeGenericEvent,
               ).toBeCalledWith({
                 eventName: expectedErrorTxmaEventName,
-                componentId: "mockIssuer",
+                componentId: mockIssuer,
                 getNowInMilliseconds: Date.now,
                 sessionId: mockSessionId,
-                govukSigninJourneyId: "mockGovukSigninJourneyId",
+                govukSigninJourneyId: mockGovukSigninJourneyId,
                 ipAddress: undefined,
                 redirect_uri: undefined,
                 sub: "mockSubjectIdentifier",
@@ -740,7 +752,7 @@ describe("Async Issue Biometric Credential", () => {
             });
 
             it("Sends server_error to IPV Core", () => {
-              expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
+              expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
                 "mockIpvcoreOutboundSqs",
                 expectedSqsMessage,
               );
@@ -793,7 +805,7 @@ describe("Async Issue Biometric Credential", () => {
             });
 
             it("Sends server_error to IPV Core", () => {
-              expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
+              expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
                 "mockIpvcoreOutboundSqs",
                 expectedSqsMessage,
               );
@@ -803,10 +815,10 @@ describe("Async Issue Biometric Credential", () => {
               expect(
                 mockSuccessfulEventService.writeGenericEvent,
               ).toBeCalledWith({
-                componentId: "mockIssuer",
+                componentId: mockIssuer,
                 eventName: expectedErrorTxmaEventName,
                 getNowInMilliseconds: Date.now,
-                govukSigninJourneyId: "mockGovukSigninJourneyId",
+                govukSigninJourneyId: mockGovukSigninJourneyId,
                 ipAddress: undefined,
                 redirect_uri: undefined,
                 sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
@@ -841,6 +853,148 @@ describe("Async Issue Biometric Credential", () => {
           messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
         });
       });
+    });
+
+    describe("Write verifiable credential to IPVCore outbound queue errors", () => {
+      describe("Given writing to the outbound queue fails", () => {
+        beforeEach(async () => {
+          dependencies.sendMessageToSqs = mockSendMessageToSqsFailure;
+          try {
+            await lambdaHandlerConstructor(
+              dependencies,
+              validSqsEvent,
+              context,
+            );
+          } catch (error: unknown) {
+            lambdaError = error;
+          }
+        });
+
+        it("Logs IPV_CORE_MESSAGE_ERROR", async () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode:
+              "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR",
+            data: { messageType: "VERIFIABLE_CREDENTIAL" },
+          });
+        });
+
+        it("Throws RetainMessageOnQueue", async () => {
+          expect(lambdaError).toEqual(
+            new RetainMessageOnQueue(
+              "Unexpected failure writing the VC to the IPVCore outbound queue",
+            ),
+          );
+        });
+      });
+    });
+
+    describe("Update session failures", () => {
+      describe.each([
+        UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
+        UpdateSessionError.INTERNAL_SERVER_ERROR,
+        UpdateSessionError.SESSION_NOT_FOUND,
+      ])(
+        "Given the error type is %s",
+        (updateSessionError: UpdateSessionError) => {
+          describe("Given writing TxMA event fails", () => {
+            beforeEach(async () => {
+              dependencies.getSessionRegistry = () => ({
+                ...mockInertSessionRegistry,
+                getSession: mockGetSessionSuccess,
+                updateSession: jest.fn().mockResolvedValue(
+                  errorResult({
+                    errorType: updateSessionError,
+                  }),
+                ),
+              });
+              dependencies.getEventService = () => mockFailingEventService;
+
+              await lambdaHandlerConstructor(
+                dependencies,
+                validSqsEvent,
+                context,
+              );
+            });
+
+            it("Passes correct arguments to the Event Service", async () => {
+              expect(
+                mockFailingEventService.writeGenericEvent,
+              ).toHaveBeenCalledWith(
+                expect.objectContaining({
+                  componentId: mockIssuer,
+                  eventName: expectedErrorTxmaEventName,
+                  govukSigninJourneyId: mockGovukSigninJourneyId,
+                  ipAddress: undefined,
+                  redirect_uri: undefined,
+                  sessionId: mockSessionId,
+                  sub: mockSubjectIdentifier,
+                  suspected_fraud_signal: undefined,
+                  txmaAuditEncoded: undefined,
+                }),
+              );
+            });
+
+            it("Logs DCMAW_ASYNC_CRI_ERROR audit event error", () => {
+              expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+                messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+                data: { auditEventName: expectedErrorTxmaEventName },
+              });
+            });
+
+            it("Does not log COMPLETED", () => {
+              expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+                messageCode:
+                  "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+              });
+            });
+          });
+
+          describe("Given writing the CRI_ERROR event to TXMA succeeds", () => {
+            beforeEach(async () => {
+              dependencies.getSessionRegistry = () => ({
+                ...mockInertSessionRegistry,
+                getSession: mockGetSessionSuccess,
+                updateSession: jest.fn().mockResolvedValue(
+                  errorResult({
+                    errorType: updateSessionError,
+                  }),
+                ),
+              });
+
+              await lambdaHandlerConstructor(
+                dependencies,
+                validSqsEvent,
+                context,
+              );
+            });
+
+            it("Passes correct arguments to the Event Service", () => {
+              expect(
+                mockSuccessfulEventService.writeGenericEvent,
+              ).toHaveBeenCalledWith(
+                expect.objectContaining({
+                  componentId: mockIssuer,
+                  eventName: expectedErrorTxmaEventName,
+                  govukSigninJourneyId: mockGovukSigninJourneyId,
+                  ipAddress: undefined,
+                  redirect_uri: undefined,
+                  sessionId: mockSessionId,
+                  sub: mockSubjectIdentifier,
+                  suspected_fraud_signal: undefined,
+                  txmaAuditEncoded: undefined,
+                }),
+              );
+            });
+
+            it("Does not log COMPLETED", () => {
+              expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+                messageCode:
+                  "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+              });
+            });
+          });
+        },
+      );
     });
 
     describe("Happy path", () => {
@@ -879,6 +1033,17 @@ describe("Async Issue Biometric Credential", () => {
             enableNfcPassport: true,
             enableBiometricResidencePermit: true,
             enableBiometricResidenceCard: true,
+          },
+        );
+      });
+
+      it("Passes correct arguments to sendMessageToSqs (verifiable credential)", async () => {
+        expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
+          "mockIpvcoreOutboundSqs",
+          {
+            "https://vocab.account.gov.uk/v1/credentialJWT": ["mockSignedJwt"],
+            state: mockClientState,
+            sub: mockSubjectIdentifier,
           },
         );
       });

@@ -3493,6 +3493,7 @@ Resources:
             Statement:
               - Action:
                   - dynamodb:GetItem
+                  - dynamodb:UpdateItem
                 Effect: Allow
                 Resource: !GetAtt SessionsTable.Arn
           PolicyName: DynamoDBPolicy
