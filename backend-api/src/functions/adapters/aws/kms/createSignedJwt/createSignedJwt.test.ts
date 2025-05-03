@@ -101,7 +101,7 @@ describe("createSignedJwt", () => {
       });
     });
 
-    describe("Given response is valid", () => {
+    describe("Given response includes a signature", () => {
       beforeEach(async () => {
         kmsMock
           .on(SignCommand)
