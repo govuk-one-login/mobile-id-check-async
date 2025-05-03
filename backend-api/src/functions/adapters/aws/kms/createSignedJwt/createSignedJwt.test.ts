@@ -56,8 +56,15 @@ describe("createSignedJwt", () => {
   });
 
   describe("Given there is an error when calling KMS", () => {
+    const mockError = {
+      name: "Error",
+      location: "mockLocation",
+      message: "mockKmsError",
+      stack: "mockStack",
+    };
+
     beforeEach(async () => {
-      kmsMock.on(SignCommand).rejects("mockKmsError");
+      kmsMock.on(SignCommand).rejects(mockError);
 
       result = await createSignedJwt(mockKid, mockPayload);
     });
@@ -65,6 +72,7 @@ describe("createSignedJwt", () => {
     it("Logs the failed attempt", () => {
       expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_CREATE_SIGNED_JWT_FAILURE",
+        error: mockError,
       });
     });
 
