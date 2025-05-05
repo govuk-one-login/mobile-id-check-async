@@ -9,40 +9,30 @@ import { logger } from "../../../../common/logging/logger";
 import { CreateSignedJwt } from "./types";
 
 export const createSignedJwt: CreateSignedJwt = async (kid, message) => {
-  const encodedJwtComponents = buildEncodedJwtComponents(kid, message);
-  const unsignedJwt = `${encodedJwtComponents.header}.${encodedJwtComponents.payload}`;
+  const encodedUnsignedJwt = buildEncodedUnsignedJwt(kid, message);
 
-  const getSignatureResult = await getSignature({ kid, unsignedJwt });
+  const getSignatureResult = await getSignature({ kid, encodedUnsignedJwt });
   if (getSignatureResult.isError) {
     return getSignatureResult;
   }
   const encodedSignature = encodeSignature(getSignatureResult.value);
 
   logger.debug(LogMessage.CREATE_SIGNED_JWT_SUCCESS);
-  return successResult(
-    `${encodedJwtComponents.header}.${encodedJwtComponents.payload}.${encodedSignature}`,
-  );
+  return successResult(`${encodedUnsignedJwt}.${encodedSignature}`);
 };
 
-const buildEncodedJwtComponents = (
-  kid: string,
-  message: JwtPayload,
-): {
-  header: string;
-  payload: string;
-} => {
+const buildEncodedUnsignedJwt = (kid: string, message: JwtPayload): string => {
   const jwtHeader: JwtHeader = { alg: "ES256", kid, typ: "JWT" };
-  return {
-    header: base64url.encode(JSON.stringify(jwtHeader)),
-    payload: base64url.encode(JSON.stringify(message)),
-  };
+  const encodedHeader = base64url.encode(JSON.stringify(jwtHeader));
+  const encodedPayload = base64url.encode(JSON.stringify(message));
+  return `${encodedHeader}.${encodedPayload}`;
 };
 
 const getSignature = async (params: {
   kid: string;
-  unsignedJwt: string;
+  encodedUnsignedJwt: string;
 }): Promise<Result<Uint8Array<ArrayBufferLike>, void>> => {
-  const { kid, unsignedJwt } = params;
+  const { kid, encodedUnsignedJwt } = params;
 
   let result: SignCommandOutput;
   try {
@@ -54,7 +44,7 @@ const getSignature = async (params: {
 
     result = await kmsClient.send(
       new SignCommand({
-        Message: Buffer.from(unsignedJwt),
+        Message: Buffer.from(encodedUnsignedJwt),
         KeyId: kid,
         SigningAlgorithm: "ECDSA_SHA_256",
         MessageType: "RAW",
