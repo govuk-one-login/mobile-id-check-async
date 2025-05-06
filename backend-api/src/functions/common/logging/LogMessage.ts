@@ -111,6 +111,20 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_SEND_MESSAGE_TO_SQS_SUCCESS",
     "Successfully writen message to SQS.",
   );
+  static readonly CREATE_SIGNED_JWT_ATTEMPT = new LogMessage(
+    "MOBILE_ASYNC_CREATE_SIGNED_JWT_ATTEMPT",
+    "Attempting to sign JWT with KMS",
+  );
+
+  static readonly CREATE_SIGNED_JWT_FAILURE = new LogMessage(
+    "MOBILE_ASYNC_CREATE_SIGNED_JWT_FAILURE",
+    "An unexpected error occurred while attempting to sign JWT with KMS",
+  );
+
+  static readonly CREATE_SIGNED_JWT_SUCCESS = new LogMessage(
+    "MOBILE_ASYNC_CREATE_SIGNED_JWT_SUCCESS",
+    "Successfully signed JWT with KMS",
+  );
 
   // Token
   static readonly TOKEN_STARTED = new LogMessage(

@@ -2,7 +2,6 @@ import { DynamoDbAdapter } from "../adapters/aws/dynamo/dynamoDbAdapter";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { GetSecrets } from "../common/config/secrets";
 import { getSecretsFromParameterStore } from "../adapters/aws/parameterStore/getSecretsFromParameterStore";
-
 import {
   GetBiometricSession,
   getBiometricSession,
@@ -10,13 +9,12 @@ import {
 import { Result } from "../utils/result";
 import { sendMessageToSqs } from "../adapters/aws/sqs/sendMessageToSqs";
 import { SQSMessageBody } from "../adapters/aws/sqs/types";
-
 import { IEventService } from "../services/events/types";
 import { EventService } from "../services/events/eventService";
 import { mockGetCredentialFromBiometricSession } from "./mockGetCredentialFromBiometricSession/mockGetCredentialFromBiometricSession";
 import { IGetCredentialFromBiometricSession } from "./mockGetCredentialFromBiometricSession/types";
-import { JwtPayload } from "../types/jwt";
-import { createSignedJwt } from "../adapters/aws/kms/createSignedJwt";
+import { createKmsSignedJwt } from "../adapters/aws/kms/createKmsSignedJwt/createKmsSignedJwt";
+import { CreateKmsSignedJwt } from "../adapters/aws/kms/createKmsSignedJwt/types";
 
 export type IssueBiometricCredentialDependencies = {
   env: NodeJS.ProcessEnv;
@@ -29,7 +27,7 @@ export type IssueBiometricCredentialDependencies = {
     messageBody: SQSMessageBody,
   ) => Promise<Result<void, void>>;
   getCredentialFromBiometricSession: IGetCredentialFromBiometricSession;
-  createSignedJwt: (message: JwtPayload) => Promise<Result<string, void>>;
+  createKmsSignedJwt: CreateKmsSignedJwt;
 };
 
 export const runtimeDependencies: IssueBiometricCredentialDependencies = {
@@ -40,5 +38,5 @@ export const runtimeDependencies: IssueBiometricCredentialDependencies = {
   getEventService: (sqsQueue: string) => new EventService(sqsQueue),
   sendMessageToSqs,
   getCredentialFromBiometricSession: mockGetCredentialFromBiometricSession,
-  createSignedJwt,
+  createKmsSignedJwt,
 };

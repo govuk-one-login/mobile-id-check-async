@@ -211,15 +211,19 @@ export async function lambdaHandlerConstructor(
     sub: sessionAttributes.subjectIdentifier,
   });
 
-  const createSignedJwtResult =
-    await dependencies.createSignedJwt(credentialJwtPayload);
-  if (createSignedJwtResult.isError) {
-    return;
+  const createKmsSignedJwtResult = await dependencies.createKmsSignedJwt(
+    config.VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID,
+    credentialJwtPayload,
+  );
+  if (createKmsSignedJwtResult.isError) {
+    throw new RetainMessageOnQueue(
+      "Unexpected failure signing verified credential jwt",
+    );
   }
 
   const sendVerifiableCredentialMessageToSqsResult =
     await sendVerifiableCredentialMessageToSqs(
-      createSignedJwtResult.value,
+      createKmsSignedJwtResult.value,
       sessionAttributes,
       dependencies.sendMessageToSqs,
       config.IPVCORE_OUTBOUND_SQS,

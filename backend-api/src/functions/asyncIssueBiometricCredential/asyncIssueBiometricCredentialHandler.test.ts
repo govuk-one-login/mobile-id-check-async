@@ -22,6 +22,7 @@ import {
   mockFailingEventService,
   mockClientState,
   mockIssuer,
+  NOW_IN_MILLISECONDS,
 } from "../testUtils/unitTestData";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { emptyFailure, errorResult, successResult } from "../utils/result";
@@ -33,6 +34,11 @@ import {
   BiometricSession,
   GetBiometricSessionError,
 } from "./getBiometricSession/getBiometricSession";
+
+jest.mock("crypto", () => ({
+  ...jest.requireActual("crypto"),
+  randomUUID: () => "mock_random_uuid",
+}));
 
 describe("Async Issue Biometric Credential", () => {
   let dependencies: IssueBiometricCredentialDependencies;
@@ -128,11 +134,14 @@ describe("Async Issue Biometric Credential", () => {
       }),
     );
 
-  const mockSuccessfulCreateSignedJwt = jest
+  const mockSignedJwt = "mockHeader.mockPayload.mockSignature";
+  const mockCreateKmsSignedJwtSuccess = jest
     .fn()
-    .mockResolvedValue(successResult("mockSignedJwt"));
+    .mockResolvedValue(successResult(mockSignedJwt));
 
   beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(NOW_IN_MILLISECONDS);
     dependencies = {
       env: {
         BIOMETRIC_VIEWER_KEY_SECRET_PATH: "mockBiometricViewerAccessKey",
@@ -147,6 +156,8 @@ describe("Async Issue Biometric Credential", () => {
         ENABLE_DRIVING_LICENCE: "true",
         ENABLE_NFC_PASSPORT: "true",
         ENABLE_UTOPIA_TEST_DOCUMENT: "true",
+        VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID:
+          "mockVerifiableCredentialSigningKeyId",
       },
       getSessionRegistry: () => mockSessionRegistrySuccess,
       getSecrets: mockGetSecretsSuccess,
@@ -155,7 +166,7 @@ describe("Async Issue Biometric Credential", () => {
       sendMessageToSqs: mockSendMessageToSqsSuccess,
       getCredentialFromBiometricSession:
         mockSuccessfulGetCredentialFromBiometricSession,
-      createSignedJwt: mockSuccessfulCreateSignedJwt,
+      createKmsSignedJwt: mockCreateKmsSignedJwtSuccess,
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
@@ -199,6 +210,7 @@ describe("Async Issue Biometric Credential", () => {
       ["ENABLE_DRIVING_LICENCE"],
       ["ENABLE_NFC_PASSPORT"],
       ["ENABLE_UTOPIA_TEST_DOCUMENT"],
+      ["VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID"],
     ])("Given %s environment variable is missing", (envVar: string) => {
       beforeEach(async () => {
         delete dependencies.env[envVar];
@@ -841,17 +853,23 @@ describe("Async Issue Biometric Credential", () => {
 
     describe("Given signing jwt fails", () => {
       beforeEach(async () => {
-        dependencies.createSignedJwt = jest
+        dependencies.createKmsSignedJwt = jest
           .fn()
           .mockResolvedValue(emptyFailure());
 
-        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        try {
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        } catch (error: unknown) {
+          lambdaError = error;
+        }
       });
 
-      it("Does not log COMPLETED", () => {
-        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-        });
+      it("Throws RetainMessageOnQueue", async () => {
+        expect(lambdaError).toEqual(
+          new RetainMessageOnQueue(
+            "Unexpected failure signing verified credential jwt",
+          ),
+        );
       });
     });
 
@@ -1037,11 +1055,25 @@ describe("Async Issue Biometric Credential", () => {
         );
       });
 
+      it("Passes correct arguments to createKmsSignedJwt", () => {
+        expect(mockCreateKmsSignedJwtSuccess).toHaveBeenCalledWith(
+          "mockVerifiableCredentialSigningKeyId",
+          {
+            iat: 1704110400,
+            iss: "mockIssuer",
+            jti: "urn:uuid:mock_random_uuid",
+            nbf: 1704110400,
+            sub: "mockSubjectIdentifier",
+            vc: "mockCredential",
+          },
+        );
+      });
+
       it("Passes correct arguments to sendMessageToSqs (verifiable credential)", async () => {
         expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
           "mockIpvcoreOutboundSqs",
           {
-            "https://vocab.account.gov.uk/v1/credentialJWT": ["mockSignedJwt"],
+            "https://vocab.account.gov.uk/v1/credentialJWT": [mockSignedJwt],
             state: mockClientState,
             sub: mockSubjectIdentifier,
           },

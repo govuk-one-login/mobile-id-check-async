@@ -2,6 +2,7 @@ import { KMSClient, SignCommand } from "@aws-sdk/client-kms";
 import { mockClient } from "aws-sdk-client-mock";
 import { TokenService } from "../tokenService";
 import { ErrorCategory } from "../../../utils/result";
+import { mockDerSignature } from "../../../testUtils/unitTestData";
 
 const kmsMock = mockClient(KMSClient);
 
@@ -54,19 +55,6 @@ describe("Token Service", () => {
 
     describe("Given KMS provides a valid response", () => {
       it("Returns a token", async () => {
-        // This is a simulated, not cryptographically valid, DER-encoded signature
-        const mockDerSignature = Buffer.from([
-          48,
-          69, // SEQUENCE
-          2,
-          33, // INTEGER (R)
-          0x00, // Leading zero for R > 127
-          ...Array(32).fill(0x42), // Mock R value
-          2,
-          32, // INTEGER (S)
-          ...Array(32).fill(0x24), // Mock S value
-        ]);
-
         kmsMock
           .on(SignCommand)
           .resolves({ KeyId: "mockKeyId", Signature: mockDerSignature });

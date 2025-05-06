@@ -33,6 +33,19 @@ export const ONE_HOUR_AGO_IN_MILLISECONDS = 1704106800000; // 2024-01-01 11:00:0
 export const validCreatedAt: number = 1704106860000; // 2024-01-01 11:01:00.000
 export const invalidCreatedAt: number = 1704106740000; // 2024-01-01 10:59:00.000
 
+// This is a simulated, not cryptographically valid, DER-encoded signature
+export const mockDerSignature = Buffer.from([
+  48,
+  69, // SEQUENCE
+  2,
+  33, // INTEGER (R)
+  0x00, // Leading zero for R > 127
+  ...Array(32).fill(0x42), // Mock R value
+  2,
+  32, // INTEGER (S)
+  ...Array(32).fill(0x24), // Mock S value
+]);
+
 export const validBaseSessionAttributes = {
   clientId: "mockClientId",
   govukSigninJourneyId: mockGovukSigninJourneyId,
