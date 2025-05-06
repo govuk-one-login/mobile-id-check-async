@@ -248,10 +248,9 @@ export async function lambdaHandlerConstructor(
     return;
   }
 
-  await handleSendCriEndEvent({
+  await sendCriEndEvent({
     eventService,
     sessionAttributes,
-    issuer: config.ISSUER,
   });
 
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
@@ -503,18 +502,20 @@ export const buildCredentialJwtPayload = (jwtData: {
   };
 };
 
-interface HandleSendCriEndEventData {
+interface SendCriEndEventData {
   eventService: IEventService;
   sessionAttributes: SessionAttributes;
-  issuer: string;
 }
-const handleSendCriEndEvent = async (
-  options: HandleSendCriEndEventData,
-): Promise<void> => {
-  const { eventService, issuer, sessionAttributes } = options;
+const sendCriEndEvent = async (options: SendCriEndEventData): Promise<void> => {
+  const { eventService, sessionAttributes } = options;
 
-  const { subjectIdentifier, sessionId, govukSigninJourneyId, redirectUri } =
-    sessionAttributes;
+  const {
+    issuer,
+    subjectIdentifier,
+    sessionId,
+    govukSigninJourneyId,
+    redirectUri,
+  } = sessionAttributes;
 
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_END",

@@ -1089,7 +1089,6 @@ describe("Async Issue Biometric Credential", () => {
 
           await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
         });
-
         it("Logs the DCMAW_ASYNC_CRI_5XXERROR event failure", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
@@ -1100,18 +1099,29 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
 
-      it("Writes DCMAW_ASYNC_CRI_END event to TxMA", () => {
-        expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
-          eventName: "DCMAW_ASYNC_CRI_END",
-          componentId: mockIssuer,
-          getNowInMilliseconds: Date.now,
-          sessionId: mockSessionId,
-          govukSigninJourneyId: mockGovukSigninJourneyId,
-          ipAddress: undefined,
-          redirect_uri: undefined,
-          sub: mockSubjectIdentifier,
-          suspected_fraud_signal: undefined,
-          txmaAuditEncoded: undefined,
+      describe("Writes DCMAW_ASYNC_CRI_END event to TxMA", () => {
+        beforeEach(async () => {
+          dependencies = {
+            ...dependencies,
+            getEventService: () => mockSuccessfulEventService,
+          };
+
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        });
+
+        it("Calls writeGenericEvent with correct parameters", () => {
+          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith({
+            eventName: "DCMAW_ASYNC_CRI_END",
+            componentId: mockIssuer,
+            getNowInMilliseconds: Date.now,
+            sessionId: mockSessionId,
+            govukSigninJourneyId: mockGovukSigninJourneyId,
+            ipAddress: undefined,
+            redirect_uri: undefined,
+            sub: mockSubjectIdentifier,
+            suspected_fraud_signal: undefined,
+            txmaAuditEncoded: undefined,
+          });
         });
       });
 
