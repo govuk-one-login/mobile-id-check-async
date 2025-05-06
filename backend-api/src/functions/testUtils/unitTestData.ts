@@ -15,6 +15,7 @@ export const mockGovukSigninJourneyId = "mockGovukSigninJourneyId";
 export const mockSubjectIdentifier = "mockSubjectIdentifier";
 export const mockClientState = "mockClientState";
 export const mockIssuer = "mockIssuer";
+export const mockRedirectUri = "https://www.mockRedirectUri.com";
 
 export const expectedSecurityHeaders = {
   "Cache-Control": "no-store",
@@ -79,7 +80,7 @@ export const validBiometricTokenIssuedSessionAttributes = {
 
 export const validBiometricTokenIssuedSessionAttributesMobileApp = {
   ...validBiometricTokenIssuedSessionAttributes,
-  redirectUri: "https://www.mockRedirectUri.com",
+  redirectUri: mockRedirectUri,
 };
 
 export const invalidBiometricTokenIssuedSessionAttributesWrongSessionState = {
@@ -97,11 +98,12 @@ export const validBiometricSessionFinishedAttributes = {
   ...validBiometricTokenIssuedSessionAttributes,
   sessionState: SessionState.BIOMETRIC_SESSION_FINISHED,
   biometricSessionId: mockBiometricSessionId,
+  redirectUri: mockRedirectUri,
 };
 
 export const validBiometricSessionFinishedAttributesMobileApp = {
   ...validBiometricSessionFinishedAttributes,
-  redirectUri: "https://www.mockRedirectUri.com",
+  redirectUri: mockRedirectUri,
 };
 
 export const validAbortSessionAttributes = {
@@ -111,7 +113,7 @@ export const validAbortSessionAttributes = {
 
 export const validAbortSessionAttributesMobileApp = {
   ...validBiometricSessionFinishedAttributes,
-  redirectUri: "https://www.mockRedirectUri.com",
+  redirectUri: mockRedirectUri,
 };
 
 export const validResultSentAttributes = {

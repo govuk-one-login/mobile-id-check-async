@@ -516,6 +516,8 @@ const handleSendCriEvent = async (
   const { subjectIdentifier, sessionId, govukSigninJourneyId, redirectUri } =
     sessionAttributes;
 
+  console.log("sessionAttributes", sessionAttributes);
+
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_END",
     sub: subjectIdentifier,
