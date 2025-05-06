@@ -536,6 +536,4 @@ const handleSendCriEvent = async (
       data: { auditEventName: "DCMAW_ASYNC_CRI_5XXERROR" },
     });
   }
-
-  return;
 };
