@@ -1,5 +1,5 @@
-import { randomUUID } from "crypto";
 import {
+  emptySuccess,
   ErrorCategory,
   errorResult,
   Result,
@@ -9,12 +9,13 @@ import {
   DynamoDbAdapter,
   DatabaseRecord,
 } from "../../adapters/aws/dynamo/dynamoDbAdapter";
-import { CreateSessionAttributes, Session } from "./types";
+import { Session } from "./types";
+import { BaseSessionAttributes } from "../../common/session/session";
 
 export interface ISessionService {
   createSession: (
-    attributes: CreateSessionAttributes,
-  ) => Promise<Result<string>>;
+    sessionAttributes: BaseSessionAttributes,
+  ) => Promise<Result<void>>;
   getActiveSessionId: (
     subjectIdentifier: string,
   ) => Promise<Result<string | null>>;
@@ -31,20 +32,17 @@ export class SessionService implements ISessionService {
   }
 
   async createSession(
-    attributes: CreateSessionAttributes,
-  ): Promise<Result<string>> {
-    const sessionId = randomUUID();
-
+    sessionAttributes: BaseSessionAttributes,
+  ): Promise<Result<void>> {
     try {
-      await this.dynamoDbAdapter.createSession(attributes, sessionId);
+      await this.dynamoDbAdapter.createSession(sessionAttributes);
     } catch (error) {
       return errorResult({
         errorMessage: `Error creating session - ${error}`,
-        errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
 
-    return successResult(sessionId);
+    return emptySuccess();
   }
 
   async getActiveSessionId(

@@ -14,6 +14,9 @@ import { ErrorCategory } from "../utils/result";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
+import { randomUUID } from "crypto";
+import { BaseSessionAttributes, SessionState } from "../common/session/session";
+import { appendSessionIdentifiersToLogger } from "../common/logging/helpers/appendSessionIdentifiersToLogger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncCredentialDependencies,
@@ -170,27 +173,29 @@ export async function lambdaHandlerConstructor(
     return activeSessionFoundResponse(requestBody.sub);
   }
 
-  const createSessionResult = await sessionService.createSession({
-    ...requestBody,
+  const sessionAttributes = buildSessionAttributes({
+    requestBody,
     issuer: jwtPayload.iss,
     sessionDurationInSeconds: config.SESSION_DURATION_IN_SECONDS,
   });
 
+  appendSessionIdentifiersToLogger(sessionAttributes);
+
+  const createSessionResult =
+    await sessionService.createSession(sessionAttributes);
   if (createSessionResult.isError) {
     logger.error(LogMessage.CREATE_SESSION_FAILURE, {
       errorMessage: createSessionResult.value.errorMessage,
     });
     return serverErrorResponse;
   }
-  const sessionId = createSessionResult.value;
-  logger.appendKeys({ sessionId });
 
   // Write audit event
   const eventService = dependencies.eventService(config.TXMA_SQS);
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_START",
     sub: requestBody.sub,
-    sessionId,
+    sessionId: sessionAttributes.sessionId,
     govukSigninJourneyId: requestBody.govuk_signin_journey_id,
     getNowInMilliseconds: Date.now,
     componentId: config.ISSUER,
@@ -275,3 +280,26 @@ export interface IRequestBody {
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
+
+const buildSessionAttributes = (params: {
+  requestBody: IRequestBody;
+  issuer: string;
+  sessionDurationInSeconds: number;
+}): BaseSessionAttributes => {
+  const nowInMilliseconds = Date.now();
+  const { client_id, govuk_signin_journey_id, state, sub, redirect_uri } =
+    params.requestBody;
+  return {
+    clientId: client_id,
+    govukSigninJourneyId: govuk_signin_journey_id,
+    createdAt: Date.now(),
+    issuer: params.issuer,
+    sessionId: randomUUID(),
+    sessionState: SessionState.AUTH_SESSION_CREATED,
+    clientState: state,
+    subjectIdentifier: sub,
+    timeToLive:
+      Math.floor(nowInMilliseconds / 1000) + params.sessionDurationInSeconds,
+    ...(redirect_uri && { redirectUri: redirect_uri }),
+  };
+};

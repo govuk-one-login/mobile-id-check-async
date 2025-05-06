@@ -21,10 +21,10 @@ import { logger } from "../../../common/logging/logger";
 import { LogMessage } from "../../../common/logging/LogMessage";
 import { GetSessionOperation } from "../../../common/session/getOperations/GetSessionOperation";
 import {
+  BaseSessionAttributes,
   SessionAttributes,
   SessionState,
 } from "../../../common/session/session";
-import { CreateSessionAttributes } from "../../../services/session/types";
 import {
   GetSessionError,
   GetSessionErrorSessionNotFound,
@@ -100,39 +100,10 @@ export class DynamoDbAdapter implements SessionRegistry {
     return attributes.join(", ");
   }
 
-  async createSession(
-    attributes: CreateSessionAttributes,
-    sessionId: string,
-  ): Promise<void> {
-    const {
-      client_id,
-      govuk_signin_journey_id,
-      issuer,
-      redirect_uri,
-      sessionDurationInSeconds,
-      state,
-      sub,
-    } = attributes;
-    const nowInMilliseconds = Date.now();
-    const timeToLive = this.getTimeToLive(
-      nowInMilliseconds,
-      sessionDurationInSeconds,
-    );
-
+  async createSession(sessionAttributes: BaseSessionAttributes): Promise<void> {
     const input: PutItemCommandInput = {
       TableName: this.tableName,
-      Item: marshall({
-        clientId: client_id,
-        govukSigninJourneyId: govuk_signin_journey_id,
-        createdAt: nowInMilliseconds,
-        issuer: issuer,
-        sessionId: sessionId,
-        sessionState: SessionState.AUTH_SESSION_CREATED,
-        clientState: state,
-        subjectIdentifier: sub,
-        timeToLive: timeToLive,
-        ...(redirect_uri && { redirectUri: redirect_uri }),
-      }),
+      Item: marshall(sessionAttributes),
       ConditionExpression: "attribute_not_exists(sessionId)",
     };
 
@@ -145,13 +116,6 @@ export class DynamoDbAdapter implements SessionRegistry {
         throw error;
       }
     }
-  }
-
-  private getTimeToLive(
-    nowInMilliseconds: number,
-    sessionDurationInSeconds: number,
-  ) {
-    return Math.floor(nowInMilliseconds / 1000) + sessionDurationInSeconds;
   }
 
   async getSession(

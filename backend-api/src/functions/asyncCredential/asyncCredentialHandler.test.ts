@@ -43,6 +43,11 @@ const env = {
   CLIENT_REGISTRY_SECRET_NAME: "mockParmaterName",
 };
 
+jest.mock("crypto", () => ({
+  ...jest.requireActual("crypto"),
+  randomUUID: () => "mockSessionId",
+}));
+
 describe("Async Credential", () => {
   let dependencies: IAsyncCredentialDependencies;
   let consoleInfoSpy: jest.SpyInstance;
