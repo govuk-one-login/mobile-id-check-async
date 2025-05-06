@@ -994,6 +994,11 @@ describe("Async Credential", () => {
 
             expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
               messageCode: "MOBILE_ASYNC_CREDENTIAL_COMPLETED",
+              sessionIdentifiers: {
+                govukSigninJourneyId: "mockGovukSigninJourneyId",
+                sessionId: "mockSessionId",
+                subjectIdentifier: "mockSub",
+              },
             });
 
             expect(result).toStrictEqual({

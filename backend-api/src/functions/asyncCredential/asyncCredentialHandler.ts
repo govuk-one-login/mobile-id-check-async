@@ -286,20 +286,21 @@ const buildSessionAttributes = (params: {
   issuer: string;
   sessionDurationInSeconds: number;
 }): BaseSessionAttributes => {
-  const nowInMilliseconds = Date.now();
+  const { requestBody, issuer, sessionDurationInSeconds } = params;
   const { client_id, govuk_signin_journey_id, state, sub, redirect_uri } =
-    params.requestBody;
+    requestBody;
+  const nowInMilliseconds = Date.now();
+
   return {
     clientId: client_id,
     govukSigninJourneyId: govuk_signin_journey_id,
-    createdAt: Date.now(),
-    issuer: params.issuer,
+    createdAt: nowInMilliseconds,
+    issuer,
     sessionId: randomUUID(),
     sessionState: SessionState.AUTH_SESSION_CREATED,
     clientState: state,
     subjectIdentifier: sub,
-    timeToLive:
-      Math.floor(nowInMilliseconds / 1000) + params.sessionDurationInSeconds,
+    timeToLive: Math.floor(nowInMilliseconds / 1000) + sessionDurationInSeconds,
     ...(redirect_uri && { redirectUri: redirect_uri }),
   };
 };
