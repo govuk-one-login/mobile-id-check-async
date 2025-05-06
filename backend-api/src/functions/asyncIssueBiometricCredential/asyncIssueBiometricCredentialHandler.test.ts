@@ -23,7 +23,6 @@ import {
   mockClientState,
   mockIssuer,
   NOW_IN_MILLISECONDS,
-  mockRedirectUri,
 } from "../testUtils/unitTestData";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { emptyFailure, errorResult, successResult } from "../utils/result";
