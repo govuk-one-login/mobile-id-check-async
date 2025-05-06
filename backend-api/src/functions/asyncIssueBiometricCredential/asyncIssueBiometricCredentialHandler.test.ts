@@ -1169,6 +1169,7 @@ describe("Async Issue Biometric Credential", () => {
             },
           );
         });
+
         it("Calls writeGenericEvent with correct parameters", () => {
           expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith({
             eventName: "DCMAW_ASYNC_CRI_END",
