@@ -1083,11 +1083,12 @@ describe("Async Issue Biometric Credential", () => {
             },
           );
         });
-        it("Logs the DCMAW_ASYNC_CRI_5XXERROR event failure", () => {
+
+        it("Logs the DCMAW_ASYNC_CRI_END event failure", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
             data: {
-              auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
+              auditEventName: "DCMAW_ASYNC_CRI_END",
             },
           });
         });
