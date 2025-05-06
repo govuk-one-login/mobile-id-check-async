@@ -52,6 +52,25 @@ describe("Backend application infrastructure", () => {
       );
     });
 
+    test("Test resources base url is set", () => {
+      const expectedEnvironmentVariables = {
+        dev: "https://api-test-resources.review-b-async.dev.account.gov.uk",
+        build: "https://api-test-resources.review-b-async.build.account.gov.uk",
+      };
+
+      template.hasMapping(
+        "EnvironmentVariables",
+        Match.objectLike({
+          dev: {
+            TestResourcesBaseUrl: expectedEnvironmentVariables.dev,
+          },
+          build: {
+            TestResourcesBaseUrl: expectedEnvironmentVariables.build,
+          },
+        }),
+      );
+    });
+
     test("ReadIdBaseUrl is the ReadID Proxy", () => {
       const expectedEnvironmentVariablesValues = {
         dev: "https://readid-proxy.review-b-async.dev.account.gov.uk/v2",
