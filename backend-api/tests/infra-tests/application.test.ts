@@ -54,8 +54,8 @@ describe("Backend application infrastructure", () => {
 
     test("Test resources base url is set", () => {
       const expectedEnvironmentVariables = {
-        dev: "https://api-test-resources.review-b-async.dev.account.gov.uk",
-        build: "https://api-test-resources.review-b-async.build.account.gov.uk",
+        dev: "https://test-resources.review-b-async.dev.account.gov.uk",
+        build: "https://test-resources.review-b-async.build.account.gov.uk",
       };
 
       template.hasMapping(
