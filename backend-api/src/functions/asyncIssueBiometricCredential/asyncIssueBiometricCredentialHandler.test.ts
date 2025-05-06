@@ -624,7 +624,7 @@ describe("Async Issue Biometric Credential", () => {
                 sessionId: mockSessionId,
                 govukSigninJourneyId: mockGovukSigninJourneyId,
                 ipAddress: undefined,
-                redirect_uri: undefined,
+                redirect_uri: "https://www.mockRedirectUri.com",
                 sub: "mockSubjectIdentifier",
                 suspected_fraud_signal: undefined,
                 txmaAuditEncoded: undefined,
@@ -832,7 +832,7 @@ describe("Async Issue Biometric Credential", () => {
                 getNowInMilliseconds: Date.now,
                 govukSigninJourneyId: mockGovukSigninJourneyId,
                 ipAddress: undefined,
-                redirect_uri: undefined,
+                redirect_uri: "https://www.mockRedirectUri.com",
                 sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
                 sub: "mockSubjectIdentifier",
                 suspected_fraud_signal: expectedSuspectedFraudSignal,
@@ -943,7 +943,7 @@ describe("Async Issue Biometric Credential", () => {
                   eventName: expectedErrorTxmaEventName,
                   govukSigninJourneyId: mockGovukSigninJourneyId,
                   ipAddress: undefined,
-                  redirect_uri: undefined,
+                  redirect_uri: "https://www.mockRedirectUri.com",
                   sessionId: mockSessionId,
                   sub: mockSubjectIdentifier,
                   suspected_fraud_signal: undefined,
@@ -995,7 +995,7 @@ describe("Async Issue Biometric Credential", () => {
                   eventName: expectedErrorTxmaEventName,
                   govukSigninJourneyId: mockGovukSigninJourneyId,
                   ipAddress: undefined,
-                  redirect_uri: undefined,
+                  redirect_uri: "https://www.mockRedirectUri.com",
                   sessionId: mockSessionId,
                   sub: mockSubjectIdentifier,
                   suspected_fraud_signal: undefined,
@@ -1091,7 +1091,6 @@ describe("Async Issue Biometric Credential", () => {
         });
 
         it("Logs the DCMAW_ASYNC_CRI_5XXERROR event failure", () => {
-          console.log("consoleErrorSpy", consoleErrorSpy.mock.calls);
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
             data: {
@@ -1102,10 +1101,6 @@ describe("Async Issue Biometric Credential", () => {
       });
 
       it("Writes DCMAW_ASYNC_CRI_END event to TxMA", () => {
-        console.log(
-          "mockWriteGenericEventSuccessResult",
-          mockWriteGenericEventSuccessResult.mock.calls,
-        );
         expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
           eventName: "DCMAW_ASYNC_CRI_END",
           componentId: mockIssuer,

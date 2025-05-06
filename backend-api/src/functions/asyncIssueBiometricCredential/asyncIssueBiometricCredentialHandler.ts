@@ -248,7 +248,7 @@ export async function lambdaHandlerConstructor(
     return;
   }
 
-  await handleSendCriEvent({
+  await handleSendCriEndEvent({
     eventService,
     sessionAttributes,
     issuer: config.ISSUER,
@@ -503,20 +503,18 @@ export const buildCredentialJwtPayload = (jwtData: {
   };
 };
 
-interface HandleSendCriEventData {
+interface HandleSendCriEndEventData {
   eventService: IEventService;
   sessionAttributes: SessionAttributes;
   issuer: string;
 }
-const handleSendCriEvent = async (
-  options: HandleSendCriEventData,
+const handleSendCriEndEvent = async (
+  options: HandleSendCriEndEventData,
 ): Promise<void> => {
   const { eventService, issuer, sessionAttributes } = options;
 
   const { subjectIdentifier, sessionId, govukSigninJourneyId, redirectUri } =
     sessionAttributes;
-
-  console.log("sessionAttributes", sessionAttributes);
 
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_END",
