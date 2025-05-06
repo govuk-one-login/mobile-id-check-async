@@ -98,7 +98,6 @@ export const validBiometricSessionFinishedAttributes = {
   ...validBiometricTokenIssuedSessionAttributes,
   sessionState: SessionState.BIOMETRIC_SESSION_FINISHED,
   biometricSessionId: mockBiometricSessionId,
-  redirectUri: mockRedirectUri,
 };
 
 export const validBiometricSessionFinishedAttributesMobileApp = {
