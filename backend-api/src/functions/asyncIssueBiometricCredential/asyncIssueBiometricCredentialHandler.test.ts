@@ -135,7 +135,7 @@ describe("Async Issue Biometric Credential", () => {
     );
 
   const mockSignedJwt = "mockHeader.mockPayload.mockSignature";
-  const mockCreateSignedJwtSuccess = jest
+  const mockCreateKmsSignedJwtSuccess = jest
     .fn()
     .mockResolvedValue(successResult(mockSignedJwt));
 
@@ -166,7 +166,7 @@ describe("Async Issue Biometric Credential", () => {
       sendMessageToSqs: mockSendMessageToSqsSuccess,
       getCredentialFromBiometricSession:
         mockSuccessfulGetCredentialFromBiometricSession,
-      createSignedJwt: mockCreateSignedJwtSuccess,
+      createKmsSignedJwt: mockCreateKmsSignedJwtSuccess,
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
@@ -853,7 +853,7 @@ describe("Async Issue Biometric Credential", () => {
 
     describe("Given signing jwt fails", () => {
       beforeEach(async () => {
-        dependencies.createSignedJwt = jest
+        dependencies.createKmsSignedJwt = jest
           .fn()
           .mockResolvedValue(emptyFailure());
 
@@ -1055,8 +1055,8 @@ describe("Async Issue Biometric Credential", () => {
         );
       });
 
-      it("Passes correct arguments to createSignedJwt", () => {
-        expect(mockCreateSignedJwtSuccess).toHaveBeenCalledWith(
+      it("Passes correct arguments to createKmsSignedJwt", () => {
+        expect(mockCreateKmsSignedJwtSuccess).toHaveBeenCalledWith(
           "mockVerifiableCredentialSigningKeyId",
           {
             iat: 1704110400,

@@ -13,8 +13,8 @@ import { IEventService } from "../services/events/types";
 import { EventService } from "../services/events/eventService";
 import { mockGetCredentialFromBiometricSession } from "./mockGetCredentialFromBiometricSession/mockGetCredentialFromBiometricSession";
 import { IGetCredentialFromBiometricSession } from "./mockGetCredentialFromBiometricSession/types";
-import { createSignedJwt } from "../adapters/aws/kms/createSignedJwt/createSignedJwt";
-import { CreateSignedJwt } from "../adapters/aws/kms/createSignedJwt/types";
+import { createKmsSignedJwt } from "../adapters/aws/kms/createKmsSignedJwt/createKmsSignedJwt";
+import { CreateKmsSignedJwt } from "../adapters/aws/kms/createKmsSignedJwt/types";
 
 export type IssueBiometricCredentialDependencies = {
   env: NodeJS.ProcessEnv;
@@ -27,7 +27,7 @@ export type IssueBiometricCredentialDependencies = {
     messageBody: SQSMessageBody,
   ) => Promise<Result<void, void>>;
   getCredentialFromBiometricSession: IGetCredentialFromBiometricSession;
-  createSignedJwt: CreateSignedJwt;
+  createKmsSignedJwt: CreateKmsSignedJwt;
 };
 
 export const runtimeDependencies: IssueBiometricCredentialDependencies = {
@@ -38,5 +38,5 @@ export const runtimeDependencies: IssueBiometricCredentialDependencies = {
   getEventService: (sqsQueue: string) => new EventService(sqsQueue),
   sendMessageToSqs,
   getCredentialFromBiometricSession: mockGetCredentialFromBiometricSession,
-  createSignedJwt,
+  createKmsSignedJwt,
 };

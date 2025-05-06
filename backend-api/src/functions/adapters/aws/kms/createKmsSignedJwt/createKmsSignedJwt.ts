@@ -6,9 +6,9 @@ import { kmsClient } from "../kmsClient";
 import format from "ecdsa-sig-formatter";
 import { LogMessage } from "../../../../common/logging/LogMessage";
 import { logger } from "../../../../common/logging/logger";
-import { CreateSignedJwt } from "./types";
+import { CreateKmsSignedJwt } from "./types";
 
-export const createSignedJwt: CreateSignedJwt = async (kid, message) => {
+export const createKmsSignedJwt: CreateKmsSignedJwt = async (kid, message) => {
   const encodedUnsignedJwt = buildEncodedUnsignedJwt(kid, message);
 
   const getSignatureResult = await getSignature({ kid, encodedUnsignedJwt });

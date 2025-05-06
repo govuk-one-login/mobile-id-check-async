@@ -6,13 +6,13 @@ import {
   SignCommand,
 } from "@aws-sdk/client-kms";
 import { AwsStub, mockClient } from "aws-sdk-client-mock";
-import { createSignedJwt } from "./createSignedJwt";
+import { createKmsSignedJwt } from "./createKmsSignedJwt";
 import { expect } from "@jest/globals";
 import "../../../../../../tests/testUtils/matchers";
 import { emptyFailure, Result, successResult } from "../../../../utils/result";
 import { mockDerSignature } from "../../../../testUtils/unitTestData";
 
-describe("createSignedJwt", () => {
+describe("createKmsSignedJwt", () => {
   let consoleDebugSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
   let kmsMock: AwsStub<
@@ -42,7 +42,7 @@ describe("createSignedJwt", () => {
     beforeEach(async () => {
       kmsMock.on(SignCommand).resolves({});
 
-      await createSignedJwt(mockKid, mockPayload);
+      await createKmsSignedJwt(mockKid, mockPayload);
     });
 
     it("Logs attempt at debug level", () => {
@@ -66,7 +66,7 @@ describe("createSignedJwt", () => {
     beforeEach(async () => {
       kmsMock.on(SignCommand).rejects(mockError);
 
-      result = await createSignedJwt(mockKid, mockPayload);
+      result = await createKmsSignedJwt(mockKid, mockPayload);
     });
 
     it("Logs the failed attempt", () => {
@@ -86,7 +86,7 @@ describe("createSignedJwt", () => {
       beforeEach(async () => {
         kmsMock.on(SignCommand).resolves({ KeyId: mockKid });
 
-        result = await createSignedJwt(mockKid, mockPayload);
+        result = await createKmsSignedJwt(mockKid, mockPayload);
       });
 
       it("Logs the error", () => {
@@ -107,7 +107,7 @@ describe("createSignedJwt", () => {
           .on(SignCommand)
           .resolves({ KeyId: "mockKid", Signature: mockDerSignature });
 
-        result = await createSignedJwt(mockKid, mockPayload);
+        result = await createKmsSignedJwt(mockKid, mockPayload);
       });
 
       it("Logs success", () => {
