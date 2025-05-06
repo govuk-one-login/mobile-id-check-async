@@ -1016,70 +1016,6 @@ describe("Async Issue Biometric Credential", () => {
     });
 
     describe("Happy path", () => {
-      beforeEach(async () => {
-        // Uses the default mockSessionRegistrySuccess which returns validBiometricSessionFinishedAttributes
-        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
-      });
-
-      it("Passes correct arguments to get secrets", () => {
-        expect(mockGetSecretsSuccess).toHaveBeenCalledWith({
-          secretNames: ["mockBiometricViewerAccessKey"],
-          cacheDurationInSeconds: 900,
-        });
-      });
-
-      it("Passes correct arguments to get biometric session", () => {
-        expect(mockGetBiometricSessionSuccess).toHaveBeenCalledWith(
-          "mockReadIdBaseUrl",
-          mockBiometricSessionId,
-          "mockViewerKey",
-        );
-      });
-
-      it("Passes correct arguments to getCredentialFromBiometricSession", () => {
-        expect(
-          mockSuccessfulGetCredentialFromBiometricSession,
-        ).toHaveBeenCalledWith(
-          { finish: "DONE" },
-          {
-            userSessionCreatedAt: 1704106860000,
-            opaqueId: "mockOpaqueId",
-          },
-          {
-            enableUtopiaTestDocument: true,
-            enableDrivingLicence: true,
-            enableNfcPassport: true,
-            enableBiometricResidencePermit: true,
-            enableBiometricResidenceCard: true,
-          },
-        );
-      });
-
-      it("Passes correct arguments to createKmsSignedJwt", () => {
-        expect(mockCreateKmsSignedJwtSuccess).toHaveBeenCalledWith(
-          "mockVerifiableCredentialSigningKeyId",
-          {
-            iat: 1704110400,
-            iss: "mockIssuer",
-            jti: "urn:uuid:mock_random_uuid",
-            nbf: 1704110400,
-            sub: "mockSubjectIdentifier",
-            vc: "mockCredential",
-          },
-        );
-      });
-
-      it("Passes correct arguments to sendMessageToSqs (verifiable credential)", async () => {
-        expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
-          "mockIpvcoreOutboundSqs",
-          {
-            "https://vocab.account.gov.uk/v1/credentialJWT": [mockSignedJwt],
-            state: mockClientState,
-            sub: mockSubjectIdentifier,
-          },
-        );
-      });
-
       describe("Given sending DCMAW_ASYNC_CRI_END event fails", () => {
         beforeEach(async () => {
           dependencies = {
@@ -1089,12 +1025,76 @@ describe("Async Issue Biometric Credential", () => {
 
           await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
         });
+        it("Passes correct arguments to get secrets", () => {
+          expect(mockGetSecretsSuccess).toHaveBeenCalledWith({
+            secretNames: ["mockBiometricViewerAccessKey"],
+            cacheDurationInSeconds: 900,
+          });
+        });
+
+        it("Passes correct arguments to get biometric session", () => {
+          expect(mockGetBiometricSessionSuccess).toHaveBeenCalledWith(
+            "mockReadIdBaseUrl",
+            mockBiometricSessionId,
+            "mockViewerKey",
+          );
+        });
+
+        it("Passes correct arguments to getCredentialFromBiometricSession", () => {
+          expect(
+            mockSuccessfulGetCredentialFromBiometricSession,
+          ).toHaveBeenCalledWith(
+            { finish: "DONE" },
+            {
+              userSessionCreatedAt: 1704106860000,
+              opaqueId: "mockOpaqueId",
+            },
+            {
+              enableUtopiaTestDocument: true,
+              enableDrivingLicence: true,
+              enableNfcPassport: true,
+              enableBiometricResidencePermit: true,
+              enableBiometricResidenceCard: true,
+            },
+          );
+        });
+
+        it("Passes correct arguments to createKmsSignedJwt", () => {
+          expect(mockCreateKmsSignedJwtSuccess).toHaveBeenCalledWith(
+            "mockVerifiableCredentialSigningKeyId",
+            {
+              iat: 1704110400,
+              iss: "mockIssuer",
+              jti: "urn:uuid:mock_random_uuid",
+              nbf: 1704110400,
+              sub: "mockSubjectIdentifier",
+              vc: "mockCredential",
+            },
+          );
+        });
+
+        it("Passes correct arguments to sendMessageToSqs (verifiable credential)", async () => {
+          expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
+            "mockIpvcoreOutboundSqs",
+            {
+              "https://vocab.account.gov.uk/v1/credentialJWT": [mockSignedJwt],
+              state: mockClientState,
+              sub: mockSubjectIdentifier,
+            },
+          );
+        });
         it("Logs the DCMAW_ASYNC_CRI_5XXERROR event failure", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
             data: {
               auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
             },
+          });
+        });
+        it("Logs COMPLETED with sessionId", () => {
+          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+            sessionId: mockSessionId,
           });
         });
       });
@@ -1108,7 +1108,64 @@ describe("Async Issue Biometric Credential", () => {
 
           await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
         });
+        it("Passes correct arguments to get secrets", () => {
+          expect(mockGetSecretsSuccess).toHaveBeenCalledWith({
+            secretNames: ["mockBiometricViewerAccessKey"],
+            cacheDurationInSeconds: 900,
+          });
+        });
 
+        it("Passes correct arguments to get biometric session", () => {
+          expect(mockGetBiometricSessionSuccess).toHaveBeenCalledWith(
+            "mockReadIdBaseUrl",
+            mockBiometricSessionId,
+            "mockViewerKey",
+          );
+        });
+
+        it("Passes correct arguments to getCredentialFromBiometricSession", () => {
+          expect(
+            mockSuccessfulGetCredentialFromBiometricSession,
+          ).toHaveBeenCalledWith(
+            { finish: "DONE" },
+            {
+              userSessionCreatedAt: 1704106860000,
+              opaqueId: "mockOpaqueId",
+            },
+            {
+              enableUtopiaTestDocument: true,
+              enableDrivingLicence: true,
+              enableNfcPassport: true,
+              enableBiometricResidencePermit: true,
+              enableBiometricResidenceCard: true,
+            },
+          );
+        });
+
+        it("Passes correct arguments to createKmsSignedJwt", () => {
+          expect(mockCreateKmsSignedJwtSuccess).toHaveBeenCalledWith(
+            "mockVerifiableCredentialSigningKeyId",
+            {
+              iat: 1704110400,
+              iss: "mockIssuer",
+              jti: "urn:uuid:mock_random_uuid",
+              nbf: 1704110400,
+              sub: "mockSubjectIdentifier",
+              vc: "mockCredential",
+            },
+          );
+        });
+
+        it("Passes correct arguments to sendMessageToSqs (verifiable credential)", async () => {
+          expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
+            "mockIpvcoreOutboundSqs",
+            {
+              "https://vocab.account.gov.uk/v1/credentialJWT": [mockSignedJwt],
+              state: mockClientState,
+              sub: mockSubjectIdentifier,
+            },
+          );
+        });
         it("Calls writeGenericEvent with correct parameters", () => {
           expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith({
             eventName: "DCMAW_ASYNC_CRI_END",
@@ -1123,12 +1180,11 @@ describe("Async Issue Biometric Credential", () => {
             txmaAuditEncoded: undefined,
           });
         });
-      });
-
-      it("Logs COMPLETED with sessionId", () => {
-        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-          sessionId: mockSessionId,
+        it("Logs COMPLETED with sessionId", () => {
+          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+            sessionId: mockSessionId,
+          });
         });
       });
     });
