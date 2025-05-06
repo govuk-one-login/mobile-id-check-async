@@ -1184,6 +1184,7 @@ describe("Async Issue Biometric Credential", () => {
             txmaAuditEncoded: undefined,
           });
         });
+
         it("Logs COMPLETED with sessionId", () => {
           expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
