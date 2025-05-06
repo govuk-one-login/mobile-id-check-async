@@ -615,9 +615,16 @@ describe("Async Finish Biometric Session", () => {
       });
     });
 
-    it("Logs COMPLETED", async () => {
+    it("Logs COMPLETED with sessionIdentifiers", async () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_COMPLETED",
+        sessionIdentifiers: {
+          biometricSessionId: "f32432a9-0965-4da9-8a2c-a98a79349d4a",
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
+          opaqueId: "mockOpaqueId",
+          sessionId: "58f4281d-d988-49ce-9586-6ef70a2be0b4",
+          subjectIdentifier: "mockSubjectIdentifier",
+        },
       });
     });
 
