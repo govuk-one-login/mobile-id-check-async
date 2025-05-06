@@ -1,7 +1,7 @@
-import { SessionAttributes } from "../session/session";
-import { logger } from "./logger";
+import { SessionAttributes } from "../../session/session";
+import { logger } from "../logger";
 
-export const appendSessionIdentifiers = (
+export const appendSessionIdentifiersToLogger = (
   sessionAttributes: SessionAttributes,
 ): void => {
   let opaqueId: string | undefined;

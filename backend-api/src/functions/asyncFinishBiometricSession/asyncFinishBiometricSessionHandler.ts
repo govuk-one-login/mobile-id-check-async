@@ -31,7 +31,7 @@ import {
 } from "../common/session/session";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
-import { appendSessionIdentifiers } from "../common/logging/appendSessionIdentifiers";
+import { appendSessionIdentifiersToLogger } from "../common/logging/helpers/appendSessionIdentifiersToLogger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncFinishBiometricSessionDependencies,
@@ -83,7 +83,7 @@ export async function lambdaHandlerConstructor(
   const sessionAttributes = updateResult.value
     .attributes as BiometricSessionFinishedAttributes;
 
-  appendSessionIdentifiers(sessionAttributes);
+  appendSessionIdentifiersToLogger(sessionAttributes);
 
   const sendMessageToSqs = dependencies.getSendMessageToSqs();
   const vendorProcessingMessage = {
