@@ -116,7 +116,7 @@ describe("createSignedJwt", () => {
         });
       });
 
-      it("Returns signed JWT", () => {
+      it("Returns successResult with signed JWT", () => {
         expect(result).toEqual(
           successResult(
             "eyJhbGciOiJFUzI1NiIsImtpZCI6Im1vY2tLaWQiLCJ0eXAiOiJKV1QifQ.eyJpYXQiOjEyMywiaXNzIjoibW9ja0lzcyIsImp0aSI6Im1vY2tKdGkiLCJuYmYiOjEyMywic3ViIjoibW9ja1N1YiIsInZjIjoibW9ja1ZjIn0.QkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkIkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJA",
