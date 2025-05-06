@@ -532,7 +532,7 @@ const sendCriEndEvent = async (options: SendCriEndEventData): Promise<void> => {
 
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-      data: { auditEventName: "DCMAW_ASYNC_CRI_5XXERROR" },
+      data: { auditEventName: "DCMAW_ASYNC_CRI_END" },
     });
   }
 };
