@@ -39,6 +39,12 @@ Parameters:
     Type: String
     Default: none
 
+  DevOverrideTestResourcesBaseUrl:
+    Description: |
+      Override the TestResourcesBaseUrl value for development deployments
+    Type: String
+    Default: none
+
   DevOverrideReadIdBaseUrl:
     Description: |
       Override the ReadIdBaseUrl value for development deployments
@@ -226,6 +232,7 @@ Mappings:
       STSBASEURL: 'https://sts-mock.review-b-async.dev.account.gov.uk'
       ReadIdBaseUrl: 'https://readid-proxy.review-b-async.dev.account.gov.uk/v2'
       EventsBaseUrl: 'https://events.review-b-async.dev.account.gov.uk'
+      TestResourcesBaseUrl: 'https://api-test-resources.review-b-async.dev.account.gov.uk'
       ClientRegistrySecretPath: 'dev/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
@@ -244,6 +251,7 @@ Mappings:
       STSBASEURL: 'https://sts-mock.review-b-async.build.account.gov.uk'
       ReadIdBaseUrl: 'https://readid-proxy.review-b-async.build.account.gov.uk/v2'
       EventsBaseUrl: 'https://events.review-b-async.build.account.gov.uk'
+      TestResourcesBaseUrl: 'https://api-test-resources.review-b-async.build.account.gov.uk'
       ClientRegistrySecretPath: 'build/clientRegistry'
       BiometricSubmitterKeySecretPathPassport: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
       BiometricSubmitterKeySecretPathBrp: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
@@ -362,6 +370,11 @@ Conditions:
   UseDevOverrideEventsBaseUrl: !Not
     - !Equals
       - !Ref DevOverrideEventsBaseUrl
+      - none
+
+  UseDevOverrideTestResourcesBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideTestResourcesBaseUrl
       - none
 
   UseDevOverrideReadIdBaseUrl: !Not
@@ -501,6 +514,14 @@ Outputs:
       - UseDevOverrideEventsBaseUrl
       - !Ref DevOverrideEventsBaseUrl
       - !FindInMap [EnvironmentVariables, !Ref Environment, EventsBaseUrl]
+
+  TestResourcesApiUrl:
+    Condition: IsDevOrBuild
+    Description: Test Resources API Gateway base URL
+    Value: !If
+      - UseDevOverrideTestResourcesBaseUrl
+      - !Ref DevOverrideTestResourcesBaseUrl
+      - !FindInMap [EnvironmentVariables, !Ref Environment, TestResourcesBaseUrl]
 
   TxmaSqsQueueArn:
     Condition: IsDevOrBuild

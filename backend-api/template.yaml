@@ -32,6 +32,12 @@ Parameters:
     Type: String
     Default: none
 
+  DevOverrideTestResourcesBaseUrl:
+    Description: |
+      Override the TestResourcesBaseUrl value for development deployments
+    Type: String
+    Default: none
+
   Environment:
     Description: The environment type
     Type: String
@@ -113,6 +119,7 @@ Mappings:
       ReadIdBaseUrl: https://readid-proxy.review-b-async.build.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.build.account.gov.uk
       SessionDurationInSeconds: 86400
+      TestResourcesBaseUrl: https://api-test-resources.review-b-async.build.account.gov.uk
     dev:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
@@ -130,6 +137,7 @@ Mappings:
       ReadIdBaseUrl: https://readid-proxy.review-b-async.dev.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.dev.account.gov.uk
       SessionDurationInSeconds: 86400
+      TestResourcesBaseUrl: https://api-test-resources.review-b-async.dev.account.gov.uk
     integration:
       BiometricSubmitterKeySecretCacheDurationInSeconds: 900
       BiometricSubmitterKeySecretPathBrp: /integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP
@@ -375,6 +383,11 @@ Conditions:
   UseDevOverrideStsBaseUrl: !Not
     - !Equals
       - !Ref DevOverrideStsBaseUrl
+      - none
+
+  UseDevOverrideTestResourcesBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideTestResourcesBaseUrl
       - none
 
   UsePermissionsBoundary: !Not
@@ -6010,6 +6023,17 @@ Outputs:
         - EnvironmentVariables
         - !Ref Environment
         - STSBASEURL
+    Condition: IsDevOrBuild
+
+  TestResourcesApiUrl:
+    Description: Test Resources API Gateway base URL
+    Value: !If
+      - UseDevOverrideTestResourcesBaseUrl
+      - !Ref DevOverrideTestResourcesBaseUrl
+      - !FindInMap
+        - EnvironmentVariables
+        - !Ref Environment
+        - TestResourcesBaseUrl
     Condition: IsDevOrBuild
 
   TxmaKmsEncryptionKeyArn:
