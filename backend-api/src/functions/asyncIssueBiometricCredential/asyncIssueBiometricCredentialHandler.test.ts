@@ -405,10 +405,13 @@ describe("Async Issue Biometric Credential", () => {
           await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
         });
 
-        it("Logs DCMAW_ASYNC_CRI_ERROR audit event error", () => {
+        it("Logs DCMAW_ASYNC_CRI_ERROR audit event error with persistent identifiers", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
             data: { auditEventName: expectedErrorTxmaEventName },
+            persistentIdentifiers: {
+              sessionId: mockSessionId,
+            },
           });
         });
 
@@ -466,10 +469,14 @@ describe("Async Issue Biometric Credential", () => {
       expect(mockGetSecretsSuccess).not.toHaveBeenCalled();
     });
 
-    it("Logs COMPLETED with sessionId", async () => {
+    it("Logs COMPLETED with persistent identifiers", async () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-        sessionId: mockSessionId,
+        persistentIdentifiers: {
+          sessionId: mockSessionId,
+          biometricSessionId: mockBiometricSessionId,
+          govukSigninJourneyId: mockGovukSigninJourneyId,
+        },
       });
     });
   });
@@ -556,10 +563,15 @@ describe("Async Issue Biometric Credential", () => {
             );
           });
 
-          it("Logs IPV Core message error", () => {
+          it("Logs IPV Core message error with persistent identifiers", () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
               messageCode:
                 "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR",
+              persistentIdentifiers: {
+                sessionId: mockSessionId,
+                biometricSessionId: mockBiometricSessionId,
+                govukSigninJourneyId: mockGovukSigninJourneyId,
+              },
             });
           });
 
@@ -590,10 +602,15 @@ describe("Async Issue Biometric Credential", () => {
               );
             });
 
-            it("Logs DCMAW_ASYNC_CRI_ERROR audit event error", () => {
+            it("Logs DCMAW_ASYNC_CRI_ERROR audit event error with persistent identifiers", () => {
               expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
                 messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
                 data: { auditEventName: expectedErrorTxmaEventName },
+                persistentIdentifiers: {
+                  sessionId: mockSessionId,
+                  biometricSessionId: mockBiometricSessionId,
+                  govukSigninJourneyId: mockGovukSigninJourneyId,
+                },
               });
             });
 
@@ -652,11 +669,16 @@ describe("Async Issue Biometric Credential", () => {
         }
       });
 
-      it("Logs the appropriate message", () => {
+      it("Logs NOT_READY with persistent identifiers", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY",
           data: {
             finish: "PROCESSING",
+          },
+          persistentIdentifiers: {
+            sessionId: mockSessionId,
+            biometricSessionId: mockBiometricSessionId,
+            govukSigninJourneyId: mockGovukSigninJourneyId,
           },
         });
       });
@@ -668,10 +690,14 @@ describe("Async Issue Biometric Credential", () => {
         );
       });
 
-      it("Logs COMPLETED with sessionId", () => {
+      it("Logs COMPLETED with persistent identifiers", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-          sessionId: mockSessionId,
+          persistentIdentifiers: {
+            sessionId: mockSessionId,
+            biometricSessionId: mockBiometricSessionId,
+            govukSigninJourneyId: mockGovukSigninJourneyId,
+          },
         });
       });
     });
@@ -753,12 +779,17 @@ describe("Async Issue Biometric Credential", () => {
               );
             });
 
-            it(`Logs ${logMessage}`, () => {
+            it(`Logs ${logMessage} with persistent identifiers`, () => {
               expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
                 messageCode: logMessage,
                 data: {
                   errorReason: "mockErrorReason",
                   mockData: "mockData",
+                },
+                persistentIdentifiers: {
+                  sessionId: mockSessionId,
+                  biometricSessionId: mockBiometricSessionId,
+                  govukSigninJourneyId: mockGovukSigninJourneyId,
                 },
               });
             });
@@ -770,10 +801,15 @@ describe("Async Issue Biometric Credential", () => {
               );
             });
 
-            it(`Logs DCMAW_ASYNC_CRI_ERROR audit event error`, () => {
+            it(`Logs DCMAW_ASYNC_CRI_ERROR audit event error with persistent identifiers`, () => {
               expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
                 messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
                 data: { auditEventName: expectedErrorTxmaEventName },
+                persistentIdentifiers: {
+                  sessionId: mockSessionId,
+                  biometricSessionId: mockBiometricSessionId,
+                  govukSigninJourneyId: mockGovukSigninJourneyId,
+                },
               });
             });
 
@@ -806,12 +842,17 @@ describe("Async Issue Biometric Credential", () => {
               );
             });
 
-            it(`Logs ${logMessage}`, () => {
+            it(`Logs ${logMessage} with persistent identifiers`, () => {
               expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
                 messageCode: logMessage,
                 data: {
                   errorReason: "mockErrorReason",
                   mockData: "mockData",
+                },
+                persistentIdentifiers: {
+                  sessionId: mockSessionId,
+                  biometricSessionId: mockBiometricSessionId,
+                  govukSigninJourneyId: mockGovukSigninJourneyId,
                 },
               });
             });
@@ -888,11 +929,16 @@ describe("Async Issue Biometric Credential", () => {
           }
         });
 
-        it("Logs IPV_CORE_MESSAGE_ERROR", async () => {
+        it("Logs IPV_CORE_MESSAGE_ERROR with persistent identifiers", async () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode:
               "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR",
             data: { messageType: "VERIFIABLE_CREDENTIAL" },
+            persistentIdentifiers: {
+              sessionId: mockSessionId,
+              biometricSessionId: mockBiometricSessionId,
+              govukSigninJourneyId: mockGovukSigninJourneyId,
+            },
           });
         });
 
@@ -952,10 +998,15 @@ describe("Async Issue Biometric Credential", () => {
               );
             });
 
-            it("Logs DCMAW_ASYNC_CRI_ERROR audit event error", () => {
+            it("Logs DCMAW_ASYNC_CRI_ERROR audit event error with persistent identifiers", () => {
               expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
                 messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
                 data: { auditEventName: expectedErrorTxmaEventName },
+                persistentIdentifiers: {
+                  sessionId: mockSessionId,
+                  biometricSessionId: mockBiometricSessionId,
+                  govukSigninJourneyId: mockGovukSigninJourneyId,
+                },
               });
             });
 
@@ -1080,10 +1131,14 @@ describe("Async Issue Biometric Credential", () => {
         );
       });
 
-      it("Logs COMPLETED with sessionId", () => {
+      it("Logs COMPLETED with persistent identifiers", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-          sessionId: mockSessionId,
+          persistentIdentifiers: {
+            sessionId: mockSessionId,
+            biometricSessionId: mockBiometricSessionId,
+            govukSigninJourneyId: mockGovukSigninJourneyId,
+          },
         });
       });
     });
