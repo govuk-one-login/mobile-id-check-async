@@ -465,9 +465,12 @@ describe("Async Active Session", () => {
         result = await lambdaHandlerConstructor(dependencies, request, context);
       });
 
-      it("Logs COMPLETED", () => {
+      it("Logs COMPLETED with persistent identifiers", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_STARTED",
+          persistentIdentifiers: {
+            sessionId: "mockSessionId",
+          },
         });
       });
 
