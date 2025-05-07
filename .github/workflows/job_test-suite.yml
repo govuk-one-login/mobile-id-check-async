@@ -19,6 +19,10 @@ on:
         description: Path to working directory in repo
         required: true
         type: string
+      PRIVATE_PACKAGES_REQUIRED:
+        description: Whether private packages must be installed
+        type: string
+        default: false
 
 jobs:
   run-test-suite:
@@ -40,6 +44,15 @@ jobs:
           cache: npm
           cache-dependency-path: ${{ inputs.WORKING_DIRECTORY }}/package-lock.json
           node-version-file: ${{ inputs.WORKING_DIRECTORY }}/.nvmrc
+
+      - name: Configure authentication for private packages in .npmrc
+        if: inputs.PRIVATE_PACKAGES_REQUIRED == 'true'
+        run: |
+          engine-strict=true > .npmrc
+          echo "@govuk-one-login:registry=https://npm.pkg.github.com/" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN" >> .npmrc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
         run: npm clean-install
