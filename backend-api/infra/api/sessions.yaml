@@ -76,42 +76,15 @@ Resources:
 
   SessionsApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
-    DependsOn: SessionsApiDomainName
     Properties:
-      DomainName: !If
-        - DevelopmentStack
-        - !Sub
-          - sessions-${AWS::StackName}.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
-        - !Sub
-          - sessions.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+      DomainName: !Ref SessionsApiDomainName
       RestApiId: !Ref SessionsApi
       Stage: !Ref SessionsApi.Stage
 
   SessionsApiOriginRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
-      Name: !If
-        - DevelopmentStack
-        - !Sub
-          - origin.sessions-${AWS::StackName}.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
-        - !Sub
-          - origin.sessions.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+      Name: !Sub "origin.${SessionsApiDomainName}"
       Type: A
       HostedZoneId: !Sub "{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}"
       AliasTarget:
@@ -121,20 +94,7 @@ Resources:
   SessionsApiRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
-      Name: !If
-        - DevelopmentStack
-        - !Sub
-          - sessions-${AWS::StackName}.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
-        - !Sub
-          - sessions.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+      Name: !Ref SessionsApiDomainName
       Type: A
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
       AliasTarget:
