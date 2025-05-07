@@ -1033,6 +1033,12 @@ describe("Async Issue Biometric Credential", () => {
           },
         });
       });
+
+      it("Does not log COMPLETED", () => {
+        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        });
+      });
     });
 
     describe("Happy path", () => {
