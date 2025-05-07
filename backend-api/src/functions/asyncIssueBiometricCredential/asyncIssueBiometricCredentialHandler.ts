@@ -248,10 +248,27 @@ export async function lambdaHandlerConstructor(
     return;
   }
 
-  await sendCriEndEvent({
-    eventService,
-    sessionAttributes,
+  const { issuer, subjectIdentifier, govukSigninJourneyId, redirectUri } =
+    sessionAttributes;
+
+  const writeCriEndEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_CRI_END",
+    sub: subjectIdentifier,
+    sessionId,
+    govukSigninJourneyId,
+    componentId: issuer,
+    getNowInMilliseconds: Date.now,
+    ipAddress: undefined,
+    txmaAuditEncoded: undefined,
+    redirect_uri: redirectUri,
+    suspected_fraud_signal: undefined,
   });
+  if (writeCriEndEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: { auditEventName: "DCMAW_ASYNC_CRI_END" },
+    });
+    return;
+  }
 
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
 }
@@ -500,39 +517,4 @@ export const buildCredentialJwtPayload = (jwtData: {
     sub,
     vc: credential,
   };
-};
-
-interface SendCriEndEventData {
-  eventService: IEventService;
-  sessionAttributes: SessionAttributes;
-}
-const sendCriEndEvent = async (options: SendCriEndEventData): Promise<void> => {
-  const { eventService, sessionAttributes } = options;
-
-  const {
-    issuer,
-    subjectIdentifier,
-    sessionId,
-    govukSigninJourneyId,
-    redirectUri,
-  } = sessionAttributes;
-
-  const writeEventResult = await eventService.writeGenericEvent({
-    eventName: "DCMAW_ASYNC_CRI_END",
-    sub: subjectIdentifier,
-    sessionId,
-    govukSigninJourneyId,
-    componentId: issuer,
-    getNowInMilliseconds: Date.now,
-    ipAddress: undefined,
-    txmaAuditEncoded: undefined,
-    redirect_uri: redirectUri,
-    suspected_fraud_signal: undefined,
-  });
-
-  if (writeEventResult.isError) {
-    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-      data: { auditEventName: "DCMAW_ASYNC_CRI_END" },
-    });
-  }
 };
