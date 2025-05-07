@@ -37,15 +37,16 @@ import {
 } from "../common/session/session";
 import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
 import { GetSessionIssueBiometricCredential } from "../common/session/getOperations/IssueBiometricCredential/GetSessionIssueBiometricCredential";
-import {
-  GetCredentialError,
-  GetCredentialErrorCode,
-  GetCredentialOptions,
-  FraudCheckData,
-} from "./mockGetCredentialFromBiometricSession/types";
 import { ResultSent } from "../common/session/updateOperations/ResultSent/ResultSent";
 import { CredentialJwtPayload } from "../types/jwt";
 import { randomUUID } from "crypto";
+import {
+  BiometricCredential,
+  FraudCheckData,
+  GetCredentialError,
+  GetCredentialErrorCode,
+  GetCredentialOptions,
+} from "@govuk-one-login/mobile-id-check-biometric-credential";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -481,7 +482,7 @@ const handleUpdateSessionError = async (
   if (writeEventResult.isError) logErrorWritingErrorEvent();
 };
 export const buildCredentialJwtPayload = (jwtData: {
-  credential: string;
+  credential: BiometricCredential;
   sub: string;
   issuer: string;
 }): CredentialJwtPayload => {
