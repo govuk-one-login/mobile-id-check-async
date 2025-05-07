@@ -231,7 +231,7 @@ describe("Async Biometric Token", () => {
         );
       });
 
-      it("Logs the error with persistentIdentifiers", async () => {
+      it("Logs the error with persistent identifiers", async () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
           data: {
