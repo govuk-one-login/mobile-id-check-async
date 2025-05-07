@@ -88,27 +88,23 @@ describe("POST /async/abortSession", () => {
       });
     }, 110000);
 
-    describe("Given the abort session message is sent to the IPV Core outbound queue", () => {
-      it("Writes the abort session message", () => {
-        expect(credentialResultsResponse[0].body).toEqual(
-          expect.objectContaining({
-            sub,
-            state: mockClientState,
-            error: "access_denied",
-            error_description: "User aborted the session",
-          }),
-        );
-      });
+    it("Writes the abort session message to the IPV Core outbound queue", () => {
+      expect(credentialResultsResponse[0].body).toEqual(
+        expect.objectContaining({
+          sub,
+          state: mockClientState,
+          error: "access_denied",
+          error_description: "User aborted the session",
+        }),
+      );
     });
 
-    describe("Given the TxMA event is sent to TxMA", () => {
-      it("Writes DCMAW_ASYNC_ABORT_APP TxMA event", () => {
-        expect(eventsResponse[0].event).toEqual(
-          expect.objectContaining({
-            event_name: "DCMAW_ASYNC_ABORT_APP",
-          }),
-        );
-      });
+    it("Writes DCMAW_ASYNC_ABORT_APP event to TxMA", () => {
+      expect(eventsResponse[0].event).toEqual(
+        expect.objectContaining({
+          event_name: "DCMAW_ASYNC_ABORT_APP",
+        }),
+      );
     });
 
     it("Returns 200 Ok response", () => {
