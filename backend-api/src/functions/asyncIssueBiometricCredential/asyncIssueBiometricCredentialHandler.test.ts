@@ -1015,34 +1015,34 @@ describe("Async Issue Biometric Credential", () => {
       );
     });
 
-    describe("Happy path", () => {
-      describe("Given sending DCMAW_ASYNC_CRI_END event fails", () => {
-        beforeEach(async () => {
-          dependencies = {
-            ...dependencies,
-            getEventService: () => mockFailingEventService,
-          };
+    describe("Given sending DCMAW_ASYNC_CRI_END event fails", () => {
+      beforeEach(async () => {
+        dependencies = {
+          ...dependencies,
+          getEventService: () => mockFailingEventService,
+        };
 
-          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
-        });
+        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+      });
 
-        it("Logs the DCMAW_ASYNC_CRI_END event failure", () => {
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
-            data: {
-              auditEventName: "DCMAW_ASYNC_CRI_END",
-            },
-          });
-        });
-
-        it("Logs COMPLETED with sessionId", () => {
-          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-            sessionId: mockSessionId,
-          });
+      it("Logs the DCMAW_ASYNC_CRI_END event failure", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+          data: {
+            auditEventName: "DCMAW_ASYNC_CRI_END",
+          },
         });
       });
 
+      it("Logs COMPLETED with sessionId", () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+          sessionId: mockSessionId,
+        });
+      });
+    });
+
+    describe("Happy path", () => {
       describe("Writes DCMAW_ASYNC_CRI_END event to TxMA", () => {
         beforeEach(async () => {
           dependencies = {
