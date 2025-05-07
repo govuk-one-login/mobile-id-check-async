@@ -14,6 +14,7 @@ import { ErrorCategory } from "../utils/result";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
+import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncCredentialDependencies,
@@ -80,6 +81,10 @@ export async function lambdaHandlerConstructor(
     });
   }
   const requestBody = requestBodyResult.value;
+
+  appendPersistentIdentifiersToLogger({
+    govukSigninJourneyId: requestBody.govuk_signin_journey_id,
+  });
 
   // Check token signature
   const verifyTokenSignatureResult = await tokenService.verifyTokenSignature(
@@ -165,7 +170,10 @@ export async function lambdaHandlerConstructor(
     return serverErrorResponse;
   }
   if (getActiveSessionIdResult.value) {
-    logger.appendKeys({ sessionId: getActiveSessionIdResult.value });
+    appendPersistentIdentifiersToLogger({
+      sessionId: getActiveSessionIdResult.value,
+    });
+
     logger.info(LogMessage.CREDENTIAL_COMPLETED);
     return activeSessionFoundResponse(requestBody.sub);
   }
@@ -183,7 +191,8 @@ export async function lambdaHandlerConstructor(
     return serverErrorResponse;
   }
   const sessionId = createSessionResult.value;
-  logger.appendKeys({ sessionId });
+
+  appendPersistentIdentifiersToLogger({ sessionId });
 
   // Write audit event
   const eventService = dependencies.eventService(config.TXMA_SQS);
