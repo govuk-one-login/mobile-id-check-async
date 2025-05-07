@@ -101,42 +101,15 @@ Resources:
 
   TestResourcesApiBasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
-    DependsOn: TestResourcesApiDomainName
     Properties:
-      DomainName: !If
-        - DevelopmentStack
-        - !Sub
-          - api-${AWS::StackName}.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
-        - !Sub
-          - test-resources.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+      DomainName: !Ref TestResourcesApiDomainName
       RestApiId: !Ref TestResourcesApi
       Stage: !Ref TestResourcesApi.Stage
 
   TestResourcesApiRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
-      Name: !If
-        - DevelopmentStack
-        - !Sub
-          - api-${AWS::StackName}.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
-        - !Sub
-          - test-resources.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-            - DNS
-            - !Ref Environment
-            - BaseDns
+      Name: !Ref TestResourcesApiDomainName
       Type: A
       HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
       AliasTarget:
