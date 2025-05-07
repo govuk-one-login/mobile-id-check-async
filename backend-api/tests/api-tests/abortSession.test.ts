@@ -1,8 +1,6 @@
 import { AxiosResponse } from "axios";
 import { randomUUID } from "crypto";
-import {
-  SESSIONS_API_INSTANCE
-} from "./utils/apiInstance";
+import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 import {
   expectedSecurityHeaders,
   mockClientState,
