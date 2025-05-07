@@ -65,6 +65,8 @@ describe("POST /async/abortSession", () => {
     let sub: string;
     let sessionId: string;
     let response: AxiosResponse;
+    let credentialResultsResponse: CredentialResultResponse[];
+    let eventsResponse: EventResponse[];
 
     beforeAll(async () => {
       sub = randomUUID();
@@ -74,18 +76,20 @@ describe("POST /async/abortSession", () => {
       response = await SESSIONS_API_INSTANCE.post("/async/abortSession", {
         sessionId,
       });
-    }, 30000);
+
+      credentialResultsResponse = await pollForCredentialResults(
+        `SUB#${sub}`,
+        1,
+      );
+
+      eventsResponse = await pollForEvents({
+        partitionKey: `SESSION#${sessionId}`,
+        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_ABORT_APP`,
+        numberOfEvents: 1,
+      });
+    }, 110000);
 
     describe("Given the abort session message is sent to the IPV Core outbound queue", () => {
-      let credentialResultsResponse: CredentialResultResponse[];
-
-      beforeAll(async () => {
-        credentialResultsResponse = await pollForCredentialResults(
-          `SUB#${sub}`,
-          1,
-        );
-      }, 40000);
-
       it("Writes the abort session message", () => {
         expect(credentialResultsResponse[0].body).toEqual(
           expect.objectContaining({
@@ -99,16 +103,6 @@ describe("POST /async/abortSession", () => {
     });
 
     describe("Given the TxMA event is sent to TxMA", () => {
-      let eventsResponse: EventResponse[];
-
-      beforeAll(async () => {
-        eventsResponse = await pollForEvents({
-          partitionKey: `SESSION#${sessionId}`,
-          sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_ABORT_APP`,
-          numberOfEvents: 1,
-        });
-      }, 40000);
-
       it("Writes DCMAW_ASYNC_ABORT_APP TxMA event", () => {
         expect(eventsResponse[0].event).toEqual(
           expect.objectContaining({
