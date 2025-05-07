@@ -6,6 +6,7 @@ import {
 } from "./utils/apiInstance";
 import {
   expectedSecurityHeaders,
+  mockClientState,
   mockInvalidUUID,
   mockSessionId,
 } from "./utils/apiTestData";
@@ -89,7 +90,7 @@ describe("POST /async/abortSession", () => {
         expect(credentialResultsResponse[0].body).toEqual(
           expect.objectContaining({
             sub,
-            state: "testState",
+            state: mockClientState,
             error: "access_denied",
             error_description: "User aborted the session",
           }),

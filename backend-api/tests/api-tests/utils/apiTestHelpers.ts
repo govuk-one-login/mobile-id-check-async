@@ -9,6 +9,7 @@ import {
   SESSIONS_API_INSTANCE,
   STS_MOCK_API_INSTANCE,
 } from "./apiInstance";
+import { mockClientState } from "./apiTestData";
 
 export interface ClientDetails {
   client_id: string;
@@ -54,7 +55,7 @@ export async function createSessionForSub(sub: string) {
       sub: sub ?? randomUUID(),
       govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
       client_id: clientDetails.client_id,
-      state: "testState",
+      state: mockClientState,
       redirect_uri: clientDetails.redirect_uri,
     },
     {
