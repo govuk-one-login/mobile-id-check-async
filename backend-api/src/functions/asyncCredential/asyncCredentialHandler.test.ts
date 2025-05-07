@@ -33,7 +33,10 @@ import {
 } from "../services/session/tests/mocks";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { logger } from "../common/logging/logger";
-import { mockGovukSigninJourneyId } from "../testUtils/unitTestData";
+import {
+  mockGovukSigninJourneyId,
+  mockSessionId,
+} from "../testUtils/unitTestData";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -865,7 +868,7 @@ describe("Async Credential", () => {
             messageCode: "MOBILE_ASYNC_CREDENTIAL_COMPLETED",
             persistentIdentifiers: {
               govukSigninJourneyId: mockGovukSigninJourneyId,
-              sessionId: "mockSessionId",
+              sessionId: mockSessionId,
             },
           });
 
@@ -954,7 +957,7 @@ describe("Async Credential", () => {
               messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
               persistentIdentifiers: {
                 govukSigninJourneyId: mockGovukSigninJourneyId,
-                sessionId: "mockSessionId",
+                sessionId: mockSessionId,
               },
               data: {
                 auditEventName: "DCMAW_ASYNC_CRI_START",
@@ -1005,7 +1008,7 @@ describe("Async Credential", () => {
                 getNowInMilliseconds: Date.now,
                 govukSigninJourneyId: "mockGovukSigninJourneyId",
                 sub: "mockSub",
-                sessionId: "mockSessionId",
+                sessionId: mockSessionId,
                 ipAddress: undefined,
                 redirect_uri: "https://www.mockUrl.com",
                 suspected_fraud_signal: undefined,
@@ -1017,7 +1020,7 @@ describe("Async Credential", () => {
               messageCode: "MOBILE_ASYNC_CREDENTIAL_COMPLETED",
               persistentIdentifiers: {
                 govukSigninJourneyId: mockGovukSigninJourneyId,
-                sessionId: "mockSessionId",
+                sessionId: mockSessionId,
               },
             });
 
