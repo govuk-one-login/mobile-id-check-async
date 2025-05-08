@@ -63,6 +63,7 @@ export class EventService implements IEventService {
     const extensions = this.getExtensionsObject(
       eventConfig.redirect_uri,
       eventConfig.suspected_fraud_signal,
+      eventConfig.evidence,
     );
 
     const event: GenericTxmaEvent = {
@@ -87,14 +88,20 @@ export class EventService implements IEventService {
   private getExtensionsObject(
     redirect_uri?: string,
     suspected_fraud_signal?: string,
+    evidence?: object[],
   ) {
-    if (redirect_uri === undefined && suspected_fraud_signal === undefined) {
+    if (
+      redirect_uri === undefined &&
+      suspected_fraud_signal === undefined &&
+      evidence === undefined
+    ) {
       return undefined;
     }
 
     return {
       redirect_uri,
       suspected_fraud_signal,
+      evidence,
     };
   }
 

@@ -35,7 +35,10 @@ import {
   SessionAttributes,
   SessionState,
 } from "../common/session/session";
-import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
+import {
+  BiometricSession,
+  GetBiometricSessionError,
+} from "./getBiometricSession/getBiometricSession";
 import { GetSessionIssueBiometricCredential } from "../common/session/getOperations/IssueBiometricCredential/GetSessionIssueBiometricCredential";
 import {
   GetCredentialError,
@@ -245,6 +248,35 @@ export async function lambdaHandlerConstructor(
       sessionAttributes,
       issuer: config.ISSUER,
       eventService,
+    });
+    return;
+  }
+
+  logger.debug("stuff", {
+    data: {
+      sessionId,
+      biometricSessionId,
+      biometricSession,
+      credentialJwtPayload,
+      credential,
+      sessionAttributes,
+      updateSessionResult,
+      sendVerifiableCredentialMessageToSqsResult,
+      getCredentialFromBiometricSessionResult,
+      getCredentialFromBiometricSessionOptions,
+      fraudCheckData,
+    },
+  });
+
+  //Write VC_ISSUED event
+  const writeBiometricTokenEventResult = await writeVCIssuedEvent(
+    eventService,
+    sessionAttributes,
+    biometricSession,
+  );
+  if (writeBiometricTokenEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: { auditEventName: "DCMAW_ASYNC_CRI_VC_ISSUED" },
     });
     return;
   }
@@ -532,6 +564,125 @@ const writeCriEndEvent = async (
   if (writeCriEndEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: { auditEventName: "DCMAW_ASYNC_CRI_END" },
+    });
+    return emptyFailure();
+  }
+  return emptySuccess();
+};
+
+const writeVCIssuedEvent = async (
+  eventService: IEventService,
+  sessionAttributes: BiometricSessionFinishedAttributes,
+  biometricSession: BiometricSession,
+): Promise<Result<void, void>> => {
+  const {
+    govukSigninJourneyId,
+    subjectIdentifier,
+    sessionId,
+    issuer,
+    redirectUri,
+  } = sessionAttributes;
+
+  logger.debug("sessionAttributes", {
+    data: sessionAttributes,
+  });
+  console.log("biometricSession", biometricSession);
+
+  const evidence = [
+    {
+      type: "IdentityCheck",
+      txn: "biometric session id",
+      strengthScore: 3,
+      validityScore: 2,
+      activityHistoryScore: 1,
+      checkDetails: [
+        {
+          checkMethod: "vri",
+          identityCheckPolicy: "published",
+          activityFrom: "2019-01-01",
+        },
+        {
+          checkMethod: "bvr",
+          biometricVerificationProcessLevel: 3,
+        },
+      ],
+    },
+  ];
+  console.log("evidence", evidence);
+  const restricted = {
+    name: [
+      {
+        nameParts: [
+          {
+            value: "John",
+            type: "GivenName",
+          },
+          {
+            value: "Earnest",
+            type: "GivenName",
+          },
+          {
+            value: "Doe",
+            type: "FamilyName",
+          },
+        ],
+      },
+    ],
+    birthDate: [
+      {
+        value: "1985-02-08",
+      },
+    ],
+    address: [
+      {
+        uprn: null,
+        organisationName: null,
+        subBuildingName: null,
+        "buildingNumber ": null,
+        buildingName: null,
+        dependentStreetName: null,
+        streetName: null,
+        doubleDependentAddressLocality: null,
+        dependentAddressLocality: null,
+        addressLocality: null,
+        postalCode: "EH1 9GP",
+        addressCountry: null,
+      },
+    ],
+    drivingPermit: [
+      {
+        personalNumber: "DOE99802085J99FG",
+        fullAddress: "122 BURNS CRESCENT EDINBURGH EH1 9GP",
+        expiryDate: "2023-01-18",
+        issueNumber: null,
+        issuedBy: null,
+        issueDate: null,
+      },
+    ],
+    deviceId: [
+      {
+        value: "2345ee48-37fe-4123-a68e-b0e2afca2122",
+      },
+    ],
+  };
+
+  console.log("restricted", restricted);
+
+  const writeEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
+    sub: subjectIdentifier,
+    sessionId,
+    govukSigninJourneyId: govukSigninJourneyId,
+    getNowInMilliseconds: Date.now,
+    componentId: issuer,
+    ipAddress: undefined,
+    txmaAuditEncoded: undefined,
+    redirect_uri: redirectUri,
+    suspected_fraud_signal: undefined,
+  });
+  if (writeEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: { auditEventName: "DCMAW_ASYNC_CRI_VC_ISSUED" },
     });
     return emptyFailure();
   }
