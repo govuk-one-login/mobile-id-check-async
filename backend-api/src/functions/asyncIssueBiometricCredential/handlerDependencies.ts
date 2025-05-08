@@ -11,10 +11,12 @@ import { sendMessageToSqs } from "../adapters/aws/sqs/sendMessageToSqs";
 import { SQSMessageBody } from "../adapters/aws/sqs/types";
 import { IEventService } from "../services/events/types";
 import { EventService } from "../services/events/eventService";
-import { mockGetCredentialFromBiometricSession } from "./mockGetCredentialFromBiometricSession/mockGetCredentialFromBiometricSession";
-import { IGetCredentialFromBiometricSession } from "./mockGetCredentialFromBiometricSession/types";
 import { createKmsSignedJwt } from "../adapters/aws/kms/createKmsSignedJwt/createKmsSignedJwt";
 import { CreateKmsSignedJwt } from "../adapters/aws/kms/createKmsSignedJwt/types";
+import {
+  getCredentialFromBiometricSession,
+  IGetCredentialFromBiometricSession,
+} from "@govuk-one-login/mobile-id-check-biometric-credential";
 
 export type IssueBiometricCredentialDependencies = {
   env: NodeJS.ProcessEnv;
@@ -37,6 +39,6 @@ export const runtimeDependencies: IssueBiometricCredentialDependencies = {
   getBiometricSession,
   getEventService: (sqsQueue: string) => new EventService(sqsQueue),
   sendMessageToSqs,
-  getCredentialFromBiometricSession: mockGetCredentialFromBiometricSession,
+  getCredentialFromBiometricSession,
   createKmsSignedJwt,
 };

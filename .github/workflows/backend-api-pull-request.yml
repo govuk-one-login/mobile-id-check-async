@@ -20,6 +20,9 @@ on:
 
   workflow_dispatch:
 
+permissions:
+  packages: read
+
 jobs:
   backend-api-pull-request:
     name: Backend-api pull request checks
@@ -28,4 +31,5 @@ jobs:
       ./.github/workflows/workflow_pull-request.yml
     with:
       WORKING_DIRECTORY: backend-api
+      PRIVATE_PACKAGES_REQUIRED: true
     secrets: inherit

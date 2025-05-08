@@ -35,6 +35,10 @@ on:
         description: Path to working directory in repo
         required: true
         type: string
+      PRIVATE_PACKAGES_REQUIRED:
+        description: Whether private packages must be installed
+        type: string
+        default: false
     secrets:
       SONAR_TOKEN:
         description: The token used for secure access to the SonarQube platform
@@ -83,6 +87,7 @@ jobs:
       RUN_RAIN_FORMAT_VERIFY: ${{ inputs.RUN_RAIN_FORMAT_VERIFY }}
       RUN_SAM_VALIDATE: ${{ inputs.RUN_SAM_VALIDATE }}
       WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
+      PRIVATE_PACKAGES_REQUIRED: ${{ inputs.PRIVATE_PACKAGES_REQUIRED }}
 
   run-test-suite:
     name: Run test suite
@@ -94,6 +99,7 @@ jobs:
       RUN_UNIT_TESTS: ${{ inputs.RUN_UNIT_TESTS }}
       RUN_SONARQUBE: ${{ inputs.RUN_SONARQUBE }}
       WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
+      PRIVATE_PACKAGES_REQUIRED: ${{ inputs.PRIVATE_PACKAGES_REQUIRED }}
 
   sonarqube-scan:
     name: SonarQube scan

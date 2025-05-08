@@ -11,6 +11,8 @@ import { expect } from "@jest/globals";
 import "../../../../../../tests/testUtils/matchers";
 import { emptyFailure, Result, successResult } from "../../../../utils/result";
 import { mockDerSignature } from "../../../../testUtils/unitTestData";
+import { JwtPayload } from "../../../../types/jwt";
+import { BiometricCredential } from "@govuk-one-login/mobile-id-check-biometric-credential";
 
 describe("createKmsSignedJwt", () => {
   let consoleDebugSpy: jest.SpyInstance;
@@ -23,13 +25,13 @@ describe("createKmsSignedJwt", () => {
   let result: Result<string, void>;
 
   const mockKid = "mockKid";
-  const mockPayload = {
+  const mockPayload: JwtPayload = {
     iat: 123,
     iss: "mockIss",
     jti: "mockJti",
     nbf: 123,
     sub: "mockSub",
-    vc: "mockVc",
+    vc: {} as BiometricCredential,
   };
 
   beforeEach(() => {
@@ -119,7 +121,7 @@ describe("createKmsSignedJwt", () => {
       it("Returns successResult with signed JWT", () => {
         expect(result).toEqual(
           successResult(
-            "eyJhbGciOiJFUzI1NiIsImtpZCI6Im1vY2tLaWQiLCJ0eXAiOiJKV1QifQ.eyJpYXQiOjEyMywiaXNzIjoibW9ja0lzcyIsImp0aSI6Im1vY2tKdGkiLCJuYmYiOjEyMywic3ViIjoibW9ja1N1YiIsInZjIjoibW9ja1ZjIn0.QkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkIkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJA",
+            "eyJhbGciOiJFUzI1NiIsImtpZCI6Im1vY2tLaWQiLCJ0eXAiOiJKV1QifQ.eyJpYXQiOjEyMywiaXNzIjoibW9ja0lzcyIsImp0aSI6Im1vY2tKdGkiLCJuYmYiOjEyMywic3ViIjoibW9ja1N1YiIsInZjIjp7fX0.QkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkIkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJA",
           ),
         );
       });

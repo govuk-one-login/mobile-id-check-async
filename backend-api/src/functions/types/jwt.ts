@@ -1,3 +1,5 @@
+import { BiometricCredential } from "@govuk-one-login/mobile-id-check-biometric-credential";
+
 export interface IJwtPayload {
   [key: string]: string | number | undefined;
   iss: string;
@@ -21,7 +23,7 @@ export interface CredentialJwtPayload {
   jti: string;
   nbf: number;
   sub: string;
-  vc: string; // To be updated when using the real package
+  vc: BiometricCredential;
 }
 
 export type JwtPayload = CredentialJwtPayload;
