@@ -567,6 +567,7 @@ describe("Async Issue Biometric Credential", () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
               messageCode:
                 "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_IPV_CORE_MESSAGE_ERROR",
+              data: { messageType: "ERROR_MESSAGE" },
               persistentIdentifiers: {
                 sessionId: mockSessionId,
                 biometricSessionId: mockBiometricSessionId,
@@ -1066,9 +1067,39 @@ describe("Async Issue Biometric Credential", () => {
       );
     });
 
+    describe("Given sending DCMAW_ASYNC_CRI_END event fails", () => {
+      beforeEach(async () => {
+        dependencies = {
+          ...dependencies,
+          getEventService: () => mockFailingEventService,
+        };
+
+        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+      });
+
+      it("Logs the DCMAW_ASYNC_CRI_END event failure with persistent identifiers", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+          data: {
+            auditEventName: "DCMAW_ASYNC_CRI_END",
+          },
+          persistentIdentifiers: {
+            sessionId: mockSessionId,
+            biometricSessionId: mockBiometricSessionId,
+            govukSigninJourneyId: mockGovukSigninJourneyId
+          }
+        });
+      });
+
+      it("Does not log COMPLETED", () => {
+        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        });
+      });
+    });
+
     describe("Happy path", () => {
       beforeEach(async () => {
-        // Uses the default mockSessionRegistrySuccess which returns validBiometricSessionFinishedAttributes
         await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
       });
 
@@ -1129,6 +1160,21 @@ describe("Async Issue Biometric Credential", () => {
             sub: mockSubjectIdentifier,
           },
         );
+      });
+
+      it("Writes DCMAW_ASYNC_CRI_END event to TxMA", () => {
+        expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith({
+          eventName: "DCMAW_ASYNC_CRI_END",
+          componentId: mockIssuer,
+          getNowInMilliseconds: Date.now,
+          sessionId: mockSessionId,
+          govukSigninJourneyId: mockGovukSigninJourneyId,
+          ipAddress: undefined,
+          redirect_uri: undefined,
+          sub: mockSubjectIdentifier,
+          suspected_fraud_signal: undefined,
+          txmaAuditEncoded: undefined,
+        });
       });
 
       it("Logs COMPLETED with persistent identifiers", () => {
