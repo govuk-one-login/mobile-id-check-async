@@ -25,6 +25,7 @@ DEV_OVERRIDE_PROXY_BASE_URL="DevOverrideProxyBaseUrl"
 DEV_OVERRIDE_SESSIONS_BASE_URL="DevOverrideSessionsBaseUrl"
 DEV_OVERRIDE_STS_BASE_URL="DevOverrideStsBaseUrl"
 DEV_OVERRIDE_EVENTS_BASE_URL="DevOverrideEventsBaseUrl"
+DEV_OVERRIDE_TEST_RESOURCES_BASE_URL="DevOverrideTestResourcesBaseUrl"
 DEV_OVERRIDE_READID_PROXY_BASE_URL="DevOverrideReadIdBaseUrl"
 DEPLOY_ALARMS_IN_DEV="DeployAlarmsInDev"
 LAMBDA_DEPLOYMENT_PREFERENCE="LambdaDeploymentPreference"
@@ -37,6 +38,7 @@ PROXY_URL="https://proxy-${BACKEND_STACK_NAME}.${ASYNC_DOMAIN}"
 SESSIONS_URL="https://sessions-${BACKEND_STACK_NAME}.${ASYNC_DOMAIN}"
 STS_MOCK_URL="https://sts-${TEST_RESOURCES_STACK_NAME}.${ASYNC_DOMAIN}"
 EVENTS_URL="https://events-${TEST_RESOURCES_STACK_NAME}.${ASYNC_DOMAIN}"
+TEST_RESOURCES_URL="https://api-${TEST_RESOURCES_STACK_NAME}.${ASYNC_DOMAIN}"
 
 deploy_cf_dist=false
 deploy_backend_api_stack=false
@@ -206,6 +208,7 @@ fi
 if [[ $deploy_backend_api_stack == true ]]; then
   parameter_overrides="${DEV_OVERRIDE_STS_BASE_URL}=${STS_MOCK_URL}"
   parameter_overrides+=" ${DEV_OVERRIDE_EVENTS_BASE_URL}=${EVENTS_URL}"
+  parameter_overrides+=" ${DEV_OVERRIDE_TEST_RESOURCES_BASE_URL}=${TEST_RESOURCES_URL}"
 
   if [[ $enable_alarms == true ]]; then
       parameter_overrides+=" $DEPLOY_ALARMS_IN_DEV=true"
