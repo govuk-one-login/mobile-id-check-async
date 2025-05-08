@@ -39,7 +39,7 @@ jobs:
 
       - name: Configure authentication for private packages in .npmrc
         run: |
-          engine-strict=true > .npmrc
+          echo "engine-strict=true" > .npmrc
           echo "@govuk-one-login:registry=https://npm.pkg.github.com/" >> .npmrc
           echo "//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN" >> .npmrc
         env:
@@ -88,7 +88,7 @@ jobs:
 
     - name: Configure authentication for private packages in .npmrc
       run: |
-        engine-strict=true > .npmrc
+        echo "engine-strict=true" > .npmrc
         echo "@govuk-one-login:registry=https://npm.pkg.github.com/" >> .npmrc
         echo "//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN" >> .npmrc
       env:
@@ -176,7 +176,7 @@ jobs:
 
       - name: Configure authentication for private packages in .npmrc
         run: |
-          engine-strict=true > .npmrc
+          echo "engine-strict=true" > .npmrc
           echo "@govuk-one-login:registry=https://npm.pkg.github.com/" >> .npmrc
           echo "//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN" >> .npmrc
         env:

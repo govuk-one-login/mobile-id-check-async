@@ -54,7 +54,7 @@ jobs:
       - name: Configure authentication for private packages in .npmrc
         if: inputs.PRIVATE_PACKAGES_REQUIRED == 'true'
         run: |
-          engine-strict=true > .npmrc
+          echo "engine-strict=true" > .npmrc
           echo "@govuk-one-login:registry=https://npm.pkg.github.com/" >> .npmrc
           echo "//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN" >> .npmrc
         env:
