@@ -1,8 +1,8 @@
-name: backend-api push to main
+name: backend-api push to DCMAW-13162
 on:
   push:
     branches:
-      - main
+      - DCMAW-13162
     paths:
       - "backend-api/**"
       - ".github/workflows/backend-api-push-to-main.yml"
