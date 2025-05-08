@@ -3,6 +3,7 @@ export const mockBiometricSessionId = "11111111-1111-1111-1111-111111111111";
 export const mockInvalidUUID = "invalid-uuid";
 export const mockExpiredSessionId = "mock-expired-session-id";
 export const mockInvalidStateSessionId = "mock-invalid-state-session-id";
+export const mockClientState = "mockClientState";
 export const expectedSecurityHeaders = {
   "cache-control": "no-store",
   "content-type": "application/json",
