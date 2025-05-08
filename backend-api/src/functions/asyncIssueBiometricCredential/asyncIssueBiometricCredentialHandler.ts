@@ -249,6 +249,14 @@ export async function lambdaHandlerConstructor(
     return;
   }
 
+  const writeCriEndEventResult = await writeCriEndEvent(
+    eventService,
+    sessionAttributes,
+  );
+  if (writeCriEndEventResult.isError) {
+    return;
+  }
+
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
 }
 
@@ -496,4 +504,36 @@ export const buildCredentialJwtPayload = (jwtData: {
     sub,
     vc: credential,
   };
+};
+
+const writeCriEndEvent = async (
+  eventService: IEventService,
+  sessionAttributes: BiometricSessionFinishedAttributes,
+): Promise<Result<void, void>> => {
+  const {
+    govukSigninJourneyId,
+    subjectIdentifier,
+    sessionId,
+    issuer,
+    redirectUri,
+  } = sessionAttributes;
+  const writeCriEndEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_CRI_END",
+    sub: subjectIdentifier,
+    sessionId,
+    govukSigninJourneyId,
+    componentId: issuer,
+    getNowInMilliseconds: Date.now,
+    ipAddress: undefined,
+    txmaAuditEncoded: undefined,
+    redirect_uri: redirectUri,
+    suspected_fraud_signal: undefined,
+  });
+  if (writeCriEndEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: { auditEventName: "DCMAW_ASYNC_CRI_END" },
+    });
+    return emptyFailure();
+  }
+  return emptySuccess();
 };
