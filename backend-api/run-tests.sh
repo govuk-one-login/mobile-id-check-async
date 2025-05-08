@@ -11,6 +11,7 @@ export PRIVATE_API_URL=$(remove_quotes "$CFN_PrivateApiUrl")
 export SESSIONS_API_URL=$(remove_quotes "$CFN_SessionsApiUrl")
 export STS_MOCK_API_URL=$(remove_quotes "$CFN_StsMockApiUrl")
 export EVENTS_API_URL=$(remove_quotes "$CFN_EventsApiUrl")
+export TEST_RESOURCES_API_URL=$(remove_quotes "$CFN_TestResourcesApiUrl")
 
 mkdir -pv results
 
