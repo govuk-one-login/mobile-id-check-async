@@ -1086,8 +1086,8 @@ describe("Async Issue Biometric Credential", () => {
           persistentIdentifiers: {
             sessionId: mockSessionId,
             biometricSessionId: mockBiometricSessionId,
-            govukSigninJourneyId: mockGovukSigninJourneyId
-          }
+            govukSigninJourneyId: mockGovukSigninJourneyId,
+          },
         });
       });
 

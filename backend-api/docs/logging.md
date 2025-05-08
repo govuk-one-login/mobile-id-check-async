@@ -35,20 +35,20 @@ logger.error(LogMessage.GET_SECRETS_FROM_PARAMETER_STORE_FAILURE, {
 
 To assist tracing user requests across the system to aide in support queries, we have decided to append the following identifiers to the logger as soon as we have access to them in the lambda handler:
 
-* `biometricSessionId`: Mechanism for providing ReadID `biometricSessionId`s for any errors we’ve encountered when issuing a VC
-* `govukSigninJourneyId`: Mechanism for linking from TxMA events and provides E2E journey traceability
-* `sessionId`: Mechanism for looking up sessions in `Dynamo`
+* `biometricSessionId`: Identifies the `ReadID` session for biometric verification, useful for tracing errors encountered during VC issuance.
+* `govukSigninJourneyId`: Links to TxMA events, enabling end-to-end journey traceability.
+* `sessionId`: Allows session lookup in `DynamoDB`
 
 Logging fields that should persist across multiple uses of the logger within a single Lambda invocation can be added as follows:
 
 ```ts
-import { appendPersistentIdentifiersToLogger } from "backend-api/src/functions/common/logging/helpers/appendPersistentIdentifiersToLogger.ts";
+import { appendPersistentIdentifiersToLogger } from "relative/path/to/logging/helpers/appendPersistentIdentifiersToLogger.ts";
 
-// You can add all identifiers at once
+//Option 1: Add all identifiers at once
 const { biometricSessionId, govukSigninJourneyId, sessionId } = sessionAttributes
 appendPersistentKeys({ biometricSessionId, govukSigninJourneyId, sessionId })
 
-// Or you can add them in multiple stages
+// Option 2: Add them incrementally
 const { sessionId } = requestBody
 appendPersistentKeys({ sessionId })
 
