@@ -19,11 +19,11 @@
     "zx": "^8.5.3"
   },
   "devDependencies": {
-    "@types/node": "^22.15.3",
-    "eslint": "^9.25.1",
+    "@types/node": "^22.15.11",
+    "eslint": "^9.26.0",
     "eslint-config-prettier": "^10.1.2",
     "prettier": "^3.4.2",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.31.1"
+    "typescript-eslint": "^8.32.0"
   }
 }

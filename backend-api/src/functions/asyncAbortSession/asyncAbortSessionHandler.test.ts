@@ -17,8 +17,8 @@ import {
   validCreatedAt,
   mockSuccessfulEventService,
   mockWriteGenericEventSuccessResult,
-  mockSuccessfulSendMessageToSqs,
-  mockFailingSendMessageToSqs,
+  mockSendMessageToSqsSuccess,
+  mockSendMessageToSqsFailure,
   mockFailingEventService,
 } from "../testUtils/unitTestData";
 import { successResult, errorResult } from "../utils/result";
@@ -58,7 +58,7 @@ describe("Async Abort Session", () => {
       },
       getSessionRegistry: () => mockSuccessfulSessionRegistry,
       getEventService: () => mockSuccessfulEventService,
-      sendMessageToSqs: mockSuccessfulSendMessageToSqs,
+      sendMessageToSqs: mockSendMessageToSqsSuccess,
     };
 
     context = buildLambdaContext();
@@ -419,7 +419,7 @@ describe("Async Abort Session", () => {
       });
 
       it("Sends the correct message format to the IPVCore Outbound queue", () => {
-        expect(mockSuccessfulSendMessageToSqs).toHaveBeenCalledWith(
+        expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
           "mockIpvcoreOutboundSqs",
           {
             sub: "mockSubjectIdentifier",
@@ -436,7 +436,7 @@ describe("Async Abort Session", () => {
         beforeEach(async () => {
           dependencies = {
             ...dependencies,
-            sendMessageToSqs: mockFailingSendMessageToSqs,
+            sendMessageToSqs: mockSendMessageToSqsFailure,
             getEventService: () => mockFailingEventService,
           };
           result = await lambdaHandlerConstructor(
@@ -471,7 +471,7 @@ describe("Async Abort Session", () => {
         beforeEach(async () => {
           dependencies = {
             ...dependencies,
-            sendMessageToSqs: mockFailingSendMessageToSqs,
+            sendMessageToSqs: mockSendMessageToSqsFailure,
           };
           result = await lambdaHandlerConstructor(
             dependencies,

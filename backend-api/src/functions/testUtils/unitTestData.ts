@@ -11,6 +11,11 @@ import {
 export const mockSessionId = "58f4281d-d988-49ce-9586-6ef70a2be0b4";
 export const mockBiometricSessionId = "f32432a9-0965-4da9-8a2c-a98a79349d4a";
 export const mockInvalidUUID = "invalid-uuid";
+export const mockGovukSigninJourneyId = "mockGovukSigninJourneyId";
+export const mockSubjectIdentifier = "mockSubjectIdentifier";
+export const mockClientState = "mockClientState";
+export const mockIssuer = "mockIssuer";
+export const mockRedirectUri = "https://www.mockRedirectUri.com";
 
 export const expectedSecurityHeaders = {
   "Cache-Control": "no-store",
@@ -29,27 +34,40 @@ export const ONE_HOUR_AGO_IN_MILLISECONDS = 1704106800000; // 2024-01-01 11:00:0
 export const validCreatedAt: number = 1704106860000; // 2024-01-01 11:01:00.000
 export const invalidCreatedAt: number = 1704106740000; // 2024-01-01 10:59:00.000
 
+// This is a simulated, not cryptographically valid, DER-encoded signature
+export const mockDerSignature = Buffer.from([
+  48,
+  69, // SEQUENCE
+  2,
+  33, // INTEGER (R)
+  0x00, // Leading zero for R > 127
+  ...Array(32).fill(0x42), // Mock R value
+  2,
+  32, // INTEGER (S)
+  ...Array(32).fill(0x24), // Mock S value
+]);
+
 export const validBaseSessionAttributes = {
   clientId: "mockClientId",
-  govukSigninJourneyId: "mockGovukSigninJourneyId",
+  govukSigninJourneyId: mockGovukSigninJourneyId,
   createdAt: validCreatedAt,
-  issuer: "mockIssuer",
+  issuer: mockIssuer,
   sessionId: mockSessionId,
   sessionState: SessionState.AUTH_SESSION_CREATED,
-  clientState: "mockClientState",
-  subjectIdentifier: "mockSubjectIdentifier",
+  clientState: mockClientState,
+  subjectIdentifier: mockSubjectIdentifier,
   timeToLive: 12345,
 };
 
 export const invalidBaseSessionAttributeTypes = {
   clientId: "mockClientId",
-  govukSigninJourneyId: "mockGovukSigninJourneyId",
+  govukSigninJourneyId: mockGovukSigninJourneyId,
   createdAt: validCreatedAt,
   issuer: 12345, // Invalid type
   sessionId: mockSessionId,
   sessionState: SessionState.AUTH_SESSION_CREATED,
-  clientState: "mockClientState",
-  subjectIdentifier: "mockSubjectIdentifier",
+  clientState: mockClientState,
+  subjectIdentifier: mockSubjectIdentifier,
   timeToLive: "12345", // Invalid type
 };
 
@@ -62,7 +80,7 @@ export const validBiometricTokenIssuedSessionAttributes = {
 
 export const validBiometricTokenIssuedSessionAttributesMobileApp = {
   ...validBiometricTokenIssuedSessionAttributes,
-  redirectUri: "https://www.mockRedirectUri.com",
+  redirectUri: mockRedirectUri,
 };
 
 export const invalidBiometricTokenIssuedSessionAttributesWrongSessionState = {
@@ -84,7 +102,7 @@ export const validBiometricSessionFinishedAttributes = {
 
 export const validBiometricSessionFinishedAttributesMobileApp = {
   ...validBiometricSessionFinishedAttributes,
-  redirectUri: "https://www.mockRedirectUri.com",
+  redirectUri: mockRedirectUri,
 };
 
 export const validAbortSessionAttributes = {
@@ -94,7 +112,7 @@ export const validAbortSessionAttributes = {
 
 export const validAbortSessionAttributesMobileApp = {
   ...validBiometricSessionFinishedAttributes,
-  redirectUri: "https://www.mockRedirectUri.com",
+  redirectUri: mockRedirectUri,
 };
 
 export const validResultSentAttributes = {
@@ -148,11 +166,11 @@ export const mockFailingEventService = {
   writeGenericEvent: mockWriteGenericEventFailureResult,
 };
 
-export const mockSuccessfulSendMessageToSqs = jest
+export const mockSendMessageToSqsSuccess = jest
   .fn()
   .mockResolvedValue(emptySuccess());
 
-export const mockFailingSendMessageToSqs = jest
+export const mockSendMessageToSqsFailure = jest
   .fn()
   .mockResolvedValue(emptyFailure());
 

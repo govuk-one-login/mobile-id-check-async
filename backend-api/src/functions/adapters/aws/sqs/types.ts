@@ -10,6 +10,13 @@ export interface OutboundQueueErrorMessage {
   error_description: string;
 }
 
+export interface VerifiableCredentialMessage {
+  sub: string;
+  state: string;
+  "https://vocab.account.gov.uk/v1/credentialJWT": [string];
+}
+
 export type SQSMessageBody =
   | VendorProcessingMessage
-  | OutboundQueueErrorMessage;
+  | OutboundQueueErrorMessage
+  | VerifiableCredentialMessage;
