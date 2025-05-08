@@ -36,7 +36,7 @@ logger.error(LogMessage.GET_SECRETS_FROM_PARAMETER_STORE_FAILURE, {
 To assist tracing user requests across the system to aide in support queries, we have decided to append the following identifiers to the logger as soon as we have access to them in the lambda handler:
 
 * `biometricSessionId`: Mechanism for providing ReadID `biometricSessionId`s for any errors we’ve encountered when issuing a VC
-* `govuk_signin_journeyid`: Mechanism for linking from TxMA events and provides E2E journey traceability
+* `govukSigninJourneyId`: Mechanism for linking from TxMA events and provides E2E journey traceability
 * `sessionId`: Mechanism for looking up sessions in `Dynamo`
 
 Logging fields that should persist across multiple uses of the logger within a single Lambda invocation can be added as follows:
