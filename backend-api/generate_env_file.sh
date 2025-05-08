@@ -12,7 +12,7 @@ fi
 echo "Generating .env file for the $BACKEND_STACK_NAME stack"
 
 # Retrieve backend stack outputs
-aws_output=$(aws cloudformation describe-stacks \
+stack_outputs=$(aws cloudformation describe-stacks \
   --stack-name "$BACKEND_STACK_NAME" \
   --query "Stacks[0].Outputs[*].{key: OutputKey, value: OutputValue}" \
   --output text)
@@ -25,7 +25,7 @@ fi
 # Read AWS output and export each line as a key=value pair
 while IFS=$'\t' read -r key value; do
   export "$key"="$value"
-done <<< "$aws_output"
+done <<< "$stack_outputs"
 
 echo "TEST_ENVIRONMENT=dev" > .env
 {
