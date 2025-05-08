@@ -267,15 +267,11 @@ describe("Async TxMA Event", () => {
           context,
         );
       });
-      it("Logs the error with persistent identifiers", async () => {
+      it("Logs the error", async () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
           data: {
             auditEventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
-          },
-          persistentIdentifiers: {
-            sessionId: mockSessionId,
-            govukSigninJourneyId: mockGovukSigninJourneyId,
           },
         });
       });

@@ -231,14 +231,11 @@ describe("Async Biometric Token", () => {
         );
       });
 
-      it("Logs the error with persistent identifiers", async () => {
+      it("Logs the error", async () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
           data: {
             auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
-          },
-          persistentIdentifiers: {
-            sessionId: mockSessionId,
           },
         });
       });
@@ -319,14 +316,11 @@ describe("Async Biometric Token", () => {
             );
           });
 
-          it("Logs the error with persistent identifiers", async () => {
+          it("Logs the error", async () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
               messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
               data: {
                 auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
-              },
-              persistentIdentifiers: {
-                sessionId: mockSessionId,
               },
             });
           });
@@ -404,14 +398,11 @@ describe("Async Biometric Token", () => {
             );
           });
 
-          it("Logs the error with persistent identifiers", async () => {
+          it("Logs the error", async () => {
             expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
               messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
               data: {
                 auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
-              },
-              persistentIdentifiers: {
-                sessionId: mockSessionId,
               },
             });
           });
@@ -492,14 +483,11 @@ describe("Async Biometric Token", () => {
           );
         });
 
-        it("Logs the error with persistent identifiers", async () => {
+        it("Logs the error", async () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
             data: {
               auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
-            },
-            persistentIdentifiers: {
-              sessionId: mockSessionId,
             },
           });
         });
@@ -597,15 +585,11 @@ describe("Async Biometric Token", () => {
           context,
         );
       });
-      it("Logs the error with persistent identifiers", async () => {
+      it("Logs the error", async () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
           data: {
             auditEventName: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED", // example field to verify that context has been added
-          },
-          persistentIdentifiers: {
-            sessionId: mockSessionId,
-            govukSigninJourneyId: mockGovukSigninJourneyId,
           },
         });
       });

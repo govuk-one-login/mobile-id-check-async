@@ -185,13 +185,10 @@ describe("Async Abort Session", () => {
           );
         });
 
-        it("Logs audit event error with persistent identifiers and returns 500", () => {
+        it("Logs audit event error and returns 500", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
             data: { auditEventName: "DCMAW_ASYNC_CRI_4XXERROR" },
-            persistentIdentifiers: {
-              sessionId: mockSessionId,
-            },
           });
           expect(result.statusCode).toBe(500);
         });
@@ -337,13 +334,10 @@ describe("Async Abort Session", () => {
           );
         });
 
-        it("Logs audit event error with persistent identifiers and returns 500", () => {
+        it("Logs audit event error and returns 500", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
             data: { auditEventName: "DCMAW_ASYNC_CRI_4XXERROR" },
-            persistentIdentifiers: {
-              sessionId: mockSessionId,
-            },
           });
           expect(result.statusCode).toBe(500);
         });
@@ -372,13 +366,10 @@ describe("Async Abort Session", () => {
           );
         });
 
-        it("Logs audit event error with persistent identifiers and returns 500", () => {
+        it("Logs audit event error and returns 500", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
             data: { auditEventName: "DCMAW_ASYNC_CRI_5XXERROR" },
-            persistentIdentifiers: {
-              sessionId: mockSessionId,
-            },
           });
           expect(result.statusCode).toBe(500);
         });
@@ -456,15 +447,11 @@ describe("Async Abort Session", () => {
           );
         });
 
-        it("Logs the DCMAW_ASYNC_CRI_5XXERROR event failure with persistent identifiers", () => {
+        it("Logs the DCMAW_ASYNC_CRI_5XXERROR event failure", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
             data: {
               auditEventName: "DCMAW_ASYNC_CRI_5XXERROR",
-            },
-            persistentIdentifiers: {
-              sessionId: mockSessionId,
-              govukSigninJourneyId: mockGovukSigninJourneyId,
             },
           });
         });
@@ -546,15 +533,11 @@ describe("Async Abort Session", () => {
         );
       });
 
-      it("Logs the DCMAW_ASYNC_ABORT_APP event failure with persistent identifiers", () => {
+      it("Logs the DCMAW_ASYNC_ABORT_APP event failure", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
           data: {
             auditEventName: "DCMAW_ASYNC_ABORT_APP",
-          },
-          persistentIdentifiers: {
-            sessionId: mockSessionId,
-            govukSigninJourneyId: mockGovukSigninJourneyId,
           },
         });
       });
