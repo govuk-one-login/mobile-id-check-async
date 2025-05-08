@@ -40,6 +40,7 @@ updates:
     ignore:
       - dependency-name: "jose"
         update-types: ["version-update:semver-major"]
+      - dependency-name: "@govuk-one-login/mobile-id-check-biometric-credential"
   - package-ecosystem: "npm"
     directory: "test-resources"
     schedule:

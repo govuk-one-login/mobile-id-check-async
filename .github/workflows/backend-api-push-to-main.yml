@@ -13,6 +13,7 @@ on:
 permissions:
   contents: read
   id-token: write
+  packages: read
 
 jobs:
   sonar-scan:
@@ -35,6 +36,14 @@ jobs:
           node-version-file: ./backend-api/.nvmrc
           cache: npm
           cache-dependency-path: backend-api/package-lock.json
+
+      - name: Configure authentication for private packages in .npmrc
+        run: |
+          echo "engine-strict=true" > .npmrc
+          echo "@govuk-one-login:registry=https://npm.pkg.github.com/" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN" >> .npmrc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
         run: npm install
@@ -76,6 +85,14 @@ jobs:
         node-version-file: ./backend-api/.nvmrc
         cache: npm
         cache-dependency-path: backend-api/package-lock.json
+
+    - name: Configure authentication for private packages in .npmrc
+      run: |
+        echo "engine-strict=true" > .npmrc
+        echo "@govuk-one-login:registry=https://npm.pkg.github.com/" >> .npmrc
+        echo "//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN" >> .npmrc
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Install Cosign
       uses: sigstore/cosign-installer@d7d6bc7722e3daa8354c50bcb52f4837da5e9b6a #v3.8.1
@@ -156,6 +173,14 @@ jobs:
           node-version-file: ./backend-api/.nvmrc
           cache: npm
           cache-dependency-path: backend-api/package-lock.json
+
+      - name: Configure authentication for private packages in .npmrc
+        run: |
+          echo "engine-strict=true" > .npmrc
+          echo "@govuk-one-login:registry=https://npm.pkg.github.com/" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN" >> .npmrc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@d7d6bc7722e3daa8354c50bcb52f4837da5e9b6a #v3.8.1

@@ -30,10 +30,11 @@ awk '{ printf("CFN_%s=\"%s\"\n", $1, $2) }' cf-output.txt >> docker-vars.env
 
 aws configure export-credentials --format env-no-export >> docker-vars.env
 
-docker build --tag testcontainer .
+docker buildx build --tag testcontainer --secret id=NPM_TOKEN,env=NPM_TOKEN .
 
 docker run --rm --interactive --tty \
   --user root \
   --env-file docker-vars.env \
+  --env NPM_TOKEN=$NPM_TOKEN \
   --volume "$(pwd):/results" \
   testcontainer

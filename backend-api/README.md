@@ -16,6 +16,34 @@
 
 ## Setup
 
+### Enable the installation of modules from GitHub Packages
+
+1. On GitHub, generate a Personal Access Token (classic) with the following scopes:
+
+    - `read:packages`
+    - `repo`
+
+   It is recommended to:
+    - create a new PAT with only the required scopes, to ensure least-privilege
+    - store this PAT _securely_ for re-use in the OS keychain to avoid needing to generate a new PAT for each install
+
+1. Set your token as an environment variable
+
+    ```zsh
+    export NPM_TOKEN=<your-classic-pat>
+    ```
+
+1. Use script to create a `.npmrc` file referencing this environment variable:
+
+    ```bash
+    # From /backend-api
+    ./generate_npmrc.sh
+    ```
+
+**NOTE:** the above steps must be followed before installing dependencies (`npm install`).
+
+### Pre-commit hooks
+
 This repository uses Githooks to run pre-commit checks. To install these:
 
 ```bash
