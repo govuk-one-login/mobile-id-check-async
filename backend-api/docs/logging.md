@@ -44,16 +44,16 @@ Logging fields that should persist across multiple uses of the logger within a s
 ```ts
 import { appendPersistentIdentifiersToLogger } from "relative/path/to/logging/helpers/appendPersistentIdentifiersToLogger.ts";
 
-//Option 1: Add all identifiers at once
+// Option 1: Add all identifiers at once
 const { biometricSessionId, govukSigninJourneyId, sessionId } = sessionAttributes
-appendPersistentKeys({ biometricSessionId, govukSigninJourneyId, sessionId })
+appendPersistentIdentifiersToLogger({ biometricSessionId, govukSigninJourneyId, sessionId })
 
 // Option 2: Add them incrementally
 const { sessionId } = requestBody
-appendPersistentKeys({ sessionId })
+appendPersistentIdentifiersToLogger({ sessionId })
 
 const { biometricSessionId, govukSigninJourneyId } = sessionAttributes
-appendPersistentKeys({ biometricSessionId, govukSigninJourneyId })
+appendPersistentIdentifiersToLogger({ biometricSessionId, govukSigninJourneyId })
 ```
 
 As a single logger instance is shared across the modules of our Lambda, these keys will persist until cleared or
