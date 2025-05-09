@@ -1,6 +1,7 @@
 import { SendMessageCommand } from "@aws-sdk/client-sqs";
 import { Result, emptyFailure, emptySuccess } from "../../utils/result";
 import { sqsClient } from "./sqsClient";
+import { CredentialSubject } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import {
   BiometricTokenIssuedEvent,
   BiometricTokenIssuedEventConfig,
@@ -78,7 +79,10 @@ export class EventService implements IEventService {
       event_timestamp_ms: timestampInMillis,
       event_name: eventConfig.eventName,
       component_id: eventConfig.componentId,
-      restricted: this.getRestrictedData(eventConfig.txmaAuditEncoded),
+      restricted: this.getRestrictedData(
+        eventConfig.txmaAuditEncoded,
+        eventConfig.credentialSubject,
+      ),
       extensions,
     };
 
@@ -141,15 +145,24 @@ export class EventService implements IEventService {
 
   private readonly getRestrictedData = (
     txmaAuditEncoded: string | undefined,
+    credentialSubject?: CredentialSubject,
   ): RestrictedData | undefined => {
-    if (txmaAuditEncoded == null) {
+    if (txmaAuditEncoded === null && credentialSubject === null) {
       return undefined;
     }
 
-    return {
-      device_information: {
-        encoded: txmaAuditEncoded,
-      },
+    // Use a ternary to ensure device_information is either the expected object or undefined
+    const deviceInformation = txmaAuditEncoded
+      ? {
+          encoded: txmaAuditEncoded,
+        }
+      : undefined;
+
+    const restrictedData: RestrictedData = {
+      device_information: deviceInformation,
+      ...credentialSubject,
     };
+
+    return restrictedData;
   };
 }
