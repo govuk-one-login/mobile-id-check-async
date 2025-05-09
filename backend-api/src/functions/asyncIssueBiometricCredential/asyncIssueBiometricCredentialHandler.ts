@@ -196,7 +196,6 @@ export async function lambdaHandlerConstructor(
       getCredentialFromBiometricSessionOptions,
     );
 
-  //BREAKS HERE
   if (getCredentialFromBiometricSessionResult.isError) {
     return await handleGetCredentialFailure(
       getCredentialFromBiometricSessionResult.value,
