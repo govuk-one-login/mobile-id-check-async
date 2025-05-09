@@ -22,6 +22,7 @@ import { getAuditData } from "../common/request/getAuditData/getAuditData";
 import { handleUpdateSessionError } from "../common/errors/errorHandlers";
 import { AuthSessionAbortedAttributes } from "../common/session/session";
 import { IEventService } from "../services/events/types";
+import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncAbortSessionDependencies,
@@ -50,6 +51,8 @@ export async function lambdaHandlerConstructor(
 
   const sessionId = validateResult.value;
 
+  appendPersistentIdentifiersToLogger({ sessionId });
+
   const eventService = dependencies.getEventService(config.TXMA_SQS);
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
@@ -74,6 +77,10 @@ export async function lambdaHandlerConstructor(
 
   const sessionAttributes = updateSessionResult.value
     .attributes as AuthSessionAbortedAttributes;
+
+  appendPersistentIdentifiersToLogger({
+    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+  });
 
   const ipvCoreOutboundMessage = {
     sub: sessionAttributes.subjectIdentifier,

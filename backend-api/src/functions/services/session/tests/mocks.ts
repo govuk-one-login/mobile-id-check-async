@@ -1,3 +1,4 @@
+import { mockSessionId } from "../../../testUtils/unitTestData";
 import {
   ErrorCategory,
   errorResult,
@@ -23,7 +24,7 @@ export class MockSessionServiceGetErrorResult implements ISessionService {
   };
 
   createSession = async (): Promise<Result<string>> => {
-    return successResult("mockSessionId");
+    return successResult(mockSessionId);
   };
 }
 
@@ -37,25 +38,25 @@ export class MockSessionServiceGetNullSuccessResult implements ISessionService {
   };
 
   createSession = async (): Promise<Result<string>> => {
-    return successResult("mockSessionId");
+    return successResult(mockSessionId);
   };
 }
 
 export class MockSessionServiceGetSuccessResult implements ISessionService {
   getActiveSessionId = async (): Promise<Result<string | null>> => {
-    return successResult("mockSessionId");
+    return successResult(mockSessionId);
   };
 
   getActiveSession = async (): Promise<Result<Session | null>> => {
     return successResult({
-      sessionId: "mockSessionId",
+      sessionId: mockSessionId,
       redirectUri: "https://mockUrl.com/redirect",
       state: "mockClientState",
     });
   };
 
   createSession = async (): Promise<Result<string>> => {
-    return successResult("mockSessionId");
+    return successResult(mockSessionId);
   };
 }
 
@@ -69,7 +70,7 @@ export class MockSessionServiceCreateSuccessResult implements ISessionService {
   };
 
   createSession = async (): Promise<Result<string>> => {
-    return successResult("mockSessionId");
+    return successResult(mockSessionId);
   };
 }
 
