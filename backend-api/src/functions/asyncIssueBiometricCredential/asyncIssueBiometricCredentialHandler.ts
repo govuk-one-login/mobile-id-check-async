@@ -257,9 +257,6 @@ export async function lambdaHandlerConstructor(
     credential,
   );
   if (writeBiometricTokenEventResult.isError) {
-    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-      data: { auditEventName: "DCMAW_ASYNC_CRI_VC_ISSUED" },
-    });
     return;
   }
 
