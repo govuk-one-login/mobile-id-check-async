@@ -3465,6 +3465,19 @@ Resources:
               - Action:
                   - sqs:SendMessage
                 Effect: Allow
+                Resource: !GetAtt TxMASQSQueue.Arn
+              - Action:
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Effect: Allow
+                Resource: !GetAtt TxMAKMSEncryptionKey.Arn
+            Version: "2012-10-17"
+          PolicyName: AsyncIssueBiometricCredentialFunctionTxmaSQSPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - sqs:SendMessage
+                Effect: Allow
                 Resource: !GetAtt IPVCoreSQS.Arn
               - Action:
                   - kms:Decrypt

@@ -1,5 +1,10 @@
 import { Result } from "../../utils/result";
 import { DocumentType } from "../../types/document";
+import {
+  CredentialSubject,
+  FailEvidence,
+  PassEvidence,
+} from "@govuk-one-login/mobile-id-check-biometric-credential";
 
 interface BaseEventConfig {
   getNowInMilliseconds: () => number;
@@ -15,8 +20,8 @@ export interface BaseUserEventConfig extends BaseEventConfig {
   transactionId?: string;
 }
 
-export interface RestrictedData {
-  device_information: {
+export interface RestrictedData extends Partial<CredentialSubject> {
+  device_information?: {
     encoded: string;
   };
   transactionId?: string;
@@ -54,12 +59,6 @@ export type GenericEventNames =
   | "DCMAW_ASYNC_APP_END"
   | "DCMAW_ASYNC_ABORT_APP";
 
-export type EventNames =
-  | GenericEventNames
-  | TxmaBillingEventName
-  | "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED"
-  | "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED";
-
 export const txmaBillingEventNames = [
   "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
   "DCMAW_ASYNC_IPROOV_BILLING_STARTED",
@@ -68,10 +67,19 @@ export const txmaBillingEventNames = [
 
 export type TxmaBillingEventName = (typeof txmaBillingEventNames)[number];
 
+export type EventNames =
+  | GenericEventNames
+  | TxmaBillingEventName
+  | "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED"
+  | "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED"
+  | "DCMAW_ASYNC_CRI_VC_ISSUED";
+
 export interface GenericEventConfig extends BaseUserEventConfig {
-  eventName: GenericEventNames | TxmaBillingEventName;
+  eventName: EventNames;
   redirect_uri: string | undefined;
   suspected_fraud_signal: string | undefined;
+  evidence?: Array<PassEvidence | FailEvidence>;
+  credentialSubject?: CredentialSubject;
 }
 
 export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
@@ -84,7 +92,7 @@ export interface BiometricTokenIssuedEventConfig extends BaseUserEventConfig {
 }
 
 export interface GenericTxmaEvent extends BaseUserTxmaEvent {
-  event_name: GenericEventNames | TxmaBillingEventName;
+  event_name: EventNames;
   extensions: Extensions | undefined;
 }
 

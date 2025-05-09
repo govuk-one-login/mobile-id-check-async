@@ -23,6 +23,8 @@ import {
   mockClientState,
   mockIssuer,
   NOW_IN_MILLISECONDS,
+  mockBiometricCredential,
+  mockFailingCriEventService,
 } from "../testUtils/unitTestData";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { emptyFailure, errorResult, successResult } from "../utils/result";
@@ -127,7 +129,7 @@ describe("Async Issue Biometric Credential", () => {
     .fn()
     .mockReturnValue(
       successResult({
-        credential: "mockCredential",
+        credential: mockBiometricCredential,
         analytics: "mockAnalytics",
         audit: "mockAudit",
         advisories: "mockAdvisories",
@@ -1024,11 +1026,36 @@ describe("Async Issue Biometric Credential", () => {
       );
     });
 
-    describe("Given sending DCMAW_ASYNC_CRI_END event fails", () => {
+    describe("Given sending DCMAW_ASYNC_CRI_VC_ISSUED event fails", () => {
       beforeEach(async () => {
         dependencies = {
           ...dependencies,
           getEventService: () => mockFailingEventService,
+        };
+
+        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+      });
+
+      it("Logs the DCMAW_ASYNC_CRI_VC_ISSUED event failure", () => {
+        expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+          data: {
+            auditEventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
+          },
+        });
+      });
+
+      it("Does not log COMPLETED", () => {
+        expect(consoleInfoSpy).not.toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        });
+      });
+    });
+    describe("Given sending DCMAW_ASYNC_CRI_END event fails", () => {
+      beforeEach(async () => {
+        dependencies = {
+          ...dependencies,
+          getEventService: () => mockFailingCriEventService,
         };
 
         await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
@@ -1098,7 +1125,71 @@ describe("Async Issue Biometric Credential", () => {
             jti: "urn:uuid:mock_random_uuid",
             nbf: 1704110400,
             sub: "mockSubjectIdentifier",
-            vc: "mockCredential",
+            vc: {
+              "@context": [
+                "https://www.w3.org/2018/credentials/v1",
+                "https://identity.gov.uk/credentials/v1",
+              ],
+              type: ["mockCredentialType"],
+              credentialSubject: {
+                name: [
+                  {
+                    nameParts: [
+                      { type: "GivenName", value: "mockGivenName" },
+                      { type: "FamilyName", value: "mockFamilyName" },
+                    ],
+                  },
+                ],
+                birthDate: [{ value: "mockBirthDate" }],
+                address: [
+                  {
+                    uprn: null,
+                    organisationName: null,
+                    subBuildingName: null,
+                    buildingNumber: null,
+                    buildingName: null,
+                    dependentStreetName: null,
+                    streetName: null,
+                    doubleDependentAddressLocality: null,
+                    dependentAddressLocality: null,
+                    addressLocality: null,
+                    postalCode: "mockPostalCode",
+                    addressCountry: null,
+                  },
+                ],
+                drivingPermit: [
+                  {
+                    personalNumber: "mockPersonalNumber",
+                    issueNumber: null,
+                    issuedBy: null,
+                    issueDate: null,
+                    expiryDate: "mockExpiryDate",
+                    fullAddress: "mockFullAddress",
+                  },
+                ],
+                deviceId: [{ value: "mockDeviceId" }],
+              },
+              evidence: [
+                {
+                  type: "IdentityCheck",
+                  txn: "mockTxn",
+                  strengthScore: 3,
+                  validityScore: 2,
+                  activityHistoryScore: 1,
+                  checkDetails: [
+                    {
+                      checkMethod: "vri",
+                      identityCheckPolicy: "published",
+                      activityFrom: "mockActivityFrom",
+                    },
+                    {
+                      checkMethod: "bvr",
+                      biometricVerificationProcessLevel: 3,
+                    },
+                  ],
+                },
+              ],
+            },
           },
         );
       });
