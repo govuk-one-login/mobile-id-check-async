@@ -251,20 +251,6 @@ export async function lambdaHandlerConstructor(
     return;
   }
 
-  logger.debug("stuff", {
-    data: {
-      biometricSession,
-      credentialJwtPayload,
-      credential,
-      sessionAttributes,
-      updateSessionResult,
-      sendVerifiableCredentialMessageToSqsResult,
-      getCredentialFromBiometricSessionResult,
-      getCredentialFromBiometricSessionOptions,
-      fraudCheckData,
-    },
-  });
-
   //Write VC_ISSUED event
   const writeBiometricTokenEventResult = await writeVCIssuedEvent(
     eventService,
