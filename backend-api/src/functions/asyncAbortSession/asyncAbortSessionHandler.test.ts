@@ -20,6 +20,7 @@ import {
   mockSendMessageToSqsSuccess,
   mockSendMessageToSqsFailure,
   mockFailingEventService,
+  mockGovukSigninJourneyId,
 } from "../testUtils/unitTestData";
 import { successResult, errorResult } from "../utils/result";
 import { UpdateSessionError } from "../common/session/SessionRegistry/types";
@@ -568,9 +569,13 @@ describe("Async Abort Session", () => {
       });
     });
 
-    it("Logs COMPLETED", async () => {
+    it("Logs COMPLETED with persistent identifiers", async () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_ABORT_SESSION_COMPLETED",
+        persistentIdentifiers: {
+          sessionId: mockSessionId,
+          govukSigninJourneyId: mockGovukSigninJourneyId,
+        },
       });
     });
 

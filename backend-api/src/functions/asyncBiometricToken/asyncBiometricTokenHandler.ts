@@ -41,6 +41,7 @@ import {
 } from "../common/session/session";
 import { setupLogger } from "../common/logging/setupLogger";
 import { getAuditData } from "../common/request/getAuditData/getAuditData";
+import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncBiometricTokenDependencies,
@@ -65,6 +66,8 @@ export async function lambdaHandlerConstructor(
     return badRequestResponse("invalid_request", errorMessage);
   }
   const { documentType, sessionId } = validateRequestBodyResult.value;
+
+  appendPersistentIdentifiersToLogger({ sessionId });
 
   const submitterKeyResult = await getSubmitterKeyForDocumentType(
     documentType,
@@ -113,14 +116,20 @@ export async function lambdaHandlerConstructor(
     });
   }
 
+  const sessionAttributes = updateSessionResult.value
+    .attributes as BiometricTokenIssuedSessionAttributes;
+
+  appendPersistentIdentifiersToLogger({
+    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+  });
+
   const responseBody = {
     accessToken: biometricTokenResult.value,
     opaqueId,
   };
 
   return await handleOkResponse(eventService, {
-    sessionAttributes: updateSessionResult.value
-      .attributes as BiometricTokenIssuedSessionAttributes,
+    sessionAttributes,
     issuer: config.ISSUER,
     responseBody,
     ipAddress,

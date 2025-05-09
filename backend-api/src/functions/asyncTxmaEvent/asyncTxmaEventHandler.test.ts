@@ -7,6 +7,7 @@ import { buildLambdaContext } from "../testUtils/mockContext";
 import { buildRequest } from "../testUtils/mockRequest";
 import {
   expectedSecurityHeaders,
+  mockGovukSigninJourneyId,
   mockInertEventService,
   mockInertSessionRegistry,
   mockSessionId,
@@ -304,9 +305,13 @@ describe("Async TxMA Event", () => {
       });
     });
 
-    it("Logs COMPLETED", () => {
+    it("Logs COMPLETED with persistent identifiers", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_TXMA_EVENT_COMPLETED",
+        persistentIdentifiers: {
+          sessionId: mockSessionId,
+          govukSigninJourneyId: mockGovukSigninJourneyId,
+        },
       });
     });
 
