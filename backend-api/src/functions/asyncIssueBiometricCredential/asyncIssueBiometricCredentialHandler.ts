@@ -517,6 +517,43 @@ export const buildCredentialJwtPayload = (jwtData: {
   };
 };
 
+const writeVCIssuedEvent = async (
+  eventService: IEventService,
+  sessionAttributes: BiometricSessionFinishedAttributes,
+  credential: BiometricCredential,
+): Promise<Result<void, void>> => {
+  const {
+    govukSigninJourneyId,
+    subjectIdentifier,
+    sessionId,
+    issuer,
+    redirectUri,
+  } = sessionAttributes;
+  const { evidence, credentialSubject } = credential;
+
+  const writeEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
+    sub: subjectIdentifier,
+    sessionId,
+    govukSigninJourneyId,
+    getNowInMilliseconds: Date.now,
+    componentId: issuer,
+    ipAddress: undefined,
+    txmaAuditEncoded: undefined,
+    redirect_uri: redirectUri,
+    suspected_fraud_signal: undefined,
+    evidence,
+    credentialSubject,
+  });
+  if (writeEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: { auditEventName: "DCMAW_ASYNC_CRI_VC_ISSUED" },
+    });
+    return emptyFailure();
+  }
+  return emptySuccess();
+};
+
 const writeCriEndEvent = async (
   eventService: IEventService,
   sessionAttributes: BiometricSessionFinishedAttributes,
@@ -528,6 +565,7 @@ const writeCriEndEvent = async (
     issuer,
     redirectUri,
   } = sessionAttributes;
+
   const writeCriEndEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_END",
     sub: subjectIdentifier,
@@ -543,44 +581,6 @@ const writeCriEndEvent = async (
   if (writeCriEndEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: { auditEventName: "DCMAW_ASYNC_CRI_END" },
-    });
-    return emptyFailure();
-  }
-  return emptySuccess();
-};
-
-const writeVCIssuedEvent = async (
-  eventService: IEventService,
-  sessionAttributes: BiometricSessionFinishedAttributes,
-  credential: BiometricCredential,
-): Promise<Result<void, void>> => {
-  const {
-    govukSigninJourneyId,
-    subjectIdentifier,
-    sessionId,
-    issuer,
-    redirectUri,
-  } = sessionAttributes;
-
-  const { evidence, credentialSubject } = credential;
-  const writeEventResult = await eventService.writeGenericEvent({
-    eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
-    sub: subjectIdentifier,
-    sessionId,
-    govukSigninJourneyId,
-    getNowInMilliseconds: Date.now,
-    componentId: issuer,
-    ipAddress: undefined,
-    txmaAuditEncoded: undefined,
-    redirect_uri: redirectUri,
-    suspected_fraud_signal: undefined,
-    evidence,
-    credentialSubject,
-  });
-
-  if (writeEventResult.isError) {
-    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-      data: { auditEventName: "DCMAW_ASYNC_CRI_VC_ISSUED" },
     });
     return emptyFailure();
   }

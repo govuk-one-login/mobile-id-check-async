@@ -50,7 +50,6 @@ export class EventService implements IEventService {
           MessageBody: JSON.stringify(txmaEvent),
         }),
       );
-
       return emptySuccess();
     } catch {
       return emptyFailure();

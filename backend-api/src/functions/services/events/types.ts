@@ -1,6 +1,10 @@
 import { Result } from "../../utils/result";
 import { DocumentType } from "../../types/document";
-import { CredentialSubject } from "@govuk-one-login/mobile-id-check-biometric-credential";
+import {
+  CredentialSubject,
+  FailEvidence,
+  PassEvidence,
+} from "@govuk-one-login/mobile-id-check-biometric-credential";
 
 interface BaseEventConfig {
   getNowInMilliseconds: () => number;
@@ -74,7 +78,7 @@ export interface GenericEventConfig extends BaseUserEventConfig {
   eventName: EventNames;
   redirect_uri: string | undefined;
   suspected_fraud_signal: string | undefined;
-  evidence?: object[];
+  evidence?: Array<PassEvidence | FailEvidence>;
   credentialSubject?: CredentialSubject;
 }
 
