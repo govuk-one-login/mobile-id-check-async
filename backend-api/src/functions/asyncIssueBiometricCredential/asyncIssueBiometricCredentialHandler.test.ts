@@ -468,10 +468,14 @@ describe("Async Issue Biometric Credential", () => {
       expect(mockGetSecretsSuccess).not.toHaveBeenCalled();
     });
 
-    it("Logs COMPLETED with sessionId", async () => {
+    it("Logs COMPLETED with persistent identifiers", async () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-        sessionId: mockSessionId,
+        persistentIdentifiers: {
+          sessionId: mockSessionId,
+          biometricSessionId: mockBiometricSessionId,
+          govukSigninJourneyId: mockGovukSigninJourneyId,
+        },
       });
     });
   });
@@ -655,7 +659,7 @@ describe("Async Issue Biometric Credential", () => {
         }
       });
 
-      it("Logs the appropriate message", () => {
+      it("Logs NOT_READY", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY",
           data: {
@@ -671,10 +675,14 @@ describe("Async Issue Biometric Credential", () => {
         );
       });
 
-      it("Logs COMPLETED with sessionId", () => {
+      it("Logs COMPLETED with persistent identifiers", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-          sessionId: mockSessionId,
+          persistentIdentifiers: {
+            sessionId: mockSessionId,
+            biometricSessionId: mockBiometricSessionId,
+            govukSigninJourneyId: mockGovukSigninJourneyId,
+          },
         });
       });
     });
@@ -1212,10 +1220,14 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
 
-      it("Logs COMPLETED with sessionId", () => {
+      it("Logs COMPLETED with persistent identifiers", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-          sessionId: mockSessionId,
+          persistentIdentifiers: {
+            sessionId: mockSessionId,
+            biometricSessionId: mockBiometricSessionId,
+            govukSigninJourneyId: mockGovukSigninJourneyId,
+          },
         });
       });
     });
