@@ -15,6 +15,7 @@ import {
   mockInertEventService,
   validBiometricSessionFinishedAttributes,
   validBiometricSessionFinishedAttributesMobileApp,
+  mockGovukSigninJourneyId,
 } from "../testUtils/unitTestData";
 import {
   emptySuccess,
@@ -615,9 +616,14 @@ describe("Async Finish Biometric Session", () => {
       });
     });
 
-    it("Logs COMPLETED", async () => {
+    it("Logs COMPLETED with persistent identifiers", async () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_FINISH_BIOMETRIC_SESSION_COMPLETED",
+        persistentIdentifiers: {
+          biometricSessionId: mockBiometricSessionId,
+          sessionId: mockSessionId,
+          govukSigninJourneyId: mockGovukSigninJourneyId,
+        },
       });
     });
 

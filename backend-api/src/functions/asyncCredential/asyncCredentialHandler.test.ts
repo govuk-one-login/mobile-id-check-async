@@ -33,6 +33,10 @@ import {
 } from "../services/session/tests/mocks";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { logger } from "../common/logging/logger";
+import {
+  mockGovukSigninJourneyId,
+  mockSessionId,
+} from "../testUtils/unitTestData";
 
 const env = {
   SIGNING_KEY_ID: "mockKid",
@@ -968,10 +972,6 @@ describe("Async Credential", () => {
               context,
             );
 
-            expect(mockEventService.auditEvents[0]).toEqual(
-              "DCMAW_ASYNC_CRI_START",
-            );
-
             expect(mockEventService.eventConfig).toEqual(
               expect.objectContaining({
                 eventName: "DCMAW_ASYNC_CRI_START",
@@ -979,7 +979,7 @@ describe("Async Credential", () => {
                 getNowInMilliseconds: Date.now,
                 govukSigninJourneyId: "mockGovukSigninJourneyId",
                 sub: "mockSub",
-                sessionId: "mockSessionId",
+                sessionId: mockSessionId,
                 ipAddress: undefined,
                 redirect_uri: "https://www.mockUrl.com",
                 suspected_fraud_signal: undefined,
@@ -989,6 +989,10 @@ describe("Async Credential", () => {
 
             expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
               messageCode: "MOBILE_ASYNC_CREDENTIAL_COMPLETED",
+              persistentIdentifiers: {
+                govukSigninJourneyId: mockGovukSigninJourneyId,
+                sessionId: mockSessionId,
+              },
             });
 
             expect(result).toStrictEqual({
