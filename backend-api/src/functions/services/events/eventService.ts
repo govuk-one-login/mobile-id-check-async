@@ -147,22 +147,26 @@ export class EventService implements IEventService {
     txmaAuditEncoded: string | undefined,
     credentialSubject?: CredentialSubject,
   ): RestrictedData | undefined => {
-    if (txmaAuditEncoded === null && credentialSubject === null) {
+    if (!txmaAuditEncoded && !credentialSubject) {
       return undefined;
     }
 
-    // Use a ternary to ensure device_information is either the expected object or undefined
-    const deviceInformation = txmaAuditEncoded
-      ? {
-          encoded: txmaAuditEncoded,
-        }
-      : undefined;
+    const result: Partial<RestrictedData> = {};
 
-    const restrictedData: RestrictedData = {
-      device_information: deviceInformation,
-      ...credentialSubject,
-    };
+    if (txmaAuditEncoded) {
+      result.device_information = {
+        encoded: txmaAuditEncoded,
+      };
+    }
 
-    return restrictedData;
+    if (credentialSubject) {
+      Object.assign(result, credentialSubject);
+    }
+
+    if (Object.keys(result).length === 0) {
+      return undefined;
+    }
+
+    return result as RestrictedData;
   };
 }
