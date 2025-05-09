@@ -1027,6 +1027,7 @@ describe("Async Issue Biometric Credential", () => {
       });
 
       it("Logs the DCMAW_ASYNC_CRI_END event failure", () => {
+        console.log("consoleErrorSpy", consoleErrorSpy.mock.calls);
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
           data: {
