@@ -250,12 +250,12 @@ export async function lambdaHandlerConstructor(
     return;
   }
 
-  const writeBiometricTokenEventResult = await writeVCIssuedEvent(
+  const writeVCIssuedEventResult = await writeVCIssuedEvent(
     eventService,
     sessionAttributes,
     credential,
   );
-  if (writeBiometricTokenEventResult.isError) {
+  if (writeVCIssuedEventResult.isError) {
     return;
   }
 
