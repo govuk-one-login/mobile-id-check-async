@@ -39,7 +39,7 @@ To assist tracing user requests across the system to aide in support queries, we
 |------------------------|------------------------------------------------------------------------|-------------------------------------------------------------------------|
 | `biometricSessionId`   | In request from mobile app to `async/finishBiometricSession`           | Identifies the `ReadID` session for biometric verification, useful for tracing errors encountered during VC issuance |
 | `govukSigninJourneyId` | In request from IPV Core to `async/Credential`                         | A correlation ID to trace a user's journey through One Login's identity proving |
-| `sessionId`            | Set by `async/Credential` when establishing a new session              | The primary key for the user's asynchronous session in DynamoDB that can be used for session lookup and tracing the user's ID Check asynchronous journey |
+| `sessionId`            | Set by `async/Credential` when creating a new session                  | The primary key for the user's asynchronous session in DynamoDB that can be used for session lookup and tracing the user's ID Check asynchronous journey |
 
 Logging fields that should persist across multiple uses of the logger within a single Lambda invocation can be added as follows:
 
