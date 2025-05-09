@@ -251,7 +251,6 @@ export async function lambdaHandlerConstructor(
     return;
   }
 
-  //Write VC_ISSUED event
   const writeBiometricTokenEventResult = await writeVCIssuedEvent(
     eventService,
     sessionAttributes,
