@@ -35,9 +35,11 @@ logger.error(LogMessage.GET_SECRETS_FROM_PARAMETER_STORE_FAILURE, {
 
 To assist tracing user requests across the system to aide in support queries, we have decided to append the following identifiers to the logger as soon as we have access to them in the lambda handler:
 
-* `biometricSessionId`: Identifies the `ReadID` session for biometric verification, useful for tracing errors encountered during VC issuance.
-* `govukSigninJourneyId`: Links to TxMA events, enabling end-to-end journey traceability.
-* `sessionId`: Allows session lookup in `DynamoDB`
+| Identifier             | Origin                                                                 | Purpose                                                                 |
+|------------------------|------------------------------------------------------------------------|-------------------------------------------------------------------------|
+| `biometricSessionId`   | In request from mobile app to `async/finishBiometricSession`           | Identifies the `ReadID` session for biometric verification, useful for tracing errors encountered during VC issuance. |
+| `govukSigninJourneyId` | In request from IPV Core to `async/Credential`                         | Links to TxMA events, enabling end-to-end journey traceability.         |
+| `sessionId`            | Set by `async/Credential` when creating a new session                  | Allows session lookup in `DynamoDB`.                                   |
 
 Logging fields that should persist across multiple uses of the logger within a single Lambda invocation can be added as follows:
 
