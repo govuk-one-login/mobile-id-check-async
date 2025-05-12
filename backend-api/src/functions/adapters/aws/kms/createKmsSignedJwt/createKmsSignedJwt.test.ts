@@ -62,7 +62,7 @@ describe("createKmsSignedJwt", () => {
       name: "Error",
       location: "mockLocation",
       message: "mockKmsError",
-      stack: "mockStack",
+      stack: undefined,
     };
 
     beforeEach(async () => {

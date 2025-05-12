@@ -47,6 +47,7 @@ import {
   GetCredentialErrorCode,
   GetCredentialOptions,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
+import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -69,7 +70,8 @@ export async function lambdaHandlerConstructor(
   }
 
   const sessionId = validateSqsEventResult.value;
-  logger.appendKeys({ sessionId });
+
+  appendPersistentIdentifiersToLogger({ sessionId });
 
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
@@ -91,13 +93,18 @@ export async function lambdaHandlerConstructor(
     });
   }
 
+  const sessionAttributes =
+    getSessionResult.value as BiometricSessionFinishedAttributes;
+
+  appendPersistentIdentifiersToLogger({
+    biometricSessionId: sessionAttributes.biometricSessionId,
+    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+  });
+
   if (getSessionResult.value.sessionState === SessionState.RESULT_SENT) {
     logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
     return;
   }
-
-  const sessionAttributes =
-    getSessionResult.value as BiometricSessionFinishedAttributes;
 
   const viewerKeyResult = await getBiometricViewerAccessKey(
     config.BIOMETRIC_VIEWER_KEY_SECRET_PATH,
@@ -110,7 +117,6 @@ export async function lambdaHandlerConstructor(
 
   const viewerKey = viewerKeyResult.value;
   const { biometricSessionId } = sessionAttributes;
-  logger.appendKeys({ biometricSessionId });
 
   const biometricSessionResult = await dependencies.getBiometricSession(
     config.READID_BASE_URL,
@@ -516,7 +522,7 @@ export const buildCredentialJwtPayload = (jwtData: {
   };
 };
 
-const writeVCIssuedEvent = async (
+const writeVcIssuedEvent = async (
   eventService: IEventService,
   sessionAttributes: BiometricSessionFinishedAttributes,
   credential: BiometricCredential,

@@ -13,6 +13,7 @@ import { setupLogger } from "../common/logging/setupLogger";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { getActiveSessionConfig } from "./getActiveSessionConfig";
+import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncActiveSessionDependencies,
@@ -86,6 +87,8 @@ export async function lambdaHandlerConstructor(
     logger.info(LogMessage.ACTIVE_SESSION_ACTIVE_SESSION_NOT_FOUND);
     return notFoundResponse;
   }
+
+  appendPersistentIdentifiersToLogger({ sessionId: session.sessionId });
 
   logger.info(LogMessage.ACTIVE_SESSION_COMPLETED);
 

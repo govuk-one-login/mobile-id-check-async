@@ -8,6 +8,7 @@ import { buildLambdaContext } from "../testUtils/mockContext";
 import { buildRequest } from "../testUtils/mockRequest";
 import {
   expectedSecurityHeaders,
+  mockGovukSigninJourneyId,
   mockInertEventService,
   mockInertSessionRegistry,
   mockSessionId,
@@ -620,9 +621,13 @@ describe("Async Biometric Token", () => {
         });
       });
 
-      it("Logs COMPLETED", async () => {
+      it("Logs COMPLETED with persistent identifiers", async () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_BIOMETRIC_TOKEN_COMPLETED",
+          persistentIdentifiers: {
+            sessionId: mockSessionId,
+            govukSigninJourneyId: mockGovukSigninJourneyId,
+          },
         });
       });
 

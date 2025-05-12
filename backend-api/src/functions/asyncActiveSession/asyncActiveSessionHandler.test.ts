@@ -22,6 +22,7 @@ import { buildLambdaContext } from "../testUtils/mockContext";
 import { logger } from "../common/logging/logger";
 import "../../../tests/testUtils/matchers";
 import { expect } from "@jest/globals";
+import { mockSessionId } from "../testUtils/unitTestData";
 
 const env = {
   ENCRYPTION_KEY_ARN: "mockEncryptionKeyArn",
@@ -465,9 +466,12 @@ describe("Async Active Session", () => {
         result = await lambdaHandlerConstructor(dependencies, request, context);
       });
 
-      it("Logs COMPLETED", () => {
+      it("Logs COMPLETED with persistent identifiers", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_STARTED",
+          messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_COMPLETED",
+          persistentIdentifiers: {
+            sessionId: mockSessionId,
+          },
         });
       });
 
@@ -476,7 +480,7 @@ describe("Async Active Session", () => {
           headers: { "Content-Type": "application/json" },
           statusCode: 200,
           body: JSON.stringify({
-            sessionId: "mockSessionId",
+            sessionId: mockSessionId,
             redirectUri: "https://mockUrl.com/redirect",
             state: "mockClientState",
           }),

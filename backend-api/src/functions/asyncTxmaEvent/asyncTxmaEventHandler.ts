@@ -30,6 +30,7 @@ import {
   IAsyncTxmaEventRequestBody,
   validateRequestBody,
 } from "./validateRequestBody/validateRequestBody";
+import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncTxmaEventDependencies,
@@ -54,12 +55,15 @@ export async function lambdaHandlerConstructor(
     return badRequestResponse("invalid_request", errorMessage);
   }
   const requestBody = validateRequestBodyResult.value;
+  const { sessionId } = requestBody;
+
+  appendPersistentIdentifiersToLogger({ sessionId });
 
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
   );
   const getSessionResult = await sessionRegistry.getSession(
-    requestBody.sessionId,
+    sessionId,
     new GetSessionBiometricTokenIssued(),
   );
 
@@ -69,6 +73,10 @@ export async function lambdaHandlerConstructor(
     });
   }
   const sessionAttributes = getSessionResult.value;
+
+  appendPersistentIdentifiersToLogger({
+    govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
+  });
 
   const eventService = dependencies.getEventService(config.TXMA_SQS);
   const sessionData = { requestBody, sessionAttributes, issuer: config.ISSUER };
