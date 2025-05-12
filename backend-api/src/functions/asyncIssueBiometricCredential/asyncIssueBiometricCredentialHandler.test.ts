@@ -25,6 +25,8 @@ import {
   NOW_IN_MILLISECONDS,
   mockBiometricCredential,
   mockFailingCriEventService,
+  mockEvidence,
+  mockCredentialSubject,
 } from "../testUtils/unitTestData";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { emptyFailure, errorResult, successResult } from "../utils/result";
@@ -1139,6 +1141,23 @@ describe("Async Issue Biometric Credential", () => {
             sub: mockSubjectIdentifier,
           },
         );
+      });
+
+      it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event to TxMA", () => {
+        expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith({
+          eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
+          componentId: mockIssuer,
+          getNowInMilliseconds: Date.now,
+          sessionId: mockSessionId,
+          govukSigninJourneyId: mockGovukSigninJourneyId,
+          ipAddress: undefined,
+          redirect_uri: undefined,
+          sub: mockSubjectIdentifier,
+          suspected_fraud_signal: undefined,
+          txmaAuditEncoded: undefined,
+          evidence: mockEvidence,
+          credentialSubject: mockCredentialSubject,
+        });
       });
 
       it("Writes DCMAW_ASYNC_CRI_END event to TxMA", () => {

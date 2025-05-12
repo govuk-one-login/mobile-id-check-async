@@ -256,7 +256,7 @@ export async function lambdaHandlerConstructor(
     return;
   }
 
-  const writeVCIssuedEventResult = await writeVCIssuedEvent(
+  const writeVCIssuedEventResult = await writeVcIssuedEvent(
     eventService,
     sessionAttributes,
     credential,
