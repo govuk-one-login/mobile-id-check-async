@@ -41,6 +41,7 @@ import { ResultSent } from "../common/session/updateOperations/ResultSent/Result
 import { CredentialJwtPayload } from "../types/jwt";
 import { randomUUID } from "crypto";
 import {
+  AuditData,
   BiometricCredential,
   FraudCheckData,
   GetCredentialError,
@@ -212,7 +213,7 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  const { credential } = getCredentialFromBiometricSessionResult.value;
+  const { credential, audit } = getCredentialFromBiometricSessionResult.value;
   const credentialJwtPayload = buildCredentialJwtPayload({
     credential,
     issuer: config.ISSUER,
@@ -260,6 +261,7 @@ export async function lambdaHandlerConstructor(
     eventService,
     sessionAttributes,
     credential,
+    audit,
   );
   if (writeVCIssuedEventResult.isError) {
     return;
@@ -526,6 +528,7 @@ const writeVcIssuedEvent = async (
   eventService: IEventService,
   sessionAttributes: BiometricSessionFinishedAttributes,
   credential: BiometricCredential,
+  audit: AuditData,
 ): Promise<Result<void, void>> => {
   const {
     govukSigninJourneyId,
@@ -535,7 +538,11 @@ const writeVcIssuedEvent = async (
     redirectUri,
   } = sessionAttributes;
   const { evidence, credentialSubject } = credential;
+  const { contraIndicatorReasons, txmaContraIndicators, flags } = audit;
 
+  const hasFlags = flags != null;
+
+  //TxMAContraIndicators !== ContraIndicator
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
     sub: subjectIdentifier,
@@ -547,7 +554,16 @@ const writeVcIssuedEvent = async (
     txmaAuditEncoded: undefined,
     redirect_uri: redirectUri,
     suspected_fraud_signal: undefined,
-    evidence,
+    evidence: [
+      {
+        ...evidence,
+        ...(hasContraIndicators(credential) && {
+          ciReasons: contraIndicatorReasons,
+        }),
+        txmaContraIndicators,
+      },
+    ],
+    ...(hasFlags && { ...flags }),
     credentialSubject,
   });
   if (writeEventResult.isError) {
@@ -557,6 +573,11 @@ const writeVcIssuedEvent = async (
     return emptyFailure();
   }
   return emptySuccess();
+};
+
+const hasContraIndicators = (credential: BiometricCredential): boolean => {
+  const credentialEvidence = credential.evidence[0];
+  return "ci" in credentialEvidence && credentialEvidence.ci !== null;
 };
 
 const writeCriEndEvent = async (
