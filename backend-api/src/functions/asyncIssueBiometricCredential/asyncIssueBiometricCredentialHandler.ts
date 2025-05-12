@@ -537,7 +537,7 @@ const writeVcIssuedEvent = async (
     issuer,
     redirectUri,
   } = sessionAttributes;
-  const { evidence, credentialSubject } = credential;
+  const { credentialSubject } = credential;
   const { contraIndicatorReasons, txmaContraIndicators, flags } = audit;
 
   const hasFlags = flags != null;
@@ -556,7 +556,7 @@ const writeVcIssuedEvent = async (
     suspected_fraud_signal: undefined,
     evidence: [
       {
-        ...evidence,
+        ...credential.evidence[0],
         ...(hasContraIndicators(credential) && {
           ciReasons: contraIndicatorReasons,
         }),

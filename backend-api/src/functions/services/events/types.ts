@@ -4,6 +4,7 @@ import {
   CredentialSubject,
   FailEvidence,
   PassEvidence,
+  TxmaContraIndicator,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
 
 interface BaseEventConfig {
@@ -74,14 +75,17 @@ export type EventNames =
   | "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED"
   | "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED";
 
+type PassEvidenceWithTxMAContraIndicators =
+  | (PassEvidence & { txmaContraIndicators: TxmaContraIndicator[] })
+  | FailEvidence;
+
 export interface GenericEventConfig extends BaseUserEventConfig {
   eventName: EventNames;
   redirect_uri: string | undefined;
   suspected_fraud_signal: string | undefined;
-  evidence?: Array<PassEvidence | FailEvidence>;
+  evidence?: PassEvidenceWithTxMAContraIndicators[]; // Changed to array
   credentialSubject?: CredentialSubject;
 }
-
 export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
   eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
 }
