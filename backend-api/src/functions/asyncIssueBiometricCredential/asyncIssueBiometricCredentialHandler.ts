@@ -522,7 +522,7 @@ export const buildCredentialJwtPayload = (jwtData: {
   };
 };
 
-const writeVCIssuedEvent = async (
+const writeVcIssuedEvent = async (
   eventService: IEventService,
   sessionAttributes: BiometricSessionFinishedAttributes,
   credential: BiometricCredential,
