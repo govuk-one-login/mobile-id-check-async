@@ -542,7 +542,6 @@ const writeVcIssuedEvent = async (
 
   const hasFlags = flags != null;
 
-  //TxMAContraIndicators !== ContraIndicator
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
     sub: subjectIdentifier,
