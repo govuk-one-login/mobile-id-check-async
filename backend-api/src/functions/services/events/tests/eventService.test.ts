@@ -10,6 +10,10 @@ import { emptyFailure, emptySuccess, Result } from "../../../utils/result";
 import { EventService } from "../eventService";
 import { sqsClient } from "../sqsClient";
 import { GenericEventNames, TxmaBillingEventName } from "../types";
+import {
+  mockCredentialSubject,
+  mockEvidence,
+} from "../../../testUtils/unitTestData";
 
 describe("Event Service", () => {
   const eventWriter = new EventService("mockSqsQueue");
@@ -500,6 +504,227 @@ describe("Event Service", () => {
             extensions: {
               redirect_uri: "http://www.mockRedirectUri.com",
               suspected_fraud_signal: "AUTH_SESSION_NOT_FOUND",
+            },
+          }),
+          QueueUrl: "mockSqsQueue",
+        };
+
+        expect(sqsMock).toHaveReceivedCommandWith(
+          SendMessageCommand,
+          expectedCommandInput,
+        );
+      });
+
+      it("Returns an emptySuccess", () => {
+        expect(result).toEqual(emptySuccess());
+      });
+    });
+  });
+
+  describe("Writing DCMAW_ASYNC_CRI_VC_ISSUED event to SQS", () => {
+    describe("Given writing DCMAW_ASYNC_CRI_VC_ISSUED event to SQS fails", () => {
+      beforeEach(async () => {
+        sqsMock.on(SendMessageCommand).rejects("Failed to write to SQS");
+
+        result = await eventWriter.writeGenericEvent({
+          sub: "mockSub",
+          sessionId: "mockSessionId",
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
+          getNowInMilliseconds: () => 1609462861000,
+          componentId: "mockComponentId",
+          eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
+          transactionId: "mockTransactionId",
+          redirect_uri: undefined,
+          suspected_fraud_signal: undefined,
+          ipAddress: "mockIpAddress",
+          txmaAuditEncoded: undefined,
+          evidence: mockEvidence,
+          credentialSubject: mockCredentialSubject,
+        });
+      });
+
+      it("Attempts to send DCMAW_ASYNC_CRI_VC_ISSUED event to SQS", () => {
+        const expectedCommandInput = {
+          MessageBody: JSON.stringify({
+            user: {
+              user_id: "mockSub",
+              session_id: "mockSessionId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              transaction_id: "mockTransactionId",
+              ip_address: "mockIpAddress",
+            },
+            timestamp: 1609462861,
+            event_timestamp_ms: 1609462861000,
+            event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
+            component_id: "mockComponentId",
+            restricted: {
+              name: [
+                {
+                  nameParts: [
+                    { type: "GivenName", value: "mockGivenName" },
+                    { type: "FamilyName", value: "mockFamilyName" },
+                  ],
+                },
+              ],
+              birthDate: [{ value: "mockBirthDate" }],
+              address: [
+                {
+                  uprn: null,
+                  organisationName: null,
+                  subBuildingName: null,
+                  buildingNumber: null,
+                  buildingName: null,
+                  dependentStreetName: null,
+                  streetName: null,
+                  doubleDependentAddressLocality: null,
+                  dependentAddressLocality: null,
+                  addressLocality: null,
+                  postalCode: "mockPostalCode",
+                  addressCountry: null,
+                },
+              ],
+              drivingPermit: [
+                {
+                  personalNumber: "mockPersonalNumber",
+                  issueNumber: null,
+                  issuedBy: null,
+                  issueDate: null,
+                  expiryDate: "mockExpiryDate",
+                  fullAddress: "mockFullAddress",
+                },
+              ],
+              deviceId: [{ value: "mockDeviceId" }],
+            },
+            extensions: {
+              evidence: [
+                {
+                  type: "IdentityCheck",
+                  txn: "mockTxn",
+                  strengthScore: 0,
+                  validityScore: 0,
+                  activityHistoryScore: 0,
+                  checkDetails: [
+                    {
+                      checkMethod: "bvr",
+                      identityCheckPolicy: "published",
+                      activityFrom: undefined, // Added this
+                      biometricVerificationProcessLevel: 0,
+                    },
+                  ],
+                  txmaContraIndicators: [],
+                },
+              ],
+            },
+          }),
+          QueueUrl: "mockSqsQueue",
+        };
+
+        expect(sqsMock).toHaveReceivedCommandWith(
+          SendMessageCommand,
+          expectedCommandInput,
+        );
+      });
+
+      it("Returns an emptyFailure", () => {
+        expect(result).toEqual(emptyFailure());
+      });
+    });
+
+    describe("Given writing DCMAW_ASYNC_CRI_VC_ISSUED event to SQS is successful", () => {
+      beforeEach(async () => {
+        sqsMock.on(SendMessageCommand).resolves({});
+
+        result = await eventWriter.writeGenericEvent({
+          sub: "mockSub",
+          sessionId: "mockSessionId",
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
+          getNowInMilliseconds: () => 1609462861000,
+          componentId: "mockComponentId",
+          eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
+          transactionId: "mockTransactionId",
+          redirect_uri: undefined,
+          suspected_fraud_signal: undefined,
+          ipAddress: "mockIpAddress",
+          txmaAuditEncoded: "mockTxmaAuditEncoded",
+          evidence: mockEvidence,
+          credentialSubject: mockCredentialSubject,
+        });
+      });
+
+      it("Attempts to send DCMAW_ASYNC_CRI_VC_ISSUED event to SQS", () => {
+        const expectedCommandInput = {
+          MessageBody: JSON.stringify({
+            user: {
+              user_id: "mockSub",
+              session_id: "mockSessionId",
+              govuk_signin_journey_id: "mockGovukSigninJourneyId",
+              transaction_id: "mockTransactionId",
+              ip_address: "mockIpAddress",
+            },
+            timestamp: 1609462861,
+            event_timestamp_ms: 1609462861000,
+            event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
+            component_id: "mockComponentId",
+            restricted: {
+              device_information: {
+                encoded: "mockTxmaAuditEncoded",
+              },
+              name: [
+                {
+                  nameParts: [
+                    { type: "GivenName", value: "mockGivenName" },
+                    { type: "FamilyName", value: "mockFamilyName" },
+                  ],
+                },
+              ],
+              birthDate: [{ value: "mockBirthDate" }],
+              address: [
+                {
+                  uprn: null,
+                  organisationName: null,
+                  subBuildingName: null,
+                  buildingNumber: null,
+                  buildingName: null,
+                  dependentStreetName: null,
+                  streetName: null,
+                  doubleDependentAddressLocality: null,
+                  dependentAddressLocality: null,
+                  addressLocality: null,
+                  postalCode: "mockPostalCode",
+                  addressCountry: null,
+                },
+              ],
+              drivingPermit: [
+                {
+                  personalNumber: "mockPersonalNumber",
+                  issueNumber: null,
+                  issuedBy: null,
+                  issueDate: null,
+                  expiryDate: "mockExpiryDate",
+                  fullAddress: "mockFullAddress",
+                },
+              ],
+              deviceId: [{ value: "mockDeviceId" }],
+            },
+            extensions: {
+              evidence: [
+                {
+                  type: "IdentityCheck",
+                  txn: "mockTxn",
+                  strengthScore: 0,
+                  validityScore: 0,
+                  activityHistoryScore: 0,
+                  checkDetails: [
+                    {
+                      checkMethod: "bvr",
+                      identityCheckPolicy: "published",
+                      activityFrom: undefined, // Added this
+                      biometricVerificationProcessLevel: 0,
+                    },
+                  ],
+                  txmaContraIndicators: [],
+                },
+              ],
             },
           }),
           QueueUrl: "mockSqsQueue",

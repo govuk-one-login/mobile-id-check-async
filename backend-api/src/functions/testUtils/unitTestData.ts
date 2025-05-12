@@ -1,12 +1,13 @@
 import {
   BiometricCredential,
   CredentialSubject,
-  FailEvidence,
-  PassEvidence,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { SessionState } from "../common/session/session";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
-import { IEventService } from "../services/events/types";
+import {
+  EvidenceWithTxMAContraIndicators,
+  IEventService,
+} from "../services/events/types";
 import {
   emptyFailure,
   emptySuccess,
@@ -79,24 +80,22 @@ export const mockCredentialSubject: CredentialSubject = {
   deviceId: [{ value: "mockDeviceId" }],
 };
 
-export const mockEvidence: Array<PassEvidence | FailEvidence> = [
+export const mockEvidence: EvidenceWithTxMAContraIndicators[] = [
   {
     type: "IdentityCheck",
     txn: "mockTxn",
-    strengthScore: 3,
-    validityScore: 2,
-    activityHistoryScore: 1,
+    strengthScore: 0,
+    validityScore: 0,
+    activityHistoryScore: 0,
     checkDetails: [
       {
-        checkMethod: "vri",
-        identityCheckPolicy: "published",
-        activityFrom: "mockActivityFrom",
-      },
-      {
         checkMethod: "bvr",
-        biometricVerificationProcessLevel: 3,
+        identityCheckPolicy: "published",
+        activityFrom: undefined,
+        biometricVerificationProcessLevel: 0,
       },
     ],
+    txmaContraIndicators: [],
   },
 ];
 

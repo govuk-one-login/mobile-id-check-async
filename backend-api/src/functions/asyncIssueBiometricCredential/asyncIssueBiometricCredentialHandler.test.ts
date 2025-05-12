@@ -25,7 +25,6 @@ import {
   NOW_IN_MILLISECONDS,
   mockBiometricCredential,
   mockFailingCriEventService,
-  mockEvidence,
   mockCredentialSubject,
 } from "../testUtils/unitTestData";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
@@ -1144,7 +1143,7 @@ describe("Async Issue Biometric Credential", () => {
       });
 
       it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event to TxMA", () => {
-        expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith({
+        expect(mockWriteGenericEventSuccessResult).toHaveBeenNthCalledWith(1, {
           eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
           componentId: mockIssuer,
           getNowInMilliseconds: Date.now,
@@ -1155,13 +1154,30 @@ describe("Async Issue Biometric Credential", () => {
           sub: mockSubjectIdentifier,
           suspected_fraud_signal: undefined,
           txmaAuditEncoded: undefined,
-          evidence: mockEvidence,
+          evidence: [
+            {
+              type: "IdentityCheck",
+              txn: "mockTxn",
+              strengthScore: 0,
+              validityScore: 0,
+              activityHistoryScore: 0,
+              checkDetails: [
+                {
+                  checkMethod: "bvr",
+                  identityCheckPolicy: "published",
+                  activityFrom: undefined,
+                  biometricVerificationProcessLevel: 0,
+                },
+              ],
+              txmaContraIndicators: undefined, // Changed from [] to undefined
+            },
+          ],
           credentialSubject: mockCredentialSubject,
         });
       });
 
       it("Writes DCMAW_ASYNC_CRI_END event to TxMA", () => {
-        expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith({
+        expect(mockWriteGenericEventSuccessResult).toHaveBeenNthCalledWith(2, {
           eventName: "DCMAW_ASYNC_CRI_END",
           componentId: mockIssuer,
           getNowInMilliseconds: Date.now,

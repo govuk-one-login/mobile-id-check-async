@@ -75,15 +75,15 @@ export type EventNames =
   | "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED"
   | "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED";
 
-type PassEvidenceWithTxMAContraIndicators =
-  | (PassEvidence & { txmaContraIndicators: TxmaContraIndicator[] })
-  | FailEvidence;
+export type EvidenceWithTxMAContraIndicators = (PassEvidence | FailEvidence) & {
+  txmaContraIndicators: TxmaContraIndicator[];
+};
 
 export interface GenericEventConfig extends BaseUserEventConfig {
   eventName: EventNames;
   redirect_uri: string | undefined;
   suspected_fraud_signal: string | undefined;
-  evidence?: PassEvidenceWithTxMAContraIndicators[]; // Changed to array
+  evidence?: EvidenceWithTxMAContraIndicators[];
   credentialSubject?: CredentialSubject;
 }
 export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
