@@ -1,7 +1,11 @@
 import { SendMessageCommand } from "@aws-sdk/client-sqs";
 import { Result, emptyFailure, emptySuccess } from "../../utils/result";
 import { sqsClient } from "./sqsClient";
-import { CredentialSubject } from "@govuk-one-login/mobile-id-check-biometric-credential";
+import {
+  CredentialSubject,
+  FailEvidence,
+  PassEvidence,
+} from "@govuk-one-login/mobile-id-check-biometric-credential";
 import {
   BiometricTokenIssuedEvent,
   BiometricTokenIssuedEventConfig,
@@ -91,7 +95,7 @@ export class EventService implements IEventService {
   private getExtensionsObject(
     redirect_uri?: string,
     suspected_fraud_signal?: string,
-    evidence?: object[],
+    evidence?: Array<PassEvidence | FailEvidence>,
   ) {
     if (
       redirect_uri === undefined &&
@@ -166,6 +170,6 @@ export class EventService implements IEventService {
       return undefined;
     }
 
-    return result as RestrictedData;
+    return result;
   };
 }

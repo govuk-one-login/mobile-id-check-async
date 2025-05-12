@@ -1117,71 +1117,7 @@ describe("Async Issue Biometric Credential", () => {
             jti: "urn:uuid:mock_random_uuid",
             nbf: 1704110400,
             sub: "mockSubjectIdentifier",
-            vc: {
-              "@context": [
-                "https://www.w3.org/2018/credentials/v1",
-                "https://identity.gov.uk/credentials/v1",
-              ],
-              type: ["mockCredentialType"],
-              credentialSubject: {
-                name: [
-                  {
-                    nameParts: [
-                      { type: "GivenName", value: "mockGivenName" },
-                      { type: "FamilyName", value: "mockFamilyName" },
-                    ],
-                  },
-                ],
-                birthDate: [{ value: "mockBirthDate" }],
-                address: [
-                  {
-                    uprn: null,
-                    organisationName: null,
-                    subBuildingName: null,
-                    buildingNumber: null,
-                    buildingName: null,
-                    dependentStreetName: null,
-                    streetName: null,
-                    doubleDependentAddressLocality: null,
-                    dependentAddressLocality: null,
-                    addressLocality: null,
-                    postalCode: "mockPostalCode",
-                    addressCountry: null,
-                  },
-                ],
-                drivingPermit: [
-                  {
-                    personalNumber: "mockPersonalNumber",
-                    issueNumber: null,
-                    issuedBy: null,
-                    issueDate: null,
-                    expiryDate: "mockExpiryDate",
-                    fullAddress: "mockFullAddress",
-                  },
-                ],
-                deviceId: [{ value: "mockDeviceId" }],
-              },
-              evidence: [
-                {
-                  type: "IdentityCheck",
-                  txn: "mockTxn",
-                  strengthScore: 3,
-                  validityScore: 2,
-                  activityHistoryScore: 1,
-                  checkDetails: [
-                    {
-                      checkMethod: "vri",
-                      identityCheckPolicy: "published",
-                      activityFrom: "mockActivityFrom",
-                    },
-                    {
-                      checkMethod: "bvr",
-                      biometricVerificationProcessLevel: 3,
-                    },
-                  ],
-                },
-              ],
-            },
+            vc: mockBiometricCredential,
           },
         );
       });

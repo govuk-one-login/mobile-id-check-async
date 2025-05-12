@@ -57,7 +57,8 @@ export type GenericEventNames =
   | "DCMAW_ASYNC_CRI_ERROR"
   | "DCMAW_ASYNC_CRI_END"
   | "DCMAW_ASYNC_APP_END"
-  | "DCMAW_ASYNC_ABORT_APP";
+  | "DCMAW_ASYNC_ABORT_APP"
+  | "DCMAW_ASYNC_CRI_VC_ISSUED";
 
 export const txmaBillingEventNames = [
   "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
@@ -71,8 +72,7 @@ export type EventNames =
   | GenericEventNames
   | TxmaBillingEventName
   | "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED"
-  | "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED"
-  | "DCMAW_ASYNC_CRI_VC_ISSUED";
+  | "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED";
 
 export interface GenericEventConfig extends BaseUserEventConfig {
   eventName: EventNames;
