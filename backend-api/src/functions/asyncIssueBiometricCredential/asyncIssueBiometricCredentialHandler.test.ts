@@ -1178,6 +1178,7 @@ describe("Async Issue Biometric Credential", () => {
               suspected_fraud_signal: undefined,
               txmaAuditEncoded: undefined,
               flaggedRecord: undefined,
+              flags: undefined,
               evidence: [
                 {
                   type: "IdentityCheck",
@@ -1193,7 +1194,7 @@ describe("Async Issue Biometric Credential", () => {
                       biometricVerificationProcessLevel: 0,
                     },
                   ],
-                  txmaContraIndicators: undefined,
+                  txmaContraIndicators: [],
                 },
               ],
               credentialSubject: mockCredentialSubject,
@@ -1264,16 +1265,15 @@ describe("Async Issue Biometric Credential", () => {
           expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
             expect.objectContaining({
               eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
-              flaggedRecord: [
-                {
-                  recordId: "mock-record-id",
-                  reason: "mock-reason",
-                  timestamp: "2024-01-01T12:00:00Z",
-                },
-              ],
+              flaggedRecord: {
+                recordId: "mock-record-id",
+                reason: "mock-reason",
+                timestamp: "2024-01-01T12:00:00Z",
+              },
+              flags: ["FLAG_1", "FLAG_2"],
               evidence: [
                 expect.objectContaining({
-                  txmaContraIndicators: undefined,
+                  txmaContraIndicators: [],
                 }),
               ],
             }),
@@ -1337,7 +1337,7 @@ describe("Async Issue Biometric Credential", () => {
           evidence: [
             {
               ...mockBiometricCredential.evidence[0],
-              ci: ["CI_1"], // Adding contraIndicators
+              ci: ["CI_1"],
             },
           ],
         };
@@ -1372,13 +1372,10 @@ describe("Async Issue Biometric Credential", () => {
           expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
             expect.objectContaining({
               eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
-              flaggedRecord: [
-                {
-                  recordId: "flagged-record-id",
-                  reason: "flagged-reason",
-                  timestamp: "2024-01-01T12:00:00Z",
-                },
-              ],
+              flaggedRecord: {
+                mockFlaggedRecordField: "mockFlaggedRecordValue",
+              },
+              flags: ["FLAG_1"],
               evidence: [
                 expect.objectContaining({
                   ci: ["CI_1"],

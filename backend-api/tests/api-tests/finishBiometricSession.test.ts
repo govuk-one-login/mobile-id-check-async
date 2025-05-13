@@ -1,8 +1,5 @@
 import { randomUUID } from "crypto";
-import {
-  READ_ID_MOCK_API_INSTANCE,
-  SESSIONS_API_INSTANCE,
-} from "./utils/apiInstance";
+import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 import {
   mockBiometricSessionId,
   expectedSecurityHeaders,
