@@ -80,11 +80,12 @@ export type EvidenceWithTxMAContraIndicators = (PassEvidence | FailEvidence) & {
 };
 
 export interface GenericEventConfig extends BaseUserEventConfig {
-  eventName: EventNames;
+  eventName: GenericEventNames | TxmaBillingEventName;
   redirect_uri: string | undefined;
   suspected_fraud_signal: string | undefined;
   evidence?: EvidenceWithTxMAContraIndicators[];
   credentialSubject?: CredentialSubject;
+  clientId?: string;
 }
 export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
   eventName: "DCMAW_ASYNC_CLIENT_CREDENTIALS_TOKEN_ISSUED";
@@ -97,6 +98,7 @@ export interface BiometricTokenIssuedEventConfig extends BaseUserEventConfig {
 
 export interface GenericTxmaEvent extends BaseUserTxmaEvent {
   event_name: EventNames;
+  clientId?: string;
   extensions: Extensions | undefined;
 }
 

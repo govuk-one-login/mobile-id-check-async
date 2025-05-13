@@ -78,6 +78,7 @@ export class EventService implements IEventService {
         transaction_id: eventConfig.transactionId,
         ip_address: eventConfig.ipAddress,
       },
+      clientId: eventConfig.clientId,
       timestamp: Math.floor(timestampInMillis / 1000),
       event_timestamp_ms: timestampInMillis,
       event_name: eventConfig.eventName,
