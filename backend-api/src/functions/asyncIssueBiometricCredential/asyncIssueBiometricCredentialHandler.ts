@@ -43,6 +43,7 @@ import { randomUUID } from "crypto";
 import {
   AuditData,
   BiometricCredential,
+  FlaggedRecord,
   FraudCheckData,
   GetCredentialError,
   GetCredentialErrorCode,
@@ -531,6 +532,7 @@ const writeVcIssuedEvent = async (
   audit: AuditData,
 ): Promise<Result<void, void>> => {
   const {
+    biometricSessionId,
     govukSigninJourneyId,
     subjectIdentifier,
     sessionId,
@@ -539,7 +541,8 @@ const writeVcIssuedEvent = async (
     clientId,
   } = sessionAttributes;
   const { credentialSubject } = credential;
-  const { contraIndicatorReasons, txmaContraIndicators, flags } = audit;
+  const { contraIndicatorReasons, txmaContraIndicators, flags, flaggedRecord } =
+    audit;
 
   const hasFlags = flags != null;
 
@@ -550,6 +553,7 @@ const writeVcIssuedEvent = async (
     sessionId,
     govukSigninJourneyId,
     getNowInMilliseconds: Date.now,
+    transactionId: biometricSessionId,
     componentId: issuer,
     ipAddress: undefined,
     txmaAuditEncoded: undefined,
@@ -564,7 +568,9 @@ const writeVcIssuedEvent = async (
         txmaContraIndicators,
       },
     ],
-    ...(hasFlags && { ...flags }),
+    flaggedRecord: hasFlags
+      ? ([{ ...flaggedRecord }] as FlaggedRecord[])
+      : undefined,
     credentialSubject,
   });
   if (writeEventResult.isError) {
