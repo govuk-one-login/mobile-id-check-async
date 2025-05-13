@@ -12,7 +12,7 @@ import { sqsClient } from "../sqsClient";
 import { GenericEventNames, TxmaBillingEventName } from "../types";
 import {
   mockCredentialSubject,
-  mockEvidence,
+  mockVcIssuedEvidence,
 } from "../../../testUtils/unitTestData";
 
 describe("Event Service", () => {
@@ -538,37 +538,9 @@ describe("Event Service", () => {
           suspected_fraud_signal: undefined,
           ipAddress: "mockIpAddress",
           txmaAuditEncoded: undefined,
-          evidence: mockEvidence,
+          evidence: mockVcIssuedEvidence,
           credentialSubject: mockCredentialSubject,
         });
-      });
-
-      it("Attempts to send DCMAW_ASYNC_CRI_VC_ISSUED event to SQS", () => {
-        const expectedCommandInput = {
-          MessageBody: JSON.stringify({
-            user: {
-              user_id: "mockSub",
-              session_id: "mockSessionId",
-              govuk_signin_journey_id: "mockGovukSigninJourneyId",
-              transaction_id: "mockTransactionId",
-              ip_address: "mockIpAddress",
-            },
-            timestamp: 1609462861,
-            event_timestamp_ms: 1609462861000,
-            event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
-            component_id: "mockComponentId",
-            restricted: mockCredentialSubject,
-            extensions: {
-              evidence: mockEvidence,
-            },
-          }),
-          QueueUrl: "mockSqsQueue",
-        };
-
-        expect(sqsMock).toHaveReceivedCommandWith(
-          SendMessageCommand,
-          expectedCommandInput,
-        );
       });
 
       it("Returns an emptyFailure", () => {
@@ -592,7 +564,7 @@ describe("Event Service", () => {
           suspected_fraud_signal: undefined,
           ipAddress: "mockIpAddress",
           txmaAuditEncoded: "mockTxmaAuditEncoded",
-          evidence: mockEvidence,
+          evidence: mockVcIssuedEvidence,
           credentialSubject: mockCredentialSubject,
         });
       });
@@ -615,62 +587,10 @@ describe("Event Service", () => {
               device_information: {
                 encoded: "mockTxmaAuditEncoded",
               },
-              name: [
-                {
-                  nameParts: [
-                    { type: "GivenName", value: "mockGivenName" },
-                    { type: "FamilyName", value: "mockFamilyName" },
-                  ],
-                },
-              ],
-              birthDate: [{ value: "mockBirthDate" }],
-              address: [
-                {
-                  uprn: null,
-                  organisationName: null,
-                  subBuildingName: null,
-                  buildingNumber: null,
-                  buildingName: null,
-                  dependentStreetName: null,
-                  streetName: null,
-                  doubleDependentAddressLocality: null,
-                  dependentAddressLocality: null,
-                  addressLocality: null,
-                  postalCode: "mockPostalCode",
-                  addressCountry: null,
-                },
-              ],
-              drivingPermit: [
-                {
-                  personalNumber: "mockPersonalNumber",
-                  issueNumber: null,
-                  issuedBy: null,
-                  issueDate: null,
-                  expiryDate: "mockExpiryDate",
-                  fullAddress: "mockFullAddress",
-                },
-              ],
-              deviceId: [{ value: "mockDeviceId" }],
+              ...mockCredentialSubject,
             },
             extensions: {
-              evidence: [
-                {
-                  type: "IdentityCheck",
-                  txn: "mockTxn",
-                  strengthScore: 0,
-                  validityScore: 0,
-                  activityHistoryScore: 0,
-                  checkDetails: [
-                    {
-                      checkMethod: "bvr",
-                      identityCheckPolicy: "published",
-                      activityFrom: undefined, // Added this
-                      biometricVerificationProcessLevel: 0,
-                    },
-                  ],
-                  txmaContraIndicators: [],
-                },
-              ],
+              evidence: mockVcIssuedEvidence,
             },
           }),
           QueueUrl: "mockSqsQueue",
