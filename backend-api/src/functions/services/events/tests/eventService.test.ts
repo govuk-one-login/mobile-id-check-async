@@ -557,63 +557,9 @@ describe("Event Service", () => {
             event_timestamp_ms: 1609462861000,
             event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
             component_id: "mockComponentId",
-            restricted: {
-              name: [
-                {
-                  nameParts: [
-                    { type: "GivenName", value: "mockGivenName" },
-                    { type: "FamilyName", value: "mockFamilyName" },
-                  ],
-                },
-              ],
-              birthDate: [{ value: "mockBirthDate" }],
-              address: [
-                {
-                  uprn: null,
-                  organisationName: null,
-                  subBuildingName: null,
-                  buildingNumber: null,
-                  buildingName: null,
-                  dependentStreetName: null,
-                  streetName: null,
-                  doubleDependentAddressLocality: null,
-                  dependentAddressLocality: null,
-                  addressLocality: null,
-                  postalCode: "mockPostalCode",
-                  addressCountry: null,
-                },
-              ],
-              drivingPermit: [
-                {
-                  personalNumber: "mockPersonalNumber",
-                  issueNumber: null,
-                  issuedBy: null,
-                  issueDate: null,
-                  expiryDate: "mockExpiryDate",
-                  fullAddress: "mockFullAddress",
-                },
-              ],
-              deviceId: [{ value: "mockDeviceId" }],
-            },
+            restricted: mockCredentialSubject,
             extensions: {
-              evidence: [
-                {
-                  type: "IdentityCheck",
-                  txn: "mockTxn",
-                  strengthScore: 0,
-                  validityScore: 0,
-                  activityHistoryScore: 0,
-                  checkDetails: [
-                    {
-                      checkMethod: "bvr",
-                      identityCheckPolicy: "published",
-                      activityFrom: undefined, // Added this
-                      biometricVerificationProcessLevel: 0,
-                    },
-                  ],
-                  txmaContraIndicators: [],
-                },
-              ],
+              evidence: mockEvidence,
             },
           }),
           QueueUrl: "mockSqsQueue",
