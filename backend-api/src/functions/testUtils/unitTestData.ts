@@ -4,10 +4,7 @@ import {
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { SessionState } from "../common/session/session";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
-import {
-  VcIssuedEvidence,
-  IEventService,
-} from "../services/events/types";
+import { VcIssuedEvidence, IEventService } from "../services/events/types";
 import {
   emptyFailure,
   emptySuccess,
