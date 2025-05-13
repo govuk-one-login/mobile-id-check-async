@@ -39,6 +39,7 @@ describe("Event Service", () => {
     "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
     "DCMAW_ASYNC_IPROOV_BILLING_STARTED",
     "DCMAW_ASYNC_READID_NFC_BILLING_STARTED",
+    "DCMAW_ASYNC_CRI_VC_ISSUED",
   ])("Writing generic TxMA events to SQS", (genericEventName) => {
     describe(`Given writing ${genericEventName} event to SQS fails`, () => {
       beforeEach(async () => {
