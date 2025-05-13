@@ -1233,7 +1233,7 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
 
-      describe("With flags and flaggedRecord", () => {
+      describe("Given generated biometric credential has flags and flaggedRecord", () => {
         const mockAuditDataWithFlags = {
           contraIndicatorReasons: [],
           txmaContraIndicators: [],
