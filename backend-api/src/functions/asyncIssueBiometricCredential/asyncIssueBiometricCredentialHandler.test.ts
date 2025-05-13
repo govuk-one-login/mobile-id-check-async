@@ -1236,7 +1236,7 @@ describe("Async Issue Biometric Credential", () => {
       describe("With flags and flaggedRecord", () => {
         const mockAuditDataWithFlags = {
           contraIndicatorReasons: [],
-          txmaContraIndicators: undefined,
+          txmaContraIndicators: [],
           flags: ["FLAG_1", "FLAG_2"],
           flaggedRecord: {
             recordId: "mock-record-id",
