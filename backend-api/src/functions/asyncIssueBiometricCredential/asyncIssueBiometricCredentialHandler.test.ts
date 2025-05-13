@@ -1283,7 +1283,7 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
 
-      describe("With contraIndicators", () => {
+      describe("Given generated biometric credential has contraindicators", () => {
         const mockCredentialWithContraIndicators = {
           ...mockBiometricCredential,
           evidence: [
