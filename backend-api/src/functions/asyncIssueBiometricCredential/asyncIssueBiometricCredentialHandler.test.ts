@@ -1080,6 +1080,8 @@ describe("Async Issue Biometric Credential", () => {
 
     describe("Happy path", () => {
       beforeEach(async () => {
+        dependencies.getCredentialFromBiometricSession =
+          mockSuccessfulGetCredentialFromBiometricSession;
         await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
       });
 
@@ -1172,7 +1174,7 @@ describe("Async Issue Biometric Credential", () => {
                   biometricVerificationProcessLevel: 0,
                 },
               ],
-              txmaContraIndicators: undefined, // Changed from [] to undefined
+              txmaContraIndicators: undefined,
             },
           ],
           credentialSubject: mockCredentialSubject,
