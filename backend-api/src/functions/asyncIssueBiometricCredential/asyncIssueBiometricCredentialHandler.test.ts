@@ -1079,131 +1079,321 @@ describe("Async Issue Biometric Credential", () => {
     });
 
     describe("Happy path", () => {
-      beforeEach(async () => {
-        dependencies.getCredentialFromBiometricSession =
-          mockSuccessfulGetCredentialFromBiometricSession;
-        await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
-      });
+      describe("Without flags or contraIndicators", () => {
+        const mockAuditData = {
+          contraIndicatorReasons: [],
+          txmaContraIndicators: undefined,
+          flags: null,
+          flaggedRecord: null,
+        };
 
-      it("Passes correct arguments to get secrets", () => {
-        expect(mockGetSecretsSuccess).toHaveBeenCalledWith({
-          secretNames: ["mockBiometricViewerAccessKey"],
-          cacheDurationInSeconds: 900,
+        const mockSuccessfulGetCredentialFromBiometricSession = jest
+          .fn()
+          .mockReturnValue(
+            successResult({
+              credential: mockBiometricCredential,
+              analytics: "mockAnalytics",
+              audit: mockAuditData,
+              advisories: "mockAdvisories",
+            }),
+          );
+
+        beforeEach(async () => {
+          dependencies.getCredentialFromBiometricSession =
+            mockSuccessfulGetCredentialFromBiometricSession;
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
         });
-      });
 
-      it("Passes correct arguments to get biometric session", () => {
-        expect(mockGetBiometricSessionSuccess).toHaveBeenCalledWith(
-          "mockReadIdBaseUrl",
-          mockBiometricSessionId,
-          "mockViewerKey",
-        );
-      });
+        it("Passes correct arguments to get secrets", () => {
+          expect(mockGetSecretsSuccess).toHaveBeenCalledWith({
+            secretNames: ["mockBiometricViewerAccessKey"],
+            cacheDurationInSeconds: 900,
+          });
+        });
 
-      it("Passes correct arguments to getCredentialFromBiometricSession", () => {
-        expect(
-          mockSuccessfulGetCredentialFromBiometricSession,
-        ).toHaveBeenCalledWith(
-          { finish: "DONE" },
-          {
-            userSessionCreatedAt: 1704106860000,
-            opaqueId: "mockOpaqueId",
-          },
-          {
-            enableUtopiaTestDocument: true,
-            enableDrivingLicence: true,
-            enableNfcPassport: true,
-            enableBiometricResidencePermit: true,
-            enableBiometricResidenceCard: true,
-          },
-        );
-      });
+        it("Passes correct arguments to get biometric session", () => {
+          expect(mockGetBiometricSessionSuccess).toHaveBeenCalledWith(
+            "mockReadIdBaseUrl",
+            mockBiometricSessionId,
+            "mockViewerKey",
+          );
+        });
 
-      it("Passes correct arguments to createKmsSignedJwt", () => {
-        expect(mockCreateKmsSignedJwtSuccess).toHaveBeenCalledWith(
-          "mockVerifiableCredentialSigningKeyId",
-          {
-            iat: 1704110400,
-            iss: "mockIssuer",
-            jti: "urn:uuid:mock_random_uuid",
-            nbf: 1704110400,
-            sub: "mockSubjectIdentifier",
-            vc: mockBiometricCredential,
-          },
-        );
-      });
-
-      it("Passes correct arguments to sendMessageToSqs (verifiable credential)", async () => {
-        expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
-          "mockIpvcoreOutboundSqs",
-          {
-            "https://vocab.account.gov.uk/v1/credentialJWT": [mockSignedJwt],
-            state: mockClientState,
-            sub: mockSubjectIdentifier,
-          },
-        );
-      });
-
-      it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event to TxMA", () => {
-        expect(mockWriteGenericEventSuccessResult).toHaveBeenNthCalledWith(1, {
-          eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
-          componentId: mockIssuer,
-          clientId: "mockClientId",
-          getNowInMilliseconds: Date.now,
-          sessionId: mockSessionId,
-          govukSigninJourneyId: mockGovukSigninJourneyId,
-          transactionId: "f32432a9-0965-4da9-8a2c-a98a79349d4a",
-          ipAddress: undefined,
-          redirect_uri: undefined,
-          sub: mockSubjectIdentifier,
-          suspected_fraud_signal: undefined,
-          txmaAuditEncoded: undefined,
-          flaggedRecord: undefined,
-          evidence: [
+        it("Passes correct arguments to getCredentialFromBiometricSession", () => {
+          expect(
+            mockSuccessfulGetCredentialFromBiometricSession,
+          ).toHaveBeenCalledWith(
+            { finish: "DONE" },
             {
-              type: "IdentityCheck",
-              txn: "mockTxn",
-              strengthScore: 0,
-              validityScore: 0,
-              activityHistoryScore: 0,
-              checkDetails: [
+              userSessionCreatedAt: 1704106860000,
+              opaqueId: "mockOpaqueId",
+            },
+            {
+              enableUtopiaTestDocument: true,
+              enableDrivingLicence: true,
+              enableNfcPassport: true,
+              enableBiometricResidencePermit: true,
+              enableBiometricResidenceCard: true,
+            },
+          );
+        });
+
+        it("Passes correct arguments to createKmsSignedJwt", () => {
+          expect(mockCreateKmsSignedJwtSuccess).toHaveBeenCalledWith(
+            "mockVerifiableCredentialSigningKeyId",
+            {
+              iat: 1704110400,
+              iss: "mockIssuer",
+              jti: "urn:uuid:mock_random_uuid",
+              nbf: 1704110400,
+              sub: "mockSubjectIdentifier",
+              vc: mockBiometricCredential,
+            },
+          );
+        });
+
+        it("Passes correct arguments to sendMessageToSqs (verifiable credential)", async () => {
+          expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
+            "mockIpvcoreOutboundSqs",
+            {
+              "https://vocab.account.gov.uk/v1/credentialJWT": [mockSignedJwt],
+              state: mockClientState,
+              sub: mockSubjectIdentifier,
+            },
+          );
+        });
+
+        it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event to TxMA", () => {
+          expect(mockWriteGenericEventSuccessResult).toHaveBeenNthCalledWith(
+            1,
+            {
+              eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
+              componentId: mockIssuer,
+              clientId: "mockClientId",
+              getNowInMilliseconds: Date.now,
+              sessionId: mockSessionId,
+              govukSigninJourneyId: mockGovukSigninJourneyId,
+              transactionId: "f32432a9-0965-4da9-8a2c-a98a79349d4a",
+              ipAddress: undefined,
+              redirect_uri: undefined,
+              sub: mockSubjectIdentifier,
+              suspected_fraud_signal: undefined,
+              txmaAuditEncoded: undefined,
+              flaggedRecord: undefined,
+              evidence: [
                 {
-                  checkMethod: "bvr",
-                  identityCheckPolicy: "published",
-                  activityFrom: undefined,
-                  biometricVerificationProcessLevel: 0,
+                  type: "IdentityCheck",
+                  txn: "mockTxn",
+                  strengthScore: 0,
+                  validityScore: 0,
+                  activityHistoryScore: 0,
+                  checkDetails: [
+                    {
+                      checkMethod: "bvr",
+                      identityCheckPolicy: "published",
+                      activityFrom: undefined,
+                      biometricVerificationProcessLevel: 0,
+                    },
+                  ],
+                  txmaContraIndicators: undefined,
                 },
               ],
-              txmaContraIndicators: undefined,
+              credentialSubject: mockCredentialSubject,
+            },
+          );
+        });
+
+        it("Writes DCMAW_ASYNC_CRI_END event to TxMA", () => {
+          expect(mockWriteGenericEventSuccessResult).toHaveBeenNthCalledWith(
+            2,
+            {
+              eventName: "DCMAW_ASYNC_CRI_END",
+              componentId: mockIssuer,
+              getNowInMilliseconds: Date.now,
+              sessionId: mockSessionId,
+              govukSigninJourneyId: mockGovukSigninJourneyId,
+              ipAddress: undefined,
+              redirect_uri: undefined,
+              sub: mockSubjectIdentifier,
+              suspected_fraud_signal: undefined,
+              txmaAuditEncoded: undefined,
+            },
+          );
+        });
+
+        it("Logs COMPLETED with persistent identifiers", () => {
+          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+            persistentIdentifiers: {
+              sessionId: mockSessionId,
+              biometricSessionId: mockBiometricSessionId,
+              govukSigninJourneyId: mockGovukSigninJourneyId,
+            },
+          });
+        });
+      });
+
+      describe("With flags and flaggedRecord", () => {
+        const mockAuditDataWithFlags = {
+          contraIndicatorReasons: [],
+          txmaContraIndicators: undefined,
+          flags: ["FLAG_1", "FLAG_2"],
+          flaggedRecord: {
+            recordId: "mock-record-id",
+            reason: "mock-reason",
+            timestamp: "2024-01-01T12:00:00Z",
+          },
+        };
+
+        const mockGetCredentialFromBiometricSessionWithFlags = jest
+          .fn()
+          .mockReturnValue(
+            successResult({
+              credential: mockBiometricCredential,
+              analytics: "mockAnalytics",
+              audit: mockAuditDataWithFlags,
+              advisories: "mockAdvisories",
+            }),
+          );
+
+        beforeEach(async () => {
+          dependencies.getCredentialFromBiometricSession =
+            mockGetCredentialFromBiometricSessionWithFlags;
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        });
+
+        it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event with flaggedRecord to TxMA", () => {
+          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
+            expect.objectContaining({
+              eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
+              flaggedRecord: [
+                {
+                  recordId: "mock-record-id",
+                  reason: "mock-reason",
+                  timestamp: "2024-01-01T12:00:00Z",
+                },
+              ],
+              evidence: [
+                expect.objectContaining({
+                  txmaContraIndicators: undefined,
+                }),
+              ],
+            }),
+          );
+        });
+      });
+
+      describe("With contraIndicators", () => {
+        const mockCredentialWithContraIndicators = {
+          ...mockBiometricCredential,
+          evidence: [
+            {
+              ...mockBiometricCredential.evidence[0],
+              ci: ["CI_1"],
             },
           ],
-          credentialSubject: mockCredentialSubject,
+        };
+
+        const mockAuditDataWithContraIndicatorReasons = {
+          contraIndicatorReasons: ["Reason 1", "Reason 2"],
+          txmaContraIndicators: ["TxMA_CI_1", "TxMA_CI_2"],
+          flags: null,
+          flaggedRecord: null,
+        };
+
+        const mockGetCredentialFromBiometricSessionWithCI = jest
+          .fn()
+          .mockReturnValue(
+            successResult({
+              credential: mockCredentialWithContraIndicators,
+              analytics: "mockAnalytics",
+              audit: mockAuditDataWithContraIndicatorReasons,
+              advisories: "mockAdvisories",
+            }),
+          );
+
+        beforeEach(async () => {
+          dependencies.getCredentialFromBiometricSession =
+            mockGetCredentialFromBiometricSessionWithCI;
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        });
+
+        it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event with ciReasons to TxMA", () => {
+          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
+            expect.objectContaining({
+              eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
+              flaggedRecord: undefined,
+              evidence: [
+                expect.objectContaining({
+                  ci: ["CI_1"],
+                  ciReasons: ["Reason 1", "Reason 2"],
+                  txmaContraIndicators: ["TxMA_CI_1", "TxMA_CI_2"],
+                }),
+              ],
+            }),
+          );
         });
       });
 
-      it("Writes DCMAW_ASYNC_CRI_END event to TxMA", () => {
-        expect(mockWriteGenericEventSuccessResult).toHaveBeenNthCalledWith(2, {
-          eventName: "DCMAW_ASYNC_CRI_END",
-          componentId: mockIssuer,
-          getNowInMilliseconds: Date.now,
-          sessionId: mockSessionId,
-          govukSigninJourneyId: mockGovukSigninJourneyId,
-          ipAddress: undefined,
-          redirect_uri: undefined,
-          sub: mockSubjectIdentifier,
-          suspected_fraud_signal: undefined,
-          txmaAuditEncoded: undefined,
-        });
-      });
+      describe("With both flags and contraIndicators", () => {
+        const mockCredentialWithContraIndicators = {
+          ...mockBiometricCredential,
+          evidence: [
+            {
+              ...mockBiometricCredential.evidence[0],
+              ci: ["CI_1"], // Adding contraIndicators
+            },
+          ],
+        };
 
-      it("Logs COMPLETED with persistent identifiers", () => {
-        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-          persistentIdentifiers: {
-            sessionId: mockSessionId,
-            biometricSessionId: mockBiometricSessionId,
-            govukSigninJourneyId: mockGovukSigninJourneyId,
+        const mockAuditDataWithBothFlagsAndCI = {
+          contraIndicatorReasons: ["CI Reason"],
+          txmaContraIndicators: ["TxMA_CI_1"],
+          flags: ["FLAG_1"],
+          flaggedRecord: {
+            recordId: "flagged-record-id",
+            reason: "flagged-reason",
+            timestamp: "2024-01-01T12:00:00Z",
           },
+        };
+
+        const mockGetCredentialFromBiometricSessionWithBoth = jest
+          .fn()
+          .mockReturnValue(
+            successResult({
+              credential: mockCredentialWithContraIndicators,
+              analytics: "mockAnalytics",
+              audit: mockAuditDataWithBothFlagsAndCI,
+              advisories: "mockAdvisories",
+            }),
+          );
+
+        beforeEach(async () => {
+          dependencies.getCredentialFromBiometricSession =
+            mockGetCredentialFromBiometricSessionWithBoth;
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        });
+
+        it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event with both flaggedRecord and ciReasons to TxMA", () => {
+          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith(
+            expect.objectContaining({
+              eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
+              flaggedRecord: [
+                {
+                  recordId: "flagged-record-id",
+                  reason: "flagged-reason",
+                  timestamp: "2024-01-01T12:00:00Z",
+                },
+              ],
+              evidence: [
+                expect.objectContaining({
+                  ci: ["CI_1"],
+                  ciReasons: ["CI Reason"],
+                  txmaContraIndicators: ["TxMA_CI_1"],
+                }),
+              ],
+            }),
+          );
         });
       });
     });
