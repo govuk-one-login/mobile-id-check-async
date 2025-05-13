@@ -5,7 +5,7 @@ import {
 import { SessionState } from "../common/session/session";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import {
-  EvidenceWithTxMAContraIndicators,
+  VcIssuedEvidence,
   IEventService,
 } from "../services/events/types";
 import {
@@ -80,7 +80,7 @@ export const mockCredentialSubject: CredentialSubject = {
   deviceId: [{ value: "mockDeviceId" }],
 };
 
-export const mockEvidence: EvidenceWithTxMAContraIndicators[] = [
+export const mockEvidence: VcIssuedEvidence[] = [
   {
     type: "IdentityCheck",
     txn: "mockTxn",
@@ -244,9 +244,7 @@ export const mockFailingEventService = {
 export const mockFailingCriEventService = {
   ...mockInertEventService,
   writeGenericEvent: jest.fn((params) => {
-    if (params.eventName === "DCMAW_ASYNC_CRI_VC_ISSUED") {
-      return Promise.resolve(emptySuccess());
-    } else if (params.eventName === "DCMAW_ASYNC_CRI_END") {
+    if (params.eventName === "DCMAW_ASYNC_CRI_END") {
       return Promise.resolve(errorResult({ errorMessage: "Mock error" }));
     } else {
       return Promise.resolve(emptySuccess());

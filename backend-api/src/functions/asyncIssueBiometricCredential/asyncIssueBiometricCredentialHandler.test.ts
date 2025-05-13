@@ -1146,14 +1146,17 @@ describe("Async Issue Biometric Credential", () => {
         expect(mockWriteGenericEventSuccessResult).toHaveBeenNthCalledWith(1, {
           eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
           componentId: mockIssuer,
+          clientId: "mockClientId",
           getNowInMilliseconds: Date.now,
           sessionId: mockSessionId,
           govukSigninJourneyId: mockGovukSigninJourneyId,
+          transactionId: "f32432a9-0965-4da9-8a2c-a98a79349d4a",
           ipAddress: undefined,
           redirect_uri: undefined,
           sub: mockSubjectIdentifier,
           suspected_fraud_signal: undefined,
           txmaAuditEncoded: undefined,
+          flaggedRecord: undefined,
           evidence: [
             {
               type: "IdentityCheck",
