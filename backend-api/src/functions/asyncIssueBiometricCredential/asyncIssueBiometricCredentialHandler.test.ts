@@ -1079,7 +1079,7 @@ describe("Async Issue Biometric Credential", () => {
     });
 
     describe("Happy path", () => {
-      describe("Without flags or contraIndicators", () => {
+      describe("Given generated biometric credential does not have flags or contraindicators", () => {
         const mockAuditData = {
           contraIndicatorReasons: [],
           txmaContraIndicators: [],
