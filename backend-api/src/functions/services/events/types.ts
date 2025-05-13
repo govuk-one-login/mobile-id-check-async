@@ -98,7 +98,7 @@ export interface BiometricTokenIssuedEventConfig extends BaseUserEventConfig {
 
 export interface GenericTxmaEvent extends BaseUserTxmaEvent {
   event_name: EventNames;
-  clientId?: string;
+  client_id?: string;
   extensions: Extensions | undefined;
 }
 
