@@ -1351,9 +1351,7 @@ describe("Async Issue Biometric Credential", () => {
           txmaContraIndicators: ["TxMA_CI_1"],
           flags: ["FLAG_1"],
           flaggedRecord: {
-            recordId: "flagged-record-id",
-            reason: "flagged-reason",
-            timestamp: "2024-01-01T12:00:00Z",
+            mockFlaggedRecordField: "mockFlaggedRecordValue",
           },
         };
 
