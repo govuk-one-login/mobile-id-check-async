@@ -321,6 +321,10 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
     "Lambda handler processing has completed without issue.",
   );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED = new LogMessage(
+    "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED",
+    "Biometric credential successfully written to IPV Core outbound queue.",
+  );
   static readonly ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG = new LogMessage(
     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_CONFIG",
     "One or more required environment variables were missing or invalid.",

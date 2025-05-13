@@ -212,7 +212,8 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  const { credential } = getCredentialFromBiometricSessionResult.value;
+  const { credential, analytics } =
+    getCredentialFromBiometricSessionResult.value;
   const credentialJwtPayload = buildCredentialJwtPayload({
     credential,
     issuer: config.ISSUER,
@@ -242,6 +243,10 @@ export async function lambdaHandlerConstructor(
       "Unexpected failure writing the VC to the IPVCore outbound queue",
     );
   }
+
+  logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED, {
+    documentType: analytics.documentType,
+  });
 
   const updateSessionResult = await sessionRegistry.updateSession(
     sessionId,
