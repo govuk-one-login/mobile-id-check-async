@@ -1297,8 +1297,6 @@ describe("Async Issue Biometric Credential", () => {
         const mockAuditDataWithContraIndicatorReasons = {
           contraIndicatorReasons: ["Reason 1", "Reason 2"],
           txmaContraIndicators: ["TxMA_CI_1", "TxMA_CI_2"],
-          flags: null,
-          flaggedRecord: null,
         };
 
         const mockGetCredentialFromBiometricSessionWithCI = jest
