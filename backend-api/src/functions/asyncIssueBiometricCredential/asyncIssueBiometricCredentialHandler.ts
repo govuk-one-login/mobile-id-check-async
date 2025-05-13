@@ -43,7 +43,6 @@ import { randomUUID } from "crypto";
 import {
   AuditData,
   BiometricCredential,
-  FlaggedRecord,
   FraudCheckData,
   GetCredentialError,
   GetCredentialErrorCode,
@@ -568,10 +567,9 @@ const writeVcIssuedEvent = async (
         txmaContraIndicators,
       },
     ],
-    flaggedRecord: hasFlags
-      ? ([{ ...flaggedRecord }] as FlaggedRecord[])
-      : undefined,
+    flaggedRecord: hasFlags ? flaggedRecord : undefined,
     credentialSubject,
+    flags: hasFlags ? flags : undefined,
   });
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {

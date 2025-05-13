@@ -1,7 +1,11 @@
 import { SendMessageCommand } from "@aws-sdk/client-sqs";
 import { Result, emptyFailure, emptySuccess } from "../../utils/result";
 import { sqsClient } from "./sqsClient";
-import { CredentialSubject } from "@govuk-one-login/mobile-id-check-biometric-credential";
+import {
+  CredentialSubject,
+  FlaggedRecord,
+  FlagsWrapper,
+} from "@govuk-one-login/mobile-id-check-biometric-credential";
 import {
   BiometricTokenIssuedEvent,
   BiometricTokenIssuedEventConfig,
@@ -65,6 +69,7 @@ export class EventService implements IEventService {
       eventConfig.redirect_uri,
       eventConfig.suspected_fraud_signal,
       eventConfig.evidence,
+      eventConfig.flags,
     );
 
     const event: GenericTxmaEvent = {
@@ -83,6 +88,7 @@ export class EventService implements IEventService {
       restricted: this.getRestrictedData(
         eventConfig.txmaAuditEncoded,
         eventConfig.credentialSubject,
+        eventConfig.flaggedRecord,
       ),
       extensions,
     };
@@ -94,11 +100,13 @@ export class EventService implements IEventService {
     redirect_uri?: string,
     suspected_fraud_signal?: string,
     evidence?: VcIssuedEvidence[],
+    flags?: FlagsWrapper,
   ) {
     if (
       redirect_uri === undefined &&
       suspected_fraud_signal === undefined &&
-      evidence === undefined
+      evidence === undefined &&
+      flags === undefined
     ) {
       return undefined;
     }
@@ -107,6 +115,7 @@ export class EventService implements IEventService {
       redirect_uri,
       suspected_fraud_signal,
       evidence,
+      ...flags,
     };
   }
 
@@ -147,8 +156,9 @@ export class EventService implements IEventService {
   private readonly getRestrictedData = (
     txmaAuditEncoded: string | undefined,
     credentialSubject?: CredentialSubject,
+    flaggedRecord?: FlaggedRecord[],
   ): RestrictedData | undefined => {
-    if (!txmaAuditEncoded && !credentialSubject) {
+    if (!txmaAuditEncoded && !credentialSubject && !flaggedRecord) {
       return undefined;
     }
 
@@ -162,6 +172,10 @@ export class EventService implements IEventService {
 
     if (credentialSubject) {
       Object.assign(result, credentialSubject);
+    }
+
+    if (flaggedRecord) {
+      result.flaggedRecord = flaggedRecord;
     }
 
     if (Object.keys(result).length === 0) {

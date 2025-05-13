@@ -4,6 +4,7 @@ import {
   CredentialSubject,
   FailEvidence,
   FlaggedRecord,
+  FlagsWrapper,
   PassEvidence,
   TxmaContraIndicator,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
@@ -27,6 +28,7 @@ export interface RestrictedData extends Partial<CredentialSubject> {
     encoded: string;
   };
   transactionId?: string;
+  flaggedRecord?: FlaggedRecord[];
 }
 
 export interface Extensions {
@@ -87,6 +89,7 @@ export interface GenericEventConfig extends BaseUserEventConfig {
   evidence?: VcIssuedEvidence[];
   credentialSubject?: CredentialSubject;
   clientId?: string;
+  flags?: FlagsWrapper;
   flaggedRecord?: FlaggedRecord[];
 }
 export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
