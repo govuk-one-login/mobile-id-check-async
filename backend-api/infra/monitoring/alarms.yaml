@@ -1904,7 +1904,7 @@ Resources:
             - Key: MessageCode
               Value: $.messageCode
 
-  JourneyStartedMetricFilter:
+  JourneysStartedMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref AsyncCredentialLogGroup
