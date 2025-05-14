@@ -4,7 +4,6 @@ import {
   mockBiometricSessionId,
   expectedSecurityHeaders,
   mockSessionId,
-  mockExpiredSessionId,
 } from "./utils/apiTestData";
 import {
   createSessionForSub,
