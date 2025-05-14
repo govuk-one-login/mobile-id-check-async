@@ -1,6 +1,10 @@
+import {
+  BiometricCredential,
+  CredentialSubject,
+} from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { SessionState } from "../common/session/session";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
-import { IEventService } from "../services/events/types";
+import { VcIssuedEvidence, IEventService } from "../services/events/types";
 import {
   emptyFailure,
   emptySuccess,
@@ -33,6 +37,94 @@ export const ONE_HOUR_AGO_IN_MILLISECONDS = 1704106800000; // 2024-01-01 11:00:0
 
 export const validCreatedAt: number = 1704106860000; // 2024-01-01 11:01:00.000
 export const invalidCreatedAt: number = 1704106740000; // 2024-01-01 10:59:00.000
+
+export const mockCredentialSubject: CredentialSubject = {
+  name: [
+    {
+      nameParts: [
+        { type: "GivenName", value: "mockGivenName" },
+        { type: "FamilyName", value: "mockFamilyName" },
+      ],
+    },
+  ],
+  birthDate: [{ value: "mockBirthDate" }],
+  address: [
+    {
+      uprn: null,
+      organisationName: null,
+      subBuildingName: null,
+      buildingNumber: null,
+      buildingName: null,
+      dependentStreetName: null,
+      streetName: null,
+      doubleDependentAddressLocality: null,
+      dependentAddressLocality: null,
+      addressLocality: null,
+      postalCode: "mockPostalCode",
+      addressCountry: null,
+    },
+  ],
+  drivingPermit: [
+    {
+      personalNumber: "mockPersonalNumber",
+      issueNumber: null,
+      issuedBy: null,
+      issueDate: null,
+      expiryDate: "mockExpiryDate",
+      fullAddress: "mockFullAddress",
+    },
+  ],
+  deviceId: [{ value: "mockDeviceId" }],
+};
+
+export const mockVcIssuedEvidence: VcIssuedEvidence[] = [
+  {
+    type: "IdentityCheck",
+    txn: "mockTxn",
+    strengthScore: 0,
+    validityScore: 0,
+    activityHistoryScore: 0,
+    checkDetails: [
+      {
+        checkMethod: "bvr",
+        identityCheckPolicy: "published",
+        activityFrom: undefined,
+        biometricVerificationProcessLevel: 0,
+      },
+    ],
+    txmaContraIndicators: [],
+  },
+];
+
+export const mockBiometricCredential: BiometricCredential = {
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://identity.gov.uk/credentials/v1",
+  ],
+  type: ["mockCredentialType"],
+  credentialSubject: mockCredentialSubject,
+  evidence: mockVcIssuedEvidence,
+};
+
+export const mockAuditWithFlags = {
+  contraIndicatorReasons: [],
+  txmaContraIndicators: [],
+  flags: ["FLAG_1", "FLAG_2"],
+  flaggedRecord: {
+    mockKey: "mockValue",
+  },
+};
+
+export const mockGetCredentialFromBiometricSessionWithFlags = jest
+  .fn()
+  .mockReturnValue(
+    successResult({
+      credential: mockBiometricCredential,
+      analytics: "mockAnalytics",
+      audit: mockAuditWithFlags,
+      advisories: "mockAdvisories",
+    }),
+  );
 
 // This is a simulated, not cryptographically valid, DER-encoded signature
 export const mockDerSignature = Buffer.from([
@@ -164,6 +256,17 @@ export const mockSuccessfulEventService = {
 export const mockFailingEventService = {
   ...mockInertEventService,
   writeGenericEvent: mockWriteGenericEventFailureResult,
+};
+
+export const mockFailingCriEventService = {
+  ...mockInertEventService,
+  writeGenericEvent: jest.fn((params) => {
+    if (params.eventName === "DCMAW_ASYNC_CRI_END") {
+      return Promise.resolve(errorResult({ errorMessage: "Mock error" }));
+    } else {
+      return Promise.resolve(emptySuccess());
+    }
+  }),
 };
 
 export const mockSendMessageToSqsSuccess = jest
