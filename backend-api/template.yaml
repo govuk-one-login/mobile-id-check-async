@@ -4778,7 +4778,7 @@ Resources:
       ScalingConfig:
         MaximumConcurrency: 34
 
-  JourneyStartedMetricFilter:
+  JourneysStartedMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
       FilterPattern: '{ $.messageCode = MOBILE_ASYNC_CREDENTIAL_COMPLETED }'
