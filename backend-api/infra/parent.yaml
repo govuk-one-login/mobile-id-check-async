@@ -86,20 +86,20 @@ Mappings:
 
   PrivateApigw:
     dev:
-      ApiBurstLimit: 10
+      ApiBurstLimit: 20
       ApiRateLimit: 10
       IpvCoreVpceId: ""
     build:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
       IpvCoreVpceId: ""
     staging:
-      ApiBurstLimit: 10
+      ApiBurstLimit: 20
       ApiRateLimit: 10
       IpvCoreVpceId: "vpce-0cc0de10742b83b8a"
     integration:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
+      ApiBurstLimit: 20
+      ApiRateLimit: 10
       IpvCoreVpceId: ""
     production:
       ApiBurstLimit: 0
@@ -108,39 +108,39 @@ Mappings:
 
   SessionsApigw:
     dev:
-      ApiBurstLimit: 10
+      ApiBurstLimit: 20
       ApiRateLimit: 10
     build:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
     staging:
-      ApiBurstLimit: 10
+      ApiBurstLimit: 20
       ApiRateLimit: 10
     integration:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
+      ApiBurstLimit: 20
+      ApiRateLimit: 10
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
 
   ProxyApigw:
     dev:
-      ApiBurstLimit: 10
+      ApiBurstLimit: 20
       ApiRateLimit: 10
       # Perf test prod account - di-performance-test-prod
       perfTesterRoleArn: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
     build:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
       # Perf test prod account - di-performance-test-prod
       perfTesterRoleArn: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
     staging:
-      ApiBurstLimit: 10
+      ApiBurstLimit: 20
       ApiRateLimit: 10
       perfTesterRoleArn: ""
     integration:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
+      ApiBurstLimit: 20
+      ApiRateLimit: 10
       perfTesterRoleArn: ""
     production:
       ApiBurstLimit: 0

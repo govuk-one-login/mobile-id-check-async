@@ -235,63 +235,63 @@ Mappings:
 
   PrivateApigw:
     build:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
       IpvCoreVpceId: ""
     dev:
-      ApiBurstLimit: 10
+      ApiBurstLimit: 20
       ApiRateLimit: 10
       IpvCoreVpceId: ""
     integration:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
+      ApiBurstLimit: 20
+      ApiRateLimit: 10
       IpvCoreVpceId: ""
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
       IpvCoreVpceId: ""
     staging:
-      ApiBurstLimit: 10
+      ApiBurstLimit: 20
       ApiRateLimit: 10
       IpvCoreVpceId: vpce-0cc0de10742b83b8a
 
   ProxyApigw:
     build:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
       perfTesterRoleArn: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
     dev:
-      ApiBurstLimit: 10
+      ApiBurstLimit: 20
       ApiRateLimit: 10
       perfTesterRoleArn: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
     integration:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
+      ApiBurstLimit: 20
+      ApiRateLimit: 10
       perfTesterRoleArn: ""
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
       perfTesterRoleArn: ""
     staging:
-      ApiBurstLimit: 10
+      ApiBurstLimit: 20
       ApiRateLimit: 10
       perfTesterRoleArn: ""
 
   SessionsApigw:
     build:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
     dev:
-      ApiBurstLimit: 10
+      ApiBurstLimit: 20
       ApiRateLimit: 10
     integration:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
+      ApiBurstLimit: 20
+      ApiRateLimit: 10
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
     staging:
-      ApiBurstLimit: 10
+      ApiBurstLimit: 20
       ApiRateLimit: 10
 
   StaticVariables:
