@@ -4794,7 +4794,7 @@ Resources:
   JourneysStartedMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
-      FilterPattern: '{ $.messageCode = MOBILE_ASYNC_CREDENTIAL_COMPLETED }'
+      FilterPattern: '{ $.messageCode = MOBILE_ASYNC_CREDENTIAL_SESSION_CREATED }'
       LogGroupName: !Ref AsyncCredentialLogGroup
       MetricTransformations:
         - MetricName: JourneysStarted

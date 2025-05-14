@@ -1908,7 +1908,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref AsyncCredentialLogGroup
-      FilterPattern: '{ $.messageCode = MOBILE_ASYNC_CREDENTIAL_COMPLETED }'
+      FilterPattern: '{ $.messageCode = MOBILE_ASYNC_CREDENTIAL_SESSION_CREATED }'
       MetricTransformations:
         - MetricValue: "1"
           MetricNamespace: !Sub "${AWS::StackName}/LogMessages"
