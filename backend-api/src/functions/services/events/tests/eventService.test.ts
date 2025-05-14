@@ -209,9 +209,9 @@ describe("Event Service", () => {
                 doBUnknown: true,
                 doBMismatched: false,
                 doEInPast: true,
-              }
+              },
             },
-            flaggedRecord: undefined
+            flaggedRecord: undefined,
           });
         });
 
@@ -233,8 +233,8 @@ describe("Event Service", () => {
                   doBUnknown: true,
                   doBMismatched: false,
                   doEInPast: true,
-                }
-              }
+                },
+              },
             }),
             QueueUrl: "mockSqsQueue",
           };
@@ -269,16 +269,16 @@ describe("Event Service", () => {
               dcmawFlagsPassport: {
                 doBUnknown: true,
                 doBMismatched: false,
-              }
+              },
             },
             flaggedRecord: [
               {
                 dateOfBirth: [
                   { type: "ocr", value: "1990-01-01" },
-                  { type: "nfc", value: "1990-01-02" }
-                ]
-              }
-            ]
+                  { type: "nfc", value: "1990-01-02" },
+                ],
+              },
+            ],
           });
         });
 
@@ -303,17 +303,17 @@ describe("Event Service", () => {
                   {
                     dateOfBirth: [
                       { type: "ocr", value: "1990-01-01" },
-                      { type: "nfc", value: "1990-01-02" }
-                    ]
-                  }
-                ]
+                      { type: "nfc", value: "1990-01-02" },
+                    ],
+                  },
+                ],
               },
               extensions: {
                 dcmawFlagsPassport: {
                   doBUnknown: true,
                   doBMismatched: false,
-                }
-              }
+                },
+              },
             }),
             QueueUrl: "mockSqsQueue",
           };
@@ -347,11 +347,9 @@ describe("Event Service", () => {
             flags: undefined,
             flaggedRecord: [
               {
-                dateOfExpiry: [
-                  { type: "ocr", value: "2030-12-31" }
-                ]
-              }
-            ]
+                dateOfExpiry: [{ type: "ocr", value: "2030-12-31" }],
+              },
+            ],
           });
         });
 
@@ -371,12 +369,10 @@ describe("Event Service", () => {
               restricted: {
                 flaggedRecord: [
                   {
-                    dateOfExpiry: [
-                      { type: "ocr", value: "2030-12-31" }
-                    ]
-                  }
-                ]
-              }
+                    dateOfExpiry: [{ type: "ocr", value: "2030-12-31" }],
+                  },
+                ],
+              },
             }),
             QueueUrl: "mockSqsQueue",
           };
@@ -408,7 +404,7 @@ describe("Event Service", () => {
             redirect_uri: undefined,
             suspected_fraud_signal: undefined,
             flags: undefined,
-            flaggedRecord: undefined
+            flaggedRecord: undefined,
           });
         });
 
