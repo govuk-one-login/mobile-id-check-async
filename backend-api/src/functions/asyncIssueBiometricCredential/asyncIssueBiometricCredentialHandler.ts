@@ -41,6 +41,7 @@ import { ResultSent } from "../common/session/updateOperations/ResultSent/Result
 import { CredentialJwtPayload } from "../types/jwt";
 import { randomUUID } from "crypto";
 import {
+  AuditData,
   BiometricCredential,
   FraudCheckData,
   GetCredentialError,
@@ -212,7 +213,7 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  const { credential, analytics } =
+  const { credential, audit, analytics } =
     getCredentialFromBiometricSessionResult.value;
   const credentialJwtPayload = buildCredentialJwtPayload({
     credential,
@@ -258,6 +259,16 @@ export async function lambdaHandlerConstructor(
       issuer: config.ISSUER,
       eventService,
     });
+    return;
+  }
+
+  const writeVCIssuedEventResult = await writeVcIssuedEvent(
+    eventService,
+    sessionAttributes,
+    credential,
+    audit,
+  );
+  if (writeVCIssuedEventResult.isError) {
     return;
   }
 
@@ -518,6 +529,65 @@ export const buildCredentialJwtPayload = (jwtData: {
   };
 };
 
+const writeVcIssuedEvent = async (
+  eventService: IEventService,
+  sessionAttributes: BiometricSessionFinishedAttributes,
+  credential: BiometricCredential,
+  audit: AuditData,
+): Promise<Result<void, void>> => {
+  const {
+    biometricSessionId,
+    govukSigninJourneyId,
+    subjectIdentifier,
+    sessionId,
+    issuer,
+    redirectUri,
+  } = sessionAttributes;
+  const { credentialSubject } = credential;
+  const { contraIndicatorReasons, txmaContraIndicators, flags, flaggedRecord } =
+    audit;
+
+  const hasFlags = flags != null;
+
+  const writeEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
+    sub: subjectIdentifier,
+    sessionId,
+    govukSigninJourneyId,
+    getNowInMilliseconds: Date.now,
+    transactionId: biometricSessionId,
+    componentId: issuer,
+    ipAddress: undefined,
+    txmaAuditEncoded: undefined,
+    redirect_uri: redirectUri,
+    suspected_fraud_signal: undefined,
+    evidence: [
+      {
+        ...credential.evidence[0],
+        ...(hasContraIndicators(credential) && {
+          ciReasons: contraIndicatorReasons,
+        }),
+        txmaContraIndicators,
+      },
+    ],
+    flaggedRecord: hasFlags ? flaggedRecord : undefined,
+    credentialSubject,
+    flags: hasFlags ? flags : undefined,
+  });
+  if (writeEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: { auditEventName: "DCMAW_ASYNC_CRI_VC_ISSUED" },
+    });
+    return emptyFailure();
+  }
+  return emptySuccess();
+};
+
+const hasContraIndicators = (credential: BiometricCredential): boolean => {
+  const credentialEvidence = credential.evidence[0];
+  return "ci" in credentialEvidence && credentialEvidence.ci !== null;
+};
+
 const writeCriEndEvent = async (
   eventService: IEventService,
   sessionAttributes: BiometricSessionFinishedAttributes,
@@ -529,6 +599,7 @@ const writeCriEndEvent = async (
     issuer,
     redirectUri,
   } = sessionAttributes;
+
   const writeCriEndEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_END",
     sub: subjectIdentifier,
