@@ -189,14 +189,21 @@ describe("Backend application infrastructure", () => {
 
   describe("Private APIgw", () => {
     test("The endpoints are Private", () => {
+      console.log(
+        JSON.stringify(
+          template.toJSON().Resources.PrivateApi.Properties
+            .EndpointConfiguration.VPCEndpointIds[1],
+        ),
+      );
       template.hasResourceProperties("AWS::Serverless::Api", {
         Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
         EndpointConfiguration: {
           Type: "PRIVATE",
-          VPCEndpointIds: {
-            "Fn::If": [
-              "IntegrateIpvCore",
-              [
+          VPCEndpointIds: [
+            {
+              "Fn::If": [
+                "IntegrateIpvCore",
+
                 {
                   "Fn::FindInMap": [
                     "PrivateApigw",
@@ -204,10 +211,24 @@ describe("Backend application infrastructure", () => {
                     "IpvCoreVpceId",
                   ],
                 },
+
+                { Ref: "AWS::NoValue" },
               ],
-              [{ Ref: "AWS::NoValue" }],
-            ],
-          },
+            },
+            {
+              "Fn::If": [
+                "IntegratePerformanceTesting",
+                {
+                  "Fn::FindInMap": [
+                    "PrivateApigw",
+                    { Ref: "Environment" },
+                    "PerformanceTestingVpceId",
+                  ],
+                },
+                { Ref: "AWS::NoValue" },
+              ],
+            },
+          ],
         },
       });
     });
