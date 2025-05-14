@@ -1238,7 +1238,7 @@ describe("Async Issue Biometric Credential", () => {
           txmaContraIndicators: [],
           flags: ["FLAG_1", "FLAG_2"],
           flaggedRecord: {
-            mockKey: "mockValue"
+            mockKey: "mockValue",
           },
         };
 
@@ -1264,9 +1264,7 @@ describe("Async Issue Biometric Credential", () => {
             expect.objectContaining({
               eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
               flaggedRecord: {
-                recordId: "mock-record-id",
-                reason: "mock-reason",
-                timestamp: "2024-01-01T12:00:00Z",
+                mockKey: "mockValue",
               },
               flags: ["FLAG_1", "FLAG_2"],
               evidence: [
