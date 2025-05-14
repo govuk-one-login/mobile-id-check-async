@@ -886,7 +886,7 @@ describe("Async Issue Biometric Credential", () => {
       });
     });
 
-    describe("Writing verifiable credential to IPVCore outbound queue", () => {
+    describe("Writing verifiable credential to IPVCore outbound queue errors", () => {
       describe("Given writing to the outbound queue fails", () => {
         beforeEach(async () => {
           dependencies.sendMessageToSqs = mockSendMessageToSqsFailure;
@@ -915,19 +915,6 @@ describe("Async Issue Biometric Credential", () => {
               "Unexpected failure writing the VC to the IPVCore outbound queue",
             ),
           );
-        });
-      });
-
-      describe("Given writing to the outbound queue succeeds", () => {
-        beforeEach(async () => {
-          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
-        });
-
-        it("Logs ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED", async () => {
-          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED",
-            documentType: "Passport",
-          });
         });
       });
     });
@@ -1129,6 +1116,13 @@ describe("Async Issue Biometric Credential", () => {
             sub: mockSubjectIdentifier,
           },
         );
+      });
+
+      it("Logs ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED and documentType", async () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED",
+          documentType: "Passport",
+        });
       });
 
       it("Writes DCMAW_ASYNC_CRI_END event to TxMA", () => {
