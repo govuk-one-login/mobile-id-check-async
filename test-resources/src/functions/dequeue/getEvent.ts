@@ -66,6 +66,8 @@ export const allowedTxmaEventNames = [
   "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
   "DCMAW_ASYNC_APP_END",
   "DCMAW_ASYNC_ABORT_APP",
+  "DCMAW_ASYNC_CRI_END",
+  "DCMAW_ASYNC_CRI_VC_ISSUED",
 ];
 
 const allowedTxmaEventNamesWithoutSessionId = [

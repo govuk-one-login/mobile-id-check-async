@@ -2,6 +2,11 @@ import { SendMessageCommand } from "@aws-sdk/client-sqs";
 import { Result, emptyFailure, emptySuccess } from "../../utils/result";
 import { sqsClient } from "./sqsClient";
 import {
+  CredentialSubject,
+  FlaggedRecord,
+  FlagsWrapper,
+} from "@govuk-one-login/mobile-id-check-biometric-credential";
+import {
   BiometricTokenIssuedEvent,
   BiometricTokenIssuedEventConfig,
   CredentialTokenIssuedEvent,
@@ -11,6 +16,7 @@ import {
   IEventService,
   RestrictedData,
   TxmaEvents,
+  VcIssuedEvidence,
 } from "./types";
 
 export class EventService implements IEventService {
@@ -49,7 +55,6 @@ export class EventService implements IEventService {
           MessageBody: JSON.stringify(txmaEvent),
         }),
       );
-
       return emptySuccess();
     } catch {
       return emptyFailure();
@@ -63,6 +68,8 @@ export class EventService implements IEventService {
     const extensions = this.getExtensionsObject(
       eventConfig.redirect_uri,
       eventConfig.suspected_fraud_signal,
+      eventConfig.evidence,
+      eventConfig.flags,
     );
 
     const event: GenericTxmaEvent = {
@@ -77,7 +84,11 @@ export class EventService implements IEventService {
       event_timestamp_ms: timestampInMillis,
       event_name: eventConfig.eventName,
       component_id: eventConfig.componentId,
-      restricted: this.getRestrictedData(eventConfig.txmaAuditEncoded),
+      restricted: this.getRestrictedData(
+        eventConfig.txmaAuditEncoded,
+        eventConfig.credentialSubject,
+        eventConfig.flaggedRecord,
+      ),
       extensions,
     };
 
@@ -87,14 +98,23 @@ export class EventService implements IEventService {
   private getExtensionsObject(
     redirect_uri?: string,
     suspected_fraud_signal?: string,
+    evidence?: VcIssuedEvidence[],
+    flags?: FlagsWrapper,
   ) {
-    if (redirect_uri === undefined && suspected_fraud_signal === undefined) {
+    if (
+      redirect_uri === undefined &&
+      suspected_fraud_signal === undefined &&
+      evidence === undefined &&
+      flags === undefined
+    ) {
       return undefined;
     }
 
     return {
       redirect_uri,
       suspected_fraud_signal,
+      evidence,
+      ...flags,
     };
   }
 
@@ -134,15 +154,33 @@ export class EventService implements IEventService {
 
   private readonly getRestrictedData = (
     txmaAuditEncoded: string | undefined,
+    credentialSubject?: CredentialSubject,
+    flaggedRecord?: FlaggedRecord[],
   ): RestrictedData | undefined => {
-    if (txmaAuditEncoded == null) {
+    if (!txmaAuditEncoded && !credentialSubject && !flaggedRecord) {
       return undefined;
     }
 
-    return {
-      device_information: {
+    const result: Partial<RestrictedData> = {};
+
+    if (txmaAuditEncoded) {
+      result.device_information = {
         encoded: txmaAuditEncoded,
-      },
-    };
+      };
+    }
+
+    if (credentialSubject) {
+      Object.assign(result, credentialSubject);
+    }
+
+    if (flaggedRecord) {
+      result.flaggedRecord = flaggedRecord;
+    }
+
+    if (Object.keys(result).length === 0) {
+      return undefined;
+    }
+
+    return result;
   };
 }
