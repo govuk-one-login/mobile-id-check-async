@@ -249,6 +249,21 @@ describe("Backend application infrastructure", () => {
         });
       });
 
+      test("Performance testing VPCe mappings are set", () => {
+        const expectedPerformanceTestMapping = {
+          dev: "vpce-0a5d1c69016ab3b56",
+          build: "vpce-0a5d1c69016ab3b56",
+          staging: "",
+          integration: "",
+          production: "",
+        };
+        const mappingHelper = new Mappings(template);
+        mappingHelper.validatePrivateAPIMapping({
+          environmentFlags: expectedPerformanceTestMapping,
+          mappingBottomLevelKey: "PerformanceTestingVpceId",
+        });
+      });
+
       test("Rate and burst limit mappings are set", () => {
         const expectedBurstLimits = {
           dev: 10,
