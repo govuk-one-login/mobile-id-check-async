@@ -188,6 +188,257 @@ describe("Event Service", () => {
           expect(result).toEqual(emptySuccess());
         });
       });
+
+      describe("Given flags are provided", () => {
+        beforeEach(async () => {
+          sqsMock.on(SendMessageCommand).resolves({});
+
+          result = await eventWriter.writeGenericEvent({
+            eventName: genericEventName,
+            sub: "mockSub",
+            sessionId: "mockSessionId",
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            getNowInMilliseconds: () => 1609462861000,
+            componentId: "mockComponentId",
+            ipAddress: "mockIpAddress",
+            txmaAuditEncoded: undefined,
+            redirect_uri: undefined,
+            suspected_fraud_signal: undefined,
+            flags: {
+              dcmawFlagsPassport: {
+                doBUnknown: true,
+                doBMismatched: false,
+                doEInPast: true,
+              }
+            },
+            flaggedRecord: undefined
+          });
+        });
+
+        it(`Attempts to send ${genericEventName} event to SQS with flags`, () => {
+          const expectedCommandInput = {
+            MessageBody: JSON.stringify({
+              user: {
+                user_id: "mockSub",
+                session_id: "mockSessionId",
+                govuk_signin_journey_id: "mockGovukSigninJourneyId",
+                ip_address: "mockIpAddress",
+              },
+              timestamp: 1609462861,
+              event_timestamp_ms: 1609462861000,
+              event_name: genericEventName,
+              component_id: "mockComponentId",
+              extensions: {
+                dcmawFlagsPassport: {
+                  doBUnknown: true,
+                  doBMismatched: false,
+                  doEInPast: true,
+                }
+              }
+            }),
+            QueueUrl: "mockSqsQueue",
+          };
+
+          expect(sqsMock).toHaveReceivedCommandWith(
+            SendMessageCommand,
+            expectedCommandInput,
+          );
+        });
+
+        it("Returns an emptySuccess", () => {
+          expect(result).toEqual(emptySuccess());
+        });
+      });
+
+      describe("Given flags and flaggedRecord are provided", () => {
+        beforeEach(async () => {
+          sqsMock.on(SendMessageCommand).resolves({});
+
+          result = await eventWriter.writeGenericEvent({
+            eventName: genericEventName,
+            sub: "mockSub",
+            sessionId: "mockSessionId",
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            getNowInMilliseconds: () => 1609462861000,
+            componentId: "mockComponentId",
+            ipAddress: "mockIpAddress",
+            txmaAuditEncoded: "mockTxmaAuditEncoded",
+            redirect_uri: undefined,
+            suspected_fraud_signal: undefined,
+            flags: {
+              dcmawFlagsPassport: {
+                doBUnknown: true,
+                doBMismatched: false,
+              }
+            },
+            flaggedRecord: [
+              {
+                dateOfBirth: [
+                  { type: "ocr", value: "1990-01-01" },
+                  { type: "nfc", value: "1990-01-02" }
+                ]
+              }
+            ]
+          });
+        });
+
+        it(`Attempts to send ${genericEventName} event to SQS with flags and flaggedRecord`, () => {
+          const expectedCommandInput = {
+            MessageBody: JSON.stringify({
+              user: {
+                user_id: "mockSub",
+                session_id: "mockSessionId",
+                govuk_signin_journey_id: "mockGovukSigninJourneyId",
+                ip_address: "mockIpAddress",
+              },
+              timestamp: 1609462861,
+              event_timestamp_ms: 1609462861000,
+              event_name: genericEventName,
+              component_id: "mockComponentId",
+              restricted: {
+                device_information: {
+                  encoded: "mockTxmaAuditEncoded",
+                },
+                flaggedRecord: [
+                  {
+                    dateOfBirth: [
+                      { type: "ocr", value: "1990-01-01" },
+                      { type: "nfc", value: "1990-01-02" }
+                    ]
+                  }
+                ]
+              },
+              extensions: {
+                dcmawFlagsPassport: {
+                  doBUnknown: true,
+                  doBMismatched: false,
+                }
+              }
+            }),
+            QueueUrl: "mockSqsQueue",
+          };
+
+          expect(sqsMock).toHaveReceivedCommandWith(
+            SendMessageCommand,
+            expectedCommandInput,
+          );
+        });
+
+        it("Returns an emptySuccess", () => {
+          expect(result).toEqual(emptySuccess());
+        });
+      });
+
+      describe("Given only flaggedRecord is provided", () => {
+        beforeEach(async () => {
+          sqsMock.on(SendMessageCommand).resolves({});
+
+          result = await eventWriter.writeGenericEvent({
+            eventName: genericEventName,
+            sub: "mockSub",
+            sessionId: "mockSessionId",
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            getNowInMilliseconds: () => 1609462861000,
+            componentId: "mockComponentId",
+            ipAddress: "mockIpAddress",
+            txmaAuditEncoded: undefined,
+            redirect_uri: undefined,
+            suspected_fraud_signal: undefined,
+            flags: undefined,
+            flaggedRecord: [
+              {
+                dateOfExpiry: [
+                  { type: "ocr", value: "2030-12-31" }
+                ]
+              }
+            ]
+          });
+        });
+
+        it(`Attempts to send ${genericEventName} event to SQS with flaggedRecord only`, () => {
+          const expectedCommandInput = {
+            MessageBody: JSON.stringify({
+              user: {
+                user_id: "mockSub",
+                session_id: "mockSessionId",
+                govuk_signin_journey_id: "mockGovukSigninJourneyId",
+                ip_address: "mockIpAddress",
+              },
+              timestamp: 1609462861,
+              event_timestamp_ms: 1609462861000,
+              event_name: genericEventName,
+              component_id: "mockComponentId",
+              restricted: {
+                flaggedRecord: [
+                  {
+                    dateOfExpiry: [
+                      { type: "ocr", value: "2030-12-31" }
+                    ]
+                  }
+                ]
+              }
+            }),
+            QueueUrl: "mockSqsQueue",
+          };
+
+          expect(sqsMock).toHaveReceivedCommandWith(
+            SendMessageCommand,
+            expectedCommandInput,
+          );
+        });
+
+        it("Returns an emptySuccess", () => {
+          expect(result).toEqual(emptySuccess());
+        });
+      });
+
+      describe("Given neither flags nor flaggedRecord are provided", () => {
+        beforeEach(async () => {
+          sqsMock.on(SendMessageCommand).resolves({});
+
+          result = await eventWriter.writeGenericEvent({
+            eventName: genericEventName,
+            sub: "mockSub",
+            sessionId: "mockSessionId",
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            getNowInMilliseconds: () => 1609462861000,
+            componentId: "mockComponentId",
+            ipAddress: "mockIpAddress",
+            txmaAuditEncoded: undefined,
+            redirect_uri: undefined,
+            suspected_fraud_signal: undefined,
+            flags: undefined,
+            flaggedRecord: undefined
+          });
+        });
+
+        it(`Attempts to send ${genericEventName} event to SQS without flags or flaggedRecord`, () => {
+          const expectedCommandInput = {
+            MessageBody: JSON.stringify({
+              user: {
+                user_id: "mockSub",
+                session_id: "mockSessionId",
+                govuk_signin_journey_id: "mockGovukSigninJourneyId",
+                ip_address: "mockIpAddress",
+              },
+              timestamp: 1609462861,
+              event_timestamp_ms: 1609462861000,
+              event_name: genericEventName,
+              component_id: "mockComponentId",
+            }),
+            QueueUrl: "mockSqsQueue",
+          };
+
+          expect(sqsMock).toHaveReceivedCommandWith(
+            SendMessageCommand,
+            expectedCommandInput,
+          );
+        });
+
+        it("Returns an emptySuccess", () => {
+          expect(result).toEqual(emptySuccess());
+        });
+      });
     });
   });
 
