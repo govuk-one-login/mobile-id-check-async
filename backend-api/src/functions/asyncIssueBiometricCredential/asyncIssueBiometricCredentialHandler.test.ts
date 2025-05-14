@@ -1167,7 +1167,6 @@ describe("Async Issue Biometric Credential", () => {
             {
               eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
               componentId: mockIssuer,
-              clientId: "mockClientId",
               getNowInMilliseconds: Date.now,
               sessionId: mockSessionId,
               govukSigninJourneyId: mockGovukSigninJourneyId,

@@ -537,7 +537,6 @@ const writeVcIssuedEvent = async (
     sessionId,
     issuer,
     redirectUri,
-    clientId,
   } = sessionAttributes;
   const { credentialSubject } = credential;
   const { contraIndicatorReasons, txmaContraIndicators, flags, flaggedRecord } =
@@ -548,7 +547,6 @@ const writeVcIssuedEvent = async (
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_VC_ISSUED",
     sub: subjectIdentifier,
-    clientId,
     sessionId,
     govukSigninJourneyId,
     getNowInMilliseconds: Date.now,
