@@ -90,7 +90,6 @@ export interface GenericEventConfig extends BaseUserEventConfig {
   suspected_fraud_signal: string | undefined;
   evidence?: VcIssuedEvidence[];
   credentialSubject?: CredentialSubject;
-  clientId?: string;
   flags?: FlagsWrapper;
   flaggedRecord?: FlaggedRecord[];
 }
@@ -105,7 +104,6 @@ export interface BiometricTokenIssuedEventConfig extends BaseUserEventConfig {
 
 export interface GenericTxmaEvent extends BaseUserTxmaEvent {
   event_name: GenericEventNames | TxmaBillingEventName;
-  client_id?: string;
   extensions: Extensions | undefined;
 }
 
