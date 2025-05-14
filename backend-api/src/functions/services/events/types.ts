@@ -1,6 +1,7 @@
 import { Result } from "../../utils/result";
 import { DocumentType } from "../../types/document";
 import {
+  ContraIndicatorReason,
   CredentialSubject,
   FailEvidence,
   FlaggedRecord,
@@ -80,6 +81,7 @@ export type EventNames =
 
 export type VcIssuedEvidence = (PassEvidence | FailEvidence) & {
   txmaContraIndicators: TxmaContraIndicator[];
+  ciReasons?: ContraIndicatorReason[];
 };
 
 export interface GenericEventConfig extends BaseUserEventConfig {
