@@ -217,6 +217,7 @@ export async function lambdaHandlerConstructor(
     return serverErrorResponse;
   }
 
+  logger.info(LogMessage.CREDENTIAL_SESSION_CREATED);
   logger.info(LogMessage.CREDENTIAL_COMPLETED);
   return sessionCreatedResponse(requestBody.sub);
 }

@@ -988,6 +988,10 @@ describe("Async Credential", () => {
             );
 
             expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+              messageCode: "MOBILE_ASYNC_CREDENTIAL_SESSION_CREATED",
+            });
+
+            expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
               messageCode: "MOBILE_ASYNC_CREDENTIAL_COMPLETED",
               persistentIdentifiers: {
                 govukSigninJourneyId: mockGovukSigninJourneyId,

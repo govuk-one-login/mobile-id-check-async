@@ -161,6 +161,10 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_CREDENTIAL_COMPLETED",
     "Lambda handler processing has completed successfully.",
   );
+  static readonly CREDENTIAL_SESSION_CREATED = new LogMessage(
+    "MOBILE_ASYNC_CREDENTIAL_SESSION_CREATED",
+    "A new session has been created.",
+  );
   static readonly CREDENTIAL_INVALID_CONFIG = new LogMessage(
     "MOBILE_ASYNC_CREDENTIAL_INVALID_CONFIG",
     "One or more required environment variables were missing or invalid.",
