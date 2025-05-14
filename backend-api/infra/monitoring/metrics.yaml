@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  JourneysStartedMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref AsyncCredentialLogGroup
+      FilterPattern: '{ $.messageCode = MOBILE_ASYNC_CREDENTIAL_SESSION_CREATED }'
+      MetricTransformations:
+        - MetricValue: "1"
+          MetricNamespace: !Sub "${AWS::StackName}/LogMessages"
+          MetricName: "JourneysStarted"
+
+  CredentialsIssuedMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
+      FilterPattern: '{ $.messageCode = MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED }'
+      MetricTransformations:
+        - MetricValue: "1"
+          MetricNamespace: !Sub "${AWS::StackName}/LogMessages"
+          MetricName: "CredentialsIssued"
+          Dimensions:
+            - Key: DocumentType
+              Value: $.documentType
