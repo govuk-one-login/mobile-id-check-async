@@ -67,6 +67,36 @@ describe("POST /async/finishBiometricSession", () => {
     });
   });
 
+  describe("Given the session is in an invalid state", () => {
+    let sessionId: string;
+    let response: AxiosResponse;
+    beforeAll(async () => {
+      const sub = randomUUID();
+      await createSessionForSub(sub);
+      sessionId = await getActiveSessionIdFromSub(sub);
+
+      response = await SESSIONS_API_INSTANCE.post(
+        "/async/finishBiometricSession",
+        {
+          sessionId,
+          biometricSessionId: randomUUID(),
+        },
+      );
+    }, 20000);
+
+    it("Returns 401 Unauthorized response with invalid_session error", () => {
+      expect(response.status).toBe(401);
+      expect(response.statusText).toBe("Unauthorized");
+      expect(response.data).toStrictEqual({
+        error: "invalid_session",
+        error_description: "Session in invalid state",
+      });
+      expect(response.headers).toEqual(
+        expect.objectContaining(expectedSecurityHeaders),
+      );
+    });
+  });
+
   describe("Given there is a valid request", () => {
     let sessionId: string;
     let response: AxiosResponse;
