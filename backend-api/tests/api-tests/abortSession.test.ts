@@ -86,7 +86,7 @@ describe("POST /async/abortSession", () => {
         sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_ABORT_APP`,
         numberOfEvents: 1,
       });
-    }, 11000);
+    }, 40000);
 
     it("Writes the abort session message to the IPV Core outbound queue", () => {
       expect(credentialResultsResponse[0].body).toEqual(

@@ -8,13 +8,21 @@ Resources:
       AlwaysDeploy: true
       EndpointConfiguration:
         Type: PRIVATE
-        VPCEndpointIds: !If
-          - IntegrateIpvCore
-          - - !FindInMap
+        VPCEndpointIds: 
+          - !If
+            - IntegrateIpvCore
+            - !FindInMap
               - PrivateApigw
               - !Ref Environment
               - IpvCoreVpceId
-          - - Ref: "AWS::NoValue"
+            - Ref: "AWS::NoValue"
+          - !If
+            - IntegratePerformanceTesting
+            - !FindInMap
+              - PrivateApigw
+              - !Ref Environment
+              - PerformanceTestingVpceId
+            - Ref: "AWS::NoValue"
       Auth:
         ResourcePolicy:
           IntrinsicVpceWhitelist:
@@ -25,6 +33,13 @@ Resources:
                 - PrivateApigw
                 - !Ref Environment
                 - IpvCoreVpceId
+              - Ref: "AWS::NoValue"
+            - !If
+              - IntegratePerformanceTesting
+              - !FindInMap
+                - PrivateApigw
+                - !Ref Environment
+                - PerformanceTestingVpceId
               - Ref: "AWS::NoValue"
       StageName: !Ref Environment
       OpenApiVersion: 3.0.1

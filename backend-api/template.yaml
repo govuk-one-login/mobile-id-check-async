@@ -238,22 +238,27 @@ Mappings:
       ApiBurstLimit: 400
       ApiRateLimit: 200
       IpvCoreVpceId: ""
+      PerformanceTestingVpceId: vpce-0a5d1c69016ab3b56
     dev:
       ApiBurstLimit: 20
       ApiRateLimit: 10
       IpvCoreVpceId: ""
+      PerformanceTestingVpceId: vpce-0a5d1c69016ab3b56
     integration:
       ApiBurstLimit: 400
       ApiRateLimit: 200
       IpvCoreVpceId: ""
+      PerformanceTestingVpceId: ""
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
       IpvCoreVpceId: ""
+      PerformanceTestingVpceId: ""
     staging:
       ApiBurstLimit: 400
       ApiRateLimit: 200
       IpvCoreVpceId: vpce-0cc0de10742b83b8a
+      PerformanceTestingVpceId: ""
 
   ProxyApigw:
     build:
@@ -337,6 +342,14 @@ Conditions:
   IntegrateIpvCore: !Equals
     - !Ref Environment
     - staging
+
+  IntegratePerformanceTesting: !Or
+    - !Equals
+      - !Ref Environment
+      - dev
+    - !Equals
+      - !Ref Environment
+      - build
 
   IsDevOrBuild: !Or
     - !Equals
@@ -5097,6 +5110,13 @@ Resources:
                 - !Ref Environment
                 - IpvCoreVpceId
               - !Ref AWS::NoValue
+            - !If
+              - IntegratePerformanceTesting
+              - !FindInMap
+                - PrivateApigw
+                - !Ref Environment
+                - PerformanceTestingVpceId
+              - !Ref AWS::NoValue
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
@@ -5105,13 +5125,21 @@ Resources:
       Description: Private API gateway for Client Credentials flow
       EndpointConfiguration:
         Type: PRIVATE
-        VPCEndpointIds: !If
-          - IntegrateIpvCore
-          - - !FindInMap
+        VPCEndpointIds:
+          - !If
+            - IntegrateIpvCore
+            - !FindInMap
               - PrivateApigw
               - !Ref Environment
               - IpvCoreVpceId
-          - - !Ref AWS::NoValue
+            - !Ref AWS::NoValue
+          - !If
+            - IntegratePerformanceTesting
+            - !FindInMap
+              - PrivateApigw
+              - !Ref Environment
+              - PerformanceTestingVpceId
+            - !Ref AWS::NoValue
       MethodSettings:
         - DataTraceEnabled: false
           HttpMethod: '*'
