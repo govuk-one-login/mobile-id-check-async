@@ -189,12 +189,6 @@ describe("Backend application infrastructure", () => {
 
   describe("Private APIgw", () => {
     test("The endpoints are Private", () => {
-      console.log(
-        JSON.stringify(
-          template.toJSON().Resources.PrivateApi.Properties
-            .EndpointConfiguration.VPCEndpointIds[1],
-        ),
-      );
       template.hasResourceProperties("AWS::Serverless::Api", {
         Name: { "Fn::Sub": "${AWS::StackName}-private-api" },
         EndpointConfiguration: {
