@@ -4573,6 +4573,19 @@ Resources:
         - !Ref AWS::NoValue
       RoleName: !Sub ${AWS::StackName}-code-deploy-service-role
 
+  CredentialsIssuedMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '{ $.messageCode = MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED }'
+      LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
+      MetricTransformations:
+        - Dimensions:
+            - Key: DocumentType
+              Value: $.documentType
+          MetricName: CredentialsIssued
+          MetricNamespace: !Sub ${AWS::StackName}/LogMessages
+          MetricValue: "1"
+
   IPVCoreDLQ:
     Type: AWS::SQS::Queue
     Properties:
@@ -4790,6 +4803,16 @@ Resources:
       FunctionName: !Ref AsyncIssueBiometricCredentialFunction.Alias
       ScalingConfig:
         MaximumConcurrency: 34
+
+  JourneysStartedMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '{ $.messageCode = MOBILE_ASYNC_CREDENTIAL_SESSION_CREATED }'
+      LogGroupName: !Ref AsyncCredentialLogGroup
+      MetricTransformations:
+        - MetricName: JourneysStarted
+          MetricNamespace: !Sub ${AWS::StackName}/LogMessages
+          MetricValue: "1"
 
   JsonWebKeysBucket:
     Type: AWS::S3::Bucket

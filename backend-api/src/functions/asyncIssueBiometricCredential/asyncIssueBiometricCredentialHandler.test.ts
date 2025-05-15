@@ -131,7 +131,11 @@ describe("Async Issue Biometric Credential", () => {
     .mockReturnValue(
       successResult({
         credential: mockBiometricCredential,
-        analytics: "mockAnalytics",
+        analytics: {
+          scanType: "NFC",
+          visualVerification: "mockVisualVerification",
+          documentType: "Passport",
+        },
         audit: "mockAudit",
         advisories: "mockAdvisories",
       }),
@@ -885,7 +889,7 @@ describe("Async Issue Biometric Credential", () => {
       });
     });
 
-    describe("Write verifiable credential to IPVCore outbound queue errors", () => {
+    describe("Writing verifiable credential to IPVCore outbound queue errors", () => {
       describe("Given writing to the outbound queue fails", () => {
         beforeEach(async () => {
           dependencies.sendMessageToSqs = mockSendMessageToSqsFailure;
@@ -1090,7 +1094,11 @@ describe("Async Issue Biometric Credential", () => {
           .mockReturnValue(
             successResult({
               credential: mockBiometricCredential,
-              analytics: "mockAnalytics",
+              analytics: {
+                scanType: "NFC",
+                visualVerification: "mockVisualVerification",
+                documentType: "Passport",
+              },
               audit: mockAuditData,
               advisories: "mockAdvisories",
             }),
@@ -1159,6 +1167,13 @@ describe("Async Issue Biometric Credential", () => {
               sub: mockSubjectIdentifier,
             },
           );
+        });
+
+        it("Logs ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED and documentType", async () => {
+          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED",
+            documentType: "Passport",
+          });
         });
 
         it("Writes DCMAW_ASYNC_CRI_VC_ISSUED event to TxMA", () => {
@@ -1246,7 +1261,11 @@ describe("Async Issue Biometric Credential", () => {
           .mockReturnValue(
             successResult({
               credential: mockBiometricCredential,
-              analytics: "mockAnalytics",
+              analytics: {
+                scanType: "NFC",
+                visualVerification: "mockVisualVerification",
+                documentType: "Passport",
+              },
               audit: mockAuditDataWithFlags,
               advisories: "mockAdvisories",
             }),
