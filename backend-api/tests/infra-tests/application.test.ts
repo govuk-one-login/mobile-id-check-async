@@ -253,15 +253,15 @@ describe("Backend application infrastructure", () => {
         const expectedBurstLimits = {
           dev: 20,
           build: 400,
-          staging: 20,
-          integration: 20,
+          staging: 400,
+          integration: 400,
           production: 0,
         };
         const expectedRateLimits = {
           dev: 10,
           build: 200,
-          staging: 10,
-          integration: 10,
+          staging: 200,
+          integration: 200,
           production: 0,
         };
         const mappingHelper = new Mappings(template);
@@ -494,15 +494,15 @@ describe("Backend application infrastructure", () => {
         const expectedBurstLimits = {
           dev: 20,
           build: 400,
-          staging: 20,
-          integration: 20,
+          staging: 400,
+          integration: 400,
           production: 0,
         };
         const expectedRateLimits = {
           dev: 10,
           build: 200,
-          staging: 10,
-          integration: 10,
+          staging: 200,
+          integration: 200,
           production: 0,
         };
         const mappingHelper = new Mappings(template);
@@ -603,15 +603,15 @@ describe("Backend application infrastructure", () => {
         const expectedBurstLimits = {
           dev: 20,
           build: 400,
-          staging: 20,
-          integration: 20,
+          staging: 400,
+          integration: 400,
           production: 0,
         };
         const expectedRateLimits = {
           dev: 10,
           build: 200,
-          staging: 10,
-          integration: 10,
+          staging: 200,
+          integration: 200,
           production: 0,
         };
         const mappingHelper = new Mappings(template);

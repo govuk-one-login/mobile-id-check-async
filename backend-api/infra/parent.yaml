@@ -94,12 +94,12 @@ Mappings:
       ApiRateLimit: 200
       IpvCoreVpceId: ""
     staging:
-      ApiBurstLimit: 20
-      ApiRateLimit: 10
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
       IpvCoreVpceId: "vpce-0cc0de10742b83b8a"
     integration:
-      ApiBurstLimit: 20
-      ApiRateLimit: 10
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
       IpvCoreVpceId: ""
     production:
       ApiBurstLimit: 0
@@ -114,11 +114,11 @@ Mappings:
       ApiBurstLimit: 400
       ApiRateLimit: 200
     staging:
-      ApiBurstLimit: 20
-      ApiRateLimit: 10
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
     integration:
-      ApiBurstLimit: 20
-      ApiRateLimit: 10
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
@@ -135,12 +135,12 @@ Mappings:
       # Perf test prod account - di-performance-test-prod
       perfTesterRoleArn: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
     staging:
-      ApiBurstLimit: 20
-      ApiRateLimit: 10
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
       perfTesterRoleArn: ""
     integration:
-      ApiBurstLimit: 20
-      ApiRateLimit: 10
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
       perfTesterRoleArn: ""
     production:
       ApiBurstLimit: 0
