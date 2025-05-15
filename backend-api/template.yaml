@@ -235,18 +235,18 @@ Mappings:
 
   PrivateApigw:
     build:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
       IpvCoreVpceId: ""
       PerformanceTestingVpceId: vpce-0a5d1c69016ab3b56
     dev:
-      ApiBurstLimit: 10
+      ApiBurstLimit: 20
       ApiRateLimit: 10
       IpvCoreVpceId: ""
       PerformanceTestingVpceId: vpce-0a5d1c69016ab3b56
     integration:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
       IpvCoreVpceId: ""
       PerformanceTestingVpceId: ""
     production:
@@ -255,49 +255,49 @@ Mappings:
       IpvCoreVpceId: ""
       PerformanceTestingVpceId: ""
     staging:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
       IpvCoreVpceId: vpce-0cc0de10742b83b8a
       PerformanceTestingVpceId: ""
 
   ProxyApigw:
     build:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
       perfTesterRoleArn: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
     dev:
-      ApiBurstLimit: 10
+      ApiBurstLimit: 20
       ApiRateLimit: 10
       perfTesterRoleArn: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
     integration:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
       perfTesterRoleArn: ""
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
       perfTesterRoleArn: ""
     staging:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
       perfTesterRoleArn: ""
 
   SessionsApigw:
     build:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
     dev:
-      ApiBurstLimit: 10
+      ApiBurstLimit: 20
       ApiRateLimit: 10
     integration:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
     staging:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
 
   StaticVariables:
     urls:
