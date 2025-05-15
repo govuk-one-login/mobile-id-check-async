@@ -4730,6 +4730,49 @@ Resources:
       AliasName: !Sub alias/${AWS::StackName}-IPVCoreKMSEncryptionKey
       TargetKeyId: !Ref IPVCoreKMSEncryptionKey
 
+  IPVCoreOutboundDlq:
+    Type: AWS::SQS::Queue
+    Properties:
+      KmsMasterKeyId: !Ref IPVCoreKMSEncryptionKey
+      MessageRetentionPeriod: 345600
+      QueueName: !Sub ${AWS::StackName}-ipv-core-outbound-dlq
+
+  IPVCoreOutboundSqs:
+    Type: AWS::SQS::Queue
+    Properties:
+      DelaySeconds: 0
+      KmsMasterKeyId: !Ref IPVCoreKeyAlias
+      MessageRetentionPeriod: 345600
+      QueueName: !Sub ${AWS::StackName}-ipv-core-outbound
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt IPVCoreOutboundDlq.Arn
+        maxReceiveCount: 60
+      VisibilityTimeout: 60
+
+  IPVCoreOutboundSqsPolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+              - sqs:ChangeMessageVisibility
+              - sqs:ReceiveMessage
+            Effect: Allow
+            Principal:
+              AWS:
+                - !FindInMap
+                  - IPVCore
+                  - !Ref Environment
+                  - AccountId
+            Resource:
+              - !GetAtt IPVCoreOutboundSqs.Arn
+        Version: "2012-10-17"
+      Queues:
+        - !Ref IPVCoreOutboundSqs
+    Condition: isNotDevOrBuild
+
   IPVCoreSQS:
     Type: AWS::SQS::Queue
     Properties:
@@ -5647,6 +5690,48 @@ Resources:
         - !Ref TxMASQSQueue
     Condition: isNotDevOrBuild
 
+  TxMASqs:
+    Type: AWS::SQS::Queue
+    Properties:
+      KmsMasterKeyId: !Ref TxMAKeyAlias
+      MessageRetentionPeriod: 604800
+      QueueName: !Sub ${AWS::StackName}-txma
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt TxMASqsDlq.Arn
+        maxReceiveCount: 5
+      VisibilityTimeout: 60
+
+  TxMASqsDlq:
+    Type: AWS::SQS::Queue
+    Properties:
+      KmsMasterKeyId: !Sub TxMAKMSEncryptionKey
+      MessageRetentionPeriod: 259200
+      QueueName: !Sub ${AWS::StackName}-txma-dlq
+
+  TxMASqsPolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+              - sqs:ChangeMessageVisibility
+              - sqs:ReceiveMessage
+            Effect: Allow
+            Principal:
+              AWS:
+                - !FindInMap
+                  - TxMA
+                  - !Ref Environment
+                  - TxmaAccount
+            Resource:
+              - !GetAtt TxMASqs.Arn
+        Version: "2012-10-17"
+      Queues:
+        - !Ref TxMASqs
+    Condition: isNotDevOrBuild
+
   VendorProcessingDLQ:
     Type: AWS::SQS::Queue
     Properties:
@@ -5991,6 +6076,13 @@ Outputs:
       Name: !Sub ${AWS::StackName}-ipv-core-kms-encryption-key-arn
     Condition: IsDevOrBuild
 
+  IPVCoreOutboundSqsArn:
+    Description: IPV Core Queue ARN
+    Value: !GetAtt IPVCoreOutboundSqs.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-ipv-core-outbound-sqs-arn
+    Condition: IsDevOrBuild
+
   IPVCoreQueueArn:
     Description: IPV Core Queue ARN
     Value: !GetAtt IPVCoreSQS.Arn
@@ -6038,6 +6130,13 @@ Outputs:
     Value: !GetAtt TxMAKMSEncryptionKey.Arn
     Export:
       Name: !Sub ${AWS::StackName}-txma-kms-encryption-key-arn
+    Condition: IsDevOrBuild
+
+  TxmaSqsArn:
+    Description: TxMA SQS Queue ARN
+    Value: !GetAtt TxMASqs.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-txma-sqs-arn
     Condition: IsDevOrBuild
 
   TxmaSqsQueueArn:
