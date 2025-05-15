@@ -2,6 +2,7 @@ import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import {
   NOW_IN_MILLISECONDS,
   ONE_HOUR_AGO_IN_MILLISECONDS,
+  validBaseSessionAttributes,
   validBiometricSessionFinishedAttributes,
   validBiometricTokenIssuedSessionAttributes,
 } from "../../../../testUtils/unitTestData";
@@ -86,14 +87,10 @@ describe("BiometricSessionFinished", () => {
       it("Returns successResult with BaseSessionAttributes for valid base attributes", () => {
         const result =
           biometricSessionFinished.getSessionAttributesFromDynamoDbItem(
-            validBiometricTokenIssuedSessionAttributesItem,
+            marshall(validBaseSessionAttributes),
             getSessionAttributesOptions,
           );
-        expect(result).toEqual(
-          successResult(
-            unmarshall(validBiometricTokenIssuedSessionAttributesItem),
-          ),
-        );
+        expect(result).toEqual(successResult(validBaseSessionAttributes));
       });
     });
 
