@@ -558,6 +558,13 @@ Outputs:
       Name: !Sub ${AWS::StackName}-txma-sqs-queue-arn
     Value: !GetAtt TxMASQSQueue.Arn
 
+  TxmaSqsArn:
+    Condition: IsDevOrBuild
+    Description: TxMA SQS Queue ARN
+    Export:
+      Name: !Sub ${AWS::StackName}-txma-sqs-arn
+    Value: !GetAtt TxMASqs.Arn
+
   TxmaKmsEncryptionKeyArn:
     Condition: IsDevOrBuild
     Description: TxMA KMS Encryption Key ARN
@@ -571,6 +578,13 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-ipv-core-queue-arn
     Value: !GetAtt IPVCoreSQS.Arn
+
+  IPVCoreOutboundSqsArn:
+    Condition: IsDevOrBuild
+    Description: IPV Core Queue ARN
+    Export:
+      Name: !Sub ${AWS::StackName}-ipv-core-outbound-sqs-arn
+    Value: !GetAtt IPVCoreOutboundSqs.Arn
 
   IPVCoreKmsEncryptionKeyArn:
     Condition: IsDevOrBuild

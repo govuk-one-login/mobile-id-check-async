@@ -10,6 +10,17 @@ Resources:
         deadLetterTargetArn: !GetAtt TxMASQSQueueDeadLetterQueue.Arn
         maxReceiveCount: 5
 
+  TxMASqs:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-txma"
+      MessageRetentionPeriod: 604800
+      VisibilityTimeout: 60
+      KmsMasterKeyId: !Ref TxMAKeyAlias
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt TxMASqsDlq.Arn
+        maxReceiveCount: 5
+
   TxMASQSQueuePolicy:
     Type: AWS::SQS::QueuePolicy
     Properties:
@@ -34,9 +45,40 @@ Resources:
                   - TxmaAccount
     Condition: isNotDevOrBuild
 
+  TxMASqsPolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref TxMASqs
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+              - sqs:ChangeMessageVisibility
+              - sqs:ReceiveMessage
+            Resource:
+              - !GetAtt TxMASqs.Arn
+            Principal:
+              AWS:
+                - !FindInMap
+                  - TxMA
+                  - !Ref Environment
+                  - TxmaAccount
+    Condition: isNotDevOrBuild
+
   TxMASQSQueueDeadLetterQueue:
     Type: AWS::SQS::Queue
     Properties:
+      MessageRetentionPeriod: 259200
+      KmsMasterKeyId: !Sub TxMAKMSEncryptionKey
+
+  TxMASqsDlq:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${AWS::StackName}-txma-dlq"
       MessageRetentionPeriod: 259200
       KmsMasterKeyId: !Sub TxMAKMSEncryptionKey
   
