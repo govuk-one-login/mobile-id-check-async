@@ -492,7 +492,7 @@ Globals:
               - EnvironmentConfiguration
               - !Ref Environment
               - dynatraceSecretArn
-        IPVCORE_OUTBOUND_SQS: !GetAtt IPVCoreSQS.QueueUrl
+        IPVCORE_OUTBOUND_SQS: !GetAtt IPVCoreOutboundSqs.QueueUrl
         ISSUER: !Sub
           - https://${BaseDns}
           - BaseDns: !FindInMap
@@ -502,7 +502,7 @@ Globals:
         POWERTOOLS_SERVICE_NAME: mobile-id-check-async-backend
         SESSION_TABLE_NAME: !Ref SessionsTable
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
-        TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
+        TXMA_SQS: !GetAtt TxMASqs.QueueUrl
         VENDOR_PROCESSING_SQS: !GetAtt VendorProcessingSQS.QueueUrl
     Layers:
       - !Sub
@@ -967,7 +967,7 @@ Resources:
               - Action:
                   - sqs:SendMessage
                 Effect: Allow
-                Resource: !GetAtt TxMASQSQueue.Arn
+                Resource: !GetAtt TxMASqs.Arn
               - Action:
                   - kms:Decrypt
                   - kms:GenerateDataKey
@@ -980,7 +980,7 @@ Resources:
               - Action:
                   - sqs:SendMessage
                 Effect: Allow
-                Resource: !GetAtt IPVCoreSQS.Arn
+                Resource: !GetAtt IPVCoreOutboundSqs.Arn
               - Action:
                   - kms:Decrypt
                   - kms:GenerateDataKey
@@ -2085,7 +2085,7 @@ Resources:
               - Action:
                   - sqs:SendMessage
                 Effect: Allow
-                Resource: !GetAtt TxMASQSQueue.Arn
+                Resource: !GetAtt TxMASqs.Arn
               - Action:
                   - kms:Decrypt
                   - kms:GenerateDataKey
@@ -2640,7 +2640,7 @@ Resources:
               - Action:
                   - sqs:SendMessage
                 Effect: Allow
-                Resource: !GetAtt TxMASQSQueue.Arn
+                Resource: !GetAtt TxMASqs.Arn
               - Action:
                   - kms:Encrypt
                   - kms:Decrypt
@@ -3168,7 +3168,7 @@ Resources:
               - Action:
                   - sqs:SendMessage
                 Effect: Allow
-                Resource: !GetAtt TxMASQSQueue.Arn
+                Resource: !GetAtt TxMASqs.Arn
               - Action:
                   - kms:Decrypt
                   - kms:GenerateDataKey
@@ -3500,7 +3500,7 @@ Resources:
               - Action:
                   - sqs:SendMessage
                 Effect: Allow
-                Resource: !GetAtt TxMASQSQueue.Arn
+                Resource: !GetAtt TxMASqs.Arn
               - Action:
                   - kms:Decrypt
                   - kms:GenerateDataKey
@@ -3513,7 +3513,7 @@ Resources:
               - Action:
                   - sqs:SendMessage
                 Effect: Allow
-                Resource: !GetAtt IPVCoreSQS.Arn
+                Resource: !GetAtt IPVCoreOutboundSqs.Arn
               - Action:
                   - kms:Decrypt
                   - kms:GenerateDataKey
@@ -4110,7 +4110,7 @@ Resources:
               - Action:
                   - sqs:SendMessage
                 Effect: Allow
-                Resource: !GetAtt TxMASQSQueue.Arn
+                Resource: !GetAtt TxMASqs.Arn
               - Action:
                   - kms:Encrypt
                   - kms:Decrypt
@@ -4556,7 +4556,7 @@ Resources:
               - Action:
                   - sqs:SendMessage
                 Effect: Allow
-                Resource: !GetAtt TxMASQSQueue.Arn
+                Resource: !GetAtt TxMASqs.Arn
               - Action:
                   - kms:GenerateDataKey
                 Effect: Allow
@@ -4638,7 +4638,7 @@ Resources:
       DatapointsToAlarm: 1
       Dimensions:
         - Name: QueueName
-          Value: !GetAtt IPVCoreDLQ.QueueName
+          Value: !GetAtt IPVCoreOutboundDlq.QueueName
       EvaluationPeriods: 1
       MetricName: ApproximateAgeOfOldestMessage
       Namespace: AWS/SQS
@@ -4667,7 +4667,7 @@ Resources:
       DatapointsToAlarm: 1
       Dimensions:
         - Name: QueueName
-          Value: !GetAtt IPVCoreDLQ.QueueName
+          Value: !GetAtt IPVCoreOutboundDlq.QueueName
       EvaluationPeriods: 1
       MetricName: ApproximateAgeOfOldestMessage
       Namespace: AWS/SQS
@@ -4696,7 +4696,7 @@ Resources:
       DatapointsToAlarm: 1
       Dimensions:
         - Name: QueueName
-          Value: !GetAtt IPVCoreDLQ.QueueName
+          Value: !GetAtt IPVCoreOutboundDlq.QueueName
       EvaluationPeriods: 1
       MetricName: ApproximateNumberOfMessagesVisible
       Namespace: AWS/SQS
@@ -4724,9 +4724,7 @@ Resources:
               Resource:
                 - '*'
             - Action:
-                - kms:Encrypt
                 - kms:Decrypt
-                - kms:GenerateDataKey
               Effect: Allow
               Principal:
                 AWS: !FindInMap
@@ -4854,7 +4852,7 @@ Resources:
       DatapointsToAlarm: 1
       Dimensions:
         - Name: QueueName
-          Value: !GetAtt IPVCoreSQS.QueueName
+          Value: !GetAtt IPVCoreOutboundSqs.QueueName
       EvaluationPeriods: 1
       MetricName: ApproximateAgeOfOldestMessage
       Namespace: AWS/SQS
@@ -5656,9 +5654,7 @@ Resources:
             Resource:
               - '*'
           - Action:
-              - kms:Encrypt
               - kms:Decrypt
-              - kms:GenerateDataKey
             Effect: Allow
             Principal:
               AWS: !FindInMap

@@ -155,7 +155,7 @@ Resources:
       BatchSize: 10
       Enabled: true
       EventSourceArn: !ImportValue
-        Fn::Sub: ${BackendStackName}-ipv-core-queue-arn
+        Fn::Sub: ${BackendStackName}-ipv-core-outbound-sqs-arn
       FunctionName: !GetAtt DequeueCredentialResultFunction.Arn
       FunctionResponseTypes:
         - ReportBatchItemFailures
@@ -248,7 +248,7 @@ Resources:
                   - sqs:GetQueueAttributes
                 Effect: Allow
                 Resource: !ImportValue
-                  Fn::Sub: ${BackendStackName}-ipv-core-queue-arn
+                  Fn::Sub: ${BackendStackName}-ipv-core-outbound-sqs-arn
             Version: "2012-10-17"
           PolicyName: SQSPolicy
         - PolicyDocument:
@@ -267,7 +267,7 @@ Resources:
       BatchSize: 10
       Enabled: true
       EventSourceArn: !ImportValue
-        Fn::Sub: ${BackendStackName}-txma-sqs-queue-arn
+        Fn::Sub: ${BackendStackName}-txma-sqs-arn
       FunctionName: !GetAtt DequeueFunction.Arn
       FunctionResponseTypes:
         - ReportBatchItemFailures
@@ -340,7 +340,7 @@ Resources:
                   - sqs:GetQueueAttributes
                 Effect: Allow
                 Resource: !ImportValue
-                  Fn::Sub: ${BackendStackName}-txma-sqs-queue-arn
+                  Fn::Sub: ${BackendStackName}-txma-sqs-arn
             Version: "2012-10-17"
           PolicyName: SQSPolicy
         - PolicyDocument:

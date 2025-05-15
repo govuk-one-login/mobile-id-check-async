@@ -92,7 +92,7 @@ Resources:
                   - sqs:DeleteMessage
                   - sqs:GetQueueAttributes
                 Resource:
-                  Fn::ImportValue: !Sub ${BackendStackName}-ipv-core-queue-arn
+                  Fn::ImportValue: !Sub ${BackendStackName}-ipv-core-outbound-sqs-arn
         - PolicyName: DynamoDBPolicy
           PolicyDocument:
             Version: "2012-10-17"
@@ -108,7 +108,7 @@ Resources:
       BatchSize: 10
       Enabled: true
       EventSourceArn:
-        Fn::ImportValue: !Sub ${BackendStackName}-ipv-core-queue-arn
+        Fn::ImportValue: !Sub ${BackendStackName}-ipv-core-outbound-sqs-arn
       FunctionName: !GetAtt DequeueCredentialResultFunction.Arn
       FunctionResponseTypes:
         - ReportBatchItemFailures
