@@ -153,11 +153,11 @@ Mappings:
       perfTesterRoleArn: ""
 
   Lambda:
-    dev:
-      ReservedConcurrentExecutions: 0 # Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
-      IssueBiometricCredentialReservedConcurrentExecutions: 0 # Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
-      AsyncTokenReservedConcurrentExecutions: 0 # Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
-      AsyncCredentialReservedConcurrentExecutions: 0 # Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
+    dev: # Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
+      ReservedConcurrentExecutions: 0 
+      IssueBiometricCredentialReservedConcurrentExecutions: 0 
+      AsyncTokenReservedConcurrentExecutions: 0 
+      AsyncCredentialReservedConcurrentExecutions: 0 
       JsonWebKeysReservedConcurrentExecutions: 1
       LogLevel: DEBUG
     build:
