@@ -2,8 +2,8 @@ import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { Result } from "../../../../utils/result";
 import { SessionAttributes, SessionState } from "../../session";
 import {
+  getBaseSessionAttributes,
   getBiometricSessionFinishedSessionAttributes,
-  getBiometricTokenIssuedSessionAttributes,
 } from "../../sessionAttributes/sessionAttributes";
 import { UpdateSessionOperation } from "../UpdateSessionOperation";
 import { oneHourAgoInMilliseconds } from "../../../../utils/utils";
@@ -39,7 +39,7 @@ export class BiometricSessionFinished implements UpdateSessionOperation {
     },
   ): Result<SessionAttributes, GetSessionAttributesInvalidAttributesError> {
     if (options?.operationFailed) {
-      return getBiometricTokenIssuedSessionAttributes(item);
+      return getBaseSessionAttributes(item);
     } else {
       return getBiometricSessionFinishedSessionAttributes(item);
     }
