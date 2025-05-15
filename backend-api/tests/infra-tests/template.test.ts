@@ -48,8 +48,6 @@ describe("Template", () => {
     expect(mainKeys).toEqual(parentKeys);
 
     parentKeys.forEach((key) => {
-      console.log("main " + key, main.Mappings[key]);
-      console.log("parent " + key, parent.Mappings[key]);
       expect(isDeepStrictEqual(main.Mappings[key], parent.Mappings[key])).toBe(
         true,
       );
@@ -66,8 +64,6 @@ describe("Template", () => {
     expect(mainKeys).toEqual(parentKeys);
 
     parentKeys.forEach((key) => {
-      console.log("main " + key, main.Conditions[key]);
-      console.log("parent " + key, parent.Conditions[key]);
       expect(
         isDeepStrictEqual(main.Conditions[key], parent.Conditions[key]),
       ).toBe(true);
