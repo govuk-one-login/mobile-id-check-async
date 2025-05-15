@@ -41,6 +41,7 @@ Resources:
           - !ImportValue devplatform-vpc-PrivateSubnetIdC
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+  
   AsyncTokenFunctionPermission:
     Type: AWS::Lambda::Permission
     Properties:

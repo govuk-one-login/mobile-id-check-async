@@ -34,6 +34,7 @@ Resources:
           - !ImportValue devplatform-vpc-PrivateSubnetIdC
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+  
   JsonWebKeysFunctionLambdaRole:
     Type: AWS::IAM::Role
     Properties:
