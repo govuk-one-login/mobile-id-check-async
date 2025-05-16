@@ -3,6 +3,7 @@ Resources:
   VendorProcessingSQS:
     Type: AWS::SQS::Queue
     Properties:
+      QueueName: !Sub ${AWS::StackName}-vendor-processing
       MessageRetentionPeriod: 1209600
       VisibilityTimeout: 10
       DelaySeconds: 5
@@ -15,6 +16,7 @@ Resources:
   VendorProcessingDLQ:
     Type: AWS::SQS::Queue
     Properties:
+      QueueName: !Sub ${AWS::StackName}-vendor-processing-dlq
       MessageRetentionPeriod: 1209600
       KmsMasterKeyId: !Ref VendorProcessingKeyAlias
 

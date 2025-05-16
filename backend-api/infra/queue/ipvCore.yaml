@@ -1,16 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Resources:
-  IPVCoreSQS:
-    Type: AWS::SQS::Queue
-    Properties:
-      MessageRetentionPeriod: 345600 # 4 days in seconds
-      VisibilityTimeout: 60
-      DelaySeconds: 0
-      KmsMasterKeyId: !Ref IPVCoreKeyAlias
-      RedrivePolicy:
-        deadLetterTargetArn: !GetAtt IPVCoreDLQ.Arn
-        maxReceiveCount: 60
-
   IPVCoreOutboundSqs:
     Type: AWS::SQS::Queue
     Properties:
@@ -22,30 +11,6 @@ Resources:
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt IPVCoreOutboundDlq.Arn
         maxReceiveCount: 60
-
-  IPVCoreSQSPolicy:
-    Type: AWS::SQS::QueuePolicy
-    Properties:
-      Queues:
-        - !Ref IPVCoreSQS
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action:
-              - sqs:DeleteMessage
-              - sqs:GetQueueAttributes
-              - sqs:ChangeMessageVisibility
-              - sqs:ReceiveMessage
-            Resource:
-              - !GetAtt IPVCoreSQS.Arn
-            Principal:
-              AWS:
-                - !FindInMap
-                  - IPVCore
-                  - !Ref Environment
-                  - AccountId
-    Condition: isNotDevOrBuild
 
   IPVCoreOutboundSqsPolicy:
     Type: AWS::SQS::QueuePolicy
@@ -70,12 +35,6 @@ Resources:
                   - !Ref Environment
                   - AccountId
     Condition: isNotDevOrBuild
-
-  IPVCoreDLQ:
-    Type: AWS::SQS::Queue
-    Properties:
-      MessageRetentionPeriod: 345600 # 4 days in seconds
-      KmsMasterKeyId: !Ref IPVCoreKMSEncryptionKey
 
   IPVCoreOutboundDlq:
     Type: AWS::SQS::Queue

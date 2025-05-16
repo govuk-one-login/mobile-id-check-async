@@ -4615,12 +4615,6 @@ Resources:
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
 
-  IPVCoreDLQ:
-    Type: AWS::SQS::Queue
-    Properties:
-      KmsMasterKeyId: !Ref IPVCoreKMSEncryptionKey
-      MessageRetentionPeriod: 345600
-
   IPVCoreDlqAgeOfOldestMessageHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -4798,41 +4792,6 @@ Resources:
         Version: "2012-10-17"
       Queues:
         - !Ref IPVCoreOutboundSqs
-    Condition: isNotDevOrBuild
-
-  IPVCoreSQS:
-    Type: AWS::SQS::Queue
-    Properties:
-      DelaySeconds: 0
-      KmsMasterKeyId: !Ref IPVCoreKeyAlias
-      MessageRetentionPeriod: 345600
-      RedrivePolicy:
-        deadLetterTargetArn: !GetAtt IPVCoreDLQ.Arn
-        maxReceiveCount: 60
-      VisibilityTimeout: 60
-
-  IPVCoreSQSPolicy:
-    Type: AWS::SQS::QueuePolicy
-    Properties:
-      PolicyDocument:
-        Statement:
-          - Action:
-              - sqs:DeleteMessage
-              - sqs:GetQueueAttributes
-              - sqs:ChangeMessageVisibility
-              - sqs:ReceiveMessage
-            Effect: Allow
-            Principal:
-              AWS:
-                - !FindInMap
-                  - IPVCore
-                  - !Ref Environment
-                  - AccountId
-            Resource:
-              - !GetAtt IPVCoreSQS.Arn
-        Version: "2012-10-17"
-      Queues:
-        - !Ref IPVCoreSQS
     Condition: isNotDevOrBuild
 
   IPVCoreSqsAgeOfOldestMessageAlarm:
@@ -5678,46 +5637,6 @@ Resources:
       AliasName: !Sub alias/${AWS::StackName}-TxMAKMSEncryptionKey
       TargetKeyId: !Ref TxMAKMSEncryptionKey
 
-  TxMASQSQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      KmsMasterKeyId: !Ref TxMAKeyAlias
-      MessageRetentionPeriod: 604800
-      RedrivePolicy:
-        deadLetterTargetArn: !GetAtt TxMASQSQueueDeadLetterQueue.Arn
-        maxReceiveCount: 5
-      VisibilityTimeout: 60
-
-  TxMASQSQueueDeadLetterQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      KmsMasterKeyId: !Sub TxMAKMSEncryptionKey
-      MessageRetentionPeriod: 259200
-
-  TxMASQSQueuePolicy:
-    Type: AWS::SQS::QueuePolicy
-    Properties:
-      PolicyDocument:
-        Statement:
-          - Action:
-              - sqs:DeleteMessage
-              - sqs:GetQueueAttributes
-              - sqs:ChangeMessageVisibility
-              - sqs:ReceiveMessage
-            Effect: Allow
-            Principal:
-              AWS:
-                - !FindInMap
-                  - TxMA
-                  - !Ref Environment
-                  - TxmaAccount
-            Resource:
-              - !GetAtt TxMASQSQueue.Arn
-        Version: "2012-10-17"
-      Queues:
-        - !Ref TxMASQSQueue
-    Condition: isNotDevOrBuild
-
   TxMASqs:
     Type: AWS::SQS::Queue
     Properties:
@@ -5765,6 +5684,7 @@ Resources:
     Properties:
       KmsMasterKeyId: !Ref VendorProcessingKeyAlias
       MessageRetentionPeriod: 1209600
+      QueueName: !Sub ${AWS::StackName}-vendor-processing-dlq
 
   VendorProcessingDlqAgeOfOldestMessageHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -5889,6 +5809,7 @@ Resources:
       DelaySeconds: 5
       KmsMasterKeyId: !Ref VendorProcessingKeyAlias
       MessageRetentionPeriod: 1209600
+      QueueName: !Sub ${AWS::StackName}-vendor-processing
       ReceiveMessageWaitTimeSeconds: 5
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt VendorProcessingDLQ.Arn
@@ -6111,13 +6032,6 @@ Outputs:
       Name: !Sub ${AWS::StackName}-ipv-core-outbound-sqs-arn
     Condition: IsDevOrBuild
 
-  IPVCoreQueueArn:
-    Description: IPV Core Queue ARN
-    Value: !GetAtt IPVCoreSQS.Arn
-    Export:
-      Name: !Sub ${AWS::StackName}-ipv-core-queue-arn
-    Condition: IsDevOrBuild
-
   PrivateApiUrl:
     Description: Private API Gateway base URL
     Value: !Sub https://${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
@@ -6165,11 +6079,4 @@ Outputs:
     Value: !GetAtt TxMASqs.Arn
     Export:
       Name: !Sub ${AWS::StackName}-txma-sqs-arn
-    Condition: IsDevOrBuild
-
-  TxmaSqsQueueArn:
-    Description: TxMA SQS Queue ARN
-    Value: !GetAtt TxMASQSQueue.Arn
-    Export:
-      Name: !Sub ${AWS::StackName}-txma-sqs-queue-arn
     Condition: IsDevOrBuild
