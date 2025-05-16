@@ -90,6 +90,8 @@ describe("Credential results", () => {
         base64url.decode(encodedPayload),
       );
 
+      const parsedCredentialJwtPayload = JSON.parse(credentialJwtPayload);
+
       console.log("header", credentialJwtHeader);
       console.log("payload", credentialJwtPayload);
 
@@ -105,6 +107,78 @@ describe("Credential results", () => {
           typ: "JWT",
         }),
       );
+
+      expect(parsedCredentialJwtPayload).toEqual({
+        iat: expect.any(Number),
+        iss: "https://review-b-async.dev.account.gov.uk",
+        jti: expect.stringContaining("urn:uuid:"),
+        nbf: expect.any(Number),
+        sub: subjectIdentifier,
+        vc: {
+          "@context": [
+            "https://www.w3.org/2018/credentials/v1",
+            "https://vocab.account.gov.uk/contexts/identity-v1.jsonld",
+          ],
+          type: ["VerifiableCredential", "IdentityCheckCredential"],
+          credentialSubject: {
+            name: [
+              {
+                nameParts: [
+                  { type: "GivenName", value: "Joe" },
+                  { type: "GivenName", value: "Shmoe" },
+                  { type: "FamilyName", value: "Doe The Ball" },
+                ],
+              },
+            ],
+            birthDate: [{ value: "1985-02-08" }],
+            deviceId: [{ value: "fb03ce33-6cb4-4b27-b428-f614eba26dd0" }],
+            drivingPermit: [
+              {
+                personalNumber: "DOE99802085J99FG",
+                expiryDate: "2023-01-18",
+                issueDate: "2022-05-29",
+                issueNumber: null,
+                issuedBy: "DVLA",
+                fullAddress: "WHATEVER STREET, WIRRAL, CH1 1AQ",
+              },
+            ],
+            address: [
+              {
+                uprn: null,
+                organisationName: null,
+                subBuildingName: null,
+                buildingNumber: null,
+                buildingName: null,
+                dependentStreetName: null,
+                streetName: null,
+                doubleDependentAddressLocality: null,
+                dependentAddressLocality: null,
+                addressLocality: null,
+                postalCode: "CH1 1AQ",
+                addressCountry: null,
+              },
+            ],
+          },
+          evidence: [
+            {
+              type: "IdentityCheck",
+              txn: "9930669c-c6c6-434b-b551-75fc5f081bcd",
+              strengthScore: 3,
+              validityScore: 0,
+              activityHistoryScore: 0,
+              ci: [],
+              failedCheckDetails: [
+                {
+                  checkMethod: "vri",
+                  identityCheckPolicy: "published",
+                  activityFrom: "2022-05-29",
+                },
+                { checkMethod: "bvr", biometricVerificationProcessLevel: 3 },
+              ],
+            },
+          ],
+        },
+      });
     });
 
     it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event", () => {
