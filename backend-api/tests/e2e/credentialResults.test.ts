@@ -1,8 +1,10 @@
 import {
   createSessionForSub,
+  CredentialResultResponse,
   EventResponse,
   getActiveSessionIdFromSub,
   issueBiometricToken,
+  pollForCredentialResults,
   pollForEvents,
 } from "../api-tests/utils/apiTestHelpers";
 import { randomUUID } from "crypto";
@@ -10,16 +12,19 @@ import {
   READ_ID_MOCK_API_INSTANCE,
   SESSIONS_API_INSTANCE,
 } from "../api-tests/utils/apiInstance";
+import { mockClientState } from "../api-tests/utils/apiTestData";
 
 describe("Credential results", () => {
   describe("Given the vendor returns a successful driving licence session", () => {
+    let subjectIdentifier: string;
     let sessionId: string;
+    let credentialResultsResponse: CredentialResultResponse[];
     let vcIssuedEventResponse: EventResponse[];
     let criEndEventResponse: EventResponse[];
     beforeAll(async () => {
-      const sub = randomUUID();
-      await createSessionForSub(sub);
-      sessionId = await getActiveSessionIdFromSub(sub);
+      subjectIdentifier = randomUUID();
+      await createSessionForSub(subjectIdentifier);
+      sessionId = await getActiveSessionIdFromSub(subjectIdentifier);
       const issueBiometricTokenResponse = await issueBiometricToken(sessionId);
       const { opaqueId } = issueBiometricTokenResponse.data;
       const biometricSessionId = randomUUID();
@@ -41,6 +46,11 @@ describe("Credential results", () => {
         biometricSessionId,
       });
 
+      credentialResultsResponse = await pollForCredentialResults(
+        `SUB#${subjectIdentifier}`,
+        1,
+      );
+
       // Assume you can get both events with one call, haven't looked into it yet
       vcIssuedEventResponse = await pollForEvents({
         partitionKey: `SESSION#${sessionId}`,
@@ -53,7 +63,14 @@ describe("Credential results", () => {
         sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_END`,
         numberOfEvents: 1,
       });
-    }, 20000);
+    }, 40000);
+
+        it("Writes verified credential to the IPV Core outbound queue - WIP", () => {
+          const credentialResult = credentialResultsResponse[0].body as Record<string, unknown>
+
+          expect(credentialResult.state).toEqual(mockClientState)
+          expect(credentialResult.sub).toEqual(subjectIdentifier)
+        });
 
     it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event", () => {
       expect(vcIssuedEventResponse[0].event).toEqual(
