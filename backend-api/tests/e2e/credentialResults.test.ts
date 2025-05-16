@@ -12,11 +12,12 @@ import {
   READ_ID_MOCK_API_INSTANCE,
   SESSIONS_API_INSTANCE,
 } from "../api-tests/utils/apiInstance";
-import { mockClientState } from "../api-tests/utils/apiTestData";
-import { base64url } from "jose";
+import { createRemoteJWKSet, JWK, jwtVerify, KeyLike } from "jose";
 
 describe("Credential results", () => {
   describe("Given the vendor returns a successful driving licence session", () => {
+    let signingPublicKey: KeyLike | Uint8Array<ArrayBufferLike> | JWK;
+    let publicKeys;
     let subjectIdentifier: string;
     let sessionId: string;
     let credentialResultsResponse: CredentialResultResponse[];
@@ -40,6 +41,18 @@ describe("Credential results", () => {
           },
         }),
       );
+
+      const jwksResponse = await SESSIONS_API_INSTANCE.get(
+        "/.well-known/jwks.json",
+      );
+      publicKeys = jwksResponse.data.keys;
+      signingPublicKey = publicKeys.filter(
+        (key: JsonWebKey) => key.use === "sig",
+      );
+
+      console.log("signingPublicKey", signingPublicKey);
+
+      console.log("jwksResponse", jwksResponse);
       console.log("setupResponse.data", setupResponse.data);
 
       await SESSIONS_API_INSTANCE.post("/async/finishBiometricSession", {
@@ -66,7 +79,7 @@ describe("Credential results", () => {
       });
     }, 40000);
 
-    it("Writes verified credential to the IPV Core outbound queue - WIP", () => {
+    it("Writes verified credential to the IPV Core outbound queue - WIP", async () => {
       const credentialResult = credentialResultsResponse[0].body as Record<
         string,
         unknown
@@ -75,29 +88,26 @@ describe("Credential results", () => {
         "https://vocab.account.gov.uk/v1/credentialJWT"
       ] as string[];
       const credentialJwt = credentialJwtArray[0];
-      const [encodedHeader, encodedPayload, signature] =
-        credentialJwt.split(".");
 
-      console.log("signature", signature);
-
-      const decoder = new TextDecoder("utf-8");
-      const credentialJwtHeader = decoder.decode(
-        base64url.decode(encodedHeader),
+      const JWKS_URL = new URL(
+        "https://sessions-jam-async-backend.review-b-async.dev.account.gov.uk/.well-known/jwks.json",
       );
-      const credentialJwtPayload = decoder.decode(
-        base64url.decode(encodedPayload),
-      );
-      const parsedCredentialJwtHeader = JSON.parse(credentialJwtHeader);
-      const parsedCredentialJwtPayload = JSON.parse(credentialJwtPayload);
+      const JWKS = createRemoteJWKSet(JWKS_URL);
 
-      expect(credentialResult.state).toEqual(mockClientState);
-      expect(credentialResult.sub).toEqual(subjectIdentifier);
-      expect(parsedCredentialJwtHeader).toEqual({
+      const { payload, protectedHeader } = await jwtVerify(
+        credentialJwt,
+        JWKS,
+        {
+          algorithms: ["ES256"],
+        },
+      );
+
+      expect(protectedHeader).toEqual({
         alg: "ES256",
         kid: "b169df69-8ec7-4667-a674-4b5e7bc66886",
         typ: "JWT",
       });
-      expect(parsedCredentialJwtPayload).toEqual({
+      expect(payload).toEqual({
         iat: expect.any(Number),
         iss: "https://review-b-async.dev.account.gov.uk",
         jti: expect.stringContaining("urn:uuid:"),
