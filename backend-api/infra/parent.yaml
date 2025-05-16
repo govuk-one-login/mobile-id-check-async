@@ -551,6 +551,14 @@ Outputs:
       - !Ref DevOverrideTestResourcesBaseUrl
       - !FindInMap [EnvironmentVariables, !Ref Environment, TestResourcesBaseUrl]
 
+  ReadIdMockApiUrl:
+    Condition: IsDevOrBuild
+    Description: ReadID Mock API Gateway base URL
+    Value: !If
+      - UseDevOverrideReadIdBaseUrl
+      - !Ref DevOverrideReadIdBaseUrl
+      - !FindInMap [EnvironmentVariables, !Ref Environment, ReadIdBaseUrl]
+
   TxmaSqsQueueArn:
     Condition: IsDevOrBuild
     Description: TxMA SQS Queue ARN
