@@ -36,4 +36,5 @@ echo "TEST_ENVIRONMENT=dev" > .env
   echo "STS_MOCK_API_URL=${StsMockApiUrl}"
   echo "EVENTS_API_URL=${EventsApiUrl}"
   echo "TEST_RESOURCES_API_URL=${TestResourcesApiUrl}"
+  echo "READ_ID_MOCK_API_URL=${ReadIdMockApiUrl}"
 } >> .env
