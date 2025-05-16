@@ -68,7 +68,7 @@ describe("Credential results", () => {
       const credentialJwt = credentialJwtArray[0];
 
       const JWKS_URL = new URL(
-        "https://sessions-jam-async-backend.review-b-async.dev.account.gov.uk/.well-known/jwks.json",
+        `${process.env.SESSIONS_API_URL}/.well-known/jwks.json`,
       );
       const JWKS = createRemoteJWKSet(JWKS_URL);
 
@@ -90,7 +90,7 @@ describe("Credential results", () => {
       });
     }, 40000);
 
-    it("Writes verified credential to the IPV Core outbound queue - WIP", async () => {
+    it("Writes verified credential to the IPV Core outbound queue - WIP", () => {
       const { protectedHeader, payload } = verifiedJwt;
 
       expect(protectedHeader).toEqual({
