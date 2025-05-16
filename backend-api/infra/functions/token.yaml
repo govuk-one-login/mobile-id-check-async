@@ -16,6 +16,13 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-token      
       Handler: asyncTokenHandler.lambdaHandler
       Role: !GetAtt AsyncTokenLambdaRole.Arn
+      ReservedConcurrentExecutions: !If
+        - isDev
+        - !Ref AWS::NoValue
+        - !FindInMap
+          - Lambda
+          - !Ref Environment
+          - AsyncTokenReservedConcurrentExecutions
       DeploymentPreference:
         Enabled: true
         Alarms: !If
@@ -34,7 +41,7 @@ Resources:
           - !ImportValue devplatform-vpc-PrivateSubnetIdC
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
-
+  
   AsyncTokenFunctionPermission:
     Type: AWS::Lambda::Permission
     Properties:

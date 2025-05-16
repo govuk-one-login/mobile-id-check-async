@@ -213,23 +213,38 @@ Mappings:
 
   Lambda:
     build:
+      AsyncCredentialReservedConcurrentExecutions: 160
+      AsyncTokenReservedConcurrentExecutions: 160
       IssueBiometricCredentialReservedConcurrentExecutions: 34
+      JsonWebKeysReservedConcurrentExecutions: 1
       LogLevel: INFO
-      ReservedConcurrentExecutions: 15
+      ReservedConcurrentExecutions: 80
     dev:
+      AsyncCredentialReservedConcurrentExecutions: 0
+      AsyncTokenReservedConcurrentExecutions: 0
       IssueBiometricCredentialReservedConcurrentExecutions: 0
+      JsonWebKeysReservedConcurrentExecutions: 1
       LogLevel: DEBUG
       ReservedConcurrentExecutions: 0
     integration:
+      AsyncCredentialReservedConcurrentExecutions: 15
+      AsyncTokenReservedConcurrentExecutions: 15
       IssueBiometricCredentialReservedConcurrentExecutions: 34
+      JsonWebKeysReservedConcurrentExecutions: 1
       LogLevel: INFO
-      ReservedConcurrentExecutions: 0
+      ReservedConcurrentExecutions: 15
     production:
+      AsyncCredentialReservedConcurrentExecutions: 0
+      AsyncTokenReservedConcurrentExecutions: 0
       IssueBiometricCredentialReservedConcurrentExecutions: 34
+      JsonWebKeysReservedConcurrentExecutions: 1
       LogLevel: INFO
       ReservedConcurrentExecutions: 0
     staging:
+      AsyncCredentialReservedConcurrentExecutions: 15
+      AsyncTokenReservedConcurrentExecutions: 15
       IssueBiometricCredentialReservedConcurrentExecutions: 34
+      JsonWebKeysReservedConcurrentExecutions: 1
       LogLevel: INFO
       ReservedConcurrentExecutions: 15
 
@@ -2525,6 +2540,13 @@ Resources:
             - SessionDurationInSeconds
       FunctionName: !Sub ${AWS::StackName}-credential
       Handler: asyncCredentialHandler.lambdaHandler
+      ReservedConcurrentExecutions: !If
+        - isDev
+        - !Ref AWS::NoValue
+        - !FindInMap
+          - Lambda
+          - !Ref Environment
+          - AsyncCredentialReservedConcurrentExecutions
       Role: !GetAtt AsyncCredentialLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
@@ -4011,6 +4033,13 @@ Resources:
             - ClientRegistrySecretPath
       FunctionName: !Sub ${AWS::StackName}-token
       Handler: asyncTokenHandler.lambdaHandler
+      ReservedConcurrentExecutions: !If
+        - isDev
+        - !Ref AWS::NoValue
+        - !FindInMap
+          - Lambda
+          - !Ref Environment
+          - AsyncTokenReservedConcurrentExecutions
       Role: !GetAtt AsyncTokenLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:
@@ -4999,7 +5028,10 @@ Resources:
           VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID: !Ref VerifiableCredentialSigningKey
       FunctionName: !Sub ${AWS::StackName}-jwks
       Handler: jwksHandler.lambdaHandler
-      ReservedConcurrentExecutions: 1
+      ReservedConcurrentExecutions: !FindInMap
+        - Lambda
+        - !Ref Environment
+        - JsonWebKeysReservedConcurrentExecutions
       Role: !GetAtt JsonWebKeysFunctionLambdaRole.Arn
       VpcConfig:
         SecurityGroupIds:

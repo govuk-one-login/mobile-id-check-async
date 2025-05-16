@@ -733,19 +733,39 @@ describe("Backend application infrastructure", () => {
         expect(reservedConcurrentExecutionMapping).toStrictEqual({
           Lambda: {
             dev: expect.objectContaining({
-              ReservedConcurrentExecutions: 0, // Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
+              ReservedConcurrentExecutions: 0,
+              IssueBiometricCredentialReservedConcurrentExecutions: 0,
+              AsyncTokenReservedConcurrentExecutions: 0,
+              AsyncCredentialReservedConcurrentExecutions: 0,
+              JsonWebKeysReservedConcurrentExecutions: 1,
             }),
             build: expect.objectContaining({
-              ReservedConcurrentExecutions: 15,
+              ReservedConcurrentExecutions: 80,
+              IssueBiometricCredentialReservedConcurrentExecutions: 34,
+              AsyncTokenReservedConcurrentExecutions: 160,
+              AsyncCredentialReservedConcurrentExecutions: 160,
+              JsonWebKeysReservedConcurrentExecutions: 1,
             }),
             staging: expect.objectContaining({
               ReservedConcurrentExecutions: 15,
+              IssueBiometricCredentialReservedConcurrentExecutions: 34,
+              AsyncTokenReservedConcurrentExecutions: 15,
+              AsyncCredentialReservedConcurrentExecutions: 15,
+              JsonWebKeysReservedConcurrentExecutions: 1,
             }),
             integration: expect.objectContaining({
-              ReservedConcurrentExecutions: 0,
+              ReservedConcurrentExecutions: 15,
+              IssueBiometricCredentialReservedConcurrentExecutions: 34,
+              AsyncTokenReservedConcurrentExecutions: 15,
+              AsyncCredentialReservedConcurrentExecutions: 15,
+              JsonWebKeysReservedConcurrentExecutions: 1,
             }),
             production: expect.objectContaining({
               ReservedConcurrentExecutions: 0,
+              IssueBiometricCredentialReservedConcurrentExecutions: 34,
+              AsyncTokenReservedConcurrentExecutions: 0,
+              AsyncCredentialReservedConcurrentExecutions: 0,
+              JsonWebKeysReservedConcurrentExecutions: 1,
             }),
           },
         });
@@ -980,9 +1000,9 @@ describe("Backend application infrastructure", () => {
     });
 
     test("IssueBiometricCredential lambda reserved concurrency is set", () => {
-      const lambaMappings = template.findMappings("Lambda");
+      const lambdaMappings = template.findMappings("Lambda");
 
-      expect(lambaMappings).toStrictEqual({
+      expect(lambdaMappings).toStrictEqual({
         Lambda: {
           dev: expect.objectContaining({
             IssueBiometricCredentialReservedConcurrentExecutions: 0, // Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
@@ -1019,6 +1039,133 @@ describe("Backend application infrastructure", () => {
                 "IssueBiometricCredentialReservedConcurrentExecutions",
               ],
             },
+          ],
+        },
+      });
+    });
+
+    test("AsyncToken lambda reserved concurrency is set", () => {
+      const lambdaMappings = template.findMappings("Lambda");
+
+      expect(lambdaMappings).toStrictEqual({
+        Lambda: {
+          dev: expect.objectContaining({
+            AsyncTokenReservedConcurrentExecutions: 0,
+          }),
+          build: expect.objectContaining({
+            AsyncTokenReservedConcurrentExecutions: 160,
+          }),
+          staging: expect.objectContaining({
+            AsyncTokenReservedConcurrentExecutions: 15,
+          }),
+          integration: expect.objectContaining({
+            AsyncTokenReservedConcurrentExecutions: 15,
+          }),
+          production: expect.objectContaining({
+            AsyncTokenReservedConcurrentExecutions: 0,
+          }),
+        },
+      });
+
+      template.hasResourceProperties("AWS::Serverless::Function", {
+        Handler: "asyncTokenHandler.lambdaHandler",
+        ReservedConcurrentExecutions: {
+          "Fn::If": [
+            "isDev",
+            {
+              Ref: "AWS::NoValue",
+            },
+            {
+              "Fn::FindInMap": [
+                "Lambda",
+                {
+                  Ref: "Environment",
+                },
+                "AsyncTokenReservedConcurrentExecutions",
+              ],
+            },
+          ],
+        },
+      });
+    });
+
+    test("AsyncCredential lambda reserved concurrency is set", () => {
+      const lambdaMappings = template.findMappings("Lambda");
+
+      expect(lambdaMappings).toStrictEqual({
+        Lambda: {
+          dev: expect.objectContaining({
+            AsyncCredentialReservedConcurrentExecutions: 0,
+          }),
+          build: expect.objectContaining({
+            AsyncCredentialReservedConcurrentExecutions: 160,
+          }),
+          staging: expect.objectContaining({
+            AsyncCredentialReservedConcurrentExecutions: 15,
+          }),
+          integration: expect.objectContaining({
+            AsyncCredentialReservedConcurrentExecutions: 15,
+          }),
+          production: expect.objectContaining({
+            AsyncCredentialReservedConcurrentExecutions: 0,
+          }),
+        },
+      });
+
+      template.hasResourceProperties("AWS::Serverless::Function", {
+        Handler: "asyncCredentialHandler.lambdaHandler",
+        ReservedConcurrentExecutions: {
+          "Fn::If": [
+            "isDev",
+            {
+              Ref: "AWS::NoValue",
+            },
+            {
+              "Fn::FindInMap": [
+                "Lambda",
+                {
+                  Ref: "Environment",
+                },
+                "AsyncCredentialReservedConcurrentExecutions",
+              ],
+            },
+          ],
+        },
+      });
+    });
+
+    test("JsonWebKeys lambda reserved concurrency is set", () => {
+      const lambdaMappings = template.findMappings("Lambda");
+
+      expect(lambdaMappings).toStrictEqual({
+        Lambda: {
+          dev: expect.objectContaining({
+            JsonWebKeysReservedConcurrentExecutions: 1,
+          }),
+          build: expect.objectContaining({
+            JsonWebKeysReservedConcurrentExecutions: 1,
+          }),
+          staging: expect.objectContaining({
+            JsonWebKeysReservedConcurrentExecutions: 1,
+          }),
+          integration: expect.objectContaining({
+            JsonWebKeysReservedConcurrentExecutions: 1,
+          }),
+          production: expect.objectContaining({
+            JsonWebKeysReservedConcurrentExecutions: 1,
+          }),
+        },
+      });
+
+      template.hasResourceProperties("AWS::Serverless::Function", {
+        Handler: "jwksHandler.lambdaHandler",
+        ReservedConcurrentExecutions: {
+          "Fn::FindInMap": [
+            "Lambda",
+            {
+              Ref: "Environment",
+            },
+            "JsonWebKeysReservedConcurrentExecutions",
           ],
         },
       });

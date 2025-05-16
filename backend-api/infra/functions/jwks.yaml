@@ -17,7 +17,10 @@ Resources:
       Description: Convert ID Check public encryption keys to JWKS format and upload to S3      
       Handler: jwksHandler.lambdaHandler
       Role: !GetAtt JsonWebKeysFunctionLambdaRole.Arn
-      ReservedConcurrentExecutions: 1
+      ReservedConcurrentExecutions: !FindInMap
+        - Lambda
+        - !Ref Environment
+        - JsonWebKeysReservedConcurrentExecutions
       Environment:
         Variables:
           ENCRYPTION_KEY_ID: !Ref KMSEncryptionKey
@@ -31,7 +34,7 @@ Resources:
           - !ImportValue devplatform-vpc-PrivateSubnetIdC
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
-
+  
   JsonWebKeysFunctionLambdaRole:
     Type: AWS::IAM::Role
     Properties:

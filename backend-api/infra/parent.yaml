@@ -153,25 +153,40 @@ Mappings:
       perfTesterRoleArn: ""
 
   Lambda:
-    dev:
-      ReservedConcurrentExecutions: 0 # Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
-      IssueBiometricCredentialReservedConcurrentExecutions: 0 # Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
+    dev: # Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
+      ReservedConcurrentExecutions: 0 
+      IssueBiometricCredentialReservedConcurrentExecutions: 0 
+      AsyncTokenReservedConcurrentExecutions: 0 
+      AsyncCredentialReservedConcurrentExecutions: 0 
+      JsonWebKeysReservedConcurrentExecutions: 1
       LogLevel: DEBUG
     build:
-      ReservedConcurrentExecutions: 15
+      ReservedConcurrentExecutions: 80
       IssueBiometricCredentialReservedConcurrentExecutions: 34
+      AsyncTokenReservedConcurrentExecutions: 160
+      AsyncCredentialReservedConcurrentExecutions: 160
+      JsonWebKeysReservedConcurrentExecutions: 1
       LogLevel: INFO
     staging:
       ReservedConcurrentExecutions: 15
       IssueBiometricCredentialReservedConcurrentExecutions: 34
+      AsyncTokenReservedConcurrentExecutions: 15
+      AsyncCredentialReservedConcurrentExecutions: 15
+      JsonWebKeysReservedConcurrentExecutions: 1
       LogLevel: INFO
     integration:
-      ReservedConcurrentExecutions: 0
+      ReservedConcurrentExecutions: 15
       IssueBiometricCredentialReservedConcurrentExecutions: 34
+      AsyncTokenReservedConcurrentExecutions: 15
+      AsyncCredentialReservedConcurrentExecutions: 15
+      JsonWebKeysReservedConcurrentExecutions: 1
       LogLevel: INFO
     production:
       ReservedConcurrentExecutions: 0
       IssueBiometricCredentialReservedConcurrentExecutions: 34
+      AsyncTokenReservedConcurrentExecutions: 0
+      AsyncCredentialReservedConcurrentExecutions: 0
+      JsonWebKeysReservedConcurrentExecutions: 1
       LogLevel: INFO
 
   TxMA:
