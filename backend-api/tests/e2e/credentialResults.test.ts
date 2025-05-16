@@ -13,6 +13,7 @@ import {
   SESSIONS_API_INSTANCE,
 } from "../api-tests/utils/apiInstance";
 import { mockClientState } from "../api-tests/utils/apiTestData";
+import { base64url } from "jose";
 
 describe("Credential results", () => {
   describe("Given the vendor returns a successful driving licence session", () => {
@@ -65,12 +66,46 @@ describe("Credential results", () => {
       });
     }, 40000);
 
-        it("Writes verified credential to the IPV Core outbound queue - WIP", () => {
-          const credentialResult = credentialResultsResponse[0].body as Record<string, unknown>
+    it("Writes verified credential to the IPV Core outbound queue - WIP", () => {
+      const credentialResult = credentialResultsResponse[0].body as Record<
+        string,
+        unknown
+      >;
+      const credentialJwtArray = credentialResult[
+        "https://vocab.account.gov.uk/v1/credentialJWT"
+      ] as string[];
+      const credentialJwt = credentialJwtArray[0];
 
-          expect(credentialResult.state).toEqual(mockClientState)
-          expect(credentialResult.sub).toEqual(subjectIdentifier)
-        });
+      const [encodedHeader, encodedPayload, signature] =
+        credentialJwt.split(".");
+
+      console.log("signature", signature);
+
+      const decoder = new TextDecoder("utf-8");
+
+      const credentialJwtHeader = decoder.decode(
+        base64url.decode(encodedHeader),
+      );
+      const credentialJwtPayload = decoder.decode(
+        base64url.decode(encodedPayload),
+      );
+
+      console.log("header", credentialJwtHeader);
+      console.log("payload", credentialJwtPayload);
+
+      console.log(credentialJwt);
+
+      expect(credentialResult.state).toEqual(mockClientState);
+      expect(credentialResult.sub).toEqual(subjectIdentifier);
+
+      expect(credentialJwtHeader).toEqual(
+        JSON.stringify({
+          alg: "ES256",
+          kid: "b169df69-8ec7-4667-a674-4b5e7bc66886",
+          typ: "JWT",
+        }),
+      );
+    });
 
     it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event", () => {
       expect(vcIssuedEventResponse[0].event).toEqual(
