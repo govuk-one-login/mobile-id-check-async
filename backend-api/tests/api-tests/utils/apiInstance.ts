@@ -81,7 +81,6 @@ function getReadIdMockApiInstance() {
   return getInstance(apiUrl, true);
 }
 
-
 export const SESSIONS_API_INSTANCE = getSessionsApiInstance();
 export const PROXY_API_INSTANCE = getProxyApiInstance();
 export const PRIVATE_API_INSTANCE = getPrivateApiInstance();

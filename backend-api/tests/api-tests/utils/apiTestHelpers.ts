@@ -8,7 +8,7 @@ import {
   PROXY_API_INSTANCE,
   SESSIONS_API_INSTANCE,
   STS_MOCK_API_INSTANCE,
-  TEST_RESOURCES_API_INSTANCE
+  TEST_RESOURCES_API_INSTANCE,
 } from "./apiInstance";
 import { mockClientState } from "./apiTestData";
 import { AxiosResponse } from "axios";
@@ -105,7 +105,9 @@ export async function getAccessToken(sub?: string, scope?: string) {
   return stsMockResponse.data.access_token;
 }
 
-export const issueBiometricToken = async (sessionId: string): Promise<AxiosResponse> => {
+export const issueBiometricToken = async (
+  sessionId: string,
+): Promise<AxiosResponse> => {
   const requestBody = {
     sessionId,
     documentType: "NFC_PASSPORT",
