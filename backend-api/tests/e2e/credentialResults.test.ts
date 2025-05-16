@@ -12,17 +12,23 @@ import {
   READ_ID_MOCK_API_INSTANCE,
   SESSIONS_API_INSTANCE,
 } from "../api-tests/utils/apiInstance";
-import { createRemoteJWKSet, JWK, jwtVerify, KeyLike } from "jose";
+import {
+  createRemoteJWKSet,
+  JWTPayload,
+  jwtVerify,
+  JWTVerifyResult,
+  KeyLike,
+  ResolvedKey,
+} from "jose";
 
 describe("Credential results", () => {
   describe("Given the vendor returns a successful driving licence session", () => {
-    let signingPublicKey: KeyLike | Uint8Array<ArrayBufferLike> | JWK;
-    let publicKeys;
     let subjectIdentifier: string;
     let sessionId: string;
     let credentialResultsResponse: CredentialResultResponse[];
     let vcIssuedEventResponse: EventResponse[];
     let criEndEventResponse: EventResponse[];
+    let verifiedJwt: JWTVerifyResult<JWTPayload> & ResolvedKey<KeyLike>;
     beforeAll(async () => {
       subjectIdentifier = randomUUID();
       await createSessionForSub(subjectIdentifier);
@@ -31,7 +37,7 @@ describe("Credential results", () => {
       const { opaqueId } = issueBiometricTokenResponse.data;
       const biometricSessionId = randomUUID();
 
-      const setupResponse = await READ_ID_MOCK_API_INSTANCE.post(
+      await READ_ID_MOCK_API_INSTANCE.post(
         `/setupBiometricSessionByScenario/${biometricSessionId}`,
         JSON.stringify({
           scenario: "DRIVING_LICENCE_SUCCESS",
@@ -42,19 +48,6 @@ describe("Credential results", () => {
         }),
       );
 
-      const jwksResponse = await SESSIONS_API_INSTANCE.get(
-        "/.well-known/jwks.json",
-      );
-      publicKeys = jwksResponse.data.keys;
-      signingPublicKey = publicKeys.filter(
-        (key: JsonWebKey) => key.use === "sig",
-      );
-
-      console.log("signingPublicKey", signingPublicKey);
-
-      console.log("jwksResponse", jwksResponse);
-      console.log("setupResponse.data", setupResponse.data);
-
       await SESSIONS_API_INSTANCE.post("/async/finishBiometricSession", {
         sessionId,
         biometricSessionId,
@@ -64,6 +57,24 @@ describe("Credential results", () => {
         `SUB#${subjectIdentifier}`,
         1,
       );
+
+      const credentialResult = credentialResultsResponse[0].body as Record<
+        string,
+        unknown
+      >;
+      const credentialJwtArray = credentialResult[
+        "https://vocab.account.gov.uk/v1/credentialJWT"
+      ] as string[];
+      const credentialJwt = credentialJwtArray[0];
+
+      const JWKS_URL = new URL(
+        "https://sessions-jam-async-backend.review-b-async.dev.account.gov.uk/.well-known/jwks.json",
+      );
+      const JWKS = createRemoteJWKSet(JWKS_URL);
+
+      verifiedJwt = await jwtVerify(credentialJwt, JWKS, {
+        algorithms: ["ES256"],
+      });
 
       // Assume you can get both events with one call, haven't looked into it yet
       vcIssuedEventResponse = await pollForEvents({
@@ -80,27 +91,7 @@ describe("Credential results", () => {
     }, 40000);
 
     it("Writes verified credential to the IPV Core outbound queue - WIP", async () => {
-      const credentialResult = credentialResultsResponse[0].body as Record<
-        string,
-        unknown
-      >;
-      const credentialJwtArray = credentialResult[
-        "https://vocab.account.gov.uk/v1/credentialJWT"
-      ] as string[];
-      const credentialJwt = credentialJwtArray[0];
-
-      const JWKS_URL = new URL(
-        "https://sessions-jam-async-backend.review-b-async.dev.account.gov.uk/.well-known/jwks.json",
-      );
-      const JWKS = createRemoteJWKSet(JWKS_URL);
-
-      const { payload, protectedHeader } = await jwtVerify(
-        credentialJwt,
-        JWKS,
-        {
-          algorithms: ["ES256"],
-        },
-      );
+      const { protectedHeader, payload } = verifiedJwt;
 
       expect(protectedHeader).toEqual({
         alg: "ES256",
