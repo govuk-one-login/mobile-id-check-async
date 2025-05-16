@@ -75,39 +75,28 @@ describe("Credential results", () => {
         "https://vocab.account.gov.uk/v1/credentialJWT"
       ] as string[];
       const credentialJwt = credentialJwtArray[0];
-
       const [encodedHeader, encodedPayload, signature] =
         credentialJwt.split(".");
 
       console.log("signature", signature);
 
       const decoder = new TextDecoder("utf-8");
-
       const credentialJwtHeader = decoder.decode(
         base64url.decode(encodedHeader),
       );
       const credentialJwtPayload = decoder.decode(
         base64url.decode(encodedPayload),
       );
-
+      const parsedCredentialJwtHeader = JSON.parse(credentialJwtHeader);
       const parsedCredentialJwtPayload = JSON.parse(credentialJwtPayload);
-
-      console.log("header", credentialJwtHeader);
-      console.log("payload", credentialJwtPayload);
-
-      console.log(credentialJwt);
 
       expect(credentialResult.state).toEqual(mockClientState);
       expect(credentialResult.sub).toEqual(subjectIdentifier);
-
-      expect(credentialJwtHeader).toEqual(
-        JSON.stringify({
-          alg: "ES256",
-          kid: "b169df69-8ec7-4667-a674-4b5e7bc66886",
-          typ: "JWT",
-        }),
-      );
-
+      expect(parsedCredentialJwtHeader).toEqual({
+        alg: "ES256",
+        kid: "b169df69-8ec7-4667-a674-4b5e7bc66886",
+        typ: "JWT",
+      });
       expect(parsedCredentialJwtPayload).toEqual({
         iat: expect.any(Number),
         iss: "https://review-b-async.dev.account.gov.uk",
