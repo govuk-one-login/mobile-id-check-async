@@ -1304,11 +1304,11 @@ describe("Backend application infrastructure", () => {
   describe("SQS", () => {
     test("All SQS queues have QueueName as a property", () => {
       const queues = template.findResources("AWS::SQS::Queue");
-      const queuesList = Object.values(queues)
+      const queuesList = Object.values(queues);
 
       queuesList.forEach((queue) => {
         expect(queue.Properties).toHaveProperty("QueueName");
-      })
+      });
     });
 
     test("All primary SQS have a DLQ", () => {
