@@ -250,7 +250,7 @@ Mappings:
   EnvironmentVariables:
     dev:
       STSBASEURL: 'https://sts-mock.review-b-async.dev.account.gov.uk'
-      ReadIdBaseUrl: 'https://readid-proxy.review-b-async.dev.account.gov.uk/v2'
+      ReadIdBaseUrl: 'https://jam-mock-readid.review-b-async.dev.account.gov.uk/v2'
       EventsBaseUrl: 'https://events.review-b-async.dev.account.gov.uk'
       TestResourcesBaseUrl: 'https://test-resources.review-b-async.dev.account.gov.uk'
       ClientRegistrySecretPath: 'dev/clientRegistry'

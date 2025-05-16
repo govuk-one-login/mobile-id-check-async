@@ -134,7 +134,7 @@ Mappings:
       EnableNfcPassport: "true"
       EnableUtopiaTestDocument: "true"
       EventsBaseUrl: https://events.review-b-async.dev.account.gov.uk
-      ReadIdBaseUrl: https://readid-proxy.review-b-async.dev.account.gov.uk/v2
+      ReadIdBaseUrl: https://jam-mock-readid.review-b-async.dev.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.dev.account.gov.uk
       SessionDurationInSeconds: 86400
       TestResourcesBaseUrl: https://test-resources.review-b-async.dev.account.gov.uk
@@ -1978,13 +1978,7 @@ Resources:
             - EnvironmentVariables
             - !Ref Environment
             - BiometricSubmitterKeySecretPathPassport
-          READID_BASE_URL: !If
-            - UseDevOverrideReadIdBaseUrl
-            - !Ref DevOverrideReadIdBaseUrl
-            - !FindInMap
-              - EnvironmentVariables
-              - !Ref Environment
-              - ReadIdBaseUrl
+          READID_BASE_URL: https://jam-mock-readid.review-b-async.dev.account.gov.uk/v2
       Events:
         AsyncBiometricToken:
           Properties:
@@ -3390,13 +3384,7 @@ Resources:
             - EnvironmentVariables
             - !Ref Environment
             - EnableUtopiaTestDocument
-          READID_BASE_URL: !If
-            - UseDevOverrideReadIdBaseUrl
-            - !Ref DevOverrideReadIdBaseUrl
-            - !FindInMap
-              - EnvironmentVariables
-              - !Ref Environment
-              - ReadIdBaseUrl
+          READID_BASE_URL: https://jam-mock-readid.review-b-async.dev.account.gov.uk/v2
           VERIFIABLE_CREDENTIAL_SIGNING_KEY_ID: !Ref VerifiableCredentialSigningKey
       FunctionName: !Sub ${AWS::StackName}-issue-biometric-credential
       Handler: asyncIssueBiometricCredentialHandler.lambdaHandler
