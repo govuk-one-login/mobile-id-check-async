@@ -128,7 +128,7 @@ Resources:
       Statistic: Maximum
       Dimensions:
         - Name: QueueName
-          Value: !GetAtt IPVCoreSQS.QueueName
+          Value: !GetAtt IPVCoreOutboundSqs.QueueName
 
   IPVCoreDlqMessageVisibleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -154,7 +154,7 @@ Resources:
       Statistic: Maximum
       Dimensions:
         - Name: QueueName
-          Value: !GetAtt IPVCoreDLQ.QueueName
+          Value: !GetAtt IPVCoreOutboundDlq.QueueName
 
   IPVCoreDlqAgeOfOldestMessageLowThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -180,7 +180,7 @@ Resources:
       Statistic: Maximum
       Dimensions:
         - Name: QueueName
-          Value: !GetAtt IPVCoreDLQ.QueueName
+          Value: !GetAtt IPVCoreOutboundDlq.QueueName
 
   IPVCoreDlqAgeOfOldestMessageHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -206,4 +206,4 @@ Resources:
       Statistic: Maximum
       Dimensions:
         - Name: QueueName
-          Value: !GetAtt IPVCoreDLQ.QueueName
+          Value: !GetAtt IPVCoreOutboundDlq.QueueName

@@ -110,7 +110,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - sqs:SendMessage
-                Resource: !GetAtt TxMASQSQueue.Arn
+                Resource: !GetAtt TxMASqs.Arn
               - Effect: Allow
                 Action:
                   - kms:Decrypt
@@ -123,7 +123,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - sqs:SendMessage
-                Resource: !GetAtt IPVCoreSQS.Arn
+                Resource: !GetAtt IPVCoreOutboundSqs.Arn
               - Effect: Allow
                 Action:
                   - kms:Decrypt

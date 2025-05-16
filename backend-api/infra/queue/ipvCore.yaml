@@ -107,9 +107,7 @@ Resources:
                   - !Ref Environment
                   - AccountId
               Action:
-                - kms:Encrypt
                 - kms:Decrypt
-                - kms:GenerateDataKey
               Resource:
                 - "*"
         - Version: "2012-10-17"

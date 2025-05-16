@@ -473,7 +473,7 @@ Globals:
     Environment:
       Variables:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
-        TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
+        TXMA_SQS: !GetAtt TxMASqs.QueueUrl
         VENDOR_PROCESSING_SQS: !GetAtt VendorProcessingSQS.QueueUrl
         ISSUER: !Sub
           - https://${BaseDns}
@@ -481,7 +481,7 @@ Globals:
             - DNS
             - !Ref Environment
             - BaseDns
-        IPVCORE_OUTBOUND_SQS: !GetAtt IPVCoreSQS.QueueUrl
+        IPVCORE_OUTBOUND_SQS: !GetAtt IPVCoreOutboundSqs.QueueUrl
         SESSION_TABLE_NAME: !Ref SessionsTable
         POWERTOOLS_SERVICE_NAME: mobile-id-check-async-backend
         AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
