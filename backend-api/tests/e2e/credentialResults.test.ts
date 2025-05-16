@@ -67,11 +67,11 @@ describe("Credential results", () => {
       ] as string[];
       const credentialJwt = credentialJwtArray[0];
 
-      const JWKS_URL = new URL(
-        `${process.env.SESSIONS_API_URL}/.well-known/jwks.json`,
+      const JWKS = createRemoteJWKSet(
+        new URL(`${process.env.SESSIONS_API_URL}/.well-known/jwks.json`),
       );
-      const JWKS = createRemoteJWKSet(JWKS_URL);
 
+      // This validates the signature - unsure no assertion directly on sig
       verifiedJwt = await jwtVerify(credentialJwt, JWKS, {
         algorithms: ["ES256"],
       });
