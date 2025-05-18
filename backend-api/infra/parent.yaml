@@ -554,10 +554,7 @@ Outputs:
   ReadIdMockApiUrl:
     Condition: IsDevOrBuild
     Description: ReadID Mock API Gateway base URL
-    Value: !If
-      - UseDevOverrideReadIdBaseUrl
-      - !Ref DevOverrideReadIdBaseUrl
-      - !FindInMap [EnvironmentVariables, !Ref Environment, ReadIdBaseUrl]
+    Value: 'https://jam-mock-readid.review-b-async.dev.account.gov.uk/v2'
 
   TxmaSqsQueueArn:
     Condition: IsDevOrBuild
