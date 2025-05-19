@@ -27,6 +27,7 @@ DEV_OVERRIDE_STS_BASE_URL="DevOverrideStsBaseUrl"
 DEV_OVERRIDE_EVENTS_BASE_URL="DevOverrideEventsBaseUrl"
 DEV_OVERRIDE_TEST_RESOURCES_BASE_URL="DevOverrideTestResourcesBaseUrl"
 DEV_OVERRIDE_READID_PROXY_BASE_URL="DevOverrideReadIdBaseUrl"
+DEV_OVERRIDE_READID_MOCK_BASE_URL="DevOverrideReadIdMockBaseUrl"
 DEPLOY_ALARMS_IN_DEV="DeployAlarmsInDev"
 LAMBDA_DEPLOYMENT_PREFERENCE="LambdaDeploymentPreference"
 
@@ -47,6 +48,7 @@ enable_canary_deployments=false
 deploy_test_resources=false
 publish_sts_mock_keys_to_s3=false
 overrideReadIdBaseUrl=false
+overrideReadIdMockBaseUrl=false
 
 
 # Ask the user if they want to deploy the backend-cf-dist stack
@@ -162,7 +164,9 @@ while true; do
       case "$yn" in
       [yY])
         overrideReadIdBaseUrl=true
+        overrideReadIdMockBaseUrl=true
         read -r -p "Enter your ReadId proxy stack name: " readIdProxyStackName
+        read -r -p "Enter your ReadId *mock* stack name: " readIdMockStackName
         break
         ;;
       [nN] | "")
@@ -219,7 +223,11 @@ if [[ $deploy_backend_api_stack == true ]]; then
   fi
 
   if [[ $overrideReadIdBaseUrl == true ]]; then
-      parameter_overrides+=" $DEV_OVERRIDE_READID_PROXY_BASE_URL=https://readid-proxy-${readIdProxyStackName}.${ASYNC_DOMAIN}"
+      parameter_overrides+=" $DEV_OVERRIDE_READID_PROXY_BASE_URL=https://readid-proxy-${readIdProxyStackName}.${ASYNC_DOMAIN}/v2"
+  fi
+
+  if [[ $overrideReadIdMockBaseUrl == true ]]; then
+      parameter_overrides+=" $DEV_OVERRIDE_READID_MOCK_BASE_URL=https://${readIdMockStackName}.${ASYNC_DOMAIN}/v2"
   fi
 
   # Build and deploy backend-api

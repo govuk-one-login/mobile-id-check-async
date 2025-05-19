@@ -51,6 +51,12 @@ Parameters:
     Type: String
     Default: none
 
+  DevOverrideReadIdMockBaseUrl:
+    Description: |
+      Override the ReadIdMockBaseUrl value for development deployments
+    Type: String
+    Default: none
+
   DeployAlarmsInDev:
     Description: Set to `true` to deploy alarms in a dev environment
     Type: String
@@ -251,6 +257,7 @@ Mappings:
     dev:
       STSBASEURL: 'https://sts-mock.review-b-async.dev.account.gov.uk'
       ReadIdBaseUrl: 'https://readid-proxy.review-b-async.dev.account.gov.uk/v2'
+      ReadIdMockBaseUrl: 'https://readid-mock.review-b-async.dev.account.gov.uk/v2'
       EventsBaseUrl: 'https://events.review-b-async.dev.account.gov.uk'
       TestResourcesBaseUrl: 'https://test-resources.review-b-async.dev.account.gov.uk'
       ClientRegistrySecretPath: 'dev/clientRegistry'
@@ -270,6 +277,7 @@ Mappings:
     build:
       STSBASEURL: 'https://sts-mock.review-b-async.build.account.gov.uk'
       ReadIdBaseUrl: 'https://readid-proxy.review-b-async.build.account.gov.uk/v2'
+      ReadIdMockBaseUrl: 'https://readid-mock.review-b-async.build.account.gov.uk/v2'
       EventsBaseUrl: 'https://events.review-b-async.build.account.gov.uk'
       TestResourcesBaseUrl: 'https://test-resources.review-b-async.build.account.gov.uk'
       ClientRegistrySecretPath: 'build/clientRegistry'
@@ -400,6 +408,11 @@ Conditions:
   UseDevOverrideReadIdBaseUrl: !Not
     - !Equals
       - !Ref DevOverrideReadIdBaseUrl
+      - none
+
+  UseDevOverrideReadIdMockBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideReadIdMockBaseUrl
       - none
 
   DevelopmentStack: !And
@@ -555,9 +568,9 @@ Outputs:
     Condition: IsDevOrBuild
     Description: ReadID Mock API Gateway base URL
     Value: !If
-      - UseDevOverrideReadIdBaseUrl
-      - !Ref DevOverrideReadIdBaseUrl
-      - !FindInMap [EnvironmentVariables, !Ref Environment, ReadIdBaseUrl]
+      - UseDevOverrideReadIdMockBaseUrl
+      - !Ref DevOverrideReadIdMockBaseUrl
+      - !FindInMap [EnvironmentVariables, !Ref Environment, ReadIdMockBaseUrl]
 
   TxmaSqsQueueArn:
     Condition: IsDevOrBuild
