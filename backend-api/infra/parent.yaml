@@ -250,7 +250,7 @@ Mappings:
   EnvironmentVariables:
     dev:
       STSBASEURL: 'https://sts-mock.review-b-async.dev.account.gov.uk'
-      ReadIdBaseUrl: 'https://jam-mock-readid.review-b-async.dev.account.gov.uk/v2'
+      ReadIdBaseUrl: 'https://readid-proxy.review-b-async.dev.account.gov.uk/v2'
       EventsBaseUrl: 'https://events.review-b-async.dev.account.gov.uk'
       TestResourcesBaseUrl: 'https://test-resources.review-b-async.dev.account.gov.uk'
       ClientRegistrySecretPath: 'dev/clientRegistry'
@@ -554,7 +554,10 @@ Outputs:
   ReadIdMockApiUrl:
     Condition: IsDevOrBuild
     Description: ReadID Mock API Gateway base URL
-    Value: 'https://jam-mock-readid.review-b-async.dev.account.gov.uk/v2'
+    Value: !If
+      - UseDevOverrideReadIdBaseUrl
+      - !Ref DevOverrideReadIdBaseUrl
+      - !FindInMap [EnvironmentVariables, !Ref Environment, ReadIdBaseUrl]
 
   TxmaSqsQueueArn:
     Condition: IsDevOrBuild
