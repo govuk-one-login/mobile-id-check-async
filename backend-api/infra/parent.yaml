@@ -417,9 +417,16 @@ Conditions:
     - !Condition DeployAlarms
     - !Not [!Equals [!Ref LambdaDeploymentPreference, "AllAtOnce"]]
 
-  IntegrateIpvCore: !Equals
+  IntegrateIpvCore: !Or
+    - !Equals
       - !Ref Environment
       - staging
+    - !Equals
+      - !Ref Environment
+      - integration
+    - !Equals
+      - !Ref Environment
+      - production
 
   IntegratePerformanceTesting: !Or
     - !Equals
