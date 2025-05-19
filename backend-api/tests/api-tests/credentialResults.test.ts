@@ -6,12 +6,12 @@ import {
   issueBiometricToken,
   pollForCredentialResults,
   pollForEvents,
-} from "../api-tests/utils/apiTestHelpers";
+} from "./utils/apiTestHelpers";
 import { randomUUID } from "crypto";
 import {
   READ_ID_MOCK_API_INSTANCE,
   SESSIONS_API_INSTANCE,
-} from "../api-tests/utils/apiInstance";
+} from "./utils/apiInstance";
 import {
   createRemoteJWKSet,
   JWTPayload,
