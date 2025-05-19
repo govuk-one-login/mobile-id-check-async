@@ -354,9 +354,16 @@ Conditions:
         - !Ref AWS::StackName
         - mob-async-backend
 
-  IntegrateIpvCore: !Equals
-    - !Ref Environment
-    - staging
+  IntegrateIpvCore: !Or
+    - !Equals
+      - !Ref Environment
+      - staging
+    - !Equals
+      - !Ref Environment
+      - integration
+    - !Equals
+      - !Ref Environment
+      - production
 
   IntegratePerformanceTesting: !Or
     - !Equals
