@@ -254,8 +254,8 @@ describe("Backend application infrastructure", () => {
           dev: "",
           build: "",
           staging: "vpce-0cc0de10742b83b8a",
-          integration: "",
-          production: "",
+          integration: "vpce-0f47068fdf9ad0c3d",
+          production: "vpce-0e40247a557c2169e",
         };
         const mappingHelper = new Mappings(template);
         mappingHelper.validatePrivateAPIMapping({
