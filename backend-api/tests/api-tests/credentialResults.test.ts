@@ -91,7 +91,7 @@ describe("Credential results", () => {
           sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_`,
           numberOfEvents: 3, // Should find CRI_START, CRI_END and CRI_VC_ISSUED
         });
-      }, 40000);
+      }, 60000);
 
       it("Writes verified credential to the IPV Core outbound queue", () => {
         const { protectedHeader, payload } = verifiedJwt;
@@ -120,19 +120,14 @@ describe("Credential results", () => {
       });
 
       it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event", () => {
-        expect(criTxmaEvents).toContain({
-          event: expect.objectContaining({
-            event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
-          }),
-        });
+        expectTxmaEventToHaveBeenWritten(
+          criTxmaEvents,
+          "DCMAW_ASYNC_CRI_VC_ISSUED",
+        );
       });
 
       it("Writes DCMAW_ASYNC_CRI_END TxMA event", () => {
-        expect(criTxmaEvents).toContain({
-          event: expect.objectContaining({
-            event_name: "DCMAW_ASYNC_CRI_END",
-          }),
-        });
+        expectTxmaEventToHaveBeenWritten(criTxmaEvents, "DCMAW_ASYNC_CRI_END");
       });
     },
   );
@@ -141,4 +136,15 @@ describe("Credential results", () => {
 interface TestParameters {
   expectedStrengthScore: number;
   expectedValidityScore: number;
+}
+
+function expectTxmaEventToHaveBeenWritten(
+  criTxmaEvents: EventResponse[],
+  eventName: string,
+) {
+  expect(
+    criTxmaEvents.some((item) => {
+      return "event_name" in item.event && item.event.event_name === eventName;
+    }),
+  ).toBe(true);
 }

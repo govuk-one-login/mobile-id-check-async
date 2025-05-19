@@ -118,13 +118,13 @@ export const issueBiometricToken = async (
 };
 
 export async function setupBiometricSessionByScenario(
-  biometricSessionId: UUID,
+  biometricSessionIdDifferentNameDeleteThisLater: UUID,
   scenario: Scenario,
   opaqueId: string,
   creationDate: string,
 ) {
-  await READ_ID_MOCK_API_INSTANCE.post(
-    `/setupBiometricSessionByScenario/${biometricSessionId}`,
+  const result = await READ_ID_MOCK_API_INSTANCE.post(
+    `/setupBiometricSessionByScenario/${biometricSessionIdDifferentNameDeleteThisLater}`,
     JSON.stringify({
       scenario,
       overrides: {
@@ -133,6 +133,11 @@ export async function setupBiometricSessionByScenario(
       },
     }),
   );
+  if (result.status !== 201) {
+    throw new Error(
+      `Failed to setup biometric session (${result.status}): ${JSON.stringify(result.data)}`,
+    );
+  }
 }
 
 export async function finishBiometricSession(
@@ -159,6 +164,13 @@ export async function getCredentialFromIpvOutboundQueue(
   const credentialJwtArray = credentialResult[
     "https://vocab.account.gov.uk/v1/credentialJWT"
   ] as string[];
+
+  if (!credentialJwtArray || credentialJwtArray.length < 1) {
+    throw new Error(
+      `Result written to IPV Core outbound queue was not a success: ${JSON.stringify(credentialResult)}`,
+    );
+  }
+
   return credentialJwtArray[0];
 }
 
