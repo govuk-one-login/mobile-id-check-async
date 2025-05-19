@@ -1,123 +1,95 @@
 import {
   createSessionForSub,
-  CredentialResultResponse,
   EventResponse,
+  finishBiometricSession,
   getActiveSessionIdFromSub,
+  getCredentialFromIpvOutboundQueue,
   issueBiometricToken,
-  pollForCredentialResults,
   pollForEvents,
+  Scenario,
+  setupBiometricSessionByScenario,
 } from "./utils/apiTestHelpers";
 import { randomUUID } from "crypto";
 import {
-  READ_ID_MOCK_API_INSTANCE,
-  SESSIONS_API_INSTANCE,
-} from "./utils/apiInstance";
-import {
   createRemoteJWKSet,
-  JWTPayload,
   jwtVerify,
   JWTVerifyResult,
-  KeyLike,
   ResolvedKey,
 } from "jose";
 
 describe("Credential results", () => {
   describe.each([
     [
-      "DRIVING_LICENCE_SUCCESS",
+      Scenario.DRIVING_LICENCE_SUCCESS,
       {
-        strengthScore: 3,
-        validityScore: 0,
+        expectedStrengthScore: 3,
+        expectedValidityScore: 0,
       },
     ],
     [
-      "PASSPORT_SUCCESS",
+      Scenario.PASSPORT_SUCCESS,
       {
-        strengthScore: 4,
-        validityScore: 3,
+        expectedStrengthScore: 4,
+        expectedValidityScore: 3,
       },
     ],
     [
-      "BRP_SUCCESS",
+      Scenario.BRP_SUCCESS,
       {
-        strengthScore: 4,
-        validityScore: 3,
+        expectedStrengthScore: 4,
+        expectedValidityScore: 3,
       },
     ],
     [
-      "BRC_SUCCESS",
+      Scenario.BRC_SUCCESS,
       {
-        strengthScore: 4,
-        validityScore: 3,
+        expectedStrengthScore: 4,
+        expectedValidityScore: 3,
       },
     ],
   ])(
     "Given the vendor returns a successful %s session",
-    (scenario: string, expectedVcStrengthAndValidityScore: object) => {
-      let credentialResultsResponse: CredentialResultResponse[];
-      let criEndEventResponse: EventResponse[];
+    (scenario: Scenario, parameters: TestParameters) => {
       let subjectIdentifier: string;
-      let sessionId: string;
-      let vcIssuedEventResponse: EventResponse[];
-      let verifiedJwt: JWTVerifyResult<JWTPayload> & ResolvedKey<KeyLike>;
+      let criTxmaEvents: EventResponse[];
+      let verifiedJwt: JWTVerifyResult & ResolvedKey;
 
       beforeAll(async () => {
         subjectIdentifier = randomUUID();
         await createSessionForSub(subjectIdentifier);
-        sessionId = await getActiveSessionIdFromSub(subjectIdentifier);
+
+        const sessionId = await getActiveSessionIdFromSub(subjectIdentifier);
+
         const issueBiometricTokenResponse =
           await issueBiometricToken(sessionId);
+
         const { opaqueId } = issueBiometricTokenResponse.data;
         const biometricSessionId = randomUUID();
-
-        await READ_ID_MOCK_API_INSTANCE.post(
-          `/setupBiometricSessionByScenario/${biometricSessionId}`,
-          JSON.stringify({
-            scenario,
-            overrides: {
-              opaqueId,
-              creationDate: new Date().toISOString(),
-            },
-          }),
-        );
-
-        await SESSIONS_API_INSTANCE.post("/async/finishBiometricSession", {
-          sessionId,
+        const creationDate = new Date().toISOString();
+        await setupBiometricSessionByScenario(
           biometricSessionId,
-        });
-
-        credentialResultsResponse = await pollForCredentialResults(
-          `SUB#${subjectIdentifier}`,
-          1,
+          scenario,
+          opaqueId,
+          creationDate,
         );
 
-        const credentialResult = credentialResultsResponse[0].body as Record<
-          string,
-          unknown
-        >;
-        const credentialJwtArray = credentialResult[
-          "https://vocab.account.gov.uk/v1/credentialJWT"
-        ] as string[];
-        const credentialJwt = credentialJwtArray[0];
+        await finishBiometricSession(sessionId, biometricSessionId);
 
-        const JWKS = createRemoteJWKSet(
+        const credentialJwt =
+          await getCredentialFromIpvOutboundQueue(subjectIdentifier);
+
+        const jwks = createRemoteJWKSet(
           new URL(`${process.env.SESSIONS_API_URL}/.well-known/jwks.json`),
         );
 
-        verifiedJwt = await jwtVerify(credentialJwt, JWKS, {
+        verifiedJwt = await jwtVerify(credentialJwt, jwks, {
           algorithms: ["ES256"],
         });
 
-        vcIssuedEventResponse = await pollForEvents({
+        criTxmaEvents = await pollForEvents({
           partitionKey: `SESSION#${sessionId}`,
-          sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_VC_ISSUED`,
-          numberOfEvents: 1,
-        });
-
-        criEndEventResponse = await pollForEvents({
-          partitionKey: `SESSION#${sessionId}`,
-          sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_END`,
-          numberOfEvents: 1,
+          sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_`,
+          numberOfEvents: 3, // Should find CRI_START, CRI_END and CRI_VC_ISSUED
         });
       }, 40000);
 
@@ -126,39 +98,47 @@ describe("Credential results", () => {
 
         expect(protectedHeader).toEqual({
           alg: "ES256",
-          kid: "b169df69-8ec7-4667-a674-4b5e7bc66886",
+          kid: expect.any(String),
           typ: "JWT",
         });
 
         expect(payload).toEqual({
           iat: expect.any(Number),
-          iss: "https://review-b-async.dev.account.gov.uk",
+          iss: `https://review-b-async.${process.env.TEST_ENVIRONMENT}.account.gov.uk`,
           jti: expect.stringContaining("urn:uuid:"),
           nbf: expect.any(Number),
           sub: subjectIdentifier,
           vc: expect.objectContaining({
             evidence: [
-              expect.objectContaining(expectedVcStrengthAndValidityScore),
+              expect.objectContaining({
+                strengthScore: parameters.expectedStrengthScore,
+                validityScore: parameters.expectedValidityScore,
+              }),
             ],
           }),
         });
       });
 
       it("Writes DCMAW_ASYNC_CRI_VC_ISSUED TxMA event", () => {
-        expect(vcIssuedEventResponse[0].event).toEqual(
-          expect.objectContaining({
+        expect(criTxmaEvents).toContain({
+          event: expect.objectContaining({
             event_name: "DCMAW_ASYNC_CRI_VC_ISSUED",
           }),
-        );
+        });
       });
 
       it("Writes DCMAW_ASYNC_CRI_END TxMA event", () => {
-        expect(criEndEventResponse[0].event).toEqual(
-          expect.objectContaining({
+        expect(criTxmaEvents).toContain({
+          event: expect.objectContaining({
             event_name: "DCMAW_ASYNC_CRI_END",
           }),
-        );
+        });
       });
     },
   );
 });
+
+interface TestParameters {
+  expectedStrengthScore: number;
+  expectedValidityScore: number;
+}

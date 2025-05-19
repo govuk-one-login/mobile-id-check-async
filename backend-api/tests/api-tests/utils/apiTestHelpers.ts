@@ -2,10 +2,11 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
-import { randomUUID } from "crypto";
+import { randomUUID, UUID } from "crypto";
 import {
   EVENTS_API_INSTANCE,
   PROXY_API_INSTANCE,
+  READ_ID_MOCK_API_INSTANCE,
   SESSIONS_API_INSTANCE,
   STS_MOCK_API_INSTANCE,
   TEST_RESOURCES_API_INSTANCE,
@@ -115,6 +116,51 @@ export const issueBiometricToken = async (
 
   return await SESSIONS_API_INSTANCE.post("/async/biometricToken", requestBody);
 };
+
+export async function setupBiometricSessionByScenario(
+  biometricSessionId: UUID,
+  scenario: Scenario,
+  opaqueId: string,
+  creationDate: string,
+) {
+  await READ_ID_MOCK_API_INSTANCE.post(
+    `/setupBiometricSessionByScenario/${biometricSessionId}`,
+    JSON.stringify({
+      scenario,
+      overrides: {
+        opaqueId,
+        creationDate,
+      },
+    }),
+  );
+}
+
+export async function finishBiometricSession(
+  sessionId: string,
+  biometricSessionId: UUID,
+) {
+  await SESSIONS_API_INSTANCE.post("/async/finishBiometricSession", {
+    sessionId,
+    biometricSessionId,
+  });
+}
+
+export async function getCredentialFromIpvOutboundQueue(
+  subjectIdentifier: string,
+) {
+  const credentialResultsResponse = await pollForCredentialResults(
+    `SUB#${subjectIdentifier}`,
+    1,
+  );
+  const credentialResult = credentialResultsResponse[0].body as Record<
+    string,
+    unknown
+  >;
+  const credentialJwtArray = credentialResult[
+    "https://vocab.account.gov.uk/v1/credentialJWT"
+  ] as string[];
+  return credentialJwtArray[0];
+}
 
 export type EventResponse = {
   pk: string;
@@ -290,4 +336,11 @@ async function getCredentialResult(partitionKey: string): Promise<unknown[]> {
 
   const credentialResults = response.data;
   return Array.isArray(credentialResults) ? credentialResults : []; // If response is malformed, return empty array so polling can be retried
+}
+
+export enum Scenario {
+  DRIVING_LICENCE_SUCCESS = "DRIVING_LICENCE_SUCCESS",
+  PASSPORT_SUCCESS = "PASSPORT_SUCCESS",
+  BRP_SUCCESS = "BRP_SUCCESS",
+  BRC_SUCCESS = "BRC_SUCCESS",
 }
