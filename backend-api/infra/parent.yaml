@@ -112,8 +112,8 @@ Mappings:
       IpvCoreVpceId: "vpce-0f47068fdf9ad0c3d"
       PerformanceTestingVpceId: ""
     production:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
       IpvCoreVpceId: "vpce-0e40247a557c2169e"
       PerformanceTestingVpceId: ""
 
