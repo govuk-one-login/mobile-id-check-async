@@ -238,7 +238,7 @@ export async function pollForEvents({
 
   if (events.length < numberOfEvents)
     throw new Error(
-      `Only found ${events.length} events for pkPrefix=${partitionKey} and skPrefix=${sortKeyPrefix}. Expected to find at least ${numberOfEvents} events.`,
+      `Only found ${events.length} events for pkPrefix=${partitionKey} and skPrefix=${sortKeyPrefix}. Expected to find at least ${numberOfEvents} events. Please check that all expected events have been defined in the test-resources dequeue Lambda, and are being written as part of this test.`,
     );
 
   if (events.some((event) => !isValidEventResponse(event)))
