@@ -26,6 +26,12 @@ Parameters:
     Type: String
     Default: none
 
+  DevOverrideReadIdMockBaseUrl:
+    Description: |
+      Override the ReadIdMockBaseUrl value for development deployments
+    Type: String
+    Default: none
+
   DevOverrideStsBaseUrl:
     Description: |
       Override the STS_BASE_URL value for development deployments
@@ -117,6 +123,7 @@ Mappings:
       EnableUtopiaTestDocument: "true"
       EventsBaseUrl: https://events.review-b-async.build.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.build.account.gov.uk/v2
+      ReadIdMockBaseUrl: https://readid-mock.review-b-async.build.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.build.account.gov.uk
       SessionDurationInSeconds: 86400
       TestResourcesBaseUrl: https://test-resources.review-b-async.build.account.gov.uk
@@ -135,6 +142,7 @@ Mappings:
       EnableUtopiaTestDocument: "true"
       EventsBaseUrl: https://events.review-b-async.dev.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.dev.account.gov.uk/v2
+      ReadIdMockBaseUrl: https://readid-mock.review-b-async.dev.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.dev.account.gov.uk
       SessionDurationInSeconds: 86400
       TestResourcesBaseUrl: https://test-resources.review-b-async.dev.account.gov.uk
@@ -413,6 +421,11 @@ Conditions:
   UseDevOverrideReadIdBaseUrl: !Not
     - !Equals
       - !Ref DevOverrideReadIdBaseUrl
+      - none
+
+  UseDevOverrideReadIdMockBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideReadIdMockBaseUrl
       - none
 
   UseDevOverrideStsBaseUrl: !Not
@@ -6047,6 +6060,17 @@ Outputs:
     Description: Proxy API Gateway Pretty DNS
     Value: !Sub https://${ProxyApiDomainName}
     Condition: ProxyApiDeployment
+
+  ReadIdMockApiUrl:
+    Description: ReadID Mock API Gateway base URL
+    Value: !If
+      - UseDevOverrideReadIdMockBaseUrl
+      - !Ref DevOverrideReadIdMockBaseUrl
+      - !FindInMap
+        - EnvironmentVariables
+        - !Ref Environment
+        - ReadIdMockBaseUrl
+    Condition: IsDevOrBuild
 
   SessionsApiUrl:
     Description: Sessions API Gateway base URL

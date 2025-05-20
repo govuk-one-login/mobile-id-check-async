@@ -2,15 +2,17 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
-import { randomUUID } from "crypto";
+import { randomUUID, UUID } from "crypto";
 import {
   EVENTS_API_INSTANCE,
   PROXY_API_INSTANCE,
+  READ_ID_MOCK_API_INSTANCE,
   SESSIONS_API_INSTANCE,
   STS_MOCK_API_INSTANCE,
   TEST_RESOURCES_API_INSTANCE,
 } from "./apiInstance";
 import { mockClientState } from "./apiTestData";
+import { AxiosResponse } from "axios";
 
 export interface ClientDetails {
   client_id: string;
@@ -104,14 +106,73 @@ export async function getAccessToken(sub?: string, scope?: string) {
   return stsMockResponse.data.access_token;
 }
 
-export const issueBiometricToken = async (sessionId: string): Promise<void> => {
+export const issueBiometricToken = async (
+  sessionId: string,
+): Promise<AxiosResponse> => {
   const requestBody = {
     sessionId,
     documentType: "NFC_PASSPORT",
   };
 
-  await SESSIONS_API_INSTANCE.post("/async/biometricToken", requestBody);
+  return await SESSIONS_API_INSTANCE.post("/async/biometricToken", requestBody);
 };
+
+export async function setupBiometricSessionByScenario(
+  biometricSessionIdDifferentNameDeleteThisLater: UUID,
+  scenario: Scenario,
+  opaqueId: string,
+  creationDate: string,
+) {
+  const result = await READ_ID_MOCK_API_INSTANCE.post(
+    `/setupBiometricSessionByScenario/${biometricSessionIdDifferentNameDeleteThisLater}`,
+    JSON.stringify({
+      scenario,
+      overrides: {
+        opaqueId,
+        creationDate,
+      },
+    }),
+  );
+  if (result.status !== 201) {
+    throw new Error(
+      `Failed to setup biometric session (${result.status}): ${JSON.stringify(result.data)}`,
+    );
+  }
+}
+
+export async function finishBiometricSession(
+  sessionId: string,
+  biometricSessionId: UUID,
+) {
+  await SESSIONS_API_INSTANCE.post("/async/finishBiometricSession", {
+    sessionId,
+    biometricSessionId,
+  });
+}
+
+export async function getCredentialFromIpvOutboundQueue(
+  subjectIdentifier: string,
+) {
+  const credentialResultsResponse = await pollForCredentialResults(
+    `SUB#${subjectIdentifier}`,
+    1,
+  );
+  const credentialResult = credentialResultsResponse[0].body as Record<
+    string,
+    unknown
+  >;
+  const credentialJwtArray = credentialResult[
+    "https://vocab.account.gov.uk/v1/credentialJWT"
+  ] as string[];
+
+  if (!credentialJwtArray || credentialJwtArray.length < 1) {
+    throw new Error(
+      `Result written to IPV Core outbound queue was not a success: ${JSON.stringify(credentialResult)}`,
+    );
+  }
+
+  return credentialJwtArray[0];
+}
 
 export type EventResponse = {
   pk: string;
@@ -177,7 +238,7 @@ export async function pollForEvents({
 
   if (events.length < numberOfEvents)
     throw new Error(
-      `Only found ${events.length} events for pkPrefix=${partitionKey} and skPrefix=${sortKeyPrefix}. Expected to find at least ${numberOfEvents} events.`,
+      `Only found ${events.length} events for pkPrefix=${partitionKey} and skPrefix=${sortKeyPrefix}. Expected to find at least ${numberOfEvents} events. Please check that all expected events have been defined in the test-resources dequeue Lambda, and are being written as part of this test.`,
     );
 
   if (events.some((event) => !isValidEventResponse(event)))
@@ -287,4 +348,14 @@ async function getCredentialResult(partitionKey: string): Promise<unknown[]> {
 
   const credentialResults = response.data;
   return Array.isArray(credentialResults) ? credentialResults : []; // If response is malformed, return empty array so polling can be retried
+}
+
+export enum Scenario {
+  DRIVING_LICENCE_SUCCESS = "DRIVING_LICENCE_SUCCESS",
+  DRIVING_LICENCE_FAILURE_WITH_CIS = "DRIVING_LICENCE_FAILURE_WITH_CIS",
+  PASSPORT_SUCCESS = "PASSPORT_SUCCESS",
+  PASSPORT_FAILURE_WITH_CIS = "PASSPORT_FAILURE_WITH_CIS",
+  BRP_SUCCESS = "BRP_SUCCESS",
+  BRC_SUCCESS = "BRC_SUCCESS",
+  INVALID_BIOMETRIC_SESSION = "INVALID_BIOMETRIC_SESSION",
 }
