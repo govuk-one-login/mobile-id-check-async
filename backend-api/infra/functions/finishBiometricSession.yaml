@@ -109,7 +109,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - sqs:SendMessage
-                Resource: !GetAtt TxMASQSQueue.Arn
+                Resource: !GetAtt TxMASqs.Arn
               - Effect: Allow
                 Action:
                   - kms:Decrypt
@@ -122,7 +122,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - sqs:SendMessage
-                Resource: !GetAtt VendorProcessingSQS.Arn
+                Resource: !GetAtt VendorProcessingSqs.Arn
               - Effect: Allow
                 Action:
                   - kms:Decrypt

@@ -68,7 +68,7 @@ Resources:
                   - sqs:DeleteMessage
                   - sqs:GetQueueAttributes
                 Resource:
-                  Fn::ImportValue: !Sub ${BackendStackName}-txma-sqs-queue-arn
+                  Fn::ImportValue: !Sub ${BackendStackName}-txma-sqs-arn
         - PolicyName: DynamoDBPolicy
           PolicyDocument:
             Version: "2012-10-17"
@@ -107,7 +107,7 @@ Resources:
       BatchSize: 10
       Enabled: true
       EventSourceArn:
-        Fn::ImportValue: !Sub ${BackendStackName}-txma-sqs-queue-arn
+        Fn::ImportValue: !Sub ${BackendStackName}-txma-sqs-arn
       FunctionName: !GetAtt DequeueFunction.Arn
       FunctionResponseTypes:
         - ReportBatchItemFailures

@@ -24,7 +24,7 @@ Resources:
       Statistic: Maximum
       Dimensions:
         - Name: QueueName
-          Value: !GetAtt VendorProcessingSQS.QueueName
+          Value: !GetAtt VendorProcessingSqs.QueueName
 
   VendorProcessingDlqMessageVisibleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -50,7 +50,7 @@ Resources:
       Statistic: Maximum
       Dimensions:
         - Name: QueueName
-          Value: !GetAtt VendorProcessingDLQ.QueueName
+          Value: !GetAtt VendorProcessingDlq.QueueName
 
   VendorProcessingDlqAgeOfOldestMessageLowThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -76,7 +76,7 @@ Resources:
       Statistic: Maximum
       Dimensions:
         - Name: QueueName
-          Value: !GetAtt VendorProcessingDLQ.QueueName
+          Value: !GetAtt VendorProcessingDlq.QueueName
 
   VendorProcessingDlqAgeOfOldestMessageHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -102,7 +102,7 @@ Resources:
       Statistic: Maximum
       Dimensions:
         - Name: QueueName
-          Value: !GetAtt VendorProcessingDLQ.QueueName
+          Value: !GetAtt VendorProcessingDlq.QueueName
 
   IPVCoreSqsAgeOfOldestMessageAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -128,7 +128,7 @@ Resources:
       Statistic: Maximum
       Dimensions:
         - Name: QueueName
-          Value: !GetAtt IPVCoreSQS.QueueName
+          Value: !GetAtt IPVCoreOutboundSqs.QueueName
 
   IPVCoreDlqMessageVisibleAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -154,7 +154,7 @@ Resources:
       Statistic: Maximum
       Dimensions:
         - Name: QueueName
-          Value: !GetAtt IPVCoreDLQ.QueueName
+          Value: !GetAtt IPVCoreOutboundDlq.QueueName
 
   IPVCoreDlqAgeOfOldestMessageLowThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -180,7 +180,7 @@ Resources:
       Statistic: Maximum
       Dimensions:
         - Name: QueueName
-          Value: !GetAtt IPVCoreDLQ.QueueName
+          Value: !GetAtt IPVCoreOutboundDlq.QueueName
 
   IPVCoreDlqAgeOfOldestMessageHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -206,4 +206,4 @@ Resources:
       Statistic: Maximum
       Dimensions:
         - Name: QueueName
-          Value: !GetAtt IPVCoreDLQ.QueueName
+          Value: !GetAtt IPVCoreOutboundDlq.QueueName

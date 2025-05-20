@@ -254,8 +254,8 @@ describe("Backend application infrastructure", () => {
           dev: "",
           build: "",
           staging: "vpce-0cc0de10742b83b8a",
-          integration: "",
-          production: "",
+          integration: "vpce-0f47068fdf9ad0c3d",
+          production: "vpce-0e40247a557c2169e",
         };
         const mappingHelper = new Mappings(template);
         mappingHelper.validatePrivateAPIMapping({
@@ -526,14 +526,14 @@ describe("Backend application infrastructure", () => {
           build: 400,
           staging: 400,
           integration: 400,
-          production: 0,
+          production: 400,
         };
         const expectedRateLimits = {
           dev: 10,
           build: 200,
           staging: 200,
           integration: 200,
-          production: 0,
+          production: 200,
         };
         const mappingHelper = new Mappings(template);
         mappingHelper.validateSessionsApiMapping({
@@ -1302,25 +1302,25 @@ describe("Backend application infrastructure", () => {
   });
 
   describe("SQS", () => {
+    const queues = Object.values(template.findResources("AWS::SQS::Queue"));
+
+    test("All SQS queues have the QueueName as a property that has the stack name as a prefix", () => {
+      const queueNamePrefix = new RegExp(/^\${AWS::StackName}-.*/);
+
+      queues.forEach((queue) => {
+        expect(queue.Properties.QueueName["Fn::Sub"]).toMatch(queueNamePrefix);
+      });
+    });
+
     test("All primary SQS have a DLQ", () => {
-      const queues = template.findResources("AWS::SQS::Queue");
-      const deadLetterQueueNames = [
-        "TxMASQSQueueDeadLetterQueue",
-        "VendorProcessingDLQ",
-        "IPVCoreDLQ",
-        "TxMASqsDlq",
-        "IPVCoreOutboundDlq",
-      ];
-      const queueList = Object.keys(queues).filter(
-        (queueName: string) => !deadLetterQueueNames.includes(queueName),
+      const queuesFiltered = queues.filter(
+        (queue: any) => !queue.Properties.QueueName["Fn::Sub"].endsWith("-dlq"),
       );
 
-      queueList.forEach((queue) => {
+      queuesFiltered.forEach((queue) => {
         expect(
-          queues[queue].Properties.RedrivePolicy.deadLetterTargetArn,
-        ).toStrictEqual({
-          "Fn::GetAtt": [expect.any(String), "Arn"],
-        });
+          queue.Properties.RedrivePolicy.deadLetterTargetArn["Fn::GetAtt"],
+        ).toStrictEqual([expect.any(String), "Arn"]);
       });
     });
   });

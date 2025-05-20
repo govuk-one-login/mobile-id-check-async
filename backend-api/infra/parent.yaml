@@ -109,12 +109,12 @@ Mappings:
     integration:
       ApiBurstLimit: 400
       ApiRateLimit: 200
-      IpvCoreVpceId: ""
+      IpvCoreVpceId: "vpce-0f47068fdf9ad0c3d"
       PerformanceTestingVpceId: ""
     production:
       ApiBurstLimit: 0
       ApiRateLimit: 0
-      IpvCoreVpceId: ""
+      IpvCoreVpceId: "vpce-0e40247a557c2169e"
       PerformanceTestingVpceId: ""
 
   SessionsApigw:
@@ -131,8 +131,8 @@ Mappings:
       ApiBurstLimit: 400
       ApiRateLimit: 200
     production:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
 
   ProxyApigw:
     dev:
@@ -430,9 +430,16 @@ Conditions:
     - !Condition DeployAlarms
     - !Not [!Equals [!Ref LambdaDeploymentPreference, "AllAtOnce"]]
 
-  IntegrateIpvCore: !Equals
+  IntegrateIpvCore: !Or
+    - !Equals
       - !Ref Environment
       - staging
+    - !Equals
+      - !Ref Environment
+      - integration
+    - !Equals
+      - !Ref Environment
+      - production
 
   IntegratePerformanceTesting: !Or
     - !Equals
@@ -486,15 +493,15 @@ Globals:
     Environment:
       Variables:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
-        TXMA_SQS: !GetAtt TxMASQSQueue.QueueUrl
-        VENDOR_PROCESSING_SQS: !GetAtt VendorProcessingSQS.QueueUrl
+        TXMA_SQS: !GetAtt TxMASqs.QueueUrl
+        VENDOR_PROCESSING_SQS: !GetAtt VendorProcessingSqs.QueueUrl
         ISSUER: !Sub
           - https://${BaseDns}
           - BaseDns: !FindInMap
             - DNS
             - !Ref Environment
             - BaseDns
-        IPVCORE_OUTBOUND_SQS: !GetAtt IPVCoreSQS.QueueUrl
+        IPVCORE_OUTBOUND_SQS: !GetAtt IPVCoreOutboundSqs.QueueUrl
         SESSION_TABLE_NAME: !Ref SessionsTable
         POWERTOOLS_SERVICE_NAME: mobile-id-check-async-backend
         AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
@@ -572,13 +579,6 @@ Outputs:
       - !Ref DevOverrideReadIdMockBaseUrl
       - !FindInMap [EnvironmentVariables, !Ref Environment, ReadIdMockBaseUrl]
 
-  TxmaSqsQueueArn:
-    Condition: IsDevOrBuild
-    Description: TxMA SQS Queue ARN
-    Export:
-      Name: !Sub ${AWS::StackName}-txma-sqs-queue-arn
-    Value: !GetAtt TxMASQSQueue.Arn
-
   TxmaSqsArn:
     Condition: IsDevOrBuild
     Description: TxMA SQS Queue ARN
@@ -592,13 +592,6 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-txma-kms-encryption-key-arn
     Value: !GetAtt TxMAKMSEncryptionKey.Arn
-
-  IPVCoreQueueArn:
-    Condition: IsDevOrBuild
-    Description: IPV Core Queue ARN
-    Export:
-      Name: !Sub ${AWS::StackName}-ipv-core-queue-arn
-    Value: !GetAtt IPVCoreSQS.Arn
 
   IPVCoreOutboundSqsArn:
     Condition: IsDevOrBuild
