@@ -125,8 +125,8 @@ Mappings:
       ApiBurstLimit: 400
       ApiRateLimit: 200
     production:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
 
   ProxyApigw:
     dev:
@@ -481,7 +481,7 @@ Globals:
       Variables:
         SIGNING_KEY_ID: !GetAtt KMSSigningKey.Arn
         TXMA_SQS: !GetAtt TxMASqs.QueueUrl
-        VENDOR_PROCESSING_SQS: !GetAtt VendorProcessingSQS.QueueUrl
+        VENDOR_PROCESSING_SQS: !GetAtt VendorProcessingSqs.QueueUrl
         ISSUER: !Sub
           - https://${BaseDns}
           - BaseDns: !FindInMap
@@ -558,13 +558,6 @@ Outputs:
       - !Ref DevOverrideTestResourcesBaseUrl
       - !FindInMap [EnvironmentVariables, !Ref Environment, TestResourcesBaseUrl]
 
-  TxmaSqsQueueArn:
-    Condition: IsDevOrBuild
-    Description: TxMA SQS Queue ARN
-    Export:
-      Name: !Sub ${AWS::StackName}-txma-sqs-queue-arn
-    Value: !GetAtt TxMASQSQueue.Arn
-
   TxmaSqsArn:
     Condition: IsDevOrBuild
     Description: TxMA SQS Queue ARN
@@ -578,13 +571,6 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-txma-kms-encryption-key-arn
     Value: !GetAtt TxMAKMSEncryptionKey.Arn
-
-  IPVCoreQueueArn:
-    Condition: IsDevOrBuild
-    Description: IPV Core Queue ARN
-    Export:
-      Name: !Sub ${AWS::StackName}-ipv-core-queue-arn
-    Value: !GetAtt IPVCoreSQS.Arn
 
   IPVCoreOutboundSqsArn:
     Condition: IsDevOrBuild

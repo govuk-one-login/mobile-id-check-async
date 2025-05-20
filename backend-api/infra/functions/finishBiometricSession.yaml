@@ -122,7 +122,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - sqs:SendMessage
-                Resource: !GetAtt VendorProcessingSQS.Arn
+                Resource: !GetAtt VendorProcessingSqs.Arn
               - Effect: Allow
                 Action:
                   - kms:Decrypt
