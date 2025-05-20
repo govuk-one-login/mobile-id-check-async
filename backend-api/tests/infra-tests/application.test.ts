@@ -1302,25 +1302,25 @@ describe("Backend application infrastructure", () => {
   });
 
   describe("SQS", () => {
+    const queues = Object.values(template.findResources("AWS::SQS::Queue"));
+
+    test("All SQS queues have the QueueName as a property that has the stack name as a prefix", () => {
+      const queueNamePrefix = new RegExp(/^\${AWS::StackName}-.*/);
+
+      queues.forEach((queue) => {
+        expect(queue.Properties.QueueName["Fn::Sub"]).toMatch(queueNamePrefix);
+      });
+    });
+
     test("All primary SQS have a DLQ", () => {
-      const queues = template.findResources("AWS::SQS::Queue");
-      const deadLetterQueueNames = [
-        "TxMASQSQueueDeadLetterQueue",
-        "VendorProcessingDLQ",
-        "IPVCoreDLQ",
-        "TxMASqsDlq",
-        "IPVCoreOutboundDlq",
-      ];
-      const queueList = Object.keys(queues).filter(
-        (queueName: string) => !deadLetterQueueNames.includes(queueName),
+      const queuesFiltered = queues.filter(
+        (queue: any) => !queue.Properties.QueueName["Fn::Sub"].endsWith("-dlq"),
       );
 
-      queueList.forEach((queue) => {
+      queuesFiltered.forEach((queue) => {
         expect(
-          queues[queue].Properties.RedrivePolicy.deadLetterTargetArn,
-        ).toStrictEqual({
-          "Fn::GetAtt": [expect.any(String), "Arn"],
-        });
+          queue.Properties.RedrivePolicy.deadLetterTargetArn["Fn::GetAtt"],
+        ).toStrictEqual([expect.any(String), "Arn"]);
       });
     });
   });
