@@ -285,14 +285,14 @@ describe("Backend application infrastructure", () => {
           build: 400,
           staging: 400,
           integration: 400,
-          production: 400,
+          production: 0,
         };
         const expectedRateLimits = {
           dev: 10,
           build: 200,
           staging: 200,
           integration: 200,
-          production: 200,
+          production: 0,
         };
         const mappingHelper = new Mappings(template);
         mappingHelper.validatePrivateAPIMapping({
