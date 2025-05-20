@@ -22,7 +22,6 @@ import {
   PassEvidence,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { mockClientState } from "./utils/apiTestData";
-import { GenericTxmaEvent } from "../../src/functions/services/events/types";
 
 describe("Successful credential results", () => {
   describe.each([
@@ -246,7 +245,13 @@ describe("Unsuccessful credential results", () => {
     });
 
     it("Writes DCMAW_ASYNC_CRI_ERROR TxMA event", () => {
-      const event = criErrorTxmaEvent as GenericTxmaEvent;
+      type GenericEvent = {
+        event_name: string;
+        extensions?: {
+          suspected_fraud_signal?: string;
+        };
+      };
+      const event = criErrorTxmaEvent as GenericEvent;
       expect(event.event_name).toEqual("DCMAW_ASYNC_CRI_ERROR");
       if (parameters.expectedSuspectedFraudSignal) {
         expect(event.extensions?.suspected_fraud_signal).toEqual(
