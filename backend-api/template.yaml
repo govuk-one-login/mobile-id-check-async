@@ -308,8 +308,8 @@ Mappings:
       ApiBurstLimit: 400
       ApiRateLimit: 200
     production:
-      ApiBurstLimit: 0
-      ApiRateLimit: 0
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
     staging:
       ApiBurstLimit: 400
       ApiRateLimit: 200
