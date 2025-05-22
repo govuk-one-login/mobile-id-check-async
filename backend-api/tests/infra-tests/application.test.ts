@@ -372,6 +372,10 @@ describe("Backend application infrastructure", () => {
         "high-threshold-vendor-processing-dlq-age-of-oldest-message": false,
         "high-threshold-ipv-core-dlq-age-of-oldest-message": false,
         "issue-biometric-credential-lambda-invalid-sqs-event": false,
+        "high-threshold-async-issue-biometric-credential-parse-failure": false,
+        "high-threshold-async-issue-biometric-credential-biometric-session-not-valid":
+          false,
+        "async-issue-biometric-credential-vendor-likeness-disabled": false,
       };
 
       const alarms = template.findResources("AWS::CloudWatch::Alarm");
@@ -455,6 +459,15 @@ describe("Backend application infrastructure", () => {
         ["ipv-core-dlq-message-visible"],
         ["low-threshold-ipv-core-dlq-age-of-oldest-message"],
         ["issue-biometric-credential-lambda-invalid-sqs-event"],
+        ["low-threshold-async-issue-biometric-credential-parse-failure"],
+        ["high-threshold-async-issue-biometric-credential-parse-failure"],
+        [
+          "low-threshold-async-issue-biometric-credential-biometric-session-not-valid",
+        ],
+        [
+          "high-threshold-async-issue-biometric-credential-biometric-session-not-valid",
+        ],
+        ["async-issue-biometric-credential-vendor-likeness-disabled"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
