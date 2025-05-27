@@ -378,6 +378,8 @@ describe("Backend application infrastructure", () => {
         "async-issue-biometric-credential-vendor-likeness-disabled": false,
         "high-threshold-async-issue-biometric-credential-error-writing-audit-event":
           false,
+        "high-threshold-async-issue-biometric-credential-invalid-vendor-response":
+          false,
       };
 
       const alarms = template.findResources("AWS::CloudWatch::Alarm");
@@ -472,6 +474,9 @@ describe("Backend application infrastructure", () => {
         ["async-issue-biometric-credential-vendor-likeness-disabled"],
         [
           "low-threshold-async-issue-biometric-credential-error-writing-audit-event",
+        ],
+        [
+          "low-threshold-async-issue-biometric-credential-invalid-vendor-response",
         ],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
