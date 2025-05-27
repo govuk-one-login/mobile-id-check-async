@@ -2181,7 +2181,7 @@ Resources:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       InsufficientDataActions: []
       AlarmDescription: !Sub
-        - "Alarms when 5 or more log events with the messageCode DCMAW_ASYNC_CRI_INVALID_VENDOR_RESPONSE have occurred. See runbook: ${RunbookUrl}"
+        - "Alarms when 25 or more log events with the messageCode DCMAW_ASYNC_CRI_INVALID_VENDOR_RESPONSE have occurred. See runbook: ${RunbookUrl}"
         - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-issue-biometric-credential-invalid-vendor-response"
       Namespace: !Sub "${AWS::StackName}/LogMessages"
@@ -2194,5 +2194,34 @@ Resources:
       EvaluationPeriods: 5
       DatapointsToAlarm: 2
       Threshold: 25
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+
+  AsyncIssueBiometricCredentialZeroVcsIssuedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: DeployAlarms
+    DependsOn:
+      - "AsyncIssueBiometricCredentialMetricFilter"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      InsufficientDataActions: []
+      AlarmDescription: !Sub
+        - "Alarms when there are 0 log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED within a set timeframe. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+      AlarmName: !Sub "${AWS::StackName}-async-issue-biometric-credential-zero-vcs-issued"
+      Namespace: !Sub "${AWS::StackName}/LogMessages"
+      MetricName: AsyncIssueBiometricCredentialMessageCode
+      Dimensions:
+        - Name: MessageCode
+          Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 4
+      Threshold: 0
       ComparisonOperator: GreaterThanOrEqualToThreshold
       TreatMissingData: notBreaching
