@@ -242,12 +242,12 @@ Mappings:
       LogLevel: INFO
       ReservedConcurrentExecutions: 15
     production:
-      AsyncCredentialReservedConcurrentExecutions: 0
-      AsyncTokenReservedConcurrentExecutions: 0
+      AsyncCredentialReservedConcurrentExecutions: 160
+      AsyncTokenReservedConcurrentExecutions: 160
       IssueBiometricCredentialReservedConcurrentExecutions: 34
       JsonWebKeysReservedConcurrentExecutions: 1
       LogLevel: INFO
-      ReservedConcurrentExecutions: 0
+      ReservedConcurrentExecutions: 80
     staging:
       AsyncCredentialReservedConcurrentExecutions: 15
       AsyncTokenReservedConcurrentExecutions: 15
