@@ -2080,3 +2080,61 @@ Resources:
       Threshold: 25
       ComparisonOperator: GreaterThanOrEqualToThreshold
       TreatMissingData: notBreaching
+
+  AsyncIssueBiometricCredentialBiometricErrorWritingAuditEventLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: DeployAlarms
+    DependsOn:
+      - "AsyncIssueBiometricCredentialMetricFilter"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      InsufficientDataActions: []
+      AlarmDescription: !Sub
+        - "Alarms when 1 or more log events with the messageCode MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT have occurred. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+      AlarmName: !Sub "${AWS::StackName}-low-threshold-async-issue-biometric-credential-error-writing-audit-event"
+      Namespace: !Sub "${AWS::StackName}/LogMessages"
+      MetricName: AsyncIssueBiometricCredentialMessageCode
+      Dimensions:
+        - Name: MessageCode
+          Value: MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+
+  AsyncIssueBiometricCredentialBiometricErrorWritingAuditEventHighThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: DeployAlarms
+    DependsOn:
+      - "AsyncIssueBiometricCredentialMetricFilter"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      InsufficientDataActions: []
+      AlarmDescription: !Sub
+        - "Alarms when 25 or more log events with the messageCode MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT have occurred. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+      AlarmName: !Sub "${AWS::StackName}-high-threshold-async-issue-biometric-credential-error-writing-audit-event"
+      Namespace: !Sub "${AWS::StackName}/LogMessages"
+      MetricName: AsyncIssueBiometricCredentialMessageCode
+      Dimensions:
+        - Name: MessageCode
+          Value: MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 25
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching

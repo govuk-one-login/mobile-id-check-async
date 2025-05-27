@@ -3285,6 +3285,70 @@ Resources:
       LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
     Condition: isNotDev
 
+  AsyncIssueBiometricCredentialBiometricErrorWritingAuditEventHighThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncIssueBiometricCredentialMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Alarms when 25 or more log events with the messageCode MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT have occurred. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-high-threshold-async-issue-biometric-credential-error-writing-audit-event
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: MessageCode
+          Value: MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: AsyncIssueBiometricCredentialMessageCode
+      Namespace: !Sub ${AWS::StackName}/LogMessages
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Sum
+      Threshold: 25
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  AsyncIssueBiometricCredentialBiometricErrorWritingAuditEventLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncIssueBiometricCredentialMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Alarms when 1 or more log events with the messageCode MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT have occurred. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-low-threshold-async-issue-biometric-credential-error-writing-audit-event
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: MessageCode
+          Value: MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: AsyncIssueBiometricCredentialMessageCode
+      Namespace: !Sub ${AWS::StackName}/LogMessages
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Sum
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   AsyncIssueBiometricCredentialBiometricSessionNotValidHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     DependsOn:
