@@ -85,7 +85,7 @@ export const getActiveSessionIdFromSub = async (
   const sessionId = activeSessionResponse.data["sessionId"];
   if (!sessionId) {
     const errorMessage = JSON.stringify({
-      errorMessage: "An active session cannot be found",
+      errorMessage: "Failed to get valid session ID in call to activeSession endpoint",
       sub,
       activeSessionBody: activeSessionResponse.data,
       activeSessionStatus: activeSessionResponse.status,
