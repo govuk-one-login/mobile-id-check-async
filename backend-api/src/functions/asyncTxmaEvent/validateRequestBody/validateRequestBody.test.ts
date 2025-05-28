@@ -101,7 +101,7 @@ describe("Validate request body", () => {
       { eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED" },
       { eventName: "DCMAW_ASYNC_READID_NFC_BILLING_STARTED" },
       { eventName: "DCMAW_ASYNC_IPROOV_BILLING_STARTED" },
-    ])("$eventName", ({ eventName }) => {
+    ])("Given the event name is $eventName", ({ eventName }) => {
       it(`Returns a successResult for ${eventName} with a valid parsed body as value`, () => {
         const result = validateRequestBody(
           JSON.stringify({
