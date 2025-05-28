@@ -102,7 +102,7 @@ describe("Validate request body", () => {
       { eventName: "DCMAW_ASYNC_READID_NFC_BILLING_STARTED" },
       { eventName: "DCMAW_ASYNC_IPROOV_BILLING_STARTED" },
     ])("Given the event name is $eventName", ({ eventName }) => {
-      it(`Returns a successResult for ${eventName} with a valid parsed body as value`, () => {
+      it(`Returns a successResult with a valid parsed body as the value`, () => {
         const result = validateRequestBody(
           JSON.stringify({
             sessionId: mockSessionId,
