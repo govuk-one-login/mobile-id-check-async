@@ -3957,38 +3957,6 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
-  AsyncIssueBiometricCredentialZeroVcsIssuedAlarm:
-    Type: AWS::CloudWatch::Alarm
-    DependsOn:
-      - AsyncIssueBiometricCredentialMetricFilter
-    Properties:
-      ActionsEnabled: true
-      AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      AlarmDescription: !Sub
-        - 'Alarms when there are 0 log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED within a set timeframe. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
-            - StaticVariables
-            - urls
-            - WarningAlarmsRunbook
-      AlarmName: !Sub ${AWS::StackName}-async-issue-biometric-credential-zero-vcs-issued
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 4
-      Dimensions:
-        - Name: MessageCode
-          Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED
-      EvaluationPeriods: 5
-      InsufficientDataActions: []
-      MetricName: AsyncIssueBiometricCredentialMessageCode
-      Namespace: !Sub ${AWS::StackName}/LogMessages
-      OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      Period: 60
-      Statistic: Sum
-      Threshold: 0
-      TreatMissingData: notBreaching
-    Condition: DeployAlarms
-
   AsyncPrivateApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:

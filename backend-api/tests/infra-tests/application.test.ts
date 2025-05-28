@@ -380,7 +380,6 @@ describe("Backend application infrastructure", () => {
           false,
         "high-threshold-async-issue-biometric-credential-invalid-vendor-response":
           false,
-        "async-issue-biometric-credential-zero-vcs-issued": false,
       };
 
       const alarms = template.findResources("AWS::CloudWatch::Alarm");
