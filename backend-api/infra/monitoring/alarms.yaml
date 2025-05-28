@@ -2210,14 +2210,14 @@ Resources:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       InsufficientDataActions: []
       AlarmDescription: !Sub
-        - "Alarms when there are 0 log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED within a set timeframe. See runbook: ${RunbookUrl}"
+        - "Alarms when there are 0 log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED within a set timeframe. See runbook: ${RunbookUrl}"
         - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-async-issue-biometric-credential-zero-vcs-issued"
       Namespace: !Sub "${AWS::StackName}/LogMessages"
       MetricName: AsyncIssueBiometricCredentialMessageCode
       Dimensions:
         - Name: MessageCode
-          Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED
+          Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED
       Statistic: Sum
       Period: 60
       EvaluationPeriods: 5
