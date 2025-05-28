@@ -774,10 +774,10 @@ describe("Backend application infrastructure", () => {
               JsonWebKeysReservedConcurrentExecutions: 1,
             }),
             production: expect.objectContaining({
-              ReservedConcurrentExecutions: 0,
+              ReservedConcurrentExecutions: 80,
               IssueBiometricCredentialReservedConcurrentExecutions: 34,
-              AsyncTokenReservedConcurrentExecutions: 0,
-              AsyncCredentialReservedConcurrentExecutions: 0,
+              AsyncTokenReservedConcurrentExecutions: 160,
+              AsyncCredentialReservedConcurrentExecutions: 160,
               JsonWebKeysReservedConcurrentExecutions: 1,
             }),
           },
@@ -1075,7 +1075,7 @@ describe("Backend application infrastructure", () => {
             AsyncTokenReservedConcurrentExecutions: 15,
           }),
           production: expect.objectContaining({
-            AsyncTokenReservedConcurrentExecutions: 0,
+            AsyncTokenReservedConcurrentExecutions: 160,
           }),
         },
       });
@@ -1120,7 +1120,7 @@ describe("Backend application infrastructure", () => {
             AsyncCredentialReservedConcurrentExecutions: 15,
           }),
           production: expect.objectContaining({
-            AsyncCredentialReservedConcurrentExecutions: 0,
+            AsyncCredentialReservedConcurrentExecutions: 160,
           }),
         },
       });
