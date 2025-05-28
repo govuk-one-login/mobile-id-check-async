@@ -97,20 +97,26 @@ describe("Validate request body", () => {
   });
 
   describe("Given body is valid", () => {
-    it("Returns a successResult with a valid parsed body as value", () => {
-      const result = validateRequestBody(
-        JSON.stringify({
-          sessionId: mockSessionId,
-          eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
-        }),
-      );
+    describe.each([
+      { eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED" },
+      { eventName: "DCMAW_ASYNC_READID_NFC_BILLING_STARTED" },
+      { eventName: "DCMAW_ASYNC_IPROOV_BILLING_STARTED" },
+    ])("Given the event name is $eventName", ({ eventName }) => {
+      it(`Returns a successResult with a valid parsed body as the value`, () => {
+        const result = validateRequestBody(
+          JSON.stringify({
+            sessionId: mockSessionId,
+            eventName: eventName,
+          }),
+        );
 
-      expect(result).toStrictEqual({
-        isError: false,
-        value: {
-          sessionId: mockSessionId,
-          eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
-        },
+        expect(result).toStrictEqual({
+          isError: false,
+          value: {
+            sessionId: mockSessionId,
+            eventName: eventName,
+          },
+        });
       });
     });
   });
