@@ -478,6 +478,12 @@ describe("Backend application infrastructure", () => {
         [
           "low-threshold-async-issue-biometric-credential-invalid-vendor-response",
         ],
+        [
+          "high-threshold-async-issue-biometric-credential-error-writing-audit-event",
+        ],
+        [
+          "high-threshold-async-issue-biometric-credential-invalid-vendor-response",
+        ],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
