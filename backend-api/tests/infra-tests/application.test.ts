@@ -376,6 +376,10 @@ describe("Backend application infrastructure", () => {
         "high-threshold-async-issue-biometric-credential-biometric-session-not-valid":
           false,
         "async-issue-biometric-credential-vendor-likeness-disabled": false,
+        "high-threshold-async-issue-biometric-credential-error-writing-audit-event":
+          false,
+        "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor":
+          false,
         "account-reserved-concurrency-limit": false,
       };
 
@@ -469,6 +473,18 @@ describe("Backend application infrastructure", () => {
           "high-threshold-async-issue-biometric-credential-biometric-session-not-valid",
         ],
         ["async-issue-biometric-credential-vendor-likeness-disabled"],
+        [
+          "low-threshold-async-issue-biometric-credential-error-writing-audit-event",
+        ],
+        [
+          "low-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
+        ],
+        [
+          "high-threshold-async-issue-biometric-credential-error-writing-audit-event",
+        ],
+        [
+          "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
+        ],
         ["lambda-account-reserved-concurrency-reaching-limit"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
