@@ -37,6 +37,7 @@ import {
   BiometricSession,
   GetBiometricSessionError,
 } from "./getBiometricSession/getBiometricSession";
+import { Advisory } from "@govuk-one-login/mobile-id-check-biometric-credential";
 
 jest.mock("crypto", () => ({
   ...jest.requireActual("crypto"),
@@ -1399,6 +1400,67 @@ describe("Async Issue Biometric Credential", () => {
               ],
             }),
           );
+        });
+      });
+
+      describe("Given credential has expired driving license with vendor checks passed", () => {
+        const mockCredentialWithExpiredDrivingLicense = {
+          ...mockBiometricCredential,
+          credentialSubject: {
+            ...mockBiometricCredential.credentialSubject,
+            drivingPermit: [
+              {
+                expiryDate: "2020-01-01",
+              },
+            ],
+          },
+        };
+
+        const mockAdvisoriesWithExpiredDrivingLicense = [
+          Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
+        ];
+
+        const mockGetCredentialWithExpiredDrivingLicense = jest
+          .fn()
+          .mockReturnValue(
+            successResult({
+              credential: mockCredentialWithExpiredDrivingLicense,
+              analytics: {
+                scanType: "NFC",
+                visualVerification: "mockVisualVerification",
+                documentType: "DrivingLicense",
+              },
+              audit: {
+                contraIndicatorReasons: [],
+                txmaContraIndicators: [],
+              },
+              advisories: mockAdvisoriesWithExpiredDrivingLicense,
+            }),
+          );
+
+        beforeEach(async () => {
+          dependencies.getCredentialFromBiometricSession =
+            mockGetCredentialWithExpiredDrivingLicense;
+          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
+        });
+
+        it("Logs expired driving license message with expiry date", () => {
+          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+            messageCode:
+              "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE",
+            data: { expiryDate: "2020-01-01" },
+          });
+        });
+
+        it("Still completes successfully and logs COMPLETED", () => {
+          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+            persistentIdentifiers: {
+              sessionId: mockSessionId,
+              biometricSessionId: mockBiometricSessionId,
+              govukSigninJourneyId: mockGovukSigninJourneyId,
+            },
+          });
         });
       });
     });
