@@ -376,6 +376,7 @@ describe("Backend application infrastructure", () => {
         "high-threshold-async-issue-biometric-credential-biometric-session-not-valid":
           false,
         "async-issue-biometric-credential-vendor-likeness-disabled": false,
+        "account-reserved-concurrency-limit": false,
       };
 
       const alarms = template.findResources("AWS::CloudWatch::Alarm");
@@ -468,6 +469,7 @@ describe("Backend application infrastructure", () => {
           "high-threshold-async-issue-biometric-credential-biometric-session-not-valid",
         ],
         ["async-issue-biometric-credential-vendor-likeness-disabled"],
+        ["account-reserved-concurrency-limit"]
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
@@ -490,6 +492,13 @@ describe("Backend application infrastructure", () => {
         },
       );
     });
+
+    test("Account level concurrency alarm set to 80%", () => {
+      expect(template.hasResourceProperties("AWS::CloudWatch::Alarm", {
+        AlarmName: { "Fn::Sub": "${AWS::StackName}-account-reserved-concurrency-limit" },
+        Threshold: 760
+      }))      
+    })
   });
 
   describe("Sessions APIgw", () => {

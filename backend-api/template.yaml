@@ -1084,6 +1084,33 @@ Resources:
       LogGroupName: !Ref AsyncAbortSessionLogGroup
     Condition: isNotDev
 
+  AsyncAccountLambdaConcurrencyHighThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Alarms when the account level reseverved concurrent executions reaches 80% of maximum capacity. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-account-reserved-concurrency-limit
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: ConcurrentExecutions
+      Namespace: AWS/Lambda
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 760
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   AsyncActiveSession4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
