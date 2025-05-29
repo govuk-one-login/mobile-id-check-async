@@ -468,6 +468,7 @@ describe("Backend application infrastructure", () => {
           "high-threshold-async-issue-biometric-credential-biometric-session-not-valid",
         ],
         ["async-issue-biometric-credential-vendor-likeness-disabled"],
+        ["async-issue-biometric-credential-driving-licence-expired"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {

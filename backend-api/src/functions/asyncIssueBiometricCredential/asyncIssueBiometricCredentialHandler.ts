@@ -41,6 +41,7 @@ import { ResultSent } from "../common/session/updateOperations/ResultSent/Result
 import { CredentialJwtPayload } from "../types/jwt";
 import { randomUUID } from "crypto";
 import {
+  Advisory,
   AuditData,
   BiometricCredential,
   FraudCheckData,
@@ -213,8 +214,28 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  const { credential, audit, analytics } =
+  const { credential, audit, analytics, advisories } =
     getCredentialFromBiometricSessionResult.value;
+
+  const drivingLicenceExpiry =
+    credential.credentialSubject.drivingPermit?.[0].expiryDate ?? "";
+
+  const test = true;
+
+  if (
+    advisories.includes(
+      Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
+    ) ||
+    test
+  ) {
+    logger.info(
+      LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
+      {
+        data: { expiryDate: drivingLicenceExpiry },
+      },
+    );
+  }
+
   const credentialJwtPayload = buildCredentialJwtPayload({
     credential,
     issuer: config.ISSUER,

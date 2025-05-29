@@ -382,6 +382,11 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_SUSPECTED_FRAUD",
     "Failed to get credential - potential fraud detected when analysing vendor response",
   );
+  static readonly ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE =
+    new LogMessage(
+      "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE",
+      "Vendor checks passed for expired driving licence",
+    );
 
   private constructor(
     public readonly messageCode: string,
