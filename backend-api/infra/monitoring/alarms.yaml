@@ -2081,7 +2081,7 @@ Resources:
       ComparisonOperator: GreaterThanOrEqualToThreshold
       TreatMissingData: notBreaching
 
-  AsyncIssueBiometricCredentialBiometricErrorWritingAuditEventLowThresholdAlarm:
+  AsyncIssueBiometricCredentialErrorWritingAuditEventLowThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Condition: DeployAlarms
     DependsOn:
@@ -2110,7 +2110,7 @@ Resources:
       ComparisonOperator: GreaterThanOrEqualToThreshold
       TreatMissingData: notBreaching
 
-  AsyncIssueBiometricCredentialBiometricErrorWritingAuditEventHighThresholdAlarm:
+  AsyncIssueBiometricCredentialErrorWritingAuditEventHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Condition: DeployAlarms
     DependsOn:
