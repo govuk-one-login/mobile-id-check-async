@@ -135,8 +135,6 @@ export async function lambdaHandlerConstructor(
       );
     }
 
-    logger.error(LogMessage.INVALID_VENDOR_RESPONSE);
-
     const handleSendErrorMessageToOutboundQueueResponse =
       await handleSendErrorMessageToOutboundQueue(
         dependencies,

@@ -378,10 +378,6 @@ export class LogMessage implements LogAttributes {
       "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED",
       "Failed to get credential - Verification succeeded but most recent likeness check failed. This indicates the vendor has disabled likeness checks.",
     );
-  static readonly INVALID_VENDOR_RESPONSE = new LogMessage(
-    "DCMAW_ASYNC_CRI_INVALID_VENDOR_RESPONSE",
-    "Unexpected and unrecoverable response from the vendor.",
-  );
   static readonly ISSUE_BIOMETRIC_CREDENTIAL_SUSPECTED_FRAUD = new LogMessage(
     "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_SUSPECTED_FRAUD",
     "Failed to get credential - potential fraud detected when analysing vendor response",
