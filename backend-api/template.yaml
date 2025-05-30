@@ -349,6 +349,10 @@ Conditions:
       - !Ref DeployAlarmsInDev
       - true
 
+  DeployProxyAlarms: !And
+    - !Condition DeployAlarms
+    - !Condition ProxyApiDeployment
+
   DeployProxyCsls: !And
     - !Condition ProxyApiDeployment
     - !Condition isNotDev
@@ -1084,6 +1088,36 @@ Resources:
       LogGroupName: !Ref AsyncAbortSessionLogGroup
     Condition: isNotDev
 
+  AsyncAbortSessionThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm if the Async Abort Session Lambda throttles. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - CriticalAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-abort-session-lambda-throttle
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref AsyncAbortSessionFunction
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: Throttles
+      Namespace: AWS/Lambda
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Sum
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   AsyncActiveSession4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -1620,6 +1654,36 @@ Resources:
       FilterPattern: ""
       LogGroupName: !Ref AsyncActiveSessionLogGroup
     Condition: isNotDev
+
+  AsyncActiveSessionThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm if the Async Active Session Lambda throttles. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - CriticalAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-active-session-lambda-throttle
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref AsyncActiveSessionFunction
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: Throttles
+      Namespace: AWS/Lambda
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Sum
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
 
   AsyncBiometricToken4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2189,6 +2253,36 @@ Resources:
       LogGroupName: !Ref AsyncBiometricTokenLogGroup
     Condition: isNotDev
 
+  AsyncBiometricTokenThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm if the Async Biometric Token Lambda throttles. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - CriticalAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-biometric-token-lambda-throttle
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref AsyncBiometricTokenFunction
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: Throttles
+      Namespace: AWS/Lambda
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Sum
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   AsyncCredential4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -2755,6 +2849,36 @@ Resources:
       LogGroupName: !Ref AsyncCredentialLogGroup
     Condition: isNotDev
 
+  AsyncCredentialThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm if the Async Credential Lambda throttles. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - CriticalAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-credential-lambda-throttle
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref AsyncCredentialFunction
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: Throttles
+      Namespace: AWS/Lambda
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Sum
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   AsyncFinishBiometricSession4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -3284,6 +3408,36 @@ Resources:
       FilterPattern: ""
       LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
     Condition: isNotDev
+
+  AsyncFinishBiometricSessionThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm if the Async Finish Biometric Session Lambda throttles. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - CriticalAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-finish-biometric-session-lambda-throttle
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref AsyncFinishBiometricSessionFunction
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: Throttles
+      Namespace: AWS/Lambda
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Sum
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
 
   AsyncIssueBiometricCredentialBiometricSessionNotValidHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -4545,6 +4699,36 @@ Resources:
       LogGroupName: !Ref AsyncTokenLogGroup
     Condition: isNotDev
 
+  AsyncTokenThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm if the Async Token Lambda throttles. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - CriticalAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-token-lambda-throttle
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref AsyncTokenFunction
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: Throttles
+      Namespace: AWS/Lambda
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Sum
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   AsyncTxmaEvent4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -4921,6 +5105,36 @@ Resources:
       FilterPattern: ""
       LogGroupName: !Ref AsyncTxmaEventLogGroup
     Condition: isNotDev
+
+  AsyncTxmaEventThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm if the Async TxMA Event Lambda throttles. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - CriticalAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-txma-event-lambda-throttle
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref AsyncTxmaEventFunction
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: Throttles
+      Namespace: AWS/Lambda
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Sum
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
 
   CodeDeployServiceRole:
     Type: AWS::IAM::Role
@@ -5776,6 +5990,36 @@ Resources:
       FilterPattern: ""
       LogGroupName: !Ref ProxyLambdaLogGroup
     Condition: DeployProxyCsls
+
+  ProxyLambdaThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm if the Proxy Lambda throttles. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - CriticalAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-proxy-lambda-throttle
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ProxyLambda
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: Throttles
+      Namespace: AWS/Lambda
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Sum
+      Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployProxyAlarms
 
   SessionsApi:
     Type: AWS::Serverless::Api
