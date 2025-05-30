@@ -2080,6 +2080,7 @@ Resources:
       Threshold: 25
       ComparisonOperator: GreaterThanOrEqualToThreshold
       TreatMissingData: notBreaching
+
   AsyncIssueBiometricCredentialDrivingLicenceExpiredAlarm:
       Type: AWS::CloudWatch::Alarm
       Condition: DeployAlarms
@@ -2105,10 +2106,10 @@ Resources:
         Period: 60
         EvaluationPeriods: 1
         DatapointsToAlarm: 1
-        Threshold: 1
+        Threshold: 5
         ComparisonOperator: GreaterThanOrEqualToThreshold
         TreatMissingData: notBreaching
-        
+
   AsyncIssueBiometricCredentialErrorWritingAuditEventLowThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Condition: DeployAlarms
