@@ -2081,6 +2081,35 @@ Resources:
       ComparisonOperator: GreaterThanOrEqualToThreshold
       TreatMissingData: notBreaching
 
+  AsyncIssueBiometricCredentialDrivingLicenceExpiredAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Condition: DeployAlarms
+      DependsOn:
+        - "AsyncIssueBiometricCredentialMetricFilter"
+      Properties:
+        ActionsEnabled: true
+        AlarmActions:
+          - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        OKActions:
+          - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        InsufficientDataActions: []
+        AlarmDescription: !Sub
+          - "Trigger when a Veriff result has succeeded but the driving licence is expired. This indicates that the vendor has disabled their expiry checks. See runbook: ${RunbookUrl}"
+          - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+        AlarmName: !Sub "${AWS::StackName}-async-issue-biometric-credential-driving-licence-expired"
+        Namespace: !Sub "${AWS::StackName}/LogMessages"
+        MetricName: AsyncIssueBiometricCredentialMessageCode
+        Dimensions:
+          - Name: MessageCode
+            Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE
+        Statistic: Sum
+        Period: 60
+        EvaluationPeriods: 1
+        DatapointsToAlarm: 1
+        Threshold: 5
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        TreatMissingData: notBreaching
+
   AsyncIssueBiometricCredentialErrorWritingAuditEventLowThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Condition: DeployAlarms
