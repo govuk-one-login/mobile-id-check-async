@@ -2016,10 +2016,10 @@ Resources:
         - Name: MessageCode
           Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED
       Statistic: Sum
-      Period: 60
-      EvaluationPeriods: 1
-      DatapointsToAlarm: 1
       Threshold: 1
+      Period: 60
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
       ComparisonOperator: GreaterThanOrEqualToThreshold
       TreatMissingData: notBreaching
 
@@ -2196,3 +2196,32 @@ Resources:
       Threshold: 25
       ComparisonOperator: GreaterThanOrEqualToThreshold
       TreatMissingData: notBreaching
+
+  AsyncIssueBiometricCredentialZeroVcsIssuedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: DeployAlarms
+    DependsOn:
+      - "AsyncIssueBiometricCredentialMetricFilter"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      InsufficientDataActions: []
+      AlarmDescription: !Sub
+        - "Alarms when there have been 0 Verifiable Credentials issued and written onto the IPVCore outbound queue in the past 20 minutes. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+      AlarmName: !Sub "${AWS::StackName}-async-issue-biometric-credential-zero-vcs-issued"
+      Namespace: !Sub "${AWS::StackName}/LogMessages"
+      MetricName: AsyncIssueBiometricCredentialMessageCode
+      Dimensions:
+        - Name: MessageCode
+          Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 4
+      DatapointsToAlarm: 4
+      Threshold: 0
+      ComparisonOperator: LessThanOrEqualToThreshold
+      TreatMissingData: breaching

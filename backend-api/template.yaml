@@ -3957,6 +3957,38 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
+  AsyncIssueBiometricCredentialZeroVcsIssuedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncIssueBiometricCredentialMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Alarms when there have been 0 Verifiable Credentials issued and written onto the IPVCore outbound queue in the past 20 minutes. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-async-issue-biometric-credential-zero-vcs-issued
+      ComparisonOperator: LessThanOrEqualToThreshold
+      DatapointsToAlarm: 4
+      Dimensions:
+        - Name: MessageCode
+          Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED
+      EvaluationPeriods: 4
+      InsufficientDataActions: []
+      MetricName: AsyncIssueBiometricCredentialMessageCode
+      Namespace: !Sub ${AWS::StackName}/LogMessages
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 300
+      Statistic: Sum
+      Threshold: 0
+      TreatMissingData: breaching
+    Condition: DeployAlarms
+
   AsyncPrivateApiAccessLogs:
     Type: AWS::Logs::LogGroup
     Properties:
