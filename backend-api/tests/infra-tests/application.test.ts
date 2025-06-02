@@ -376,6 +376,11 @@ describe("Backend application infrastructure", () => {
         "high-threshold-async-issue-biometric-credential-biometric-session-not-valid":
           false,
         "async-issue-biometric-credential-vendor-likeness-disabled": false,
+        "high-threshold-async-issue-biometric-credential-error-writing-audit-event":
+          false,
+        "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor":
+          false,
+        "async-issue-biometric-credential-zero-vcs-issued": false,
       };
 
       const alarms = template.findResources("AWS::CloudWatch::Alarm");
@@ -468,6 +473,19 @@ describe("Backend application infrastructure", () => {
           "high-threshold-async-issue-biometric-credential-biometric-session-not-valid",
         ],
         ["async-issue-biometric-credential-vendor-likeness-disabled"],
+        [
+          "low-threshold-async-issue-biometric-credential-error-writing-audit-event",
+        ],
+        [
+          "low-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
+        ],
+        [
+          "high-threshold-async-issue-biometric-credential-error-writing-audit-event",
+        ],
+        [
+          "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
+        ],
+        ["async-issue-biometric-credential-zero-vcs-issued"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
@@ -774,10 +792,10 @@ describe("Backend application infrastructure", () => {
               JsonWebKeysReservedConcurrentExecutions: 1,
             }),
             production: expect.objectContaining({
-              ReservedConcurrentExecutions: 0,
+              ReservedConcurrentExecutions: 80,
               IssueBiometricCredentialReservedConcurrentExecutions: 34,
-              AsyncTokenReservedConcurrentExecutions: 0,
-              AsyncCredentialReservedConcurrentExecutions: 0,
+              AsyncTokenReservedConcurrentExecutions: 160,
+              AsyncCredentialReservedConcurrentExecutions: 160,
               JsonWebKeysReservedConcurrentExecutions: 1,
             }),
           },
@@ -1075,7 +1093,7 @@ describe("Backend application infrastructure", () => {
             AsyncTokenReservedConcurrentExecutions: 15,
           }),
           production: expect.objectContaining({
-            AsyncTokenReservedConcurrentExecutions: 0,
+            AsyncTokenReservedConcurrentExecutions: 160,
           }),
         },
       });
@@ -1120,7 +1138,7 @@ describe("Backend application infrastructure", () => {
             AsyncCredentialReservedConcurrentExecutions: 15,
           }),
           production: expect.objectContaining({
-            AsyncCredentialReservedConcurrentExecutions: 0,
+            AsyncCredentialReservedConcurrentExecutions: 160,
           }),
         },
       });
