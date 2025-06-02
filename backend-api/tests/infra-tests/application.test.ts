@@ -530,7 +530,7 @@ describe("Backend application infrastructure", () => {
         },
       );
     });
-    test("Account level concurrency alarm set to 80%", () => {
+    test("Account claimed concurrency alarm set to 80%", () => {
       expect(
         template.hasResourceProperties("AWS::CloudWatch::Alarm", {
           AlarmName: {
