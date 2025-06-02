@@ -1,10 +1,11 @@
 import {
+  AnalyticsData,
   BiometricCredential,
   CredentialSubject,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { SessionState } from "../common/session/session";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
-import { VcIssuedEvidence, IEventService } from "../services/events/types";
+import { IEventService, VcIssuedEvidence } from "../services/events/types";
 import {
   emptyFailure,
   emptySuccess,
@@ -280,3 +281,13 @@ export const mockSendMessageToSqsFailure = jest
 export const mockGetBiometricSessionSuccess = jest
   .fn()
   .mockResolvedValue(successResult("mockBiometricSession"));
+
+export const mockAnalyticsData: AnalyticsData = {
+  scanType: "NFC",
+  visualVerification: "mockVisualVerification",
+  documentType: "DriversLicence",
+};
+export const mockAuditData = {
+  contraIndicatorReasons: [],
+  txmaContraIndicators: [],
+};
