@@ -13,7 +13,7 @@ Resources:
       AlarmDescription: !Sub
       - "Alarms when the level of claimed account concurrency reaches 80% of maximum capacity. See runbook: ${RunbookUrl}"
       - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
-      AlarmName: !Sub "${AWS::StackName}-lambda-claimed-account-currency-reaching-limit"
+      AlarmName: !Sub "${AWS::StackName}-lambda-claimed-account-concurrency-reaching-limit"
       Namespace: AWS/Lambda
       MetricName: ClaimedAccountConcurrency
       Statistic: Maximum

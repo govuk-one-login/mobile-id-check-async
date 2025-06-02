@@ -389,7 +389,7 @@ describe("Backend application infrastructure", () => {
         "token-lambda-throttle": false,
         "txma-event-lambda-throttle": false,
         "proxy-lambda-throttle": false,
-        "account-reserved-concurrency-limit": false,
+        "lambda-claimed-account-concurrency-reaching-limit": false,
       };
 
       const alarms = template.findResources("AWS::CloudWatch::Alarm");
@@ -507,7 +507,7 @@ describe("Backend application infrastructure", () => {
         ["token-lambda-throttle"],
         ["txma-event-lambda-throttle"],
         ["proxy-lambda-throttle"],
-        ["lambda-claimed-account-currency-reaching-limit"],
+        ["lambda-claimed-account-concurrency-reaching-limit"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
@@ -535,7 +535,7 @@ describe("Backend application infrastructure", () => {
         template.hasResourceProperties("AWS::CloudWatch::Alarm", {
           AlarmName: {
             "Fn::Sub":
-              "${AWS::StackName}-lambda-claimed-account-currency-reaching-limit",
+              "${AWS::StackName}-lambda-claimed-account-concurrency-reaching-limit",
           },
           Threshold: 800,
         }),

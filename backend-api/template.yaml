@@ -4155,7 +4155,7 @@ Resources:
             - StaticVariables
             - urls
             - WarningAlarmsRunbook
-      AlarmName: !Sub ${AWS::StackName}-lambda-claimed-account-currency-reaching-limit
+      AlarmName: !Sub ${AWS::StackName}-lambda-claimed-account-concurrency-reaching-limit
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
       EvaluationPeriods: 1
