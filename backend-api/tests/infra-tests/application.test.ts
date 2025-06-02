@@ -380,6 +380,15 @@ describe("Backend application infrastructure", () => {
           false,
         "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor":
           false,
+        "async-issue-biometric-credential-zero-vcs-issued": false,
+        "abort-session-lambda-throttle": false,
+        "active-session-lambda-throttle": false,
+        "biometric-token-lambda-throttle": false,
+        "credential-lambda-throttle": false,
+        "finish-biometric-session-lambda-throttle": false,
+        "token-lambda-throttle": false,
+        "txma-event-lambda-throttle": false,
+        "proxy-lambda-throttle": false,
       };
 
       const alarms = template.findResources("AWS::CloudWatch::Alarm");
@@ -404,7 +413,11 @@ describe("Backend application infrastructure", () => {
     });
 
     test("All alarms are configured with a Condition", () => {
-      const conditionalNames = ["DeployAlarms", "UseCanaryDeployment"];
+      const conditionalNames = [
+        "DeployAlarms",
+        "UseCanaryDeployment",
+        "DeployProxyAlarms",
+      ];
       const alarms = Object.values(
         template.findResources("AWS::CloudWatch::Alarm"),
       );
@@ -485,6 +498,15 @@ describe("Backend application infrastructure", () => {
         [
           "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
         ],
+        ["async-issue-biometric-credential-zero-vcs-issued"],
+        ["abort-session-lambda-throttle"],
+        ["active-session-lambda-throttle"],
+        ["biometric-token-lambda-throttle"],
+        ["credential-lambda-throttle"],
+        ["finish-biometric-session-lambda-throttle"],
+        ["token-lambda-throttle"],
+        ["txma-event-lambda-throttle"],
+        ["proxy-lambda-throttle"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
