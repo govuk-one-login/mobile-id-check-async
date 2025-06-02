@@ -1162,7 +1162,7 @@ describe("Async Issue Biometric Credential", () => {
         it("Logs ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED and documentType", async () => {
           expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED",
-            documentType: "Passport",
+            documentType: "DriversLicence",
           });
         });
 
