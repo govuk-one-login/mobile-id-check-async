@@ -497,7 +497,8 @@ describe("Backend application infrastructure", () => {
       expect(
         template.hasResourceProperties("AWS::CloudWatch::Alarm", {
           AlarmName: {
-            "Fn::Sub": "${AWS::StackName}-lambda-account-reserved-concurrency-reaching-limit",
+            "Fn::Sub":
+              "${AWS::StackName}-lambda-account-reserved-concurrency-reaching-limit",
           },
           Threshold: 800,
         }),
