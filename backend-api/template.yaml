@@ -2283,6 +2283,33 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
+  AsyncClaimedAccountConcurrencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Alarms when the account level reseverved concurrent executions reaches 80% of maximum capacity. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-lambda-claimed-account-currency-reaching-limit
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: ClaimedAccountConcurrency
+      Namespace: AWS/Lambda
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 800
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   AsyncCredential4XXHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
