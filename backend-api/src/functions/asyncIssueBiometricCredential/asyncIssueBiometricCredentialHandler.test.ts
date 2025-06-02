@@ -7,25 +7,27 @@ import { lambdaHandlerConstructor } from "./asyncIssueBiometricCredentialHandler
 import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 import { IssueBiometricCredentialDependencies } from "./handlerDependencies";
 import {
+  mockAnalyticsData,
+  mockAuditData,
+  mockBiometricCredential,
+  mockBiometricSessionId,
+  mockClientState,
+  mockCredentialSubject,
+  mockFailingCriEventService,
+  mockFailingEventService,
+  mockGovukSigninJourneyId,
+  mockInertEventService,
+  mockInertSessionRegistry,
+  mockIssuer,
+  mockSendMessageToSqsFailure,
+  mockSendMessageToSqsSuccess,
   mockSessionId,
+  mockSubjectIdentifier,
   mockSuccessfulEventService,
   mockWriteGenericEventSuccessResult,
-  mockSendMessageToSqsSuccess,
-  mockInertSessionRegistry,
-  mockBiometricSessionId,
-  mockInertEventService,
+  NOW_IN_MILLISECONDS,
   validBiometricSessionFinishedAttributes,
   validResultSentAttributes,
-  mockSendMessageToSqsFailure,
-  mockGovukSigninJourneyId,
-  mockSubjectIdentifier,
-  mockFailingEventService,
-  mockClientState,
-  mockIssuer,
-  NOW_IN_MILLISECONDS,
-  mockBiometricCredential,
-  mockFailingCriEventService,
-  mockCredentialSubject,
 } from "../testUtils/unitTestData";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { emptyFailure, errorResult, successResult } from "../utils/result";
@@ -132,11 +134,7 @@ describe("Async Issue Biometric Credential", () => {
     .mockReturnValue(
       successResult({
         credential: mockBiometricCredential,
-        analytics: {
-          scanType: "NFC",
-          visualVerification: "mockVisualVerification",
-          documentType: "Passport",
-        },
+        analytics: mockAnalyticsData,
         audit: "mockAudit",
         advisories: "mockAdvisories",
       }),
@@ -1085,21 +1083,12 @@ describe("Async Issue Biometric Credential", () => {
 
     describe("Happy path", () => {
       describe("Given generated biometric credential does not have flags or contraindicators", () => {
-        const mockAuditData = {
-          contraIndicatorReasons: [],
-          txmaContraIndicators: [],
-        };
-
         const mockSuccessfulGetCredentialFromBiometricSession = jest
           .fn()
           .mockReturnValue(
             successResult({
               credential: mockBiometricCredential,
-              analytics: {
-                scanType: "NFC",
-                visualVerification: "mockVisualVerification",
-                documentType: "Passport",
-              },
+              analytics: mockAnalyticsData,
               audit: mockAuditData,
               advisories: "mockAdvisories",
             }),
@@ -1249,8 +1238,7 @@ describe("Async Issue Biometric Credential", () => {
 
       describe("Given generated biometric credential has flags and flaggedRecord", () => {
         const mockAuditDataWithFlags = {
-          contraIndicatorReasons: [],
-          txmaContraIndicators: [],
+          ...mockAuditData,
           flags: ["FLAG_1", "FLAG_2"],
           flaggedRecord: {
             mockKey: "mockValue",
@@ -1262,11 +1250,7 @@ describe("Async Issue Biometric Credential", () => {
           .mockReturnValue(
             successResult({
               credential: mockBiometricCredential,
-              analytics: {
-                scanType: "NFC",
-                visualVerification: "mockVisualVerification",
-                documentType: "Passport",
-              },
+              analytics: mockAnalyticsData,
               audit: mockAuditDataWithFlags,
               advisories: "mockAdvisories",
             }),
@@ -1403,65 +1387,71 @@ describe("Async Issue Biometric Credential", () => {
         });
       });
 
-      describe("Given credential has expired driving license with vendor checks passed", () => {
-        const mockCredentialWithExpiredDrivingLicense = {
-          ...mockBiometricCredential,
-          credentialSubject: {
-            ...mockBiometricCredential.credentialSubject,
-            drivingPermit: [
-              {
-                expiryDate: "2020-01-01",
+      describe("Given credential has expired driving license advisory", () => {
+        describe.each([
+          ["2020-01-01", "2020-01-01"],
+          [null, ""],
+        ])(
+          "Given driving licence expiry date in credential is %s",
+          (expiryDate: string | null, expectedExpiryDateLogData: string) => {
+            const mockCredentialWithExpiredDrivingLicense = {
+              ...mockBiometricCredential,
+              credentialSubject: {
+                ...mockCredentialSubject,
+                drivingPermit: [
+                  {
+                    expiryDate,
+                  },
+                ],
               },
-            ],
+            };
+
+            const mockAdvisoriesWithExpiredDrivingLicense = [
+              Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
+            ];
+
+            const mockGetCredentialWithExpiredDrivingLicense = jest
+              .fn()
+              .mockReturnValue(
+                successResult({
+                  credential: mockCredentialWithExpiredDrivingLicense,
+                  analytics: mockAnalyticsData,
+                  audit: mockAuditData,
+                  advisories: mockAdvisoriesWithExpiredDrivingLicense,
+                }),
+              );
+
+            beforeEach(async () => {
+              dependencies.getCredentialFromBiometricSession =
+                mockGetCredentialWithExpiredDrivingLicense;
+              await lambdaHandlerConstructor(
+                dependencies,
+                validSqsEvent,
+                context,
+              );
+            });
+
+            it("Logs expired driving license message with expiry date", () => {
+              expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+                messageCode:
+                  "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE",
+                data: { expiryDate: expectedExpiryDateLogData },
+              });
+            });
+
+            it("Still completes successfully and logs COMPLETED", () => {
+              expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+                messageCode:
+                  "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+                persistentIdentifiers: {
+                  sessionId: mockSessionId,
+                  biometricSessionId: mockBiometricSessionId,
+                  govukSigninJourneyId: mockGovukSigninJourneyId,
+                },
+              });
+            });
           },
-        };
-
-        const mockAdvisoriesWithExpiredDrivingLicense = [
-          Advisory.VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE,
-        ];
-
-        const mockGetCredentialWithExpiredDrivingLicense = jest
-          .fn()
-          .mockReturnValue(
-            successResult({
-              credential: mockCredentialWithExpiredDrivingLicense,
-              analytics: {
-                scanType: "NFC",
-                visualVerification: "mockVisualVerification",
-                documentType: "DrivingLicense",
-              },
-              audit: {
-                contraIndicatorReasons: [],
-                txmaContraIndicators: [],
-              },
-              advisories: mockAdvisoriesWithExpiredDrivingLicense,
-            }),
-          );
-
-        beforeEach(async () => {
-          dependencies.getCredentialFromBiometricSession =
-            mockGetCredentialWithExpiredDrivingLicense;
-          await lambdaHandlerConstructor(dependencies, validSqsEvent, context);
-        });
-
-        it("Logs expired driving license message with expiry date", () => {
-          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-            messageCode:
-              "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_CHECKS_PASSED_FOR_EXPIRED_DRIVING_LICENCE",
-            data: { expiryDate: "2020-01-01" },
-          });
-        });
-
-        it("Still completes successfully and logs COMPLETED", () => {
-          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
-            persistentIdentifiers: {
-              sessionId: mockSessionId,
-              biometricSessionId: mockBiometricSessionId,
-              govukSigninJourneyId: mockGovukSigninJourneyId,
-            },
-          });
-        });
+        );
       });
     });
   });
