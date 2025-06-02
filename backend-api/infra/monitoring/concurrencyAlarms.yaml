@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  AsyncLambdaClaimedAccountConcurrencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: DeployAlarms
+    Properties:
+      ActionsEnabled: True
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      InsufficientDataActions: []
+      AlarmDescription: !Sub
+      - "Alarms when the level of claimed account concurrency reaches 80% of maximum capacity. See runbook: ${RunbookUrl}"
+      - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+      AlarmName: !Sub "${AWS::StackName}-lambda-claimed-account-concurrency-reaching-limit"
+      Namespace: AWS/Lambda
+      MetricName: ClaimedAccountConcurrency
+      Statistic: Maximum
+      Threshold: 800
+      Period: 60
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData:  notBreaching
