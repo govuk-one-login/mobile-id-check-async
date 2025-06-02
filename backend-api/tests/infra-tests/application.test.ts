@@ -388,7 +388,7 @@ describe("Backend application infrastructure", () => {
         "finish-biometric-session-lambda-throttle": false,
         "token-lambda-throttle": false,
         "txma-event-lambda-throttle": false,
-        "proxy-lambda-throttle": false,        
+        "proxy-lambda-throttle": false,
       };
 
       const alarms = template.findResources("AWS::CloudWatch::Alarm");
@@ -529,7 +529,7 @@ describe("Backend application infrastructure", () => {
         },
       );
     });
-    
+
     test("Account claimed concurrency alarm set to 80%", () => {
       expect(
         template.hasResourceProperties("AWS::CloudWatch::Alarm", {
