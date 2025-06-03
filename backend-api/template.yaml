@@ -324,7 +324,7 @@ Mappings:
 
   StaticVariables:
     urls:
-      CriticalAlarmsRunbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4799594677/Alarms+Runbook+Alerts
+      SupportManual: https://team-manual.account.gov.uk/teams/mobile-team/supporting-id-check-asynchronous-backend
       WarningAlarmsRunbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4800446694/Alarms+Runbook+Warnings
 
   TxMA:
@@ -569,7 +569,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-abort-session-4xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -701,7 +701,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-abort-session-5xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -1099,7 +1099,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-abort-session-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -1129,7 +1129,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-active-session-4xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -1261,7 +1261,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-active-session-5xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -1666,7 +1666,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-active-session-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -1696,7 +1696,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-biometric-token-4xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -1828,7 +1828,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-biometric-token-5xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -2264,7 +2264,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-biometric-token-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -2294,7 +2294,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-credential-4xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -2426,7 +2426,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-credential-5xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -2860,7 +2860,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-credential-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -2890,7 +2890,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-finish-biometric-session-4xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -3022,7 +3022,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-finish-biometric-session-5xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -3420,7 +3420,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-finish-biometric-session-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -3827,7 +3827,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda-invalid-sqs-event
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -4230,7 +4230,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-token-4xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -4362,7 +4362,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-token-5xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -4769,7 +4769,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-token-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -5176,7 +5176,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-txma-event-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -6061,7 +6061,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-proxy-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -6528,7 +6528,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-well-known-5xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
