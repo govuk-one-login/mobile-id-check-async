@@ -577,9 +577,9 @@ Resources:
         - RunbookUrl: !FindInMap [StaticVariables, urls, SupportManual]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-credential-5xx-api-gw"
       AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
       EvaluationPeriods: 5
