@@ -2060,13 +2060,13 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       InsufficientDataActions: []
       AlarmDescription: !Sub
         - "Alarms when 25 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID have occurred. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+        - RunbookUrl: !FindInMap [StaticVariables, urls, SupportManual]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-issue-biometric-credential-biometric-session-not-valid"
       Namespace: !Sub "${AWS::StackName}/LogMessages"
       MetricName: AsyncIssueBiometricCredentialMessageCode

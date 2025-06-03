@@ -374,7 +374,7 @@ describe("Backend application infrastructure", () => {
         "issue-biometric-credential-lambda-invalid-sqs-event": true,
         "high-threshold-async-issue-biometric-credential-parse-failure": true,
         "high-threshold-async-issue-biometric-credential-biometric-session-not-valid":
-          false,
+          true,
         "async-issue-biometric-credential-vendor-likeness-disabled": true,
         "high-threshold-async-issue-biometric-credential-error-writing-audit-event":
           false,
@@ -474,9 +474,6 @@ describe("Backend application infrastructure", () => {
         ["low-threshold-async-issue-biometric-credential-parse-failure"],
         [
           "low-threshold-async-issue-biometric-credential-biometric-session-not-valid",
-        ],
-        [
-          "high-threshold-async-issue-biometric-credential-biometric-session-not-valid",
         ],
         ["async-issue-biometric-credential-driving-licence-expired"],
         [
