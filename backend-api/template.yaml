@@ -631,7 +631,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
+        - '1% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -763,7 +763,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/abortSession endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
+        - '1% or more of requests are failing on the /async/abortSession endpoint with a 5XX error. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -1191,7 +1191,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/activeSession endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
+        - '1% or more of requests are failing on the /async/activeSession endpoint with a 4XX error. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -1323,7 +1323,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/activeSession endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
+        - '1% or more of requests are failing on the /async/activeSession endpoint with a 5XX error. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -1758,7 +1758,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/biometricToken endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
+        - '1% or more of requests are failing on the /async/biometricToken endpoint with a 4XX error. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -1890,7 +1890,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/biometricToken endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
+        - '1% or more of requests are failing on the /async/biometricToken endpoint with a 5XX error. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -2356,7 +2356,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/credential endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
+        - '1% or more of requests are failing on the /async/credential endpoint with a 4XX error. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -2488,7 +2488,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/credential endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
+        - '1% or more of requests are failing on the /async/credential endpoint with a 5XX error. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -2952,7 +2952,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/finishBiometricSession endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
+        - '1% or more of requests are failing on the /async/finishBiometricSession endpoint with a 4XX error. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -3084,7 +3084,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/finishBiometricSession endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
+        - '1% or more of requests are failing on the /async/finishBiometricSession endpoint with a 5XX error. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -3480,7 +3480,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Alarms when 1 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID have occurred. See support manual: ${SupportManualUrl}'
+        - 'Alarms when 1 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID have occurred. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -3528,7 +3528,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger when a Veriff result has succeeded but the driving licence is expired. This indicates that the vendor has disabled their expiry checks. See support manual: ${SupportManualUrl}'
+        - 'Trigger when a Veriff result has succeeded but the driving licence is expired. This indicates that the vendor has disabled their expiry checks. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -3650,7 +3650,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Alarms when 2 or more log events with the messageCode MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT have been emitted by the Issue Biometric Credential Lambda. See support manual: ${SupportManualUrl}'
+        - 'Alarms when 2 or more log events with the messageCode MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT have been emitted by the Issue Biometric Credential Lambda. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -3714,7 +3714,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Alarms when 5 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE have occurred. See support manual: ${SupportManualUrl}'
+        - 'Alarms when 5 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE have occurred. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -4077,7 +4077,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Alarms when 1 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE have occurred. See support manual: ${SupportManualUrl}'
+        - 'Alarms when 1 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE have occurred. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -4260,7 +4260,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/token endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
+        - '1% or more of requests are failing on the /async/token endpoint with a 4XX error. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -4392,7 +4392,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/token endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
+        - '1% or more of requests are failing on the /async/token endpoint with a 5XX error. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -4829,7 +4829,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/txmaEvent endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
+        - '1% or more of requests are failing on the /async/txmaEvent endpoint with a 4XX error. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -4961,7 +4961,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/txmaEvent endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
+        - '1% or more of requests are failing on the /async/txmaEvent endpoint with a 5XX error. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -6611,7 +6611,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /.well-known/jwks.json endpoint. See support manual: ${SupportManualUrl}'
+        - '1% or more of requests are failing on the /.well-known/jwks.json endpoint. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
