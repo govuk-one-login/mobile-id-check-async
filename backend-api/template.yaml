@@ -4156,7 +4156,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - WarningAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-async-issue-biometric-credential-zero-vcs-issued
       ComparisonOperator: LessThanOrEqualToThreshold
       DatapointsToAlarm: 4
