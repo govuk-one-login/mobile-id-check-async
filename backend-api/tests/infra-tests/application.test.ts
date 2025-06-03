@@ -387,7 +387,7 @@ describe("Backend application infrastructure", () => {
         "credential-lambda-throttle": true,
         "finish-biometric-session-lambda-throttle": true,
         "token-lambda-throttle": true,
-        "txma-event-lambda-throttle": false,
+        "txma-event-lambda-throttle": true,
         "proxy-lambda-throttle": false,
         "ipv-core-dlq-message-visible": true,
       };
@@ -482,7 +482,6 @@ describe("Backend application infrastructure", () => {
           "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
         ],
         ["async-issue-biometric-credential-zero-vcs-issued"],
-        ["txma-event-lambda-throttle"],
         ["proxy-lambda-throttle"],
         ["lambda-claimed-account-concurrency-reaching-limit"],
       ])(

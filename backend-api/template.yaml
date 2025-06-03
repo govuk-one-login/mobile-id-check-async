@@ -5170,7 +5170,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - 'Trigger an alarm if the Async TxMA Event Lambda throttles. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
@@ -5188,7 +5188,7 @@ Resources:
       MetricName: Throttles
       Namespace: AWS/Lambda
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Period: 60
       Statistic: Sum
       Threshold: 1
