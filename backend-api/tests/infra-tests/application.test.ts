@@ -389,6 +389,7 @@ describe("Backend application infrastructure", () => {
         "token-lambda-throttle": false,
         "txma-event-lambda-throttle": false,
         "proxy-lambda-throttle": false,
+        "ipv-core-dlq-message-visible": true,
       };
 
       const alarms = template.findResources("AWS::CloudWatch::Alarm");
@@ -462,7 +463,6 @@ describe("Backend application infrastructure", () => {
         ["vendor-processing-dlq-message-visible"],
         ["low-threshold-vendor-processing-dlq-age-of-oldest-message"],
         ["ipv-core-sqs-age-of-oldest-message"],
-        ["ipv-core-dlq-message-visible"],
         ["low-threshold-ipv-core-dlq-age-of-oldest-message"],
         ["low-threshold-async-issue-biometric-credential-parse-failure"],
         [

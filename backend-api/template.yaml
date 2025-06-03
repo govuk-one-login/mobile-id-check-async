@@ -5291,13 +5291,13 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - 'Trigger an alarm when new message gets added to IPV Core SQS DLQ. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - WarningAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-ipv-core-dlq-message-visible
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -5308,7 +5308,7 @@ Resources:
       MetricName: ApproximateNumberOfMessagesVisible
       Namespace: AWS/SQS
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Period: 60
       Statistic: Maximum
       Threshold: 1
