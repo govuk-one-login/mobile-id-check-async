@@ -379,7 +379,7 @@ describe("Backend application infrastructure", () => {
         "high-threshold-async-issue-biometric-credential-error-writing-audit-event":
           true,
         "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor":
-          false,
+          true,
         "async-issue-biometric-credential-zero-vcs-issued": false,
         "abort-session-lambda-throttle": true,
         "active-session-lambda-throttle": true,
@@ -474,9 +474,6 @@ describe("Backend application infrastructure", () => {
         ],
         [
           "low-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
-        ],
-        [
-          "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
         ],
         ["async-issue-biometric-credential-zero-vcs-issued"],
         ["lambda-claimed-account-concurrency-reaching-limit"],
