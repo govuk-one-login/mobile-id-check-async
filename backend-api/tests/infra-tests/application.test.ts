@@ -357,7 +357,7 @@ describe("Backend application infrastructure", () => {
       const runbooksByAlarm: Record<string, boolean> = {
         "high-threshold-well-known-5xx-api-gw": false,
         "high-threshold-well-known-4xx-api-gw": false,
-        "high-threshold-async-token-5xx-api-gw": false,
+        "high-threshold-async-token-5xx-api-gw": true,
         "high-threshold-async-token-4xx-api-gw": true,
         "high-threshold-async-credential-5xx-api-gw": false,
         "high-threshold-async-credential-4xx-api-gw": false,
@@ -431,7 +431,6 @@ describe("Backend application infrastructure", () => {
       it.each([
         ["high-threshold-well-known-5xx-api-gw"],
         ["low-threshold-well-known-5xx-api-gw"],
-        ["high-threshold-async-token-5xx-api-gw"],
         ["low-threshold-async-token-5xx-api-gw"],
         ["low-threshold-async-token-4xx-api-gw"],
         ["high-threshold-async-credential-5xx-api-gw"],
