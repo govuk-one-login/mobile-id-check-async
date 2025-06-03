@@ -2008,7 +2008,7 @@ Resources:
       InsufficientDataActions: []
       AlarmDescription: !Sub
         - "Alarms when 1 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED have occurred. See runbook: ${RunbookUrl}"
-        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+        - RunbookUrl: !FindInMap [StaticVariables, urls, SupportManual]
       AlarmName: !Sub "${AWS::StackName}-async-issue-biometric-credential-vendor-likeness-disabled"
       Namespace: !Sub "${AWS::StackName}/LogMessages"
       MetricName: AsyncIssueBiometricCredentialMessageCode

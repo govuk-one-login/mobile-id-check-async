@@ -4124,7 +4124,7 @@ Resources:
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - WarningAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-async-issue-biometric-credential-vendor-likeness-disabled
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
