@@ -6055,13 +6055,13 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger an alarm if the Proxy Lambda throttles. See support manual: ${SupportManualUrl}'
-        - SupportManualUrl: !FindInMap
+        - 'Trigger an alarm if the Proxy Lambda throttles. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - SupportManual
+            - WarningAlarmsRunbook
       AlarmName: !Sub ${AWS::StackName}-proxy-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -6073,7 +6073,7 @@ Resources:
       MetricName: Throttles
       Namespace: AWS/Lambda
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Period: 60
       Statistic: Sum
       Threshold: 1
