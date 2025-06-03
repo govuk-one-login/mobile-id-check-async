@@ -381,7 +381,7 @@ describe("Backend application infrastructure", () => {
         "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor":
           false,
         "async-issue-biometric-credential-zero-vcs-issued": false,
-        "abort-session-lambda-throttle": false,
+        "abort-session-lambda-throttle": true,
         "active-session-lambda-throttle": false,
         "biometric-token-lambda-throttle": false,
         "credential-lambda-throttle": false,
@@ -482,7 +482,6 @@ describe("Backend application infrastructure", () => {
           "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
         ],
         ["async-issue-biometric-credential-zero-vcs-issued"],
-        ["abort-session-lambda-throttle"],
         ["active-session-lambda-throttle"],
         ["biometric-token-lambda-throttle"],
         ["credential-lambda-throttle"],
