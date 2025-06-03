@@ -324,7 +324,7 @@ Mappings:
 
   StaticVariables:
     urls:
-      CriticalAlarmsRunbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4799594677/Alarms+Runbook+Alerts
+      SupportManualUrl: https://team-manual.account.gov.uk/teams/mobile-team/supporting-id-check-asynchronous-backend
       WarningAlarmsRunbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4800446694/Alarms+Runbook+Warnings
 
   TxMA:
@@ -565,11 +565,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '80% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - '80% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-abort-session-4xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -631,7 +631,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See runbook: ${RunbookUrl}'
+        - '1% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -697,11 +697,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '80% or more of requests are failing on the /async/abortSession endpoint with a 5XX error. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - '80% or more of requests are failing on the /async/abortSession endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-abort-session-5xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -763,7 +763,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/abortSession endpoint with a 5XX error. See runbook: ${RunbookUrl}'
+        - '1% or more of requests are failing on the /async/abortSession endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -1095,11 +1095,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger an alarm if the Async Abort Session Lambda throttles. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - 'Trigger an alarm if the Async Abort Session Lambda throttles. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-abort-session-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -1125,11 +1125,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '80% or more of requests are failing on the /async/activeSession endpoint with a 4XX error. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - '80% or more of requests are failing on the /async/activeSession endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-active-session-4xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -1191,7 +1191,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/activeSession endpoint with a 4XX error. See runbook: ${RunbookUrl}'
+        - '1% or more of requests are failing on the /async/activeSession endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -1257,11 +1257,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '80% or more of requests are failing on the /async/activeSession endpoint with a 5XX error. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - '80% or more of requests are failing on the /async/activeSession endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-active-session-5xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -1323,7 +1323,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/activeSession endpoint with a 5XX error. See runbook: ${RunbookUrl}'
+        - '1% or more of requests are failing on the /async/activeSession endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -1662,11 +1662,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger an alarm if the Async Active Session Lambda throttles. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - 'Trigger an alarm if the Async Active Session Lambda throttles. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-active-session-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -1692,11 +1692,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '80% or more of requests are failing on the /async/biometricToken endpoint with a 4XX error. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - '80% or more of requests are failing on the /async/biometricToken endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-biometric-token-4xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -1758,7 +1758,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/biometricToken endpoint with a 4XX error. See runbook: ${RunbookUrl}'
+        - '1% or more of requests are failing on the /async/biometricToken endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -1824,11 +1824,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '80% or more of requests are failing on the /async/biometricToken endpoint with a 5XX error. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - '80% or more of requests are failing on the /async/biometricToken endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-biometric-token-5xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -1890,7 +1890,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/biometricToken endpoint with a 5XX error. See runbook: ${RunbookUrl}'
+        - '1% or more of requests are failing on the /async/biometricToken endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -2260,11 +2260,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger an alarm if the Async Biometric Token Lambda throttles. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - 'Trigger an alarm if the Async Biometric Token Lambda throttles. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-biometric-token-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -2290,11 +2290,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '80% or more of requests are failing on the /async/credential endpoint with a 4XX error. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - '80% or more of requests are failing on the /async/credential endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-credential-4xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -2356,7 +2356,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/credential endpoint with a 4XX error. See runbook: ${RunbookUrl}'
+        - '1% or more of requests are failing on the /async/credential endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -2422,11 +2422,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '80% or more of requests are failing on the /async/credential endpoint with a 5XX error. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - '80% or more of requests are failing on the /async/credential endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-credential-5xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -2488,7 +2488,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/credential endpoint with a 5XX error. See runbook: ${RunbookUrl}'
+        - '1% or more of requests are failing on the /async/credential endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -2856,11 +2856,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger an alarm if the Async Credential Lambda throttles. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - 'Trigger an alarm if the Async Credential Lambda throttles. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-credential-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -2886,11 +2886,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '80% or more of requests are failing on the /async/finishBiometricSession endpoint with a 4XX error. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - '80% or more of requests are failing on the /async/finishBiometricSession endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-finish-biometric-session-4xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -2952,7 +2952,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/finishBiometricSession endpoint with a 4XX error. See runbook: ${RunbookUrl}'
+        - '1% or more of requests are failing on the /async/finishBiometricSession endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -3018,11 +3018,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '80% or more of requests are failing on the /async/finishBiometricSession endpoint with a 5XX error. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - '80% or more of requests are failing on the /async/finishBiometricSession endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-finish-biometric-session-5xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -3084,7 +3084,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/finishBiometricSession endpoint with a 5XX error. See runbook: ${RunbookUrl}'
+        - '1% or more of requests are failing on the /async/finishBiometricSession endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -3416,11 +3416,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger an alarm if the Async Finish Biometric Session Lambda throttles. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - 'Trigger an alarm if the Async Finish Biometric Session Lambda throttles. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-finish-biometric-session-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -3448,7 +3448,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Alarms when 25 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID have occurred. See runbook: ${RunbookUrl}'
+        - 'Alarms when 25 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID have occurred. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -3480,7 +3480,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Alarms when 1 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID have occurred. See runbook: ${RunbookUrl}'
+        - 'Alarms when 1 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID have occurred. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -3528,7 +3528,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger when a Veriff result has succeeded but the driving licence is expired. This indicates that the vendor has disabled their expiry checks. See runbook: ${RunbookUrl}'
+        - 'Trigger when a Veriff result has succeeded but the driving licence is expired. This indicates that the vendor has disabled their expiry checks. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -3618,7 +3618,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Alarms when 25 or more log events with the messageCode MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT have been emitted by the Issue Biometric Credential Lambda. See runbook: ${RunbookUrl}'
+        - 'Alarms when 25 or more log events with the messageCode MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT have been emitted by the Issue Biometric Credential Lambda. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -3650,7 +3650,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Alarms when 2 or more log events with the messageCode MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT have been emitted by the Issue Biometric Credential Lambda. See runbook: ${RunbookUrl}'
+        - 'Alarms when 2 or more log events with the messageCode MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT have been emitted by the Issue Biometric Credential Lambda. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -3682,7 +3682,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Alarms when 25 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE have occurred. See runbook: ${RunbookUrl}'
+        - 'Alarms when 25 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE have occurred. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -3714,7 +3714,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Alarms when 5 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE have occurred. See runbook: ${RunbookUrl}'
+        - 'Alarms when 5 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE have occurred. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -3823,11 +3823,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Fires when a log event with messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT is detected. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - 'Fires when a log event with messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT is detected. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-issue-biometric-credential-lambda-invalid-sqs-event
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -4045,7 +4045,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Alarms when 25 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE have occurred. See runbook: ${RunbookUrl}'
+        - 'Alarms when 25 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE have occurred. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -4077,7 +4077,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Alarms when 1 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE have occurred. See runbook: ${RunbookUrl}'
+        - 'Alarms when 1 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE have occurred. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -4120,7 +4120,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Alarms when 1 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED have occurred. See runbook: ${RunbookUrl}'
+        - 'Alarms when 1 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED have occurred. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -4143,38 +4143,6 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
-  AsyncIssueBiometricCredentialZeroVcsIssuedAlarm:
-    Type: AWS::CloudWatch::Alarm
-    DependsOn:
-      - AsyncIssueBiometricCredentialMetricFilter
-    Properties:
-      ActionsEnabled: true
-      AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      AlarmDescription: !Sub
-        - 'Alarms when there have been 0 Verifiable Credentials issued and written onto the IPVCore outbound queue in the past 20 minutes. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
-            - StaticVariables
-            - urls
-            - WarningAlarmsRunbook
-      AlarmName: !Sub ${AWS::StackName}-async-issue-biometric-credential-zero-vcs-issued
-      ComparisonOperator: LessThanOrEqualToThreshold
-      DatapointsToAlarm: 4
-      Dimensions:
-        - Name: MessageCode
-          Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED
-      EvaluationPeriods: 4
-      InsufficientDataActions: []
-      MetricName: AsyncIssueBiometricCredentialMessageCode
-      Namespace: !Sub ${AWS::StackName}/LogMessages
-      OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      Period: 300
-      Statistic: Sum
-      Threshold: 0
-      TreatMissingData: breaching
-    Condition: DeployAlarms
-
   AsyncLambdaClaimedAccountConcurrencyAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -4182,7 +4150,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Alarms when the level of claimed account concurrency reaches 80% of maximum capacity. See runbook: ${RunbookUrl}'
+        - 'Alarms when the level of claimed account concurrency reaches 80% of maximum capacity. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -4226,11 +4194,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '80% or more of requests are failing on the /async/token endpoint with a 4XX error. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - '80% or more of requests are failing on the /async/token endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-token-4xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -4292,7 +4260,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/token endpoint with a 4XX error. See runbook: ${RunbookUrl}'
+        - '1% or more of requests are failing on the /async/token endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -4358,11 +4326,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '80% or more of requests are failing on the /async/token endpoint with a 5XX error. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - '80% or more of requests are failing on the /async/token endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-token-5xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -4424,7 +4392,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/token endpoint with a 5XX error. See runbook: ${RunbookUrl}'
+        - '1% or more of requests are failing on the /async/token endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -4765,11 +4733,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger an alarm if the Async Token Lambda throttles. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - 'Trigger an alarm if the Async Token Lambda throttles. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-token-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -4795,7 +4763,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '80% or more of requests are failing on the /async/txmaEvent endpoint with a 4XX error. See runbook: ${RunbookUrl}'
+        - '80% or more of requests are failing on the /async/txmaEvent endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -4861,7 +4829,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/txmaEvent endpoint with a 4XX error. See runbook: ${RunbookUrl}'
+        - '1% or more of requests are failing on the /async/txmaEvent endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -4927,7 +4895,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '80% or more of requests are failing on the /async/txmaEvent endpoint with a 5XX error. See runbook: ${RunbookUrl}'
+        - '80% or more of requests are failing on the /async/txmaEvent endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -4993,7 +4961,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/txmaEvent endpoint with a 5XX error. See runbook: ${RunbookUrl}'
+        - '1% or more of requests are failing on the /async/txmaEvent endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -5172,11 +5140,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger an alarm if the Async TxMA Event Lambda throttles. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - 'Trigger an alarm if the Async TxMA Event Lambda throttles. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-txma-event-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -5235,7 +5203,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger an alarm when the age of the oldest message in IPV Core SQS DLQ is 10 days or older. See runbook: ${RunbookUrl}'
+        - 'Trigger an alarm when the age of the oldest message in IPV Core SQS DLQ is 10 days or older. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -5264,7 +5232,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger an alarm when the age of the oldest message in IPV Core SQS DLQ is 3 days or older. See runbook: ${RunbookUrl}'
+        - 'Trigger an alarm when the age of the oldest message in IPV Core SQS DLQ is 3 days or older. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -5293,7 +5261,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger an alarm when new message gets added to IPV Core SQS DLQ. See runbook: ${RunbookUrl}'
+        - 'Trigger an alarm when new message gets added to IPV Core SQS DLQ. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -5414,7 +5382,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger an alarm when the age of the oldest message in IPV Core SQS queue is 30 minutes or older. See runbook: ${RunbookUrl}'
+        - 'Trigger an alarm when the age of the oldest message in IPV Core SQS queue is 30 minutes or older. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -5756,6 +5724,59 @@ Resources:
           LinearPercentage: 20
         Type: TimeBasedLinear
 
+  LowJourneyCompletionAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncIssueBiometricCredentialMetricFilter
+      - JourneysStartedMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+      AlarmDescription: !Sub
+        - 'Alarms when fewer than 10% of journeys have completed (VC issued) in the past 20 minutes. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - SupportManual
+      AlarmName: !Sub ${AWS::StackName}-low-journey-completion
+      ComparisonOperator: LessThanOrEqualToThreshold
+      DatapointsToAlarm: 4
+      EvaluationPeriods: 4
+      InsufficientDataActions: []
+      Metrics:
+        - Id: journeysStarted
+          MetricStat:
+            Metric:
+              MetricName: JourneysStarted
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 300
+            Stat: Sum
+          ReturnData: false
+        - Id: vcsIssued
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED
+              MetricName: AsyncIssueBiometricCredentialMessageCode
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 300
+            Stat: Sum
+          ReturnData: false
+        - Expression: (vcsIssued/journeysStarted) * 100
+          Id: journeyCompletionRate
+          ReturnData: false
+        - Expression: IF(FILL(journeysStarted, 0) >= 40, journeyCompletionRate, 100)
+          Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+      Threshold: 10
+      TreatMissingData: breaching
+    Condition: DeployAlarms
+
   NullResource:
     Type: AWS::CloudFormation::WaitConditionHandle
     Condition: NeverDeploy
@@ -6057,11 +6078,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger an alarm if the Proxy Lambda throttles. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - 'Trigger an alarm if the Proxy Lambda throttles. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-proxy-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -6336,7 +6357,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger an alarm when the age of the oldest message in Vendor Processing SQS DLQ is 10 days or older. See runbook: ${RunbookUrl}'
+        - 'Trigger an alarm when the age of the oldest message in Vendor Processing SQS DLQ is 10 days or older. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -6365,7 +6386,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger an alarm when the age of the oldest message in Vendor Processing SQS DLQ is 3 days or older. See runbook: ${RunbookUrl}'
+        - 'Trigger an alarm when the age of the oldest message in Vendor Processing SQS DLQ is 3 days or older. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -6394,7 +6415,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger an alarm when new message gets added to Vendor Processing SQS DLQ. See runbook: ${RunbookUrl}'
+        - 'Trigger an alarm when new message gets added to Vendor Processing SQS DLQ. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -6466,7 +6487,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger an alarm when the age of the oldest message in Vendor Processing SQS queue is 30 minutes or older. See runbook: ${RunbookUrl}'
+        - 'Trigger an alarm when the age of the oldest message in Vendor Processing SQS queue is 30 minutes or older. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -6524,11 +6545,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '80% or more of requests are failing on the /.well-known/jwks.json endpoint. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
+        - '80% or more of requests are failing on the /.well-known/jwks.json endpoint. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - CriticalAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-well-known-5xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -6590,7 +6611,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /.well-known/jwks.json endpoint. See runbook: ${RunbookUrl}'
+        - '1% or more of requests are failing on the /.well-known/jwks.json endpoint. See support manual: ${SupportManualUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -6647,6 +6668,85 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 1
       TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  ZeroJourneysStartedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - JourneysStartedMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+      AlarmDescription: !Sub
+        - 'Alarms when no journeys have been started successfully in the past 25 minutes. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - SupportManual
+      AlarmName: !Sub ${AWS::StackName}-zero-journeys-started
+      ComparisonOperator: LessThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: JourneysStarted
+      Namespace: !Sub ${AWS::StackName}/LogMessages
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+      Period: 1500
+      Statistic: Sum
+      Threshold: 0
+      TreatMissingData: breaching
+    Condition: DeployAlarms
+
+  ZeroVcsIssuedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - AsyncIssueBiometricCredentialMetricFilter
+      - JourneysStartedMetricFilter
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+      AlarmDescription: !Sub
+        - 'Alarms when there have been 0 Verifiable Credentials issued and written onto the IPVCore outbound queue in the past 20 minutes. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - SupportManual
+      AlarmName: !Sub ${AWS::StackName}-zero-vcs-issued
+      ComparisonOperator: LessThanOrEqualToThreshold
+      DatapointsToAlarm: 4
+      EvaluationPeriods: 4
+      InsufficientDataActions: []
+      Metrics:
+        - Id: journeysStarted
+          MetricStat:
+            Metric:
+              MetricName: JourneysStarted
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 300
+            Stat: Sum
+          ReturnData: false
+        - Id: vcsIssued
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED
+              MetricName: AsyncIssueBiometricCredentialMessageCode
+              Namespace: !Sub ${AWS::StackName}/LogMessages
+            Period: 300
+            Stat: Sum
+          ReturnData: false
+        - Expression: IF(FILL(journeysStarted, 0) >= 25, vcsIssued, 1)
+          Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+      Threshold: 0
+      TreatMissingData: breaching
     Condition: DeployAlarms
 
 Outputs:

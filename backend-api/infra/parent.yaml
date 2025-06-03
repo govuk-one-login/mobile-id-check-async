@@ -77,7 +77,7 @@ Mappings:
   StaticVariables:
     urls:
       WarningAlarmsRunbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4800446694/Alarms+Runbook+Warnings
-      CriticalAlarmsRunbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4799594677/Alarms+Runbook+Alerts
+      SupportManualUrl: https://team-manual.account.gov.uk/teams/mobile-team/supporting-id-check-asynchronous-backend
   EnvironmentConfiguration:
     dev:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables

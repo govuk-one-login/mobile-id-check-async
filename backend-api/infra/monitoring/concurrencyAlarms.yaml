@@ -11,7 +11,7 @@ Resources:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       InsufficientDataActions: []
       AlarmDescription: !Sub
-      - "Alarms when the level of claimed account concurrency reaches 80% of maximum capacity. See runbook: ${RunbookUrl}"
+      - "Alarms when the level of claimed account concurrency reaches 80% of maximum capacity. See support manual: ${SupportManualUrl}"
       - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-lambda-claimed-account-concurrency-reaching-limit"
       Namespace: AWS/Lambda
