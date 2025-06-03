@@ -380,7 +380,7 @@ describe("Backend application infrastructure", () => {
           true,
         "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor":
           true,
-        "async-issue-biometric-credential-zero-vcs-issued": false,
+        "async-issue-biometric-credential-zero-vcs-issued": true,
         "abort-session-lambda-throttle": true,
         "active-session-lambda-throttle": true,
         "biometric-token-lambda-throttle": true,
@@ -475,7 +475,6 @@ describe("Backend application infrastructure", () => {
         [
           "low-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
         ],
-        ["async-issue-biometric-credential-zero-vcs-issued"],
         ["lambda-claimed-account-concurrency-reaching-limit"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
