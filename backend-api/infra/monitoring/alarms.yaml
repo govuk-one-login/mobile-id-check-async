@@ -1707,7 +1707,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmDescription: !Sub
-        - "80% or more of requests are failing on the /async/txmaEvent endpoint with a 4XX error. See support manual: ${SupportManualUrl}"
+        - "80% or more of requests are failing on the /async/txmaEvent endpoint with a 4XX error. See runbook: ${RunbookUrl}"
         - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-txma-event-4xx-api-gw"
       AlarmActions:
@@ -1833,7 +1833,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmDescription: !Sub
-        - "80% or more of requests are failing on the /async/txmaEvent endpoint with a 5XX error. See support manual: ${SupportManualUrl}"
+        - "80% or more of requests are failing on the /async/txmaEvent endpoint with a 5XX error. See runbook: ${RunbookUrl}"
         - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-txma-event-5xx-api-gw"
       AlarmActions:

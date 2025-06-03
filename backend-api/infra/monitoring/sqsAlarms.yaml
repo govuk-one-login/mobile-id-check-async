@@ -6,7 +6,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmDescription: !Sub
-        - "Trigger an alarm when the age of the oldest message in Vendor Processing SQS queue is 30 minutes or older. See support manual: ${SupportManualUrl}"
+        - "Trigger an alarm when the age of the oldest message in Vendor Processing SQS queue is 30 minutes or older. See runbook: ${RunbookUrl}"
         - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-vendor-processing-sqs-age-of-oldest-message"
       AlarmActions:
@@ -32,7 +32,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmDescription: !Sub
-        - "Trigger an alarm when new message gets added to Vendor Processing SQS DLQ. See support manual: ${SupportManualUrl}"
+        - "Trigger an alarm when new message gets added to Vendor Processing SQS DLQ. See runbook: ${RunbookUrl}"
         - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-vendor-processing-dlq-message-visible"
       AlarmActions:
@@ -58,7 +58,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmDescription: !Sub
-        - "Trigger an alarm when the age of the oldest message in Vendor Processing SQS DLQ is 3 days or older. See support manual: ${SupportManualUrl}"
+        - "Trigger an alarm when the age of the oldest message in Vendor Processing SQS DLQ is 3 days or older. See runbook: ${RunbookUrl}"
         - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-vendor-processing-dlq-age-of-oldest-message"
       AlarmActions:
@@ -110,7 +110,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmDescription: !Sub
-        - "Trigger an alarm when the age of the oldest message in IPV Core SQS queue is 30 minutes or older. See support manual: ${SupportManualUrl}"
+        - "Trigger an alarm when the age of the oldest message in IPV Core SQS queue is 30 minutes or older. See runbook: ${RunbookUrl}"
         - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-ipv-core-sqs-age-of-oldest-message"
       AlarmActions:
@@ -162,7 +162,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmDescription: !Sub
-        - "Trigger an alarm when the age of the oldest message in IPV Core SQS DLQ is 3 days or older. See support manual: ${SupportManualUrl}"
+        - "Trigger an alarm when the age of the oldest message in IPV Core SQS DLQ is 3 days or older. See runbook: ${RunbookUrl}"
         - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-ipv-core-dlq-age-of-oldest-message"
       AlarmActions:
