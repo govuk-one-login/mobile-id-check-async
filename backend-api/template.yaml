@@ -5233,13 +5233,13 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - 'Trigger an alarm when the age of the oldest message in IPV Core SQS DLQ is 10 days or older. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - WarningAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-ipv-core-dlq-age-of-oldest-message
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -5250,7 +5250,7 @@ Resources:
       MetricName: ApproximateAgeOfOldestMessage
       Namespace: AWS/SQS
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Period: 60
       Statistic: Maximum
       Threshold: 864000

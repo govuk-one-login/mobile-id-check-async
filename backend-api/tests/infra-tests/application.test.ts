@@ -370,7 +370,7 @@ describe("Backend application infrastructure", () => {
         "high-threshold-async-abort-session-5xx-api-gw": true,
         "high-threshold-async-abort-session-4xx-api-gw": true,
         "high-threshold-vendor-processing-dlq-age-of-oldest-message": true,
-        "high-threshold-ipv-core-dlq-age-of-oldest-message": false,
+        "high-threshold-ipv-core-dlq-age-of-oldest-message": true,
         "issue-biometric-credential-lambda-invalid-sqs-event": true,
         "high-threshold-async-issue-biometric-credential-parse-failure": true,
         "high-threshold-async-issue-biometric-credential-biometric-session-not-valid":
