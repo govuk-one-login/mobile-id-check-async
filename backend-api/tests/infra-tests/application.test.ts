@@ -388,7 +388,7 @@ describe("Backend application infrastructure", () => {
         "finish-biometric-session-lambda-throttle": true,
         "token-lambda-throttle": true,
         "txma-event-lambda-throttle": true,
-        "proxy-lambda-throttle": false,
+        "proxy-lambda-throttle": true,
         "ipv-core-dlq-message-visible": true,
       };
 
@@ -482,7 +482,6 @@ describe("Backend application infrastructure", () => {
           "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
         ],
         ["async-issue-biometric-credential-zero-vcs-issued"],
-        ["proxy-lambda-throttle"],
         ["lambda-claimed-account-concurrency-reaching-limit"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
