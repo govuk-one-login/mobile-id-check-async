@@ -353,7 +353,6 @@ describe("Backend application infrastructure", () => {
 
   describe("CloudWatch alarms", () => {
     test("All critical alerts should have runbooks defined", () => {
-      // to be updated only when a runbook exists for an alarm
       const runbooksByAlarm: Record<string, boolean> = {
         "high-threshold-well-known-5xx-api-gw": true,
         "high-threshold-async-token-5xx-api-gw": true,
