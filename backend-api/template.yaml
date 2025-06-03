@@ -1255,7 +1255,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+        - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical '
       AlarmDescription: !Sub
         - '80% or more of requests are failing on the /async/activeSession endpoint with a 5XX error. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
@@ -1311,7 +1311,7 @@ Resources:
           Label: Number of 5XX errors returned as a percentage
           ReturnData: false
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+        - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical '
       Threshold: 80
       TreatMissingData: notBreaching
     Condition: DeployAlarms
@@ -6522,7 +6522,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - '80% or more of requests are failing on the /.well-known/jwks.json endpoint. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
@@ -6578,7 +6578,7 @@ Resources:
           Label: Number of 5XX errors returned as a percentage
           ReturnData: false
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Threshold: 80
       TreatMissingData: notBreaching
     Condition: DeployAlarms
