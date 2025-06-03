@@ -3,7 +3,7 @@
 DCMAW-XXXXX
 
 ## Description of changes
-<!-- 
+<!--
 - Describe what changed and why
 - Call out specific areas that need focus in the review
 - Call out new patterns and articulate why they're being proposed
@@ -35,6 +35,9 @@ DCMAW-XXXXX
 ### Observability & Operations
 - **Observability**: Are there appropriate logs/metrics that would help debug and monitor the service?
 - **Performance**: Are there any performance considerations or potential bottlenecks?
+- **Runbooks for Alarms**: If an alarm has been created or updated, has a corresponding runbook been created or updated?
+  - [Critical alarms runbook](https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4799594677/Alarm+Runbook+Critical+Alerts)
+  - [Warning alarms runbook](https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4800446694/Alarms+Runbook+Warnings)
 
 ### Documentation
 - **Documentation**: Is the code well documented? Is there any existing documentation that needs updating?
@@ -46,7 +49,7 @@ DCMAW-XXXXX
 </details>
 
 ## Evidence
-<!-- 
+<!--
 - Provide evidence that changes work as expected
 - For UI changes, include screenshots or recordings
 - For API changes, include example requests/responses
@@ -61,7 +64,7 @@ When you should run the test container:
 -->
 
 ## Documentation
-<!-- 
+<!--
 - Call out if key repository documentation has been updated
 - Link to external documentation that has been updated
 

@@ -324,7 +324,7 @@ Mappings:
 
   StaticVariables:
     urls:
-      SupportManualUrl: https://team-manual.account.gov.uk/teams/mobile-team/supporting-id-check-asynchronous-backend
+      SupportManual: https://team-manual.account.gov.uk/teams/mobile-team/supporting-id-check-asynchronous-backend
       WarningAlarmsRunbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4800446694/Alarms+Runbook+Warnings
 
   TxMA:
@@ -563,7 +563,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - '80% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -619,7 +619,7 @@ Resources:
           Label: Number of 4XX errors returned as a percentage
           ReturnData: false
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Threshold: 80
       TreatMissingData: notBreaching
     Condition: DeployAlarms
@@ -695,7 +695,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - '80% or more of requests are failing on the /async/abortSession endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -751,7 +751,7 @@ Resources:
           Label: Number of 5XX errors returned as a percentage
           ReturnData: false
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Threshold: 80
       TreatMissingData: notBreaching
     Condition: DeployAlarms
@@ -1093,7 +1093,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - 'Trigger an alarm if the Async Abort Session Lambda throttles. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -1111,7 +1111,7 @@ Resources:
       MetricName: Throttles
       Namespace: AWS/Lambda
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Period: 60
       Statistic: Sum
       Threshold: 1
@@ -1123,7 +1123,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - '80% or more of requests are failing on the /async/activeSession endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -1179,7 +1179,7 @@ Resources:
           Label: Number of 4XX errors returned as a percentage
           ReturnData: false
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Threshold: 80
       TreatMissingData: notBreaching
     Condition: DeployAlarms
@@ -1255,7 +1255,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - '80% or more of requests are failing on the /async/activeSession endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -1311,7 +1311,7 @@ Resources:
           Label: Number of 5XX errors returned as a percentage
           ReturnData: false
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Threshold: 80
       TreatMissingData: notBreaching
     Condition: DeployAlarms
@@ -1660,7 +1660,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - 'Trigger an alarm if the Async Active Session Lambda throttles. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -1678,7 +1678,7 @@ Resources:
       MetricName: Throttles
       Namespace: AWS/Lambda
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Period: 60
       Statistic: Sum
       Threshold: 1
@@ -1690,7 +1690,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - '80% or more of requests are failing on the /async/biometricToken endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -1746,7 +1746,7 @@ Resources:
           Label: Number of 4XX errors returned as a percentage
           ReturnData: false
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Threshold: 80
       TreatMissingData: notBreaching
     Condition: DeployAlarms
@@ -1822,7 +1822,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - '80% or more of requests are failing on the /async/biometricToken endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -1878,7 +1878,7 @@ Resources:
           Label: Number of 5XX errors returned as a percentage
           ReturnData: false
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Threshold: 80
       TreatMissingData: notBreaching
     Condition: DeployAlarms
@@ -2258,7 +2258,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - 'Trigger an alarm if the Async Biometric Token Lambda throttles. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -2276,7 +2276,7 @@ Resources:
       MetricName: Throttles
       Namespace: AWS/Lambda
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Period: 60
       Statistic: Sum
       Threshold: 1
@@ -2288,7 +2288,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - '80% or more of requests are failing on the /async/credential endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -2344,7 +2344,7 @@ Resources:
           Label: Number of 4XX errors returned as a percentage
           ReturnData: false
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Threshold: 80
       TreatMissingData: notBreaching
     Condition: DeployAlarms
@@ -2420,7 +2420,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - '80% or more of requests are failing on the /async/credential endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -2476,7 +2476,7 @@ Resources:
           Label: Number of 5XX errors returned as a percentage
           ReturnData: false
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Threshold: 80
       TreatMissingData: notBreaching
     Condition: DeployAlarms
@@ -2854,7 +2854,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - 'Trigger an alarm if the Async Credential Lambda throttles. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -2872,7 +2872,7 @@ Resources:
       MetricName: Throttles
       Namespace: AWS/Lambda
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Period: 60
       Statistic: Sum
       Threshold: 1
@@ -2884,7 +2884,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - '80% or more of requests are failing on the /async/finishBiometricSession endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -2940,7 +2940,7 @@ Resources:
           Label: Number of 4XX errors returned as a percentage
           ReturnData: false
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Threshold: 80
       TreatMissingData: notBreaching
     Condition: DeployAlarms
@@ -3016,7 +3016,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - '80% or more of requests are failing on the /async/finishBiometricSession endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -3072,7 +3072,7 @@ Resources:
           Label: Number of 5XX errors returned as a percentage
           ReturnData: false
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Threshold: 80
       TreatMissingData: notBreaching
     Condition: DeployAlarms
@@ -3414,7 +3414,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - 'Trigger an alarm if the Async Finish Biometric Session Lambda throttles. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -3432,7 +3432,7 @@ Resources:
       MetricName: Throttles
       Namespace: AWS/Lambda
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Period: 60
       Statistic: Sum
       Threshold: 1
@@ -3446,13 +3446,13 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - 'Alarms when 25 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_NOT_VALID have occurred. See support manual: ${SupportManualUrl}'
-        - RunbookUrl: !FindInMap
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - WarningAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-issue-biometric-credential-biometric-session-not-valid
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -3464,7 +3464,7 @@ Resources:
       MetricName: AsyncIssueBiometricCredentialMessageCode
       Namespace: !Sub ${AWS::StackName}/LogMessages
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Period: 60
       Statistic: Sum
       Threshold: 25
@@ -3616,13 +3616,13 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - 'Alarms when 25 or more log events with the messageCode MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT have been emitted by the Issue Biometric Credential Lambda. See support manual: ${SupportManualUrl}'
-        - RunbookUrl: !FindInMap
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - WarningAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-issue-biometric-credential-error-writing-audit-event
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -3634,7 +3634,7 @@ Resources:
       MetricName: AsyncIssueBiometricCredentialMessageCode
       Namespace: !Sub ${AWS::StackName}/LogMessages
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Period: 60
       Statistic: Sum
       Threshold: 25
@@ -3680,13 +3680,13 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - 'Alarms when 25 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_GET_FROM_READID_FAILURE have occurred. See support manual: ${SupportManualUrl}'
-        - RunbookUrl: !FindInMap
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - WarningAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
@@ -3698,7 +3698,7 @@ Resources:
       MetricName: AsyncIssueBiometricCredentialMessageCode
       Namespace: !Sub ${AWS::StackName}/LogMessages
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Period: 60
       Statistic: Sum
       Threshold: 25
@@ -3821,7 +3821,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - 'Fires when a log event with messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_INVALID_SQS_EVENT is detected. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -3839,7 +3839,7 @@ Resources:
       MetricName: AsyncIssueBiometricCredentialMessageCode
       Namespace: !Sub ${AWS::StackName}/LogMessages
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Period: 60
       Statistic: Sum
       Threshold: 1
@@ -4043,13 +4043,13 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - 'Alarms when 25 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_BIOMETRIC_SESSION_PARSE_FAILURE have occurred. See support manual: ${SupportManualUrl}'
-        - RunbookUrl: !FindInMap
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - WarningAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-issue-biometric-credential-parse-failure
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -4061,7 +4061,7 @@ Resources:
       MetricName: AsyncIssueBiometricCredentialMessageCode
       Namespace: !Sub ${AWS::StackName}/LogMessages
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Period: 60
       Statistic: Sum
       Threshold: 25
@@ -4118,13 +4118,13 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - 'Alarms when 1 or more log events with the messageCode MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VENDOR_LIKENESS_DISABLED have occurred. See support manual: ${SupportManualUrl}'
-        - RunbookUrl: !FindInMap
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - WarningAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-async-issue-biometric-credential-vendor-likeness-disabled
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -4136,7 +4136,7 @@ Resources:
       MetricName: AsyncIssueBiometricCredentialMessageCode
       Namespace: !Sub ${AWS::StackName}/LogMessages
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Period: 60
       Statistic: Sum
       Threshold: 1
@@ -4192,7 +4192,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - '80% or more of requests are failing on the /async/token endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -4248,7 +4248,7 @@ Resources:
           Label: Number of 4XX errors returned as a percentage
           ReturnData: false
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Threshold: 80
       TreatMissingData: notBreaching
     Condition: DeployAlarms
@@ -4324,7 +4324,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - '80% or more of requests are failing on the /async/token endpoint with a 5XX error. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -4380,7 +4380,7 @@ Resources:
           Label: Number of 5XX errors returned as a percentage
           ReturnData: false
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Threshold: 80
       TreatMissingData: notBreaching
     Condition: DeployAlarms
@@ -4731,7 +4731,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - 'Trigger an alarm if the Async Token Lambda throttles. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -4749,7 +4749,7 @@ Resources:
       MetricName: Throttles
       Namespace: AWS/Lambda
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Period: 60
       Statistic: Sum
       Threshold: 1
@@ -5138,7 +5138,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - 'Trigger an alarm if the Async TxMA Event Lambda throttles. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -5156,7 +5156,7 @@ Resources:
       MetricName: Throttles
       Namespace: AWS/Lambda
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Period: 60
       Statistic: Sum
       Threshold: 1
@@ -5201,13 +5201,13 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - 'Trigger an alarm when the age of the oldest message in IPV Core SQS DLQ is 10 days or older. See support manual: ${SupportManualUrl}'
-        - RunbookUrl: !FindInMap
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - WarningAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-ipv-core-dlq-age-of-oldest-message
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -5218,7 +5218,7 @@ Resources:
       MetricName: ApproximateAgeOfOldestMessage
       Namespace: AWS/SQS
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Period: 60
       Statistic: Maximum
       Threshold: 864000
@@ -5259,13 +5259,13 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - 'Trigger an alarm when new message gets added to IPV Core SQS DLQ. See support manual: ${SupportManualUrl}'
-        - RunbookUrl: !FindInMap
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - WarningAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-ipv-core-dlq-message-visible
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -5276,7 +5276,7 @@ Resources:
       MetricName: ApproximateNumberOfMessagesVisible
       Namespace: AWS/SQS
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Period: 60
       Statistic: Maximum
       Threshold: 1
@@ -6078,11 +6078,11 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger an alarm if the Proxy Lambda throttles. See support manual: ${SupportManualUrl}'
-        - SupportManualUrl: !FindInMap
+        - 'Trigger an alarm if the Proxy Lambda throttles. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - SupportManual
+            - WarningAlarmsRunbook
       AlarmName: !Sub ${AWS::StackName}-proxy-lambda-throttle
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -6355,13 +6355,13 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - 'Trigger an alarm when the age of the oldest message in Vendor Processing SQS DLQ is 10 days or older. See support manual: ${SupportManualUrl}'
-        - RunbookUrl: !FindInMap
+        - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
-            - WarningAlarmsRunbook
+            - SupportManual
       AlarmName: !Sub ${AWS::StackName}-high-threshold-vendor-processing-dlq-age-of-oldest-message
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
@@ -6372,7 +6372,7 @@ Resources:
       MetricName: ApproximateAgeOfOldestMessage
       Namespace: AWS/SQS
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Period: 60
       Statistic: Maximum
       Threshold: 864000
@@ -6543,7 +6543,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
         - '80% or more of requests are failing on the /.well-known/jwks.json endpoint. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -6599,7 +6599,7 @@ Resources:
           Label: Number of 5XX errors returned as a percentage
           ReturnData: false
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       Threshold: 80
       TreatMissingData: notBreaching
     Condition: DeployAlarms

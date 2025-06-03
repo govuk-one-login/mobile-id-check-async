@@ -11,9 +11,9 @@ Resources:
         - "Trigger an alarm if the Async Abort Session Lambda throttles. See support manual: ${SupportManualUrl}"
         - SupportManualUrl: !FindInMap [StaticVariables, urls, SupportManual]
       AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       InsufficientDataActions: []
       Namespace: AWS/Lambda
       MetricName: Throttles
@@ -38,9 +38,9 @@ Resources:
         - "Trigger an alarm if the Async Active Session Lambda throttles. See support manual: ${SupportManualUrl}"
         - SupportManualUrl: !FindInMap [StaticVariables, urls, SupportManual]
       AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       InsufficientDataActions: []
       Namespace: AWS/Lambda
       MetricName: Throttles
@@ -65,9 +65,9 @@ Resources:
         - "Trigger an alarm if the Async Biometric Token Lambda throttles. See support manual: ${SupportManualUrl}"
         - SupportManualUrl: !FindInMap [StaticVariables, urls, SupportManual]
       AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       InsufficientDataActions: []
       Namespace: AWS/Lambda
       MetricName: Throttles
@@ -92,9 +92,9 @@ Resources:
         - "Trigger an alarm if the Async Credential Lambda throttles. See support manual: ${SupportManualUrl}"
         - SupportManualUrl: !FindInMap [StaticVariables, urls, SupportManual]
       AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       InsufficientDataActions: []
       Namespace: AWS/Lambda
       MetricName: Throttles
@@ -119,9 +119,9 @@ Resources:
         - "Trigger an alarm if the Async Finish Biometric Session Lambda throttles. See support manual: ${SupportManualUrl}"
         - SupportManualUrl: !FindInMap [StaticVariables, urls, SupportManual]
       AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       InsufficientDataActions: []
       Namespace: AWS/Lambda
       MetricName: Throttles
@@ -146,9 +146,9 @@ Resources:
         - "Trigger an alarm if the Async Token Lambda throttles. See support manual: ${SupportManualUrl}"
         - SupportManualUrl: !FindInMap [StaticVariables, urls, SupportManual]
       AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       InsufficientDataActions: []
       Namespace: AWS/Lambda
       MetricName: Throttles
@@ -173,9 +173,9 @@ Resources:
         - "Trigger an alarm if the Async TxMA Event Lambda throttles. See support manual: ${SupportManualUrl}"
         - SupportManualUrl: !FindInMap [StaticVariables, urls, SupportManual]
       AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       InsufficientDataActions: []
       Namespace: AWS/Lambda
       MetricName: Throttles
@@ -197,8 +197,8 @@ Resources:
       ActionsEnabled: true
       AlarmName: !Sub "${AWS::StackName}-proxy-lambda-throttle"
       AlarmDescription: !Sub
-        - "Trigger an alarm if the Proxy Lambda throttles. See support manual: ${SupportManualUrl}"
-        - SupportManualUrl: !FindInMap [StaticVariables, urls, SupportManual]
+        - "Trigger an alarm if the Proxy Lambda throttles. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       OKActions:
