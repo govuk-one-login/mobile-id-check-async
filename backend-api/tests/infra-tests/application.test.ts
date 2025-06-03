@@ -377,7 +377,7 @@ describe("Backend application infrastructure", () => {
           true,
         "async-issue-biometric-credential-vendor-likeness-disabled": true,
         "high-threshold-async-issue-biometric-credential-error-writing-audit-event":
-          false,
+          true,
         "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor":
           false,
         "async-issue-biometric-credential-zero-vcs-issued": false,
@@ -474,9 +474,6 @@ describe("Backend application infrastructure", () => {
         ],
         [
           "low-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
-        ],
-        [
-          "high-threshold-async-issue-biometric-credential-error-writing-audit-event",
         ],
         [
           "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
