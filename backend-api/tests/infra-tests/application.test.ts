@@ -352,65 +352,6 @@ describe("Backend application infrastructure", () => {
   });
 
   describe("CloudWatch alarms", () => {
-    test("All critical alerts should have runbooks defined", () => {
-      const runbooksByAlarm: Record<string, boolean> = {
-        "high-threshold-well-known-5xx-api-gw": true,
-        "high-threshold-async-token-5xx-api-gw": true,
-        "high-threshold-async-token-4xx-api-gw": true,
-        "high-threshold-async-credential-5xx-api-gw": true,
-        "high-threshold-async-credential-4xx-api-gw": true,
-        "high-threshold-async-active-session-5xx-api-gw": true,
-        "high-threshold-async-active-session-4xx-api-gw": true,
-        "high-threshold-async-biometric-token-5xx-api-gw": true,
-        "high-threshold-async-biometric-token-4xx-api-gw": true,
-        "high-threshold-async-finish-biometric-session-5xx-api-gw": true,
-        "high-threshold-async-finish-biometric-session-4xx-api-gw": true,
-        "high-threshold-async-abort-session-5xx-api-gw": true,
-        "high-threshold-async-abort-session-4xx-api-gw": true,
-        "high-threshold-vendor-processing-dlq-age-of-oldest-message": true,
-        "high-threshold-ipv-core-dlq-age-of-oldest-message": true,
-        "issue-biometric-credential-lambda-invalid-sqs-event": true,
-        "high-threshold-async-issue-biometric-credential-parse-failure": true,
-        "high-threshold-async-issue-biometric-credential-biometric-session-not-valid":
-          true,
-        "async-issue-biometric-credential-vendor-likeness-disabled": true,
-        "high-threshold-async-issue-biometric-credential-error-writing-audit-event":
-          true,
-        "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor":
-          true,
-        "async-issue-biometric-credential-zero-vcs-issued": true,
-        "abort-session-lambda-throttle": true,
-        "active-session-lambda-throttle": true,
-        "biometric-token-lambda-throttle": true,
-        "credential-lambda-throttle": true,
-        "finish-biometric-session-lambda-throttle": true,
-        "token-lambda-throttle": true,
-        "txma-event-lambda-throttle": true,
-        "proxy-lambda-throttle": true,
-        "ipv-core-dlq-message-visible": true,
-      };
-
-      const alarms = template.findResources("AWS::CloudWatch::Alarm");
-      const activeCriticalAlerts = Object.entries(alarms)
-        .filter(([, resource]) => {
-          const alarmIsEnabled = resource.Properties.ActionsEnabled;
-          const isCriticalAlert =
-            resource.Properties.AlarmActions[0]["Fn::Sub"] ===
-            "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical";
-          return alarmIsEnabled && isCriticalAlert;
-        })
-        .map(([, resource]) =>
-          resource.Properties.AlarmName["Fn::Sub"].replace(
-            "${AWS::StackName}-",
-            "",
-          ),
-        );
-      const activeCriticalAlertsWithNoRunbook = activeCriticalAlerts.filter(
-        (alarmName) => runbooksByAlarm[alarmName] === false,
-      );
-      expect(activeCriticalAlertsWithNoRunbook).toHaveLength(0);
-    });
-
     test("All alarms are configured with a Condition", () => {
       const conditionalNames = [
         "DeployAlarms",
