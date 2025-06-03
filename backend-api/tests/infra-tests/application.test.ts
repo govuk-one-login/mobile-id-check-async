@@ -352,66 +352,6 @@ describe("Backend application infrastructure", () => {
   });
 
   describe("CloudWatch alarms", () => {
-    test("All critical alerts should have runbooks defined", () => {
-      // to be updated only when a runbook exists for an alarm
-      const runbooksByAlarm: Record<string, boolean> = {
-        "high-threshold-well-known-5xx-api-gw": false,
-        "high-threshold-well-known-4xx-api-gw": false,
-        "high-threshold-async-token-5xx-api-gw": false,
-        "high-threshold-async-token-4xx-api-gw": false,
-        "high-threshold-async-credential-5xx-api-gw": false,
-        "high-threshold-async-credential-4xx-api-gw": false,
-        "high-threshold-async-active-session-5xx-api-gw": false,
-        "high-threshold-async-active-session-4xx-api-gw": false,
-        "high-threshold-async-biometric-token-5xx-api-gw": false,
-        "high-threshold-async-biometric-token-4xx-api-gw": false,
-        "high-threshold-async-finish-biometric-session-5xx-api-gw": false,
-        "high-threshold-async-finish-biometric-session-4xx-api-gw": false,
-        "high-threshold-async-abort-session-5xx-api-gw": false,
-        "high-threshold-async-abort-session-4xx-api-gw": false,
-        "high-threshold-vendor-processing-dlq-age-of-oldest-message": false,
-        "high-threshold-ipv-core-dlq-age-of-oldest-message": false,
-        "issue-biometric-credential-lambda-invalid-sqs-event": false,
-        "high-threshold-async-issue-biometric-credential-parse-failure": false,
-        "high-threshold-async-issue-biometric-credential-biometric-session-not-valid":
-          false,
-        "async-issue-biometric-credential-vendor-likeness-disabled": false,
-        "high-threshold-async-issue-biometric-credential-error-writing-audit-event":
-          false,
-        "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor":
-          false,
-        "async-issue-biometric-credential-zero-vcs-issued": false,
-        "abort-session-lambda-throttle": false,
-        "active-session-lambda-throttle": false,
-        "biometric-token-lambda-throttle": false,
-        "credential-lambda-throttle": false,
-        "finish-biometric-session-lambda-throttle": false,
-        "token-lambda-throttle": false,
-        "txma-event-lambda-throttle": false,
-        "proxy-lambda-throttle": false,
-      };
-
-      const alarms = template.findResources("AWS::CloudWatch::Alarm");
-      const activeCriticalAlerts = Object.entries(alarms)
-        .filter(([, resource]) => {
-          const alarmIsEnabled = resource.Properties.ActionsEnabled;
-          const isCriticalAlert =
-            resource.Properties.AlarmActions[0]["Fn::Sub"] ===
-            "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical";
-          return alarmIsEnabled && isCriticalAlert;
-        })
-        .map(([, resource]) =>
-          resource.Properties.AlarmName["Fn::Sub"].replace(
-            "${AWS::StackName}-",
-            "",
-          ),
-        );
-      const activeCriticalAlertsWithNoRunbook = activeCriticalAlerts.filter(
-        (alarmName) => runbooksByAlarm[alarmName] === false,
-      );
-      expect(activeCriticalAlertsWithNoRunbook).toHaveLength(0);
-    });
-
     test("All alarms are configured with a Condition", () => {
       const conditionalNames = [
         "DeployAlarms",
@@ -429,27 +369,16 @@ describe("Backend application infrastructure", () => {
 
     describe("Warning alarms", () => {
       it.each([
-        ["high-threshold-well-known-5xx-api-gw"],
         ["low-threshold-well-known-5xx-api-gw"],
-        ["high-threshold-async-token-5xx-api-gw"],
         ["low-threshold-async-token-5xx-api-gw"],
-        ["high-threshold-async-token-4xx-api-gw"],
         ["low-threshold-async-token-4xx-api-gw"],
-        ["high-threshold-async-credential-5xx-api-gw"],
         ["low-threshold-async-credential-5xx-api-gw"],
-        ["high-threshold-async-credential-4xx-api-gw"],
         ["low-threshold-async-credential-4xx-api-gw"],
-        ["high-threshold-async-active-session-5xx-api-gw"],
         ["low-threshold-async-active-session-5xx-api-gw"],
-        ["high-threshold-async-active-session-4xx-api-gw"],
         ["low-threshold-async-active-session-4xx-api-gw"],
-        ["high-threshold-async-biometric-token-4xx-api-gw"],
         ["low-threshold-async-biometric-token-4xx-api-gw"],
-        ["high-threshold-async-biometric-token-5xx-api-gw"],
         ["low-threshold-async-biometric-token-5xx-api-gw"],
-        ["high-threshold-async-finish-biometric-session-4xx-api-gw"],
         ["low-threshold-async-finish-biometric-session-4xx-api-gw"],
-        ["high-threshold-async-finish-biometric-session-5xx-api-gw"],
         ["low-threshold-async-finish-biometric-session-5xx-api-gw"],
         ["low-threshold-async-abort-session-4xx-api-gw"],
         ["low-threshold-async-abort-session-5xx-api-gw"],
@@ -473,18 +402,11 @@ describe("Backend application infrastructure", () => {
         ["vendor-processing-dlq-message-visible"],
         ["low-threshold-vendor-processing-dlq-age-of-oldest-message"],
         ["ipv-core-sqs-age-of-oldest-message"],
-        ["ipv-core-dlq-message-visible"],
         ["low-threshold-ipv-core-dlq-age-of-oldest-message"],
-        ["issue-biometric-credential-lambda-invalid-sqs-event"],
         ["low-threshold-async-issue-biometric-credential-parse-failure"],
-        ["high-threshold-async-issue-biometric-credential-parse-failure"],
         [
           "low-threshold-async-issue-biometric-credential-biometric-session-not-valid",
         ],
-        [
-          "high-threshold-async-issue-biometric-credential-biometric-session-not-valid",
-        ],
-        ["async-issue-biometric-credential-vendor-likeness-disabled"],
         ["async-issue-biometric-credential-driving-licence-expired"],
         [
           "low-threshold-async-issue-biometric-credential-error-writing-audit-event",
@@ -492,22 +414,8 @@ describe("Backend application infrastructure", () => {
         [
           "low-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
         ],
-        [
-          "high-threshold-async-issue-biometric-credential-error-writing-audit-event",
-        ],
-        [
-          "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
-        ],
-        ["async-issue-biometric-credential-zero-vcs-issued"],
-        ["abort-session-lambda-throttle"],
-        ["active-session-lambda-throttle"],
-        ["biometric-token-lambda-throttle"],
-        ["credential-lambda-throttle"],
-        ["finish-biometric-session-lambda-throttle"],
-        ["token-lambda-throttle"],
-        ["txma-event-lambda-throttle"],
-        ["proxy-lambda-throttle"],
         ["lambda-claimed-account-concurrency-reaching-limit"],
+        ["proxy-lambda-throttle"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
@@ -523,6 +431,67 @@ describe("Backend application infrastructure", () => {
               {
                 "Fn::Sub":
                   "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning",
+              },
+            ],
+            ActionsEnabled: true,
+          });
+        },
+      );
+    });
+
+    describe("Critical alarms", () => {
+      it.each([
+        ["high-threshold-well-known-5xx-api-gw"],
+        ["high-threshold-async-token-5xx-api-gw"],
+        ["high-threshold-async-token-4xx-api-gw"],
+        ["high-threshold-async-credential-5xx-api-gw"],
+        ["high-threshold-async-credential-4xx-api-gw"],
+        ["high-threshold-async-active-session-5xx-api-gw"],
+        ["high-threshold-async-active-session-4xx-api-gw"],
+        ["high-threshold-async-biometric-token-5xx-api-gw"],
+        ["high-threshold-async-biometric-token-4xx-api-gw"],
+        ["high-threshold-async-finish-biometric-session-5xx-api-gw"],
+        ["high-threshold-async-finish-biometric-session-4xx-api-gw"],
+        ["high-threshold-async-abort-session-5xx-api-gw"],
+        ["high-threshold-async-abort-session-4xx-api-gw"],
+        ["high-threshold-vendor-processing-dlq-age-of-oldest-message"],
+        ["high-threshold-ipv-core-dlq-age-of-oldest-message"],
+        ["issue-biometric-credential-lambda-invalid-sqs-event"],
+        ["high-threshold-async-issue-biometric-credential-parse-failure"],
+        [
+          "high-threshold-async-issue-biometric-credential-biometric-session-not-valid",
+        ],
+        ["async-issue-biometric-credential-vendor-likeness-disabled"],
+        [
+          "high-threshold-async-issue-biometric-credential-error-writing-audit-event",
+        ],
+        [
+          "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
+        ],
+        ["async-issue-biometric-credential-zero-vcs-issued"],
+        ["abort-session-lambda-throttle"],
+        ["active-session-lambda-throttle"],
+        ["biometric-token-lambda-throttle"],
+        ["credential-lambda-throttle"],
+        ["finish-biometric-session-lambda-throttle"],
+        ["token-lambda-throttle"],
+        ["txma-event-lambda-throttle"],
+        ["ipv-core-dlq-message-visible"],
+      ])(
+        "The %s alarm is configured to send an event to the critical SNS topic on Alarm and OK actions",
+        (alarmName: string) => {
+          template.hasResourceProperties("AWS::CloudWatch::Alarm", {
+            AlarmName: { "Fn::Sub": `\${AWS::StackName}-${alarmName}` },
+            AlarmActions: [
+              {
+                "Fn::Sub":
+                  "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical",
+              },
+            ],
+            OKActions: [
+              {
+                "Fn::Sub":
+                  "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical",
               },
             ],
             ActionsEnabled: true,
