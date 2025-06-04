@@ -443,123 +443,123 @@ describe("Backend application infrastructure", () => {
       const criticalAlarms = [
         {
           name: "high-threshold-well-known-5xx-api-gw",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "high-threshold-async-token-5xx-api-gw",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "high-threshold-async-token-4xx-api-gw",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "high-threshold-async-credential-5xx-api-gw",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "high-threshold-async-credential-4xx-api-gw",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "high-threshold-async-active-session-5xx-api-gw",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "high-threshold-async-active-session-4xx-api-gw",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "high-threshold-async-biometric-token-5xx-api-gw",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "high-threshold-async-biometric-token-4xx-api-gw",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "high-threshold-async-finish-biometric-session-5xx-api-gw",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "high-threshold-async-finish-biometric-session-4xx-api-gw",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "high-threshold-async-abort-session-5xx-api-gw",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "high-threshold-async-abort-session-4xx-api-gw",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "high-threshold-vendor-processing-dlq-age-of-oldest-message",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "high-threshold-ipv-core-dlq-age-of-oldest-message",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "issue-biometric-credential-lambda-invalid-sqs-event",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "high-threshold-async-issue-biometric-credential-parse-failure",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "high-threshold-async-issue-biometric-credential-biometric-session-not-valid",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "async-issue-biometric-credential-vendor-likeness-disabled",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "high-threshold-async-issue-biometric-credential-error-writing-audit-event",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "async-issue-biometric-credential-zero-vcs-issued",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "abort-session-lambda-throttle",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "active-session-lambda-throttle",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "biometric-token-lambda-throttle",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "credential-lambda-throttle",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "finish-biometric-session-lambda-throttle",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "token-lambda-throttle",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "txma-event-lambda-throttle",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
         {
           name: "ipv-core-dlq-message-visible",
-          supportManualEnabled: true,
+          hasRunbookBeenSignedOff: true,
         },
       ];
 
@@ -603,7 +603,7 @@ describe("Backend application infrastructure", () => {
         );
       });
 
-      test("Critical alarms have support manuals when required", () => {
+      test("All critical alarms reference the support manual mapping in their description", () => {
         criticalAlarms.forEach((alarm) => {
           const alarmDescriptionCapture = new Capture();
           template.hasResourceProperties("AWS::CloudWatch::Alarm", {
@@ -611,21 +611,21 @@ describe("Backend application infrastructure", () => {
             AlarmDescription: alarmDescriptionCapture,
           });
 
-          let descriptionText = "";
-          const descriptionObj = alarmDescriptionCapture.asObject();
-          if (descriptionObj["Fn::Sub"]) {
-            if (Array.isArray(descriptionObj["Fn::Sub"])) {
-              descriptionText = descriptionObj["Fn::Sub"][0];
-            } else {
-              descriptionText = descriptionObj["Fn::Sub"];
-            }
-          }
+          const alarmDescription = alarmDescriptionCapture.asObject();
+          const [description, substitutions] = alarmDescription["Fn::Sub"];
 
-          if (alarm.supportManualEnabled) {
-            expect(descriptionText).toContain("support manual");
-          } else {
-            expect(descriptionText).not.toContain("support manual");
-          }
+          expect(description).toContain("SupportManualUrl");
+          expect(substitutions).toEqual({
+            SupportManualUrl: {
+              "Fn::FindInMap": ["StaticVariables", "urls", "SupportManual"],
+            },
+          });
+        });
+      });
+
+      test("Critical alarms have signed off runbook", () => {
+        criticalAlarms.forEach((alarm) => {
+          expect(alarm.hasRunbookBeenSignedOff).toEqual(true);
         });
       });
     });
