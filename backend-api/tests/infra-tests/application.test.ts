@@ -440,64 +440,194 @@ describe("Backend application infrastructure", () => {
     });
 
     describe("Critical alarms", () => {
-      it.each([
-        ["high-threshold-well-known-5xx-api-gw"],
-        ["high-threshold-async-token-5xx-api-gw"],
-        ["high-threshold-async-token-4xx-api-gw"],
-        ["high-threshold-async-credential-5xx-api-gw"],
-        ["high-threshold-async-credential-4xx-api-gw"],
-        ["high-threshold-async-active-session-5xx-api-gw"],
-        ["high-threshold-async-active-session-4xx-api-gw"],
-        ["high-threshold-async-biometric-token-5xx-api-gw"],
-        ["high-threshold-async-biometric-token-4xx-api-gw"],
-        ["high-threshold-async-finish-biometric-session-5xx-api-gw"],
-        ["high-threshold-async-finish-biometric-session-4xx-api-gw"],
-        ["high-threshold-async-abort-session-5xx-api-gw"],
-        ["high-threshold-async-abort-session-4xx-api-gw"],
-        ["high-threshold-vendor-processing-dlq-age-of-oldest-message"],
-        ["high-threshold-ipv-core-dlq-age-of-oldest-message"],
-        ["issue-biometric-credential-lambda-invalid-sqs-event"],
-        ["high-threshold-async-issue-biometric-credential-parse-failure"],
-        [
-          "high-threshold-async-issue-biometric-credential-biometric-session-not-valid",
-        ],
-        ["async-issue-biometric-credential-vendor-likeness-disabled"],
-        [
-          "high-threshold-async-issue-biometric-credential-error-writing-audit-event",
-        ],
-        [
-          "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
-        ],
-        ["async-issue-biometric-credential-zero-vcs-issued"],
-        ["abort-session-lambda-throttle"],
-        ["active-session-lambda-throttle"],
-        ["biometric-token-lambda-throttle"],
-        ["credential-lambda-throttle"],
-        ["finish-biometric-session-lambda-throttle"],
-        ["token-lambda-throttle"],
-        ["txma-event-lambda-throttle"],
-        ["ipv-core-dlq-message-visible"],
-      ])(
-        "The %s alarm is configured to send an event to the critical SNS topic on Alarm and OK actions",
-        (alarmName: string) => {
+      const criticalAlarms = [
+        {
+          name: "high-threshold-well-known-5xx-api-gw",
+          runbookEnabled: true,
+        },
+        {
+          name: "high-threshold-async-token-5xx-api-gw",
+          runbookEnabled: true,
+        },
+        {
+          name: "high-threshold-async-token-4xx-api-gw",
+          runbookEnabled: true,
+        },
+        {
+          name: "high-threshold-async-credential-5xx-api-gw",
+          runbookEnabled: true,
+        },
+        {
+          name: "high-threshold-async-credential-4xx-api-gw",
+          runbookEnabled: true,
+        },
+        {
+          name: "high-threshold-async-active-session-5xx-api-gw",
+          runbookEnabled: true,
+        },
+        {
+          name: "high-threshold-async-active-session-4xx-api-gw",
+          runbookEnabled: true,
+        },
+        {
+          name: "high-threshold-async-biometric-token-5xx-api-gw",
+          runbookEnabled: true,
+        },
+        {
+          name: "high-threshold-async-biometric-token-4xx-api-gw",
+          runbookEnabled: true,
+        },
+        {
+          name: "high-threshold-async-finish-biometric-session-5xx-api-gw",
+          runbookEnabled: true,
+        },
+        {
+          name: "high-threshold-async-finish-biometric-session-4xx-api-gw",
+          runbookEnabled: true,
+        },
+        {
+          name: "high-threshold-async-abort-session-5xx-api-gw",
+          runbookEnabled: true,
+        },
+        {
+          name: "high-threshold-async-abort-session-4xx-api-gw",
+          runbookEnabled: true,
+        },
+        {
+          name: "high-threshold-vendor-processing-dlq-age-of-oldest-message",
+          runbookEnabled: true,
+        },
+        {
+          name: "high-threshold-ipv-core-dlq-age-of-oldest-message",
+          runbookEnabled: true,
+        },
+        {
+          name: "issue-biometric-credential-lambda-invalid-sqs-event",
+          runbookEnabled: true,
+        },
+        {
+          name: "high-threshold-async-issue-biometric-credential-parse-failure",
+          runbookEnabled: true,
+        },
+        {
+          name: "high-threshold-async-issue-biometric-credential-biometric-session-not-valid",
+          runbookEnabled: true,
+        },
+        {
+          name: "async-issue-biometric-credential-vendor-likeness-disabled",
+          runbookEnabled: true,
+        },
+        {
+          name: "high-threshold-async-issue-biometric-credential-error-writing-audit-event",
+          runbookEnabled: true,
+        },
+        {
+          name: "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
+          runbookEnabled: true,
+        },
+        {
+          name: "async-issue-biometric-credential-zero-vcs-issued",
+          runbookEnabled: true,
+        },
+        {
+          name: "abort-session-lambda-throttle",
+          runbookEnabled: true,
+        },
+        {
+          name: "active-session-lambda-throttle",
+          runbookEnabled: true,
+        },
+        {
+          name: "biometric-token-lambda-throttle",
+          runbookEnabled: true,
+        },
+        {
+          name: "credential-lambda-throttle",
+          runbookEnabled: true,
+        },
+        {
+          name: "finish-biometric-session-lambda-throttle",
+          runbookEnabled: true,
+        },
+        {
+          name: "token-lambda-throttle",
+          runbookEnabled: true,
+        },
+        {
+          name: "txma-event-lambda-throttle",
+          runbookEnabled: true,
+        },
+        {
+          name: "ipv-core-dlq-message-visible",
+          runbookEnabled: true,
+        },
+      ];
+
+      const snsCriticalTopicArn = {
+        "Fn::Sub":
+          "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical",
+      };
+
+      test("All critical alarms exist in CloudWatch configuration and notify correct SNS topic", () => {
+        criticalAlarms.forEach((alarm) => {
           template.hasResourceProperties("AWS::CloudWatch::Alarm", {
-            AlarmName: { "Fn::Sub": `\${AWS::StackName}-${alarmName}` },
-            AlarmActions: [
-              {
-                "Fn::Sub":
-                  "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical",
-              },
-            ],
-            OKActions: [
-              {
-                "Fn::Sub":
-                  "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical",
-              },
-            ],
+            AlarmName: { "Fn::Sub": `\${AWS::StackName}-${alarm.name}` },
+            AlarmActions: [snsCriticalTopicArn],
+            OKActions: [snsCriticalTopicArn],
             ActionsEnabled: true,
           });
-        },
-      );
+        });
+      });
+
+      test("All critical alarms have runbooks enabled as required", () => {
+        criticalAlarms.forEach((alarm) => {
+          const alarmDescriptionCapture = new Capture();
+          template.hasResourceProperties("AWS::CloudWatch::Alarm", {
+            AlarmName: { "Fn::Sub": `\${AWS::StackName}-${alarm.name}` },
+            AlarmDescription: alarmDescriptionCapture,
+          });
+
+          let descriptionText = "";
+          const descriptionObj = alarmDescriptionCapture.asObject();
+          if (descriptionObj["Fn::Sub"]) {
+            if (Array.isArray(descriptionObj["Fn::Sub"])) {
+              descriptionText = descriptionObj["Fn::Sub"][0];
+            } else {
+              descriptionText = descriptionObj["Fn::Sub"];
+            }
+          }
+
+          if (alarm.runbookEnabled) {
+            expect(descriptionText).toMatch(/runbook|support manual/i);
+          } else {
+            expect(descriptionText).not.toMatch(/runbook|support manual/i);
+          }
+        });
+      });
+
+      test("No extra critical alarms are configured", () => {
+        const alarms = template.findResources("AWS::CloudWatch::Alarm");
+        const templateAlarmNames = Object.values(alarms)
+          .filter((alarm: any) => {
+            const actions = alarm.Properties.AlarmActions || [];
+            return actions.some(
+              (action: any) =>
+                action["Fn::Sub"] &&
+                action["Fn::Sub"].includes("platform-alarms-sns-critical"),
+            );
+          })
+          .map((alarm: any) =>
+            alarm.Properties.AlarmName["Fn::Sub"].replace(
+              "${AWS::StackName}-",
+              "",
+            ),
+          );
+        const criticalAlarmNames = criticalAlarms.map((alarm) => alarm.name);
+
+        expect(new Set(templateAlarmNames)).toEqual(
+          new Set(criticalAlarmNames),
+        );
+      });
     });
 
     test("Account claimed concurrency alarm set to 80%", () => {
