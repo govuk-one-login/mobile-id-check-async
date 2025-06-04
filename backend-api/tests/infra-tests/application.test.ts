@@ -605,7 +605,7 @@ describe("Backend application infrastructure", () => {
         });
       });
 
-      test("No extra critical alarms are configured", () => {
+      test("All critical alarms are configured", () => {
         const alarms = template.findResources("AWS::CloudWatch::Alarm");
         const templateAlarmNames = Object.values(alarms)
           .filter((alarm: any) => {
