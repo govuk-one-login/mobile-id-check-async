@@ -568,7 +568,7 @@ describe("Backend application infrastructure", () => {
           "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical",
       };
 
-      test("All critical alarms are configured", () => {
+      test("No undocumented critical alarms exist", () => {
         const alarms = template.findResources("AWS::CloudWatch::Alarm");
         const templateAlarmNames = Object.values(alarms)
           .filter((alarm: any) => {
@@ -592,7 +592,7 @@ describe("Backend application infrastructure", () => {
         );
       });
 
-      test("All critical alarms exist in CloudWatch configuration and notify critical SNS topic", () => {
+      test("All documented critical alarms exist and notify critical SNS", () => {
         criticalAlarms.forEach((alarm) => {
           template.hasResourceProperties("AWS::CloudWatch::Alarm", {
             AlarmName: { "Fn::Sub": `\${AWS::StackName}-${alarm.name}` },
@@ -603,7 +603,7 @@ describe("Backend application infrastructure", () => {
         });
       });
 
-      test("All critical alarms have support manuals enabled as required", () => {
+      test("Critical alarms have support manuals when required", () => {
         criticalAlarms.forEach((alarm) => {
           const alarmDescriptionCapture = new Capture();
           template.hasResourceProperties("AWS::CloudWatch::Alarm", {
