@@ -468,7 +468,6 @@ describe("Backend application infrastructure", () => {
         [
           "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
         ],
-        ["async-issue-biometric-credential-zero-vcs-issued"],
         ["abort-session-lambda-throttle"],
         ["active-session-lambda-throttle"],
         ["biometric-token-lambda-throttle"],
@@ -477,6 +476,9 @@ describe("Backend application infrastructure", () => {
         ["token-lambda-throttle"],
         ["txma-event-lambda-throttle"],
         ["ipv-core-dlq-message-visible"],
+        ["zero-journeys-started"],
+        ["zero-vcs-issued"],
+        ["low-journey-completion"],
       ])(
         "The %s alarm is configured to send an event to the critical SNS topic on Alarm and OK actions",
         (alarmName: string) => {
