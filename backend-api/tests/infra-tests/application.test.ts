@@ -568,7 +568,31 @@ describe("Backend application infrastructure", () => {
           "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical",
       };
 
-      test("All critical alarms exist in CloudWatch configuration and notify correct SNS topic", () => {
+      test("All critical alarms are configured", () => {
+        const alarms = template.findResources("AWS::CloudWatch::Alarm");
+        const templateAlarmNames = Object.values(alarms)
+          .filter((alarm: any) => {
+            const actions = alarm.Properties.AlarmActions || [];
+            return actions.some(
+              (action: any) =>
+                action["Fn::Sub"] &&
+                action["Fn::Sub"].includes("platform-alarms-sns-critical"),
+            );
+          })
+          .map((alarm: any) =>
+            alarm.Properties.AlarmName["Fn::Sub"].replace(
+              "${AWS::StackName}-",
+              "",
+            ),
+          );
+        const criticalAlarmNames = criticalAlarms.map((alarm) => alarm.name);
+
+        expect(new Set(templateAlarmNames)).toEqual(
+          new Set(criticalAlarmNames),
+        );
+      });
+
+      test("All critical alarms exist in CloudWatch configuration and notify critical SNS topic", () => {
         criticalAlarms.forEach((alarm) => {
           template.hasResourceProperties("AWS::CloudWatch::Alarm", {
             AlarmName: { "Fn::Sub": `\${AWS::StackName}-${alarm.name}` },
@@ -603,30 +627,6 @@ describe("Backend application infrastructure", () => {
             expect(descriptionText).not.toMatch(/runbook|support manual/i);
           }
         });
-      });
-
-      test("All critical alarms are configured", () => {
-        const alarms = template.findResources("AWS::CloudWatch::Alarm");
-        const templateAlarmNames = Object.values(alarms)
-          .filter((alarm: any) => {
-            const actions = alarm.Properties.AlarmActions || [];
-            return actions.some(
-              (action: any) =>
-                action["Fn::Sub"] &&
-                action["Fn::Sub"].includes("platform-alarms-sns-critical"),
-            );
-          })
-          .map((alarm: any) =>
-            alarm.Properties.AlarmName["Fn::Sub"].replace(
-              "${AWS::StackName}-",
-              "",
-            ),
-          );
-        const criticalAlarmNames = criticalAlarms.map((alarm) => alarm.name);
-
-        expect(new Set(templateAlarmNames)).toEqual(
-          new Set(criticalAlarmNames),
-        );
       });
     });
 
