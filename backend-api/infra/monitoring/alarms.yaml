@@ -2226,11 +2226,38 @@ Resources:
       ComparisonOperator: GreaterThanOrEqualToThreshold
       TreatMissingData: notBreaching
 
-  AsyncIssueBiometricCredentialZeroVcsIssuedAlarm:
+  ZeroJourneysStartedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: DeployAlarms
+    DependsOn:
+      - "JourneysStartedMetricFilter"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
+      InsufficientDataActions: [ ]
+      AlarmDescription: !Sub
+        - "Alarms when no journeys have been started successfully in the past 25 minutes. See support manual: ${SupportManualUrl}"
+        - SupportManualUrl: !FindInMap [ StaticVariables, urls, SupportManual ]
+      AlarmName: !Sub "${AWS::StackName}-zero-journeys-started"
+      Namespace: !Sub "${AWS::StackName}/LogMessages"
+      MetricName: JourneysStarted
+      Statistic: Sum
+      Period: 1500
+      EvaluationPeriods: 1
+      DatapointsToAlarm: 1
+      Threshold: 0
+      ComparisonOperator: LessThanOrEqualToThreshold
+      TreatMissingData: breaching
+
+  ZeroVcsIssuedAlarm:
     Type: AWS::CloudWatch::Alarm
     Condition: DeployAlarms
     DependsOn:
       - "AsyncIssueBiometricCredentialMetricFilter"
+      - "JourneysStartedMetricFilter"
     Properties:
       ActionsEnabled: true
       AlarmActions:
@@ -2241,16 +2268,83 @@ Resources:
       AlarmDescription: !Sub
         - "Alarms when there have been 0 Verifiable Credentials issued and written onto the IPVCore outbound queue in the past 20 minutes. See support manual: ${SupportManualUrl}"
         - SupportManualUrl: !FindInMap [StaticVariables, urls, SupportManual]
-      AlarmName: !Sub "${AWS::StackName}-async-issue-biometric-credential-zero-vcs-issued"
-      Namespace: !Sub "${AWS::StackName}/LogMessages"
-      MetricName: AsyncIssueBiometricCredentialMessageCode
-      Dimensions:
-        - Name: MessageCode
-          Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED
-      Statistic: Sum
-      Period: 300
+      AlarmName: !Sub "${AWS::StackName}-zero-vcs-issued"
       EvaluationPeriods: 4
       DatapointsToAlarm: 4
       Threshold: 0
       ComparisonOperator: LessThanOrEqualToThreshold
       TreatMissingData: breaching
+      Metrics:
+        - Id: journeysStarted
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/LogMessages"
+              MetricName: JourneysStarted
+            Period: 300
+            Stat: Sum
+        - Id: vcsIssued
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/LogMessages"
+              MetricName: AsyncIssueBiometricCredentialMessageCode
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED
+            Period: 300
+            Stat: Sum
+        - Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+          Expression: IF(FILL(journeysStarted, 0) >= 25, vcsIssued, 1)
+
+  LowJourneyCompletionAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: DeployAlarms
+    DependsOn:
+      - "AsyncIssueBiometricCredentialMetricFilter"
+      - "JourneysStartedMetricFilter"
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
+      InsufficientDataActions: [ ]
+      AlarmDescription: !Sub
+        - "Alarms when fewer than 10% of journeys have completed (VC issued) in the past 20 minutes. See support manual: ${SupportManualUrl}"
+        - SupportManualUrl: !FindInMap [ StaticVariables, urls, SupportManual ]
+      AlarmName: !Sub "${AWS::StackName}-low-journey-completion"
+      EvaluationPeriods: 4
+      DatapointsToAlarm: 4
+      Threshold: 10
+      ComparisonOperator: LessThanOrEqualToThreshold
+      TreatMissingData: breaching
+      Metrics:
+        - Id: journeysStarted
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/LogMessages"
+              MetricName: JourneysStarted
+            Period: 300
+            Stat: Sum
+        - Id: vcsIssued
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/LogMessages"
+              MetricName: AsyncIssueBiometricCredentialMessageCode
+              Dimensions:
+                - Name: MessageCode
+                  Value: MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED
+            Period: 300
+            Stat: Sum
+        - Id: journeyCompletionRate
+          ReturnData: false
+          Expression: (vcsIssued/journeysStarted) * 100
+        - Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+          Expression: IF(FILL(journeysStarted, 0) >= 40, journeyCompletionRate, 100)

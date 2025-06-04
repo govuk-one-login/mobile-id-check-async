@@ -526,10 +526,6 @@ describe("Backend application infrastructure", () => {
           hasRunbookBeenSignedOff: true,
         },
         {
-          name: "async-issue-biometric-credential-zero-vcs-issued",
-          hasRunbookBeenSignedOff: true,
-        },
-        {
           name: "abort-session-lambda-throttle",
           hasRunbookBeenSignedOff: true,
         },
@@ -559,6 +555,18 @@ describe("Backend application infrastructure", () => {
         },
         {
           name: "ipv-core-dlq-message-visible",
+          hasRunbookBeenSignedOff: true,
+        },
+        {
+          name: "zero-journeys-started",
+          hasRunbookBeenSignedOff: true,
+        },
+        {
+          name: "zero-vcs-issued",
+          hasRunbookBeenSignedOff: true,
+        },
+        {
+          name: "low-journey-completion",
           hasRunbookBeenSignedOff: true,
         },
       ];
