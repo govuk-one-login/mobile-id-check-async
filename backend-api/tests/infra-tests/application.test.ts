@@ -622,9 +622,9 @@ describe("Backend application infrastructure", () => {
           }
 
           if (alarm.supportManualEnabled) {
-            expect(descriptionText).toMatch(/support manual/i);
+            expect(descriptionText).toContain("support manual");
           } else {
-            expect(descriptionText).not.toMatch(/support manual/i);
+            expect(descriptionText).not.toContain("support manual");
           }
         });
       });
