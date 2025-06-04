@@ -443,123 +443,123 @@ describe("Backend application infrastructure", () => {
       const criticalAlarms = [
         {
           name: "high-threshold-well-known-5xx-api-gw",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "high-threshold-async-token-5xx-api-gw",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "high-threshold-async-token-4xx-api-gw",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "high-threshold-async-credential-5xx-api-gw",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "high-threshold-async-credential-4xx-api-gw",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "high-threshold-async-active-session-5xx-api-gw",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "high-threshold-async-active-session-4xx-api-gw",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "high-threshold-async-biometric-token-5xx-api-gw",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "high-threshold-async-biometric-token-4xx-api-gw",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "high-threshold-async-finish-biometric-session-5xx-api-gw",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "high-threshold-async-finish-biometric-session-4xx-api-gw",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "high-threshold-async-abort-session-5xx-api-gw",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "high-threshold-async-abort-session-4xx-api-gw",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "high-threshold-vendor-processing-dlq-age-of-oldest-message",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "high-threshold-ipv-core-dlq-age-of-oldest-message",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "issue-biometric-credential-lambda-invalid-sqs-event",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "high-threshold-async-issue-biometric-credential-parse-failure",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "high-threshold-async-issue-biometric-credential-biometric-session-not-valid",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "async-issue-biometric-credential-vendor-likeness-disabled",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "high-threshold-async-issue-biometric-credential-error-writing-audit-event",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "high-threshold-async-issue-biometric-credential-failure-to-get-biometric-session-from-vendor",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "async-issue-biometric-credential-zero-vcs-issued",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "abort-session-lambda-throttle",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "active-session-lambda-throttle",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "biometric-token-lambda-throttle",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "credential-lambda-throttle",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "finish-biometric-session-lambda-throttle",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "token-lambda-throttle",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "txma-event-lambda-throttle",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
         {
           name: "ipv-core-dlq-message-visible",
-          runbookEnabled: true,
+          supportManualEnabled: true,
         },
       ];
 
@@ -603,7 +603,7 @@ describe("Backend application infrastructure", () => {
         });
       });
 
-      test("All critical alarms have runbooks enabled as required", () => {
+      test("All critical alarms have support manuals enabled as required", () => {
         criticalAlarms.forEach((alarm) => {
           const alarmDescriptionCapture = new Capture();
           template.hasResourceProperties("AWS::CloudWatch::Alarm", {
@@ -621,10 +621,10 @@ describe("Backend application infrastructure", () => {
             }
           }
 
-          if (alarm.runbookEnabled) {
-            expect(descriptionText).toMatch(/runbook|support manual/i);
+          if (alarm.supportManualEnabled) {
+            expect(descriptionText).toMatch(/support manual/i);
           } else {
-            expect(descriptionText).not.toMatch(/runbook|support manual/i);
+            expect(descriptionText).not.toMatch(/support manual/i);
           }
         });
       });
