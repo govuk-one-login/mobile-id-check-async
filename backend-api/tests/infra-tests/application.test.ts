@@ -416,6 +416,8 @@ describe("Backend application infrastructure", () => {
         ],
         ["lambda-claimed-account-concurrency-reaching-limit"],
         ["proxy-lambda-throttle"],
+        ["sessions-api-latency"],
+        ["private-api-latency"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
