@@ -838,6 +838,36 @@ Resources:
           MetricValue: "1"
     Condition: DeployAlarms
 
+  AsyncAbortSessionConcurrencyReachingLimitAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Reserved concurrency usage for Async Abort Session lambda has exceeded 80%. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-abort-session-concurrency-reaching-limit
+      ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref AsyncAbortSessionFunction
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: ConcurrentExecutions
+      Namespace: AWS/Lambda
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 64
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   AsyncAbortSessionErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -1396,6 +1426,36 @@ Resources:
           MetricName: AsyncActiveSessionMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
+    Condition: DeployAlarms
+
+  AsyncActiveSessionConcurrencyReachingLimitAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Reserved concurrency usage for Async Active Session lambda has exceeded 80%. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-active-session-concurrency-reaching-limit
+      ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref AsyncActiveSessionFunction
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: ConcurrentExecutions
+      Namespace: AWS/Lambda
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 64
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncActiveSessionErrorRateAlarm:
@@ -1963,6 +2023,36 @@ Resources:
           MetricName: AsyncBiometricTokenMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
+    Condition: DeployAlarms
+
+  AsyncBiometricTokenConcurrencyReachingLimitAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Reserved concurrency usage for Async Biometric Token lambda has exceeded 80%. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-biometric-token-concurrency-reaching-limit
+      ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref AsyncBiometricTokenFunction
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: ConcurrentExecutions
+      Namespace: AWS/Lambda
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 64
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncBiometricTokenErrorRateAlarm:
@@ -2563,6 +2653,36 @@ Resources:
           MetricValue: "1"
     Condition: DeployAlarms
 
+  AsyncCredentialConcurrencyReachingLimitAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Reserved concurrency usage for Async Credential lambda has exceeded 80%. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-credential-concurrency-reaching-limit
+      ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref AsyncCredentialFunction
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: ConcurrentExecutions
+      Namespace: AWS/Lambda
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 128
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   AsyncCredentialErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -3159,6 +3279,36 @@ Resources:
           MetricValue: "1"
     Condition: DeployAlarms
 
+  AsyncFinishBiometricSessionConcurrencyReachingLimitAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Reserved concurrency usage for Async Finish Biometric Session lambda has exceeded 80%. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-finish-biometric-session-concurrency-reaching-limit
+      ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref AsyncFinishBiometricSessionFunction
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: ConcurrentExecutions
+      Namespace: AWS/Lambda
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 64
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   AsyncFinishBiometricSessionErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -3517,6 +3667,36 @@ Resources:
           MetricName: AsyncIssueBiometricCredentialMessageCode
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "1"
+    Condition: DeployAlarms
+
+  AsyncIssueBiometricCredentialConcurrencyReachingLimitAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Reserved concurrency usage for Async Issue Biometric Credential lambda has exceeded 80%. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-issue-biometric-credential-concurrency-reaching-limit
+      ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref AsyncIssueBiometricCredentialFunction
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: ConcurrentExecutions
+      Namespace: AWS/Lambda
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 27
+      TreatMissingData: notBreaching
     Condition: DeployAlarms
 
   AsyncIssueBiometricCredentialDrivingLicenceExpiredAlarm:
@@ -4467,6 +4647,36 @@ Resources:
           MetricValue: "1"
     Condition: DeployAlarms
 
+  AsyncTokenConcurrencyReachingLimitAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Reserved concurrency usage for Async Token lambda has exceeded 80%. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-token-concurrency-reaching-limit
+      ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref AsyncTokenFunction
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: ConcurrentExecutions
+      Namespace: AWS/Lambda
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 128
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   AsyncTokenErrorRateAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -5017,6 +5227,36 @@ Resources:
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 1
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  AsyncTxmaEventConcurrencyReachingLimitAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Reserved concurrency usage for Async Txma Event lambda has exceeded 80%. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-txma-event-concurrency-reaching-limit
+      ComparisonOperator: GreaterThanThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref AsyncTxmaEventFunction
+      EvaluationPeriods: 1
+      InsufficientDataActions: []
+      MetricName: ConcurrentExecutions
+      Namespace: AWS/Lambda
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 64
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
