@@ -2348,3 +2348,96 @@ Resources:
           Label: errorThreshold
           ReturnData: true
           Expression: IF(FILL(journeysStarted, 0) >= 40, journeyCompletionRate, 100)
+
+  SessionsApiLatencyAlarm:
+    Condition: DeployAlarms
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmDescription: !Sub
+        - "Latency on the Sessions API has reached 2500ms in each of the past five minutes. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+      AlarmName: !Sub "${AWS::StackName}-sessions-api-latency"
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 5
+      EvaluationPeriods: 5
+      TreatMissingData: notBreaching
+      Threshold: 2500
+      Metrics:
+        - Id: invocations
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: Count
+              Dimensions:
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+            Period: 60
+            Stat: Sum
+        - Id: maxLatency
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: Latency
+              Dimensions:
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+            Period: 60
+            Stat: Maximum
+        - Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+          Expression: IF(invocations<10,0,maxLatency)
+
+  PrivateApiLatencyAlarm:
+    Condition: DeployAlarms
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmDescription: !Sub
+        - "Latency on the Private API has reached 2500ms in each of the past five minutes. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
+      AlarmName: !Sub "${AWS::StackName}-private-api-latency"
+      AlarmActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      OKActions:
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 5
+      EvaluationPeriods: 5
+      TreatMissingData: notBreaching
+      Threshold: 2500
+      Metrics:
+        - Id: invocations
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: Count
+              Dimensions:
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-private-api
+            Period: 60
+            Stat: Sum
+        - Id: maxLatency
+          ReturnData: false
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: Latency
+              Dimensions:
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-private-api
+            Period: 60
+            Stat: Maximum
+        - Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+          Expression: IF(invocations<10,0,maxLatency)
+

@@ -5847,6 +5847,55 @@ Resources:
       OpenApiVersion: 3.0.1
       StageName: !Ref Environment
 
+  PrivateApiLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Latency on the Private API has reached 2500ms in each of the past five minutes. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-private-api-latency
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 5
+      EvaluationPeriods: 5
+      Metrics:
+        - Id: invocations
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-private-api
+              MetricName: Count
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: maxLatency
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-private-api
+              MetricName: Latency
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Maximum
+          ReturnData: false
+        - Expression: IF(invocations<10,0,maxLatency)
+          Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 2500
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   ProxyApi:
     Type: AWS::Serverless::Api
     Properties:
@@ -6172,6 +6221,55 @@ Resources:
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
         - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneSessionsCertificateV2ARN}}'
       SecurityPolicy: TLS_1_2
+
+  SessionsApiLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Latency on the Sessions API has reached 2500ms in each of the past five minutes. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-sessions-api-latency
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 5
+      EvaluationPeriods: 5
+      Metrics:
+        - Id: invocations
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+              MetricName: Count
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: maxLatency
+          MetricStat:
+            Metric:
+              Dimensions:
+                - Name: ApiName
+                  Value: !Sub ${AWS::StackName}-sessions-api
+              MetricName: Latency
+              Namespace: AWS/ApiGateway
+            Period: 60
+            Stat: Maximum
+          ReturnData: false
+        - Expression: IF(invocations<10,0,maxLatency)
+          Id: errorThreshold
+          Label: errorThreshold
+          ReturnData: true
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Threshold: 2500
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
 
   SessionsApiOriginRecordSet:
     Type: AWS::Route53::RecordSet
