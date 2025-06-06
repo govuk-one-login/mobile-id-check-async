@@ -188,6 +188,7 @@ Mappings:
       JsonWebKeysReservedConcurrentExecutions: 1
       LogLevel: INFO
     production:
+      # If any reserved reserved concurrency value is updated, make sure to update the corresponding concurrency alarms
       ReservedConcurrentExecutions: 80
       IssueBiometricCredentialReservedConcurrentExecutions: 34
       AsyncTokenReservedConcurrentExecutions: 160
