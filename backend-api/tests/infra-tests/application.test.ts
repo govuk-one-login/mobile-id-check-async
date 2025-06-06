@@ -418,6 +418,7 @@ describe("Backend application infrastructure", () => {
         ["proxy-lambda-throttle"],
         ["sessions-api-latency"],
         ["private-api-latency"],
+        ["zero-journeys-started"],
       ])(
         "The %s alarm is configured to send an event to the warnings SNS topic on Alarm and OK actions",
         (alarmName: string) => {
@@ -557,10 +558,6 @@ describe("Backend application infrastructure", () => {
         },
         {
           name: "ipv-core-dlq-message-visible",
-          hasRunbookBeenSignedOff: true,
-        },
-        {
-          name: "zero-journeys-started",
           hasRunbookBeenSignedOff: true,
         },
         {

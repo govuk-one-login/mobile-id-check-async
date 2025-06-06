@@ -2234,9 +2234,9 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
+        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       InsufficientDataActions: [ ]
       AlarmDescription: !Sub
         - "Alarms when no journeys have been started successfully in the past 25 minutes. See support manual: ${SupportManualUrl}"
