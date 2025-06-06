@@ -260,7 +260,6 @@ describe("Async Abort Session", () => {
             govukSigninJourneyId: expiredSessionAttributes.govukSigninJourneyId,
             sessionId: expiredSessionAttributes.sessionId,
             sub: expiredSessionAttributes.subjectIdentifier,
-            suspected_fraud_signal: "AUTH_SESSION_TOO_OLD",
             ipAddress: "1.1.1.1",
             txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
           });

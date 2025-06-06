@@ -41,11 +41,6 @@ export async function handleConditionalCheckFailure(
   // Check if session is expired using either utility or direct calculation
   const isSessionExpired = isOlderThan60Minutes(sessionAttributes.createdAt);
 
-  const getFraudSignal = (): string | undefined => {
-    if (isSessionExpired) return "AUTH_SESSION_TOO_OLD";
-    return undefined;
-  };
-
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_4XXERROR",
     sub: sessionAttributes.subjectIdentifier,
@@ -57,7 +52,7 @@ export async function handleConditionalCheckFailure(
     ipAddress,
     txmaAuditEncoded,
     redirect_uri: sessionAttributes.redirectUri,
-    suspected_fraud_signal: getFraudSignal(),
+    suspected_fraud_signal: undefined,
   });
 
   if (writeEventResult.isError) {
