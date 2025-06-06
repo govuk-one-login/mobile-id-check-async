@@ -1214,6 +1214,7 @@ describe("Async Issue Biometric Credential", () => {
               componentId: mockIssuer,
               getNowInMilliseconds: Date.now,
               sessionId: mockSessionId,
+              transactionId: mockBiometricSessionId,
               govukSigninJourneyId: mockGovukSigninJourneyId,
               ipAddress: undefined,
               redirect_uri: undefined,

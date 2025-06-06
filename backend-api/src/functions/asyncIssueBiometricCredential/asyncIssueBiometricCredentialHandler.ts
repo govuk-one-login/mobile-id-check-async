@@ -602,6 +602,7 @@ const writeCriEndEvent = async (
     sessionId,
     issuer,
     redirectUri,
+    biometricSessionId,
   } = sessionAttributes;
 
   const writeCriEndEventResult = await eventService.writeGenericEvent({
@@ -609,6 +610,7 @@ const writeCriEndEvent = async (
     sub: subjectIdentifier,
     sessionId,
     govukSigninJourneyId,
+    transactionId: biometricSessionId,
     componentId: issuer,
     getNowInMilliseconds: Date.now,
     ipAddress: undefined,
