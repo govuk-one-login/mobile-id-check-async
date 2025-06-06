@@ -7015,7 +7015,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
         - 'Alarms when no journeys have been started successfully in the past 25 minutes. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -7030,7 +7030,7 @@ Resources:
       MetricName: JourneysStarted
       Namespace: !Sub ${AWS::StackName}/LogMessages
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Period: 1500
       Statistic: Sum
       Threshold: 0
