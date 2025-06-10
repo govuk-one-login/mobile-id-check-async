@@ -445,6 +445,7 @@ describe("Async Active Session", () => {
       it("Logs ACTIVE_SESSION_COMPLETE", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_COMPLETED",
+          activeSessionFound: false,
         });
       });
 
@@ -475,6 +476,7 @@ describe("Async Active Session", () => {
       it("Logs COMPLETED with persistent identifiers", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_COMPLETED",
+          activeSessionFound: true,
           persistentIdentifiers: {
             sessionId: mockSessionId,
           },

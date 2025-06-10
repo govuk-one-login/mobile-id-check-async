@@ -85,13 +85,17 @@ export async function lambdaHandlerConstructor(
   const session = getActiveSessionResult.value;
   if (session === null) {
     logger.info(LogMessage.ACTIVE_SESSION_ACTIVE_SESSION_NOT_FOUND);
-    logger.info(LogMessage.ACTIVE_SESSION_COMPLETED);
+    logger.info(LogMessage.ACTIVE_SESSION_COMPLETED, {
+      activeSessionFound: false,
+    });
     return notFoundResponse;
   }
 
   appendPersistentIdentifiersToLogger({ sessionId: session.sessionId });
 
-  logger.info(LogMessage.ACTIVE_SESSION_COMPLETED);
+  logger.info(LogMessage.ACTIVE_SESSION_COMPLETED, {
+    activeSessionFound: true,
+  });
 
   return {
     headers: { "Content-Type": "application/json" },
