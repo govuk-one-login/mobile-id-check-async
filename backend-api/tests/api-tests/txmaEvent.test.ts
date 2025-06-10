@@ -70,7 +70,6 @@ describe("POST /async/txmaEvent", () => {
     });
   });
 
-  // Test coverage for billing events
   describe.each([
     "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
     "DCMAW_ASYNC_IPROOV_BILLING_STARTED",
