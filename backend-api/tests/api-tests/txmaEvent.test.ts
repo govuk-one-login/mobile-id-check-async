@@ -70,7 +70,12 @@ describe("POST /async/txmaEvent", () => {
     });
   });
 
-  describe("Given the request is valid", () => {
+  // Test coverage for billing events
+  describe.each([
+    "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+    "DCMAW_ASYNC_IPROOV_BILLING_STARTED",
+    "DCMAW_ASYNC_READID_NFC_BILLING_STARTED",
+  ])("Given the request is valid - %s", (eventName) => {
     let sessionId: string | null;
     let response: AxiosResponse;
     let eventsResponse: EventResponse[];
@@ -83,7 +88,7 @@ describe("POST /async/txmaEvent", () => {
 
       const requestBody = {
         sessionId,
-        eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+        eventName,
       };
       response = await SESSIONS_API_INSTANCE.post(
         "/async/txmaEvent",
@@ -92,7 +97,7 @@ describe("POST /async/txmaEvent", () => {
 
       eventsResponse = await pollForEvents({
         partitionKey: `SESSION#${sessionId}`,
-        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_HYBRID_BILLING_STARTED`,
+        sortKeyPrefix: `TXMA#EVENT_NAME#${eventName}`,
         numberOfEvents: 1,
       });
     }, 70000);
@@ -100,7 +105,7 @@ describe("POST /async/txmaEvent", () => {
     it("Writes an event with the correct event_name", async () => {
       expect(eventsResponse[0].event).toEqual(
         expect.objectContaining({
-          event_name: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+          event_name: eventName,
         }),
       );
     });
