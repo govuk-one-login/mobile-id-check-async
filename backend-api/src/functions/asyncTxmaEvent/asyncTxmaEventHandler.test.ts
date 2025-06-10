@@ -243,14 +243,13 @@ describe("Async TxMA Event", () => {
     beforeEach(async () => {
       dependencies.getSessionRegistry = () =>
         mockTxmaEventSessionRegistrySuccess;
-      result = await lambdaHandlerConstructor(
-        dependencies,
-        validRequest,
-        context,
-      );
     });
 
-    describe("Given a TxMA billing event fails to write to TxMA (e.g. DCMAW_ASYNC_HYBRID_BILLING_STARTED)", () => {
+    describe.each([
+      "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+      "DCMAW_ASYNC_IPROOV_BILLING_STARTED",
+      "DCMAW_ASYNC_READID_NFC_BILLING_STARTED",
+    ])("Given TxMA billing event %s fails to write to TxMA", (eventName) => {
       beforeEach(async () => {
         dependencies.getEventService = () => ({
           ...mockInertEventService,
@@ -261,22 +260,26 @@ describe("Async TxMA Event", () => {
           ),
         });
 
-        result = await lambdaHandlerConstructor(
-          dependencies,
-          validRequest,
-          context,
-        );
+        const request = buildRequest({
+          body: JSON.stringify({
+            sessionId: mockSessionId,
+            eventName,
+          }),
+        });
+
+        result = await lambdaHandlerConstructor(dependencies, request, context);
       });
+
       it("Logs the error", async () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
           data: {
-            auditEventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+            auditEventName: eventName,
           },
         });
       });
 
-      it("Returns 500 Internal Server Error ", async () => {
+      it("Returns 500 Internal Server Error", async () => {
         expect(result).toStrictEqual({
           statusCode: 500,
           body: JSON.stringify({
@@ -288,40 +291,64 @@ describe("Async TxMA Event", () => {
       });
     });
 
-    describe("Given a TxMA billing event successfully writes to TxMA (e.g. DCMAW_ASYNC_HYBRID_BILLING_STARTED)", () => {
-      it("Writes DCMAW_ASYNC_HYBRID_BILLING_STARTED event to TxMA", () => {
-        expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
-          eventName: "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
-          componentId: "mockIssuer",
-          getNowInMilliseconds: Date.now,
-          govukSigninJourneyId: "mockGovukSigninJourneyId",
-          sessionId: mockSessionId,
-          sub: "mockSubjectIdentifier",
-          ipAddress: "1.1.1.1",
-          txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
-          redirect_uri: undefined,
-          suspected_fraud_signal: undefined,
+    describe.each([
+      "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+      "DCMAW_ASYNC_IPROOV_BILLING_STARTED",
+      "DCMAW_ASYNC_READID_NFC_BILLING_STARTED",
+    ])(
+      "Given TxMA billing event %s successfully writes to TxMA",
+      (eventName) => {
+        beforeEach(async () => {
+          dependencies.getEventService = () => mockSuccessfulEventService;
+
+          const request = buildRequest({
+            body: JSON.stringify({
+              sessionId: mockSessionId,
+              eventName,
+            }),
+          });
+
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            request,
+            context,
+          );
         });
-      });
-    });
 
-    it("Logs COMPLETED with persistent identifiers", () => {
-      expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-        messageCode: "MOBILE_ASYNC_TXMA_EVENT_COMPLETED",
-        persistentIdentifiers: {
-          sessionId: mockSessionId,
-          govukSigninJourneyId: mockGovukSigninJourneyId,
-        },
-      });
-    });
+        it(`Writes ${eventName} event to TxMA`, () => {
+          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+            eventName,
+            componentId: "mockIssuer",
+            getNowInMilliseconds: Date.now,
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            sessionId: mockSessionId,
+            sub: "mockSubjectIdentifier",
+            ipAddress: "1.1.1.1",
+            txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
+            redirect_uri: undefined,
+            suspected_fraud_signal: undefined,
+          });
+        });
 
-    it("Returns 200 OK response", () => {
-      expect(result).toStrictEqual({
-        headers: expectedSecurityHeaders,
-        statusCode: 200,
-        body: "",
-      });
-    });
+        it("Logs COMPLETED with persistent identifiers", () => {
+          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_TXMA_EVENT_COMPLETED",
+            persistentIdentifiers: {
+              sessionId: mockSessionId,
+              govukSigninJourneyId: mockGovukSigninJourneyId,
+            },
+          });
+        });
+
+        it("Returns 200 OK response", () => {
+          expect(result).toStrictEqual({
+            headers: expectedSecurityHeaders,
+            statusCode: 200,
+            body: "",
+          });
+        });
+      },
+    );
   });
 });
 
