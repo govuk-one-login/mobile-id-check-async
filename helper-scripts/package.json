@@ -16,14 +16,14 @@
   "license": "MIT",
   "dependencies": {
     "inquirer": "^12.6.3",
-    "zx": "^8.5.4"
+    "zx": "^8.5.5"
   },
   "devDependencies": {
-    "@types/node": "^22.15.29",
+    "@types/node": "^22.15.31",
     "eslint": "^9.28.0",
     "eslint-config-prettier": "^10.1.5",
     "prettier": "^3.4.2",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.33.1"
+    "typescript-eslint": "^8.34.0"
   }
 }
