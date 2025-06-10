@@ -442,6 +442,12 @@ describe("Async Active Session", () => {
         });
       });
 
+      it("Logs ACTIVE_SESSION_COMPLETE", () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_COMPLETED",
+        });
+      });
+
       it("Returns 404 Not Found", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
