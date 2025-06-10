@@ -442,6 +442,13 @@ describe("Async Active Session", () => {
         });
       });
 
+      it("Logs ACTIVE_SESSION_COMPLETE", () => {
+        expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+          messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_COMPLETED",
+          activeSessionFound: false,
+        });
+      });
+
       it("Returns 404 Not Found", () => {
         expect(result).toStrictEqual({
           headers: { "Content-Type": "application/json" },
@@ -469,6 +476,7 @@ describe("Async Active Session", () => {
       it("Logs COMPLETED with persistent identifiers", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ACTIVE_SESSION_COMPLETED",
+          activeSessionFound: true,
           persistentIdentifiers: {
             sessionId: mockSessionId,
           },
