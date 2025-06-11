@@ -9,13 +9,6 @@ import { ISessionService } from "../sessionService";
 import { Session } from "../types";
 
 export class MockSessionServiceGetErrorResult implements ISessionService {
-  getActiveSessionId = async (): Promise<Result<string | null>> => {
-    return errorResult({
-      errorMessage: "Mock error when getting session ID",
-      errorCategory: ErrorCategory.SERVER_ERROR,
-    });
-  };
-
   getActiveSession = async (): Promise<Result<Session | null>> => {
     return errorResult({
       errorMessage: "Mock error when getting session details",
@@ -29,10 +22,6 @@ export class MockSessionServiceGetErrorResult implements ISessionService {
 }
 
 export class MockSessionServiceGetNullSuccessResult implements ISessionService {
-  getActiveSessionId = async (): Promise<Result<string | null>> => {
-    return successResult(null);
-  };
-
   getActiveSession = async (): Promise<Result<Session | null>> => {
     return successResult(null);
   };
@@ -43,10 +32,6 @@ export class MockSessionServiceGetNullSuccessResult implements ISessionService {
 }
 
 export class MockSessionServiceGetSuccessResult implements ISessionService {
-  getActiveSessionId = async (): Promise<Result<string | null>> => {
-    return successResult(mockSessionId);
-  };
-
   getActiveSession = async (): Promise<Result<Session | null>> => {
     return successResult({
       sessionId: mockSessionId,
@@ -61,10 +46,6 @@ export class MockSessionServiceGetSuccessResult implements ISessionService {
 }
 
 export class MockSessionServiceCreateSuccessResult implements ISessionService {
-  getActiveSessionId = async (): Promise<Result<string | null>> => {
-    return successResult(null);
-  };
-
   getActiveSession = async (): Promise<Result<Session | null>> => {
     return successResult(null);
   };
@@ -75,10 +56,6 @@ export class MockSessionServiceCreateSuccessResult implements ISessionService {
 }
 
 export class MockSessionServiceCreateErrorResult implements ISessionService {
-  getActiveSessionId = async (): Promise<Result<string | null>> => {
-    return successResult(null);
-  };
-
   getActiveSession = async (): Promise<Result<Session | null>> => {
     return successResult(null);
   };

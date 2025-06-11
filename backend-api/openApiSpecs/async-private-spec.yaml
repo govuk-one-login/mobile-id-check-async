@@ -235,19 +235,6 @@ paths:
                     }
               schema:
                 $ref: "#/components/schemas/CredentialResponse"
-        '200':
-          description: OK
-          content:
-            application/json:
-              examples:
-                success:
-                  value:
-                    {
-                      "sub": "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
-                      "https://vocab.account.gov.uk/v1/credentialStatus": "pending"
-                    }
-              schema:
-                $ref: "#/components/schemas/CredentialResponse"
         '400':
           description: Bad request
           content:

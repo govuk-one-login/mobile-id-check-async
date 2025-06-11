@@ -15,9 +15,6 @@ export interface ISessionService {
   createSession: (
     attributes: CreateSessionAttributes,
   ) => Promise<Result<string>>;
-  getActiveSessionId: (
-    subjectIdentifier: string,
-  ) => Promise<Result<string | null>>;
   getActiveSession: (
     subjectIdentifier: string,
   ) => Promise<Result<Session | null>>;
@@ -40,39 +37,6 @@ export class SessionService implements ISessionService {
     } catch (error) {
       return errorResult({
         errorMessage: `Error creating session - ${error}`,
-        errorCategory: ErrorCategory.SERVER_ERROR,
-      });
-    }
-
-    return successResult(sessionId);
-  }
-
-  async getActiveSessionId(
-    subjectIdentifier: string,
-  ): Promise<Result<string | null>> {
-    const attributesToGet = ["sessionId"];
-
-    let record;
-    try {
-      record = await this.dynamoDbAdapter.getActiveSession(
-        subjectIdentifier,
-        attributesToGet,
-      );
-    } catch (error) {
-      return errorResult({
-        errorMessage: `Error getting session ID - ${error}`,
-        errorCategory: ErrorCategory.SERVER_ERROR,
-      });
-    }
-
-    if (!record) {
-      return successResult(null);
-    }
-
-    const sessionId = record.sessionId;
-    if (!sessionId) {
-      return errorResult({
-        errorMessage: "Session is malformed",
         errorCategory: ErrorCategory.SERVER_ERROR,
       });
     }
