@@ -9,6 +9,7 @@ import {
   pollForEvents,
 } from "./utils/apiTestHelpers";
 import { randomUUID } from "crypto";
+import { txmaBillingEventNames } from "../../src/functions/services/events/types";
 
 describe("POST /async/txmaEvent", () => {
   describe("Given request body is invalid", () => {
@@ -70,51 +71,50 @@ describe("POST /async/txmaEvent", () => {
     });
   });
 
-  describe.each([
-    "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
-    "DCMAW_ASYNC_IPROOV_BILLING_STARTED",
-    "DCMAW_ASYNC_READID_NFC_BILLING_STARTED",
-  ])("Given the request is valid - %s", (eventName) => {
-    let sessionId: string | null;
-    let response: AxiosResponse;
-    let eventsResponse: EventResponse[];
+  describe.each(txmaBillingEventNames)(
+    "Given the request is valid - %s",
+    (eventName) => {
+      let sessionId: string | null;
+      let response: AxiosResponse;
+      let eventsResponse: EventResponse[];
 
-    beforeAll(async () => {
-      const sub = randomUUID();
-      await createSessionForSub(sub);
-      sessionId = await getActiveSessionIdFromSub(sub);
-      await issueBiometricToken(sessionId);
+      beforeAll(async () => {
+        const sub = randomUUID();
+        await createSessionForSub(sub);
+        sessionId = await getActiveSessionIdFromSub(sub);
+        await issueBiometricToken(sessionId);
 
-      const requestBody = {
-        sessionId,
-        eventName,
-      };
-      response = await SESSIONS_API_INSTANCE.post(
-        "/async/txmaEvent",
-        requestBody,
-      );
+        const requestBody = {
+          sessionId,
+          eventName,
+        };
+        response = await SESSIONS_API_INSTANCE.post(
+          "/async/txmaEvent",
+          requestBody,
+        );
 
-      eventsResponse = await pollForEvents({
-        partitionKey: `SESSION#${sessionId}`,
-        sortKeyPrefix: `TXMA#EVENT_NAME#${eventName}`,
-        numberOfEvents: 1,
+        eventsResponse = await pollForEvents({
+          partitionKey: `SESSION#${sessionId}`,
+          sortKeyPrefix: `TXMA#EVENT_NAME#${eventName}`,
+          numberOfEvents: 1,
+        });
+      }, 70000);
+
+      it("Writes an event with the correct event_name", async () => {
+        expect(eventsResponse[0].event).toEqual(
+          expect.objectContaining({
+            event_name: eventName,
+          }),
+        );
       });
-    }, 70000);
 
-    it("Writes an event with the correct event_name", async () => {
-      expect(eventsResponse[0].event).toEqual(
-        expect.objectContaining({
-          event_name: eventName,
-        }),
-      );
-    });
-
-    it("Returns 200 OK response", () => {
-      expect(response.status).toBe(200);
-      expect(response.data).toStrictEqual("");
-      expect(response.headers).toEqual(
-        expect.objectContaining(expectedSecurityHeaders),
-      );
-    });
-  });
+      it("Returns 200 OK response", () => {
+        expect(response.status).toBe(200);
+        expect(response.data).toStrictEqual("");
+        expect(response.headers).toEqual(
+          expect.objectContaining(expectedSecurityHeaders),
+        );
+      });
+    },
+  );
 });

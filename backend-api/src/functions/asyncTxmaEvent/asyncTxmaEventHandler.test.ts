@@ -20,6 +20,7 @@ import { errorResult, successResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncTxmaEventHandler";
 import { IAsyncTxmaEventDependencies } from "./handlerDependencies";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
+import { txmaBillingEventNames } from "../services/events/types";
 
 describe("Async TxMA Event", () => {
   let dependencies: IAsyncTxmaEventDependencies;
@@ -27,12 +28,6 @@ describe("Async TxMA Event", () => {
   let consoleInfoSpy: jest.SpyInstance;
   let consoleErrorSpy: jest.SpyInstance;
   let result: APIGatewayProxyResult;
-
-  const billingEvents = [
-    "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
-    "DCMAW_ASYNC_IPROOV_BILLING_STARTED",
-    "DCMAW_ASYNC_READID_NFC_BILLING_STARTED",
-  ];
 
   beforeEach(() => {
     jest.useFakeTimers();
@@ -264,7 +259,7 @@ describe("Async TxMA Event", () => {
       });
 
       it("Logs the error and returns 500 Internal Server Error for all billing events", async () => {
-        for (const eventName of billingEvents) {
+        for (const eventName of txmaBillingEventNames) {
           const request = buildRequest({
             body: JSON.stringify({
               sessionId: mockSessionId,
@@ -303,7 +298,7 @@ describe("Async TxMA Event", () => {
       });
 
       it("Writes events to TxMA, logs completion, and returns 200 OK for all billing events", async () => {
-        for (const eventName of billingEvents) {
+        for (const eventName of txmaBillingEventNames) {
           const request = buildRequest({
             body: JSON.stringify({
               sessionId: mockSessionId,
