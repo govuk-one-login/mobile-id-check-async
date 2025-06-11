@@ -70,7 +70,11 @@ describe("POST /async/txmaEvent", () => {
     });
   });
 
-  describe.each(billingEvents)("Given the request is valid - %s", (eventName) => {
+  describe.each([
+    "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+    "DCMAW_ASYNC_IPROOV_BILLING_STARTED",
+    "DCMAW_ASYNC_READID_NFC_BILLING_STARTED",
+  ])("Given the request is valid - %s", (eventName) => {
     let sessionId: string | null;
     let response: AxiosResponse;
     let eventsResponse: EventResponse[];
