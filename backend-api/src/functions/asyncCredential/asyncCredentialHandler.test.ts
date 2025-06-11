@@ -28,7 +28,6 @@ import {
 import {
   MockSessionServiceCreateErrorResult,
   MockSessionServiceCreateSuccessResult,
-  MockSessionServiceGetErrorResult,
   MockSessionServiceGetSuccessResult,
 } from "../services/session/tests/mocks";
 import { buildLambdaContext } from "../testUtils/mockContext";
@@ -787,81 +786,6 @@ describe("Async Credential", () => {
   });
 
   describe("Session Service", () => {
-    describe("Get an active session", () => {
-      describe("Given there is an error checking for an existing session", () => {
-        it("Returns 500 Server Error", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          const event = buildRequest({
-            headers: { Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}` },
-            body: JSON.stringify({
-              state: "mockState",
-              sub: "mockSub",
-              client_id: "mockClientId",
-              govuk_signin_journey_id: "mockGovukSigninJourneyId",
-            }),
-          });
-          dependencies.sessionService = () =>
-            new MockSessionServiceGetErrorResult();
-
-          const result = await lambdaHandlerConstructor(
-            dependencies,
-            event,
-            context,
-          );
-
-          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_GET_ACTIVE_SESSION_FAILURE",
-            errorMessage: "Mock error when getting session ID",
-          });
-
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 500,
-            body: JSON.stringify({
-              error: "server_error",
-              error_description: "Server Error",
-            }),
-          });
-        });
-      });
-
-      describe("Given there is an active session", () => {
-        it("Returns 200 OK", async () => {
-          const jwtBuilder = new MockJWTBuilder();
-          const event = buildRequest({
-            headers: {
-              Authorization: `Bearer ${jwtBuilder.getEncodedJwt()}`,
-            },
-            body: JSON.stringify({
-              state: "mockState",
-              sub: "mockSub",
-              client_id: "mockClientId",
-              govuk_signin_journey_id: "mockGovukSigninJourneyId",
-            }),
-          });
-
-          const result = await lambdaHandlerConstructor(
-            dependencies,
-            event,
-            context,
-          );
-
-          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "MOBILE_ASYNC_CREDENTIAL_COMPLETED",
-          });
-
-          expect(result).toStrictEqual({
-            headers: { "Content-Type": "application/json" },
-            statusCode: 200,
-            body: JSON.stringify({
-              sub: "mockSub",
-              "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
-            }),
-          });
-        });
-      });
-    });
-
     describe("Create a session", () => {
       describe("Given there is an error creating a session", () => {
         it("Returns 500 Server Error", async () => {

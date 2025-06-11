@@ -268,71 +268,7 @@ describe.each(apis)(
         });
       });
 
-      describe("Given the request is valid and an active session is found for a given sub", () => {
-        it("Returns 200 OK", async () => {
-          // Create session if it does not exist
-          await axiosInstance.post(`/async/credential`, credentialRequestBody, {
-            headers: {
-              [authorizationHeader]: "Bearer " + accessToken,
-            },
-          });
-
-          const response = await axiosInstance.post(
-            `/async/credential`,
-            credentialRequestBody,
-            {
-              headers: {
-                [authorizationHeader]: "Bearer " + accessToken,
-              },
-            },
-          );
-
-          expect(response.data).toStrictEqual({
-            "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
-            sub: "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
-          });
-          expect(response.status).toBe(200);
-        });
-      });
-
-      describe("Given the same access token is used more than once to fetch an active session", () => {
-        it("Returns 200 OK", async () => {
-          // use access token once
-          const responseOne = await axiosInstance.post(
-            `/async/credential`,
-            credentialRequestBody,
-            {
-              headers: {
-                [authorizationHeader]: "Bearer " + accessToken,
-              },
-            },
-          );
-
-          // use access token twice
-          const responseTwo = await axiosInstance.post(
-            `/async/credential`,
-            credentialRequestBody,
-            {
-              headers: {
-                [authorizationHeader]: "Bearer " + accessToken,
-              },
-            },
-          );
-
-          expect(responseOne.data).toStrictEqual({
-            "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
-            sub: "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
-          });
-          expect(responseOne.status).toBe(200);
-          expect(responseTwo.data).toStrictEqual({
-            "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
-            sub: "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
-          });
-          expect(responseTwo.status).toBe(200);
-        });
-      });
-
-      describe("Given the request is valid and there is no active session for the given sub", () => {
+      describe("Given the request is valid", () => {
         let randomSub: UUID;
         let response: AxiosResponse;
 

@@ -160,24 +160,6 @@ export async function lambdaHandlerConstructor(
 
   const sessionService = dependencies.sessionService(config.SESSION_TABLE_NAME);
 
-  const getActiveSessionIdResult = await sessionService.getActiveSessionId(
-    requestBody.sub,
-  );
-  if (getActiveSessionIdResult.isError) {
-    logger.error(LogMessage.GET_ACTIVE_SESSION_FAILURE, {
-      errorMessage: getActiveSessionIdResult.value.errorMessage,
-    });
-    return serverErrorResponse;
-  }
-  if (getActiveSessionIdResult.value) {
-    appendPersistentIdentifiersToLogger({
-      sessionId: getActiveSessionIdResult.value,
-    });
-
-    logger.info(LogMessage.CREDENTIAL_COMPLETED);
-    return activeSessionFoundResponse(requestBody.sub);
-  }
-
   const createSessionResult = await sessionService.createSession({
     ...requestBody,
     issuer: jwtPayload.iss,
@@ -252,17 +234,6 @@ const serverErrorResponse: APIGatewayProxyResult = {
     error: "server_error",
     error_description: "Server Error",
   }),
-};
-
-const activeSessionFoundResponse = (sub: string): APIGatewayProxyResult => {
-  return {
-    headers: { "Content-Type": "application/json" },
-    statusCode: 200,
-    body: JSON.stringify({
-      sub,
-      "https://vocab.account.gov.uk/v1/credentialStatus": "pending",
-    }),
-  };
 };
 
 const sessionCreatedResponse = (sub: string): APIGatewayProxyResult => {
