@@ -6,7 +6,10 @@ import {
   askWhichStacksToDelete,
 } from "./prompts.js";
 import { protectedStacks } from "../protectedStacks.js";
-import { CloudFormationClient, DescribeStacksCommand } from "@aws-sdk/client-cloudformation";
+import {
+  CloudFormationClient,
+  DescribeStacksCommand,
+} from "@aws-sdk/client-cloudformation";
 
 export interface PrioritisedStacks {
   stacksToDeleteOrder01: string[];
