@@ -1,6 +1,6 @@
 # Helper scripts
 
-## `deleteStackSets.ts`
+## `deleteStacks.ts`
 
 ### What it does
 
@@ -12,7 +12,7 @@
 
 ```bash
 # From /helper-scripts
-npm run deleteStackSets
+npm run deleteStacks
 ```
 
 Follow the prompts to delete your desired stacks

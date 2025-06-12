@@ -9,7 +9,7 @@
   "scripts": {
     "build": "./node_modules/.bin/tsc",
     "generateHashedSecret": "npm run build --silent && node dist/generateHashedSecret/generateHashedSecret --silent",
-    "deleteStackSets": "npm run build && node dist/deleteStackSets/deleteStackSets",
+    "deleteStacks": "npm run build && node dist/deleteStacks/deleteStacks",
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
     "lint": "./node_modules/.bin/eslint ./src"

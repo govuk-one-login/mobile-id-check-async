@@ -1,14 +1,14 @@
 import { getStacks } from "./getStacks/getStacks.js";
-import { deleteStacks } from "./deleteStacks/deleteStacks.js";
+import { deleteCloudFormationStacks } from "./deleteCloudFormationStacks/deleteCloudFormationStacks.js";
 import { chalk, echo } from "zx";
 
-export const deleteStackSets = async (): Promise<void> => {
+export const deleteStacks = async (): Promise<void> => {
   try {
     const stacks = await getStacks();
-    await deleteStacks(stacks);
+    await deleteCloudFormationStacks(stacks);
   } catch (error: unknown) {
     echo(chalk.red("There was an error. Error:", error));
   }
 };
 
-await deleteStackSets();
+await deleteStacks();

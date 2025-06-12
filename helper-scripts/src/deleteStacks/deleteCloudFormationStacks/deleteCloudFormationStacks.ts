@@ -1,7 +1,7 @@
 import { $, chalk, echo } from "zx";
 import { PrioritisedStacks } from "../getStacks/getStacks.js";
 
-export const deleteStacks = async (
+export const deleteCloudFormationStacks = async (
   stacks: PrioritisedStacks,
 ): Promise<void> => {
   const {
