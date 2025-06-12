@@ -48,6 +48,7 @@ const getStackCandidates = async (
   baseStackNames: string[],
 ): Promise<string[]> => {
   const candidates: string[] = [];
+  const existingStacks = await getExistingStackNames();
 
   for (const stackName of baseStackNames) {
     const potentialStacks = [
@@ -57,10 +58,9 @@ const getStackCandidates = async (
     ];
 
     for (const stack of potentialStacks) {
-      try {
-        await doesStackExist(stack);
+      if (existingStacks.has(stack)) {
         candidates.push(stack);
-      } catch {
+      } else {
         echo(chalk.dim.italic(`No stack found with name: ${stack}`));
       }
     }
@@ -69,15 +69,25 @@ const getStackCandidates = async (
   return candidates;
 };
 
-const doesStackExist = async (stackName: string): Promise<void> => {
+const getExistingStackNames = async (): Promise<Set<string>> => {
   const cloudFormation = new CloudFormationClient({
     region: "eu-west-2",
   });
-  await cloudFormation.send(
-    new DescribeStacksCommand({
-      StackName: stackName,
-    }),
-  );
+
+  const existing = new Set<string>();
+  try {
+    const response = await cloudFormation.send(new DescribeStacksCommand({}));
+    for (const stack of response.Stacks ?? []) {
+      if (stack.StackName) {
+        existing.add(stack.StackName);
+      }
+    }
+  } catch (error: unknown) {
+    echo(chalk.red("Failed to list CloudFormation stacks:", error));
+    process.exit(1);
+  }
+
+  return existing;
 };
 
 const selectStacksToDelete = async (
