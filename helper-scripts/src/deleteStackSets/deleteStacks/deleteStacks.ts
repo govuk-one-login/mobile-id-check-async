@@ -21,6 +21,7 @@ const deleteStacksInParallel = async (stackNames: string[]): Promise<void> => {
       echo("");
       echo(`Deleting stack: ${stackName}`);
       await deleteStack(stackName);
+      echo("");
       echo(chalk.green.bold(`${stackName} stack deleted`));
       echo("");
     }),
