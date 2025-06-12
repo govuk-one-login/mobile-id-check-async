@@ -1,4 +1,4 @@
-import { $, chalk, echo } from "zx";
+import { chalk, echo } from "zx";
 import {
   areYouHappyToDelete,
   askForBaseStackNames,
@@ -6,6 +6,7 @@ import {
   askWhichStacksToDelete,
 } from "./prompts.js";
 import { protectedStacks } from "../protectedStacks.js";
+import { CloudFormationClient, DescribeStacksCommand } from "@aws-sdk/client-cloudformation";
 
 export interface PrioritisedStacks {
   stacksToDeleteOrder01: string[];
@@ -66,7 +67,12 @@ const getStackCandidates = async (
 };
 
 const doesStackExist = async (stackName: string): Promise<void> => {
-  await $`aws cloudformation describe-stacks --stack-name ${stackName} 2>/dev/null`;
+  const cloudFormation = new CloudFormationClient({});
+  await cloudFormation.send(
+    new DescribeStacksCommand({
+      StackName: stackName,
+    }),
+  );
 };
 
 const selectStacksToDelete = async (
