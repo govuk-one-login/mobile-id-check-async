@@ -82,4 +82,28 @@ for bucket in $buckets; do
 done
 
 aws cloudformation delete-stack --stack-name "$STACK_NAME"
-aws cloudformation wait stack-delete-complete --stack-name "$STACK_NAME"
+
+echo "Waiting for stack $STACK_NAME to be deleted..."
+while true; do
+  sleep 10
+
+  status=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" \
+    --query "Stacks[0].StackStatus" --output text 2>/dev/null)
+
+  if [ $? -ne 0 ]; then
+    echo "Stack $STACK_NAME deleted successfully"
+    break
+  fi
+
+  if [[ "$status" == "DELETE_FAILED" ]]; then
+    echo "Stack $STACK_NAME failed to delete (DELETE_FAILED)"
+    exit 1
+  fi
+
+  if [[ "$status" != DELETE_IN_PROGRESS ]]; then
+    echo "Stack $STACK_NAME reverted to status: $status. Deletion likely blocked by stack dependencies"
+    exit 1
+  fi
+
+  echo "Current status: $status ... still deleting"
+done
