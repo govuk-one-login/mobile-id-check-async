@@ -78,32 +78,6 @@ Resources:
         - Name: QueueName
           Value: !GetAtt VendorProcessingDlq.QueueName
 
-  VendorProcessingDlqAgeOfOldestMessageHighThresholdAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Condition: DeployAlarms
-    Properties:
-      ActionsEnabled: true
-      AlarmDescription: !Sub
-        - "Trigger an alarm when the age of the oldest message in Vendor Processing SQS DLQ is 10 days or older. See support manual: ${SupportManualUrl}"
-        - SupportManualUrl: !FindInMap [StaticVariables, urls, SupportManual]
-      AlarmName: !Sub "${AWS::StackName}-high-threshold-vendor-processing-dlq-age-of-oldest-message"
-      AlarmActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
-      OKActions:
-        - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 1
-      EvaluationPeriods: 1
-      TreatMissingData: notBreaching
-      Threshold: 864000
-      MetricName: ApproximateAgeOfOldestMessage
-      Namespace: AWS/SQS
-      Period: 60
-      Statistic: Maximum
-      Dimensions:
-        - Name: QueueName
-          Value: !GetAtt VendorProcessingDlq.QueueName
-
   IPVCoreSqsAgeOfOldestMessageAlarm:
     Type: AWS::CloudWatch::Alarm
     Condition: DeployAlarms
