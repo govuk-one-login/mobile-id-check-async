@@ -7,7 +7,7 @@
 This script provides the ability to:
 
 - empty and delete any versioned S3 buckets (if present in a SAM application)
-- delete SAM applications in correct order (based on stack dependencies)
+- delete SAM applications in the correct order (based on stack dependencies)
 
 ### How to use it
 
@@ -15,7 +15,7 @@ This script provides the ability to:
 ./delete_stack.sh <base-stack-name>
 ```
 
-Follow the prompts to delete the relevant stacks
+Follow the prompts to delete your desired stacks.
 
 ## `deploy_backend.sh`
 
