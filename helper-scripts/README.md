@@ -17,6 +17,15 @@ npm run deleteStackSets
 
 Follow the prompts to delete your desired stacks
 
+### Deleting stacks with non-standard name
+
+If you have a deployed a stack that does not following our naming convention, you can delete it by:
+
+```bash
+# From /helper-scripts
+./delete_stack.sh <your-stack-name>
+```
+
 ## `deploy_backend.sh`
 
 ### What it does
