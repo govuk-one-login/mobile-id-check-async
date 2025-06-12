@@ -4,8 +4,6 @@
 
 ### What it does
 
-This script provides the ability to:
-
 - empty and delete any versioned S3 buckets (if present in a SAM application)
 - delete SAM applications in the correct order (based on stack dependencies)
 
