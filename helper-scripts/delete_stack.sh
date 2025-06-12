@@ -97,11 +97,13 @@ while true; do
 
   if [[ "$status" == "DELETE_FAILED" ]]; then
     echo "Stack $STACK_NAME failed to delete (DELETE_FAILED)"
+    echo "Check CloudFormation console for more information"
     exit 1
   fi
 
   if [[ "$status" != DELETE_IN_PROGRESS ]]; then
     echo "Stack $STACK_NAME reverted to status: $status. Deletion likely blocked by stack dependencies"
+    echo "Check CloudFormation console for more information"
     exit 1
   fi
 
