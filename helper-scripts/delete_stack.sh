@@ -22,11 +22,12 @@ CONFIRMED_STACKS=()
 
 for STACK_NAME in "${STACKS[@]}"; do
   if aws cloudformation describe-stacks --stack-name "$STACK_NAME" >/dev/null 2>&1; then
-    read -p "Do you want to delete stack '$STACK_NAME'? (y/n): " CONFIRMATION
+    echo
+    read -p "Do you want to delete stack: $STACK_NAME? (y/n): " CONFIRMATION
     if [[ "$CONFIRMATION" == "y" ]]; then
       CONFIRMED_STACKS+=("$STACK_NAME")
     else
-      echo "Skipping deletion for stack '$STACK_NAME'"
+      echo "Skipping deletion for stack: $STACK_NAME"
     fi
   else
     echo "Stack '$STACK_NAME' does not exist, skipping."
@@ -104,9 +105,9 @@ for STACK_NAME in "${CONFIRMED_STACKS[@]}"; do
     echo
   done
 
-  echo "Deleting stack: '$STACK_NAME'"
+  echo "Deleting stack: $STACK_NAME"
   aws cloudformation delete-stack --stack-name "$STACK_NAME"
   aws cloudformation wait stack-delete-complete --stack-name "$STACK_NAME"
-  echo "Deleted stack: '$STACK_NAME'"
+  echo "Deleted stack: $STACK_NAME"
   echo
 done
