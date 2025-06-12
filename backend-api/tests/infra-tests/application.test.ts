@@ -401,6 +401,7 @@ describe("Backend application infrastructure", () => {
         ["vendor-processing-sqs-age-of-oldest-message"],
         ["vendor-processing-dlq-message-visible"],
         ["ipv-core-sqs-age-of-oldest-message"],
+        ["low-threshold-vendor-processing-dlq-age-of-oldest-message"],
         ["low-threshold-ipv-core-dlq-age-of-oldest-message"],
         ["low-threshold-async-issue-biometric-credential-parse-failure"],
         [
