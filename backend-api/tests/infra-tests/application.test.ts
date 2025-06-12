@@ -400,7 +400,6 @@ describe("Backend application infrastructure", () => {
         ["issue-biometric-credential-lambda-low-completion"],
         ["vendor-processing-sqs-age-of-oldest-message"],
         ["vendor-processing-dlq-message-visible"],
-        ["low-threshold-vendor-processing-dlq-age-of-oldest-message"],
         ["ipv-core-sqs-age-of-oldest-message"],
         ["low-threshold-ipv-core-dlq-age-of-oldest-message"],
         ["low-threshold-async-issue-biometric-credential-parse-failure"],
@@ -502,14 +501,6 @@ describe("Backend application infrastructure", () => {
         },
         {
           name: "high-threshold-async-abort-session-4xx-api-gw",
-          hasRunbookBeenSignedOff: true,
-        },
-        {
-          name: "high-threshold-vendor-processing-dlq-age-of-oldest-message",
-          hasRunbookBeenSignedOff: true,
-        },
-        {
-          name: "high-threshold-ipv-core-dlq-age-of-oldest-message",
           hasRunbookBeenSignedOff: true,
         },
         {
