@@ -70,7 +70,9 @@ const getStackCandidates = async (
 };
 
 const doesStackExist = async (stackName: string): Promise<void> => {
-  const cloudFormation = new CloudFormationClient({});
+  const cloudFormation = new CloudFormationClient({
+    region: "eu-west-2",
+  });
   await cloudFormation.send(
     new DescribeStacksCommand({
       StackName: stackName,
