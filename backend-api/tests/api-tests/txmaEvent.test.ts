@@ -9,7 +9,12 @@ import {
   pollForEvents,
 } from "./utils/apiTestHelpers";
 import { randomUUID } from "crypto";
-import { txmaBillingEventNames } from "../../src/functions/services/events/types";
+
+const txmaBillingEventNames = [
+  "DCMAW_ASYNC_HYBRID_BILLING_STARTED",
+  "DCMAW_ASYNC_IPROOV_BILLING_STARTED",
+  "DCMAW_ASYNC_READID_NFC_BILLING_STARTED",
+];
 
 describe("POST /async/txmaEvent", () => {
   describe("Given request body is invalid", () => {
