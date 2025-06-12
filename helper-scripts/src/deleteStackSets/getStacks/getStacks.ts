@@ -57,7 +57,7 @@ const getStackCandidates = async (
         await doesStackExist(stack);
         candidates.push(stack);
       } catch {
-        echo(chalk.dim.italic(`No stack found with name: ${stackName}`));
+        echo(chalk.dim.italic(`No stack found with name: ${stack}`));
       }
     }
   }
