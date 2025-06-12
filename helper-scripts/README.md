@@ -48,7 +48,7 @@ Takes in secret and salt values, and uses them to return a hashed secret as a he
 
 ### How to use it
 
-```
+```bash
 # From /helper-scripts
 npm run generateHashedSecret
 ```
@@ -59,14 +59,14 @@ This helper-script directory uses Prettier as an opinionated formatter to ensure
 
 ### Format your code
 
-```
+```bash
 # From /helper-scripts
 npm run format
 ```
 
 ### Validate your code adheres to the formatting rules
 
-```
+```bash
 # From /helper-scripts
 npm run format:check
 ```
@@ -75,7 +75,7 @@ npm run format:check
 
 ### Lint your code
 
-```
+```bash
 # From /helper-scripts
 npm run lint
 ```
