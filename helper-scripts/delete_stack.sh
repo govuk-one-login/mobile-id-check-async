@@ -6,8 +6,8 @@ if [ "$(aws sts get-caller-identity --output text --query 'Account')" != "211125
 fi
 
 if [ $# -ne 1 ]; then
-    echo "Usage: $0 <stack-name>"
-    exit 1
+  echo "Usage: $0 <stack-name>"
+  exit 1
 fi
 
 STACK_NAME=$1
