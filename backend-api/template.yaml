@@ -6659,6 +6659,64 @@ Resources:
       MessageRetentionPeriod: 1209600
       QueueName: !Sub ${AWS::StackName}-vendor-processing-dlq
 
+  VendorProcessingDlqAgeOfOldestMessageHighThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+      AlarmDescription: !Sub
+        - 'Trigger an alarm when the age of the oldest message in Vendor Processing SQS DLQ is 10 days or older. See support manual: ${SupportManualUrl}'
+        - SupportManualUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - SupportManual
+      AlarmName: !Sub ${AWS::StackName}-high-threshold-vendor-processing-dlq-age-of-oldest-message
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt VendorProcessingDlq.QueueName
+      EvaluationPeriods: 1
+      MetricName: ApproximateAgeOfOldestMessage
+      Namespace: AWS/SQS
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+      Period: 60
+      Statistic: Maximum
+      Threshold: 864000
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  VendorProcessingDlqAgeOfOldestMessageLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger an alarm when the age of the oldest message in Vendor Processing SQS DLQ is 3 days or older. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-low-threshold-vendor-processing-dlq-age-of-oldest-message
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt VendorProcessingDlq.QueueName
+      EvaluationPeriods: 1
+      MetricName: ApproximateAgeOfOldestMessage
+      Namespace: AWS/SQS
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      Period: 60
+      Statistic: Maximum
+      Threshold: 259200
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
   VendorProcessingDlqMessageVisibleAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
