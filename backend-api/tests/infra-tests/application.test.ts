@@ -505,14 +505,6 @@ describe("Backend application infrastructure", () => {
           hasRunbookBeenSignedOff: true,
         },
         {
-          name: "high-threshold-vendor-processing-dlq-age-of-oldest-message",
-          hasRunbookBeenSignedOff: true,
-        },
-        {
-          name: "high-threshold-ipv-core-dlq-age-of-oldest-message",
-          hasRunbookBeenSignedOff: true,
-        },
-        {
           name: "issue-biometric-credential-lambda-invalid-sqs-event",
           hasRunbookBeenSignedOff: true,
         },
