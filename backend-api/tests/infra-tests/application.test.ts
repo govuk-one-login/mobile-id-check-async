@@ -558,7 +558,7 @@ describe("Backend application infrastructure", () => {
           hasRunbookBeenSignedOff: true,
         },
         {
-          name: "high-threshold-ipv-core-dlq-message-visible", // UPDATED: Changed from ipv-core-dlq-message-visible to high-threshold version
+          name: "high-threshold-ipv-core-dlq-message-visible",
           hasRunbookBeenSignedOff: true,
         },
         {
