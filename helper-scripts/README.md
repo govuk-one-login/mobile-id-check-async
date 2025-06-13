@@ -1,15 +1,29 @@
 # Helper scripts
 
-## `delete_stack.sh`
+## `deleteStacks.ts`
 
-This script provides the ability to:
+### What it does
 
 - empty and delete any versioned S3 buckets (if present in a SAM application)
-- delete the SAM application
+- delete SAM applications in the correct order (based on stack dependencies)
+- allows deletion of multiple sets of SAM applications
+
+### How to use it
 
 ```bash
-export STACK_NAME=backend-stack-name    (REQUIRED)
-./delete_stack.sh
+# From /helper-scripts
+npm run deleteStacks
+```
+
+Follow the prompts to delete your desired stacks
+
+### Deleting stacks with non-standard name
+
+If you have a deployed a stack that does not following our naming convention, you can delete it by:
+
+```bash
+# From /helper-scripts
+./delete_stack.sh <your-stack-name>
 ```
 
 ## `deploy_backend.sh`
@@ -43,7 +57,7 @@ Takes in secret and salt values, and uses them to return a hashed secret as a he
 
 ### How to use it
 
-```
+```bash
 # From /helper-scripts
 npm run generateHashedSecret
 ```
@@ -54,14 +68,14 @@ This helper-script directory uses Prettier as an opinionated formatter to ensure
 
 ### Format your code
 
-```
+```bash
 # From /helper-scripts
 npm run format
 ```
 
 ### Validate your code adheres to the formatting rules
 
-```
+```bash
 # From /helper-scripts
 npm run format:check
 ```
@@ -70,7 +84,7 @@ npm run format:check
 
 ### Lint your code
 
-```
+```bash
 # From /helper-scripts
 npm run lint
 ```

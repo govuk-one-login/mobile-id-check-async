@@ -5,10 +5,12 @@ if [ "$(aws sts get-caller-identity --output text --query 'Account')" != "211125
   exit 1
 fi
 
-if [ -z "${STACK_NAME}" ]; then
-  echo "STACK_NAME not set"
+if [ $# -ne 1 ]; then
+  echo "Usage: $0 <stack-name>"
   exit 1
 fi
+
+STACK_NAME=$1
 
 echo "Stack Name: $STACK_NAME"
 
@@ -35,11 +37,13 @@ list_500() {
     --query="{Objects: ${2}[0:500].{Key:Key,VersionId:VersionId}}"
 }
 
+mkdir -p "deleteResponses"
+
 delete() {
   aws s3api delete-objects \
     --bucket "${1}" \
     --delete "$(list_500 "${1}" "${2}")" \
-    >"./delete_response_${1}_${2}_${i}.json"
+    >"./deleteResponses/delete_response_${1}_${2}_${i}.json"
 }
 
 for bucket in $buckets; do
@@ -77,4 +81,31 @@ for bucket in $buckets; do
   echo
 done
 
-sam delete --stack-name "$STACK_NAME"
+aws cloudformation delete-stack --stack-name "$STACK_NAME"
+
+echo "Waiting for stack $STACK_NAME to be deleted..."
+while true; do
+  sleep 10
+
+  status=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" \
+    --query "Stacks[0].StackStatus" --output text 2>/dev/null)
+
+  if [ $? -ne 0 ]; then
+    echo "Stack $STACK_NAME deleted successfully"
+    break
+  fi
+
+  if [[ "$status" == "DELETE_FAILED" ]]; then
+    echo "Stack $STACK_NAME failed to delete (DELETE_FAILED)"
+    echo "Check CloudFormation console for more information"
+    exit 1
+  fi
+
+  if [[ "$status" != DELETE_IN_PROGRESS ]]; then
+    echo "Stack $STACK_NAME reverted to status: $status. Deletion likely blocked by stack dependencies"
+    echo "Check CloudFormation console for more information"
+    exit 1
+  fi
+
+  echo "Current status: $status ... still deleting"
+done
