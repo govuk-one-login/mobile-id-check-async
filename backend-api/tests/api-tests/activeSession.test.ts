@@ -137,4 +137,31 @@ describe("GET /async/activeSession", () => {
       expect(response.data["state"]).toBeDefined();
     });
   });
+
+  describe("Given the request is valid and there are two sessions with the requested subject ID", () => {
+    it("Returns the latest session", async () => {
+      const sub = randomUUID();
+      const accessToken = await getAccessToken(sub);
+
+      await createSessionForSub(sub);
+      const firstResponse = await SESSIONS_API_INSTANCE.get(
+        "/async/activeSession",
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        },
+      );
+
+      await createSessionForSub(sub);
+      const secondResponse = await SESSIONS_API_INSTANCE.get(
+        "/async/activeSession",
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        },
+      );
+
+      expect(firstResponse.data["sessionId"]).not.toEqual(
+        secondResponse.data["sessionId"],
+      );
+    });
+  });
 });

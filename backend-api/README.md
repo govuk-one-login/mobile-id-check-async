@@ -176,7 +176,7 @@ Given both endpoints in the Private API require an Authorization header and AWS 
 
 This schema is generated dynamically from the async-private-spec.yaml. This is to ensure that the endpoints on the proxy are as similar as possible to the Private API and is kept up-to-date.
 
-This schema is generated in the backend-api-push-to-main.yaml worfklow. To generate it locally:
+This schema is generated in the backend-api-push-to-main.yaml workflow. To generate it locally:
 
 ```bash
 npm run generate-proxy-open-api
