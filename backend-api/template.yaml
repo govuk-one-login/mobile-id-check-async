@@ -5477,7 +5477,7 @@ Resources:
             - StaticVariables
             - urls
             - SupportManual
-      AlarmName: !Sub ${AWS::StackName}-high-threshold-ipv-core-dlq-message-visible
+      AlarmName: !Sub ${AWS::StackName}-ipv-core-dlq-message-visible-high-threshold
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
       Dimensions:
@@ -5506,7 +5506,7 @@ Resources:
             - StaticVariables
             - urls
             - WarningAlarmsRunbook
-      AlarmName: !Sub ${AWS::StackName}-low-threshold-ipv-core-dlq-message-visible
+      AlarmName: !Sub ${AWS::StackName}-ipv-core-dlq-message-visible-low-threshold
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
       Dimensions:
