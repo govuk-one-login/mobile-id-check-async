@@ -402,7 +402,7 @@ describe("Backend application infrastructure", () => {
         ["vendor-processing-dlq-message-visible"],
         ["low-threshold-vendor-processing-dlq-age-of-oldest-message"],
         ["ipv-core-sqs-age-of-oldest-message"],
-        ["low-threshold-ipv-core-dlq-message-visible"], // NEW: Added low threshold warning alarm
+        ["low-threshold-ipv-core-dlq-message-visible"],
         ["low-threshold-ipv-core-dlq-age-of-oldest-message"],
         ["low-threshold-async-issue-biometric-credential-parse-failure"],
         [
