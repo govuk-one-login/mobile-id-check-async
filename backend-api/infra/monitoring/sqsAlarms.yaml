@@ -112,7 +112,7 @@ Resources:
       AlarmDescription: !Sub
         - "Trigger a warning alarm when message gets added to IPV Core SQS DLQ. See runbook: ${RunbookUrl}"
         - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
-      AlarmName: !Sub "${AWS::StackName}-ipv-core-dlq-message-visible-low-threshold"
+      AlarmName: !Sub "${AWS::StackName}-low-threshold-ipv-core-dlq-message-visible"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       OKActions:
@@ -138,7 +138,7 @@ Resources:
       AlarmDescription: !Sub
         - "Trigger a critical alarm when 25 or more messages accumulate in IPV Core SQS DLQ. See support manual: ${SupportManualUrl}"
         - SupportManualUrl: !FindInMap [StaticVariables, urls, SupportManual]
-      AlarmName: !Sub "${AWS::StackName}-ipv-core-dlq-message-visible-high-threshold"
+      AlarmName: !Sub "${AWS::StackName}-high-threshold-ipv-core-dlq-message-visible"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical"
       OKActions:
