@@ -402,6 +402,7 @@ describe("Backend application infrastructure", () => {
         ["vendor-processing-dlq-message-visible"],
         ["low-threshold-vendor-processing-dlq-age-of-oldest-message"],
         ["ipv-core-sqs-age-of-oldest-message"],
+        ["low-threshold-ipv-core-dlq-message-visible"],
         ["low-threshold-ipv-core-dlq-age-of-oldest-message"],
         ["low-threshold-async-issue-biometric-credential-parse-failure"],
         [
@@ -557,7 +558,7 @@ describe("Backend application infrastructure", () => {
           hasRunbookBeenSignedOff: true,
         },
         {
-          name: "ipv-core-dlq-message-visible",
+          name: "high-threshold-ipv-core-dlq-message-visible",
           hasRunbookBeenSignedOff: true,
         },
         {

@@ -5465,19 +5465,19 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
-  IPVCoreDlqMessageVisibleAlarm:
+  IPVCoreDlqMessageVisibleHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
       AlarmDescription: !Sub
-        - 'Trigger an alarm when new message gets added to IPV Core SQS DLQ. See support manual: ${SupportManualUrl}'
+        - 'Trigger a critical alarm when 25 or more messages accumulate in IPV Core SQS DLQ. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
             - SupportManual
-      AlarmName: !Sub ${AWS::StackName}-ipv-core-dlq-message-visible
+      AlarmName: !Sub ${AWS::StackName}-high-threshold-ipv-core-dlq-message-visible
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 1
       Dimensions:
@@ -5488,6 +5488,35 @@ Resources:
       Namespace: AWS/SQS
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+      Period: 60
+      Statistic: Maximum
+      Threshold: 25
+      TreatMissingData: notBreaching
+    Condition: DeployAlarms
+
+  IPVCoreDlqMessageVisibleLowThresholdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
+      AlarmDescription: !Sub
+        - 'Trigger a warning alarm when message gets added to IPV Core SQS DLQ. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
+      AlarmName: !Sub ${AWS::StackName}-low-threshold-ipv-core-dlq-message-visible
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      DatapointsToAlarm: 1
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt IPVCoreOutboundDlq.QueueName
+      EvaluationPeriods: 1
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      OKActions:
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Period: 60
       Statistic: Maximum
       Threshold: 1
