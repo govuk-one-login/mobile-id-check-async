@@ -112,7 +112,7 @@ describe("InMemoryJwksCache", () => {
     });
 
     describe("Given response from JWKS URI was previously stored in cache but has expired", () => {
-      describe("Given cache duration returned from JWKS response was less than 5 minutes", () => {
+      describe("Given cache duration returned from JWKS response was less than maximum", () => {
         beforeEach(async () => {
           inMemoryJwksCache = new InMemoryJwksCache(mockSuccessfulGetJwks);
           await inMemoryJwksCache.getJwks("mock_jwks_uri");
@@ -139,7 +139,7 @@ describe("InMemoryJwksCache", () => {
         });
       });
 
-      describe("Given cache duration returned from JWKS response was greater than 15 minutes", () => {
+      describe("Given cache duration returned from JWKS response was greater than maximum", () => {
         beforeEach(async () => {
           mockSuccessfulGetJwks = jest.fn().mockResolvedValue(
             successResult({
