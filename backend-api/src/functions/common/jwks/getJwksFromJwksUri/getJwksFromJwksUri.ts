@@ -4,17 +4,8 @@ import {
   sendHttpRequest,
   SuccessfulHttpResponse,
 } from "../../../adapters/http/sendHttpRequest";
-import {
-  emptyFailure,
-  errorResult,
-  Result,
-  successResult,
-} from "../../../utils/result";
-import {
-  GetJwksErrorReason,
-  GetJwksFromJwksUriResponse,
-  IGetJwksFromJwksUri,
-} from "../types";
+import { emptyFailure, Result, successResult } from "../../../utils/result";
+import { GetJwksFromJwksUriResponse, IGetJwksFromJwksUri } from "../types";
 import { logger } from "../../logging/logger";
 import { LogMessage } from "../../logging/LogMessage";
 import { getHeader } from "../../request/getHeader/getHeader";
@@ -38,17 +29,13 @@ export const getJwksFromJwksUri: IGetJwksFromJwksUri = async (
     logger.error(LogMessage.GET_JWKS_FAILURE, {
       data: { jwksUri, description, ...(statusCode && { statusCode }) },
     });
-    return errorResult({
-      reason: GetJwksErrorReason.ERROR_INVOKING_JWKS_ENDPOINT,
-    });
+    return emptyFailure();
   }
 
   const validationResult = validateResponse(jwksResult.value);
   if (validationResult.isError) {
     logger.error(LogMessage.MALFORMED_JWKS_RESPONSE, { data: { jwksUri } });
-    return errorResult({
-      reason: GetJwksErrorReason.JWKS_ENDPOINT_RETURNED_MALFORMED_RESPONSE,
-    });
+    return emptyFailure();
   }
 
   logger.debug(LogMessage.GET_JWKS_SUCCESS, { data: { jwksUri } });

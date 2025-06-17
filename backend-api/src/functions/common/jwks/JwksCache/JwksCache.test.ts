@@ -1,16 +1,11 @@
 import { Result } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import { InMemoryJwksCache } from "./JwksCache";
-import {
-  GetJwksErrorReason,
-  GetKeysError,
-  GetKeysResponse,
-  IGetJwksFromJwksUri,
-} from "../types";
-import { errorResult, successResult } from "../../../utils/result";
+import { GetKeysResponse, IGetJwksFromJwksUri } from "../types";
+import { emptyFailure, successResult } from "../../../utils/result";
 import { NOW_IN_MILLISECONDS } from "../../../testUtils/unitTestData";
 
 let inMemoryJwksCache: InMemoryJwksCache;
-let result: Result<GetKeysResponse, GetKeysError>;
+let result: Result<GetKeysResponse, void>;
 
 let mockSuccessfulGetJwks: IGetJwksFromJwksUri;
 let mockFailingGetJwks: IGetJwksFromJwksUri;
@@ -26,11 +21,7 @@ describe("InMemoryJwksCache", () => {
       }),
     );
 
-    mockFailingGetJwks = jest.fn().mockResolvedValue(
-      errorResult({
-        reason: GetJwksErrorReason.ERROR_INVOKING_JWKS_ENDPOINT,
-      }),
-    );
+    mockFailingGetJwks = jest.fn().mockResolvedValue(emptyFailure());
   });
 
   beforeEach(() => {
@@ -251,11 +242,7 @@ describe("InMemoryJwksCache", () => {
       });
 
       it("Returns failure with error reason", () => {
-        expect(result).toEqual(
-          errorResult({
-            reason: "Error invoking JWKS endpoint",
-          }),
-        );
+        expect(result).toEqual(emptyFailure());
       });
 
       it("Calls getJwksFromJwksUri with JWKS URI", () => {

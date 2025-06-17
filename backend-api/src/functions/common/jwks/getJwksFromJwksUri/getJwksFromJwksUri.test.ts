@@ -2,14 +2,18 @@ import { expect } from "@jest/globals";
 import "../../../../../tests/testUtils/matchers";
 import { getJwksFromJwksUri } from "./getJwksFromJwksUri";
 import { Result } from "@govuk-one-login/mobile-id-check-biometric-credential";
-import { GetJwksFromJwksUriResponse, GetKeysError } from "../types";
+import { GetJwksFromJwksUriResponse } from "../types";
 import {
   HttpRequest,
   ISendHttpRequest,
 } from "../../../adapters/http/sendHttpRequest";
-import { errorResult, successResult } from "../../../utils/result";
+import {
+  emptyFailure,
+  errorResult,
+  successResult,
+} from "../../../utils/result";
 
-let result: Result<GetJwksFromJwksUriResponse, GetKeysError>;
+let result: Result<GetJwksFromJwksUriResponse, void>;
 let sendRequest: ISendHttpRequest;
 let consoleDebugSpy: jest.SpyInstance;
 let consoleErrorSpy: jest.SpyInstance;
@@ -75,13 +79,8 @@ describe("getJwks", () => {
         result = await getJwksFromJwksUri("mock_jwks_uri", sendRequest);
       });
 
-      it("Returns error with reason", () => {
-        expect(result).toEqual({
-          isError: true,
-          value: {
-            reason: "Error invoking JWKS endpoint",
-          },
-        });
+      it("Returns empty failure", () => {
+        expect(result).toEqual(emptyFailure());
       });
 
       it("Logs MOBILE_ASYNC_GET_JWKS_FAILURE with JWKS URI", () => {
@@ -107,13 +106,8 @@ describe("getJwks", () => {
         result = await getJwksFromJwksUri("mock_jwks_uri", sendRequest);
       });
 
-      it("Returns error with reason", () => {
-        expect(result).toEqual({
-          isError: true,
-          value: {
-            reason: "Error invoking JWKS endpoint",
-          },
-        });
+      it("Returns empty failure", () => {
+        expect(result).toEqual(emptyFailure());
       });
 
       it("Logs MOBILE_ASYNC_GET_JWKS_FAILURE with JWKS URI", () => {
@@ -139,13 +133,8 @@ describe("getJwks", () => {
         result = await getJwksFromJwksUri("mock_jwks_uri", sendRequest);
       });
 
-      it("Returns error with reason", () => {
-        expect(result).toEqual({
-          isError: true,
-          value: {
-            reason: "JWKS endpoint returned malformed response",
-          },
-        });
+      it("Returns empty failure", () => {
+        expect(result).toEqual(emptyFailure());
       });
 
       it("Logs MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {
@@ -169,13 +158,8 @@ describe("getJwks", () => {
         result = await getJwksFromJwksUri("mock_jwks_uri", sendRequest);
       });
 
-      it("Returns error with reason", () => {
-        expect(result).toEqual({
-          isError: true,
-          value: {
-            reason: "JWKS endpoint returned malformed response",
-          },
-        });
+      it("Returns empty failure", () => {
+        expect(result).toEqual(emptyFailure());
       });
 
       it("Logs MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {
@@ -200,13 +184,8 @@ describe("getJwks", () => {
         result = await getJwksFromJwksUri("mock_jwks_uri", sendRequest);
       });
 
-      it("Returns error with reason", () => {
-        expect(result).toEqual({
-          isError: true,
-          value: {
-            reason: "JWKS endpoint returned malformed response",
-          },
-        });
+      it("Returns empty failure", () => {
+        expect(result).toEqual(emptyFailure());
       });
 
       it("Logs MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {
@@ -231,13 +210,8 @@ describe("getJwks", () => {
         result = await getJwksFromJwksUri("mock_jwks_uri", sendRequest);
       });
 
-      it("Returns error with reason", () => {
-        expect(result).toEqual({
-          isError: true,
-          value: {
-            reason: "JWKS endpoint returned malformed response",
-          },
-        });
+      it("Returns empty failure", () => {
+        expect(result).toEqual(emptyFailure());
       });
 
       it("Logs MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {
@@ -262,13 +236,8 @@ describe("getJwks", () => {
         result = await getJwksFromJwksUri("mock_jwks_uri", sendRequest);
       });
 
-      it("Returns error with reason", () => {
-        expect(result).toEqual({
-          isError: true,
-          value: {
-            reason: "JWKS endpoint returned malformed response",
-          },
-        });
+      it("Returns empty failure", () => {
+        expect(result).toEqual(emptyFailure());
       });
 
       it("Logs MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {
@@ -295,13 +264,8 @@ describe("getJwks", () => {
         result = await getJwksFromJwksUri("mock_jwks_uri", sendRequest);
       });
 
-      it("Returns error with reason", () => {
-        expect(result).toEqual({
-          isError: true,
-          value: {
-            reason: "JWKS endpoint returned malformed response",
-          },
-        });
+      it("Returns empty failure", () => {
+        expect(result).toEqual(emptyFailure());
       });
 
       it("Logs MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {
@@ -328,13 +292,8 @@ describe("getJwks", () => {
         result = await getJwksFromJwksUri("mock_jwks_uri", sendRequest);
       });
 
-      it("Returns error with reason", () => {
-        expect(result).toEqual({
-          isError: true,
-          value: {
-            reason: "JWKS endpoint returned malformed response",
-          },
-        });
+      it("Returns empty failure", () => {
+        expect(result).toEqual(emptyFailure());
       });
 
       it("Logs MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {

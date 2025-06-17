@@ -1,6 +1,5 @@
 import {
   GetJwksFromJwksUriResponse,
-  GetKeysError,
   GetKeysResponse,
   IGetJwksFromJwksUri,
   JwksCache,
@@ -34,7 +33,7 @@ export class InMemoryJwksCache implements JwksCache {
   async getJwks(
     jwksUri: string,
     keyId?: string,
-  ): Promise<Result<GetKeysResponse, GetKeysError>> {
+  ): Promise<Result<GetKeysResponse, void>> {
     const previouslyCachedResponse = this.jwksResponses[jwksUri];
     if (!this.cacheContainsFreshResponse(previouslyCachedResponse, keyId)) {
       const getJwksResult = await this.fetchJwks(jwksUri);
