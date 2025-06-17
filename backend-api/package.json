@@ -24,7 +24,7 @@
   "devDependencies": {
     "@aws-sdk/credential-providers": "3.826.0",
     "@eslint/js": "^9.28.0",
-    "@pact-foundation/pact": "^13.2.0",
+    "@pact-foundation/pact": "^15.0.1",
     "@types/aws-lambda": "8.10.149",
     "@types/express": "^4.17.21",
     "@types/jest": "29.5.14",
