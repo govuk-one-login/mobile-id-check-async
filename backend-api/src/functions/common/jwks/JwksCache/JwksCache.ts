@@ -15,7 +15,7 @@ type JwksCacheEntry = {
 
 export class InMemoryJwksCache implements JwksCache {
   private static INSTANCE: JwksCache;
-  private readonly maximumCacheDuration = 5 * 60 * 1000; // 5 minutes
+  private readonly maximumCacheDuration = 15 * 60 * 1000; // 15 minutes
   private readonly jwksResponses: {
     [key: string]: JwksCacheEntry;
   } = {};

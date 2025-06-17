@@ -15,7 +15,7 @@ let result: Result<GetKeysResponse, GetKeysError>;
 let mockSuccessfulGetJwks: IGetJwksFromJwksUri;
 let mockFailingGetJwks: IGetJwksFromJwksUri;
 
-const MAXIMUM_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const MAXIMUM_CACHE_DURATION = 15 * 60 * 1000; // 15 minutes
 
 describe("InMemoryJwksCache", () => {
   beforeEach(() => {
@@ -148,7 +148,7 @@ describe("InMemoryJwksCache", () => {
         });
       });
 
-      describe("Given cache duration returned from JWKS response was greater than 5 minutes", () => {
+      describe("Given cache duration returned from JWKS response was greater than 15 minutes", () => {
         beforeEach(async () => {
           mockSuccessfulGetJwks = jest.fn().mockResolvedValue(
             successResult({
