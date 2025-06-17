@@ -127,19 +127,19 @@ export class LogMessage implements LogAttributes {
   );
 
   static readonly GET_JWKS_ATTEMPT = new LogMessage(
-    "STS_GET_JWKS_ATTEMPT",
+    "MOBILE_ASYNC_GET_JWKS_ATTEMPT",
     "Attempting to retrieve JWKS",
   );
   static readonly GET_JWKS_FAILURE = new LogMessage(
-    "STS_GET_JWKS_FAILURE",
+    "MOBILE_ASYNC_GET_JWKS_FAILURE",
     "An error has occurred while calling JWKS URI",
   );
   static readonly MALFORMED_JWKS_RESPONSE = new LogMessage(
-    "STS_MALFORMED_JWKS_RESPONSE",
+    "MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE",
     "The request to the JWKS URI was successful, but the response is not as expected",
   );
   static readonly GET_JWKS_SUCCESS = new LogMessage(
-    "STS_GET_JWKS_SUCCESS",
+    "MOBILE_ASYNC_GET_JWKS_SUCCESS",
     "Successfully retrieved JWKS",
   );
 

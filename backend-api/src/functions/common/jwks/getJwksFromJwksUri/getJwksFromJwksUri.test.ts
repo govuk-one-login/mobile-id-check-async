@@ -45,9 +45,9 @@ describe("getJwks", () => {
       await getJwksFromJwksUri("mock_jwks_uri", mockSendRequest);
     });
 
-    it("Logs STS_GET_JWKS_ATTEMPT with JWKS URI", () => {
+    it("Logs MOBILE_ASYNC_GET_JWKS_ATTEMPT with JWKS URI", () => {
       expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
-        messageCode: "STS_GET_JWKS_ATTEMPT",
+        messageCode: "MOBILE_ASYNC_GET_JWKS_ATTEMPT",
         data: {
           jwksUri: "mock_jwks_uri",
         },
@@ -84,9 +84,9 @@ describe("getJwks", () => {
         });
       });
 
-      it("Logs STS_GET_JWKS_FAILURE with JWKS URI", () => {
+      it("Logs MOBILE_ASYNC_GET_JWKS_FAILURE with JWKS URI", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "STS_GET_JWKS_FAILURE",
+          messageCode: "MOBILE_ASYNC_GET_JWKS_FAILURE",
           data: {
             jwksUri: "mock_jwks_uri",
             description: "mock_error_description",
@@ -116,9 +116,9 @@ describe("getJwks", () => {
         });
       });
 
-      it("Logs STS_GET_JWKS_FAILURE with JWKS URI", () => {
+      it("Logs MOBILE_ASYNC_GET_JWKS_FAILURE with JWKS URI", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "STS_GET_JWKS_FAILURE",
+          messageCode: "MOBILE_ASYNC_GET_JWKS_FAILURE",
           data: {
             jwksUri: "mock_jwks_uri",
             description: "mock_error_description",
@@ -148,9 +148,9 @@ describe("getJwks", () => {
         });
       });
 
-      it("Logs STS_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {
+      it("Logs MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "STS_MALFORMED_JWKS_RESPONSE",
+          messageCode: "MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE",
           data: {
             jwksUri: "mock_jwks_uri",
           },
@@ -178,9 +178,9 @@ describe("getJwks", () => {
         });
       });
 
-      it("Logs STS_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {
+      it("Logs MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "STS_MALFORMED_JWKS_RESPONSE",
+          messageCode: "MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE",
           data: {
             jwksUri: "mock_jwks_uri",
           },
@@ -209,9 +209,9 @@ describe("getJwks", () => {
         });
       });
 
-      it("Logs STS_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {
+      it("Logs MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "STS_MALFORMED_JWKS_RESPONSE",
+          messageCode: "MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE",
           data: {
             jwksUri: "mock_jwks_uri",
           },
@@ -240,9 +240,9 @@ describe("getJwks", () => {
         });
       });
 
-      it("Logs STS_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {
+      it("Logs MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "STS_MALFORMED_JWKS_RESPONSE",
+          messageCode: "MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE",
           data: {
             jwksUri: "mock_jwks_uri",
           },
@@ -271,9 +271,9 @@ describe("getJwks", () => {
         });
       });
 
-      it("Logs STS_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {
+      it("Logs MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "STS_MALFORMED_JWKS_RESPONSE",
+          messageCode: "MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE",
           data: {
             jwksUri: "mock_jwks_uri",
           },
@@ -304,9 +304,9 @@ describe("getJwks", () => {
         });
       });
 
-      it("Logs STS_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {
+      it("Logs MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "STS_MALFORMED_JWKS_RESPONSE",
+          messageCode: "MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE",
           data: {
             jwksUri: "mock_jwks_uri",
           },
@@ -337,9 +337,9 @@ describe("getJwks", () => {
         });
       });
 
-      it("Logs STS_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {
+      it("Logs MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE with JWKS URI", () => {
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "STS_MALFORMED_JWKS_RESPONSE",
+          messageCode: "MOBILE_ASYNC_MALFORMED_JWKS_RESPONSE",
           data: {
             jwksUri: "mock_jwks_uri",
           },
@@ -365,9 +365,9 @@ describe("getJwks", () => {
           });
         });
 
-        it("Logs STS_GET_JWKS_SUCCESS with JWKS URI", async () => {
+        it("Logs MOBILE_ASYNC_GET_JWKS_SUCCESS with JWKS URI", async () => {
           expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "STS_GET_JWKS_SUCCESS",
+            messageCode: "MOBILE_ASYNC_GET_JWKS_SUCCESS",
             data: {
               jwksUri: "mock_jwks_uri",
             },
@@ -411,9 +411,9 @@ describe("getJwks", () => {
               });
             });
 
-            it("Logs STS_GET_JWKS_SUCCESS with JWKS URI", async () => {
+            it("Logs MOBILE_ASYNC_GET_JWKS_SUCCESS with JWKS URI", async () => {
               expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
-                messageCode: "STS_GET_JWKS_SUCCESS",
+                messageCode: "MOBILE_ASYNC_GET_JWKS_SUCCESS",
                 data: {
                   jwksUri: "mock_jwks_uri",
                 },
@@ -455,9 +455,9 @@ describe("getJwks", () => {
               });
             });
 
-            it("Logs STS_GET_JWKS_SUCCESS with JWKS URI", async () => {
+            it("Logs MOBILE_ASYNC_GET_JWKS_SUCCESS with JWKS URI", async () => {
               expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
-                messageCode: "STS_GET_JWKS_SUCCESS",
+                messageCode: "MOBILE_ASYNC_GET_JWKS_SUCCESS",
                 data: {
                   jwksUri: "mock_jwks_uri",
                 },
@@ -500,9 +500,9 @@ describe("getJwks", () => {
             });
           });
 
-          it("Logs STS_GET_JWKS_SUCCESS with JWKS URI", async () => {
+          it("Logs MOBILE_ASYNC_GET_JWKS_SUCCESS with JWKS URI", async () => {
             expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
-              messageCode: "STS_GET_JWKS_SUCCESS",
+              messageCode: "MOBILE_ASYNC_GET_JWKS_SUCCESS",
               data: {
                 jwksUri: "mock_jwks_uri",
               },
@@ -544,9 +544,9 @@ describe("getJwks", () => {
             });
           });
 
-          it("Logs STS_GET_JWKS_SUCCESS with JWKS URI", async () => {
+          it("Logs MOBILE_ASYNC_GET_JWKS_SUCCESS with JWKS URI", async () => {
             expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
-              messageCode: "STS_GET_JWKS_SUCCESS",
+              messageCode: "MOBILE_ASYNC_GET_JWKS_SUCCESS",
               data: {
                 jwksUri: "mock_jwks_uri",
               },
@@ -588,9 +588,9 @@ describe("getJwks", () => {
             });
           });
 
-          it("Logs STS_GET_JWKS_SUCCESS with JWKS URI", async () => {
+          it("Logs MOBILE_ASYNC_GET_JWKS_SUCCESS with JWKS URI", async () => {
             expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
-              messageCode: "STS_GET_JWKS_SUCCESS",
+              messageCode: "MOBILE_ASYNC_GET_JWKS_SUCCESS",
               data: {
                 jwksUri: "mock_jwks_uri",
               },
@@ -624,9 +624,9 @@ describe("getJwks", () => {
         });
       });
 
-      it("Logs STS_GET_JWKS_SUCCESS with JWKS URI", async () => {
+      it("Logs MOBILE_ASYNC_GET_JWKS_SUCCESS with JWKS URI", async () => {
         expect(consoleDebugSpy).toHaveBeenCalledWithLogFields({
-          messageCode: "STS_GET_JWKS_SUCCESS",
+          messageCode: "MOBILE_ASYNC_GET_JWKS_SUCCESS",
           data: {
             jwksUri: "mock_jwks_uri",
           },
