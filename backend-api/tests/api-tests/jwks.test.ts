@@ -61,6 +61,6 @@ describe("GET /.well-known/jwks.json", () => {
     const maxAgeValue = parseInt(maxAgeMatch[1], 10);
 
     expect(maxAgeValue).toBeGreaterThan(0);
-    expect(maxAgeValue).toBe(300); //5 minutes
+    expect(maxAgeValue).toBe(300);
   });
 });
