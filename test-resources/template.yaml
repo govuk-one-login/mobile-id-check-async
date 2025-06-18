@@ -63,8 +63,8 @@ Mappings:
 
   StsMockApiGateway:
     build:
-      ApiBurstLimit: 200
-      ApiRateLimit: 100
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
     dev:
       ApiBurstLimit: 10
       ApiRateLimit: 10
