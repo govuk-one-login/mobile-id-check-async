@@ -49,4 +49,18 @@ describe("GET /.well-known/jwks.json", () => {
       expect(key.e).toBeDefined();
     });
   });
+
+  it("should include a Cache-Control header with `max-age=300`", () => {
+    expect(jwksResponse.headers).toHaveProperty("cache-control");
+
+    const cacheControl = jwksResponse.headers["cache-control"];
+
+    expect(cacheControl).toMatch(/max-age=/);
+
+    const maxAgeMatch = cacheControl.match(/max-age=(\d+)/);
+    const maxAgeValue = parseInt(maxAgeMatch[1], 10);
+
+    expect(maxAgeValue).toBeGreaterThan(0);
+    expect(maxAgeValue).toBe(300); //5 minutes
+  });
 });
