@@ -18,7 +18,7 @@ export interface JwksCache {
   getJwks: IGetKeys;
 }
 
-type IGetKeys = (
+export type IGetKeys = (
   jwksUri: string,
   keyId?: string,
 ) => Promise<Result<GetKeysResponse, void>>;

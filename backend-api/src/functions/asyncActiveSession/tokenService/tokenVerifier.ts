@@ -6,6 +6,8 @@ import {
   successResult,
 } from "../../utils/result";
 import { IPublicKeyGetter, PublicKeyGetter } from "./publicKeyGetter";
+import { IGetKeys } from "../../common/jwks/types";
+import { InMemoryJwksCache } from "../../common/jwks/JwksCache/JwksCache";
 
 export interface ITokenVerifier {
   verify: (
@@ -17,17 +19,22 @@ export interface ITokenVerifier {
 
 export type TokenVerifierDependencies = {
   publicKeyGetter: IPublicKeyGetter;
+  getKeys: IGetKeys;
 };
 
 const tokenVerifierDependencies: TokenVerifierDependencies = {
   publicKeyGetter: new PublicKeyGetter(),
+  getKeys: (jwksUri: string, keyId?: string) =>
+    InMemoryJwksCache.getSingletonInstance().getJwks(jwksUri, keyId),
 };
 
 export class TokenVerifier implements ITokenVerifier {
   private readonly publicKeyGetter: IPublicKeyGetter;
+  private readonly getKeys: IGetKeys;
 
   constructor(dependencies = tokenVerifierDependencies) {
     this.publicKeyGetter = dependencies.publicKeyGetter;
+    this.getKeys = dependencies.getKeys;
   }
 
   async verify(
@@ -38,6 +45,7 @@ export class TokenVerifier implements ITokenVerifier {
     const getPublicKeyResult = await this.publicKeyGetter.getPublicKey(
       stsBaseUrl,
       kid,
+      this.getKeys,
     );
     if (getPublicKeyResult.isError) {
       return getPublicKeyResult;
