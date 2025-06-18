@@ -7,8 +7,9 @@ describe("GET /.well-known/jwks.json", () => {
     jwksResponse = await SESSIONS_API_INSTANCE.get("/.well-known/jwks.json");
   });
 
-  it("returns 200 status code and the Json Web Key Set", () => {
+  it("returns 200 status code, cache-control header, and the Json Web Key Set", () => {
     expect(jwksResponse.status).toBe(200);
+    expect(jwksResponse.headers["cache-control"]).toEqual("max-age=300");
     expect(jwksResponse.data.keys.length).toBeGreaterThanOrEqual(2);
   });
 
