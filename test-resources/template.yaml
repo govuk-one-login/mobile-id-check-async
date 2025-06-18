@@ -69,6 +69,12 @@ Mappings:
       ApiBurstLimit: 10
       ApiRateLimit: 10
 
+  StsMockTokenLambda:
+    build:
+      ReservedConcurrency: 160
+    dev:
+      ReservedConcurrency: 0
+
   TestResourcesApiGateway:
     build:
       ApiBurstLimit: 10
@@ -934,6 +940,10 @@ Resources:
           Type: Api
       FunctionName: !Sub ${AWS::StackName}-sts-mock-token
       Handler: tokenHandler.lambdaHandler
+      ReservedConcurrentExecutions: !FindInMap
+        - StsMockTokenLambda
+        - !Ref Environment
+        - ReservedConcurrency
       Role: !GetAtt TokenFunctionRole.Arn
       Timeout: 5
       VpcConfig:

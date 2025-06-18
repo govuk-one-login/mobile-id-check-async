@@ -69,6 +69,12 @@ Mappings:
       ApiBurstLimit: 400
       ApiRateLimit: 200
 
+  StsMockTokenLambda:
+    dev:
+      ReservedConcurrency: 0
+    build:
+      ReservedConcurrency: 160
+
   EventsApiGateway:
     dev:
       ApiBurstLimit: 10
