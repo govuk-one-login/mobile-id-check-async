@@ -29,6 +29,12 @@ const testData = [
   },
   {
     scenario:
+      "Given header contains max-age directive with equals sign but no value",
+    cacheControlHeaderValue: "max-age=",
+    expectedMaxAge: 0,
+  },
+  {
+    scenario:
       "Given header contains max-age directive with a non-numeric value",
     cacheControlHeaderValue: "max-age=invalid",
     expectedMaxAge: 0,
