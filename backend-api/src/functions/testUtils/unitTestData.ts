@@ -21,6 +21,7 @@ export const mockSubjectIdentifier = "mockSubjectIdentifier";
 export const mockClientState = "mockClientState";
 export const mockIssuer = "mockIssuer";
 export const mockRedirectUri = "https://www.mockRedirectUri.com";
+export const mockKeyId = "mockKid";
 
 export const expectedSecurityHeaders = {
   "Cache-Control": "no-store",

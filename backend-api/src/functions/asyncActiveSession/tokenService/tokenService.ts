@@ -5,35 +5,18 @@ import {
   successResult,
 } from "../../utils/result";
 import { decodeJwt, decodeProtectedHeader } from "jose";
-import { ITokenVerifier, TokenVerifier } from "./tokenVerifier";
-
-export interface ITokenService {
-  validateServiceToken: (
-    token: string,
-    audience: string,
-    stsBaseUrl: string,
-  ) => Promise<Result<string>>;
-}
-
-export type ExpectedClaims = {
-  aud: string;
-  iss: string;
-  scope: "idCheck.activeSession.read";
-};
-
-export type TokenServicesDependencies = {
-  tokenVerifier: ITokenVerifier;
-};
+import { verifyToken } from "./verifyToken/verifyToken";
+import { ITokenService, VerifyToken } from "./types";
 
 const tokenServiceDependencies: TokenServicesDependencies = {
-  tokenVerifier: new TokenVerifier(),
+  verifyToken,
 };
 
 export class TokenService implements ITokenService {
-  private readonly tokenVerifier: ITokenVerifier;
+  private readonly verifyToken: VerifyToken;
 
   constructor(dependencies = tokenServiceDependencies) {
-    this.tokenVerifier = dependencies.tokenVerifier;
+    this.verifyToken = dependencies.verifyToken;
   }
 
   async validateServiceToken(
@@ -62,11 +45,7 @@ export class TokenService implements ITokenService {
     }
     const { sub } = validateServiceTokenPayloadResult.value;
 
-    const verifyResult = await this.tokenVerifier.verify(
-      token,
-      kid,
-      stsBaseUrl,
-    );
+    const verifyResult = await this.verifyToken(token, kid, stsBaseUrl);
     if (verifyResult.isError) {
       return verifyResult;
     }
@@ -235,3 +214,13 @@ export class TokenService implements ITokenService {
     return "kid" in decodedHeader && typeof decodedHeader.kid === "string";
   }
 }
+
+type ExpectedClaims = {
+  aud: string;
+  iss: string;
+  scope: "idCheck.activeSession.read";
+};
+
+type TokenServicesDependencies = {
+  verifyToken: VerifyToken;
+};
