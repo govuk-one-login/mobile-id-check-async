@@ -11,10 +11,10 @@
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
     "lint": "./node_modules/.bin/eslint ./src/functions",
-    "pact": "./node_modules/.bin/jest --testPathPattern=tests/pact",
+    "pact": "./node_modules/.bin/jest --testPathPatterns=tests/pact",
     "test": "./node_modules/.bin/jest --testPathIgnorePatterns=api-tests/",
-    "test:api": "./node_modules/.bin/jest --testPathPattern=api-tests/",
-    "test:infra": "./node_modules/.bin/jest --testPathPattern=infra-tests/",
+    "test:api": "./node_modules/.bin/jest --testPathPatterns=api-tests/",
+    "test:infra": "./node_modules/.bin/jest --testPathPatterns=infra-tests/",
     "test:pact": "npm run pact",
     "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/pact api-tests"
   },

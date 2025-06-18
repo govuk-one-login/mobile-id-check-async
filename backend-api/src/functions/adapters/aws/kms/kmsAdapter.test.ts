@@ -34,7 +34,7 @@ describe("KMS Adapter", () => {
 
       await expect(() =>
         kmsAdapter.decrypt(new Uint8Array(), "mockKeyId"),
-      ).rejects.toThrowError(ClientError);
+      ).rejects.toThrow(ClientError);
     });
   });
 
@@ -49,7 +49,7 @@ describe("KMS Adapter", () => {
 
       await expect(() =>
         kmsAdapter.decrypt(new Uint8Array(), "mockKeyId"),
-      ).rejects.toThrowError(ClientError);
+      ).rejects.toThrow(ClientError);
     });
   });
 
@@ -64,7 +64,7 @@ describe("KMS Adapter", () => {
 
       await expect(() =>
         kmsAdapter.decrypt(new Uint8Array(), "mockKeyId"),
-      ).rejects.toThrowError(KeyUnavailableException);
+      ).rejects.toThrow(KeyUnavailableException);
     });
   });
 
@@ -74,7 +74,7 @@ describe("KMS Adapter", () => {
 
       await expect(() =>
         kmsAdapter.decrypt(new Uint8Array(), "mockKeyId"),
-      ).rejects.toThrowError(new Error("Decrypted plaintext data is missing"));
+      ).rejects.toThrow(new Error("Decrypted plaintext data is missing"));
     });
   });
 

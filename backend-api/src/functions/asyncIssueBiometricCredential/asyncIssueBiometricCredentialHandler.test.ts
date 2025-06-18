@@ -440,7 +440,9 @@ describe("Async Issue Biometric Credential", () => {
         });
 
         it("Writes DCMAW_ASYNC_CRI_ERROR to TxMA", () => {
-          expect(mockSuccessfulEventService.writeGenericEvent).toBeCalledWith({
+          expect(
+            mockSuccessfulEventService.writeGenericEvent,
+          ).toHaveBeenCalledWith({
             eventName: expectedErrorTxmaEventName,
             componentId: mockIssuer,
             getNowInMilliseconds: Date.now,
@@ -628,7 +630,7 @@ describe("Async Issue Biometric Credential", () => {
             it("Writes DCMAW_ASYNC_CRI_ERROR to TxMA", () => {
               expect(
                 mockSuccessfulEventService.writeGenericEvent,
-              ).toBeCalledWith({
+              ).toHaveBeenCalledWith({
                 eventName: expectedErrorTxmaEventName,
                 componentId: mockIssuer,
                 getNowInMilliseconds: Date.now,
@@ -841,7 +843,7 @@ describe("Async Issue Biometric Credential", () => {
             it("Writes DCMAW_ASYNC_CRI_ERROR event to TxMA", () => {
               expect(
                 mockSuccessfulEventService.writeGenericEvent,
-              ).toBeCalledWith({
+              ).toHaveBeenCalledWith({
                 componentId: mockIssuer,
                 eventName: expectedErrorTxmaEventName,
                 getNowInMilliseconds: Date.now,

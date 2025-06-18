@@ -21,7 +21,7 @@ describe("getBiometricToken", () => {
     },
     method: "POST",
     url: "https://mockUrl.com/oauth/token?grant_type=client_credentials",
-  };
+  } as const;
   const expectedRetryConfig = {
     retryableStatusCodes: [
       429, 500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511,
@@ -83,7 +83,7 @@ describe("getBiometricToken", () => {
 
     it("Returns an empty failure", () => {
       expect(result).toEqual(emptyFailure());
-      expect(mockSendHttpRequest).toBeCalledWith(
+      expect(mockSendHttpRequest).toHaveBeenCalledWith(
         expectedHttpRequest,
         expectedRetryConfig,
       );
@@ -119,7 +119,7 @@ describe("getBiometricToken", () => {
 
       it("Returns an empty failure", () => {
         expect(result).toEqual(emptyFailure());
-        expect(mockSendHttpRequest).toBeCalledWith(
+        expect(mockSendHttpRequest).toHaveBeenCalledWith(
           expectedHttpRequest,
           expectedRetryConfig,
         );
@@ -154,7 +154,7 @@ describe("getBiometricToken", () => {
 
       it("Returns an empty failure", () => {
         expect(result).toEqual(emptyFailure());
-        expect(mockSendHttpRequest).toBeCalledWith(
+        expect(mockSendHttpRequest).toHaveBeenCalledWith(
           expectedHttpRequest,
           expectedRetryConfig,
         );
@@ -194,7 +194,7 @@ describe("getBiometricToken", () => {
 
     it("Returns successResult containing biometric token", () => {
       expect(result).toEqual(successResult("mockBiometricToken"));
-      expect(mockSendHttpRequest).toBeCalledWith(
+      expect(mockSendHttpRequest).toHaveBeenCalledWith(
         expectedHttpRequest,
         expectedRetryConfig,
       );
