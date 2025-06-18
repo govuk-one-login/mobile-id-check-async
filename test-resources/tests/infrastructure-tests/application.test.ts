@@ -201,6 +201,22 @@ describe("STS mock infrastructure", () => {
       });
     });
 
+    test("Token lambda has reserved concurrency set from mapping", () => {
+      const reservedConcurrentExecutions = new Capture();
+      template.hasResourceProperties("AWS::Serverless::Function", {
+        FunctionName: { "Fn::Sub": "${AWS::StackName}-sts-mock-token" },
+        ReservedConcurrentExecutions: reservedConcurrentExecutions,
+      });
+
+      expect(reservedConcurrentExecutions.asObject()).toStrictEqual({
+        "Fn::FindInMap": [
+          "StsMockTokenLambda",
+          { Ref: "Environment" },
+          "ReservedConcurrency",
+        ],
+      });
+    });
+
     test("Dequeue lambda is attached to a VPC and subnets are private", () => {
       const lambdaHandlers = ["dequeueHandler.lambdaHandler"];
       lambdaHandlers.forEach((lambdaHandler) => {
