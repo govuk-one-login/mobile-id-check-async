@@ -99,7 +99,6 @@ describe("InMemoryJwksCache", () => {
 
       it("Calls getJwksFromJwksUri for both JWKS URIs", () => {
         expect(mockSuccessfulGetJwks).toHaveBeenCalledTimes(2);
-        expect(mockSuccessfulGetJwks).toHaveBeenCalledWith("mock_jwks_uri");
         expect(mockSuccessfulGetJwks).toHaveBeenNthCalledWith(
           1,
           "mock_jwks_uri",
