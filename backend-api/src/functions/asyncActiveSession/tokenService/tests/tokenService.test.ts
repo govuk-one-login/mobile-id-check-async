@@ -1,10 +1,19 @@
 import { MockJWTBuilder } from "../../../testUtils/mockJwtBuilder";
-import { ITokenService, TokenService } from "../tokenService";
-import { MockTokenVerifierError, MockTokenVerifierSuccess } from "./mocks";
-import { ErrorCategory } from "../../../utils/result";
+import { TokenService } from "../tokenService";
+import {
+  emptySuccess,
+  ErrorCategory,
+  errorResult,
+} from "../../../utils/result";
+
+import { ITokenService, VerifyToken } from "../types";
 
 describe("Token Service", () => {
   let tokenService: ITokenService;
+
+  const mockVerifyTokenSuccess: VerifyToken = jest
+    .fn()
+    .mockResolvedValue(emptySuccess());
 
   beforeAll(() => {
     jest.useFakeTimers().setSystemTime(new Date("2024-03-10"));
@@ -12,7 +21,7 @@ describe("Token Service", () => {
 
   beforeEach(async () => {
     tokenService = new TokenService({
-      tokenVerifier: new MockTokenVerifierSuccess(),
+      verifyToken: mockVerifyTokenSuccess,
     });
   });
 
@@ -308,8 +317,14 @@ describe("Token Service", () => {
           .setSub("mockSub")
           .setIat(1710028700)
           .getEncodedJwt();
+
         tokenService = new TokenService({
-          tokenVerifier: new MockTokenVerifierError(),
+          verifyToken: jest.fn().mockResolvedValue(
+            errorResult({
+              errorMessage: "mockErrorMessage",
+              errorCategory: ErrorCategory.CLIENT_ERROR,
+            }),
+          ),
         });
         const result = await tokenService.validateServiceToken(
           mockEncodedJwt,
@@ -319,7 +334,7 @@ describe("Token Service", () => {
 
         expect(result.isError).toBe(true);
         expect(result.value).toStrictEqual({
-          errorMessage: "Mock signature verification error",
+          errorMessage: "mockErrorMessage",
           errorCategory: ErrorCategory.CLIENT_ERROR,
         });
       });

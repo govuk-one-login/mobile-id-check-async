@@ -1,8 +1,9 @@
 import { base64url, importJWK, SignJWT } from "jose";
+import { mockKeyId } from "./unitTestData";
 
 export class MockJWTBuilder {
   private jwt: IMockJwt = {
-    header: { alg: "ES256", typ: "JWT", kid: "mockKid" },
+    header: { alg: "ES256", typ: "JWT", kid: mockKeyId },
     payload: {
       exp: Date.now() + 1000,
       iss: "mockIssuer",

@@ -2,8 +2,9 @@ import {
   ISessionService,
   SessionService,
 } from "../services/session/sessionService";
-import { ITokenService, TokenService } from "./tokenService/tokenService";
+import { TokenService } from "./tokenService/tokenService";
 import { IDecryptJwe, JweDecrypter } from "./jwe/jweDecrypter";
+import { ITokenService } from "./tokenService/types";
 
 export interface IAsyncActiveSessionDependencies {
   env: NodeJS.ProcessEnv;

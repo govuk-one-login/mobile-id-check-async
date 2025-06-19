@@ -84,6 +84,7 @@ paths:
             description: OK
             responseParameters:
               method.response.header.Content-Type: "'application/json'"
+              method.response.header.Cache-Control: "'max-age=3600'" # matches real STS config
             contentHandling: "CONVERT_TO_TEXT"
           default:
             statusCode: "500"
