@@ -71,9 +71,9 @@ Mappings:
 
   StsMockTokenLambda:
     dev:
-      ReservedConcurrency: 0
+      ReservedConcurrentExecutions: 0
     build:
-      ReservedConcurrency: 160
+      ReservedConcurrentExecutions: 160
 
   EventsApiGateway:
     dev:
@@ -131,6 +131,10 @@ Conditions:
       - !Equals
         - !Ref AWS::StackName
         - mob-test-resources
+
+  isDev: !Equals
+      - !Ref Environment
+      - dev
 
 Resources:
   # CloudFormation requires at least one resource definition per template, so this resource is here to satisfy various

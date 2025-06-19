@@ -71,9 +71,9 @@ Mappings:
 
   StsMockTokenLambda:
     build:
-      ReservedConcurrency: 160
+      ReservedConcurrentExecutions: 160
     dev:
-      ReservedConcurrency: 0
+      ReservedConcurrentExecutions: 0
 
   TestResourcesApiGateway:
     build:
@@ -116,6 +116,10 @@ Conditions:
     - !Equals
       - !Ref PermissionsBoundary
       - none
+
+  isDev: !Equals
+    - !Ref Environment
+    - dev
 
 Transform: AWS::Serverless-2016-10-31
 
@@ -940,10 +944,13 @@ Resources:
           Type: Api
       FunctionName: !Sub ${AWS::StackName}-sts-mock-token
       Handler: tokenHandler.lambdaHandler
-      ReservedConcurrentExecutions: !FindInMap
-        - StsMockTokenLambda
-        - !Ref Environment
-        - ReservedConcurrency
+      ReservedConcurrentExecutions: !If
+        - isDev
+        - !Ref AWS::NoValue
+        - !FindInMap
+          - StsMockTokenLambda
+          - !Ref Environment
+          - ReservedConcurrentExecutions
       Role: !GetAtt TokenFunctionRole.Arn
       Timeout: 5
       VpcConfig:
