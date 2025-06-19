@@ -254,7 +254,7 @@ describe("Async Biometric Token", () => {
 
     describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully to write to TxMA", () => {
       it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
-        expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+        expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith({
           eventName: "DCMAW_ASYNC_CRI_5XXERROR",
           componentId: "mockIssuer",
           getNowInMilliseconds: Date.now,
@@ -338,7 +338,7 @@ describe("Async Biometric Token", () => {
         });
 
         it("Writes DCMAW_ASYNC_CRI_4XXERROR event to TxMA", () => {
-          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith({
             eventName: "DCMAW_ASYNC_CRI_4XXERROR",
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
@@ -420,7 +420,7 @@ describe("Async Biometric Token", () => {
         });
 
         it("Writes DCMAW_ASYNC_CRI_4XXERROR event to TxMA", () => {
-          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith({
             eventName: "DCMAW_ASYNC_CRI_4XXERROR",
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
@@ -506,7 +506,7 @@ describe("Async Biometric Token", () => {
 
       describe("Given DCMAW_ASYNC_CRI_5XXERROR event successfully to write to TxMA", () => {
         it("Writes DCMAW_ASYNC_CRI_5XXERROR event to TxMA", () => {
-          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith({
             eventName: "DCMAW_ASYNC_CRI_5XXERROR",
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
@@ -608,7 +608,9 @@ describe("Async Biometric Token", () => {
 
     describe("Given DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED event successfully writes to TxMA", () => {
       it("Writes DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED event to TxMA", () => {
-        expect(mockWriteBiometricTokenIssuedEventSuccessResult).toBeCalledWith({
+        expect(
+          mockWriteBiometricTokenIssuedEventSuccessResult,
+        ).toHaveBeenCalledWith({
           componentId: "mockIssuer",
           getNowInMilliseconds: Date.now,
           govukSigninJourneyId: "mockGovukSigninJourneyId",

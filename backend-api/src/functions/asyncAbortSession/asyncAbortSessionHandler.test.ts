@@ -211,7 +211,7 @@ describe("Async Abort Session", () => {
         });
 
         it("Writes error event to TxMA and returns 401", () => {
-          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith({
             eventName: "DCMAW_ASYNC_CRI_4XXERROR",
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
@@ -253,7 +253,7 @@ describe("Async Abort Session", () => {
         });
 
         it("Writes fraud signal and returns 401", () => {
-          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith({
             eventName: "DCMAW_ASYNC_CRI_4XXERROR",
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
@@ -291,7 +291,7 @@ describe("Async Abort Session", () => {
         });
 
         it("Writes event without fraud signal and returns 401", () => {
-          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith({
             eventName: "DCMAW_ASYNC_CRI_4XXERROR",
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
@@ -392,7 +392,7 @@ describe("Async Abort Session", () => {
         });
 
         it("Writes error event and returns 500", () => {
-          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith({
             eventName: "DCMAW_ASYNC_CRI_5XXERROR",
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
@@ -481,7 +481,7 @@ describe("Async Abort Session", () => {
         });
 
         it("Writes DCMAW_ASYNC_CRI_5XXERROR event", () => {
-          expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith({
             eventName: "DCMAW_ASYNC_CRI_5XXERROR",
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
@@ -554,7 +554,7 @@ describe("Async Abort Session", () => {
     });
 
     it("Writes DCMAW_ASYNC_ABORT_APP event to TxMA", () => {
-      expect(mockWriteGenericEventSuccessResult).toBeCalledWith({
+      expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith({
         eventName: "DCMAW_ASYNC_ABORT_APP",
         sub: "mockSubjectIdentifier",
         sessionId: mockSessionId,

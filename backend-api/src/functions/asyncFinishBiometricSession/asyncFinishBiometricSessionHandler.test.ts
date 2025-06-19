@@ -255,7 +255,7 @@ describe("Async Finish Biometric Session", () => {
         });
 
         it("Writes error event to TxMA and returns 401", () => {
-          expect(mockWriteGenericEventSuccess).toBeCalledWith({
+          expect(mockWriteGenericEventSuccess).toHaveBeenCalledWith({
             eventName: "DCMAW_ASYNC_CRI_4XXERROR",
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
@@ -296,7 +296,7 @@ describe("Async Finish Biometric Session", () => {
         });
 
         it("Writes fraud signal and returns 403", () => {
-          expect(mockWriteGenericEventSuccess).toBeCalledWith({
+          expect(mockWriteGenericEventSuccess).toHaveBeenCalledWith({
             eventName: "DCMAW_ASYNC_CRI_4XXERROR",
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
@@ -336,7 +336,7 @@ describe("Async Finish Biometric Session", () => {
         });
 
         it("Writes event without fraud signal and returns 401", () => {
-          expect(mockWriteGenericEventSuccess).toBeCalledWith({
+          expect(mockWriteGenericEventSuccess).toHaveBeenCalledWith({
             eventName: "DCMAW_ASYNC_CRI_4XXERROR",
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
@@ -438,7 +438,7 @@ describe("Async Finish Biometric Session", () => {
         });
 
         it("Writes error event and returns 500", () => {
-          expect(mockWriteGenericEventSuccess).toBeCalledWith({
+          expect(mockWriteGenericEventSuccess).toHaveBeenCalledWith({
             eventName: "DCMAW_ASYNC_CRI_5XXERROR",
             componentId: "mockIssuer",
             getNowInMilliseconds: Date.now,
@@ -520,7 +520,7 @@ describe("Async Finish Biometric Session", () => {
       });
 
       it("Writes DCMAW_ASYNC_CRI_5XXERROR event", () => {
-        expect(mockWriteGenericEventSuccess).toBeCalledWith({
+        expect(mockWriteGenericEventSuccess).toHaveBeenCalledWith({
           eventName: "DCMAW_ASYNC_CRI_5XXERROR",
           componentId: "mockIssuer",
           getNowInMilliseconds: Date.now,
@@ -601,7 +601,7 @@ describe("Async Finish Biometric Session", () => {
     });
 
     it("Writes DCMAW_ASYNC_APP_END event to TxMA", () => {
-      expect(mockWriteGenericEventSuccess).toBeCalledWith({
+      expect(mockWriteGenericEventSuccess).toHaveBeenCalledWith({
         eventName: "DCMAW_ASYNC_APP_END",
         sub: "mockSubjectIdentifier",
         sessionId: mockSessionId,

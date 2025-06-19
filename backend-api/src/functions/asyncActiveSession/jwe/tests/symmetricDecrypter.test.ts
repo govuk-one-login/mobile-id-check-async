@@ -30,7 +30,7 @@ describe("Symmetric Decrypter", () => {
           authenticationTag,
           additionalAuthenticatedData,
         ),
-      ).toThrowError(RangeError("Invalid key length"));
+      ).toThrow("Invalid key length");
     });
   });
 

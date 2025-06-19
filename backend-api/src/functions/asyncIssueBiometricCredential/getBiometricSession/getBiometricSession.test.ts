@@ -25,7 +25,7 @@ describe("getBiometricSession", () => {
       "OData-MaxVersion": "4.0",
       "OData-Version": "4.0",
     },
-  };
+  } as const;
 
   const expectedRetryConfig = {
     retryableStatusCodes: [
@@ -100,7 +100,7 @@ describe("getBiometricSession", () => {
         expect(result.value).toEqual({
           isRetryable: true,
         });
-        expect(mockSendHttpRequest).toBeCalledWith(
+        expect(mockSendHttpRequest).toHaveBeenCalledWith(
           expectedHttpRequest,
           expectedRetryConfig,
         );
@@ -135,7 +135,7 @@ describe("getBiometricSession", () => {
         expect(result.value).toEqual({
           isRetryable: false,
         });
-        expect(mockSendHttpRequest).toBeCalledWith(
+        expect(mockSendHttpRequest).toHaveBeenCalledWith(
           expectedHttpRequest,
           expectedRetryConfig,
         );
@@ -199,7 +199,7 @@ describe("getBiometricSession", () => {
         expect(result.value).toEqual({
           isRetryable: false,
         });
-        expect(mockSendHttpRequest).toBeCalledWith(
+        expect(mockSendHttpRequest).toHaveBeenCalledWith(
           expectedHttpRequest,
           expectedRetryConfig,
         );
@@ -238,7 +238,7 @@ describe("getBiometricSession", () => {
         expect(result.value).toEqual({
           isRetryable: false,
         });
-        expect(mockSendHttpRequest).toBeCalledWith(
+        expect(mockSendHttpRequest).toHaveBeenCalledWith(
           expectedHttpRequest,
           expectedRetryConfig,
         );
@@ -317,7 +317,7 @@ describe("getBiometricSession", () => {
 
     it("it returns successResult containing biometric session", () => {
       expect(result).toEqual(successResult(mockSession));
-      expect(mockSendHttpRequest).toBeCalledWith(
+      expect(mockSendHttpRequest).toHaveBeenCalledWith(
         expectedHttpRequest,
         expectedRetryConfig,
       );
