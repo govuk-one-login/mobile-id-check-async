@@ -251,6 +251,7 @@ Resources:
           Label: "Number of 5XX errors returned as a percentage"
           ReturnData: false
           Expression: (errorSum5XX/invocations) * 100
+
   AsyncAbortSessionErrorRateAlarm:
     Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm
