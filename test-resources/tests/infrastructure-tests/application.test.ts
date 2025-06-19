@@ -209,10 +209,20 @@ describe("STS mock infrastructure", () => {
       });
 
       expect(reservedConcurrentExecutions.asObject()).toStrictEqual({
-        "Fn::FindInMap": [
-          "StsMockTokenLambda",
-          { Ref: "Environment" },
-          "ReservedConcurrency",
+        "Fn::If": [
+          "isDev",
+          {
+            Ref: "AWS::NoValue",
+          },
+          {
+            "Fn::FindInMap": [
+              "StsMockTokenLambda",
+              {
+                Ref: "Environment",
+              },
+              "ReservedConcurrentExecutions",
+            ],
+          },
         ],
       });
     });
