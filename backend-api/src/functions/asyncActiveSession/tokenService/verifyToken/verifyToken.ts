@@ -33,9 +33,9 @@ export const verifyToken: VerifyToken = async (
 
   try {
     await jwtVerify(token, publicKey);
-  } catch {
+  } catch (error) {
     return errorResult({
-      errorMessage: "Error verifying token signature",
+      errorMessage: `Error verifying token signature - ${error}`,
       errorCategory: ErrorCategory.CLIENT_ERROR,
     });
   }

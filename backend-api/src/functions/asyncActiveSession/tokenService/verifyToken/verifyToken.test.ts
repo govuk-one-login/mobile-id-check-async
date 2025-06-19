@@ -138,7 +138,8 @@ describe("verifyToken", () => {
     it("Returns error result with server error", async () => {
       expect(result).toEqual(
         errorResult({
-          errorMessage: "Error verifying token signature",
+          errorMessage:
+            "Error verifying token signature - JWSSignatureVerificationFailed: signature verification failed",
           errorCategory: ErrorCategory.CLIENT_ERROR,
         }),
       );
