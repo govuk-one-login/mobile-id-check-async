@@ -54,11 +54,11 @@ describe("STS mock infrastructure", () => {
       test("rate and burst limit mappings are set", () => {
         const expectedBurstLimits = {
           dev: 10,
-          build: 200,
+          build: 400,
         };
         const expectedRateLimits = {
           dev: 10,
-          build: 100,
+          build: 200,
         };
         const mappingHelper = new Mappings(template);
         mappingHelper.validatePrivateAPIMapping({
@@ -198,6 +198,32 @@ describe("STS mock infrastructure", () => {
             ],
           },
         });
+      });
+    });
+
+    test("Token lambda has reserved concurrency set from mapping", () => {
+      const reservedConcurrentExecutions = new Capture();
+      template.hasResourceProperties("AWS::Serverless::Function", {
+        FunctionName: { "Fn::Sub": "${AWS::StackName}-sts-mock-token" },
+        ReservedConcurrentExecutions: reservedConcurrentExecutions,
+      });
+
+      expect(reservedConcurrentExecutions.asObject()).toStrictEqual({
+        "Fn::If": [
+          "isDev",
+          {
+            Ref: "AWS::NoValue",
+          },
+          {
+            "Fn::FindInMap": [
+              "StsMockTokenLambda",
+              {
+                Ref: "Environment",
+              },
+              "ReservedConcurrentExecutions",
+            ],
+          },
+        ],
       });
     });
 
