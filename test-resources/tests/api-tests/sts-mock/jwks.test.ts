@@ -15,5 +15,7 @@ describe("GET /.well-known/jwks.json", () => {
       expect(key).toHaveProperty("x");
       expect(key).toHaveProperty("y");
     });
+
+    expect(response.headers["cache-control"]).toEqual("max-age=3600")
   });
 });
