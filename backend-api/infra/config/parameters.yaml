@@ -1,0 +1,69 @@
+Parameters:
+  Environment:
+    Description: The environment type
+    Type: String
+    AllowedValues:
+      - dev
+      - build
+      - staging
+      - integration
+      - production
+    Default: dev
+
+  CodeSigningConfigArn:
+    Description: |
+      The ARN of the Code Signing Config to use, provided by the deployment pipeline
+    Type: String
+    Default: none
+
+  PermissionsBoundary:
+    Description: |
+      The ARN of the permissions boundary to apply to any role created by the template
+    Type: String
+    Default: none
+
+  DevOverrideStsBaseUrl:
+    Description: |
+      Override the STS_BASE_URL value for development deployments
+    Type: String
+    Default: none
+
+  DevOverrideEventsBaseUrl:
+    Description: |
+      Override the EventsBaseUrl value for development deployments
+    Type: String
+    Default: none
+
+  DevOverrideTestResourcesBaseUrl:
+    Description: |
+      Override the TestResourcesBaseUrl value for development deployments
+    Type: String
+    Default: none
+
+  DevOverrideReadIdBaseUrl:
+    Description: |
+      Override the ReadIdBaseUrl value for development deployments
+    Type: String
+    Default: none
+
+  DevOverrideReadIdMockBaseUrl:
+    Description: |
+      Override the ReadIdMockBaseUrl value for development deployments
+    Type: String
+    Default: none
+
+  DeployAlarmsInDev:
+    Description: Set to `true` to deploy alarms in a dev environment
+    Type: String
+    Default: false
+
+  LambdaDeploymentPreference:
+    Description: |
+      Specifies the configuration to enable gradual Lambda deployments. Value can be 'AllAtOnce', a default deployment config, or name of custom DeploymentConfig.
+    Type: String
+    Default: AllAtOnce
+
+  SamValidateLintWorkaround:
+    Description: Do not update or override. This allows the definition of a resource that is never deployed.
+    Type: String
+    Default: unused

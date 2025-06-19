@@ -2,7 +2,10 @@
 
 The `template.yaml` contains the Cloudformation resources that are deployed into AWS. This is made up of smaller `*.yaml` files that live in the `backend-api/infra` directory. 
 
-The `*.yaml` files in the `backend-api/infra` folder are organised by technology. There is also a `parent.yaml` which defines the Conditionals, Mappings and Globals.
+The `*.yaml` files in the `backend-api/infra` folder are organised into:
+- a `parent.yaml` which serves as an empty shell for the template, including the template format version, description and serverless transform.
+- a `config/` directory containing separate definitions for parameters, mappings, conditions, globals and outputs
+- a `resources/` directory containing all of our resource definitions, grouped by domain.
 
 ### Generating the template.yaml
 When any changes are made to the `*.yaml` files in the `backend/infra` folder, the `backend-api/template.yaml` needs to be regenerated:
@@ -24,8 +27,8 @@ Merging templates requires rain to be installed. See https://github.com/aws-clou
 3) Generate the `template.yaml`
 
 ### Deleting infrastructure
-1) Locate the infrastructure to be removed in the `infra` folder.
-2) Check if it uses resources from the `parent.yaml` and remove these, if no other resources depend on it.
+1) Locate the resources to be removed in the `resources/` folder.
+2) Check if they use definitions from the `config/` folder and remove these, if no other resources depend on them.
 3) Delete the `infra/*.yaml` file if empty
 4) Generate the `template.yaml`
 

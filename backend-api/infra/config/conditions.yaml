@@ -1,0 +1,116 @@
+Conditions:
+  UseCodeSigning: !Not
+    - !Equals
+      - !Ref CodeSigningConfigArn
+      - none
+
+  UsePermissionsBoundary: !Not
+    - !Equals
+      - !Ref PermissionsBoundary
+      - none
+
+  isDev: !Equals
+    - !Ref Environment
+    - dev
+
+  isNotDev:
+    !Not [!Equals [!Ref Environment, dev]]
+
+  isNotDevOrBuild: !Or
+    - !Equals
+      - !Ref Environment
+      - staging
+    - !Equals
+      - !Ref Environment
+      - integration
+    - !Equals
+      - !Ref Environment
+      - production
+
+  IsDevOrBuild: !Or
+    - !Equals
+      - !Ref Environment
+      - dev
+    - !Equals
+      - !Ref Environment
+      - build
+
+  ProxyApiDeployment: !Or
+    - !Equals
+      - !Ref Environment
+      - dev
+    - !Equals
+      - !Ref Environment
+      - build
+
+  UseDevOverrideStsBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideStsBaseUrl
+      - none
+
+  UseDevOverrideEventsBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideEventsBaseUrl
+      - none
+
+  UseDevOverrideTestResourcesBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideTestResourcesBaseUrl
+      - none
+
+  UseDevOverrideReadIdBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideReadIdBaseUrl
+      - none
+
+  UseDevOverrideReadIdMockBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideReadIdMockBaseUrl
+      - none
+
+  DevelopmentStack: !And
+    - !Equals [!Ref Environment, dev]
+    - !Not [!Equals [!Ref AWS::StackName, mob-async-backend]]
+
+  DeployAlarms: !Or
+    - !Not
+      - !Equals
+        - !Ref Environment
+        - dev
+    - !Equals [!Ref DeployAlarmsInDev, true]
+
+  DeployProxyAlarms: !And
+    - !Condition DeployAlarms
+    - !Condition ProxyApiDeployment
+
+  UseCanaryDeployment: !And
+    - !Condition DeployAlarms
+    - !Not [!Equals [!Ref LambdaDeploymentPreference, "AllAtOnce"]]
+
+  IntegrateIpvCore: !Or
+    - !Equals
+      - !Ref Environment
+      - staging
+    - !Equals
+      - !Ref Environment
+      - integration
+    - !Equals
+      - !Ref Environment
+      - production
+
+  IntegratePerformanceTesting: !Or
+    - !Equals
+      - !Ref Environment
+      - dev
+    - !Equals
+      - !Ref Environment
+      - build
+
+  DeployProxyCsls: !And
+    - Condition: ProxyApiDeployment
+    - Condition: isNotDev
+
+  # This condition is in place so that we can add a resource to this parent.yaml template that is never deployed.
+  NeverDeploy: !Equals
+    - !Ref SamValidateLintWorkaround
+    - "Should always equal false"

@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  AsyncFinishBiometricSessionCompletionMetricFilter:
+    Condition: DeployAlarms
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref AsyncFinishBiometricSessionLogGroup
+      FilterPattern: "{ ($.messageCode = *) && ($.functionVersion = *) }"
+      MetricTransformations:
+        - MetricValue: "1"
+          MetricNamespace: !Sub "${AWS::StackName}/LogMessages"
+          MetricName: "AsyncFinishBiometricSessionMessageCode"
+          Dimensions:
+            - Key: MessageCode
+              Value: $.messageCode
+            - Key: Version
+              Value: $.functionVersion

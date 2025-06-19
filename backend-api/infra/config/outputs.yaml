@@ -1,0 +1,73 @@
+Outputs:
+  SessionsApiUrl:
+    Description: Sessions API Gateway base URL
+    Value: !Sub https://${SessionsApiDomainName}
+
+  PrivateApiUrl:
+    Description: Private API Gateway base URL
+    Value: !Sub https://${PrivateApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}
+
+  ProxyApiUrl:
+    Condition: ProxyApiDeployment
+    Description: Proxy API Gateway Pretty DNS
+    Value: !Sub https://${ProxyApiDomainName}
+
+  StsMockApiUrl:
+    Condition: IsDevOrBuild
+    Description: STS Mock API Gateway base URL
+    Value: !If
+      - UseDevOverrideStsBaseUrl
+      - !Ref DevOverrideStsBaseUrl
+      - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
+
+  EventsApiUrl:
+    Condition: IsDevOrBuild
+    Description: Events API Gateway base URL
+    Value: !If
+      - UseDevOverrideEventsBaseUrl
+      - !Ref DevOverrideEventsBaseUrl
+      - !FindInMap [EnvironmentVariables, !Ref Environment, EventsBaseUrl]
+
+  TestResourcesApiUrl:
+    Condition: IsDevOrBuild
+    Description: Test Resources API Gateway base URL
+    Value: !If
+      - UseDevOverrideTestResourcesBaseUrl
+      - !Ref DevOverrideTestResourcesBaseUrl
+      - !FindInMap [EnvironmentVariables, !Ref Environment, TestResourcesBaseUrl]
+
+  ReadIdMockApiUrl:
+    Condition: IsDevOrBuild
+    Description: ReadID Mock API Gateway base URL
+    Value: !If
+      - UseDevOverrideReadIdMockBaseUrl
+      - !Ref DevOverrideReadIdMockBaseUrl
+      - !FindInMap [EnvironmentVariables, !Ref Environment, ReadIdMockBaseUrl]
+
+  TxmaSqsArn:
+    Condition: IsDevOrBuild
+    Description: TxMA SQS Queue ARN
+    Export:
+      Name: !Sub ${AWS::StackName}-txma-sqs-arn
+    Value: !GetAtt TxMASqs.Arn
+
+  TxmaKmsEncryptionKeyArn:
+    Condition: IsDevOrBuild
+    Description: TxMA KMS Encryption Key ARN
+    Export:
+      Name: !Sub ${AWS::StackName}-txma-kms-encryption-key-arn
+    Value: !GetAtt TxMAKMSEncryptionKey.Arn
+
+  IPVCoreOutboundSqsArn:
+    Condition: IsDevOrBuild
+    Description: IPV Core Queue ARN
+    Export:
+      Name: !Sub ${AWS::StackName}-ipv-core-outbound-sqs-arn
+    Value: !GetAtt IPVCoreOutboundSqs.Arn
+
+  IPVCoreKmsEncryptionKeyArn:
+    Condition: IsDevOrBuild
+    Description: IPV Core KMS Encryption Key ARN
+    Export:
+      Name: !Sub ${AWS::StackName}-ipv-core-kms-encryption-key-arn
+    Value: !GetAtt IPVCoreKMSEncryptionKey.Arn
