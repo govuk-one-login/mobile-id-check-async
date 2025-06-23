@@ -1,5 +1,5 @@
 import { Result } from "../../utils/result";
-import { IGetKeys } from "../../common/jwks/types";
+import { IGetKeys } from "../../common/jwks/JwksCache/types";
 
 export type VerifyToken = (
   token: string,

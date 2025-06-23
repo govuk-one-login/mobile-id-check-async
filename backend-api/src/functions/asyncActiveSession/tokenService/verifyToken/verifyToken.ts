@@ -6,7 +6,7 @@ import {
   Result,
   successResult,
 } from "../../../utils/result";
-import { IGetKeys } from "../../../common/jwks/types";
+import { IGetKeys } from "../../../common/jwks/JwksCache/types";
 import { InMemoryJwksCache } from "../../../common/jwks/JwksCache/JwksCache";
 import { VerifyToken, VerifyTokenDependencies } from "../types";
 

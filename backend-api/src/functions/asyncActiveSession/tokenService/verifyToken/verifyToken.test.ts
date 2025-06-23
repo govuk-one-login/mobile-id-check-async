@@ -7,7 +7,7 @@ import {
   Result,
   successResult,
 } from "../../../utils/result";
-import { IGetKeys } from "../../../common/jwks/types";
+import { IGetKeys } from "../../../common/jwks/JwksCache/types";
 import { verifyToken } from "./verifyToken";
 import { mockKeyId } from "../../../testUtils/unitTestData";
 import { VerifyTokenDependencies } from "../types";

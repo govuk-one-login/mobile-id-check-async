@@ -3,8 +3,8 @@ import {
   GetKeysResponse,
   JwksCache,
   JwksCacheDependencies,
-} from "../types";
-import { getJwksFromJwksUri } from "../getJwksFromJwksUri/getJwksFromJwksUri";
+} from "./types";
+import { getJwksFromJwksUri } from "./helpers/getJwksFromJwksUri";
 import { Result, successResult } from "../../../utils/result";
 import { sendHttpRequest } from "../../../adapters/http/sendHttpRequest";
 
