@@ -1,0 +1,272 @@
+Mappings:
+  StaticVariables:
+    urls:
+      WarningAlarmsRunbook: https://govukverify.atlassian.net/wiki/spaces/DCMAW/pages/4800446694/Alarms+Runbook+Warnings
+      SupportManual: https://team-manual.account.gov.uk/teams/mobile-team/supporting-id-check-asynchronous-backend
+  EnvironmentConfiguration:
+    dev:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+    build:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+    staging:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+    integration:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+    production:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables
+
+  PrivateApigw:
+    dev:
+      ApiBurstLimit: 20
+      ApiRateLimit: 10
+      IpvCoreVpceId: ""
+      PerformanceTestingVpceId: "vpce-0a5d1c69016ab3b56"
+    build:
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
+      IpvCoreVpceId: ""
+      PerformanceTestingVpceId: "vpce-0a5d1c69016ab3b56"
+    staging:
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
+      IpvCoreVpceId: "vpce-0cc0de10742b83b8a"
+      PerformanceTestingVpceId: ""
+    integration:
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
+      IpvCoreVpceId: "vpce-0f47068fdf9ad0c3d"
+      PerformanceTestingVpceId: ""
+    production:
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
+      IpvCoreVpceId: "vpce-0e40247a557c2169e"
+      PerformanceTestingVpceId: ""
+
+  SessionsApigw:
+    dev:
+      ApiBurstLimit: 20
+      ApiRateLimit: 10
+    build:
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
+    staging:
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
+    integration:
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
+    production:
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
+
+  ProxyApigw:
+    dev:
+      ApiBurstLimit: 20
+      ApiRateLimit: 10
+      # Perf test prod account - di-performance-test-prod
+      perfTesterRoleArn: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
+    build:
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
+      # Perf test prod account - di-performance-test-prod
+      perfTesterRoleArn: arn:aws:iam::330163506186:role/perftest-PerformanceTesterRole
+    staging:
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
+      perfTesterRoleArn: ""
+    integration:
+      ApiBurstLimit: 400
+      ApiRateLimit: 200
+      perfTesterRoleArn: ""
+    production:
+      ApiBurstLimit: 0
+      ApiRateLimit: 0
+      perfTesterRoleArn: ""
+
+  Lambda:
+    dev: # Placeholder value to satisfy Cloudformation validation requirements when the environment is dev
+      ReservedConcurrentExecutions: 0
+      IssueBiometricCredentialReservedConcurrentExecutions: 0
+      AsyncTokenReservedConcurrentExecutions: 0
+      AsyncCredentialReservedConcurrentExecutions: 0
+      JsonWebKeysReservedConcurrentExecutions: 1
+      LogLevel: DEBUG
+    build:
+      ReservedConcurrentExecutions: 80
+      IssueBiometricCredentialReservedConcurrentExecutions: 34
+      AsyncTokenReservedConcurrentExecutions: 160
+      AsyncCredentialReservedConcurrentExecutions: 160
+      JsonWebKeysReservedConcurrentExecutions: 1
+      LogLevel: INFO
+    staging:
+      ReservedConcurrentExecutions: 15
+      IssueBiometricCredentialReservedConcurrentExecutions: 34
+      AsyncTokenReservedConcurrentExecutions: 15
+      AsyncCredentialReservedConcurrentExecutions: 15
+      JsonWebKeysReservedConcurrentExecutions: 1
+      LogLevel: INFO
+    integration:
+      ReservedConcurrentExecutions: 15
+      IssueBiometricCredentialReservedConcurrentExecutions: 34
+      AsyncTokenReservedConcurrentExecutions: 15
+      AsyncCredentialReservedConcurrentExecutions: 15
+      JsonWebKeysReservedConcurrentExecutions: 1
+      LogLevel: INFO
+    production:
+      # If any reserved reserved concurrency value is updated, make sure to update the corresponding concurrency alarms
+      ReservedConcurrentExecutions: 80
+      IssueBiometricCredentialReservedConcurrentExecutions: 34
+      AsyncTokenReservedConcurrentExecutions: 160
+      AsyncCredentialReservedConcurrentExecutions: 160
+      JsonWebKeysReservedConcurrentExecutions: 1
+      LogLevel: INFO
+
+  TxMA:
+    dev:
+      TxmaAccount: arn:aws:iam::248098332657:root
+    build:
+      TxmaAccount: arn:aws:iam::750703655225:root
+    staging:
+      TxmaAccount: arn:aws:iam::178023842775:root
+    integration:
+      TxmaAccount: arn:aws:iam::729485541398:root
+    production:
+      TxmaAccount: arn:aws:iam::451773080033:root
+
+  IPVCore:
+    dev:
+      AccountId: not-used
+    build:
+      AccountId: not-used
+    staging:
+      AccountId: arn:aws:iam::335257547869:root
+    integration:
+      AccountId: arn:aws:iam::991138514218:root
+    production:
+      AccountId: arn:aws:iam::075701497069:root
+
+  KMS:
+    dev:
+      PendingDeletionInDays: 7
+    build:
+      PendingDeletionInDays: 30
+    staging:
+      PendingDeletionInDays: 30
+    integration:
+      PendingDeletionInDays: 30
+    production:
+      PendingDeletionInDays: 30
+
+  DNS:
+    dev:
+      BaseDns: review-b-async.dev.account.gov.uk
+    build:
+      BaseDns: review-b-async.build.account.gov.uk
+    staging:
+      BaseDns: review-b-async.staging.account.gov.uk
+    integration:
+      BaseDns: review-b-async.integration.account.gov.uk
+    production:
+      BaseDns: review-b-async.account.gov.uk
+
+  CslsConfiguration:
+    build:
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+    staging:
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+    integration:
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+    production:
+      CSLSEGRESS: arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython-2
+
+  EnvironmentVariables:
+    dev:
+      STSBASEURL: 'https://sts-mock.review-b-async.dev.account.gov.uk'
+      ReadIdBaseUrl: 'https://readid-proxy.review-b-async.dev.account.gov.uk/v2'
+      ReadIdMockBaseUrl: 'https://readid-mock.review-b-async.dev.account.gov.uk/v2'
+      EventsBaseUrl: 'https://events.review-b-async.dev.account.gov.uk'
+      TestResourcesBaseUrl: 'https://test-resources.review-b-async.dev.account.gov.uk'
+      ClientRegistrySecretPath: 'dev/clientRegistry'
+      BiometricSubmitterKeySecretPathPassport: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
+      BiometricSubmitterKeySecretPathBrp: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
+      BiometricSubmitterKeySecretPathDl: '/dev/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
+      BiometricSubmitterKeySecretCacheDurationInSeconds: 900
+      BiometricViewerAccessKey: '/dev/BIOMETRIC_VIEWER_ACCESS_KEY'
+      BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
+      SessionDurationInSeconds: 86400
+      EnableBiometricResidenceCard: 'true'
+      EnableBiometricResidencePermit: 'true'
+      EnableDrivingLicence: 'true'
+      EnableNfcPassport: 'true'
+      EnableUtopiaTestDocument: 'true'
+
+    build:
+      STSBASEURL: 'https://sts-mock.review-b-async.build.account.gov.uk'
+      ReadIdBaseUrl: 'https://readid-proxy.review-b-async.build.account.gov.uk/v2'
+      ReadIdMockBaseUrl: 'https://readid-mock.review-b-async.build.account.gov.uk/v2'
+      EventsBaseUrl: 'https://events.review-b-async.build.account.gov.uk'
+      TestResourcesBaseUrl: 'https://test-resources.review-b-async.build.account.gov.uk'
+      ClientRegistrySecretPath: 'build/clientRegistry'
+      BiometricSubmitterKeySecretPathPassport: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
+      BiometricSubmitterKeySecretPathBrp: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
+      BiometricSubmitterKeySecretPathDl: '/build/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
+      BiometricSubmitterKeySecretCacheDurationInSeconds: 900
+      BiometricViewerAccessKey: '/build/BIOMETRIC_VIEWER_ACCESS_KEY'
+      BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
+      SessionDurationInSeconds: 86400
+      EnableBiometricResidenceCard: 'true'
+      EnableBiometricResidencePermit: 'true'
+      EnableDrivingLicence: 'true'
+      EnableNfcPassport: 'true'
+      EnableUtopiaTestDocument: 'true'
+
+    staging:
+      STSBASEURL: 'https://token.staging.account.gov.uk'
+      ReadIdBaseUrl: 'https://readid-proxy.review-b-async.staging.account.gov.uk'
+      ClientRegistrySecretPath: 'staging/clientRegistry'
+      BiometricSubmitterKeySecretPathPassport: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
+      BiometricSubmitterKeySecretPathBrp: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
+      BiometricSubmitterKeySecretPathDl: '/staging/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
+      BiometricSubmitterKeySecretCacheDurationInSeconds: 900
+      BiometricViewerAccessKey: '/staging/BIOMETRIC_VIEWER_ACCESS_KEY'
+      BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
+      SessionDurationInSeconds: 86400
+      EnableBiometricResidenceCard: 'true'
+      EnableBiometricResidencePermit: 'true'
+      EnableDrivingLicence: 'true'
+      EnableNfcPassport: 'true'
+      EnableUtopiaTestDocument: 'true'
+
+    integration:
+      STSBASEURL: 'https://token.integration.account.gov.uk'
+      ReadIdBaseUrl: 'https://readid-proxy.review-b-async.integration.account.gov.uk'
+      ClientRegistrySecretPath: 'integration/clientRegistry'
+      BiometricSubmitterKeySecretPathPassport: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
+      BiometricSubmitterKeySecretPathBrp: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
+      BiometricSubmitterKeySecretPathDl: '/integration/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
+      BiometricSubmitterKeySecretCacheDurationInSeconds: 900
+      BiometricViewerAccessKey: '/integration/BIOMETRIC_VIEWER_ACCESS_KEY'
+      BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
+      SessionDurationInSeconds: 86400
+      EnableBiometricResidenceCard: 'true'
+      EnableBiometricResidencePermit: 'true'
+      EnableDrivingLicence: 'true'
+      EnableNfcPassport: 'true'
+      EnableUtopiaTestDocument: 'true'
+
+    production:
+      STSBASEURL: 'https://token.account.gov.uk'
+      ReadIdBaseUrl: 'https://readid-proxy.review-b-async.account.gov.uk'
+      ClientRegistrySecretPath: 'production/clientRegistry'
+      BiometricSubmitterKeySecretPathPassport: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_PASSPORT'
+      BiometricSubmitterKeySecretPathBrp: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_NFC_BRP'
+      BiometricSubmitterKeySecretPathDl: '/production/BIOMETRIC_SUBMITTER_ACCESS_KEY_DL'
+      BiometricSubmitterKeySecretCacheDurationInSeconds: 900
+      BiometricViewerAccessKey: '/production/BIOMETRIC_VIEWER_ACCESS_KEY'
+      BiometricViewerAccessKeySecretCacheDurationInSeconds: 900
+      SessionDurationInSeconds: 86400
+      EnableBiometricResidenceCard: 'true'
+      EnableBiometricResidencePermit: 'true'
+      EnableDrivingLicence: 'true'
+      EnableNfcPassport: 'true'
+      EnableUtopiaTestDocument: 'false'
