@@ -3,7 +3,7 @@ import { Result } from "../../utils/result";
 
 export type IGetJwksFromJwksUri = (
   jwksUri: string,
-  sendRequest?: ISendHttpRequest,
+  dependencies: JwksCacheDependencies,
 ) => Promise<Result<GetJwksFromJwksUriResponse, void>>;
 
 export type GetJwksFromJwksUriResponse = GetKeysResponse & {
@@ -16,6 +16,10 @@ export type GetKeysResponse = {
 
 export interface JwksCache {
   getJwks: IGetKeys;
+}
+
+export interface JwksCacheDependencies {
+  sendRequest: ISendHttpRequest;
 }
 
 export type IGetKeys = (

@@ -1,11 +1,13 @@
 import {
   HttpRequest,
-  ISendHttpRequest,
-  sendHttpRequest,
   SuccessfulHttpResponse,
 } from "../../../adapters/http/sendHttpRequest";
 import { emptyFailure, Result, successResult } from "../../../utils/result";
-import { GetJwksFromJwksUriResponse, IGetJwksFromJwksUri } from "../types";
+import {
+  GetJwksFromJwksUriResponse,
+  IGetJwksFromJwksUri,
+  JwksCacheDependencies,
+} from "../types";
 import { logger } from "../../logging/logger";
 import { LogMessage } from "../../logging/LogMessage";
 import { getHeader } from "../../request/getHeader/getHeader";
@@ -14,7 +16,7 @@ import { parseCacheControlHeader } from "../../request/parseCacheControlHeader/p
 
 export const getJwksFromJwksUri: IGetJwksFromJwksUri = async (
   jwksUri: string,
-  sendRequest: ISendHttpRequest = sendHttpRequest,
+  dependencies: JwksCacheDependencies,
 ) => {
   logger.debug(LogMessage.GET_JWKS_ATTEMPT, { data: { jwksUri } });
 
@@ -22,12 +24,16 @@ export const getJwksFromJwksUri: IGetJwksFromJwksUri = async (
     url: jwksUri,
     method: "GET",
   };
-  const jwksResult = await sendRequest(jwksRequest);
+  const jwksResult = await dependencies.sendRequest(jwksRequest);
 
   if (jwksResult.isError) {
     const { statusCode, description } = jwksResult.value;
     logger.error(LogMessage.GET_JWKS_FAILURE, {
-      data: { jwksUri, description, ...(statusCode && { statusCode }) },
+      data: {
+        jwksUri,
+        errorDescription: description,
+        ...(statusCode && { statusCode }),
+      },
     });
     return emptyFailure();
   }
