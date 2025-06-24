@@ -21,7 +21,7 @@ const MAXIMUM_CACHE_DURATION_MILLIS = MAXIMUM_CACHE_DURATION_SECONDS * 1000;
 
 const serverDefinedMaxAgeInSeconds = MAXIMUM_CACHE_DURATION_SECONDS - 1;
 
-describe("InMemoryJwksCache", () => {
+describe("InMemoryJwksCache - Caching", () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(NOW_IN_MILLISECONDS);

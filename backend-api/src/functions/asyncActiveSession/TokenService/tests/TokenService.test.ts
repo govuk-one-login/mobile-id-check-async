@@ -10,7 +10,10 @@ import {
 
 import { ITokenService, TokenServiceDependencies } from "../types";
 import { IGetKeys } from "../../../common/jwks/JwksCache/types";
-import { mockKeyId } from "../../../testUtils/unitTestData";
+import {
+  activeSessionReadScope,
+  mockKeyId,
+} from "../../../testUtils/unitTestData";
 
 describe("Token Service", () => {
   let tokenService: ITokenService;
@@ -42,7 +45,7 @@ describe("Token Service", () => {
 
   beforeEach(async () => {
     mockValidEncodedJwt = await new MockJWTBuilder()
-      .setScope("idCheck.activeSession.read")
+      .setScope(activeSessionReadScope)
       .setSub("mockSub")
       .setIat(1710028700)
       .getSignedEncodedJwt();
@@ -107,14 +110,14 @@ describe("Token Service", () => {
       {
         scenario: "Given the sub claim is not present in the JWT payload",
         jwt: new MockJWTBuilder()
-          .setScope("idCheck.activeSession.read")
+          .setScope(activeSessionReadScope)
           .getEncodedJwt(),
         expectedErrorMessage: "Invalid sub claim",
       },
       {
         scenario: "Given the expiry claim is not present in the JWT payload",
         jwt: new MockJWTBuilder()
-          .setScope("idCheck.activeSession.read")
+          .setScope(activeSessionReadScope)
           .setSub("mockSub")
           .deleteExp()
           .getEncodedJwt(),
@@ -123,7 +126,7 @@ describe("Token Service", () => {
       {
         scenario: "Given the expiry claim value is in the past",
         jwt: new MockJWTBuilder()
-          .setScope("idCheck.activeSession.read")
+          .setScope(activeSessionReadScope)
           .setSub("mockSub")
           .setExp(1706783129)
           .getEncodedJwt(),
@@ -133,7 +136,7 @@ describe("Token Service", () => {
         scenario:
           "Given the issued at time claim is not present in the JWT payload",
         jwt: new MockJWTBuilder()
-          .setScope("idCheck.activeSession.read")
+          .setScope(activeSessionReadScope)
           .setSub("mockSub")
           .getEncodedJwt(),
         expectedErrorMessage:
@@ -142,7 +145,7 @@ describe("Token Service", () => {
       {
         scenario: "Given the issued at time claim value is in the future",
         jwt: new MockJWTBuilder()
-          .setScope("idCheck.activeSession.read")
+          .setScope(activeSessionReadScope)
           .setSub("mockSub")
           .setIat(1728555929)
           .getEncodedJwt(),

@@ -22,7 +22,7 @@ export const mockClientState = "mockClientState";
 export const mockIssuer = "mockIssuer";
 export const mockRedirectUri = "https://www.mockRedirectUri.com";
 export const mockKeyId = "mockKid";
-
+export const activeSessionReadScope = "idCheck.activeSession.read";
 export const expectedSecurityHeaders = {
   "Cache-Control": "no-store",
   "Content-Type": "application/json",

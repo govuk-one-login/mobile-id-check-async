@@ -15,7 +15,7 @@ let dependencies: JwksCacheDependencies;
 let result: Result<GetKeysResponse, void>;
 let consoleErrorSpy: jest.SpyInstance;
 
-describe("InMemoryJwksCache", () => {
+describe("InMemoryJwksCache - Errors", () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(NOW_IN_MILLISECONDS);
