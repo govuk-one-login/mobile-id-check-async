@@ -183,7 +183,7 @@ describe("Token Service", () => {
       );
     });
 
-    it("Returns error result with server error", async () => {
+    it("Returns error result with server error", () => {
       expect(result).toEqual(
         errorResult({
           errorMessage: "Error retrieving JWKS",
@@ -212,7 +212,7 @@ describe("Token Service", () => {
       );
     });
 
-    it("Returns error result with server error", async () => {
+    it("Returns error result with server error", () => {
       expect(result).toEqual(
         errorResult({
           errorMessage: "No JWK found matching provided key ID",
@@ -241,7 +241,7 @@ describe("Token Service", () => {
       );
     });
 
-    it("Returns error result with server error", async () => {
+    it("Returns error result with server error", () => {
       expect(result).toEqual(
         errorResult({
           errorMessage:
