@@ -4,7 +4,7 @@ import {
   JwksCache,
   JwksCacheDependencies,
 } from "./types";
-import { getJwksFromJwksUri } from "./helpers/getJwksFromJwksUri";
+import { getJwksFromJwksUri } from "./getJwksFromJwksUri";
 import { Result, successResult } from "../../../utils/result";
 import { sendHttpRequest } from "../../../adapters/http/sendHttpRequest";
 
