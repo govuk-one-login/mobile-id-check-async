@@ -1,14 +1,7 @@
 import { Result } from "../../utils/result";
 import { IGetKeys } from "../../common/jwks/JwksCache/types";
 
-export type VerifyToken = (
-  token: string,
-  kid: string,
-  stsBaseUrl: string,
-  dependencies?: VerifyTokenDependencies,
-) => Promise<Result<void>>;
-
-export type VerifyTokenDependencies = {
+export type TokenServiceDependencies = {
   getKeys: IGetKeys;
 };
 
@@ -19,3 +12,9 @@ export interface ITokenService {
     stsBaseUrl: string,
   ) => Promise<Result<string>>;
 }
+
+export type ExpectedClaims = {
+  aud: string;
+  iss: string;
+  scope: "idCheck.activeSession.read";
+};

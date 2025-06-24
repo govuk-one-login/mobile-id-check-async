@@ -5,22 +5,16 @@ import {
   errorResult,
   Result,
   successResult,
-} from "../../../utils/result";
-import { IGetKeys } from "../../../common/jwks/JwksCache/types";
-import { InMemoryJwksCache } from "../../../common/jwks/JwksCache/JwksCache";
-import { VerifyToken, VerifyTokenDependencies } from "../types";
+} from "../../utils/result";
+import { IGetKeys } from "../../common/jwks/JwksCache/types";
+import { TokenServiceDependencies } from "./types";
 
-const verifyTokenDependencies: VerifyTokenDependencies = {
-  getKeys: (jwksUri: string, keyId?: string) =>
-    InMemoryJwksCache.getSingletonInstance().getJwks(jwksUri, keyId),
-};
-
-export const verifyToken: VerifyToken = async (
-  token,
-  kid,
-  stsBaseUrl,
-  dependencies = verifyTokenDependencies,
-) => {
+export const verifyServiceTokenSignature = async (
+  token: string,
+  kid: string,
+  stsBaseUrl: string,
+  dependencies: TokenServiceDependencies,
+): Promise<Result<void>> => {
   const getPublicKeyResult = await getPublicKeyWithKeyId(
     stsBaseUrl,
     kid,
