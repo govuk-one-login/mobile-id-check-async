@@ -32,7 +32,7 @@ export const getJwksFromJwksUri: IGetJwksFromJwksUri = async (
       data: {
         jwksUri,
         errorDescription: description,
-        ...(statusCode && { statusCode }),
+        statusCode,
       },
     });
     return emptyFailure();
