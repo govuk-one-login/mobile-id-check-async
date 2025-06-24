@@ -3,9 +3,9 @@ import {
   errorResult,
   Result,
   successResult,
-} from "../../../utils/result";
+} from "../utils/result";
 
-import { ITokenService } from "../types";
+import { ITokenService } from "./TokenService/types";
 
 export class MockTokenServiceServerError implements ITokenService {
   async validateServiceToken(): Promise<Result<string>> {

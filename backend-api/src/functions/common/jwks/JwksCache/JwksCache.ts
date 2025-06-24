@@ -1,16 +1,12 @@
 import {
   GetJwksFromJwksUriResponse,
   GetKeysResponse,
-  IGetJwksFromJwksUri,
   JwksCache,
-} from "../types";
-import { getJwksFromJwksUri } from "../getJwksFromJwksUri/getJwksFromJwksUri";
+  JwksCacheDependencies,
+} from "./types";
+import { getJwksFromJwksUri } from "./getJwksFromJwksUri";
 import { Result, successResult } from "../../../utils/result";
-
-type JwksCacheEntry = {
-  keys: object[];
-  expiry: number;
-};
+import { sendHttpRequest } from "../../../adapters/http/sendHttpRequest";
 
 export class InMemoryJwksCache implements JwksCache {
   private static INSTANCE: JwksCache;
@@ -20,15 +16,15 @@ export class InMemoryJwksCache implements JwksCache {
   } = {};
 
   public static getSingletonInstance(
-    fetchJwks = getJwksFromJwksUri,
+    dependencies: JwksCacheDependencies = jwksCacheDependencies,
   ): JwksCache {
     if (!this.INSTANCE) {
-      this.INSTANCE = new InMemoryJwksCache(fetchJwks);
+      this.INSTANCE = new InMemoryJwksCache(dependencies);
     }
     return this.INSTANCE;
   }
 
-  constructor(private readonly fetchJwks: IGetJwksFromJwksUri) {}
+  constructor(private readonly dependencies: JwksCacheDependencies) {}
 
   async getJwks(
     jwksUri: string,
@@ -36,7 +32,10 @@ export class InMemoryJwksCache implements JwksCache {
   ): Promise<Result<GetKeysResponse, void>> {
     const previouslyCachedResponse = this.jwksResponses[jwksUri];
     if (!this.cacheContainsFreshResponse(previouslyCachedResponse, keyId)) {
-      const getJwksResult = await this.fetchJwks(jwksUri);
+      const getJwksResult = await getJwksFromJwksUri(
+        jwksUri,
+        this.dependencies,
+      );
       if (getJwksResult.isError) {
         return getJwksResult;
       }
@@ -88,3 +87,12 @@ export class InMemoryJwksCache implements JwksCache {
     return cacheEntry.keys.some((jwk) => "kid" in jwk && jwk.kid === keyId);
   }
 }
+
+const jwksCacheDependencies: JwksCacheDependencies = {
+  sendRequest: sendHttpRequest,
+};
+
+type JwksCacheEntry = {
+  keys: object[];
+  expiry: number;
+};

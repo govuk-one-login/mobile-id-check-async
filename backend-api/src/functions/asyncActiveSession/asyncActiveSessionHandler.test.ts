@@ -17,7 +17,7 @@ import {
   MockTokenServiceClientError,
   MockTokenServiceServerError,
   MockTokenServiceSuccess,
-} from "./tokenService/tests/mocks";
+} from "./mocks";
 import { buildLambdaContext } from "../testUtils/mockContext";
 import { logger } from "../common/logging/logger";
 import "../../../tests/testUtils/matchers";
