@@ -10,11 +10,14 @@ import { IGetKeys } from "../../common/jwks/JwksCache/types";
 import { TokenServiceDependencies } from "./types";
 
 export const verifyServiceTokenSignature = async (
-  token: string,
-  kid: string,
-  stsBaseUrl: string,
+  parameters: {
+    token: string;
+    kid: string;
+    stsBaseUrl: string;
+  },
   dependencies: TokenServiceDependencies,
 ): Promise<Result<void>> => {
+  const { token, kid, stsBaseUrl } = parameters;
   const getPublicKeyResult = await getPublicKeyWithKeyId(
     stsBaseUrl,
     kid,

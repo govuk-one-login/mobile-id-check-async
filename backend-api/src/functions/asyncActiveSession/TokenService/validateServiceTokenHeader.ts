@@ -12,10 +12,10 @@ export function validateServiceTokenHeader(
   let header;
   try {
     header = decodeProtectedHeader(token);
-  } catch {
+  } catch (error) {
     return errorResult({
       errorCategory: ErrorCategory.CLIENT_ERROR,
-      errorMessage: "Failed to decode token header",
+      errorMessage: `Failed to decode token header: ${error}`,
     });
   }
 

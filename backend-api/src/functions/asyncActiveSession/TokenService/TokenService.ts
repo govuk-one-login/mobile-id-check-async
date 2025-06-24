@@ -44,12 +44,14 @@ export class TokenService implements ITokenService {
     if (validateServiceTokenPayloadResult.isError) {
       return validateServiceTokenPayloadResult;
     }
-    const { sub } = validateServiceTokenPayloadResult.value;
+    const sub = validateServiceTokenPayloadResult.value;
 
     const verifyResult = await verifyServiceTokenSignature(
-      token,
-      kid,
-      stsBaseUrl,
+      {
+        token,
+        kid,
+        stsBaseUrl,
+      },
       this.dependencies,
     );
     if (verifyResult.isError) {

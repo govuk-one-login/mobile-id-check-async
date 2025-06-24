@@ -60,7 +60,8 @@ describe("Token Service", () => {
       {
         scenario: "Given the JWT header cannot be decoded",
         jwt: "test.invalid.jwt",
-        expectedErrorMessage: "Failed to decode token header",
+        expectedErrorMessage:
+          "Failed to decode token header: TypeError: Invalid Token or Protected Header formatting",
       },
       {
         scenario: "Given the kid claim is not present in JWT header",

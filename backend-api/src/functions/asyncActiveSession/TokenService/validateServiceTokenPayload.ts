@@ -10,7 +10,7 @@ import { ExpectedClaims } from "./types";
 export function validateServiceTokenPayload(
   token: string,
   expectedClaims: ExpectedClaims,
-): Result<{ sub: string }> {
+): Result<string> {
   let payload;
   try {
     payload = decodeJwt(token);
@@ -74,9 +74,7 @@ export function validateServiceTokenPayload(
     });
   }
 
-  return successResult({
-    sub: payload.sub,
-  });
+  return successResult(payload.sub);
 }
 
 export function hasValidIssuer(
