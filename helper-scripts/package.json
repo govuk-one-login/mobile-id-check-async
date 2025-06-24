@@ -16,16 +16,16 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@aws-sdk/client-cloudformation": "^3.830.0",
+    "@aws-sdk/client-cloudformation": "^3.835.0",
     "inquirer": "^12.6.3",
-    "zx": "^8.5.5"
+    "zx": "^8.6.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.32",
     "eslint": "^9.29.0",
     "eslint-config-prettier": "^10.1.5",
-    "prettier": "^3.4.2",
+    "prettier": "^3.6.0",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.34.1"
+    "typescript-eslint": "^8.35.0"
   }
 }
