@@ -26,6 +26,7 @@ import {
   mockSuccessfulEventService,
   mockWriteGenericEventSuccessResult,
   NOW_IN_MILLISECONDS,
+  ONE_HOUR_AGO_IN_MILLISECONDS,
   validBiometricSessionFinishedAttributes,
   validResultSentAttributes,
 } from "../testUtils/unitTestData";
@@ -104,8 +105,8 @@ describe("Async Issue Biometric Credential", () => {
       sessionId: mockSessionId,
     }),
     attributes: {
-      ApproximateReceiveCount: "mockApproximateReceiveCount",
-      SentTimestamp: "mockSentTimestamp",
+      ApproximateReceiveCount: "1",
+      SentTimestamp: ONE_HOUR_AGO_IN_MILLISECONDS.toString(),
       SenderId: "mockSenderId",
       ApproximateFirstReceiveTimestamp: "mockApproximateFirstReceiveTimestamp",
     },
@@ -474,9 +475,13 @@ describe("Async Issue Biometric Credential", () => {
       expect(mockGetSecretsSuccess).not.toHaveBeenCalled();
     });
 
-    it("Logs COMPLETED with persistent identifiers", async () => {
+    it("Logs COMPLETED with message properties and persistent identifiers", async () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+        sqsMessageProperties: {
+          messageId: "mockMessageId",
+          approximateReceiveCount: "1",
+        },
         persistentIdentifiers: {
           sessionId: mockSessionId,
           biometricSessionId: mockBiometricSessionId,
@@ -665,11 +670,20 @@ describe("Async Issue Biometric Credential", () => {
         }
       });
 
-      it("Logs NOT_READY", () => {
+      it("Logs NOT_READY with message properties and persistent identifiers", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_NOT_READY",
           data: {
             finish: "PROCESSING",
+          },
+          sqsMessageProperties: {
+            messageId: "mockMessageId",
+            approximateReceiveCount: "1",
+          },
+          persistentIdentifiers: {
+            sessionId: mockSessionId,
+            biometricSessionId: mockBiometricSessionId,
+            govukSigninJourneyId: mockGovukSigninJourneyId,
           },
         });
       });
@@ -681,9 +695,13 @@ describe("Async Issue Biometric Credential", () => {
         );
       });
 
-      it("Logs COMPLETED with persistent identifiers", () => {
+      it("Logs COMPLETED with message properties and persistent identifiers", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+          sqsMessageProperties: {
+            messageId: "mockMessageId",
+            approximateReceiveCount: "1",
+          },
           persistentIdentifiers: {
             sessionId: mockSessionId,
             biometricSessionId: mockBiometricSessionId,
@@ -1161,10 +1179,16 @@ describe("Async Issue Biometric Credential", () => {
           );
         });
 
-        it("Logs ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED and documentType", async () => {
+        it("Logs ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED with message properties and documentType", async () => {
           expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED",
             documentType: "DriversLicence",
+            vendorQueueToVcIssuanceElapsedTimeInMs:
+              NOW_IN_MILLISECONDS - ONE_HOUR_AGO_IN_MILLISECONDS,
+            sqsMessageProperties: {
+              messageId: "mockMessageId",
+              approximateReceiveCount: "1",
+            },
           });
         });
 
@@ -1227,9 +1251,14 @@ describe("Async Issue Biometric Credential", () => {
           );
         });
 
-        it("Logs COMPLETED with persistent identifiers", () => {
+        it("Logs COMPLETED with message properties, documentType and persistent identifiers", () => {
           expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+            sqsMessageProperties: {
+              messageId: "mockMessageId",
+              approximateReceiveCount: "1",
+            },
+            documentType: "DriversLicence",
             persistentIdentifiers: {
               sessionId: mockSessionId,
               biometricSessionId: mockBiometricSessionId,
@@ -1446,6 +1475,11 @@ describe("Async Issue Biometric Credential", () => {
               expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
                 messageCode:
                   "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
+                sqsMessageProperties: {
+                  messageId: "mockMessageId",
+                  approximateReceiveCount: "1",
+                },
+                documentType: "DriversLicence",
                 persistentIdentifiers: {
                   sessionId: mockSessionId,
                   biometricSessionId: mockBiometricSessionId,
