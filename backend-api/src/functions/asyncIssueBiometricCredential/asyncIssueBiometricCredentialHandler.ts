@@ -104,6 +104,7 @@ export async function lambdaHandlerConstructor(
     biometricSessionId: sessionAttributes.biometricSessionId,
     govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
   });
+  appendDocumentTypeToLogger(sessionAttributes.documentType);
 
   if (getSessionResult.value.sessionState === SessionState.RESULT_SENT) {
     logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
@@ -216,10 +217,9 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  const { credential, audit, analytics, advisories } =
+  const { credential, audit, advisories } =
     getCredentialFromBiometricSessionResult.value;
 
-  appendDocumentTypeToLogger(analytics.documentType);
   logIfExpiredDrivingLicence(credential, advisories);
 
   const credentialJwtPayload = buildCredentialJwtPayload({
@@ -253,8 +253,8 @@ export async function lambdaHandlerConstructor(
   }
 
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED, {
-    vendorQueueToVcIssuanceElapsedTimeInMs:
-      getVendorQueueToVcIssuanceElapsedTimeInMs(sqsMessage),
+    vendorProcessingQueueToVcIssuanceElapsedTimeInMs:
+      getVendorProcessingQueueToVcIssuanceElapsedTimeInMs(sqsMessage),
   });
 
   const updateSessionResult = await sessionRegistry.updateSession(
@@ -309,7 +309,7 @@ const appendDocumentTypeToLogger = (documentType: string): void => {
   logger.appendKeys({ documentType });
 };
 
-const getVendorQueueToVcIssuanceElapsedTimeInMs = (
+const getVendorProcessingQueueToVcIssuanceElapsedTimeInMs = (
   sqsRecord: SQSRecord,
 ): number => {
   return Date.now() - Number(sqsRecord.attributes.SentTimestamp);
