@@ -1,10 +1,10 @@
 import { Application } from "express";
 import { createApp } from "./createApp";
 import { Verifier } from "@pact-foundation/pact";
-import path from "path";
 import { Server } from "http";
 import { asyncTokenDependencies } from "./dependencies/asyncTokenDependencies";
 import { asyncCredentialDependencies } from "./dependencies/asyncCredentialDependencies";
+import "dotenv/config"; // TEMPORARY BEFORE I SET LOCALLY WITH SCRIPT
 
 jest.setTimeout(30000);
 describe("Provider API contract verification", () => {
@@ -51,16 +51,20 @@ describe("Provider API contract verification", () => {
     };
 
     const verifier = new Verifier({
-      provider: "DcmawAsyncCriProvider",
-      logLevel: "error",
-      pactUrls: [
-        path.resolve(
-          process.cwd(),
-          "src/functions/tests/pact/pactFiles/IpvCoreBack-DcmawAsyncCriProvider.json",
-        ),
+      consumerVersionSelectors: [
+        {
+          mainBranch: true, // UNSURE WHAT WE WANT HERE
+        }
       ],
-      stateHandlers,
+      logLevel: "error",
+      pactBrokerUrl: process.env.PACT_BROKER_URL,
+      pactBrokerUsername: process.env.PACT_BROKER_USERNAME,
+      pactBrokerPassword: process.env.PACT_BROKER_PASSWORD,
+      provider: "DcmawAsyncCriProvider",
       providerBaseUrl: `http://localhost:${port}`,
+      providerVersion: process.env.GITHUB_SHA || "local-dev", // UPDATE
+      publishVerificationResult: false, // UPDATE
+      stateHandlers,
     });
 
     // Return the promise to Jest
