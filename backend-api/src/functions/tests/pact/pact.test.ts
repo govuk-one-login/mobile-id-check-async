@@ -54,7 +54,7 @@ describe("Provider API contract verification", () => {
       consumerVersionSelectors: [
         {
           mainBranch: true, // UNSURE WHAT WE WANT HERE
-        }
+        },
       ],
       logLevel: "error",
       pactBrokerUrl: process.env.PACT_BROKER_URL,
