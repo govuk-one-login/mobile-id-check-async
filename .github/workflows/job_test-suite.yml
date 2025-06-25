@@ -26,7 +26,7 @@ on:
       RUN_PACT_TESTS:
         description: Whether to run pact tests using `test:pact` and `test:pact:authorize` npm script
         type: string
-        default: false
+        default: true
 
 jobs:
   run-test-suite:
