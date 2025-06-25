@@ -1,4 +1,4 @@
-import { Context, SQSEvent } from "aws-lambda";
+import { Context, SQSEvent, SQSRecord } from "aws-lambda";
 import {
   IssueBiometricCredentialDependencies,
   runtimeDependencies,
@@ -72,8 +72,10 @@ export async function lambdaHandlerConstructor(
   }
 
   const sessionId = validateSqsEventResult.value;
+  const sqsMessage = event.Records[0];
 
   appendPersistentIdentifiersToLogger({ sessionId });
+  appendSqsMessagePropertiesToLogger(sqsMessage);
 
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
@@ -102,6 +104,7 @@ export async function lambdaHandlerConstructor(
     biometricSessionId: sessionAttributes.biometricSessionId,
     govukSigninJourneyId: sessionAttributes.govukSigninJourneyId,
   });
+  appendDocumentTypeToLogger(sessionAttributes.documentType);
 
   if (getSessionResult.value.sessionState === SessionState.RESULT_SENT) {
     logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
@@ -214,7 +217,7 @@ export async function lambdaHandlerConstructor(
     );
   }
 
-  const { credential, audit, analytics, advisories } =
+  const { credential, audit, advisories } =
     getCredentialFromBiometricSessionResult.value;
 
   logIfExpiredDrivingLicence(credential, advisories);
@@ -250,7 +253,8 @@ export async function lambdaHandlerConstructor(
   }
 
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED, {
-    documentType: analytics.documentType,
+    vendorProcessingQueueToVcIssuanceElapsedTimeInMs:
+      getVendorProcessingQueueToVcIssuanceElapsedTimeInMs(sqsMessage),
   });
 
   const updateSessionResult = await sessionRegistry.updateSession(
@@ -291,6 +295,25 @@ export const lambdaHandler = lambdaHandlerConstructor.bind(
   null,
   runtimeDependencies,
 );
+
+const appendSqsMessagePropertiesToLogger = (sqsRecord: SQSRecord): void => {
+  logger.appendKeys({
+    sqsMessageProperties: {
+      messageId: sqsRecord.messageId,
+      approximateReceiveCount: sqsRecord.attributes.ApproximateReceiveCount,
+    },
+  });
+};
+
+const appendDocumentTypeToLogger = (documentType: string): void => {
+  logger.appendKeys({ documentType });
+};
+
+const getVendorProcessingQueueToVcIssuanceElapsedTimeInMs = (
+  sqsRecord: SQSRecord,
+): number => {
+  return Date.now() - Number(sqsRecord.attributes.SentTimestamp);
+};
 
 const getBiometricViewerAccessKey = async (
   path: string,
