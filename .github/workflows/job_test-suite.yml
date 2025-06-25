@@ -23,6 +23,10 @@ on:
         description: Whether private packages must be installed
         type: string
         default: false
+      RUN_PACT_TESTS:
+        description: Whether to run pact tests using `test:pact` and `test:pact:authorize` npm script
+        type: string
+        default: true
 
 jobs:
   run-test-suite:
@@ -72,3 +76,14 @@ jobs:
       - name: Run infra tests
         if: inputs.RUN_INFRA_TESTS == 'true'
         run: npm run test:infra
+
+      - name: Run pact tests
+        if: inputs.RUN_PACT_TESTS == 'true'
+        env:
+          PACT_BROKER_URL: "https://pactbroker-onelogin.account.gov.uk"
+          PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
+          PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
+          PUBLISH_PACT: "false"
+        run: |
+          npm run test:pact:authorize
+          npm run test:pact
