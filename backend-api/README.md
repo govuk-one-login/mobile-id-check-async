@@ -60,12 +60,31 @@ For guidance on adding, updating or removing infrastructure, see the[infra/READM
 
 ## Running tests
 
-### Unit, infra and pact tests
+### Unit tests
 
 ```bash
 # From /backend-api
-npm run test
+npm run test:unit
 ```
+
+### Infra tests
+
+```bash
+# From /backend-api
+npm run test:infra
+```
+
+### Pact tests
+
+1. Activate AWS credentials
+1. Paste your encrypted Pact broker credentials into `backend-api/src/functions/tests/pact/setPactCredentials/encryptedCredentials`
+1. Update the encrypted credential file name to `encryptedCredentials.json.gpg`
+1. Run tests
+
+    ```bash
+    # From /backend-api
+    npm run test:pact:local
+    ```
 
 ### API tests
 
