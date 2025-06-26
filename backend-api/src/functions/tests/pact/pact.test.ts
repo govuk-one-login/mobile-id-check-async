@@ -52,7 +52,7 @@ describe("Provider API contract verification", () => {
     const verifier = new Verifier({
       consumerVersionSelectors: [
         {
-          mainBranch: true, // UNSURE WHAT WE WANT HERE
+          mainBranch: true,
         },
       ],
       logLevel: "error",
