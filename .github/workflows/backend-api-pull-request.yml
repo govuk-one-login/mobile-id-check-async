@@ -72,7 +72,7 @@ jobs:
           PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
           PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
           PACT_BROKER_SOURCE_SECRET: ${{ secrets.PACT_BROKER_SOURCE_SECRET }}
-          PUBLISH_PACT: "false"
+          PUBLISH_PACT_VERIFICATION_RESULTS: "false"
         run: |
           npm run test:pact:authorize
           npm run test:pact:ci
