@@ -62,7 +62,8 @@ describe("Provider API contract verification", () => {
       provider: "DcmawAsyncCriProvider",
       providerBaseUrl: `http://localhost:${port}`,
       providerVersion: process.env.GITHUB_SHA || "local-dev",
-      publishVerificationResult: process.env.PUBLISH_PACT_VERIFICATION_RESULTS === "true",
+      publishVerificationResult:
+        process.env.PUBLISH_PACT_VERIFICATION_RESULTS === "true",
       stateHandlers,
     });
 
