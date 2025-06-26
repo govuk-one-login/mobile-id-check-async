@@ -479,10 +479,6 @@ describe("Backend application infrastructure", () => {
           hasRunbookBeenSignedOff: true,
         },
         {
-          name: "high-threshold-async-active-session-4xx-api-gw",
-          hasRunbookBeenSignedOff: true,
-        },
-        {
           name: "high-threshold-async-biometric-token-5xx-api-gw",
           hasRunbookBeenSignedOff: true,
         },
