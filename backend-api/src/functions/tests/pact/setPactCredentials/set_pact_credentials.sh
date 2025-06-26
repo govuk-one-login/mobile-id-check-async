@@ -15,7 +15,7 @@ if [[ $? -ne 0 ]]; then
 fi
 
 if ! command -v jq &>/dev/null; then
-  echo "jq is required but not installed."
+  echo "jq is required but not installed"
   exit 1
 fi
 
