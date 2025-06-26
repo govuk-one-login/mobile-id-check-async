@@ -11,7 +11,7 @@
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
     "lint": "./node_modules/.bin/eslint ./src/functions",
-    "pact": "./node_modules/.bin/jest backend-api/src/functions/tests/pact/pact.test.ts",
+    "pact": "./node_modules/.bin/jest --testPathPatterns=src/functions/tests/pact/",
     "test": "./node_modules/.bin/jest --testPathIgnorePatterns=api-tests/",
     "test:api": "./node_modules/.bin/jest --testPathPatterns=api-tests/",
     "test:infra": "./node_modules/.bin/jest --testPathPatterns=infra-tests/",
