@@ -76,7 +76,7 @@ npm run test:infra
 
 ### Pact tests
 
-1. Activate AWS credentials
+1. Ensure you are on the GDS VPN
 1. Configure Pact broker credentials
     - Request encrypted Pact broker credentials from your tech lead, or follow [this process](https://govukverify.atlassian.net/wiki/spaces/PLAT/pages/3783131729/Transferring+Pact+Broker+Credentials+Securely#How-to-securely-transfer-Pact-Broker-Credentials) to request them from Dev Platform
     - Place the encrypted credentials file into `~/gds/encrypted-pact-broker-credentials`
