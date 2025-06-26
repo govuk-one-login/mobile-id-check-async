@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eu
 
 CRED_FILE="./encryptedCredentials/encryptedCredentials.json.gpg"
 
@@ -23,4 +24,4 @@ export PACT_BROKER_PASSWORD=$(echo "$DECRYPTED" | jq -r '.password')
 export PACT_BROKER_SOURCE_SECRET=$(echo "$DECRYPTED" | jq -r '.source_secret')
 export PACT_BROKER_URL="https://pactbroker-onelogin.account.gov.uk"
 
-echo "Exported pact credentials"
+echo "Exported pact credentials\n"
