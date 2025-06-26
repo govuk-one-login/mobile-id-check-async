@@ -40,7 +40,7 @@ on:
         type: string
         default: false
       RUN_PACT_TESTS:
-        description: Whether to run pact tests using `test:pact` npm script
+        description: Whether to run pact tests using `test:pact:ci` npm script
         type: string
         default: false
     secrets:

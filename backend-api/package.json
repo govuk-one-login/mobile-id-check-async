@@ -16,7 +16,7 @@
     "test:api": "./node_modules/.bin/jest --testPathPatterns=api-tests/",
     "test:infra": "./node_modules/.bin/jest --testPathPatterns=infra-tests/",
     "test:pact:authorize": "bash -c 'curl -sS -o /dev/null --fail -u $PACT_BROKER_USERNAME:$PACT_BROKER_PASSWORD \"$PACT_BROKER_URL?testSource=$PACT_BROKER_SOURCE_SECRET\"'",
-    "test:pact:ci": "npm run pact",
+    "test:pact:ci": "test:pact:authorize && npm run pact",
     "test:pact:local": "cd src/functions/tests/pact/setPactCredentials && . ./set_pact_credentials.sh && cd - && npm run pact",
     "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/pact api-tests"
   },
