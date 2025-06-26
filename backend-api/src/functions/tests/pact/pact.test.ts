@@ -50,6 +50,8 @@ describe("Provider API contract verification", () => {
       },
     };
 
+    console.log("HERE >> process.env.GITHUB_SHA >> ", process.env.GITHUB_SHA)
+
     const verifier = new Verifier({
       consumerVersionSelectors: [
         {
