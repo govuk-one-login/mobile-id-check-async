@@ -64,16 +64,3 @@ jobs:
 
       - name: Install dependencies
         run: npm clean-install
-
-      - name: Run pact tests
-        continue-on-error: true # Pact tests are currently failing - remove step once fixed
-        env:
-          PACT_BROKER_URL: "https://pactbroker-onelogin.account.gov.uk"
-          PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
-          PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
-          PACT_BROKER_SOURCE_SECRET: ${{ secrets.PACT_BROKER_SOURCE_SECRET }}
-          PUBLISH_PACT_VERIFICATION_RESULTS: "false"
-        run: |
-          npm run test:pact:authorize
-          npm run test:pact:ci
-
