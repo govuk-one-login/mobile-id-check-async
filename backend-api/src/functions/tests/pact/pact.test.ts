@@ -50,10 +50,6 @@ describe("Provider API contract verification", () => {
       },
     };
 
-    const whatIsThisValue = process.env.PUBLISH_PACT === "true"
-    console.log("process.env.PUBLISH_PACT >>>", process.env.PUBLISH_PACT)
-    console.log("whatIsThisValue >>>", whatIsThisValue)
-
     const verifier = new Verifier({
       consumerVersionSelectors: [
         {
