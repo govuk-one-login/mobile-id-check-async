@@ -61,7 +61,7 @@ jobs:
           projectBaseDir: backend-api
 
       - name: Run pact tests
-        continue-on-error: true # true for now as pact tests are broken
+        continue-on-error: true # Pact tests are currently failing - remove step once fixed
         env:
           PACT_BROKER_URL: "https://pactbroker-onelogin.account.gov.uk"
           PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
