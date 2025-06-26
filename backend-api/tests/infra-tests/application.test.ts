@@ -403,6 +403,7 @@ describe("Backend application infrastructure", () => {
         ["low-threshold-vendor-processing-dlq-age-of-oldest-message"],
         ["ipv-core-sqs-age-of-oldest-message"],
         ["low-threshold-ipv-core-dlq-message-visible"],
+        ["high-threshold-ipv-core-dlq-message-visible"],
         ["low-threshold-ipv-core-dlq-age-of-oldest-message"],
         ["low-threshold-async-issue-biometric-credential-parse-failure"],
         [
@@ -555,10 +556,6 @@ describe("Backend application infrastructure", () => {
         },
         {
           name: "txma-event-lambda-throttle",
-          hasRunbookBeenSignedOff: true,
-        },
-        {
-          name: "high-threshold-ipv-core-dlq-message-visible",
           hasRunbookBeenSignedOff: true,
         },
         {

@@ -5470,9 +5470,9 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - 'Trigger a critical alarm when 25 or more messages accumulate in IPV Core SQS DLQ. See support manual: ${SupportManualUrl}'
+        - 'Trigger a warning alarm when 25 or more messages accumulate in IPV Core SQS DLQ. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
             - StaticVariables
             - urls
@@ -5487,7 +5487,7 @@ Resources:
       MetricName: ApproximateNumberOfMessagesVisible
       Namespace: AWS/SQS
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Period: 60
       Statistic: Maximum
       Threshold: 25
