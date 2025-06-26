@@ -17,7 +17,6 @@
     "test:infra": "./node_modules/.bin/jest --testPathPatterns=infra-tests/",
     "test:pact": "npm run pact",
     "test:pact:authorize": "bash -c 'curl -sS -o /dev/null --fail -u $PACT_BROKER_USERNAME:$PACT_BROKER_PASSWORD \"$PACT_BROKER_URL?testSource=$PACT_BROKER_SOURCE_SECRET\"'",
-    "test:pact:publish": "bash -c './node_modules/.bin/pact-broker publish ./test/pact/pactFiles --consumer-app-version=$(git rev-parse HEAD) --branch=$(git rev-parse --abbrev-ref HEAD) --auto-detect-version-properties --broker-base-url=$PACT_BROKER_URL -u=$PACT_BROKER_USERNAME -p=$PACT_BROKER_PASSWORD'",
     "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/pact api-tests"
   },
   "engines": {
