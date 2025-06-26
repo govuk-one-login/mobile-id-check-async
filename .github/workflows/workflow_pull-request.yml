@@ -47,6 +47,15 @@ on:
       SONAR_TOKEN:
         description: The token used for secure access to the SonarQube platform
         required: false
+      PACT_BROKER_USERNAME:
+        description: TBC
+        required: false
+      PACT_BROKER_PASSWORD:
+        description: TBC
+        required: false
+      PACT_BROKER_SOURCE_SECRET:
+        description: TBC
+        required: false
 
 jobs:
   validate-inputs:
