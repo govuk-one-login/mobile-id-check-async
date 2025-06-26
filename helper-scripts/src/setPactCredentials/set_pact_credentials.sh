@@ -1,4 +1,4 @@
- #!/bin/bash
+#!/bin/bash
 
 CRED_FILE="./encryptedCredential/pact-credentials.json.gpg"
 
