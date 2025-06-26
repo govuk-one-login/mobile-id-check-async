@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   sonar-scan-and-pact-test:
-    name: Sonar main branch scan
+    name: Sonar main branch scan and pact tests
     runs-on: ubuntu-22.04
     defaults:
       run:
