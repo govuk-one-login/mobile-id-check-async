@@ -81,7 +81,7 @@ describe("Provider API contract verification", () => {
   });
 });
 
-const getProviderBranchName = () => {
+const getProviderBranchName = (): string => {
   return (
     process.env.GIT_BRANCH ||
     execSync("git rev-parse --abbrev-ref HEAD").toString().trim()
