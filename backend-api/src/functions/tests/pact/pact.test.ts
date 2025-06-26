@@ -4,7 +4,6 @@ import { Verifier } from "@pact-foundation/pact";
 import { Server } from "http";
 import { asyncTokenDependencies } from "./dependencies/asyncTokenDependencies";
 import { asyncCredentialDependencies } from "./dependencies/asyncCredentialDependencies";
-import "dotenv/config"; // TEMPORARY BEFORE I SET LOCALLY WITH SCRIPT
 
 jest.setTimeout(30000);
 describe("Provider API contract verification", () => {
