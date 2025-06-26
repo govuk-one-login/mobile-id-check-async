@@ -39,6 +39,10 @@ on:
         description: Whether private packages must be installed
         type: string
         default: false
+      RUN_PACT_TESTS:
+        description: Whether to run pact tests using `test:pact` npm script
+        type: string
+        default: false
     secrets:
       SONAR_TOKEN:
         description: The token used for secure access to the SonarQube platform
@@ -58,6 +62,7 @@ jobs:
       RUN_SAM_VALIDATE: ${{ inputs.RUN_SAM_VALIDATE }}
       RUN_SONARQUBE: ${{ inputs.RUN_SONARQUBE }}
       RUN_UNIT_TESTS: ${{ inputs.RUN_UNIT_TESTS }}
+      RUN_PACT_TESTS: ${{ inputs.RUN_PACT_TESTS }}
     steps:
       - name: Print inputs
         run: |
@@ -67,6 +72,7 @@ jobs:
           echo "RUN_SAM_VALIDATE=$RUN_SAM_VALIDATE"
           echo "RUN_SONARQUBE=$RUN_SONARQUBE"
           echo "RUN_UNIT_TESTS=$RUN_UNIT_TESTS"
+          echo "RUN_PACT_TESTS=$RUN_PACT_TESTS"
 
       - name: Validate SonarQube and Unit Test inputs
         run: |
@@ -100,6 +106,8 @@ jobs:
       RUN_SONARQUBE: ${{ inputs.RUN_SONARQUBE }}
       WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
       PRIVATE_PACKAGES_REQUIRED: ${{ inputs.PRIVATE_PACKAGES_REQUIRED }}
+      RUN_PACT_TESTS: ${{ inputs.RUN_PACT_TESTS }}
+    secrets: inherit
 
   sonarqube-scan:
     name: SonarQube scan
