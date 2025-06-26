@@ -27,16 +27,6 @@ on:
         description: Whether to run pact tests using `test:pact` and `test:pact:authorize` npm script
         type: string
         default: true
-    secrets:
-      PACT_BROKER_USERNAME:
-        description: TBC
-        required: false
-      PACT_BROKER_PASSWORD:
-        description: TBC
-        required: false
-      PACT_BROKER_SOURCE_SECRET:
-        description: TBC
-        required: false
 
 jobs:
   run-test-suite:
