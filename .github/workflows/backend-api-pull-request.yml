@@ -37,7 +37,6 @@ jobs:
   run-pact-tests:
     name: Run pact tests
     runs-on: ubuntu-24.04
-    needs: backend-api-pull-request
     defaults:
       run:
         shell: bash
