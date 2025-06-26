@@ -100,7 +100,6 @@ jobs:
       RUN_SONARQUBE: ${{ inputs.RUN_SONARQUBE }}
       WORKING_DIRECTORY: ${{ inputs.WORKING_DIRECTORY }}
       PRIVATE_PACKAGES_REQUIRED: ${{ inputs.PRIVATE_PACKAGES_REQUIRED }}
-    secrets: inherit
 
   sonarqube-scan:
     name: SonarQube scan
