@@ -79,8 +79,9 @@ npm run test:infra
 1. Activate AWS credentials
 1. Configure Pact broker credentials
     - Request encrypted Pact broker credentials from your tech lead, or follow [this process](https://govukverify.atlassian.net/wiki/spaces/PLAT/pages/3783131729/Transferring+Pact+Broker+Credentials+Securely#How-to-securely-transfer-Pact-Broker-Credentials) to request them from Dev Platform
-    - Place the encrypted credentials file into `backend-api/src/functions/tests/pact/setPactCredentials/encryptedCredentials`
-    - Update the filename to `encryptedCredentials.json.gpg`
+    - Place the encrypted credentials file into `~/gds/encrypted-pact-broker-credentials`
+    - Update the filename to `encrypted-credentials.json.gpg`
+    - **Important:** Do **not** store this folder on any shared drives, it should be stored locally only
 1. Run tests
 
     ```bash

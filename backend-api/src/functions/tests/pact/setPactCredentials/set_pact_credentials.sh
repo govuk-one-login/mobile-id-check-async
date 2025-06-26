@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eu
 
-CRED_FILE="./encryptedCredentials/encryptedCredentials.json.gpg"
+CRED_FILE="$HOME/gds/encrypted-pact-broker-credentials/encrypted-credentials.json.gpg"
 
 if [[ ! -f "$CRED_FILE" ]]; then
   echo "Credential file not found at $CRED_FILE"
