@@ -70,7 +70,7 @@ jobs:
           PUBLISH_PACT: "true"
         run: |
           npm run test:pact:authorize
-          npm run test:pact
+          npm run test:pact:ci
 
   build-and-push-to-dev:
     name: 'Push test image and SAM artifact to dev'

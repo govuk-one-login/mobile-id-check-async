@@ -75,5 +75,5 @@ jobs:
           PUBLISH_PACT: "false"
         run: |
           npm run test:pact:authorize
-          npm run test:pact
+          npm run test:pact:ci
 

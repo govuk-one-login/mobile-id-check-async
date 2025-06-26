@@ -11,12 +11,13 @@
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
     "lint": "./node_modules/.bin/eslint ./src/functions",
-    "pact": "./node_modules/.bin/jest --testPathPatterns=tests/pact",
+    "pact": "./node_modules/.bin/jest backend-api/src/functions/tests/pact/pact.test.ts",
     "test": "./node_modules/.bin/jest --testPathIgnorePatterns=api-tests/",
     "test:api": "./node_modules/.bin/jest --testPathPatterns=api-tests/",
     "test:infra": "./node_modules/.bin/jest --testPathPatterns=infra-tests/",
-    "test:pact": "npm run pact",
     "test:pact:authorize": "bash -c 'curl -sS -o /dev/null --fail -u $PACT_BROKER_USERNAME:$PACT_BROKER_PASSWORD \"$PACT_BROKER_URL?testSource=$PACT_BROKER_SOURCE_SECRET\"'",
+    "test:pact:ci": "npm run pact",
+    "test:pact:local": "cd ../helper-scripts/src/setPactCredentials && . ./set_pact_credentials.sh && cd - && npm run pact",
     "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/pact api-tests"
   },
   "engines": {
