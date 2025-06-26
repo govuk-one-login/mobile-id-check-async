@@ -34,3 +34,6 @@ private-key.json
 
 # NPMRC files
 **/.npmrc
+
+# Pact credentials
+backend-api/src/functions/tests/pact/setPactCredentials/encryptedCredentials/

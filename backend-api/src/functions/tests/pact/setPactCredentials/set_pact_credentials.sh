@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CRED_FILE="./encryptedCredential/pact-credentials.json.gpg"
+CRED_FILE="./encryptedCredentials/encryptedCredentials.json.gpg"
 
 if [[ ! -f "$CRED_FILE" ]]; then
   echo "Credential file not found at $CRED_FILE"
