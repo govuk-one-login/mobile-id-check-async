@@ -1,10 +1,10 @@
 import { Application } from "express";
 import { createApp } from "./createApp";
 import { Verifier } from "@pact-foundation/pact";
-import path from "path";
 import { Server } from "http";
 import { asyncTokenDependencies } from "./dependencies/asyncTokenDependencies";
 import { asyncCredentialDependencies } from "./dependencies/asyncCredentialDependencies";
+import { execSync } from "child_process";
 
 jest.setTimeout(30000);
 describe("Provider API contract verification", () => {
@@ -51,19 +51,24 @@ describe("Provider API contract verification", () => {
     };
 
     const verifier = new Verifier({
-      provider: "DcmawAsyncCriProvider",
-      logLevel: "error",
-      pactUrls: [
-        path.resolve(
-          process.cwd(),
-          "src/functions/tests/pact/pactFiles/IpvCoreBack-DcmawAsyncCriProvider.json",
-        ),
+      consumerVersionSelectors: [
+        {
+          mainBranch: true,
+        },
       ],
-      stateHandlers,
+      logLevel: "error",
+      pactBrokerPassword: process.env.PACT_BROKER_PASSWORD,
+      pactBrokerUrl: process.env.PACT_BROKER_URL,
+      pactBrokerUsername: process.env.PACT_BROKER_USERNAME,
+      provider: "DcmawAsyncCriProvider",
       providerBaseUrl: `http://localhost:${port}`,
+      providerVersion: process.env.GITHUB_SHA || "local-dev",
+      providerVersionBranch: getProviderBranchName(),
+      publishVerificationResult:
+        process.env.PUBLISH_PACT_VERIFICATION_RESULTS === "true",
+      stateHandlers,
     });
 
-    // Return the promise to Jest
     return verifier
       .verifyProvider()
       .then((output) => {
@@ -71,7 +76,14 @@ describe("Provider API contract verification", () => {
       })
       .catch((error) => {
         console.error("Failed to verify pacts", error);
-        throw error; // Rethrow to ensure Jest marks the test as failed
+        throw error;
       });
   });
 });
+
+const getProviderBranchName = (): string => {
+  return (
+    process.env.GIT_BRANCH ||
+    execSync("git rev-parse --abbrev-ref HEAD").toString().trim()
+  );
+};

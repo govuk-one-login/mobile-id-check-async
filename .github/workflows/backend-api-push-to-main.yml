@@ -16,8 +16,8 @@ permissions:
   packages: read
 
 jobs:
-  sonar-scan:
-    name: Sonar main branch scan
+  sonar-scan-and-pact-test:
+    name: Sonar main branch scan and pact tests
     runs-on: ubuntu-22.04
     defaults:
       run:
@@ -60,9 +60,19 @@ jobs:
         with:
           projectBaseDir: backend-api
 
+      - name: Run pact tests
+        continue-on-error: true # Pact tests are currently failing - remove step once fixed
+        env:
+          PACT_BROKER_URL: "https://pactbroker-onelogin.account.gov.uk"
+          PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
+          PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
+          PACT_BROKER_SOURCE_SECRET: ${{ secrets.PACT_BROKER_SOURCE_SECRET }}
+          PUBLISH_PACT_VERIFICATION_RESULTS: "true"
+        run: npm run test:pact:ci
+
   build-and-push-to-dev:
     name: 'Push test image and SAM artifact to dev'
-    needs: sonar-scan
+    needs: sonar-scan-and-pact-test
     runs-on: ubuntu-22.04
     env:
       BACKEND_API_DEV_TEST_IMAGE_REPOSITORY: ${{ secrets.BACKEND_API_DEV_TEST_IMAGE_REPOSITORY }}
@@ -151,7 +161,7 @@ jobs:
 
   build-and-push-to-build:
     name: Push test image and SAM artifact to build
-    needs: sonar-scan
+    needs: sonar-scan-and-pact-test
     runs-on: ubuntu-22.04
     env:
       BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY: ${{ secrets.BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY }}

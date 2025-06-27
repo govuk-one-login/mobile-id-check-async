@@ -11,11 +11,13 @@
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
     "lint": "./node_modules/.bin/eslint ./src/functions",
-    "pact": "./node_modules/.bin/jest --testPathPatterns=tests/pact",
     "test": "./node_modules/.bin/jest --testPathIgnorePatterns=api-tests/",
     "test:api": "./node_modules/.bin/jest --testPathPatterns=api-tests/",
     "test:infra": "./node_modules/.bin/jest --testPathPatterns=infra-tests/",
-    "test:pact": "npm run pact",
+    "test:pact": "./node_modules/.bin/jest --testPathPatterns=src/functions/tests/pact/",
+    "test:pact:authorize": "bash -c 'curl -sS -o /dev/null --fail -u $PACT_BROKER_USERNAME:$PACT_BROKER_PASSWORD \"$PACT_BROKER_URL?testSource=$PACT_BROKER_SOURCE_SECRET\"'",
+    "test:pact:ci": "npm run test:pact:authorize && npm run test:pact",
+    "test:pact:local": ". ./src/functions/tests/pact/setPactCredentials/set_pact_credentials.sh && npm run test:pact",
     "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/pact api-tests"
   },
   "engines": {
