@@ -1,0 +1,51 @@
+name: Create Github Action Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/"
+      - "!.github/workflow_github_actions_release.yml"
+
+jobs:
+  create-tag:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+        # step to get the name of the workflows that have been changed
+      - name: Get workflow names
+        run: |
+          sdf
+
+        # step to get old version / create new version (not semver for now)
+      - name: Retrieve current version
+        id: current_version
+        run: |
+          version=$(jq -r .version package.json)
+          echo "Current version: $version"
+          echo version=$version >> $GITHUB_OUTPUT
+
+      - name: Create Tag
+        uses: actions/github-script@v6
+        with:
+          script: | # what language is this?
+            const workflowFileName = '${{ steps.workflow-file.outputs.filename }}';
+            const tagName = `workflowname/version`;
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/tags/${tagName}`,
+              sha: context.sha,
+            });
+            console.log(`Created tag: ${tagName}`);
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # v2.2.2
+        with:
+          tag_name: ${{ steps.create-tag.outputs.tagName }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true

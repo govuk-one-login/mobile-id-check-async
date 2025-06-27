@@ -30,7 +30,7 @@ on:
 
 jobs:
   ci-checks:
-    name: Run CI checks
+    name: Run CI checkss
     runs-on: ubuntu-24.04
     env:
       SAM_CLI_TELEMETRY: 0
