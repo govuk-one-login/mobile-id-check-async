@@ -3867,8 +3867,7 @@ Resources:
       DeploymentPreference:
         Alarms: !If
           - UseCanaryDeployment
-          - - !Ref AsyncIssueBiometricCredentialErrorRateAlarm
-            - !Ref AsyncIssueBiometricCredentialLowCompletionAlarm
+          - - !Ref AsyncIssueBiometricCredentialLowCompletionAlarm
           - - !Ref AWS::NoValue
         Enabled: true
         Type: !Ref LambdaDeploymentPreference
