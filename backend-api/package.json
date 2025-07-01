@@ -70,10 +70,6 @@
     "jose": "^5.10.0"
   },
   "overrides": {
-    "express": {
-      "path-to-regexp": "^0.1.12"
-    },
-    "micromatch": "^4.0.8",
-    "path-to-regexp": "^8.1.0"
+    "micromatch": "^4.0.8"
   }
 }
