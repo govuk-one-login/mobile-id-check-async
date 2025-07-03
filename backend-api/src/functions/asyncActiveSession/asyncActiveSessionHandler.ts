@@ -14,7 +14,12 @@ import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { getActiveSessionConfig } from "./getActiveSessionConfig";
 import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
-import { getAuditData } from "../common/request/getAuditData/getAuditData";
+import {
+  AuditData,
+  getAuditData,
+} from "../common/request/getAuditData/getAuditData";
+import { Session } from "../services/session/types";
+import { IEventService } from "../services/events/types";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncActiveSessionDependencies,
@@ -29,6 +34,7 @@ export async function lambdaHandlerConstructor(
     return serverErrorResponse;
   }
   const config = configResult.value;
+  const eventService = dependencies.eventService(config.TXMA_SQS);
 
   const authorizationHeaderResult = new RequestService().getAuthorizationHeader(
     event.headers["Authorization"] ?? event.headers["authorization"],
@@ -92,39 +98,12 @@ export async function lambdaHandlerConstructor(
     return notFoundResponse;
   }
 
-  appendPersistentIdentifiersToLogger({ sessionId: session.sessionId });
-
-  const eventService = dependencies.eventService(config.TXMA_SQS);
-  const { ipAddress, txmaAuditEncoded } = getAuditData(event);
-  const writeEventResult = await eventService.writeActiveSessionEvent({
+  return handleOkResponse(eventService, {
+    session,
+    auditData: getAuditData(event),
     sub,
-    sessionId: session.sessionId,
-    govukSigninJourneyId: session.govukSigninJourneyId,
-    getNowInMilliseconds: Date.now,
-    componentId: config.ISSUER,
-    ipAddress,
-    txmaAuditEncoded,
-    redirect_uri: session.redirectUri,
+    issuer: config.ISSUER,
   });
-
-  if (writeEventResult.isError) {
-    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
-      data: {
-        auditEventName: "DCMAW_ASYNC_CRI_APP_START",
-      },
-    });
-  }
-
-  logger.info(LogMessage.CRI_APP_START, {});
-  logger.info(LogMessage.ACTIVE_SESSION_COMPLETED, {
-    activeSessionFound: true,
-  });
-
-  return {
-    headers: { "Content-Type": "application/json" },
-    statusCode: 200,
-    body: JSON.stringify(session),
-  };
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(null, dependencies);
@@ -168,3 +147,47 @@ const notFoundResponse: APIGatewayProxyResult = {
     error_description: "No active session found for the given sub identifier",
   }),
 };
+
+interface HandleOkResponseData {
+  session: Session;
+  auditData: AuditData;
+  sub: string;
+  issuer: string;
+}
+
+async function handleOkResponse(
+  eventService: IEventService,
+  { session, auditData, sub, issuer }: HandleOkResponseData,
+) {
+  appendPersistentIdentifiersToLogger({ sessionId: session.sessionId });
+  const { ipAddress, txmaAuditEncoded } = auditData;
+  const writeEventResult = await eventService.writeActiveSessionEvent({
+    sub,
+    sessionId: session.sessionId,
+    govukSigninJourneyId: session.govukSigninJourneyId,
+    getNowInMilliseconds: Date.now,
+    componentId: issuer,
+    ipAddress,
+    txmaAuditEncoded,
+    redirect_uri: session.redirectUri,
+  });
+
+  if (writeEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_CRI_APP_START",
+      },
+    });
+  }
+
+  logger.info(LogMessage.CRI_APP_START, {});
+  logger.info(LogMessage.ACTIVE_SESSION_COMPLETED, {
+    activeSessionFound: true,
+  });
+
+  return {
+    headers: { "Content-Type": "application/json" },
+    statusCode: 200,
+    body: JSON.stringify(session),
+  };
+}
