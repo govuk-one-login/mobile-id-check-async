@@ -7,6 +7,8 @@ import {
   FlagsWrapper,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
 import {
+  ActiveSessionEvent,
+  ActiveSessionEventConfig,
   BiometricTokenIssuedEvent,
   BiometricTokenIssuedEventConfig,
   CredentialTokenIssuedEvent,
@@ -37,6 +39,13 @@ export class EventService implements IEventService {
     eventConfig: CredentialTokenIssuedEventConfig,
   ): Promise<Result<void, void>> {
     const txmaEvent = this.buildCredentialTokenIssuedEvent(eventConfig);
+    return await this.writeToSqs(txmaEvent);
+  }
+
+  async writeActiveSessionEvent(
+    eventConfig: ActiveSessionEventConfig,
+  ): Promise<Result<void, void>> {
+    const txmaEvent = this.buildActiveSessionEvent(eventConfig);
     return await this.writeToSqs(txmaEvent);
   }
 
@@ -149,6 +158,27 @@ export class EventService implements IEventService {
         documentType: eventConfig.documentType,
       },
       restricted: this.getRestrictedData(eventConfig.txmaAuditEncoded),
+    };
+  };
+
+  private readonly buildActiveSessionEvent = (
+    eventConfig: ActiveSessionEventConfig,
+  ): ActiveSessionEvent => {
+    const timestampInMillis = eventConfig.getNowInMilliseconds();
+    const extensions = this.getExtensionsObject(eventConfig.redirect_uri);
+    return {
+      user: {
+        user_id: eventConfig.sub,
+        session_id: eventConfig.sessionId,
+        govuk_signin_journey_id: eventConfig.govukSigninJourneyId,
+        ip_address: eventConfig.ipAddress,
+      },
+      timestamp: Math.floor(timestampInMillis / 1000),
+      event_timestamp_ms: timestampInMillis,
+      event_name: "DCMAW_ASYNC_CRI_APP_START",
+      component_id: eventConfig.componentId,
+      restricted: this.getRestrictedData(eventConfig.txmaAuditEncoded),
+      extensions,
     };
   };
 

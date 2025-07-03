@@ -47,7 +47,12 @@ export class SessionService implements ISessionService {
   async getActiveSession(
     subjectIdentifier: string,
   ): Promise<Result<Session | null>> {
-    const attributesToGet = ["sessionId", "clientState", "redirectUri"];
+    const attributesToGet = [
+      "sessionId",
+      "clientState",
+      "redirectUri",
+      "govukSigninJourneyId",
+    ];
 
     let record: DatabaseRecord | null;
     try {

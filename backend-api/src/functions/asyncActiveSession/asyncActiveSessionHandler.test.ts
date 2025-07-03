@@ -1,13 +1,25 @@
+import { expect } from "@jest/globals";
 import { APIGatewayProxyResult, Context } from "aws-lambda";
-import { buildRequest } from "../testUtils/mockRequest";
-import { lambdaHandlerConstructor } from "./asyncActiveSessionHandler";
-import { IAsyncActiveSessionDependencies } from "./handlerDependencies";
-import { MockJWTBuilder } from "../testUtils/mockJwtBuilder";
+import "../../../tests/testUtils/matchers";
+import { logger } from "../common/logging/logger";
+import { MockEventWriterSuccess } from "../services/events/tests/mocks";
 import {
   MockSessionServiceGetErrorResult,
-  MockSessionServiceGetSuccessResult,
   MockSessionServiceGetNullSuccessResult,
+  MockSessionServiceGetSuccessResult,
 } from "../services/session/tests/mocks";
+import { buildLambdaContext } from "../testUtils/mockContext";
+import { MockJWTBuilder } from "../testUtils/mockJwtBuilder";
+import { buildRequest } from "../testUtils/mockRequest";
+import {
+  mockInertEventService,
+  mockSessionId,
+  mockSuccessfulEventService,
+  mockWriteActiveSessionSuccessResult,
+} from "../testUtils/unitTestData";
+import { errorResult } from "../utils/result";
+import { lambdaHandlerConstructor } from "./asyncActiveSessionHandler";
+import { IAsyncActiveSessionDependencies } from "./handlerDependencies";
 import {
   MockJweDecrypterClientError,
   MockJweDecrypterServerError,
@@ -18,17 +30,14 @@ import {
   MockTokenServiceServerError,
   MockTokenServiceSuccess,
 } from "./mocks";
-import { buildLambdaContext } from "../testUtils/mockContext";
-import { logger } from "../common/logging/logger";
-import "../../../tests/testUtils/matchers";
-import { expect } from "@jest/globals";
-import { mockSessionId } from "../testUtils/unitTestData";
 
 const env = {
   ENCRYPTION_KEY_ARN: "mockEncryptionKeyArn",
   SESSION_TABLE_NAME: "mockSessionTableName",
   AUDIENCE: "https://mockAudience.com/",
   STS_BASE_URL: "https://mockUrl.com/",
+  TXMA_SQS: "mockTxmaSqs",
+  ISSUER: "https://mockIssuer.com/",
 };
 
 describe("Async Active Session", () => {
@@ -49,6 +58,7 @@ describe("Async Active Session", () => {
       jweDecrypter: () => new MockJweDecrypterSuccess(),
       tokenService: () => new MockTokenServiceSuccess(),
       sessionService: () => new MockSessionServiceGetSuccessResult(),
+      eventService: () => new MockEventWriterSuccess(),
     };
     context = buildLambdaContext();
     consoleInfoSpy = jest.spyOn(console, "info");
@@ -469,8 +479,58 @@ describe("Async Active Session", () => {
         });
         dependencies.sessionService = () =>
           new MockSessionServiceGetSuccessResult();
+        dependencies.eventService = () => mockSuccessfulEventService;
 
         result = await lambdaHandlerConstructor(dependencies, request, context);
+      });
+
+      describe("Given DCMAW_ASYNC_CRI_APP_START event fails to write to TxMA", () => {
+        beforeEach(async () => {
+          dependencies.eventService = () => ({
+            ...mockInertEventService,
+            writeActiveSessionEvent: jest.fn().mockResolvedValue(
+              errorResult({
+                errorMessage: "mockError",
+              }),
+            ),
+          });
+
+          result = await lambdaHandlerConstructor(
+            dependencies,
+            validRequest,
+            context,
+          );
+        });
+
+        it("Logs the error", async () => {
+          expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
+            data: {
+              auditEventName: "DCMAW_ASYNC_CRI_APP_START",
+            },
+          });
+        });
+      });
+
+      describe("Given DCMAW_ASYNC_CRI_APP_START event successfully writes to TxMA", () => {
+        it("Writes DCMAW_ASYNC_CRI_APP_START event to TxMA", () => {
+          expect(mockWriteActiveSessionSuccessResult).toHaveBeenCalledWith({
+            sub: "mockSub",
+            sessionId: mockSessionId,
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
+            getNowInMilliseconds: Date.now,
+            componentId: "https://mockIssuer.com/",
+            ipAddress: "1.1.1.1",
+            txmaAuditEncoded: undefined,
+            redirect_uri: "https://mockUrl.com/redirect",
+          });
+        });
+
+        it("Logs DCMAW_ASYNC_CRI_APP_START", async () => {
+          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
+            messageCode: "DCMAW_ASYNC_CRI_APP_START",
+          });
+        });
       });
 
       it("Logs COMPLETED with persistent identifiers", () => {
@@ -491,6 +551,7 @@ describe("Async Active Session", () => {
             sessionId: mockSessionId,
             redirectUri: "https://mockUrl.com/redirect",
             state: "mockClientState",
+            govukSigninJourneyId: "mockGovukSigninJourneyId",
           }),
         });
       });

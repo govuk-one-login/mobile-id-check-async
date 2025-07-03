@@ -14,6 +14,7 @@ import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { getActiveSessionConfig } from "./getActiveSessionConfig";
 import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
+import { getAuditData } from "../common/request/getAuditData/getAuditData";
 
 export async function lambdaHandlerConstructor(
   dependencies: IAsyncActiveSessionDependencies,
@@ -93,6 +94,28 @@ export async function lambdaHandlerConstructor(
 
   appendPersistentIdentifiersToLogger({ sessionId: session.sessionId });
 
+  const eventService = dependencies.eventService(config.TXMA_SQS);
+  const { ipAddress, txmaAuditEncoded } = getAuditData(event);
+  const writeEventResult = await eventService.writeActiveSessionEvent({
+    sub,
+    sessionId: session.sessionId,
+    govukSigninJourneyId: session.govukSigninJourneyId,
+    getNowInMilliseconds: Date.now,
+    componentId: config.ISSUER,
+    ipAddress,
+    txmaAuditEncoded,
+    redirect_uri: session.redirectUri,
+  });
+
+  if (writeEventResult.isError) {
+    logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
+      data: {
+        auditEventName: "DCMAW_ASYNC_CRI_APP_START",
+      },
+    });
+  }
+
+  logger.info(LogMessage.CRI_APP_START, {});
   logger.info(LogMessage.ACTIVE_SESSION_COMPLETED, {
     activeSessionFound: true,
   });
