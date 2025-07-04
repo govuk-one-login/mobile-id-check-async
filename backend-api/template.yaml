@@ -1543,7 +1543,7 @@ Resources:
                 Effect: Allow
                 Resource:
                   - !GetAtt SessionsTable.Arn
-                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-createdAt-index
+                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-createdAt-index-v2
             Version: "2012-10-17"
           PolicyName: DynamoReadSessionsTable
         - PolicyDocument:
@@ -6526,6 +6526,18 @@ Resources:
               - clientState
             ProjectionType: INCLUDE
         - IndexName: subjectIdentifier-createdAt-index
+          KeySchema:
+            - AttributeName: subjectIdentifier
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            NonKeyAttributes:
+              - sessionState
+              - redirectUri
+              - clientState
+            ProjectionType: INCLUDE
+        - IndexName: subjectIdentifier-createdAt-index-v2
           KeySchema:
             - AttributeName: subjectIdentifier
               KeyType: HASH

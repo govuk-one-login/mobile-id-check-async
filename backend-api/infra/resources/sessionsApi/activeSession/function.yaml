@@ -92,7 +92,7 @@ Resources:
                   - dynamodb:Query
                 Resource:
                   - Fn::GetAtt: ["SessionsTable", "Arn"]
-                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-createdAt-index
+                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-createdAt-index-v2
                 Condition:
                   ForAllValues:StringEquals:
                     dynamodb:Attributes:
