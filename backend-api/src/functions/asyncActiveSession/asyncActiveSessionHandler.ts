@@ -98,7 +98,7 @@ export async function lambdaHandlerConstructor(
     return notFoundResponse;
   }
 
-  return handleOkResponse(eventService, {
+  return await handleOkResponse(eventService, {
     session,
     auditData: getAuditData(event),
     sub,
