@@ -40,6 +40,7 @@ Resources:
               - sessionState
               - redirectUri
               - clientState
+              - govukSigninJourneyId
             ProjectionType: INCLUDE
       BillingMode: PAY_PER_REQUEST
       SSESpecification:

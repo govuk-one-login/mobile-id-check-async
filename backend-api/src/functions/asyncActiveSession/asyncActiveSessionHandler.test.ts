@@ -502,7 +502,7 @@ describe("Async Active Session", () => {
           );
         });
 
-        it("Logs the error", async () => {
+        it("Logs the error", () => {
           expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ERROR_WRITING_AUDIT_EVENT",
             data: {
@@ -526,7 +526,7 @@ describe("Async Active Session", () => {
           });
         });
 
-        it("Logs DCMAW_ASYNC_CRI_APP_START", async () => {
+        it("Logs DCMAW_ASYNC_CRI_APP_START", () => {
           expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
             messageCode: "DCMAW_ASYNC_CRI_APP_START",
           });

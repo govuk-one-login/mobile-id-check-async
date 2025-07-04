@@ -98,6 +98,8 @@ export async function lambdaHandlerConstructor(
     return notFoundResponse;
   }
 
+  appendPersistentIdentifiersToLogger({ sessionId: session.sessionId });
+
   return await handleOkResponse(eventService, {
     session,
     auditData: getAuditData(event),
@@ -159,7 +161,6 @@ async function handleOkResponse(
   eventService: IEventService,
   { session, auditData, sub, issuer }: HandleOkResponseData,
 ) {
-  appendPersistentIdentifiersToLogger({ sessionId: session.sessionId });
   const { ipAddress, txmaAuditEncoded } = auditData;
   const writeEventResult = await eventService.writeActiveSessionEvent({
     sub,

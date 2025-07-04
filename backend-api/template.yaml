@@ -1537,6 +1537,7 @@ Resources:
                       - createdAt
                       - redirectUri
                       - clientState
+                      - govukSigninJourneyId
                   StringEquals:
                     dynamodb:Select: SPECIFIC_ATTRIBUTES
                 Effect: Allow
@@ -1563,6 +1564,19 @@ Resources:
                 Resource: !GetAtt KMSEncryptionKey.Arn
             Version: "2012-10-17"
           PolicyName: KMSDecryptPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - sqs:SendMessage
+                Effect: Allow
+                Resource: !GetAtt TxMASqs.Arn
+              - Action:
+                  - kms:Decrypt
+                  - kms:GenerateDataKey
+                Effect: Allow
+                Resource: !GetAtt TxMAKMSEncryptionKey.Arn
+            Version: "2012-10-17"
+          PolicyName: TxmaSQSPolicy
         - PolicyDocument:
             Statement:
               - Action:
@@ -6522,6 +6536,7 @@ Resources:
               - sessionState
               - redirectUri
               - clientState
+              - govukSigninJourneyId
             ProjectionType: INCLUDE
       KeySchema:
         - AttributeName: sessionId
