@@ -57,6 +57,8 @@ export class EventService implements IEventService {
   }
 
   private async writeToSqs(txmaEvent: TxmaEvents): Promise<Result<void, void>> {
+    console.log("TXMA EVENT >>>>>", txmaEvent);
+
     try {
       await sqsClient.send(
         new SendMessageCommand({
