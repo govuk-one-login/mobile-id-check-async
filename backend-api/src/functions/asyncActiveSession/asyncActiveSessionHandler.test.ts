@@ -527,12 +527,6 @@ describe("Async Active Session", () => {
             suspected_fraud_signal: undefined,
           });
         });
-
-        it("Logs DCMAW_ASYNC_CRI_APP_START", () => {
-          expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
-            messageCode: "DCMAW_ASYNC_CRI_APP_START",
-          });
-        });
       });
 
       it("Logs COMPLETED with persistent identifiers", () => {

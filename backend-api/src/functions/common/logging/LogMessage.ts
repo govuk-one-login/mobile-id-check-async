@@ -231,10 +231,6 @@ export class LogMessage implements LogAttributes {
     "MOBILE_ASYNC_ACTIVE_SESSION_ACTIVE_SESSION_NOT_FOUND",
     "An active session was not found.",
   );
-  static readonly CRI_APP_START = new LogMessage(
-    "DCMAW_ASYNC_CRI_APP_START",
-    "An active session was found.",
-  );
   static readonly ACTIVE_SESSION_COMPLETED = new LogMessage(
     "MOBILE_ASYNC_ACTIVE_SESSION_COMPLETED",
     "Lambda handler processing has completed successfully.",

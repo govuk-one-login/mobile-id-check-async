@@ -183,7 +183,6 @@ async function handleOkResponse(
     });
   }
 
-  logger.info(LogMessage.CRI_APP_START, {});
   logger.info(LogMessage.ACTIVE_SESSION_COMPLETED, {
     activeSessionFound: true,
   });

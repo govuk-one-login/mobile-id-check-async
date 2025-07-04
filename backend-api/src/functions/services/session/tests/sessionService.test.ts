@@ -140,6 +140,7 @@ describe("Session Service", () => {
           sessionId: "mockSessionId",
           state: "mockClientSate",
           redirectUri: "mockRedirectUri",
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
         });
         const expectedCommandInput: QueryCommandInput = {
           ExpressionAttributeValues: {
@@ -150,7 +151,7 @@ describe("Session Service", () => {
             ":subjectIdentifier": { S: "mockSub" },
           },
           FilterExpression: "sessionState = :authSessionCreated",
-          IndexName: "subjectIdentifier-createdAt-index",
+          IndexName: "subjectIdentifier-createdAt-index-v2",
           KeyConditionExpression:
             "subjectIdentifier = :subjectIdentifier AND createdAt > :oneHourAgoInMilliseconds",
           Limit: 1,
