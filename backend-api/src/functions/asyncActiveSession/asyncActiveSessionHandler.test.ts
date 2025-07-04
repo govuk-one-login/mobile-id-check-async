@@ -15,7 +15,7 @@ import {
   mockInertEventService,
   mockSessionId,
   mockSuccessfulEventService,
-  mockWriteActiveSessionSuccessResult,
+  mockWriteGenericEventSuccessResult,
 } from "../testUtils/unitTestData";
 import { errorResult } from "../utils/result";
 import { lambdaHandlerConstructor } from "./asyncActiveSessionHandler";
@@ -488,7 +488,7 @@ describe("Async Active Session", () => {
         beforeEach(async () => {
           dependencies.eventService = () => ({
             ...mockInertEventService,
-            writeActiveSessionEvent: jest.fn().mockResolvedValue(
+            writeGenericEvent: jest.fn().mockResolvedValue(
               errorResult({
                 errorMessage: "mockError",
               }),
@@ -514,7 +514,8 @@ describe("Async Active Session", () => {
 
       describe("Given DCMAW_ASYNC_CRI_APP_START event successfully writes to TxMA", () => {
         it("Writes DCMAW_ASYNC_CRI_APP_START event to TxMA", () => {
-          expect(mockWriteActiveSessionSuccessResult).toHaveBeenCalledWith({
+          expect(mockWriteGenericEventSuccessResult).toHaveBeenCalledWith({
+            eventName: "DCMAW_ASYNC_CRI_APP_START",
             sub: "mockSub",
             sessionId: mockSessionId,
             govukSigninJourneyId: "mockGovukSigninJourneyId",
@@ -523,6 +524,7 @@ describe("Async Active Session", () => {
             ipAddress: "1.1.1.1",
             txmaAuditEncoded: undefined,
             redirect_uri: "https://mockUrl.com/redirect",
+            suspected_fraud_signal: undefined,
           });
         });
 

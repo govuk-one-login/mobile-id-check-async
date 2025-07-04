@@ -231,9 +231,6 @@ export const mockInertEventService: IEventService = {
   writeCredentialTokenIssuedEvent: jest.fn(() => {
     throw new Error("Not implemented");
   }),
-  writeActiveSessionEvent: jest.fn(() => {
-    throw new Error("Not implemented");
-  }),
   writeBiometricTokenIssuedEvent: jest.fn(() => {
     throw new Error("Not implemented");
   }),
@@ -247,10 +244,6 @@ export const mockWriteGenericEventFailureResult = jest
   .fn()
   .mockResolvedValue(errorResult(new Error("Failed to write event")));
 
-export const mockWriteActiveSessionSuccessResult = jest
-  .fn()
-  .mockResolvedValue(emptySuccess());
-
 export const mockWriteBiometricTokenIssuedEventSuccessResult = jest
   .fn()
   .mockResolvedValue(emptySuccess());
@@ -258,7 +251,6 @@ export const mockWriteBiometricTokenIssuedEventSuccessResult = jest
 export const mockSuccessfulEventService = {
   ...mockInertEventService,
   writeGenericEvent: mockWriteGenericEventSuccessResult,
-  writeActiveSessionEvent: mockWriteActiveSessionSuccessResult,
   writeBiometricTokenIssuedEvent:
     mockWriteBiometricTokenIssuedEventSuccessResult,
 };

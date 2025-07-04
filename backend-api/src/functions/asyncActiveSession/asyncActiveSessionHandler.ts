@@ -162,7 +162,8 @@ async function handleOkResponse(
   { session, auditData, sub, issuer }: HandleOkResponseData,
 ) {
   const { ipAddress, txmaAuditEncoded } = auditData;
-  const writeEventResult = await eventService.writeActiveSessionEvent({
+  const writeEventResult = await eventService.writeGenericEvent({
+    eventName: "DCMAW_ASYNC_CRI_APP_START",
     sub,
     sessionId: session.sessionId,
     govukSigninJourneyId: session.govukSigninJourneyId,
@@ -171,6 +172,7 @@ async function handleOkResponse(
     ipAddress,
     txmaAuditEncoded,
     redirect_uri: session.redirectUri,
+    suspected_fraud_signal: undefined,
   });
 
   if (writeEventResult.isError) {
