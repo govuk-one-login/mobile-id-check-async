@@ -122,13 +122,14 @@ describe("Session Service", () => {
     });
 
     describe("Given the item returned has the attribute redirectUri", () => {
-      it("Returns a success response with the session ID, state and redirectUri as value", async () => {
+      it("Returns a success response with the session ID, state, redirectUri, and govukSigninJourneyId as value", async () => {
         dynamoDbMockClient.on(QueryCommand).resolvesOnce({
           Items: [
             {
               sessionId: { S: "mockSessionId" },
               clientState: { S: "mockClientSate" },
               redirectUri: { S: "mockRedirectUri" },
+              govukSigninJourneyId: { S: "mockGovukSigninJourneyId" },
             },
           ],
         });
@@ -139,6 +140,7 @@ describe("Session Service", () => {
           sessionId: "mockSessionId",
           state: "mockClientSate",
           redirectUri: "mockRedirectUri",
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
         });
         const expectedCommandInput: QueryCommandInput = {
           ExpressionAttributeValues: {
@@ -149,11 +151,12 @@ describe("Session Service", () => {
             ":subjectIdentifier": { S: "mockSub" },
           },
           FilterExpression: "sessionState = :authSessionCreated",
-          IndexName: "subjectIdentifier-createdAt-index",
+          IndexName: "subjectIdentifier-createdAt-index-v2",
           KeyConditionExpression:
             "subjectIdentifier = :subjectIdentifier AND createdAt > :oneHourAgoInMilliseconds",
           Limit: 1,
-          ProjectionExpression: "sessionId, clientState, redirectUri",
+          ProjectionExpression:
+            "sessionId, clientState, redirectUri, govukSigninJourneyId",
           ScanIndexForward: false,
           TableName: "mockTableName",
         };

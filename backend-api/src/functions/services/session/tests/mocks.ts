@@ -37,6 +37,7 @@ export class MockSessionServiceGetSuccessResult implements ISessionService {
       sessionId: mockSessionId,
       redirectUri: "https://mockUrl.com/redirect",
       state: "mockClientState",
+      govukSigninJourneyId: "mockGovukSigninJourneyId",
     });
   };
 
