@@ -381,6 +381,7 @@ describe("Backend application infrastructure", () => {
         ["low-threshold-async-finish-biometric-session-4xx-api-gw"],
         ["low-threshold-async-finish-biometric-session-5xx-api-gw"],
         ["low-threshold-async-abort-session-4xx-api-gw"],
+        ["high-threshold-async-abort-session-4xx-api-gw"],
         ["low-threshold-async-abort-session-5xx-api-gw"],
         ["high-threshold-async-txma-event-4xx-api-gw"],
         ["low-threshold-async-txma-event-4xx-api-gw"],
@@ -496,10 +497,6 @@ describe("Backend application infrastructure", () => {
         },
         {
           name: "high-threshold-async-abort-session-5xx-api-gw",
-          hasRunbookBeenSignedOff: true,
-        },
-        {
-          name: "high-threshold-async-abort-session-4xx-api-gw",
           hasRunbookBeenSignedOff: true,
         },
         {
