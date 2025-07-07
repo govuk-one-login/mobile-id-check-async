@@ -563,7 +563,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
         - '80% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
         - SupportManualUrl: !FindInMap
@@ -619,7 +619,7 @@ Resources:
           Label: Number of 4XX errors returned as a percentage
           ReturnData: false
       OKActions:
-        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-critical
+        - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 80
       TreatMissingData: notBreaching
     Condition: DeployAlarms
