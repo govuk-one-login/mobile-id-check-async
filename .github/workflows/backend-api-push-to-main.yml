@@ -107,7 +107,7 @@ jobs:
     - name: Install Cosign
       uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac #v3.9.1
       with:
-        cosign-release: 'v1.9.0'
+        cosign-release: 'v2.5.2'
 
     - name: Setup SAM CLI
       uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
@@ -195,7 +195,7 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac #v3.9.1
         with:
-          cosign-release: 'v1.9.0'
+          cosign-release: 'v2.5.2'
 
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@819220f63fb333a9a394dd0a5cab2d8303fd17e2 #main
