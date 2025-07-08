@@ -129,7 +129,6 @@ describe("GET /async/activeSession", () => {
   });
 
   describe("Given the request is valid and a session is found", () => {
-    let sessionId: string;
     let response: AxiosResponse;
     let eventsResponse: EventResponse[];
 
@@ -137,7 +136,7 @@ describe("GET /async/activeSession", () => {
       const sub = randomUUID();
       await createSessionForSub(sub);
       const accessToken = await getAccessToken(sub);
-      sessionId = await getActiveSessionIdFromSub(sub);
+      const sessionId = await getActiveSessionIdFromSub(sub);
 
       response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -150,20 +149,20 @@ describe("GET /async/activeSession", () => {
       });
     }, 70000);
 
-    it("Returns 200 status code, sessionId, redirectUri and state", async () => {
-      expect(response.status).toBe(200);
-      expect(response.data["sessionId"]).toBeDefined();
-      expect(response.data["redirectUri"]).toBeDefined();
-      expect(response.data["state"]).toBeDefined();
-      expect(response.data["govukSigninJourneyId"]).toBeDefined();
-    });
-
     it("Writes an event with the correct event_name", async () => {
       expect(eventsResponse[0].event).toEqual(
         expect.objectContaining({
           event_name: "DCMAW_ASYNC_CRI_APP_START",
         }),
       );
+    });
+
+    it("Returns 200 status code, sessionId, redirectUri and state", async () => {
+      expect(response.status).toBe(200);
+      expect(response.data["sessionId"]).toBeDefined();
+      expect(response.data["redirectUri"]).toBeDefined();
+      expect(response.data["state"]).toBeDefined();
+      expect(response.data["govukSigninJourneyId"]).toBeDefined();
     });
   });
 
