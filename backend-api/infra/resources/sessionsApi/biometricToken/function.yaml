@@ -27,7 +27,6 @@ Resources:
         Alarms: !If
           - UseCanaryDeployment
           - - !Ref AsyncBiometricTokenErrorRateAlarm        
-            - !Ref AsyncBiometricTokenLowCompletionAlarm
           - - !Ref AWS::NoValue
         Type: !Ref LambdaDeploymentPreference
       Environment:

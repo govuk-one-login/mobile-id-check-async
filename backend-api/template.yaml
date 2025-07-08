@@ -943,7 +943,6 @@ Resources:
         Alarms: !If
           - UseCanaryDeployment
           - - !Ref AsyncAbortSessionErrorRateAlarm
-            - !Ref AsyncAbortSessionLowCompletionAlarm
           - - !Ref AWS::NoValue
         Enabled: true
         Type: !Ref LambdaDeploymentPreference
@@ -2064,7 +2063,6 @@ Resources:
         Alarms: !If
           - UseCanaryDeployment
           - - !Ref AsyncBiometricTokenErrorRateAlarm
-            - !Ref AsyncBiometricTokenLowCompletionAlarm
           - - !Ref AWS::NoValue
         Enabled: true
         Type: !Ref LambdaDeploymentPreference
