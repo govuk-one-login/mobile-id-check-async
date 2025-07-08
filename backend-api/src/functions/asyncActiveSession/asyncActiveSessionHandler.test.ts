@@ -510,6 +510,17 @@ describe("Async Active Session", () => {
             },
           });
         });
+
+        it("Returns a 500 Server Error response", () => {
+          expect(result).toStrictEqual({
+            headers: { "Content-Type": "application/json" },
+            statusCode: 500,
+            body: JSON.stringify({
+              error: "server_error",
+              error_description: "Server Error",
+            }),
+          });
+        });
       });
 
       it("Writes DCMAW_ASYNC_CRI_APP_START event to TxMA", () => {

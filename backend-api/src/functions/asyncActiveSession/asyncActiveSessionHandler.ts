@@ -182,6 +182,8 @@ async function handleOkResponse(
         auditEventName: eventName,
       },
     });
+
+    return serverErrorResponse;
   }
 
   logger.info(LogMessage.ACTIVE_SESSION_COMPLETED, {
