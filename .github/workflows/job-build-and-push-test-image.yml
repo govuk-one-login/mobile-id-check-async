@@ -34,7 +34,7 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac #v3.9.1
         with:
-          cosign-release: 'v1.9.0'
+          cosign-release: 'v2.5.2'
 
       - name: Authenticate with AWS
         uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 #v4.0.2

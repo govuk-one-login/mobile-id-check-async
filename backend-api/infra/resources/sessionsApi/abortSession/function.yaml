@@ -28,8 +28,7 @@ Resources:
         Enabled: true
         Alarms: !If
           - UseCanaryDeployment
-          - - !Ref AsyncAbortSessionErrorRateAlarm        
-            - !Ref AsyncAbortSessionLowCompletionAlarm
+          - - !Ref AsyncAbortSessionErrorRateAlarm
           - - !Ref AWS::NoValue
         Type: !Ref LambdaDeploymentPreference
       VpcConfig:
