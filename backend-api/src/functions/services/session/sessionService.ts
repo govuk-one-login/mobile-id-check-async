@@ -74,7 +74,7 @@ export class SessionService implements ISessionService {
     const sessionId = record.sessionId;
     const state = record.clientState;
     const govukSigninJourneyId = record.govukSigninJourneyId;
-    if (!sessionId || !state) {
+    if (!sessionId || !state || !govukSigninJourneyId) {
       return errorResult({
         errorMessage: "Session is malformed",
         errorCategory: ErrorCategory.SERVER_ERROR,

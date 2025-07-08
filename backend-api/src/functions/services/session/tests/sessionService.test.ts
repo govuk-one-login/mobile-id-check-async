@@ -73,9 +73,14 @@ describe("Session Service", () => {
 
     describe("Given the item returned is missing the attribute sessionId", () => {
       it("Returns an error response", async () => {
-        dynamoDbMockClient
-          .on(QueryCommand)
-          .resolvesOnce({ Items: [{ dummyKey: { S: "dummyValue" } }] });
+        dynamoDbMockClient.on(QueryCommand).resolvesOnce({
+          Items: [
+            {
+              clientState: { S: "mockClientState" },
+              govukSigninJourneyId: { S: "mockGovukSigninJourneyId" },
+            },
+          ],
+        });
         const result = await sessionService.getActiveSession("mockSub");
 
         expect(result.isError).toBe(true);
@@ -88,9 +93,34 @@ describe("Session Service", () => {
 
     describe("Given the item returned is missing the attribute clientState", () => {
       it("Returns an error response", async () => {
-        dynamoDbMockClient
-          .on(QueryCommand)
-          .resolvesOnce({ Items: [{ sessionId: { S: "mockSessionId" } }] });
+        dynamoDbMockClient.on(QueryCommand).resolvesOnce({
+          Items: [
+            {
+              govukSigninJourneyId: { S: "mockGovukSigninJourneyId" },
+              sessionId: { S: "mockSessionId" },
+            },
+          ],
+        });
+        const result = await sessionService.getActiveSession("mockSub");
+
+        expect(result.isError).toBe(true);
+        expect(result.value).toEqual({
+          errorCategory: ErrorCategory.SERVER_ERROR,
+          errorMessage: "Session is malformed",
+        });
+      });
+    });
+
+    describe("Given the item returned is missing the attribute govukSigninJourneyId", () => {
+      it("Returns an error response", async () => {
+        dynamoDbMockClient.on(QueryCommand).resolvesOnce({
+          Items: [
+            {
+              clientState: { S: "mockClientState" },
+              sessionId: { S: "mockSessionId" },
+            },
+          ],
+        });
         const result = await sessionService.getActiveSession("mockSub");
 
         expect(result.isError).toBe(true);
@@ -106,8 +136,9 @@ describe("Session Service", () => {
         dynamoDbMockClient.on(QueryCommand).resolvesOnce({
           Items: [
             {
-              sessionId: { S: "mockSessionId" },
               clientState: { S: "mockClientState" },
+              govukSigninJourneyId: { S: "mockGovukSigninJourneyId" },
+              sessionId: { S: "mockSessionId" },
             },
           ],
         });
@@ -115,6 +146,7 @@ describe("Session Service", () => {
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual({
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
           sessionId: "mockSessionId",
           state: "mockClientState",
         });
@@ -126,10 +158,10 @@ describe("Session Service", () => {
         dynamoDbMockClient.on(QueryCommand).resolvesOnce({
           Items: [
             {
-              sessionId: { S: "mockSessionId" },
               clientState: { S: "mockClientSate" },
-              redirectUri: { S: "mockRedirectUri" },
               govukSigninJourneyId: { S: "mockGovukSigninJourneyId" },
+              redirectUri: { S: "mockRedirectUri" },
+              sessionId: { S: "mockSessionId" },
             },
           ],
         });
