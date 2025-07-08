@@ -162,8 +162,9 @@ async function handleOkResponse(
   { session, auditData, sub, issuer }: HandleOkResponseData,
 ) {
   const { ipAddress, txmaAuditEncoded } = auditData;
+  const eventName = "DCMAW_ASYNC_CRI_APP_START";
   const writeEventResult = await eventService.writeGenericEvent({
-    eventName: "DCMAW_ASYNC_CRI_APP_START",
+    eventName,
     sub,
     sessionId: session.sessionId,
     govukSigninJourneyId: session.govukSigninJourneyId,
@@ -178,7 +179,7 @@ async function handleOkResponse(
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: {
-        auditEventName: "DCMAW_ASYNC_CRI_APP_START",
+        auditEventName: eventName,
       },
     });
   }
