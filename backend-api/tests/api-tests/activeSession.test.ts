@@ -147,7 +147,7 @@ describe("GET /async/activeSession", () => {
         sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_APP_START`,
         numberOfEvents: 1,
       });
-    }, 70000);
+    }, 40000);
 
     it("Writes an event with the correct event_name", async () => {
       expect(eventsResponse[0].event).toEqual(
