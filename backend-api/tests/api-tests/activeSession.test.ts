@@ -162,7 +162,6 @@ describe("GET /async/activeSession", () => {
       expect(response.data["sessionId"]).toBeDefined();
       expect(response.data["redirectUri"]).toBeDefined();
       expect(response.data["state"]).toBeDefined();
-      expect(response.data["govukSigninJourneyId"]).toBeDefined();
     });
   });
 

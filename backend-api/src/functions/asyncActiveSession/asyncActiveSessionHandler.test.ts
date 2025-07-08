@@ -556,7 +556,6 @@ describe("Async Active Session", () => {
             sessionId: mockSessionId,
             redirectUri: "https://mockUrl.com/redirect",
             state: "mockClientState",
-            govukSigninJourneyId: "mockGovukSigninJourneyId",
           }),
         });
       });

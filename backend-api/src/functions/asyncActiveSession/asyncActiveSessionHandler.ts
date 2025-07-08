@@ -162,20 +162,21 @@ async function handleOkResponse(
   { session, auditData, sub, issuer }: HandleOkResponseData,
 ) {
   const { ipAddress, txmaAuditEncoded } = auditData;
+  const { govukSigninJourneyId, redirectUri, sessionId, state } = session;
   const eventName = "DCMAW_ASYNC_CRI_APP_START";
+
   const writeEventResult = await eventService.writeGenericEvent({
     eventName,
     sub,
-    sessionId: session.sessionId,
-    govukSigninJourneyId: session.govukSigninJourneyId,
+    sessionId,
+    govukSigninJourneyId,
     getNowInMilliseconds: Date.now,
     componentId: issuer,
     ipAddress,
     txmaAuditEncoded,
-    redirect_uri: session.redirectUri,
+    redirect_uri: redirectUri,
     suspected_fraud_signal: undefined,
   });
-
   if (writeEventResult.isError) {
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: {
@@ -193,6 +194,10 @@ async function handleOkResponse(
   return {
     headers: { "Content-Type": "application/json" },
     statusCode: 200,
-    body: JSON.stringify(session),
+    body: JSON.stringify({
+      sessionId,
+      redirectUri,
+      state,
+    }),
   };
 }
