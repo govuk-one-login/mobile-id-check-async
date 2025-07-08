@@ -3316,7 +3316,6 @@ Resources:
         Alarms: !If
           - UseCanaryDeployment
           - - !Ref AsyncFinishBiometricSessionErrorRateAlarm
-            - !Ref AsyncFinishBiometricSessionLowCompletionAlarm
           - - !Ref AWS::NoValue
         Enabled: true
         Type: !Ref LambdaDeploymentPreference
