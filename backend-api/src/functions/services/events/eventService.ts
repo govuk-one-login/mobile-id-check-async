@@ -1,11 +1,11 @@
 import { SendMessageCommand } from "@aws-sdk/client-sqs";
+import { Result, emptyFailure, emptySuccess } from "../../utils/result";
+import { sqsClient } from "./sqsClient";
 import {
   CredentialSubject,
   FlaggedRecord,
   FlagsWrapper,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
-import { Result, emptyFailure, emptySuccess } from "../../utils/result";
-import { sqsClient } from "./sqsClient";
 import {
   BiometricTokenIssuedEvent,
   BiometricTokenIssuedEventConfig,
