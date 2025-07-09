@@ -2767,7 +2767,7 @@ Resources:
                 Effect: Allow
                 Resource: !GetAtt SessionsTable.Arn
             Version: "2012-10-17"
-          PolicyName: DynamoPutItemSessionsTablePolicy
+          PolicyName: DynamoSessionsTablePolicy
         - PolicyDocument:
             Statement:
               - Action:
