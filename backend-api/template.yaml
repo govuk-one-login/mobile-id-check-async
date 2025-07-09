@@ -2763,26 +2763,11 @@ Resources:
         - PolicyDocument:
             Statement:
               - Action:
-                  - dynamodb:Query
-                Condition:
-                  ForAllValues:StringEquals:
-                    dynamodb:Attributes:
-                      - sessionId
-                      - sessionState
-                      - subjectIdentifier
-                      - createdAt
-                  StringEquals:
-                    dynamodb:Select: SPECIFIC_ATTRIBUTES
-                Effect: Allow
-                Resource:
-                  - !GetAtt SessionsTable.Arn
-                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-createdAt-index
-              - Action:
                   - dynamodb:PutItem
                 Effect: Allow
                 Resource: !GetAtt SessionsTable.Arn
             Version: "2012-10-17"
-          PolicyName: DynamoReadSessionsTable
+          PolicyName: DynamoSessionsTablePolicy
         - PolicyDocument:
             Statement:
               - Action:
@@ -6515,18 +6500,6 @@ Resources:
             - AttributeName: subjectIdentifier
               KeyType: HASH
             - AttributeName: timeToLive
-              KeyType: RANGE
-          Projection:
-            NonKeyAttributes:
-              - sessionState
-              - redirectUri
-              - clientState
-            ProjectionType: INCLUDE
-        - IndexName: subjectIdentifier-createdAt-index
-          KeySchema:
-            - AttributeName: subjectIdentifier
-              KeyType: HASH
-            - AttributeName: createdAt
               KeyType: RANGE
           Projection:
             NonKeyAttributes:
