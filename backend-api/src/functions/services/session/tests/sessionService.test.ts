@@ -73,9 +73,14 @@ describe("Session Service", () => {
 
     describe("Given the item returned is missing the attribute sessionId", () => {
       it("Returns an error response", async () => {
-        dynamoDbMockClient
-          .on(QueryCommand)
-          .resolvesOnce({ Items: [{ dummyKey: { S: "dummyValue" } }] });
+        dynamoDbMockClient.on(QueryCommand).resolvesOnce({
+          Items: [
+            {
+              clientState: { S: "mockClientState" },
+              govukSigninJourneyId: { S: "mockGovukSigninJourneyId" },
+            },
+          ],
+        });
         const result = await sessionService.getActiveSession("mockSub");
 
         expect(result.isError).toBe(true);
@@ -88,9 +93,34 @@ describe("Session Service", () => {
 
     describe("Given the item returned is missing the attribute clientState", () => {
       it("Returns an error response", async () => {
-        dynamoDbMockClient
-          .on(QueryCommand)
-          .resolvesOnce({ Items: [{ sessionId: { S: "mockSessionId" } }] });
+        dynamoDbMockClient.on(QueryCommand).resolvesOnce({
+          Items: [
+            {
+              govukSigninJourneyId: { S: "mockGovukSigninJourneyId" },
+              sessionId: { S: "mockSessionId" },
+            },
+          ],
+        });
+        const result = await sessionService.getActiveSession("mockSub");
+
+        expect(result.isError).toBe(true);
+        expect(result.value).toEqual({
+          errorCategory: ErrorCategory.SERVER_ERROR,
+          errorMessage: "Session is malformed",
+        });
+      });
+    });
+
+    describe("Given the item returned is missing the attribute govukSigninJourneyId", () => {
+      it("Returns an error response", async () => {
+        dynamoDbMockClient.on(QueryCommand).resolvesOnce({
+          Items: [
+            {
+              clientState: { S: "mockClientState" },
+              sessionId: { S: "mockSessionId" },
+            },
+          ],
+        });
         const result = await sessionService.getActiveSession("mockSub");
 
         expect(result.isError).toBe(true);
@@ -106,8 +136,9 @@ describe("Session Service", () => {
         dynamoDbMockClient.on(QueryCommand).resolvesOnce({
           Items: [
             {
-              sessionId: { S: "mockSessionId" },
               clientState: { S: "mockClientState" },
+              govukSigninJourneyId: { S: "mockGovukSigninJourneyId" },
+              sessionId: { S: "mockSessionId" },
             },
           ],
         });
@@ -115,6 +146,7 @@ describe("Session Service", () => {
 
         expect(result.isError).toBe(false);
         expect(result.value).toEqual({
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
           sessionId: "mockSessionId",
           state: "mockClientState",
         });
@@ -122,13 +154,14 @@ describe("Session Service", () => {
     });
 
     describe("Given the item returned has the attribute redirectUri", () => {
-      it("Returns a success response with the session ID, state and redirectUri as value", async () => {
+      it("Returns a success response with the session ID, state, redirectUri, and govukSigninJourneyId as value", async () => {
         dynamoDbMockClient.on(QueryCommand).resolvesOnce({
           Items: [
             {
-              sessionId: { S: "mockSessionId" },
               clientState: { S: "mockClientSate" },
+              govukSigninJourneyId: { S: "mockGovukSigninJourneyId" },
               redirectUri: { S: "mockRedirectUri" },
+              sessionId: { S: "mockSessionId" },
             },
           ],
         });
@@ -139,6 +172,7 @@ describe("Session Service", () => {
           sessionId: "mockSessionId",
           state: "mockClientSate",
           redirectUri: "mockRedirectUri",
+          govukSigninJourneyId: "mockGovukSigninJourneyId",
         });
         const expectedCommandInput: QueryCommandInput = {
           ExpressionAttributeValues: {
@@ -149,11 +183,12 @@ describe("Session Service", () => {
             ":subjectIdentifier": { S: "mockSub" },
           },
           FilterExpression: "sessionState = :authSessionCreated",
-          IndexName: "subjectIdentifier-createdAt-index",
+          IndexName: "subjectIdentifier-createdAt-index-v2",
           KeyConditionExpression:
             "subjectIdentifier = :subjectIdentifier AND createdAt > :oneHourAgoInMilliseconds",
           Limit: 1,
-          ProjectionExpression: "sessionId, clientState, redirectUri",
+          ProjectionExpression:
+            "sessionId, clientState, redirectUri, govukSigninJourneyId",
           ScanIndexForward: false,
           TableName: "mockTableName",
         };

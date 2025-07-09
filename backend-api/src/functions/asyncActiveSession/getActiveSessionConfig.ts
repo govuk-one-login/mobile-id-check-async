@@ -12,6 +12,8 @@ const REQUIRED_ENVIRONMENT_VARIABLES = [
   "SESSION_TABLE_NAME",
   "AUDIENCE",
   "STS_BASE_URL",
+  "TXMA_SQS",
+  "ISSUER",
 ] as const;
 
 export type ActiveSessionConfig = Config<

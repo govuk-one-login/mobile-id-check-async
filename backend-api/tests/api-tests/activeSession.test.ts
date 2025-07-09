@@ -1,6 +1,13 @@
+import { AxiosResponse } from "axios";
 import { randomUUID } from "crypto";
 import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
-import { createSessionForSub, getAccessToken } from "./utils/apiTestHelpers";
+import {
+  createSessionForSub,
+  EventResponse,
+  getAccessToken,
+  getActiveSessionIdFromSub,
+  pollForEvents,
+} from "./utils/apiTestHelpers";
 
 jest.setTimeout(4 * 5000);
 
@@ -122,15 +129,35 @@ describe("GET /async/activeSession", () => {
   });
 
   describe("Given the request is valid and a session is found", () => {
-    it("Returns 200 status code, sessionId, redirectUri and state", async () => {
+    let response: AxiosResponse;
+    let eventsResponse: EventResponse[];
+
+    beforeAll(async () => {
       const sub = randomUUID();
       await createSessionForSub(sub);
       const accessToken = await getAccessToken(sub);
+      const sessionId = await getActiveSessionIdFromSub(sub);
 
-      const response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
+      response = await SESSIONS_API_INSTANCE.get("/async/activeSession", {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
 
+      eventsResponse = await pollForEvents({
+        partitionKey: `SESSION#${sessionId}`,
+        sortKeyPrefix: `TXMA#EVENT_NAME#DCMAW_ASYNC_CRI_APP_START`,
+        numberOfEvents: 1,
+      });
+    }, 40000);
+
+    it("Writes an event with the correct event_name", async () => {
+      expect(eventsResponse[0].event).toEqual(
+        expect.objectContaining({
+          event_name: "DCMAW_ASYNC_CRI_APP_START",
+        }),
+      );
+    });
+
+    it("Returns 200 status code, sessionId, redirectUri and state", async () => {
       expect(response.status).toBe(200);
       expect(response.data["sessionId"]).toBeDefined();
       expect(response.data["redirectUri"]).toBeDefined();

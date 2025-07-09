@@ -71,7 +71,7 @@ export class DynamoDbAdapter implements SessionRegistry {
   ): Promise<DatabaseRecord | null> {
     const input: QueryCommandInput = {
       TableName: this.tableName,
-      IndexName: "subjectIdentifier-createdAt-index",
+      IndexName: "subjectIdentifier-createdAt-index-v2",
       KeyConditionExpression:
         "subjectIdentifier = :subjectIdentifier AND createdAt > :oneHourAgoInMilliseconds",
       FilterExpression: "sessionState = :authSessionCreated",
