@@ -2776,7 +2776,7 @@ Resources:
                 Effect: Allow
                 Resource:
                   - !GetAtt SessionsTable.Arn
-                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-createdAt-index
+                  - !Sub ${SessionsTable.Arn}/index/subjectIdentifier-createdAt-index-v2
               - Action:
                   - dynamodb:PutItem
                 Effect: Allow
