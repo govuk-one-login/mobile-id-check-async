@@ -4241,7 +4241,7 @@ Resources:
   AsyncIssueBiometricCredentialTimeToIssueVcMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
-      FilterPattern: '{ ($.messageCode = "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED") && ($.documentType = *) && ($.vendorProcessingQueueToVcIssuanceElapsedTimeInMs = *) }'
+      FilterPattern: '{ $.messageCode = "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED" }'
       LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
       MetricTransformations:
         - Dimensions:

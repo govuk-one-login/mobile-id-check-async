@@ -21,7 +21,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
-      FilterPattern: '{ ($.messageCode = "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED") && ($.documentType = *) && ($.vendorProcessingQueueToVcIssuanceElapsedTimeInMs = *) }'
+      FilterPattern: '{ $.messageCode = "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED" }'
       MetricTransformations:
         - Dimensions:
             - Key: DocumentType
