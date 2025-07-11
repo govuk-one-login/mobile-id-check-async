@@ -3519,6 +3519,24 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
+  AsyncIssueBiometricCredentialApproximateReceiveCountMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '{ ($.sqsMessageProperties.approximateReceiveCount = *) && ($.documentType = *) && ($.messageCode = *) }'
+      LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
+      MetricTransformations:
+        - Dimensions:
+            - Key: ReceiveCount
+              Value: $.sqsMessageProperties.approximateReceiveCount
+            - Key: DocumentType
+              Value: $.documentType
+            - Key: MessageCode
+              Value: $.messageCode
+          MetricName: AsyncIssueBiometricCredentialApproximateReceiveCount
+          MetricNamespace: !Sub ${AWS::StackName}/LogMessages
+          MetricValue: $.sqsMessageProperties.approximateReceiveCount
+    Condition: DeployAlarms
+
   AsyncIssueBiometricCredentialBiometricSessionNotValidHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     DependsOn:
@@ -4219,6 +4237,21 @@ Resources:
       FilterPattern: ""
       LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
     Condition: isNotDev
+
+  AsyncIssueBiometricCredentialTimeToIssueVcMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '{ $.messageCode = "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED" }'
+      LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
+      MetricTransformations:
+        - Dimensions:
+            - Key: DocumentType
+              Value: $.documentType
+          MetricName: AsyncIssueBiometricCredentialTimeToIssueVc
+          MetricNamespace: !Sub ${AWS::StackName}/LogMessages
+          MetricValue: $.vendorProcessingQueueToVcIssuanceElapsedTimeInMs
+          Unit: Milliseconds
+    Condition: DeployAlarms
 
   AsyncIssueBiometricCredentialVendorLikenessDisabledAlarm:
     Type: AWS::CloudWatch::Alarm
