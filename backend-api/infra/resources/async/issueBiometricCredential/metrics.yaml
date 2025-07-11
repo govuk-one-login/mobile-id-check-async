@@ -15,3 +15,36 @@ Resources:
               Value: $.messageCode
             - Key: Version
               Value: $.functionVersion
+
+  AsyncIssueBiometricCredentialTimeToIssueVcMetricFilter:
+    Condition: DeployAlarms
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
+      FilterPattern: '{ ($.messageCode = "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_VC_ISSUED") && ($.documentType = *) && ($.vendorProcessingQueueToVcIssuanceElapsedTimeInMs = *) }'
+      MetricTransformations:
+        - Dimensions:
+            - Key: DocumentType
+              Value: $.documentType
+          MetricName: AsyncIssueBiometricCredentialTimeToIssueVc
+          MetricNamespace: !Sub ${AWS::StackName}/LogMessages
+          MetricValue: $.vendorProcessingQueueToVcIssuanceElapsedTimeInMs
+          Unit: Milliseconds
+
+  AsyncIssueBiometricCredentialReceiveCountMetricFilter:
+    Condition: DeployAlarms
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '{ ($.sqsMessageProperties.approximateReceiveCount = *) && ($.documentType = *) && ($.messageCode = *) }'
+      LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
+      MetricTransformations:
+        - Dimensions:
+            - Key: ReceiveCount
+              Value: $.sqsMessageProperties.approximateReceiveCount
+            - Key: DocumentType
+              Value: $.documentType
+            - Key: MessageCode
+              Value: $.messageCode
+          MetricName: AsyncIssueBiometricCredentialReceiveCount
+          MetricNamespace: !Sub ${AWS::StackName}/LogMessages
+          MetricValue: "$.sqsMessageProperties.approximateReceiveCount"
