@@ -3519,6 +3519,24 @@ Resources:
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
+  AsyncIssueBiometricCredentialApproximateReceiveCountMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: '{ ($.sqsMessageProperties.approximateReceiveCount = *) && ($.documentType = *) && ($.messageCode = *) }'
+      LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
+      MetricTransformations:
+        - Dimensions:
+            - Key: ReceiveCount
+              Value: $.sqsMessageProperties.approximateReceiveCount
+            - Key: DocumentType
+              Value: $.documentType
+            - Key: MessageCode
+              Value: $.messageCode
+          MetricName: AsyncIssueBiometricCredentialApproximateReceiveCount
+          MetricNamespace: !Sub ${AWS::StackName}/LogMessages
+          MetricValue: $.sqsMessageProperties.approximateReceiveCount
+    Condition: DeployAlarms
+
   AsyncIssueBiometricCredentialBiometricSessionNotValidHighThresholdAlarm:
     Type: AWS::CloudWatch::Alarm
     DependsOn:
@@ -4207,24 +4225,6 @@ Resources:
       Statistic: Sum
       Threshold: 1
       TreatMissingData: notBreaching
-    Condition: DeployAlarms
-
-  AsyncIssueBiometricCredentialReceiveCountMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      FilterPattern: '{ ($.sqsMessageProperties.approximateReceiveCount = *) && ($.documentType = *) && ($.messageCode = *) }'
-      LogGroupName: !Ref AsyncIssueBiometricCredentialLogGroup
-      MetricTransformations:
-        - Dimensions:
-            - Key: ReceiveCount
-              Value: $.sqsMessageProperties.approximateReceiveCount
-            - Key: DocumentType
-              Value: $.documentType
-            - Key: MessageCode
-              Value: $.messageCode
-          MetricName: AsyncIssueBiometricCredentialReceiveCount
-          MetricNamespace: !Sub ${AWS::StackName}/LogMessages
-          MetricValue: $.sqsMessageProperties.approximateReceiveCount
     Condition: DeployAlarms
 
   AsyncIssueBiometricCredentialSubscriptionFilter:

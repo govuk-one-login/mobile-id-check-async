@@ -31,7 +31,7 @@ Resources:
           MetricValue: $.vendorProcessingQueueToVcIssuanceElapsedTimeInMs
           Unit: Milliseconds
 
-  AsyncIssueBiometricCredentialReceiveCountMetricFilter:
+  AsyncIssueBiometricCredentialApproximateReceiveCountMetricFilter:
     Condition: DeployAlarms
     Type: AWS::Logs::MetricFilter
     Properties:
@@ -45,6 +45,6 @@ Resources:
               Value: $.documentType
             - Key: MessageCode
               Value: $.messageCode
-          MetricName: AsyncIssueBiometricCredentialReceiveCount
+          MetricName: AsyncIssueBiometricCredentialApproximateReceiveCount
           MetricNamespace: !Sub ${AWS::StackName}/LogMessages
           MetricValue: "$.sqsMessageProperties.approximateReceiveCount"
