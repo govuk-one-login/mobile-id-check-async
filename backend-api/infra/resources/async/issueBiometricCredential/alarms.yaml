@@ -351,7 +351,7 @@ Resources:
       DatapointsToAlarm: 1
       EvaluationPeriods: 1
       TreatMissingData: notBreaching
-      Threshold: 10
+      Threshold: 60
       Metrics:
         - Id: lambdaInvocations
           Label: "Sum of invocations for latest Lambda version"
@@ -392,7 +392,7 @@ Resources:
         - Id: lambdaErrorRate
           Label: "Error threshold calculation"
           ReturnData: true
-          Expression: IF(lambdaErrors >= 5, lambdaErrorPercentage)
+          Expression: IF(lambdaErrors >= 10, lambdaErrorPercentage)
 
   AsyncIssueBiometricCredentialLowCompletionAlarm:
     Condition: DeployAlarms
