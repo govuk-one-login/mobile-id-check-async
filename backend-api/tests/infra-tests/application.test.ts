@@ -375,7 +375,6 @@ describe("Backend application infrastructure", () => {
         ["low-threshold-async-credential-5xx-api-gw"],
         ["low-threshold-async-credential-4xx-api-gw"],
         ["low-threshold-async-active-session-5xx-api-gw"],
-        ["low-threshold-async-active-session-4xx-api-gw"],
         ["low-threshold-async-biometric-token-4xx-api-gw"],
         ["low-threshold-async-biometric-token-5xx-api-gw"],
         ["low-threshold-async-finish-biometric-session-4xx-api-gw"],
