@@ -3531,7 +3531,7 @@ Resources:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Period: 60
       Statistic: Sum
-      Threshold: 1
+      Threshold: 4
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
