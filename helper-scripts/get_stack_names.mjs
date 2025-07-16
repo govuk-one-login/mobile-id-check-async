@@ -33,6 +33,9 @@ for (const stack of response.Stacks) {
     || stackName.startsWith("awsconfigconforms-") 
     || stackName.startsWith("StackSet-")
     || stackName.startsWith("platform-")
+    || stackName.startsWith("mob-async-")
+    || stackName.startsWith("mob-readid-")
+    || stackName.startsWith("mob-test-resources")
   ) {
     // do nothing
   } else if (protectedStacks.includes(stackName)) {
