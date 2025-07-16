@@ -17,12 +17,12 @@ Resources:
       DatapointsToAlarm: 2
       EvaluationPeriods: 5
       TreatMissingData: notBreaching
-      Threshold: 1
+      Threshold: 50
       Metrics:
         - Id: errorThreshold
           Label: errorThreshold
           ReturnData: true
-          Expression: IF((invocations>=4) && (errorSum4XX>=2),errorPercentage4XX)
+          Expression: IF((invocations>=5) && (errorSum4XX>=2),errorPercentage4XX)
         - Id: invocations
           ReturnData: false
           MetricStat:

@@ -641,7 +641,7 @@ Resources:
       DatapointsToAlarm: 2
       EvaluationPeriods: 5
       Metrics:
-        - Expression: IF((invocations>=4) && (errorSum4XX>=2),errorPercentage4XX)
+        - Expression: IF((invocations>=5) && (errorSum4XX>=2),errorPercentage4XX)
           Id: errorThreshold
           Label: errorThreshold
           ReturnData: true
@@ -686,7 +686,7 @@ Resources:
           ReturnData: false
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      Threshold: 1
+      Threshold: 50
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
