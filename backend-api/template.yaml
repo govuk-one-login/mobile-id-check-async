@@ -570,7 +570,7 @@ Resources:
             - StaticVariables
             - urls
             - SupportManual
-      AlarmName: !Sub ${AWS::StackName}-high-threshold-async-abort-session-4xx-api-gw
+      AlarmName: !Sub ${AWS::StackName}-async-abort-session-4xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
       DatapointsToAlarm: 2
       EvaluationPeriods: 5
