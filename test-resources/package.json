@@ -64,7 +64,8 @@
   },
   "release": {
     "branches": [
-      "main"
+      "main",
+      "DCMAW-12122"
     ],
     "plugins": [
       "@semantic-release/commit-analyzer",
