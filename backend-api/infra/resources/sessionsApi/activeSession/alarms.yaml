@@ -198,9 +198,9 @@ Resources:
       InsufficientDataActions: [ ]
       AlarmDescription: "A large proportion of Async Active Session requests have not completed successfully."
       AlarmName: !Sub "${AWS::StackName}-active-session-lambda-low-completion"
-      EvaluationPeriods: 1
-      DatapointsToAlarm: 1
-      Threshold: 80
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 5
+      Threshold: 50
       ComparisonOperator: LessThanOrEqualToThreshold
       TreatMissingData: notBreaching
       Metrics:
