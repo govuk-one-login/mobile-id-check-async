@@ -3,6 +3,10 @@ name: SonarQube Scan
 on:
   workflow_call:
     inputs:
+      CONTINUE_ON_ERROR:
+        description: Whether to continue running the workflow if sonarqube quality gate fails
+        type: string
+        default: false
       WORKING_DIRECTORY:
         description: Path to working directory in repo
         required: true
@@ -43,6 +47,7 @@ jobs:
 
       - name: Run SonarQube Quality Gate Check
         uses: Sonarsource/sonarqube-quality-gate-action@8406f4f1edaffef38e9fb9c53eb292fc1d7684fa #master
+        continue-on-error: ${{ inputs.CONTINUE_ON_ERROR }}
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

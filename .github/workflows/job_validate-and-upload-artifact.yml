@@ -1,0 +1,64 @@
+name: Validate, Build, and Upload Artifact to S3
+
+on:
+  workflow_call:
+    inputs:
+      AWS_REGION:
+        description: The AWS region
+        type: string
+        default: eu-west-2
+      WORKING_DIRECTORY:
+        description: Path to working directory in repo
+        required: true
+        type: string
+    secrets:
+      ARTIFACT_BUCKET:
+        required: true
+      GH_ACTIONS_ROLE_ARN:
+        required: true
+      SIGNING_PROFILE_NAME:
+        required: true
+
+jobs:
+  validate-and-upload:
+    name: "Validate and Upload Artifact"
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.WORKING_DIRECTORY }}
+    env:
+      SAM_CLI_TELEMETRY: 0
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 #v4.2.2
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Setup nodeJS
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          cache: npm
+          cache-dependency-path: ${{ inputs.WORKING_DIRECTORY }}/package-lock.json
+          node-version-file: ${{ inputs.WORKING_DIRECTORY }}/.nvmrc
+
+      - name: Authenticate with AWS
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 #v4.0.2
+        with:
+          aws-region: ${{ inputs.AWS_REGION }}
+          role-to-assume: ${{ secrets.GH_ACTIONS_ROLE_ARN }}
+
+      - name: Sam Validate
+        run: sam validate --lint
+
+      - name: Sam Build
+        run: sam build --cached
+
+      - name: Upload SAM artifact into the artifact bucket
+        uses: govuk-one-login/devplatform-upload-action@v3.10.1
+        with:
+          artifact-bucket-name: ${{ secrets.ARTIFACT_BUCKET }}
+          signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
+          template-file: .aws-sam/build/template.yaml
+          working-directory: ${{ inputs.WORKING_DIRECTORY }}
