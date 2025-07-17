@@ -3,10 +3,15 @@ name: Create Release
 on:
   push:
     branches:
-      - main
+      - DCMAW-12122
     paths:
       - ".github/workflows/**"
   workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+    working-directory: test-resources
 
 jobs:
   release:
@@ -17,18 +22,46 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
 
       - name: Setup nodeJS
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           cache: npm
-          cache-dependency-path: ${{ inputs.WORKING_DIRECTORY }}/package-lock.json
-          node-version-file: ${{ inputs.WORKING_DIRECTORY }}/.nvmrc
+          cache-dependency-path: ./test-resources/package-lock.json
+          node-version-file: ./test-resources/.nvmrc
 
       - name: Install dependencies
         run: npm clean-install
 
+      - name: Get commit hashes
+        id: get_commits
+        run: |
+          echo "current_commit_hash=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "previous_commit_hash=$(git rev-parse HEAD^)" >> "$GITHUB_OUTPUT"
+
+      - name: List changed files between current and previous commit
+        run: |
+          TARGET_DIRECTORY=".github/workflows"
+
+          # Get the current commit hash (HEAD)
+          CURRENT_COMMIT=${{ steps.get_commits.outputs.current_commit_hash }}
+          # Get the previous commit hash (HEAD)
+          PREVIOUS_COMMIT=${{ steps.get_commits.outputs.previous_commit_hash }}
+          
+          echo "Current commit: $CURRENT_COMMIT"
+          echo "Previous commit: $PREVIOUS_COMMIT"
+          CHANGED_FILES=$(git diff --name-only "$PREVIOUS_COMMIT" "$CURRENT_COMMIT" -- "$TARGET_DIRECTORY")
+
+          echo "changed_files_list<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$CHANGED_FILES" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+          echo "Detected changes in '$TARGET_DIRECTORY':"
+          echo "$CHANGED_FILES"
+
       - name: Run Semantic Release
-        run: npm run semantic-release
+        run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

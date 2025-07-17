@@ -64,8 +64,10 @@
   },
   "release": {
     "branches": [
-      "main"
+      "main",
+      "DCMAW-12122"
     ],
+    "tagFormat": "post-merge/v${version}",
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
