@@ -1,25 +1,32 @@
-name: Build, Sign, Push and Tag test image
+name: Build, Push, Sign and Tag Test Image
 
 on:
   workflow_call:
     inputs:
+      AWS_REGION:
+        description: The AWS region
+        type: string
+        default: eu-west-2
+      IMAGE_TAG:
+        description: The docker image tag
+        type: string
+        default: latest
       WORKING_DIRECTORY:
+        description: Path to working directory in repo
         required: true
         type: string
     secrets:
+      CONTAINER_SIGN_KMS_KEY:
+        required: true
       GH_ACTIONS_ROLE_ARN:
         required: true
       TEST_IMAGE_REPOSITOR_URI:
         required: true
-      CONTAINER_SIGN_KMS_KEY:
-        required: true
 
 jobs:
-  build-and-push:
-    name: build-and-push
+  build-and-push-test-image:
+    name: "Build and Push Test Image"
     runs-on: ubuntu-24.04
-    env:
-      IMAGE_TAG: latest
     defaults:
       run:
         shell: bash
@@ -39,7 +46,7 @@ jobs:
       - name: Authenticate with AWS
         uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 #v4.0.2
         with:
-          aws-region: eu-west-2
+          aws-region: ${{ inputs.AWS_REGION }}
           role-to-assume: ${{ secrets.GH_ACTIONS_ROLE_ARN }}
 
       - name: Login to AWS ECR
@@ -47,12 +54,12 @@ jobs:
 
       - name: Build image
         run: |
-          docker build -t ${{ secrets.TEST_IMAGE_REPOSITOR_URI }}:$IMAGE_TAG . 
+          docker build -t ${{ secrets.TEST_IMAGE_REPOSITOR_URI }}:${{ inputs.IMAGE_TAG }} .
 
       - name: Push image
         run: |
-          docker push ${{ secrets.TEST_IMAGE_REPOSITOR_URI }}:$IMAGE_TAG
+          docker push ${{ secrets.TEST_IMAGE_REPOSITOR_URI }}:${{ inputs.IMAGE_TAG }}
 
       - name: Sign image
         run: |
-          cosign sign --key awskms:///${{ secrets.CONTAINER_SIGN_KMS_KEY }} ${{ secrets.TEST_IMAGE_REPOSITOR_URI }}:$IMAGE_TAG
+          cosign sign --key awskms:///${{ secrets.CONTAINER_SIGN_KMS_KEY }} ${{ secrets.TEST_IMAGE_REPOSITOR_URI }}:${{ inputs.IMAGE_TAG }}
