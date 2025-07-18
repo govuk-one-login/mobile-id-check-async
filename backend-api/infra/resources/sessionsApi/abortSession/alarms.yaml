@@ -6,7 +6,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmDescription: !Sub
-        - "1% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See runbook: ${RunbookUrl}"
+        - "50% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See runbook: ${RunbookUrl}"
         - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-async-abort-session-4xx-api-gw"
       AlarmActions:
@@ -17,12 +17,12 @@ Resources:
       DatapointsToAlarm: 2
       EvaluationPeriods: 5
       TreatMissingData: notBreaching
-      Threshold: 1
+      Threshold: 50
       Metrics:
         - Id: errorThreshold
           Label: errorThreshold
           ReturnData: true
-          Expression: IF((invocations>=4) && (errorSum4XX>=2),errorPercentage4XX)
+          Expression: IF(errorSum4XX>=4,errorPercentage4XX)
         - Id: invocations
           ReturnData: false
           MetricStat:
@@ -69,15 +69,15 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmDescription: !Sub
-        - "80% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See support manual: ${SupportManualUrl}"
-        - SupportManualUrl: !FindInMap [ StaticVariables, urls, SupportManual ]
+        - "80% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-abort-session-4xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       OKActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 2
+      DatapointsToAlarm: 3
       EvaluationPeriods: 5
       TreatMissingData: notBreaching
       Threshold: 80
@@ -85,7 +85,7 @@ Resources:
         - Id: errorThreshold
           Label: errorThreshold
           ReturnData: true
-          Expression: IF(invocations>=10,errorPercentage4XX)
+          Expression: IF(errorSum4XX>=20,errorPercentage4XX)
         - Id: invocations
           ReturnData: false
           MetricStat:

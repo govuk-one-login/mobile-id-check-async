@@ -565,17 +565,17 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '80% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See support manual: ${SupportManualUrl}'
-        - SupportManualUrl: !FindInMap
+        - '80% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
-            - SupportManual
+            - WarningAlarmsRunbook
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-abort-session-4xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 2
+      DatapointsToAlarm: 3
       EvaluationPeriods: 5
       Metrics:
-        - Expression: IF(invocations>=10,errorPercentage4XX)
+        - Expression: IF(errorSum4XX>=20,errorPercentage4XX)
           Id: errorThreshold
           Label: errorThreshold
           ReturnData: true
@@ -631,7 +631,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription: !Sub
-        - '1% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See runbook: ${RunbookUrl}'
+        - '50% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See runbook: ${RunbookUrl}'
         - RunbookUrl: !FindInMap
             - StaticVariables
             - urls
@@ -641,7 +641,7 @@ Resources:
       DatapointsToAlarm: 2
       EvaluationPeriods: 5
       Metrics:
-        - Expression: IF((invocations>=4) && (errorSum4XX>=2),errorPercentage4XX)
+        - Expression: IF(errorSum4XX>=4,errorPercentage4XX)
           Id: errorThreshold
           Label: errorThreshold
           ReturnData: true
@@ -686,7 +686,7 @@ Resources:
           ReturnData: false
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      Threshold: 1
+      Threshold: 50
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 
