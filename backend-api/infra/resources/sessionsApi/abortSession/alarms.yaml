@@ -1,13 +1,13 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Resources:
-  AsyncAbortSessionLowThreshold4XXAlarm:
+  AsyncAbortSession4XXLowThresholdAlarm:
     Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
       AlarmDescription: !Sub
-        - "50% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See support manual: ${SupportManualUrl}"
-        - SupportManualUrl: !FindInMap [ StaticVariables, urls, SupportManual ]
+        - "50% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-async-abort-session-4xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
@@ -63,14 +63,14 @@ Resources:
           ReturnData: false
           Expression: (errorSum4XX/invocations) * 100
 
-  AsyncAbortSessionHighThreshold4XXAlarm:
+  AsyncAbortSession4XXHighThresholdAlarm:
     Condition: DeployAlarms
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
       AlarmDescription: !Sub
-        - "80% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See support manual: ${SupportManualUrl}"
-        - SupportManualUrl: !FindInMap [ StaticVariables, urls, SupportManual ]
+        - "80% or more of requests are failing on the /async/abortSession endpoint with a 4XX error. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
       AlarmName: !Sub "${AWS::StackName}-high-threshold-async-abort-session-4xx-api-gw"
       AlarmActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
