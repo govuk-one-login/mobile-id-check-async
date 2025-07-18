@@ -1,0 +1,65 @@
+name: Build, Push, Sign and Tag Test Image
+
+on:
+  workflow_call:
+    inputs:
+      AWS_REGION:
+        description: The AWS region
+        type: string
+        default: eu-west-2
+      IMAGE_TAG:
+        description: The docker image tag
+        type: string
+        default: latest
+      WORKING_DIRECTORY:
+        description: Path to working directory in repo
+        required: true
+        type: string
+    secrets:
+      CONTAINER_SIGN_KMS_KEY:
+        required: true
+      GH_ACTIONS_ROLE_ARN:
+        required: true
+      TEST_IMAGE_REPOSITOR_URI:
+        required: true
+
+jobs:
+  build-and-push-test-image:
+    name: "Build and Push Test Image"
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.WORKING_DIRECTORY }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 #v4.2.2
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac #v3.9.1
+        with:
+          cosign-release: 'v2.5.2'
+
+      - name: Authenticate with AWS
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 #v4.0.2
+        with:
+          aws-region: ${{ inputs.AWS_REGION }}
+          role-to-assume: ${{ secrets.GH_ACTIONS_ROLE_ARN }}
+
+      - name: Login to AWS ECR
+        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 #v2.0.1
+
+      - name: Build image
+        run: |
+          docker build -t ${{ secrets.TEST_IMAGE_REPOSITOR_URI }}:${{ inputs.IMAGE_TAG }} .
+
+      - name: Push image
+        run: |
+          docker push ${{ secrets.TEST_IMAGE_REPOSITOR_URI }}:${{ inputs.IMAGE_TAG }}
+
+      - name: Sign image
+        run: |
+          cosign sign --key awskms:///${{ secrets.CONTAINER_SIGN_KMS_KEY }} ${{ secrets.TEST_IMAGE_REPOSITOR_URI }}:${{ inputs.IMAGE_TAG }}

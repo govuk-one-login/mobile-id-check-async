@@ -1,0 +1,40 @@
+name: Create Release for Validate and Upload Artifact
+
+on:
+  push:
+    branches:
+      - DCMAW-versioning-spike
+    paths:
+      - ".github/jobs/build-and-push-test-image/**"
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+    working-directory: .github/jobs/build-and-push-test-image
+
+jobs:
+  release:
+    permissions:
+        contents: write
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Setup nodeJS
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          cache: npm
+          cache-dependency-path: package-lock.json
+          node-version-file: .nvmrc
+
+      - name: Install dependencies
+        run: npm clean-install
+
+      - name: Run Semantic Release
+        run: npx semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,4 @@
+{
+  "branches": ["main", "DCMAW-versioning-spike"],
+  "tagFormat": "build-and-push-test-image/v${version}"
+}

@@ -1,0 +1,4 @@
+{
+  "branches": ["main", "DCMAW-versioning-spike"],
+  "tagFormat": "validate-and-upload-artifact/v${version}"
+}

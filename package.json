@@ -1,0 +1,16 @@
+{
+  "name": "one-login-shared-workflows",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": "22"
+  },
+  "devDependencies": {
+    "semantic-release": "^24.2.7"
+  },
+  "release": {
+    "branches": ["main", "DCMAW-versioning-spike"]
+  }
+}
