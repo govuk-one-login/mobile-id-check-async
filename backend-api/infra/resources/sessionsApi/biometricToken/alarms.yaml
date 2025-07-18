@@ -6,7 +6,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmDescription: !Sub
-        - "1% or more of requests are failing on the /async/biometricToken endpoint with a 4XX error. See runbook: ${RunbookUrl}"
+        - "10% or more of requests are failing on the /async/biometricToken endpoint with a 4XX error. See runbook: ${RunbookUrl}"
         - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
       AlarmName: !Sub "${AWS::StackName}-low-threshold-async-biometric-token-4xx-api-gw"
       AlarmActions:
@@ -17,12 +17,12 @@ Resources:
       DatapointsToAlarm: 2
       EvaluationPeriods: 5
       TreatMissingData: notBreaching
-      Threshold: 1
+      Threshold: 10
       Metrics:
         - Id: errorThreshold
           Label: errorThreshold
           ReturnData: true
-          Expression: IF((invocations>=4) && (errorSum4XX>=2),errorPercentage4XX,0)
+          Expression: IF(errorSum4XX>=4,errorPercentage4XX,0)
         - Id: invocations
           ReturnData: false
           MetricStat:
