@@ -1057,13 +1057,26 @@ Resources:
       ActionsEnabled: true
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      AlarmDescription: A large proportion of Async Abort Session requests have not completed successfully.
+      AlarmDescription:
+        - 'A large proportion of Async Abort Session requests have not completed successfully. See runbook: ${RunbookUrl}'
+        - RunbookUrl: !FindInMap
+            - StaticVariables
+            - urls
+            - WarningAlarmsRunbook
       AlarmName: !Sub ${AWS::StackName}-abort-session-lambda-low-completion
       ComparisonOperator: LessThanOrEqualToThreshold
-      DatapointsToAlarm: 1
-      EvaluationPeriods: 1
+      DatapointsToAlarm: 5
+      EvaluationPeriods: 2
       InsufficientDataActions: []
       Metrics:
+        - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>=4, lambdaLogCompletePercentage)
+          Id: lowCompletionRateThreshold
+          Label: Error threshold calculation
+          ReturnData: true
+        - Expression: (lambdaLogCompleted/lambdaLogStarted)*100
+          Id: lambdaLogCompletePercentage
+          Label: Percentage of invocations that complete successfully
+          ReturnData: false
         - Id: lambdaLogStarted
           Label: Sum of MOBILE_ASYNC_ABORT_SESSION_STARTED messageCodes for latest Lambda version
           MetricStat:
@@ -1092,17 +1105,9 @@ Resources:
             Period: 60
             Stat: Sum
           ReturnData: false
-        - Expression: (lambdaLogCompleted/lambdaLogStarted)*100
-          Id: lambdaLogCompletePercentage
-          Label: Percentage of invocations that complete successfully
-          ReturnData: false
-        - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage)
-          Id: lowCompletionRateThreshold
-          Label: Error threshold calculation
-          ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
-      Threshold: 80
+      Threshold: 50
       TreatMissingData: notBreaching
     Condition: DeployAlarms
 

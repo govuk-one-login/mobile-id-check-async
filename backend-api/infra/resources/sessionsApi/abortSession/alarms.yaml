@@ -322,14 +322,24 @@ Resources:
       OKActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       InsufficientDataActions: [ ]
-      AlarmDescription: "A large proportion of Async Abort Session requests have not completed successfully."
+      AlarmDescription:
+        - "A large proportion of Async Abort Session requests have not completed successfully. See runbook: ${RunbookUrl}"
+        - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
       AlarmName: !Sub "${AWS::StackName}-abort-session-lambda-low-completion"
-      EvaluationPeriods: 1
-      DatapointsToAlarm: 1
-      Threshold: 80
+      EvaluationPeriods: 2
+      DatapointsToAlarm: 5
+      Threshold: 50
       ComparisonOperator: LessThanOrEqualToThreshold
       TreatMissingData: notBreaching
       Metrics:
+        - Id: lowCompletionRateThreshold
+          Label: "Error threshold calculation"
+          ReturnData: true
+          Expression: IF((lambdaLogStarted-lambdaLogCompleted)>=4, lambdaLogCompletePercentage)
+        - Id: lambdaLogCompletePercentage
+          Label: "Percentage of invocations that complete successfully"
+          ReturnData: false
+          Expression: (lambdaLogCompleted/lambdaLogStarted)*100
         - Id: lambdaLogStarted
           Label: "Sum of MOBILE_ASYNC_ABORT_SESSION_STARTED messageCodes for latest Lambda version"
           ReturnData: false
@@ -358,14 +368,6 @@ Resources:
                   Value: !GetAtt AsyncAbortSessionFunction.Version.Version
             Period: 60
             Stat: Sum
-        - Id: lambdaLogCompletePercentage
-          Label: "Percentage of invocations that complete successfully"
-          ReturnData: false
-          Expression: (lambdaLogCompleted/lambdaLogStarted)*100
-        - Id: lowCompletionRateThreshold
-          Label: "Error threshold calculation"
-          ReturnData: true
-          Expression: IF((lambdaLogStarted-lambdaLogCompleted)>= 5, lambdaLogCompletePercentage)
 
   AsyncAbortSessionConcurrencyReachingLimitAlarm:
     Type: AWS::CloudWatch::Alarm
