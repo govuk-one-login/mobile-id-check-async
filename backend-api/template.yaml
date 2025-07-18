@@ -1064,14 +1064,6 @@ Resources:
       EvaluationPeriods: 5
       InsufficientDataActions: []
       Metrics:
-        - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>=4, lambdaLogCompletePercentage)
-          Id: lowCompletionRateThreshold
-          Label: Error threshold calculation
-          ReturnData: true
-        - Expression: (lambdaLogCompleted/lambdaLogStarted)*100
-          Id: lambdaLogCompletePercentage
-          Label: Percentage of invocations that complete successfully
-          ReturnData: false
         - Id: lambdaLogStarted
           Label: Sum of MOBILE_ASYNC_ABORT_SESSION_STARTED messageCodes for latest Lambda version
           MetricStat:
@@ -1100,6 +1092,14 @@ Resources:
             Period: 60
             Stat: Sum
           ReturnData: false
+        - Expression: (lambdaLogCompleted/lambdaLogStarted)*100
+          Id: lambdaLogCompletePercentage
+          Label: Percentage of invocations that complete successfully
+          ReturnData: false
+        - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>=4, lambdaLogCompletePercentage)
+          Id: lowCompletionRateThreshold
+          Label: Error threshold calculation
+          ReturnData: true
       OKActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       Threshold: 50

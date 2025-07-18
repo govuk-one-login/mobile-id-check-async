@@ -330,14 +330,6 @@ Resources:
       ComparisonOperator: LessThanOrEqualToThreshold
       TreatMissingData: notBreaching
       Metrics:
-        - Id: lowCompletionRateThreshold
-          Label: "Error threshold calculation"
-          ReturnData: true
-          Expression: IF((lambdaLogStarted-lambdaLogCompleted)>=4, lambdaLogCompletePercentage)
-        - Id: lambdaLogCompletePercentage
-          Label: "Percentage of invocations that complete successfully"
-          ReturnData: false
-          Expression: (lambdaLogCompleted/lambdaLogStarted)*100
         - Id: lambdaLogStarted
           Label: "Sum of MOBILE_ASYNC_ABORT_SESSION_STARTED messageCodes for latest Lambda version"
           ReturnData: false
@@ -366,6 +358,14 @@ Resources:
                   Value: !GetAtt AsyncAbortSessionFunction.Version.Version
             Period: 60
             Stat: Sum
+        - Id: lambdaLogCompletePercentage
+          Label: "Percentage of invocations that complete successfully"
+          ReturnData: false
+          Expression: (lambdaLogCompleted/lambdaLogStarted)*100
+        - Id: lowCompletionRateThreshold
+          Label: "Error threshold calculation"
+          ReturnData: true
+          Expression: IF((lambdaLogStarted-lambdaLogCompleted)>=4, lambdaLogCompletePercentage)
 
   AsyncAbortSessionConcurrencyReachingLimitAlarm:
     Type: AWS::CloudWatch::Alarm
