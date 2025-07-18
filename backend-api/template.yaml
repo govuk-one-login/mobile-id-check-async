@@ -1058,11 +1058,7 @@ Resources:
       AlarmActions:
         - !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning
       AlarmDescription:
-        - 'A large proportion of Async Abort Session requests have not completed successfully. See runbook: ${RunbookUrl}'
-        - RunbookUrl: !FindInMap
-            - StaticVariables
-            - urls
-            - WarningAlarmsRunbook
+        - A large proportion of Async Abort Session requests have not completed successfully.
       AlarmName: !Sub ${AWS::StackName}-abort-session-lambda-low-completion
       ComparisonOperator: LessThanOrEqualToThreshold
       DatapointsToAlarm: 2
