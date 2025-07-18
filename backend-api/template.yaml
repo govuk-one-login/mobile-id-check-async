@@ -1065,8 +1065,8 @@ Resources:
             - WarningAlarmsRunbook
       AlarmName: !Sub ${AWS::StackName}-abort-session-lambda-low-completion
       ComparisonOperator: LessThanOrEqualToThreshold
-      DatapointsToAlarm: 5
-      EvaluationPeriods: 2
+      DatapointsToAlarm: 2
+      EvaluationPeriods: 5
       InsufficientDataActions: []
       Metrics:
         - Expression: IF((lambdaLogStarted-lambdaLogCompleted)>=4, lambdaLogCompletePercentage)

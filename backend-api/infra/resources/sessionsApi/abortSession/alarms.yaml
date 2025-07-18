@@ -326,8 +326,8 @@ Resources:
         - "A large proportion of Async Abort Session requests have not completed successfully. See runbook: ${RunbookUrl}"
         - RunbookUrl: !FindInMap [ StaticVariables, urls, WarningAlarmsRunbook ]
       AlarmName: !Sub "${AWS::StackName}-abort-session-lambda-low-completion"
-      EvaluationPeriods: 2
-      DatapointsToAlarm: 5
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 2
       Threshold: 50
       ComparisonOperator: LessThanOrEqualToThreshold
       TreatMissingData: notBreaching
