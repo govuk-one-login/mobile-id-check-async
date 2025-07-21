@@ -22,7 +22,7 @@ Resources:
         - Id: errorThreshold
           Label: errorThreshold
           ReturnData: true
-          Expression: IF(errorSum4XX>=4,errorPercentage4XX)
+          Expression: IF(errorSum4XX>=4,errorPercentage4XX,0)
         - Id: invocations
           ReturnData: false
           MetricStat:
