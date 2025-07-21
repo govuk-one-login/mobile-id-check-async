@@ -326,7 +326,7 @@ Resources:
       AlarmName: !Sub "${AWS::StackName}-biometric-token-lambda-low-completion"
       EvaluationPeriods: 1
       DatapointsToAlarm: 1
-      Threshold: 80
+      Threshold: 55
       ComparisonOperator: LessThanOrEqualToThreshold
       TreatMissingData: notBreaching
       Metrics:
