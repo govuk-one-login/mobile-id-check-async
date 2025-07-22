@@ -21,6 +21,8 @@ import {
   mockSendMessageToSqsFailure,
   mockFailingEventService,
   mockGovukSigninJourneyId,
+  mockClientState,
+  mockSubjectIdentifier,
 } from "../testUtils/unitTestData";
 import { successResult, errorResult } from "../utils/result";
 import { UpdateSessionError } from "../common/session/SessionRegistry/types";
@@ -422,8 +424,9 @@ describe("Async Abort Session", () => {
         expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
           "mockIpvcoreOutboundSqs",
           {
-            sub: "mockSubjectIdentifier",
-            state: "mockClientState",
+            sub: mockSubjectIdentifier,
+            state: mockClientState,
+            govuk_signin_journey_id: mockGovukSigninJourneyId,
             error: "access_denied",
             error_description: "User aborted the session",
           },
