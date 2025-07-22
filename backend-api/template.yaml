@@ -641,7 +641,7 @@ Resources:
       DatapointsToAlarm: 2
       EvaluationPeriods: 5
       Metrics:
-        - Expression: IF(errorSum4XX>=4,errorPercentage4XX)
+        - Expression: IF(errorSum4XX>=4,errorPercentage4XX,0)
           Id: errorThreshold
           Label: errorThreshold
           ReturnData: true
