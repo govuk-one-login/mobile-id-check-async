@@ -10,7 +10,7 @@ Resources:
       KmsMasterKeyId: !Ref IPVCoreKeyAlias
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt IPVCoreOutboundDlq.Arn
-        maxReceiveCount: 60
+        maxReceiveCount: 5
 
   IPVCoreOutboundSqsPolicy:
     Type: AWS::SQS::QueuePolicy
