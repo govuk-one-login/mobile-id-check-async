@@ -715,8 +715,8 @@ describe("Async Issue Biometric Credential", () => {
 
     describe("Get credential from biometric session errors", () => {
       const serverErrorMessage = {
-        sub: "mockSubjectIdentifier",
-        state: "mockClientState",
+        sub: mockSubjectIdentifier,
+        state: mockClientState,
         govuk_signin_journey_id: mockGovukSigninJourneyId,
         error: "server_error",
         error_description: "Internal server error",
@@ -725,8 +725,8 @@ describe("Async Issue Biometric Credential", () => {
         {
           errorCode: "SUSPECTED_FRAUD",
           expectedSqsMessage: {
-            sub: "mockSubjectIdentifier",
-            state: "mockClientState",
+            sub: mockSubjectIdentifier,
+            state: mockClientState,
             govuk_signin_journey_id: mockGovukSigninJourneyId,
             error: "access_denied",
             error_description: "Suspected fraud detected",
