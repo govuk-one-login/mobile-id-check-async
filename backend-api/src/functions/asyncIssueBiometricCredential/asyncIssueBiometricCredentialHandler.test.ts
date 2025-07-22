@@ -544,8 +544,9 @@ describe("Async Issue Biometric Credential", () => {
           expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
             "mockIpvcoreOutboundSqs",
             {
-              sub: "mockSubjectIdentifier",
-              state: "mockClientState",
+              sub: mockSubjectIdentifier,
+              state: mockClientState,
+              govuk_signin_journey_id: mockGovukSigninJourneyId,
               error: "server_error",
               error_description: "Internal server error",
             },
@@ -716,6 +717,7 @@ describe("Async Issue Biometric Credential", () => {
       const serverErrorMessage = {
         sub: "mockSubjectIdentifier",
         state: "mockClientState",
+        govuk_signin_journey_id: mockGovukSigninJourneyId,
         error: "server_error",
         error_description: "Internal server error",
       };
@@ -725,6 +727,7 @@ describe("Async Issue Biometric Credential", () => {
           expectedSqsMessage: {
             sub: "mockSubjectIdentifier",
             state: "mockClientState",
+            govuk_signin_journey_id: mockGovukSigninJourneyId,
             error: "access_denied",
             error_description: "Suspected fraud detected",
           },
