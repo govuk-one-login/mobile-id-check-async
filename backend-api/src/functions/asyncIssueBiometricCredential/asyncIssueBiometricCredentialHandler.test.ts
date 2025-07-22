@@ -1176,6 +1176,7 @@ describe("Async Issue Biometric Credential", () => {
               "https://vocab.account.gov.uk/v1/credentialJWT": [mockSignedJwt],
               state: mockClientState,
               sub: mockSubjectIdentifier,
+              govuk_signin_journey_id: mockGovukSigninJourneyId,
             },
           );
         });

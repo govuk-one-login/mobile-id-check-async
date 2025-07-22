@@ -496,6 +496,7 @@ const sendVerifiableCredentialMessageToSqs = async (
     sub: sessionAttributes.subjectIdentifier,
     state: sessionAttributes.clientState,
     "https://vocab.account.gov.uk/v1/credentialJWT": [verifiableCredentialJwt],
+    govuk_signin_journey_id: sessionAttributes.govukSigninJourneyId,
   };
 
   const sendMessageToSqsResult = await sendMessageToSqs(

@@ -14,6 +14,7 @@ export interface VerifiableCredentialMessage {
   sub: string;
   state: string;
   "https://vocab.account.gov.uk/v1/credentialJWT": [string];
+  govuk_signin_journey_id: string;
 }
 
 export type SQSMessageBody =
