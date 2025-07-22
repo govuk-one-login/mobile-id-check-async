@@ -4,9 +4,8 @@ import {
   APIGatewayProxyResult,
   Context,
 } from "aws-lambda";
-
 import { dependencies, IMockProxyDependencies } from "./handlerDependencies";
-import { ConfigService } from "./configService/configService";
+import { getProxyConfig } from "./proxyConfig";
 
 export type StandardisedHeaders = {
   [key in string]: string | number | boolean;
@@ -19,16 +18,14 @@ export async function lambdaHandlerConstructor(
 ): Promise<APIGatewayProxyResult> {
   const logger = dependencies.logger();
   logger.addContext(context);
-
-  const configService = new ConfigService();
-  const configResult = configService.getConfig(dependencies.env);
   logger.log("STARTED");
+
+  const configResult = getProxyConfig(dependencies.env, logger);
   if (configResult.isError) {
-    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
-      errorMessage: configResult.value.errorMessage,
-    });
     return internalServerErrorResponse;
   }
+
+  const config = configResult.value;
 
   const { path } = event;
   const allowedPaths = ["/async/token", "/async/credential"];
@@ -62,7 +59,7 @@ export async function lambdaHandlerConstructor(
 
   const proxyRequestService = dependencies.proxyRequestService();
   const proxyRequestResult = await proxyRequestService.makeProxyRequest({
-    backendApiUrl: configResult.value.PRIVATE_API_URL,
+    backendApiUrl: config.PRIVATE_API_URL,
     body: event.body,
     path,
     headers: standardisedHeaders,
