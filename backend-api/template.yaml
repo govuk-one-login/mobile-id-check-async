@@ -5427,7 +5427,7 @@ Resources:
       QueueName: !Sub ${AWS::StackName}-ipv-core-outbound
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt IPVCoreOutboundDlq.Arn
-        maxReceiveCount: 60
+        maxReceiveCount: 5
       VisibilityTimeout: 60
 
   IPVCoreOutboundSqsPolicy:
