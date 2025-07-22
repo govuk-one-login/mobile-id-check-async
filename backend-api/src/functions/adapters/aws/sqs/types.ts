@@ -6,6 +6,7 @@ export interface VendorProcessingMessage {
 export interface OutboundQueueErrorMessage {
   sub: string;
   state: string;
+  govuk_signin_journey_id: string;
   error: string;
   error_description: string;
 }

@@ -4,6 +4,7 @@ export const mockInvalidUUID = "invalid-uuid";
 export const mockExpiredSessionId = "mock-expired-session-id";
 export const mockInvalidStateSessionId = "mock-invalid-state-session-id";
 export const mockClientState = "mockClientState";
+export const mockGovukSigninJourneyId = "44444444-4444-4444-4444-444444444444";
 export const expectedSecurityHeaders = {
   "cache-control": "no-store",
   "content-type": "application/json",

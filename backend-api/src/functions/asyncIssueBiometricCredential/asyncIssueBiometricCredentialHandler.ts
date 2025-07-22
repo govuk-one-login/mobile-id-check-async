@@ -377,6 +377,7 @@ const handleSendErrorMessageToOutboundQueue = async (
   const ipvCoreOutboundMessage: OutboundQueueErrorMessage = {
     sub: sessionAttributes.subjectIdentifier,
     state: sessionAttributes.clientState,
+    govuk_signin_journey_id: sessionAttributes.govukSigninJourneyId,
     ...error,
   };
 
@@ -421,6 +422,7 @@ const handleGetCredentialFailure = async (
   const ipvOutboundMessageServerError: OutboundQueueErrorMessage = {
     sub: subjectIdentifier,
     state: clientState,
+    govuk_signin_journey_id: govukSigninJourneyId,
     error_description: "Internal server error",
     error: "server_error",
   };
@@ -431,6 +433,7 @@ const handleGetCredentialFailure = async (
       sqsMessage = {
         sub: subjectIdentifier,
         state: clientState,
+        govuk_signin_journey_id: govukSigninJourneyId,
         error_description: "Suspected fraud detected",
         error: "access_denied",
       };
