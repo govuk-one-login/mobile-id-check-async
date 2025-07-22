@@ -103,7 +103,9 @@ describe("Async Credential", () => {
 
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_CREDENTIAL_INVALID_CONFIG",
-          errorMessage: `No ${envVar}`,
+          data: {
+            missingEnvironmentVariables: [envVar],
+          },
         });
 
         expect(result).toStrictEqual({
