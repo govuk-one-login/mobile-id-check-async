@@ -1,0 +1,95 @@
+name: Test Resources Post Merge
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "test-resources/**"
+      - ".github/workflows/job_build-and-push-test-image.yml"
+      - ".github/workflows/job_validate-and-upload-artifact.yml"
+      - ".github/workflows/test-resources-post-merge.yml"
+      - "!test-resources/**/*.md"
+      - "!test-resources/**/*.png"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+defaults:
+  run:
+    shell: bash
+    working-directory: ./test-resources
+
+jobs:
+  ci-checks:
+    name: Pre-deployment
+    uses:
+      ./.github/workflows/job_ci-checks.yml
+    with:
+      WORKING_DIRECTORY: test-resources
+
+  run-test-suite:
+    name: Pre-deployment
+    uses:
+      ./.github/workflows/job_test-suite.yml
+    with:
+      WORKING_DIRECTORY: test-resources
+
+  sonarqube-scan:
+    name: Pre-deployment
+    needs: run-test-suite
+    with:
+      CONTINUE_ON_ERROR: true
+      WORKING_DIRECTORY: test-resources
+    uses:
+      ./.github/workflows/job_sonarqube.yml
+    secrets: inherit
+
+  build-and-push-test-image-dev:
+    name: Dev
+    needs: sonarqube-scan
+    uses:
+      ./.github/workflows/job_build-and-push-test-image.yml
+    with:
+      WORKING_DIRECTORY: test-resources
+    secrets:
+      CONTAINER_SIGN_KMS_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
+      GH_ACTIONS_ROLE_ARN: ${{ secrets.TEST_RESOURCES_DEV_GH_ACTIONS_ROLE_ARN }}
+      TEST_IMAGE_REPOSITOR_URI: ${{ secrets.TEST_RESOURCES_DEV_TEST_IMAGE_REPOSITORY_URI }}
+
+  validate-and-upload-artifact-to-s3-dev:
+    name: Dev
+    needs: build-and-push-test-image-dev
+    uses:
+      ./.github/workflows/job_validate-and-upload-artifact.yml
+    with:
+      WORKING_DIRECTORY: test-resources
+    secrets:
+      ARTIFACT_BUCKET: ${{ secrets.TEST_RESOURCES_DEV_ARTIFACT_BUCKET }}
+      GH_ACTIONS_ROLE_ARN: ${{ secrets.TEST_RESOURCES_DEV_GH_ACTIONS_ROLE_ARN }}
+      SIGNING_PROFILE_NAME: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
+
+  build-and-push-test-image-build:
+    name: Build
+    needs: sonarqube-scan
+    uses:
+      ./.github/workflows/job_build-and-push-test-image.yml
+    with:
+      WORKING_DIRECTORY: test-resources
+    secrets:
+      CONTAINER_SIGN_KMS_KEY: ${{ secrets.BUILD_CONTAINER_SIGN_KMS_KEY }}
+      GH_ACTIONS_ROLE_ARN: ${{ secrets.TEST_RESOURCES_BUILD_GH_ACTIONS_ROLE_ARN }}
+      TEST_IMAGE_REPOSITOR_URI: ${{ secrets.TEST_RESOURCES_BUILD_TEST_IMAGE_REPOSITORY_URI }}
+
+  validate-and-upload-artifact-to-s3-build:
+    name: Build
+    needs: build-and-push-test-image-build
+    uses:
+      ./.github/workflows/job_validate-and-upload-artifact.yml
+    with:
+      WORKING_DIRECTORY: test-resources
+    secrets:
+      ARTIFACT_BUCKET: ${{ secrets.TEST_RESOURCES_BUILD_ARTIFACT_BUCKET }}
+      GH_ACTIONS_ROLE_ARN: ${{ secrets.TEST_RESOURCES_BUILD_GH_ACTIONS_ROLE_ARN }}
+      SIGNING_PROFILE_NAME: ${{ secrets.BUILD_SIGNING_PROFILE_NAME }}

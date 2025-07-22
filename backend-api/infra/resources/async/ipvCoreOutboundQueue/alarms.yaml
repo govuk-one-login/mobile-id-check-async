@@ -6,7 +6,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmDescription: !Sub
-        - "Trigger an alarm when the age of the oldest message in IPV Core SQS queue is 30 minutes or older. See runbook: ${RunbookUrl}"
+        - "Trigger an alarm when the age of the oldest message in IPV Core SQS queue is 5 minutes or older. See runbook: ${RunbookUrl}"
         - RunbookUrl: !FindInMap [StaticVariables, urls, WarningAlarmsRunbook]
       AlarmName: !Sub "${AWS::StackName}-ipv-core-sqs-age-of-oldest-message"
       AlarmActions:
@@ -17,7 +17,7 @@ Resources:
       DatapointsToAlarm: 1
       EvaluationPeriods: 1
       TreatMissingData: notBreaching
-      Threshold: 1800
+      Threshold: 300
       MetricName: ApproximateAgeOfOldestMessage
       Namespace: AWS/SQS
       Period: 60
