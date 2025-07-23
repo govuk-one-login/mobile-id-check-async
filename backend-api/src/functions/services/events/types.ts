@@ -116,6 +116,7 @@ export interface BiometricTokenIssuedEvent extends BaseUserTxmaEvent {
   event_name: "DCMAW_ASYNC_BIOMETRIC_TOKEN_ISSUED";
   extensions: {
     documentType: DocumentType;
+    redirect_uri: string | undefined;
   };
 }
 
