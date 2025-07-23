@@ -4,6 +4,7 @@ import { SESSIONS_API_INSTANCE } from "./utils/apiInstance";
 import {
   expectedSecurityHeaders,
   mockClientState,
+  mockGovukSigninJourneyId,
   mockInvalidUUID,
   mockSessionId,
 } from "./utils/apiTestData";
@@ -93,6 +94,7 @@ describe("POST /async/abortSession", () => {
         expect.objectContaining({
           sub,
           state: mockClientState,
+          govuk_signin_journey_id: mockGovukSigninJourneyId,
           error: "access_denied",
           error_description: "User aborted the session",
         }),

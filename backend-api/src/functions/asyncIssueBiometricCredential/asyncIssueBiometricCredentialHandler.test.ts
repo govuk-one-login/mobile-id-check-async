@@ -544,8 +544,9 @@ describe("Async Issue Biometric Credential", () => {
           expect(mockSendMessageToSqsSuccess).toHaveBeenCalledWith(
             "mockIpvcoreOutboundSqs",
             {
-              sub: "mockSubjectIdentifier",
-              state: "mockClientState",
+              sub: mockSubjectIdentifier,
+              state: mockClientState,
+              govuk_signin_journey_id: mockGovukSigninJourneyId,
               error: "server_error",
               error_description: "Internal server error",
             },
@@ -714,8 +715,9 @@ describe("Async Issue Biometric Credential", () => {
 
     describe("Get credential from biometric session errors", () => {
       const serverErrorMessage = {
-        sub: "mockSubjectIdentifier",
-        state: "mockClientState",
+        sub: mockSubjectIdentifier,
+        state: mockClientState,
+        govuk_signin_journey_id: mockGovukSigninJourneyId,
         error: "server_error",
         error_description: "Internal server error",
       };
@@ -723,8 +725,9 @@ describe("Async Issue Biometric Credential", () => {
         {
           errorCode: "SUSPECTED_FRAUD",
           expectedSqsMessage: {
-            sub: "mockSubjectIdentifier",
-            state: "mockClientState",
+            sub: mockSubjectIdentifier,
+            state: mockClientState,
+            govuk_signin_journey_id: mockGovukSigninJourneyId,
             error: "access_denied",
             error_description: "Suspected fraud detected",
           },
@@ -1176,6 +1179,7 @@ describe("Async Issue Biometric Credential", () => {
               "https://vocab.account.gov.uk/v1/credentialJWT": [mockSignedJwt],
               state: mockClientState,
               sub: mockSubjectIdentifier,
+              govuk_signin_journey_id: mockGovukSigninJourneyId,
             },
           );
         });

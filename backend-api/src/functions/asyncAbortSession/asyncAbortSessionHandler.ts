@@ -85,6 +85,7 @@ export async function lambdaHandlerConstructor(
   const ipvCoreOutboundMessage = {
     sub: sessionAttributes.subjectIdentifier,
     state: sessionAttributes.clientState,
+    govuk_signin_journey_id: sessionAttributes.govukSigninJourneyId,
     error: "access_denied",
     error_description: "User aborted the session",
   };

@@ -21,7 +21,7 @@ import {
   FailEvidence,
   PassEvidence,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
-import { mockClientState } from "./utils/apiTestData";
+import { mockClientState, mockGovukSigninJourneyId } from "./utils/apiTestData";
 
 describe("Successful credential results", () => {
   describe.each([
@@ -204,14 +204,11 @@ describe("Unsuccessful credential results", () => {
 
       const issueBiometricTokenResponse = await issueBiometricToken(sessionId);
 
+      const biometricSessionId = randomUUID();
       const opaqueIdFromSession: string =
         issueBiometricTokenResponse.data.opaqueId;
       const opaqueId = parameters.opaqueId ?? opaqueIdFromSession;
-
       const creationDate = parameters.creationDate ?? new Date().toISOString();
-
-      const biometricSessionId = randomUUID();
-
       await setupBiometricSessionByScenario(
         biometricSessionId,
         parameters.scenario,
@@ -239,6 +236,7 @@ describe("Unsuccessful credential results", () => {
       expect(credentialResult).toEqual({
         sub: subjectIdentifier,
         state: mockClientState,
+        govuk_signin_journey_id: mockGovukSigninJourneyId,
         error: parameters.expectedError,
         error_description: parameters.expectedErrorDescription,
       });
