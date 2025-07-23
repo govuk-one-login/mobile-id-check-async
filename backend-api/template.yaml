@@ -572,7 +572,7 @@ Resources:
             - WarningAlarmsRunbook
       AlarmName: !Sub ${AWS::StackName}-high-threshold-async-abort-session-4xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 3
+      DatapointsToAlarm: 5
       EvaluationPeriods: 5
       Metrics:
         - Expression: IF(errorSum4XX>=20,errorPercentage4XX)
@@ -638,7 +638,7 @@ Resources:
             - WarningAlarmsRunbook
       AlarmName: !Sub ${AWS::StackName}-low-threshold-async-abort-session-4xx-api-gw
       ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 2
+      DatapointsToAlarm: 3
       EvaluationPeriods: 5
       Metrics:
         - Expression: IF(errorSum4XX>=4,errorPercentage4XX,0)
