@@ -274,7 +274,7 @@ describe("Event Service", () => {
           documentType: "NFC_PASSPORT",
           ipAddress: "mockIpAddress",
           txmaAuditEncoded: "mockTxmaAuditEncoded",
-          redirect_uri: undefined,
+          redirect_uri: "https://mockredirecturi.com/",
         });
       });
 
@@ -293,6 +293,7 @@ describe("Event Service", () => {
             component_id: "mockComponentId",
             extensions: {
               documentType: "NFC_PASSPORT",
+              redirect_uri: "https://mockredirecturi.com/",
             },
             restricted: {
               device_information: {

@@ -147,6 +147,7 @@ export class EventService implements IEventService {
       component_id: eventConfig.componentId,
       extensions: {
         documentType: eventConfig.documentType,
+        redirect_uri: eventConfig.redirect_uri,
       },
       restricted: this.getRestrictedData(eventConfig.txmaAuditEncoded),
     };
