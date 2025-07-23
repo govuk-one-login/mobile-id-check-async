@@ -1,6 +1,6 @@
 import { CloudFormationCustomResourceEvent, Context } from "aws-lambda";
-import { ConfigService } from "./configService/configService";
 import { dependencies, IJwksDependencies } from "./handlerDependencies";
+import { getJwksConfig } from "./jwksConfig";
 
 export async function lambdaHandlerConstructor(
   dependencies: IJwksDependencies,
@@ -23,11 +23,9 @@ export async function lambdaHandlerConstructor(
     return;
   }
 
-  const configResult = new ConfigService().getConfig(dependencies.env);
+  const configResult = getJwksConfig(dependencies.env, logger);
+
   if (configResult.isError) {
-    logger.log("ENVIRONMENT_VARIABLE_MISSING", {
-      errorMessage: configResult.value.errorMessage,
-    });
     const sendEventResult = await resultSender.sendEvent("FAILED");
     if (sendEventResult.isError) {
       logger.log("ERROR_SENDING_CUSTOM_RESOURCE_EVENT", {

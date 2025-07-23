@@ -4,7 +4,6 @@ import {
   Context,
 } from "aws-lambda";
 import { IDecodedToken } from "./tokenService/tokenService";
-import { ConfigService } from "./configService/configService";
 import {
   IAsyncCredentialDependencies,
   dependencies,
@@ -13,6 +12,7 @@ import { RequestService } from "./requestService/requestService";
 import { ErrorCategory } from "../utils/result";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
+import { getCredentialConfig } from "./credentialConfig";
 import { setupLogger } from "../common/logging/setupLogger";
 import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
 
@@ -25,15 +25,12 @@ export async function lambdaHandlerConstructor(
   logger.info(LogMessage.CREDENTIAL_STARTED);
 
   // Get environment variables
-  const configResult = new ConfigService().getConfig(dependencies.env);
+  const configResult = getCredentialConfig(dependencies.env);
   if (configResult.isError) {
-    logger.error(LogMessage.CREDENTIAL_INVALID_CONFIG, {
-      errorMessage: configResult.value.errorMessage,
-    });
     return serverErrorResponse;
   }
-  const config = configResult.value;
 
+  const config = configResult.value;
   const requestService = new RequestService();
 
   const authorizationHeaderResult = requestService.getAuthorizationHeader(
@@ -163,7 +160,7 @@ export async function lambdaHandlerConstructor(
   const createSessionResult = await sessionService.createSession({
     ...requestBody,
     issuer: jwtPayload.iss,
-    sessionDurationInSeconds: config.SESSION_DURATION_IN_SECONDS,
+    sessionDurationInSeconds: Number(config.SESSION_DURATION_IN_SECONDS),
   });
 
   if (createSessionResult.isError) {

@@ -94,7 +94,9 @@ describe("Async Token", () => {
 
         expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_TOKEN_INVALID_CONFIG",
-          errorMessage: `No ${envVar}`,
+          data: {
+            missingEnvironmentVariables: [envVar],
+          },
         });
 
         expect(result).toStrictEqual({

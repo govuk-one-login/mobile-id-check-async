@@ -3,7 +3,6 @@ import {
   APIGatewayProxyResult,
   Context,
 } from "aws-lambda";
-import { ConfigService } from "./configService/configService";
 import {
   dependencies,
   IAsyncTokenRequestDependencies,
@@ -11,6 +10,7 @@ import {
 import { ErrorCategory } from "../utils/result";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
+import { getTokenConfig } from "./tokenConfig";
 import { setupLogger } from "../common/logging/setupLogger";
 
 export async function lambdaHandlerConstructor(
@@ -21,16 +21,12 @@ export async function lambdaHandlerConstructor(
   setupLogger(context);
   logger.info(LogMessage.TOKEN_STARTED);
 
-  const configResult = new ConfigService().getConfig(dependencies.env);
+  const configResult = getTokenConfig(dependencies.env);
   if (configResult.isError) {
-    logger.error(LogMessage.TOKEN_INVALID_CONFIG, {
-      errorMessage: configResult.value.errorMessage,
-    });
     return serverErrorResponse;
   }
 
   const config = configResult.value;
-
   const requestService = dependencies.requestService();
 
   // Ensure that request contains expected params
