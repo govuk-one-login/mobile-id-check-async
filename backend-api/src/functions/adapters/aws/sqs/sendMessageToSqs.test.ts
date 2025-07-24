@@ -1,15 +1,15 @@
-import { sendMessageToSqs, sqsClient } from "./sendMessageToSqs";
-import { expect } from "@jest/globals";
-import "../../../../../tests/testUtils/matchers";
-import { AwsStub, mockClient } from "aws-sdk-client-mock";
 import {
   SendMessageCommand,
   ServiceInputTypes,
   ServiceOutputTypes,
   SQSClientResolvedConfig,
 } from "@aws-sdk/client-sqs";
-import { emptyFailure, emptySuccess, Result } from "../../../utils/result";
+import { expect } from "@jest/globals";
+import { AwsStub, mockClient } from "aws-sdk-client-mock";
 import "aws-sdk-client-mock-jest";
+import "../../../../../tests/testUtils/matchers";
+import { emptyFailure, Result, successResult } from "../../../utils/result";
+import { sendMessageToSqs, sqsClient } from "./sendMessageToSqs";
 
 describe("Sending a message to SQS", () => {
   let consoleDebugSpy: jest.SpyInstance;
@@ -81,7 +81,7 @@ describe("Sending a message to SQS", () => {
 
   describe("Given sending message to SQS succeeds", () => {
     beforeEach(async () => {
-      sqsMock.on(SendMessageCommand).resolves({});
+      sqsMock.on(SendMessageCommand).resolves({ MessageId: "mockMessageId" });
 
       result = await sendMessageToSqs(mockQueueArn, mockMessageBody);
     });
@@ -104,8 +104,28 @@ describe("Sending a message to SQS", () => {
       });
     });
 
-    it("Returns an emptySuccess Result", () => {
-      expect(result).toEqual(emptySuccess());
+    describe("Given the MessageId in the response is undefined", () => {
+      beforeEach(async () => {
+        sqsMock.on(SendMessageCommand).resolves({});
+
+        result = await sendMessageToSqs(mockQueueArn, mockMessageBody);
+      });
+
+      it("Returns an Success Result with the messageId", () => {
+        expect(result).toStrictEqual(successResult({ messageId: "undefined" }));
+      });
+    });
+
+    describe("Given the MessageId in the response is undefined", () => {
+      beforeEach(async () => {
+        result = await sendMessageToSqs(mockQueueArn, mockMessageBody);
+      });
+
+      it("Returns an Success Result with the messageId", () => {
+        expect(result).toStrictEqual(
+          successResult({ messageId: "mockMessageId" }),
+        );
+      });
     });
   });
 });

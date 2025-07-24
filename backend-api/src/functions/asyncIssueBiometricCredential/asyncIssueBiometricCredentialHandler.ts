@@ -1,45 +1,33 @@
 import { Context, SQSEvent, SQSRecord } from "aws-lambda";
-import {
-  IssueBiometricCredentialDependencies,
-  runtimeDependencies,
-} from "./handlerDependencies";
+import { GetSecrets } from "../common/config/secrets";
 import { logger } from "../common/logging/logger";
 import { LogMessage } from "../common/logging/LogMessage";
 import { setupLogger } from "../common/logging/setupLogger";
-import { validateVendorProcessingQueueSqsEvent } from "./validateSqsEvent";
-import {
-  getIssueBiometricCredentialConfig,
-  IssueBiometricCredentialConfig,
-} from "./issueBiometricCredentialConfig";
 import {
   GetSessionError,
   GetSessionFailed,
 } from "../common/session/SessionRegistry/types";
 import {
-  Result,
   emptyFailure,
   emptySuccess,
+  Result,
   successResult,
 } from "../utils/result";
-import { GetSecrets } from "../common/config/secrets";
+import {
+  IssueBiometricCredentialDependencies,
+  runtimeDependencies,
+} from "./handlerDependencies";
+import {
+  getIssueBiometricCredentialConfig,
+  IssueBiometricCredentialConfig,
+} from "./issueBiometricCredentialConfig";
+import { validateVendorProcessingQueueSqsEvent } from "./validateSqsEvent";
 
 import {
   OutboundQueueErrorMessage,
   VerifiableCredentialMessage,
 } from "../adapters/aws/sqs/types";
 
-import { GenericEventNames, IEventService } from "../services/events/types";
-import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
-import {
-  BiometricSessionFinishedAttributes,
-  SessionAttributes,
-  SessionState,
-} from "../common/session/session";
-import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
-import { GetSessionIssueBiometricCredential } from "../common/session/getOperations/IssueBiometricCredential/GetSessionIssueBiometricCredential";
-import { ResultSent } from "../common/session/updateOperations/ResultSent/ResultSent";
-import { CredentialJwtPayload } from "../types/jwt";
-import { randomUUID } from "crypto";
 import {
   Advisory,
   AuditData,
@@ -49,7 +37,20 @@ import {
   GetCredentialErrorCode,
   GetCredentialOptions,
 } from "@govuk-one-login/mobile-id-check-biometric-credential";
+import { randomUUID } from "crypto";
+import { SendMessageToSqsResponse } from "../adapters/aws/sqs/sendMessageToSqs";
 import { appendPersistentIdentifiersToLogger } from "../common/logging/helpers/appendPersistentIdentifiersToLogger";
+import { GetSessionIssueBiometricCredential } from "../common/session/getOperations/IssueBiometricCredential/GetSessionIssueBiometricCredential";
+import {
+  BiometricSessionFinishedAttributes,
+  SessionAttributes,
+  SessionState,
+} from "../common/session/session";
+import { ResultSent } from "../common/session/updateOperations/ResultSent/ResultSent";
+import { GenericEventNames, IEventService } from "../services/events/types";
+import { CredentialJwtPayload } from "../types/jwt";
+import { GetBiometricSessionError } from "./getBiometricSession/getBiometricSession";
+import { RetainMessageOnQueue } from "./RetainMessageOnQueue";
 
 export async function lambdaHandlerConstructor(
   dependencies: IssueBiometricCredentialDependencies,
@@ -288,7 +289,12 @@ export async function lambdaHandlerConstructor(
     return;
   }
 
-  logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED);
+  logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED, {
+    data: {
+      responseMessageId:
+        sendVerifiableCredentialMessageToSqsResult.value.messageId,
+    },
+  });
 }
 
 export const lambdaHandler = lambdaHandlerConstructor.bind(
@@ -492,9 +498,9 @@ const sendVerifiableCredentialMessageToSqs = async (
   sendMessageToSqs: (
     sqsArn: string,
     messageBody: VerifiableCredentialMessage,
-  ) => Promise<Result<void, void>>,
+  ) => Promise<Result<SendMessageToSqsResponse, void>>,
   sqsArn: string,
-): Promise<Result<void, void>> => {
+): Promise<Result<SendMessageToSqsResponse, void>> => {
   const verifiableCredentialMessage: VerifiableCredentialMessage = {
     sub: sessionAttributes.subjectIdentifier,
     state: sessionAttributes.clientState,
@@ -515,7 +521,7 @@ const sendVerifiableCredentialMessageToSqs = async (
     return emptyFailure();
   }
 
-  return emptySuccess();
+  return successResult({ messageId: sendMessageToSqsResult.value.messageId });
 };
 
 interface HandleUpdateSessionErrorParameters {

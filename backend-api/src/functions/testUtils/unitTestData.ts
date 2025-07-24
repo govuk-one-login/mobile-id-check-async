@@ -273,7 +273,7 @@ export const mockFailingCriEventService = {
 
 export const mockSendMessageToSqsSuccess = jest
   .fn()
-  .mockResolvedValue(emptySuccess());
+  .mockResolvedValue(successResult({ messageId: "mockMessageId" }));
 
 export const mockSendMessageToSqsFailure = jest
   .fn()

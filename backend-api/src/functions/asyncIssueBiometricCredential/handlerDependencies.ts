@@ -7,7 +7,10 @@ import {
   getBiometricSession,
 } from "./getBiometricSession/getBiometricSession";
 import { Result } from "../utils/result";
-import { sendMessageToSqs } from "../adapters/aws/sqs/sendMessageToSqs";
+import {
+  sendMessageToSqs,
+  SendMessageToSqsResponse,
+} from "../adapters/aws/sqs/sendMessageToSqs";
 import { SQSMessageBody } from "../adapters/aws/sqs/types";
 import { IEventService } from "../services/events/types";
 import { EventService } from "../services/events/eventService";
@@ -27,7 +30,7 @@ export type IssueBiometricCredentialDependencies = {
   sendMessageToSqs: (
     sqsArn: string,
     messageBody: SQSMessageBody,
-  ) => Promise<Result<void, void>>;
+  ) => Promise<Result<SendMessageToSqsResponse, void>>;
   getCredentialFromBiometricSession: IGetCredentialFromBiometricSession;
   createKmsSignedJwt: CreateKmsSignedJwt;
 };
