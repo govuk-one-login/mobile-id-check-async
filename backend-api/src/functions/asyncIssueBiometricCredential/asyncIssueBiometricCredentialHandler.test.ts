@@ -1256,7 +1256,7 @@ describe("Async Issue Biometric Credential", () => {
           );
         });
 
-        it("Logs COMPLETED with documentType, message properties, persistent identifiers, and outbound SQS response MessageId", () => {
+        it("Logs COMPLETED with documentType, message properties, persistent identifiers, and SQS response MessageId", () => {
           expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
             sqsMessageProperties: {
@@ -1270,7 +1270,7 @@ describe("Async Issue Biometric Credential", () => {
               govukSigninJourneyId: mockGovukSigninJourneyId,
             },
             data: {
-              responseMessageId: "mockMessageId",
+              sqsResponseMessageId: "mockMessageId",
             },
           });
         });
@@ -1494,7 +1494,7 @@ describe("Async Issue Biometric Credential", () => {
                   govukSigninJourneyId: mockGovukSigninJourneyId,
                 },
                 data: {
-                  responseMessageId: "mockMessageId",
+                  sqsResponseMessageId: "mockMessageId",
                 },
               });
             });
