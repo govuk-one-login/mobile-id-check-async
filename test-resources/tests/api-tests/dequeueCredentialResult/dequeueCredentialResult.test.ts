@@ -69,6 +69,7 @@ describe("GET /credentialResult", () => {
       expect(response.body).toEqual({
         error: "access_denied",
         error_description: "User aborted the session",
+        govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
         state: "testState",
         sub,
       });
@@ -103,6 +104,7 @@ describe("GET /credentialResult", () => {
         body: {
           sub,
           state: "testState",
+          govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
           error: "access_denied",
           error_description: "User aborted the session",
         },
@@ -111,7 +113,6 @@ describe("GET /credentialResult", () => {
       expect(response[0].pk).toEqual(testData.pk);
       expect(response[0].sk).toContain(testData.sk);
       expect(response[0].body).toStrictEqual(testData.body);
-
       expect(response[1].pk).toEqual(testData.pk);
       expect(response[1].sk).toContain(testData.sk);
       expect(response[1].body).toStrictEqual(testData.body);
