@@ -578,6 +578,9 @@ describe("Async Abort Session", () => {
           sessionId: mockSessionId,
           govukSigninJourneyId: mockGovukSigninJourneyId,
         },
+        data: {
+          sqsResponseMessageId: "mockMessageId",
+        },
       });
     });
 
