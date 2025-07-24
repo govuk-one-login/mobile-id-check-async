@@ -14,7 +14,7 @@ Resources:
       OKActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 2
+      DatapointsToAlarm: 3
       EvaluationPeriods: 5
       TreatMissingData: notBreaching
       Threshold: 50
@@ -77,7 +77,7 @@ Resources:
       OKActions:
         - !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:platform-alarms-sns-warning"
       ComparisonOperator: GreaterThanOrEqualToThreshold
-      DatapointsToAlarm: 3
+      DatapointsToAlarm: 5
       EvaluationPeriods: 5
       TreatMissingData: notBreaching
       Threshold: 80
