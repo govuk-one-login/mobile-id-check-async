@@ -23,6 +23,7 @@ export const mockIssuer = "mockIssuer";
 export const mockRedirectUri = "https://www.mockRedirectUri.com";
 export const mockKeyId = "mockKid";
 export const activeSessionReadScope = "idCheck.activeSession.read";
+export const mockMessageId = "mockMessageId";
 export const expectedSecurityHeaders = {
   "Cache-Control": "no-store",
   "Content-Type": "application/json",
@@ -273,7 +274,7 @@ export const mockFailingCriEventService = {
 
 export const mockSendMessageToSqsSuccess = jest
   .fn()
-  .mockResolvedValue(successResult({ messageId: "mockMessageId" }));
+  .mockResolvedValue(successResult({ messageId: mockMessageId }));
 
 export const mockSendMessageToSqsFailure = jest
   .fn()

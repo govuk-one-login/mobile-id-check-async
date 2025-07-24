@@ -19,6 +19,7 @@ import {
   mockInertEventService,
   mockInertSessionRegistry,
   mockIssuer,
+  mockMessageId,
   mockSendMessageToSqsFailure,
   mockSendMessageToSqsSuccess,
   mockSessionId,
@@ -98,7 +99,7 @@ describe("Async Issue Biometric Credential", () => {
   );
 
   const validVendorProcessingQueueSqsEventRecord = {
-    messageId: "mockMessageId",
+    messageId: mockMessageId,
     receiptHandle: "mockReceiptHandle",
     body: JSON.stringify({
       biometricSessionId: mockBiometricSessionId,
@@ -479,7 +480,7 @@ describe("Async Issue Biometric Credential", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
         sqsMessageProperties: {
-          messageId: "mockMessageId",
+          messageId: mockMessageId,
           approximateReceiveCount: "1",
         },
         persistentIdentifiers: {
@@ -679,7 +680,7 @@ describe("Async Issue Biometric Credential", () => {
           },
           documentType: "NFC_PASSPORT",
           sqsMessageProperties: {
-            messageId: "mockMessageId",
+            messageId: mockMessageId,
             approximateReceiveCount: "1",
           },
           persistentIdentifiers: {
@@ -701,7 +702,7 @@ describe("Async Issue Biometric Credential", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
           sqsMessageProperties: {
-            messageId: "mockMessageId",
+            messageId: mockMessageId,
             approximateReceiveCount: "1",
           },
           persistentIdentifiers: {
@@ -1191,7 +1192,7 @@ describe("Async Issue Biometric Credential", () => {
             vendorProcessingQueueToVcIssuanceElapsedTimeInMs:
               NOW_IN_MILLISECONDS - ONE_HOUR_AGO_IN_MILLISECONDS,
             sqsMessageProperties: {
-              messageId: "mockMessageId",
+              messageId: mockMessageId,
               approximateReceiveCount: "1",
             },
           });
@@ -1260,7 +1261,7 @@ describe("Async Issue Biometric Credential", () => {
           expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
             sqsMessageProperties: {
-              messageId: "mockMessageId",
+              messageId: mockMessageId,
               approximateReceiveCount: "1",
             },
             documentType: "NFC_PASSPORT",
@@ -1270,7 +1271,7 @@ describe("Async Issue Biometric Credential", () => {
               govukSigninJourneyId: mockGovukSigninJourneyId,
             },
             data: {
-              sqsResponseMessageId: "mockMessageId",
+              sqsResponseMessageId: mockMessageId,
             },
           });
         });
@@ -1485,7 +1486,7 @@ describe("Async Issue Biometric Credential", () => {
                   "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
                 documentType: "NFC_PASSPORT",
                 sqsMessageProperties: {
-                  messageId: "mockMessageId",
+                  messageId: mockMessageId,
                   approximateReceiveCount: "1",
                 },
                 persistentIdentifiers: {
@@ -1494,7 +1495,7 @@ describe("Async Issue Biometric Credential", () => {
                   govukSigninJourneyId: mockGovukSigninJourneyId,
                 },
                 data: {
-                  sqsResponseMessageId: "mockMessageId",
+                  sqsResponseMessageId: mockMessageId,
                 },
               });
             });

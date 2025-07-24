@@ -23,6 +23,7 @@ import {
   mockGovukSigninJourneyId,
   mockClientState,
   mockSubjectIdentifier,
+  mockMessageId,
 } from "../testUtils/unitTestData";
 import { successResult, errorResult } from "../utils/result";
 import { UpdateSessionError } from "../common/session/SessionRegistry/types";
@@ -579,7 +580,7 @@ describe("Async Abort Session", () => {
           govukSigninJourneyId: mockGovukSigninJourneyId,
         },
         data: {
-          sqsResponseMessageId: "mockMessageId",
+          sqsResponseMessageId: mockMessageId,
         },
       });
     });
