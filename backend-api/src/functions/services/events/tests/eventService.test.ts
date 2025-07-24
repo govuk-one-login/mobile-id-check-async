@@ -275,6 +275,7 @@ describe("Event Service", () => {
           ipAddress: "mockIpAddress",
           txmaAuditEncoded: "mockTxmaAuditEncoded",
           redirect_uri: "https://mockredirecturi.com/",
+          opaqueId: "mockOpaqueId",
         });
       });
 
@@ -294,6 +295,7 @@ describe("Event Service", () => {
             extensions: {
               documentType: "NFC_PASSPORT",
               redirect_uri: "https://mockredirecturi.com/",
+              opaque_id: "mockOpaqueId",
             },
             restricted: {
               device_information: {
@@ -330,6 +332,7 @@ describe("Event Service", () => {
             ipAddress: "mockIpAddress",
             txmaAuditEncoded: undefined,
             redirect_uri: undefined,
+            opaqueId: "mockOpaqueId",
           });
         });
 
@@ -348,6 +351,7 @@ describe("Event Service", () => {
               component_id: "mockComponentId",
               extensions: {
                 documentType: "NFC_PASSPORT",
+                opaque_id: "mockOpaqueId",
               },
             }),
             QueueUrl: "mockSqsQueue",
@@ -378,6 +382,7 @@ describe("Event Service", () => {
             ipAddress: "mockIpAddress",
             txmaAuditEncoded: "mockTxmaAuditEncoded",
             redirect_uri: undefined,
+            opaqueId: "mockOpaqueId",
           });
         });
 
@@ -396,6 +401,7 @@ describe("Event Service", () => {
               component_id: "mockComponentId",
               extensions: {
                 documentType: "NFC_PASSPORT",
+                opaque_id: "mockOpaqueId",
               },
               restricted: {
                 device_information: {
