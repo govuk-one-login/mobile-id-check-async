@@ -134,6 +134,7 @@ export async function lambdaHandlerConstructor(
     responseBody,
     ipAddress,
     txmaAuditEncoded,
+    opaqueId,
   });
 }
 
@@ -354,6 +355,7 @@ interface HandleOkResponseData {
   responseBody: BiometricTokenIssuedOkResponseBody;
   ipAddress: string;
   txmaAuditEncoded: string | undefined;
+  opaqueId: string | undefined;
 }
 
 async function handleOkResponse(
@@ -366,6 +368,7 @@ async function handleOkResponse(
     responseBody,
     ipAddress,
     txmaAuditEncoded,
+    opaqueId,
   } = data;
   const writeEventResult = await eventService.writeBiometricTokenIssuedEvent({
     sub: sessionAttributes.subjectIdentifier,
@@ -377,6 +380,7 @@ async function handleOkResponse(
     ipAddress,
     txmaAuditEncoded,
     redirect_uri: sessionAttributes.redirectUri,
+    opaque_id: opaqueId,
   });
 
   if (writeEventResult.isError) {

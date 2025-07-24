@@ -148,6 +148,7 @@ export class EventService implements IEventService {
       extensions: {
         documentType: eventConfig.documentType,
         redirect_uri: eventConfig.redirect_uri,
+        opaque_id: eventConfig.opaque_id,
       },
       restricted: this.getRestrictedData(eventConfig.txmaAuditEncoded),
     };

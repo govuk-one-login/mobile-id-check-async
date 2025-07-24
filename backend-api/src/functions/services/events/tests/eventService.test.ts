@@ -275,6 +275,7 @@ describe("Event Service", () => {
           ipAddress: "mockIpAddress",
           txmaAuditEncoded: "mockTxmaAuditEncoded",
           redirect_uri: "https://mockredirecturi.com/",
+          opaque_id: "mockOpaqueId",
         });
       });
 
@@ -294,6 +295,7 @@ describe("Event Service", () => {
             extensions: {
               documentType: "NFC_PASSPORT",
               redirect_uri: "https://mockredirecturi.com/",
+              opaque_id: "mockOpaqueId",
             },
             restricted: {
               device_information: {
@@ -330,6 +332,7 @@ describe("Event Service", () => {
             ipAddress: "mockIpAddress",
             txmaAuditEncoded: undefined,
             redirect_uri: undefined,
+            opaque_id: undefined,
           });
         });
 
@@ -378,6 +381,7 @@ describe("Event Service", () => {
             ipAddress: "mockIpAddress",
             txmaAuditEncoded: "mockTxmaAuditEncoded",
             redirect_uri: undefined,
+            opaque_id: undefined,
           });
         });
 
