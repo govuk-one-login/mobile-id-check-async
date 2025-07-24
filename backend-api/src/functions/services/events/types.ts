@@ -101,7 +101,7 @@ export interface CredentialTokenIssuedEventConfig extends BaseEventConfig {
 export interface BiometricTokenIssuedEventConfig extends BaseUserEventConfig {
   documentType: DocumentType;
   redirect_uri: string | undefined;
-  opaque_id: string | undefined;
+  opaqueId: string;
 }
 
 export interface GenericTxmaEvent extends BaseUserTxmaEvent {
@@ -118,7 +118,7 @@ export interface BiometricTokenIssuedEvent extends BaseUserTxmaEvent {
   extensions: {
     documentType: DocumentType;
     redirect_uri: string | undefined;
-    opaque_id: string | undefined;
+    opaque_id: string;
   };
 }
 

@@ -620,7 +620,7 @@ describe("Async Biometric Token", () => {
           ipAddress: "1.1.1.1",
           txmaAuditEncoded: "mockTxmaAuditEncodedHeader",
           redirect_uri: "https://www.mockRedirectUri.com",
-          opaque_id: "mock_opaque_id",
+          opaqueId: "mock_opaque_id",
         });
       });
 

@@ -355,7 +355,7 @@ interface HandleOkResponseData {
   responseBody: BiometricTokenIssuedOkResponseBody;
   ipAddress: string;
   txmaAuditEncoded: string | undefined;
-  opaqueId: string | undefined;
+  opaqueId: string;
 }
 
 async function handleOkResponse(
@@ -380,7 +380,7 @@ async function handleOkResponse(
     ipAddress,
     txmaAuditEncoded,
     redirect_uri: sessionAttributes.redirectUri,
-    opaque_id: opaqueId,
+    opaqueId,
   });
 
   if (writeEventResult.isError) {
