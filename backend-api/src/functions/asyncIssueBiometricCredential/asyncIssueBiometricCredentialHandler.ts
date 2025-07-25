@@ -496,9 +496,9 @@ const sendVerifiableCredentialMessageToSqs = async (
   sendMessageToSqs: (
     sqsArn: string,
     messageBody: VerifiableCredentialMessage,
-  ) => Promise<Result<string, void>>,
+  ) => Promise<Result<string | undefined, void>>,
   sqsArn: string,
-): Promise<Result<string, void>> => {
+): Promise<Result<string | undefined, void>> => {
   const verifiableCredentialMessage: VerifiableCredentialMessage = {
     sub: sessionAttributes.subjectIdentifier,
     state: sessionAttributes.clientState,

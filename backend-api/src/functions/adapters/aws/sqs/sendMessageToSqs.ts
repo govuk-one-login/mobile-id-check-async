@@ -12,7 +12,7 @@ import { SQSMessageBody } from "./types";
 export const sendMessageToSqs = async (
   sqsArn: string,
   messageBody: SQSMessageBody,
-): Promise<Result<string, void>> => {
+): Promise<Result<string | undefined, void>> => {
   let response: SendMessageResult;
   try {
     logger.debug(LogMessage.SEND_MESSAGE_TO_SQS_ATTEMPT, {
@@ -34,7 +34,7 @@ export const sendMessageToSqs = async (
   }
 
   logger.debug(LogMessage.SEND_MESSAGE_TO_SQS_SUCCESS);
-  return successResult(response.MessageId ?? "undefined");
+  return successResult(response.MessageId);
 };
 
 export const sqsClient = new SQSClient({

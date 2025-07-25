@@ -27,7 +27,7 @@ export type IssueBiometricCredentialDependencies = {
   sendMessageToSqs: (
     sqsArn: string,
     messageBody: SQSMessageBody,
-  ) => Promise<Result<string, void>>;
+  ) => Promise<Result<string | undefined, void>>;
   getCredentialFromBiometricSession: IGetCredentialFromBiometricSession;
   createKmsSignedJwt: CreateKmsSignedJwt;
 };
