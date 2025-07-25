@@ -1,32 +1,32 @@
-import { APIGatewayProxyResult, Context } from "aws-lambda";
 import { expect } from "@jest/globals";
+import { APIGatewayProxyResult, Context } from "aws-lambda";
 import "../../../tests/testUtils/matchers";
-import { IAsyncAbortSessionDependencies } from "./handlerDependencies";
-import { buildLambdaContext } from "../testUtils/mockContext";
-import { lambdaHandlerConstructor } from "./asyncAbortSessionHandler";
-import { buildRequest } from "../testUtils/mockRequest";
 import { logger } from "../common/logging/logger";
+import { UpdateSessionError } from "../common/session/SessionRegistry/types";
+import { buildLambdaContext } from "../testUtils/mockContext";
+import { buildRequest } from "../testUtils/mockRequest";
 import {
-  expectedSecurityHeaders,
-  mockInvalidUUID,
-  mockSessionId,
-  mockInertSessionRegistry,
-  validAbortSessionAttributes,
   NOW_IN_MILLISECONDS,
+  expectedSecurityHeaders,
   invalidCreatedAt,
-  validCreatedAt,
-  mockSuccessfulEventService,
-  mockWriteGenericEventSuccessResult,
-  mockSendMessageToSqsSuccess,
-  mockSendMessageToSqsFailure,
+  mockClientState,
   mockFailingEventService,
   mockGovukSigninJourneyId,
-  mockClientState,
+  mockInertSessionRegistry,
+  mockInvalidUUID,
+  mockSendMessageToSqsFailure,
+  mockSendMessageToSqsSuccess,
+  mockSessionId,
+  mockSqsResponseMessageId,
   mockSubjectIdentifier,
-  mockMessageId,
+  mockSuccessfulEventService,
+  mockWriteGenericEventSuccessResult,
+  validAbortSessionAttributes,
+  validCreatedAt,
 } from "../testUtils/unitTestData";
-import { successResult, errorResult } from "../utils/result";
-import { UpdateSessionError } from "../common/session/SessionRegistry/types";
+import { errorResult, successResult } from "../utils/result";
+import { lambdaHandlerConstructor } from "./asyncAbortSessionHandler";
+import { IAsyncAbortSessionDependencies } from "./handlerDependencies";
 
 describe("Async Abort Session", () => {
   let dependencies: IAsyncAbortSessionDependencies;
@@ -579,8 +579,8 @@ describe("Async Abort Session", () => {
           sessionId: mockSessionId,
           govukSigninJourneyId: mockGovukSigninJourneyId,
         },
-        data: {
-          sqsResponseMessageId: mockMessageId,
+        outboundSqsMessageResponseProperties: {
+          messageId: mockSqsResponseMessageId,
         },
       });
     });

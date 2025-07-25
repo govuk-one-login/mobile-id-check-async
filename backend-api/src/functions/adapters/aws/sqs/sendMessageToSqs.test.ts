@@ -10,7 +10,7 @@ import "aws-sdk-client-mock-jest";
 import "../../../../../tests/testUtils/matchers";
 import { emptyFailure, Result, successResult } from "../../../utils/result";
 import { sendMessageToSqs, sqsClient } from "./sendMessageToSqs";
-import { mockMessageId } from "../../../testUtils/unitTestData";
+import { mockSqsInboundMessageId } from "../../../testUtils/unitTestData";
 
 describe("Sending a message to SQS", () => {
   let consoleDebugSpy: jest.SpyInstance;
@@ -82,7 +82,9 @@ describe("Sending a message to SQS", () => {
 
   describe("Given sending message to SQS succeeds", () => {
     beforeEach(async () => {
-      sqsMock.on(SendMessageCommand).resolves({ MessageId: mockMessageId });
+      sqsMock
+        .on(SendMessageCommand)
+        .resolves({ MessageId: mockSqsInboundMessageId });
 
       result = await sendMessageToSqs(mockQueueArn, mockMessageBody);
     });
@@ -123,7 +125,7 @@ describe("Sending a message to SQS", () => {
       });
 
       it("Returns an Success Result with the messageId", () => {
-        expect(result).toStrictEqual(successResult(mockMessageId));
+        expect(result).toStrictEqual(successResult(mockSqsInboundMessageId));
       });
     });
   });

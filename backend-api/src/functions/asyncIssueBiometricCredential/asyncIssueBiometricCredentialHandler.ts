@@ -289,8 +289,8 @@ export async function lambdaHandlerConstructor(
   }
 
   logger.info(LogMessage.ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED, {
-    data: {
-      sqsResponseMessageId: sendVerifiableCredentialMessageToSqsResult.value,
+    outboundSqsMessageResponseProperties: {
+      messageId: sendVerifiableCredentialMessageToSqsResult.value,
     },
   });
 }

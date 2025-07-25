@@ -19,7 +19,7 @@ import {
   mockInertEventService,
   mockInertSessionRegistry,
   mockIssuer,
-  mockMessageId,
+  mockSqsInboundMessageId,
   mockSendMessageToSqsFailure,
   mockSendMessageToSqsSuccess,
   mockSessionId,
@@ -30,6 +30,7 @@ import {
   ONE_HOUR_AGO_IN_MILLISECONDS,
   validBiometricSessionFinishedAttributes,
   validResultSentAttributes,
+  mockSqsResponseMessageId,
 } from "../testUtils/unitTestData";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { emptyFailure, errorResult, successResult } from "../utils/result";
@@ -99,7 +100,7 @@ describe("Async Issue Biometric Credential", () => {
   );
 
   const validVendorProcessingQueueSqsEventRecord = {
-    messageId: mockMessageId,
+    messageId: mockSqsInboundMessageId,
     receiptHandle: "mockReceiptHandle",
     body: JSON.stringify({
       biometricSessionId: mockBiometricSessionId,
@@ -480,7 +481,7 @@ describe("Async Issue Biometric Credential", () => {
       expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
         messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
         sqsMessageProperties: {
-          messageId: mockMessageId,
+          messageId: mockSqsInboundMessageId,
           approximateReceiveCount: "1",
         },
         persistentIdentifiers: {
@@ -680,7 +681,7 @@ describe("Async Issue Biometric Credential", () => {
           },
           documentType: "NFC_PASSPORT",
           sqsMessageProperties: {
-            messageId: mockMessageId,
+            messageId: mockSqsInboundMessageId,
             approximateReceiveCount: "1",
           },
           persistentIdentifiers: {
@@ -702,7 +703,7 @@ describe("Async Issue Biometric Credential", () => {
         expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
           messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
           sqsMessageProperties: {
-            messageId: mockMessageId,
+            messageId: mockSqsInboundMessageId,
             approximateReceiveCount: "1",
           },
           persistentIdentifiers: {
@@ -1192,7 +1193,7 @@ describe("Async Issue Biometric Credential", () => {
             vendorProcessingQueueToVcIssuanceElapsedTimeInMs:
               NOW_IN_MILLISECONDS - ONE_HOUR_AGO_IN_MILLISECONDS,
             sqsMessageProperties: {
-              messageId: mockMessageId,
+              messageId: mockSqsInboundMessageId,
               approximateReceiveCount: "1",
             },
           });
@@ -1261,7 +1262,7 @@ describe("Async Issue Biometric Credential", () => {
           expect(consoleInfoSpy).toHaveBeenCalledWithLogFields({
             messageCode: "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
             sqsMessageProperties: {
-              messageId: mockMessageId,
+              messageId: mockSqsInboundMessageId,
               approximateReceiveCount: "1",
             },
             documentType: "NFC_PASSPORT",
@@ -1270,8 +1271,8 @@ describe("Async Issue Biometric Credential", () => {
               biometricSessionId: mockBiometricSessionId,
               govukSigninJourneyId: mockGovukSigninJourneyId,
             },
-            data: {
-              sqsResponseMessageId: mockMessageId,
+            outboundSqsMessageResponseProperties: {
+              messageId: mockSqsResponseMessageId,
             },
           });
         });
@@ -1486,7 +1487,7 @@ describe("Async Issue Biometric Credential", () => {
                   "MOBILE_ASYNC_ISSUE_BIOMETRIC_CREDENTIAL_COMPLETED",
                 documentType: "NFC_PASSPORT",
                 sqsMessageProperties: {
-                  messageId: mockMessageId,
+                  messageId: mockSqsInboundMessageId,
                   approximateReceiveCount: "1",
                 },
                 persistentIdentifiers: {
@@ -1494,8 +1495,8 @@ describe("Async Issue Biometric Credential", () => {
                   biometricSessionId: mockBiometricSessionId,
                   govukSigninJourneyId: mockGovukSigninJourneyId,
                 },
-                data: {
-                  sqsResponseMessageId: mockMessageId,
+                outboundSqsMessageResponseProperties: {
+                  messageId: mockSqsResponseMessageId,
                 },
               });
             });
