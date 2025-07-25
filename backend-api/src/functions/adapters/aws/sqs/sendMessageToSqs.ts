@@ -9,14 +9,10 @@ import { logger } from "../../../common/logging/logger";
 import { emptyFailure, Result, successResult } from "../../../utils/result";
 import { SQSMessageBody } from "./types";
 
-export interface SendMessageToSqsResponse {
-  messageId: string;
-}
-
 export const sendMessageToSqs = async (
   sqsArn: string,
   messageBody: SQSMessageBody,
-): Promise<Result<SendMessageToSqsResponse, void>> => {
+): Promise<Result<string, void>> => {
   let response: SendMessageResult;
   try {
     logger.debug(LogMessage.SEND_MESSAGE_TO_SQS_ATTEMPT, {
@@ -38,7 +34,7 @@ export const sendMessageToSqs = async (
   }
 
   logger.debug(LogMessage.SEND_MESSAGE_TO_SQS_SUCCESS);
-  return successResult({ messageId: response.MessageId ?? "undefined" });
+  return successResult(response.MessageId ?? "undefined");
 };
 
 export const sqsClient = new SQSClient({

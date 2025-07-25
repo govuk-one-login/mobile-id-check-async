@@ -128,8 +128,7 @@ export async function lambdaHandlerConstructor(
 
   logger.info(LogMessage.ABORT_SESSION_COMPLETED, {
     data: {
-      sqsResponseMessageId:
-        sendMessageToIPVCoreOutboundQueueResult.value.messageId,
+      sqsResponseMessageId: sendMessageToIPVCoreOutboundQueueResult.value,
     },
   });
   return okResponse();

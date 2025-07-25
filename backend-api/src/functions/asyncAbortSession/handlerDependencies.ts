@@ -1,8 +1,5 @@
 import { DynamoDbAdapter } from "../adapters/aws/dynamo/dynamoDbAdapter";
-import {
-  sendMessageToSqs,
-  SendMessageToSqsResponse,
-} from "../adapters/aws/sqs/sendMessageToSqs";
+import { sendMessageToSqs } from "../adapters/aws/sqs/sendMessageToSqs";
 import { OutboundQueueErrorMessage } from "../adapters/aws/sqs/types";
 import { SessionRegistry } from "../common/session/SessionRegistry/SessionRegistry";
 import { EventService } from "../services/events/eventService";
@@ -16,7 +13,7 @@ export type IAsyncAbortSessionDependencies = {
   sendMessageToSqs: (
     sqsArn: string,
     messageBody: OutboundQueueErrorMessage,
-  ) => Promise<Result<SendMessageToSqsResponse, void>>;
+  ) => Promise<Result<string, void>>;
 };
 
 export const runtimeDependencies: IAsyncAbortSessionDependencies = {

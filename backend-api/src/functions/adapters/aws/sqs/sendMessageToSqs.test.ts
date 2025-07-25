@@ -113,7 +113,7 @@ describe("Sending a message to SQS", () => {
       });
 
       it("Returns an Success Result with the messageId", () => {
-        expect(result).toStrictEqual(successResult({ messageId: "undefined" }));
+        expect(result).toStrictEqual(successResult("undefined"));
       });
     });
 
@@ -123,9 +123,7 @@ describe("Sending a message to SQS", () => {
       });
 
       it("Returns an Success Result with the messageId", () => {
-        expect(result).toStrictEqual(
-          successResult({ messageId: mockMessageId }),
-        );
+        expect(result).toStrictEqual(successResult(mockMessageId));
       });
     });
   });
