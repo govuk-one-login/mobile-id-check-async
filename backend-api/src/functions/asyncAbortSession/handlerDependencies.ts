@@ -13,7 +13,7 @@ export type IAsyncAbortSessionDependencies = {
   sendMessageToSqs: (
     sqsArn: string,
     messageBody: OutboundQueueErrorMessage,
-  ) => Promise<Result<void, void>>;
+  ) => Promise<Result<string | undefined, void>>;
 };
 
 export const runtimeDependencies: IAsyncAbortSessionDependencies = {

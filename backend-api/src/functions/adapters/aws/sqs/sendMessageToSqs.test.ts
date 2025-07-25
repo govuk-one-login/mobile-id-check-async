@@ -1,15 +1,16 @@
-import { sendMessageToSqs, sqsClient } from "./sendMessageToSqs";
-import { expect } from "@jest/globals";
-import "../../../../../tests/testUtils/matchers";
-import { AwsStub, mockClient } from "aws-sdk-client-mock";
 import {
   SendMessageCommand,
   ServiceInputTypes,
   ServiceOutputTypes,
   SQSClientResolvedConfig,
 } from "@aws-sdk/client-sqs";
-import { emptyFailure, emptySuccess, Result } from "../../../utils/result";
+import { expect } from "@jest/globals";
+import { AwsStub, mockClient } from "aws-sdk-client-mock";
 import "aws-sdk-client-mock-jest";
+import "../../../../../tests/testUtils/matchers";
+import { mockSqsResponseMessageId } from "../../../testUtils/unitTestData";
+import { emptyFailure, Result, successResult } from "../../../utils/result";
+import { sendMessageToSqs, sqsClient } from "./sendMessageToSqs";
 
 describe("Sending a message to SQS", () => {
   let consoleDebugSpy: jest.SpyInstance;
@@ -19,7 +20,7 @@ describe("Sending a message to SQS", () => {
     ServiceOutputTypes,
     SQSClientResolvedConfig
   >;
-  let result: Result<void, void>;
+  let result: Result<string | undefined, void>;
   const mockMessageBody = {
     biometricSessionId: "mockBiometricSessionId",
     sessionId: "mockSessionId",
@@ -81,7 +82,9 @@ describe("Sending a message to SQS", () => {
 
   describe("Given sending message to SQS succeeds", () => {
     beforeEach(async () => {
-      sqsMock.on(SendMessageCommand).resolves({});
+      sqsMock
+        .on(SendMessageCommand)
+        .resolves({ MessageId: mockSqsResponseMessageId });
 
       result = await sendMessageToSqs(mockQueueArn, mockMessageBody);
     });
@@ -104,8 +107,19 @@ describe("Sending a message to SQS", () => {
       });
     });
 
-    it("Returns an emptySuccess Result", () => {
-      expect(result).toEqual(emptySuccess());
-    });
+    describe.each([[undefined], [mockSqsResponseMessageId]])(
+      "Given the MessageId in the response is %s",
+      (messageId: string | undefined) => {
+        beforeEach(async () => {
+          sqsMock.on(SendMessageCommand).resolves({ MessageId: messageId });
+
+          result = await sendMessageToSqs(mockQueueArn, mockMessageBody);
+        });
+
+        it("Returns a Success Result with MessageId value", () => {
+          expect(result).toStrictEqual(successResult(messageId));
+        });
+      },
+    );
   });
 });

@@ -1,21 +1,26 @@
-import { emptyFailure, emptySuccess, Result } from "../../../utils/result";
-import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
+import {
+  SendMessageCommand,
+  SendMessageResult,
+  SQSClient,
+} from "@aws-sdk/client-sqs";
+import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { LogMessage } from "../../../common/logging/LogMessage";
 import { logger } from "../../../common/logging/logger";
+import { emptyFailure, Result, successResult } from "../../../utils/result";
 import { SQSMessageBody } from "./types";
-import { NodeHttpHandler } from "@smithy/node-http-handler";
 
 export const sendMessageToSqs = async (
   sqsArn: string,
   messageBody: SQSMessageBody,
-): Promise<Result<void, void>> => {
+): Promise<Result<string | undefined, void>> => {
+  let response: SendMessageResult;
   try {
     logger.debug(LogMessage.SEND_MESSAGE_TO_SQS_ATTEMPT, {
       data: {
         sqsArn,
       },
     });
-    await sqsClient.send(
+    response = await sqsClient.send(
       new SendMessageCommand({
         QueueUrl: sqsArn,
         MessageBody: JSON.stringify(messageBody),
@@ -29,7 +34,7 @@ export const sendMessageToSqs = async (
   }
 
   logger.debug(LogMessage.SEND_MESSAGE_TO_SQS_SUCCESS);
-  return emptySuccess();
+  return successResult(response.MessageId);
 };
 
 export const sqsClient = new SQSClient({
