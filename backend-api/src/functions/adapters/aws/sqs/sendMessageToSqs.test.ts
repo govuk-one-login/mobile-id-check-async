@@ -8,9 +8,9 @@ import { expect } from "@jest/globals";
 import { AwsStub, mockClient } from "aws-sdk-client-mock";
 import "aws-sdk-client-mock-jest";
 import "../../../../../tests/testUtils/matchers";
+import { mockSqsResponseMessageId } from "../../../testUtils/unitTestData";
 import { emptyFailure, Result, successResult } from "../../../utils/result";
 import { sendMessageToSqs, sqsClient } from "./sendMessageToSqs";
-import { mockSqsInboundMessageId } from "../../../testUtils/unitTestData";
 
 describe("Sending a message to SQS", () => {
   let consoleDebugSpy: jest.SpyInstance;
@@ -20,7 +20,7 @@ describe("Sending a message to SQS", () => {
     ServiceOutputTypes,
     SQSClientResolvedConfig
   >;
-  let result: Result<void, void>;
+  let result: Result<string | undefined, void>;
   const mockMessageBody = {
     biometricSessionId: "mockBiometricSessionId",
     sessionId: "mockSessionId",
@@ -84,7 +84,7 @@ describe("Sending a message to SQS", () => {
     beforeEach(async () => {
       sqsMock
         .on(SendMessageCommand)
-        .resolves({ MessageId: mockSqsInboundMessageId });
+        .resolves({ MessageId: mockSqsResponseMessageId });
 
       result = await sendMessageToSqs(mockQueueArn, mockMessageBody);
     });
@@ -107,26 +107,26 @@ describe("Sending a message to SQS", () => {
       });
     });
 
-    describe("Given the MessageId in the response is undefined", () => {
-      beforeEach(async () => {
-        sqsMock.on(SendMessageCommand).resolves({});
+    describe.each([
+      ["undefined", { MessageId: undefined }, undefined],
+      [
+        "defined",
+        { MessageId: mockSqsResponseMessageId },
+        mockSqsResponseMessageId,
+      ],
+    ])(
+      `Given the MessageId in the response is %s`,
+      (testResult, sqsResponse, expected) => {
+        beforeEach(async () => {
+          sqsMock.on(SendMessageCommand).resolves(sqsResponse);
 
-        result = await sendMessageToSqs(mockQueueArn, mockMessageBody);
-      });
+          result = await sendMessageToSqs(mockQueueArn, mockMessageBody);
+        });
 
-      it("Returns an Success Result with the messageId", () => {
-        expect(result).toStrictEqual(successResult(undefined));
-      });
-    });
-
-    describe("Given the MessageId in the response is undefined", () => {
-      beforeEach(async () => {
-        result = await sendMessageToSqs(mockQueueArn, mockMessageBody);
-      });
-
-      it("Returns an Success Result with the messageId", () => {
-        expect(result).toStrictEqual(successResult(mockSqsInboundMessageId));
-      });
-    });
+        it(`Returns an Success Result with messageId ${testResult}`, () => {
+          expect(result).toStrictEqual(successResult(expected));
+        });
+      },
+    );
   });
 });
