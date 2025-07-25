@@ -107,30 +107,19 @@ describe("Sending a message to SQS", () => {
       });
     });
 
-    describe("Given the MessageId in the response is undefined", () => {
-      beforeEach(async () => {
-        sqsMock.on(SendMessageCommand).resolves({});
+    describe.each([[undefined], [mockSqsResponseMessageId]])(
+      "Given the MessageId in the response is %s",
+      (messageId: string | undefined) => {
+        beforeEach(async () => {
+          sqsMock.on(SendMessageCommand).resolves({ MessageId: messageId });
 
-        result = await sendMessageToSqs(mockQueueArn, mockMessageBody);
-      });
+          result = await sendMessageToSqs(mockQueueArn, mockMessageBody);
+        });
 
-      it("Returns a Success Result", () => {
-        expect(result).toStrictEqual(successResult(undefined));
-      });
-    });
-
-    describe("Given the MessageId in the response is defined", () => {
-      beforeEach(async () => {
-        sqsMock
-          .on(SendMessageCommand)
-          .resolves({ MessageId: mockSqsResponseMessageId });
-
-        result = await sendMessageToSqs(mockQueueArn, mockMessageBody);
-      });
-
-      it("Returns a Success Result with the messageId", () => {
-        expect(result).toStrictEqual(successResult(mockSqsResponseMessageId));
-      });
-    });
+        it("Returns a Success Result with MessageId value", () => {
+          expect(result).toStrictEqual(successResult(messageId));
+        });
+      },
+    );
   });
 });
