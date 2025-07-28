@@ -11,7 +11,8 @@
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
     "lint": "./node_modules/.bin/eslint ./src",
     "test": "./node_modules/.bin/jest --testPathIgnorePatterns=api-tests/",
-    "test:api": "./node_modules/.bin/jest --testPathPatterns=api-tests/",
+    "test:api": "node --env-file=.env ./node_modules/.bin/jest --testPathPatterns=api-tests/",
+    "test:api:ci": "./node_modules/.bin/jest --testPathPatterns=api-tests/",
     "test:infra": "./node_modules/.bin/jest --testPathPatterns=infrastructure-tests/",
     "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/infrastructure-tests api-tests"
   },
@@ -32,7 +33,6 @@
     "axios": "^1.11.0",
     "axios-retry": "^4.5.0",
     "aws-cdk-lib": "^2.204.0",
-    "dotenv": "^16.5.0",
     "eslint": "^9.31.0",
     "jest": "30.0.4",
     "jest-junit": "16.0.0",

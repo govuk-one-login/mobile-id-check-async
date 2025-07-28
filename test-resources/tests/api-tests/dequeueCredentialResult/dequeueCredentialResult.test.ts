@@ -1,5 +1,4 @@
 import { randomUUID } from "crypto";
-import "dotenv/config";
 import {
   SESSIONS_API_INSTANCE,
   TEST_RESOURCES_API_INSTANCE,

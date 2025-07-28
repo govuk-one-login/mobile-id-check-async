@@ -1,6 +1,5 @@
 import axios from "axios";
 import axiosRetry from "axios-retry";
-import "dotenv/config";
 import { aws4Interceptor } from "aws4-axios";
 import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
 

@@ -1,5 +1,4 @@
 import { randomUUID } from "crypto";
-import "dotenv/config";
 import { createSession, getActiveSessionId } from "../utils/testFunctions";
 import { EVENTS_API_INSTANCE } from "../utils/apiInstances";
 

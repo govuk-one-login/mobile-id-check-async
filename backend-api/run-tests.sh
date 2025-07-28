@@ -17,7 +17,7 @@ export READ_ID_MOCK_API_URL=$(remove_quotes "$CFN_ReadIdMockApiUrl")
 mkdir -pv results
 
 if [[ "$TEST_ENVIRONMENT" == "dev" ]] || [[ "$TEST_ENVIRONMENT" == "build" ]]; then
-  if npm run test:api; then
+  if npm run test:api:ci; then
     cp -rf results $TEST_REPORT_ABSOLUTE_DIR
   else
     cp -rf results $TEST_REPORT_ABSOLUTE_DIR

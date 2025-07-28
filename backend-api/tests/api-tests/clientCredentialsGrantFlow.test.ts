@@ -1,6 +1,5 @@
 import { AxiosInstance, AxiosResponse } from "axios";
 import { randomUUID, UUID } from "crypto";
-import "dotenv/config";
 import { PRIVATE_API_INSTANCE, PROXY_API_INSTANCE } from "./utils/apiInstance";
 import {
   ClientDetails,

@@ -2,8 +2,6 @@ import { fromNodeProviderChain } from "@aws-sdk/credential-providers";
 import aws4Interceptor from "aws4-axios";
 import axios from "axios";
 import axiosRetry from "axios-retry";
-import dotenv from "dotenv";
-dotenv.config();
 
 export const STS_MOCK_API_INSTANCE = getStsMockInstance();
 export const SESSIONS_API_INSTANCE = getSessionsApiInstance();
