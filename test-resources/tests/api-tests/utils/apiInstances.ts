@@ -8,7 +8,6 @@ dotenv.config();
 export const STS_MOCK_API_INSTANCE = getStsMockInstance();
 export const SESSIONS_API_INSTANCE = getSessionsApiInstance();
 export const PROXY_API_INSTANCE = getProxyApiInstance();
-export const EVENTS_API_INSTANCE = getEventsApiInstance();
 export const TEST_RESOURCES_API_INSTANCE = getTestResourcesApiInstance();
 
 function getStsMockInstance() {
