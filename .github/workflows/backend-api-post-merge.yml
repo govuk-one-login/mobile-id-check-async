@@ -1,25 +1,26 @@
-name: Test Resources Post Merge
+name: Backend API Post Merge
 on:
   push:
     branches:
       - main
     paths:
-      - "test-resources/**"
+      - "backend-api/**"
       - ".github/workflows/job_push-docker-image.yml"
       - ".github/workflows/job_upload-sam-artifact.yml"
-      - ".github/workflows/test-resources-post-merge.yml"
-      - "!test-resources/**/*.md"
-      - "!test-resources/**/*.png"
+      - ".github/workflows/backend-api-post-merge.yml"
+      - "!backend-api/**/*.md"
+      - "!backend-api/**/*.png"
   workflow_dispatch:
 
 permissions:
   contents: read
   id-token: write
+  packages: read
 
 defaults:
   run:
     shell: bash
-    working-directory: ./test-resources
+    working-directory: ./backend-api
 
 jobs:
   ci-checks:
@@ -27,21 +28,25 @@ jobs:
     uses:
       ./.github/workflows/job_ci-checks.yml
     with:
-      WORKING_DIRECTORY: test-resources
+      PRIVATE_PACKAGES_REQUIRED: true
+      WORKING_DIRECTORY: backend-api
 
   run-test-suite:
     name: Pre-deployment
     uses:
       ./.github/workflows/job_test-suite.yml
     with:
-      WORKING_DIRECTORY: test-resources
+      PRIVATE_PACKAGES_REQUIRED: true
+      RUN_PACT_TESTS: true
+      WORKING_DIRECTORY: backend-api
+    secrets: inherit
 
   sonarqube-scan:
     name: Pre-deployment
     needs: run-test-suite
     with:
       CONTINUE_ON_ERROR: true
-      WORKING_DIRECTORY: test-resources
+      WORKING_DIRECTORY: backend-api
     uses:
       ./.github/workflows/job_sonarqube.yml
     secrets: inherit
@@ -54,11 +59,12 @@ jobs:
     uses:
       ./.github/workflows/job_push-docker-image.yml
     with:
-      WORKING_DIRECTORY: test-resources
+      PRIVATE_PACKAGES_REQUIRED: true
+      WORKING_DIRECTORY: backend-api
     secrets:
       CONTAINER_SIGN_KMS_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
-      GH_ACTIONS_ROLE_ARN: ${{ secrets.TEST_RESOURCES_DEV_GH_ACTIONS_ROLE_ARN }}
-      TEST_IMAGE_REPOSITOR_URI: ${{ secrets.TEST_RESOURCES_DEV_TEST_IMAGE_REPOSITORY_URI }}
+      GH_ACTIONS_ROLE_ARN: ${{ secrets.BACKEND_API_DEV_GH_ACTIONS_ROLE_ARN }}
+      TEST_IMAGE_REPOSITOR_URI: ${{ secrets.BACKEND_API_DEV_TEST_IMAGE_REPOSITORY }}
 
   upload-sam-artifact-dev:
     name: Dev
@@ -66,10 +72,11 @@ jobs:
     uses:
       ./.github/workflows/job_upload-sam-artifact.yml
     with:
-      WORKING_DIRECTORY: test-resources
+      GENERATE_OPEN_PROXY_API_SPEC: true
+      WORKING_DIRECTORY: backend-api
     secrets:
-      ARTIFACT_BUCKET: ${{ secrets.TEST_RESOURCES_DEV_ARTIFACT_BUCKET }}
-      GH_ACTIONS_ROLE_ARN: ${{ secrets.TEST_RESOURCES_DEV_GH_ACTIONS_ROLE_ARN }}
+      ARTIFACT_BUCKET: ${{ secrets.BACKEND_API_DEV_ARTIFACT_BUCKET }}
+      GH_ACTIONS_ROLE_ARN: ${{ secrets.BACKEND_API_DEV_GH_ACTIONS_ROLE_ARN }}
       SIGNING_PROFILE_NAME: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
 
   push-docker-image-build:
@@ -80,11 +87,12 @@ jobs:
     uses:
       ./.github/workflows/job_push-docker-image.yml
     with:
-      WORKING_DIRECTORY: test-resources
+      PRIVATE_PACKAGES_REQUIRED: true
+      WORKING_DIRECTORY: backend-api
     secrets:
       CONTAINER_SIGN_KMS_KEY: ${{ secrets.BUILD_CONTAINER_SIGN_KMS_KEY }}
-      GH_ACTIONS_ROLE_ARN: ${{ secrets.TEST_RESOURCES_BUILD_GH_ACTIONS_ROLE_ARN }}
-      TEST_IMAGE_REPOSITOR_URI: ${{ secrets.TEST_RESOURCES_BUILD_TEST_IMAGE_REPOSITORY_URI }}
+      GH_ACTIONS_ROLE_ARN: ${{ secrets.BACKEND_API_BUILD_GH_ACTIONS_ROLE_ARN }}
+      TEST_IMAGE_REPOSITOR_URI: ${{ secrets.BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY }}
 
   upload-sam-artifact-build:
     name: Build
@@ -92,8 +100,9 @@ jobs:
     uses:
       ./.github/workflows/job_upload-sam-artifact.yml
     with:
-      WORKING_DIRECTORY: test-resources
+      GENERATE_OPEN_PROXY_API_SPEC: true
+      WORKING_DIRECTORY: backend-api
     secrets:
-      ARTIFACT_BUCKET: ${{ secrets.TEST_RESOURCES_BUILD_ARTIFACT_BUCKET }}
-      GH_ACTIONS_ROLE_ARN: ${{ secrets.TEST_RESOURCES_BUILD_GH_ACTIONS_ROLE_ARN }}
+      ARTIFACT_BUCKET: ${{ secrets.BACKEND_API_BUILD_ARTIFACT_BUCKET }}
+      GH_ACTIONS_ROLE_ARN: ${{ secrets.BACKEND_API_BUILD_GH_ACTIONS_ROLE_ARN }}
       SIGNING_PROFILE_NAME: ${{ secrets.BUILD_SIGNING_PROFILE_NAME }}
