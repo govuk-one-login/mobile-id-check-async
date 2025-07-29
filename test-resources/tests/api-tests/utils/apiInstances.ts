@@ -31,13 +31,6 @@ function getProxyApiInstance() {
   return getInstance(apiUrl, true);
 }
 
-function getEventsApiInstance() {
-  const apiUrl = process.env.EVENTS_API_URL;
-  if (!apiUrl)
-    throw new Error("EVENTS_API_URL needs to be defined for API tests");
-  return getInstance(apiUrl, true);
-}
-
 function getTestResourcesApiInstance() {
   const apiUrl = process.env.TEST_RESOURCES_API_URL;
   if (!apiUrl)
