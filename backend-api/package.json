@@ -11,7 +11,7 @@
     "format": "./node_modules/.bin/prettier --write '**/*.ts'",
     "format:check": "./node_modules/.bin/prettier --check '**/*.ts'",
     "lint": "./node_modules/.bin/eslint ./src/functions",
-    "test": "./node_modules/.bin/jest --testPathIgnorePatterns=api-tests/",
+    "test:env": "node --env-file=.env ./node_modules/.bin/jest",
     "test:api": "node --env-file=.env ./node_modules/.bin/jest --testPathPatterns=api-tests/",
     "test:api:ci": "./node_modules/.bin/jest --testPathPatterns=api-tests/",
     "test:infra": "./node_modules/.bin/jest --testPathPatterns=infra-tests/",
