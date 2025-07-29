@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import "dotenv/config";
 import { createSession, getActiveSessionId } from "../utils/testFunctions";
-import { TEST_RESOURCES_API_INSTANCE } from "../utils/apiInstances";
+import { EVENTS_API_INSTANCE } from "../utils/apiInstances";
 
 const ONE_SECOND = 1000;
 jest.setTimeout(45 * ONE_SECOND);
@@ -13,9 +13,7 @@ describe("GET /events", () => {
         pkPrefix: `SESSION%23`,
         skPrefix: `TXMA%23EVENT_NAME%23DCMAW_ASYNC_CRI_START`,
       };
-      const response = await TEST_RESOURCES_API_INSTANCE.get("/events", {
-        params,
-      });
+      const response = await EVENTS_API_INSTANCE.get("/events", { params });
 
       expect(response.status).toBe(404);
       expect(response.statusText).toStrictEqual("Not Found");
@@ -28,7 +26,7 @@ describe("GET /events", () => {
         const params = {
           skPrefix: `TXMA%23EVENT_NAME%23DCMAW_ASYNC_CRI_START`,
         };
-        const response = await TEST_RESOURCES_API_INSTANCE.get("/events", {
+        const response = await EVENTS_API_INSTANCE.get("/events", {
           params,
         });
 
@@ -142,7 +140,7 @@ async function getEvents(
   partitionKey: string,
   sortKeyPrefix: string,
 ): Promise<unknown[]> {
-  const response = await TEST_RESOURCES_API_INSTANCE.get("events", {
+  const response = await EVENTS_API_INSTANCE.get("events", {
     params: {
       pkPrefix: partitionKey,
       skPrefix: sortKeyPrefix,
