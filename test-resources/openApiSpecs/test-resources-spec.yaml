@@ -570,7 +570,7 @@ components:
       pk:
         in: query
         name: pk
-        description: The identifier used for a credential result.
+        description: The identifier used for a credential result
         required: true
         schema:
           type: string
@@ -580,7 +580,7 @@ components:
       pkPrefix:
         in: query
         name: pkPrefix
-        description: The identifier used for a session.
+        description: The identifier used for a session
         required: true
         schema:
           type: string
