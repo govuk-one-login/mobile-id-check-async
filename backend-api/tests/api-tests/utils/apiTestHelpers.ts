@@ -2,9 +2,9 @@ import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
+import { AxiosResponse } from "axios";
 import { randomUUID, UUID } from "crypto";
 import {
-  EVENTS_API_INSTANCE,
   PROXY_API_INSTANCE,
   READ_ID_MOCK_API_INSTANCE,
   SESSIONS_API_INSTANCE,
@@ -12,7 +12,6 @@ import {
   TEST_RESOURCES_API_INSTANCE,
 } from "./apiInstance";
 import { mockClientState } from "./apiTestData";
-import { AxiosResponse } from "axios";
 
 export interface ClientDetails {
   client_id: string;
@@ -260,7 +259,7 @@ async function getEvents({
   partitionKey: string;
   sortKeyPrefix: string;
 }): Promise<unknown[]> {
-  const response = await EVENTS_API_INSTANCE.get("events", {
+  const response = await TEST_RESOURCES_API_INSTANCE.get("events", {
     params: {
       pkPrefix: partitionKey,
       skPrefix: sortKeyPrefix,
