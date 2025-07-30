@@ -20,14 +20,6 @@ Outputs:
       - !Ref DevOverrideStsBaseUrl
       - !FindInMap [EnvironmentVariables, !Ref Environment, STSBASEURL]
 
-  EventsApiUrl:
-    Condition: IsDevOrBuild
-    Description: Events API Gateway base URL
-    Value: !If
-      - UseDevOverrideEventsBaseUrl
-      - !Ref DevOverrideEventsBaseUrl
-      - !FindInMap [EnvironmentVariables, !Ref Environment, EventsBaseUrl]
-
   TestResourcesApiUrl:
     Condition: IsDevOrBuild
     Description: Test Resources API Gateway base URL
