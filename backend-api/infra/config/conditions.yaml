@@ -48,6 +48,11 @@ Conditions:
       - !Ref DevOverrideStsBaseUrl
       - none
 
+  UseDevOverrideEventsBaseUrl: !Not
+    - !Equals
+      - !Ref DevOverrideEventsBaseUrl
+      - none
+
   UseDevOverrideTestResourcesBaseUrl: !Not
     - !Equals
       - !Ref DevOverrideTestResourcesBaseUrl
