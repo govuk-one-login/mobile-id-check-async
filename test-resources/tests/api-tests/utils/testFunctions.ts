@@ -3,14 +3,12 @@ import {
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
 
+import { AxiosInstance } from "axios";
 import {
-  EVENTS_API_INSTANCE,
   PROXY_API_INSTANCE,
   SESSIONS_API_INSTANCE,
   STS_MOCK_API_INSTANCE,
-  TEST_RESOURCES_API_INSTANCE,
 } from "./apiInstances";
-import { AxiosInstance } from "axios";
 
 interface CredentialRequestBody {
   sub: string;
