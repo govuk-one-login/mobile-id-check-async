@@ -1,4 +1,4 @@
-name: backend-api pull request
+name: Backend API Pull Request
 on:
   pull_request:
     branches:
@@ -24,13 +24,22 @@ permissions:
   packages: read
 
 jobs:
-  backend-api-pull-request:
-    name: Backend-api pull request checks
+  ci-checks:
+    name: BRun CI Checks
     if: github.event.pull_request.draft == false
     uses:
-      ./.github/workflows/workflow_pull-request.yml
+      ./.github/workflows/job_ci-checks.yml
     with:
+      PRIVATE_PACKAGES_REQUIRED: true
       WORKING_DIRECTORY: backend-api
+
+  test-suite:
+    name: Run Test Suite
+    if: github.event.pull_request.draft == false
+    uses:
+      ./.github/workflows/job_test-suite.yml
+    with:
       PRIVATE_PACKAGES_REQUIRED: true
       RUN_PACT_TESTS: true
+      WORKING_DIRECTORY: backend-api
     secrets: inherit
