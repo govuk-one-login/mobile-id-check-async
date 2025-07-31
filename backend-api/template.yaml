@@ -14,12 +14,6 @@ Parameters:
     Type: String
     Default: false
 
-  DevOverrideEventsBaseUrl:
-    Description: |
-      Override the EventsBaseUrl value for development deployments
-    Type: String
-    Default: none
-
   DevOverrideReadIdBaseUrl:
     Description: |
       Override the ReadIdBaseUrl value for development deployments
@@ -121,7 +115,6 @@ Mappings:
       EnableDrivingLicence: "true"
       EnableNfcPassport: "true"
       EnableUtopiaTestDocument: "true"
-      EventsBaseUrl: https://events.review-b-async.build.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.build.account.gov.uk/v2
       ReadIdMockBaseUrl: https://readid-mock.review-b-async.build.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.build.account.gov.uk
@@ -140,7 +133,6 @@ Mappings:
       EnableDrivingLicence: "true"
       EnableNfcPassport: "true"
       EnableUtopiaTestDocument: "true"
-      EventsBaseUrl: https://events.review-b-async.dev.account.gov.uk
       ReadIdBaseUrl: https://readid-proxy.review-b-async.dev.account.gov.uk/v2
       ReadIdMockBaseUrl: https://readid-mock.review-b-async.dev.account.gov.uk/v2
       STSBASEURL: https://sts-mock.review-b-async.dev.account.gov.uk
@@ -415,11 +407,6 @@ Conditions:
   UseCodeSigning: !Not
     - !Equals
       - !Ref CodeSigningConfigArn
-      - none
-
-  UseDevOverrideEventsBaseUrl: !Not
-    - !Equals
-      - !Ref DevOverrideEventsBaseUrl
       - none
 
   UseDevOverrideReadIdBaseUrl: !Not
@@ -6899,17 +6886,6 @@ Resources:
     Condition: DeployAlarms
 
 Outputs:
-  EventsApiUrl:
-    Description: Events API Gateway base URL
-    Value: !If
-      - UseDevOverrideEventsBaseUrl
-      - !Ref DevOverrideEventsBaseUrl
-      - !FindInMap
-        - EnvironmentVariables
-        - !Ref Environment
-        - EventsBaseUrl
-    Condition: IsDevOrBuild
-
   IPVCoreKmsEncryptionKeyArn:
     Description: IPV Core KMS Encryption Key ARN
     Value: !GetAtt IPVCoreKMSEncryptionKey.Arn

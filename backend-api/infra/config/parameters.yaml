@@ -28,12 +28,6 @@ Parameters:
     Type: String
     Default: none
 
-  DevOverrideEventsBaseUrl:
-    Description: |
-      Override the EventsBaseUrl value for development deployments
-    Type: String
-    Default: none
-
   DevOverrideTestResourcesBaseUrl:
     Description: |
       Override the TestResourcesBaseUrl value for development deployments
