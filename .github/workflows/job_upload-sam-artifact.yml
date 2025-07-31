@@ -24,7 +24,7 @@ on:
         description: Artifact source bucket for Read ID Mock SAM artifact
         required: true
       GH_ACTIONS_ROLE_ARN:
-        description: AWS Role for pushing the test image and AWS artifact to AWS
+        description: AWS role for pushing the test image and AWS artifact to AWS
         required: true
       SIGNING_PROFILE_NAME:
         description: Profile used to sign SAM artifact

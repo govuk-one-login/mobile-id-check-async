@@ -31,8 +31,8 @@ on:
         required: true
 
 jobs:
-  docker-push:
-    name: "Build and Push Test Image"
+  docker-build-push-sign:
+    name: "Build, Push, and Sign Test Image"
     runs-on: ubuntu-24.04
     defaults:
       run:
