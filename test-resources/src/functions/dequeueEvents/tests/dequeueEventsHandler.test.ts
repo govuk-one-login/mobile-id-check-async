@@ -9,7 +9,7 @@ import { buildLambdaContext } from "../../testUtils/mockContext";
 import {
   IDequeueDependencies,
   lambdaHandlerConstructor,
-} from "../dequeueHandler";
+} from "../dequeueEventsHandler";
 import { TxmaEvent } from "../getEvent";
 import {
   eventNameMissingSQSRecord,

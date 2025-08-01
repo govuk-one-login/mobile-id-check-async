@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: SAM template for the test resources stack. This contains the asynchronous events test harness and the sts-mock applications.
+Description: SAM template for the test resources stack. This contains the asynchronous dequeueing functionality and the sts-mock applications.
 
 Parameters:
   BackendStackName:
@@ -263,26 +263,26 @@ Resources:
           PolicyName: DynamoDBPolicy
       RoleName: !Sub ${AWS::StackName}-dequeue-credential-result
 
-  DequeueEventSourceMapping:
+  DequeueEventsEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
       BatchSize: 10
       Enabled: true
       EventSourceArn: !ImportValue
         Fn::Sub: ${BackendStackName}-txma-sqs-arn
-      FunctionName: !GetAtt DequeueFunction.Arn
+      FunctionName: !GetAtt DequeueEventsFunction.Arn
       FunctionResponseTypes:
         - ReportBatchItemFailures
 
-  DequeueFunction:
+  DequeueEventsFunction:
     Type: AWS::Serverless::Function
     DependsOn:
-      - DequeueLogGroup
+      - DequeueEventsLogGroup
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
         EntryPoints:
-          - src/functions/dequeueEvents/dequeueHandler.ts
+          - src/functions/dequeueEvents/dequeueEventsHandler.ts
         Minify: true
         Sourcemap: false
         Target: es2022
@@ -291,9 +291,9 @@ Resources:
         Variables:
           EVENTS_TABLE_NAME: !Ref EventsTable
           TXMA_EVENT_TTL_DURATION_IN_SECONDS: 900
-      FunctionName: !Sub ${AWS::StackName}-dequeue
-      Handler: dequeueHandler.lambdaHandler
-      Role: !GetAtt DequeueRole.Arn
+      FunctionName: !Sub ${AWS::StackName}-dequeue-events
+      Handler: dequeueEventsHandler.lambdaHandler
+      Role: !GetAtt DequeueEventsRole.Arn
       Timeout: 10
       VpcConfig:
         SecurityGroupIds:
@@ -303,13 +303,13 @@ Resources:
           - !ImportValue devplatform-vpc-PrivateSubnetIdB
           - !ImportValue devplatform-vpc-PrivateSubnetIdC
 
-  DequeueLogGroup:
+  DequeueEventsLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue-events
       RetentionInDays: 30
 
-  DequeueRole:
+  DequeueEventsRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -372,7 +372,7 @@ Resources:
                 Resource: '*'
             Version: "2012-10-17"
           PolicyName: VpcPolicy
-      RoleName: !Sub ${AWS::StackName}-dequeue-role
+      RoleName: !Sub ${AWS::StackName}-dequeue-events-role
 
   EventsTable:
     Type: AWS::DynamoDB::Table

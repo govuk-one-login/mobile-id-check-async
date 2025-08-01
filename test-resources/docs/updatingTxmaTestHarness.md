@@ -3,7 +3,7 @@
 This guide provides the steps for updating the async test harness to process new
 TxMA events being developed in the async backend.
 
-### 1. Update the allowed events in the Dequeue Lambda
+### 1. Update the allowed events in the Dequeue Events Lambda
 
 Update the `allowedTxmaEventNames` array in
 [`getEvents`](../../test-resources/src/functions/dequeueEvents/getEvent.ts) to include
