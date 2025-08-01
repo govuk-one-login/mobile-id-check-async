@@ -227,7 +227,7 @@ describe("STS mock infrastructure", () => {
       });
     });
 
-    test("Dequeue lambda is attached to a VPC and subnets are private", () => {
+    test("Dequeue Events lambda is attached to a VPC and subnets are private", () => {
       const lambdaHandlers = ["dequeueEventsHandler.lambdaHandler"];
       lambdaHandlers.forEach((lambdaHandler) => {
         template.hasResourceProperties("AWS::Serverless::Function", {

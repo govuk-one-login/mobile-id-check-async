@@ -1,4 +1,4 @@
-# Dequeue events
+# Dequeue Events
 
 ## Overview
 
@@ -15,13 +15,13 @@ an asynchronous flow.
 Events can be tested manually by inspecting the queue; however, it is not
 feasible to test events for every deployment.
 
-The Dequeue events functionality provides an automated test solution that can be
+The Dequeue Events functionality provides an automated test solution that can be
 used to replace the manual test effort and therefore can be run as part of
 regression suites in deployment pipelines.
 
 #### The solution
 
-The Dequeue events functionality provides an API Gateway for use in testing to
+The Dequeue Events functionality provides an API Gateway for use in testing to
 query and retrieve events that are sent to the TxMA SQS.
 
 The purpose of the Dequeue functionality is to switch from manual testing to an
@@ -37,7 +37,7 @@ retrieved and tested against with an API.
 
 <img src="dequeue_events_diagram.png">
 
-> ###### Dequeue events flow
+> ###### Dequeue Events flow
 
 ##
 
@@ -47,11 +47,11 @@ retrieved and tested against with an API.
 
 ##
 
-### [Dequeue Lambda](../src/functions/dequeueEvents/dequeueEventsHandler.ts)
+### [Dequeue Events Lambda](../src/functions/dequeueEvents/dequeueEventsHandler.ts)
 
 2. #### Lambda polls SQS for messages
 
-The Dequeue Lambda receives events in batches when new events are added to the
+The Dequeue Events Lambda receives events in batches when new events are added to the
 backend API SQS queue. This is done using an
 [`EventSourceMapping` AWS resource](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-eventsourcemapping.html)
 (an example can be found in the [SAM template](../infra/dequeueEvents/function.yaml)).
@@ -128,13 +128,13 @@ written to DynamoDB, only the messages that failed to write are returned in this
 array. This is known as a
 [partial batch response](https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-errorhandling.html#services-sqs-batchfailurereporting).
 
-Batch items being worked on by the Dequeue Lambda are considered 'in-fight' and
+Batch items being worked on by the Dequeue Events Lambda are considered 'in-fight' and
 cannot be processed by other consumers of the backend API SQS queue due to the
 [visibility timeout](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html).
 
 ##
 
-### Events API
+### Test Resources API
 
 6. #### Retrieving events
 
