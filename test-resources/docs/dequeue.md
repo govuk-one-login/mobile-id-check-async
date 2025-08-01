@@ -47,14 +47,14 @@ retrieved and tested against with an API.
 
 ##
 
-### [Dequeue Lambda](../src/functions/dequeue/dequeueHandler.ts)
+### [Dequeue Lambda](../src/functions/dequeueEvents/dequeueHandler.ts)
 
 2. #### Lambda polls SQS for messages
 
 The Dequeue Lambda receives events in batches when new events are added to the
 backend API SQS queue. This is done using an
 [`EventSourceMapping` AWS resource](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-eventsourcemapping.html)
-(an example can be found in the [SAM template](../../../infra/dequeue/function.yaml)).
+(an example can be found in the [SAM template](../infra/dequeueEvents/function.yaml)).
 
 > The number of TxMA events that are sent in a batch can be configuring by
 specifying the `BatchSize` on the `EventSourceMapping` resource.

@@ -282,7 +282,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         EntryPoints:
-          - src/functions/dequeue/dequeueHandler.ts
+          - src/functions/dequeueEvents/dequeueHandler.ts
         Minify: true
         Sourcemap: false
         Target: es2022

@@ -12,9 +12,9 @@ Resources:
         Target: es2022
         Sourcemap: false
         EntryPoints:
-          - src/functions/dequeue/dequeueHandler.ts
+          - src/functions/dequeueEvents/dequeueHandler.ts
     Properties:
-      FunctionName: !Sub ${AWS::StackName}-dequeue      
+      FunctionName: !Sub ${AWS::StackName}-dequeue
       Handler: dequeueHandler.lambdaHandler
       Role: !GetAtt DequeueRole.Arn
       Environment:
