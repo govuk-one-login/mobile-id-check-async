@@ -783,6 +783,22 @@ Resources:
                 Resource: !GetAtt CredentialResultsTable.Arn
             Version: "2012-10-17"
           PolicyName: CredentialResultPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - dynamodb:Query
+                Condition:
+                  ForAllValues:StringEquals:
+                    dynamodb:Attributes:
+                      - pk
+                      - sk
+                      - event
+                  StringEquals:
+                    dynamodb:Select: SPECIFIC_ATTRIBUTES
+                Effect: Allow
+                Resource: !GetAtt EventsTable.Arn
+            Version: "2012-10-17"
+          PolicyName: EventsPolicy
       RoleName: !Sub ${AWS::StackName}-api
 
   TokenFunction:

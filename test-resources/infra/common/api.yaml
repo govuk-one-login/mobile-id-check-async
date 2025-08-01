@@ -66,6 +66,22 @@ Resources:
                       - body
                   StringEquals:
                     dynamodb:Select: SPECIFIC_ATTRIBUTES
+        - PolicyName: EventsPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                - "dynamodb:Query"
+                Resource: !GetAtt EventsTable.Arn
+                Condition:
+                  ForAllValues:StringEquals:
+                    dynamodb:Attributes:
+                      - pk
+                      - sk
+                      - event
+                  StringEquals:
+                    dynamodb:Select: SPECIFIC_ATTRIBUTES
 
   TestResourcesApiAccessLogs:
     Type: AWS::Logs::LogGroup
