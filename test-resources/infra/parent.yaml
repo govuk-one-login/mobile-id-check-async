@@ -75,6 +75,14 @@ Mappings:
     build:
       ReservedConcurrentExecutions: 160
 
+  EventsApiGateway:
+    dev:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+    build:
+      ApiBurstLimit: 10
+      ApiRateLimit: 10
+
   TestResourcesApiGateway:
     dev:
       ApiBurstLimit: 10
@@ -140,15 +148,19 @@ Outputs:
     Description: STS Mock API Gateway DNS
     Value: !Sub https://${StsMockApiDomainName}
 
+  EventsApiUrl:
+    Description: Events API URL
+    Value: !Sub https://${EventsApiDomainName}
+
   ProxyApiUrl:
-    Description: Proxy API URL used in the client credentials grant flow API tests
+    Description: Proxy API URL used in the Events API tests
     Value: !If
       - UseDevOverrideProxyBaseUrl
       - !Ref DevOverrideProxyBaseUrl
       - !Sub https://proxy.review-b-async.${Environment}.account.gov.uk
 
   SessionsApiUrl:
-    Description: Sessions API URL used in API tests
+    Description: Sessions API URL used in the Events API tests
     Value: !If
       - UseDevOverrideSessionsBaseUrl
       - !Ref DevOverrideSessionsBaseUrl
