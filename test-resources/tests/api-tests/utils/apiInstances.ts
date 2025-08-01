@@ -8,7 +8,6 @@ dotenv.config();
 export const STS_MOCK_API_INSTANCE = getStsMockInstance();
 export const SESSIONS_API_INSTANCE = getSessionsApiInstance();
 export const PROXY_API_INSTANCE = getProxyApiInstance();
-export const EVENTS_API_INSTANCE = getEventsApiInstance();
 export const TEST_RESOURCES_API_INSTANCE = getTestResourcesApiInstance();
 
 function getStsMockInstance() {
@@ -29,13 +28,6 @@ function getProxyApiInstance() {
   const apiUrl = process.env.PROXY_API_URL;
   if (!apiUrl)
     throw new Error("PROXY_API_URL needs to be defined for API tests");
-  return getInstance(apiUrl, true);
-}
-
-function getEventsApiInstance() {
-  const apiUrl = process.env.EVENTS_API_URL;
-  if (!apiUrl)
-    throw new Error("EVENTS_API_URL needs to be defined for API tests");
   return getInstance(apiUrl, true);
 }
 

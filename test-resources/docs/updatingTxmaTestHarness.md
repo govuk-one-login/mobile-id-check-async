@@ -24,10 +24,11 @@ export const allowedTxmaEventNames = [
 
 ### 2. Test the event is being dequeued correctly
 
-1. Write the event to the TxMA SQS by triggering the Lambda that sends the event. Alternatively, directly add a message to the TxMA SQS.
+1. Write the event to the TxMA SQS by triggering the Lambda that sends the
+event. Alternatively, directly add a message to the TxMA SQS.
 
-1. Make a request to the `/events` API to validate the event has been
-correctly dequeued and present in DynamoDB.
+1. Make a request to the `/events` endpoint on the test-resources API to
+validate the event has been correctly dequeued and present in DynamoDB.
 
 ###### Example event sent to TxMA SQS
 
@@ -51,7 +52,7 @@ correctly dequeued and present in DynamoDB.
 
 ###### Example request to the `/events` endpoint
 
-This API requires Signature V4 headers as it uses `IAM_AUTH` authorization.
+The test-resources API requires Signature V4 headers as it uses `IAM_AUTH` authorization.
 This can be done with a combination of `axios` and `aws4-axios` npm packages.
 
 ```typescript
