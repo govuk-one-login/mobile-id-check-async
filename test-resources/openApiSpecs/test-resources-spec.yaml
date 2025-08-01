@@ -443,7 +443,7 @@ paths:
         httpMethod: "POST"
         uri: "arn:aws:apigateway:eu-west-2:dynamodb:action/Query"
         credentials:
-          Fn::GetAtt: ["EventsApiRole", "Arn"]
+          Fn::GetAtt: ["TestResourcesApiRole", "Arn"]
         requestTemplates:
           application/json:
             Fn::Sub:

@@ -53,14 +53,6 @@ Mappings:
     dev:
       BaseDns: review-b-async.dev.account.gov.uk
 
-  EventsApiGateway:
-    build:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
-    dev:
-      ApiBurstLimit: 10
-      ApiRateLimit: 10
-
   StsMockApiGateway:
     build:
       ApiBurstLimit: 400
@@ -381,126 +373,6 @@ Resources:
             Version: "2012-10-17"
           PolicyName: VpcPolicy
       RoleName: !Sub ${AWS::StackName}-dequeue-role
-
-  EventsApi:
-    Type: AWS::Serverless::Api
-    Properties:
-      AccessLogSetting:
-        DestinationArn: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${EventsApiAccessLogs}
-        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
-      Auth:
-        ApiKeyRequired: false
-        DefaultAuthorizer: AWS_IAM
-        ResourcePolicy:
-          AwsAccountWhitelist: !Sub ${AWS::AccountId}
-      DefinitionBody:
-        Fn::Transform:
-          Name: AWS::Include
-          Parameters:
-            Location: ./openApiSpecs/events-spec.yaml
-      Description: API gateway for retrieving events
-      EndpointConfiguration: REGIONAL
-      MethodSettings:
-        - DataTraceEnabled: true
-          HttpMethod: '*'
-          LoggingLevel: INFO
-          MetricsEnabled: true
-          ResourcePath: /*
-          ThrottlingBurstLimit: !FindInMap
-            - EventsApiGateway
-            - !Ref Environment
-            - ApiBurstLimit
-          ThrottlingRateLimit: !FindInMap
-            - EventsApiGateway
-            - !Ref Environment
-            - ApiRateLimit
-      Name: !Sub ${AWS::StackName}-events
-      OpenApiVersion: 3.0.1
-      StageName: !Ref Environment
-
-  EventsApiAccessLogs:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-events-api-access-logs-${Environment}
-      RetentionInDays: 30
-
-  EventsApiBasePathMapping:
-    Type: AWS::ApiGateway::BasePathMapping
-    Properties:
-      DomainName: !Ref EventsApiDomainName
-      RestApiId: !Ref EventsApi
-      Stage: !Ref EventsApi.Stage
-
-  EventsApiDomainName:
-    Type: AWS::ApiGateway::DomainName
-    Properties:
-      DomainName: !If
-        - DevelopmentStack
-        - !Sub
-          - events-${AWS::StackName}.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
-        - !Sub
-          - events.${DNS_RECORD}
-          - DNS_RECORD: !FindInMap
-              - DNS
-              - !Ref Environment
-              - BaseDns
-      EndpointConfiguration:
-        Types:
-          - REGIONAL
-      RegionalCertificateArn: !If
-        - DevelopmentStack
-        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneWildcardCertificateV1ARN}}'
-        - !Sub '{{resolve:ssm:/${Environment}/Platform/ACM/AsyncPrimaryZoneEventsCertificateV1ARN}}'
-      SecurityPolicy: TLS_1_2
-
-  EventsApiRecordSet:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      AliasTarget:
-        DNSName: !GetAtt EventsApiDomainName.RegionalDomainName
-        HostedZoneId: !GetAtt EventsApiDomainName.RegionalHostedZoneId
-      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Platform/Route53/PrimaryZoneID}}'
-      Name: !Ref EventsApiDomainName
-      Type: A
-
-  EventsApiRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action:
-              - sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service:
-                - apigateway.amazonaws.com
-        Version: "2012-10-17"
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-      Policies:
-        - PolicyDocument:
-            Statement:
-              - Action:
-                  - dynamodb:Query
-                Condition:
-                  ForAllValues:StringEquals:
-                    dynamodb:Attributes:
-                      - pk
-                      - sk
-                      - event
-                  StringEquals:
-                    dynamodb:Select: SPECIFIC_ATTRIBUTES
-                Effect: Allow
-                Resource: !GetAtt EventsTable.Arn
-            Version: "2012-10-17"
-          PolicyName: EventsPolicy
-      RoleName: !Sub ${AWS::StackName}-events-api
 
   EventsTable:
     Type: AWS::DynamoDB::Table
@@ -911,6 +783,22 @@ Resources:
                 Resource: !GetAtt CredentialResultsTable.Arn
             Version: "2012-10-17"
           PolicyName: CredentialResultPolicy
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - dynamodb:Query
+                Condition:
+                  ForAllValues:StringEquals:
+                    dynamodb:Attributes:
+                      - pk
+                      - sk
+                      - event
+                  StringEquals:
+                    dynamodb:Select: SPECIFIC_ATTRIBUTES
+                Effect: Allow
+                Resource: !GetAtt EventsTable.Arn
+            Version: "2012-10-17"
+          PolicyName: EventsPolicy
       RoleName: !Sub ${AWS::StackName}-api
 
   TokenFunction:
@@ -1008,19 +896,15 @@ Resources:
       RoleName: !Sub ${AWS::StackName}-sts-mock-token
 
 Outputs:
-  EventsApiUrl:
-    Description: Events API URL
-    Value: !Sub https://${EventsApiDomainName}
-
   ProxyApiUrl:
-    Description: Proxy API URL used in the Events API tests
+    Description: Proxy API URL used in the client credentials grant flow API tests
     Value: !If
       - UseDevOverrideProxyBaseUrl
       - !Ref DevOverrideProxyBaseUrl
       - !Sub https://proxy.review-b-async.${Environment}.account.gov.uk
 
   SessionsApiUrl:
-    Description: Sessions API URL used in the Events API tests
+    Description: Sessions API URL used in API tests
     Value: !If
       - UseDevOverrideSessionsBaseUrl
       - !Ref DevOverrideSessionsBaseUrl

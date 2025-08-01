@@ -139,5 +139,4 @@ cannot be processed by other consumers of the backend API SQS queue due to the
 6. #### Retrieving events
 
 Events successfully written to the Events table can be retrieved using
-the `GET /events` endpoint on the test-resources
-[Events API](../../../openApiSpecs/events-spec.yaml)
+the `GET /events` endpoint on the [test-resources API](../openApiSpecs/test-resources-spec.yaml)
