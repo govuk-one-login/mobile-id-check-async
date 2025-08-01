@@ -24,6 +24,8 @@ jobs:
       run:
         shell: bash
         working-directory: ${{ inputs.WORKING_DIRECTORY }}
+    env:
+      CONTINUE_ON_ERROR: ${{ inputs.CONTINUE_ON_ERROR }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -47,7 +49,7 @@ jobs:
 
       - name: Run SonarQube Quality Gate Check
         uses: Sonarsource/sonarqube-quality-gate-action@8406f4f1edaffef38e9fb9c53eb292fc1d7684fa #master
-        continue-on-error: ${{ inputs.CONTINUE_ON_ERROR }}
+        continue-on-error: ${{ fromJSON(env.CONTINUE_ON_ERROR) }}
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
