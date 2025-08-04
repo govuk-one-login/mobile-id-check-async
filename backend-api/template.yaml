@@ -3797,6 +3797,7 @@ Resources:
           - !Ref Environment
           - IssueBiometricCredentialReservedConcurrentExecutions
       Role: !GetAtt AsyncIssueBiometricCredentialLambdaRole.Arn
+      Timeout: 1
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -6606,7 +6607,7 @@ Resources:
   VendorProcessingSqs:
     Type: AWS::SQS::Queue
     Properties:
-      DelaySeconds: 5
+      DelaySeconds: 7
       KmsMasterKeyId: !Ref VendorProcessingKeyAlias
       MessageRetentionPeriod: 1209600
       QueueName: !Sub ${AWS::StackName}-vendor-processing
@@ -6614,7 +6615,7 @@ Resources:
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt VendorProcessingDlq.Arn
         maxReceiveCount: 360
-      VisibilityTimeout: 10
+      VisibilityTimeout: 2
 
   VendorProcessingSqsAgeOfOldestMessageAlarm:
     Type: AWS::CloudWatch::Alarm
