@@ -79,4 +79,11 @@ describe("ResultSent", () => {
       });
     });
   });
+
+  describe("When I request the validPriorSessionStates", () => {
+    it("Returns an empty array of session states which are valid for ResultSent", () => {
+      const result = resultSent.getValidPriorSessionStates();
+      expect(result).toEqual([])
+    });
+  });
 });

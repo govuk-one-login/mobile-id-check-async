@@ -137,4 +137,11 @@ describe("BiometricTokenIssued", () => {
       });
     });
   });
+
+  describe("When I request the validPriorSessionStates", () => {
+    it("Returns an array of one session state which is valid for BiometricTokenIssued", () => {
+      const result = biometricTokenIssued.getValidPriorSessionStates();
+      expect(result).toEqual([SessionState.AUTH_SESSION_CREATED]);
+    });
+  });
 });

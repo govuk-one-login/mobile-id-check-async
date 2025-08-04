@@ -123,4 +123,11 @@ describe("BiometricSessionFinished", () => {
       });
     });
   });
+
+  describe("When I request the validPriorSessionStates", () => {
+    it("Returns an array of one session state which is valid for BiometricSessionFinished", () => {
+      const result = biometricSessionFinished.getValidPriorSessionStates();
+      expect(result).toEqual([SessionState.BIOMETRIC_TOKEN_ISSUED]);
+    });
+  });
 });
