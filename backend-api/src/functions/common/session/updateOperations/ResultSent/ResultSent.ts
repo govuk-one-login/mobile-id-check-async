@@ -31,4 +31,8 @@ export class ResultSent implements UpdateSessionOperation {
   ): Result<SessionAttributes, GetSessionAttributesInvalidAttributesError> {
     return getBiometricSessionFinishedSessionAttributes(item);
   }
+
+  getValidPriorSessionStates(): Array<string> {
+    return [];
+  }
 }

@@ -52,4 +52,11 @@ export class AbortSession implements UpdateSessionOperation {
       return getAuthSessionAbortedAttributes(item);
     }
   }
+
+  getValidPriorSessionStates(): Array<string> {
+    return [
+      SessionState.AUTH_SESSION_CREATED,
+      SessionState.BIOMETRIC_TOKEN_ISSUED,
+    ];
+  }
 }

@@ -23,6 +23,7 @@ import {
 import { BiometricTokenIssued } from "../../../common/session/updateOperations/BiometricTokenIssued/BiometricTokenIssued";
 import { UpdateSessionOperation } from "../../../common/session/updateOperations/UpdateSessionOperation";
 import {
+  invalidBaseSessionAttributeState,
   invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
   invalidBiometricTokenIssuedSessionAttributeTypes,
   mockSessionId,
@@ -181,6 +182,10 @@ describe("DynamoDbAdapter", () => {
                 conditionExpression:
                   updateOperation.getDynamoDbConditionExpression(),
               },
+              debugStates: {
+                actual: "ASYNC_AUTH_SESSION_CREATED",
+                wanted: ["ASYNC_AUTH_SESSION_CREATED"],
+              },
             });
           });
 
@@ -189,6 +194,48 @@ describe("DynamoDbAdapter", () => {
               errorResult({
                 errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
                 attributes: validBaseSessionAttributes,
+              }),
+            );
+          });
+        });
+
+        describe("Given invalid session state was returned in response", () => {
+          beforeEach(async () => {
+            mockDynamoDbClient.on(UpdateItemCommand).rejects(
+              new ConditionalCheckFailedException({
+                $metadata: {},
+                message: "Conditional check failed",
+                Item: marshall(invalidBaseSessionAttributeState),
+              }),
+            );
+            result = await sessionRegistry.updateSession(
+              "mock_session_id",
+              updateOperation,
+            );
+          });
+
+          it("Logs the failure", () => {
+            expect(consoleErrorSpy).toHaveBeenCalledWithLogFields({
+              messageCode:
+                "MOBILE_ASYNC_UPDATE_SESSION_CONDITIONAL_CHECK_FAILURE",
+              error: "Conditional check failed",
+              data: {
+                updateExpression: updateOperation.getDynamoDbUpdateExpression(),
+                conditionExpression:
+                  updateOperation.getDynamoDbConditionExpression(),
+              },
+              debugStates: {
+                actual: "ASYNC_AUTH_SESSION_ABORTED",
+                wanted: ["ASYNC_AUTH_SESSION_CREATED"],
+              },
+            });
+          });
+
+          it("Returns failure with conditional check failure error", () => {
+            expect(result).toEqual(
+              errorResult({
+                errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
+                attributes: invalidBaseSessionAttributeState,
               }),
             );
           });

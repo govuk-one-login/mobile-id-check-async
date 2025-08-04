@@ -167,6 +167,18 @@ export const invalidBaseSessionAttributeTypes = {
   timeToLive: "12345", // Invalid type
 };
 
+export const invalidBaseSessionAttributeState = {
+  clientId: "mockClientId",
+  govukSigninJourneyId: mockGovukSigninJourneyId,
+  createdAt: validCreatedAt,
+  issuer: mockIssuer,
+  sessionId: mockSessionId,
+  sessionState: SessionState.AUTH_SESSION_ABORTED, // Invalid state
+  clientState: mockClientState,
+  subjectIdentifier: mockSubjectIdentifier,
+  timeToLive: 12345,
+};
+
 export const validBiometricTokenIssuedSessionAttributes = {
   ...validBaseSessionAttributes,
   sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,

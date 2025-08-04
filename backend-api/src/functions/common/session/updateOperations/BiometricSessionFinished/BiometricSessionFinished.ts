@@ -44,4 +44,10 @@ export class BiometricSessionFinished implements UpdateSessionOperation {
       return getBiometricSessionFinishedSessionAttributes(item);
     }
   }
+
+  getValidPriorSessionStates(): Array<string> {
+    return [
+      SessionState.BIOMETRIC_TOKEN_ISSUED,
+    ];
+  }
 }
