@@ -46,8 +46,6 @@ export class BiometricTokenIssued implements UpdateSessionOperation {
   }
 
   getValidPriorSessionStates(): Array<string> {
-    return [
-      SessionState.AUTH_SESSION_CREATED,
-    ];
+    return [SessionState.AUTH_SESSION_CREATED];
   }
 }

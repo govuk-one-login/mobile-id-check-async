@@ -14,4 +14,4 @@ export interface UpdateSessionOperation {
     },
   ): Result<SessionAttributes, GetSessionAttributesInvalidAttributesError>;
   getValidPriorSessionStates(): Array<string>;
-};
+}

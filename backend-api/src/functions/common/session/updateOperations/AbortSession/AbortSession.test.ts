@@ -164,13 +164,16 @@ describe("AbortSession", () => {
           successResult(unmarshall(validAbortSessionAttributesItem)),
         );
       });
-    });    
+    });
   });
 
   describe("When I request the validPriorSessionStates", () => {
     it("Returns an array of two session states which are valid for AbortSession", () => {
       const result = abortSession.getValidPriorSessionStates();
-      expect(result).toEqual([SessionState.AUTH_SESSION_CREATED, SessionState.BIOMETRIC_TOKEN_ISSUED]);
+      expect(result).toEqual([
+        SessionState.AUTH_SESSION_CREATED,
+        SessionState.BIOMETRIC_TOKEN_ISSUED,
+      ]);
     });
   });
 });
