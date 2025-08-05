@@ -167,7 +167,7 @@ export const invalidBaseSessionAttributeTypes = {
   timeToLive: "12345", // Invalid type
 };
 
-export const invalidBaseSessionAttributeState = {
+export const invalidBaseSessionAttributeSessionState = {
   clientId: "mockClientId",
   govukSigninJourneyId: mockGovukSigninJourneyId,
   createdAt: validCreatedAt,

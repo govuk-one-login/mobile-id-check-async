@@ -272,15 +272,15 @@ export class DynamoDbAdapter implements SessionRegistry {
             sessionAttributes,
           );
         }
-        const debugStates: { actual: string; wanted: Array<string> } = {
+        const sessionStates: { actual: string; valid: Array<string> } = {
           actual: error.Item?.sessionState.S || "unknown",
-          wanted: updateOperation.getValidPriorSessionStates(),
+          valid: updateOperation.getValidPriorSessionStates(),
         };
         return this.handleUpdateSessionConditionalCheckFailure(
           error,
           updateExpressionDataToLog,
           getAttributesResult.value,
-          debugStates,
+          sessionStates,
         );
       }
 
@@ -374,12 +374,14 @@ export class DynamoDbAdapter implements SessionRegistry {
     error: ConditionalCheckFailedException,
     updateOperationDataToLog: UpdateOperationDataToLog,
     sessionAttributes: SessionAttributes,
-    debugStates: { actual: string; wanted: Array<string> },
+    sessionStates: { actual: string; valid: Array<string> },
   ): FailureWithValue<SessionUpdateFailedConditionalCheckFailure> {
     logger.error(LogMessage.UPDATE_SESSION_CONDITIONAL_CHECK_FAILURE, {
       error: error.message,
-      data: updateOperationDataToLog,
-      debugStates: debugStates,
+      data: {
+        ...updateOperationDataToLog,
+        sessionStates,
+      },
     });
 
     return errorResult({
