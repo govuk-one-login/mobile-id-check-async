@@ -3797,7 +3797,6 @@ Resources:
           - !Ref Environment
           - IssueBiometricCredentialReservedConcurrentExecutions
       Role: !GetAtt AsyncIssueBiometricCredentialLambdaRole.Arn
-      Timeout: 1
       VpcConfig:
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
@@ -6615,7 +6614,7 @@ Resources:
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt VendorProcessingDlq.Arn
         maxReceiveCount: 360
-      VisibilityTimeout: 2
+      VisibilityTimeout: 10
 
   VendorProcessingSqsAgeOfOldestMessageAlarm:
     Type: AWS::CloudWatch::Alarm
