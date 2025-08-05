@@ -15,6 +15,7 @@ Resources:
     Properties:
       FunctionName: !Sub ${AWS::StackName}-issue-biometric-credential
       Handler: asyncIssueBiometricCredentialHandler.lambdaHandler
+      Timeout: 1
       DeploymentPreference:
         Enabled: true
         Alarms: !If
