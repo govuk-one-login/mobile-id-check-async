@@ -6,7 +6,7 @@ Resources:
       QueueName: !Sub ${AWS::StackName}-vendor-processing
       MessageRetentionPeriod: 1209600
       VisibilityTimeout: 10
-      DelaySeconds: 5
+      DelaySeconds: 7
       ReceiveMessageWaitTimeSeconds: 5
       KmsMasterKeyId: !Ref VendorProcessingKeyAlias
       RedrivePolicy:
