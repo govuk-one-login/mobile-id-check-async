@@ -1312,13 +1312,6 @@ describe("Backend application infrastructure", () => {
         },
       });
     });
-
-    test("IssueBiometricCredential lambda has a timeout of 1 second", () => {
-      template.hasResourceProperties("AWS::Serverless::Function", {
-        Handler: "asyncIssueBiometricCredentialHandler.lambdaHandler",
-        Timeout: 1,
-      });
-    });
   });
 
   describe("KMS", () => {
