@@ -2,8 +2,7 @@ import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { Result } from "../../../../utils/result";
 import {
   SessionAttributes,
-  SessionState,
-  SessionStatesByToken,
+  SessionState
 } from "../../session";
 import {
   getAuthSessionAbortedAttributes,
@@ -19,32 +18,20 @@ export class AbortSession extends UpdateSessionOperation {
     super();
   }
 
-  static nextSessionState = ":abortedState";
-  static validPriorSessionStateTokens = [
-    ":authCreatedState",
-    ":biometricTokenIssuedState",
+  static nextSessionState = SessionState.AUTH_SESSION_ABORTED;
+  static validPriorSessionStates = [
+    SessionState.AUTH_SESSION_CREATED,
+    SessionState.BIOMETRIC_TOKEN_ISSUED,
   ];
 
   getDynamoDbUpdateExpression() {
-    return `set sessionState = ${AbortSession.nextSessionState}`;
+    return `set sessionState = :${AbortSession.nextSessionState}`;
   }
 
   getDynamoDbConditionExpression(): string {
     return `attribute_exists(sessionId) AND 
-            ${this.validSessionStatesCondition()} AND 
+            ${this.validSessionStatesCondition(AbortSession.validPriorSessionStates)} AND 
             createdAt > :oneHourAgoInMilliseconds`;
-  }
-
-  // TODO: every operation will have this.  Extract it.  Do we need an abstract operation class that
-  // sits between UpdateSessionOperation and child classes like this one?
-  validSessionStatesCondition() {
-    return (
-      "(" +
-      AbortSession.validPriorSessionStateTokens
-        .map((token) => `sessionState = ${token}`)
-        .join(" OR ") +
-      ")"
-    );
   }
 
   getDynamoDbExpressionAttributeValues() {
@@ -54,9 +41,9 @@ export class AbortSession extends UpdateSessionOperation {
 
     [
       AbortSession.nextSessionState,
-      ...AbortSession.validPriorSessionStateTokens,
-    ].forEach((stateToken) => {
-      values[stateToken] = { S: SessionStatesByToken[stateToken] };
+      ...AbortSession.validPriorSessionStates,
+    ].forEach((state) => {
+      values[`:${state}`] = { S: state };
     });
 
     return values;
@@ -82,8 +69,6 @@ export class AbortSession extends UpdateSessionOperation {
   }
 
   getValidPriorSessionStates(): Array<string> {
-    return AbortSession.validPriorSessionStateTokens.map(
-      (token) => SessionStatesByToken[token],
-    );
+    return AbortSession.validPriorSessionStates;
   }
 }

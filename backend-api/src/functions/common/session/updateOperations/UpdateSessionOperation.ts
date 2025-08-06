@@ -17,4 +17,15 @@ export abstract class UpdateSessionOperation {
     },
   ): Result<SessionAttributes, GetSessionAttributesInvalidAttributesError>;
   abstract getValidPriorSessionStates(): Array<string>;
+
+  // Derived classes may use this to build a DynamoDB Condition Expression.
+  validSessionStatesCondition(validPriorSessionStates: Array<string>) {
+    return (
+      "(" +
+      validPriorSessionStates
+        .map((state) => `sessionState = :${state}`)
+        .join(" OR ") +
+      ")"
+    );
+  }
 }

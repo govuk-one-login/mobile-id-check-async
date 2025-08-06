@@ -27,7 +27,7 @@ describe("AbortSession", () => {
   describe("When I request the DynamoDB UpdateExpression", () => {
     it("Returns the appropriate UpdateExpression string", () => {
       const result = abortSession.getDynamoDbUpdateExpression();
-      expect(result).toEqual("set sessionState = :abortedState");
+      expect(result).toEqual("set sessionState = :ASYNC_AUTH_SESSION_ABORTED");
     });
   });
 
@@ -36,7 +36,7 @@ describe("AbortSession", () => {
       const result = abortSession.getDynamoDbConditionExpression();
       expect(result).toEqual(
         `attribute_exists(sessionId) AND 
-            (sessionState = :authCreatedState OR sessionState = :biometricTokenIssuedState) AND 
+            (sessionState = :ASYNC_AUTH_SESSION_CREATED OR sessionState = :ASYNC_BIOMETRIC_TOKEN_ISSUED) AND 
             createdAt > :oneHourAgoInMilliseconds`,
       );
     });
@@ -46,11 +46,11 @@ describe("AbortSession", () => {
     it("Returns the ExpressionAttributeValues with the correct values", () => {
       const result = abortSession.getDynamoDbExpressionAttributeValues();
       expect(result).toEqual({
-        ":abortedState": {
+        ":ASYNC_AUTH_SESSION_ABORTED": {
           S: SessionState.AUTH_SESSION_ABORTED,
         },
-        ":authCreatedState": { S: SessionState.AUTH_SESSION_CREATED },
-        ":biometricTokenIssuedState": {
+        ":ASYNC_AUTH_SESSION_CREATED": { S: SessionState.AUTH_SESSION_CREATED },
+        ":ASYNC_BIOMETRIC_TOKEN_ISSUED": {
           S: SessionState.BIOMETRIC_TOKEN_ISSUED,
         },
         ":oneHourAgoInMilliseconds": {
