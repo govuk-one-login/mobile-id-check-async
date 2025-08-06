@@ -6614,7 +6614,7 @@ Resources:
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt VendorProcessingDlq.Arn
         maxReceiveCount: 360
-      VisibilityTimeout: 10
+      VisibilityTimeout: 6
 
   VendorProcessingSqsAgeOfOldestMessageAlarm:
     Type: AWS::CloudWatch::Alarm
