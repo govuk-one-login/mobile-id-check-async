@@ -14,8 +14,10 @@ import { UpdateSessionOperation } from "../UpdateSessionOperation";
 import { oneHourAgoInMilliseconds } from "../../../../utils/utils";
 import { GetSessionAttributesInvalidAttributesError } from "../../SessionRegistry/types";
 
-export class AbortSession implements UpdateSessionOperation {
-  constructor(private readonly sessionId: string) {}
+export class AbortSession extends UpdateSessionOperation {
+  constructor(private readonly sessionId: string) {
+    super();
+  }
 
   static nextSessionState = ":abortedState";
   static validPriorSessionStateTokens = [

@@ -9,8 +9,10 @@ import { UpdateSessionOperation } from "../UpdateSessionOperation";
 import { oneHourAgoInMilliseconds } from "../../../../utils/utils";
 import { GetSessionAttributesInvalidAttributesError } from "../../SessionRegistry/types";
 
-export class BiometricSessionFinished implements UpdateSessionOperation {
-  constructor(private readonly biometricSessionId: string) {}
+export class BiometricSessionFinished extends UpdateSessionOperation {
+  constructor(private readonly biometricSessionId: string) {
+    super();
+  }
 
   getDynamoDbUpdateExpression() {
     return "set biometricSessionId = :biometricSessionId, sessionState = :biometricSessionFinished";

@@ -5,8 +5,10 @@ import { getBiometricSessionFinishedSessionAttributes } from "../../sessionAttri
 import { UpdateSessionOperation } from "../UpdateSessionOperation";
 import { GetSessionAttributesInvalidAttributesError } from "../../SessionRegistry/types";
 
-export class ResultSent implements UpdateSessionOperation {
-  constructor(private readonly sessionId: string) {}
+export class ResultSent extends UpdateSessionOperation {
+  constructor(private readonly sessionId: string) {
+    super();
+  }
 
   getDynamoDbUpdateExpression() {
     return "set sessionState = :resultSent";

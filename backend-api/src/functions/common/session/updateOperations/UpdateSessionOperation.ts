@@ -3,15 +3,18 @@ import { Result } from "../../../utils/result";
 import { SessionAttributes } from "../session";
 import { GetSessionAttributesInvalidAttributesError } from "../SessionRegistry/types";
 
-export interface UpdateSessionOperation {
-  getDynamoDbUpdateExpression(): string;
-  getDynamoDbConditionExpression(): string | undefined;
-  getDynamoDbExpressionAttributeValues(): Record<string, AttributeValue>;
-  getSessionAttributesFromDynamoDbItem(
+export abstract class UpdateSessionOperation {
+  abstract getDynamoDbUpdateExpression(): string;
+  abstract getDynamoDbConditionExpression(): string | undefined;
+  abstract getDynamoDbExpressionAttributeValues(): Record<
+    string,
+    AttributeValue
+  >;
+  abstract getSessionAttributesFromDynamoDbItem(
     item: Record<string, AttributeValue>,
     options?: {
       operationFailed: boolean;
     },
   ): Result<SessionAttributes, GetSessionAttributesInvalidAttributesError>;
-  getValidPriorSessionStates(): Array<string>;
+  abstract getValidPriorSessionStates(): Array<string>;
 }

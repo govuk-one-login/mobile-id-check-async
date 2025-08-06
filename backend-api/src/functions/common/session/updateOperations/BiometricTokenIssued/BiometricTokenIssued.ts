@@ -8,11 +8,13 @@ import {
 import { UpdateSessionOperation } from "../UpdateSessionOperation";
 import { oneHourAgoInMilliseconds } from "../../../../utils/utils";
 
-export class BiometricTokenIssued implements UpdateSessionOperation {
+export class BiometricTokenIssued extends UpdateSessionOperation {
   constructor(
     private readonly documentType: DocumentType,
     private readonly opaqueId: string,
-  ) {}
+  ) {
+    super();
+  }
 
   getDynamoDbUpdateExpression() {
     return "set documentType = :documentType, opaqueId = :opaqueId, sessionState = :biometricTokenIssued";
