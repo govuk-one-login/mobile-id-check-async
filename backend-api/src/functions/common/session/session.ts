@@ -8,18 +8,6 @@ export enum SessionState {
   RESULT_SENT = "ASYNC_RESULT_SENT",
 }
 
-type SessionStateTokenToName = {
-  [key: string]: string;
-};
-
-export const SessionStatesByToken: SessionStateTokenToName = {
-  ":authCreatedState": SessionState.AUTH_SESSION_CREATED,
-  ":biometricTokenIssuedState": SessionState.BIOMETRIC_TOKEN_ISSUED,
-  ":biometricSessionFinished": SessionState.BIOMETRIC_SESSION_FINISHED,
-  ":abortedState": SessionState.AUTH_SESSION_ABORTED,
-  ":resultSent": SessionState.RESULT_SENT,
-};
-
 export type SessionAttributes =
   | BaseSessionAttributes
   | BiometricTokenIssuedSessionAttributes
