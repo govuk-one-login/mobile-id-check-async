@@ -10,8 +10,11 @@ export class ResultSent extends UpdateSessionOperation {
     super();
   }
 
+  static nextSessionState = SessionState.RESULT_SENT;
+  static validPriorSessionStates = [];
+
   getDynamoDbUpdateExpression() {
-    return "set sessionState = :resultSent";
+    return `set sessionState = :${ResultSent.nextSessionState}`;
   }
 
   // This prevents trying to accidentally create a session past the ttl (e.g. redriving the DLQ 24 hours later)
@@ -20,11 +23,10 @@ export class ResultSent extends UpdateSessionOperation {
   }
 
   getDynamoDbExpressionAttributeValues() {
-    return {
-      ":resultSent": {
-        S: SessionState.RESULT_SENT,
-      },
-    };
+    return this.sessionStateAttributeValues(
+      ResultSent.nextSessionState,
+      ResultSent.validPriorSessionStates,
+    );
   }
 
   // This function has been added to satisfy the interface. The issueBiometricCredential lambda that uses this operation does not need the output from Dynamo - it performs a GetItem operation earlier in the lambda flow. Rather than make a wider refactor to the UpdateOperation interface, we have decided to follow this approach for now, acknowledging that it isn't the best solution.
@@ -35,6 +37,6 @@ export class ResultSent extends UpdateSessionOperation {
   }
 
   getValidPriorSessionStates(): Array<string> {
-    return [];
+    return ResultSent.validPriorSessionStates;
   }
 }

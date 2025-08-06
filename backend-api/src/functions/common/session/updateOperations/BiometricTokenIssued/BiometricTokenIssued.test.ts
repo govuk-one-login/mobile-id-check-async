@@ -29,7 +29,7 @@ describe("BiometricTokenIssued", () => {
     it("Returns the appropriate UpdateExpression string", () => {
       const result = biometricTokenIssued.getDynamoDbUpdateExpression();
       expect(result).toEqual(
-        "set documentType = :documentType, opaqueId = :opaqueId, sessionState = :biometricTokenIssued",
+        "set documentType = :documentType, opaqueId = :opaqueId, sessionState = :ASYNC_BIOMETRIC_TOKEN_ISSUED",
       );
     });
   });
@@ -38,7 +38,7 @@ describe("BiometricTokenIssued", () => {
     it("Returns the appropriate ConditionExpression string", () => {
       const result = biometricTokenIssued.getDynamoDbConditionExpression();
       expect(result).toEqual(
-        "attribute_exists(sessionId) AND sessionState = :authSessionCreated AND createdAt > :oneHourAgoInMilliseconds",
+        "attribute_exists(sessionId) AND (sessionState = :ASYNC_AUTH_SESSION_CREATED) AND createdAt > :oneHourAgoInMilliseconds",
       );
     });
   });
@@ -50,8 +50,10 @@ describe("BiometricTokenIssued", () => {
       expect(result).toEqual({
         ":documentType": { S: "NFC_PASSPORT" },
         ":opaqueId": { S: "mockOpaqueId" },
-        ":biometricTokenIssued": { S: SessionState.BIOMETRIC_TOKEN_ISSUED },
-        ":authSessionCreated": { S: SessionState.AUTH_SESSION_CREATED },
+        ":ASYNC_BIOMETRIC_TOKEN_ISSUED": {
+          S: SessionState.BIOMETRIC_TOKEN_ISSUED,
+        },
+        ":ASYNC_AUTH_SESSION_CREATED": { S: SessionState.AUTH_SESSION_CREATED },
         ":oneHourAgoInMilliseconds": {
           N: ONE_HOUR_AGO_IN_MILLISECONDS.toString(),
         },

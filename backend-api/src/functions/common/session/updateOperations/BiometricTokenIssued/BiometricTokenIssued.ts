@@ -16,20 +16,26 @@ export class BiometricTokenIssued extends UpdateSessionOperation {
     super();
   }
 
+  static nextSessionState = SessionState.BIOMETRIC_TOKEN_ISSUED;
+  static validPriorSessionStates = [SessionState.AUTH_SESSION_CREATED];
+
   getDynamoDbUpdateExpression() {
-    return "set documentType = :documentType, opaqueId = :opaqueId, sessionState = :biometricTokenIssued";
+    return `set documentType = :documentType, opaqueId = :opaqueId, sessionState = :${BiometricTokenIssued.nextSessionState}`;
   }
 
   getDynamoDbConditionExpression(): string {
-    return `attribute_exists(sessionId) AND sessionState = :authSessionCreated AND createdAt > :oneHourAgoInMilliseconds`;
+    return `attribute_exists(sessionId) AND ${this.validPriorSessionStatesCondition()} AND createdAt > :oneHourAgoInMilliseconds`;
   }
 
   getDynamoDbExpressionAttributeValues() {
+    const values = this.sessionStateAttributeValues(
+      BiometricTokenIssued.nextSessionState,
+      BiometricTokenIssued.validPriorSessionStates,
+    );
     return {
+      ...values,
       ":documentType": { S: this.documentType },
       ":opaqueId": { S: this.opaqueId },
-      ":biometricTokenIssued": { S: SessionState.BIOMETRIC_TOKEN_ISSUED },
-      ":authSessionCreated": { S: SessionState.AUTH_SESSION_CREATED },
       ":oneHourAgoInMilliseconds": { N: oneHourAgoInMilliseconds().toString() }, // Store as number
     };
   }
@@ -48,6 +54,6 @@ export class BiometricTokenIssued extends UpdateSessionOperation {
   }
 
   getValidPriorSessionStates(): Array<string> {
-    return [SessionState.AUTH_SESSION_CREATED];
+    return BiometricTokenIssued.validPriorSessionStates;
   }
 }
