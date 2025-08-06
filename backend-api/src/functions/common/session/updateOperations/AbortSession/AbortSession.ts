@@ -10,27 +10,37 @@ import { UpdateSessionOperation } from "../UpdateSessionOperation";
 import { oneHourAgoInMilliseconds } from "../../../../utils/utils";
 import { GetSessionAttributesInvalidAttributesError } from "../../SessionRegistry/types";
 
-export class AbortSession implements UpdateSessionOperation {
-  constructor(private readonly sessionId: string) {}
+export class AbortSession extends UpdateSessionOperation {
+  constructor(private readonly sessionId: string) {
+    super();
+  }
+
+  static readonly nextSessionState = SessionState.AUTH_SESSION_ABORTED;
+  static readonly validPriorSessionStates = [
+    SessionState.AUTH_SESSION_CREATED,
+    SessionState.BIOMETRIC_TOKEN_ISSUED,
+  ];
 
   getDynamoDbUpdateExpression() {
-    return "set sessionState = :abortedState";
+    return `set sessionState = :${AbortSession.nextSessionState}`;
   }
 
   getDynamoDbConditionExpression(): string {
     return `attribute_exists(sessionId) AND 
-            (sessionState = :authCreatedState OR sessionState = :biometricTokenIssuedState) AND 
+            ${this.validPriorSessionStatesCondition()} AND 
             createdAt > :oneHourAgoInMilliseconds`;
   }
 
   getDynamoDbExpressionAttributeValues() {
+    const values = this.sessionStateAttributeValues(
+      AbortSession.nextSessionState,
+      AbortSession.validPriorSessionStates,
+    );
     return {
-      ":abortedState": {
-        S: SessionState.AUTH_SESSION_ABORTED,
-      },
-      ":authCreatedState": { S: SessionState.AUTH_SESSION_CREATED },
-      ":biometricTokenIssuedState": { S: SessionState.BIOMETRIC_TOKEN_ISSUED },
-      ":oneHourAgoInMilliseconds": { N: oneHourAgoInMilliseconds().toString() }, // Store as number
+      ...values,
+      ":oneHourAgoInMilliseconds": {
+        N: oneHourAgoInMilliseconds().toString(),
+      }, // Store as number
     };
   }
 
@@ -51,5 +61,9 @@ export class AbortSession implements UpdateSessionOperation {
       // For successful updates to AUTH_SESSION_ABORTED
       return getAuthSessionAbortedAttributes(item);
     }
+  }
+
+  getValidPriorSessionStates(): string[] {
+    return AbortSession.validPriorSessionStates;
   }
 }

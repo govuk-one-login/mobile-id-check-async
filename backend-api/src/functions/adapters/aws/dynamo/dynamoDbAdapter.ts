@@ -33,6 +33,7 @@ import {
   GetSessionSessionInvalidErrorData,
   GetSessionValidateSessionErrorData,
   SessionUpdateFailed,
+  SessionUpdateFailedConditionalCheckFailure,
   SessionUpdateFailedInternalServerError,
   SessionUpdated,
   UpdateOperationDataToLog,
@@ -271,15 +272,19 @@ export class DynamoDbAdapter implements SessionRegistry {
             sessionAttributes,
           );
         }
-
-        logger.error(LogMessage.UPDATE_SESSION_CONDITIONAL_CHECK_FAILURE, {
-          error: error.message,
-          data: updateExpressionDataToLog,
-        });
-        return errorResult({
-          errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
-          attributes: getAttributesResult.value,
-        });
+        const sessionStates: {
+          actual: string | undefined;
+          valid: Array<string>;
+        } = {
+          actual: error.Item?.sessionState.S,
+          valid: updateOperation.getValidPriorSessionStates(),
+        };
+        return this.handleUpdateSessionConditionalCheckFailure(
+          error,
+          updateExpressionDataToLog,
+          getAttributesResult.value,
+          sessionStates,
+        );
       }
 
       return this.handleUpdateSessionInternalServerError(
@@ -365,6 +370,26 @@ export class DynamoDbAdapter implements SessionRegistry {
         invalidAttributes,
         sessionAttributes,
       },
+    });
+  }
+
+  private handleUpdateSessionConditionalCheckFailure(
+    error: ConditionalCheckFailedException,
+    updateOperationDataToLog: UpdateOperationDataToLog,
+    sessionAttributes: SessionAttributes,
+    sessionStates: { actual: string | undefined; valid: Array<string> },
+  ): FailureWithValue<SessionUpdateFailedConditionalCheckFailure> {
+    logger.error(LogMessage.UPDATE_SESSION_CONDITIONAL_CHECK_FAILURE, {
+      error: error.message,
+      data: {
+        ...updateOperationDataToLog,
+        sessionStates,
+      },
+    });
+
+    return errorResult({
+      errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE,
+      attributes: sessionAttributes,
     });
   }
 }
