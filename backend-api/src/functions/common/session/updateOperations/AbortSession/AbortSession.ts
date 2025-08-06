@@ -15,8 +15,8 @@ export class AbortSession extends UpdateSessionOperation {
     super();
   }
 
-  static nextSessionState = SessionState.AUTH_SESSION_ABORTED;
-  static validPriorSessionStates = [
+  static readonly nextSessionState = SessionState.AUTH_SESSION_ABORTED;
+  static readonly validPriorSessionStates = [
     SessionState.AUTH_SESSION_CREATED,
     SessionState.BIOMETRIC_TOKEN_ISSUED,
   ];

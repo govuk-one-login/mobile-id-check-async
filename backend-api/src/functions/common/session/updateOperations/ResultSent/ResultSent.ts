@@ -10,8 +10,8 @@ export class ResultSent extends UpdateSessionOperation {
     super();
   }
 
-  static nextSessionState = SessionState.RESULT_SENT;
-  static validPriorSessionStates = [];
+  static readonly nextSessionState = SessionState.RESULT_SENT;
+  static readonly validPriorSessionStates = [];
 
   getDynamoDbUpdateExpression() {
     return `set sessionState = :${ResultSent.nextSessionState}`;

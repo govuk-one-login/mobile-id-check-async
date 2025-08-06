@@ -14,8 +14,10 @@ export class BiometricSessionFinished extends UpdateSessionOperation {
     super();
   }
 
-  static nextSessionState = SessionState.BIOMETRIC_SESSION_FINISHED;
-  static validPriorSessionStates = [SessionState.BIOMETRIC_TOKEN_ISSUED];
+  static readonly nextSessionState = SessionState.BIOMETRIC_SESSION_FINISHED;
+  static readonly validPriorSessionStates = [
+    SessionState.BIOMETRIC_TOKEN_ISSUED,
+  ];
 
   getDynamoDbUpdateExpression() {
     return `set biometricSessionId = :biometricSessionId, sessionState = :${BiometricSessionFinished.nextSessionState}`;
