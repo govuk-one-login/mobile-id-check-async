@@ -16,7 +16,7 @@ export abstract class UpdateSessionOperation {
       operationFailed: boolean;
     },
   ): Result<SessionAttributes, GetSessionAttributesInvalidAttributesError>;
-  abstract getValidPriorSessionStates(): Array<string>;
+  abstract getValidPriorSessionStates(): string[];
 
   // Derived classes may use this to build a DynamoDB Condition Expression.
   protected validPriorSessionStatesCondition(): string {

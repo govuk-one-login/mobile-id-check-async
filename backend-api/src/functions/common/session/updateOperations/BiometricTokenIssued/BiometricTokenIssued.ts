@@ -53,7 +53,7 @@ export class BiometricTokenIssued extends UpdateSessionOperation {
     }
   }
 
-  getValidPriorSessionStates(): Array<string> {
+  getValidPriorSessionStates(): string[] {
     return BiometricTokenIssued.validPriorSessionStates;
   }
 }

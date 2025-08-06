@@ -36,7 +36,7 @@ export class ResultSent extends UpdateSessionOperation {
     return getBiometricSessionFinishedSessionAttributes(item);
   }
 
-  getValidPriorSessionStates(): Array<string> {
+  getValidPriorSessionStates(): string[] {
     return ResultSent.validPriorSessionStates;
   }
 }

@@ -63,7 +63,7 @@ export class AbortSession extends UpdateSessionOperation {
     }
   }
 
-  getValidPriorSessionStates(): Array<string> {
+  getValidPriorSessionStates(): string[] {
     return AbortSession.validPriorSessionStates;
   }
 }

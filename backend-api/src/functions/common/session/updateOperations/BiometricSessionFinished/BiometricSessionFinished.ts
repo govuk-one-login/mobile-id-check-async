@@ -55,7 +55,7 @@ export class BiometricSessionFinished extends UpdateSessionOperation {
     }
   }
 
-  getValidPriorSessionStates(): Array<string> {
+  getValidPriorSessionStates(): string[] {
     return BiometricSessionFinished.validPriorSessionStates;
   }
 }
