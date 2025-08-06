@@ -1,9 +1,6 @@
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { Result } from "../../../../utils/result";
-import {
-  SessionAttributes,
-  SessionState
-} from "../../session";
+import { SessionAttributes, SessionState } from "../../session";
 import {
   getAuthSessionAbortedAttributes,
   getBaseSessionAttributes,
@@ -30,23 +27,21 @@ export class AbortSession extends UpdateSessionOperation {
 
   getDynamoDbConditionExpression(): string {
     return `attribute_exists(sessionId) AND 
-            ${this.validSessionStatesCondition(AbortSession.validPriorSessionStates)} AND 
+            ${this.validPriorSessionStatesCondition()} AND 
             createdAt > :oneHourAgoInMilliseconds`;
   }
 
   getDynamoDbExpressionAttributeValues() {
-    const values: Record<string, AttributeValue> = {
-      ":oneHourAgoInMilliseconds": { N: oneHourAgoInMilliseconds().toString() }, // Store as number
-    };
-
-    [
+    const values = this.sessionStateAttributeValues(
       AbortSession.nextSessionState,
-      ...AbortSession.validPriorSessionStates,
-    ].forEach((state) => {
-      values[`:${state}`] = { S: state };
-    });
-
-    return values;
+      AbortSession.validPriorSessionStates,
+    );
+    return {
+      ...values,
+      ":oneHourAgoInMilliseconds": {
+        N: oneHourAgoInMilliseconds().toString(),
+      }, // Store as number
+    };
   }
 
   getSessionAttributesFromDynamoDbItem(

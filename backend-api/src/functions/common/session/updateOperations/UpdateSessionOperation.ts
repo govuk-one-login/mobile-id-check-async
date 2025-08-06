@@ -1,6 +1,6 @@
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { Result } from "../../../utils/result";
-import { SessionAttributes } from "../session";
+import { SessionAttributes, SessionState } from "../session";
 import { GetSessionAttributesInvalidAttributesError } from "../SessionRegistry/types";
 
 export abstract class UpdateSessionOperation {
@@ -19,13 +19,25 @@ export abstract class UpdateSessionOperation {
   abstract getValidPriorSessionStates(): Array<string>;
 
   // Derived classes may use this to build a DynamoDB Condition Expression.
-  validSessionStatesCondition(validPriorSessionStates: Array<string>) {
+  protected validPriorSessionStatesCondition(): string {
     return (
       "(" +
-      validPriorSessionStates
+      this.getValidPriorSessionStates()
         .map((state) => `sessionState = :${state}`)
         .join(" OR ") +
       ")"
     );
+  }
+
+  // Derived classes may use this to produce DynamoDB Expression Attribute values.
+  protected sessionStateAttributeValues(
+    nextState: SessionState,
+    validStates: Array<SessionState>,
+  ): Record<string, AttributeValue> {
+    const values: Record<string, AttributeValue> = {};
+    [nextState, ...validStates].forEach((state) => {
+      values[`:${state}`] = { S: state };
+    });
+    return values;
   }
 }
