@@ -1,6 +1,10 @@
 import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { Result } from "../../../../utils/result";
-import { SessionAttributes, SessionState } from "../../session";
+import {
+  SessionAttributes,
+  SessionState,
+  SessionStatesByToken,
+} from "../../session";
 import {
   getAuthSessionAbortedAttributes,
   getBaseSessionAttributes,
@@ -13,25 +17,47 @@ import { GetSessionAttributesInvalidAttributesError } from "../../SessionRegistr
 export class AbortSession implements UpdateSessionOperation {
   constructor(private readonly sessionId: string) {}
 
+  static nextSessionState = ":abortedState";
+  static validPriorSessionStateTokens = [
+    ":authCreatedState",
+    ":biometricTokenIssuedState",
+  ];
+
   getDynamoDbUpdateExpression() {
-    return "set sessionState = :abortedState";
+    return `set sessionState = ${AbortSession.nextSessionState}`;
   }
 
   getDynamoDbConditionExpression(): string {
     return `attribute_exists(sessionId) AND 
-            (sessionState = :authCreatedState OR sessionState = :biometricTokenIssuedState) AND 
+            ${this.validSessionStatesCondition()} AND 
             createdAt > :oneHourAgoInMilliseconds`;
   }
 
+  // TODO: every operation will have this.  Extract it.  Do we need an abstract operation class that
+  // sits between UpdateSessionOperation and child classes like this one?
+  validSessionStatesCondition() {
+    return (
+      "(" +
+      AbortSession.validPriorSessionStateTokens
+        .map((token) => `sessionState = ${token}`)
+        .join(" OR ") +
+      ")"
+    );
+  }
+
   getDynamoDbExpressionAttributeValues() {
-    return {
-      ":abortedState": {
-        S: SessionState.AUTH_SESSION_ABORTED,
-      },
-      ":authCreatedState": { S: SessionState.AUTH_SESSION_CREATED },
-      ":biometricTokenIssuedState": { S: SessionState.BIOMETRIC_TOKEN_ISSUED },
+    const values: Record<string, AttributeValue> = {
       ":oneHourAgoInMilliseconds": { N: oneHourAgoInMilliseconds().toString() }, // Store as number
     };
+
+    [
+      AbortSession.nextSessionState,
+      ...AbortSession.validPriorSessionStateTokens,
+    ].forEach((stateToken) => {
+      values[stateToken] = { S: SessionStatesByToken[stateToken] };
+    });
+
+    return values;
   }
 
   getSessionAttributesFromDynamoDbItem(
@@ -54,9 +80,8 @@ export class AbortSession implements UpdateSessionOperation {
   }
 
   getValidPriorSessionStates(): Array<string> {
-    return [
-      SessionState.AUTH_SESSION_CREATED,
-      SessionState.BIOMETRIC_TOKEN_ISSUED,
-    ];
+    return AbortSession.validPriorSessionStateTokens.map(
+      (token) => SessionStatesByToken[token],
+    );
   }
 }
