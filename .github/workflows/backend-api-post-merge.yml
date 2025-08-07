@@ -38,6 +38,7 @@ jobs:
     with:
       PRIVATE_PACKAGES_REQUIRED: true
       RUN_PACT_TESTS: true
+      PUBLISH_PACT_VERIFICATION_RESULTS: true
       WORKING_DIRECTORY: backend-api
     secrets: inherit
 

@@ -27,6 +27,10 @@ on:
         description: Whether to run pact tests using `test:pact:ci` npm script
         type: string
         default: false
+      PUBLISH_PACT_VERIFICATION_RESULTS:
+        description: Whether to publish pact verification results to the broker
+        type: string
+        default: false
 
 jobs:
   run-test-suite:
@@ -84,5 +88,5 @@ jobs:
           PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
           PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
           PACT_BROKER_SOURCE_SECRET: ${{ secrets.PACT_BROKER_SOURCE_SECRET }}
-          PUBLISH_PACT_VERIFICATION_RESULTS: "false"
+          PUBLISH_PACT_VERIFICATION_RESULTS: ${{ inputs.PUBLISH_PACT_VERIFICATION_RESULTS }}
         run: npm run test:pact:ci
