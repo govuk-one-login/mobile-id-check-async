@@ -137,7 +137,6 @@ async function pollForEvents(
   return events as EventResponse[];
 }
 
-// Call /events API
 async function getEvents(
   partitionKey: string,
   sortKeyPrefix: string,
