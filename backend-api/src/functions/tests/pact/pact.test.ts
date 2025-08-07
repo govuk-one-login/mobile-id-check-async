@@ -56,7 +56,7 @@ describe("Provider API contract verification", () => {
           mainBranch: true,
         },
       ],
-      logLevel: "error",
+      logLevel: "trace",
       pactBrokerPassword: process.env.PACT_BROKER_PASSWORD,
       pactBrokerUrl: process.env.PACT_BROKER_URL,
       pactBrokerUsername: process.env.PACT_BROKER_USERNAME,
