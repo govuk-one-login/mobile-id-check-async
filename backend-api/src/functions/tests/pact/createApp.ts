@@ -22,6 +22,7 @@ export async function createApp(): Promise<Application> {
     console.log("result", result);
     res.status(result.statusCode);
     res.send(JSON.parse(result.body));
+    console.log("response sent");
   });
 
   app.post("/async/credential", async (req: Request, res: Response) => {
