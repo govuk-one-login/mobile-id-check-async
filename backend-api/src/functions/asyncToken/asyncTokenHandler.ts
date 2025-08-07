@@ -115,6 +115,11 @@ export async function lambdaHandlerConstructor(
       "Content-Type": "application/json",
     },
     statusCode: 200,
+    body: JSON.stringify({
+      access_token: accessToken,
+      token_type: "Bearer",
+      expires_in: 3600,
+    }),
   };
 }
 
