@@ -13,11 +13,13 @@ export async function createApp(): Promise<Application> {
   app.use(express.json());
 
   app.post("/async/token", async (req: Request, res: Response) => {
+    console.log("req", req);
     const result = await tokenLambdaHandlerConstructor(
       asyncTokenDependencies.dependencies,
       buildRequest({ headers: req.headers, body: req.body }),
       buildLambdaContext(),
     );
+    console.log("result", result);
     res.status(result.statusCode);
     res.send(JSON.parse(result.body));
   });
