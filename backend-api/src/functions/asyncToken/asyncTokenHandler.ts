@@ -113,8 +113,6 @@ export async function lambdaHandlerConstructor(
   return {
     headers: {
       "Content-Type": "application/json",
-      "Cache-Control": "no-store",
-      Pragma: "no-cache",
     },
     statusCode: 200,
     body: JSON.stringify({

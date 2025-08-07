@@ -26,7 +26,6 @@ permissions:
 jobs:
   backend-api-pull-request:
     name: Backend-api pull request checks
-    if: github.event.pull_request.draft == false
     uses:
       ./.github/workflows/workflow_pull-request.yml
     with:
