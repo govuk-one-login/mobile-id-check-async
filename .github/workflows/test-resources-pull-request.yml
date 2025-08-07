@@ -1,4 +1,4 @@
-name: test-resources pull request
+name: Test Resources Pull Request
 on:
   pull_request:
     branches:
@@ -14,18 +14,25 @@ on:
       - ".github/workflows/workflow_pull-request.yml"
       - ".github/workflows/job_ci-checks.yml"
       - ".github/workflows/job_test-suite.yml"
-      - ".github/workflows/job_sonarqube.yml"
       - "!test-resources/**/*.md"
       - "!test-resources/**/*.png"
 
   workflow_dispatch:
 
 jobs:
-  test-resources-pull-request:
-    name: Test resources pull request checks
+  ci-checks:
+    name: CI checks
     if: github.event.pull_request.draft == false
     uses:
-      ./.github/workflows/workflow_pull-request.yml
+      ./.github/workflows/job_ci-checks.yml
+    with:
+      WORKING_DIRECTORY: test-resources
+
+  run-test-suite:
+    name: Run test suite
+    needs: ci-checks
+    uses:
+      ./.github/workflows/job_test-suite.yml
     with:
       WORKING_DIRECTORY: test-resources
     secrets: inherit
