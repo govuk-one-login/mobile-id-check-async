@@ -73,4 +73,5 @@ jobs:
           PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
           PACT_BROKER_SOURCE_SECRET: ${{ secrets.PACT_BROKER_SOURCE_SECRET }}
           PUBLISH_PACT_VERIFICATION_RESULTS: ${{ inputs.PUBLISH_PACT_VERIFICATION_RESULTS }}
+          PACT_DESCRIPTION: "Valid basic auth credentials"
         run: npm run test:pact:ci
