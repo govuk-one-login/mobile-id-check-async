@@ -20,6 +20,8 @@ export async function createApp(): Promise<Application> {
       buildLambdaContext(),
     );
     console.log("result", result);
+    console.log(result.statusCode);
+    console.log(JSON.parse(result.body));
     res.status(result.statusCode);
     res.send(JSON.parse(result.body));
     console.log("response sent");
