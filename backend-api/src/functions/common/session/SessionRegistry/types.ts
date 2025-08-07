@@ -17,7 +17,7 @@ export type SessionUpdateFailed =
   | SessionUpdateFailedInternalServerError
   | SessionUpdateFailedSessionNotFound;
 
-interface SessionUpdateFailedConditionalCheckFailure {
+export interface SessionUpdateFailedConditionalCheckFailure {
   errorType: UpdateSessionError.CONDITIONAL_CHECK_FAILURE;
   attributes: SessionAttributes;
 }

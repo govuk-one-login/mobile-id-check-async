@@ -25,7 +25,7 @@ describe("ResultSent", () => {
   describe("When I request the DynamoDB UpdateExpression", () => {
     it("Returns the appropriate UpdateExpression string", () => {
       const result = resultSent.getDynamoDbUpdateExpression();
-      expect(result).toEqual("set sessionState = :resultSent");
+      expect(result).toEqual("set sessionState = :ASYNC_RESULT_SENT");
     });
   });
 
@@ -40,7 +40,7 @@ describe("ResultSent", () => {
     it("Returns the ExpressionAttributeValues with the correct values", () => {
       const result = resultSent.getDynamoDbExpressionAttributeValues();
       expect(result).toEqual({
-        ":resultSent": {
+        ":ASYNC_RESULT_SENT": {
           S: SessionState.RESULT_SENT,
         },
       });
@@ -77,6 +77,13 @@ describe("ResultSent", () => {
           successResult(unmarshall(validFinishedSessionAttributesItem)),
         );
       });
+    });
+  });
+
+  describe("When I request the validPriorSessionStates", () => {
+    it("Returns an empty array of session states which are valid for ResultSent", () => {
+      const result = resultSent.getValidPriorSessionStates();
+      expect(result).toEqual([]);
     });
   });
 });

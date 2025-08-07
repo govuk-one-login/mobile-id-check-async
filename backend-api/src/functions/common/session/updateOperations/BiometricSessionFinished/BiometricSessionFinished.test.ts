@@ -30,7 +30,7 @@ describe("BiometricSessionFinished", () => {
     it("Returns the appropriate UpdateExpression string", () => {
       const result = biometricSessionFinished.getDynamoDbUpdateExpression();
       expect(result).toEqual(
-        "set biometricSessionId = :biometricSessionId, sessionState = :biometricSessionFinished",
+        "set biometricSessionId = :biometricSessionId, sessionState = :ASYNC_BIOMETRIC_SESSION_FINISHED",
       );
     });
   });
@@ -39,7 +39,7 @@ describe("BiometricSessionFinished", () => {
     it("Returns the appropriate ConditionExpression string", () => {
       const result = biometricSessionFinished.getDynamoDbConditionExpression();
       expect(result).toEqual(
-        "attribute_exists(sessionId) AND sessionState = :biometricTokenIssued AND createdAt > :oneHourAgoInMilliseconds",
+        "attribute_exists(sessionId) AND (sessionState = :ASYNC_BIOMETRIC_TOKEN_ISSUED) AND createdAt > :oneHourAgoInMilliseconds",
       );
     });
   });
@@ -50,10 +50,12 @@ describe("BiometricSessionFinished", () => {
         biometricSessionFinished.getDynamoDbExpressionAttributeValues();
       expect(result).toEqual({
         ":biometricSessionId": { S: mockBiometricSessionId },
-        ":biometricSessionFinished": {
+        ":ASYNC_BIOMETRIC_SESSION_FINISHED": {
           S: SessionState.BIOMETRIC_SESSION_FINISHED,
         },
-        ":biometricTokenIssued": { S: SessionState.BIOMETRIC_TOKEN_ISSUED },
+        ":ASYNC_BIOMETRIC_TOKEN_ISSUED": {
+          S: SessionState.BIOMETRIC_TOKEN_ISSUED,
+        },
         ":oneHourAgoInMilliseconds": {
           N: ONE_HOUR_AGO_IN_MILLISECONDS.toString(),
         }, // Changed from S to N type
@@ -121,6 +123,13 @@ describe("BiometricSessionFinished", () => {
           successResult(unmarshall(validFinishedSessionAttributesItem)),
         );
       });
+    });
+  });
+
+  describe("When I request the validPriorSessionStates", () => {
+    it("Returns an array of one session state which is valid for BiometricSessionFinished", () => {
+      const result = biometricSessionFinished.getValidPriorSessionStates();
+      expect(result).toEqual([SessionState.BIOMETRIC_TOKEN_ISSUED]);
     });
   });
 });

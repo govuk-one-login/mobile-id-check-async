@@ -9,26 +9,36 @@ import { UpdateSessionOperation } from "../UpdateSessionOperation";
 import { oneHourAgoInMilliseconds } from "../../../../utils/utils";
 import { GetSessionAttributesInvalidAttributesError } from "../../SessionRegistry/types";
 
-export class BiometricSessionFinished implements UpdateSessionOperation {
-  constructor(private readonly biometricSessionId: string) {}
+export class BiometricSessionFinished extends UpdateSessionOperation {
+  constructor(private readonly biometricSessionId: string) {
+    super();
+  }
+
+  static readonly nextSessionState = SessionState.BIOMETRIC_SESSION_FINISHED;
+  static readonly validPriorSessionStates = [
+    SessionState.BIOMETRIC_TOKEN_ISSUED,
+  ];
 
   getDynamoDbUpdateExpression() {
-    return "set biometricSessionId = :biometricSessionId, sessionState = :biometricSessionFinished";
+    return `set biometricSessionId = :biometricSessionId, sessionState = :${BiometricSessionFinished.nextSessionState}`;
   }
 
   getDynamoDbConditionExpression(): string {
     // Change to use the numeric createdAt comparison
-    return `attribute_exists(sessionId) AND sessionState = :biometricTokenIssued AND createdAt > :oneHourAgoInMilliseconds`;
+    return `attribute_exists(sessionId) AND ${this.validPriorSessionStatesCondition()} AND createdAt > :oneHourAgoInMilliseconds`;
   }
 
   getDynamoDbExpressionAttributeValues() {
+    const values = this.sessionStateAttributeValues(
+      BiometricSessionFinished.nextSessionState,
+      BiometricSessionFinished.validPriorSessionStates,
+    );
     return {
+      ...values,
       ":biometricSessionId": { S: this.biometricSessionId },
-      ":biometricSessionFinished": {
-        S: SessionState.BIOMETRIC_SESSION_FINISHED,
-      },
-      ":biometricTokenIssued": { S: SessionState.BIOMETRIC_TOKEN_ISSUED },
-      ":oneHourAgoInMilliseconds": { N: oneHourAgoInMilliseconds().toString() }, // Store as number
+      ":oneHourAgoInMilliseconds": {
+        N: oneHourAgoInMilliseconds().toString(),
+      }, // Store as number
     };
   }
 
@@ -43,5 +53,9 @@ export class BiometricSessionFinished implements UpdateSessionOperation {
     } else {
       return getBiometricSessionFinishedSessionAttributes(item);
     }
+  }
+
+  getValidPriorSessionStates(): string[] {
+    return BiometricSessionFinished.validPriorSessionStates;
   }
 }
