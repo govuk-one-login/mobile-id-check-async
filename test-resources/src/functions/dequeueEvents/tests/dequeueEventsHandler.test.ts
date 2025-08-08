@@ -9,7 +9,7 @@ import { buildLambdaContext } from "../../testUtils/mockContext";
 import {
   IDequeueDependencies,
   lambdaHandlerConstructor,
-} from "../dequeueHandler";
+} from "../dequeueEventsHandler";
 import { TxmaEvent } from "../getEvent";
 import {
   eventNameMissingSQSRecord,
@@ -28,7 +28,7 @@ const env = {
   TXMA_EVENT_TTL_DURATION_IN_SECONDS: "3600",
 };
 
-describe("Dequeue TxMA events", () => {
+describe("Dequeue Events", () => {
   let dependencies: IDequeueDependencies;
   let context: Context;
   const mockDbClient = mockClient(DynamoDBClient);

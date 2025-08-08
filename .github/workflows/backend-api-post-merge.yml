@@ -64,7 +64,7 @@ jobs:
     secrets:
       CONTAINER_SIGN_KMS_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
       GH_ACTIONS_ROLE_ARN: ${{ secrets.BACKEND_API_DEV_GH_ACTIONS_ROLE_ARN }}
-      TEST_IMAGE_REPOSITOR_URI: ${{ secrets.BACKEND_API_DEV_TEST_IMAGE_REPOSITORY }}
+      TEST_IMAGE_REPOSITORY_URI: ${{ secrets.BACKEND_API_DEV_TEST_IMAGE_REPOSITORY }}
 
   upload-sam-artifact-dev:
     name: Dev
@@ -92,7 +92,7 @@ jobs:
     secrets:
       CONTAINER_SIGN_KMS_KEY: ${{ secrets.BUILD_CONTAINER_SIGN_KMS_KEY }}
       GH_ACTIONS_ROLE_ARN: ${{ secrets.BACKEND_API_BUILD_GH_ACTIONS_ROLE_ARN }}
-      TEST_IMAGE_REPOSITOR_URI: ${{ secrets.BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY }}
+      TEST_IMAGE_REPOSITORY_URI: ${{ secrets.BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY }}
 
   upload-sam-artifact-build:
     name: Build
