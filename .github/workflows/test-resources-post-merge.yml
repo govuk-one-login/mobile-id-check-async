@@ -31,26 +31,19 @@ jobs:
 
   run-test-suite:
     name: Pre-deployment
+    needs: ci-checks
     uses:
       ./.github/workflows/job_test-suite.yml
     with:
+      SONARQUBE_CONTINUE_ON_ERROR: true
       WORKING_DIRECTORY: test-resources
-
-  sonarqube-scan:
-    name: Pre-deployment
-    needs: run-test-suite
-    with:
-      CONTINUE_ON_ERROR: true
-      WORKING_DIRECTORY: test-resources
-    uses:
-      ./.github/workflows/job_sonarqube.yml
     secrets: inherit
 
   push-docker-image-dev:
     name: Dev
     needs: 
       - ci-checks
-      - sonarqube-scan
+      - run-test-suite
     uses:
       ./.github/workflows/job_push-docker-image.yml
     with:
@@ -76,7 +69,7 @@ jobs:
     name: Build
     needs: 
       - ci-checks
-      - sonarqube-scan
+      - run-test-suite
     uses:
       ./.github/workflows/job_push-docker-image.yml
     with:
