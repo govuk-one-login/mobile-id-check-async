@@ -81,6 +81,12 @@ describe("Provider API contract verification", () => {
       publishVerificationResult:
         process.env.PUBLISH_PACT_VERIFICATION_RESULTS === "true",
       stateHandlers,
+      requestFilter: (req, _res, next) => {
+        req.headers["content-length"] = JSON.stringify(
+          req.body,
+        ).length.toString();
+        next();
+      },
     });
 
     return verifier
