@@ -76,21 +76,6 @@ jobs:
         if: inputs.RUN_UNIT_TESTS == 'true'
         run: npm run test:unit
 
-      - name: Run Infra Tests
-        if: inputs.RUN_INFRA_TESTS == 'true'
-        run: npm run test:infra
-
-      - name: Run Pact Tests
-        if: inputs.RUN_PACT_TESTS == 'true'
-        continue-on-error: true # Pact tests are currently failing - remove step once fixed
-        env:
-          PACT_BROKER_URL: "https://pactbroker-onelogin.account.gov.uk"
-          PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
-          PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
-          PACT_BROKER_SOURCE_SECRET: ${{ secrets.PACT_BROKER_SOURCE_SECRET }}
-          PUBLISH_PACT_VERIFICATION_RESULTS: "false"
-        run: npm run test:pact:ci
-
       - name: Run SonarQube Scan
         if: inputs.RUN_SONARQUBE == 'true'
         uses: sonarsource/sonarqube-scan-action@8c71dc039c2dd71d3821e89a2b58ecc7fee6ced9 #v5.3.0
@@ -109,3 +94,18 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           scanMetadataReportFile: ${{ inputs.WORKING_DIRECTORY }}/.scannerwork/report-task.txt
+
+      - name: Run Infra Tests
+        if: inputs.RUN_INFRA_TESTS == 'true'
+        run: npm run test:infra
+
+      - name: Run Pact Tests
+        if: inputs.RUN_PACT_TESTS == 'true'
+        continue-on-error: true # Pact tests are currently failing - remove step once fixed
+        env:
+          PACT_BROKER_URL: "https://pactbroker-onelogin.account.gov.uk"
+          PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
+          PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
+          PACT_BROKER_SOURCE_SECRET: ${{ secrets.PACT_BROKER_SOURCE_SECRET }}
+          PUBLISH_PACT_VERIFICATION_RESULTS: "false"
+        run: npm run test:pact:ci
