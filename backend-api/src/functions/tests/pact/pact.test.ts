@@ -51,13 +51,18 @@ describe("Provider API contract verification", () => {
       },
     };
 
-    const response = await axios.post(`http://localhost:${port}/async/token`, "grant_type=client_credentials", {headers: {
-        "Authorization": "Basic aXB2LWNvcmU6ZHVtbXlTZWNyZXQ=",
-        "Content-Type": "application/x-www-form-urlencoded"
-      }
-    })
-    console.log(response.status)
-    console.log(response.data)
+    const response = await axios.post(
+      `http://localhost:${port}/async/token`,
+      "grant_type=client_credentials",
+      {
+        headers: {
+          Authorization: "Basic aXB2LWNvcmU6ZHVtbXlTZWNyZXQ=",
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      },
+    );
+    console.log(response.status);
+    console.log(response.data);
 
     const verifier = new Verifier({
       consumerVersionSelectors: [
