@@ -68,9 +68,15 @@ describe("Provider API contract verification", () => {
         process.env.PUBLISH_PACT_VERIFICATION_RESULTS === "true",
       stateHandlers,
       requestFilter: (req, _res, next) => {
-        req.headers["content-length"] = JSON.stringify(
-          req.body,
-        ).length.toString();
+        if (
+          req.headers["content-type"] === "application/x-www-form-urlencoded"
+        ) {
+          // Pact converts form encoded payloads to JSON, but doesn't update the content length header - we must do that
+          // here to avoid an unexpected 400 error.
+          req.headers["content-length"] = JSON.stringify(
+            req.body,
+          ).length.toString();
+        }
         next();
       },
     });
