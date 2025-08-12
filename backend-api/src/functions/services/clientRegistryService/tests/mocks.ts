@@ -49,7 +49,7 @@ export class MockClientRegistryServiceGetPartialClientSuccessResultIPV
     return successResult({
       issuer: "mockIssuer",
       redirectUri:
-        "https://identity.staging.account.gov.uk/credential-issuer/callback?id=dcmawAsync",
+        "https://identity.staging.account.gov.uk/app/callback?state=DUMMY_RANDOM_OAUTH_STATE",
     });
   };
 }

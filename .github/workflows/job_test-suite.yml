@@ -31,6 +31,10 @@ on:
         description: Whether to run pact tests using `test:pact:ci` npm script
         type: string
         default: false
+      PUBLISH_PACT_VERIFICATION_RESULTS:
+        description: Whether to publish pact verification results to the broker
+        type: string
+        default: false
     secrets:
       SONAR_TOKEN:
         description: The token used for secure access to the SonarQube platform
@@ -101,11 +105,10 @@ jobs:
 
       - name: Run Pact Tests
         if: inputs.RUN_PACT_TESTS == 'true'
-        continue-on-error: true # Pact tests are currently failing - remove step once fixed
         env:
           PACT_BROKER_URL: "https://pactbroker-onelogin.account.gov.uk"
           PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
           PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
           PACT_BROKER_SOURCE_SECRET: ${{ secrets.PACT_BROKER_SOURCE_SECRET }}
-          PUBLISH_PACT_VERIFICATION_RESULTS: "false"
+          PUBLISH_PACT_VERIFICATION_RESULTS: ${{ inputs.PUBLISH_PACT_VERIFICATION_RESULTS }}
         run: npm run test:pact:ci
