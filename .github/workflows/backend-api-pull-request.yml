@@ -25,6 +25,7 @@ permissions:
 jobs:
   ci-checks:
     name: CI checks
+    if: github.event.pull_request.draft == false
     uses:
       ./.github/workflows/job_ci-checks.yml
     with:
