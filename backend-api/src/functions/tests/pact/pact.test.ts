@@ -5,7 +5,6 @@ import { Server } from "http";
 import { asyncTokenDependencies } from "./dependencies/asyncTokenDependencies";
 import { asyncCredentialDependencies } from "./dependencies/asyncCredentialDependencies";
 import { execSync } from "child_process";
-import axios from "axios";
 
 jest.setTimeout(30000);
 describe("Provider API contract verification", () => {
@@ -25,7 +24,7 @@ describe("Provider API contract verification", () => {
     server.close();
   });
 
-  it("validates adherence to all consumer contracts", async () => {
+  it("validates adherence to all consumer contracts", () => {
     const stateHandlers = {
       "badDummySecret is not a valid basic auth secret": () => {
         asyncTokenDependencies.setInvalidAuthHeader();
@@ -51,26 +50,13 @@ describe("Provider API contract verification", () => {
       },
     };
 
-    const response = await axios.post(
-      `http://localhost:${port}/async/token`,
-      "grant_type=client_credentials",
-      {
-        headers: {
-          Authorization: "Basic aXB2LWNvcmU6ZHVtbXlTZWNyZXQ=",
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-      },
-    );
-    console.log(response.status);
-    console.log(response.data);
-
     const verifier = new Verifier({
       consumerVersionSelectors: [
         {
           mainBranch: true,
         },
       ],
-      logLevel: "trace",
+      logLevel: "error",
       pactBrokerPassword: process.env.PACT_BROKER_PASSWORD,
       pactBrokerUrl: process.env.PACT_BROKER_URL,
       pactBrokerUsername: process.env.PACT_BROKER_USERNAME,

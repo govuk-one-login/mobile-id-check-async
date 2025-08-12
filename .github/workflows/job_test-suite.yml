@@ -65,6 +65,22 @@ jobs:
       - name: Install dependencies
         run: npm clean-install
 
+      - name: Run unit tests
+        if: inputs.RUN_UNIT_TESTS == 'true'
+        run: npm run test:unit
+
+      - name: Upload unit test coverage artifact for SonarQube scan
+        if: inputs.RUN_SONARQUBE == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: test-coverage
+          path: ${{ inputs.WORKING_DIRECTORY }}/coverage/
+          retention-days: 1
+
+      - name: Run infra tests
+        if: inputs.RUN_INFRA_TESTS == 'true'
+        run: npm run test:infra
+
       - name: Run pact tests
         if: inputs.RUN_PACT_TESTS == 'true'
         env:
@@ -73,5 +89,4 @@ jobs:
           PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
           PACT_BROKER_SOURCE_SECRET: ${{ secrets.PACT_BROKER_SOURCE_SECRET }}
           PUBLISH_PACT_VERIFICATION_RESULTS: ${{ inputs.PUBLISH_PACT_VERIFICATION_RESULTS }}
-          PACT_DESCRIPTION: "Valid basic auth credentials"
         run: npm run test:pact:ci
