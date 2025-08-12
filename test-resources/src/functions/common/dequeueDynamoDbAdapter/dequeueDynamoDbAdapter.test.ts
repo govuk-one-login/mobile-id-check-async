@@ -4,7 +4,7 @@ import { mockClient } from "aws-sdk-client-mock";
 import {
   mockPutItemInput,
   NOW_IN_MILLISECONDS,
-} from "../../dequeue/tests/testData";
+} from "../../dequeueEvents/tests/testData";
 import "../../testUtils/matchers";
 import { emptyFailure, emptySuccess, Result } from "../utils/result";
 import {

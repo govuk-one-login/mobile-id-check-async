@@ -15,6 +15,10 @@ on:
         description: Whether to run unit tests using `test:unit` npm script
         type: string
         default: true
+      SONARQUBE_CONTINUE_ON_ERROR:
+        description: Whether to continue running the workflow if SonarQube quality gate fails
+        type: string
+        default: false
       WORKING_DIRECTORY:
         description: Path to working directory in repo
         required: true
@@ -31,57 +35,75 @@ on:
         description: Whether to publish pact verification results to the broker
         type: string
         default: false
+    secrets:
+      SONAR_TOKEN:
+        description: The token used for secure access to the SonarQube platform
+        required: false
 
 jobs:
   run-test-suite:
-    name: Run test suite and upload coverage artifact
+    name: Run test suite and SonarQube
     runs-on: ubuntu-24.04
     defaults:
       run:
         shell: bash
         working-directory: ${{ inputs.WORKING_DIRECTORY }}
+    env:
+      CONTINUE_ON_ERROR: ${{ inputs.SONARQUBE_CONTINUE_ON_ERROR }}
     steps:
-      - name: Check out repository code
+      - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
+          fetch-depth: 0
           submodules: true
 
-      - name: Setup nodeJS
+      - name: Setup NodeJS
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           cache: npm
           cache-dependency-path: ${{ inputs.WORKING_DIRECTORY }}/package-lock.json
           node-version-file: ${{ inputs.WORKING_DIRECTORY }}/.nvmrc
 
-      - name: Configure authentication for private packages in .npmrc
-        if: inputs.PRIVATE_PACKAGES_REQUIRED == 'true'
+      - name: Configure Authentication for Private Packages in .npmrc
+        if: inputs.GENERATE_OPEN_PROXY_API_SPEC == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "engine-strict=true" > .npmrc
           echo "@govuk-one-login:registry=https://npm.pkg.github.com/" >> .npmrc
           echo "//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN" >> .npmrc
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm clean-install
 
-      - name: Run unit tests
+      - name: Run Unit Tests
         if: inputs.RUN_UNIT_TESTS == 'true'
         run: npm run test:unit
 
-      - name: Upload unit test coverage artifact for SonarQube scan
+      - name: Run SonarQube Scan
         if: inputs.RUN_SONARQUBE == 'true'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: sonarsource/sonarqube-scan-action@8c71dc039c2dd71d3821e89a2b58ecc7fee6ced9 #v5.3.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          name: test-coverage
-          path: ${{ inputs.WORKING_DIRECTORY }}/coverage/
-          retention-days: 1
+          projectBaseDir: ${{ inputs.WORKING_DIRECTORY }}
 
-      - name: Run infra tests
+      - name: Run SonarQube Quality Gate Check
+        if: inputs.RUN_SONARQUBE == 'true'
+        uses: Sonarsource/sonarqube-quality-gate-action@8406f4f1edaffef38e9fb9c53eb292fc1d7684fa #master
+        continue-on-error: ${{ fromJSON(env.CONTINUE_ON_ERROR) }}
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          scanMetadataReportFile: ${{ inputs.WORKING_DIRECTORY }}/.scannerwork/report-task.txt
+
+      - name: Run Infra Tests
         if: inputs.RUN_INFRA_TESTS == 'true'
         run: npm run test:infra
 
-      - name: Run pact tests
+      - name: Run Pact Tests
         if: inputs.RUN_PACT_TESTS == 'true'
         env:
           PACT_BROKER_URL: "https://pactbroker-onelogin.account.gov.uk"

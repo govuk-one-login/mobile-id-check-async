@@ -39,24 +39,15 @@ jobs:
       PRIVATE_PACKAGES_REQUIRED: true
       RUN_PACT_TESTS: true
       PUBLISH_PACT_VERIFICATION_RESULTS: true
+      SONARQUBE_CONTINUE_ON_ERROR: true
       WORKING_DIRECTORY: backend-api
-    secrets: inherit
-
-  sonarqube-scan:
-    name: Pre-deployment
-    needs: run-test-suite
-    with:
-      CONTINUE_ON_ERROR: true
-      WORKING_DIRECTORY: backend-api
-    uses:
-      ./.github/workflows/job_sonarqube.yml
     secrets: inherit
 
   push-docker-image-dev:
     name: Dev
     needs: 
       - ci-checks
-      - sonarqube-scan
+      - run-test-suite
     uses:
       ./.github/workflows/job_push-docker-image.yml
     with:
@@ -65,7 +56,7 @@ jobs:
     secrets:
       CONTAINER_SIGN_KMS_KEY: ${{ secrets.DEV_CONTAINER_SIGN_KMS_KEY }}
       GH_ACTIONS_ROLE_ARN: ${{ secrets.BACKEND_API_DEV_GH_ACTIONS_ROLE_ARN }}
-      TEST_IMAGE_REPOSITOR_URI: ${{ secrets.BACKEND_API_DEV_TEST_IMAGE_REPOSITORY }}
+      TEST_IMAGE_REPOSITORY_URI: ${{ secrets.BACKEND_API_DEV_TEST_IMAGE_REPOSITORY }}
 
   upload-sam-artifact-dev:
     name: Dev
@@ -84,7 +75,7 @@ jobs:
     name: Build
     needs: 
       - ci-checks
-      - sonarqube-scan
+      - run-test-suite
     uses:
       ./.github/workflows/job_push-docker-image.yml
     with:
@@ -93,7 +84,7 @@ jobs:
     secrets:
       CONTAINER_SIGN_KMS_KEY: ${{ secrets.BUILD_CONTAINER_SIGN_KMS_KEY }}
       GH_ACTIONS_ROLE_ARN: ${{ secrets.BACKEND_API_BUILD_GH_ACTIONS_ROLE_ARN }}
-      TEST_IMAGE_REPOSITOR_URI: ${{ secrets.BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY }}
+      TEST_IMAGE_REPOSITORY_URI: ${{ secrets.BACKEND_API_BUILD_TEST_IMAGE_REPOSITORY }}
 
   upload-sam-artifact-build:
     name: Build

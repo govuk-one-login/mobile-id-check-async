@@ -1,4 +1,4 @@
-name: backend-api pull request
+name: Backend API Pull Request
 on:
   pull_request:
     branches:
@@ -14,7 +14,6 @@ on:
       - ".github/workflows/workflow_pull-request.yml"
       - ".github/workflows/job_ci-checks.yml"
       - ".github/workflows/job_test-suite.yml"
-      - ".github/workflows/job_sonarqube.yml"
       - "!backend-api/**/*.md"
       - "!backend-api/**/*.png"
 
@@ -24,12 +23,21 @@ permissions:
   packages: read
 
 jobs:
-  backend-api-pull-request:
-    name: Backend-api pull request checks
+  ci-checks:
+    name: CI checks
     uses:
-      ./.github/workflows/workflow_pull-request.yml
+      ./.github/workflows/job_ci-checks.yml
     with:
+      PRIVATE_PACKAGES_REQUIRED: true
       WORKING_DIRECTORY: backend-api
+
+  run-test-suite:
+    name: Run test suite
+    needs: ci-checks
+    uses:
+      ./.github/workflows/job_test-suite.yml
+    with:
       PRIVATE_PACKAGES_REQUIRED: true
       RUN_PACT_TESTS: true
+      WORKING_DIRECTORY: backend-api
     secrets: inherit
