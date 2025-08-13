@@ -62,6 +62,5 @@ Globals:
           - SecretArn: !FindInMap [EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]
         DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
     Layers:
-      - !Sub
-        - '{{resolve:secretsmanager:${SecretArn}:SecretString:NODEJS_LAYER}}'
-        - SecretArn: !FindInMap [EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]
+      - arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_311_2_20250307-045250_with_collector_nodejs:1
+      # See here for latest supported layers https://github.com/govuk-one-login/observability-infrastructure/blob/main/lambdalayer/README.md
