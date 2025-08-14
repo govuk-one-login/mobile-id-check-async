@@ -1,4 +1,5 @@
-name: Test Resources Pull Request
+name: GitHub Jobs Pull Request
+
 on:
   pull_request:
     branches:
@@ -9,30 +10,101 @@ on:
       - ready_for_review
       - synchronize
     paths:
-      - "test-resources/**"
-      - ".github/workflows/test-resources-pull-request.yml"
-      - ".github/workflows/workflow_pull-request.yml"
-      - ".github/workflows/job_ci-checks.yml"
-      - ".github/workflows/job_test-suite.yml"
-      - "!test-resources/**/*.md"
-      - "!test-resources/**/*.png"
+      - ".github/jobs/**"
 
   workflow_dispatch:
 
-jobs:
-  ci-checks:
-    name: CI checks
-    if: github.event.pull_request.draft == false
-    uses:
-      ./.github/workflows/job_ci-checks.yml
-    with:
-      WORKING_DIRECTORY: test-resources
+permissions:
+  contents: write
+  id-token: write
 
-  run-test-suite:
-    name: Run test suite
-    needs: ci-checks
-    uses:
-      ./.github/workflows/job_test-suite.yml
-    with:
-      WORKING_DIRECTORY: test-resources
-    secrets: inherit
+jobs:
+  get-file-names:
+    name: Get Names of Files Changed
+    runs-on: ubuntu-24.04
+    env:
+      SAM_CLI_TELEMETRY: 0
+    defaults:
+      run:
+        shell: bash
+        working-directory: .
+    outputs:
+      FILE_NAMES: ${{ steps.get-files.outputs.NAMES }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          submodules: true
+          fetch-depth: 0
+
+# This is ugly but can't get anything else to work
+      - name: Get File Names
+        id: get-files
+        run: |
+          git fetch
+          files=$( git diff origin/main --name-only -- ./.github/jobs )
+
+          JSON="["
+          for file in ${files[@]}; do
+              echo $file
+              JSONline="\"$file\","
+              if [[ "$JSON" != *"$JSONline"* ]]; then
+                  JSON="$JSON$JSONline"
+              fi
+          done
+
+          if [[ $JSON == *, ]]; then
+              JSON="${JSON%?}"
+          fi
+          JSON="$JSON]"
+
+          echo $JSON
+          echo "NAMES=$( echo "$JSON" )" >> $GITHUB_OUTPUT
+
+  validate-versions:
+    name: Validate Versions
+    runs-on: ubuntu-24.04
+    needs: get-file-names
+    strategy:
+      matrix:
+        file_name:  ${{ fromJSON(needs.get-file-names.outputs.FILE_NAMES) }}
+    env:
+      SAM_CLI_TELEMETRY: 0
+      FILE_NAME: ${{ matrix.file_name }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: jobs
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          cache: npm
+          cache-dependency-path: jobs/package-lock.json
+          node-version-file: jobs/.nvmrc
+
+      - name: Install Dependencies
+        run: |
+          npm clean-install
+
+      - name: Get Job Name
+        id: get-job-name
+        run: |
+          name=$( yq .name ../$FILE_NAME )
+          echo "NAME=$name" >> $GITHUB_OUTPUT
+
+      - name: Get Version
+        id: get-version
+        run: |
+          version=$( yq .description ../$FILE_NAME )
+          echo "VERSION=$version" >> $GITHUB_OUTPUT
+
+      - name: Validate Version
+        run: |
+          npm run validate-version $FILE_NAME
