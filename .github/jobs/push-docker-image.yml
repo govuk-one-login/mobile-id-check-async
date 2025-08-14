@@ -1,0 +1,83 @@
+name: push-docker-image
+
+description: "1.1.0"
+
+on:
+  workflow_call:
+    inputs:
+      AWS_REGION:
+        description: The AWS region
+        type: string
+        default: eu-west-2
+      IMAGE_TAG:
+        description: The docker image tag
+        type: string
+        default: latest
+      PRIVATE_PACKAGES_REQUIRED:
+        description: Whether private packages must be installed
+        type: string
+        default: false
+      WORKING_DIRECTORY:
+        description: Path to working directory in repo
+        required: true
+        type: string
+    secrets:
+      CONTAINER_SIGN_KMS_KEY:
+        description: KMS key for encrypting the test image
+        required: true
+      GH_ACTIONS_ROLE_ARN:
+        description: AWS Role for pushing the test image and AWS artifact to AWS
+        required: true
+      TEST_IMAGE_REPOSITORY_URI:
+        description: uri of the ECR for the test images
+        required: true
+
+jobs:
+  docker-build-push-sign:
+    name: "Build, Push, and Sign Test Image"
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.WORKING_DIRECTORY }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 #v4.2.2
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@d58896d6a1865668819e1d91763c7751a165e159 #v3.9.2
+        with:
+          cosign-release: 'v2.5.2'
+
+      - name: Configure Authentication for Private Packages in .npmrc
+        if: inputs.PRIVATE_PACKAGES_REQUIRED == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "engine-strict=true" > .npmrc
+          echo "@govuk-one-login:registry=https://npm.pkg.github.com/" >> .npmrc
+          echo "//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN" >> .npmrc
+
+      - name: Authenticate with AWS
+        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 #v4.0.2
+        with:
+          aws-region: ${{ inputs.AWS_REGION }}
+          role-to-assume: ${{ secrets.GH_ACTIONS_ROLE_ARN }}
+
+      - name: Login to AWS ECR
+        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 #v2.0.1
+
+      - name: Build Image
+        run: |
+          docker build -t ${{ secrets.TEST_IMAGE_REPOSITORY_URI }}:${{ inputs.IMAGE_TAG }} .
+
+      - name: Push Image
+        run: |
+          docker push ${{ secrets.TEST_IMAGE_REPOSITORY_URI }}:${{ inputs.IMAGE_TAG }}
+
+      - name: Sign Image
+        run: |
+          cosign sign --key awskms:///${{ secrets.CONTAINER_SIGN_KMS_KEY }} ${{ secrets.TEST_IMAGE_REPOSITORY_URI }}:${{ inputs.IMAGE_TAG }}
