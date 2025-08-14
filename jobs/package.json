@@ -1,0 +1,14 @@
+{
+  "name": "one-login-async-jobs",
+  "version": "1.0.0",
+  "license": "MIT",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "get-job-name": "./get_job_name.sh",
+    "validate-version": "./validate_version.sh"
+  },
+  "engines": {
+    "node": "22"
+  }
+}
