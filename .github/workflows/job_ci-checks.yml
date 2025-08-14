@@ -1,4 +1,6 @@
-name: CI Checks
+name: ci-checks
+
+description: "1.1.0"
 
 on:
   workflow_call:

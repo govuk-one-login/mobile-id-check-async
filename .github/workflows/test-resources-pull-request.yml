@@ -1,38 +1,81 @@
-name: Test Resources Pull Request
+name: release ci-checks
+
 on:
-  pull_request:
+  push:
     branches:
       - main
-    types:
-      - opened
-      - reopened
-      - ready_for_review
-      - synchronize
     paths:
-      - "test-resources/**"
-      - ".github/workflows/test-resources-pull-request.yml"
-      - ".github/workflows/workflow_pull-request.yml"
-      - ".github/workflows/job_ci-checks.yml"
-      - ".github/workflows/job_test-suite.yml"
-      - "!test-resources/**/*.md"
-      - "!test-resources/**/*.png"
-
+      - ".github/workflows/jobs_ci-checks.yml"
   workflow_dispatch:
 
-jobs:
-  ci-checks:
-    name: CI checks
-    if: github.event.pull_request.draft == false
-    uses:
-      ./.github/workflows/job_ci-checks.yml
-    with:
-      WORKING_DIRECTORY: test-resources
+permissions:
+  contents: write
+  id-token: write
 
-  run-test-suite:
-    name: Run test suite
-    needs: ci-checks
-    uses:
-      ./.github/workflows/job_test-suite.yml
-    with:
-      WORKING_DIRECTORY: test-resources
-    secrets: inherit
+jobs:
+  create-tag:
+    name: Create Tag
+    runs-on: ubuntu-24.04
+    env:
+      SAM_CLI_TELEMETRY: 0
+    defaults:
+      run:
+        shell: bash
+        working-directory: .
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          cache: npm
+          cache-dependency-path: backend-api/package-lock.json
+          node-version-file: backend-api/.nvmrc
+
+      - name: Install Dependencies
+        run: |
+          cd backend-api
+          npm clean-install
+
+      - name: Get Name
+        id: get-name
+        run: |
+          pwd
+          cd .github/workflows/
+          job_name=$( yq .name job_ci-checks.yml ) 
+          echo "JOB_NAME=$job_name" >> $GITHUB_OUTPUT
+
+      - name: Get Old Version
+        id: old-version
+        run: |
+          job_name=${{ steps.get-name.outputs.JOB_NAME }}
+          version=$( git tag --list "$job_name/*" | tail -n 1 | cut -d "/" -f 2 )
+          echo "VERSION=$version" >> $GITHUB_OUTPUT
+
+      - name: Get New Version
+        id: new-version
+        run: |
+          cd .github/workflows/
+          version=$( yq .description job_ci-checks.yml ) 
+          echo "VERSION=$version" >> $GITHUB_OUTPUT
+
+      - name: Validate Version
+        run: |
+          cd backend-api
+          
+          old_version=${{ steps.old-version.outputs.VERSION }}
+          new_version=${{ steps.new-version.outputs.VERSION }}
+          
+          npm run validate-version $old_version $new_version
+
+      - name: Create and Push Tag
+        run: |
+          job_name=${{ steps.get-name.outputs.JOB_NAME }}
+          new_version=${{ steps.new-version.outputs.VERSION }}
+          
+          git tag $job_name/$new_version
+          git push origin $job_name/$new_version

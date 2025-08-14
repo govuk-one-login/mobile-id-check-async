@@ -18,7 +18,8 @@
     "test:pact:authorize": "bash -c 'curl -sS -o /dev/null --fail -u $PACT_BROKER_USERNAME:$PACT_BROKER_PASSWORD \"$PACT_BROKER_URL?testSource=$PACT_BROKER_SOURCE_SECRET\"'",
     "test:pact:ci": "npm run test:pact:authorize && npm run test:pact",
     "test:pact:local": ". ./src/functions/tests/pact/setPactCredentials/set_pact_credentials.sh && npm run test:pact",
-    "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/pact api-tests"
+    "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/pact api-tests",
+    "validate-version": "sh ./validate_version.sh"
   },
   "engines": {
     "node": "22"
