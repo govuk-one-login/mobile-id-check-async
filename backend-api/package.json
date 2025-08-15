@@ -19,7 +19,7 @@
     "test:pact:ci": "npm run test:pact:authorize && npm run test:pact",
     "test:pact:local": ". ./src/functions/tests/pact/setPactCredentials/set_pact_credentials.sh && npm run test:pact",
     "test:unit": "./node_modules/.bin/jest --detectOpenHandles --testPathIgnorePatterns=tests/pact api-tests",
-    "validate-version": "sh ./validate_version.sh"
+    "validate-version": "./validate_version.sh"
   },
   "engines": {
     "node": "22"
