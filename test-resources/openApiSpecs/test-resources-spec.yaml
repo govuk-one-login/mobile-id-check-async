@@ -467,7 +467,8 @@ paths:
                     "#event": "event"
                   },
                   "KeyConditionExpression": "#pk = :pkPrefix AND begins_with(#sk, :skPrefix)",
-                  "ProjectionExpression": "#pk, #sk, #event"
+                  "ProjectionExpression": "#pk, #sk, #event",
+                  "Limit": 50
                 }
               - tableName:
                   Ref: EventsTable
