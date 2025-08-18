@@ -359,7 +359,16 @@ async function getCredentialResult(partitionKey: string): Promise<unknown[]> {
   });
 
   const credentialResults = response.data;
-  return Array.isArray(credentialResults) ? credentialResults : []; // If response is malformed, return empty array so polling can be retried
+
+  if (response.status >= 400) {
+    return []; // If response is 4/5XX, this may be a temporary network issue, so we return an empty array so polling can be retried
+  }
+
+  if (!Array.isArray(credentialResults)) {
+    throw new Error("Response from /credentialResult is malformed");
+  }
+
+  return credentialResults;
 }
 
 export enum Scenario {
