@@ -206,7 +206,6 @@ async function getCredentialResult(partitionKey: string): Promise<unknown[]> {
     return []; // These may indicate a temporary network issue; we return an empty array so polling can be retried
   }
 
-
   if (!Array.isArray(credentialResults)) {
     throw new Error("Response from /credentialResult is malformed");
   }
