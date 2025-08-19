@@ -150,8 +150,8 @@ async function getEvents(
 
   const events = response.data;
 
-  if (response.status >= 400) {
-    return []; // If response is 4/5XX, this may be a temporary network issue, so we return an empty array so polling can be retried
+  if (response.status in [404, 429, 500, 501, 502, 503]) {
+    return []; // These may indicate a temporary network issue; we return an empty array so polling can be retried
   }
 
   if (!Array.isArray(events)) {
