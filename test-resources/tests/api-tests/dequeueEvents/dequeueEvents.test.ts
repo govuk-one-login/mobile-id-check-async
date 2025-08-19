@@ -149,5 +149,14 @@ async function getEvents(
   });
 
   const events = response.data;
-  return Array.isArray(events) ? events : []; // If response is malformed, return empty array so polling can be retried
+
+  if (response.status in [404, 429, 500, 501, 502, 503]) {
+    return []; // These may indicate a temporary network issue; we return an empty array so polling can be retried
+  }
+
+  if (!Array.isArray(events)) {
+    throw new Error("Response from /events is malformed");
+  }
+
+  return events;
 }
