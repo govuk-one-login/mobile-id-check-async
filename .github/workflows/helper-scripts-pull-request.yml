@@ -24,4 +24,5 @@ jobs:
     uses:
       ./.github/workflows/job_ci-checks.yml
     with:
+      RUN_CHECKOV: false
       WORKING_DIRECTORY: helper-scripts
