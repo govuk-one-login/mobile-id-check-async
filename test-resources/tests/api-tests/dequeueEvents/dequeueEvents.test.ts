@@ -150,7 +150,7 @@ async function getEvents(
 
   const events = response.data;
 
-  if (response.status in [404, 429, 500, 501, 502, 503]) {
+  if ([404, 429, 500, 501, 502, 503].includes(response.status)) {
     return []; // These may indicate a temporary network issue; we return an empty array so polling can be retried
   }
 
