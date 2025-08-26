@@ -35,7 +35,7 @@ jobs:
       - name: Get File Names
         id: get-files
         run: |
-          files=$( git diff origin/main --name-only -- ./.github/workflows/job_** )
+          files=$( git diff origin/DCMAW-12245-a --name-only -- ./.github/workflows/job_** )
 
           JSON="["
           for file in ${files[@]}; do

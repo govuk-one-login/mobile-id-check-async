@@ -2,9 +2,9 @@ name: Run Test Suite
 
 description: {
   "name": "test-suite",
-  "version": "v1.0.0",
+  "version": "v1.0.1",
   "message":
-    "This update adds versioning to the test-suite job."
+    "This update tests versioning for sprint review."
   }
 
 on:
@@ -78,6 +78,9 @@ jobs:
 
       - name: Install Dependencies
         run: npm clean-install
+
+      - name: Testing versioning
+        run: echo "Hello! We have versioning!!"
 
       - name: Run Unit Tests
         if: inputs.RUN_UNIT_TESTS == 'true'

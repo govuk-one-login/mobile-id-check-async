@@ -2,9 +2,9 @@ name: CI Checks
 
 description: {
   "name": "ci-checks",
-  "version": "v1.0.0",
+  "version": "v1.0.1",
   "message":
-    "This update adds versioning to the ci-checks job."
+    "This update tests versioning for sprint review."
   }
 
 on:
@@ -69,6 +69,9 @@ jobs:
 
       - name: Install dependencies
         run: npm clean-install
+
+      - name: Testing versioning
+        run: echo "Hello! We have versioning!!"
 
       - name: Check formatting
         if: inputs.RUN_FORMATTING == 'true'
