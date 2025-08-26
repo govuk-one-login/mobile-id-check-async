@@ -27,7 +27,7 @@ jobs:
     name: CI checks
     if: github.event.pull_request.draft == false
     uses:
-      ./.github/workflows/job_ci-checks.yml
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_ci-checks.yml@ci-checks/v1.0.1
     with:
       PRIVATE_PACKAGES_REQUIRED: true
       WORKING_DIRECTORY: backend-api
@@ -36,7 +36,7 @@ jobs:
     name: Run test suite
     needs: ci-checks
     uses:
-      ./.github/workflows/job_test-suite.yml
+      govuk-one-login/mobile-id-check-async/.github/workflows/job_test-suite.yml@test-suite/v1.0.1
     with:
       PRIVATE_PACKAGES_REQUIRED: true
       RUN_PACT_TESTS: true
