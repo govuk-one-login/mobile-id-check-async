@@ -30,12 +30,23 @@ Resources:
           - !ImportValue devplatform-vpc-PrivateSubnetIdC
         SecurityGroupIds:
           - !ImportValue devplatform-vpc-AWSServicesEndpointSecurityGroupId
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: !GetAtt DeadLetterQueue.Arn
+      KmsKeyArn: "PLACEHOLDER_FOR_YOUR_KMS_KEY_ARN"
+      ReservedConcurrentExecutions: 100
+
+  DeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      KmsMasterKeyId: alias/aws/sqs
 
   DequeueCredentialResultLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 30
       LogGroupName: !Sub /aws/lambda/${AWS::StackName}-dequeue-credential-result
+      KmsKeyId: "PLACEHOLDER_FOR_YOUR_KMS_KEY_ID"
 
   DequeueCredentialResultRole:
     Type: AWS::IAM::Role
