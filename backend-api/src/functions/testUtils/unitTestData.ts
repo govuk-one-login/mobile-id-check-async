@@ -179,6 +179,12 @@ export const invalidBaseSessionAttributeSessionState = {
   timeToLive: 12345,
 };
 
+export const validBiometricTokenSessionAttributes = {
+  ...validBaseSessionAttributes,
+  sessionState: SessionState.AUTH_SESSION_CREATED,
+  documentType: "NFC_PASSPORT",
+};
+
 export const validBiometricTokenIssuedSessionAttributes = {
   ...validBaseSessionAttributes,
   sessionState: SessionState.BIOMETRIC_TOKEN_ISSUED,

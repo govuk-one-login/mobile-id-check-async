@@ -27,6 +27,11 @@ export interface BaseSessionAttributes {
   redirectUri?: string;
 }
 
+export interface BiometricTokenSessionAttributes extends BaseSessionAttributes {
+  documentType: DocumentType;
+  sessionState: SessionState.AUTH_SESSION_CREATED;
+}
+
 export interface BiometricTokenIssuedSessionAttributes
   extends BaseSessionAttributes {
   documentType: DocumentType;

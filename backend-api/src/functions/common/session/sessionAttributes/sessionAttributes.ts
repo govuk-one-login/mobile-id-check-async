@@ -7,6 +7,7 @@ import {
   BiometricTokenIssuedSessionAttributes,
   AuthSessionAbortedAttributes,
   SessionState,
+  BiometricTokenSessionAttributes,
 } from "../session";
 import { GetSessionAttributesInvalidAttributesError } from "../SessionRegistry/types";
 
@@ -45,6 +46,30 @@ const isCommonSessionAttributes = (
   if ("redirectUri" in item && typeof item.redirectUri !== "string") {
     return false;
   }
+  return true;
+};
+
+export const getBiometricTokenSessionAttributes = (
+  item: Record<string, AttributeValue>,
+): Result<
+  BiometricTokenSessionAttributes,
+  GetSessionAttributesInvalidAttributesError
+> => {
+  const sessionAttributes: Record<string, unknown> = unmarshall(item);
+  if (!isBiometricTokenSessionAttributes(sessionAttributes)) {
+    return errorResult({
+      sessionAttributes,
+    });
+  }
+
+  return successResult(sessionAttributes);
+};
+
+const isBiometricTokenSessionAttributes = (
+  item: Record<string, NativeAttributeValue>,
+): item is BiometricTokenSessionAttributes => {
+  if (!isCommonSessionAttributes(item)) return false;
+  if (typeof item.documentType !== "string") return false;
   return true;
 };
 
