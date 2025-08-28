@@ -2,12 +2,12 @@ import { AttributeValue } from "@aws-sdk/client-dynamodb";
 import { NativeAttributeValue, unmarshall } from "@aws-sdk/util-dynamodb";
 import { errorResult, Result, successResult } from "../../../utils/result";
 import {
+  AuthSessionAbortedAttributes,
+  AuthSessionCreatedSessionAttributes,
   BaseSessionAttributes,
   BiometricSessionFinishedAttributes,
   BiometricTokenIssuedSessionAttributes,
-  AuthSessionAbortedAttributes,
   SessionState,
-  BiometricTokenSessionAttributes,
 } from "../session";
 import { GetSessionAttributesInvalidAttributesError } from "../SessionRegistry/types";
 
@@ -49,14 +49,14 @@ const isCommonSessionAttributes = (
   return true;
 };
 
-export const getBiometricTokenSessionAttributes = (
+export const getAuthSessionAttributes = (
   item: Record<string, AttributeValue>,
 ): Result<
-  BiometricTokenSessionAttributes,
+  AuthSessionCreatedSessionAttributes,
   GetSessionAttributesInvalidAttributesError
 > => {
   const sessionAttributes: Record<string, unknown> = unmarshall(item);
-  if (!isBiometricTokenSessionAttributes(sessionAttributes)) {
+  if (!isAuthSessionAttributes(sessionAttributes)) {
     return errorResult({
       sessionAttributes,
     });
@@ -65,11 +65,10 @@ export const getBiometricTokenSessionAttributes = (
   return successResult(sessionAttributes);
 };
 
-const isBiometricTokenSessionAttributes = (
+const isAuthSessionAttributes = (
   item: Record<string, NativeAttributeValue>,
-): item is BiometricTokenSessionAttributes => {
+): item is AuthSessionCreatedSessionAttributes => {
   if (!isCommonSessionAttributes(item)) return false;
-  if (typeof item.documentType !== "string") return false;
   return true;
 };
 

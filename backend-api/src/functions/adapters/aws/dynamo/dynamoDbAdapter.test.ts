@@ -537,7 +537,7 @@ describe("DynamoDbAdapter", () => {
             invalidAttributes: [
               { sessionState: SessionState.AUTH_SESSION_CREATED },
             ],
-            allAttributes:
+            allSessionAttributes:
               invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
           });
         });
@@ -550,7 +550,7 @@ describe("DynamoDbAdapter", () => {
                 invalidAttributes: [
                   { sessionState: SessionState.AUTH_SESSION_CREATED },
                 ],
-                allAttributes:
+                allSessionAttributes:
                   invalidBiometricTokenIssuedSessionAttributesWrongSessionState,
               },
             }),

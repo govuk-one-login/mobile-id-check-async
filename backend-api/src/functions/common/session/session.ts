@@ -10,7 +10,7 @@ export enum SessionState {
 
 export type SessionAttributes =
   | BaseSessionAttributes
-  | BiometricTokenSessionAttributes
+  | AuthSessionCreatedSessionAttributes
   | BiometricTokenIssuedSessionAttributes
   | BiometricSessionFinishedAttributes
   | AuthSessionAbortedAttributes;
@@ -28,8 +28,8 @@ export interface BaseSessionAttributes {
   redirectUri?: string;
 }
 
-export interface BiometricTokenSessionAttributes extends BaseSessionAttributes {
-  documentType: DocumentType;
+export interface AuthSessionCreatedSessionAttributes
+  extends BaseSessionAttributes {
   sessionState: SessionState.AUTH_SESSION_CREATED;
 }
 
