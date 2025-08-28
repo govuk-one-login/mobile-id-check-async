@@ -344,7 +344,7 @@ async function handleInvalidSessionFailure(
 ): Promise<APIGatewayProxyResult> {
   const { sessionAttributes, issuer, ipAddress, txmaAuditEncoded } = data;
   const { subjectIdentifier, sessionId, govukSigninJourneyId, redirectUri } =
-    sessionAttributes.allAttributes as unknown as SessionAttributes;
+    sessionAttributes.allSessionAttributes as unknown as SessionAttributes;
   const writeEventResult = await eventService.writeGenericEvent({
     eventName: "DCMAW_ASYNC_CRI_4XXERROR",
     sub: subjectIdentifier,

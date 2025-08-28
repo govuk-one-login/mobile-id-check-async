@@ -29,7 +29,7 @@ import {
   GetSessionError,
   GetSessionFailed,
   GetSessionInternalServerError,
-  GetSessionSessionInvalidErrorData,
+  GetSessionSessionNotValidError,
   GetSessionSessionNotFoundError,
   SessionUpdateFailed,
   SessionUpdateFailedConditionalCheckFailure,
@@ -199,8 +199,8 @@ export class DynamoDbAdapter implements SessionRegistry {
 
     if (validateSessionResult.isError) {
       const { invalidAttributes } = validateSessionResult.value;
-      return this.handleGetSessionSessionInvalidError({
-        allAttributes: sessionAttributes,
+      return this.handleGetSessionSessionNotValidError({
+        allSessionAttributes: sessionAttributes,
         invalidAttributes,
       });
     }
@@ -355,10 +355,10 @@ export class DynamoDbAdapter implements SessionRegistry {
     });
   }
 
-  private handleGetSessionSessionInvalidError({
-    allAttributes,
+  private handleGetSessionSessionNotValidError({
+    allSessionAttributes: allAttributes,
     invalidAttributes,
-  }: ValidateSessionErrorData): FailureWithValue<GetSessionSessionInvalidErrorData> {
+  }: ValidateSessionErrorData): FailureWithValue<GetSessionSessionNotValidError> {
     logger.error(LogMessage.GET_SESSION_SESSION_INVALID, {
       allAttributes,
       invalidAttributes,

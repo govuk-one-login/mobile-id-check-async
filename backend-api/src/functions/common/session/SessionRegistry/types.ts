@@ -74,7 +74,7 @@ export enum GetSessionError {
 
 export type GetSessionFailed =
   | GetSessionSessionNotFoundError
-  | GetSessionSessionInvalidFailure
+  | GetSessionSessionNotValidError
   | GetSessionInternalServerError;
 
 export interface GetSessionInternalServerError {
@@ -85,18 +85,13 @@ export interface GetSessionSessionNotFoundError {
   errorType: GetSessionError.SESSION_NOT_FOUND;
 }
 
-export interface GetSessionSessionInvalidErrorData {
-  errorType: GetSessionError.SESSION_NOT_VALID;
-  data: ValidateSessionErrorData;
-}
-
-export interface GetSessionSessionInvalidFailure {
+export interface GetSessionSessionNotValidError {
   errorType: GetSessionError.SESSION_NOT_VALID;
   data: ValidateSessionErrorData;
 }
 
 export interface ValidateSessionErrorData {
-  allAttributes?: unknown;
+  allSessionAttributes?: unknown;
   invalidAttributes?: ValidateSessionInvalidAttributes[];
 }
 

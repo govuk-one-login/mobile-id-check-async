@@ -193,7 +193,7 @@ const allMobileAppBiometricTokenSessionAttributesData = {
 };
 
 export const invalidMobileAppBiometricTokenSessionAttributesData = {
-  allAttributes: allMobileAppBiometricTokenSessionAttributesData,
+  allSessionAttributes: allMobileAppBiometricTokenSessionAttributesData,
   invalidAttributes: {
     createdAt: allMobileAppBiometricTokenSessionAttributesData.createdAt,
     sessionState: allMobileAppBiometricTokenSessionAttributesData.sessionState,
