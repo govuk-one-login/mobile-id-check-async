@@ -256,44 +256,6 @@ interface HandleUpdateSessionErrorData {
   txmaAuditEncoded: string | undefined;
 }
 
-async function handleUpdateSessionError(
-  eventService: IEventService,
-  data: HandleUpdateSessionErrorData,
-): Promise<APIGatewayProxyResult> {
-  const {
-    updateSessionResult,
-    sessionId,
-    issuer,
-    ipAddress,
-    txmaAuditEncoded,
-  } = data;
-  let sessionAttributes;
-  switch (updateSessionResult.value.errorType) {
-    case UpdateSessionError.SESSION_NOT_FOUND:
-      return handleSessionNotFound(eventService, {
-        sessionId,
-        issuer,
-        ipAddress,
-        txmaAuditEncoded,
-      });
-    case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
-      sessionAttributes = updateSessionResult.value.attributes;
-      return handleConditionalCheckFailure(eventService, {
-        sessionAttributes,
-        issuer,
-        ipAddress,
-        txmaAuditEncoded,
-      });
-    case UpdateSessionError.INTERNAL_SERVER_ERROR:
-      return handleInternalServerError(eventService, {
-        sessionId,
-        issuer,
-        ipAddress,
-        txmaAuditEncoded,
-      });
-  }
-}
-
 interface HandleConditionalCheckFailureData {
   sessionAttributes: BaseSessionAttributes;
   issuer: string;
@@ -444,6 +406,44 @@ async function handleInternalServerError(
     });
   }
   return serverErrorResponse;
+}
+
+async function handleUpdateSessionError(
+  eventService: IEventService,
+  data: HandleUpdateSessionErrorData,
+): Promise<APIGatewayProxyResult> {
+  const {
+    updateSessionResult,
+    sessionId,
+    issuer,
+    ipAddress,
+    txmaAuditEncoded,
+  } = data;
+  let sessionAttributes;
+  switch (updateSessionResult.value.errorType) {
+    case UpdateSessionError.SESSION_NOT_FOUND:
+      return handleSessionNotFound(eventService, {
+        sessionId,
+        issuer,
+        ipAddress,
+        txmaAuditEncoded,
+      });
+    case UpdateSessionError.CONDITIONAL_CHECK_FAILURE:
+      sessionAttributes = updateSessionResult.value.attributes;
+      return handleConditionalCheckFailure(eventService, {
+        sessionAttributes,
+        issuer,
+        ipAddress,
+        txmaAuditEncoded,
+      });
+    case UpdateSessionError.INTERNAL_SERVER_ERROR:
+      return handleInternalServerError(eventService, {
+        sessionId,
+        issuer,
+        ipAddress,
+        txmaAuditEncoded,
+      });
+  }
 }
 
 interface BiometricTokenIssuedOkResponseBody {
