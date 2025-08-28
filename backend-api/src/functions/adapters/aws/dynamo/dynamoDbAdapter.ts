@@ -356,18 +356,18 @@ export class DynamoDbAdapter implements SessionRegistry {
   }
 
   private handleGetSessionSessionNotValidError({
-    allSessionAttributes: allAttributes,
+    allSessionAttributes,
     invalidAttributes,
   }: ValidateSessionErrorData): FailureWithValue<GetSessionSessionNotValidError> {
     logger.error(LogMessage.GET_SESSION_SESSION_INVALID, {
-      allAttributes,
+      allSessionAttributes,
       invalidAttributes,
     });
 
     return errorResult({
       errorType: GetSessionError.SESSION_NOT_VALID,
       data: {
-        allAttributes,
+        allSessionAttributes,
         invalidAttributes,
       },
     });
