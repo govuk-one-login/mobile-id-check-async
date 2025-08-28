@@ -199,8 +199,6 @@ async function handleGetSessionError(
         txmaAuditEncoded,
       });
   }
-  // Unreachable
-  // return serverErrorResponse;
 }
 
 async function getSubmitterKeyForDocumentType(
