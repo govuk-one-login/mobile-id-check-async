@@ -199,12 +199,8 @@ async function handleGetSessionError(
         txmaAuditEncoded,
       });
   }
-
-  // if (errorData.errorType === GetSessionError.CLIENT_ERROR) {
-
-  // }
-
-  return serverErrorResponse;
+  // Unreachable
+  // return serverErrorResponse;
 }
 
 async function getSubmitterKeyForDocumentType(
@@ -323,16 +319,12 @@ async function handleConditionalCheckFailure(
     suspected_fraud_signal: undefined,
   });
 
-  console.log("BEFORE ERROR CHECK >>>>>");
-
   if (writeEventResult.isError) {
-    console.log("INSIDE ERROR CHECK BEFORE LOG >>>>>");
     logger.error(LogMessage.ERROR_WRITING_AUDIT_EVENT, {
       data: {
         auditEventName: "DCMAW_ASYNC_CRI_4XXERROR",
       },
     });
-    console.log("AFTER LOG >>>>>");
     return serverErrorResponse;
   }
   return unauthorizedResponse(
