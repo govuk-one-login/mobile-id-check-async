@@ -74,7 +74,6 @@ export async function lambdaHandlerConstructor(
 
   appendPersistentIdentifiersToLogger({ sessionId });
 
-  // TODO: validate user session here
   const sessionRegistry = dependencies.getSessionRegistry(
     config.SESSION_TABLE_NAME,
   );
@@ -85,14 +84,6 @@ export async function lambdaHandlerConstructor(
     sessionId,
     new GetSessionBiometricToken(),
   );
-
-  // interface HandleGetSessionErrorData {
-  //   getSessionResult: FailureWithValue<GetSessionFailed>;
-  //   sessionId: string;
-  //   issuer: string;
-  //   ipAddress: string;
-  //   txmaAuditEncoded: string | undefined;
-  // }
 
   if (getSessionResult.isError) {
     return handleGetSessionError(eventService, {
@@ -114,8 +105,6 @@ export async function lambdaHandlerConstructor(
   }
   const submitterKey = submitterKeyResult.value;
 
-  // token exchange with ReadID
-
   const biometricTokenResult = await dependencies.getBiometricToken(
     config.READID_BASE_URL,
     submitterKey,
@@ -130,8 +119,6 @@ export async function lambdaHandlerConstructor(
   }
 
   const opaqueId = generateOpaqueId();
-
-  // session validation
 
   const updateSessionResult = await sessionRegistry.updateSession(
     sessionId,
