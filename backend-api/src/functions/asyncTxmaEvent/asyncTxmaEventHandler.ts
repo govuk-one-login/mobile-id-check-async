@@ -102,10 +102,11 @@ async function handleGetSessionError({
 }: {
   errorData: GetSessionFailed;
 }): Promise<APIGatewayProxyResult> {
-  const { errorType } = errorData;
   if (
-    errorType === GetSessionError.SESSION_NOT_FOUND ||
-    errorType === GetSessionError.SESSION_NOT_VALID
+    [
+      GetSessionError.SESSION_NOT_FOUND,
+      GetSessionError.SESSION_NOT_VALID,
+    ].includes(errorData.errorType)
   ) {
     return unauthorizedResponse(
       "invalid_session",
